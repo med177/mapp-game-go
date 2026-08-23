@@ -773,6 +773,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.openNavalMissionPanel()
 			return InputAction{}
 		}
+		if r.selectedArmyIsPlayerOwned() && DisbandButtonHitTest(fx, fy, r.gs, r.SelectedArmy, r.splitSelectedUnits) {
+			indices := r.selectedArmySplitIndices()
+			r.openArmyDisbandConfirm(indices)
+			return InputAction{}
+		}
 		if r.selectedArmyIsPlayerOwned() && ArmyPanelCommanderUnassignHitTest(fx, fy, r.gs, r.SelectedArmy) {
 			return InputAction{Kind: ActionUnassignCommander, ArmyID: r.SelectedArmy}
 		}
@@ -1152,6 +1157,11 @@ func (r *Renderer) resetRecruitSelection() {
 
 func (r *Renderer) clearArmySplitSelection() {
 	r.splitSelectedUnits = nil
+}
+
+// ClearArmyUnitSelection, oyun aksiyonu sonrası birim kartı seçimini temizler.
+func (r *Renderer) ClearArmyUnitSelection() {
+	r.clearArmySplitSelection()
 }
 
 func (r *Renderer) toggleArmySplitUnit(unitIndex int) {

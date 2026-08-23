@@ -1807,6 +1807,24 @@ func (r *Renderer) openBuildingDemolitionConfirm(rid world.RegionID, buildingID 
 	)
 }
 
+func (r *Renderer) openArmyDisbandConfirm(indices []int) {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" || len(indices) == 0 {
+		return
+	}
+	a := r.gs.Armies[r.SelectedArmy]
+	if a == nil || a.OwnerID != string(r.gs.PlayerFactionID) {
+		return
+	}
+	r.ShowConfirmDialog(
+		"Birim Terhisi",
+		fmt.Sprintf("%d seçili birimi terhis etmek istiyor musunuz? Üretim maliyetinin %%20'si geri kazanılır.", len(indices)),
+		"Evet",
+		"Hayır",
+		InputAction{Kind: ActionDisbandArmy, ArmyID: r.SelectedArmy, UnitIndices: indices},
+		nil,
+	)
+}
+
 func (r *Renderer) ShowChoiceDialog(title, message, acceptLabel, declineLabel string, acceptAction, declineAction InputAction) {
 	r.confirmDialog = confirmDialogState{
 		show:          true,

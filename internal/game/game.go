@@ -335,6 +335,8 @@ func (g *Game) Update() error {
 			g.acceptSurrenderOfferForRegion(action.TargetRegion)
 		case render.ActionSplitArmy:
 			g.splitArmy(action.ArmyID, action.UnitIndices...)
+		case render.ActionDisbandArmy:
+			g.disbandArmy(action.ArmyID, action.UnitIndices...)
 		case render.ActionMergeArmies:
 			g.mergeArmiesManual(action.ArmyID, action.TargetArmyID)
 		case render.ActionAssignCommander:
@@ -5369,6 +5371,78 @@ func (g *Game) splitArmy(aid army.ArmyID, selectedIndices ...int) {
 	copy(newUnits, a.Units[len(a.Units)-half:])
 	a.Units = a.Units[:len(a.Units)-half]
 	g.createSplitArmy(a, newUnits)
+}
+
+// disbandArmy seçili birimleri ordudan çıkarır ve üretim maliyetlerinin
+// %20'sini kaynak bazında iade eder.
+func (g *Game) disbandArmy(aid army.ArmyID, selectedIndices ...int) {
+	if g == nil || g.gs == nil || g.gs.Armies == nil {
+		return
+	}
+	a := g.gs.Armies[aid]
+	if a == nil || a.OwnerID != string(g.gs.PlayerFactionID) || len(selectedIndices) == 0 {
+		return
+	}
+	selected := make(map[int]bool, len(selectedIndices))
+	for _, index := range selectedIndices {
+		if index >= 0 && index < len(a.Units) {
+			selected[index] = true
+		}
+	}
+	if len(selected) == 0 {
+		return
+	}
+	if len(selected) == len(a.Units) && len(a.EmbarkedUnits) > 0 {
+		if g.renderer != nil {
+			g.renderer.ShowCombatResult("Taşınan birlikler varken filo tamamen terhis edilemez.")
+		}
+		return
+	}
+
+	f := g.gs.Factions[g.gs.PlayerFactionID]
+	refund := economy.ResourceCost{}
+	remaining := make([]army.Unit, 0, len(a.Units)-len(selected))
+	for index, unit := range a.Units {
+		if selected[index] {
+			if unitType := g.gs.UnitTypes[unit.TypeID]; unitType != nil {
+				refund.Gold += unitType.GoldCost
+				refund.Grain += unitType.GrainCost
+				refund.Iron += unitType.IronCost
+				refund.Timber += unitType.TimberCost
+				refund.Stone += unitType.StoneCost
+				refund.Spice += unitType.SpiceCost
+				refund.Cloth += unitType.ClothCost
+			}
+			continue
+		}
+		remaining = append(remaining, unit)
+	}
+	a.Units = remaining
+	refund.RefundPercent(f, 20)
+
+	if len(a.Units) == 0 {
+		a.RemoveCommander()
+		delete(g.gs.Armies, aid)
+		if g.gs.ArmyLogistics != nil {
+			delete(g.gs.ArmyLogistics, aid)
+		}
+		if g.renderer != nil {
+			g.renderer.SelectedArmy = ""
+		}
+	}
+	if g.renderer != nil {
+		g.renderer.ClearArmyUnitSelection()
+		g.renderer.ShowCombatResult(fmt.Sprintf("%d birlik terhis edildi. Geri kazanım: %s", len(selected), refundPercentText(refund)))
+	}
+}
+
+func refundPercentText(cost economy.ResourceCost) string {
+	return (economy.ResourceCost{
+		Gold: cost.Gold * 20 / 100, Grain: cost.Grain * 20 / 100,
+		Iron: cost.Iron * 20 / 100, Timber: cost.Timber * 20 / 100,
+		Stone: cost.Stone * 20 / 100, Spice: cost.Spice * 20 / 100,
+		Cloth: cost.Cloth * 20 / 100,
+	}).ShortTR()
 }
 
 func (g *Game) createSplitArmy(a *army.Army, newUnits []army.Unit) {

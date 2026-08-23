@@ -35,6 +35,12 @@ Seçili ordu/donanma panelindeki tahıl ihtiyacı satırının yanında toplam
 üzerinden hesaplandığı için donanmanın gemileri ve taşıdığı kara birlikleri
 aynı toplamda görünür (`internal/render/army_panel.go`, `internal/state/state.go`).
 
+Ordu panelinde seçili birim kartları varken aksiyon grubunun solunda `SİL`
+düğmesi görünür. Düğme ortak onay modalını açar; onaylanan birimler ordudan
+çıkarılır ve `UnitType` üretim maliyetlerinin kaynak bazında `%20`si iade edilir.
+Çizim ve hit-test fiziksel birim indekslerini paylaşır (`internal/render/army_panel.go`,
+`internal/render/renderer_input.go`, `internal/game/game.go`).
+
 Kuşatmada `SiegeState.BreachLevel >= 1` olduğunda kanonik settlement marker'ının
 etrafında seçimden bağımsız yeşil bir halka çizilir (`internal/render/renderer.go`).
 Seçim halkası korunur; iki gösterge farklı yarıçaplardan türetilir.

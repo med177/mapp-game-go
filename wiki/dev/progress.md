@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-23: Ordu bilgi paneline seçili birimleri `SİL` düğmesiyle terhis etme
+  eklendi. Evet/Hayır modalı sonrasında birimler çıkarılıyor ve normal üretim
+  maliyetlerinin kaynak bazında `%20`si iade ediliyor; boş ordular ile lojistik
+  kayıtları temizleniyor. Regression: `TestDisbandArmyRefundsTwentyPercentAndKeepsUnselectedUnits`,
+  `TestDisbandArmyRemovesEmptyArmyAndLogistics`, `TestDisbandButtonIsLeftOfArmyActions`.
+
 - 2026-08-23: Tek saha ordusunun kuşatıcıyı yenmeye yetmediği durumda AI artık
   ulaşılabilir yakın orduları ortak `relief` rally noktasında topluyor. Toplam güç
   kuşatıcı gücünün `%110`una ulaştığında ordular mevcut lojistik/kapasite kurallarıyla

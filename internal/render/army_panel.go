@@ -92,6 +92,8 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		selectedUnits = selectedUnitMaps[0]
 	}
 	selectedCount := splitSelectedUnitCount(a, selectedUnits)
+	canCommand := a.OwnerID == string(gs.PlayerFactionID)
+	canDisband := canCommand && selectedCount > 0
 
 	// ── Arka plan ve çerçeve ──────────────────────────────────────────
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
@@ -136,6 +138,9 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	hasMerge := len(mergeTargets) > 0
 	hasSplitButton := canSplit || hasMerge
 	actionStartX := splitButtonBlockLeft(px, panelW, len(mergeTargets), hasSplitButton)
+	if canDisband {
+		actionStartX -= actionBtnGap + actionBtnW
+	}
 	headerMaxW := float64(actionStartX - px - armyPanelPadX - 10)
 	if rightLimited := float64(panelW) - float64(armyPanelPadX*2) - mpW - 12; rightLimited < headerMaxW {
 		headerMaxW = rightLimited
@@ -184,7 +189,12 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 
 	// Aksiyon butonları — BÖL ve BİRLEŞTİR
-	canCommand := a.OwnerID == string(gs.PlayerFactionID)
+	// canCommand yukarıda hesaplanır; panel ve hit-test aynı sahiplik kuralını kullanır.
+	canCommand = a.OwnerID == string(gs.PlayerFactionID)
+	if canCommand && canDisband {
+		bx, by, bw, bh := disbandButtonRect(px, py, panelW, len(mergeTargets), hasSplitButton)
+		drawArmyPanelButton(screen, bx, by, bw, bh, "Sil", true)
+	}
 	if canCommand && (canSplit || hasMerge) {
 		drawArmyActionButton(screen, px, py, panelW, "✂ BÖL", canSplit, hasMerge, true)
 	}
@@ -1138,6 +1148,15 @@ func splitButtonBlockLeft(px, panelW float32, mergeCount int, hasSplit bool) flo
 	return px + panelW - armyPanelPadX - actionBtnW - actionBtnRightInset
 }
 
+// disbandButtonRect terhis düğmesini mevcut aksiyon grubunun hemen soluna
+// yerleştirir; böylece BÖL/BİRLEŞTİR düğmelerinin geometrisi değişmez.
+func disbandButtonRect(px, py, panelW float32, mergeCount int, hasSplit bool) (bx, by, bw, bh float32) {
+	bw, bh = actionBtnW, actionBtnH
+	by = py + armyPanelBtnY
+	bx = splitButtonBlockLeft(px, panelW, mergeCount, hasSplit) - actionBtnGap - bw
+	return
+}
+
 // mergeButtonRect BİRLEŞTİR butonunun piksel dikdörtgenini döner.
 // hasSplit true ise BİRLEŞTİR, BÖL butonunun soluna yerleşir.
 func mergeButtonRect(px, py, panelW float32, hasSplit bool) (bx, by, bw, bh float32) {
@@ -1177,6 +1196,26 @@ func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMaps
 	hasMerge := FindMergeTarget(gs, aid) != ""
 	bx, by, bw, bh := splitButtonRect(layout.panelX, layout.panelY, layout.panelW, hasMerge)
 	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "<-Böl->"), true
+}
+
+func buildDisbandArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) (gameui.Button, bool) {
+	if gs == nil || aid == "" {
+		return gameui.Button{}, false
+	}
+	a := gs.Armies[aid]
+	if a == nil || a.OwnerID != string(gs.PlayerFactionID) || len(selectedUnitMaps) == 0 || splitSelectedUnitCount(a, selectedUnitMaps[0]) == 0 {
+		return gameui.Button{}, false
+	}
+	mergeCount := len(FindMergeTargets(gs, aid))
+	hasSplit := len(a.Units) >= 2 && splitSelectionCanBeApplied(a, selectedUnitMaps[0])
+	layout := armyPanelGeometry()
+	bx, by, bw, bh := disbandButtonRect(layout.panelX, layout.panelY, layout.panelW, mergeCount, hasSplit)
+	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "Sil"), true
+}
+
+func DisbandButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) bool {
+	btn, ok := buildDisbandArmyButton(gs, aid, selectedUnitMaps...)
+	return ok && btn.HitTest(fx, fy)
 }
 
 func buildMergeArmyButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
@@ -1425,7 +1464,7 @@ func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyI
 	if buildArmyPanelCloseButton().HitTest(fx, fy) {
 		return true
 	}
-	if SplitButtonHitTest(fx, fy, gs, aid, selectedUnitMaps...) || MergeButtonHitTest(fx, fy, gs, aid) {
+	if DisbandButtonHitTest(fx, fy, gs, aid, selectedUnitMaps...) || SplitButtonHitTest(fx, fy, gs, aid, selectedUnitMaps...) || MergeButtonHitTest(fx, fy, gs, aid) {
 		return true
 	}
 	if merchantRouteButtonHit(fx, fy, gs, aid) {

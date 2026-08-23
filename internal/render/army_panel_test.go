@@ -42,6 +42,31 @@ func TestArmyPanelUnitIndexGroupsUnitsByCategory(t *testing.T) {
 	}
 }
 
+func TestDisbandButtonIsLeftOfArmyActions(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	defer func() { ScreenWidth, ScreenHeight = oldW, oldH }()
+	ScreenWidth, ScreenHeight = 1280, 720
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		UnitTypes:       map[string]*army.UnitType{"inf": {ID: "inf", Category: army.CategoryInfantry}},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", Units: []army.Unit{{TypeID: "inf"}, {TypeID: "inf"}}},
+		},
+	}
+	selected := map[int]bool{0: true}
+	disband, ok := buildDisbandArmyButton(gs, "army", selected)
+	if !ok {
+		t.Fatal("seçili birim varken terhis düğmesi oluşturulmalıydı")
+	}
+	split, ok := buildSplitArmyButton(gs, "army", selected)
+	if !ok {
+		t.Fatal("iki birimli orduda böl düğmesi oluşturulmalıydı")
+	}
+	if disband.X+disband.W+float64(actionBtnGap) != split.X {
+		t.Fatalf("terhis düğmesi böl düğmesinin hemen solunda olmalıydı: disband=%+v split=%+v", disband, split)
+	}
+}
+
 func TestArmyUpkeepSummaryShowsGrainAndGoldSalary(t *testing.T) {
 	gs := &state.GameState{
 		UnitTypes: map[string]*army.UnitType{

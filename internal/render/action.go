@@ -85,6 +85,7 @@ const (
 	ActionSelectSave                ActionKind = "select_save"      // belirli slotu yükle/kaydet (BuildingID = slot adı)
 	ActionDeleteSave                ActionKind = "delete_save"      // belirli slotu sil (BuildingID = slot adı)
 	ActionSplitArmy                 ActionKind = "split_army"       // seçili orduyu ikiye böl
+	ActionDisbandArmy               ActionKind = "disband_army"     // seçili birimleri terhis et
 	ActionMergeArmies               ActionKind = "merge_armies"     // ArmyID'yi TargetArmyID ile birleştir
 	ActionAssignCommander           ActionKind = "assign_commander"
 	ActionRecruitCommander          ActionKind = "recruit_commander"

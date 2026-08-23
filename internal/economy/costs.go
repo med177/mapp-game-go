@@ -68,6 +68,23 @@ func (c ResourceCost) Refund(f *faction.Faction) {
 	}
 }
 
+// RefundPercent, maliyetin verilen yüzde kadarını her kaynak için aşağı
+// yuvarlayarak iade eder. Üretim maliyeti olmayan kaynaklar değişmez.
+func (c ResourceCost) RefundPercent(f *faction.Faction, percent int) {
+	if f == nil || percent <= 0 {
+		return
+	}
+	if percent > 100 {
+		percent = 100
+	}
+	for _, kind := range CostResourceKinds() {
+		amount := c.Amount(kind) * percent / 100
+		if amount > 0 {
+			AddFactionResource(f, kind, amount)
+		}
+	}
+}
+
 func (c ResourceCost) ShortTR() string {
 	parts := make([]string, 0, len(CostResourceKinds()))
 	for _, kind := range CostResourceKinds() {
