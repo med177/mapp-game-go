@@ -61,6 +61,27 @@ func TestArmyReplenishmentHPDoublesAtFactionCapital(t *testing.T) {
 	}
 }
 
+func TestBestCapitalSettlementPrefersMostDevelopedRegionOverHigherIncome(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{"ai": {ID: "ai"}},
+		Regions: map[world.RegionID]*world.Region{
+			"rich": {
+				ID: "rich", OwnerID: "ai", BaseGoldIncome: 500,
+				Settlements: []world.Settlement{{ID: "rich_city", Type: world.SettlementCity, IsCenter: true}},
+			},
+			"developed": {
+				ID: "developed", OwnerID: "ai", BaseGoldIncome: 50,
+				Buildings:   []string{"market", "market", "walls"},
+				Settlements: []world.Settlement{{ID: "developed_city", Type: world.SettlementCity, IsCenter: true}},
+			},
+		},
+	}
+
+	if got, ok := gs.BestCapitalSettlementForFaction("ai"); !ok || got != "developed_city" {
+		t.Fatalf("en gelişmiş bölgenin başkenti seçilmeliydi: ok=%v got=%q", ok, got)
+	}
+}
+
 func TestNormalizeFactionCapitalsChoosesBestOwnedSettlement(t *testing.T) {
 	gs := &GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
@@ -82,6 +103,7 @@ func TestNormalizeFactionCapitalsChoosesBestOwnedSettlement(t *testing.T) {
 				BaseGoldIncome:  90,
 				BaseGrainOutput: 6,
 				TradeCapacity:   8,
+				Buildings:       []string{"market"},
 				Settlements: []world.Settlement{
 					{ID: "bursa_city", NameTR: "Bursa", IsCenter: true},
 				},

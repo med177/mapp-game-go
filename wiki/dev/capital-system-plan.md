@@ -36,7 +36,7 @@ Bu modelde kalıcı truth fraksiyon üstündedir. `Settlement.is_capital` görse
 Yükleme sonrası tek yardımcı akış:
 
 - `Faction.capital_settlement_id` doluysa onu kullan
-- boşsa sahip olunan kara bölgeler içinden en yüksek getirili bölgenin ana settlement'ını seç
+- boşsa sahip olunan kara bölgeler içinden gelişmişlik puanı en yüksek bölgenin ana settlement'ını seç
 - pending hedef artık geçersiz/elde değilse kuyruğu temizle
 
 ## Oyun Kuralları
@@ -64,7 +64,7 @@ Bir fraksiyon başkent settlement'ını içeren bölgeyi kaybederse:
 Başkentini kaybeden fraksiyon için yeni başkent:
 
 - sahip olduğu kara bölgeler arasından
-- en yüksek efektif getiriye sahip bölge seçilerek
+- tamamlanmış bina seviyeleri başta olmak üzere yerleşim altyapısı ve nüfusu en gelişmiş bölge seçilerek
 - o bölgenin merkez / ana settlement'ına atanır
 
 Fraksiyonun hiç kara bölgesi kalmadıysa başkent boş kalabilir; eliminasyon akışı bunu ayrıca temizler.

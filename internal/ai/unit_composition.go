@@ -130,7 +130,7 @@ func aiUnitCandidateAvailableForSelection(gs *state.GameState, self *faction.Fac
 // cephenin ihtiyacına göre daraltır. Böylece aynı devlet savunma objective'inde
 // olsa bile uzun savaştaki gerçek ana saldırı için kuşatma ağırlığı üretebilir;
 // ikincil cepheler ise gereksiz hücum birimi yığmaz.
-func aiCompositionTargetForStrategicContext(gs *state.GameState, fid faction.FactionID, plan *state.AIPlanState, ctx *StrategicContext) aiCompositionTarget {
+func aiCompositionTargetForStrategicContext(gs *state.GameState, _ faction.FactionID, plan *state.AIPlanState, ctx *StrategicContext) aiCompositionTarget {
 	target := aiCompositionTargetForPlan(plan)
 	if gs == nil || ctx == nil {
 		return target

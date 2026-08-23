@@ -10,6 +10,18 @@ import (
 	gameui "mapp-game-go/internal/ui"
 )
 
+func TestTechRequirementSummaryShowsMissingRegionsAndYear(t *testing.T) {
+	summary := techRequirementSummary(
+		&tech.Technology{RequiredRegions: []string{"thrace", "bursa"}, MinYear: 1420},
+		1419,
+		map[string]bool{"thrace": true},
+		map[string]string{"thrace": "Trakya", "bursa": "Bursa"},
+	)
+	if summary != "Bölgeler: ✓Trakya, ✕Bursa  •  En erken yıl: 1420" {
+		t.Fatalf("önkoşul özeti yanlış: %q", summary)
+	}
+}
+
 func TestLayoutTechTreeWrapsAfterFourColumns(t *testing.T) {
 	levels := [][]techNode{{
 		{t: nil}, {t: nil}, {t: nil}, {t: nil}, {t: nil},
@@ -81,6 +93,18 @@ func TestTechCardComponentDerivesProgressAndAvailabilityFromNodeState(t *testing
 	}
 	if card.Model.ProgressText != "2 tur kaldı" {
 		t.Fatalf("unexpected progress label: %q", card.Model.ProgressText)
+	}
+}
+
+func TestTechCardComponentCarriesRequirementText(t *testing.T) {
+	node := techNode{
+		t:               &tech.Technology{ID: "cannon", NameTR: "Bronz Top Dökümü", Category: tech.CategoryMilitary},
+		unlocked:        false,
+		requirementText: "Bölgeler: ✕Trakya  •  En erken yıl: 1420",
+	}
+	card := buildTechCardComponent(node, "", faction.ResearchState{})
+	if card.Model.Summary != node.requirementText {
+		t.Fatalf("kilitli kart önkoşul metnini göstermeli: got=%q", card.Model.Summary)
 	}
 }
 

@@ -265,6 +265,11 @@
     "requires": [
       "gunpowder"
     ],
+    "required_regions": [
+      "thrace",
+      "bursa"
+    ],
+    "min_year": 1420,
     "turns_required": 14
   },
   {

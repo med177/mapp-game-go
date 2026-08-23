@@ -50,8 +50,12 @@ type Army struct {
 	// Morale ordunun mevcut ikmal/komuta dayanıklılığını temsil eder.
 	// Eski save'lerde alan bulunmadığı için 0, CurrentMorale tarafından 100
 	// başlangıç morali olarak yorumlanır.
-	Morale    int        `json:"morale,omitempty"`
-	Commander *Commander `json:"commander,omitempty"`
+	// IsRebel, bu ordunun bir bölge isyanından doğduğunu belirtir. RebelAgainstID
+	// isyan bastırıldığında bölgenin geri döneceği eski sahibi taşır.
+	IsRebel        bool       `json:"is_rebel,omitempty"`
+	RebelAgainstID string     `json:"rebel_against_id,omitempty"`
+	Morale         int        `json:"morale,omitempty"`
+	Commander      *Commander `json:"commander,omitempty"`
 	// EmbarkedCommander kara birlikleri filoda taşınırken komutan bağlantısını korur.
 	EmbarkedCommander *Commander `json:"embarked_commander,omitempty"`
 

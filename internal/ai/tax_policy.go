@@ -18,7 +18,7 @@ const (
 // aiAdjustTaxesWithSteps vergi politikasını bölge bazında uygular. Savaş
 // yorgunluğu da projeksiyona katılır; böylece savaşta yüksek görünen ama
 // ekonomi tick'inden sonra isyan eşiğine yaklaşacak bölgelerde vergi azaltılır.
-func aiAdjustTaxesWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+func aiAdjustTaxesWithSteps(gs *state.GameState, fid faction.FactionID, _ *[]TurnStep) {
 	if gs == nil || fid == "" {
 		return
 	}

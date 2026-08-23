@@ -227,7 +227,7 @@ func aiPursueHistoricalWarAlliance(gs *state.GameState, fid faction.FactionID, s
 // sağlayan barışçıl ilişkilerde kullandığı tek taraflı ilişki aksiyonlarını
 // uygular. AI-AI işlemleri hemen çözülür; oyuncuya giden işlemler ise oyuncunun
 // barış tekliflerinde gördüğü aynı modal kuyruğuna girer.
-func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, steps *[]TurnStep) bool {
+func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, _ *[]TurnStep) bool {
 	return aiHandleRelationshipRepairWithBudget(gs, fid, otherID, rel, nil)
 }
 

@@ -697,7 +697,11 @@ func applyStartedResearch(gs *state.GameState, fid faction.FactionID, techID str
 	if !ok || t == nil {
 		return
 	}
-	if !tech.IsUnlocked(&f.Research, t) {
+	ownedRegions := make(map[string]bool)
+	for _, region := range gs.LandRegionsOwnedBy(fid) {
+		ownedRegions[string(region.ID)] = true
+	}
+	if !tech.IsUnlockedForContext(&f.Research, t, gs.Year, ownedRegions) {
 		return
 	}
 	if f.Research.Completed == nil {

@@ -114,6 +114,83 @@ func TestCheckRebellionsClearsProductionOrdersForLostRegion(t *testing.T) {
 	}
 }
 
+func TestCheckRebellionsSpawnsScaledRebelArmy(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{"owner": {ID: "owner", Grain: 0}},
+		Regions: map[world.RegionID]*world.Region{
+			"region": {ID: "region", OwnerID: "owner", Satisfaction: 10, Population: 900,
+				Settlements: []world.Settlement{{ID: "city"}, {ID: "town"}}, Buildings: []string{"market", "barracks"}},
+		},
+		Armies:       map[army.ArmyID]*army.Army{},
+		GrainEconomy: map[faction.FactionID]state.GrainEconomyStatus{"owner": {SupplyLevel: state.GrainSupplyCritical}},
+	}
+
+	checkRebellions(gs)
+
+	if gs.Regions["region"].OwnerID != "" {
+		t.Fatal("isyan başladığında bölge sahipsiz kalmalı")
+	}
+	var rebel *army.Army
+	for _, current := range gs.Armies {
+		if current != nil && current.IsRebel {
+			rebel = current
+		}
+	}
+	if rebel == nil || rebel.RebelAgainstID != "owner" {
+		t.Fatalf("eski sahibi takip eden isyancı ordu oluşmadı: %+v", rebel)
+	}
+	// 1 + 900/100 + 2/2 + 2/2 = 12; kritik ikmal %75 => 9.
+	if got := len(rebel.Units); got != 9 {
+		t.Fatalf("ikmal ve gelişmişliğe göre 9 birim bekleniyordu, got=%d", got)
+	}
+}
+
+func TestCheckRebellionsSuccessorFormsAfterRebellionWins(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"owner":     {ID: "owner"},
+			"successor": {ID: "successor", IsEliminated: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"region": {ID: "region", OwnerID: "owner", SuccessorFactionID: "successor", Satisfaction: 10, Population: 100},
+		},
+		Armies: map[army.ArmyID]*army.Army{},
+	}
+
+	checkRebellions(gs)
+	checkRebellions(gs)
+
+	if got := gs.Regions["region"].OwnerID; got != "successor" {
+		t.Fatalf("ardıl devlet isyanı kazanınca bölgeyi almalıydı, got=%q", got)
+	}
+	if gs.Factions["successor"].IsEliminated {
+		t.Fatal("ardıl devlet aktifleşmeliydi")
+	}
+	for _, current := range gs.Armies {
+		if current != nil && current.RegionID == "region" && current.OwnerID == "successor" && current.IsRebel {
+			t.Fatal("ardıl devlet kurulduktan sonra ordu isyancı işaretini taşımamalı")
+		}
+	}
+}
+
+func TestCheckRebellionsArmySuppressesExistingRevolt(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"region": {ID: "region", OwnerID: "owner", Satisfaction: 10, Population: 100},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"rebel":  {ID: "rebel", OwnerID: "", RegionID: "region", IsRebel: true, RebelAgainstID: "owner", Units: army.MakeUnits("militia", 2)},
+			"relief": {ID: "relief", OwnerID: "owner", RegionID: "region", Units: army.MakeUnits("militia", 1)},
+		},
+	}
+
+	checkRebellions(gs)
+
+	if gs.Regions["region"].OwnerID != "owner" || gs.Armies["rebel"] != nil {
+		t.Fatal("sahibin ordusu mevcut isyanı bastırmalıydı")
+	}
+}
+
 func TestCivilianGrainDemandRoundsUpAndIgnoresEmptyPopulation(t *testing.T) {
 	if got := civilianGrainDemand(&world.Region{Population: 36}); got != 2 {
 		t.Fatalf("36 nüfus için 2 tahıl bekleniyordu, got=%d", got)

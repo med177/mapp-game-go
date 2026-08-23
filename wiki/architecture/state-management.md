@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-21
+last_updated: 2026-08-23
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -92,6 +92,13 @@ delta alanıyla korunur. Böylece edit mode ataması, fetih sonrası özgürleş
 save/load aynı bölge state'ini kullanır. Özgürleştirme runtime'da ardıl fraksiyonun
 `IsEliminated` bayrağını kaldırır, kaynak/ordu/ittifak başlangıcını kurar ve başkenti
 `NormalizeFactionCapitals()` ile yeniden belirler.
+
+İsyan orduları `Army.IsRebel` ve `Army.RebelAgainstID` ile kalıcı olarak ayrıştırılır.
+İsyan başladığında nüfus, yerleşim/bina gelişmişliği ve eski sahibin tahıl ikmal
+seviyesi 1–20 milislik kuvveti belirler; üretim kuyruğu kullanılmaz. Sonraki turda
+eski sahibin kara ordusu bölgeye gelirse isyan bastırılır. Bölge sahipsiz kalır ve
+`SuccessorFactionID` gerçekten elenmiş bir fraksiyona işaret ederse ardıl devlet
+aktifleşir, isyancı ordu ona devredilir ve bölgeyi alır.
 
 Geliştirme modunda save yükleme sonrası ilk beş AI fazı için
 `AIDiagnosticHistory` ve `AIDiagnosticCaptureTurnsRemain` geçici runtime alanları

@@ -13,20 +13,21 @@ import (
 )
 
 type techCardViewModel struct {
-	Title         string
-	Summary       string
-	CostText      string
-	ProgressText  string
-	Progress      float64
-	NameColor     color.Color
-	CostColor     color.Color
-	CategoryColor color.RGBA
-	IconColor     color.RGBA
-	IconID        gameui.IconID
-	IsActive      bool
-	IsDone        bool
-	IsUnlocked    bool
-	CanResearch   bool
+	Title           string
+	Summary         string
+	RequirementText string
+	CostText        string
+	ProgressText    string
+	Progress        float64
+	NameColor       color.Color
+	CostColor       color.Color
+	CategoryColor   color.RGBA
+	IconColor       color.RGBA
+	IconID          gameui.IconID
+	IsActive        bool
+	IsDone          bool
+	IsUnlocked      bool
+	CanResearch     bool
 }
 
 type techCardComponent struct {
@@ -37,21 +38,24 @@ type techCardComponent struct {
 func newTechCardComponent(node techNode, rect gameui.Rect, activeResearchID string, research faction.ResearchState) techCardComponent {
 	isActive := activeResearchID == node.t.ID
 	model := techCardViewModel{
-		Title:         node.t.NameTR,
-		Summary:       techEffectSummary(node.t),
-		CostText:      fmt.Sprintf("%d altın  •  %d tur", node.t.GoldCost, node.t.TurnsRequired),
-		NameColor:     techCardNameColor(node.unlocked, node.done),
-		CostColor:     techTextCost,
-		CategoryColor: techCardCategoryColor(node.t.Category, node.unlocked || node.done),
-		IconColor:     techCardIconColor(node.t.Category, node.unlocked, node.done),
-		IconID:        techCategoryIcon(node.t.Category),
-		IsActive:      isActive,
-		IsDone:        node.done,
-		IsUnlocked:    node.unlocked,
-		CanResearch:   node.unlocked && !node.done,
+		Title:           node.t.NameTR,
+		Summary:         techEffectSummary(node.t),
+		RequirementText: node.requirementText,
+		CostText:        fmt.Sprintf("%d altın  •  %d tur", node.t.GoldCost, node.t.TurnsRequired),
+		NameColor:       techCardNameColor(node.unlocked, node.done),
+		CostColor:       techTextCost,
+		CategoryColor:   techCardCategoryColor(node.t.Category, node.unlocked || node.done),
+		IconColor:       techCardIconColor(node.t.Category, node.unlocked, node.done),
+		IconID:          techCategoryIcon(node.t.Category),
+		IsActive:        isActive,
+		IsDone:          node.done,
+		IsUnlocked:      node.unlocked,
+		CanResearch:     node.unlocked && !node.done,
 	}
 	if model.IsDone {
 		model.Summary = "✓ Tamamlandı"
+	} else if !node.unlocked && model.RequirementText != "" {
+		model.Summary = model.RequirementText
 	}
 	if !node.unlocked && !node.done {
 		model.CostColor = techTextCostLocked

@@ -43,14 +43,16 @@ type Effects struct {
 
 // Technology bir araştırılabilir teknolojiyi tanımlar.
 type Technology struct {
-	ID            string   `json:"id"`
-	NameTR        string   `json:"name_tr"`
-	Category      Category `json:"category"`
-	DescriptionTR string   `json:"description_tr"`
-	GoldCost      int      `json:"gold_cost"`
-	TurnsRequired int      `json:"turns_required"`
-	Requires      []string `json:"requires"`
-	Effects       Effects  `json:"effects"`
+	ID              string   `json:"id"`
+	NameTR          string   `json:"name_tr"`
+	Category        Category `json:"category"`
+	DescriptionTR   string   `json:"description_tr"`
+	GoldCost        int      `json:"gold_cost"`
+	TurnsRequired   int      `json:"turns_required"`
+	Requires        []string `json:"requires"`
+	RequiredRegions []string `json:"required_regions,omitempty"`
+	MinYear         int      `json:"min_year,omitempty"`
+	Effects         Effects  `json:"effects"`
 }
 
 // IsUnlocked tüm gereksinimlerin tamamlanıp tamamlanmadığını kontrol eder.
@@ -60,6 +62,26 @@ func IsUnlocked(rs *faction.ResearchState, t *Technology) bool {
 	}
 	for _, req := range t.Requires {
 		if !rs.Completed[req] {
+			return false
+		}
+	}
+	return true
+}
+
+// IsUnlockedForContext checks both the technology tree and campaign context.
+// ownedRegions contains region IDs controlled by the researching faction.
+func IsUnlockedForContext(rs *faction.ResearchState, t *Technology, year int, ownedRegions map[string]bool) bool {
+	if t == nil {
+		return false
+	}
+	if !IsUnlocked(rs, t) {
+		return false
+	}
+	if t.MinYear > 0 && year < t.MinYear {
+		return false
+	}
+	for _, regionID := range t.RequiredRegions {
+		if regionID == "" || !ownedRegions[regionID] {
 			return false
 		}
 	}
@@ -141,6 +163,12 @@ func Tick(rs *faction.ResearchState) string {
 // NextResearchableTechID araştırılabilir ve ödenebilir teknolojiler arasından
 // ağaç sırasına göre ilk uygun tech ID'sini döner.
 func NextResearchableTechID(rs *faction.ResearchState, allTechs map[string]*Technology, gold int) (string, bool) {
+	return NextResearchableTechIDForContext(rs, allTechs, gold, 0, nil)
+}
+
+// NextResearchableTechIDForContext selects the first affordable technology
+// whose tree, date, and owned-region requirements are satisfied.
+func NextResearchableTechIDForContext(rs *faction.ResearchState, allTechs map[string]*Technology, gold, year int, ownedRegions map[string]bool) (string, bool) {
 	if rs == nil || allTechs == nil || len(rs.PausedTurns) > 0 {
 		return "", false
 	}
@@ -153,7 +181,7 @@ func NextResearchableTechID(rs *faction.ResearchState, allTechs map[string]*Tech
 		if rs.Completed != nil && rs.Completed[id] {
 			continue
 		}
-		if !IsUnlocked(rs, t) {
+		if !IsUnlockedForContext(rs, t, year, ownedRegions) {
 			continue
 		}
 		if gold < t.GoldCost {

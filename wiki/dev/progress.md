@@ -7,6 +7,31 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-23: Düşük memnuniyetli bölgelerde isyan artık sahipsiz bir durumdan
+  ibaret değil. Nüfus, yerleşim/bina gelişmişliği ve tahıl ikmal seviyesine göre
+  1–20 milislik `IsRebel` ordusu doğuyor; eski sahibin ordusu bölgeye gelirse
+  isyan bastırılıyor. Bölgenin `SuccessorFactionID` değeri elenmiş geçerli bir
+  fraksiyona işaret ediyorsa isyanın sonraki turdaki zaferi ardıl devleti kurup
+  isyancı orduyu devlete bağlıyor. Regression: `TestCheckRebellionsSpawnsScaledRebelArmy`,
+  `TestCheckRebellionsSuccessorFormsAfterRebellionWins`,
+  `TestCheckRebellionsArmySuppressesExistingRevolt`.
+
+- 2026-08-23: Teknoloji kartlarının üzerine gelindiğinde bilgi popup'ı açılıyor;
+  oyuncu teknoloji etkisini, maliyetini, araştırma süresini ve tamamlanmamış
+  önkoşulları tek yerde görebiliyor. Regression: `TestTechRequirementSummaryShowsMissingRegionsAndYear`,
+  `TestTechCardComponentCarriesRequirementText`.
+
+- 2026-08-23: Teknolojilere `required_regions` ve `min_year` önkoşulları eklendi.
+  `cast_bronze_cannon`, Edirne/Trakya (`thrace`) ve Bursa'nın elde tutulmasını ve
+  1420 yılına ulaşılmasını bekliyor; oyuncu, AI ve otomatik araştırma aynı uygunluk
+  kontrolünü kullanıyor. Regression: `TestIsUnlockedForContextRequiresYearAndRegions`,
+  `TestNextResearchableTechIDForContextSkipsUnavailableTech`.
+
+- 2026-08-23: AI devletinin başkenti fethedildiğinde yeni başkent artık en yüksek
+  gelirli değil, tamamlanmış bina seviyeleri başta olmak üzere yerleşim altyapısı
+  ve nüfusu en gelişmiş kalan bölgeden seçiliyor. Eşit skorlar bölge ID'si ile
+  deterministik çözülüyor. Regression: `TestBestCapitalSettlementPrefersMostDevelopedRegionOverHigherIncome`.
+
 - 2026-08-23: Agresif veya savaş halindeki 1300 AI, nüfus tabanlı kara rezervine
   ulaştığında asker üretimini kesmiyor. Genişleme kuvveti hedefi agresifliğe göre
   artırılıyor; mevcut `ManpowerCap`, bütçe, kaynak, lojistik ve güvenlik sınırları

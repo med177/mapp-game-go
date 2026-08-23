@@ -66,3 +66,38 @@ func TestNextResearchableTechIDSkipsPausedResearch(t *testing.T) {
 		t.Fatalf("paused research varken otomatik secim yapilmamali, got=%q ok=%v", id, ok)
 	}
 }
+
+func TestIsUnlockedForContextRequiresYearAndRegions(t *testing.T) {
+	rs := faction.ResearchState{Completed: map[string]bool{"gunpowder": true}}
+	target := &Technology{
+		ID:              "cast_bronze_cannon",
+		Requires:        []string{"gunpowder"},
+		RequiredRegions: []string{"thrace", "bursa"},
+		MinYear:         1420,
+	}
+
+	if IsUnlockedForContext(&rs, target, 1419, map[string]bool{"thrace": true, "bursa": true}) {
+		t.Fatal("minimum yıldan önce teknoloji açılmamalı")
+	}
+	if IsUnlockedForContext(&rs, target, 1420, map[string]bool{"thrace": true}) {
+		t.Fatal("eksik bölge varken teknoloji açılmamalı")
+	}
+	if !IsUnlockedForContext(&rs, target, 1420, map[string]bool{"thrace": true, "bursa": true}) {
+		t.Fatal("yıl ve tüm bölgeler sağlandığında teknoloji açılmalı")
+	}
+}
+
+func TestNextResearchableTechIDForContextSkipsUnavailableTech(t *testing.T) {
+	rs := faction.ResearchState{Completed: map[string]bool{}}
+	allTechs := map[string]*Technology{
+		"early": {ID: "early", GoldCost: 1},
+		"late":  {ID: "late", GoldCost: 1, MinYear: 1420, RequiredRegions: []string{"bursa"}},
+	}
+
+	if id, ok := NextResearchableTechIDForContext(&rs, allTechs, 1, 1419, map[string]bool{"bursa": true}); !ok || id != "early" {
+		t.Fatalf("erken teknoloji seçilmeliydi: id=%q ok=%v", id, ok)
+	}
+	if id, ok := NextResearchableTechIDForContext(&rs, allTechs, 1, 1420, map[string]bool{}); ok && id == "late" {
+		t.Fatal("bölge şartı sağlanmayan teknoloji seçilmemeli")
+	}
+}

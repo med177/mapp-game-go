@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"sort"
+	"strings"
 
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
@@ -85,11 +86,12 @@ var techCategoryColors = map[tech.Category]color.RGBA{
 }
 
 type techNode struct {
-	t        *tech.Technology
-	unlocked bool
-	done     bool
-	level    int
-	x, y     float64
+	t               *tech.Technology
+	unlocked        bool
+	done            bool
+	requirementText string
+	level           int
+	x, y            float64
 }
 
 const (
@@ -197,6 +199,16 @@ func (r *Renderer) buildLaidOutTechTree(f *faction.Faction) techTreeLayoutData {
 func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 	levels := make(map[int][]techNode)
 	maxLevel := 0
+	ownedRegions := make(map[string]bool)
+	regionNames := make(map[string]string)
+	for _, region := range r.gs.LandRegionsOwnedBy(f.ID) {
+		ownedRegions[string(region.ID)] = true
+	}
+	for id, region := range r.gs.Regions {
+		if region != nil {
+			regionNames[string(id)] = region.NameTR
+		}
+	}
 
 	for _, t := range r.gs.TechTypes {
 		level := r.getTechLevel(t, r.gs.TechTypes)
@@ -204,10 +216,11 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 			maxLevel = level
 		}
 		node := techNode{
-			t:        t,
-			unlocked: tech.IsUnlocked(&f.Research, t),
-			done:     f.Research.Completed[t.ID],
-			level:    level,
+			t:               t,
+			unlocked:        tech.IsUnlockedForContext(&f.Research, t, r.gs.Year, ownedRegions),
+			done:            f.Research.Completed[t.ID],
+			requirementText: techRequirementSummary(t, r.gs.Year, ownedRegions, regionNames),
+			level:           level,
 		}
 		levels[level] = append(levels[level], node)
 	}
@@ -788,6 +801,44 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	drawTechCategoryLegend(screen, gameui.Rect{X: layout.hintRect.X, Y: layout.hintRect.Y - 28, W: layout.hintRect.W})
 	hintY := layout.hintRect.Y + 4
 	drawUIMutedText(screen, layout.hintRect.X, hintY, "Tıkla: araştır   Sürükle/tekerlek: gez   Filtre: üst sekmeler   "+economy.ResourceNameTR(economy.ResourceGold)+": "+fmt.Sprintf("%d", f.Gold))
+	r.drawTechHoverTooltip(screen, screenProjectedLevels, f)
+}
+
+func (r *Renderer) drawTechHoverTooltip(screen *ebiten.Image, levels [][]techNode, f *faction.Faction) {
+	if r == nil || r.gs == nil || f == nil {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	fx, fy := float64(mx), float64(my)
+	for _, levelNodes := range levels {
+		for _, node := range levelNodes {
+			if r.techFilterCategory != "" && node.t.Category != r.techFilterCategory {
+				continue
+			}
+			card := buildTechCardComponent(node, f.Research.ActiveID, f.Research)
+			if !card.HitTest(fx, fy) {
+				continue
+			}
+
+			const (
+				popupWidth  = 350.0
+				popupHeight = 132.0
+			)
+			x, y, w, h := tooltipRect(fx, fy, popupWidth, popupHeight)
+			drawTooltipBox(screen, x, y, w, h)
+			drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 10, W: w - 24}, node.t.NameTR, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 36, W: w - 24}, "Etki: "+techEffectSummary(node.t), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 54, W: w - 24}, fmt.Sprintf("Maliyet: %d altın  •  Süre: %d tur", node.t.GoldCost, node.t.TurnsRequired), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			if node.requirementText != "" {
+				drawUIWrappedLabelAligned(screen, gameui.Rect{X: x + 12, Y: y + 74, W: w - 24, H: 48}, "Önkoşul: "+node.requirementText, techTextCostLocked, gameui.TextSmall, 16, 3, gameui.TextAlignStart)
+			} else if len(node.t.Requires) > 0 {
+				drawUIWrappedLabelAligned(screen, gameui.Rect{X: x + 12, Y: y + 74, W: w - 24, H: 48}, "Önce araştır: "+strings.Join(node.t.Requires, ", "), techTextCostLocked, gameui.TextSmall, 16, 3, gameui.TextAlignStart)
+			} else {
+				drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 78, W: w - 24}, "Önkoşul: Yok", techTextCostLocked, gameui.TextSmall, gameui.TextAlignStart)
+			}
+			return
+		}
+	}
 }
 
 func techCloseRect() (x, y, w, h float32) {

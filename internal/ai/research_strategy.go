@@ -48,19 +48,20 @@ func aiSelectResearchTechnology(gs *state.GameState, self *faction.Faction, budg
 		return nil
 	}
 	if gs.ScenarioID != "1300_ottoman_rise" {
-		return aiSelectLegacyResearchTechnology(gs, self, budget)
+		return aiSelectLegacyResearchTechnology(gs, self, budget, aiOwnedRegionSet(gs, self.ID))
 	}
 	if ctx == nil {
 		ctx = prepareStrategicContext(gs, self.ID)
 	}
 	signals := aiBuildResearchSignals(gs, self, ctx)
 	techIDs := aiSortedTechnologyIDs(gs)
+	ownedRegions := aiOwnedRegionSet(gs, self.ID)
 
 	var best aiResearchCandidate
 	found := false
 	for _, techID := range techIDs {
 		technology := gs.TechTypes[techID]
-		if !aiResearchCandidateAvailable(gs, self, technology, budget) {
+		if !aiResearchCandidateAvailable(gs, self, technology, budget, ownedRegions) {
 			continue
 		}
 		candidate := aiScoreResearchCandidate(gs, self, technology, signals)
@@ -75,12 +76,12 @@ func aiSelectResearchTechnology(gs *state.GameState, self *faction.Faction, budg
 	return best.Technology
 }
 
-func aiSelectLegacyResearchTechnology(gs *state.GameState, self *faction.Faction, budget *aiBudget) *tech.Technology {
+func aiSelectLegacyResearchTechnology(gs *state.GameState, self *faction.Faction, budget *aiBudget, ownedRegions map[string]bool) *tech.Technology {
 	var best *tech.Technology
 	bestScore := -int(^uint(0)>>1) - 1
 	for _, techID := range aiSortedTechnologyIDs(gs) {
 		technology := gs.TechTypes[techID]
-		if !aiResearchCandidateAvailable(gs, self, technology, budget) {
+		if !aiResearchCandidateAvailable(gs, self, technology, budget, ownedRegions) {
 			continue
 		}
 		score := 0
@@ -111,11 +112,22 @@ func aiSelectLegacyResearchTechnology(gs *state.GameState, self *faction.Faction
 	return best
 }
 
-func aiResearchCandidateAvailable(gs *state.GameState, self *faction.Faction, technology *tech.Technology, budget *aiBudget) bool {
-	if gs == nil || self == nil || technology == nil || self.Research.Completed[technology.ID] || !tech.IsUnlocked(&self.Research, technology) {
+func aiResearchCandidateAvailable(gs *state.GameState, self *faction.Faction, technology *tech.Technology, budget *aiBudget, ownedRegions map[string]bool) bool {
+	if gs == nil || self == nil || technology == nil || self.Research.Completed[technology.ID] || !tech.IsUnlockedForContext(&self.Research, technology, gs.Year, ownedRegions) {
 		return false
 	}
 	return aiCanAffordForBudget(self, economy.ResourceCost{Gold: technology.GoldCost}, budget, aiBudgetResearch)
+}
+
+func aiOwnedRegionSet(gs *state.GameState, fid faction.FactionID) map[string]bool {
+	owned := make(map[string]bool)
+	if gs == nil {
+		return owned
+	}
+	for _, region := range gs.LandRegionsOwnedBy(fid) {
+		owned[string(region.ID)] = true
+	}
+	return owned
 }
 
 func aiScoreResearchCandidate(gs *state.GameState, self *faction.Faction, technology *tech.Technology, signals aiResearchSignals) aiResearchCandidate {

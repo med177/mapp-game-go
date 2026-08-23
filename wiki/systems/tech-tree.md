@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-07-22
+last_updated: 2026-08-23
 related: [systems/combat, systems/economy, architecture/state-management, dev/data-format]
 ---
 
@@ -19,6 +19,8 @@ type Technology struct {
     GoldCost     int
     Category     string        // military | economy | diplomacy | naval | culture
     Requires []string           // teknoloji ağacı bağımlılıkları
+    RequiredRegions []string    // kontrol edilmesi gereken bölgeler
+    MinYear int                 // araştırmanın açılacağı en erken yıl
     Effects      TechEffects
 }
 ```
@@ -60,7 +62,7 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
   - Kullanılabilir: Kategori rengi
 - **Bağlantılar:** Gereksinim teknolojileri diyagonal değil, ortogonal akış-şeması çizgileriyle gösterilir; mevcut veri modelindeki `Requires[]` bağımlılıkları zorunlu olduğu için çizgiler solid görünür
 - **Okunabilirlik:** Düğüm içinde yalnız teknoloji adı ve açık maliyet/tur satırı gösterilir; kategori adı kutu içinde tekrar etmez, panel altındaki renk legend'inde gösterilir
-- **Etkileşim:** Düğüm tıklayarak araştırma başlatma
+- **Etkileşim:** Düğüm tıklayarak araştırma başlatma; kartın üzerine gelince açılan bilgi popup'ı etkiyi, maliyeti, süreyi ve teknoloji/bölge/tarih önkoşullarını gösterir
 - **AI Görünürlüğü:** Bölge panelindeki sahip devlet adına tıklanınca açılan devlet paneli, rakip devletin aktif araştırmasını, tamamlanan teknoloji listesini ve kümülatif buff özetini gösterir
 
 1300 senaryosu artık başlangıç 26 düğümle sınırlı değildir; orta ve ileri dönem için yeni askeri, ekonomik, diplomatik, denizcilik ve dinî alt dallar eklendi. Özellikle `market_gold_mod`, `peace_relation_bonus`, `naval_move_bonus`, `reveal_enemy_strength` ve `conversion_speed_mod` effect alanları artık sadece veri içinde tanımlı kalmaz, runtime'da karşılık bulur.
@@ -111,9 +113,14 @@ Kategori görünen adları ve panel sırası `internal/tech/category_metadata.go
 
 ## Bölge Bağımlılığı
 
-Bazı teknolojiler belirli şehirlerin ele geçirilmesini gerektirir:
-- Konstantinopolis → Doğu Roma mühendisliği dalı
-- Kudüs → Haçlı/Cihad teknolojileri (planlanmış)
+Bazı teknolojiler belirli bölgelerin ele geçirilmesini veya belirli bir tarihe
+ulaşılmasını gerektirir. `required_regions` listesindeki tüm bölgeler araştıran
+fraksiyon tarafından tutulmalı, `min_year` değeri de geçilmiş olmalıdır.
+Örneğin `cast_bronze_cannon` için Edirne/Trakya (`thrace`) ve Bursa ile 1420 yılı
+gereklidir. Kudüs → Haçlı/Cihad teknolojileri (planlanmış).
+
+Bu koşullar oyuncu, AI, otomatik araştırma, teknoloji paneli ve olayların
+başlattığı araştırma için ortak `tech.IsUnlockedForContext` kontrolüyle uygulanır.
 
 ---
 

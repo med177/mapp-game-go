@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"sort"
 
 	"mapp-game-go/internal/army"
@@ -1568,30 +1569,134 @@ func applyTerrainSpecialization(
 	return grain, iron, timber, stone, spice, cloth
 }
 
-// checkRebellions isyan riski olan bölgeleri kontrol eder.
+const (
+	rebellionPopulationPerUnit = 100
+	rebellionBaseUnits         = 1
+)
+
+// rebellionUnitCount, halkın nüfusunu yerleşim/bina gelişmişliği ve eski
+// sahibin tahıl ikmaliyle isyancı asker gücüne çevirir. Bu birimler üretim
+// kuyruğundan geçmez; isyanın o anda sahada ortaya çıkan kuvvetidir.
+func rebellionUnitCount(gs *state.GameState, region *world.Region) int {
+	if region == nil {
+		return 0
+	}
+	count := rebellionBaseUnits + region.Population/rebellionPopulationPerUnit
+	count += len(region.Settlements) / 2
+	count += len(region.Buildings) / 2
+	if status, ok := gs.GrainEconomy[faction.FactionID(region.OwnerID)]; ok {
+		switch status.SupplyLevel {
+		case state.GrainSupplyWarning:
+			count = count * 90 / 100
+		case state.GrainSupplyCritical:
+			count = count * 75 / 100
+		case state.GrainSupplyFamine:
+			count = count * 60 / 100
+		}
+	}
+	if count < 1 {
+		count = 1
+	}
+	if count > army.MaxArmySize {
+		count = army.MaxArmySize
+	}
+	return count
+}
+
+func rebellionArmyID(gs *state.GameState, regionID world.RegionID) army.ArmyID {
+	gs.NextArmySeq++
+	id := army.ArmyID(fmt.Sprintf("army_rebel_%s_%d", regionID, gs.NextArmySeq))
+	for gs.Armies[id] != nil {
+		gs.NextArmySeq++
+		id = army.ArmyID(fmt.Sprintf("army_rebel_%s_%d", regionID, gs.NextArmySeq))
+	}
+	return id
+}
+
+// formSuccessorFromRebellion, yalnız gerçekten elenmiş ve bölgede ardıl
+// metadata'sı bulunan devletleri yeniden oyuna sokar.
+func formSuccessorFromRebellion(gs *state.GameState, region *world.Region, rebel *army.Army) bool {
+	if gs == nil || region == nil || rebel == nil || !gs.CanRestoreSuccessorAtRegion(region) {
+		return false
+	}
+	successorID := faction.FactionID(region.SuccessorFactionID)
+	successor := gs.Factions[successorID]
+	successor.IsEliminated = false
+	successor.OverlordID = ""
+	region.OwnerID = string(successorID)
+	rebel.OwnerID = string(successorID)
+	rebel.IsRebel = false
+	rebel.RebelAgainstID = ""
+	gs.NormalizeFactionCapitals()
+	return true
+}
+
+// checkRebellions isyan riskindeki bölgeleri kontrol eder. İlk kontrolde
+// isyancı ordu doğar; sonraki turlarda eski sahibin ordusu bastırır, sahipsiz
+// kalan ardıl devlet ise isyanı kazanıp bölgeyi kurar.
 func checkRebellions(gs *state.GameState) {
-	for _, r := range gs.Regions {
-		if !r.IsRebellionRisk() {
+	if gs == nil {
+		return
+	}
+	if gs.Armies == nil {
+		gs.Armies = make(map[army.ArmyID]*army.Army)
+	}
+	regionIDs := make([]world.RegionID, 0, len(gs.Regions))
+	for id := range gs.Regions {
+		regionIDs = append(regionIDs, id)
+	}
+	sort.Slice(regionIDs, func(i, j int) bool { return regionIDs[i] < regionIDs[j] })
+	for _, regionID := range regionIDs {
+		r := gs.Regions[regionID]
+		if r == nil || r.IsSea {
 			continue
 		}
-		hasGarrison := false
-		for _, a := range gs.Armies {
-			if a.RegionID == r.ID && !a.IsNaval {
-				hasGarrison = true
-				break
+		var rebel *army.Army
+		hasOwnerArmy := false
+		for _, current := range gs.Armies {
+			if current == nil || current.IsNaval || current.RegionID != r.ID {
+				continue
+			}
+			if current.IsRebel {
+				rebel = current
+			} else if r.OwnerID != "" && current.OwnerID == r.OwnerID {
+				hasOwnerArmy = true
 			}
 		}
-		// Surlar isyanı bastırır
-		for _, bid := range r.Buildings {
-			if bid == "walls" {
-				hasGarrison = true
-				break
+		if rebel != nil {
+			if hasOwnerArmy {
+				gs.RemoveArmy(rebel.ID)
+				r.OwnerID = rebel.RebelAgainstID
+				r.Satisfaction = 50
+				continue
 			}
+			if formSuccessorFromRebellion(gs, r, rebel) {
+				continue
+			}
+			continue
 		}
-		if !hasGarrison {
-			r.OwnerID = ""
-			gs.ClearProductionOrdersForRegion(r.ID)
-			r.Satisfaction = 50
+		if !r.IsRebellionRisk() || r.OwnerID == "" || hasOwnerArmy {
+			continue
+		}
+		// Surlar isyanın o turda başlamasını engeller.
+		if r.BuildingLevel("walls") > 0 {
+			continue
+		}
+		formerOwner := r.OwnerID
+		unitCount := rebellionUnitCount(gs, r)
+		r.OwnerID = ""
+		gs.ClearProductionOrdersForRegion(r.ID)
+		r.Satisfaction = 50
+		id := rebellionArmyID(gs, r.ID)
+		rebelOwner := r.SuccessorFactionID
+		if rebelOwner == "" {
+			rebelOwner = "rebel_" + string(r.ID)
+		}
+		gs.Armies[id] = &army.Army{
+			ID: id, OwnerID: rebelOwner, RegionID: r.ID,
+			Units:         army.MakeUnits("militia", unitCount),
+			MaxMovePoints: army.DefaultArmyMovePoints, MovePoints: army.DefaultArmyMovePoints,
+			IsRebel: true, RebelAgainstID: formerOwner,
 		}
 	}
 }

@@ -3,7 +3,6 @@ package state
 import (
 	"sort"
 
-	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
@@ -240,8 +239,8 @@ func (s *GameState) BestCapitalSettlementForFaction(fid faction.FactionID) (stri
 		return "", false
 	}
 	sort.SliceStable(regions, func(i, j int) bool {
-		leftScore := s.regionEconomicValueForCapital(regions[i])
-		rightScore := s.regionEconomicValueForCapital(regions[j])
+		leftScore := capitalDevelopmentScore(regions[i])
+		rightScore := capitalDevelopmentScore(regions[j])
 		if leftScore != rightScore {
 			return leftScore > rightScore
 		}
@@ -252,6 +251,38 @@ func (s *GameState) BestCapitalSettlementForFaction(fid faction.FactionID) (stri
 		return "", false
 	}
 	return regions[0].Settlements[idx].ID, true
+}
+
+// capitalDevelopmentScore, başkent kaybedildiğinde AI'nin kalan toprakları
+// arasından en gelişmiş olanı seçmek için kullanılır. Gelir tek başına
+// gelişmişliği temsil etmez: yüksek üretimli fakat altyapısız bir bölgenin,
+// daha fazla tamamlanmış binaya sahip bölgenin önüne geçmesini engeller.
+//
+// Bina seviyeleri ana ölçüttür; settlement altyapısı ve nüfus ise aynı bina
+// seviyesine sahip bölgeler arasındaki farkı belirler. Skor yalnızca mevcut
+// state verisinden üretildiği için deterministiktir.
+func capitalDevelopmentScore(region *world.Region) int {
+	if region == nil || region.IsSea {
+		return 0
+	}
+
+	score := len(region.Buildings) * 1000
+	score += len(region.Settlements) * 100
+	score += region.Population / 10
+	for _, settlement := range region.Settlements {
+		switch settlement.Type {
+		case world.SettlementCity:
+			score += 40
+		case world.SettlementFortress:
+			score += 35
+		case world.SettlementPort:
+			score += 30
+		case world.SettlementTown:
+			score += 20
+		}
+		score += settlement.Population / 10
+	}
+	return score
 }
 
 func (s *GameState) CapitalRegionBonus(region *world.Region) RegionProductionSummary {
@@ -267,29 +298,6 @@ func (s *GameState) CapitalRegionBonus(region *world.Region) RegionProductionSum
 		Spice:  CapitalRegionSpiceBonus,
 		Cloth:  CapitalRegionClothBonus,
 	}
-}
-
-func (s *GameState) regionEconomicValueForCapital(region *world.Region) int {
-	if s == nil || region == nil {
-		return 0
-	}
-	summary := s.RegionProductionSummary(region)
-	if bonus := s.CapitalRegionBonus(region); bonus != (RegionProductionSummary{}) {
-		summary.Gold -= bonus.Gold
-		summary.Grain -= bonus.Grain
-		summary.Iron -= bonus.Iron
-		summary.Timber -= bonus.Timber
-		summary.Stone -= bonus.Stone
-		summary.Spice -= bonus.Spice
-		summary.Cloth -= bonus.Cloth
-	}
-	return summary.Gold +
-		summary.Grain*economy.BaseGoldValue[economy.GoodGrain] +
-		summary.Iron*economy.BaseGoldValue[economy.GoodIron] +
-		summary.Timber*economy.BaseGoldValue[economy.GoodTimber] +
-		summary.Stone*economy.BaseGoldValue[economy.GoodStone] +
-		summary.Spice*economy.BaseGoldValue[economy.GoodSpice] +
-		summary.Cloth*economy.BaseGoldValue[economy.GoodCloth]
 }
 
 func primarySettlementIndex(region *world.Region) int {

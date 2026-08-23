@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-08-07
+last_updated: 2026-08-23
 related: [state-management, render-pipeline]
 ---
 
@@ -114,9 +114,9 @@ Kamera kontrolleri normal harita ile aynıdır.
 4. `applyProductionTicks()` — bina ve birim üretim kuyruğunu ilerletir; aktif kuşatma altındaki bölge emirleri duraklatılır, kuşatma kalkınca aynı `TurnsLeft` ile devam eder; bölge el değiştirince o bölgedeki üretim emirleri temizlenir; tamamlanan oyuncu üretimleri popup/event log bildirimi üretir
 5. `applyReligionConversion(gs)` — ele geçirilmiş bölgelerde yavaş din dönüşümü
 6. `resolveSieges()` — aktif kuşatmalarda gedik ilerlemesi, savunucu yıpranması ve teslimiyet/hücum sonucu
-7. `checkRegionUnlocks(gs)` — kilitli bölgeleri açma koşulları
-8. `checkRebellions(gs)` — düşük memnuniyet → isyan kontrolü
-9. `checkEliminations(gs)` — bölgesi kalmayan fraksiyon elenir
+8. `checkRegionUnlocks(gs)` — kilitli bölgeleri açma koşulları
+9. `checkRebellions(gs)` — düşük memnuniyet → nüfus/gelişmişlik/ikmal oranlı isyancı ordu; sonraki turda bastırma veya geçerli ardıl devletin kurulması
+10. `checkEliminations(gs)` — bölgesi kalmayan fraksiyon elenir
 10. `applyRelationDecay(gs)` — ilişki puanlarını sıfıra doğru çekme
 11. `victory.Check(gs)` — zafer/yenilgi koşulu kontrolü → [[systems/victory]]
 12. `events.Tick(gs, evts)` — tarihsel olayları tetikle → [[systems/events]]

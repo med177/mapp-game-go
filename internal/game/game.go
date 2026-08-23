@@ -1123,7 +1123,11 @@ func (g *Game) autoStartResearchIfIdle() bool {
 		selectionState.Completed = completed
 		selectionState.PausedTurns = nil
 	}
-	techID, ok := tech.NextResearchableTechID(&selectionState, g.gs.TechTypes, f.Gold)
+	ownedRegions := make(map[string]bool)
+	for _, region := range g.gs.LandRegionsOwnedBy(f.ID) {
+		ownedRegions[string(region.ID)] = true
+	}
+	techID, ok := tech.NextResearchableTechIDForContext(&selectionState, g.gs.TechTypes, f.Gold, g.gs.Year, ownedRegions)
 	if !ok {
 		return false
 	}
@@ -1899,6 +1903,10 @@ func (g *Game) playerHasResearchableTechs() bool {
 		return false
 	}
 	completed := f.Research.Completed
+	ownedRegions := make(map[string]bool)
+	for _, region := range g.gs.LandRegionsOwnedBy(f.ID) {
+		ownedRegions[string(region.ID)] = true
+	}
 	for techID, t := range g.gs.TechTypes {
 		if t == nil {
 			continue
@@ -1906,7 +1914,7 @@ func (g *Game) playerHasResearchableTechs() bool {
 		if completed != nil && completed[techID] {
 			continue
 		}
-		if tech.IsUnlocked(&f.Research, t) {
+		if tech.IsUnlockedForContext(&f.Research, t, g.gs.Year, ownedRegions) {
 			return true
 		}
 	}
@@ -5658,7 +5666,11 @@ func (g *Game) startResearch(techID string) {
 		return
 	}
 	canResume := f.Research.PausedTurns != nil && f.Research.PausedTurns[techID] > 0
-	if !tech.IsUnlocked(&f.Research, t) || (f.Research.Completed != nil && f.Research.Completed[techID]) {
+	ownedRegions := make(map[string]bool)
+	for _, region := range g.gs.LandRegionsOwnedBy(f.ID) {
+		ownedRegions[string(region.ID)] = true
+	}
+	if !tech.IsUnlockedForContext(&f.Research, t, g.gs.Year, ownedRegions) || (f.Research.Completed != nil && f.Research.Completed[techID]) {
 		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")
 		return
 	}

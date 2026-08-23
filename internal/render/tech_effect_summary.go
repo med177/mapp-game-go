@@ -6,6 +6,41 @@ import (
 	"mapp-game-go/internal/tech"
 )
 
+func techRequirementSummary(t *tech.Technology, currentYear int, ownedRegions map[string]bool, regionNames map[string]string) string {
+	if t == nil || (len(t.RequiredRegions) == 0 && t.MinYear <= 0) {
+		return ""
+	}
+	parts := make([]string, 0, 2)
+	if len(t.RequiredRegions) > 0 {
+		regions := make([]string, 0, len(t.RequiredRegions))
+		for _, regionID := range t.RequiredRegions {
+			if regionID == "" {
+				continue
+			}
+			name := regionNames[regionID]
+			if name == "" {
+				name = regionID
+			}
+			mark := "✕"
+			if ownedRegions[regionID] {
+				mark = "✓"
+			}
+			regions = append(regions, mark+name)
+		}
+		if len(regions) > 0 {
+			parts = append(parts, "Bölgeler: "+strings.Join(regions, ", "))
+		}
+	}
+	if t.MinYear > 0 {
+		yearText := "En erken yıl: " + itoa(t.MinYear)
+		if currentYear >= t.MinYear {
+			yearText = "Yıl: ✓" + itoa(t.MinYear)
+		}
+		parts = append(parts, yearText)
+	}
+	return strings.Join(parts, "  •  ")
+}
+
 func techEffectSummary(t *tech.Technology) string {
 	if t == nil {
 		return ""
