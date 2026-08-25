@@ -248,9 +248,13 @@ func (r *Renderer) drawEditArmyButtons(screen *ebiten.Image, region *world.Regio
 
 func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Region) {
 	canRegion := region != nil
-	drawEditInspectorButton(screen, editButtonAddRegion, "Bölge Ekle", canRegion)
-	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bölge Sil", canRegion)
-	drawEditInspectorButton(screen, editButtonRegionTerrain, "Arazi", canRegion)
+	drawEditInspectorButton(screen, editButtonAddRegion, "Yeni Bölge Ekle", canRegion)
+	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bölgeyi Sil", canRegion)
+	terrainLabel := "Bölge Tipi"
+	if region != nil && region.IsTerrainArea {
+		terrainLabel = "Arazi Tipi"
+	}
+	drawEditInspectorButton(screen, editButtonRegionTerrain, terrainLabel, canRegion)
 	drawEditInspectorButton(screen, editButtonRegionNameTR, "Ad TR", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionName, "Ad EN", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionID, "ID", canRegion)
@@ -258,6 +262,7 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 	drawEditInspectorButton(screen, editButtonUnlockMinus, "-10 Tur", canRegion)
 	drawEditInspectorButton(screen, editButtonUnlockPlus, "+10 Tur", canRegion)
 	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komşu Sync", canRegion)
+	drawEditInspectorButton(screen, editButtonAddNeighbor, "Komşu Ekle", canRegion)
 }
 
 func drawEditInspectorSaveButton(screen *ebiten.Image) {
@@ -316,12 +321,12 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 	}
 
 	canRegion := region != nil
-	drawEditInspectorButton(screen, editButtonRegionOwner, "Sahip", canRegion)
-	drawEditInspectorButton(screen, editButtonRegionSuccessor, "Ardıl Devlet", canRegion && !region.IsSea)
+	drawEditInspectorButton(screen, editButtonRegionOwner, "Bölge Sahibi Belirle", canRegion)
+	drawEditInspectorButton(screen, editButtonRegionSuccessor, "Ardıl Devlet Belirle", canRegion && !region.IsSea)
 	drawEditInspectorButton(screen, editButtonSetFactionCapital, "Başkent Yap", r.canSetSelectedFactionCapital())
-	drawEditInspectorButton(screen, editButtonAddFaction, "Devlet Ekle", true)
-	drawEditInspectorButton(screen, editButtonEditFaction, "Devlet Düzenle", f != nil)
-	drawEditInspectorButton(screen, editButtonDeleteFaction, "Devlet Sil", f != nil)
+	drawEditInspectorButton(screen, editButtonAddFaction, "Yeni Devlet Ekle", true)
+	drawEditInspectorButton(screen, editButtonEditFaction, "Devleti Düzenle", f != nil)
+	drawEditInspectorButton(screen, editButtonDeleteFaction, "Devleti Sil", f != nil)
 	drawUIDropdown(screen, r.editUnitTypeDropdown)
 	drawUIDropdown(screen, r.editOwnerDropdown)
 	drawUIDropdown(screen, r.editSuccessorDropdown)
@@ -584,6 +589,11 @@ const (
 	editButtonLandPassageAdjust
 	editButtonLandPassageDelete
 	editButtonAddNeighbor
+	editButtonTerrainArea
+	editButtonTerrainAreaType
+	editButtonTerrainAreaCost
+	editButtonTerrainAreaAttrition
+	editButtonTerrainAreaDelete
 	editButtonAddFaction
 	editButtonEditFaction
 	editButtonDeleteFaction
@@ -658,7 +668,9 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	case editButtonUnlockPlus:
 		return rightRect(4)
 	case editButtonSyncNeighbors:
-		return full(5)
+		return leftRect(5)
+	case editButtonAddNeighbor:
+		return rightRect(5)
 	case editButtonSetFactionCapital:
 		return leftRect(1)
 	case editButtonSaveScenario:
@@ -685,8 +697,16 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return rightRect(3)
 	case editButtonLandPassageDelete:
 		return leftRect(4)
-	case editButtonAddNeighbor:
-		return rightRect(4)
+	case editButtonTerrainArea:
+		return leftRect(6)
+	case editButtonTerrainAreaType:
+		return full(5)
+	case editButtonTerrainAreaCost:
+		return rightRect(6)
+	case editButtonTerrainAreaAttrition:
+		return leftRect(7)
+	case editButtonTerrainAreaDelete:
+		return rightRect(7)
 	case editButtonAddFaction:
 		return rightRect(1)
 	case editButtonEditFaction:
@@ -803,6 +823,7 @@ func editRegionInspectorButtonAt(mx, my float64) editInspectorButton {
 		editButtonUnlockMinus,
 		editButtonUnlockPlus,
 		editButtonSyncNeighbors,
+		editButtonAddNeighbor,
 	} {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
@@ -839,6 +860,11 @@ func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
 		editButtonLandPassageAdjust,
 		editButtonLandPassageDelete,
 		editButtonAddNeighbor,
+		editButtonTerrainArea,
+		editButtonTerrainAreaType,
+		editButtonTerrainAreaCost,
+		editButtonTerrainAreaAttrition,
+		editButtonTerrainAreaDelete,
 	} {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
@@ -1444,11 +1470,11 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		return InputAction{}
 	}
 
-	if (r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape) && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
+	if (r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape || r.editInspectorTab == editInspectorRegion) && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
 		return InputAction{}
 	}
 
-	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
+	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape || r.editInspectorTab == editInspectorRegion {
 		if leftJustPressed && r.beginShapePaintStroke(fx, fy) {
 			return InputAction{}
 		}
@@ -1505,6 +1531,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.SelectedArmy = aid
 			if a := r.gs.Armies[aid]; a != nil {
 				r.editSelectedRegion = a.RegionID
+				r.syncSelectedTerrainArea(a.RegionID)
 				r.setEditFactionFromArmy(a)
 				r.ensureEditSelectedUnitType(a)
 			}
@@ -1523,6 +1550,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editUnitTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
+			r.syncSelectedTerrainArea(rid)
 			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = idx
 			r.editDraggingSettlement = false
@@ -1536,6 +1564,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editUnitTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
+			r.syncSelectedTerrainArea(rid)
 			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = -1
 			r.editRenaming = false
@@ -1561,6 +1590,22 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 
 	return InputAction{}
+}
+
+func (r *Renderer) syncSelectedTerrainArea(rid world.RegionID) {
+	r.editTerrainAreaSelected = -1
+	region := r.gs.Regions[rid]
+	if region == nil || !region.IsTerrainArea {
+		return
+	}
+	for i := range r.gs.TerrainAreas {
+		if r.gs.TerrainAreas[i].ID == region.TerrainAreaID {
+			r.editTerrainAreaSelected = i
+			r.editTerrainAreaMoveCost = r.gs.TerrainAreas[i].MoveCost
+			r.editTerrainAreaAttritionCost = r.gs.TerrainAreas[i].AttritionCost
+			return
+		}
+	}
 }
 
 func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) {
@@ -1727,6 +1772,8 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.adjustSelectedRegionUnlockTurn(10)
 	case editButtonSyncNeighbors:
 		r.syncSelectedRegionNeighborsFromVisual()
+	case editButtonAddNeighbor:
+		r.toggleEditNeighborAddMode()
 	case editButtonAddRegion:
 		r.addRegionNearSelected()
 	case editButtonDeleteRegion:
@@ -1838,7 +1885,10 @@ func (r *Renderer) toggleEditTerrainDropdown() {
 
 	dx, dy, _, _ := editTerrainDropdownRect()
 	r.editTerrainDropdown.SetPosition(float64(dx), float64(dy))
-	terrainOptions := editTerrainOptions()
+	terrainOptions := editRegionTerrainOptions()
+	if region.IsTerrainArea {
+		terrainOptions = editTerrainAreaOptions()
+	}
 	stringOptions := make([]string, len(terrainOptions))
 	for i, t := range terrainOptions {
 		stringOptions[i] = string(t)
@@ -2060,7 +2110,7 @@ func (r *Renderer) editArmyAt(fx, fy float64) (army.ArmyID, bool) {
 
 func (r *Renderer) beginRegionCenterDrag(rid world.RegionID) {
 	region := r.gs.Regions[rid]
-	if region == nil {
+	if region == nil || region.IsTerrainArea {
 		r.editRegionDragStart = nil
 		return
 	}
@@ -2078,7 +2128,7 @@ func (r *Renderer) finishRegionCenterDrag() {
 		return
 	}
 	region := r.gs.Regions[start.Region]
-	if region == nil || (region.WorldX == start.X && region.WorldY == start.Y) {
+	if region == nil || region.IsTerrainArea || (region.WorldX == start.X && region.WorldY == start.Y) {
 		return
 	}
 	begin := *start
@@ -2095,7 +2145,7 @@ func (r *Renderer) finishRegionCenterDrag() {
 
 func (r *Renderer) restoreRegionCenter(snapshot editRegionCenterSnapshot) {
 	region := r.gs.Regions[snapshot.Region]
-	if region == nil {
+	if region == nil || region.IsTerrainArea {
 		return
 	}
 	region.WorldX = snapshot.X
@@ -2159,7 +2209,7 @@ func (r *Renderer) moveSelectedSettlementTo(fx, fy float64) {
 
 func (r *Renderer) moveSelectedRegionCenterTo(fx, fy float64) {
 	region, ok := r.gs.Regions[r.editSelectedRegion]
-	if !ok || region == nil {
+	if !ok || region == nil || region.IsTerrainArea {
 		return
 	}
 	wx, wy := r.screenToWorld(fx, fy)
@@ -2333,6 +2383,10 @@ func (r *Renderer) deleteSelectedRegion() {
 	if region == nil {
 		return
 	}
+	if region.IsTerrainArea {
+		r.deleteSelectedTerrainArea()
+		return
+	}
 	before := r.worldSnapshot()
 	rid := region.ID
 	for _, other := range r.gs.Regions {
@@ -2428,6 +2482,20 @@ func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
 	if region.Terrain == terrain {
 		return
 	}
+	if region.IsTerrainArea {
+		for i := range r.gs.TerrainAreas {
+			if r.gs.TerrainAreas[i].ID != region.TerrainAreaID {
+				continue
+			}
+			before := r.worldSnapshot()
+			r.gs.TerrainAreas[i].Terrain = terrain
+			r.rebuildEditWorldMap()
+			after := r.worldSnapshot()
+			r.pushWorldSnapshotCommand(before, after)
+			r.editDirty = true
+			return
+		}
+	}
 	rid := region.ID
 	old := region.Terrain
 	region.Terrain = terrain
@@ -2500,7 +2568,7 @@ func (r *Renderer) setSelectedRegionSuccessor(successorID string) {
 
 func (r *Renderer) setRegionSuccessorValue(rid world.RegionID, successorID string) {
 	region := r.gs.Regions[rid]
-	if region == nil {
+	if region == nil || region.IsTerrainArea {
 		return
 	}
 	region.SuccessorFactionID = successorID
@@ -2782,6 +2850,7 @@ func (r *Renderer) worldSnapshot() editWorldSnapshot {
 		Relations:            cloneRelationMap(r.gs.Relations),
 		ShapeData:            cloneCountryShapeJSON(r.gs.ShapeData),
 		RegionPaintOverrides: cloneRegionPaintOverrides(r.editRegionPaintOverrides),
+		TerrainAreas:         cloneTerrainAreas(r.gs.TerrainAreas),
 		Selected:             r.editSelectedRegion,
 		Settlement:           r.editSelectedSettlement,
 		Faction:              r.editSelectedFaction,
@@ -2801,6 +2870,7 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.Regions = cloneRegionMap(snapshot.Regions)
 	r.gs.RegionOrder = cloneRegionIDSlice(snapshot.RegionOrder)
 	r.gs.LandPassages = cloneLandPassages(snapshot.LandPassages)
+	r.gs.TerrainAreas = cloneTerrainAreas(snapshot.TerrainAreas)
 	r.gs.Factions = cloneFactionMap(snapshot.Factions)
 	r.gs.AIStrategies = cloneAIStrategyMap(snapshot.AIStrategies)
 	r.gs.TradeCenters = cloneTradeCenterConfig(snapshot.TradeCenters)
@@ -2866,6 +2936,18 @@ func cloneRegionMap(src map[world.RegionID]*world.Region) map[world.RegionID]*wo
 			}
 		}
 		dst[rid] = &copyRegion
+	}
+	return dst
+}
+
+func cloneTerrainAreas(src []world.TerrainArea) []world.TerrainArea {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make([]world.TerrainArea, len(src))
+	for i, area := range src {
+		dst[i] = area
+		dst[i].Cells = append([][2]int(nil), area.Cells...)
 	}
 	return dst
 }
@@ -4090,11 +4172,15 @@ func editBoolLabel(value bool) string {
 
 func (r *Renderer) rebuildEditWorldMap() {
 	r.invalidateShapeEditSession()
+	world.SyncTerrainAreaRegions(r.gs.Regions, r.gs.TerrainAreas)
 	r.worldMap = NewWorldMap(r.gs)
 	r.buildRegionPaintBaseline()
 	if !regionPaintOverridesEqual(r.editRegionPaintOverrides, r.gs.RegionPaintOverrides) {
 		r.applyRegionPaintOverrides()
 	}
+	// Editör oturumundaki bölge boya override'ları arazi alanı hücrelerini
+	// ezmesin diye alanlar son katman olarak yeniden boyanır.
+	r.worldMap.applyTerrainAreaRegions(r.gs)
 }
 
 func (r *Renderer) buildRegionPaintBaseline() {
@@ -4215,12 +4301,27 @@ func editOwnerOptions(factions map[faction.FactionID]*faction.Faction) []string 
 }
 
 func editTerrainOptions() []world.TerrainType {
+	return editRegionTerrainOptions()
+}
+
+func editRegionTerrainOptions() []world.TerrainType {
 	return []world.TerrainType{
 		world.TerrainPlain,
 		world.TerrainForest,
 		world.TerrainMountain,
 		world.TerrainPass,
 		world.TerrainCoast,
+	}
+}
+
+func editTerrainAreaOptions() []world.TerrainType {
+	return []world.TerrainType{
+		world.TerrainMountain,
+		world.TerrainDesert,
+		world.TerrainLake,
+		world.TerrainRiver,
+		world.TerrainDenseForest,
+		world.TerrainSwamp,
 	}
 }
 

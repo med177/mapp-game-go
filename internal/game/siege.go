@@ -292,6 +292,14 @@ func siegeAttritionDamage(progressGain, breachLevel, fortLevel int) int {
 	return damage
 }
 
+// siegeEmptyGarrisonAttritionDamage represents the small cost of maintaining
+// a siege when the settlement has no field army left. It is deliberately much
+// lower than defender attrition: there is no opposing army causing casualties,
+// but disease, exhaustion, and siege logistics still wear the besieger down.
+func siegeEmptyGarrisonAttritionDamage() int {
+	return 3
+}
+
 const (
 	granaryAttritionReductionPerLevel = 10
 	granaryAttritionReductionMax      = 30
@@ -378,6 +386,25 @@ func (g *Game) virtualSiegeGarrison(targetRegion *world.Region) *army.Army {
 		Units:      units,
 		MovePoints: 0,
 	}
+}
+
+// siegeDefenderForTurn returns the living defensive army currently inside the
+// besieged region. DefenderArmyID is only a save-friendly hint from siege
+// creation; it can become stale when the army is destroyed, split, or replaced
+// by a relieving force during a later turn.
+func siegeDefenderForTurn(gs *state.GameState, siege *state.SiegeState, attacker *army.Army, regionID world.RegionID) *army.Army {
+	if gs == nil || siege == nil || attacker == nil || regionID == "" {
+		return nil
+	}
+	if defender := gs.Armies[siege.DefenderArmyID]; defender != nil &&
+		defender.RegionID == regionID && len(defender.Units) > 0 &&
+		gs.IsArmyDefendingSiegedRegion(defender) {
+		return defender
+	}
+
+	// Re-select every tick so that a newly arrived owner/allied army receives
+	// the same gradual siege attrition as the original garrison.
+	return gs.SelectBattleDefender(attacker, regionID, false)
 }
 
 func (g *Game) clearSiege(regionID world.RegionID) {
@@ -705,7 +732,10 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 
 		siege.TurnsElapsed++
 		siege.FortLevel = targetRegion.FortificationLevel()
-		defender := g.gs.Armies[siege.DefenderArmyID]
+		defender := siegeDefenderForTurn(g.gs, siege, attacker, regionID)
+		if defender != nil {
+			siege.DefenderArmyID = defender.ID
+		}
 		force := activeSiegeForce(g.gs, siege, attacker)
 		progressGain := siegeProgressGainForForce(g.gs, attacker, targetRegion, defender, force)
 		breachGain := siegeBreachGainForForce(g.gs, attacker, targetRegion, defender, force)
@@ -728,6 +758,25 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 					Message: fmt.Sprintf("%s kuşatması savunanlara baskı uyguluyor.", targetRegion.NameTR),
 					Detail:  fmt.Sprintf("%s kuşatmasında savunan ordu %d HP ve %d birim kaybetti.", targetRegion.NameTR, totalHPDamage, lostUnits),
 					Popup:   attacker.OwnerID == string(g.gs.PlayerFactionID) || targetRegion.OwnerID == string(g.gs.PlayerFactionID),
+				})
+			}
+		} else {
+			// A vacant settlement still imposes a small, gradual cost on the
+			// besieger. This is not fortress combat and must not use the full
+			// defender attrition formula.
+			damage := siegeEmptyGarrisonAttritionDamage()
+			lostUnits, totalHPDamage := applyArmyFlatDamage(attacker, damage)
+			g.gs.RecordWarAttritionCasualties(
+				faction.FactionID(attacker.OwnerID),
+				faction.FactionID(targetRegion.OwnerID),
+				lostUnits,
+				0,
+			)
+			if totalHPDamage > 0 {
+				updates = append(updates, siegeTurnUpdate{
+					Message: fmt.Sprintf("%s kuşatması kuşatan orduyu yıpratıyor.", targetRegion.NameTR),
+					Detail:  fmt.Sprintf("%s kuşatmasında savunma ordusu bulunmadığı halde kuşatan ordu %d HP ve %d birim kaybetti.", targetRegion.NameTR, totalHPDamage, lostUnits),
+					Popup:   attacker.OwnerID == string(g.gs.PlayerFactionID),
 				})
 			}
 		}

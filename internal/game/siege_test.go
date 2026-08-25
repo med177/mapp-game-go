@@ -828,6 +828,62 @@ func TestResolveSiegesGranaryReducesDefenderAttrition(t *testing.T) {
 	}
 }
 
+func TestResolveSiegesFindsDefenderThatWasNotPresentAtSiegeStart(t *testing.T) {
+	gs := siegeTestState()
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID: "atk", OwnerID: "p1", RegionID: "dst",
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+		"def": {
+			ID: "def", OwnerID: "p2", RegionID: "dst",
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {
+			RegionID: "dst", AttackerArmyID: "atk", AttackerFactionID: "p1",
+			FortLevel: 2,
+		},
+	}
+
+	(&Game{gs: gs}).resolveSieges()
+
+	if got := gs.Armies["def"].Units[0].CurrentHP; got >= army.MaxUnitHP {
+		t.Fatalf("kuşatma başlangıcında kaydı olmayan savunma ordusu zamanla yıpranmalıydı, HP=%d", got)
+	}
+	if got := gs.SiegeAt("dst").DefenderArmyID; got != "def" {
+		t.Fatalf("canlı savunma ordusu kuşatma kaydına bağlanmalıydı, got=%s", got)
+	}
+}
+
+func TestResolveSiegesAppliesLowAttritionWhenRegionHasNoDefenderArmy(t *testing.T) {
+	gs := siegeTestState()
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"atk": {
+			ID: "atk", OwnerID: "p1", RegionID: "dst",
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {RegionID: "dst", AttackerArmyID: "atk", AttackerFactionID: "p1", FortLevel: 2},
+	}
+
+	g := &Game{gs: gs}
+	g.resolveSieges()
+
+	if got := gs.Armies["atk"].Units[0].CurrentHP; got != army.MaxUnitHP-3 {
+		t.Fatalf("savunma ordusu olmayan kuşatmada kuşatan düşük yıpranma almalıydı, HP=%d", got)
+	}
+
+	for i := 0; i < 4; i++ {
+		g.resolveSieges()
+	}
+	if got := gs.Armies["atk"].Units[0].CurrentHP; got != army.MaxUnitHP-15 {
+		t.Fatalf("boş garnizon yıpranması zamanla birikmeli, HP=%d", got)
+	}
+}
+
 func TestMoveArmyWithStanceCanBreakSiegeInAlliedRegionWithoutConquest(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",

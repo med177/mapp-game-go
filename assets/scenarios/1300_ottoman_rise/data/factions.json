@@ -1741,6 +1741,11 @@
         "value": 94
       },
       {
+        "region_id": "karakoyunlu",
+        "value": 100,
+        "core": true
+      },
+      {
         "region_id": "kayseri",
         "value": 100,
         "core": true

@@ -2009,6 +2009,10 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		DrawSeaRegionPanel(screen, gs, region, neighborExpanded)
 		return
 	}
+	if region.IsTerrainArea {
+		DrawTerrainAreaPanel(screen, gs, region, neighborExpanded)
+		return
+	}
 
 	px := infoPanelX()
 	py := infoPanelY()
@@ -2898,6 +2902,8 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	navalDeployed := gs.DeployedNavalUnits(pid)
 	navalCap := gs.NavalCap(pid)
 
+	// 1024 px genişliğindeki ekranlarda kartın sağ kenarı ve sağa hizalı
+	// değerler görünür alanda kalacak şekilde bir miktar içeri alınır.
 	cardX := float32(908)
 	cardY := float32(panelY) + 7
 	cardW := float32(130)
@@ -5188,6 +5194,35 @@ func DrawSeaRegionPanel(screen *ebiten.Image, gs *state.GameState, region *world
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 
+	drawNeighborBlock(screen, gs, region, lx, ly, sepW, neighborExpanded, ColorGold)
+}
+
+func DrawTerrainAreaPanel(screen *ebiten.Image, gs *state.GameState, region *world.Region, neighborExpanded bool) {
+	px, py, pw, ph := infoPanelX(), infoPanelY(), infoPanelW, infoPanelH
+	drawUIPanelFrame(screen, gameui.Rect{X: float64(px), Y: float64(py), W: float64(pw), H: float64(ph)}, panelBg, panelBorder, 1.5, 3)
+	drawPanelCloseButton(screen, px, py, pw)
+	lx, ly := float64(px)+panelPad, float64(py)+10
+	sepW := pw - float32(panelPad*2)
+	name := region.NameTR
+	if name == "" {
+		name = "Arazi Boya"
+	}
+	DrawText(screen, name, lx, ly, FaceLarge, color.RGBA{238, 170, 55, 255})
+	ly += 26
+	drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Tip", "Yerleşimsiz arazi alanı", ColorGray, ColorWhite)
+	ly += 18
+	status := "Geçilebilir"
+	if region.TerrainAreaID != "" {
+		for _, area := range gs.TerrainAreas {
+			if area.ID == region.TerrainAreaID && area.MoveCost == 0 {
+				status = "Geçilemez"
+			}
+		}
+	}
+	drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Hareket", status, ColorGray, ColorWhite)
+	ly += 26
+	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
+	ly += 8
 	drawNeighborBlock(screen, gs, region, lx, ly, sepW, neighborExpanded, ColorGold)
 }
 

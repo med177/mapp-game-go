@@ -189,6 +189,10 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 		copy(wm.baseRegionAt, wm.regionAt)
 		wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
 	}
+	// Arazi alanları her zaman son katman olarak boyanır; bu sayede altındaki
+	// bölge/deniz boya override'ları alan seçimini ve boyasını ezemez.
+	world.SyncTerrainAreaRegions(gs.Regions, gs.TerrainAreas)
+	wm.applyTerrainAreaRegions(gs)
 	wm.rebuildBorderSegments(gs)
 	wm.computeRegionAnchors()
 	if setProgress != nil {
@@ -544,6 +548,7 @@ func (wm *WorldMap) RebuildSettlementAnchors(gs *state.GameState) {
 }
 
 func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID, mode MapMode) {
+	world.UpdateTerrainAreaRegionOwners(gs.Regions)
 	diplomacySignature := borderDiplomacySignature(gs)
 	if !wm.ownerDirty && wm.selected == selected && wm.currentMode == mode && wm.diplomacySignature == diplomacySignature {
 		return
@@ -579,6 +584,30 @@ func (wm *WorldMap) RegionAt(wx, wy int) world.RegionID {
 		return ""
 	}
 	return wm.regionIDs[idx]
+}
+
+func (wm *WorldMap) applyTerrainAreaRegions(gs *state.GameState) {
+	if wm == nil || gs == nil {
+		return
+	}
+	for _, area := range gs.TerrainAreas {
+		childID := world.RegionID("terrain_area::" + area.ID)
+		if gs.Regions[childID] == nil {
+			continue
+		}
+		idx := wm.ensureRegionIndex(childID)
+		for _, cell := range area.Cells {
+			x, y := cell[0], cell[1]
+			if x < 0 || y < 0 || x >= WorldW || y >= WorldH {
+				continue
+			}
+			p := y*WorldW + x
+			if wm.regionAt[p] != 0 {
+				wm.regionAt[p] = idx
+			}
+		}
+	}
+	wm.rebuildRegionPixelsFromAssignments()
 }
 
 func (wm *WorldMap) VisualNeighbors(rid world.RegionID, dst []world.RegionID) []world.RegionID {
@@ -668,7 +697,7 @@ func (wm *WorldMap) buildCountryShapes(gs *state.GameState, shapes map[string]co
 
 	regionsByShape := make(map[string][]*world.Region)
 	for _, r := range gs.Regions {
-		if r.ShapeID != "" && !r.IsSea {
+		if r.ShapeID != "" && !r.IsSea && !r.IsTerrainArea {
 			regionsByShape[r.ShapeID] = append(regionsByShape[r.ShapeID], r)
 		}
 	}

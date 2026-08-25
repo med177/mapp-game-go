@@ -1893,13 +1893,13 @@
     "neighbors": [
       "bessarabia",
       "bulgaria",
+      "danube_romania",
       "danube_wallacia",
       "dobruja",
       "moldova",
-      "prut_river_south",
       "oltenia",
-      "transylvania",
-      "danube_romania"
+      "prut_river_south",
+      "transylvania"
     ],
     "world_x": 1018,
     "world_y": 392,
@@ -1979,8 +1979,8 @@
     "neighbors": [
       "galicia_volhynia",
       "moldova",
-      "prut_river_south",
       "prut_river_north",
+      "prut_river_south",
       "transylvania",
       "wallachia"
     ],
@@ -7837,8 +7837,7 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "walls",
-      "port"
+      "walls"
     ]
   },
   {

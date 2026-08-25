@@ -3,6 +3,20 @@ package world
 // RegionID bölge benzersiz kimliği.
 type RegionID string
 
+// MaxTaxRate oyuncu ve AI için izin verilen azami bölgesel vergi oranıdır.
+const MaxTaxRate = 60
+
+// ClampTaxRate vergi oranını oyun kurallarındaki [0, MaxTaxRate] aralığına indirger.
+func ClampTaxRate(rate int) int {
+	if rate < 0 {
+		return 0
+	}
+	if rate > MaxTaxRate {
+		return MaxTaxRate
+	}
+	return rate
+}
+
 // Region harita üzerindeki tek bir bölgeyi temsil eder.
 type Region struct {
 	ID      RegionID    `json:"id"`
@@ -31,6 +45,11 @@ type Region struct {
 
 	// Deniz bölgesi mi? Oynanabilir kara bölgesi değildir.
 	IsSea bool `json:"is_sea"`
+	// IsTerrainArea marks a runtime child region painted inside a parent region.
+	// These regions are navigable but have no economy or settlements.
+	IsTerrainArea  bool     `json:"-"`
+	ParentRegionID RegionID `json:"-"`
+	TerrainAreaID  string   `json:"-"`
 
 	IsLocked   bool `json:"is_locked"`
 	UnlockTurn int  `json:"unlock_turn"`
@@ -47,7 +66,7 @@ type Region struct {
 
 	// Durum
 	Satisfaction int `json:"satisfaction"` // 0-100
-	TaxRate      int `json:"tax_rate"`     // 0-100 yüzde
+	TaxRate      int `json:"tax_rate"`     // 0-60 yüzde
 	// Population kırsal nüfus ile yerleşim nüfuslarının toplamıdır.
 	Population      int `json:"population"`
 	RuralPopulation int `json:"rural_population"`
@@ -127,7 +146,7 @@ type Settlement struct {
 
 // SettlementPopulation bölgedeki yerleşimlerin toplam nüfusunu döner.
 func (r *Region) SettlementPopulation() int {
-	if r == nil {
+	if r == nil || r.IsTerrainArea {
 		return 0
 	}
 	total := 0
@@ -143,7 +162,7 @@ func (r *Region) SettlementPopulation() int {
 // Eski senaryo/kayıt verisinde bileşenler bulunmuyorsa mevcut Population değeri
 // geriye dönük uyumluluk için kırsal nüfus kabul edilir.
 func (r *Region) RecalculatePopulation() int {
-	if r == nil {
+	if r == nil || r.IsTerrainArea {
 		return 0
 	}
 	if r.RuralPopulation < 0 {
@@ -159,7 +178,7 @@ func (r *Region) RecalculatePopulation() int {
 
 // AddPopulation büyümeyi kırsal nüfusa ekler; yerleşim nüfusları korunur.
 func (r *Region) AddPopulation(amount int) {
-	if r == nil || amount <= 0 {
+	if r == nil || r.IsTerrainArea || amount <= 0 {
 		return
 	}
 	settlementPopulation := r.SettlementPopulation()
@@ -268,6 +287,9 @@ func (r *Region) CanLandEnter() bool {
 	return !r.IsSea && !r.IsLocked
 }
 func (r *Region) GoldIncome() int {
+	if r == nil || r.IsTerrainArea {
+		return 0
+	}
 	base := r.BaseGoldIncome * r.TaxRate / 100
 	satisfactionMod := r.Satisfaction - 50
 	adjusted := base + (base*satisfactionMod)/200
@@ -279,7 +301,7 @@ func (r *Region) GoldIncome() int {
 
 // IsRebellionRisk isyan riski eşiğini kontrol eder.
 func (r *Region) IsRebellionRisk() bool {
-	return r.Satisfaction < 30
+	return r != nil && !r.IsTerrainArea && r.Satisfaction < 30
 }
 
 // ApplyConquest bölge el değiştirdiğinde memnuniyet ve sahiplik günceller.

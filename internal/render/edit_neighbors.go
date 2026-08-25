@@ -57,6 +57,10 @@ func (r *Renderer) addNeighborBetween(from, to world.RegionID) {
 		r.editNeighborAddMessage = "komşuluk zaten var"
 		return
 	}
+	if source.IsTerrainArea || target.IsTerrainArea {
+		r.addTerrainAreaNeighbor(source, target)
+		return
+	}
 	before := r.neighborSnapshot(from, []world.RegionID{to})
 	addNeighborID(source, to)
 	addNeighborID(target, from)
@@ -81,4 +85,56 @@ func (r *Renderer) addNeighborBetween(from, to world.RegionID) {
 		},
 	})
 	r.editNeighborAddMessage = "komşuluk eklendi"
+}
+
+// addTerrainAreaNeighbor bir arazi alanının katıldığı komşuluğu kalıcı kılar.
+// Arazi alanı komşu listesi her senkronizasyonda yeniden üretildiği için
+// manuel eklemeler TerrainArea.ExtraNeighbors üzerinden saklanır.
+func (r *Renderer) addTerrainAreaNeighbor(source, target *world.Region) {
+	before := r.worldSnapshot()
+	changed := false
+	if source.IsTerrainArea {
+		if r.appendTerrainAreaExtraNeighbor(source.TerrainAreaID, target.ID) {
+			changed = true
+		}
+	} else {
+		addNeighborID(source, target.ID)
+		changed = true
+	}
+	if target.IsTerrainArea {
+		if r.appendTerrainAreaExtraNeighbor(target.TerrainAreaID, source.ID) {
+			changed = true
+		}
+	} else {
+		addNeighborID(target, source.ID)
+		changed = true
+	}
+	if !changed {
+		return
+	}
+	r.rebuildEditWorldMap()
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editSelectedRegion = source.ID
+	r.editSelectedSettlement = -1
+	r.editNeighborAddMessage = "komşuluk eklendi"
+	r.editDirty = true
+}
+
+// appendTerrainAreaExtraNeighbor verilen arazi alanına manuel komşu ekler;
+// zaten eklenmişse false döner.
+func (r *Renderer) appendTerrainAreaExtraNeighbor(areaID string, neighborID world.RegionID) bool {
+	for i := range r.gs.TerrainAreas {
+		if r.gs.TerrainAreas[i].ID != areaID {
+			continue
+		}
+		for _, existing := range r.gs.TerrainAreas[i].ExtraNeighbors {
+			if existing == neighborID {
+				return false
+			}
+		}
+		r.gs.TerrainAreas[i].ExtraNeighbors = append(r.gs.TerrainAreas[i].ExtraNeighbors, neighborID)
+		return true
+	}
+	return false
 }

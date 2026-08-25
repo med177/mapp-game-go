@@ -785,7 +785,7 @@ func applyRegionSaveState(region *world.Region, saved regionSaveState) {
 		region.Satisfaction = *saved.Satisfaction
 	}
 	if saved.TaxRate != nil {
-		region.TaxRate = *saved.TaxRate
+		region.TaxRate = world.ClampTaxRate(*saved.TaxRate)
 	}
 	if saved.Population != nil {
 		region.Population = *saved.Population

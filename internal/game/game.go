@@ -2618,6 +2618,9 @@ func writeScenarioEditData(gs *state.GameState) error {
 	if err := writeScenarioLandPassages(gs); err != nil {
 		return err
 	}
+	if err := writeScenarioTerrainAreas(gs); err != nil {
+		return err
+	}
 	if err := writeScenarioSettlements(gs); err != nil {
 		return err
 	}
@@ -2660,6 +2663,16 @@ func writeScenarioLandPassages(gs *state.GameState) error {
 	return os.WriteFile(path, data, 0644)
 }
 
+func writeScenarioTerrainAreas(gs *state.GameState) error {
+	path := filepath.Join(gs.ScenarioPath, "data", "terrain_areas.json")
+	data, err := json.MarshalIndent(gs.TerrainAreas, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
+}
+
 func writeScenarioRegions(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "regions.json")
 	type regionExport struct {
@@ -2694,7 +2707,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 		Buildings          []string          `json:"buildings"`
 	}
 	cloneRegion := func(region *world.Region) *regionExport {
-		if region == nil {
+		if region == nil || region.IsTerrainArea {
 			return nil
 		}
 		out := &regionExport{
@@ -2736,17 +2749,26 @@ func writeScenarioRegions(gs *state.GameState) error {
 		seen := make(map[world.RegionID]bool, len(gs.RegionOrder))
 		for _, rid := range gs.RegionOrder {
 			if region, ok := gs.Regions[rid]; ok {
+				if region == nil || region.IsTerrainArea {
+					continue
+				}
 				regions = append(regions, cloneRegion(region))
 				seen[rid] = true
 			}
 		}
 		for rid, region := range gs.Regions {
+			if region == nil || region.IsTerrainArea {
+				continue
+			}
 			if !seen[rid] {
 				regions = append(regions, cloneRegion(region))
 			}
 		}
 	} else {
 		for _, region := range gs.Regions {
+			if region == nil || region.IsTerrainArea {
+				continue
+			}
 			regions = append(regions, cloneRegion(region))
 		}
 	}
@@ -2763,7 +2785,7 @@ func writeScenarioSettlements(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "settlements.json")
 	entries := make([]world.SettlementListEntry, 0, len(gs.Regions))
 	appendEntry := func(rid world.RegionID, region *world.Region) {
-		if region == nil || region.IsSea {
+		if region == nil || region.IsSea || region.IsTerrainArea {
 			return
 		}
 		entry := world.SettlementListEntry{
@@ -3223,6 +3245,11 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	if err != nil {
 		return nil, nil, fmt.Errorf("karasal geçişler yüklenemedi: %w", err)
 	}
+	terrainAreas, err := world.LoadTerrainAreas(dp("terrain_areas.json"), regions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("arazi alanları yüklenemedi: %w", err)
+	}
+	world.SyncTerrainAreaRegions(regions, terrainAreas)
 	advance()
 	yield()
 	if err := world.LoadRegionSettlements(dp("settlements.json"), regions); err != nil {
@@ -3336,6 +3363,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		Regions:            regions,
 		RegionOrder:        regionOrder,
 		LandPassages:       landPassages,
+		TerrainAreas:       terrainAreas,
 		Factions:           factions,
 		FactionOrder:       factionOrder,
 		Armies:             armies,
@@ -4680,6 +4708,7 @@ func (g *Game) resolveSortieMovement(a *army.Army, target *world.Region, stance 
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
 				a.MovePoints--
+				g.gs.ApplyLandRegionEntryAttrition(a)
 				outcomeDetail = "Huruç başarılı; kuşatma kaldırıldı ve ordu bölgeden çıktı."
 			}
 		} else {
@@ -5005,6 +5034,19 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	if !ok {
 		return
 	}
+	landMoveCost := 1
+	blocked := false
+	if !a.IsNaval && target != a.RegionID && !targetRegion.IsSea {
+		landMoveCost, blocked = g.gs.LandRegionMoveCost(targetRegion)
+		if blocked {
+			g.renderer.ShowCombatResult("Bu boyalı arazi alanı geçilemez.")
+			return
+		}
+		if a.MovePoints < landMoveCost {
+			g.renderer.ShowCombatResult("Bu arazi alanını geçmek için yeterli hareket puanı yok.")
+			return
+		}
+	}
 	navalSeaMove := a.IsNaval && targetRegion.CanNavalEnter()
 	if !isNeighbor && !(resolved && target == a.RegionID) {
 		return
@@ -5223,9 +5265,10 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
-				if !contactMovementConsumed && a.MovePoints > 0 {
-					a.MovePoints--
+				if !contactMovementConsumed && a.MovePoints >= landMoveCost {
+					a.MovePoints -= landMoveCost
 				}
+				g.gs.ApplyLandRegionEntryAttrition(a)
 				if isAlliedRegion {
 					if navalSeaMove {
 						outcomeDetail = navalBattleOutcomeDetail("Düşman filosu battı ve deniz hattı açıldı.", defenderCargoLost)
@@ -5299,7 +5342,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		a.RegionID = target
 		a.DockedRegionID = ""
 		a.DockedSettlementID = ""
-		a.MovePoints--
+		a.MovePoints -= landMoveCost
+		g.gs.ApplyLandRegionEntryAttrition(a)
 		if allyJoiningSiege {
 			// Kuşatmaya katılım: bölge fethedilmez; destek ordusu ayrı kalır.
 			g.renderer.ShowCombatResult("Ordu kuşatmaya ayrı bir destek gücü olarak katıldı.")
@@ -5601,7 +5645,7 @@ func (g *Game) adjustTax(rid world.RegionID, delta int) {
 	if !ok || r.OwnerID != string(g.gs.PlayerFactionID) || r.IsLocked {
 		return
 	}
-	r.TaxRate = clamp(r.TaxRate+delta, 0, 100)
+	r.TaxRate = world.ClampTaxRate(r.TaxRate + delta)
 }
 
 // applyVictoryChoice seçilen zafer koşulunu senaryodan okuyarak GameState'e yazar.

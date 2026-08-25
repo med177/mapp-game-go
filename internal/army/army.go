@@ -452,11 +452,20 @@ func (a *Army) HasSiegeUnits(types map[string]*UnitType) bool {
 	return a.SiegeUnitScore(types) > 0
 }
 
-// ApplyWinterAttrition kış erozyonu — her birim %10 HP kaybeder.
-func (a *Army) ApplyWinterAttrition() (lost int) {
+// ApplyAttritionPercent tüm birimlerin HP'sini verilen yüzde kadar azaltır
+// (0-100). Kış erozyonu ve arazi alanı yıpranması (çöl, dağ vb.) bu ortak
+// mekanizmayı paylaşır.
+func (a *Army) ApplyAttritionPercent(percent int) (lost int) {
+	if percent <= 0 {
+		return 0
+	}
+	if percent > 100 {
+		percent = 100
+	}
+	keep := 100 - percent
 	surviving := a.Units[:0]
 	for _, u := range a.Units {
-		u.CurrentHP = u.CurrentHP * 90 / 100
+		u.CurrentHP = u.CurrentHP * keep / 100
 		if u.CurrentHP <= 0 {
 			lost++
 			continue
@@ -465,6 +474,11 @@ func (a *Army) ApplyWinterAttrition() (lost int) {
 	}
 	a.Units = surviving
 	return lost
+}
+
+// ApplyWinterAttrition kış erozyonu — her birim %10 HP kaybeder.
+func (a *Army) ApplyWinterAttrition() (lost int) {
+	return a.ApplyAttritionPercent(10)
 }
 
 func (a *Army) HasDamagedUnits() bool {

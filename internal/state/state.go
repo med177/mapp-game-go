@@ -214,6 +214,7 @@ type GameState struct {
 	Regions                 map[world.RegionID]*world.Region       `json:"regions"`
 	RegionOrder             []world.RegionID                       `json:"-"`
 	LandPassages            []world.LandPassage                    `json:"land_passages,omitempty"`
+	TerrainAreas            []world.TerrainArea                    `json:"terrain_areas,omitempty"`
 	Factions                map[faction.FactionID]*faction.Faction `json:"factions"`
 	FactionOrder            []faction.FactionID                    `json:"-"`
 	Armies                  map[army.ArmyID]*army.Army             `json:"armies"`
@@ -2274,7 +2275,7 @@ func (s *GameState) canFactionReplenishIn(armyOwner, regionOwner string) bool {
 
 // RegionProductionSummary hesaplanan efektif bölge üretimini döner.
 func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade bool) RegionProductionSummary {
-	if s == nil || region == nil || region.IsSea || region.OwnerID == "" {
+	if s == nil || region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID == "" {
 		return RegionProductionSummary{}
 	}
 	blockadeRetention := 100

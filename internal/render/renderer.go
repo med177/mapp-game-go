@@ -305,6 +305,10 @@ type Renderer struct {
 	editShapePaintPending             bool
 	editPaintPreviewImage             *ebiten.Image
 	editShapeTool                     editShapeTool
+	editTerrainAreaMode               bool
+	editTerrainAreaSelected           int
+	editTerrainAreaMoveCost           int
+	editTerrainAreaAttritionCost      int
 	editShapeBrushMode                editShapeBrushMode
 	editShapeBrushRadius              float64
 	editShapeStrokeBefore             *editWorldSnapshot
@@ -380,6 +384,7 @@ const (
 	editShapeToolNone editShapeTool = iota
 	editShapeToolShape
 	editShapeToolRegion
+	editShapeToolTerrainArea
 )
 
 type editRegionSettlementsSnapshot struct {
@@ -400,6 +405,7 @@ type editWorldSnapshot struct {
 	Relations            map[string]*faction.Relation
 	ShapeData            world.CountryShapeJSON
 	RegionPaintOverrides map[int]world.RegionID
+	TerrainAreas         []world.TerrainArea
 	Selected             world.RegionID
 	Settlement           int
 	Faction              faction.FactionID
@@ -639,6 +645,7 @@ func New(gs *state.GameState) *Renderer {
 		tradeAmount:                 5,
 		selectedSettlementIndex:     -1,
 		editSelectedSettlement:      -1,
+		editTerrainAreaSelected:     -1,
 		editLandPassageSelected:     -1,
 		editLandPassageDragEndpoint: -1,
 		devNeighborListExpanded:     true,
@@ -1403,6 +1410,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	screen.DrawImage(r.worldMap.Image(), mapOp)
 	r.drawVectorMapBorders(screen)
 	r.drawLandPassages(screen)
+	r.drawTerrainAreas(screen)
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 

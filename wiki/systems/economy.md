@@ -40,7 +40,9 @@ bağlar (`internal/state/raid_ambush.go`, `internal/game/resolution.go`,
 
 ## Vergi Sistemi
 
-Her bölgede `TaxRate` (0–100) ayarlanabilir.
+Her bölgede `TaxRate` (0–60) ayarlanabilir. `world.ClampTaxRate` oyuncu, AI,
+senaryo ve kayıt yükleme akışlarında değeri bu aralıkta tutar; eski kayıtlardaki
+%60 üzeri oranlar yüklenirken %60'a indirilir.
 
 Oyuncu: `.` tuşu +5, `,` tuşu -5 → `adjustTax()` — `internal/game/game.go:557`
 
@@ -48,10 +50,10 @@ Oyuncu: `.` tuşu +5, `,` tuşu -5 → `adjustTax()` — `internal/game/game.go:
 |---|---|
 | %0–20 | Her tam 10 puanlık fark için +5 memnuniyet/tur |
 | %30 | Nötr: 0 memnuniyet cezası/bonusu |
-| %40–100 | Her tam 10 puanlık fark için -10 memnuniyet/tur |
+| %40–60 | Her tam 10 puanlık fark için -10 memnuniyet/tur |
 
 Vergi etkisi tam 10 puanlık kademelerle hesaplanır; örneğin %20 `+5`, %40 `-10`,
-%50 `-20`, %100 `-70` memnuniyet deltası üretir. %21–29 ve %31–39 aralığı,
+%50 `-20`, %60 `-30` memnuniyet deltası üretir. %21–29 ve %31–39 aralığı,
 bir sonraki tam kademeye ulaşmadığı için nötr kalır.
 
 **İsyan:** `checkRebellions()` memnuniyet eşiğini kontrol eder → bölge kontrolü kaybedilebilir.

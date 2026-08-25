@@ -27,7 +27,7 @@ type Region struct {
     Settlements []Settlement   // görsel şehir/kasaba/kale noktaları
 
     Buildings    []string      // inşa edilmiş bina ID'leri
-    TaxRate      int           // 0-100
+    TaxRate      int           // 0-60; world.ClampTaxRate ile sınırlandırılır
     Satisfaction int           // halk memnuniyeti
     Population      int // RuralPopulation + SettlementPopulation()
     RuralPopulation int // yerleşim dışındaki köy/kırsal nüfus

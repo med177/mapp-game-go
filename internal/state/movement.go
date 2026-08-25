@@ -4,7 +4,74 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/tech"
+	"mapp-game-go/internal/world"
 )
+
+// LandRegionMoveCost returns the cost of entering a land region at its anchor.
+// It keeps the current node-based map model compatible while allowing painted
+// subregions to block or tax movement.
+func (s *GameState) LandRegionMoveCost(region *world.Region) (int, bool) {
+	if s == nil || region == nil || region.IsSea {
+		return 0, true
+	}
+	parentID := region.ID
+	x, y := region.WorldX, region.WorldY
+	if region.IsTerrainArea {
+		parentID = region.ParentRegionID
+		for _, area := range s.TerrainAreas {
+			if area.ID == region.TerrainAreaID {
+				extra, blocked := terrainAreaCostForID(area)
+				if blocked {
+					return 0, true
+				}
+				return 1 - extra, false
+			}
+		}
+	}
+	extra, blocked := world.TerrainAreaMovementCost(s.TerrainAreas, parentID, x, y)
+	if blocked {
+		return 0, true
+	}
+	return 1 - extra, false
+}
+
+func terrainAreaCostForID(area world.TerrainArea) (int, bool) {
+	if area.MoveCost == 0 {
+		return 0, true
+	}
+	return area.MoveCost, false
+}
+
+// LandRegionAttritionPercent, bir arazi alanına giren ordunun kaybedeceği HP
+// yüzdesini döner (çöl sıcağı, dağ yorgunluğu vb.). Normal bölgeler ve deniz
+// bölgeleri için her zaman 0 döner; yıpranma yalnızca boyanmış arazi alanı
+// çocuk düğümlerine özgüdür.
+func (s *GameState) LandRegionAttritionPercent(region *world.Region) int {
+	if s == nil || region == nil || !region.IsTerrainArea {
+		return 0
+	}
+	for _, area := range s.TerrainAreas {
+		if area.ID == region.TerrainAreaID {
+			return area.AttritionCost
+		}
+	}
+	return 0
+}
+
+// ApplyLandRegionEntryAttrition, bir kara ordusu bir arazi alanına girdiğinde
+// o alanın yıpranma yüzdesini orduya uygular. Deniz orduları ve normal
+// bölgeler etkilenmez; kayıp birim sayısını döner.
+func (s *GameState) ApplyLandRegionEntryAttrition(a *army.Army) int {
+	if s == nil || a == nil || a.IsNaval {
+		return 0
+	}
+	region := s.Regions[a.RegionID]
+	percent := s.LandRegionAttritionPercent(region)
+	if percent <= 0 {
+		return 0
+	}
+	return a.ApplyAttritionPercent(percent)
+}
 
 // ArmyMaxMovePoints bu tur için bir ordunun toplam hareket havuzunu hesaplar.
 // Mevsim etkisi önce en yavaş birimin tabanına uygulanır; komutan, teknoloji ve

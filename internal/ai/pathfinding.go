@@ -195,6 +195,11 @@ func (snapshot *aiRouteSnapshot) entryCost(region *world.Region) (int, bool) {
 	}
 	props, _ := aiRouteTerrainProps(region)
 	cost := maxInt(1, props.MoveCost) * aiRouteTerrainCostScale
+	if extra, blocked := snapshot.gs.LandRegionMoveCost(region); blocked {
+		return 0, false
+	} else if extra > 1 {
+		cost += (extra - 1) * aiRouteTerrainCostScale
+	}
 	cost += accessCost
 
 	armyPower := maxInt(1, snapshot.armyRef.TotalStrength(snapshot.gs.UnitTypes))

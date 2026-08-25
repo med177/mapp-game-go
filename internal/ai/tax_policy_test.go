@@ -28,8 +28,8 @@ func TestAIAdjustTaxesProtectsUnrestAndRaisesHealthyRevenue(t *testing.T) {
 	if got := gs.Regions["rebellion-risk"].TaxRate; got != 60 {
 		t.Fatalf("isyan riski yüksek bölgede vergi 20 puan düşmeliydi, got=%d", got)
 	}
-	if got := gs.Regions["unstable"].TaxRate; got != 70 {
-		t.Fatalf("düşük memnuniyetli bölgede vergi 10 puan düşmeliydi, got=%d", got)
+	if got := gs.Regions["unstable"].TaxRate; got != 60 {
+		t.Fatalf("düşük memnuniyetli bölgede vergi üst sınırı aşmamalıydı, got=%d", got)
 	}
 	if got := gs.Regions["healthy"].TaxRate; got != 50 {
 		t.Fatalf("iyi memnuniyetli bölgede vergi 10 puan artmalıydı, got=%d", got)

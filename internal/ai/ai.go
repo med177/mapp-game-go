@@ -1753,6 +1753,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					a.DockedRegionID = ""
 					a.DockedSettlementID = ""
 					a.MovePoints--
+					gs.ApplyLandRegionEntryAttrition(a)
 					contactMovementConsumed = true
 					contact.MovementConsumed = true
 				}
@@ -1813,6 +1814,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					if canExitToTarget && len(a.Units) > 0 {
 						a.RegionID = target
 						a.MovePoints = maxInt(0, a.MovePoints-1)
+						gs.ApplyLandRegionEntryAttrition(a)
 					}
 					msg := actorName + " " + sourceName + " kuşatmasını yardı ve çıktı."
 					return moveOutcome{survived: len(a.Units) > 0, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: fromRegion, Message: msg}}
@@ -2228,6 +2230,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
+				gs.ApplyLandRegionEntryAttrition(a)
 				vassalized := false
 				if !isAlliedTarget && !activeSiegeSupport {
 					vassalized = TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
@@ -2296,6 +2299,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	a.DockedRegionID = ""
 	a.DockedSettlementID = ""
 	a.MovePoints--
+	gs.ApplyLandRegionEntryAttrition(a)
 	stepKind := TurnStepMove
 	msg := actorName + " " + sourceName + " bölgesinden " + targetName + " bölgesine ilerledi."
 	isAlliedTarget := false

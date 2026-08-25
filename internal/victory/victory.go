@@ -157,7 +157,7 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 		fx = tech.ComputeEffects(gs.Factions[fid].Research.Completed, gs.TechTypes)
 	}
 	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID != string(fid) {
 			continue
 		}
 		goldMod := 1.0

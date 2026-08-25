@@ -1,11 +1,79 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-23
+last_updated: 2026-08-26
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-26: Arazi alanlarına (çöl/dağ/göl/nehir/sık orman/bataklık) hareket
+  maliyetine ek olarak yıpranma (%HP kaybı) değeri eklendi. Alan seçiliyken
+  Harita sekmesindeki "Yıpranma" düğmesiyle 0→20 arası 5'lik adımlarla
+  ayarlanır; oyuncu ve AI orduları bu alana her girişte `army.ApplyAttritionPercent`
+  ile HP kaybeder. Arazi alanları hâlâ normal bölge gibi seçilebilir/komşulanabilir
+  ama vergi, yerleşim, nüfus ve üretim sistemlerinden tamamen muaf kalır.
+  Kapsam: `internal/world/terrain_area.go`, `internal/army/army.go`,
+  `internal/state/movement.go`, `internal/game/game.go`, `internal/ai/ai.go`,
+  `internal/render/shape_editor.go`.
+
+- 2026-08-25: Arazi alanı boyama, arazi tipi, alan maliyeti ve silme
+  kontrolleri Edit Mode **Harita** sekmesinde toplandı. Normal bölge tipi
+  **Bölge Tipi** olarak Bölge sekmesinde kaldı; arazi alanları yalnız kendi
+  `Arazi Tipi` listesindeki dağ, çöl, göl, nehir, sık orman ve bataklık
+  seçeneklerini kullanıyor. Kapsam: `internal/render/map_editor.go`,
+  `internal/render/shape_editor.go`.
+
+- 2026-08-25: Arazi alanı boyama, maliyet ve silme kontrolleri Edit Mode
+  **Bölge** sekmesine taşındı; `Komşu Ekle` de aynı sekmede yer alıyor.
+  Normal bölgelerde dropdown etiketi `Bölge Tipi`, terrain child düğümlerinde
+  `Arazi Tipi` olarak ayrıştırıldı. Kapsam: `internal/render/map_editor.go`,
+  `internal/render/shape_editor.go`.
+
+- 2026-08-25: Edit Mode arazi alanlarına seçili alanı silme ve bağımsız arazi
+  tipi değiştirme kontrolleri eklendi. Alanlar parent devlet renginin tonlarıyla
+  çiziliyor; runtime merkezi boyalı hücrelerin ortasında hesaplanıyor ve merkez
+  sürükleme kapalı. Kapsam: `internal/render/shape_editor.go`,
+  `internal/render/terrain_areas.go`, `internal/world/terrain_area.go`.
+
+- 2026-08-25: Arazi alanlarının merkezleri sabitlendi ve Voronoi merkez
+  adaylarından çıkarıldı. Alt alanlara bağımsız `dağ`, `çöl`, `göl`, `nehir`,
+  `sık orman` ve `bataklık` arazi tipleri verilebiliyor; editör dropdown'u ve
+  harita renkleri güncellendi. Kapsam: `internal/world/terrain.go`,
+  `internal/world/terrain_area.go`, `internal/render/mapgen.go`.
+
+- 2026-08-24: Arazi alanları artık oyun haritasında gerçek runtime alt-bölge
+  düğümleri olarak seçilebilir. Parent bölge ve temas eden kardeş alanlarla
+  komşuluk kurar; ordu sağ tıkla geçilebilir alanlara yönlendirilebilir ve
+  normal seçim/marker akışı kullanılır. Arazi alanı paneli vergi, nüfus,
+  üretim ve yerleşim işlemlerini içermez. Kapsam: `internal/world/terrain_area.go`,
+  `internal/render/mapgen.go`, `internal/render/panel.go`, `internal/state/movement.go`.
+
+- 2026-08-24: Yerleşimsiz dağ/çöl/sık orman gibi alt arazi alanları eklendi.
+  Edit modda seçili kara bölgesinin mevcut ortak fırçasıyla çizilir; `0`
+  geçişi engeller, `-1` ve `-2` ek hareket puanı tüketir. Alanlar
+  `terrain_areas.json` içinde parent bölgeye bağlı hücreler olarak saklanır,
+  oyun ve AI hareket kurallarına uygulanır. Kapsam: `internal/world/terrain_area.go`,
+  `internal/state/movement.go`, `internal/render/terrain_areas.go`.
+
+- 2026-08-24: Bölgesel vergi oranı oyuncu ve AI için en fazla `%60` olacak şekilde
+  sınırlandı. Senaryo ve kayıt yükleme sırasında eski `%60` üzeri oranlar da
+  normalize ediliyor. Regression: `TestAIAdjustTaxesProtectsUnrestAndRaisesHealthyRevenue`;
+  kapsam: `internal/world/region.go`, `internal/world/loader.go`,
+  `internal/game/game.go`, `internal/ai/tax_policy.go`, `internal/save/compact.go`.
+
+- 2026-08-24: Üst HUD askerî kapasite kartı 1024 px genişliğindeki ekranlarda
+  sağa taşmaması için 14 px sola alındı; `Savaşçı / Ordu / Donanma` değerleri
+  kart ve görünür ekran sınırları içinde kalıyor. Kapsam: `internal/render/panel.go`.
+
+- 2026-08-24: Kuşatma yıpranması artık yalnızca kuşatma başlangıcında kaydedilen
+  savunma ordusu ID'sine bağlı değil. Her kuşatma turunda bölgedeki güncel,
+  savaş halindeki savunma ordusu yeniden bulunup HP kaybı alıyor; savunma ordusu
+  yoksa kuşatan ordu da yalnız düşük seviyeli, zamanla biriken `3 HP/birim/tur`
+  kuşatma yıpranması alıyor.
+  Regression: `TestResolveSiegesFindsDefenderThatWasNotPresentAtSiegeStart`,
+  `TestResolveSiegesAppliesLowAttritionWhenRegionHasNoDefenderArmy`;
+  kapsam: `internal/game/siege.go`.
 
 - 2026-08-23: Teknoloji tooltip'inde önkoşul olarak gösterilen ham teknoloji ID'leri
   yerelleştirilmiş `NameTR` etiketleriyle değiştirildi. Eksik teknoloji tanımları

@@ -103,6 +103,9 @@ func drawDashedLandPassage(screen *ebiten.Image, x1, y1, x2, y2 float64, width f
 }
 
 func (r *Renderer) toggleEditLandPassageMode() {
+	if r.editTerrainAreaMode {
+		return
+	}
 	r.editLandPassageMode = !r.editLandPassageMode
 	r.editLandPassageAdjustMode = false
 	r.editNeighborAddMode = false
@@ -122,6 +125,9 @@ func (r *Renderer) toggleEditLandPassageMode() {
 }
 
 func (r *Renderer) toggleEditLandPassageAdjustMode() {
+	if r.editTerrainAreaMode {
+		return
+	}
 	r.editLandPassageAdjustMode = !r.editLandPassageAdjustMode
 	r.editLandPassageMode = false
 	r.editNeighborAddMode = false

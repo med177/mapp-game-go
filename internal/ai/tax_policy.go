@@ -4,6 +4,7 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 const (
@@ -42,7 +43,7 @@ func aiAdjustTaxesWithSteps(gs *state.GameState, fid faction.FactionID, _ *[]Tur
 		}
 
 		oldTax := region.TaxRate
-		region.TaxRate = clampAIInt(region.TaxRate+delta, 0, 100)
+		region.TaxRate = world.ClampTaxRate(region.TaxRate + delta)
 		if region.TaxRate == oldTax {
 			continue
 		}
