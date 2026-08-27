@@ -2032,6 +2032,22 @@
         "y": 517,
         "type": "town",
         "population": 38
+      },
+      {
+        "id": "morea_corinth",
+        "name_tr": "Korint",
+        "x": 935,
+        "y": 513,
+        "type": "fortress",
+        "population": 10
+      },
+      {
+        "id": "greece_livadia",
+        "name_tr": "Livadya",
+        "x": 933,
+        "y": 505,
+        "type": "fortress",
+        "population": 4
       }
     ]
   },
@@ -3346,7 +3362,7 @@
         "id": "kallipolis_south",
         "name_tr": "Bolayır",
         "x": 1012,
-        "y": 464,
+        "y": 463,
         "type": "town",
         "population": 18
       },
@@ -4137,7 +4153,7 @@
       {
         "id": "lapseki_gallipoli",
         "name_tr": "Lapseki",
-        "x": 1011,
+        "x": 1012,
         "y": 470,
         "type": "town",
         "population": 32
@@ -6106,14 +6122,6 @@
         "y": 480,
         "type": "city",
         "population": 19
-      },
-      {
-        "id": "greece_livadia",
-        "name_tr": "Livadya",
-        "x": 933,
-        "y": 505,
-        "type": "fortress",
-        "population": 4
       }
     ]
   },
@@ -6128,6 +6136,22 @@
         "type": "town",
         "is_center": true,
         "population": 147
+      },
+      {
+        "id": "thessaloniki_city",
+        "name_tr": "Selanik",
+        "x": 937,
+        "y": 468,
+        "type": "fortress",
+        "population": 4
+      },
+      {
+        "id": "thessaloniki_drama",
+        "name_tr": "Drama",
+        "x": 942,
+        "y": 453,
+        "type": "town",
+        "population": 9
       }
     ]
   },
@@ -6162,18 +6186,10 @@
       {
         "id": "morea_patras",
         "name_tr": "Patras",
-        "x": 909,
-        "y": 510,
+        "x": 910,
+        "y": 511,
         "type": "port",
         "population": 30
-      },
-      {
-        "id": "morea_corinth",
-        "name_tr": "Korint",
-        "x": 935,
-        "y": 513,
-        "type": "fortress",
-        "population": 10
       }
     ]
   },
@@ -6876,16 +6892,8 @@
         "x": 949,
         "y": 467,
         "type": "city",
-        "population": 19
-      },
-      {
-        "id": "thessaloniki_city",
-        "name_tr": "Selanik",
-        "x": 937,
-        "y": 468,
-        "type": "fortress",
         "is_center": true,
-        "population": 4
+        "population": 19
       },
       {
         "id": "thessaloniki_kavala",
@@ -6894,14 +6902,6 @@
         "y": 462,
         "type": "port",
         "population": 13
-      },
-      {
-        "id": "thessaloniki_drama",
-        "name_tr": "Drama",
-        "x": 943,
-        "y": 452,
-        "type": "town",
-        "population": 9
       },
       {
         "id": "serres",

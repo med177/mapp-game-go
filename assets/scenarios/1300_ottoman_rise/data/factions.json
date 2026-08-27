@@ -1635,11 +1635,6 @@
         "core": true
       },
       {
-        "region_id": "terrain_area::area_transylvania_1",
-        "value": 100,
-        "core": true
-      },
-      {
         "region_id": "transylvania",
         "value": 100,
         "core": true
