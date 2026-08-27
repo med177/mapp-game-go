@@ -1,4 +1,4 @@
-# Mapp — Orta Çağ Strateji Oyunu
+# Mapp — Harita Strateji Oyunu
 
 ![Mapp Game Screenshot](Mapp_Game_Screenshot.png)
 

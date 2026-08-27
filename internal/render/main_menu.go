@@ -64,9 +64,9 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 
 	// Başlık
 	titleY := ScreenHeight/2 - 200
-	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY, W: ScreenWidth}, "MAPP", ColorYellow, gameui.TextLarge, gameui.TextAlignCenter)
-	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY + 34, W: ScreenWidth}, "Orta Çağ Strateji", color.RGBA{180, 160, 100, 200}, gameui.TextSmall, gameui.TextAlignCenter)
-	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY + 52, W: ScreenWidth}, "1300 – 1600", color.RGBA{140, 120, 80, 180}, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY, W: ScreenWidth}, "MAPP GAME", ColorYellow, gameui.TextLarge, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY + 34, W: ScreenWidth}, "Harita Strateji", color.RGBA{180, 160, 100, 200}, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: titleY + 52, W: ScreenWidth}, "Oyunu", color.RGBA{140, 120, 80, 180}, gameui.TextSmall, gameui.TextAlignCenter)
 
 	// Ayraç
 	sepY := float32(titleY + 80)

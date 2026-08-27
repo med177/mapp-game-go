@@ -29,7 +29,7 @@ func main() {
 	// .env dosyasını yüklemeyi dene (varsa)
 	_ = godotenv.Load()
 
-	ebiten.SetWindowTitle("Mapp — Orta Çağ Strateji")
+	ebiten.SetWindowTitle("Mapp Game — Harita Strateji Oyunu")
 	ebiten.SetWindowSize(1920, 1080)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.MaximizeWindow()

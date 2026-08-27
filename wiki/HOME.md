@@ -6,7 +6,7 @@ last_updated: 2026-06-03
 
 # Mapp Game Go — Wiki
 
-Orta Çağ temalı (1300–1600) sıra tabanlı strateji oyunu. Total War kampanya haritası tarzı — taktik savaş yok, tüm çarpışmalar otomatik hesaplanır.
+Harita temalı sıra tabanlı strateji oyunu. Total War sefer haritası tarzı — taktik savaş yok, tüm çarpışmalar otomatik hesaplanır.
 
 > **Bakım notu:** Bu wiki LLM tarafından güncel tutulur. Kod değişince ilgili sayfa güncellenir; yeni sistem eklenince yeni sayfa açılır. Hiçbir bilgi hardcode değil — JSON veri dosyalarından veya koddan sentezlenmiştir.
 
