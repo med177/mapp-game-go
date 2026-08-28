@@ -23,6 +23,7 @@ type Breakdown struct {
 	WarFatigue    int
 	Overextension int
 	Army          int
+	Historical    int
 	Total         int
 }
 
@@ -103,8 +104,58 @@ func (calculator *Calculator) ForRegion(region *world.Region) Breakdown {
 		breakdown.Overextension = -1
 	}
 	breakdown.Army = ArmyStabilityBonus(gs, region)
-	breakdown.Total = breakdown.Annual + breakdown.Siege + breakdown.Tax + breakdown.Buildings + breakdown.Grain + breakdown.Technology + breakdown.WarFatigue + breakdown.Overextension + breakdown.Army
+	breakdown.Historical = HistoricalTransitionDelta(gs, region)
+	breakdown.Total = breakdown.Annual + breakdown.Siege + breakdown.Tax + breakdown.Buildings + breakdown.Grain + breakdown.Technology + breakdown.WarFatigue + breakdown.Overextension + breakdown.Army + breakdown.Historical
 	return breakdown
+}
+
+const historicalPressureWindowYears = 10
+
+// HistoricalTransitionDelta, ardıl devletin tarihsel kuruluş/yıkılış
+// tarihleri yaklaştığında bölgesel memnuniyet baskısını hesaplar. Baskı,
+// bölgenin kendi successor metadata'sındaki devlete aittir; böylece devlet
+// henüz kurulmadan önce de halk hareketi birikmeye başlayabilir.
+func HistoricalTransitionDelta(gs *state.GameState, region *world.Region) int {
+	if gs == nil || region == nil || region.SuccessorFactionID == "" || gs.Year <= 0 {
+		return 0
+	}
+	successor := gs.Factions[factionID(region.SuccessorFactionID)]
+	if successor == nil {
+		return 0
+	}
+	pressure := 0
+	if successor.HistoricalStartYear > gs.Year {
+		pressure = -historicalDatePressure(successor.HistoricalStartYear - gs.Year)
+	}
+	if successor.HistoricalEndYear > 0 {
+		if gs.Year >= successor.HistoricalEndYear {
+			pressure = minHistoricalPressure(pressure, -4)
+		} else if remaining := successor.HistoricalEndYear - gs.Year; remaining <= historicalPressureWindowYears {
+			pressure = minHistoricalPressure(pressure, -historicalDatePressure(remaining))
+		}
+	}
+	return pressure
+}
+
+func historicalDatePressure(yearsRemaining int) int {
+	if yearsRemaining <= 0 {
+		return 4
+	}
+	pressure := 1 + (historicalPressureWindowYears-yearsRemaining)/3
+	if pressure < 1 {
+		pressure = 1
+	}
+	if pressure > 4 {
+		pressure = 4
+	}
+	return pressure
+}
+
+func minHistoricalPressure(current, candidate int) int {
+	if current == 0 || candidate < current {
+		return candidate
+	}
+	return current
 }
 
 // ArmyStabilityBonus bölgedeki sahibine ait kara ordularının istikrar katkısını

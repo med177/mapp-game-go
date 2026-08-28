@@ -952,6 +952,42 @@ func Test1300ScenarioSuccessorFactionReferencesAreOptionalAndValid(t *testing.T)
 	}
 }
 
+func Test1300ScenarioHistoricalSuccessorStatesAreMappedAndDated(t *testing.T) {
+	_, regions, factions := load1300IntegrityData(t)
+	want := map[string]struct {
+		region string
+		start  int
+		end    int
+	}{
+		"artuklu":           {region: "mosul", start: 1310, end: 1409},
+		"eretna_state":      {region: "kayseri", start: 1335, end: 1381},
+		"kadi_burhaneddin":  {region: "sivas", start: 1381, end: 1398},
+		"karakoyunlu_state": {region: "karakoyunlu", start: 1380, end: 1469},
+		"akkoyunlu_state":   {region: "akkoyunlu", start: 1378, end: 1503},
+		"jelayirids":        {region: "baghdad", start: 1330, end: 1410},
+		"muzaffarids":       {region: "western_persia", start: 1314, end: 1393},
+		"shirvanshahs":      {region: "azerbaijan", start: 861, end: 1538},
+		"timurid_empire":    {region: "northern_persia", start: 1370, end: 1405},
+		"afshar_beyligi":    {region: "erzurum", start: 1317, end: 0},
+	}
+	for factionID, expected := range want {
+		definition := factions[faction.FactionID(factionID)]
+		if definition == nil {
+			t.Fatalf("tarihsel ardıl fraksiyon eksik: faction=%s", factionID)
+		}
+		if !definition.IsEliminated {
+			t.Errorf("ardıl fraksiyon başlangıçta elenmiş olmalı: faction=%s", factionID)
+		}
+		if definition.HistoricalStartYear != expected.start || definition.HistoricalEndYear != expected.end {
+			t.Errorf("ardıl tarihleri hatalı: faction=%s got=%d-%d want=%d-%d", factionID, definition.HistoricalStartYear, definition.HistoricalEndYear, expected.start, expected.end)
+		}
+		region := regions[world.RegionID(expected.region)]
+		if region == nil || region.SuccessorFactionID != factionID {
+			t.Errorf("ardıl bölge eşleşmesi hatalı: faction=%s region=%s successor=%v", factionID, expected.region, region)
+		}
+	}
+}
+
 func Test1300ScenarioLandSettlementCentersAreUnique(t *testing.T) {
 	_, regions, _ := load1300IntegrityData(t)
 

@@ -2584,7 +2584,7 @@
     "name_tr": "Erzurum",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "afshar_beyligi",
     "neighbors": [
       "akkoyunlu",
       "erzincan",
@@ -2822,7 +2822,7 @@
     "name_tr": "Bağdat",
     "terrain": "plain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "jelayirids",
     "neighbors": [
       "basra",
       "mosul",
@@ -2859,7 +2859,7 @@
     "name_tr": "Kuzey İran",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "timurid_empire",
     "neighbors": [
       "caspian_sea",
       "dagestan",
@@ -2899,7 +2899,7 @@
     "name_tr": "Batı İran",
     "terrain": "plain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "muzaffarids",
     "neighbors": [
       "armenia",
       "azerbaijan",
@@ -5002,7 +5002,7 @@
     "name_tr": "Azerbaycan",
     "terrain": "plain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "shirvanshahs",
     "neighbors": [
       "armenia",
       "caspian_open_2",
@@ -6172,6 +6172,7 @@
     "name_tr": "Sivas Ucu",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "kadi_burhaneddin",
     "neighbors": [
       "candaroglu",
       "cilicia",
@@ -6256,7 +6257,7 @@
     "name_tr": "Van",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "akkoyunlu_state",
     "neighbors": [
       "dulkadir",
       "erzincan",
@@ -6295,7 +6296,7 @@
     "name_tr": "karakoyunlu",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "karakoyunlu_state",
     "neighbors": [
       "akkoyunlu",
       "armenia",
@@ -7034,6 +7035,7 @@
     "name_tr": "Kayseri",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "eretna_state",
     "neighbors": [
       "aksaray",
       "cankiri",
@@ -8559,7 +8561,7 @@
     "name_tr": "Musul",
     "terrain": "plain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "artuklu",
     "neighbors": [
       "akkoyunlu",
       "arabian_desert",

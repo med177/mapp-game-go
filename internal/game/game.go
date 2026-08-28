@@ -4421,12 +4421,7 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 }
 
 const (
-	liberatedFactionGold   = 150
-	liberatedFactionGrain  = 100
-	liberatedFactionIron   = 20
-	liberatedFactionTimber = 20
-	liberatedFactionCloth  = 10
-	liberatedMilitiaCount  = 5
+	liberatedMilitiaCount = 5
 )
 
 // reviveSuccessorAtRegion, savaş sonrası ardıl devlet kararında elenmiş bir
@@ -4444,13 +4439,6 @@ func (g *Game) reviveSuccessorAtRegion(regionID world.RegionID, successorID fact
 		return false
 	}
 	successor.IsEliminated = false
-	successor.Gold = liberatedFactionGold
-	successor.Grain = liberatedFactionGrain
-	successor.Iron = liberatedFactionIron
-	successor.Timber = liberatedFactionTimber
-	successor.Stone = 0
-	successor.Spice = 0
-	successor.Cloth = liberatedFactionCloth
 	successor.OverlordID = ""
 	successor.PendingCapitalSettlementID = ""
 	successor.PendingCapitalTurns = 0
@@ -4506,13 +4494,6 @@ func (g *Game) liberateSuccessor(regionID world.RegionID) {
 	g.retreatArmiesFromCapturedRegion(regionID, string(successorID))
 	region.OwnerID = string(successorID)
 	successor.IsEliminated = false
-	successor.Gold = liberatedFactionGold
-	successor.Grain = liberatedFactionGrain
-	successor.Iron = liberatedFactionIron
-	successor.Timber = liberatedFactionTimber
-	successor.Stone = 0
-	successor.Spice = 0
-	successor.Cloth = liberatedFactionCloth
 	successor.OverlordID = ""
 	successor.PendingCapitalSettlementID = ""
 	successor.PendingCapitalTurns = 0

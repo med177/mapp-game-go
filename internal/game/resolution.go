@@ -1649,13 +1649,13 @@ func ensureVirtualRebelFaction(gs *state.GameState, rebelOwner string, region *w
 		name = region.NameTR
 	}
 	f := &faction.Faction{
-		ID:          fid,
-		Name:        name + " Rebels",
-		NameTR:      name + " İsyancıları",
-		IsPlayable:  false,
-		IsVirtual:   true,
-		OverlordID:  "",
-		Research:    faction.ResearchState{Completed: make(map[string]bool)},
+		ID:         fid,
+		Name:       name + " Rebels",
+		NameTR:     name + " İsyancıları",
+		IsPlayable: false,
+		IsVirtual:  true,
+		OverlordID: "",
+		Research:   faction.ResearchState{Completed: make(map[string]bool)},
 	}
 	gs.Factions[fid] = f
 	return f

@@ -42,6 +42,12 @@ type Faction struct {
 	VassalizedTurn int `json:"vassalized_turn,omitempty"`
 	// CapitalSettlementID fraksiyonun aktif başkent settlement'ını tutar.
 	CapitalSettlementID string `json:"capital_settlement_id,omitempty"`
+	// HistoricalStartYear ve HistoricalEndYear, senaryo tarihçesinde devletin
+	// tarihsel olarak ortaya çıktığı ve sona erdiği yılları taşır. Bu metadata
+	// ardıl devletin oyun içi kuruluş koşulunu tek başına değiştirmez; kuruluş
+	// yine bölgenin successor_faction_id akışıyla çözülür.
+	HistoricalStartYear int `json:"historical_start_year,omitempty"`
+	HistoricalEndYear   int `json:"historical_end_year,omitempty"`
 	// PendingCapitalSettlementID başkent taşıma kuyruğundaki hedef settlement'tır.
 	PendingCapitalSettlementID string `json:"pending_capital_settlement_id,omitempty"`
 	// PendingCapitalTurns kalan başkent taşıma turudur.

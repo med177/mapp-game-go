@@ -92,6 +92,25 @@ devlet düşük başlangıç kaynakları, aynı bölgede beş `militia` birimi v
 katılır. Ardıl fraksiyon hâlâ aktifse bu metadata vassallık/serbest bırakma
 seçeneği üretmez; fethedilen bölge doğrudan ilhak edilir.
 
+1300 senaryosunda tarihsel ardıl havuzu `factions.json` içinde başlangıçta
+elenmiş olarak tutulur. Artuklular (Musul çekirdeği), Eretna (Kayseri), Kadı
+Burhaneddin (Sivas), Karakoyunlu (Van), Akkoyunlu (Diyarbekir), Celayirliler
+(Bağdat), Muzafferiler (İsfahan çekirdeği), Şirvanşahlar (Şamahı), Timur
+İmparatorluğu (senaryodaki Meşhed çekirdeği) ve Afşar Beyliği (Erzurum)
+`historical_start_year`/`historical_end_year` alanlarıyla tarih aralıklarını
+taşır. Bu yıllar tarihçe metadata'sıdır; devletin fiilî kuruluşu bölgedeki
+`successor_faction_id` üzerinden isyan, fetih sonrası karar veya özgürleştirme
+akışıyla gerçekleşir.
+Kuruluş kaynakları faction kaydındaki mevcut `gold`, `grain`, `iron`, `timber`,
+`stone`, `spice` ve `cloth` alanlarından korunur. Bu nedenle isyanla kurulan
+devletler de özgürleştirilen devletlerle aynı başlangıç kaynaklarını alır.
+Tarihsel başlangıç tarihine son 10 yıl kala ardıl bölgenin memnuniyeti kademeli
+olarak azalır. Bitiş tarihine son 10 yıl kala daha güçlü bir çözülme cezası
+uygulanır; bitiş tarihi geçtikten sonra ceza tur başına `-4`te sabitlenir. Bu
+ceza, mevcut memnuniyet/isyan eşiğiyle birlikte çalışır; tarih tek başına
+devleti otomatik olarak silmez, ancak isyanı ve toprak kaybını daha olası hâle
+getirir.
+
 `ai_expansion_targets` runtime uyumluluk alanıdır. 1300 senaryosunda kaynak
 `ai_strategies.json` içindeki `expansion_targets` alanıdır; AI'nin bölgesel savaş
 hedefi ise claim edilen bölgenin güncel sahibinden dinamik olarak türetilir.

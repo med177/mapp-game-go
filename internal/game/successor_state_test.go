@@ -15,7 +15,10 @@ func TestLiberateSuccessorRevivesFactionWithMilitiaAndAlliance(t *testing.T) {
 		PlayerFactionID: "liberator",
 		Factions: map[faction.FactionID]*faction.Faction{
 			"liberator": {ID: "liberator", NameTR: "Özgürleştirici"},
-			"successor": {ID: "successor", NameTR: "Ardıl", IsEliminated: true, Gold: 0, Grain: 0},
+			"successor": {
+				ID: "successor", NameTR: "Ardıl", IsEliminated: true,
+				Gold: 280, Grain: 220, Iron: 80, Timber: 25, Stone: 60, Spice: 25, Cloth: 20,
+			},
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"former_capital": {
@@ -43,8 +46,8 @@ func TestLiberateSuccessorRevivesFactionWithMilitiaAndAlliance(t *testing.T) {
 	if gs.Factions["successor"].IsEliminated {
 		t.Fatal("ardıl devlet elenmiş kalmamalıydı")
 	}
-	if got := gs.Factions["successor"].Gold; got != liberatedFactionGold {
-		t.Fatalf("düşük başlangıç altını atanmadı: %d", got)
+	if got := gs.Factions["successor"]; got.Gold != 280 || got.Grain != 220 || got.Iron != 80 || got.Timber != 25 || got.Stone != 60 || got.Spice != 25 || got.Cloth != 20 {
+		t.Fatalf("ardılın mevcut JSON kaynakları korunmadı: %+v", got)
 	}
 	if got := gs.Relations[faction.RelationKey("liberator", "successor")]; got == nil || got.Stance != faction.StanceAllied {
 		t.Fatalf("özgürleştiriciyle ittifak kurulmadı: %+v", got)

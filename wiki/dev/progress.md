@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-08-28: 1300 senaryosuna Artuklu, Eretna, Kadı Burhaneddin, Karakoyunlu,
+  Akkoyunlu, Celayirli, Muzafferî, Şirvanşah, Timur ve Afşar ardıl devletleri
+  eklendi. Devletler başlangıçta elenmiş, gerçek senaryo bölgeleri
+  `successor_faction_id` ile eşlenmiş ve tarih aralıkları faction metadata'sına
+  işlendi; mevcut isyan, fetih sonrası karar ve özgürleştirme akışlarıyla
+  oyunda yeniden kurulabilir. Regression:
+  `Test1300ScenarioHistoricalSuccessorStatesAreMappedAndDated`.
+
 - 2026-08-28: Kuşatan devletin hedef bölgeyle ortak kara sınırı olduğunda düzenli
   ikmal, savunma ordusu bulunmayan kuşatmalardaki doğrudan yıpranmayı `3`ten
   `2 HP/birim/tur`a indiriyor. Regression: `TestResolveSiegesReducesBesiegerAttritionWithOwnedBorderSupply`;

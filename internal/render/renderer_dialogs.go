@@ -207,13 +207,6 @@ func siegeSettlementOfferAction(gs *state.GameState, target *world.Region) diplo
 	return diplomacy.ActionProposeSurrender
 }
 
-func siegeSettlementProgressLabel(gs *state.GameState, target *world.Region) string {
-	if siegeSettlementOfferAction(gs, target) == diplomacy.ActionProposeSiegeVassalization {
-		return "Vassallık"
-	}
-	return "Teslim"
-}
-
 func attackerSiegeSettlementButtonLabel(gs *state.GameState, target *world.Region) string {
 	if siegeSettlementOfferAction(gs, target) == diplomacy.ActionProposeSiegeVassalization {
 		return "Vassallık Teklifi"
@@ -304,7 +297,7 @@ func (r *Renderer) drawAttackerSiegePanel(screen *ebiten.Image, attacker *army.A
 	drawUICardRect(screen, statusRect, color.RGBA{38, 28, 15, 238}, color.RGBA{128, 96, 42, 220}, 1)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 76, Y: statusRect.Y + 8, W: statusRect.W - 88}, status, statusColor, gameui.TextMedium, gameui.TextAlignStart)
-	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", siegeSettlementProgressLabel(r.gs, target), siege.TurnsUntilSurrender())
+	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", "Teslimiyet", siege.TurnsUntilSurrender())
 	if siege.BreachLevel >= 2 && siege.DefenderArmyID == "" {
 		remainingText = "Büyük gedik: teslim olabilir"
 	}
@@ -368,7 +361,7 @@ func (r *Renderer) drawDefensiveSiegePanel(screen *ebiten.Image, defender, attac
 	drawUICardRect(screen, statusRect, color.RGBA{38, 28, 15, 238}, color.RGBA{128, 96, 42, 220}, 1)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 76, Y: statusRect.Y + 8, W: statusRect.W - 88}, status, statusColor, gameui.TextMedium, gameui.TextAlignStart)
-	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", siegeSettlementProgressLabel(r.gs, target), siege.TurnsUntilSurrender())
+	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", "Teslimiyet", siege.TurnsUntilSurrender())
 	if siege.BreachLevel >= 2 {
 		remainingText = "Büyük gedik: teslim olabilir"
 	}

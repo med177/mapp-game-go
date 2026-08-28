@@ -59,3 +59,41 @@ func TestCalculateShowsZeroGrainPenaltyWhenFactionStockpileIsEmpty(t *testing.T)
 		t.Fatalf("boş tahıl stokunda -5 tahıl etkisi gösterilmeliydi: %+v", breakdown)
 	}
 }
+
+func TestHistoricalTransitionPressureApproachesStartAndEndDates(t *testing.T) {
+	gs := &state.GameState{
+		Year: 1395,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"successor": {ID: "successor", HistoricalStartYear: 1400, HistoricalEndYear: 1405},
+		},
+	}
+	region := &world.Region{ID: "core", OwnerID: "old_owner", SuccessorFactionID: "successor"}
+
+	if got := HistoricalTransitionDelta(gs, region); got != -2 {
+		t.Fatalf("kuruluş tarihine yaklaşırken beklenen baskı -2, got=%d", got)
+	}
+	gs.Year = 1402
+	if got := HistoricalTransitionDelta(gs, region); got != -3 {
+		t.Fatalf("yıkılış tarihine yaklaşırken beklenen baskı -3, got=%d", got)
+	}
+	gs.Year = 1405
+	if got := HistoricalTransitionDelta(gs, region); got != -4 {
+		t.Fatalf("yıkılış tarihinde beklenen baskı -4, got=%d", got)
+	}
+}
+
+func TestHistoricalTransitionPressureIsIncludedInBreakdown(t *testing.T) {
+	gs := &state.GameState{
+		Year: 1405,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"successor": {ID: "successor", Grain: 100, HistoricalEndYear: 1405},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"core": {ID: "core", OwnerID: "successor", SuccessorFactionID: "successor", TaxRate: 30},
+		},
+	}
+	breakdown := Calculate(gs, gs.Regions["core"])
+	if breakdown.Historical != -4 {
+		t.Fatalf("tarihsel çözülme baskısı breakdown'a eklenmedi: %+v", breakdown)
+	}
+}
