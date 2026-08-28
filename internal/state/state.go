@@ -2462,6 +2462,25 @@ func (s *GameState) IsEliminated(fid faction.FactionID) bool {
 	return len(s.LandRegionsOwnedBy(fid)) == 0
 }
 
+// NormalizeEliminatedFactionRelations, eski save veya eski scenario relation
+// verisinden kalan savaşları elenmiş faction'lar için pasife çeker. Ardıl
+// devlet yeniden kurulduğunda savaş ilişkisi normal diplomasi akışıyla kurulur.
+func (s *GameState) NormalizeEliminatedFactionRelations() {
+	if s == nil {
+		return
+	}
+	for _, rel := range s.Relations {
+		if rel == nil || rel.Stance != faction.StanceWar {
+			continue
+		}
+		a := s.Factions[rel.FactionA]
+		b := s.Factions[rel.FactionB]
+		if (a != nil && a.IsEliminated) || (b != nil && b.IsEliminated) {
+			rel.Stance = faction.StancePeace
+		}
+	}
+}
+
 // CanRestoreSuccessorAtRegion, bir bölgenin ardıl devlet karar paneline
 // girebilmesi için ardıl fraksiyonun gerçekten oyundan elenmiş ve kara toprağı
 // kalmamış olması gerektiğini doğrular.

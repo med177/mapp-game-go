@@ -3331,7 +3331,7 @@
       {
         "id": "edirne",
         "name_tr": "Edirne",
-        "x": 1010,
+        "x": 1012,
         "y": 443,
         "type": "fortress",
         "is_center": true,
@@ -6122,6 +6122,14 @@
         "y": 480,
         "type": "city",
         "population": 19
+      },
+      {
+        "id": "langadas",
+        "name_tr": "Langaza",
+        "x": 913,
+        "y": 460,
+        "type": "town",
+        "population": 147
       }
     ]
   },
@@ -6129,20 +6137,12 @@
     "region_id": "thessaloniki_hinterland",
     "settlements": [
       {
-        "id": "langadas",
-        "name_tr": "Langaza",
-        "x": 913,
-        "y": 460,
-        "type": "town",
-        "is_center": true,
-        "population": 147
-      },
-      {
         "id": "thessaloniki_city",
         "name_tr": "Selanik",
         "x": 937,
         "y": 468,
         "type": "fortress",
+        "is_center": true,
         "population": 4
       },
       {

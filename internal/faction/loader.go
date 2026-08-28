@@ -62,6 +62,11 @@ func LoadRelations(path string, factions map[FactionID]*Faction) (map[string]*Re
 		if factions[rel.FactionA] == nil || factions[rel.FactionB] == nil || rel.FactionA == rel.FactionB {
 			continue
 		}
+		if rel.Stance == StanceWar && (factions[rel.FactionA].IsEliminated || factions[rel.FactionB].IsEliminated) {
+			// Elenmiş ardıl devletler başlangıç diplomasi savaşlarına katılmaz.
+			// İleride yeniden kurulduklarında ilişki normal diplomasi akışıyla açılır.
+			rel.Stance = StancePeace
+		}
 		key := RelationKey(rel.FactionA, rel.FactionB)
 		relations[key] = &Relation{
 			FactionA: rel.FactionA,
@@ -95,8 +100,8 @@ func BuildInitialRelations(factions map[FactionID]*Faction) map[string]*Relation
 
 			stance := StancePeace
 			// Sünni-Şii arasını baştan gergin başlat
-			if (a.Religion == religion.Sunni && b.Religion == religion.Shia) ||
-				(a.Religion == religion.Shia && b.Religion == religion.Sunni) {
+			if !a.IsEliminated && !b.IsEliminated && ((a.Religion == religion.Sunni && b.Religion == religion.Shia) ||
+				(a.Religion == religion.Shia && b.Religion == religion.Sunni)) {
 				stance = StanceWar
 			}
 

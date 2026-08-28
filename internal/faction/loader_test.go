@@ -20,3 +20,19 @@ func TestBuildInitialRelationsUsesCanonicalFactionOrder(t *testing.T) {
 		}
 	}
 }
+
+func TestBuildInitialRelationsDoesNotDeclareWarForEliminatedFaction(t *testing.T) {
+	factions := map[FactionID]*Faction{
+		"active_sunni": {ID: "active_sunni", Religion: religion.Sunni},
+		"active_shia":  {ID: "active_shia", Religion: religion.Shia},
+		"dead_shia":    {ID: "dead_shia", Religion: religion.Shia, IsEliminated: true},
+	}
+
+	relations := BuildInitialRelations(factions)
+	if got := relations[RelationKey("active_sunni", "active_shia")].Stance; got != StanceWar {
+		t.Fatalf("aktif Sünni-Şii çifti savaşta başlamalıydı: %s", got)
+	}
+	if got := relations[RelationKey("active_sunni", "dead_shia")].Stance; got != StancePeace {
+		t.Fatalf("elenmiş Şii devlet savaş ilişkisine girmemeliydi: %s", got)
+	}
+}

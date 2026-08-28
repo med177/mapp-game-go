@@ -72,6 +72,24 @@
       ]
     },
     {
+      "faction_id": "afshar_beyligi",
+      "profile": "afshar_revival",
+      "objectives": [
+        {
+          "id": "recover_erzurum_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "erzurum",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
+        }
+      ]
+    },
+    {
       "faction_id": "ahiler",
       "profile": "central_buffer_survival",
       "objectives": [
@@ -86,6 +104,24 @@
           ],
           "priority": 96,
           "commitment": 78
+        }
+      ]
+    },
+    {
+      "faction_id": "akkoyunlu_state",
+      "profile": "aq_qoyunlu_revival",
+      "objectives": [
+        {
+          "id": "recover_diyarbakir_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "akkoyunlu",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
         }
       ]
     },
@@ -164,6 +200,24 @@
           "priority": 76,
           "commitment": 48,
           "allow_vassalization": true
+        }
+      ]
+    },
+    {
+      "faction_id": "artuklu",
+      "profile": "artuqid_revival",
+      "objectives": [
+        {
+          "id": "recover_mosul_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "mosul",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
         }
       ]
     },
@@ -842,6 +896,24 @@
           "priority": 78,
           "commitment": 50,
           "allow_vassalization": true
+        }
+      ]
+    },
+    {
+      "faction_id": "eretna_state",
+      "profile": "eretna_revival",
+      "objectives": [
+        {
+          "id": "recover_kayseri_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "kayseri",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
         }
       ]
     },
@@ -1538,6 +1610,60 @@
       ]
     },
     {
+      "faction_id": "jelayirids",
+      "profile": "jalayirid_revival",
+      "objectives": [
+        {
+          "id": "recover_baghdad_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "baghdad",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
+        }
+      ]
+    },
+    {
+      "faction_id": "kadi_burhaneddin",
+      "profile": "sivas_revival",
+      "objectives": [
+        {
+          "id": "recover_sivas_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "sivas",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
+        }
+      ]
+    },
+    {
+      "faction_id": "karakoyunlu_state",
+      "profile": "kara_koyunlu_revival",
+      "objectives": [
+        {
+          "id": "recover_van_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "karakoyunlu",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
+        }
+      ]
+    },
+    {
       "faction_id": "karaman_bey",
       "profile": "central_anatolian_expansion",
       "objectives": [
@@ -1873,6 +1999,24 @@
             "milan",
             "verona"
           ]
+        }
+      ]
+    },
+    {
+      "faction_id": "muzaffarids",
+      "profile": "muzaffarid_revival",
+      "objectives": [
+        {
+          "id": "recover_isfahan_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "western_persia",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
         }
       ]
     },
@@ -2567,6 +2711,24 @@
       ]
     },
     {
+      "faction_id": "shirvanshahs",
+      "profile": "shirvan_revival",
+      "objectives": [
+        {
+          "id": "recover_shamakhi_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "azerbaijan",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 80
+        }
+      ]
+    },
+    {
       "faction_id": "sweden_kingdom",
       "profile": "baltic_frontier_kingdom",
       "objectives": [
@@ -2677,6 +2839,24 @@
             }
           ],
           "priority": 84,
+          "commitment": 80
+        }
+      ]
+    },
+    {
+      "faction_id": "timurid_empire",
+      "profile": "timurid_revival",
+      "objectives": [
+        {
+          "id": "recover_mashhad_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "northern_persia",
+              "value": 100
+            }
+          ],
+          "priority": 100,
           "commitment": 80
         }
       ]
@@ -2897,56 +3077,6 @@
           ]
         }
       ]
-    },
-    {
-      "faction_id": "artuklu",
-      "profile": "artuqid_revival",
-      "objectives": [{"id":"recover_mosul_core","kind":"defend","territorial_claims":[{"region_id":"mosul","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "eretna_state",
-      "profile": "eretna_revival",
-      "objectives": [{"id":"recover_kayseri_core","kind":"defend","territorial_claims":[{"region_id":"kayseri","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "kadi_burhaneddin",
-      "profile": "sivas_revival",
-      "objectives": [{"id":"recover_sivas_core","kind":"defend","territorial_claims":[{"region_id":"sivas","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "karakoyunlu_state",
-      "profile": "kara_koyunlu_revival",
-      "objectives": [{"id":"recover_van_core","kind":"defend","territorial_claims":[{"region_id":"karakoyunlu","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "akkoyunlu_state",
-      "profile": "aq_qoyunlu_revival",
-      "objectives": [{"id":"recover_diyarbakir_core","kind":"defend","territorial_claims":[{"region_id":"akkoyunlu","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "jelayirids",
-      "profile": "jalayirid_revival",
-      "objectives": [{"id":"recover_baghdad_core","kind":"defend","territorial_claims":[{"region_id":"baghdad","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "muzaffarids",
-      "profile": "muzaffarid_revival",
-      "objectives": [{"id":"recover_isfahan_core","kind":"defend","territorial_claims":[{"region_id":"western_persia","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "shirvanshahs",
-      "profile": "shirvan_revival",
-      "objectives": [{"id":"recover_shamakhi_core","kind":"defend","territorial_claims":[{"region_id":"azerbaijan","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "timurid_empire",
-      "profile": "timurid_revival",
-      "objectives": [{"id":"recover_mashhad_core","kind":"defend","territorial_claims":[{"region_id":"northern_persia","value":100}],"priority":100,"commitment":80}]
-    },
-    {
-      "faction_id": "afshar_beyligi",
-      "profile": "afshar_revival",
-      "objectives": [{"id":"recover_erzurum_core","kind":"defend","territorial_claims":[{"region_id":"erzurum","value":100}],"priority":100,"commitment":80}]
     }
   ]
 }

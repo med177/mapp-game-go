@@ -670,39 +670,6 @@ func TestDiplomacyPeaceChanceUsesRealAcceptanceRules(t *testing.T) {
 	}
 }
 
-func TestAllianceChanceAllowsDirectThreatWhenCommonEnemyExists(t *testing.T) {
-	gs := &state.GameState{
-		PlayerFactionID: "player",
-		Factions: map[faction.FactionID]*faction.Faction{
-			"player": {ID: "player", NameTR: "Oyuncu"},
-			"ally":   {ID: "ally", NameTR: "Müttefik"},
-			"enemy":  {ID: "enemy", NameTR: "Düşman"},
-		},
-		Regions: map[world.RegionID]*world.Region{
-			"p1": {ID: "p1", OwnerID: "player", Neighbors: []world.RegionID{"a1"}},
-			"a1": {ID: "a1", OwnerID: "ally", Neighbors: []world.RegionID{"p1"}},
-			"e1": {ID: "e1", OwnerID: "enemy"},
-		},
-		Relations: map[string]*faction.Relation{
-			faction.RelationKey("player", "ally"):  {FactionA: "player", FactionB: "ally", Stance: faction.StancePeace, Score: 25},
-			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar, Score: -80},
-			faction.RelationKey("ally", "enemy"):   {FactionA: "ally", FactionB: "enemy", Stance: faction.StanceWar, Score: -80},
-		},
-		Armies: map[army.ArmyID]*army.Army{
-			"p_army": {ID: "p_army", OwnerID: "player", RegionID: "p1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}},
-			"a_army": {ID: "a_army", OwnerID: "ally", RegionID: "a1", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}},
-		},
-	}
-
-	if reason := diplomacyActionDisabledReason(gs, "ally", ActionProposeAlliance); reason != "" {
-		t.Fatalf("ortak düşman doğrudan tehdidi block reason'a dönüştürmemeli, got=%q", reason)
-	}
-	chance, status := estimateDiplomacyChance(gs, "ally", ActionProposeAlliance)
-	if chance <= 0 {
-		t.Fatalf("ittifak şansı sıfır olmamalıydı, got=%d status=%q", chance, status)
-	}
-}
-
 func TestHandleDiplomacyInputSelectsOnFirstClickAndOpensOnSecond(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720

@@ -233,6 +233,12 @@ func collectActiveWarSummaries(gs *state.GameState, dst []ActiveWarSummary) []Ac
 		if rel == nil || rel.Stance != faction.StanceWar || rel.FactionA == "" || rel.FactionB == "" || rel.FactionA == rel.FactionB {
 			continue
 		}
+		if factionA := gs.Factions[faction.FactionID(rel.FactionA)]; factionA == nil || factionA.IsEliminated {
+			continue
+		}
+		if factionB := gs.Factions[faction.FactionID(rel.FactionB)]; factionB == nil || factionB.IsEliminated {
+			continue
+		}
 		ledger := gs.WarLedgerFor(rel.FactionA, rel.FactionB)
 		a, b := rel.FactionA, rel.FactionB
 		if ledger != nil && ledger.DeclarerFactionID != "" && ledger.DefenderFactionID != "" && ledger.DeclarerFactionID != ledger.DefenderFactionID {
@@ -286,6 +292,12 @@ func countActiveWars(gs *state.GameState) int {
 	}
 	for _, rel := range gs.Relations {
 		if rel != nil && rel.Stance == faction.StanceWar && rel.FactionA != "" && rel.FactionB != "" && rel.FactionA != rel.FactionB {
+			if a := gs.Factions[faction.FactionID(rel.FactionA)]; a == nil || a.IsEliminated {
+				continue
+			}
+			if b := gs.Factions[faction.FactionID(rel.FactionB)]; b == nil || b.IsEliminated {
+				continue
+			}
 			count++
 		}
 	}

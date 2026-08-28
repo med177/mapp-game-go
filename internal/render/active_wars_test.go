@@ -49,6 +49,25 @@ func TestCollectActiveWarSummariesShowsTurnsStrengthAndArmyCounts(t *testing.T) 
 	}
 }
 
+func TestCollectActiveWarSummariesSkipsEliminatedFactions(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"active": {ID: "active"},
+			"dead":   {ID: "dead", IsEliminated: true},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("active", "dead"): {FactionA: "active", FactionB: "dead", Stance: faction.StanceWar},
+		},
+	}
+
+	if wars := collectActiveWarSummaries(gs, nil); len(wars) != 0 {
+		t.Fatalf("elenmiş devletin savaşı aktif savaşlar paneline girmemeliydi: %+v", wars)
+	}
+	if got := countActiveWars(gs); got != 0 {
+		t.Fatalf("elenmiş devletin savaşı aktif savaş sayısına girmemeliydi: %d", got)
+	}
+}
+
 func TestCollectActiveWarSummariesUsesRelationDirectionForLegacyLedger(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
