@@ -1794,6 +1794,23 @@ func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel s
 	}
 }
 
+// ShowSortieDecision, AI'nin oyuncu kuşatmasına karşı yaptığı huruçta
+// çatışma veya kuşatmayı kaldırma kararını oyuncuya bırakır.
+func (r *Renderer) ShowSortieDecision(regionName string, attackerID army.ArmyID, defenderID army.ArmyID, target world.RegionID) {
+	if r == nil {
+		return
+	}
+	message := fmt.Sprintf("%s kuşatmasındaki savunma ordusu huruç yapıyor. Kuşatmayı sürdürüp çatışacak mısınız, yoksa kuşatmayı kaldıracak mısınız?", regionName)
+	r.ShowChoiceDialog(
+		"Huruç Kararı",
+		message,
+		"Çatış",
+		"Kuşatmayı Kaldır",
+		InputAction{Kind: ActionResolveSortie, ArmyID: attackerID, TargetArmyID: defenderID, TargetRegion: target},
+		InputAction{Kind: ActionLiftSiege, ArmyID: defenderID, TargetRegion: target},
+	)
+}
+
 func (r *Renderer) openBuildingDemolitionConfirm(rid world.RegionID, buildingID string) {
 	if r == nil || r.gs == nil {
 		return

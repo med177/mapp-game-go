@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-23
+last_updated: 2026-08-28
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -59,6 +59,14 @@ orduları toplam güç kuşatıcı gücünün `%110`una ulaşana kadar ortak `re
 noktasında toplar. Ordular rally anchor'ına ilerler, erken saldırmaz ve mevcut
 lojistik/kapasite kuralları izin verdiğinde birleşir; birleşen kuvvet sonraki AI
 turunda kuşatmayı kaldırmayı dener.
+
+## Oyuncu kuşatmasına karşı AI huruçu
+
+AI ordusu oyuncunun kuşatması altındaki kendi bölgesinden çıkmaya çalıştığında
+huruç savaşı doğrudan çözülmez. `internal/ai/ai.go` bir `TurnStepSortie`
+üretir; `internal/game/game.go` bunu bekleyen karar olarak saklayıp oyuncuya
+ortak seçim modalında `Çatış` veya `Kuşatmayı Kaldır` seçeneklerini sunar.
+AI-AI huruçları otomatik çözülür.
 
 ## Memnuniyet ve vergi politikası
 

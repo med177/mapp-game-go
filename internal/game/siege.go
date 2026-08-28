@@ -296,7 +296,12 @@ func siegeAttritionDamage(progressGain, breachLevel, fortLevel int) int {
 // a siege when the settlement has no field army left. It is deliberately much
 // lower than defender attrition: there is no opposing army causing casualties,
 // but disease, exhaustion, and siege logistics still wear the besieger down.
-func siegeEmptyGarrisonAttritionDamage() int {
+// Kuşatanın hedef bölgeyle ortak kara sınırı varsa düzenli ikmal bu maliyeti
+// azaltır.
+func siegeEmptyGarrisonAttritionDamage(supplied bool) int {
+	if supplied {
+		return 2
+	}
 	return 3
 }
 
@@ -505,6 +510,7 @@ func (g *Game) startSiegeForArmy(aid army.ArmyID, target world.RegionID, notify 
 		AttackerFactionID:    attacker.OwnerID,
 		StartedTurn:          g.gs.Turn,
 		FortLevel:            fortLevel,
+		GranaryLevel:         targetRegion.BuildingLevel("granary"),
 	}
 	if defender != nil {
 		g.gs.Sieges[target].DefenderArmyID = defender.ID
@@ -732,6 +738,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 
 		siege.TurnsElapsed++
 		siege.FortLevel = targetRegion.FortificationLevel()
+		siege.GranaryLevel = targetRegion.BuildingLevel("granary")
 		defender := siegeDefenderForTurn(g.gs, siege, attacker, regionID)
 		if defender != nil {
 			siege.DefenderArmyID = defender.ID
@@ -764,7 +771,9 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			// A vacant settlement still imposes a small, gradual cost on the
 			// besieger. This is not fortress combat and must not use the full
 			// defender attrition formula.
-			damage := siegeEmptyGarrisonAttritionDamage()
+			damage := siegeEmptyGarrisonAttritionDamage(
+				g.gs.HasOwnedLandSupplyBorder(targetRegion.ID, attacker.OwnerID),
+			)
 			lostUnits, totalHPDamage := applyArmyFlatDamage(attacker, damage)
 			g.gs.RecordWarAttritionCasualties(
 				faction.FactionID(attacker.OwnerID),
@@ -793,7 +802,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			})
 		}
 
-		if defender == nil && (siege.BreachLevel >= 2 || siege.TurnsElapsed >= siegeSurrenderTurns(siege.FortLevel)) {
+		if defender == nil && (siege.BreachLevel >= 2 || siege.TurnsElapsed >= siege.TotalSurrenderTurns()) {
 			collapse, prompted := g.captureBesiegedRegion(attacker, targetRegion, false)
 			if g.renderer != nil {
 				if !prompted {

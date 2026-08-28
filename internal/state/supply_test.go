@@ -13,14 +13,23 @@ func TestSiegeSurrenderTurnsAreShorterByFortLevel(t *testing.T) {
 		fortLevel int
 		want      int
 	}{
-		{fortLevel: 1, want: 6},
-		{fortLevel: 2, want: 8},
-		{fortLevel: 3, want: 10},
+		{fortLevel: 1, want: 2},
+		{fortLevel: 2, want: 4},
+		{fortLevel: 3, want: 6},
 	}
 	for _, tt := range tests {
 		if got := SiegeSurrenderTurns(tt.fortLevel); got != tt.want {
 			t.Fatalf("tahkimat %d için teslim süresi %d olmalıydı, got=%d", tt.fortLevel, tt.want, got)
 		}
+	}
+}
+
+func TestSiegeSurrenderTurnsAddOneTurnPerGranaryLevel(t *testing.T) {
+	if got := SiegeSurrenderTurnsForLevels(3, 3); got != 9 {
+		t.Fatalf("T3 sur ve T3 ambar için teslim süresi 9 tur olmalıydı, got=%d", got)
+	}
+	if got := SiegeSurrenderTurnsForLevels(2, 1); got != 5 {
+		t.Fatalf("T2 sur ve T1 ambar için teslim süresi 5 tur olmalıydı, got=%d", got)
 	}
 }
 

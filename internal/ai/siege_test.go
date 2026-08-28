@@ -83,6 +83,32 @@ func TestExecuteMoveStartsSiegeOnFortifiedTarget(t *testing.T) {
 	}
 }
 
+func TestExecuteMoveDefersAISortieAgainstPlayerSiege(t *testing.T) {
+	gs := aiSiegeTestState(false)
+	gs.Regions["fort"].OwnerID = "ai_1"
+	gs.Armies["ai_army"].RegionID = "fort"
+	gs.Armies["ai_army"].MovePoints = 2
+	gs.Armies["player_siege"] = &army.Army{
+		ID: "player_siege", OwnerID: "player", RegionID: "fort",
+		Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}, MovePoints: 0, MaxMovePoints: 2,
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"fort": {RegionID: "fort", AttackerArmyID: "player_siege", AttackerFactionID: "player", DefenderArmyID: "ai_army"},
+	}
+
+	outcome := executeMove(gs, gs.Armies["ai_army"], "src", "ai_1")
+
+	if !outcome.survived || outcome.step.Kind != TurnStepSortie {
+		t.Fatalf("oyuncu kuşatmasına karşı AI huruç kararı bekletilmeliydi: outcome=%+v", outcome)
+	}
+	if gs.SiegeAt("fort") == nil {
+		t.Fatal("oyuncu kararı gelmeden kuşatma çözülmemeliydi")
+	}
+	if len(gs.Armies["ai_army"].Units) != 2 || len(gs.Armies["player_siege"].Units) != 1 {
+		t.Fatal("oyuncu kararı gelmeden huruç savaşı çözülmemeliydi")
+	}
+}
+
 func TestExecuteMoveCreatesContactBeforeSiegeOnFortifiedTargetWithDefender(t *testing.T) {
 	gs := aiSiegeTestState(false)
 	gs.Armies["defender"] = &army.Army{

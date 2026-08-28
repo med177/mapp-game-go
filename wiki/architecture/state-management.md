@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-23
+last_updated: 2026-08-28
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -93,7 +93,11 @@ save/load aynı bölge state'ini kullanır. Özgürleştirme runtime'da ardıl f
 `IsEliminated` bayrağını kaldırır, kaynak/ordu/ittifak başlangıcını kurar ve başkenti
 `NormalizeFactionCapitals()` ile yeniden belirler.
 
-İsyan orduları `Army.IsRebel` ve `Army.RebelAgainstID` ile kalıcı olarak ayrıştırılır.
+İsyan orduları `Army.IsRebel` ve `Army.RebelAgainstID` ile kalıcı olarak ayrıştırılır;
+bu iki alan compact/debug save'e de yazılır. Ardıl metadata'sı olmayan isyanlarda
+oluşan `Faction.IsVirtual` Rebel devleti de save state içinde işaretlenir. Eski
+kayıtlarda Rebel fraksiyonu bulunmuyorsa yükleme, `rebel_<region>` sahiplik
+kimliğinden sanal fraksiyonu ve savaş ilişkisine göre eski sahibini yeniden kurar.
 İsyan başladığında nüfus, yerleşim/bina gelişmişliği ve eski sahibin tahıl ikmal
 seviyesi 1–20 milislik kuvveti belirler; üretim kuyruğu kullanılmaz. Sonraki turda
 eski sahibin kara ordusu bölgeye gelirse isyan bastırılır. Bölge sahipsiz kalır ve
@@ -192,7 +196,7 @@ AI kontrollü HRE'de pending state oluşturulmaz; otomatik siyasi çözüm korun
 
 `GameState.CollectDefenders()` birleşik savunmaya katılan gerçek orduları `ArmyID` sırasıyla toplar. Böylece 20 birim sınırına giren kompozisyon, kaynak ordu ID listesi ve sonrasındaki kayıp dağıtımı map iterasyon sırasından bağımsızdır; aynı state ve aynı savaş zarı aynı sonucu üretir.
 
-`SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki tahkimat seviyesini ve gedik ilerlemesini taşır. Denizden tahkimli kıyıya inerek başlatılan kuşatmalar `NavalLanding` ile işaretlenir. Barış bu kuşatmayı kapattığında `EvacuateNavalLandingSiegesAfterPeace()` hedefe en yakın toplam yeterli kapasitedeki dost nakliye filolarına birlikleri geri yükler; uygun filo yoksa orduyu en yakın kendi kara bölgesine taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz ve barışta düşman bölgesinde kara ordusu bırakılmaz.
+`SiegeState`, tahkimli düşman kara bölgesi üstündeki aktif kuşatmayı serialize eder. Kayıt; hedef bölgeyi, kuşatan orduyu, varsa içerideki savunucu orduyu, başlangıç turunu, geçen süreyi, o anki sur ve ambar seviyelerini ve gedik ilerlemesini taşır. Zorunlu teslim süresi `2 × sur seviyesi + ambar seviyesi`dir; teslim teklifi sürenin yarısından sonra zarla kabul edilebilir, süre dolunca zorunlu teslimiyet uygulanır. Denizden tahkimli kıyıya inerek başlatılan kuşatmalar `NavalLanding` ile işaretlenir. Barış bu kuşatmayı kapattığında `EvacuateNavalLandingSiegesAfterPeace()` hedefe en yakın toplam yeterli kapasitedeki dost nakliye filolarına birlikleri geri yükler; uygun filo yoksa orduyu en yakın kendi kara bölgesine taşır. Böylece save/load sonrası kuşatma baskısı kaybolmaz ve barışta düşman bölgesinde kara ordusu bırakılmaz.
 
 `WarLedger`, `RelationKey` ile aynı sıralı taraf anahtarında yalnız aktif savaşın kalıcı
 sonuç state'ini tutar: başlangıç turu, iki tarafın başlangıç kara bölgesi sayısı, tamamen

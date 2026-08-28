@@ -1,11 +1,33 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-26
+last_updated: 2026-08-28
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-28: Kuşatan devletin hedef bölgeyle ortak kara sınırı olduğunda düzenli
+  ikmal, savunma ordusu bulunmayan kuşatmalardaki doğrudan yıpranmayı `3`ten
+  `2 HP/birim/tur`a indiriyor. Regression: `TestResolveSiegesReducesBesiegerAttritionWithOwnedBorderSupply`;
+  kapsam: `internal/game/siege.go`.
+
+- 2026-08-28: Oyuncunun kuşatması altındaki AI ordusu huruç yaptığında savaşın
+  otomatik çözülmesi kaldırıldı. AI turu `TurnStepSortie` ile bekletiliyor ve
+  oyuncuya `Çatış` veya `Kuşatmayı Kaldır` seçenekleri sunuluyor; AI-AI huruçları
+  otomatik çözülmeye devam ediyor. Regression: `TestExecuteMoveDefersAISortieAgainstPlayerSiege`,
+  `TestShowSortieDecisionOffersFightOrLiftSiege`.
+
+- 2026-08-28: Sanal Rebel devletleri save/load sözleşmesine dahil edildi. Compact
+  ve debug kayıtları `IsVirtual`, Rebel ordularının `IsRebel` ve
+  `RebelAgainstID` alanlarını taşır. Eski kayıtlarda senaryo fraksiyon listesinde
+  bulunmayan `rebel_<region>` sahipleri yükleme sırasında otomatik sanal fraksiyona
+  dönüştürülür; Rebel ordularının eski sahibi de savaş ilişkisinden yeniden
+  çıkarılır. Böylece isyan bölgesine ordu sevki ve savaş ilanı kayıt yükleme
+  sonrasında da çalışır. Regression: `TestCompactSaveRestoresVirtualRebelFactionAndArmy`,
+  `TestOldSaveMigratesMissingVirtualRebelFaction`,
+  `TestDeclareWarAgainstVirtualRebelFaction`; kapsam:
+  `internal/save/compact.go`, `internal/{save,diplomacy}/*_test.go`.
 
 - 2026-08-26: Arazi alanlarına (çöl/dağ/göl/nehir/sık orman/bataklık) hareket
   maliyetine ek olarak yıpranma (%HP kaybı) değeri eklendi. Alan seçiliyken
@@ -74,6 +96,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   Regression: `TestResolveSiegesFindsDefenderThatWasNotPresentAtSiegeStart`,
   `TestResolveSiegesAppliesLowAttritionWhenRegionHasNoDefenderArmy`;
   kapsam: `internal/game/siege.go`.
+
+- 2026-08-28: Kuşatma teslim süresi sur başına 2, ambar başına 1 tur olacak şekilde
+  sadeleştirildi. Büyük gedikte teklif yarı süreyi beklemeden kabul edilir; diğer
+  teklifler toplam sürenin yarısından sonra yüzde 50 zarla kabul edilebilir ve toplam
+  süre dolduğunda zorunlu teslimiyet uygulanır. Eski sabit 3 tur AI kabul eşiği
+  kaldırıldı. Kapsam: `internal/state/state.go`,
+  `internal/game/{game.go,siege.go}`.
 
 - 2026-08-23: Teknoloji tooltip'inde önkoşul olarak gösterilen ham teknoloji ID'leri
   yerelleştirilmiş `NameTR` etiketleriyle değiştirildi. Eksik teknoloji tanımları

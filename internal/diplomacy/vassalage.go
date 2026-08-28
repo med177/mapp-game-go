@@ -243,10 +243,15 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	actorFaction := gs.Factions[actor]
 	targetFaction := gs.Factions[target]
 	if actorFaction == nil || targetFaction == nil {
-		return "Fraksiyon bulunamadı."
+		return "Fraksiyonlardan biri bulunamadı."
 	}
 	if actorFaction.IsEliminated || targetFaction.IsEliminated {
 		return "Elenmiş fraksiyonlarla diplomasi kurulamaz."
+	}
+	// Sanal isyancı devletlerle yalnız savaş ilan edilebilir; ticaret, ittifak,
+	// hediye, vassallık gibi her türlü diplomatik ilişki kapalıdır.
+	if action != ActionDeclareWar && (actorFaction.IsVirtual || targetFaction.IsVirtual) {
+		return "İsyancı devletlerle bu diplomasi aksiyonu kullanılamaz."
 	}
 	if checkQuota && actionUsesDiplomacyOfferQuota(action) {
 		if reason := diplomacyOfferQuotaBlockReason(gs, actor); reason != "" {

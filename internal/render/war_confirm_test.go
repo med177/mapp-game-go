@@ -353,6 +353,21 @@ func TestOpenSiegeDecisionIncludesCommanderOperationalSummary(t *testing.T) {
 	}
 }
 
+func TestShowSortieDecisionOffersFightOrLiftSiege(t *testing.T) {
+	r := &Renderer{}
+	r.ShowSortieDecision("Hisar", "ai_army", "player_siege", "fort")
+
+	if !r.confirmDialog.show {
+		t.Fatal("AI huruç kararı için modal açılmalıydı")
+	}
+	if r.confirmDialog.title != "Huruç Kararı" || r.confirmDialog.acceptLabel != "Çatış" || r.confirmDialog.declineLabel != "Kuşatmayı Kaldır" {
+		t.Fatalf("huruç modalı seçenekleri hatalı: %+v", r.confirmDialog)
+	}
+	if r.confirmDialog.pendingAction.Kind != ActionResolveSortie || r.confirmDialog.declineAction.Kind != ActionLiftSiege {
+		t.Fatalf("huruç modalı oyun eylemlerini taşımamalıydı: %+v", r.confirmDialog)
+	}
+}
+
 func TestSiegeElapsedLabelTRShowsDuration(t *testing.T) {
 	if got := siegeElapsedLabelTR(7); got != "Kuşatma süresi: 7 tur" {
 		t.Fatalf("kuşatma süresi etiketi yanlış: got=%q", got)

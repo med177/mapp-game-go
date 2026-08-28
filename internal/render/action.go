@@ -32,6 +32,7 @@ const (
 	ActionSetAmbush                ActionKind = "set_ambush"
 	ActionProposeSiegeSurrender    ActionKind = "propose_siege_surrender"
 	ActionSortieSiege              ActionKind = "sortie_siege"
+	ActionResolveSortie            ActionKind = "resolve_sortie"
 	ActionSurrenderSiege           ActionKind = "surrender_siege"
 	ActionRecruitUnit              ActionKind = "recruit_unit"
 	ActionBuild                    ActionKind = "build"

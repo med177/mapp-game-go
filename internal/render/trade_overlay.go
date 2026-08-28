@@ -911,7 +911,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	if r.camScale >= 0.95 {
 		factionIDs := make([]string, 0, len(r.gs.Factions))
 		for factionID, currentFaction := range r.gs.Factions {
-			if currentFaction != nil && !currentFaction.IsEliminated {
+			if currentFaction != nil && !currentFaction.IsEliminated && !currentFaction.IsVirtual {
 				factionIDs = append(factionIDs, string(factionID))
 			}
 		}

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-08-23
+last_updated: 2026-08-28
 related: [state-management, render-pipeline]
 ---
 
@@ -23,6 +23,10 @@ Layout()  → pencere boyutu bildirir
 - `gs *state.GameState` — tüm oyun verisi
 - `renderer *render.Renderer` — görsel katman
 - `evts []*events.Event` — yüklenmiş tarihsel olaylar listesi
+
+AI turunda oyuncu kuşatmasına karşı huruç oluşursa `pendingSortie` ilgili AI ve
+kuşatma ordularını tutar. `TurnStepSortie`, `Huruç Kararı` modalını açar; karar
+gelene kadar `updateAITurnSequence()` ilerlemez.
 
 `oneTimeTrade()` oyuncunun manuel pazar işlemini uygular. Bu akış aktif ticaret
 rotasından bağımsız açık pazarı kullanır: hedef devlet elenmemiş ve oyuncuyla

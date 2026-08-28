@@ -125,6 +125,7 @@ type SiegeState struct {
 	StartedTurn          int            `json:"started_turn"`
 	TurnsElapsed         int            `json:"turns_elapsed"`
 	FortLevel            int            `json:"fort_level"`
+	GranaryLevel         int            `json:"granary_level,omitempty"`
 	BreachProgress       int            `json:"breach_progress"`
 	BreachLevel          int            `json:"breach_level"`
 }
@@ -146,12 +147,29 @@ const (
 	capitalSupplyFriendlyBorderTax = 10
 )
 
-// SiegeSurrenderTurns tahkimat seviyesine göre kuşatmanın kaç turda teslim olacağını döner.
+// SiegeSurrenderTurns geriye dönük uyumluluk için ambarı olmayan kuşatmanın
+// teslim süresini döner.
 func SiegeSurrenderTurns(fortLevel int) int {
+	return SiegeSurrenderTurnsForLevels(fortLevel, 0)
+}
+
+// SiegeSurrenderTurnsForLevels her sur seviyesi için 2, her ambar seviyesi
+// için 1 tur eklenen zorunlu teslimiyet süresini döner.
+func SiegeSurrenderTurnsForLevels(fortLevel, granaryLevel int) int {
 	if fortLevel < 1 {
 		fortLevel = 1
 	}
-	return 4 + fortLevel*2
+	if granaryLevel < 0 {
+		granaryLevel = 0
+	}
+	return fortLevel*2 + granaryLevel
+}
+
+func (s *SiegeState) TotalSurrenderTurns() int {
+	if s == nil {
+		return 0
+	}
+	return SiegeSurrenderTurnsForLevels(s.FortLevel, s.GranaryLevel)
 }
 
 // TurnsUntilSurrender kuşatmanın teslim olmasına kaç tur kaldığını döner.
@@ -160,7 +178,7 @@ func (s *SiegeState) TurnsUntilSurrender() int {
 	if s == nil {
 		return 0
 	}
-	total := SiegeSurrenderTurns(s.FortLevel)
+	total := s.TotalSurrenderTurns()
 	remaining := total - s.TurnsElapsed
 	if remaining < 0 {
 		return 0

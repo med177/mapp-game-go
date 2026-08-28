@@ -47,6 +47,7 @@ type regionSaveState struct {
 }
 
 type factionSaveState struct {
+	IsVirtual                  *bool                  `json:"v,omitempty"`
 	IsEliminated               *bool                  `json:"el,omitempty"`
 	OverlordID                 *faction.FactionID     `json:"ov,omitempty"`
 	VassalizedTurn             *int                   `json:"vt,omitempty"`
@@ -88,6 +89,8 @@ type armySaveState struct {
 	MaxMovePoints      int                    `json:"mm"`
 	IsNaval            bool                   `json:"n,omitempty"`
 	IsGarrison         bool                   `json:"g,omitempty"`
+	IsRebel            bool                   `json:"rb,omitempty"`
+	RebelAgainstID     string                 `json:"rba,omitempty"`
 	Morale             int                    `json:"mo,omitempty"`
 	Commander          *army.Commander        `json:"c,omitempty"`
 	EmbarkedCommander  *army.Commander        `json:"ec,omitempty"`
@@ -161,6 +164,7 @@ type legacyRegionSaveState struct {
 }
 
 type legacyFactionSaveState struct {
+	IsVirtual                  bool                  `json:"is_virtual,omitempty"`
 	IsEliminated               bool                  `json:"is_eliminated"`
 	OverlordID                 faction.FactionID     `json:"overlord_id,omitempty"`
 	VassalizedTurn             int                   `json:"vassalized_turn,omitempty"`
@@ -318,6 +322,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 	for fid, fx := range legacy.Factions {
 		factionCopy := fx
 		savedFactions[fid] = factionSaveState{
+			IsVirtual:                  cloneBoolPtr(factionCopy.IsVirtual),
 			IsEliminated:               cloneBoolPtr(factionCopy.IsEliminated),
 			OverlordID:                 cloneFactionIDPtr(factionCopy.OverlordID),
 			VassalizedTurn:             cloneIntPtr(factionCopy.VassalizedTurn),
@@ -539,6 +544,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 			continue
 		}
 		factions[fid] = legacyFactionSaveState{
+			IsVirtual:                  fx.IsVirtual,
 			IsEliminated:               fx.IsEliminated,
 			OverlordID:                 fx.OverlordID,
 			VassalizedTurn:             fx.VassalizedTurn,
@@ -697,12 +703,16 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	}
 
 	for fid, factionState := range saved.Factions {
+		if gs.Factions[fid] == nil && factionState.IsVirtual != nil && *factionState.IsVirtual {
+			gs.Factions[fid] = newVirtualRebelFactionFromSave(gs, fid)
+		}
 		fx := gs.Factions[fid]
 		if fx == nil {
 			continue
 		}
 		applyFactionSaveState(fx, factionState)
 	}
+	ensureVirtualRebelFactionsForLoadedState(gs)
 
 	if saved.Armies != nil {
 		gs.Armies = restoreArmiesFromSaveState(saved.Armies)
@@ -721,6 +731,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.SyncCommanderLinks()
 
 	applyRelationDelta(gs, saved.Relations)
+	repairLoadedRebelArmies(gs)
 }
 
 func makeRegionSaveState(current, base *world.Region) (regionSaveState, bool) {
@@ -827,6 +838,9 @@ func makeFactionSaveState(current, base *faction.Faction) (factionSaveState, boo
 	if base == nil || current.IsEliminated != base.IsEliminated {
 		out.IsEliminated = cloneBoolPtr(current.IsEliminated)
 	}
+	if base == nil || current.IsVirtual != base.IsVirtual {
+		out.IsVirtual = cloneBoolPtr(current.IsVirtual)
+	}
 	if base == nil || current.OverlordID != base.OverlordID {
 		out.OverlordID = cloneFactionIDPtr(current.OverlordID)
 	}
@@ -873,6 +887,9 @@ func applyFactionSaveState(fx *faction.Faction, saved factionSaveState) {
 	if fx == nil {
 		return
 	}
+	if saved.IsVirtual != nil {
+		fx.IsVirtual = *saved.IsVirtual
+	}
 	if saved.IsEliminated != nil {
 		fx.IsEliminated = *saved.IsEliminated
 	}
@@ -914,6 +931,81 @@ func applyFactionSaveState(fx *faction.Faction, saved factionSaveState) {
 	}
 	if saved.Research != nil {
 		fx.Research = *saved.Research
+	}
+}
+
+// ensureVirtualRebelFactionsForLoadedState repairs saves written before
+// virtual rebel factions were persisted. Those saves still contain the
+// region owner as rebel_<region>, but the faction itself is absent because it
+// never existed in the scenario's static faction list.
+func ensureVirtualRebelFactionsForLoadedState(gs *state.GameState) {
+	if gs == nil {
+		return
+	}
+	if gs.Factions == nil {
+		gs.Factions = make(map[faction.FactionID]*faction.Faction)
+	}
+	for _, region := range gs.Regions {
+		if region == nil || !strings.HasPrefix(region.OwnerID, "rebel_") {
+			continue
+		}
+		fid := faction.FactionID(region.OwnerID)
+		if gs.Factions[fid] == nil {
+			gs.Factions[fid] = newVirtualRebelFactionFromSave(gs, fid)
+		}
+	}
+}
+
+func newVirtualRebelFactionFromSave(gs *state.GameState, fid faction.FactionID) *faction.Faction {
+	name := string(fid)
+	if gs != nil {
+		for _, region := range gs.Regions {
+			if region != nil && faction.FactionID(region.OwnerID) == fid {
+				if region.NameTR != "" {
+					name = region.NameTR
+				}
+				break
+			}
+		}
+	}
+	return &faction.Faction{
+		ID:        fid,
+		Name:      name + " Rebels",
+		NameTR:    name + " İsyancıları",
+		IsVirtual: true,
+		Research:  faction.ResearchState{Completed: make(map[string]bool)},
+	}
+}
+
+func repairLoadedRebelArmies(gs *state.GameState) {
+	if gs == nil {
+		return
+	}
+	for _, current := range gs.Armies {
+		if current == nil || current.IsNaval {
+			continue
+		}
+		owner := faction.FactionID(current.OwnerID)
+		if !strings.HasPrefix(current.OwnerID, "rebel_") && (gs.Factions[owner] == nil || !gs.Factions[owner].IsVirtual) {
+			continue
+		}
+		current.IsRebel = true
+		if current.RebelAgainstID != "" {
+			continue
+		}
+		for _, rel := range gs.Relations {
+			if rel == nil || rel.Stance != faction.StanceWar || (rel.FactionA != owner && rel.FactionB != owner) {
+				continue
+			}
+			other := rel.FactionA
+			if other == owner {
+				other = rel.FactionB
+			}
+			if other != "" && (gs.Factions[other] == nil || !gs.Factions[other].IsVirtual) {
+				current.RebelAgainstID = string(other)
+				break
+			}
+		}
 	}
 }
 
@@ -1189,6 +1281,8 @@ func convertArmiesToSaveState(armies map[army.ArmyID]*army.Army) map[army.ArmyID
 			MaxMovePoints:      current.MaxMovePoints,
 			IsNaval:            current.IsNaval,
 			IsGarrison:         current.IsGarrison,
+			IsRebel:            current.IsRebel,
+			RebelAgainstID:     current.RebelAgainstID,
 			Morale:             current.Morale,
 			Commander:          cloneCommander(current.Commander),
 			EmbarkedCommander:  cloneCommander(current.EmbarkedCommander),
@@ -1220,6 +1314,8 @@ func restoreArmiesFromSaveState(saved map[army.ArmyID]armySaveState) map[army.Ar
 			MaxMovePoints:      current.MaxMovePoints,
 			IsNaval:            current.IsNaval,
 			IsGarrison:         current.IsGarrison,
+			IsRebel:            current.IsRebel,
+			RebelAgainstID:     current.RebelAgainstID,
 			Morale:             current.Morale,
 			Commander:          cloneCommander(current.Commander),
 			EmbarkedCommander:  cloneCommander(current.EmbarkedCommander),
@@ -1624,7 +1720,8 @@ func isZeroRegionSaveState(saved regionSaveState) bool {
 }
 
 func isZeroFactionSaveState(saved factionSaveState) bool {
-	return saved.IsEliminated == nil &&
+	return saved.IsVirtual == nil &&
+		saved.IsEliminated == nil &&
 		saved.OverlordID == nil &&
 		saved.VassalizedTurn == nil &&
 		saved.CapitalSettlementID == nil &&

@@ -1855,7 +1855,7 @@ func sortedDiplomacyFactions(gs *state.GameState, sortMode diplomacyListSort) []
 	}
 	var fids []faction.FactionID
 	for fid := range gs.Factions {
-		if f := gs.Factions[fid]; f == nil || f.IsEliminated {
+		if f := gs.Factions[fid]; f == nil || f.IsEliminated || f.IsVirtual {
 			continue
 		}
 		fids = append(fids, fid)

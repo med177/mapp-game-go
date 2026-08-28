@@ -33,7 +33,10 @@ type Faction struct {
 	Color        [3]uint8      `json:"color"`
 	IsPlayable   bool          `json:"is_playable"`
 	IsEliminated bool          `json:"is_eliminated"`
-	OverlordID   FactionID     `json:"overlord_id,omitempty"`
+	// IsVirtual, isyan sırasında otomatik oluşturulan; diplomasi ve ticarete
+	// kapalı, yalnız askeri hedef olarak var olan sanal isyancı devleti işaretler.
+	IsVirtual  bool      `json:"is_virtual,omitempty"`
+	OverlordID FactionID `json:"overlord_id,omitempty"`
 	// VassalizedTurn, vassallık bağının kurulduğu toplam turu tutar. Bu alan
 	// ilhak bekleme süresinin save/load sonrasında da korunmasını sağlar.
 	VassalizedTurn int `json:"vassalized_turn,omitempty"`

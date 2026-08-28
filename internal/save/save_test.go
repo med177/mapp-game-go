@@ -168,6 +168,65 @@ func TestInvalidDifficultyMigratesToNormal(t *testing.T) {
 	}
 }
 
+func TestCompactSaveRestoresVirtualRebelFactionAndArmy(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"border": {ID: "border", NameTR: "Sınır", OwnerID: "player"},
+		},
+		Relations: map[string]*faction.Relation{},
+	}
+	rebel := faction.FactionID("rebel_border")
+	warStance := encodeStance(faction.StanceWar)
+	saved := campaignSaveState{
+		Regions: map[world.RegionID]regionSaveState{
+			"border": {OwnerID: cloneStringPtr(string(rebel))},
+		},
+		Factions: map[faction.FactionID]factionSaveState{
+			rebel: {IsVirtual: cloneBoolPtr(true)},
+		},
+		Armies: map[army.ArmyID]armySaveState{
+			"rebel_army": {OwnerID: string(rebel), RegionID: "border", IsRebel: true, RebelAgainstID: "player", Units: []stackedUnitSaveState{{TypeID: "militia", Count: 2}}},
+		},
+		Relations: map[string]relationSaveState{
+			faction.RelationKey("player", rebel): {Stance: &warStance},
+		},
+	}
+	applyCampaignSaveState(gs, saved)
+
+	if restored := gs.Factions[rebel]; restored == nil || !restored.IsVirtual {
+		t.Fatalf("sanal rebel fraksiyonu geri yüklenmedi: %+v", restored)
+	}
+	if current := gs.Armies["rebel_army"]; current == nil || !current.IsRebel || current.RebelAgainstID != "player" {
+		t.Fatalf("rebel ordu state'i geri yüklenmedi: %+v", current)
+	}
+}
+
+func TestOldSaveMigratesMissingVirtualRebelFaction(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{"player": {ID: "player"}},
+		Regions:  map[world.RegionID]*world.Region{"border": {ID: "border", NameTR: "Sınır", OwnerID: "player"}},
+	}
+	rebel := faction.FactionID("rebel_border")
+	warStance := encodeStance(faction.StanceWar)
+	applyCampaignSaveState(gs, campaignSaveState{
+		Regions: map[world.RegionID]regionSaveState{"border": {OwnerID: cloneStringPtr(string(rebel))}},
+		Armies:  map[army.ArmyID]armySaveState{"rebel_army": {OwnerID: string(rebel), RegionID: "border"}},
+		Relations: map[string]relationSaveState{
+			faction.RelationKey("player", rebel): {Stance: &warStance},
+		},
+	})
+
+	if restored := gs.Factions[rebel]; restored == nil || !restored.IsVirtual {
+		t.Fatalf("eski save migration sanal rebel fraksiyonu oluşturmadi: %+v", restored)
+	}
+	if current := gs.Armies["rebel_army"]; current == nil || !current.IsRebel || current.RebelAgainstID != "player" {
+		t.Fatalf("eski save migration rebel orduyu tanımadı: %+v", current)
+	}
+}
+
 func TestImperialStateRoundTripInCompactPayload(t *testing.T) {
 	original := &state.ImperialState{
 		EmpireID: "hre", EmperorID: "milan_duchy", Authority: 41,

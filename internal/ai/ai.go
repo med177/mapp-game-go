@@ -1794,7 +1794,20 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			siegeArmy := gs.Armies[siege.AttackerArmyID]
 			sourceRegion := gs.Regions[fromRegion]
 			if siegeArmy != nil && sourceRegion != nil {
-				// AI vs AI sortie (veya oyuncu kuşatıyorsa): hemen çöz
+				// Oyuncunun kuşatma ordusu huruçla karşılaşıyorsa kararı oyun/UI
+				// katmanına bırak. AI-AI huruçları otomatik çözülmeye devam eder.
+				if siegeArmy.OwnerID == string(gs.PlayerFactionID) {
+					return moveOutcome{survived: true, step: TurnStep{
+						FactionID:    fid,
+						Kind:         TurnStepSortie,
+						ArmyID:       a.ID,
+						FromRegion:   fromRegion,
+						TargetRegion: target,
+						FocusRegion:  fromRegion,
+						Message:      actorName + " " + sourceName + " kuşatmasından huruç yapıyor.",
+					}}
+				}
+				// AI vs AI huruç: hemen çöz.
 				atkMods := aiTechMods(gs, a.OwnerID)
 				defMods := aiTechMods(gs, siegeArmy.OwnerID)
 				defMods.DefenseMod += 0.10

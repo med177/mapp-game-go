@@ -231,6 +231,22 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 	}
 
 	result := eliminationResult{FactionID: fid, SuccessorID: successor}
+	if f.IsVirtual {
+		// Sanal isyancı devlet elendiğinde kalıcı bir kayıt bırakmadan tamamen
+		// kaldırılır; isyancı orduları devredilmez, yok edilir ve duyuru üretilmez.
+		for aid, a := range gs.Armies {
+			if a != nil && a.OwnerID == string(fid) {
+				gs.RemoveArmy(aid)
+			}
+		}
+		for key, rel := range gs.Relations {
+			if rel != nil && (rel.FactionA == fid || rel.FactionB == fid) {
+				delete(gs.Relations, key)
+			}
+		}
+		delete(gs.Factions, fid)
+		return eliminationResult{}
+	}
 	f.IsEliminated = true
 	if gs.AIPlans != nil {
 		delete(gs.AIPlans, fid)
@@ -1613,6 +1629,62 @@ func rebellionArmyID(gs *state.GameState, regionID world.RegionID) army.ArmyID {
 	return id
 }
 
+// ensureVirtualRebelFaction, ardıl devlet metadata'sı olmayan bir isyan için
+// bölgeyi ve isyancı orduyu taşıyacak sanal bir devlet oluşturur. Bu devlet
+// diplomasi ve ticarete kapalıdır; yalnız askeri hedef olarak var olur.
+func ensureVirtualRebelFaction(gs *state.GameState, rebelOwner string, region *world.Region) *faction.Faction {
+	if gs == nil || rebelOwner == "" {
+		return nil
+	}
+	if gs.Factions == nil {
+		gs.Factions = make(map[faction.FactionID]*faction.Faction)
+	}
+	fid := faction.FactionID(rebelOwner)
+	if f := gs.Factions[fid]; f != nil {
+		f.IsVirtual = true
+		return f
+	}
+	name := string(region.ID)
+	if region != nil && region.NameTR != "" {
+		name = region.NameTR
+	}
+	f := &faction.Faction{
+		ID:          fid,
+		Name:        name + " Rebels",
+		NameTR:      name + " İsyancıları",
+		IsPlayable:  false,
+		IsVirtual:   true,
+		OverlordID:  "",
+		Research:    faction.ResearchState{Completed: make(map[string]bool)},
+	}
+	gs.Factions[fid] = f
+	return f
+}
+
+// cleanupVirtualRebelFaction, bastırılan veya ele geçirilen bir isyanın ardından
+// geride kalan sanal devleti orduları ve savaş ilişkileriyle birlikte kaldırır.
+func cleanupVirtualRebelFaction(gs *state.GameState, ownerID string) {
+	if gs == nil || ownerID == "" {
+		return
+	}
+	fid := faction.FactionID(ownerID)
+	f := gs.Factions[fid]
+	if f == nil || !f.IsVirtual {
+		return
+	}
+	for aid, a := range gs.Armies {
+		if a != nil && a.OwnerID == ownerID {
+			delete(gs.Armies, aid)
+		}
+	}
+	for key, rel := range gs.Relations {
+		if rel != nil && (rel.FactionA == fid || rel.FactionB == fid) {
+			delete(gs.Relations, key)
+		}
+	}
+	delete(gs.Factions, fid)
+}
+
 // formSuccessorFromRebellion, yalnız gerçekten elenmiş ve bölgede ardıl
 // metadata'sı bulunan devletleri yeniden oyuna sokar.
 func formSuccessorFromRebellion(gs *state.GameState, region *world.Region, rebel *army.Army) bool {
@@ -1621,6 +1693,9 @@ func formSuccessorFromRebellion(gs *state.GameState, region *world.Region, rebel
 	}
 	successorID := faction.FactionID(region.SuccessorFactionID)
 	successor := gs.Factions[successorID]
+	if successor == nil {
+		return false
+	}
 	successor.IsEliminated = false
 	successor.OverlordID = ""
 	region.OwnerID = string(successorID)
@@ -1633,13 +1708,18 @@ func formSuccessorFromRebellion(gs *state.GameState, region *world.Region, rebel
 
 // checkRebellions isyan riskindeki bölgeleri kontrol eder. İlk kontrolde
 // isyancı ordu doğar; sonraki turlarda eski sahibin ordusu bastırır, sahipsiz
-// kalan ardıl devlet ise isyanı kazanıp bölgeyi kurar.
+// kalan ardıl devlet ise isyanı kazanıp bölgeyi kurar. Ardıl devlet metadata'sı
+// olmayan bölgelerde isyan, bölgeyi ve orduyu taşıyan sanal bir rebel devletine
+// devredilir; böylece ordu sevki ve fetih akışı normal işler.
 func checkRebellions(gs *state.GameState) {
 	if gs == nil {
 		return
 	}
 	if gs.Armies == nil {
 		gs.Armies = make(map[army.ArmyID]*army.Army)
+	}
+	if gs.Relations == nil {
+		gs.Relations = make(map[string]*faction.Relation)
 	}
 	regionIDs := make([]world.RegionID, 0, len(gs.Regions))
 	for id := range gs.Regions {
@@ -1664,10 +1744,22 @@ func checkRebellions(gs *state.GameState) {
 			}
 		}
 		if rebel != nil {
-			if hasOwnerArmy {
+			// İsyancının isyan ettiği eski sahibin ordusu bölgedeyse isyan bastırılır.
+			var suppressor *army.Army
+			for _, current := range gs.Armies {
+				if current == nil || current.IsNaval || current.IsRebel || current.RegionID != r.ID {
+					continue
+				}
+				if rebel.RebelAgainstID != "" && current.OwnerID == rebel.RebelAgainstID {
+					suppressor = current
+					break
+				}
+			}
+			if suppressor != nil {
 				gs.RemoveArmy(rebel.ID)
 				r.OwnerID = rebel.RebelAgainstID
 				r.Satisfaction = 50
+				cleanupVirtualRebelFaction(gs, rebel.OwnerID)
 				continue
 			}
 			if formSuccessorFromRebellion(gs, r, rebel) {
@@ -1684,13 +1776,23 @@ func checkRebellions(gs *state.GameState) {
 		}
 		formerOwner := r.OwnerID
 		unitCount := rebellionUnitCount(gs, r)
-		r.OwnerID = ""
 		gs.ClearProductionOrdersForRegion(r.ID)
 		r.Satisfaction = 50
 		id := rebellionArmyID(gs, r.ID)
 		rebelOwner := r.SuccessorFactionID
+		virtualRebel := false
 		if rebelOwner == "" {
 			rebelOwner = "rebel_" + string(r.ID)
+			virtualRebel = true
+		}
+		if virtualRebel {
+			// Bölgeyi sanal isyancı devlete ata ve eski sahip ile savaş hali kur.
+			ensureVirtualRebelFaction(gs, rebelOwner, r)
+			r.OwnerID = rebelOwner
+			diplomacy.ForceRelation(gs, faction.FactionID(formerOwner), faction.FactionID(rebelOwner), faction.StanceWar, 0)
+		} else {
+			// Ardıl devlet metadata'sı varsa mevcut ardıl devlet akışı korunur.
+			r.OwnerID = ""
 		}
 		gs.Armies[id] = &army.Army{
 			ID: id, OwnerID: rebelOwner, RegionID: r.ID,

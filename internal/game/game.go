@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -455,6 +456,14 @@ func (g *Game) Update() error {
 
 	case state.PhaseAITurn:
 		switch action.Kind {
+		case render.ActionResolveSortie:
+			g.resolvePendingSortie(true)
+			return nil
+		case render.ActionLiftSiege:
+			if g.pendingSortie != nil {
+				g.resolvePendingSortie(false)
+				return nil
+			}
 		case render.ActionResolveNavalContact:
 			g.resolveNavalContactChoice(action.ChoiceIndex)
 		case render.ActionResolveLandContact:
@@ -733,15 +742,16 @@ func (g *Game) orderedAIFactions() []faction.FactionID {
 	order := make([]faction.FactionID, 0, len(g.gs.Factions))
 	seen := make(map[faction.FactionID]struct{}, len(g.gs.Factions))
 	for _, fid := range g.gs.FactionOrder {
-		if fid == g.gs.PlayerFactionID || g.gs.Factions[fid] == nil {
+		f := g.gs.Factions[fid]
+		if fid == g.gs.PlayerFactionID || f == nil || f.IsVirtual {
 			continue
 		}
 		order = append(order, fid)
 		seen[fid] = struct{}{}
 	}
 	extra := make([]faction.FactionID, 0, len(g.gs.Factions))
-	for fid := range g.gs.Factions {
-		if fid == g.gs.PlayerFactionID {
+	for fid, f := range g.gs.Factions {
+		if fid == g.gs.PlayerFactionID || f == nil || f.IsVirtual {
 			continue
 		}
 		if _, ok := seen[fid]; ok {
@@ -758,6 +768,9 @@ func (g *Game) updateAITurnSequence() {
 		return
 	}
 	if g.renderer.WarSummaryVisible() || g.renderer.BattleReportVisible() {
+		return
+	}
+	if g.renderer.ConfirmDialogVisible() || g.pendingSortie != nil {
 		return
 	}
 	if g.aiTurn == nil {
@@ -819,6 +832,10 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 		g.aiTurn.waitFrames = 0
 		return
 	}
+	if step.Kind == ai.TurnStepSortie {
+		g.presentAISortieDecision(step)
+		return
+	}
 	actor := turnActorName(g.gs, step.FactionID)
 	detail := step.Message
 	if detail == "" {
@@ -837,6 +854,48 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 		return
 	}
 	g.aiTurn.waitFrames = aiTurnHiddenStepFrames
+}
+
+func (g *Game) presentAISortieDecision(step ai.TurnStep) {
+	if g == nil || g.gs == nil || g.renderer == nil || g.aiTurn == nil {
+		return
+	}
+	siege := g.gs.SiegeAt(step.FromRegion)
+	if siege == nil {
+		return
+	}
+	aiArmy := g.gs.Armies[step.ArmyID]
+	siegeArmy := g.gs.Armies[siege.AttackerArmyID]
+	region := g.gs.Regions[step.FromRegion]
+	if aiArmy == nil || siegeArmy == nil || region == nil || siegeArmy.OwnerID != string(g.gs.PlayerFactionID) {
+		return
+	}
+	g.pendingSortie = &pendingSortieState{
+		step:       step,
+		aiArmy:     aiArmy,
+		siegeArmy:  siegeArmy,
+		target:     g.gs.Regions[step.TargetRegion],
+		homeRegion: siege.AttackerHomeRegionID,
+	}
+	g.renderer.CenterCameraOnRegion(step.FromRegion)
+	g.renderer.SetAITurnStatus(step.FactionID, turnActorName(g.gs, step.FactionID), "Huruç kararı bekleniyor.")
+	g.renderer.ShowSortieDecision(region.NameTR, aiArmy.ID, siegeArmy.ID, step.TargetRegion)
+}
+
+func (g *Game) resolvePendingSortie(fight bool) {
+	if g == nil || g.pendingSortie == nil {
+		return
+	}
+	pending := g.pendingSortie
+	g.pendingSortie = nil
+	if pending.aiArmy == nil || pending.siegeArmy == nil || pending.target == nil || g.gs.SiegeAt(pending.step.FromRegion) == nil {
+		return
+	}
+	if !fight {
+		g.liftSiege(pending.siegeArmy.ID, pending.step.FromRegion)
+		return
+	}
+	g.resolveSortieMovement(pending.aiArmy, pending.target, combat.BattleStanceBalanced)
 }
 
 func (g *Game) finishAITurnSequence() {
@@ -2379,7 +2438,7 @@ func canPlayerOneTimeTradeWith(gs *state.GameState, targetID faction.FactionID) 
 		return false
 	}
 	target := gs.Factions[targetID]
-	if target == nil || target.IsEliminated {
+	if target == nil || target.IsEliminated || target.IsVirtual {
 		return false
 	}
 	return !diplomacy.IsWar(gs, gs.PlayerFactionID, targetID)
@@ -2483,8 +2542,20 @@ func (g *Game) aiAcceptSiegeSurrenderOffer(attacker *army.Army, target *world.Re
 	if g == nil || g.gs == nil || attacker == nil || target == nil || siege == nil || target.OwnerID == string(g.gs.PlayerFactionID) {
 		return false
 	}
-	if siege.BreachLevel >= 2 || siege.TurnsElapsed >= state.SiegeSurrenderTurns(siege.FortLevel) {
+	totalTurns := siege.TotalSurrenderTurns()
+	if siege.TurnsElapsed >= totalTurns {
 		return true
+	}
+	// Büyük gedik savunmanın çözülme eşiğidir; teslim teklifi için yarı süreyi
+	// bekletmez ve zar gerektirmeden kabul edilir.
+	if siege.BreachLevel >= 2 {
+		return true
+	}
+	// Savunmacı, zorunlu teslimiyet süresinin yarısına gelmeden teklifi
+	// değerlendirmez. Bu noktadan sonra her teklif için %50 zar atılır.
+	// Süre dolduğunda yukarıdaki zorunlu teslimiyet dalı zarı bypass eder.
+	if siege.TurnsElapsed < (totalTurns+1)/2 {
+		return false
 	}
 	defender := g.gs.SelectBattleDefender(attacker, target.ID, false)
 	defenderPower := 0
@@ -2492,9 +2563,12 @@ func (g *Game) aiAcceptSiegeSurrenderOffer(attacker *army.Army, target *world.Re
 		defenderPower = defender.TotalStrength(g.gs.UnitTypes)
 	}
 	if defenderPower == 0 {
-		return siege.TurnsElapsed >= 3
+		return rand.Intn(100) < 50
 	}
-	return siege.TurnsElapsed >= 3 && attacker.TotalStrength(g.gs.UnitTypes) >= defenderPower*125/100
+	if attacker.TotalStrength(g.gs.UnitTypes) < defenderPower*125/100 {
+		return false
+	}
+	return rand.Intn(100) < 50
 }
 
 func (g *Game) handleAITurnOfferResponse(index int, accepted bool) {

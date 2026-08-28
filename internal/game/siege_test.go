@@ -859,6 +859,7 @@ func TestResolveSiegesFindsDefenderThatWasNotPresentAtSiegeStart(t *testing.T) {
 
 func TestResolveSiegesAppliesLowAttritionWhenRegionHasNoDefenderArmy(t *testing.T) {
 	gs := siegeTestState()
+	gs.Regions["dst"].Neighbors = nil
 	gs.Armies = map[army.ArmyID]*army.Army{
 		"atk": {
 			ID: "atk", OwnerID: "p1", RegionID: "dst",
@@ -876,11 +877,44 @@ func TestResolveSiegesAppliesLowAttritionWhenRegionHasNoDefenderArmy(t *testing.
 		t.Fatalf("savunma ordusu olmayan kuşatmada kuşatan düşük yıpranma almalıydı, HP=%d", got)
 	}
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 3; i++ {
 		g.resolveSieges()
 	}
-	if got := gs.Armies["atk"].Units[0].CurrentHP; got != army.MaxUnitHP-15 {
+	if got := gs.Armies["atk"].Units[0].CurrentHP; got != army.MaxUnitHP-12 {
 		t.Fatalf("boş garnizon yıpranması zamanla birikmeli, HP=%d", got)
+	}
+}
+
+func TestResolveSiegesReducesBesiegerAttritionWithOwnedBorderSupply(t *testing.T) {
+	buildState := func(hasBorderSupply bool) *state.GameState {
+		gs := siegeTestState()
+		if !hasBorderSupply {
+			gs.Regions["dst"].Neighbors = nil
+		}
+		gs.Armies = map[army.ArmyID]*army.Army{
+			"atk": {
+				ID: "atk", OwnerID: "p1", RegionID: "dst",
+				Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+			},
+		}
+		gs.Sieges = map[world.RegionID]*state.SiegeState{
+			"dst": {RegionID: "dst", AttackerArmyID: "atk", AttackerFactionID: "p1", FortLevel: 2},
+		}
+		return gs
+	}
+
+	withoutSupply := buildState(false)
+	withSupply := buildState(true)
+	(&Game{gs: withoutSupply}).resolveSieges()
+	(&Game{gs: withSupply}).resolveSieges()
+
+	withoutHP := withoutSupply.Armies["atk"].Units[0].CurrentHP
+	withHP := withSupply.Armies["atk"].Units[0].CurrentHP
+	if withHP <= withoutHP {
+		t.Fatalf("ortak kara sınırı kuşatan yıpranmasını azaltmalıydı: ikmalsiz=%d ikmalli=%d", withoutHP, withHP)
+	}
+	if withoutHP != 97 || withHP != 98 {
+		t.Fatalf("kuşatan yıpranması 3->2 HP olmalıydı: ikmalsiz=%d ikmalli=%d", withoutHP, withHP)
 	}
 }
 

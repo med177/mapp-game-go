@@ -100,8 +100,8 @@ func TestCheckRebellionsClearsProductionOrdersForLostRegion(t *testing.T) {
 
 	checkRebellions(gs)
 
-	if gs.Regions["rebel"].OwnerID != "" {
-		t.Fatalf("isyanda bölge sahipsiz kalmalıydı, got=%s", gs.Regions["rebel"].OwnerID)
+	if gs.Regions["rebel"].OwnerID != "rebel_rebel" {
+		t.Fatalf("isyanda bölge sanal isyancı devlete geçmeliydi, got=%s", gs.Regions["rebel"].OwnerID)
 	}
 	if gs.Regions["rebel"].Satisfaction != 50 {
 		t.Fatalf("isyandan sonra memnuniyet resetlenmeliydi, got=%d", gs.Regions["rebel"].Satisfaction)
@@ -127,8 +127,8 @@ func TestCheckRebellionsSpawnsScaledRebelArmy(t *testing.T) {
 
 	checkRebellions(gs)
 
-	if gs.Regions["region"].OwnerID != "" {
-		t.Fatal("isyan başladığında bölge sahipsiz kalmalı")
+	if gs.Regions["region"].OwnerID != "rebel_region" {
+		t.Fatalf("isyan başladığında bölge sanal isyancı devlete geçmeli, got=%q", gs.Regions["region"].OwnerID)
 	}
 	var rebel *army.Army
 	for _, current := range gs.Armies {

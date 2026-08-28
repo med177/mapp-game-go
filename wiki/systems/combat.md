@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-08-07
+last_updated: 2026-08-28
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -12,6 +12,10 @@ related: [systems/ai, systems/economy, world/regions, systems/tech-tree, archite
 ## Genel Bakış
 
 Savunma kuşatması oyuncu ordusu veya kuşatılmış yerleşim seçildiğinde `Kuşatma Emri` panelinde görünür. `Huruç başlat` kuşatılan bölgede kuşatan orduyla kara muharebesi çözer; savunmacı kazanırsa aynı bölgede kalır, kuşatmayı kaldırır ve en az 1 hareket hakkını korur, kaybederse bölgede kalır ve kuşatma sürer. `Teslim ol` düğmesi yalnız kuşatan AI'ın oyuncuya gönderdiği bölge bağlı `propose_surrender` teklifi varsa aktifleşir. Kabul edilen teslimiyette savunma orduları mümkünse en yakın kendi bölgesine, 0 hareket ve -15 moral ile geri çekilir. Kuşatılan devletin tek kara bölgesi kaldıysa aynı eşikte `propose_siege_vassalization` üretilir: UI `Vassallığı Kabul Et` gösterir, bölge sahibi değişmeden devlet kuşatanın vassalı olur, savaş ve kuşatma biter (`internal/game/{game.go,siege.go}`, `internal/render/action.go`, `internal/diplomacy/offers.go`).
+
+Oyuncunun kuşatması altındaki AI ordusu huruç yaptığında `Huruç Kararı` modalı
+oyuncuya `Çatış` veya `Kuşatmayı Kaldır` seçimini verir; karar AI turunu
+bekletir ve seçime göre ortak oyun çözümüne aktarılır.
 
 Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Düşman
 orduya hareket emri verildiğinde önce kara teması değerlendirilir; taraflardan
@@ -241,9 +245,9 @@ Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayr�
 12. Genel hücumda saldıran taraf ayrıca sur tırmanışı ve dar giriş baskısı kaynaklı ek zayiat alır; bu bedel gedik yokken en ağır, küçük gedikte daha düşük, büyük gedikte en düşüktür.
 13. Zaten başka bir devlet tarafından kuşatılmış tahkimli bölgeye üçüncü devlet yeni kuşatma başlatamaz; ancak bölgeye giriş hakkı varsa kuşatma yapan düşman orduya karşı savaş açabilir ve o ordu yenilirse kuşatma kalkar. Böyle bir savaş allied / same realm geçişinde gerçekleşiyorsa sahiplik değişmez, yalnız kuşatma kaldırılır.
 14. Kuşatılan bölgede bölge sahibine veya onun müttefikine ait bir kara ordusu varsa, bu ordu komşu bölgeye çıkmadan önce kuşatan orduya karşı huruç savaşı yapmak zorundadır. Huruç kazanılırsa kuşatma kalkar ve uygun dost/sahipsiz hedefe ilerlenir; kaybedilirse kalan birlikler kuşatılan bölgede kalır ve hareket puanı tükenir.
-15. Saldıran oyuncu da kuşatma panelindeki `Teslimiyet Teklifi` düğmesiyle AI savunmacıya çağrı gönderebilir. AI kabulü kuşatma baskısı, gedik, süre ve güç dengesine göre çözülür; bu özel kuşatma teklifi oyuncu veya AI'ın normal elçi kotasını azaltmaz.
+15. Saldıran oyuncu da kuşatma panelindeki `Teslimiyet Teklifi` düğmesiyle AI savunmacıya çağrı gönderebilir. Zorunlu teslim süresi `2 × sur seviyesi + ambar seviyesi` olarak hesaplanır; büyük gedik varsa teklif yarı süreyi beklemeden kabul edilir, aksi halde teklif sürenin yarısından sonra `%50` zar ile kabul edilebilir. Süre dolduğunda teslimiyet zar beklemeden gerçekleşir. Bu özel kuşatma teklifi oyuncu veya AI'ın normal elçi kotasını azaltmaz.
 16. AI kuşatan, kuşatma baskısı ve gedik ilerlemesi yeterli olduğunda oyuncuya teslimiyet talebi gönderebilir; AI savunmacı da ağır baskı koşulunda oyuncuya teslim olmayı teklif edebilir. Son kara toprağı için teslimiyet teklifi üretilmez ve eski/stale teklif merkezi çözümleyicide kabul edilmez. Teklifler `DiplomaticOffers` içinde bölge kimliğiyle saklanır, modal ve kuşatma paneli aynı çözümleyiciyi kullanır.
-17. Gedik açılamayan aç bırakma teslimiyeti tahkimat seviyesi 1/2/3 için sırasıyla 6/8/10 turda değerlendirilir. Kuşatan ordu hedefin yanında kendi, aynı realm/vassal veya müttefik kara bölgesine sahipse sınır ikmali, bölgesel lojistik talebini `%200` yerine `%150` sayar; başkente uzak veya kopuk kara hattı ise bu talebi artırır. Müttefik/vassal sınırının bu avantajı, destekçi devletin yeterli tahıl rezervinden ücretli konvoy göndermesine bağlıdır.
+17. Gedik açılamayan aç bırakma teslimiyeti `2 × sur seviyesi + ambar seviyesi` turda değerlendirilir. Kuşatan ordu hedefin yanında kendi, aynı realm/vassal veya müttefik kara bölgesine sahipse sınır ikmali, bölgesel lojistik talebini `%200` yerine `%150` sayar; başkente uzak veya kopuk kara hattı ise bu talebi artırır. Müttefik/vassal sınırının bu avantajı, destekçi devletin yeterli tahıl rezervinden ücretli konvoy göndermesine bağlıdır.
 
 Kuşatma hücumunda savunana arazi bonusuna ek olarak tahkimat savunma çarpanı uygulanır. Gedik büyüdükçe bu bonus düşer; yani surlar kırıldıkça saha savaşı normal kara muharebesine yaklaşır. Aynı anda saldıranın ekstra hücum zayiatı da azalır; küçük gedik hâlâ pahalı bir baskınken büyük gedik daha düşük bedelli bir yarma fırsatı sayılır.
 

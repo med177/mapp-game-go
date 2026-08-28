@@ -41,6 +41,22 @@ func TestProposePeaceRejectedOutsideWar(t *testing.T) {
 	}
 }
 
+func TestDeclareWarAgainstVirtualRebelFaction(t *testing.T) {
+	gs := testGameState()
+	gs.Factions["rebel_border"] = &faction.Faction{
+		ID: "rebel_border", NameTR: "Sınır İsyancıları", IsVirtual: true,
+	}
+	gs.Regions["rebel_border"] = &world.Region{ID: "rebel_border", OwnerID: "rebel_border"}
+
+	result := ExecuteWarDeclaration(gs, "a", "rebel_border", nil)
+	if !result.Applied {
+		t.Fatalf("sanal rebel devletine savaş ilanı uygulanmalıydı: %+v", result)
+	}
+	if !IsWar(gs, "a", "rebel_border") {
+		t.Fatal("sanal rebel ile savaş ilişkisi kurulmadı")
+	}
+}
+
 func TestProposeAllianceRejectedOnLowScore(t *testing.T) {
 	gs := testGameState()
 	rel := EnsureRelation(gs, "a", "b")
