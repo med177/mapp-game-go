@@ -657,7 +657,10 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 	// Ortalama üretim oranı kayan nokta yuvarlamasıyla 4.10'un birkaç binde
 	// üzerine çıkabilir; mevcut senaryo akışındaki savaş fazını kapsayan küçük
 	// bir ölçüm toleransı bırakılır.
-	const maxProductionRatio = 4.75
+	// Kuşatan ordunun genel lojistik hasarı kaldırıldığı için erken savaş
+	// akışında daha fazla ordu hayatta kalır ve fetih sonrası üretim artışı
+	// önceki üst banda göre yükselir.
+	const maxProductionRatio = 7.25
 	majorFactions := []faction.FactionID{"ottoman", "venice", "mamluk", "england", "france"}
 	phaseName := func(turn int) string {
 		switch {

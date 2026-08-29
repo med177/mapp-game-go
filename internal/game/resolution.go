@@ -1345,7 +1345,13 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		for _, a := range armiesInRegion {
 			a.OverCapacityTurns++
 			armyDamagePerUnit := damagePerUnit
-			if gs.IsArmyDefendingSiegedRegion(a) {
+			if gs.SiegeByArmy(a.ID) != nil {
+				// Aktif kuşatmanın lojistik yükü tahıl tüketimi ve
+				// kuşatma çözümündeki özel yıpranma ile temsil edilir.
+				// Genel bölgesel lojistik hasarını da uygulamak, aynı
+				// turda kuşatan orduyu iki kez yıpratır.
+				armyDamagePerUnit = 0
+			} else if gs.IsArmyDefendingSiegedRegion(a) {
 				armyDamagePerUnit = reduceAttritionDamageForGranary(armyDamagePerUnit, granaryAttritionReductionPercent(region))
 			}
 			armyStatus := state.ArmyLogisticsStatus{
