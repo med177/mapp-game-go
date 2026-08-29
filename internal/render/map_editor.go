@@ -1667,7 +1667,7 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	}
 	if r.editUnitTypeDropdown.IsOpen() {
 		if idx, ok := r.editUnitTypeDropdown.GetSelectedOption(fx, fy); ok {
-			r.editSelectedUnitType = r.editUnitTypeDropdown.OptionAt(idx)
+			r.setSelectedEditArmyUnitType(r.editUnitTypeDropdown.OptionAt(idx))
 			r.editUnitTypeDropdown.Close()
 			return InputAction{}, true
 		}
@@ -1807,7 +1807,7 @@ func (r *Renderer) handleEditFactionInspectorClick(fx, fy float64) (InputAction,
 func (r *Renderer) handleEditDataInspectorClick(fx, fy float64) (InputAction, bool) {
 	if r.editUnitTypeDropdown.IsOpen() {
 		if idx, ok := r.editUnitTypeDropdown.GetSelectedOption(fx, fy); ok {
-			r.editSelectedUnitType = r.editUnitTypeDropdown.OptionAt(idx)
+			r.setSelectedEditArmyUnitType(r.editUnitTypeDropdown.OptionAt(idx))
 			r.editUnitTypeDropdown.Close()
 			return InputAction{}, true
 		}
@@ -3932,6 +3932,40 @@ func (r *Renderer) addSelectedArmyUnit() {
 	after := r.worldSnapshot()
 	r.pushWorldSnapshotCommand(before, after)
 	r.editDirty = true
+}
+
+// setSelectedEditArmyUnitType, Edit Mode'da dropdown ile seçilen tipi seçili
+// ordu/filonun mevcut birimlerine uygular. Böylece seçim yalnızca sonraki
+// "Birim +" işlemini değil, kaydedilecek gerçek Unit.TypeID değerlerini de
+// değiştirir.
+func (r *Renderer) setSelectedEditArmyUnitType(typeID string) {
+	a := r.gs.Armies[r.SelectedArmy]
+	if a == nil || !r.unitTypeMatchesArmy(a, typeID) {
+		return
+	}
+	if r.editSelectedUnitType == typeID && allArmyUnitsHaveType(a, typeID) {
+		return
+	}
+	before := r.worldSnapshot()
+	for i := range a.Units {
+		a.Units[i].TypeID = typeID
+	}
+	r.editSelectedUnitType = typeID
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+}
+
+func allArmyUnitsHaveType(a *army.Army, typeID string) bool {
+	if a == nil {
+		return false
+	}
+	for _, unit := range a.Units {
+		if unit.TypeID != typeID {
+			return false
+		}
+	}
+	return true
 }
 
 func (r *Renderer) removeSelectedArmyUnit() {

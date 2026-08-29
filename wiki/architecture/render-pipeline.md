@@ -627,6 +627,10 @@ seçimi ve diğer editor aksiyonları için korunur. Boya/sil bırakıldığınd
 geçici önizleme ve bekleyen değişiklik tutulur; ilgili araç `Uygula` ile
 kesinleştirilince hesaplama, harita yenileme ve tek undo snapshot'ı üretilir.
 
+Edit Mode'da seçili ordu veya filonun `Birim Tipi` dropdown'ı seçildiğinde,
+ordudaki mevcut `Unit.TypeID` değerleri seçilen kara/deniz tipine uygulanır ve
+değişiklik tek bir undo snapshot'ı olarak tutulur.
+
 Ana menü ilk açıldığında devam edilebilir autosave/quicksave varsa başlangıç
 focus'u `Devam et` satırına alınır; kayıt yoksa `Yeni Oyun` seçili kalır.
 `.env` içindeki `EDIT_MODE=true` değeri menüye `EDIT MODE` satırını

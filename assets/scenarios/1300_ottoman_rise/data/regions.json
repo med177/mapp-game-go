@@ -5980,7 +5980,11 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -8249,7 +8253,11 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {

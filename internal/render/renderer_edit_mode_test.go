@@ -415,6 +415,55 @@ func TestEditFleetCanUsePortSettlementWithoutPortBuilding(t *testing.T) {
 	}
 }
 
+func TestEditArmyUnitTypeSelectionChangesExistingUnits(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"land": {
+				ID:      "land",
+				IsNaval: false,
+				Units:   army.MakeUnits("militia", 2),
+			},
+			"fleet": {
+				ID:      "fleet",
+				IsNaval: true,
+				Units:   army.MakeUnits("transport", 2),
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"militia":   {ID: "militia"},
+			"infantry":  {ID: "infantry"},
+			"transport": {ID: "transport", RequiredBldg: "port"},
+			"warship":   {ID: "warship", RequiredBldg: "port"},
+		},
+	}
+	r := New(gs)
+
+	r.SelectedArmy = "land"
+	r.ensureEditSelectedUnitType(gs.Armies["land"])
+	r.setSelectedEditArmyUnitType("infantry")
+	for _, unit := range gs.Armies["land"].Units {
+		if unit.TypeID != "infantry" {
+			t.Fatalf("kara ordusunun birim tipi değişmedi: %+v", gs.Armies["land"].Units)
+		}
+	}
+
+	r.SelectedArmy = "fleet"
+	r.ensureEditSelectedUnitType(gs.Armies["fleet"])
+	r.setSelectedEditArmyUnitType("warship")
+	for _, unit := range gs.Armies["fleet"].Units {
+		if unit.TypeID != "warship" {
+			t.Fatalf("donanmanın birim tipi değişmedi: %+v", gs.Armies["fleet"].Units)
+		}
+	}
+
+	r.undoEditCommand()
+	for _, unit := range gs.Armies["fleet"].Units {
+		if unit.TypeID != "transport" {
+			t.Fatalf("donanma tipi undo ile geri alınmadı: %+v", gs.Armies["fleet"].Units)
+		}
+	}
+}
+
 func TestSelectedArmyOwnerAssignmentUsesDockedRegion(t *testing.T) {
 	gs := &state.GameState{
 		Armies: map[army.ArmyID]*army.Army{

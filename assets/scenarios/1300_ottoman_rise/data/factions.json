@@ -34,6 +34,11 @@
         "region_id": "morea",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "morea_south",
+        "value": 100,
+        "core": true
       }
     ]
   },
@@ -368,7 +373,17 @@
         "core": true
       },
       {
+        "region_id": "galata",
+        "value": 100,
+        "core": true
+      },
+      {
         "region_id": "gallipoli",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "khalkedon",
         "value": 100,
         "core": true
       },
@@ -388,7 +403,17 @@
         "core": true
       },
       {
+        "region_id": "silivri",
+        "value": 100,
+        "core": true
+      },
+      {
         "region_id": "thessaloniki_hinterland",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "thessaly",
         "value": 100,
         "core": true
       },
@@ -731,7 +756,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "thessaly_larisa",
+    "capital_settlement_id": "epirus_main",
     "gold": 240,
     "grain": 130,
     "iron": 45,
@@ -757,6 +782,11 @@
       },
       {
         "region_id": "thessaly",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "yanya",
         "value": 100,
         "core": true
       }
@@ -2931,6 +2961,11 @@
         "core": true
       },
       {
+        "region_id": "egriboz",
+        "value": 100,
+        "core": true
+      },
+      {
         "region_id": "knin",
         "value": 100,
         "core": true
@@ -4043,6 +4078,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "capital_settlement_id": "north_cyprus_main",
     "gold": 500,
     "grain": 1000,
     "iron": 50,
@@ -4055,6 +4091,18 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 50,
+    "territorial_claims": [
+      {
+        "region_id": "cyprus",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "north_cyprus",
+        "value": 100,
+        "core": true
+      }
+    ]
   }
 ]

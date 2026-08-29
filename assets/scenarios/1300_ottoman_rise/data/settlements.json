@@ -2026,7 +2026,7 @@
         "id": "chalkis",
         "name_tr": "Halkis",
         "x": 952,
-        "y": 505,
+        "y": 504,
         "type": "port",
         "is_center": true,
         "population": 57
@@ -3435,7 +3435,7 @@
         "id": "galata",
         "name_tr": "Galata",
         "x": 1059,
-        "y": 452,
+        "y": 453,
         "type": "port",
         "population": 36
       }
@@ -6028,7 +6028,6 @@
         "x": 875,
         "y": 472,
         "type": "fortress",
-        "is_center": true,
         "population": 14
       },
       {
@@ -6045,6 +6044,7 @@
         "x": 877,
         "y": 458,
         "type": "city",
+        "is_center": true,
         "population": 52
       }
     ]
@@ -6063,8 +6063,8 @@
       {
         "id": "thessaly_larisa",
         "name_tr": "Larisa",
-        "x": 927,
-        "y": 482,
+        "x": 928,
+        "y": 483,
         "type": "city",
         "population": 19
       },
@@ -6079,7 +6079,7 @@
       {
         "id": "thessaly_settlement_8",
         "name_tr": "Teselya",
-        "x": 917,
+        "x": 918,
         "y": 498,
         "type": "city",
         "is_center": true,
@@ -6607,8 +6607,8 @@
       {
         "id": "chalcedon",
         "name_tr": "Khalkedon",
-        "x": 1059,
-        "y": 458,
+        "x": 1060,
+        "y": 457,
         "type": "port",
         "population": 22
       },
