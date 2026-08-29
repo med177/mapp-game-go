@@ -1485,6 +1485,34 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 	return best
 }
 
+// HasCapableSiegeReliefArmy, kuşatılan devletin hedefe komşu ve bu tur
+// ilerleyebilecek bir ordusunun kuşatanı yenebilecek güçte olup olmadığını
+// döner. Hedefteki savunmacı ayrıca değerlendirilir; bu yardımcı yalnızca
+// kuşatma dışındaki yardım ihtimalini ölçer.
+func (s *GameState) HasCapableSiegeReliefArmy(attacker *army.Army, target *world.Region) bool {
+	if s == nil || attacker == nil || target == nil || attacker.OwnerID == "" || target.OwnerID == "" {
+		return false
+	}
+	attackerPower := attacker.TotalStrength(s.UnitTypes)
+	for _, candidate := range s.Armies {
+		if candidate == nil || candidate.ID == attacker.ID || candidate.OwnerID != target.OwnerID || candidate.RegionID == target.ID || candidate.IsNaval || candidate.MovePoints <= 0 {
+			continue
+		}
+		if !regionsAreNeighbors(target, candidate.RegionID) {
+			continue
+		}
+		key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(candidate.OwnerID))
+		rel := s.Relations[key]
+		if rel == nil || rel.Stance != faction.StanceWar {
+			continue
+		}
+		if candidate.TotalStrength(s.UnitTypes)*100 >= attackerPower*125 {
+			return true
+		}
+	}
+	return false
+}
+
 // SelectAmbushDefender, hedef bölgedeki gizli pusu ordusunu deterministik
 // olarak seçer. Bu helper yalnız hedefe giriş anındaki temas kontrolünde
 // kullanılmalıdır; normal düşman görüşü pusu ordusunu görmez.

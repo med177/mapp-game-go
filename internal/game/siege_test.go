@@ -415,6 +415,36 @@ func TestSurrenderSiegeCapturesRegionAndWithdrawsDefenders(t *testing.T) {
 	}
 }
 
+func TestAISiegeSurrenderOfferNeedsTrappedDefender(t *testing.T) {
+	gs := siegeTestState()
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"attacker": {ID: "attacker", OwnerID: "p1", RegionID: "src", MovePoints: 0, Units: repeatedUnits("inf", 3, 100)},
+	}
+	siege := &state.SiegeState{RegionID: "dst", AttackerArmyID: "attacker", AttackerFactionID: "p1", TurnsElapsed: 1, FortLevel: 1, BreachLevel: 2}
+	g := &Game{gs: gs}
+
+	if g.aiAcceptSiegeSurrenderOffer(gs.Armies["attacker"], gs.Regions["dst"], siege) {
+		t.Fatal("hedefte savunma ordusu yoksa erken teslimiyet kabul edilmemeli")
+	}
+}
+
+func TestAISiegeSurrenderOfferRejectsCapableReliefArmy(t *testing.T) {
+	gs := siegeTestState()
+	gs.Regions["dst"].Neighbors = append(gs.Regions["dst"].Neighbors, "relief")
+	gs.Regions["relief"] = &world.Region{ID: "relief", OwnerID: "p2", Neighbors: []world.RegionID{"dst"}}
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"attacker": {ID: "attacker", OwnerID: "p1", RegionID: "src", MovePoints: 0, Units: repeatedUnits("inf", 2, 100)},
+		"defender": {ID: "defender", OwnerID: "p2", RegionID: "dst", MovePoints: 0, Units: repeatedUnits("inf", 1, 100)},
+		"relief":   {ID: "relief", OwnerID: "p2", RegionID: "relief", MovePoints: 1, Units: repeatedUnits("inf", 3, 100)},
+	}
+	siege := &state.SiegeState{RegionID: "dst", AttackerArmyID: "attacker", AttackerFactionID: "p1", TurnsElapsed: 1, FortLevel: 1, BreachLevel: 2}
+	g := &Game{gs: gs}
+
+	if g.aiAcceptSiegeSurrenderOffer(gs.Armies["attacker"], gs.Regions["dst"], siege) {
+		t.Fatal("kuşatanı yenebilecek komşu yardım ordusu varken teslimiyet kabul edilmemeli")
+	}
+}
+
 func TestAcceptedLastRegionSiegeVassalizationKeepsRegionAndEndsSiege(t *testing.T) {
 	gs := sortieTestState(1, 1)
 	gs.PlayerFactionID = "p1"

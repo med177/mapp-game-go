@@ -2553,6 +2553,12 @@ func (g *Game) aiAcceptSiegeSurrenderOffer(attacker *army.Army, target *world.Re
 	if siege.TurnsElapsed >= totalTurns {
 		return true
 	}
+	defender := g.gs.SelectBattleDefender(attacker, target.ID, false)
+	// Erken teslimiyet, garnizonu kurtarmak gibi somut bir fayda sağlamalıdır.
+	// Yakında kuşatmayı kaldırabilecek bir ordu varsa savunmacı beklemelidir.
+	if defender == nil || g.gs.HasCapableSiegeReliefArmy(attacker, target) {
+		return false
+	}
 	// Büyük gedik savunmanın çözülme eşiğidir; teslim teklifi için yarı süreyi
 	// bekletmez ve zar gerektirmeden kabul edilir.
 	if siege.BreachLevel >= 2 {
@@ -2564,7 +2570,6 @@ func (g *Game) aiAcceptSiegeSurrenderOffer(attacker *army.Army, target *world.Re
 	if siege.TurnsElapsed < (totalTurns+1)/2 {
 		return false
 	}
-	defender := g.gs.SelectBattleDefender(attacker, target.ID, false)
 	defenderPower := 0
 	if defender != nil {
 		defenderPower = defender.TotalStrength(g.gs.UnitTypes)

@@ -244,6 +244,29 @@ func TestAILastRegionSiegeOffersVassalization(t *testing.T) {
 	t.Fatalf("son toprak için kuşatma vassallığı teklifi üretilmeliydi: %+v", gs.DiplomaticOffers)
 }
 
+func TestAIBesiegedFactionDoesNotOfferSurrenderWithCapableReliefArmy(t *testing.T) {
+	gs := aiSiegeTestState(false)
+	gs.Regions["fort"].OwnerID = "ai_1"
+	gs.Regions["src"].OwnerID = "player"
+	gs.Regions["relief"] = &world.Region{ID: "relief", OwnerID: "ai_1", Neighbors: []world.RegionID{"fort"}}
+	gs.Relations[faction.RelationKey("ai_1", "player")] = &faction.Relation{FactionA: "ai_1", FactionB: "player", Stance: faction.StanceWar}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"fort": {RegionID: "fort", AttackerArmyID: "ai_army", AttackerFactionID: "player", TurnsElapsed: 5, BreachLevel: 2, FortLevel: 2},
+	}
+	gs.Armies["ai_army"].OwnerID = "player"
+	gs.Armies["ai_army"].RegionID = "src"
+	gs.Armies["defender"] = &army.Army{ID: "defender", OwnerID: "ai_1", RegionID: "fort", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}}}
+	gs.Armies["relief"] = &army.Army{ID: "relief", OwnerID: "ai_1", RegionID: "relief", MovePoints: 1, Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}, {TypeID: "inf", CurrentHP: 100}}}
+
+	var steps []TurnStep
+	aiHandleDiplomacyWithSteps(gs, "ai_1", &steps)
+	for _, offer := range gs.DiplomaticOffers {
+		if offer.RegionID == "fort" && offer.Action == string(diplomacy.ActionProposeSurrender) {
+			t.Fatal("kuşatanı yenebilecek yardım ordusu varken kuşatılan AI teslimiyet önermemeli")
+		}
+	}
+}
+
 func TestAISiegeSurrenderRetryCooldownIsRegionScoped(t *testing.T) {
 	gs := &state.GameState{
 		Turn: 5,
