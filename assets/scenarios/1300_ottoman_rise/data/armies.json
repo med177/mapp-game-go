@@ -48,7 +48,7 @@
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 14
       }
     ]
   },
@@ -101,7 +101,7 @@
       },
       {
         "type_id": "militia",
-        "count": 1
+        "count": 6
       }
     ]
   },
@@ -158,7 +158,7 @@
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 4
       }
     ]
   },
@@ -180,7 +180,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 3
+        "count": 10
       }
     ]
   },
@@ -275,7 +275,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 3
+        "count": 10
       }
     ]
   },
@@ -344,6 +344,17 @@
     ]
   },
   {
+    "id": "army_edit_111",
+    "owner_id": "cyprus_kingdom",
+    "region_id": "cyprus",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 8
+      }
+    ]
+  },
+  {
     "id": "army_edit_112",
     "owner_id": "aragon",
     "region_id": "catalonia",
@@ -370,6 +381,116 @@
     ]
   },
   {
+    "id": "army_edit_114",
+    "owner_id": "venice",
+    "region_id": "rhodes",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_115",
+    "owner_id": "venice",
+    "region_id": "crete",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_116",
+    "owner_id": "athena_duk",
+    "region_id": "greece",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_117",
+    "owner_id": "bulgarian_empire",
+    "region_id": "vidin",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_118",
+    "owner_id": "epir",
+    "region_id": "epirus",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_119",
+    "owner_id": "arnavut_des",
+    "region_id": "albania",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_120",
+    "owner_id": "france",
+    "region_id": "dijon",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_121",
+    "owner_id": "hre",
+    "region_id": "thuringia",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 14
+      }
+    ]
+  },
+  {
+    "id": "army_edit_122",
+    "owner_id": "polish_kingdom",
+    "region_id": "mazovia",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_123",
+    "owner_id": "genoa",
+    "region_id": "crimea",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
     "id": "army_edit_49",
     "owner_id": "venice",
     "region_id": "venice",
@@ -380,26 +501,7 @@
       },
       {
         "type_id": "militia",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "army_edit_51",
-    "owner_id": "venice",
-    "region_id": "cyprus",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 1
+        "count": 12
       }
     ]
   },
@@ -523,7 +625,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 2
+        "count": 8
       }
     ]
   },
@@ -581,7 +683,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 3
+        "count": 8
       }
     ]
   },
@@ -605,7 +707,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 3
+        "count": 6
       }
     ]
   },
@@ -629,7 +731,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 3
+        "count": 10
       }
     ]
   },
@@ -789,7 +891,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 3
+        "count": 10
       }
     ]
   },
@@ -864,7 +966,7 @@
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 15
       }
     ]
   },
@@ -894,7 +996,7 @@
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 10
       }
     ]
   },
@@ -985,7 +1087,7 @@
       },
       {
         "type_id": "militia",
-        "count": 1
+        "count": 16
       }
     ]
   },
@@ -1095,7 +1197,7 @@
       },
       {
         "type_id": "militia",
-        "count": 1
+        "count": 8
       }
     ]
   },
@@ -1110,7 +1212,7 @@
       },
       {
         "type_id": "militia",
-        "count": 1
+        "count": 13
       }
     ]
   },
@@ -1276,7 +1378,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 2
+        "count": 10
       }
     ]
   },
@@ -1325,7 +1427,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 2
+        "count": 5
       }
     ]
   },
@@ -1397,7 +1499,7 @@
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 4
       }
     ]
   },
@@ -1491,7 +1593,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 2
+        "count": 14
       }
     ]
   },
@@ -1525,7 +1627,7 @@
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 9
       }
     ]
   },
@@ -1645,7 +1747,7 @@
     "units": [
       {
         "type_id": "warship",
-        "count": 2
+        "count": 10
       }
     ]
   },
@@ -1691,7 +1793,7 @@
     "units": [
       {
         "type_id": "transport",
-        "count": 1
+        "count": 6
       }
     ]
   },
@@ -1733,7 +1835,7 @@
     "units": [
       {
         "type_id": "warship",
-        "count": 2
+        "count": 20
       }
     ]
   },

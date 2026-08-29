@@ -4030,5 +4030,31 @@
         "core": true
       }
     ]
+  },
+  {
+    "id": "cyprus_kingdom",
+    "name": "Cyprus Kingdom",
+    "name_tr": "Kıbrıs Krallığı",
+    "religion": "catholic",
+    "color": [
+      205,
+      185,
+      0
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 1000,
+    "iron": 50,
+    "timber": 200,
+    "stone": 0,
+    "spice": 10,
+    "cloth": 50,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
   }
 ]

@@ -2002,14 +2002,6 @@
         "population": 20
       },
       {
-        "id": "chalkis",
-        "name_tr": "Halkis",
-        "x": 951,
-        "y": 504,
-        "type": "port",
-        "population": 57
-      },
-      {
         "id": "greece_megara",
         "name_tr": "Megara",
         "x": 945,
@@ -2021,8 +2013,22 @@
         "id": "greece_piraeus",
         "name_tr": "Pire",
         "x": 953,
-        "y": 517,
+        "y": 518,
         "type": "port",
+        "population": 57
+      }
+    ]
+  },
+  {
+    "region_id": "egriboz",
+    "settlements": [
+      {
+        "id": "chalkis",
+        "name_tr": "Halkis",
+        "x": 952,
+        "y": 505,
+        "type": "port",
+        "is_center": true,
         "population": 57
       },
       {
@@ -2032,22 +2038,6 @@
         "y": 517,
         "type": "town",
         "population": 38
-      },
-      {
-        "id": "morea_corinth",
-        "name_tr": "Korint",
-        "x": 935,
-        "y": 513,
-        "type": "fortress",
-        "population": 10
-      },
-      {
-        "id": "greece_livadia",
-        "name_tr": "Livadya",
-        "x": 933,
-        "y": 505,
-        "type": "fortress",
-        "population": 4
       }
     ]
   },
@@ -2072,7 +2062,7 @@
       },
       {
         "id": "constantinople_settlement_3",
-        "name_tr": "Bursa",
+        "name_tr": "Prusa",
         "x": 1052,
         "y": 474,
         "type": "city",
@@ -2080,28 +2070,20 @@
         "population": 70
       },
       {
-        "id": "bithynia_iznik",
-        "name_tr": "İznik",
-        "x": 1062,
-        "y": 466,
-        "type": "fortress",
-        "population": 70
-      },
-      {
-        "id": "bithynia_yalova",
-        "name_tr": "Yalova",
-        "x": 1059,
-        "y": 462,
-        "type": "port",
-        "population": 52
-      },
-      {
         "id": "nicaea",
-        "name_tr": "Yenişehir",
+        "name_tr": "Neapolis",
         "x": 1060,
         "y": 477,
         "type": "town",
         "population": 47
+      },
+      {
+        "id": "bithynia_iznik",
+        "name_tr": "İznik",
+        "x": 1060,
+        "y": 467,
+        "type": "fortress",
+        "population": 70
       }
     ]
   },
@@ -3330,7 +3312,7 @@
     "settlements": [
       {
         "id": "edirne",
-        "name_tr": "Edirne",
+        "name_tr": "Adrianapolis",
         "x": 1012,
         "y": 443,
         "type": "fortress",
@@ -3352,7 +3334,7 @@
     "settlements": [
       {
         "id": "gallipoli",
-        "name_tr": "Gelibolu",
+        "name_tr": "Kallipolis",
         "x": 1008,
         "y": 466,
         "type": "town",
@@ -3360,7 +3342,7 @@
       },
       {
         "id": "kallipolis_south",
-        "name_tr": "Bolayır",
+        "name_tr": "Bolair",
         "x": 1012,
         "y": 463,
         "type": "town",
@@ -3385,7 +3367,7 @@
       },
       {
         "id": "gelibolu",
-        "name_tr": "Marmara Ereğlisi",
+        "name_tr": "Herakleia",
         "x": 1030,
         "y": 455,
         "type": "port",
@@ -3399,51 +3381,63 @@
       {
         "id": "blachernae_constantinople",
         "name_tr": "Blaherne",
-        "x": 1051,
-        "y": 453,
+        "x": 1053,
+        "y": 454,
         "type": "town",
         "population": 26
       },
       {
         "id": "constantinople_main",
         "name_tr": "Konstantiniyye",
-        "x": 1056,
-        "y": 456,
+        "x": 1057,
+        "y": 459,
         "type": "fortress",
         "is_center": true,
         "population": 12
+      }
+    ]
+  },
+  {
+    "region_id": "silivri",
+    "settlements": [
+      {
+        "id": "selymbria",
+        "name_tr": "Selymbria",
+        "x": 1041,
+        "y": 453,
+        "type": "town",
+        "is_center": true,
+        "population": 24
       },
+      {
+        "id": "bursa",
+        "name_tr": "Metrae",
+        "x": 1041,
+        "y": 450,
+        "type": "city",
+        "population": 48
+      }
+    ]
+  },
+  {
+    "region_id": "galata",
+    "settlements": [
       {
         "id": "pera_constantinople",
         "name_tr": "Pera",
-        "x": 1055,
-        "y": 451,
+        "x": 1056,
+        "y": 452,
         "type": "town",
+        "is_center": true,
         "population": 36
       },
       {
         "id": "galata",
         "name_tr": "Galata",
-        "x": 1058,
-        "y": 453,
+        "x": 1059,
+        "y": 452,
         "type": "port",
         "population": 36
-      },
-      {
-        "id": "selymbria",
-        "name_tr": "Silivri",
-        "x": 1041,
-        "y": 453,
-        "type": "town",
-        "population": 24
-      },
-      {
-        "id": "bursa",
-        "name_tr": "Çatalca",
-        "x": 1041,
-        "y": 450,
-        "type": "city",
-        "population": 48
       }
     ]
   },
@@ -4153,8 +4147,8 @@
       {
         "id": "lapseki_gallipoli",
         "name_tr": "Lapseki",
-        "x": 1012,
-        "y": 470,
+        "x": 1013,
+        "y": 469,
         "type": "town",
         "population": 32
       },
@@ -6047,7 +6041,7 @@
       },
       {
         "id": "epirus_main",
-        "name_tr": "Epir Despotluğu",
+        "name_tr": "Epir",
         "x": 877,
         "y": 458,
         "type": "city",
@@ -6072,24 +6066,45 @@
         "x": 927,
         "y": 482,
         "type": "city",
-        "is_center": true,
         "population": 19
-      },
-      {
-        "id": "thessaly_trikala",
-        "name_tr": "Tırhala",
-        "x": 911,
-        "y": 484,
-        "type": "town",
-        "population": 9
       },
       {
         "id": "thessaly_volos",
         "name_tr": "Volos",
-        "x": 930,
-        "y": 490,
+        "x": 932,
+        "y": 491,
         "type": "port",
         "population": 14
+      },
+      {
+        "id": "thessaly_settlement_8",
+        "name_tr": "Teselya",
+        "x": 917,
+        "y": 498,
+        "type": "city",
+        "is_center": true,
+        "population": 19
+      },
+      {
+        "id": "greece_livadia",
+        "name_tr": "Livadya",
+        "x": 933,
+        "y": 505,
+        "type": "fortress",
+        "population": 4
+      }
+    ]
+  },
+  {
+    "region_id": "yanya",
+    "settlements": [
+      {
+        "id": "thessaly_trikala",
+        "name_tr": "Tırhala",
+        "x": 910,
+        "y": 484,
+        "type": "town",
+        "population": 9
       },
       {
         "id": "epirus_arta",
@@ -6103,17 +6118,9 @@
         "id": "epirus_parga",
         "name_tr": "Parga",
         "x": 886,
-        "y": 490,
+        "y": 491,
         "type": "port",
         "population": 14
-      },
-      {
-        "id": "thessaly_settlement_8",
-        "name_tr": "Teselya",
-        "x": 917,
-        "y": 498,
-        "type": "city",
-        "population": 19
       },
       {
         "id": "epirus_ioannina",
@@ -6121,15 +6128,8 @@
         "x": 889,
         "y": 480,
         "type": "city",
+        "is_center": true,
         "population": 19
-      },
-      {
-        "id": "langadas",
-        "name_tr": "Langaza",
-        "x": 913,
-        "y": 460,
-        "type": "town",
-        "population": 147
       }
     ]
   },
@@ -6152,6 +6152,14 @@
         "y": 453,
         "type": "town",
         "population": 9
+      },
+      {
+        "id": "langadas",
+        "name_tr": "Langaza",
+        "x": 913,
+        "y": 460,
+        "type": "town",
+        "population": 147
       }
     ]
   },
@@ -6168,13 +6176,26 @@
         "population": 12
       },
       {
-        "id": "morea_mistra",
-        "name_tr": "Mistra",
-        "x": 920,
-        "y": 531,
-        "type": "city",
-        "population": 40
+        "id": "morea_patras",
+        "name_tr": "Patras",
+        "x": 910,
+        "y": 511,
+        "type": "port",
+        "population": 30
       },
+      {
+        "id": "morea_corinth",
+        "name_tr": "Korint",
+        "x": 934,
+        "y": 514,
+        "type": "fortress",
+        "population": 10
+      }
+    ]
+  },
+  {
+    "region_id": "morea_south",
+    "settlements": [
       {
         "id": "morea_nauplion",
         "name_tr": "Anabolu",
@@ -6184,12 +6205,13 @@
         "population": 30
       },
       {
-        "id": "morea_patras",
-        "name_tr": "Patras",
-        "x": 910,
-        "y": 511,
-        "type": "port",
-        "population": 30
+        "id": "morea_mistra",
+        "name_tr": "Mistra",
+        "x": 920,
+        "y": 531,
+        "type": "city",
+        "is_center": true,
+        "population": 40
       }
     ]
   },
@@ -6229,8 +6251,8 @@
       {
         "id": "bithynia_bilecik",
         "name_tr": "Pazaryeri",
-        "x": 1068,
-        "y": 481,
+        "x": 1066,
+        "y": 483,
         "type": "fortress",
         "is_center": true,
         "population": 25
@@ -6570,20 +6592,34 @@
         "population": 7
       },
       {
-        "id": "scutari",
-        "name_tr": "Üsküdar",
-        "x": 1063,
-        "y": 455,
-        "type": "town",
-        "population": 15
-      },
+        "id": "bithynia_yalova",
+        "name_tr": "Yalova",
+        "x": 1061,
+        "y": 463,
+        "type": "port",
+        "population": 52
+      }
+    ]
+  },
+  {
+    "region_id": "khalkedon",
+    "settlements": [
       {
         "id": "chalcedon",
-        "name_tr": "Kadıköy / Khalkedon",
-        "x": 1061,
+        "name_tr": "Khalkedon",
+        "x": 1059,
         "y": 458,
         "type": "port",
         "population": 22
+      },
+      {
+        "id": "scutari",
+        "name_tr": "Scutari",
+        "x": 1062,
+        "y": 454,
+        "type": "town",
+        "is_center": true,
+        "population": 15
       }
     ]
   },
@@ -6706,7 +6742,7 @@
     "settlements": [
       {
         "id": "paphlagonia_bolu",
-        "name_tr": "Bolu",
+        "name_tr": "Claudipolis",
         "x": 1092,
         "y": 461,
         "type": "town",
@@ -6926,7 +6962,7 @@
     "settlements": [
       {
         "id": "serres_settlement_1",
-        "name_tr": "Gümülcine",
+        "name_tr": "Koumoutzina",
         "x": 991,
         "y": 456,
         "type": "city",
