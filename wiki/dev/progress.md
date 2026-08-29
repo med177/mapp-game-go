@@ -1,11 +1,18 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-28
+last_updated: 2026-08-29
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-08-29: Aktif kuşatma bölgesinde bulunan, kuşatanla savaşta olmayan ve
+  kuşatanın müttefiki/aynı realm'ı olmayan üçüncü devlet orduları, son geldikleri
+  geçerli komşu bölgeye otomatik olarak geri çıkarılıyor. Orduların son hareket
+  kaynağı `PreviousRegionID` ile save uyumlu biçimde tutuluyor. Regression:
+  `TestResolveSiegesEvacuatesDefenderAlliesFromBesiegedRegion`; kapsam:
+  `internal/army/army.go`, `internal/game/{game.go,land_contact.go,siege.go}`.
 
 - 2026-08-28: 1300 senaryosuna Artuklu, Eretna, Kadı Burhaneddin, Karakoyunlu,
   Akkoyunlu, Celayirli, Muzafferî, Şirvanşah, Timur ve Afşar ardıl devletleri
@@ -1130,6 +1137,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `TestExecuteMoveCreatesContactBeforeSiegeOnFortifiedTargetWithDefender`,
   `TestFortifiedLandContactClashOpensSiegeDecision`; doğrulama:
   `go test ./...`.
+
+- 2026-08-29: Tahkimli bölgede düşman ordusuyla kara teması çatışmaya
+  dönüştüğünde kuşatma kararının araya girmesi düzeltildi. `Çatış` seçimi artık
+  tahkimat seviyesinden bağımsız olarak `ShowLandContactBattlePlan` kara
+  muharebesi planına gider; kuşatma kararı yalnızca hedefte düşman ordusu
+  bulunmayan normal hareket akışında açılır. Regression:
+  `TestFortifiedLandContactClashOpensBattlePlan`; doğrulama:
+  `go test ./internal/game ./internal/render -count=1`.
 
 - 2026-08-02: Görevi atanmış ancak görev bölgesine ulaşmamış oyuncu filolarında
   sağ-üstte siyah borderlı gri dairesel bekleyen-görev rozeti gösteriliyor.

@@ -727,6 +727,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		}
 		targetRegion := g.gs.Regions[regionID]
 		attacker := g.gs.Armies[siege.AttackerArmyID]
+		g.evacuateNonBelligerentArmiesFromSiege(regionID, siege, attacker)
 		if targetRegion == nil || attacker == nil || targetRegion.OwnerID == "" || targetRegion.OwnerID == attacker.OwnerID || (attacker.RegionID != regionID && !regionsAdjacent(g.gs, attacker.RegionID, regionID)) || !gameFactionsAtWar(g.gs, attacker.OwnerID, targetRegion.OwnerID) {
 			// Kuşatma geçersiz → orduyu homeRegion'a geri taşı
 			if attacker != nil && siege.AttackerHomeRegionID != "" {
@@ -830,4 +831,45 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		}
 	}
 	return updates
+}
+
+// evacuateNonBelligerentArmiesFromSiege, kuşatanla savaşta olmayan üçüncü
+// devlet ordularının kuşatma hattında çatışmaya zorlanmasını önler. Bu ordular
+// kuşatma bölgesine son hareketlerinde geldikleri komşu bölgeye döner;
+// önceki konum bilinmiyorsa veya artık geçerli değilse sessizce bırakılır.
+func (g *Game) evacuateNonBelligerentArmiesFromSiege(regionID world.RegionID, siege *state.SiegeState, besieger *army.Army) int {
+	if g == nil || g.gs == nil || siege == nil || besieger == nil || regionID == "" {
+		return 0
+	}
+	count := 0
+	for _, candidate := range g.gs.Armies {
+		if candidate == nil || candidate.ID == besieger.ID || candidate.IsNaval ||
+			candidate.RegionID != regionID || candidate.PreviousRegionID == "" ||
+			candidate.PreviousRegionID == regionID {
+			continue
+		}
+		if gameFactionsAtWar(g.gs, candidate.OwnerID, besieger.OwnerID) {
+			continue
+		}
+		// Kuşatanın aynı realm/müttefik destekçileri savaşta görünmese de
+		// kuşatma gücünün parçasıdır; yalnızca karşı tarafın müttefikleri veya
+		// ilgisiz devletler geri gönderilir.
+		if g.gs.CanJoinActiveSiege(candidate, regionID) {
+			continue
+		}
+		if !regionsAdjacent(g.gs, candidate.PreviousRegionID, regionID) {
+			continue
+		}
+		previous := candidate.RegionID
+		candidate.RegionID = candidate.PreviousRegionID
+		candidate.PreviousRegionID = previous
+		candidate.DockedRegionID = ""
+		candidate.DockedSettlementID = ""
+		candidate.InAmbush = false
+		count++
+		if g.renderer != nil {
+			g.renderer.MarkMapDirty()
+		}
+	}
+	return count
 }

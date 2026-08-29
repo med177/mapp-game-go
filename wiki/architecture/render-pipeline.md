@@ -288,10 +288,11 @@ aynı çizim/hit-test geometrisini paylaşır; panel yüksekliği alt bara göre
 ankorlanmaya devam eder (`internal/render/army_panel.go`, `ui_geometry_test.go`).
 
 Tahkimli bölgeye düşman kara ordusu hareketinde de temas popup'ı, kuşatma
-kararından önce gelir. Oyuncu `Çatış` seçerse tahkimli hedefte
-`ShowLandContactSiegeDecision` mevcut `Kuşatma Kararı` modalını açar; açık
-arazide ise `ShowLandContactBattlePlan` kara muharebesi planını açar. Her iki
-akışta da çizim ve input ortak modal/action state'inden türetilir. Temas
+kararından önce gelir. Oyuncu `Çatış` seçerse tahkimatlı hedefte de
+`ShowLandContactBattlePlan` kara muharebesi planını açar; temas halinde düşman
+ordusu varken kuşatma kararı açılmaz. Kuşatma kararı, düşman ordusu olmayan
+tahkimli normal hareket için `ShowSiegeDecision` ile açılır. Her iki akışta da
+çizim ve input ortak modal/action state'inden türetilir. Temas
 popup'ı açılırken saldıran ordunun `RegionID` değeri hedefe taşınır ve harita
 marker'ı hedef bölgede görünür; `MovementConsumed` bilgisi savaş planına
 aktarılıp hareket puanının ikinci kez düşmesi engellenir.

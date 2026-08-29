@@ -66,14 +66,15 @@ func TestLandContactClashOpensBattlePlan(t *testing.T) {
 	}
 }
 
-func TestFortifiedLandContactClashOpensSiegeDecision(t *testing.T) {
+func TestFortifiedLandContactClashOpensBattlePlan(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "p1",
 		Regions: map[world.RegionID]*world.Region{
 			"fort": {ID: "fort", NameTR: "Test Kalesi", OwnerID: "p2", Buildings: []string{"walls"}},
 		},
 		Armies: map[army.ArmyID]*army.Army{
-			"player-army": {ID: "player-army", OwnerID: "p1", RegionID: "source", Units: []army.Unit{{TypeID: "inf"}}},
+			"player-army": {ID: "player-army", OwnerID: "p1", RegionID: "fort", Units: []army.Unit{{TypeID: "inf"}}},
+			"enemy-army":  {ID: "enemy-army", OwnerID: "p2", RegionID: "fort", Units: []army.Unit{{TypeID: "inf"}}},
 		},
 		UnitTypes: map[string]*army.UnitType{
 			"inf": {ID: "inf", Category: army.CategoryInfantry},
@@ -81,10 +82,10 @@ func TestFortifiedLandContactClashOpensSiegeDecision(t *testing.T) {
 	}
 	r := &Renderer{gs: gs}
 
-	if !r.ShowLandContactSiegeDecision("player-army", "fort") {
-		t.Fatal("tahkimli kara temasında çatış seçilince kuşatma kararı açılmalı")
+	if !r.ShowLandContactBattlePlan("player-army", "enemy-army", "fort") {
+		t.Fatal("tahkimli kara temasında çatış seçilince kara muharebesi planı açılmalı")
 	}
-	if !r.confirmDialog.show || r.confirmDialog.pendingAction.Kind != ActionStartSiege {
-		t.Fatalf("temas sonrası kuşatma kararı yerine başka modal açıldı: %+v", r.confirmDialog)
+	if !r.battlePlan.show || !r.battlePlan.contactResolved || r.battlePlan.battleContext != combat.BattleContextLand {
+		t.Fatalf("tahkimli temas sonrası battle plan state'i kurulmadı: %+v", r.battlePlan)
 	}
 }

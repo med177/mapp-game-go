@@ -1749,6 +1749,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					contactDefenderHolding = contact.DefenderDecision == state.LandContactHold
 				}
 				if a.RegionID == contactFromRegion && a.MovePoints > 0 {
+					a.PreviousRegionID = a.RegionID
 					a.RegionID = target
 					a.DockedRegionID = ""
 					a.DockedSettlementID = ""
@@ -1825,6 +1826,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 						canExitToTarget = stance == faction.StanceAllied
 					}
 					if canExitToTarget && len(a.Units) > 0 {
+						a.PreviousRegionID = a.RegionID
 						a.RegionID = target
 						a.MovePoints = maxInt(0, a.MovePoints-1)
 						gs.ApplyLandRegionEntryAttrition(a)
@@ -2048,6 +2050,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					gs.RemoveArmy(defender.ID)
 				}
 				if len(a.Units) > 0 {
+					a.PreviousRegionID = a.RegionID
 					a.RegionID = target
 					a.DockedRegionID = ""
 					a.DockedSettlementID = ""
@@ -2122,6 +2125,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					contactDefenderHolding = contact.DefenderDecision == state.NavalContactHold
 				}
 				if contact.AttackerArmyID == a.ID && contact.AttackerFromRegionID == contactFromRegion && a.RegionID == contactFromRegion {
+					a.PreviousRegionID = a.RegionID
 					a.RegionID = target
 					a.DockedRegionID = ""
 					a.DockedSettlementID = ""
@@ -2240,6 +2244,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 				aiClearSiege(gs, target)
 			}
 			if len(a.Units) > 0 {
+				a.PreviousRegionID = a.RegionID
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
@@ -2308,6 +2313,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	}
 
 	// Savaşsız hareket
+	a.PreviousRegionID = a.RegionID
 	a.RegionID = target
 	a.DockedRegionID = ""
 	a.DockedSettlementID = ""

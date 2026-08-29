@@ -1681,30 +1681,68 @@ func (s *GameState) DistributeDefenderLosses(sourceIDs []army.ArmyID, totalLost 
 	if s == nil || len(sourceIDs) == 0 || totalLost <= 0 {
 		return
 	}
-	remaining := totalLost
+	available := 0
 	for _, id := range sourceIDs {
+		if source := s.Armies[id]; source != nil {
+			available += len(source.Units)
+		}
+	}
+	if available == 0 {
+		return
+	}
+	if totalLost > available {
+		totalLost = available
+	}
+
+	// Birleşik savunma ordusundaki toplam kaybı gerçek ordulara tam olarak
+	// dağıt. Taban bölümünü kullanmak, tek birimlik orduda 1 kaybı 0'a
+	// yuvarlayıp son düşman biriminin sonsuza kadar kalmasına yol açıyordu.
+	allocations := make([]int, len(sourceIDs))
+	remainders := make([]int, len(sourceIDs))
+	allocated := 0
+	for i, id := range sourceIDs {
+		source := s.Armies[id]
+		if source == nil || len(source.Units) == 0 {
+			continue
+		}
+		product := totalLost * len(source.Units)
+		allocations[i] = product / available
+		remainders[i] = product % available
+		if allocations[i] > len(source.Units) {
+			allocations[i] = len(source.Units)
+		}
+		allocated += allocations[i]
+	}
+	for allocated < totalLost {
+		best := -1
+		for i, id := range sourceIDs {
+			source := s.Armies[id]
+			if source == nil || allocations[i] >= len(source.Units) {
+				continue
+			}
+			if best == -1 || remainders[i] > remainders[best] {
+				best = i
+			}
+		}
+		if best == -1 {
+			break
+		}
+		allocations[best]++
+		allocated++
+	}
+
+	for i, id := range sourceIDs {
 		a := s.Armies[id]
-		if a == nil || len(a.Units) == 0 {
+		lose := allocations[i]
+		if a == nil || lose <= 0 {
 			continue
 		}
-		canLose := len(a.Units)
-		lose := (totalLost * canLose) / (totalLost + canLose) // basit orantı
-		if lose > canLose {
-			lose = canLose
-		}
-		if lose > remaining {
-			lose = remaining
-		}
-		if lose <= 0 {
-			continue
+		if lose > len(a.Units) {
+			lose = len(a.Units)
 		}
 		a.Units = a.Units[:len(a.Units)-lose]
-		remaining -= lose
 		if len(a.Units) == 0 {
 			s.RemoveArmy(id)
-		}
-		if remaining <= 0 {
-			break
 		}
 	}
 }

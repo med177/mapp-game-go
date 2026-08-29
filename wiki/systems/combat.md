@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [combat, battle, terrain, casualties]
-last_updated: 2026-08-28
+last_updated: 2026-08-29
 related: [systems/ai, systems/economy, world/regions, systems/tech-tree, architecture/render-pipeline, architecture/state-management]
 ---
 
@@ -28,9 +28,10 @@ girer ve haritada görünür; hareket puanı bu girişte tüketilir. Saldıran g
 komşu kara bölgesine taşınır.
 Tahkimli kara bölgelerde de önce temas kararı alınır; bölgeye kuşatma başlatma
 veya genel hücum doğrudan tetiklenmez. Temas popup'ında taraflardan biri
-`Çatış`, diğeri `Pozisyonu Koru` seçerse de mevcut `Kuşatma Kararı` akışı açılır
-ve normal kuşatma/genel hücum
-çözümüne devam edilir. Resolve tamamlanınca oyuncu tarafında render katmanı
+`Çatış` seçip diğeri geri çekilmezse, düşman ordusu mevcut olduğu için normal
+kara muharebesi planı açılır; tahkimat bu temas savaşını kuşatmaya çevirmez.
+Kuşatma kararı, tahkimli hedefte düşman ordusu bulunmayan normal hareket
+akışında açılır. Resolve tamamlanınca oyuncu tarafında render katmanı
 ayrı bir savaş raporu modalı açar; burada sonuç, duruş ve tarafların `Güç / Birim
 / HP` önce-sonra kırılımı gösterilir.
 
@@ -60,8 +61,8 @@ geri çekilmesi ise hareket puanı ve güvenli kara komşusu şartlarına bağl�
 
 AI kara temasında güç farkı `%135` veya daha yüksekse ve güvenli geri çekilme
 rotası varsa geri çekilir; aksi halde çatışmayı kabul eder. Tahkimli hedeflerde
-de aynı temas popup'ı kullanılır; `Çatış` sonrası kuşatma/genel hücum sözleşmesi
-korunur. Zaten aktif kuşatma altındaki destek/huruç akışı ise kendi mevcut
+de aynı temas popup'ı kullanılır; `Çatış` sonrası düşman ordusuyla kara
+muharebesi çözülür. Zaten aktif kuşatma altındaki destek/huruç akışı ise kendi mevcut
 kuşatma kurallarıyla devam eder.
 
 Temas sonrası `Pozisyonu Koru` seçilip ordu düşman toprağında kaldığında aynı
@@ -235,7 +236,7 @@ Tahkimli kara bölgesi (`fortress` settlement veya `walls` seviyesi) artık ayr�
 2. İlk temas anında oyuncu sağ tık sonrası `Kuşatma Kararı` modalında `Kuşatma Başlat` veya, kuşatma birimi varsa, `Genel Hücum` seçer.
 3. `Kuşatma Başlat` anında ordu hedefe girmez; `GameState.Sieges` içine kayıt yazılır ve ordu hareketi biter.
 4. Gedik ilerlemesi artık kuşatma ekipmanı tier'i ile kale seviyesi birlikte dikkate alınarak hesaplanır: yüksek tahkimatlar düşük tier araçlarla da zorlanabilir, ama ilerleme çok daha yavaş olur. Daha düşük tier araçlar kuşatmayı sürdürür, savunucuyu yıpratır ve ancak uzun sürede gedik üretir.
-5. Her tur çözümlemesinde kuşatma baskısı, kuşatılan bölgede o anda bulunan savaş halindeki savunma ordusuna attrition uygular; savunmacı kuşatma başlangıcından sonra gelmişse de her tick'te yeniden bulunur. Savunma ordusu yoksa kuşatan orduya çatışma kaybından düşük olmak üzere `3 HP/birim/tur` kuşatma yıpranması uygulanır. Gedik kapasitesi yetiyorsa ayrıca `BreachProgress` artar ve gedik seviyesi (`yok / küçük / büyük`) güncellenir. Kuşatılan bölgedeki her `granary` seviyesi savunucu kuşatma ve bölgesel lojistik yıpranmasını `%10` azaltır; bu savunma bonusu en fazla `%30`dur ve kuşatan orduya uygulanmaz.
+5. Her tur çözümlemesinde kuşatma baskısı, kuşatılan bölgede o anda bulunan savaş halindeki savunma ordusuna attrition uygular; savunmacı kuşatma başlangıcından sonra gelmişse de her tick'te yeniden bulunur. Kuşatanla savaşta olmayan ve kuşatanın müttefiki/aynı realm'ı olmayan üçüncü devlet orduları kuşatma çözümünün başında, son hareketlerinden önceki geçerli komşu bölgeye geri çıkarılır; böylece kuşatılan tarafın müttefikleri kuşatanla zorunlu çatışmaya girmez. Savunma ordusu yoksa kuşatan orduya çatışma kaybından düşük olmak üzere `3 HP/birim/tur` kuşatma yıpranması uygulanır. Gedik kapasitesi yetiyorsa ayrıca `BreachProgress` artar ve gedik seviyesi (`yok / küçük / büyük`) güncellenir. Kuşatılan bölgedeki her `granary` seviyesi savunucu kuşatma ve bölgesel lojistik yıpranmasını `%10` azaltır; bu savunma bonusu en fazla `%30`dur ve kuşatan orduya uygulanmaz.
 6. Aktif kuşatma seçildiğinde renderer alt-ortada modal-dışı `Kuşatma Emri` paneli gösterir; oyuncu buradan `Genel Hücum` veya `Kuşatmayı Kaldır` seçebilir.
 7. Aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için normal hareketle girebilir; bu giriş ayrı bir kuşatma başlatmaz ve destek ordusu otomatik olarak başka bir orduyla birleşmez. Destek orduları aktif bölgedeki canlı state'ten her kuşatma tick'inde taranır; sonradan getirilen kuşatma birimleri de `BreachProgress` ve gedik kazanımını güçlendirir. İlgisiz fraksiyonlar yeni kuşatma hamlesi yapamaz.
 8. Kuşatmayı yapan ordu başka komşu bölgeye normal hareket emri alırsa bu hareket, eski kuşatmayı otomatik kaldırır; ayrı ikinci onay gerekmez.

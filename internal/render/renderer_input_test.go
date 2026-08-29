@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -98,6 +99,7 @@ func TestCurrentRegionTaskOffersDirectCaptureForUnfortifiedHeldEnemyRegion(t *te
 func TestCurrentRegionTaskOpensBattlePlanWhenUnfortifiedRegionHasEnemyArmy(t *testing.T) {
 	r := currentRegionTaskTestRenderer(false)
 	target := r.gs.Regions["enemy_region"]
+	r.gs.Armies["attacker"].MovePoints = 1
 	r.gs.Armies["defender"] = &army.Army{
 		ID: "defender", OwnerID: "enemy", RegionID: target.ID,
 		Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
@@ -111,6 +113,30 @@ func TestCurrentRegionTaskOpensBattlePlanWhenUnfortifiedRegionHasEnemyArmy(t *te
 	}
 	if !r.battlePlan.show || r.battlePlan.actionKind != ActionMoveArmy || !r.battlePlan.contactResolved {
 		t.Fatalf("düşman ordusu varken ele geçirme yerine temas çözülmüş savaş planı açılmalıydı: %+v", r.battlePlan)
+	}
+}
+
+func TestCurrentRegionTaskOpensBattlePlanAgainstEnemyArmyInOwnedFortifiedRegion(t *testing.T) {
+	r := currentRegionTaskTestRenderer(true)
+	target := r.gs.Regions["enemy_region"]
+	target.OwnerID = "player"
+	r.gs.Armies["attacker"].MovePoints = 1
+	r.gs.Armies["defender"] = &army.Army{
+		ID: "defender", OwnerID: "enemy", RegionID: target.ID,
+		Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+	}
+	r.gs.UnitTypes = map[string]*army.UnitType{
+		"infantry": {ID: "infantry", Category: army.CategoryInfantry, Attack: 10, Defense: 10, Morale: 50},
+	}
+
+	if !r.openCurrentRegionArmyTask(r.gs.Armies["attacker"], target) {
+		t.Fatal("kendi tahkimatlı bölgesindeki düşman orduya saldırı planı açılmalıydı")
+	}
+	if !r.battlePlan.show || !r.battlePlan.contactResolved || r.battlePlan.battleContext != combat.BattleContextLand {
+		t.Fatalf("kendi bölgesindeki düşman için kara muharebesi planı kurulmadı: %+v", r.battlePlan)
+	}
+	if r.regionTaskDialog.show || r.confirmDialog.show {
+		t.Fatal("kendi tahkimatlı bölgesindeki düşman saldırısı kuşatma/görev modalı açmamalıydı")
 	}
 }
 

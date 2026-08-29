@@ -5324,6 +5324,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 				g.clearSiege(target)
 			}
 			if len(a.Units) > 0 {
+				a.PreviousRegionID = a.RegionID
 				a.RegionID = target
 				a.DockedRegionID = ""
 				a.DockedSettlementID = ""
@@ -5401,6 +5402,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		if liftedSiegeRegion != "" {
 			g.releaseSiegeForArmyMovement(liftedSiegeRegion, aid)
 		}
+		a.PreviousRegionID = a.RegionID
 		a.RegionID = target
 		a.DockedRegionID = ""
 		a.DockedSettlementID = ""

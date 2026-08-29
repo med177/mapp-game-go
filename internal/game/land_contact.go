@@ -19,6 +19,7 @@ func (g *Game) beginLandContact(attacker, defender *army.Army, landID, fromRegio
 	}
 	ai.ResolveLandContactDecision(g.gs, contact)
 	if moveBeforePrompt && contact.AttackerArmyID == attacker.ID && contact.AttackerFromRegionID == fromRegion && attacker.RegionID == fromRegion {
+		attacker.PreviousRegionID = attacker.RegionID
 		attacker.RegionID = landID
 		attacker.DockedRegionID = ""
 		attacker.DockedSettlementID = ""
@@ -136,13 +137,9 @@ func (g *Game) resolveLandContactChoice(choice int) {
 		defenderHolding := contact.DefenderDecision == state.LandContactHold
 		g.gs.ClearLandContact()
 		if playerIsAttacker {
-			if contact.AmbushArmyID == "" {
-				if target := g.gs.Regions[contact.LandRegionID]; target != nil && target.IsFortified() {
-					if g.renderer.ShowLandContactSiegeDecision(attacker.ID, contact.LandRegionID) {
-						return
-					}
-				}
-			}
+			// Temas çatışmaya dönüştüyse tahkimat, mevcut ordular arasındaki
+			// kara muharebesini ertelememelidir. Kuşatma kararı ancak hedefte
+			// düşman ordusu yokken, normal hareket akışında açılır.
 			if g.renderer.ShowLandContactBattlePlan(attacker.ID, defender.ID, contact.LandRegionID, attackerHolding, defenderHolding) {
 				return
 			}

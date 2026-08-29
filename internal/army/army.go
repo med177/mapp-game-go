@@ -36,9 +36,13 @@ type ArmyID string
 
 // Army harita üzerindeki bir orduyu temsil eder.
 type Army struct {
-	ID                 ArmyID         `json:"id"`
-	OwnerID            string         `json:"owner_id"` // fraksiyon ID
-	RegionID           world.RegionID `json:"region_id"`
+	ID       ArmyID         `json:"id"`
+	OwnerID  string         `json:"owner_id"` // fraksiyon ID
+	RegionID world.RegionID `json:"region_id"`
+	// PreviousRegionID, ordunun son kara hareketinden önce bulunduğu bölgedir.
+	// Eski kayıtlar için boş bırakılabilir; yalnızca geri çekilme gibi bağlamlarda
+	// güvenilir bir hedef olarak kullanılır.
+	PreviousRegionID   world.RegionID `json:"previous_region_id,omitempty"`
 	DockedRegionID     world.RegionID `json:"docked_region_id,omitempty"`
 	DockedSettlementID string         `json:"docked_settlement_id,omitempty"`
 	Units              []Unit         `json:"units"`

@@ -32,6 +32,20 @@ func TestSelectBattleDefenderPrefersStrongestDeterministically(t *testing.T) {
 	}
 }
 
+func TestDistributeDefenderLossesRemovesLastUnit(t *testing.T) {
+	gs := &GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"defender": {ID: "defender", Units: []army.Unit{{TypeID: "infantry"}}},
+		},
+	}
+
+	gs.DistributeDefenderLosses([]army.ArmyID{"defender"}, 1)
+
+	if _, ok := gs.Armies["defender"]; ok {
+		t.Fatal("toplam kayıp son birim olduğunda savunma ordusu kaldırılmalı")
+	}
+}
+
 func TestSelectBattleDefenderFiltersNavalTargetsByWarState(t *testing.T) {
 	gs := &GameState{
 		Armies: map[army.ArmyID]*army.Army{

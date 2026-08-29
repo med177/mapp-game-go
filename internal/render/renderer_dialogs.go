@@ -485,8 +485,8 @@ func (r *Renderer) ShowLandContactBattlePlan(attackerID, defenderID army.ArmyID,
 	return true
 }
 
-// ShowSiegeDecision, savaş ilanı veya temas akışı tamamlandıktan sonra
-// kuşatma kararını açar.
+// ShowSiegeDecision, savaş ilanı veya düşman ordusu olmayan tahkimli hareket
+// akışı tamamlandıktan sonra kuşatma kararını açar.
 func (r *Renderer) ShowSiegeDecision(attackerID army.ArmyID, landID world.RegionID) bool {
 	if r == nil || r.gs == nil {
 		return false
@@ -498,12 +498,6 @@ func (r *Renderer) ShowSiegeDecision(attackerID army.ArmyID, landID world.Region
 	}
 	r.openSiegeDecision(attacker, target)
 	return r.confirmDialog.show
-}
-
-// ShowLandContactSiegeDecision, tahkimli kara temasında Çatış kararından sonra
-// mevcut kuşatma kararını açar; böylece temas seçimi kuşatmayı doğrudan başlatmaz.
-func (r *Renderer) ShowLandContactSiegeDecision(attackerID army.ArmyID, landID world.RegionID) bool {
-	return r.ShowSiegeDecision(attackerID, landID)
 }
 
 // openBattlePlanWithDestination savaşın gerçekleştiği bölge ile zaferden

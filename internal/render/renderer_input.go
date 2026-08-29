@@ -1393,15 +1393,10 @@ func (r *Renderer) openCurrentRegionArmyTask(attacker *army.Army, target *world.
 	if !r.currentRegionArmyTaskAvailable(attacker, target) {
 		return false
 	}
-	if target.IsFortified() {
-		if active := r.gs.SiegeAt(target.ID); active != nil && active.AttackerArmyID == attacker.ID {
-			r.openSiegeDecision(attacker, target)
-			return r.confirmDialog.show
-		}
-		r.showRegionTaskDialog(attacker, target, true)
-		return r.regionTaskDialog.show
-	}
 	if defender := r.gs.SelectBattleDefender(attacker, target.ID, false); defender != nil {
+		if attacker.MovePoints <= 0 {
+			return false
+		}
 		battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(attacker, target, defender)
 		if opensBattlePlan {
 			r.openBattlePlan(attacker, target, defender, battleAction, battleContext)
@@ -1415,6 +1410,14 @@ func (r *Renderer) openCurrentRegionArmyTask(attacker *army.Army, target *world.
 		}
 		return false
 	}
+	if target.IsFortified() {
+		if active := r.gs.SiegeAt(target.ID); active != nil && active.AttackerArmyID == attacker.ID {
+			r.openSiegeDecision(attacker, target)
+			return r.confirmDialog.show
+		}
+		r.showRegionTaskDialog(attacker, target, true)
+		return r.regionTaskDialog.show
+	}
 	r.showRegionTaskDialog(attacker, target, false)
 	return r.regionTaskDialog.show
 }
@@ -1423,8 +1426,14 @@ func (r *Renderer) openCurrentRegionArmyTask(attacker *army.Army, target *world.
 // input katmanlarında aynı geçerlilik koşulunu kullanmasını sağlar.
 func (r *Renderer) currentRegionArmyTaskAvailable(attacker *army.Army, target *world.Region) bool {
 	if r == nil || r.gs == nil || attacker == nil || target == nil || attacker.IsNaval ||
-		attacker.RegionID != target.ID || target.IsSea || target.OwnerID == "" || target.OwnerID == attacker.OwnerID {
+		attacker.RegionID != target.ID || target.IsSea || target.OwnerID == "" {
 		return false
+	}
+	if target.OwnerID == attacker.OwnerID {
+		// Kendi bölgesindeki düşman ordusuna saldırı, bölge sahibinden
+		// bağımsız olarak gerçek düşman ordunun varlığına ve hareket hakkına
+		// bağlıdır. Kendi tahkimatımız tek başına görev üretmez.
+		return attacker.MovePoints > 0 && r.gs.SelectBattleDefender(attacker, target.ID, false) != nil
 	}
 	key := faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
 	rel := r.gs.Relations[key]

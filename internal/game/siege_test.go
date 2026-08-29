@@ -791,6 +791,44 @@ func TestResolveSiegesUsesSiegeUnitArrivingAfterSiegeStarted(t *testing.T) {
 	}
 }
 
+func TestResolveSiegesEvacuatesDefenderAlliesFromBesiegedRegion(t *testing.T) {
+	gs := siegeSupportTestState()
+	gs.Factions["enemy_ally"] = &faction.Faction{ID: "enemy_ally", Religion: "catholic"}
+	gs.Regions["enemy_ally_src"] = &world.Region{
+		ID: "enemy_ally_src", OwnerID: "enemy_ally", Neighbors: []world.RegionID{"dst"},
+	}
+	gs.Regions["dst"].Neighbors = append(gs.Regions["dst"].Neighbors, "enemy_ally_src")
+	gs.Relations[faction.RelationKey("enemy_ally", "p3")] = &faction.Relation{
+		FactionA: "enemy_ally", FactionB: "p3", Stance: faction.StanceAllied,
+	}
+	gs.Armies = map[army.ArmyID]*army.Army{
+		"besieger": {
+			ID: "besieger", OwnerID: "p1", RegionID: "dst",
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+		"defender": {
+			ID: "defender", OwnerID: "p3", RegionID: "dst",
+			Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+		"enemy_ally_army": {
+			ID: "enemy_ally_army", OwnerID: "enemy_ally", RegionID: "dst",
+			PreviousRegionID: "enemy_ally_src", Units: []army.Unit{{TypeID: "inf", CurrentHP: 100}},
+		},
+	}
+	gs.Sieges = map[world.RegionID]*state.SiegeState{
+		"dst": {RegionID: "dst", AttackerArmyID: "besieger", AttackerFactionID: "p1", FortLevel: 2},
+	}
+
+	(&Game{gs: gs}).resolveSieges()
+
+	if got := gs.Armies["enemy_ally_army"].RegionID; got != "enemy_ally_src" {
+		t.Fatalf("kuşatılan tarafın müttefiki önceki bölgesine dönmeliydi, got=%s", got)
+	}
+	if got := gs.Armies["enemy_ally_army"].PreviousRegionID; got != "dst" {
+		t.Fatalf("geri çekilmede önceki bölge zinciri korunmalıydı, got=%s", got)
+	}
+}
+
 func TestResolveSiegesGranaryReducesDefenderAttrition(t *testing.T) {
 	buildState := func(withGranary bool) *state.GameState {
 		gs := siegeTestState()

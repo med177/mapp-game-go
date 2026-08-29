@@ -81,6 +81,7 @@ type stackedUnitSaveState struct {
 type armySaveState struct {
 	OwnerID            string                 `json:"o"`
 	RegionID           world.RegionID         `json:"r"`
+	PreviousRegionID   world.RegionID         `json:"pr,omitempty"`
 	DockedRegionID     world.RegionID         `json:"dr,omitempty"`
 	DockedSettlementID string                 `json:"ds,omitempty"`
 	Units              []stackedUnitSaveState `json:"u"`
@@ -1273,6 +1274,7 @@ func convertArmiesToSaveState(armies map[army.ArmyID]*army.Army) map[army.ArmyID
 		out[id] = armySaveState{
 			OwnerID:            current.OwnerID,
 			RegionID:           current.RegionID,
+			PreviousRegionID:   current.PreviousRegionID,
 			DockedRegionID:     current.DockedRegionID,
 			DockedSettlementID: current.DockedSettlementID,
 			Units:              stackUnits(current.Units),
@@ -1306,6 +1308,7 @@ func restoreArmiesFromSaveState(saved map[army.ArmyID]armySaveState) map[army.Ar
 			ID:                 id,
 			OwnerID:            current.OwnerID,
 			RegionID:           current.RegionID,
+			PreviousRegionID:   current.PreviousRegionID,
 			DockedRegionID:     current.DockedRegionID,
 			DockedSettlementID: current.DockedSettlementID,
 			Units:              restoreStackedUnits(current.Units),
