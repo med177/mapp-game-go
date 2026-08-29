@@ -1,6 +1,7 @@
 {
   "Difficulty": 2,
   "Fullscreen": false,
+  "FastAITurns": true,
   "MusicOn": false,
   "MusicVolume": 15,
   "SoundOn": true,

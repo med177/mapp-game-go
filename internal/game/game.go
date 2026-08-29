@@ -808,7 +808,7 @@ func (g *Game) updateAITurnSequence() {
 			}
 			g.aiTurn.stepper = ai.NewTurnStepper(g.gs, fid)
 			g.renderer.SetAITurnStatus(g.aiTurn.stepper.FactionID(), g.aiTurn.stepper.FactionNameTR(), "Hamle sırası bu devlette.")
-			g.aiTurn.waitFrames = aiTurnFactionIntroFrames
+			g.aiTurn.waitFrames = g.aiTurnWaitFrames(aiTurnFactionIntroFrames)
 			return
 		}
 
@@ -850,10 +850,17 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 		g.renderer.AddEvent("[AI] " + detail)
 	}
 	if nearPlayer || step.Kind == ai.TurnStepDiplomacy {
-		g.aiTurn.waitFrames = aiTurnVisibleStepFrames
+		g.aiTurn.waitFrames = g.aiTurnWaitFrames(aiTurnVisibleStepFrames)
 		return
 	}
-	g.aiTurn.waitFrames = aiTurnHiddenStepFrames
+	g.aiTurn.waitFrames = g.aiTurnWaitFrames(aiTurnHiddenStepFrames)
+}
+
+func (g *Game) aiTurnWaitFrames(frames int) int {
+	if g != nil && g.renderer != nil && g.renderer.CurrentSettings.FastAITurns {
+		return 0
+	}
+	return frames
 }
 
 func (g *Game) presentAISortieDecision(step ai.TurnStep) {

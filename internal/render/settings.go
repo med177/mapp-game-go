@@ -15,6 +15,7 @@ import (
 type Settings struct {
 	Difficulty  int // 1=Kolay 2=Normal 3=Zor
 	Fullscreen  bool
+	FastAITurns bool
 	MusicOn     bool
 	MusicVolume int // 0-100
 	SoundOn     bool
@@ -22,7 +23,7 @@ type Settings struct {
 }
 
 func DefaultSettings() Settings {
-	return Settings{Difficulty: 2, Fullscreen: false, MusicOn: true, MusicVolume: 45, SoundOn: true, SoundVolume: 35}
+	return Settings{Difficulty: 2, Fullscreen: false, FastAITurns: false, MusicOn: true, MusicVolume: 45, SoundOn: true, SoundVolume: 35}
 }
 
 var difficultyLabels = []string{"", "Kolay", "Normal", "Zor"}
@@ -36,7 +37,7 @@ func difficultyLabelTR(difficulty int) string {
 
 const settingsPath = "saves/settings.json"
 
-const settingsRowCount = 7
+const settingsRowCount = 8
 
 func settingsRowsRect(rowCount int) gameui.Rect {
 	return centeredStackRect(rowCount, 500, 56, 4, 40)
@@ -74,6 +75,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 	rows := []row{
 		{"Zorluk", difficultyLabelTR(s.Difficulty)},
 		{"Ekran Modu", displayModeLabelTR(s.Fullscreen)},
+		{"Hızlı AI Hamleleri", boolLabel(s.FastAITurns)},
 		{"Müzik", boolLabel(s.MusicOn)},
 		{"Müzik Seviyesi", itoa(s.MusicVolume) + "%"},
 		{"Ses Efektleri", boolLabel(s.SoundOn)},
@@ -130,7 +132,7 @@ func (r *Renderer) toggleFullscreen() {
 
 // handleSettingsInput ayarlar ekranı girişini işler.
 func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
-	rowCount := settingsRowCount // zorluk, ekran modu, müzik, müzik seviyesi, ses, ses seviyesi, geri dön
+	rowCount := settingsRowCount // zorluk, ekran modu, AI hamleleri, müzik, müzik seviyesi, ses, ses seviyesi, geri dön
 	mx, my := ebiten.CursorPosition()
 	if i := r.settingsHoverIndex(float64(mx), float64(my)); i >= 0 {
 		r.factionCursor = i
@@ -156,12 +158,16 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 			s.Fullscreen = !s.Fullscreen
 			ApplyDisplaySettings(*s)
 		}
-	case 2: // Müzik
+	case 2: // AI hamleleri
+		if r.keyJustPressed(ebiten.KeyArrowLeft) || r.keyJustPressed(ebiten.KeyArrowRight) || r.keyJustPressed(ebiten.KeyEnter) {
+			s.FastAITurns = !s.FastAITurns
+		}
+	case 3: // Müzik
 		if r.keyJustPressed(ebiten.KeyArrowLeft) || r.keyJustPressed(ebiten.KeyArrowRight) || r.keyJustPressed(ebiten.KeyEnter) {
 			s.MusicOn = !s.MusicOn
 			applyAudioSettings(*s)
 		}
-	case 3: // Müzik seviyesi
+	case 4: // Müzik seviyesi
 		if r.keyJustPressed(ebiten.KeyArrowRight) {
 			s.MusicVolume = clampVolume(s.MusicVolume + 5)
 			applyAudioSettings(*s)
@@ -170,12 +176,12 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 			s.MusicVolume = clampVolume(s.MusicVolume - 5)
 			applyAudioSettings(*s)
 		}
-	case 4: // Ses efektleri
+	case 5: // Ses efektleri
 		if r.keyJustPressed(ebiten.KeyArrowLeft) || r.keyJustPressed(ebiten.KeyArrowRight) || r.keyJustPressed(ebiten.KeyEnter) {
 			s.SoundOn = !s.SoundOn
 			applyAudioSettings(*s)
 		}
-	case 5: // Ses seviyesi
+	case 6: // Ses seviyesi
 		if r.keyJustPressed(ebiten.KeyArrowRight) {
 			s.SoundVolume = clampVolume(s.SoundVolume + 5)
 			applyAudioSettings(*s)
@@ -184,7 +190,7 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 			s.SoundVolume = clampVolume(s.SoundVolume - 5)
 			applyAudioSettings(*s)
 		}
-	case 6: // Geri dön
+	case 7: // Geri dön
 		if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeyEscape) {
 			r.factionCursor = 0
 			return InputAction{Kind: ActionSaveSettings}
@@ -211,24 +217,26 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 			s.Fullscreen = !s.Fullscreen
 			ApplyDisplaySettings(*s)
 		case 2:
+			s.FastAITurns = !s.FastAITurns
+		case 3:
 			s.MusicOn = !s.MusicOn
 			applyAudioSettings(*s)
-		case 3:
+		case 4:
 			s.MusicVolume += 10
 			if s.MusicVolume > 100 {
 				s.MusicVolume = 0
 			}
 			applyAudioSettings(*s)
-		case 4:
+		case 5:
 			s.SoundOn = !s.SoundOn
 			applyAudioSettings(*s)
-		case 5:
+		case 6:
 			s.SoundVolume += 10
 			if s.SoundVolume > 100 {
 				s.SoundVolume = 0
 			}
 			applyAudioSettings(*s)
-		case 6:
+		case 7:
 			r.factionCursor = 0
 			return InputAction{Kind: ActionSaveSettings}
 		}
