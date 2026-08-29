@@ -78,6 +78,57 @@ func TestLoad1300StartingGrainAndArmyUpkeepArePositive(t *testing.T) {
 	}
 }
 
+func TestLoad1300StartingEconomySupportsArmiesForTwentyTurns(t *testing.T) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime caller unavailable")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
+	gs, _, err := loadScenarioData(filepath.Join(root, "assets", "scenarios", "1300_ottoman_rise"), 2, nil)
+	if err != nil {
+		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+	}
+	armyGrain := make(map[faction.FactionID]int)
+	armySpiceCost := make(map[faction.FactionID]int)
+	for _, currentArmy := range gs.Armies {
+		if currentArmy == nil {
+			continue
+		}
+		fid := faction.FactionID(currentArmy.OwnerID)
+		armyGrain[fid] += gs.EffectiveArmyGrainUpkeep(currentArmy)
+		for _, unit := range currentArmy.Units {
+			if unitType := gs.UnitTypes[unit.TypeID]; unitType != nil {
+				armySpiceCost[fid] += unitType.SpiceCost
+			}
+		}
+	}
+	for fid, armyUpkeep := range armyGrain {
+		civilianDemand := 0
+		for _, region := range gs.Regions {
+			if region != nil && !region.IsSea && region.OwnerID == string(fid) {
+				civilianDemand += state.CivilianGrainDemand(region)
+			}
+		}
+		definition := gs.Factions[fid]
+		if definition == nil {
+			t.Errorf("başlangıç ordusu bilinmeyen devlete bağlı: %s", fid)
+			continue
+		}
+		grainReserve := 20 * (civilianDemand + armyUpkeep)
+		if definition.Grain < grainReserve {
+			t.Errorf("%s 20 turluk tahıl rezervinin altında: grain=%d reserve=%d", fid, definition.Grain, grainReserve)
+		}
+		spiceReserve := 20 + 20*armySpiceCost[fid]
+		if definition.Spice < spiceReserve {
+			t.Errorf("%s başlangıç ordusunun 20 turluk baharat maliyetinin altında: spice=%d reserve=%d", fid, definition.Spice, spiceReserve)
+		}
+		production := gs.FactionProductionSummary(fid).Grain
+		if production-civilianDemand-armyUpkeep < 100 {
+			t.Errorf("%s başlangıçta +100 net tahıl üretmiyor: production=%d civilian=%d army=%d net=%d", fid, production, civilianDemand, armyUpkeep, production-civilianDemand-armyUpkeep)
+		}
+	}
+}
+
 func TestScenarioLoadEditModeIsExplicit(t *testing.T) {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {

@@ -40,7 +40,12 @@
       "port",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -114,7 +119,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -150,7 +160,13 @@
     "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
+    ]
   },
   {
     "id": "yorkshire",
@@ -187,7 +203,8 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm"
     ]
   },
   {
@@ -288,7 +305,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 30,
-    "base_grain_output": 20,
+    "base_grain_output": 67,
     "base_iron_output": 2,
     "base_timber_output": 18,
     "base_stone_output": 8,
@@ -307,7 +324,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -611,7 +633,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -649,7 +676,13 @@
     "rural_population": 326,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
+    ]
   },
   {
     "id": "dijon",
@@ -685,7 +718,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -748,7 +786,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 50,
-    "base_grain_output": 28,
+    "base_grain_output": 50,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -766,7 +804,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -831,7 +874,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 40,
-    "base_grain_output": 35,
+    "base_grain_output": 58,
     "base_iron_output": 5,
     "base_timber_output": 10,
     "base_stone_output": 0,
@@ -849,7 +892,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -875,7 +923,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 42,
-    "base_grain_output": 50,
+    "base_grain_output": 60,
     "base_iron_output": 6,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -893,7 +941,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -917,7 +970,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 48,
-    "base_grain_output": 45,
+    "base_grain_output": 82,
     "base_iron_output": 8,
     "base_timber_output": 14,
     "base_stone_output": 8,
@@ -936,7 +989,12 @@
       "walls",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1087,7 +1145,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 40,
-    "base_grain_output": 25,
+    "base_grain_output": 63,
     "base_iron_output": 2,
     "base_timber_output": 16,
     "base_stone_output": 0,
@@ -1105,7 +1163,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1140,7 +1203,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1242,7 +1310,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 70,
-    "base_grain_output": 30,
+    "base_grain_output": 68,
     "base_iron_output": 2,
     "base_timber_output": 16,
     "base_stone_output": 0,
@@ -1261,7 +1329,12 @@
       "walls",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1299,7 +1372,12 @@
     "buildings": [
       "barracks",
       "walls",
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1325,7 +1403,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 70,
-    "base_grain_output": 60,
+    "base_grain_output": 69,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 8,
@@ -1344,7 +1422,12 @@
       "walls",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1369,7 +1452,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 70,
-    "base_grain_output": 60,
+    "base_grain_output": 87,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -1388,7 +1471,12 @@
       "walls",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1430,7 +1518,12 @@
       "walls",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1474,7 +1567,12 @@
       "walls",
       "barracks",
       "granary",
-      "temple"
+      "temple",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1518,7 +1616,8 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm"
     ]
   },
   {
@@ -1589,7 +1688,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 55,
-    "base_grain_output": 30,
+    "base_grain_output": 102,
     "base_iron_output": 8,
     "base_timber_output": 8,
     "base_stone_output": 10,
@@ -1609,7 +1708,12 @@
       "market",
       "walls",
       "walls",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1634,7 +1738,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 45,
-    "base_grain_output": 40,
+    "base_grain_output": 73,
     "base_iron_output": 2,
     "base_timber_output": 12,
     "base_stone_output": 8,
@@ -1652,7 +1756,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1697,7 +1806,10 @@
       "walls",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1740,7 +1852,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1788,7 +1905,12 @@
       "market",
       "walls",
       "walls",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1835,7 +1957,12 @@
       "market",
       "walls",
       "walls",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -1881,7 +2008,12 @@
       "temple",
       "market",
       "walls",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2008,7 +2140,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2075,7 +2212,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 40,
-    "base_grain_output": 30,
+    "base_grain_output": 60,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -2094,7 +2231,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2117,7 +2259,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 35,
-    "base_grain_output": 20,
+    "base_grain_output": 60,
     "base_iron_output": 2,
     "base_timber_output": 8,
     "base_stone_output": 0,
@@ -2134,7 +2276,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2172,7 +2319,13 @@
     "rural_population": 180,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
+    ]
   },
   {
     "id": "constantine",
@@ -2207,7 +2360,13 @@
     "rural_population": 120,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
+    ]
   },
   {
     "id": "tunis",
@@ -2230,7 +2389,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 50,
-    "base_grain_output": 25,
+    "base_grain_output": 44,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -2249,7 +2408,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2289,7 +2453,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2313,7 +2482,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 30,
-    "base_grain_output": 15,
+    "base_grain_output": 56,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -2331,7 +2500,12 @@
       "granary",
       "temple",
       "market",
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2356,7 +2530,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 45,
-    "base_grain_output": 25,
+    "base_grain_output": 65,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -2375,7 +2549,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2417,7 +2596,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2496,6 +2680,9 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
+      "farm",
+      "farm",
+      "farm",
       "farm"
     ]
   },
@@ -2519,7 +2706,7 @@
     "is_locked": false,
     "unlock_turn": 10,
     "base_gold_income": 35,
-    "base_grain_output": 30,
+    "base_grain_output": 160,
     "base_iron_output": 2,
     "base_timber_output": 8,
     "base_stone_output": 0,
@@ -2534,7 +2721,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2600,7 +2792,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 40,
-    "base_grain_output": 25,
+    "base_grain_output": 74,
     "base_iron_output": 2,
     "base_timber_output": 14,
     "base_stone_output": 0,
@@ -2619,7 +2811,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2683,7 +2880,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 25,
-    "base_grain_output": 20,
+    "base_grain_output": 52,
     "base_iron_output": 2,
     "base_timber_output": 12,
     "base_stone_output": 8,
@@ -2702,7 +2899,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2746,7 +2948,12 @@
       "market",
       "walls",
       "walls",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2785,7 +2992,12 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -2894,7 +3106,12 @@
     "religion": "shia",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -3006,7 +3223,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 75,
-    "base_grain_output": 55,
+    "base_grain_output": 61,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 8,
@@ -3026,7 +3243,12 @@
       "walls",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -3049,7 +3271,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 34,
-    "base_grain_output": 10,
+    "base_grain_output": 47,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -3068,7 +3290,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -3137,7 +3364,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 35,
-    "base_grain_output": 25,
+    "base_grain_output": 58,
     "base_iron_output": 2,
     "base_timber_output": 14,
     "base_stone_output": 6,
@@ -3156,7 +3383,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -3195,7 +3427,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -3220,7 +3457,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 30,
-    "base_grain_output": 25,
+    "base_grain_output": 66,
     "base_iron_output": 6,
     "base_timber_output": 14,
     "base_stone_output": 12,
@@ -3238,7 +3475,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -3278,7 +3520,12 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -3315,7 +3562,12 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -3339,7 +3591,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 25,
-    "base_grain_output": 20,
+    "base_grain_output": 62,
     "base_iron_output": 2,
     "base_timber_output": 12,
     "base_stone_output": 8,
@@ -3358,7 +3610,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -4758,7 +5015,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5311,7 +5573,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 30,
-    "base_grain_output": 20,
+    "base_grain_output": 54,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -5326,7 +5588,12 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5354,7 +5621,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 40,
-    "base_grain_output": 25,
+    "base_grain_output": 57,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -5373,7 +5640,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5618,7 +5890,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5656,7 +5933,12 @@
     "active_event_id": "",
     "buildings": [
       "walls",
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5729,7 +6011,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5767,7 +6054,12 @@
     "active_event_id": "",
     "buildings": [
       "walls",
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5865,7 +6157,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 20,
-    "base_grain_output": 6,
+    "base_grain_output": 61,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -5883,7 +6175,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5903,7 +6200,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 18,
-    "base_grain_output": 5,
+    "base_grain_output": 49,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -5916,7 +6213,13 @@
     "rural_population": 78,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
+    ]
   },
   {
     "id": "bahrain",
@@ -5953,7 +6256,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -5993,7 +6301,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6030,7 +6343,12 @@
       "walls",
       "walls",
       "walls",
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6174,7 +6492,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 42,
-    "base_grain_output": 28,
+    "base_grain_output": 60,
     "base_iron_output": 2,
     "base_timber_output": 8,
     "base_stone_output": 0,
@@ -6192,7 +6510,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6215,7 +6538,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 45,
-    "base_grain_output": 24,
+    "base_grain_output": 59,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -6234,7 +6557,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6278,7 +6606,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6315,7 +6648,11 @@
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6381,7 +6718,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 38,
-    "base_grain_output": 35,
+    "base_grain_output": 47,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -6400,7 +6737,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6523,7 +6865,11 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6568,7 +6914,12 @@
       "walls",
       "barracks",
       "granary",
-      "temple"
+      "temple",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6609,7 +6960,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6636,7 +6992,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 55,
-    "base_grain_output": 40,
+    "base_grain_output": 54,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -6655,7 +7011,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6678,7 +7039,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 30,
-    "base_grain_output": 30,
+    "base_grain_output": 62,
     "base_iron_output": 2,
     "base_timber_output": 10,
     "base_stone_output": 8,
@@ -6696,7 +7057,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6734,7 +7100,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6775,7 +7146,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6874,7 +7250,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 32,
-    "base_grain_output": 28,
+    "base_grain_output": 48,
     "base_iron_output": 2,
     "base_timber_output": 8,
     "base_stone_output": 0,
@@ -6889,7 +7265,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6930,7 +7311,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6954,7 +7340,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 30,
-    "base_grain_output": 28,
+    "base_grain_output": 41,
     "base_iron_output": 2,
     "base_timber_output": 10,
     "base_stone_output": 8,
@@ -6972,7 +7358,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -6996,7 +7387,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 26,
-    "base_grain_output": 30,
+    "base_grain_output": 40,
     "base_iron_output": 2,
     "base_timber_output": 8,
     "base_stone_output": 6,
@@ -7013,7 +7404,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7078,7 +7474,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 34,
-    "base_grain_output": 32,
+    "base_grain_output": 42,
     "base_iron_output": 6,
     "base_timber_output": 0,
     "base_stone_output": 6,
@@ -7096,7 +7492,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7159,7 +7560,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 34,
-    "base_grain_output": 34,
+    "base_grain_output": 52,
     "base_iron_output": 6,
     "base_timber_output": 4,
     "base_stone_output": 6,
@@ -7178,7 +7579,12 @@
       "granary",
       "temple",
       "market",
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7259,7 +7665,11 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7322,7 +7732,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 38,
-    "base_grain_output": 35,
+    "base_grain_output": 50,
     "base_iron_output": 2,
     "base_timber_output": 10,
     "base_stone_output": 8,
@@ -7340,7 +7750,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7425,7 +7840,9 @@
       "temple",
       "market",
       "walls",
-      "walls"
+      "walls",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7537,7 +7954,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7757,7 +8179,9 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7780,7 +8204,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 70,
-    "base_grain_output": 45,
+    "base_grain_output": 177,
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 0,
@@ -7794,7 +8218,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7875,7 +8304,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7913,7 +8347,12 @@
     "active_event_id": "",
     "buildings": [
       "walls",
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7954,7 +8393,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -7977,7 +8421,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 28,
-    "base_grain_output": 40,
+    "base_grain_output": 42,
     "base_iron_output": 2,
     "base_timber_output": 10,
     "base_stone_output": 8,
@@ -7991,7 +8435,12 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8029,7 +8478,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8068,7 +8522,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8105,7 +8564,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8147,7 +8611,10 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8185,7 +8652,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8223,7 +8695,12 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8354,7 +8831,11 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8438,7 +8919,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8521,7 +9007,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8545,7 +9036,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 32,
-    "base_grain_output": 42,
+    "base_grain_output": 59,
     "base_iron_output": 2,
     "base_timber_output": 18,
     "base_stone_output": 0,
@@ -8560,9 +9051,13 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "farm",
       "walls",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8600,7 +9095,13 @@
     "rural_population": 273,
     "religion": "sunni",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
+    ]
   },
   {
     "id": "galicia_volhynia",
@@ -8679,7 +9180,11 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8758,7 +9263,12 @@
     "active_event_id": "",
     "buildings": [
       "market",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8797,7 +9307,11 @@
     "active_event_id": "",
     "buildings": [
       "market",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -8997,10 +9511,14 @@
     "active_event_id": "",
     "buildings": [
       "barracks",
-      "farm",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -9037,7 +9555,12 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -9081,7 +9604,12 @@
       "temple",
       "market",
       "walls",
-      "walls"
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
@@ -9161,7 +9689,12 @@
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
     ]
   },
   {
