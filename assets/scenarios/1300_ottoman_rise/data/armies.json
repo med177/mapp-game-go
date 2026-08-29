@@ -1350,24 +1350,8 @@
     "region_id": "bithynia",
     "units": [
       {
-        "type_id": "catapult",
-        "count": 1
-      },
-      {
         "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 4
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 2
-      },
-      {
-        "type_id": "militia",
-        "count": 2
+        "count": 12
       }
     ]
   },

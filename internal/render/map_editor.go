@@ -131,6 +131,10 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 			} else {
 				r.drawEditRegionButtons(screen, region)
 			}
+			// Seçili ordu için yukarıdaki erken dönüşte de dropdown'ı çizmek
+			// gerekir. Aksi halde Birim Tipi düğmesi listeyi açar, ancak liste
+			// görünmediği için kullanıcı bir seçim yapamaz.
+			drawUIDropdown(screen, r.editUnitTypeDropdown)
 			drawEditInspectorSaveButton(screen)
 			return
 		}

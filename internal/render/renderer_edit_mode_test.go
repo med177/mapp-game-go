@@ -446,6 +446,19 @@ func TestEditArmyUnitTypeSelectionChangesExistingUnits(t *testing.T) {
 			t.Fatalf("kara ordusunun birim tipi değişmedi: %+v", gs.Armies["land"].Units)
 		}
 	}
+	r.toggleEditUnitTypeDropdown()
+	if !r.editUnitTypeDropdown.IsOpen() {
+		t.Fatal("Birim Tipi düğmesi dropdown listesini açmalıydı")
+	}
+	if got := r.editUnitTypeDropdown.Options(); len(got) != 2 || got[0] != "infantry" || got[1] != "militia" {
+		t.Fatalf("kara ordusu için birim tipi listesi yanlış: %v", got)
+	}
+	r.editUnitTypeDropdown.Close()
+	beforeCount := len(gs.Armies["land"].Units)
+	r.addSelectedArmyUnit()
+	if len(gs.Armies["land"].Units) != beforeCount+1 || gs.Armies["land"].Units[beforeCount].TypeID != "infantry" {
+		t.Fatalf("Birim + seçili birim tipinden eklemeliydi: %+v", gs.Armies["land"].Units)
+	}
 
 	r.SelectedArmy = "fleet"
 	r.ensureEditSelectedUnitType(gs.Armies["fleet"])

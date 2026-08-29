@@ -5191,6 +5191,7 @@
     "successor_faction_id": "east_rome",
     "neighbors": [
       "aegean_sea",
+      "aydinoglu",
       "sea_of_marmara",
       "serres",
       "silivri",
@@ -6439,8 +6440,9 @@
       "aegean_sea",
       "bithynia",
       "bursa",
-      "sea_of_marmara",
-      "saruhan"
+      "gallipoli",
+      "saruhan",
+      "sea_of_marmara"
     ],
     "world_x": 1022,
     "world_y": 477,
