@@ -186,18 +186,36 @@ func siegeAssaultAttackerDamage(fortLevel, breachLevel int) int {
 type siegeForce struct {
 	UnitScore     int
 	HighestTier   int
+	BreachPower   float64
 	ProgressBonus int
 	BreachBonus   int
 }
 
-// siegeForceForArmy tek bir ordunun kuşatma katkısını hesaplar.
-func siegeForceForArmy(gs *state.GameState, attacker *army.Army) siegeForce {
+// siegeForceForArmy tek bir ordunun kuşatma katkısını hesaplar. Gedik gücü,
+// yalnızca ilgili sur seviyesine erişebilen kuşatma birimlerinden ve canlı HP
+// oranlarından oluşur.
+func siegeForceForArmy(gs *state.GameState, attacker *army.Army, fortLevel int) siegeForce {
 	force := siegeForce{}
 	if gs == nil || attacker == nil || attacker.IsNaval || len(attacker.Units) == 0 {
 		return force
 	}
 	force.UnitScore = attacker.SiegeUnitScore(gs.UnitTypes)
 	force.HighestTier = attacker.HighestSiegeTier(gs.UnitTypes)
+	for _, unit := range attacker.Units {
+		unitType := gs.UnitTypes[unit.TypeID]
+		if unitType == nil || unitType.Category != army.CategorySiege ||
+			fortLevel > int(unitType.Tier)+2 {
+			continue
+		}
+		hp := unit.CurrentHP
+		if hp < 0 {
+			hp = 0
+		}
+		if hp > army.MaxUnitHP {
+			hp = army.MaxUnitHP
+		}
+		force.BreachPower += float64(2+int(unitType.Tier)) * float64(hp) / float64(army.MaxUnitHP)
+	}
 	force.ProgressBonus, force.BreachBonus = attacker.CommanderSiegeBonuses()
 	return force
 }
@@ -207,7 +225,13 @@ func siegeForceForArmy(gs *state.GameState, attacker *army.Army) siegeForce {
 // kullanıldığı için ilgisiz üçüncü devletlerin birlikleri kuşatma gücüne
 // sızamaz.
 func activeSiegeForce(gs *state.GameState, siege *state.SiegeState, attacker *army.Army) siegeForce {
-	force := siegeForceForArmy(gs, attacker)
+	fortLevel := 1
+	if gs != nil && siege != nil {
+		if target := gs.Regions[siege.RegionID]; target != nil {
+			fortLevel = target.FortificationLevel()
+		}
+	}
+	force := siegeForceForArmy(gs, attacker, fortLevel)
 	if gs == nil || siege == nil || attacker == nil {
 		return force
 	}
@@ -219,8 +243,9 @@ func activeSiegeForce(gs *state.GameState, siege *state.SiegeState, attacker *ar
 		if !gs.CanJoinActiveSiege(candidate, siege.RegionID) {
 			continue
 		}
-		candidateForce := siegeForceForArmy(gs, candidate)
+		candidateForce := siegeForceForArmy(gs, candidate, fortLevel)
 		force.UnitScore += candidateForce.UnitScore
+		force.BreachPower += candidateForce.BreachPower
 		if candidateForce.HighestTier > force.HighestTier {
 			force.HighestTier = candidateForce.HighestTier
 		}
@@ -234,7 +259,7 @@ func siegeProgressGain(gs *state.GameState, attacker *army.Army, targetRegion *w
 	if gs == nil || attacker == nil || targetRegion == nil {
 		return 0
 	}
-	return siegeProgressGainForForce(gs, attacker, targetRegion, defender, siegeForceForArmy(gs, attacker))
+	return siegeProgressGainForForce(gs, attacker, targetRegion, defender, siegeForceForArmy(gs, attacker, targetRegion.FortificationLevel()))
 }
 
 func siegeProgressGainForForce(gs *state.GameState, attacker *army.Army, targetRegion *world.Region, defender *army.Army, force siegeForce) int {
@@ -252,27 +277,27 @@ func siegeProgressGainForForce(gs *state.GameState, attacker *army.Army, targetR
 	return progress
 }
 
-func siegeBreachGain(gs *state.GameState, attacker *army.Army, targetRegion *world.Region, defender *army.Army) int {
+func siegeBreachGain(gs *state.GameState, attacker *army.Army, targetRegion *world.Region, defender *army.Army) float64 {
 	if gs == nil || attacker == nil || targetRegion == nil {
 		return 0
 	}
-	return siegeBreachGainForForce(gs, attacker, targetRegion, defender, siegeForceForArmy(gs, attacker))
+	return siegeBreachGainForForce(gs, attacker, targetRegion, defender, siegeForceForArmy(gs, attacker, targetRegion.FortificationLevel()))
 }
 
-func siegeBreachGainForForce(gs *state.GameState, attacker *army.Army, targetRegion *world.Region, defender *army.Army, force siegeForce) int {
-	if gs == nil || attacker == nil || targetRegion == nil || force.UnitScore <= 0 {
+func siegeBreachGainForForce(gs *state.GameState, attacker *army.Army, targetRegion *world.Region, defender *army.Army, force siegeForce) float64 {
+	if gs == nil || attacker == nil || targetRegion == nil || force.BreachPower <= 0 {
 		return 0
 	}
 	fortLevel := targetRegion.FortificationLevel()
 	if fortLevel < 1 {
 		fortLevel = 1
 	}
-	gain := force.HighestTier + 1 + int(siegeTechMod(gs, attacker.OwnerID)*8+0.5) + force.BreachBonus - fortLevel/2
+	gain := force.BreachPower + float64(int(siegeTechMod(gs, attacker.OwnerID)*8+0.5)+force.BreachBonus-fortLevel/2)
 	if defender != nil {
-		gain -= defender.TotalDefense(gs.UnitTypes) / 120
+		gain -= float64(defender.TotalDefense(gs.UnitTypes) / 120)
 	}
-	if gain < 1 {
-		gain = 1
+	if gain < 0 {
+		gain = 0
 	}
 	return gain
 }
@@ -748,7 +773,10 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		progressGain := siegeProgressGainForForce(g.gs, attacker, targetRegion, defender, force)
 		breachGain := siegeBreachGainForForce(g.gs, attacker, targetRegion, defender, force)
 		oldBreach := siege.BreachLevel
-		siege.BreachProgress += breachGain
+		totalBreachProgress := siege.BreachProgressRemainder + breachGain
+		wholeBreachProgress := int(totalBreachProgress)
+		siege.BreachProgress += wholeBreachProgress
+		siege.BreachProgressRemainder = totalBreachProgress - float64(wholeBreachProgress)
 		siege.BreachLevel = siegeBreachLevel(siege.BreachProgress, siege.FortLevel)
 
 		if defender != nil {

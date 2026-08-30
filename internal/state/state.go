@@ -127,7 +127,10 @@ type SiegeState struct {
 	FortLevel            int            `json:"fort_level"`
 	GranaryLevel         int            `json:"granary_level,omitempty"`
 	BreachProgress       int            `json:"breach_progress"`
-	BreachLevel          int            `json:"breach_level"`
+	// BreachProgressRemainder, tamsayı BreachProgress'e henüz dönüşmemiş
+	// ondalık gedik ilerlemesini taşır. Eski kayıtlar için varsayılanı sıfırdır.
+	BreachProgressRemainder float64 `json:"breach_progress_remainder,omitempty"`
+	BreachLevel             int     `json:"breach_level"`
 }
 
 const (

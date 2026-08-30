@@ -308,7 +308,45 @@ func TestCommanderSiegeBonusesIncreaseProgressAndBreachGain(t *testing.T) {
 		t.Fatalf("saldırgan komutan kuşatma ilerlemesine +1 vermeliydi: base=%d commanded=%d", baseProgress, commandedProgress)
 	}
 	if commandedBreach != baseBreach+1 {
-		t.Fatalf("saldırgan komutan gedik kazanımına +1 vermeliydi: base=%d commanded=%d", baseBreach, commandedBreach)
+		t.Fatalf("saldırgan komutan gedik kazanımına +1 vermeliydi: base=%.2f commanded=%.2f", baseBreach, commandedBreach)
+	}
+}
+
+func TestSiegeBreachGainScalesWithUnitCountAndHP(t *testing.T) {
+	gs := siegeTestState()
+	region := gs.Regions["dst"]
+	one := &army.Army{OwnerID: "p1", Units: []army.Unit{{TypeID: "siege", CurrentHP: 100}}}
+	two := &army.Army{OwnerID: "p1", Units: []army.Unit{
+		{TypeID: "siege", CurrentHP: 100}, {TypeID: "siege", CurrentHP: 100},
+	}}
+	wounded := &army.Army{OwnerID: "p1", Units: []army.Unit{{TypeID: "siege", CurrentHP: 50}}}
+
+	oneGain := siegeBreachGain(gs, one, region, nil)
+	twoGain := siegeBreachGain(gs, two, region, nil)
+	woundedGain := siegeBreachGain(gs, wounded, region, nil)
+	if twoGain <= oneGain {
+		t.Fatalf("kuşatma birimi sayısı gedik kazanımını artırmalıydı: one=%.2f two=%.2f", oneGain, twoGain)
+	}
+	if woundedGain >= oneGain {
+		t.Fatalf("hasarlı kuşatma birimi sağlam birimden daha hızlı gedik açmamalıydı: full=%.2f wounded=%.2f", oneGain, woundedGain)
+	}
+}
+
+func TestSiegeBreachGainRequiresCompatibleSiegeTier(t *testing.T) {
+	gs := siegeTestState()
+	// Fortress settlement + dört duvar seviyesi = toplam sur seviyesi 5.
+	gs.Regions["dst"].Buildings = []string{"walls", "walls", "walls", "walls"}
+	attacker := &army.Army{OwnerID: "p1", Units: []army.Unit{
+		{TypeID: "siege", CurrentHP: 100}, {TypeID: "siege", CurrentHP: 100},
+	}}
+	if gain := siegeBreachGain(gs, attacker, gs.Regions["dst"], nil); gain != 0 {
+		t.Fatalf("T1 mancınık T5 surda gedik açmamalıydı: gain=%.2f", gain)
+	}
+
+	gs.UnitTypes["cannon"] = &army.UnitType{ID: "cannon", Category: army.CategorySiege, Tier: 3}
+	attacker.Units = []army.Unit{{TypeID: "cannon", CurrentHP: 100}}
+	if gain := siegeBreachGain(gs, attacker, gs.Regions["dst"], nil); gain <= 0 {
+		t.Fatalf("T3 top T5 surda gedik oluşturabilmeli: gain=%.2f", gain)
 	}
 }
 
