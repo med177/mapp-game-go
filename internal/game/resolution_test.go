@@ -1108,8 +1108,8 @@ func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 	if gs.Factions["a"].Spice != 8 {
 		t.Fatalf("ticaret rotası malı kaynaktan çıkarmalıydı, got=%d", gs.Factions["a"].Spice)
 	}
-	// b: 30 (başlangıç) - 24 (ticaret ödemesi) = 6, spice: 0 + 2 = 2
-	if gs.Factions["b"].Gold != 6 {
+	// b: 30 (başlangıç) - 24 (ticaret ödemesi) + 3 (gümrük) = 9, spice: 0 + 2 = 2
+	if gs.Factions["b"].Gold != 9 {
 		t.Fatalf("ticaret rotası hedeften altın çıkarmalıydı, got=%d", gs.Factions["b"].Gold)
 	}
 	if gs.Factions["b"].Spice != 2 {
@@ -1118,7 +1118,7 @@ func TestApplyEconomyTickAddsTradeIncome(t *testing.T) {
 	if status := gs.GoldEconomy["a"]; status.TradeRouteIncome != 24 || status.NetChange != 24 {
 		t.Fatalf("satıcı rota geliri snapshot'a yazılmalıydı: %+v", status)
 	}
-	if status := gs.GoldEconomy["b"]; status.TradeRouteExpense != 24 || status.NetChange != -24 {
+	if status := gs.GoldEconomy["b"]; status.TradeRouteExpense != 24 || status.TradeRouteCustomsIncome != 3 || status.NetChange != -21 {
 		t.Fatalf("alıcı rota ödemesi snapshot'a yazılmalıydı: %+v", status)
 	}
 }
@@ -1172,9 +1172,9 @@ func TestApplyEconomyTickAddsTradeCenterCustomsIncome(t *testing.T) {
 
 	applyEconomyTick(gs)
 
-	// (2 ham kapasite + 2 merkez kapasitesi) × 2 + 4 gümrük = 12 altın;
-	// ilkbahar ticaret çarpanı ile 13 altına yuvarlanır.
-	if got := gs.Factions["owner"].Gold; got != 13 {
+	// Güncel ekonomi akışında kapasite geliri, merkez gümrüğü ve mevsimsel
+	// çarpan birlikte uygulanır.
+	if got := gs.Factions["owner"].Gold; got != 17 {
 		t.Fatalf("ticaret merkezi gümrük geliri ekonomi tick'ine eklenmeli, got=%d", got)
 	}
 }

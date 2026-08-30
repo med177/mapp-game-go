@@ -419,7 +419,10 @@ func aiResearchTradeIncome(gs *state.GameState, fid faction.FactionID) int {
 		income := gs.BaseRegionTradeIncome(region)
 		total += income * gs.CurrentSeason().TradeMod() / 100
 	}
-	return total
+	// Ticaret gücü geliri, rota kurulmadan da merkez havuzundaki paydan gelir;
+	// araştırma seçimi bu yeni ticaret mekanizmasını da gelecekteki getirinin
+	// parçası olarak değerlendirmelidir.
+	return total + gs.TradePowerCommerceIncome(fid)
 }
 
 func aiSortedTechnologyIDs(gs *state.GameState) []string {

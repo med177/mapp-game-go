@@ -668,6 +668,9 @@ func TestDiplomacyPeaceChanceUsesRealAcceptanceRules(t *testing.T) {
 	if chance >= 100 || status == "Kesin kabul" {
 		t.Fatalf("reddedilecek barış teklifi ekranda kesin görünmemeli: chance=%d status=%q", chance, status)
 	}
+	if status != "Eşik altında — reddedebilir" {
+		t.Fatalf("reddedilebilir barış için gerçek durum gösterilmeli: chance=%d status=%q", chance, status)
+	}
 }
 
 func TestHandleDiplomacyInputSelectsOnFirstClickAndOpensOnSecond(t *testing.T) {

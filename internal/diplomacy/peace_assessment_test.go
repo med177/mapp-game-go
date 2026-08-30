@@ -82,6 +82,30 @@ func TestPeaceAssessmentAllowsEarlyMilitaryCollapse(t *testing.T) {
 	}
 }
 
+func TestPeaceAssessmentIncludesFutureLossPressure(t *testing.T) {
+	gs := peaceTestState()
+	gs.Turn = 12
+	// b barış teklifinin hedefidir; a'nın cephe üstünlüğü reddetme halinde
+	// b'nin yeni asker ve bölge kayıpları yaşayacağını göstermelidir.
+	for i := 0; i < 5; i++ {
+		id := army.ArmyID("a_extra_" + itoa(i))
+		gs.Armies[id] = &army.Army{
+			ID:       id,
+			OwnerID:  "a",
+			RegionID: "a1",
+			Units:    []army.Unit{{TypeID: "u", CurrentHP: 100}},
+		}
+	}
+
+	assessment := AssessPeaceDesire(gs, "b", "a")
+	if assessment.FutureLossPressure <= 0 {
+		t.Fatalf("barış reddedilirse beklenen kayıp baskısı hesaplanmadı: %+v", assessment)
+	}
+	if assessment.Score < assessment.FutureLossPressure {
+		t.Fatalf("gelecekteki kayıp baskısı toplam skora yansımadı: %+v", assessment)
+	}
+}
+
 func TestPeaceAssessmentUsesLossesDurationObjectiveAndCooldown(t *testing.T) {
 	gs := peaceTestState()
 	ledger := gs.WarLedgerFor("a", "b")

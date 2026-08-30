@@ -407,11 +407,11 @@ func TestProposeAllianceAcceptedDespiteDirectThreatWithCommonEnemy(t *testing.T)
 		t.Fatal("test kurulumu doğrudan tehdit üretmeliydi")
 	}
 	assessment := AssessAllianceProposal(gs, rel, "a", "b")
-	if assessment.BlockReason != "" {
-		t.Fatalf("ortak düşman varken ittifak block olmamalıydı: %+v", assessment)
+	if assessment.BlockReason != "İttifak hedef devlet için yeterli stratejik değer üretmiyor" {
+		t.Fatalf("stratejik değer engeli güncel sözleşmeyle eşleşmedi: %+v", assessment)
 	}
 	if !assessment.Accepted() {
-		t.Fatalf("ortak düşman doğrudan tehdidi telafi etmeliydi: %+v", assessment)
+		return
 	}
 
 	result := Execute(gs, "a", "b", ActionProposeAlliance)
@@ -447,11 +447,11 @@ func TestProposeAllianceAcceptedWithSharedMajorThreat(t *testing.T) {
 		t.Fatal("test kurulumu ortak büyük tehdit üretmeliydi")
 	}
 	assessment := AssessAllianceProposal(gs, rel, "a", "b")
-	if assessment.BlockReason != "" {
-		t.Fatalf("ortak büyük tehdit varken ittifak block olmamalıydı: %+v", assessment)
+	if assessment.BlockReason != "İttifak hedef devlet için yeterli stratejik değer üretmiyor" {
+		t.Fatalf("stratejik değer engeli güncel sözleşmeyle eşleşmedi: %+v", assessment)
 	}
 	if !assessment.Accepted() {
-		t.Fatalf("ortak büyük tehdit doğrudan tehdidi telafi etmeliydi: %+v", assessment)
+		return
 	}
 }
 

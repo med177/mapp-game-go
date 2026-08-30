@@ -189,6 +189,7 @@ type TradeRouteGoldTransfer struct {
 	FromFactionID faction.FactionID
 	ToFactionID   faction.FactionID
 	Amount        int
+	CustomsAmount int
 }
 
 // MaxTradeRouteAmountPerTurn yeni ticaret anlaşmasının temel hacim paylaşım
@@ -196,6 +197,7 @@ type TradeRouteGoldTransfer struct {
 // kendi hacmi üzerinden hesaplanır.
 const MaxTradeRouteAmountPerTurn = 4
 const MaxTradeRouteBlockadePercent = 100
+const TradeRouteCustomsRatePercent = 10
 
 // TradeRouteAssignmentKey rota yeniden üretildiğinde de değişmeyen görev anahtarıdır.
 func TradeRouteAssignmentKey(fromFactionID, toFactionID string) string {
@@ -263,6 +265,12 @@ func ApplyTradeRoutes(factions map[faction.FactionID]*faction.Faction, routes []
 // ApplyTradeRoutesWithTransfers tüm aktif ticaret rotalarını işletir ve
 // başarıyla uygulanan altın transferlerini döner.
 func ApplyTradeRoutesWithTransfers(factions map[faction.FactionID]*faction.Faction, routes []*TradeRoute) ([]string, []TradeRouteGoldTransfer) {
+	return ApplyTradeRoutesWithTransfersAndCustoms(factions, routes, nil)
+}
+
+// ApplyTradeRoutesWithTransfersAndCustoms, ithalatçıya göre gümrük oranı
+// belirlenmesine izin veren rota çözümüdür. rateFn nil ise temel oran kullanılır.
+func ApplyTradeRoutesWithTransfersAndCustoms(factions map[faction.FactionID]*faction.Faction, routes []*TradeRoute, rateFn func(faction.FactionID) int) ([]string, []TradeRouteGoldTransfer) {
 	var logs []string
 	var transfers []TradeRouteGoldTransfer
 
@@ -305,10 +313,23 @@ func ApplyTradeRoutesWithTransfers(factions map[faction.FactionID]*faction.Facti
 		// Altın transferi: hedeften çıkar, kaynağa ekle
 		dstFaction.Gold -= totalCost
 		srcFaction.Gold += totalCost
+		rate := TradeRouteCustomsRatePercent
+		if rateFn != nil {
+			rate = rateFn(faction.FactionID(tr.ToFactionID))
+		}
+		if rate < 0 {
+			rate = 0
+		}
+		if rate > 20 {
+			rate = 20
+		}
+		customs := totalCost * rate / 100
+		dstFaction.Gold += customs
 		transfers = append(transfers, TradeRouteGoldTransfer{
 			FromFactionID: faction.FactionID(tr.FromFactionID),
 			ToFactionID:   faction.FactionID(tr.ToFactionID),
 			Amount:        totalCost,
+			CustomsAmount: customs,
 		})
 	}
 

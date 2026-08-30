@@ -58,7 +58,7 @@ func TestMerchantTradeBonusUsesAssignmentLocationAndRouteCap(t *testing.T) {
 		t.Fatalf("üç merchant gemisi rota kapasitesine kadar +3 hacim sağlamalıydı: %+v", route)
 	}
 	logs := economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
-	if len(logs) != 0 || gs.Factions["venice"].Spice != 4 || gs.Factions["venice"].Gold != 30 || gs.Factions["mamluk"].Spice != 6 || gs.Factions["mamluk"].Gold != 70 {
+	if len(logs) != 0 || gs.Factions["venice"].Spice != 4 || gs.Factions["venice"].Gold != 30 || gs.Factions["mamluk"].Spice != 6 || gs.Factions["mamluk"].Gold != 73 {
 		t.Fatalf("merchant hacmi gerçek mal ve altın transferi üretmeliydi: venice=%+v mamluk=%+v logs=%v", gs.Factions["venice"], gs.Factions["mamluk"], logs)
 	}
 }
@@ -251,7 +251,7 @@ func TestTradeRouteBlockadeReducesMerchantVolume(t *testing.T) {
 	}
 
 	economy.ApplyTradeRoutes(gs.Factions, gs.TradeRoutes)
-	if gs.Factions["venice"].Spice != 7 || gs.Factions["venice"].Gold != 15 || gs.Factions["mamluk"].Spice != 3 || gs.Factions["mamluk"].Gold != 85 {
+	if gs.Factions["venice"].Spice != 7 || gs.Factions["venice"].Gold != 15 || gs.Factions["mamluk"].Spice != 3 || gs.Factions["mamluk"].Gold != 86 {
 		t.Fatalf("abluka sonrası yarım rota hacmi uygulanmalıydı: venice=%+v mamluk=%+v", gs.Factions["venice"], gs.Factions["mamluk"])
 	}
 

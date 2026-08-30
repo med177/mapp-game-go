@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-08-23
+last_updated: 2026-08-30
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -56,6 +56,22 @@ type Relation struct {
 ```
 
 `RelationKey(a, b)` → her zaman sıralı `"a|b"` string'i üretir (çift kayıt önler).
+
+## Barış Teklifi Kabulü
+
+Barış teklifinin sonucu, teklif edilen devletin perspektifinden
+`AssessPeaceProposal()` ve `AssessPeaceDesire()` ile deterministik olarak
+hesaplanır. Pencere yalnız değerlendirme gerçekten kabul ediyorsa `%100 /
+Kesin kabul` gösterir; eşik altında kalan değerler yüzde olasılık gibi
+sunulmaz ve `Eşik altında — reddedebilir` olarak belirtilir.
+
+Değerlendirme ilişki skorunun yanı sıra savaş süresi, mevcut askerî güç farkı,
+cephe orduları, kaybedilen bölgeler ve ekonomik baskıyı kullanır. Özellikle
+hedef devletin askerî gücü rakibin çok gerisindeyse veya rakip cephede belirgin
+üstünlük kurmuşsa `FutureLossPressure` eklenir. Bu değer, barış reddedildiğinde
+beklenen yeni asker ve toprak kaybını temsil eder; böylece `-100` ilişki skoru
+tek başına hedefin açıkça kaybedilecek bir savaşı sürdürmesine neden olmaz
+(`internal/diplomacy/peace_assessment.go`).
 
 ## Kuşatma Vassallığı
 

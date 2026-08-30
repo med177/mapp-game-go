@@ -91,6 +91,8 @@ de kaldırıldığında temizlenir; senaryo ile tanımlı port yerleşimleri kor
 
 1300 Osmanlı yükselişi senaryosunda `farm` üretim çarpanı `x1.30`, bölge başına üst sınırı 3 seviyedir. Bina çarpanları ekonomi tick'inde birlikte uygulanır; bu nedenle üç farm seviyesi güçlü bir tarım yatırımıdır ancak denge testindeki `1.0–4.0` üretim/sivil talep bandını aşmamalıdır.
 
+1300 senaryosunda Taş üretimi tüm kara bölgelerinde en az `2` temel üretim olacak şekilde normalize edilmiştir. Mevcut taş yataklarının kapasitesi yaklaşık `2,5×` artırılmış; uzmanlaşmış üretim korunarak toplam temel Taş üretimi `1997` seviyesine getirilmiştir. Bu ayar yalnızca `1300_ottoman_rise` senaryosunun verisinde geçerlidir.
+
 ---
 
 ## Sabit Altın Ordu Bakımı
@@ -118,6 +120,7 @@ teknoloji, haraç, ganimet, bakım, ödenen bakım, ödenemeyen açık ve tur so
 hazineyi taşır. Bu gider ekonomik zaferin brüt gelir ölçümünden ayrı tutulur;
 HUD'daki Gelir satırı artık bakım düşülmüş net tur değişimini gösterir. Rakamın
 üzerine gelindiğinde açılan popup, bu net değerin hesabını kalem kalem gösterir.
+
 Hediye gibi tek seferlik diplomatik transferler aynı popup'ta ayrıca gösterilir.
 
 ## Ticaret Güzergahları

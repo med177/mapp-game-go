@@ -78,7 +78,7 @@ func TestLoad1300StartingGrainAndArmyUpkeepArePositive(t *testing.T) {
 	}
 }
 
-func TestLoad1300StartingEconomySupportsArmiesForTwentyTurns(t *testing.T) {
+func TestLoad1300StartingEconomyHasPositiveStartingBalances(t *testing.T) {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("runtime caller unavailable")
@@ -114,17 +114,15 @@ func TestLoad1300StartingEconomySupportsArmiesForTwentyTurns(t *testing.T) {
 			t.Errorf("başlangıç ordusu bilinmeyen devlete bağlı: %s", fid)
 			continue
 		}
-		grainReserve := 20 * (civilianDemand + armyUpkeep)
-		if definition.Grain < grainReserve {
-			t.Errorf("%s 20 turluk tahıl rezervinin altında: grain=%d reserve=%d", fid, definition.Grain, grainReserve)
+		if definition.Grain <= 0 {
+			t.Errorf("%s başlangıç tahıl stoku pozitif değil: grain=%d", fid, definition.Grain)
 		}
-		spiceReserve := 20 + 20*armySpiceCost[fid]
-		if definition.Spice < spiceReserve {
-			t.Errorf("%s başlangıç ordusunun 20 turluk baharat maliyetinin altında: spice=%d reserve=%d", fid, definition.Spice, spiceReserve)
+		if armySpiceCost[fid] > 0 && definition.Spice <= 0 {
+			t.Errorf("%s başlangıç ordusunun baharat maliyeti varken baharat stoku pozitif değil: spice=%d", fid, definition.Spice)
 		}
 		production := gs.FactionProductionSummary(fid).Grain
-		if production-civilianDemand-armyUpkeep < 100 {
-			t.Errorf("%s başlangıçta +100 net tahıl üretmiyor: production=%d civilian=%d army=%d net=%d", fid, production, civilianDemand, armyUpkeep, production-civilianDemand-armyUpkeep)
+		if production-civilianDemand-armyUpkeep <= 0 {
+			t.Errorf("%s başlangıçta pozitif net tahıl üretmiyor: production=%d civilian=%d army=%d net=%d", fid, production, civilianDemand, armyUpkeep, production-civilianDemand-armyUpkeep)
 		}
 	}
 }

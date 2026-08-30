@@ -81,6 +81,7 @@ type PeaceAssessment struct {
 	GrainPressure        int
 	SatisfactionPressure int
 	RelationshipPressure int
+	FutureLossPressure   int
 	Threshold            int
 	WarTurns             int
 	Eligible             bool
@@ -167,6 +168,8 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 
 	assessment.Score += economicStress(gs, actor)
 	assessment.Score += assessment.RelationshipPressure
+	assessment.FutureLossPressure = futureLossPressureFor(gs, actor, opponent)
+	assessment.Score += assessment.FutureLossPressure
 	if extraWars := activeWarCount(gs, actor) - 1; extraWars > 0 {
 		assessment.Score += min(24, extraWars*12)
 	}
@@ -346,6 +349,48 @@ func relationshipPressureFor(gs *state.GameState, actor, opponent faction.Factio
 		return 0
 	}
 	return min(20, -rel.Score/5)
+}
+
+// futureLossPressureFor, barış reddedilirse actor'un kısa vadede asker ve
+// bölge kaybetme riskini ölçer. İlişki skoru geçmiş duyguyu, bu değer ise
+// mevcut savaş gücü ve cephe durumundan çıkan ileriye dönük maliyeti temsil
+// eder. Kabul kararı hedefin perspektifinden hesaplandığı için actor burada
+// barış teklifini değerlendiren devlettir.
+func futureLossPressureFor(gs *state.GameState, actor, opponent faction.FactionID) int {
+	if gs == nil || actor == "" || opponent == "" || actor == opponent {
+		return 0
+	}
+	actorPower := MilitaryPower(gs, actor)
+	opponentPower := MilitaryPower(gs, opponent)
+	if opponentPower <= 0 {
+		return 0
+	}
+
+	pressure := 0
+	switch {
+	case actorPower == 0:
+		pressure += 28
+	case opponentPower*100 >= actorPower*300:
+		pressure += 24
+	case opponentPower*100 >= actorPower*200:
+		pressure += 18
+	case opponentPower*100 >= actorPower*150:
+		pressure += 12
+	case opponentPower*100 >= actorPower*120:
+		pressure += 6
+	}
+
+	actorFrontier := frontierArmyCount(gs, actor, opponent)
+	opponentFrontier := frontierArmyCount(gs, opponent, actor)
+	if opponentFrontier > actorFrontier {
+		pressure += min(10, (opponentFrontier-actorFrontier)*4)
+	}
+
+	actorRegions := landRegionCount(gs, actor)
+	if actorRegions > 0 && actorRegions <= 4 && opponentPower > actorPower {
+		pressure += 8
+	}
+	return min(40, pressure)
 }
 
 func isWarStalemate(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger) bool {

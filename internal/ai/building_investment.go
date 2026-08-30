@@ -186,6 +186,7 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 	stabilityNeed := maxInt(0, 70-region.Satisfaction+projectedWarPenalty)
 	stabilityScore := btype.SatBonus * stabilityNeed / 2
 	tradeScore := aiTradeBuildingScore(gs, self.ID, region, btype.ID, level, queued)
+	tradeScore += aiTradePowerBuildingScore(gs, self.ID, region, btype.ID)
 	if btype.ID == "temple" && region.Satisfaction < 30 {
 		stabilityScore += 180
 	}
@@ -274,6 +275,39 @@ func aiTradeBuildingScore(gs *state.GameState, fid faction.FactionID, region *wo
 		isFullTradeRegion := marketAfter >= marketType.MaxPerRegion && portAfter >= portType.MaxPerRegion
 		if !wasFullTradeRegion && isFullTradeRegion {
 			score += 300
+		}
+	}
+	return score
+}
+
+// aiTradePowerBuildingScore, yeni pazar/liman seviyesinin mevcut ticaret gücü
+// mekanizmasına katkısını yatırım kararına taşır. Payı düşük olan AI, kendi
+// kapasitesini büyüterek merkez gelirinden daha büyük pay almayı hedefler.
+func aiTradePowerBuildingScore(gs *state.GameState, fid faction.FactionID, region *world.Region, buildingID string) int {
+	if gs == nil || region == nil || fid == "" || (buildingID != "market" && buildingID != "port") {
+		return 0
+	}
+	before := gs.EffectiveRegionTradeCapacity(region)
+	projected := *region
+	projected.Buildings = append(append([]string(nil), region.Buildings...), buildingID)
+	after := gs.EffectiveRegionTradeCapacity(&projected)
+	gain := after - before
+	if gain <= 0 {
+		return 0
+	}
+
+	// TradePowerForFaction'taki kapasite katsayısı 10'dur. Skorun temelini
+	// aynı sinyale bağlayıp düşük payı olan devletlere toparlanma önceliği
+	// veriyoruz; yatırım yine savaş/iaşe skorları tarafından geçilebilir.
+	score := gain * 10
+	share := gs.TradePowerSharePercent(fid)
+	if share < 20 {
+		score += gain * (20 - share) * 2
+	}
+	for _, center := range gs.TradeCenters.Centers {
+		if center.ID == region.ID && center.ActiveInYear(gs.Year) {
+			score += gain * 12
+			break
 		}
 	}
 	return score

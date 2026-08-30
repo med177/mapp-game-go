@@ -310,22 +310,27 @@ func drawTradeRoutesTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 }
 
 func drawTradeRouteSummary(screen *ebiten.Image, layout tradeLayout, gs *state.GameState, y, w, h float32) {
-	income, expense := tradeRouteFinancialTotals(gs)
+	income, expense, customs := tradeRouteFinancialTotals(gs)
 	rect := tradeRouteSummaryRect(layout, y, w, h)
 	drawUIPanelRect(screen, rect, color.RGBA{16, 14, 10, 220}, panelBorder, 1)
+	playerID := gs.PlayerFactionID
+	power := gs.TradePowerForFaction(playerID)
+	share := gs.TradePowerSharePercent(playerID)
 	drawUISectionLabel(screen, rect.X+10, rect.Y+5, "Toplam Rota Özeti (tur başına):")
+	drawUILabel(screen, gameui.Rect{X: rect.X + rect.W - 10, Y: rect.Y + 5, W: 0}, "Ticaret gücü: "+itoa(power)+" ("+itoa(share)+"%)", ColorGray, gameui.TextSmall, gameui.TextAlignEnd)
 
-	const gap = 16.0
-	columnW := (rect.W - 20 - gap*2) / 3
+	const gap = 12.0
+	columnW := (rect.W - 20 - gap*3) / 4
 	rowY := rect.Y + 27
 	drawUIKeyValueRowLeading(screen, rect.X+10, rowY, columnW, "Gelir", "+"+itoa(income)+" altın", ColorGray, color.RGBA{145, 220, 155, 245}, 12)
 	drawUIKeyValueRowLeading(screen, rect.X+10+columnW+gap, rowY, columnW, "Gider", "-"+itoa(expense)+" altın", ColorGray, color.RGBA{230, 170, 135, 240}, 12)
+	drawUIKeyValueRowLeading(screen, rect.X+10+(columnW+gap)*2, rowY, columnW, "Gümrük (%"+itoa(tradeRouteCustomsRate(gs))+")", "+"+itoa(customs)+" altın", ColorGray, color.RGBA{205, 180, 110, 245}, 12)
 	netColor := color.RGBA{145, 220, 155, 245}
-	net := income - expense
+	net := income - expense + customs
 	if net < 0 {
 		netColor = color.RGBA{230, 170, 135, 240}
 	}
-	drawUIKeyValueRowLeading(screen, rect.X+10+(columnW+gap)*2, rowY, columnW, "Net Fark", formatSignedAmount(net)+" altın", ColorGray, netColor, 12)
+	drawUIKeyValueRowLeading(screen, rect.X+10+(columnW+gap)*3, rowY, columnW, "Net Fark", formatSignedAmount(net)+" altın", ColorGray, netColor, 12)
 }
 
 func tradeRouteSummaryRect(layout tradeLayout, y, w, h float32) gameui.Rect {
@@ -337,9 +342,9 @@ func tradeRouteSummaryRect(layout tradeLayout, y, w, h float32) gameui.Rect {
 	}
 }
 
-func tradeRouteFinancialTotals(gs *state.GameState) (income, expense int) {
+func tradeRouteFinancialTotals(gs *state.GameState) (income, expense, customs int) {
 	if gs == nil {
-		return 0, 0
+		return 0, 0, 0
 	}
 	playerID := string(gs.PlayerFactionID)
 	for _, route := range gs.TradeRoutes {
@@ -352,9 +357,21 @@ func tradeRouteFinancialTotals(gs *state.GameState) (income, expense int) {
 		}
 		if route.ToFactionID == playerID {
 			expense += gold
+			customs += gold * tradeRouteCustomsRate(gs) / 100
 		}
 	}
-	return income, expense
+	return income, expense, customs
+}
+
+func tradeRouteCustomsRate(gs *state.GameState) int {
+	if gs == nil {
+		return economy.TradeRouteCustomsRatePercent
+	}
+	rate := economy.TradeRouteCustomsRatePercent + gs.TradePowerSharePercent(gs.PlayerFactionID)/10
+	if rate > 20 {
+		return 20
+	}
+	return rate
 }
 
 func tradeRouteMatchesFilter(gs *state.GameState, route *economy.TradeRoute, filter TradeRouteListFilter) bool {

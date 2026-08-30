@@ -419,6 +419,12 @@ aktarır; Venedik-Ceneviz rekabeti başlangıçtaki `-10` ilişkiyle korunur.
 Kaynak: `assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`,
 `internal/ai/merchant_trade.go`, `internal/ai/naval_threat.go`.
 
+AI’nin pazar ve liman yatırımları artık `TradePowerForFaction()` ile hesaplanan efektif
+ticaret gücü artışını da puanlar. Ticaret gücü payı düşük olan devletler ve kendi ticaret
+merkezine yatırım yapan devletler daha yüksek öncelik alır; araştırma puanlaması da merkez
+ticaret gücü gelirini hesaba katar (`internal/ai/building_investment.go`,
+`internal/ai/research_strategy.go`).
+
 Aktif savaşta liman ablukası görüldüğünde AI yalnız ticaret rotasının merchant
 escort kararını beklemez. `aiProcureStrategicResources()` o turdaki gerçek üretim
 maliyetlerinden tüm eksik ticari kaynakları aktif ticaret ağından satın alır;

@@ -1218,6 +1218,9 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		drawDiplomacyActionButton(screen, btn.Button, bg, disabledReason != "", i == actionFocus)
 		bx, by, bw, _ := diplomActionRect(i)
 		chanceText := "%" + itoa(chance)
+		if action == ActionProposePeace && status == "Eşik altında — reddedebilir" {
+			chanceText = "EŞİK ALTI"
+		}
 		if action == ActionCancelAlliance || action == ActionCancelTrade {
 			chanceText = "AKTİF"
 		}
@@ -2054,6 +2057,9 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 	case ActionProposePeace:
 		assessment := diplomacy.AssessPeaceProposal(gs, gs.PlayerFactionID, target)
 		chance = assessment.Chance
+		if !assessment.Accepted && assessment.BlockReason == "" {
+			return chance, "Eşik altında — reddedebilir"
+		}
 	case ActionProposeAlliance:
 		assessment := diplomacy.AssessAllianceProposal(gs, rel, gs.PlayerFactionID, target)
 		chance = assessment.Chance

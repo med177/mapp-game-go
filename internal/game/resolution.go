@@ -629,18 +629,26 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	diplomacy.RebalanceTradeRouteCapacities(gs)
 	gs.RefreshTradeRouteBlockades()
 	gs.RefreshMerchantTradeBonuses()
-	tradeLogs, tradeTransfers := economy.ApplyTradeRoutesWithTransfers(gs.Factions, gs.TradeRoutes)
+	tradeLogs, tradeTransfers := economy.ApplyTradeRoutesWithTransfersAndCustoms(gs.Factions, gs.TradeRoutes, func(importer faction.FactionID) int {
+		return economy.TradeRouteCustomsRatePercent + gs.TradePowerSharePercent(importer)/10
+	})
 	tradeRouteIncomeByFaction := make(map[string]int)
 	tradeRouteExpenseByFaction := make(map[string]int)
+	tradeRouteCustomsByFaction := make(map[string]int)
+	tradePowerIncomeByFaction := make(map[string]int)
 	for _, transfer := range tradeTransfers {
 		tradeRouteIncomeByFaction[string(transfer.FromFactionID)] += transfer.Amount
 		tradeRouteExpenseByFaction[string(transfer.ToFactionID)] += transfer.Amount
+		tradeRouteCustomsByFaction[string(transfer.ToFactionID)] += transfer.CustomsAmount
 	}
 	for _, log := range tradeLogs {
 		// Ticaret logları oyuncuya aitse göster
 		if gs.PlayerFactionID != "" {
 			_ = log // ileride oyuncuya bildirim gösterilebilir
 		}
+	}
+	for fid := range gs.Factions {
+		tradePowerIncomeByFaction[string(fid)] = gs.TradePowerCommerceIncome(fid)
 	}
 
 	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep/GoldUpkeep)
@@ -671,6 +679,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		// Yağmalanan vergi transferi doğrudan yağmalayan devlete geçer; hedef
 		// devletin tahıl arz cezasından etkilenmez.
 		goldIncome += raidLoot.Gold
+		tradePowerIncome := tradePowerIncomeByFaction[fidStr]
+		goldIncome += tradePowerIncome
 		f.Gold += goldIncome
 		if f.Gold < 0 {
 			f.Gold = 0
@@ -682,27 +692,29 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 		f.Gold -= paidGoldUpkeep
 		goldStatus := state.GoldEconomyStatus{
-			FactionID:         fid,
-			Income:            goldIncome,
-			TaxIncome:         taxIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
-			TradeIncome:       tradeIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
-			CapitalIncome:     capitalIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
-			TechnologyIncome:  techGold * grainGoldIncomePercent(status.SupplyLevel) / 100,
-			BlockadeIncome:    loot.Gold * grainGoldIncomePercent(status.SupplyLevel) / 100,
-			RaidIncome:        raidLoot.Gold,
-			TradeRouteIncome:  tradeRouteIncomeByFaction[fidStr],
-			TradeRouteExpense: tradeRouteExpenseByFaction[fidStr],
-			Upkeep:            goldUpkeep,
-			GoldBefore:        goldBefore,
-			GoldAfter:         f.Gold,
-			PaidUpkeep:        paidGoldUpkeep,
-			Shortage:          goldUpkeep - paidGoldUpkeep,
+			FactionID:               fid,
+			Income:                  goldIncome,
+			TaxIncome:               taxIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			TradeIncome:             tradeIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			CapitalIncome:           capitalIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			TechnologyIncome:        techGold * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			BlockadeIncome:          loot.Gold * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			RaidIncome:              raidLoot.Gold,
+			TradeRouteIncome:        tradeRouteIncomeByFaction[fidStr],
+			TradeRouteExpense:       tradeRouteExpenseByFaction[fidStr],
+			TradeRouteCustomsIncome: tradeRouteCustomsByFaction[fidStr],
+			TradePowerIncome:        tradePowerIncome,
+			Upkeep:                  goldUpkeep,
+			GoldBefore:              goldBefore,
+			GoldAfter:               f.Gold,
+			PaidUpkeep:              paidGoldUpkeep,
+			Shortage:                goldUpkeep - paidGoldUpkeep,
 		}
 		if ledger := gs.GoldTurnLedger[fid]; ledger.Turn == gs.Turn {
 			goldStatus.GiftIncome = ledger.GiftIncome
 			goldStatus.GiftExpense = ledger.GiftExpense
 		}
-		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense - goldUpkeep
+		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.TradePowerIncome - goldUpkeep
 		if goldStatus.Shortage > 0 {
 			applyGoldUpkeepShortagePenalty(gs, fidStr, goldStatus.Upkeep, goldStatus.Shortage, &goldStatus)
 		}

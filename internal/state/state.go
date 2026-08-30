@@ -766,30 +766,32 @@ type GrainEconomyStatus struct {
 // sonucunu taşır. GoldAfter tur sonundaki gerçek hazineyi, Shortage ise
 // ödenemeyen bakım miktarını gösterir.
 type GoldEconomyStatus struct {
-	FactionID         faction.FactionID
-	Income            int
-	TaxIncome         int
-	TradeIncome       int
-	CapitalIncome     int
-	TechnologyIncome  int
-	BlockadeIncome    int
-	RaidIncome        int
-	TradeRouteIncome  int
-	TradeRouteExpense int
-	TributeIncome     int
-	TributePaid       int
-	GiftIncome        int
-	GiftExpense       int
-	Upkeep            int
-	NetChange         int
-	GoldBefore        int
-	GoldAfter         int
-	PaidUpkeep        int
-	Shortage          int
-	AttritionHPDamage int
-	UnitsLost         int
-	DesertedUnits     int
-	ArmyMoraleDelta   int
+	FactionID               faction.FactionID
+	Income                  int
+	TaxIncome               int
+	TradeIncome             int
+	CapitalIncome           int
+	TechnologyIncome        int
+	BlockadeIncome          int
+	RaidIncome              int
+	TradeRouteIncome        int
+	TradeRouteExpense       int
+	TradeRouteCustomsIncome int
+	TradePowerIncome        int
+	TributeIncome           int
+	TributePaid             int
+	GiftIncome              int
+	GiftExpense             int
+	Upkeep                  int
+	NetChange               int
+	GoldBefore              int
+	GoldAfter               int
+	PaidUpkeep              int
+	Shortage                int
+	AttritionHPDamage       int
+	UnitsLost               int
+	DesertedUnits           int
+	ArmyMoraleDelta         int
 }
 
 // GoldTurnLedger, tur içinde ekonomi tick'i dışında gerçekleşen diplomatik

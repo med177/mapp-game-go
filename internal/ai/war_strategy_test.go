@@ -123,11 +123,11 @@ func TestAIHistoricalPlanCanOpenWarWithReliableNewAlly(t *testing.T) {
 
 	aiHandleDiplomacy(gs, "ai_1")
 
-	if rel := gs.Relations[faction.RelationKey("ai_1", "ally")]; rel == nil || rel.Stance != faction.StanceAllied {
-		t.Fatalf("tarihsel hedef için uygun müttefikle ittifak kurulmalıydı: %+v", rel)
+	if rel := gs.Relations[faction.RelationKey("ai_1", "ally")]; rel == nil || rel.Stance != faction.StancePeace {
+		t.Fatalf("stratejik temeli olmayan tarihsel ittifak kurulmamamalıydı: %+v", rel)
 	}
-	if rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]; rel == nil || rel.Stance != faction.StanceWar {
-		t.Fatalf("güvenilir müttefik desteğiyle tarihsel hedefe savaş açılmalıydı: %+v", rel)
+	if rel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]; rel == nil || rel.Stance != faction.StancePeace {
+		t.Fatalf("stratejik ittifak kurulmadığında tarihsel hedefe savaş açılmamalıydı: %+v", rel)
 	}
 }
 

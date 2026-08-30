@@ -48,12 +48,14 @@ type goldIncomePopupLine struct {
 	color color.RGBA
 }
 
-func goldIncomePopupLines(status state.GoldEconomyStatus) [12]goldIncomePopupLine {
-	return [12]goldIncomePopupLine{
+func goldIncomePopupLines(status state.GoldEconomyStatus) [14]goldIncomePopupLine {
+	return [14]goldIncomePopupLine{
 		{label: "Vergi", value: status.TaxIncome, color: ColorGold},
 		{label: "Pasif ticaret", value: status.TradeIncome, color: color.RGBA{145, 220, 155, 255}},
 		{label: "Ticaret rotası geliri", value: status.TradeRouteIncome, color: color.RGBA{145, 220, 155, 255}},
 		{label: "Ticaret rotası ödemesi", value: -status.TradeRouteExpense, color: ColorRed},
+		{label: "Gümrük geliri", value: status.TradeRouteCustomsIncome, color: color.RGBA{205, 180, 110, 255}},
+		{label: "Ticaret gücü geliri", value: status.TradePowerIncome, color: color.RGBA{180, 205, 235, 255}},
 		{label: "Haraç geliri", value: status.TributeIncome, color: ColorGold},
 		{label: "Ödenen haraç", value: -status.TributePaid, color: ColorRed},
 		{label: "Teknoloji", value: status.TechnologyIncome, color: color.RGBA{180, 180, 255, 255}},

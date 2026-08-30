@@ -316,9 +316,12 @@ func TestFactionTradeStatsCalculatesRouteIncomeExpenseAndNet(t *testing.T) {
 	if stats.ExportGold != 10 || stats.ImportGold != 12 || stats.NetGold != -2 {
 		t.Fatalf("rota finans özeti beklenmedik: %+v", stats)
 	}
-	income, expense := tradeRouteFinancialTotals(gs)
+	income, expense, customs := tradeRouteFinancialTotals(gs)
 	if income != 10 || expense != 12 {
 		t.Fatalf("rota finans toplamları beklenmedik: gelir=%d gider=%d", income, expense)
+	}
+	if customs != 1 {
+		t.Fatalf("rota gümrük toplamı beklenmedik: %d", customs)
 	}
 	if stats.RouteCount != 2 || stats.SuspendedCount != 1 {
 		t.Fatalf("aktif/askıdaki rota sayısı beklenmedik: %+v", stats)

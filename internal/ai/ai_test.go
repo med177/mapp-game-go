@@ -742,8 +742,8 @@ func TestCoalitionUsesDiplomacyEngine(t *testing.T) {
 		t.Fatalf("koalisyon oyuncuya savaş açmalıydı, got=%s", playerRel.Stance)
 	}
 	allyRel := gs.Relations[faction.RelationKey("ai_1", "ai_2")]
-	if allyRel.Stance != faction.StanceAllied {
-		t.Fatalf("koalisyon AI ittifakı kurmalıydı, got=%s", allyRel.Stance)
+	if allyRel.Stance != faction.StancePeace {
+		t.Fatalf("stratejik temeli olmayan koalisyon ittifak kurmamalıydı, got=%s", allyRel.Stance)
 	}
 }
 
