@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"image/color"
 
+	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/satisfaction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
@@ -82,6 +84,15 @@ func satisfactionBreakdownLines(gs *state.GameState, region *world.Region, break
 		{text: fmt.Sprintf("Yıllık yıpranma: %+d", breakdown.Annual), col: satisfactionDeltaColor(breakdown.Annual)},
 		{text: fmt.Sprintf("Kuşatma: %+d", breakdown.Siege), col: satisfactionDeltaColor(breakdown.Siege)},
 		{text: fmt.Sprintf("Toplam: %+d", breakdown.Total), col: satisfactionDeltaColor(breakdown.Total)},
+	}
+	if region != nil && gs != nil {
+		if owner := gs.Factions[faction.FactionID(region.OwnerID)]; owner != nil && owner.OverlordID != "" {
+			rate := owner.TributeRate
+			if !owner.TributeRateConfigured {
+				rate = diplomacy.VassalTributeRatePercent()
+			}
+			lines = append([]tooltipLine{{text: fmt.Sprintf("Haraç (%%%d): %+d", rate, breakdown.Tribute), col: satisfactionDeltaColor(breakdown.Tribute)}}, lines...)
+		}
 	}
 	buildingLines := satisfactionBuildingLines(gs, region)
 	if len(buildingLines) == 0 {

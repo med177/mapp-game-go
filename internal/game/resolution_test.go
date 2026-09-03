@@ -1209,6 +1209,33 @@ func TestApplyEconomyTickTransfersVassalTributeToOverlord(t *testing.T) {
 	}
 }
 
+func TestApplyEconomyTickUsesConfiguredVassalTributeRate(t *testing.T) {
+	gs := &state.GameState{
+		Month: 4,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"lord":   {ID: "lord", Gold: 50},
+			"vassal": {ID: "vassal", Gold: 0, Grain: 100, OverlordID: "lord", TributeRate: 40, TributeRateConfigured: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"v1": {ID: "v1", OwnerID: "vassal", TaxRate: 50, Satisfaction: 50, BaseGoldIncome: 20},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{},
+	}
+
+	applyEconomyTick(gs)
+
+	if got := gs.Factions["vassal"].Gold; got != 6 {
+		t.Fatalf("%%40 haraç sonrası vassal 6 altın bırakmalıydı, got=%d", got)
+	}
+	if got := gs.Factions["lord"].Gold; got != 54 {
+		t.Fatalf("overlord %%40 haraç olarak 4 altın almalıydı, got=%d", got)
+	}
+	if got := gs.Regions["v1"].Satisfaction; got != 46 {
+		t.Fatalf("%%40 haraç vassal sadakatini 4 azaltmalıydı, got=%d", got)
+	}
+}
+
 func TestApplySeasonEffectsAddsNavalMoveBonus(t *testing.T) {
 	gs := &state.GameState{
 		Month: 4,

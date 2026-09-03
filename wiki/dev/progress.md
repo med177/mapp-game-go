@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-03: Vassal haraç oranı oyuncunun `Vassal Yönetimi` kartından `%0–50`
+  arasında `%5` adımlarla ayarlanabilir hale getirildi. Haraç oranı ekonomi
+  aktarımına ve vassal bölge memnuniyetine bağlandı; oran ve yapılandırma durumu
+  save/load ile korunuyor. Regression: `TestApplyEconomyTickUsesConfiguredVassalTributeRate`,
+  `TestCalculateIncludesVassalTributePressure`, `TestHandleDiplomacyInputAdjustsVassalTribute`.
+
 - 2026-08-29: Aktif kuşatma bölgesinde bulunan, kuşatanla savaşta olmayan ve
   kuşatanın müttefiki/aynı realm'ı olmayan üçüncü devlet orduları, son geldikleri
   geçerli komşu bölgeye otomatik olarak geri çıkarılıyor. Orduların son hareket

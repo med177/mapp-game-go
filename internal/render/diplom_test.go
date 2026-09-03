@@ -492,6 +492,28 @@ func TestHandleDiplomacyInputVassalManagementAndDisabledActions(t *testing.T) {
 	}
 }
 
+func TestHandleDiplomacyInputAdjustsVassalTribute(t *testing.T) {
+	oldW, oldH := ScreenWidth, ScreenHeight
+	ScreenWidth, ScreenHeight = 1280, 720
+	defer func() { ScreenWidth, ScreenHeight = oldW, oldH }()
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"vassal": {ID: "vassal", OverlordID: "player", TributeRate: 20, TributeRateConfigured: true},
+		},
+	}
+	r := &Renderer{gs: gs, showDiplomacy: true, diplomacyTargetFaction: "vassal"}
+	management := buildDiplomacyVassalManagementLayout()
+	action := r.handleDiplomacyInput(gameui.InputState{
+		MouseX: management.tributeInc.X + 1, MouseY: management.tributeInc.Y + 1, LeftJustPressed: true,
+	})
+	if action.Kind != ActionAdjustTribute || action.TargetFaction != "vassal" || action.Delta != 5 {
+		t.Fatalf("haraç artırma aksiyonu yanlış: %+v", action)
+	}
+}
+
 func TestDiplomacyActionSelectionUsesHighlightedBorder(t *testing.T) {
 	oldW, oldH := ScreenWidth, ScreenHeight
 	ScreenWidth, ScreenHeight = 1280, 720

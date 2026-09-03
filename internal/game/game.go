@@ -445,6 +445,8 @@ func (g *Game) Update() error {
 			g.startLoadSlot("autosave", state.PhasePlayerTurn)
 		case render.ActionAdjustTax:
 			g.adjustTax(action.TargetRegion, action.Delta)
+		case render.ActionAdjustTribute:
+			g.adjustTribute(action.TargetFaction, action.Delta)
 		case render.ActionOpenPauseMenu:
 			g.gs.Phase = state.PhasePauseMenu
 		case render.ActionToggleMusic:
@@ -5715,6 +5717,21 @@ func (g *Game) adjustTax(rid world.RegionID, delta int) {
 		return
 	}
 	r.TaxRate = world.ClampTaxRate(r.TaxRate + delta)
+}
+
+func (g *Game) adjustTribute(target faction.FactionID, delta int) {
+	if g == nil || g.gs == nil || target == "" || diplomacy.DirectOverlord(g.gs, target) != g.gs.PlayerFactionID {
+		return
+	}
+	vassal := g.gs.Factions[target]
+	if vassal == nil {
+		return
+	}
+	if !vassal.TributeRateConfigured {
+		vassal.TributeRate = diplomacy.VassalTributeRatePercent()
+		vassal.TributeRateConfigured = true
+	}
+	vassal.TributeRate = diplomacy.ClampVassalTributeRate(vassal.TributeRate + delta)
 }
 
 // applyVictoryChoice seçilen zafer koşulunu senaryodan okuyarak GameState'e yazar.

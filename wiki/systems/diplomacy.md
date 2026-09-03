@@ -416,9 +416,10 @@ Bu sayede elenen devletler diğer devletlerle diplomasi verisi taşımaya devam 
 - Vassal, overlord dışındaki devletlerle doğrudan savaş/barış/ittifak/ticaret/vassallık diplomasisi kuramaz.
 - Üçüncü taraf devletler de vassal ile doğrudan diplomasi kuramaz; muhatap overlord'dur.
 - Overlord savaş açarsa veya savaşa çekilirse vassal coalition olarak aynı savaşa girer.
-- Ekonomi tick'inde vassal altın gelirinin `%20` kadarını overlord'a haraç olarak aktarır.
+- Ekonomi tick'inde vassal altın gelirinin vassal yönetimindeki `%0–50` arası haraç oranı kadarını overlord'a aktarır. Varsayılan oran `%20`'dir; oran yükseldikçe vassal bölgelerin memnuniyeti her tur düşer (`%25` için `-1`, `%30` için `-2`, `%35` için `-3`, `%40` için `-4`, `%45` için `-5`, `%50` için `-6`).
 - Aynı realm içindeki devletler (`overlord`, doğrudan vassal ve aynı kök zincirdeki bağlı devletler) kara geçişi, dost kıyıya çıkarma, liman kullanımı ve mevcut kuşatmaya destek için ayrıca ittifak veya savaş ilanı gerektirmez.
 - UI tarafında vassal sahibi bölgeler bölge bilgi panelinde `Bağlı: <overlord>` satırıyla ve ana haritadaki yerleşim marker'ı üstündeki küçük rozetle görünür hale getirilir; oyuncu kendi vassal bölgelerini seçtiğinde aynı blokta o devletten gelen `Haraç: +X altın/tur` satırı da görünür, böylece hiyerarşi ve ekonomik bağlılık diplomasi ekranı açılmadan da okunabilir.
+- Diplomasi ekranındaki `Vassal Yönetimi` kartında oyuncu doğrudan vassalının haraç oranını `-`/`+` düğmeleriyle `%5` adımlarla değiştirebilir; `%0` haraç mümkündür. Oran ve yapılandırma durumu save/load ile korunur, eski kayıtlarda `%20` varsayılır.
 - Oyuncu, savaşta bir devletin son kara toprağını düşürdüğünde fetih artık otomatik ilhakla kapanmak zorunda değildir; battle report sonrası açılan `Savaş Sonrası Düzen` modalında `İlhak Et` veya `Vassal Yap` seçilir.
 - Bu savaş-sonrası vassallık akışı hedef devletin o son bölgesini yerel yönetimde bırakır, ama realm ilişkisini hemen normalize eder; yani savaş biter, hedef overlord'a bağlanır ve overlord'un aktif savaşlarına coalition olarak çekilir.
 

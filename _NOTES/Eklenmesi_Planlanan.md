@@ -22,5 +22,14 @@
   - Bazı teknolojilerin gelişmesi için bazı bölgelerin ele geçirilmezi gereksin.
   - müttefike bölge verebilme, müttefike bölge satabilme, müttefikden asker isteme.
   - Vassal bölgelerden gelen haracı görüp artırma eksiltme ile sadakati etkileyebilme. isyan çıkması durumları.
-  
-  - Bir bölge kuşatılırsa kuşatanla savaşta olmayan diğer müttefik askerleri orayı terketmeli.
+
+  - Kuşatma sırasında müttefiklerin kendi aralarındaki koordinasyon eksikliği nedeniyle bazı avantajlar veya dezavantajlar oluşabilir.
+
+## Ütopik Fikirler
+
+  - Düşmanı şaşırtma ve manipüle etme adına bazı güzel taktikler eklenebilir.
+  - Gizli ittifaklar ve ihanet mekanikleri eklenebilir.
+  - Oyuncuların diplomasi ve casusluk yoluyla avantaj sağlaması mümkün olabilir.
+  - Oyuncuların ekonomik ve ticari yollarla diğer oyuncular üzerinde etkili olabilmesi.
+  - Oyuncuların kültürel veya dini etkilerle diğer bölgeleri etkilemesi.
+  - Oyuncuların teknolojik üstünlük veya yeniliklerle diğer oyuncular üzerinde avantaj sağlaması.

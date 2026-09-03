@@ -44,6 +44,23 @@ func TestCalculateUsesSharedTaxBuildingAndWarComponents(t *testing.T) {
 	}
 }
 
+func TestCalculateIncludesVassalTributePressure(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"lord":   {ID: "lord"},
+			"vassal": {ID: "vassal", Grain: 100, OverlordID: "lord", TributeRate: 50, TributeRateConfigured: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"vassal-land": {ID: "vassal-land", OwnerID: "vassal", TaxRate: 30},
+		},
+	}
+
+	breakdown := Calculate(gs, gs.Regions["vassal-land"])
+	if breakdown.Tribute != -6 || breakdown.Total != -6 {
+		t.Fatalf("%%50 haraç vassal sadakatine -6 yansıtmalıydı: %+v", breakdown)
+	}
+}
+
 func TestCalculateShowsZeroGrainPenaltyWhenFactionStockpileIsEmpty(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

@@ -788,7 +788,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		if income <= 0 {
 			continue
 		}
-		tribute := income * diplomacy.VassalTributeRatePercent() / 100
+		tributeRate := f.TributeRate
+		if !f.TributeRateConfigured {
+			tributeRate = diplomacy.VassalTributeRatePercent()
+		}
+		tribute := income * diplomacy.ClampVassalTributeRate(tributeRate) / 100
 		if tribute <= 0 {
 			continue
 		}

@@ -17,6 +17,7 @@ type Breakdown struct {
 	Annual        int
 	Siege         int
 	Tax           int
+	Tribute       int
 	Buildings     int
 	Grain         int
 	Technology    int
@@ -79,6 +80,13 @@ func (calculator *Calculator) ForRegion(region *world.Region) Breakdown {
 		breakdown.Siege = -5
 	} else {
 		breakdown.Tax = economy.TaxSatisfactionDelta(region.TaxRate)
+		if owner := gs.Factions[factionID(region.OwnerID)]; owner != nil && owner.OverlordID != "" {
+			rate := owner.TributeRate
+			if !owner.TributeRateConfigured {
+				rate = diplomacy.VassalTributeRatePercent()
+			}
+			breakdown.Tribute = diplomacy.VassalTributeSatisfactionDelta(rate)
+		}
 		for _, buildingID := range region.Buildings {
 			if building := gs.BuildingTypes[buildingID]; building != nil {
 				breakdown.Buildings += building.SatBonus
@@ -105,7 +113,7 @@ func (calculator *Calculator) ForRegion(region *world.Region) Breakdown {
 	}
 	breakdown.Army = ArmyStabilityBonus(gs, region)
 	breakdown.Historical = HistoricalTransitionDelta(gs, region)
-	breakdown.Total = breakdown.Annual + breakdown.Siege + breakdown.Tax + breakdown.Buildings + breakdown.Grain + breakdown.Technology + breakdown.WarFatigue + breakdown.Overextension + breakdown.Army + breakdown.Historical
+	breakdown.Total = breakdown.Annual + breakdown.Siege + breakdown.Tax + breakdown.Tribute + breakdown.Buildings + breakdown.Grain + breakdown.Technology + breakdown.WarFatigue + breakdown.Overextension + breakdown.Army + breakdown.Historical
 	return breakdown
 }
 

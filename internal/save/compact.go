@@ -50,6 +50,8 @@ type factionSaveState struct {
 	IsVirtual                  *bool                  `json:"v,omitempty"`
 	IsEliminated               *bool                  `json:"el,omitempty"`
 	OverlordID                 *faction.FactionID     `json:"ov,omitempty"`
+	TributeRate                *int                   `json:"tr,omitempty"`
+	TributeRateConfigured      *bool                  `json:"trc,omitempty"`
 	VassalizedTurn             *int                   `json:"vt,omitempty"`
 	CapitalSettlementID        *string                `json:"cap,omitempty"`
 	PendingCapitalSettlementID *string                `json:"pcap,omitempty"`
@@ -168,6 +170,8 @@ type legacyFactionSaveState struct {
 	IsVirtual                  bool                  `json:"is_virtual,omitempty"`
 	IsEliminated               bool                  `json:"is_eliminated"`
 	OverlordID                 faction.FactionID     `json:"overlord_id,omitempty"`
+	TributeRate                int                   `json:"tribute_rate,omitempty"`
+	TributeRateConfigured      bool                  `json:"tribute_rate_configured,omitempty"`
 	VassalizedTurn             int                   `json:"vassalized_turn,omitempty"`
 	CapitalSettlementID        string                `json:"capital_settlement_id,omitempty"`
 	PendingCapitalSettlementID string                `json:"pending_capital_settlement_id,omitempty"`
@@ -326,6 +330,8 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 			IsVirtual:                  cloneBoolPtr(factionCopy.IsVirtual),
 			IsEliminated:               cloneBoolPtr(factionCopy.IsEliminated),
 			OverlordID:                 cloneFactionIDPtr(factionCopy.OverlordID),
+			TributeRate:                cloneIntPtr(factionCopy.TributeRate),
+			TributeRateConfigured:      cloneBoolPtr(factionCopy.TributeRateConfigured),
 			VassalizedTurn:             cloneIntPtr(factionCopy.VassalizedTurn),
 			CapitalSettlementID:        cloneStringPtr(factionCopy.CapitalSettlementID),
 			PendingCapitalSettlementID: cloneStringPtr(factionCopy.PendingCapitalSettlementID),
@@ -548,6 +554,8 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 			IsVirtual:                  fx.IsVirtual,
 			IsEliminated:               fx.IsEliminated,
 			OverlordID:                 fx.OverlordID,
+			TributeRate:                fx.TributeRate,
+			TributeRateConfigured:      fx.TributeRateConfigured,
 			VassalizedTurn:             fx.VassalizedTurn,
 			CapitalSettlementID:        fx.CapitalSettlementID,
 			PendingCapitalSettlementID: fx.PendingCapitalSettlementID,
@@ -845,6 +853,12 @@ func makeFactionSaveState(current, base *faction.Faction) (factionSaveState, boo
 	if base == nil || current.OverlordID != base.OverlordID {
 		out.OverlordID = cloneFactionIDPtr(current.OverlordID)
 	}
+	if base == nil || current.TributeRate != base.TributeRate {
+		out.TributeRate = cloneIntPtr(current.TributeRate)
+	}
+	if base == nil || current.TributeRateConfigured != base.TributeRateConfigured {
+		out.TributeRateConfigured = cloneBoolPtr(current.TributeRateConfigured)
+	}
 	if base == nil || current.VassalizedTurn != base.VassalizedTurn {
 		out.VassalizedTurn = cloneIntPtr(current.VassalizedTurn)
 	}
@@ -896,6 +910,12 @@ func applyFactionSaveState(fx *faction.Faction, saved factionSaveState) {
 	}
 	if saved.OverlordID != nil {
 		fx.OverlordID = *saved.OverlordID
+	}
+	if saved.TributeRate != nil {
+		fx.TributeRate = *saved.TributeRate
+	}
+	if saved.TributeRateConfigured != nil {
+		fx.TributeRateConfigured = *saved.TributeRateConfigured
 	}
 	if saved.VassalizedTurn != nil {
 		fx.VassalizedTurn = *saved.VassalizedTurn
@@ -1726,6 +1746,8 @@ func isZeroFactionSaveState(saved factionSaveState) bool {
 	return saved.IsVirtual == nil &&
 		saved.IsEliminated == nil &&
 		saved.OverlordID == nil &&
+		saved.TributeRate == nil &&
+		saved.TributeRateConfigured == nil &&
 		saved.VassalizedTurn == nil &&
 		saved.CapitalSettlementID == nil &&
 		saved.PendingCapitalSettlementID == nil &&

@@ -37,6 +37,9 @@ type Faction struct {
 	// kapalı, yalnız askeri hedef olarak var olan sanal isyancı devleti işaretler.
 	IsVirtual  bool      `json:"is_virtual,omitempty"`
 	OverlordID FactionID `json:"overlord_id,omitempty"`
+	// TributeRate, vassalın overlord'a ödediği gelir payıdır (0-50).
+	TributeRate           int  `json:"tribute_rate,omitempty"`
+	TributeRateConfigured bool `json:"tribute_rate_configured,omitempty"`
 	// VassalizedTurn, vassallık bağının kurulduğu toplam turu tutar. Bu alan
 	// ilhak bekleme süresinin save/load sonrasında da korunmasını sağlar.
 	VassalizedTurn int `json:"vassalized_turn,omitempty"`

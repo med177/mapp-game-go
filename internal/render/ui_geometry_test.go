@@ -588,6 +588,8 @@ func assertDiplomacyPanelInside(t *testing.T, screenW, screenH float64) {
 		assertRectInside(t, screenW, screenH, management.panelRect)
 		assertButtonInside(t, screenW, screenH, management.releaseButton)
 		assertButtonInside(t, screenW, screenH, management.annexButton)
+		assertButtonInside(t, screenW, screenH, management.tributeDec)
+		assertButtonInside(t, screenW, screenH, management.tributeInc)
 		buttons := buildDiplomacyHistoryFilterButtons(offer.historyRect, diplomacyHistoryDirectionAll, ActionNone)
 		actionRowBottom := buttons[3].Button.Y + buttons[3].Button.H
 		firstCardY := diplomacyOfferHistoryCardRect(offer.historyRect, 0).Y

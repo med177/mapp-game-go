@@ -5034,7 +5034,11 @@ func projectedFactionTributeToOverlord(gs *state.GameState, fid faction.FactionI
 	if income <= 0 {
 		return 0
 	}
-	return income * diplomacy.VassalTributeRatePercent() / 100
+	rate := diplomacy.VassalTributeRatePercent()
+	if vassal := gs.Factions[fid]; vassal != nil && vassal.TributeRateConfigured {
+		rate = vassal.TributeRate
+	}
+	return income * diplomacy.ClampVassalTributeRate(rate) / 100
 }
 
 func projectedFactionTributeIncome(gs *state.GameState, fid faction.FactionID) int {

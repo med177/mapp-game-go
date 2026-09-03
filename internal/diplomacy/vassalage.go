@@ -18,6 +18,8 @@ const (
 	vassalMilitaryPowerRatio    = 5
 	vassalRegionRatio           = 5
 	vassalTributeRatePercent    = 20
+	vassalTributeMinimumRate    = 0
+	vassalTributeMaximumRate    = 50
 	vassalInternalRelationFloor = 40
 	// VassalAnnexationMinimumTurns, yeni vassal yapılan devletin ilhak
 	// edilebilmesi için realm içinde kalması gereken asgari tur sayısıdır.
@@ -577,6 +579,8 @@ func applyVassalization(gs *state.GameState, actor, target faction.FactionID) Re
 		return Result{Message: "Fraksiyon bulunamadı."}
 	}
 	targetFaction.OverlordID = actor
+	targetFaction.TributeRate = vassalTributeRatePercent
+	targetFaction.TributeRateConfigured = true
 	targetFaction.VassalizedTurn = gs.Turn
 	if targetFaction.VassalizedTurn <= 0 {
 		targetFaction.VassalizedTurn = 1
@@ -602,6 +606,8 @@ func releaseVassalage(gs *state.GameState, actor, target faction.FactionID) Resu
 		return Result{Message: "Fraksiyon bulunamadı."}
 	}
 	targetFaction.OverlordID = ""
+	targetFaction.TributeRate = 0
+	targetFaction.TributeRateConfigured = false
 	targetFaction.VassalizedTurn = 0
 	rel := EnsureRelation(gs, actor, target)
 	rel.Stance = faction.StanceTrade
@@ -744,6 +750,11 @@ func NormalizeVassalage(gs *state.GameState) {
 				f.VassalizedTurn = 1
 			}
 		}
+		if !f.TributeRateConfigured {
+			f.TributeRate = vassalTributeRatePercent
+			f.TributeRateConfigured = true
+		}
+		f.TributeRate = ClampVassalTributeRate(f.TributeRate)
 	}
 
 	for fid, f := range gs.Factions {
@@ -761,4 +772,22 @@ func NormalizeVassalage(gs *state.GameState) {
 
 func VassalTributeRatePercent() int {
 	return vassalTributeRatePercent
+}
+
+func ClampVassalTributeRate(rate int) int {
+	if rate < vassalTributeMinimumRate {
+		return vassalTributeMinimumRate
+	}
+	if rate > vassalTributeMaximumRate {
+		return vassalTributeMaximumRate
+	}
+	return rate
+}
+
+func VassalTributeSatisfactionDelta(rate int) int {
+	rate = ClampVassalTributeRate(rate)
+	if rate <= 20 {
+		return 0
+	}
+	return -((rate - 20) / 5)
 }

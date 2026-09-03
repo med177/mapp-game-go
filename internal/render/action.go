@@ -49,6 +49,7 @@ const (
 	ActionLoad                     ActionKind = "load"
 	ActionSelectFaction            ActionKind = "select_faction"
 	ActionAdjustTax                ActionKind = "adjust_tax"      // Delta: +5 veya -5
+	ActionAdjustTribute            ActionKind = "adjust_tribute"  // Delta: +5 veya -5
 	ActionResearch                 ActionKind = "research"        // BuildingID = tech ID
 	ActionCancelResearch           ActionKind = "cancel_research" // teknoloji araştırmasını iptal et
 	ActionCancelBuilding           ActionKind = "cancel_building" // bina inşaatını onaylı iptal

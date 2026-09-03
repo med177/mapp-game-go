@@ -213,6 +213,9 @@ type diplomacyOfferLayout struct {
 
 type diplomacyVassalManagementLayout struct {
 	panelRect     gameui.Rect
+	tributeLabel  gameui.Rect
+	tributeDec    gameui.Button
+	tributeInc    gameui.Button
 	releaseButton gameui.Button
 	annexButton   gameui.Button
 }
@@ -289,11 +292,14 @@ func diplomacyOfferLayoutForScreen() diplomacyOfferLayout {
 
 func buildDiplomacyVassalManagementLayout() diplomacyVassalManagementLayout {
 	side := diplomacyOfferLayoutForScreen().historyRect
-	panel := gameui.Rect{X: side.X, Y: side.Y + side.H + 12, W: side.W, H: 122}
+	panel := gameui.Rect{X: side.X, Y: side.Y + side.H + 12, W: side.W, H: 164}
 	return diplomacyVassalManagementLayout{
 		panelRect:     panel,
-		releaseButton: gameui.NewButton(panel.X+12, panel.Y+36, panel.W-24, 32, diplomacy.ActionLabelTR(diplomacy.ActionReleaseVassal)),
-		annexButton:   gameui.NewButton(panel.X+12, panel.Y+76, panel.W-24, 32, diplomacy.ActionLabelTR(diplomacy.ActionAnnexVassal)),
+		tributeLabel:  gameui.Rect{X: panel.X + 12, Y: panel.Y + 34, W: panel.W - 92, H: 24},
+		tributeDec:    gameui.NewButton(panel.X+panel.W-72, panel.Y+30, 28, 28, "-"),
+		tributeInc:    gameui.NewButton(panel.X+panel.W-38, panel.Y+30, 28, 28, "+"),
+		releaseButton: gameui.NewButton(panel.X+12, panel.Y+70, panel.W-24, 32, diplomacy.ActionLabelTR(diplomacy.ActionReleaseVassal)),
+		annexButton:   gameui.NewButton(panel.X+12, panel.Y+110, panel.W-24, 32, diplomacy.ActionLabelTR(diplomacy.ActionAnnexVassal)),
 	}
 }
 
@@ -1310,6 +1316,13 @@ func drawDiplomacyVassalManagementPanel(screen *ebiten.Image, gs *state.GameStat
 	layout := buildDiplomacyVassalManagementLayout()
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{18, 14, 10, 228}, color.RGBA{104, 82, 42, 190}, 1, 3)
 	drawUILabel(screen, gameui.Rect{X: layout.panelRect.X + 12, Y: layout.panelRect.Y + 10, W: layout.panelRect.W - 24}, "Vassal Yönetimi", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	rate := gs.Factions[target].TributeRate
+	if !gs.Factions[target].TributeRateConfigured {
+		rate = diplomacy.VassalTributeRatePercent()
+	}
+	drawUILabel(screen, layout.tributeLabel, "Haraç: %"+itoa(rate), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	drawDiplomacyButton(screen, layout.tributeDec, color.RGBA{84, 74, 52, 230}, panelBorder, FaceSmall, 6)
+	drawDiplomacyButton(screen, layout.tributeInc, color.RGBA{84, 74, 52, 230}, panelBorder, FaceSmall, 6)
 	drawDiplomacyButton(screen, layout.releaseButton, color.RGBA{62, 104, 142, 225}, panelBorder, FaceSmall, 6)
 	annexDisabled := diplomacy.ActionBlockReason(gs, gs.PlayerFactionID, target, diplomacy.ActionAnnexVassal) != ""
 	drawDiplomacyActionButton(screen, layout.annexButton, color.RGBA{154, 54, 48, 230}, annexDisabled, false)
@@ -1666,6 +1679,12 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			management := buildDiplomacyVassalManagementLayout()
 			target := r.diplomacyTargetFaction
 			name := factionDisplayName(r.gs, string(target))
+			if management.tributeDec.HandleInput(input) {
+				return InputAction{Kind: ActionAdjustTribute, TargetFaction: target, Delta: -5}
+			}
+			if management.tributeInc.HandleInput(input) {
+				return InputAction{Kind: ActionAdjustTribute, TargetFaction: target, Delta: 5}
+			}
 			if management.releaseButton.HandleInput(input) {
 				r.ShowConfirmDialog(
 					"Vasallığı Bitir",
