@@ -18,10 +18,10 @@ type aiMerchantRoute struct {
 	seas  []world.RegionID
 }
 
-// aiExecuteMerchantTradeStrategy 1300 senaryosunda ticaret cumhuriyetlerinin
-// merchant filolarını aktif deniz rotalarına bağlar ve eksik kapasiteyi üretir.
+// aiExecuteMerchantTradeStrategy merchant filolarını aktif deniz rotalarına
+// bağlar ve eksik kapasiteyi üretir.
 func aiExecuteMerchantTradeStrategy(gs *state.GameState, fid faction.FactionID, budget *aiBudget, _ *StrategicContext, steps *[]TurnStep) {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || !aiMerchantTradeFaction(fid) {
+	if gs == nil || !aiMerchantTradeFaction(fid) {
 		return
 	}
 	routes := aiEligibleMerchantRoutes(gs, fid)
@@ -40,7 +40,7 @@ func aiMerchantTradeFaction(fid faction.FactionID) bool {
 }
 
 func aiMerchantTradeResourceReserve(gs *state.GameState, fid faction.FactionID) economy.ResourceCost {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || !aiMerchantTradeFaction(fid) {
+	if gs == nil || !aiMerchantTradeFaction(fid) {
 		return economy.ResourceCost{}
 	}
 	routes := aiEligibleMerchantRoutes(gs, fid)

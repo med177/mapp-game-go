@@ -2566,6 +2566,23 @@ func (s *GameState) NormalizeEliminatedFactionRelations() {
 	}
 }
 
+// NormalizeFactionEliminationState, eski veya tutarsız kayıtlarda kara
+// bölgesi sahibi olduğu halde elenmiş işaretlenen faction'ları yeniden aktif
+// eder. Bir faction'ın elenmiş olması ile kara toprağı sahibi olması aynı anda
+// geçerli bir state değildir; ardıl devletlerin yeniden kurulması da bu
+// invariant'a dayanır.
+func (s *GameState) NormalizeFactionEliminationState() {
+	if s == nil {
+		return
+	}
+	for fid, f := range s.Factions {
+		if f == nil || !f.IsEliminated || len(s.LandRegionsOwnedBy(fid)) == 0 {
+			continue
+		}
+		f.IsEliminated = false
+	}
+}
+
 // CanRestoreSuccessorAtRegion, bir bölgenin ardıl devlet karar paneline
 // girebilmesi için ardıl fraksiyonun gerçekten oyundan elenmiş ve kara toprağı
 // kalmamış olması gerektiğini doğrular.

@@ -19,8 +19,12 @@ type region struct {
 }
 
 func main() {
-	baseDir := flag.String("dir", "assets/scenarios/1300_ottoman_rise/data", "Senaryo data klasörü")
+	baseDir := flag.String("dir", "", "Senaryo data klasörü")
 	flag.Parse()
+	if *baseDir == "" {
+		flag.Usage()
+		os.Exit(2)
+	}
 
 	regionsPath := filepath.Join(*baseDir, "regions.json")
 	raw, err := os.ReadFile(regionsPath)

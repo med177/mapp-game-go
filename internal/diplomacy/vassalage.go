@@ -308,6 +308,12 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if stance == faction.StanceAllied {
 			return "Zaten müttefiksiniz."
 		}
+		if reason := allianceLimitBlockReason(gs, actor); reason != "" {
+			return reason
+		}
+		if reason := allianceLimitBlockReason(gs, target); reason != "" {
+			return reason
+		}
 		if score < allianceRelationThresholdFor(gs) {
 			return allianceRelationBlockReason(gs) + "."
 		}

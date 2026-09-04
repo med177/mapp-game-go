@@ -304,6 +304,12 @@ func resolveAcceptedAllianceOffer(gs *state.GameState, offer state.DiplomaticOff
 	if rel.Stance == faction.StanceAllied {
 		return Result{Accepted: true, Applied: true, Message: "Zaten müttefiksiniz."}
 	}
+	if reason := allianceLimitBlockReason(gs, offer.FromFactionID); reason != "" {
+		return Result{Message: reason}
+	}
+	if reason := allianceLimitBlockReason(gs, offer.ToFactionID); reason != "" {
+		return Result{Message: reason}
+	}
 	rel.Stance = faction.StanceAllied
 	rel.Score = clamp(rel.Score+20, -100, 100)
 	return Result{

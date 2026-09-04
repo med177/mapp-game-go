@@ -131,9 +131,7 @@ func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, 
 			}
 			if aiShouldCancelAlliance(gs, fid, otherID) {
 				activeObjectiveConflict := false
-				if gs.ScenarioID == "1300_ottoman_rise" {
-					activeObjectiveConflict = diplomacy.AssessStrategicAlliance(gs, fid, otherID).ActiveObjectiveConflict
-				}
+				activeObjectiveConflict = diplomacy.AssessStrategicAlliance(gs, fid, otherID).ActiveObjectiveConflict
 				result := diplomacy.Execute(gs, fid, otherID, diplomacy.ActionCancelAlliance)
 				if result.Applied && activeObjectiveConflict {
 					if current := diplomacy.Relation(gs, fid, otherID); current != nil && current.Stance == faction.StanceTrade {

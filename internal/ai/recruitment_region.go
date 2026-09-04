@@ -35,9 +35,6 @@ type aiRecruitRegionCandidate struct {
 }
 
 func aiFindRecruitRegionForStrategicContext(gs *state.GameState, fid faction.FactionID, unitType *army.UnitType, ctx *StrategicContext) world.RegionID {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" {
-		return aiFindRecruitRegion(gs, fid, unitType)
-	}
 	return aiFindStrategicRecruitRegion(gs, fid, unitType, ctx)
 }
 

@@ -66,10 +66,6 @@ func aiEconomyBuildWithStrategicContextAndSteps(gs *state.GameState, fid faction
 	if self == nil || self.IsEliminated || gs.BuildingTypes == nil {
 		return
 	}
-	if gs.ScenarioID != "1300_ottoman_rise" {
-		aiLegacyEconomyBuildWithSteps(gs, fid, budget, steps)
-		return
-	}
 	if ctx == nil {
 		ctx = prepareStrategicContext(gs, fid)
 	}
@@ -104,7 +100,7 @@ func aiBestBuildingInvestmentForProcurement(gs *state.GameState, fid faction.Fac
 }
 
 func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.FactionID, budget *aiBudget, ctx *StrategicContext, requireResources bool) (aiBuildingCandidate, bool) {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || gs.Factions[fid] == nil {
+	if gs == nil || gs.Factions[fid] == nil {
 		return aiBuildingCandidate{}, false
 	}
 	self := gs.Factions[fid]

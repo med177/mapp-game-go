@@ -330,7 +330,7 @@ AI hareket/ikmal kararları `GameState.RegionMilitaryGrainProduction()` ve
 
 ### Kalıcı Stratejik Plan
 
-Yalnız `1300_ottoman_rise` senaryosunda her AI devletinin tur öncesinde bir `StrategicContext` üretilir. Bu runtime context manpower kapasitesi, konuşlandırılmış kara birimi, sahip olunan/sınır bölgeleri, aktif savaşlar ve ihtiyaç halinde hesaplanan devlet gücü, frontier gücü ve bölge değerini cache'ler; `GameState` veya save payload'ına yazılmaz.
+Her senaryoda her AI devletinin tur öncesinde bir `StrategicContext` üretilir. Bu runtime context manpower kapasitesi, konuşlandırılmış kara birimi, sahip olunan/sınır bölgeleri, aktif savaşlar ve ihtiyaç halinde hesaplanan devlet gücü, frontier gücü ve bölge değerini cache'ler; `GameState` veya save payload'ına yazılmaz.
 
 Kalıcı karar `GameState.AIPlans[factionID]` içindeki `AIPlanState` kaydıdır:
 
@@ -567,7 +567,7 @@ gelir.
 
 ### Dinamik Acil Rezerv ve Harcama Bütçesi
 
-`internal/ai/budget.go`, yalnız `1300_ottoman_rise` AI turlarında save'e yazılmayan bir
+`internal/ai/budget.go`, tüm AI turlarında save'e yazılmayan bir
 harcama bütçesi üretir. Acil altın rezervi şu formüldür:
 
 `40 + sahip olunan kara bölgesi*8 + aktif savaş*30 + min(120, efektif aylık altın/3)`
@@ -854,7 +854,7 @@ yüklenir, nakliye yoksa en yakın kendi kara bölgesine çekilir.
 
 ### Geri Çekilme ve Takviye
 
-`internal/ai/retreat.go`, yalnız `1300_ottoman_rise` stratejik context'inde mobil kara
+`internal/ai/retreat.go`, stratejik context kullanan tüm senaryolarda mobil kara
 ordusunun mevcut rolünü geçici `retreat` rolüyle ezebilir. Açık arazide iki tetikleyici
 vardır:
 
@@ -915,7 +915,7 @@ bırakılır; rol save'e yazılmaz.
 
 ### Ağırlıklı Kara Rotaları
 
-`internal/ai/pathfinding.go`, yalnız `1300_ottoman_rise` stratejik kara AI'sında mevcut
+`internal/ai/pathfinding.go`, tüm senaryolarda stratejik kara AI'sında kullanılan
 uzun menzilli BFS seçimini deterministik Dijkstra maliyet alanıyla değiştirir. Aynı motor
 cephe rolü mesafeleri, rally, reserve, relief, retreat ve security hedeflerine giden ilk
 adımı da üretir. Gerçek hareket uygulaması hâlâ komşu bölge başına mevcut hareket puanı
@@ -1114,8 +1114,7 @@ merchant üretimi `naval_mission.go` ile `merchant_trade.go` modüllerine devred
 Kuşatma state ve başlatma yardımcıları `internal/ai/siege_strategy.go` içindedir;
 uzun menzilli hareket hedefleme ve rota seçimi `internal/ai/movement_strategy.go`
 içindedir; komşu hareket skoru ve combat resolve bu karar katmanlarından ayrıdır.
-`1300_ottoman_rise` için ağırlıklı kara rotası, diğer senaryolar için geriye dönük BFS
-seçimi kullanılır. Her iki yol da stratejik rol bonusunu ve deterministik bölge sırasını
+Tüm senaryolarda ağırlıklı kara rotası seçimi kullanılır. Motor stratejik rol bonusunu ve deterministik bölge sırasını
 korur. Komşu hedef seçimi, lojistik context önbelleği, denizden karaya çıkış puanı ve
 `scoreMove` kararları da aynı dosyada tutulur; gerçek hareket puanı tüketimi, savaş ve
 state değişikliği ortak `ai.go` akışında kalır.
@@ -1190,7 +1189,7 @@ Aktif objective sonradan mevcut müttefiki hedeflerse AI ittifakı bitirir; koru
 stance'i hedef savaşı kilitlemesin diye aynı çiftin ticaret anlaşmasını da kapatır. Statik
 gelecek hedefi tek başına bu sert temizliği yapmaz. Tehdit/fayda kaybolduğunda retention
 eşiğinin altındaki veya müttefik tavanını aşan düşük değerli ittifaklar çözülür. Bu model
-yalnız `1300_ottoman_rise` için aktiftir.
+ tüm senaryolar için aktiftir.
 - AI savaş ilanında hem saldıran hem savunan taraftaki oyuncu müttefikleri otomatik çekilmez; önce oyuncuya savaş çağrısı modalı düşer
 
 ---
@@ -1273,7 +1272,7 @@ aşamaz; inşa süresi mevcut ve kuyruktaki seviyeler arttıkça uzar.
 
 ## Deniz Stratejisi (`aiNavalStrategy`)
 
-`1300_ottoman_rise`, `internal/ai/naval_mission.go` içindeki runtime-only görev modelini
+Senaryolar, `internal/ai/naval_mission.go` içindeki runtime-only görev modelini
 kullanır. Kıyı sahibi olmak tek başına liman veya transport yatırımı açmaz:
 
 1. Aktif `expand` objective'inin hedef bölgesi ya da aynı hedef devletin kıyısı ve
@@ -1415,7 +1414,7 @@ Kaynak/test: `internal/army/army.go`, `internal/state/naval_mission.go`,
 
 AI kara ordularını nakliye filosuna bindirip indirebilir:
 
-- 1300 görevinde seçilmiş kara ordusu güvenli dost rotayla çıkış limanına gider; yeterli
+- Seçilmiş kara ordusu güvenli dost rotayla çıkış limanına gider; yeterli
   tek filo kapasitesi hazırsa çıkış denizini seçip gemiye biner.
 - Boş transport filoları görev çıkış denizinde toplanır. Yüklenmiş filo sonraki turda
   aktif plandan yeniden tanınır, deniz BFS'iyle objective kıyısına gider ve uygun hedefe
@@ -1429,9 +1428,8 @@ AI kara ordularını nakliye filosuna bindirip indirebilir:
   devriye gezer.
   Eski save'den yük taşıyan ama objective'i kalmayan filo, yalnız komşu güvenli dost
   kıyıya tahliye yapar.
-- Diğer senaryolarda kara ordusu `chooseBestMove()` içinde komşu deniz bölgesini, o
-  denizde uygun `transport` filosu ve pozitif `aiEmbarkScore()` varsa seçen legacy
-  davranışı sürdürür.
+- Görev hedefi olmayan kara ordusu `chooseBestMove()` içinde komşu deniz bölgesini,
+  o denizde uygun `transport` filosu ve pozitif `aiEmbarkScore()` varsa seçer.
 - `executeMove()` kara → deniz geçişinde birimleri filonun `EmbarkedUnits` alanına taşır ve kara ordusunu haritadan kaldırır.
 - Donanma `EmbarkedUnits` taşıyorsa komşu kara bölgesine çıkarma (`disembark`) yapar; yeni kara ordusu üretilir. Hedef düşman tahkimatlı kıyıysa çıkarma savaşı/fetih yerine bu orduyla kuşatma başlatılır; mevcut kuşatma varsa yasal destek olarak katılır.
 - Hedef kara bölgesi sahipsizse başarılı çıkarma sonrası bölge artık AI sahipliğine yazılır; eski bug'lı save'lerde sahipsiz kalmış ama tek taraflı işgal altında olan kara bölgeleri yükleme/tur çözümlemesinde toparlanır.
@@ -1497,8 +1495,8 @@ manpower kapasitesi doluluğa yaklaşmamış olsa bile ilk kışlayı kuyruğa a
 boş/legacy ordu kaydı AI'nin askerî üretime başlamasını kilitlemez. Sonra
 `aiSelectBestUnit()` ile birim seçer:
 
-1300 senaryosunda seçim yukarıdaki **Plan Bazlı Kara Ordu Kompozisyonu** modeliyle
-yapılır. Aşağıdaki sabit sıra yalnız diğer senaryoların legacy davranışıdır:
+Seçim yukarıdaki **Plan Bazlı Kara Ordu Kompozisyonu** modeliyle yapılır. Aşağıdaki
+sabit sıra, plan verisi bulunmayan durumlar için fallback davranışıdır:
 
 | Öncelik | Birim | Koşul |
 |---|---|---|
@@ -1516,8 +1514,8 @@ Queue davranışı:
 - AI gerekli teknoloji, bina ve bina seviyesi olmayan birimi seçmez.
 - Bölge başına pending üretim emri `20` ile sınırlıdır.
 - AI kara recruit seçiminde yalnız ilk uygun bölgeyi almaz; kışla throughput'u dolu bölgeyi atlayıp aynı tur kapasitesi kalan başka uygun bölgeye dağılır. Tüm uygun kışla hatları doluysa yeni kara emri açmaz.
-- 1300 senaryosunda uygun hatlar ayrıca stratejik recruitment bölgesi skoru ile
-  sıralanır; diğer senaryolarda remaining-capacity/kışla seviyesi seçimi korunur.
+- Uygun hatlar stratejik recruitment bölgesi skoru ile sıralanır; veri bulunmayan
+  durumlarda remaining-capacity/kışla seviyesi seçimi korunur.
 - Mevcut ordu doluysa üretim tamamlandığında oyuncu ile aynı `completeLandUnit()` yolu yeni ordu oluşturabilir.
 
 ---

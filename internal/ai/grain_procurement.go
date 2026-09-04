@@ -40,7 +40,7 @@ func aiGrainSupplierSurplus(gs *state.GameState, fid faction.FactionID) int {
 // alır. Savaşta olmayan tüm devletler satıcı olabilir; kaynakta yine güvenli
 // rezerv bırakılır.
 func aiProcureGrain(gs *state.GameState, fid faction.FactionID) int {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
+	if gs == nil || fid == "" {
 		return 0
 	}
 	self := gs.Factions[fid]
@@ -97,7 +97,7 @@ func aiProcureGrain(gs *state.GameState, fid faction.FactionID) int {
 // yeterliyse alım yapmaz; eksik olan her ticari malı açık pazardan, altın
 // rezervi korunabildiği sürece tamamlar.
 func aiProcureStrategicResources(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) economy.ResourceCost {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
+	if gs == nil || fid == "" {
 		return economy.ResourceCost{}
 	}
 	self := gs.Factions[fid]

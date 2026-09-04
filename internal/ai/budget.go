@@ -52,7 +52,7 @@ type aiBudget struct {
 }
 
 func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) *aiBudget {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
+	if gs == nil || fid == "" {
 		return nil
 	}
 	self := gs.Factions[fid]

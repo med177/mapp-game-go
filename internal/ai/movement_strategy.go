@@ -388,7 +388,7 @@ func findLongRangeMoveWithContext(gs *state.GameState, a *army.Army, start *worl
 }
 
 func findLongRangeMoveWithStrategicContext(gs *state.GameState, a *army.Army, start *world.Region, ctx *moveScoreContext, strategicContext *StrategicContext) world.RegionID {
-	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+	if gs != nil {
 		return findWeightedLongRangeMove(gs, a, start, ctx, strategicContext)
 	}
 	return findLongRangeMoveBFS(gs, a, start, ctx, strategicContext)

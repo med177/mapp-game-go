@@ -28,9 +28,12 @@ var (
 )
 
 func main() {
-	defaultPath := "assets/scenarios/1300_ottoman_rise/data/regions.json"
-	path := flag.String("file", defaultPath, "Kontrol edilecek regions.json yolu")
+	path := flag.String("file", "", "Kontrol edilecek regions.json yolu")
 	flag.Parse()
+	if *path == "" {
+		flag.Usage()
+		os.Exit(2)
+	}
 
 	data, err := os.ReadFile(*path)
 	if err != nil {

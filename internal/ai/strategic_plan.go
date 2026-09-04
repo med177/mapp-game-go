@@ -176,11 +176,11 @@ func ensureStrategicPlan(gs *state.GameState, fid faction.FactionID, ctx *Strate
 	return plan
 }
 
-// aiStrategicPlanningEnabled, victory_conditions içeren her senaryoda kalıcı
-// AI planlarını açar. 1300'ün eski strateji profilleri, bu metadata olmadan
-// çalışan test/legacy başlangıçları için korunur.
+// aiStrategicPlanningEnabled tüm senaryolarda kalıcı AI planlarını açar.
+// Tarihsel hedefler ve strateji profilleri varsa plan seçimini zenginleştirir;
+// yoksa genel konsolidasyon/genişleme davranışı kullanılır.
 func aiStrategicPlanningEnabled(gs *state.GameState) bool {
-	return gs != nil && (gs.ScenarioID == "1300_ottoman_rise" || len(gs.ScenarioVictories) > 0)
+	return gs != nil
 }
 
 func aiStrategicPlanValid(gs *state.GameState, fid faction.FactionID, plan *state.AIPlanState) bool {
@@ -228,26 +228,11 @@ func chooseStrategicPlan(gs *state.GameState, fid faction.FactionID, ctx *Strate
 	if self == nil {
 		return nil
 	}
-	// 1300 profilleri, tarihsel hedeflerin kademeli açılışını ve sert yıl/event
-	// kapılarını içerir. Victory koşulu bu senaryoda profile yedek yön verir;
-	// diğer senaryolarda ise fraksiyona özel victory hedefi birincil niyettir.
-	if gs.ScenarioID == "1300_ottoman_rise" {
-		if plan := chooseScenarioObjectivePlan(gs, self, ctx); plan != nil {
-			return plan
-		}
-		if plan := chooseVictoryStrategicPlan(gs, self, ctx); plan != nil {
-			return plan
-		}
-	} else {
-		if plan := chooseHistoricalVictoryStrategicPlan(gs, self, ctx); plan != nil {
-			return plan
-		}
-		if plan := chooseScenarioObjectivePlan(gs, self, ctx); plan != nil {
-			return plan
-		}
-		if plan := chooseGeneralVictoryStrategicPlan(gs, self, ctx); plan != nil {
-			return plan
-		}
+	if plan := chooseScenarioObjectivePlan(gs, self, ctx); plan != nil {
+		return plan
+	}
+	if plan := chooseVictoryStrategicPlan(gs, self, ctx); plan != nil {
+		return plan
 	}
 	if targetID := aiBestExpansionPlanTarget(gs, self, ctx); targetID != "" {
 		return newStrategicPlan(gs, self, ctx, state.AIObjectiveExpand, targetID, "senaryo genişleme hedefi")

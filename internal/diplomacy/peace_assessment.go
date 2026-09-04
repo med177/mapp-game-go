@@ -71,8 +71,8 @@ func finalizePeaceProposalAssessment(assessment PeaceProposalAssessment) PeacePr
 	return assessment
 }
 
-// PeaceAssessment 1300 senaryosundaki bir savaş tarafının barış isteğini
-// açıklar. Score yükseldikçe savaşı bitirme baskısı artar.
+// PeaceAssessment bir savaş tarafının barış isteğini açıklar. Score yükseldikçe
+// savaşı bitirme baskısı artar.
 type PeaceAssessment struct {
 	Score                int
 	WarScore             int
@@ -394,7 +394,7 @@ func futureLossPressureFor(gs *state.GameState, actor, opponent faction.FactionI
 }
 
 func isWarStalemate(gs *state.GameState, actor, opponent faction.FactionID, ledger *state.WarLedger) bool {
-	if gs == nil || ledger == nil || gs.ScenarioID != "1300_ottoman_rise" {
+	if gs == nil || ledger == nil {
 		return false
 	}
 	warTurns := gs.Turn - ledger.StartedTurn

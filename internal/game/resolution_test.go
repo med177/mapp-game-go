@@ -1217,7 +1217,7 @@ func TestApplyEconomyTickUsesConfiguredVassalTributeRate(t *testing.T) {
 			"vassal": {ID: "vassal", Gold: 0, Grain: 100, OverlordID: "lord", TributeRate: 40, TributeRateConfigured: true},
 		},
 		Regions: map[world.RegionID]*world.Region{
-			"v1": {ID: "v1", OwnerID: "vassal", TaxRate: 50, Satisfaction: 50, BaseGoldIncome: 20},
+			"v1": {ID: "v1", OwnerID: "vassal", TaxRate: 30, Satisfaction: 50, BaseGoldIncome: 34},
 		},
 		Armies:    map[army.ArmyID]*army.Army{},
 		UnitTypes: map[string]*army.UnitType{},

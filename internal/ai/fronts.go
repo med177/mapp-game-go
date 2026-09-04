@@ -108,10 +108,7 @@ func assignAINavalRoles(ctx *StrategicContext) {
 		if aiFleetHasWarship(ctx.gs, fleet) {
 			anchor := fleet.RegionID
 			reason := "ticaret ve liman devriyesi"
-			role := AIArmyRoleEscort
-			if ctx.gs.ScenarioID == "1300_ottoman_rise" {
-				role = AIArmyRolePatrol
-			}
+			role := AIArmyRolePatrol
 			if mission != nil && mission.EmbarkSeaRegionID != "" {
 				anchor = mission.EmbarkSeaRegionID
 				reason = "nakliye hattı escortu"
@@ -660,7 +657,7 @@ func primaryOffensiveFrontEnemy(ctx *StrategicContext, plan *state.AIPlanState) 
 }
 
 func aiWarLogisticsPolicyActive(gs *state.GameState) bool {
-	return gs != nil && gs.ScenarioID == "1300_ottoman_rise" && gs.Turn > aiWarLogisticsActivationTurn
+	return gs != nil && gs.Turn > aiWarLogisticsActivationTurn
 }
 
 func aiActiveWarMatureForOffense(gs *state.GameState, actor, opponent faction.FactionID) bool {
@@ -957,7 +954,7 @@ func aiRoleAdjustedMoveScore(ctx *StrategicContext, armyRef *army.Army, target *
 }
 
 func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
-	if ctx == nil || ctx.gs == nil || ctx.gs.ScenarioID != "1300_ottoman_rise" {
+	if ctx == nil || ctx.gs == nil {
 		return true
 	}
 	// Warning seviyesindeki rezerv eksikliği hazırlık ve saldırı temposunu
@@ -1019,7 +1016,7 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 // varsa ekonomi tick'inin sonucu, yoksa aynı talep hesaplarının state fallback'i
 // kullanılır. Böylece save yükleme veya ilk tur planlaması farklı davranmaz.
 func aiWarLogisticsReady(gs *state.GameState, fid faction.FactionID) bool {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
+	if gs == nil || fid == "" {
 		return true
 	}
 	self := gs.Factions[fid]
@@ -1066,7 +1063,7 @@ func aiWarLogisticsReady(gs *state.GameState, fid faction.FactionID) bool {
 // cepheyi gereksiz yere savunmaya kilitlemez; kritik/famine seviyesi ise
 // saldırı ordularını savunma ve ikmal görevine çevirir.
 func aiWarSupplyCrisis(gs *state.GameState, fid faction.FactionID) bool {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || fid == "" {
+	if gs == nil || fid == "" {
 		return false
 	}
 	if status, ok := gs.GrainEconomy[fid]; ok && status.TotalDemand > 0 {

@@ -5,8 +5,8 @@ import (
 	"mapp-game-go/internal/state"
 )
 
-// AllianceRelationThreshold, AI'nin teklif üretirken kullandığı senaryo bazlı
-// ilişki eşiğini dışarıya açar. Teklif üretimi ile actionBlockReason aynı kapıyı
+// AllianceRelationThreshold, AI'nin teklif üretirken kullandığı ortak ilişki
+// eşiğini dışarıya açar. Teklif üretimi ile actionBlockReason aynı kapıyı
 // kullanmalıdır; aksi halde AI kota harcayıp kesin bloke olacak teklif üretir.
 func AllianceRelationThreshold(gs *state.GameState) int {
 	return allianceRelationThresholdFor(gs)
@@ -134,8 +134,8 @@ func applyAllianceWarRelationPenalties(gs *state.GameState, attacker, target fac
 
 const strategicAllianceAcceptanceFloor = 12
 
-// StrategicAllianceAssessment 1300 senaryosunda actor'un target ile ittifaktan
-// elde edeceği stratejik değeri bileşenlerine ayırır.
+// StrategicAllianceAssessment actor'un target ile ittifaktan elde edeceği
+// stratejik değeri bileşenlerine ayırır.
 type StrategicAllianceAssessment struct {
 	Score                   int
 	ThreatValue             int
@@ -153,7 +153,7 @@ type StrategicAllianceAssessment struct {
 // sahibinin girişim kararı ve hedef AI'nin kabul kararı aynı bileşenleri ters
 // perspektiflerden okuyabilir.
 func AssessStrategicAlliance(gs *state.GameState, actor, target faction.FactionID) StrategicAllianceAssessment {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || actor == "" || target == "" || actor == target {
+	if gs == nil || actor == "" || target == "" || actor == target {
 		return StrategicAllianceAssessment{}
 	}
 	return assessStrategicAlliance(gs, actor, target, HasCommonEnemy(gs, actor, target), HasSharedMajorThreat(gs, actor, target))
@@ -166,7 +166,7 @@ func assessStrategicAlliance(gs *state.GameState, actor, target faction.FactionI
 
 func assessStrategicAllianceWithTrade(gs *state.GameState, actor, target faction.FactionID, commonEnemy, sharedMajorThreat bool, tradeAccess bool) StrategicAllianceAssessment {
 	assessment := StrategicAllianceAssessment{}
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || actor == "" || target == "" || actor == target {
+	if gs == nil || actor == "" || target == "" || actor == target {
 		return assessment
 	}
 	assessment.ActiveObjectiveConflict = activeAllianceObjectiveConflict(gs, actor, target)

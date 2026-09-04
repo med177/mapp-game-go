@@ -289,6 +289,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   beklemeye devam ediyor. Regression:
   `TestDiplomacyRelationshipNotificationAutoClosesAfterThreeSeconds`.
 
+- 2026-09-04: Devlet başına doğrudan dış ittifak sayısı `MaxAlliances = 5` ile sınırlandı. Aynı vassal realm içindeki iç `StanceAllied` kayıtları kotaya dahil edilmiyor; doğrudan teklif ve kuyruk çözümü için regresyon testleri eklendi (`TestProposeAllianceRejectedWhenActorHasFiveAllies`, `TestQueuedAllianceOfferRejectedWhenTargetReachesFiveAllies`).
+
 - 2026-08-07: İttifak-savaş çakışması iki yönlü ve oyuncu/AI ortak kural haline getirildi. Bir devlet, diğer tarafın doğrudan müttefikiyle savaş halindeyse ittifak kuramıyor. Bir devlete savaş ilan edildiğinde hedefin tarafsız kalan doğrudan müttefikleriyle ilişki `-25` düşüyor; saldıranın mevcut müttefiki olan hedef müttefikiyle ittifak bozulup ilişki `-35` düşüyor. Savaşa katılan müttefiklerde ek ceza uygulanmıyor. Regression: `TestProposeAllianceRejectedWhenTargetAllyIsAtWarWithPlayer`, `TestDeclareWarPenalizesTargetAlliesOnce`, `TestDeclareWarBreaksCrossAllianceWithTargetAlly`, `TestDeclareWarAgainstTargetAllyThatJoinsUsesWarRelationOnly`.
 
 - 2026-08-07: Askerî kara/deniz birimlerine JSON tabanlı sabit `gold_upkeep`

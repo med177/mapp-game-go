@@ -40,11 +40,10 @@ func aiApplyConquest(gs *state.GameState, region *world.Region, newOwnerID strin
 	region.ApplyConquest(newOwnerID, aiOwnerReligion(gs, newOwnerID))
 }
 
-// TryResolvePostWarVassalization 1300 senaryosunda bir AI devletinin son
-// toprağında yenilen hedefi vassal bırakıp bırakmayacağını değerlendirir ve
-// onaylanan kararı standart diplomasi executor'ıyla uygular.
+// TryResolvePostWarVassalization yenilen hedefi vassal bırakıp bırakmayacağını
+// değerlendirir ve onaylanan kararı standart diplomasi executor'ıyla uygular.
 func TryResolvePostWarVassalization(gs *state.GameState, attackerID faction.FactionID, targetRegion *world.Region) diplomacy.Result {
-	if gs == nil || gs.ScenarioID != "1300_ottoman_rise" || targetRegion == nil || attackerID == "" || attackerID == gs.PlayerFactionID {
+	if gs == nil || targetRegion == nil || attackerID == "" || attackerID == gs.PlayerFactionID {
 		return diplomacy.Result{}
 	}
 	defenderID := faction.FactionID(targetRegion.OwnerID)

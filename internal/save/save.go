@@ -381,6 +381,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	}
 	applyCampaignSaveState(gs, saved)
 	gs.ApplyHistoricalFactionChanges()
+	gs.NormalizeFactionEliminationState()
 	gs.NormalizeEliminatedFactionRelations()
 	army.NormalizeLegacyGarrisons(gs.Armies)
 	gs.NormalizeEmptyArmies()

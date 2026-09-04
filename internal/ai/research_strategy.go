@@ -47,9 +47,6 @@ func aiSelectResearchTechnology(gs *state.GameState, self *faction.Faction, budg
 	if gs == nil || self == nil || self.IsEliminated || gs.TechTypes == nil {
 		return nil
 	}
-	if gs.ScenarioID != "1300_ottoman_rise" {
-		return aiSelectLegacyResearchTechnology(gs, self, budget, aiOwnedRegionSet(gs, self.ID))
-	}
 	if ctx == nil {
 		ctx = prepareStrategicContext(gs, self.ID)
 	}

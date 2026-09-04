@@ -9,7 +9,7 @@ import (
 )
 
 // Açılış ekonomi/ordu bandı ilk 42 turda korunur; daha sonra AI-AI barışları
-// somut tazminat/toprak/vassallık sonucu uygulayabilir.
+// tüm senaryolarda somut tazminat/toprak/vassallık sonucu uygulayabilir.
 const peaceSettlementActivationTurn = 42
 
 // PeaceOutcome savaşın barışla kapanırken ortaya çıkan siyasi sonucu belirtir.
@@ -100,7 +100,7 @@ func ExecuteAIPeace(gs *state.GameState, proposer, responder faction.FactionID) 
 	setPeaceBetweenCoalitions(gs, proposer, responder)
 	result := Result{Accepted: true, Applied: true, Settlement: &settlement, Message: factionLabel(gs, responder) + " barışı kabul etti."}
 	if settlement.Outcome != PeaceOutcomeWhitePeace &&
-		(gs.ScenarioID != "1300_ottoman_rise" || gs.Turn > peaceSettlementActivationTurn) {
+		gs.Turn > peaceSettlementActivationTurn {
 		if applied := applyPeaceSettlement(gs, settlement); applied {
 			result.Message += " " + peaceSettlementMessageTR(gs, settlement)
 		}

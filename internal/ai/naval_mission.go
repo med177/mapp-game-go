@@ -50,7 +50,7 @@ type aiNavalMissionCandidate struct {
 }
 
 func buildAINavalMission(ctx *StrategicContext) *aiNavalMission {
-	if ctx == nil || ctx.gs == nil || ctx.gs.ScenarioID != "1300_ottoman_rise" || ctx.FactionID == "" {
+	if ctx == nil || ctx.gs == nil || ctx.FactionID == "" {
 		return nil
 	}
 	targets := aiNavalMissionTargets(ctx)
@@ -450,7 +450,7 @@ func aiSortedNeighborIDs(region *world.Region) []world.RegionID {
 }
 
 func aiNavalMissionMove(gs *state.GameState, fleet *army.Army, ctx *StrategicContext) (world.RegionID, bool) {
-	if gs == nil || fleet == nil || !fleet.IsNaval || gs.ScenarioID != "1300_ottoman_rise" {
+	if gs == nil || fleet == nil || !fleet.IsNaval {
 		return "", false
 	}
 	// Docked filoların RegionID'si zaten komşu deniz ankrajıdır. Bu yüzden
@@ -630,7 +630,7 @@ func aiNavalWarCoastCandidateBetter(candidate aiNavalWarCoastCandidate, best *ai
 }
 
 func aiNavalEmbarkArmyMove(gs *state.GameState, landArmy *army.Army, ctx *StrategicContext) (world.RegionID, bool) {
-	if gs == nil || landArmy == nil || landArmy.IsNaval || gs.ScenarioID != "1300_ottoman_rise" || ctx == nil || ctx.navalMission == nil || ctx.navalMission.EmbarkArmyID != landArmy.ID {
+	if gs == nil || landArmy == nil || landArmy.IsNaval || ctx == nil || ctx.navalMission == nil || ctx.navalMission.EmbarkArmyID != landArmy.ID {
 		return "", false
 	}
 	mission := ctx.navalMission

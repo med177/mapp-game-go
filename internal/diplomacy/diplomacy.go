@@ -121,21 +121,44 @@ func (a TradeProposalAssessment) Accepted() bool {
 }
 
 const allianceAcceptanceThreshold = 45
-const allianceRelationThreshold = 25
-const historicalAllianceRelationThreshold = 40
+const allianceRelationThreshold = 40
 
-func allianceRelationThresholdFor(gs *state.GameState) int {
-	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
-		return historicalAllianceRelationThreshold
-	}
+// MaxAlliances bir devletin doğrudan diplomatik ittifak kurabileceği dış
+// müttefik sayısıdır. Aynı vassal realm içindeki zorunlu allied ilişkiler bu
+// sayıya dahil edilmez.
+const MaxAlliances = 5
+
+func allianceRelationThresholdFor(_ *state.GameState) int {
 	return allianceRelationThreshold
 }
 
-func allianceRelationBlockReason(gs *state.GameState) string {
-	if allianceRelationThresholdFor(gs) == historicalAllianceRelationThreshold {
-		return "İttifak için ilişki puanı 40 altı"
+func allianceRelationBlockReason(_ *state.GameState) string {
+	return "İttifak için ilişki puanı 40 altı"
+}
+
+// ActiveAllianceCount, devletin aynı realm dışındaki aktif müttefiklerini
+// sayar. Relation kaydının hangi yönünde tutulduğuna bakmadan çalışır.
+func ActiveAllianceCount(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
 	}
-	return "İttifak için ilişki puanı 25 altı"
+	count := 0
+	for _, rel := range gs.Relations {
+		if rel == nil || rel.Stance != faction.StanceAllied || sameRealm(gs, rel.FactionA, rel.FactionB) {
+			continue
+		}
+		if rel.FactionA == fid || rel.FactionB == fid {
+			count++
+		}
+	}
+	return count
+}
+
+func allianceLimitBlockReason(gs *state.GameState, fid faction.FactionID) string {
+	if ActiveAllianceCount(gs, fid) >= MaxAlliances {
+		return factionLabel(gs, fid) + " en fazla 5 müttefike sahip olabilir"
+	}
+	return ""
 }
 
 type AllianceProposalAssessment struct {
@@ -811,6 +834,14 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 	}
 	if rel.Score < allianceRelationThresholdFor(gs) {
 		assessment.BlockReason = allianceRelationBlockReason(gs)
+		return assessment
+	}
+	if reason := allianceLimitBlockReason(gs, actor); reason != "" {
+		assessment.BlockReason = reason
+		return assessment
+	}
+	if reason := allianceLimitBlockReason(gs, target); reason != "" {
+		assessment.BlockReason = reason
 		return assessment
 	}
 	actorFaction := gs.Factions[actor]

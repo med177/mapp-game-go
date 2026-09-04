@@ -253,18 +253,16 @@ func aiDiplomacyOfferPriorityDetails(gs *state.GameState, from, to faction.Facti
 	case diplomacy.ActionProposeAlliance:
 		assessment := diplomacy.AssessAllianceProposal(gs, diplomacy.EnsureRelation(gs, from, to), from, to)
 		score += assessment.Chance
-		if gs.ScenarioID == "1300_ottoman_rise" {
-			strategic := assessment.ActorStrategic
-			score += minInt(30, strategic.Score)
-			if strategic.BufferValue > 0 {
-				reasons = append(reasons, "tampon devlet")
-			}
-			if strategic.FrontSupportValue > 0 {
-				reasons = append(reasons, "cephe desteği")
-			}
-			if strategic.TradeValue >= 8 {
-				reasons = append(reasons, "ticaret değeri")
-			}
+		strategic := assessment.ActorStrategic
+		score += minInt(30, strategic.Score)
+		if strategic.BufferValue > 0 {
+			reasons = append(reasons, "tampon devlet")
+		}
+		if strategic.FrontSupportValue > 0 {
+			reasons = append(reasons, "cephe desteği")
+		}
+		if strategic.TradeValue >= 8 {
+			reasons = append(reasons, "ticaret değeri")
 		}
 		if diplomacy.HasCommonEnemy(gs, from, to) {
 			reasons = append(reasons, "ortak düşman")
@@ -310,57 +308,19 @@ func aiShouldAttemptAllianceOffer(gs *state.GameState, from, to faction.FactionI
 	if gs == nil || assessment.BlockReason != "" {
 		return false
 	}
-	if gs.ScenarioID == "1300_ottoman_rise" {
-		strategic := assessment.ActorStrategic
-		if strategic.ActiveObjectiveConflict || strategic.Score < 18 || assessment.Chance < 45 {
-			return false
-		}
-		urgent := strategic.ThreatValue >= 18 || strategic.BufferValue >= 10
-		if aiAllianceSoftCap(gs, from) <= aiActiveAllianceCount(gs, from) && !urgent {
-			return false
-		}
-		if urgent && assessment.Chance >= 60 {
-			return true
-		}
-		threshold := assessment.Chance + minInt(18, maxInt(0, strategic.Score-18)/2)
-		threshold = maxInt(25, minInt(92, threshold))
-		return aiDiplomacyOfferRoll(gs, from, to, diplomacy.ActionProposeAlliance) < threshold
-	}
-	commonEnemy := diplomacy.HasCommonEnemy(gs, from, to)
-	sharedThreat := diplomacy.HasSharedMajorThreat(gs, from, to)
-	if !aiAllianceHasMeaningfulBenefit(gs, from, to) {
+	strategic := assessment.ActorStrategic
+	if strategic.ActiveObjectiveConflict || strategic.Score < 18 || assessment.Chance < 45 {
 		return false
 	}
-	if aiAllianceSoftCap(gs, from) <= aiActiveAllianceCount(gs, from) && !commonEnemy && !sharedThreat {
+	urgent := strategic.ThreatValue >= 18 || strategic.BufferValue >= 10
+	if aiAllianceSoftCap(gs, from) <= aiActiveAllianceCount(gs, from) && !urgent {
 		return false
 	}
-	if aiAllianceExpansionTension(gs, from, to) && !commonEnemy && !sharedThreat {
-		return false
-	}
-	if assessment.Chance >= 72 {
+	if urgent && assessment.Chance >= 60 {
 		return true
 	}
-	if assessment.Chance >= 60 && (commonEnemy || sharedThreat) {
-		return true
-	}
-	if !commonEnemy && !sharedThreat && assessment.Chance < 78 {
-		return false
-	}
-
-	threshold := assessment.Chance
-	if f := gs.Factions[from]; f != nil {
-		threshold += (f.AIAggressiveness - 45) / 3
-	}
-	if to == gs.PlayerFactionID {
-		threshold += 8
-	}
-	if commonEnemy {
-		threshold += 6
-	}
-	if sharedThreat {
-		threshold += 8
-	}
-	threshold = maxInt(22, minInt(92, threshold))
+	threshold := assessment.Chance + minInt(18, maxInt(0, strategic.Score-18)/2)
+	threshold = maxInt(25, minInt(92, threshold))
 	return aiDiplomacyOfferRoll(gs, from, to, diplomacy.ActionProposeAlliance) < threshold
 }
 
@@ -444,44 +404,17 @@ func aiShouldCancelAlliance(gs *state.GameState, from, to faction.FactionID) boo
 	if rel == nil || rel.Stance != faction.StanceAllied {
 		return false
 	}
-	if gs.ScenarioID == "1300_ottoman_rise" {
-		strategic := diplomacy.AssessStrategicAlliance(gs, from, to)
-		if strategic.ActiveObjectiveConflict {
-			return true
-		}
-		if strategic.ExpansionTensionPenalty > 0 && strategic.ThreatValue == 0 && strategic.Score < 22 {
-			return true
-		}
-		if strategic.Score < strategicAllianceRetentionFloor(gs, from) && rel.Score <= 50 {
-			return true
-		}
-		if aiActiveAllianceCount(gs, from) > aiAllianceSoftCap(gs, from) && strategic.ThreatValue == 0 && strategic.Score < 24 {
-			return true
-		}
-		return false
-	}
-	commonEnemy := diplomacy.HasCommonEnemy(gs, from, to)
-	sharedThreat := diplomacy.HasSharedMajorThreat(gs, from, to)
-	if commonEnemy || sharedThreat {
-		return false
-	}
-	if !aiAllianceHasMeaningfulBenefit(gs, from, to) && rel.Score <= 45 {
+	strategic := diplomacy.AssessStrategicAlliance(gs, from, to)
+	if strategic.ActiveObjectiveConflict {
 		return true
 	}
-	hasTrade := diplomacy.HasTradeRouteBetween(gs, from, to)
-	hasBorder := aiSharesLandBorder(gs, from, to)
-	expansionTension := aiAllianceExpansionTension(gs, from, to)
-	directThreat := diplomacy.HasDirectThreat(gs, from, to)
-	if !hasBorder && !hasTrade && rel.Score <= 35 {
+	if strategic.ExpansionTensionPenalty > 0 && strategic.ThreatValue == 0 && strategic.Score < 22 {
 		return true
 	}
-	if expansionTension && rel.Score <= 40 {
+	if strategic.Score < strategicAllianceRetentionFloor(gs, from) && rel.Score <= 50 {
 		return true
 	}
-	if directThreat && rel.Score <= 45 {
-		return true
-	}
-	if aiActiveAllianceCount(gs, from) > aiAllianceSoftCap(gs, from) && rel.Score <= 40 {
+	if aiActiveAllianceCount(gs, from) > aiAllianceSoftCap(gs, from) && strategic.ThreatValue == 0 && strategic.Score < 24 {
 		return true
 	}
 	return false
@@ -1112,7 +1045,7 @@ func aiSelectBestUnitForBudget(gs *state.GameState, f *faction.Faction, budget *
 }
 
 func aiSelectBestUnitForStrategicContext(gs *state.GameState, f *faction.Faction, budget *aiBudget, strategicContext *StrategicContext) string {
-	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+	if gs != nil {
 		return aiSelectStrategicLandUnit(gs, f, budget, strategicContext)
 	}
 	return aiSelectLegacyLandUnit(gs, f, budget)
@@ -2375,7 +2308,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 }
 
 func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) {
-	if gs != nil && gs.ScenarioID == "1300_ottoman_rise" {
+	if gs != nil {
 		aiExecuteNavalMissionProduction(gs, fid, budget, strategicContext, steps)
 		aiProduceNavalDefenseAtThreatenedPort(gs, fid, budget, strategicContext, steps)
 		aiExecuteMerchantTradeStrategy(gs, fid, budget, strategicContext, steps)
