@@ -41,7 +41,9 @@ type Region struct {
 `successor_faction_id`, edit mode'da `Ardıl Devlet` düğmesiyle atanır. Bölge oyuncu
 tarafından fethedildiğinde bu fraksiyon `is_eliminated=true` ise bilgi panelinde
 `Özgürleştir` görünür; aksiyon bölgeyi ardıl devlete verir ve devletin yeniden
-kuruluş state'ini başlatır. 1300 senaryosunda başkent settlement'ı bulunan ve
+kuruluş state'ini başlatır. Aynı koşullarda `Vassallaştır` da görünür; bu aksiyon
+ardıl devleti yeniden kurup bölgeyi ona verir ve oyuncunun doğrudan vassalı yapar.
+1300 senaryosunda başkent settlement'ı bulunan ve
 sahibi eşleşen 68 bölge başlangıçta kendi sahibiyle işaretlidir.
 
 Oyuncu ordusu bu metadata'yı taşıyan düşman kara bölgesini savaşla veya savaşsız

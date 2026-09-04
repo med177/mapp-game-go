@@ -986,15 +986,15 @@
         "x": 307,
         "y": 476,
         "type": "fortress",
+        "is_center": true,
         "population": 45
       },
       {
         "id": "portugal_lisboa",
         "name_tr": "Lizbon",
-        "x": 292,
-        "y": 497,
-        "type": "port",
-        "is_center": true,
+        "x": 293,
+        "y": 495,
+        "type": "city",
         "population": 135
       },
       {
@@ -1004,6 +1004,14 @@
         "y": 460,
         "type": "port",
         "population": 135
+      },
+      {
+        "id": "portugal_settlement_4",
+        "name_tr": "Lizbon Limanı",
+        "x": 293,
+        "y": 499,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -4701,9 +4709,25 @@
         "id": "granada_settlement_7",
         "name_tr": "Sevilla",
         "x": 356,
-        "y": 522,
+        "y": 521,
         "type": "city",
         "population": 44
+      },
+      {
+        "id": "granada_settlement_8",
+        "name_tr": "Cadiz",
+        "x": 348,
+        "y": 538,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "granada_settlement_9",
+        "name_tr": "Sevilla Limanı",
+        "x": 355,
+        "y": 524,
+        "type": "port",
+        "population": 0
       }
     ]
   },

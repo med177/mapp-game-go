@@ -407,6 +407,8 @@ func (g *Game) Update() error {
 			g.applyGrainAid(action.TargetRegion)
 		case render.ActionLiberateSuccessor:
 			g.liberateSuccessor(action.TargetRegion)
+		case render.ActionVassalizeRegionSuccessor:
+			g.vassalizeSuccessor(action.TargetRegion)
 		case render.ActionProposeAlliance:
 			g.proposeAlliance(action.TargetFaction)
 		case render.ActionProposeTrade:
@@ -4556,6 +4558,57 @@ func (g *Game) liberateSuccessor(regionID world.RegionID) {
 		message := fmt.Sprintf("%s yeniden kuruldu: %s bölgesi özgürleştirildi, 5 milis göreve başladı.", name, region.NameTR)
 		g.renderer.ShowCombatResult(message)
 		g.renderer.AddEventDetail("[ÖZGÜRLÜK] "+message, fmt.Sprintf("%s devleti yeniden oyuna döndü ve özgürleştiren devletle müttefik oldu.", name))
+		g.renderer.MarkMapDirty()
+	}
+}
+
+// vassalizeSuccessor, oyuncunun kontrolündeki bölgede elenmiş ardıl devleti
+// yeniden kurup bölgeyi ona vererek oyuncunun doğrudan vassalı yapar.
+func (g *Game) vassalizeSuccessor(regionID world.RegionID) {
+	if g == nil || g.gs == nil || regionID == "" {
+		return
+	}
+	region := g.gs.Regions[regionID]
+	if region == nil || region.IsSea || region.OwnerID != string(g.gs.PlayerFactionID) || region.SuccessorFactionID == "" {
+		return
+	}
+	successorID := faction.FactionID(region.SuccessorFactionID)
+	if successorID == g.gs.PlayerFactionID || !g.gs.CanRestoreSuccessorAtRegion(region) || diplomacy.DirectOverlord(g.gs, g.gs.PlayerFactionID) != "" {
+		return
+	}
+	successor := g.gs.Factions[successorID]
+	if successor == nil {
+		return
+	}
+
+	// ForceVassalizeAfterWar mevcut vassallık/ilişki sözleşmesini ve ticaret
+	// rotalarını kurar; ardılın yeniden kurulması bu çağrıdan önce yapılmalıdır.
+	if !g.reviveSuccessorAtRegion(regionID, successorID) {
+		return
+	}
+	result := diplomacy.ForceVassalizeAfterWar(g.gs, g.gs.PlayerFactionID, successorID)
+	if !result.Applied {
+		if g.renderer != nil && result.Message != "" {
+			g.renderer.ShowCombatResult(result.Message)
+		}
+		return
+	}
+
+	g.retreatArmiesFromCapturedRegion(regionID, string(successorID))
+	region.OwnerID = string(successorID)
+	g.gs.NormalizeFactionCapitals()
+	g.gs.RefreshArmyMovePoints(false)
+	if g.renderer != nil {
+		name := successor.NameTR
+		if name == "" {
+			name = successor.Name
+		}
+		if name == "" {
+			name = string(successorID)
+		}
+		message := fmt.Sprintf("%s yeniden kuruldu: %s bölgesi vassal yönetimine bırakıldı.", name, region.NameTR)
+		g.renderer.ShowCombatResult(message)
+		g.renderer.AddEventDetail("[VASSALLIK] "+message, fmt.Sprintf("%s devleti yeniden oyuna döndü ve oyuncunun vassalı oldu.", name))
 		g.renderer.MarkMapDirty()
 	}
 }

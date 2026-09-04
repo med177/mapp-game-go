@@ -2349,6 +2349,8 @@ func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *worl
 	}
 	if region.OwnerID == string(gs.PlayerFactionID) {
 		if _, ok := regionLiberationSuccessor(gs, region); ok {
+			vassalizeBtn := buildRegionVassalizeSuccessorButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+			drawUIButtonWidget(screen, vassalizeBtn, solidButtonStyle(color.RGBA{74, 87, 126, 235}, color.RGBA{130, 150, 205, 255}, ColorWhite, 0))
 			liberateBtn := buildRegionLiberateButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
 			drawUIButtonWidget(screen, liberateBtn, solidButtonStyle(color.RGBA{76, 112, 66, 235}, color.RGBA{145, 190, 108, 255}, ColorWhite, 0))
 		}
@@ -3550,6 +3552,12 @@ func regionPanelInteractiveHitForTab(mx, my float64, gs *state.GameState, rid wo
 	if regionGrainAidButtonHitForTab(mx, my, gs, rid, activeTab) {
 		return true
 	}
+	if regionVassalizeSuccessorButtonHitForTab(mx, my, gs, rid, activeTab) {
+		return true
+	}
+	if regionLiberateButtonHitForTab(mx, my, gs, rid, activeTab) {
+		return true
+	}
 	if regionDiplomacyButtonHitForTab(mx, my, gs, rid, activeTab) {
 		return true
 	}
@@ -4613,12 +4621,38 @@ func regionLiberationSuccessor(gs *state.GameState, region *world.Region) (facti
 	return successorID, true
 }
 
+const (
+	regionActionButtonWidth = float32(90)
+	regionActionButtonGap   = float32(5)
+)
+
 func buildRegionLiberateButton(px, py, pw, ph float32) gameui.Button {
-	const btnW = float32(112)
+	const btnW = regionActionButtonWidth
 	const btnH = float32(24)
-	x := px + pw - btnW - 5
+	x := px + pw - btnW - regionActionButtonGap
 	y := py + (ph-btnH)/2
 	return gameui.NewButton(float64(x), float64(y), float64(btnW), float64(btnH), "Özgürleştir")
+}
+
+func buildRegionVassalizeSuccessorButton(px, py, pw, ph float32) gameui.Button {
+	const btnW = regionActionButtonWidth
+	const btnH = float32(24)
+	x := px + pw - (btnW*2 + regionActionButtonGap*2)
+	y := py + (ph-btnH)/2
+	return gameui.NewButton(float64(x), float64(y), float64(btnW), float64(btnH), "Vassallaştır")
+}
+
+func regionVassalizeSuccessorButtonHitForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab) bool {
+	if gs == nil || rid == "" {
+		return false
+	}
+	region := gs.Regions[rid]
+	if _, ok := regionLiberationSuccessor(gs, region); !ok {
+		return false
+	}
+	barY := float32(regionPanelActionBarY(gs, region, activeTab))
+	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
+	return buildRegionVassalizeSuccessorButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
 
 func regionLiberateButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
@@ -4668,9 +4702,9 @@ func buildRegionDiplomacyButtons(_ *state.GameState, _ string, px, py, pw, ph fl
 }
 
 func buildRegionGrainAidButton(_ *state.GameState, _ world.RegionID, px, py, _, ph float32) gameui.Button {
-	const btnW = float32(112)
+	const btnW = regionActionButtonWidth
 	const btnH = float32(24)
-	x := px + 5
+	x := px + regionActionButtonGap
 	y := py + (ph-btnH)/2
 	return gameui.NewButton(float64(x), float64(y), float64(btnW), float64(btnH), "Tahıl Yardımı")
 }

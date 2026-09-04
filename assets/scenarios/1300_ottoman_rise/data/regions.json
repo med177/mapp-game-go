@@ -1343,6 +1343,7 @@
     "name_tr": "Algarve",
     "terrain": "coast",
     "owner_id": "granada_emirate",
+    "successor_faction_id": "granada_emirate",
     "neighbors": [
       "granada",
       "gulf_of_cadiz",

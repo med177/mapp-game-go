@@ -121,6 +121,15 @@ func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 		drawSmallHoverHint(screen, "Ardıl devlet: "+successorName, fx, fy)
 		return
 	}
+	if regionVassalizeSuccessorButtonHitForTab(fx, fy, gs, rid, activeTab) {
+		successorID, _ := regionLiberationSuccessor(gs, gs.Regions[rid])
+		successorName := factionDisplayName(gs, string(successorID))
+		if successorName == "" {
+			successorName = string(successorID)
+		}
+		drawSmallHoverHint(screen, successorName+" devletini vassallaştır", fx, fy)
+		return
+	}
 	if regionGrainAidButtonHitForTab(fx, fy, gs, rid, activeTab) {
 		if reason := gs.GrainAidBlockReason(rid); reason != "" {
 			drawSmallHoverHint(screen, reason, fx, fy)

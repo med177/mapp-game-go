@@ -67,3 +67,40 @@ func TestLiberateSuccessorRevivesFactionWithMilitiaAndAlliance(t *testing.T) {
 		t.Fatal("özgürleştirici ordusu yeni ardıl toprağında bırakılmamalıydı")
 	}
 }
+
+func TestVassalizeSuccessorRevivesFactionAndTransfersRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "overlord",
+		Turn:            8,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"overlord":  {ID: "overlord", NameTR: "Üst Devlet"},
+			"successor": {ID: "successor", NameTR: "Ardıl", IsEliminated: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"successor_capital": {
+				ID:                 "successor_capital",
+				OwnerID:            "overlord",
+				SuccessorFactionID: "successor",
+				NameTR:             "Ardıl Başkent",
+			},
+			"overlord_home": {ID: "overlord_home", OwnerID: "overlord"},
+		},
+		Armies:    map[army.ArmyID]*army.Army{},
+		Relations: map[string]*faction.Relation{},
+		UnitTypes: map[string]*army.UnitType{"militia": {ID: "militia", MovementPoints: 2}},
+	}
+
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+	g.vassalizeSuccessor("successor_capital")
+
+	if got := gs.Regions["successor_capital"].OwnerID; got != "successor" {
+		t.Fatalf("vassallaştırmada bölge ardıl devlete geçmedi: %q", got)
+	}
+	successor := gs.Factions["successor"]
+	if successor.IsEliminated || successor.OverlordID != "overlord" {
+		t.Fatalf("ardıl yeniden kurulup oyuncuya bağlanmalıydı: %+v", successor)
+	}
+	if successor.TributeRate != 20 || !successor.TributeRateConfigured {
+		t.Fatalf("vassal haraç varsayılanı kurulmadı: %+v", successor)
+	}
+}

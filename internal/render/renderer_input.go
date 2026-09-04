@@ -651,7 +651,12 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: delta}
 		}
 		if regionLiberateButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
-			return InputAction{Kind: ActionLiberateSuccessor, TargetRegion: r.SelectedRegion}
+			r.showSuccessorRegionConfirm(ActionLiberateSuccessor, "Özgürleştirme", "bölgeyi özgürleştirmek")
+			return InputAction{}
+		}
+		if regionVassalizeSuccessorButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
+			r.showSuccessorRegionConfirm(ActionVassalizeRegionSuccessor, "Vassallaştırma", "onu vassalın yapmak")
+			return InputAction{}
 		}
 		if regionGrainAidButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
 			if r.gs.CanApplyGrainAid(r.SelectedRegion) {
@@ -895,6 +900,29 @@ func (r *Renderer) handleLeftClick() InputAction {
 	// teklif paneli açılır.
 	r.selectMapRegionFromMapClick(rid)
 	return InputAction{}
+}
+
+func (r *Renderer) showSuccessorRegionConfirm(action ActionKind, title, verb string) {
+	if r == nil || r.gs == nil || r.SelectedRegion == "" {
+		return
+	}
+	region := r.gs.Regions[r.SelectedRegion]
+	successorID, ok := regionLiberationSuccessor(r.gs, region)
+	if !ok {
+		return
+	}
+	successorName := factionDisplayName(r.gs, string(successorID))
+	if successorName == "" {
+		successorName = string(successorID)
+	}
+	r.ShowConfirmDialog(
+		title,
+		fmt.Sprintf("%s devletini yeniden kurup %s istiyor musun?", successorName, verb),
+		"Evet",
+		"Hayır",
+		InputAction{Kind: action, TargetRegion: r.SelectedRegion},
+		nil,
+	)
 }
 
 func (r *Renderer) toggleTradePanel() {
