@@ -1048,10 +1048,24 @@ func (s *GameState) AdvanceTurn() {
 			s.Year++
 		}
 	}
+	s.ApplyHistoricalFactionChanges()
 	s.RetireExpiredCommanders()
 	s.ResetDiplomacyOfferCounts()
 	s.GrainAidUsage = nil
 	s.GrainSaleGoldUsed = nil
+}
+
+// ApplyHistoricalFactionChanges takvimde açılmış tarihsel isim ve bayrak
+// değişikliklerini tüm fraksiyonlara uygular.
+func (s *GameState) ApplyHistoricalFactionChanges() {
+	if s == nil {
+		return
+	}
+	for _, f := range s.Factions {
+		if f != nil {
+			f.ApplyHistoricalChange(s.Year)
+		}
+	}
 }
 
 // GrainAidBlockReason tahıl yardımının neden uygulanamayacağını döner.

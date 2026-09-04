@@ -2325,6 +2325,20 @@
         "region_id": "thrace",
         "value": 60
       }
+    ],
+    "historical_changes": [
+      {
+        "year": 1350,
+        "flag": "ottoman_state.png",
+        "name": "Ottoman State",
+        "name_tr": "Osmanlı Devleti"
+      },
+      {
+        "year": 1460,
+        "flag": "ottoman_emp.png",
+        "name": "Ottoman Empire",
+        "name_tr": "Osmanlı İmp.(Devlet-i Aliyye)"
+      }
     ]
   },
   {

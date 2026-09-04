@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-08-06
+last_updated: 2026-09-04
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -49,6 +49,8 @@ type Faction struct {
     ID           FactionID
     Name         string
     NameTR       string
+    Flag         string
+    HistoricalChanges []HistoricalChange
     Religion     religion.Type // catholic | orthodox | sunni | shia
     Color        [3]uint8      // harita rengi (RGB)
     IsPlayable   bool
@@ -71,6 +73,26 @@ type Faction struct {
     AIExpansionTargets []FactionID  // AI tarihsel genişleme hedefleri
 }
 ```
+
+## Tarihsel isim ve bayrak değişimleri
+
+Senaryo `data/factions.json` içindeki isteğe bağlı `historical_changes` dizisi,
+belirli bir yıldan itibaren faction'ın görünen adını ve bayrağını değiştirir:
+
+```json
+"historical_changes": [
+  {"year": 1350, "flag": "ottoman_state.png", "name": "Ottoman State", "name_tr": "Osmanlı Devleti"},
+  {"year": 1460, "flag": "ottoman_emp.png", "name": "Ottoman Empire", "name_tr": "Osmanlı İmp.(Devlet-i Aliyye)"}
+]
+```
+
+Her tur sonunda geçerli yılın altındaki en son kayıt uygulanır. Aynı çözümleme
+yeni oyun başlangıcında ve save yüklenirken de çalıştırıldığı için kayıtlar
+isim/bayrak geçişinden önce veya sonra alınmış olsa da aynı sonucu üretir.
+`flag` değeri senaryonun `sprites/flags/` dizinindeki dosya adıdır; dosya yoksa
+UI mevcut faction baş harfi fallback'ini kullanır. Uygulama noktaları
+`internal/faction/faction.go`, `internal/state/state.go` ve
+`internal/render/panel.go` dosyalarındadır.
 
 `capital_settlement_id`, fraksiyonun ulusal başkent settlement'ını tutar. Bu alan artık bölgesel `settlement.is_capital` işaretinden ayrıdır: `is_capital` bir bölgenin ana yerleşimini/anchor noktasını belirlemeye devam ederken, ulusal başkent tekil olarak fraksiyon üstünde tutulur.
 

@@ -1144,6 +1144,7 @@ func (g *Game) resolveTurn() {
 	events.TickActiveRegionEvents(g.gs)
 
 	g.gs.AdvanceTurn()
+	render.RefreshFactionHistoricalVisuals(g.gs)
 	if arrivals := g.gs.SyncCommanderAvailability(); len(arrivals) > 0 {
 		g.showCommanderArrivals(arrivals)
 	}
@@ -3470,6 +3471,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},
 	}
+	gs.ApplyHistoricalFactionChanges()
 	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
 	diplomacy.NormalizeVassalage(gs)
 	gs.SyncWarLedgers()

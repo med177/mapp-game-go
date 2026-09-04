@@ -611,6 +611,7 @@ func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string,
 
 // New başlangıç kamera pozisyonuyla yeni bir Renderer döner.
 func New(gs *state.GameState) *Renderer {
+	syncFactionHistoricalFlagNames(gs)
 	loadTradeCenterIcon()
 	x, y, w, _ := editInspectorRect()
 	dropW := float32(292)
@@ -904,8 +905,16 @@ func (r *Renderer) ReloadGameState(gs *state.GameState) {
 	r.ReloadGameStateWithPreparedMap(gs, nil)
 }
 
+// RefreshFactionHistoricalVisuals yeni tarihsel bayrak kimliklerini asset
+// yükleyicilerine aktarır.
+func RefreshFactionHistoricalVisuals(gs *state.GameState) {
+	syncFactionHistoricalFlagNames(gs)
+	resetFactionFlagCache()
+}
+
 func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
 	r.gs = gs
+	syncFactionHistoricalFlagNames(gs)
 	r.editSuccessorDropdown.Close()
 	r.LoadingScenarioPath = gs.ScenarioPath
 	if gs.ScenarioPath != "" {

@@ -144,7 +144,8 @@ var (
 
 	// factionFlagCache senaryo bayraklarını faction ID'siyle eşleştirir.
 	// nil değerler de cache'lenir; böylece eksik asset her frame diskten aranmaz.
-	factionFlagCache = map[string]*ebiten.Image{}
+	factionFlagCache           = map[string]*ebiten.Image{}
+	factionHistoricalFlagNames = map[faction.FactionID]string{}
 )
 
 // buildingDisplayOrder bina slotlarının sırasını belirler.
@@ -191,7 +192,11 @@ func factionFlagImage(fid faction.FactionID) *ebiten.Image {
 		return nil
 	}
 
-	path := filepath.Join(ActiveScenarioPath, "sprites", "flags", string(fid)+".png")
+	flagName := factionHistoricalFlagNames[fid]
+	if flagName == "" {
+		flagName = string(fid) + ".png"
+	}
+	path := filepath.Join(ActiveScenarioPath, "sprites", "flags", flagName)
 	if img, loaded := factionFlagCache[path]; loaded {
 		return img
 	}
@@ -203,6 +208,18 @@ func factionFlagImage(fid faction.FactionID) *ebiten.Image {
 
 func resetFactionFlagCache() {
 	factionFlagCache = map[string]*ebiten.Image{}
+}
+
+func syncFactionHistoricalFlagNames(gs *state.GameState) {
+	factionHistoricalFlagNames = make(map[faction.FactionID]string)
+	if gs == nil {
+		return
+	}
+	for id, f := range gs.Factions {
+		if f != nil && f.Flag != "" {
+			factionHistoricalFlagNames[id] = f.Flag
+		}
+	}
 }
 
 // drawFactionFlagBadge kare faction rozetini çizer; asset yoksa baş harfi gösterir.

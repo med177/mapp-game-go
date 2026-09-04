@@ -380,6 +380,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 		return nil, err
 	}
 	applyCampaignSaveState(gs, saved)
+	gs.ApplyHistoricalFactionChanges()
 	gs.NormalizeEliminatedFactionRelations()
 	army.NormalizeLegacyGarrisons(gs.Armies)
 	gs.NormalizeEmptyArmies()
@@ -563,6 +564,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},
 	}
+	gs.ApplyHistoricalFactionChanges()
 	gs.SyncWarLedgers()
 	return gs, nil
 }

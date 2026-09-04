@@ -24,15 +24,26 @@ type TerritorialClaim struct {
 	Core     bool   `json:"core,omitempty"`
 }
 
+// HistoricalChange bir fraksiyonun belirli bir yıldan itibaren kullanacağı
+// tarihsel isim ve bayrak kimliğini taşır.
+type HistoricalChange struct {
+	Year   int    `json:"year"`
+	Flag   string `json:"flag,omitempty"`
+	Name   string `json:"name,omitempty"`
+	NameTR string `json:"name_tr,omitempty"`
+}
+
 // Faction oyundaki bir fraksiyonu temsil eder.
 type Faction struct {
-	ID           FactionID     `json:"id"`
-	Name         string        `json:"name"`
-	NameTR       string        `json:"name_tr"`
-	Religion     religion.Type `json:"religion"`
-	Color        [3]uint8      `json:"color"`
-	IsPlayable   bool          `json:"is_playable"`
-	IsEliminated bool          `json:"is_eliminated"`
+	ID                FactionID          `json:"id"`
+	Name              string             `json:"name"`
+	NameTR            string             `json:"name_tr"`
+	Flag              string             `json:"flag,omitempty"`
+	HistoricalChanges []HistoricalChange `json:"historical_changes,omitempty"`
+	Religion          religion.Type      `json:"religion"`
+	Color             [3]uint8           `json:"color"`
+	IsPlayable        bool               `json:"is_playable"`
+	IsEliminated      bool               `json:"is_eliminated"`
 	// IsVirtual, isyan sırasında otomatik oluşturulan; diplomasi ve ticarete
 	// kapalı, yalnız askeri hedef olarak var olan sanal isyancı devleti işaretler.
 	IsVirtual  bool      `json:"is_virtual,omitempty"`
@@ -70,6 +81,38 @@ type Faction struct {
 	AIAggressiveness   int                `json:"ai_aggressiveness"`
 	AIExpansionTargets []FactionID        `json:"ai_expansion_targets,omitempty"`
 	TerritorialClaims  []TerritorialClaim `json:"territorial_claims,omitempty"`
+}
+
+// ApplyHistoricalChange yıl için geçerli son tarihsel değişikliği uygular.
+func (f *Faction) ApplyHistoricalChange(year int) bool {
+	if f == nil {
+		return false
+	}
+	var selected *HistoricalChange
+	for i := range f.HistoricalChanges {
+		change := &f.HistoricalChanges[i]
+		if change.Year <= 0 || change.Year > year || (selected != nil && change.Year < selected.Year) {
+			continue
+		}
+		selected = change
+	}
+	if selected == nil {
+		return false
+	}
+	changed := false
+	if selected.Flag != "" && f.Flag != selected.Flag {
+		f.Flag = selected.Flag
+		changed = true
+	}
+	if selected.Name != "" && f.Name != selected.Name {
+		f.Name = selected.Name
+		changed = true
+	}
+	if selected.NameTR != "" && f.NameTR != selected.NameTR {
+		f.NameTR = selected.NameTR
+		changed = true
+	}
+	return changed
 }
 
 // DiplomaticStance iki fraksiyon arasındaki ilişki durumu.

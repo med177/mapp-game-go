@@ -1,6 +1,30 @@
 package state
 
-import "testing"
+import (
+	"testing"
+
+	"mapp-game-go/internal/faction"
+)
+
+func TestAdvanceTurnAppliesHistoricalFactionChangesAfterYearAdvances(t *testing.T) {
+	gs := &GameState{
+		Year:          1349,
+		Month:         12,
+		MonthsPerTurn: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"test": {
+				ID: "test", Name: "Old", NameTR: "Eski",
+				HistoricalChanges: []faction.HistoricalChange{{Year: 1350, Flag: "state.png", Name: "State", NameTR: "Devlet"}},
+			},
+		},
+	}
+
+	gs.AdvanceTurn()
+	got := gs.Factions["test"]
+	if gs.Year != 1350 || got.NameTR != "Devlet" || got.Flag != "state.png" {
+		t.Fatalf("tarihsel değişiklik tur sonunda uygulanmadı: yıl=%d faction=%+v", gs.Year, got)
+	}
+}
 
 func TestQuarterlyTurnCoversCalendarRangeAndAdvancesThreeMonths(t *testing.T) {
 	gs := &GameState{Year: 1300, Month: 3, MonthsPerTurn: 3}
