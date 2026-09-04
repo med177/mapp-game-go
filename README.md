@@ -2,17 +2,12 @@
 
 ![Mapp Game Screenshot](Mapp_Game_Screenshot.png)
 
-> Akdeniz'in hâkimi sen olacaksın.
-
-Mapp, **1300–1600 yılları** arasını kapsayan, sıra tabanlı bir harita strateji oyunudur. Total War serisinin kampanya haritasından ilham alarak geliştirilmiştir — taktik savaş sahnesi yoktur; tüm çarpışmalar harita üzerinde otomatik hesaplanır.
+Mapp, **1300–1600 yılları** arasını kapsayan, sıra tabanlı bir harita strateji oyunudur. Total War serisinin sefer haritası ve EU4'ten ilham alarak geliştirilmiştir — taktik savaş sahnesi yoktur; tüm çarpışmalar harita üzerinde otomatik hesaplanır.
 
 ---
 
 ## Özellikler
-
-- **İzometrik Dünya Haritası** — Akdeniz havzasını kapsayan, Voronoi tabanlı bölge sistemi
 - **Sıra Tabanlı Strateji** — 1 tur = 1 ay; mevsimler haritaya yansır, kış ordularınızı eritir
-- **9 Oynanabilir Fraksiyon** — Osmanlı, Venedik, Fransa, İngiltere, Memlük, Safevi, Rusya, Aragon, Portekiz
 - **Din & Diplomasi Sistemi** — Mezhep farklılıkları ilişkileri etkiler; ittifak, ticaret, savaş ilanı
 - **Ekonomi & Şehir Geliştirme** — Vergi oranı, bina üretimi, ticaret malları, isyan mekaniği
 - **Teknoloji Ağacı** — Askeri, ekonomi, denizcilik, din kategorileri; bina ve bölge bağımlılıkları
@@ -20,21 +15,6 @@ Mapp, **1300–1600 yılları** arasını kapsayan, sıra tabanlı bir harita st
 - **Yapay Zeka** — 3 zorluk seviyesi, fırsatçı/ekonomik/diplomatik strateji
 - **Senaryo Sistemi** — Farklı başlangıç koşulları ve zafer hedefleriyle birden fazla senaryo
 - **Kayıt/Yükleme** — JSON tabanlı save envelope + sıkıştırılmış state payload; debug modda ek okunabilir sidecar
-
----
-
-## Senaryolar
-
-| Senaryo | Yıl | Açıklama |
-|---|---|---|
-| **Osmanlı'nın Yükselişi** | 1300 | Küçük bir Anadolu beyliğinden Akdeniz imparatorluğuna |
-| **Konstantinopolis** | 1444 | Doğu Roma'nın son günleri; Fetih eşiğinde |
-
-### Zafer Koşulları (seçilebilir)
-- **Toprak Hakimiyeti** — 20+ bölge ve kritik şehirleri ele geçir
-- **Ekonomik Güç** — Tur başı 500+ altın geliri 5 tur koru
-- **Askeri Üstünlük** — Büyük fraksiyonları yenilgiye uğrat
-- **Dinî Zafer** — Kudüs, Roma ve Mekke'yi aynı anda tut
 
 ---
 
@@ -164,16 +144,6 @@ Her sistem kendi `internal/` paketinde izole edilmiştir. Render katmanı ile oy
 
 Harita, **Voronoi tabanlı** bölge sistemidir. Her piksel, en yakın bölge merkezine (`world_x`, `world_y`) göre renklenir. Komşuluk listesi yalnızca ordu hareketi ve ticaret için kullanılır — görsel sınırları etkilemez.
 
-Bölge tipleri:
-
-| Tip | Etki |
-|---|---|
-| Ova | Serbest geçiş |
-| Orman | Görüş kısıtlı, yavaş geçiş |
-| Dağ | Geçilemez; sadece dar geçitler |
-| Deniz | Yalnızca deniz birlikleriyle |
-| Geçit | Pusu noktası, stratejik tıkama |
-
 ---
 
 ## Ordu & Çarpışma
@@ -184,12 +154,6 @@ Bölge tipleri:
   - Arazi tipi savunma çarpanı
   - Mevsim cezası/bonusu
   - Pusu bonusu (geçit noktasında hazır bekleyen ordu)
-
-| Kategori | Temel | Orta | Elit |
-|---|---|---|---|
-| Piyade | Milis | Piyade | Yeniçeri / Şövalye |
-| Süvari | Hafif Süvari | Süvari | Ağır Süvari |
-| Topçu | Mancınık | Bombarda | Top |
 
 ---
 

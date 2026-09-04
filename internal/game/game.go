@@ -300,6 +300,8 @@ func (g *Game) Update() error {
 			g.startAITurnSequence()
 		case render.ActionMoveArmy:
 			g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed, action.ContactAttackerHolding, action.ContactDefenderHolding)
+		case render.ActionEngageNavalFleet:
+			g.engageNavalFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionResolveNavalContact:
 			g.resolveNavalContactChoice(action.ChoiceIndex)
 		case render.ActionResolveLandContact:

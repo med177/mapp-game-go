@@ -1,11 +1,16 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-08-29
+last_updated: 2026-09-04
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-04: Hareket sonrası aynı açık denizde kalan düşman filoları için,
+  oyuncunun kalan hareket puanıyla belirli filo ikonuna sağ tıklayarak ayrı
+  deniz teması başlatabilmesi sağlandı. Regression: `TestPlayerCanContactAnotherFleetAfterMovementContact`;
+  doğrulama: `go test ./... -count=1`.
 
 - 2026-09-03: Vassal haraç oranı oyuncunun `Vassal Yönetimi` kartından `%0–50`
   arasında `%5` adımlarla ayarlanabilir hale getirildi. Haraç oranı ekonomi

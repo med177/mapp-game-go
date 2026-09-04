@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-08-07
+last_updated: 2026-09-04
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -318,6 +318,10 @@ Senaryo verisi için bütün kara bölgelerinde toplam başlangıç üretimi yak
 - Tahıl/demir/kereste/taş/baharat/kumaş üretimi arazi uzmanlaşması sonrası gösterilir.
 - Sahip fraksiyonun ekonomi teknolojileri varsa aynı önizlemeye dahil edilir.
 - Bölge bilgi paneli bu helper ile beslendiği için görünen üretim satırları ekonomi çözüm mantığıyla daha yakındır.
+- Bölge panelindeki Altın hücresine gelindiğinde `RegionGoldIncomeBreakdown()` vergi,
+  bina etkileri, mevsim, abluka, pasif ticaret, teknoloji ve başkent bonusunu
+  ayrı katkılar olarak gösterir; satırların toplamı paneldeki efektif Altın
+  değeridir.
 
 ## Tek Seferlik Mal Transferi
 

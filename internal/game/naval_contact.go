@@ -4,9 +4,31 @@ import (
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+// engageNavalFleet, aynı açık denizde kalan belirli düşman filosuna yeni bir
+// temas açar. İlk hareket teması yalnızca bir filo çiftiyle sınırlıdır; oyuncu
+// kalan hareket hakkıyla diğer filoları ayrıca seçip bu akışı başlatabilir.
+func (g *Game) engageNavalFleet(attackerID, defenderID army.ArmyID) {
+	if g == nil || g.gs == nil || g.gs.PendingNavalContact != nil {
+		return
+	}
+	attacker := g.gs.Armies[attackerID]
+	defender := g.gs.Armies[defenderID]
+	if attacker == nil || defender == nil || attacker.OwnerID != string(g.gs.PlayerFactionID) ||
+		!attacker.IsAtSea() || !defender.IsAtSea() || attacker.ID == defender.ID ||
+		attacker.RegionID != defender.RegionID || attacker.OwnerID == defender.OwnerID || attacker.MovePoints <= 0 {
+		return
+	}
+	rel := g.gs.Relations[faction.RelationKey(faction.FactionID(attacker.OwnerID), faction.FactionID(defender.OwnerID))]
+	if rel == nil || rel.Stance != faction.StanceWar {
+		return
+	}
+	g.beginNavalContact(attacker, defender, attacker.RegionID, "", state.NavalContactDirectAttack, false)
+}
 
 func (g *Game) beginNavalContact(attacker, defender *army.Army, seaID, fromRegion world.RegionID, trigger state.NavalContactTrigger, moveBeforePrompt bool) bool {
 	if g == nil || g.gs == nil || attacker == nil || defender == nil {

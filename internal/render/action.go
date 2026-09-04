@@ -16,6 +16,7 @@ const (
 	ActionConfirmEndTurn           ActionKind = "confirm_end_turn"
 	ActionSelectArmy               ActionKind = "select_army"
 	ActionMoveArmy                 ActionKind = "move_army"
+	ActionEngageNavalFleet         ActionKind = "engage_naval_fleet"
 	ActionResolveNavalContact      ActionKind = "resolve_naval_contact"
 	ActionResolveLandContact       ActionKind = "resolve_land_contact"
 	ActionEmbarkArmy               ActionKind = "embark_army"

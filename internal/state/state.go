@@ -2386,17 +2386,16 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 		blockadeRetention = s.RegionBlockadeOutputRetentionPercent(region)
 	}
 
-	goldMod := 1.0
 	grainMod := 1.0
 	for _, bid := range region.Buildings {
 		if b, ok := s.BuildingTypes[bid]; ok && b != nil {
-			goldMod *= b.GoldMod
 			grainMod *= b.GrainMod
 		}
 	}
 
+	_, goldTotal := s.regionGoldIncomeBreakdown(region, applyBlockade)
 	out := RegionProductionSummary{
-		Gold:   scaleBlockadeOutput(int(float64(region.GoldIncome())*goldMod*float64(s.CurrentSeason().HarvestMod())/100), blockadeRetention),
+		Gold:   goldTotal,
 		Grain:  int(float64(region.BaseGrainOutput) * grainMod),
 		Iron:   region.BaseIronOutput,
 		Timber: region.BaseTimberOutput,
@@ -2414,16 +2413,8 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 	out.Spice = scaleBlockadeOutput(out.Spice, blockadeRetention)
 	out.Cloth = scaleBlockadeOutput(out.Cloth, blockadeRetention)
 
-	tradeIncome := s.BaseRegionTradeIncome(region) * s.CurrentSeason().TradeMod() / 100
-	tradeIncome = scaleBlockadeOutput(tradeIncome, blockadeRetention)
-	if fx, ok := s.Factions[faction.FactionID(region.OwnerID)]; ok && fx != nil && s.TechTypes != nil {
-		tradeIncome = int(float64(tradeIncome) * (1.0 + tech.ComputeEffects(fx.Research.Completed, s.TechTypes).MarketGoldMod))
-	}
-	out.Gold += tradeIncome
-
 	if fx, ok := s.Factions[faction.FactionID(region.OwnerID)]; ok && fx != nil && s.TechTypes != nil {
 		effects := tech.ComputeEffects(fx.Research.Completed, s.TechTypes)
-		out.Gold += effects.GoldPerRegion
 		out.Grain = int(float64(out.Grain) * (1.0 + effects.GrainMod))
 		out.Iron = int(float64(out.Iron) * (1.0 + effects.IronMod))
 		out.Timber = int(float64(out.Timber) * (1.0 + effects.TimberMod))
@@ -2431,7 +2422,6 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 	}
 
 	if bonus := s.CapitalRegionBonus(region); bonus != (RegionProductionSummary{}) {
-		out.Gold += bonus.Gold
 		out.Grain += bonus.Grain
 		out.Iron += bonus.Iron
 		out.Timber += bonus.Timber

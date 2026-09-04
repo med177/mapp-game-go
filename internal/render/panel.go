@@ -3538,6 +3538,9 @@ func regionPanelInteractiveHitForTab(mx, my float64, gs *state.GameState, rid wo
 	if deltaRect, ok := regionSatisfactionDeltaRect(gs, rid); ok && deltaRect.Hit(mx, my) {
 		return true
 	}
+	if goldRect, ok := regionGoldProductionRect(gs, rid); ok && goldRect.Hit(mx, my) {
+		return true
+	}
 	if _, ok := regionOwnerNameHit(mx, my, gs, rid); ok {
 		return true
 	}
@@ -4775,6 +4778,23 @@ func drawRegionProductionGrid(screen *ebiten.Image, gs *state.GameState, region 
 			item.col,
 		)
 	}
+}
+
+// regionGoldProductionRect, Altın satırının çizilen ilk hücresiyle tooltip
+// hit-test'inin aynı geometriyi kullanmasını sağlar.
+func regionGoldProductionRect(gs *state.GameState, rid world.RegionID) (gameui.Rect, bool) {
+	if gs == nil || rid == "" {
+		return gameui.Rect{}, false
+	}
+	region := gs.Regions[rid]
+	if region == nil || region.IsSea || region.IsTerrainArea {
+		return gameui.Rect{}, false
+	}
+	px := float64(infoPanelX()) + panelPad
+	width := float64(infoPanelW) - panelPad*2
+	colW := (width - 14) / 2
+	y := regionPanelStatRowsStartY(gs, region.OwnerID) - regionPanelStatRowGap*4
+	return gameui.Rect{X: px, Y: y, W: colW, H: regionPanelStatRowGap}, true
 }
 
 func regionGrainProductionDisplayValue(gs *state.GameState, region *world.Region, production state.RegionProductionSummary) string {

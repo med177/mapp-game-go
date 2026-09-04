@@ -131,6 +131,33 @@ func TestBlockadeAndPlayerHoldCanShareSeaWithoutBattle(t *testing.T) {
 	}
 }
 
+func TestPlayerCanContactAnotherFleetAfterMovementContact(t *testing.T) {
+	g := newNavalBattleGame(
+		&army.Army{ID: "attacker_fleet", OwnerID: "p1", RegionID: "sea_a", IsNaval: true, MovePoints: 2, MaxMovePoints: 2, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
+		&army.Army{ID: "first_fleet", OwnerID: "p2", RegionID: "sea_b", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea_b"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}},
+	)
+	second := &army.Army{ID: "second_fleet", OwnerID: "p2", RegionID: "sea_b", IsNaval: true, MovePoints: 1, MaxMovePoints: 1, NavalMission: &army.NavalMission{Kind: army.NavalMissionBlockade, TargetRegionID: "sea_b"}, Units: []army.Unit{{TypeID: "warship", CurrentHP: 100}}}
+	g.gs.Armies[second.ID] = second
+
+	g.moveArmy("attacker_fleet", "sea_b")
+	if g.gs.PendingNavalContact == nil || g.gs.Armies["attacker_fleet"].MovePoints != 1 {
+		t.Fatalf("ilk temas hareket hakkının yalnız birini tüketmeliydi: contact=%v mp=%d", g.gs.PendingNavalContact != nil, g.gs.Armies["attacker_fleet"].MovePoints)
+	}
+	g.resolveNavalContactChoice(2)
+
+	g.engageNavalFleet("attacker_fleet", "second_fleet")
+	if contact := g.gs.PendingNavalContact; contact == nil || contact.DefenderArmyID != "second_fleet" && contact.AttackerArmyID != "second_fleet" {
+		t.Fatalf("ikinci seçili filo için ayrı temas açılmalıydı: %+v", contact)
+	}
+	g.resolveNavalContactChoice(2)
+	if g.gs.PendingNavalContact != nil {
+		t.Fatal("ikinci temas da çözüldükten sonra bekleyen temas kalmamalı")
+	}
+	if g.gs.Armies["attacker_fleet"].MovePoints != 1 {
+		t.Fatalf("pozisyon korunan ikinci temas kalan hareket hakkını tüketmemeliydi: %d", g.gs.Armies["attacker_fleet"].MovePoints)
+	}
+}
+
 func TestMovingPatrolOrBlockadeFleetClearsMission(t *testing.T) {
 	for _, kind := range []army.NavalMissionKind{army.NavalMissionPatrol, army.NavalMissionBlockade} {
 		t.Run(string(kind), func(t *testing.T) {

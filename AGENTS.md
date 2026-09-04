@@ -73,9 +73,6 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
   mevcutsa referansların gerçek kayda çözüldüğünü doğrulamalı.
 - Save veya state değişiyorsa serialize/deserialize ve varsayılan değerleri
   birlikte kontrol et; eski kayıtların yüklenmesini bozma.
-- Yeni mekanik, state, ekonomi, AI, diplomasi, hareket veya save davranışı için
-  ilgili `internal/<paket>/*_test.go` altında regresyon testi yaz. Salt görsel
-  polish değişikliklerinde test zorunlu değildir.
 - Sentetik fixture ile gerçek senaryo verisini karıştırma; map/render kurulumu
   gerekmeyen testlerde gereksiz renderer oluşturma.
 

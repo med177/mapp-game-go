@@ -1221,6 +1221,12 @@ func (r *Renderer) handleRightClick() InputAction {
 	wx, wy := r.screenToWorld(float64(mx), float64(my))
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
 	if clickedID, hit := r.armyHitAt(fx, fy); hit {
+		if a.IsNaval && clickedID != a.ID {
+			if fleet := r.gs.Armies[clickedID]; fleet != nil && fleet.IsAtSea() &&
+				fleet.OwnerID != a.OwnerID && fleet.RegionID == a.RegionID && a.MovePoints > 0 {
+				return InputAction{Kind: ActionEngageNavalFleet, ArmyID: a.ID, TargetArmyID: fleet.ID}
+			}
+		}
 		if fleet := r.gs.Armies[clickedID]; fleet != nil && !a.IsNaval && fleet.OwnerID == a.OwnerID && fleet.IsNaval {
 			if fleetCanEmbarkFromRegion(r.gs, fleet, a.RegionID) {
 				if !armyCanEmbark(r.gs, a) {

@@ -99,6 +99,10 @@ func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 			}
 		}
 	}
+	if goldRect, ok := regionGoldProductionRect(gs, rid); ok && goldRect.Hit(fx, fy) {
+		drawRegionGoldTooltip(screen, gs, rid, fx, fy)
+		return
+	}
 	if deltaRect, ok := regionSatisfactionDeltaRect(gs, rid); ok && deltaRect.Hit(fx, fy) {
 		drawSatisfactionTooltip(screen, gs, rid, fx, fy)
 		return
@@ -432,13 +436,15 @@ func buildingLandCapacityEffectLines(gs *state.GameState, region *world.Region, 
 		}
 		if nextProductionLimit > productionLimit {
 			return []string{
-				fmt.Sprintf("Savaşçı sınırı: %d (%d temel ordu × %d)", landCap, baseArmyCap, army.MaxArmySize),
+				fmt.Sprintf("Savaşçı sınırı: %d", landCap),
+				fmt.Sprintf("Temel ordu: %d × %d", baseArmyCap, army.MaxArmySize),
 				fmt.Sprintf("Kışla üretim limiti: %d → %d birim/tur", productionLimit, nextProductionLimit),
 			}
 		}
 	}
 	return []string{
-		fmt.Sprintf("Savaşçı sınırı: %d (%d temel ordu × %d; +1 slot ayrı)", landCap, baseArmyCap, army.MaxArmySize),
+		fmt.Sprintf("Savaşçı sınırı: %d", landCap),
+		fmt.Sprintf("Temel ordu: %d × %d; +1 slot ayrı", baseArmyCap, army.MaxArmySize),
 		fmt.Sprintf("Kışla üretim limiti: %d birim/tur", productionLimit),
 	}
 }
@@ -660,28 +666,30 @@ func unitCostTooltipLines(gs *state.GameState, cost economy.ResourceCost) []tool
 }
 
 func resourceTooltipLines(gs *state.GameState, cost economy.ResourceCost) []tooltipLine {
-	f := gs.Factions[gs.PlayerFactionID]
 	lines := make([]tooltipLine, 0, 5)
 
-	appendLine := func(kind economy.ResourceKind, need int, have int) {
+	appendLine := func(kind economy.ResourceKind, need int) {
 		if need <= 0 {
 			return
 		}
 		col := ColorWhite
-		text := fmt.Sprintf("%s: %d/%d", economy.ResourceNameTR(kind), have, need)
-		if have < need {
-			col = ColorRed
-			text += " eksik"
+		text := fmt.Sprintf("%s: %d", economy.ResourceNameTR(kind), need)
+		if gs != nil {
+			f := gs.Factions[gs.PlayerFactionID]
+			have := 0
+			if f != nil {
+				have = economy.FactionResourceAmount(f, kind)
+			}
+			if have < need {
+				col = ColorRed
+				text += " eksik"
+			}
 		}
 		lines = append(lines, tooltipLine{text: text, col: col})
 	}
 
 	for _, kind := range economy.CostResourceKinds() {
-		have := 0
-		if f != nil {
-			have = economy.FactionResourceAmount(f, kind)
-		}
-		appendLine(kind, cost.Amount(kind), have)
+		appendLine(kind, cost.Amount(kind))
 	}
 
 	if len(lines) == 0 {
@@ -715,6 +723,34 @@ func drawTooltipBox(screen *ebiten.Image, x, y, w, h float64) {
 	}
 	gameui.DrawTooltip(screen, tooltip, hoverTooltipStyle, renderText)
 	vector.FillRect(screen, float32(x), float32(y), float32(w), 3, panelBorder, false)
+}
+
+func drawRegionGoldTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, mx, my float64) {
+	region := gs.Regions[rid]
+	if region == nil {
+		return
+	}
+	lines, total := gs.RegionGoldIncomeBreakdown(region)
+	const tooltipWidth = 330.0
+	// Son katkı satırı ile toplam ayırıcısı arasında yeterli görsel boşluk bırak.
+	tooltipHeight := 60.0 + float64(len(lines))*20
+	x, y, w, h := tooltipRect(mx, my, tooltipWidth, tooltipHeight)
+	drawTooltipBox(screen, x, y, w, h)
+	DrawText(screen, "Altın üretimi / tur", x+10, y+10, FaceSmall, ColorGold)
+	DrawText(screen, formatSignedAmount(total), x+w-10-MeasureText(formatSignedAmount(total), FaceSmall), y+10, FaceSmall, ColorGold)
+	drawUISeparator(screen, float32(x+10), float32(y+30), float32(x+w-10), 1, panelBorder)
+
+	rowY := y + 38
+	for _, line := range lines {
+		lineColor := color.RGBA{145, 220, 155, 255}
+		if line.Value < 0 {
+			lineColor = ColorRed
+		}
+		drawUIKeyValueRowWithGap(screen, x+10, rowY, w-20, line.Label, formatSignedAmount(line.Value), ColorGray, lineColor, 8)
+		rowY += 20
+	}
+	drawUISeparator(screen, float32(x+10), float32(y+h-25), float32(x+w-10), 1, panelBorder)
+	drawUIKeyValueRowWithGap(screen, x+10, y+h-19, w-20, "Toplam", formatSignedAmount(total), ColorGray, ColorGold, 8)
 }
 
 func drawSmallHoverHint(screen *ebiten.Image, message string, mx, my float64) {

@@ -306,6 +306,9 @@ açılır. Taraflardan biri `Çatış` seçip diğeri `Geri Çekil` seçmediyse 
 bırakır. Koru seçen filo temas savunma bonusu alır.
 Filo zaten aynı denizdeyken yeni `Devriye` veya `Abluka` görevi atanması da aynı
 temas akışını başlatır; görev tekrar atanırsa aynı temas her tur tekrarlanmaz.
+Hareket teması `Pozisyonu Koru` ile kapanır ve filonun hareket puanı kalırsa,
+oyuncu aynı denizdeki başka bir düşman filo ikonuna sağ tıklayarak o hedefle
+ayrı bir temas başlatabilir.
 Devriye ve görevsiz filo otomatik `Çatış`, abluka filosu otomatik
 `Pozisyonu koru` kararı taşır. Oyuncu tarafı üç seçenekli ortak modal üzerinden
 karar verir; oyuncu filosunun hareket puanı yoksa `Geri Çekil` seçeneği pasiftir.
