@@ -433,6 +433,9 @@ func TestLiftSiegeSortieConsumesAIArmyMovement(t *testing.T) {
 	gs := sortieTestState(4, 1)
 	aiArmy := gs.Armies["defender"]
 	siegeArmy := gs.Armies["besieger"]
+	gs.Regions["besieged"].OwnerID = "p2"
+	gs.Regions["exit"].OwnerID = "p1"
+	siegeArmy.PreviousRegionID = "exit"
 	g := &Game{
 		gs: gs,
 		pendingSortie: &pendingSortieState{
@@ -449,10 +452,8 @@ func TestLiftSiegeSortieConsumesAIArmyMovement(t *testing.T) {
 	if gs.SiegeAt("besieged") != nil {
 		t.Fatal("kuşatmayı kaldırma kararı aktif kuşatmayı temizlemeliydi")
 	}
-	if siegeArmy.RegionID != "besieged" {
-		// sortieTestState'te kuşatmacının kuşatma öncesi konumu yoktur;
-		// bu nedenle liftSiege yalnız kuşatmayı temizler.
-		t.Fatalf("kuşatmacı beklenmeyen bölgeye taşındı: %s", siegeArmy.RegionID)
+	if siegeArmy.RegionID != "exit" {
+		t.Fatalf("geçersiz home kaydında kuşatmacı önceki dost bölgeye çekilmeliydi: %s", siegeArmy.RegionID)
 	}
 	if aiArmy.MovePoints != 0 {
 		t.Fatalf("kuşatmayı kaldırma sonrası huruç ordusunun hareketi tüketilmeliydi: %d", aiArmy.MovePoints)

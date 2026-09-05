@@ -562,9 +562,19 @@ func (g *Game) liftSiege(aid army.ArmyID, target world.RegionID) {
 		}
 		return
 	}
-	// Orduyu kuşatma öncesi bulunduğu bölgeye geri taşı
-	if a := g.gs.Armies[aid]; a != nil && siege.AttackerHomeRegionID != "" {
-		a.RegionID = siege.AttackerHomeRegionID
+	// Orduyu kuşatma öncesi bulunduğu bölgeye geri taşı. Bazı eski/ara
+	// akışlarda home kaydı kuşatılan bölgenin kendisi olarak yazılmış olabilir;
+	// bu durumda son geçerli komşu konumu geri çekilme noktası olarak kullan.
+	if a := g.gs.Armies[aid]; a != nil {
+		retreatRegion := siege.AttackerHomeRegionID
+		if retreatRegion == target || !validSiegeRetreatRegion(g.gs, retreatRegion, target, a.OwnerID) {
+			if validSiegeRetreatRegion(g.gs, a.PreviousRegionID, target, a.OwnerID) {
+				retreatRegion = a.PreviousRegionID
+			}
+		}
+		if validSiegeRetreatRegion(g.gs, retreatRegion, target, a.OwnerID) {
+			a.RegionID = retreatRegion
+		}
 	}
 	g.clearSiege(target)
 	if region := g.gs.Regions[target]; region != nil && g.renderer != nil {
@@ -573,6 +583,14 @@ func (g *Game) liftSiege(aid army.ArmyID, target world.RegionID) {
 		g.renderer.ShowCombatResult(msg)
 		g.renderer.AddEvent("[KUSATMA] " + msg)
 	}
+}
+
+func validSiegeRetreatRegion(gs *state.GameState, candidate, target world.RegionID, ownerID string) bool {
+	if gs == nil || candidate == "" || candidate == target || ownerID == "" {
+		return false
+	}
+	region := gs.Regions[candidate]
+	return region != nil && !region.IsSea && region.OwnerID == ownerID && regionsAdjacent(gs, candidate, target)
 }
 
 func (g *Game) captureBesiegedRegion(attacker *army.Army, targetRegion *world.Region, showAfterBattleReport bool) (eliminationResult, bool) {
