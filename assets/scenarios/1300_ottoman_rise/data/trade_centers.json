@@ -43,9 +43,9 @@
         "crimea",
         "flanders",
         "granada",
+        "palatinate",
         "tunis",
-        "venice",
-        "palatinate"
+        "venice"
       ]
     },
     {
@@ -61,10 +61,10 @@
       "region_id": "sevilla",
       "tier": "secondary",
       "links": [
-        "granada",
-        "portugal",
         "atlantic_route",
-        "cape_route"
+        "cape_route",
+        "granada",
+        "portugal"
       ]
     },
     {
@@ -125,7 +125,6 @@
         "saxony"
       ]
     },
-    
     {
       "region_id": "tunis",
       "tier": "secondary",
@@ -142,6 +141,7 @@
       "links": [
         "constantinople",
         "genoa",
+        "kiev",
         "silk_road",
         "trebizond"
       ]
@@ -150,17 +150,17 @@
       "region_id": "palatinate",
       "tier": "secondary",
       "links": [
-        "saxony",
+        "flanders",
         "genoa",
-        "flanders"
+        "saxony"
       ]
     },
     {
       "region_id": "saxony",
       "tier": "secondary",
       "links": [
-        "palatinate",
         "denmark",
+        "palatinate",
         "silesia"
       ]
     },
@@ -168,6 +168,7 @@
       "region_id": "silesia",
       "tier": "secondary",
       "links": [
+        "kiev",
         "saxony"
       ]
     },
@@ -175,7 +176,18 @@
       "region_id": "moscow",
       "tier": "secondary",
       "links": [
+        "kiev",
         "novgorod"
+      ]
+    },
+    {
+      "region_id": "kiev",
+      "name_tr": "Dinyeper Havzası",
+      "tier": "secondary",
+      "links": [
+        "crimea",
+        "moscow",
+        "silesia"
       ]
     },
     {
@@ -250,8 +262,8 @@
       "tier": "secondary",
       "links": [
         "basra",
-        "egypt",
-        "cape_route"
+        "cape_route",
+        "egypt"
       ],
       "world_x": 2880,
       "world_y": 1260,
@@ -263,9 +275,9 @@
       "tier": "secondary",
       "links": [
         "north_america_route",
-        "south_america_route",
         "portugal",
-        "sevilla"
+        "sevilla",
+        "south_america_route"
       ],
       "world_x": -120,
       "world_y": 220,

@@ -74,16 +74,22 @@ func (s *GameState) regionGoldIncomeBreakdown(region *world.Region, applyBlockad
 	appendLine("Abluka etkisi", retained-local)
 	local = retained
 
+	tradeBase := s.BaseRegionTradeIncome(region) - s.RegionTradeCenterIncome(region)
 	trade := s.BaseRegionTradeIncome(region) * s.CurrentSeason().TradeMod() / 100
 	trade = scaleBlockadeOutput(trade, retention)
+	tradeBase = tradeBase * s.CurrentSeason().TradeMod() / 100
+	tradeBase = scaleBlockadeOutput(tradeBase, retention)
 	if owner, ok := s.Factions[faction.FactionID(region.OwnerID)]; ok && owner != nil && s.TechTypes != nil {
 		marketGoldMod := tech.ComputeEffects(owner.Research.Completed, s.TechTypes).MarketGoldMod
 		techTrade := int(float64(trade) * (1.0 + marketGoldMod))
-		appendLine("Pasif ticaret", trade)
+		techBase := int(float64(tradeBase) * (1.0 + marketGoldMod))
+		appendLine("Pasif ticaret", techBase)
+		appendLine("Ticaret merkezi", techTrade-techBase)
 		appendLine("Teknoloji (ticaret)", techTrade-trade)
 		trade = techTrade
 	} else {
-		appendLine("Pasif ticaret", trade)
+		appendLine("Pasif ticaret", tradeBase)
+		appendLine("Ticaret merkezi", trade-tradeBase)
 	}
 
 	appendLine("Teknoloji (bölge)", s.regionTechnologyGoldBonus(region))

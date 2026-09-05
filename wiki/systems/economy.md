@@ -120,6 +120,8 @@ teknoloji, haraç, ganimet, bakım, ödenen bakım, ödenemeyen açık ve tur so
 hazineyi taşır. Bu gider ekonomik zaferin brüt gelir ölçümünden ayrı tutulur;
 HUD'daki Gelir satırı artık bakım düşülmüş net tur değişimini gösterir. Rakamın
 üzerine gelindiğinde açılan popup, bu net değerin hesabını kalem kalem gösterir.
+Pasif ticaret ile ticaret merkezlerinin kapasite ve doğrudan gelir katkısı popup'ta
+ayrı satırlardır; bölge altın tooltip'i de merkez katkısını pasif ticaretten ayırır.
 
 Hediye gibi tek seferlik diplomatik transferler aynı popup'ta ayrıca gösterilir.
 
@@ -320,8 +322,9 @@ Senaryo verisi için bütün kara bölgelerinde toplam başlangıç üretimi yak
 - Bölge bilgi paneli bu helper ile beslendiği için görünen üretim satırları ekonomi çözüm mantığıyla daha yakındır.
 - Bölge panelindeki Altın hücresine gelindiğinde `RegionGoldIncomeBreakdown()` vergi,
   bina etkileri, mevsim, abluka, pasif ticaret, teknoloji ve başkent bonusunu
-  ayrı katkılar olarak gösterir; satırların toplamı paneldeki efektif Altın
-  değeridir.
+  ayrı katkılar olarak gösterir. Ticaret merkezinin kapasite ve doğrudan gelir
+  etkisi ayrıca `Ticaret merkezi` satırında görünür; satırların toplamı paneldeki
+  efektif Altın değeridir.
 
 ## Tek Seferlik Mal Transferi
 

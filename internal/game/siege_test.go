@@ -3,6 +3,7 @@ package game
 import (
 	"testing"
 
+	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
@@ -425,6 +426,39 @@ func TestSortieSiegeActionResolvesInPlace(t *testing.T) {
 	}
 	if gs.SiegeAt("besieged") != nil {
 		t.Fatal("başarılı huruç kuşatmayı kaldırmalıydı")
+	}
+}
+
+func TestLiftSiegeSortieConsumesAIArmyMovement(t *testing.T) {
+	gs := sortieTestState(4, 1)
+	aiArmy := gs.Armies["defender"]
+	siegeArmy := gs.Armies["besieger"]
+	g := &Game{
+		gs: gs,
+		pendingSortie: &pendingSortieState{
+			step:      ai.TurnStep{FromRegion: "besieged", TargetRegion: "exit"},
+			aiArmy:    aiArmy,
+			siegeArmy: siegeArmy,
+			target:    gs.Regions["exit"],
+		},
+		renderer: &render.Renderer{},
+	}
+
+	g.resolvePendingSortie(false)
+
+	if gs.SiegeAt("besieged") != nil {
+		t.Fatal("kuşatmayı kaldırma kararı aktif kuşatmayı temizlemeliydi")
+	}
+	if siegeArmy.RegionID != "besieged" {
+		// sortieTestState'te kuşatmacının kuşatma öncesi konumu yoktur;
+		// bu nedenle liftSiege yalnız kuşatmayı temizler.
+		t.Fatalf("kuşatmacı beklenmeyen bölgeye taşındı: %s", siegeArmy.RegionID)
+	}
+	if aiArmy.MovePoints != 0 {
+		t.Fatalf("kuşatmayı kaldırma sonrası huruç ordusunun hareketi tüketilmeliydi: %d", aiArmy.MovePoints)
+	}
+	if gs.Regions["besieged"].OwnerID != "p2" {
+		t.Fatalf("kuşatma kaldırılınca bölge fethedilmemeliydi: %s", gs.Regions["besieged"].OwnerID)
 	}
 }
 

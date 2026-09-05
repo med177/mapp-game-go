@@ -1,7 +1,6 @@
 package victory
 
 import (
-	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
@@ -168,7 +167,7 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 		}
 		retention := gs.RegionBlockadeOutputRetentionPercent(region)
 		income += state.ScaleBlockadeOutputForEconomy(int(float64(region.GoldIncome())*goldMod*float64(harvestMod)/100), retention)
-		tradeIncome := economy.RegionTradeIncome(gs.EffectiveRegionTradeCapacity(region))
+		tradeIncome := gs.BaseRegionTradeIncome(region)
 		tradeIncome = tradeIncome * seasonMod / 100
 		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, retention)
 		if fx.MarketGoldMod != 0 {

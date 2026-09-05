@@ -514,6 +514,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	incomeByFaction := make(map[string]int)
 	taxIncomeByFaction := make(map[string]int)
 	tradeIncomeByFaction := make(map[string]int)
+	tradeCenterIncomeByFaction := make(map[string]int)
 	capitalIncomeByFaction := make(map[string]int)
 	grainByFaction := make(map[string]int)
 	civilianGrainDemandByFaction := make(map[string]int)
@@ -566,16 +567,22 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 
 		// Pasif ticaret geliri ortak efektif kapasite üzerinden hesaplanır.
 		tradeIncome := gs.BaseRegionTradeIncome(r)
+		tradeBaseIncome := tradeIncome - gs.RegionTradeCenterIncome(r)
 		// Mevsimsel ticaret modu uygula
 		tradeIncome = tradeIncome * s.TradeMod() / 100
 		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, blockadeRetention)
+		tradeBaseIncome = tradeBaseIncome * s.TradeMod() / 100
+		tradeBaseIncome = state.ScaleBlockadeOutputForEconomy(tradeBaseIncome, blockadeRetention)
 		if fx, ok := effectsByFaction[r.OwnerID]; ok && fx.MarketGoldMod != 0 {
 			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
+			tradeBaseIncome = int(float64(tradeBaseIncome) * (1.0 + fx.MarketGoldMod))
 		}
+		tradeCenterIncome := tradeIncome - tradeBaseIncome
 
 		incomeByFaction[r.OwnerID] += income + tradeIncome
 		taxIncomeByFaction[r.OwnerID] += income
-		tradeIncomeByFaction[r.OwnerID] += tradeIncome
+		tradeIncomeByFaction[r.OwnerID] += tradeBaseIncome
+		tradeCenterIncomeByFaction[r.OwnerID] += tradeCenterIncome
 		civilianGrainDemandByFaction[r.OwnerID] += gs.CivilianGrainDemandForRegion(r)
 		ironByFaction[r.OwnerID] += iron
 		timberByFaction[r.OwnerID] += timber
@@ -696,6 +703,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			Income:                  goldIncome,
 			TaxIncome:               taxIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			TradeIncome:             tradeIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			TradeCenterIncome:       tradeCenterIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			CapitalIncome:           capitalIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			TechnologyIncome:        techGold * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			BlockadeIncome:          loot.Gold * grainGoldIncomePercent(status.SupplyLevel) / 100,

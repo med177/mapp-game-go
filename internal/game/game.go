@@ -906,6 +906,14 @@ func (g *Game) resolvePendingSortie(fight bool) {
 	}
 	if !fight {
 		g.liftSiege(pending.siegeArmy.ID, pending.step.FromRegion)
+		// Huruç kararı, AI stepper'ın mevcut hareket adımını henüz
+		// tüketmediği noktada verilir. Kuşatma kaldırıldıktan sonra aynı
+		// adımın yeniden çalışması, savunmacı ordunun normal hareket/fetih
+		// akışına girip kuşatılan bölgeyi ele geçirmesine yol açabilir.
+		// Kuşatmayı kaldırma kararı bu AI hareketini sona erdirmelidir.
+		if pending.aiArmy != nil {
+			pending.aiArmy.MovePoints = 0
+		}
 		return
 	}
 	g.resolveSortieMovement(pending.aiArmy, pending.target, combat.BattleStanceBalanced)

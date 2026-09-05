@@ -1263,6 +1263,11 @@
         "core": true
       },
       {
+        "region_id": "sevilla",
+        "value": 100,
+        "core": true
+      },
+      {
         "region_id": "toledo",
         "value": 66
       }

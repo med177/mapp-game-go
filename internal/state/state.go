@@ -770,6 +770,7 @@ type GoldEconomyStatus struct {
 	Income                  int
 	TaxIncome               int
 	TradeIncome             int
+	TradeCenterIncome       int
 	CapitalIncome           int
 	TechnologyIncome        int
 	BlockadeIncome          int

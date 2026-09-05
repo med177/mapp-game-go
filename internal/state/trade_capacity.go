@@ -142,6 +142,22 @@ func (s *GameState) BaseRegionTradeIncome(region *world.Region) int {
 	return income
 }
 
+// RegionTradeCenterIncome bölgenin ticaret merkezi etkilerinden kaynaklanan
+// ham pasif ticaret gelirini döner. Merkez kapasitesinin gelir etkisi ile
+// merkezin doğrudan gelir bonusu birlikte hesaplanır; mevsim, abluka ve
+// teknoloji çarpanları çağıran ekonomi katmanında uygulanır.
+func (s *GameState) RegionTradeCenterIncome(region *world.Region) int {
+	if s == nil || region == nil || region.IsSea {
+		return 0
+	}
+	baseIncome := economy.RegionTradeIncome(s.baseRegionTradeCapacity(region))
+	centerIncome := s.BaseRegionTradeIncome(region) - baseIncome
+	if centerIncome < 0 {
+		return 0
+	}
+	return centerIncome
+}
+
 // EffectiveFactionTradeCapacity bir devletin sahip olduğu kara bölgelerinin
 // ortak efektif ticaret kapasitesini döner.
 func (s *GameState) EffectiveFactionTradeCapacity(fid faction.FactionID) int {
