@@ -2462,14 +2462,6 @@
         "y": 637,
         "type": "port",
         "population": 86
-      },
-      {
-        "id": "egypt_suez",
-        "name_tr": "Süveyş",
-        "x": 1127,
-        "y": 664,
-        "type": "port",
-        "population": 86
       }
     ]
   },
@@ -2500,6 +2492,14 @@
         "y": 751,
         "type": "city",
         "population": 280
+      },
+      {
+        "id": "egypt_suez",
+        "name_tr": "Süveyş",
+        "x": 1127,
+        "y": 668,
+        "type": "port",
+        "population": 86
       }
     ]
   },
@@ -2849,16 +2849,16 @@
       {
         "id": "hejaz_khaybar",
         "name_tr": "Hayber",
-        "x": 1276,
-        "y": 766,
+        "x": 1259,
+        "y": 743,
         "type": "fortress",
         "population": 17
       },
       {
         "id": "hejaz_mecca",
         "name_tr": "Mekke",
-        "x": 1298,
-        "y": 797,
+        "x": 1270,
+        "y": 799,
         "type": "city",
         "is_center": true,
         "population": 70
@@ -2866,24 +2866,24 @@
       {
         "id": "hejaz_medina",
         "name_tr": "Medine",
-        "x": 1281,
-        "y": 795,
+        "x": 1263,
+        "y": 759,
         "type": "city",
         "population": 62
       },
       {
         "id": "hejaz_tabuk",
         "name_tr": "Tebük",
-        "x": 1232,
-        "y": 692,
+        "x": 1201,
+        "y": 693,
         "type": "fortress",
         "population": 15
       },
       {
         "id": "hejaz_yanbu",
         "name_tr": "Yenbu",
-        "x": 1252,
-        "y": 797,
+        "x": 1239,
+        "y": 781,
         "type": "port",
         "population": 46
       }
@@ -3480,7 +3480,7 @@
       {
         "id": "jordan_tafila",
         "name_tr": "Tafile",
-        "x": 1190,
+        "x": 1189,
         "y": 655,
         "type": "town",
         "population": 21

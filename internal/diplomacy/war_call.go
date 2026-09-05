@@ -376,6 +376,17 @@ func resolveAutoWarCalls(gs *state.GameState, callerRoot, enemyRoot, warDeclarer
 		}
 		assessment := AssessWarCall(gs, callerRoot, allyRoot, enemyRoot)
 		if assessment.BlockReason != "" {
+			// Otomatik çağrıda cevap bekleyen bir karar yoktur. Müttefik savaşa
+			// katılamıyorsa mevcut ittifak da korunamaz; aksi halde savunmacı
+			// savaşa fiilen girmeden müttefiklikten yararlanmaya devam eder.
+			breakAllianceForWarRefusal(gs, callerRoot, allyRoot)
+			out = append(out, WarCallOutcome{
+				FactionID:       allyRoot,
+				NameTR:          factionLabel(gs, allyRoot),
+				AllianceBroken:  true,
+				RelationPenalty: warCallRefusalScorePenalty,
+				StatusTR:        assessment.BlockReason,
+			})
 			continue
 		}
 		if allyRoot == playerRoot {

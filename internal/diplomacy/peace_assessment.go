@@ -205,7 +205,10 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 	if assessment.Emergency {
 		assessment.Threshold -= peaceEmergencyDiscount
 	}
-	assessment.Eligible = assessment.WarTurns >= peaceMinimumWarTurns || assessment.Emergency
+	// Acil durum barış eşiğini düşürür, fakat savaşın ilk turlarındaki
+	// taahhüdü ortadan kaldırmaz. Aksi halde yeni katılan müttefikler, ilk tur
+	// sonunda başkent tehdidi veya askerî çöküş hesabıyla savaştan çıkabilir.
+	assessment.Eligible = assessment.WarTurns >= peaceMinimumWarTurns
 	// Başkent tehdidi veya askerî çöküş gerçek acil durumdur; bunun dışındaki
 	// durumda düşmanın elindeki core bölgesi için barış kapısı kapalı kalır.
 	if assessment.UnresolvedCoreClaims > 0 && !assessment.Emergency {

@@ -4906,11 +4906,10 @@ func (g *Game) applySurrenderOffer(offer state.DiplomaticOffer) diplomacy.Result
 		return diplomacy.Result{Message: "Teslimiyet teklifinin göndereni değişti."}
 	}
 	if len(g.gs.LandRegionsOwnedBy(faction.FactionID(target.OwnerID))) == 1 {
-		return diplomacy.Result{
-			Accepted: false,
-			Applied:  false,
-			Message:  fmt.Sprintf("%s devletinin son toprağı için teslimiyet teklifi kabul edilemez.", g.factionNameTR(target.OwnerID)),
-		}
+		// Eski veya tur sonu çözümleme sırasında teslimiyet olarak kalmış bir
+		// teklif, son kara toprağında ilhaka dönüşmemelidir. Kabul anındaki
+		// gerçek durumu esas alıp aynı kuşatma vassallığı yoluna yükselt.
+		return g.applySiegeVassalizationOffer(offer)
 	}
 
 	// Teslim olan savunma ordusu varsa, mevcut birlikleri koruyarak en yakın

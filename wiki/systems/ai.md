@@ -162,8 +162,8 @@ barışını beyaz barış, bölge bırakma, tazminat veya vassallık sonucuna a
 seçim olmadan toprak veya altın kaybettirmez.
 
 Barış kararı artık tüm senaryolarda ortak `AssessPeaceDesire()` akışından geçer.
-İlk dört savaş turunda olağan teklif üretilmez; başkent tehdidi veya askerî
-çöküş acil durum istisnasıdır. AI, `TerritorialClaims`, aktif expand planı ve
+İlk dört savaş turunda, başkent tehdidi veya askerî çöküş yaşansa bile teklif
+üretilmez; bu acil durumlar yalnızca dört turdan sonraki kabul eşiğini düşürür. AI, `TerritorialClaims`, aktif expand planı ve
 `WarLedger` hedefiyle düşmanın tuttuğu bölgeleri kontrol eder. Core işgali
 acil durum yoksa barış kabulünü kapatır; normal claim değeri eşik ve skor
 üzerinde baskı oluşturur. Savaş sonrası relation tabanı da hedef sonucuna göre

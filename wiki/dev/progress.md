@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-05: Savaşa otomatik katılamayan savunma müttefiklerinin ittifakı artık
+  korunmuyor; ilişki barışa/ticarete düşürülüyor ve ret raporlanıyor. Ayrıca
+  başkent tehdidi veya askerî çöküş acil durumu ilk dört savaş turu barış
+  sınırını bypass edemiyor. Regression:
+  `TestAssessPeaceDesireKeepsFirstFourWarTurnsIneligibleDuringEmergency`,
+  `TestResolveAutoWarCallsBreaksAllianceWhenBlockedAllyCannotJoin`; kapsam:
+  `internal/diplomacy/{peace_assessment.go,war_call.go}`.
+
 - 2026-09-05: Ayarlardaki `Hızlı AI Hamleleri` açıkken oyuncuya gelen `Heyet` ve
   `Hediye` diplomasi bildirimleri 3 saniye yerine 1 saniye görünür. Normal ayarda
   3 saniyelik otomatik kapanma korunur; `internal/render/{renderer_input.go,renderer_dialogs.go}`.

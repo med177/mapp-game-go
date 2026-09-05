@@ -507,6 +507,27 @@ func TestAcceptedLastRegionSiegeVassalizationKeepsRegionAndEndsSiege(t *testing.
 	}
 }
 
+func TestAcceptedLastRegionLegacySurrenderOfferBecomesSiegeVassalization(t *testing.T) {
+	gs := sortieTestState(1, 1)
+	gs.PlayerFactionID = "p1"
+	delete(gs.Regions, "exit")
+	gs.DiplomaticOffers = []state.DiplomaticOffer{
+		{FromFactionID: "p2", ToFactionID: "p1", Action: string(diplomacy.ActionProposeSurrender), RegionID: "besieged", CreatedTurn: gs.Turn, Priority: 175},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	_, result, ok := g.resolveDiplomacyOffer(0, true)
+	if !ok || !result.Accepted || !result.Applied {
+		t.Fatalf("son toprak teslimiyet kaydı vassallığa yükseltilmeliydi: ok=%t result=%+v", ok, result)
+	}
+	if gs.Factions["p2"].OverlordID != "p1" || gs.Regions["besieged"].OwnerID != "p2" {
+		t.Fatalf("son toprak vassallıkta korunmalıydı: faction=%+v region=%s", gs.Factions["p2"], gs.Regions["besieged"].OwnerID)
+	}
+	if gs.SiegeAt("besieged") != nil {
+		t.Fatal("vassallık kabulünden sonra kuşatma sürmemeliydi")
+	}
+}
+
 func TestPlayerCanOfferSiegeVassalizationToLastRegion(t *testing.T) {
 	gs := sortieTestState(1, 2)
 	gs.PlayerFactionID = "p1"

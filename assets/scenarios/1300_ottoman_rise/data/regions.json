@@ -2937,7 +2937,7 @@
     "trade_capacity": 3,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 1400,
+    "population": 1314,
     "rural_population": 910,
     "religion": "sunni",
     "active_event_id": "",
@@ -2963,6 +2963,7 @@
     "name_tr": "Luksor",
     "terrain": "plain",
     "owner_id": "mamluk",
+    "successor_faction_id": "mamluk",
     "neighbors": [
       "eastern_mediterranean",
       "egypt",
@@ -2987,7 +2988,7 @@
     "trade_capacity": 3,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 1400,
+    "population": 1486,
     "rural_population": 910,
     "religion": "sunni",
     "active_event_id": "",
@@ -2998,7 +2999,8 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "port"
     ]
   },
   {
