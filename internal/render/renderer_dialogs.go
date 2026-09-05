@@ -1614,7 +1614,7 @@ func (r *Renderer) diplomacyNotificationAutoCloseReady(offer state.DiplomaticOff
 		r.diplomacyNotificationTimerActive = true
 	}
 	r.diplomacyNotificationFrames++
-	if r.diplomacyNotificationFrames < diplomacyNotificationAutoCloseFrames {
+	if r.diplomacyNotificationFrames < r.diplomacyNotificationAutoCloseFrameLimit() {
 		return false
 	}
 	r.resetDiplomacyNotificationTimer()

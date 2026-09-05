@@ -83,7 +83,8 @@ Vergi ayarı ile ilişki iyileştirme amaçlı `Heyet`/`Hediye` hamleleri state'
 değiştirmeye devam eder, ancak `TurnStepper` için görünür HAMLELER adımı
 üretmez; böylece düşük öncelikli ekonomi ve ilişki bakımı AI akışını
 yavaşlatmaz. Oyuncuya gönderilen heyet/hediye, mevcut diplomasi bildirim
-kuyruğunda çözülür.
+kuyruğunda çözülür. Ayarlardaki `Hızlı AI Hamleleri` açıkken bu bildirim
+modalı 1 saniye, kapalıyken 3 saniye sonra otomatik kapanır.
 
 İlişki onarımı stratejik savaş hedeflerini desteklemez: AI'nin açık
 `AIExpansionTargets` listesinde bulunan, aktif `expand` planının hedefi olan

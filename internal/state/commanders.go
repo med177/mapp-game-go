@@ -303,6 +303,13 @@ func (s *GameState) CanAffordCommanderRecruitment(ownerID string) bool {
 // dağılımdan gelir; aynı kampanya state'i yeniden yüklendiğinde sonuç değişmez.
 // AI'nin otomatik, seviye 1 fallback üretimi bu akıştan bağımsız kalır.
 func (s *GameState) RecruitPlayerCommander(name string) (*army.Commander, bool) {
+	return s.RecruitPlayerCommanderWithPortrait(name, "")
+}
+
+// RecruitPlayerCommanderWithPortrait oyuncunun verdiği ad ve seçtiği portreyle
+// boş komutan havuzuna yeni bir komutan ekler. Portre boş bırakılırsa eski save
+// ve doğrudan domain çağrıları için varsayılan portre korunur.
+func (s *GameState) RecruitPlayerCommanderWithPortrait(name, portraitAsset string) (*army.Commander, bool) {
 	if s == nil || s.PlayerFactionID == "" {
 		return nil, false
 	}
@@ -325,7 +332,10 @@ func (s *GameState) RecruitPlayerCommander(name string) (*army.Commander, bool) 
 	}
 	commander := army.NewCommander(id, name)
 	commander.OwnerID = string(s.PlayerFactionID)
-	commander.PortraitAsset = army.DefaultPortraitAsset
+	commander.PortraitAsset = strings.TrimSpace(portraitAsset)
+	if commander.PortraitAsset == "" {
+		commander.PortraitAsset = army.DefaultPortraitAsset
+	}
 	commander.Experience = recruitedCommanderExperience(string(s.PlayerFactionID), s.NextCommanderSeq)
 	commander.Normalize()
 	s.Commanders[commander.ID] = commander

@@ -574,8 +574,10 @@ Aynı modalın `Yeni Komutan` düğmesi, ortak `gameui.Modal`, `TextBox` ve
 `Button` bileşenleriyle ad girişini açar. Düğme yalnız oyuncunun `500 altın +
 100 tahıl` maliyeti karşılayabildiğinde aktif olur ve iç modal aynı maliyeti
 gösterir. İç modal önce inputu sahiplenir; çizim, hit-test ve cursor aynı
-canonical rect helper'larından gelir. Onay, adı `ActionRecruitCommander` ile
-game katmanına iletir; yeni aday boş komutan listesinde görünür ve normal atama
+canonical rect helper'larından gelir. Aktif senaryodaki mevcut komutan
+portreleri modalda önizlenir ve `F2` tuşu veya ortak butonla rastgele
+değiştirilir. Onay, adı ve seçilen portreyi `ActionRecruitCommander` ile game
+katmanına iletir; yeni aday boş komutan listesinde görünür ve normal atama
 seçimiyle orduya bağlanır.
 
 Oyuncuya ait ordunun komutan kartında ana komutan mevcutsa kartın altına kırmızı

@@ -350,7 +350,7 @@ func (g *Game) Update() error {
 				g.renderer.ShowCombatResult("Komutan bu orduya atanamadı.")
 			}
 		case render.ActionRecruitCommander:
-			if commander, ok := g.gs.RecruitPlayerCommander(action.CommanderName); ok {
+			if commander, ok := g.gs.RecruitPlayerCommanderWithPortrait(action.CommanderName, action.PortraitAsset); ok {
 				g.renderer.ShowCombatResult(fmt.Sprintf("%s komutan olarak katıldı. Seviye %d, %d XP.", commander.Name, commander.Level, commander.Experience))
 			} else {
 				g.renderer.ShowCombatResult("Komutan oluşturulamadı. Gerekli: " + state.CommanderRecruitCost.ShortTR())

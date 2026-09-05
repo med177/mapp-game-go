@@ -208,31 +208,32 @@ type Renderer struct {
 	aiTurnDetail    string
 
 	// Tarihsel olay tam ekran bildirimi
-	historicalEventTitle   string
-	historicalEventDesc    string
-	historicalEventPrompt  string
-	historicalEventChoices []HistoricalEventChoice
-	historicalEventFocus   int
-	showHistoricalEvent    bool
-	commanderArrivals      []*army.Commander
-	commanderArrivalScroll int
-	battleReport           battleReportState
-	queuedBattleReport     battleReportState
-	warSummary             warSummaryState
-	showActiveWars         bool
-	activeWarsScroll       int
-	activeWarsBuf          []ActiveWarSummary
-	showCommanderPanel     bool
-	commanderPanelArmy     army.ArmyID
-	commanderPanelFocus    int
-	commanderPanelScroll   int
-	showCommanderRecruit   bool
-	commanderRecruitName   gameui.TextBox
-	commanderRecruitError  string
-	showAIDiagnostic       bool
-	aiDiagnosticFaction    faction.FactionID
-	aiDiagnosticScroll     int
-	aiDiagnosticSnapshot   *ai.AIDiagnosticSnapshot
+	historicalEventTitle     string
+	historicalEventDesc      string
+	historicalEventPrompt    string
+	historicalEventChoices   []HistoricalEventChoice
+	historicalEventFocus     int
+	showHistoricalEvent      bool
+	commanderArrivals        []*army.Commander
+	commanderArrivalScroll   int
+	battleReport             battleReportState
+	queuedBattleReport       battleReportState
+	warSummary               warSummaryState
+	showActiveWars           bool
+	activeWarsScroll         int
+	activeWarsBuf            []ActiveWarSummary
+	showCommanderPanel       bool
+	commanderPanelArmy       army.ArmyID
+	commanderPanelFocus      int
+	commanderPanelScroll     int
+	showCommanderRecruit     bool
+	commanderRecruitName     gameui.TextBox
+	commanderRecruitError    string
+	commanderRecruitPortrait string
+	showAIDiagnostic         bool
+	aiDiagnosticFaction      faction.FactionID
+	aiDiagnosticScroll       int
+	aiDiagnosticSnapshot     *ai.AIDiagnosticSnapshot
 
 	// İlk frame kamera başlatma
 	firstDraw bool

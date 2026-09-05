@@ -132,6 +132,7 @@ type InputAction struct {
 	TargetArmyID  army.ArmyID
 	CommanderID   string
 	CommanderName string
+	PortraitAsset string
 	TargetRegion  world.RegionID
 	// TargetSettlementID, denizden kara hedefinde liman ile merkez yerleşimi
 	// ayırır. Boş bırakıldığında bölge tabanlı eski hareket semantiği korunur.

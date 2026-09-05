@@ -20,9 +20,19 @@ import (
 
 const mapRegionDoubleClickWindow = 400 * time.Millisecond
 
-// İlişki iyileştirme ve hediye bildirimleri mevcut 60 TPS akışında üç saniye
-// görünür kalır; süre dolunca Tamam'a basılmış gibi kabul edilir.
-const diplomacyNotificationAutoCloseFrames = 180
+// İlişki iyileştirme ve hediye bildirimleri normalde mevcut 60 TPS akışında
+// üç saniye görünür kalır; hızlı AI açıkken bu süre bir saniyeye iner.
+const (
+	diplomacyNotificationAutoCloseFrames = 180
+	fastAINotificationAutoCloseFrames    = 60
+)
+
+func (r *Renderer) diplomacyNotificationAutoCloseFrameLimit() int {
+	if r != nil && r.CurrentSettings.FastAITurns {
+		return fastAINotificationAutoCloseFrames
+	}
+	return diplomacyNotificationAutoCloseFrames
+}
 
 func (r *Renderer) HandleInput() InputAction {
 	r.updateCursorShape()

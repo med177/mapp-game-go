@@ -287,8 +287,12 @@ canonical havuzdur; `SyncCommanderLinks()` yükleme sonrasında ordu pointer'lar
 havuzdaki nesnelere bağlar. Oyuncu havuzu ve ordu panelindeki atama/ayırma modalı
 `InitializePlayerCommanders()`, `RecruitPlayerCommander()`,
 `AssignCommanderToArmy()` ve `UnassignCommanderFromArmy()` üzerinden çalışır.
-Oyuncu adıyla yeni bir komutan oluşturduğunda varsayılan portre kullanılır;
-başlangıç XP'si fraksiyon ve kalıcı sıra sayısından deterministik türetilir.
+Oyuncu yeni komutan modalında aktif senaryonun `sprites/commanders/` portreleri
+arasından `F2` tuşu veya rastgele portre düğmesiyle seçim yapabilir; seçilen
+`portrait_asset` adla birlikte `ActionRecruitCommander` üzerinden state'e
+taşınır. Portre seçilmezse eski kayıtlar ve doğrudan domain çağrıları için
+varsayılan portre kullanılır. Başlangıç XP'si fraksiyon ve kalıcı sıra
+sayısından deterministik türetilir.
 `CommanderRecruitCost` hem oyuncu hem AI için `500 altın + 100 tahıl` harcar;
 kaynak yetmiyorsa runtime aday üretilmez. Böylece adayın açtığı
 Taktisyen/Savunma uzmanlıkları rastgele görünür, fakat aynı save yeniden

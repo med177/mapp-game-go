@@ -1,11 +1,15 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-04
+last_updated: 2026-09-05
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-05: Ayarlardaki `Hızlı AI Hamleleri` açıkken oyuncuya gelen `Heyet` ve
+  `Hediye` diplomasi bildirimleri 3 saniye yerine 1 saniye görünür. Normal ayarda
+  3 saniyelik otomatik kapanma korunur; `internal/render/{renderer_input.go,renderer_dialogs.go}`.
 
 - 2026-09-04: Hareket sonrası aynı açık denizde kalan düşman filoları için,
   oyuncunun kalan hareket puanıyla belirli filo ikonuna sağ tıklayarak ayrı
@@ -870,6 +874,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   bölgesel ikmal açığı hasarını `%10` azaltıyor; toplam bonus `%30` ile sınırlı
   ve kuşatan ordu bu bonusu almıyor. Regression: `TestResolveSiegesGranaryReducesDefenderAttrition`,
   `TestSiegeGranaryReducesDefenderLogisticsAttrition`.
+
+- 2026-09-05: Yeni komutan modalı aktif senaryonun mevcut komutan portrelerini
+  önizliyor. Oyuncu `F2` tuşu veya `Resim Değiştir` düğmesiyle portreyi
+  değiştirip istediği seçimle isim ve onay adımını tamamlayabiliyor; seçilen
+  `portrait_asset` state/action hattında korunuyor. Eski doğrudan domain
+  çağrıları varsayılan portre davranışını koruyor.
 
 - 2026-08-04: Oyuncu komutan atama modalından `Yeni Komutan` seçip adını
   yazarak havuza yeni aday ekleyebiliyor. Yeni adaylar varsayılan portreyle,
