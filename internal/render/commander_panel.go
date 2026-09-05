@@ -333,7 +333,10 @@ func commanderPanelRow(index, scroll int) gameui.Rect {
 	return gameui.Rect{
 		X: panel.X + 24,
 		Y: panel.Y + commanderPanelListTop + float64(index-scroll)*commanderPanelRowH,
-		W: commanderPanelListW,
+		// StrokeRect'in dış yarısı viewport sınırında kırpılmasın; çizim ve
+		// hit-test aynı rect'i kullandığı için sağdaki 2 px güvenlik payı
+		// etkileşim alanını da doğru yerde tutar.
+		W: commanderPanelListW - 2,
 		H: commanderPanelRowH - commanderPanelListGap,
 	}
 }
@@ -426,11 +429,6 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 			for i := r.commanderPanelScroll; i < end; i++ {
 				commander := available[i]
 				row := commanderPanelRow(i, r.commanderPanelScroll)
-				// body, viewport'un sol-üstünü (0,0) kabul eder. Satırın
-				// ekran koordinatını body-local koordinata çevirmeden çizmek,
-				// satırı ikinci kez sağa kaydırıp sağ kenarını kırpıyordu.
-				row.X -= viewport.X
-				row.Y -= viewport.Y
 				rowBG := color.RGBA{35, 26, 14, 210}
 				rowBorder := color.RGBA{100, 75, 30, 180}
 				if i == r.commanderPanelFocus {
