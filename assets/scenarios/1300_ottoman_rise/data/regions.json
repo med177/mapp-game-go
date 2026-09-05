@@ -1297,11 +1297,11 @@
     "owner_id": "portugal",
     "successor_faction_id": "portugal",
     "neighbors": [
+      "algarve",
       "atlantic_open_3",
       "castile",
-      "granada",
       "portuguese_atlantic",
-      "algarve"
+      "sevilla"
     ],
     "world_x": 316,
     "world_y": 481,
@@ -1345,10 +1345,10 @@
     "owner_id": "granada_emirate",
     "successor_faction_id": "granada_emirate",
     "neighbors": [
-      "granada",
       "gulf_of_cadiz",
+      "portugal",
       "portuguese_atlantic",
-      "portugal"
+      "sevilla"
     ],
     "world_x": 322,
     "world_y": 495,
@@ -1394,8 +1394,9 @@
       "bay_of_biscay",
       "granada",
       "north_atlantic_iberia",
-      "toledo",
-      "portugal"
+      "portugal",
+      "sevilla",
+      "toledo"
     ],
     "world_x": 357,
     "world_y": 434,
@@ -2202,7 +2203,6 @@
     "neighbors": [
       "algiers",
       "atlantic_ocean",
-      "granada",
       "alboran_sea",
       "gulf_of_cadiz"
     ],
@@ -3737,12 +3737,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "atlantic_ocean",
-      "granada",
-      "morocco",
       "alboran_sea",
-      "portuguese_atlantic",
-      "algarve"
+      "algarve",
+      "atlantic_ocean",
+      "morocco",
+      "sevilla",
+      "portuguese_atlantic"
     ],
     "world_x": 334,
     "world_y": 556,
@@ -6976,22 +6976,19 @@
   {
     "id": "granada",
     "name": "Granada",
-    "name_tr": "Gırnata Emirliği",
+    "name_tr": "Gırnata",
     "terrain": "mountain",
     "owner_id": "granada_emirate",
     "successor_faction_id": "granada_emirate",
     "neighbors": [
       "alboran_sea",
-      "algarve",
       "castile",
-      "gulf_of_cadiz",
-      "morocco",
       "murcia",
-      "portugal",
+      "sevilla",
       "toledo"
     ],
-    "world_x": 365,
-    "world_y": 508,
+    "world_x": 384,
+    "world_y": 520,
     "shape_id": "ESP",
     "is_sea": false,
     "is_locked": false,
@@ -7001,6 +6998,55 @@
     "base_iron_output": 2,
     "base_timber_output": 0,
     "base_stone_output": 2,
+    "base_spice_output": 0,
+    "base_cloth_output": 15,
+    "trade_capacity": 3,
+    "satisfaction": 65,
+    "tax_rate": 30,
+    "population": 700,
+    "rural_population": 455,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
+    ]
+  },
+  {
+    "id": "sevilla",
+    "name": "Sevilla",
+    "name_tr": "Sevilla",
+    "terrain": "mountain",
+    "owner_id": "granada_emirate",
+    "successor_faction_id": "granada_emirate",
+    "neighbors": [
+      "alboran_sea",
+      "algarve",
+      "castile",
+      "granada",
+      "gulf_of_cadiz",
+      "portugal"
+    ],
+    "world_x": 351,
+    "world_y": 521,
+    "shape_id": "ESP",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 55,
+    "base_grain_output": 54,
+    "base_iron_output": 2,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
     "base_spice_output": 0,
     "base_cloth_output": 15,
     "trade_capacity": 3,
@@ -9972,7 +10018,8 @@
       "granada",
       "gulf_of_cadiz",
       "morocco",
-      "murcia"
+      "murcia",
+      "sevilla"
     ],
     "world_x": 393,
     "world_y": 555,

@@ -1009,7 +1009,7 @@
         "id": "portugal_settlement_4",
         "name_tr": "Lizbon Limanı",
         "x": 293,
-        "y": 499,
+        "y": 498,
         "type": "port",
         "population": 0
       }
@@ -4730,6 +4730,10 @@
         "population": 0
       }
     ]
+  },
+  {
+    "region_id": "sevilla",
+    "settlements": null
   },
   {
     "region_id": "navarra",

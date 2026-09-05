@@ -8,10 +8,11 @@
       "region_id": "venice",
       "tier": "primary",
       "links": [
+        "constantinople",
         "dalmatia",
         "egypt",
-        "flanders",
-        "genoa"
+        "genoa",
+        "tunis"
       ]
     },
     {
@@ -22,7 +23,8 @@
         "crimea",
         "dalmatia",
         "egypt",
-        "trebizond"
+        "trebizond",
+        "venice"
       ]
     },
     {
@@ -30,10 +32,8 @@
       "tier": "primary",
       "links": [
         "denmark",
-        "genoa",
-        "portugal",
-        "silesia",
-        "venice"
+        "palatinate",
+        "portugal"
       ]
     },
     {
@@ -44,7 +44,8 @@
         "flanders",
         "granada",
         "tunis",
-        "venice"
+        "venice",
+        "palatinate"
       ]
     },
     {
@@ -52,13 +53,35 @@
       "tier": "secondary",
       "links": [
         "genoa",
-        "portugal"
+        "portugal",
+        "sevilla"
+      ]
+    },
+    {
+      "region_id": "sevilla",
+      "tier": "secondary",
+      "links": [
+        "granada",
+        "portugal",
+        "atlantic_route",
+        "cape_route"
+      ]
+    },
+    {
+      "region_id": "portugal",
+      "tier": "secondary",
+      "links": [
+        "atlantic_route",
+        "flanders",
+        "granada",
+        "sevilla"
       ]
     },
     {
       "region_id": "aleppo",
       "tier": "primary",
       "links": [
+        "azerbaijan",
         "baghdad",
         "constantinople",
         "egypt",
@@ -89,10 +112,8 @@
       "region_id": "novgorod",
       "tier": "secondary",
       "links": [
-        "crimea",
         "denmark",
-        "moscow",
-        "silesia"
+        "moscow"
       ]
     },
     {
@@ -100,25 +121,19 @@
       "tier": "secondary",
       "links": [
         "flanders",
-        "novgorod"
+        "novgorod",
+        "saxony"
       ]
     },
-    {
-      "region_id": "portugal",
-      "tier": "secondary",
-      "links": [
-        "atlantic_route",
-        "flanders",
-        "granada"
-      ]
-    },
+    
     {
       "region_id": "tunis",
       "tier": "secondary",
       "links": [
         "egypt",
         "genoa",
-        "trans_saharan_route"
+        "trans_saharan_route",
+        "venice"
       ]
     },
     {
@@ -127,16 +142,33 @@
       "links": [
         "constantinople",
         "genoa",
-        "novgorod",
+        "silk_road",
         "trebizond"
+      ]
+    },
+    {
+      "region_id": "palatinate",
+      "tier": "secondary",
+      "links": [
+        "saxony",
+        "genoa",
+        "flanders"
+      ]
+    },
+    {
+      "region_id": "saxony",
+      "tier": "secondary",
+      "links": [
+        "palatinate",
+        "denmark",
+        "silesia"
       ]
     },
     {
       "region_id": "silesia",
       "tier": "secondary",
       "links": [
-        "flanders",
-        "novgorod"
+        "saxony"
       ]
     },
     {
@@ -158,6 +190,7 @@
       "region_id": "azerbaijan",
       "tier": "secondary",
       "links": [
+        "aleppo",
         "northern_persia",
         "silk_road",
         "trebizond"
@@ -204,7 +237,8 @@
       "name_tr": "İpek Yolu",
       "tier": "secondary",
       "links": [
-        "azerbaijan"
+        "azerbaijan",
+        "crimea"
       ],
       "world_x": 3000,
       "world_y": 515,
@@ -216,7 +250,8 @@
       "tier": "secondary",
       "links": [
         "basra",
-        "egypt"
+        "egypt",
+        "cape_route"
       ],
       "world_x": 2880,
       "world_y": 1260,
@@ -228,8 +263,9 @@
       "tier": "secondary",
       "links": [
         "north_america_route",
+        "south_america_route",
         "portugal",
-        "south_america_route"
+        "sevilla"
       ],
       "world_x": -120,
       "world_y": 220,
@@ -256,6 +292,20 @@
       ],
       "world_x": -280,
       "world_y": 520,
+      "off_map": true,
+      "unlock_year": 1500
+    },
+    {
+      "region_id": "cape_route",
+      "name_tr": "Ümit Burnu / Hint Deniz Yolu",
+      "tier": "secondary",
+      "links": [
+        "portugal",
+        "sevilla",
+        "spice_route"
+      ],
+      "world_x": 1200,
+      "world_y": 1800,
       "off_map": true,
       "unlock_year": 1500
     },
