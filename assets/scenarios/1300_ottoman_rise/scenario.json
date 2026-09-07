@@ -4,6 +4,7 @@
   "description": "1310 yılı. Anadolu parçalı, Doğu Roma yorgun, Memlük ve İlhanlı baskısı ise ufukta. Osmanoğulları olarak uç beyliğinden yükselirken Balkan, Levant ve ticaret yollarındaki güç dengesini kendi lehine çevirmeye çalış.",
   "version": 1.0,
   "author": "Mapp Team",
+  "period": "medieval",
   "year": 1310,
   "month": 3,
   "turn_months": 3,

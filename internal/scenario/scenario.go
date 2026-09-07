@@ -100,6 +100,42 @@ type MusicConfig struct {
 	Playlists       map[string][]MusicTrackDef `json:"playlists"`
 }
 
+// Period senaryonun tarihsel/teknolojik çağ profilini tanımlar.
+// Değerler senaryo JSON'larında zorunludur; yeni mekanikler bu ortak profili
+// kullanmalı, tek tek senaryo ID'lerine bağlanmamalıdır.
+type Period string
+
+const (
+	PeriodPrehistoric   Period = "prehistoric"
+	PeriodAncient       Period = "ancient"
+	PeriodClassical     Period = "classical"
+	PeriodLateAntiquity Period = "late_antiquity"
+	PeriodMedieval      Period = "medieval"
+	PeriodEarlyModern   Period = "early_modern"
+	PeriodIndustrial    Period = "industrial"
+	PeriodModern        Period = "modern"
+	PeriodContemporary  Period = "contemporary"
+)
+
+// IsValid bu period değerinin senaryo sözleşmesinde tanımlı olup olmadığını
+// bildirir. Boş değer geçersizdir; böylece period alanı fiilen zorunludur.
+func (p Period) IsValid() bool {
+	switch p {
+	case PeriodPrehistoric,
+		PeriodAncient,
+		PeriodClassical,
+		PeriodLateAntiquity,
+		PeriodMedieval,
+		PeriodEarlyModern,
+		PeriodIndustrial,
+		PeriodModern,
+		PeriodContemporary:
+		return true
+	default:
+		return false
+	}
+}
+
 // Scenario oyun başında seçilebilen bir tarihsel senaryoyu tanımlar.
 type Scenario struct {
 	ID          string  `json:"id"`
@@ -107,6 +143,7 @@ type Scenario struct {
 	Description string  `json:"description"`
 	Version     float64 `json:"version"`
 	Author      string  `json:"author"`
+	Period      Period  `json:"period"`
 	Year        int     `json:"year"`
 	Month       int     `json:"month"`
 	// TurnMonths bir stratejik turun temsil ettiği takvim ayı sayısıdır.
@@ -149,6 +186,12 @@ func Load(path string) (*Scenario, error) {
 	var definition Scenario
 	if err := json.Unmarshal(data, &definition); err != nil {
 		return nil, fmt.Errorf("senaryo tanımı parse edilemedi: %w", err)
+	}
+	if !definition.Period.IsValid() {
+		if definition.Period == "" {
+			return nil, fmt.Errorf("senaryo period alanı zorunludur")
+		}
+		return nil, fmt.Errorf("geçersiz senaryo period değeri %q", definition.Period)
 	}
 	definition.Path = path
 	return &definition, nil
