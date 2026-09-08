@@ -2024,8 +2024,8 @@
   {
     "faction_a": "aragon",
     "faction_b": "castile_kingdom",
-    "score": -80,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "aragon",
@@ -2126,8 +2126,8 @@
   {
     "faction_a": "aragon",
     "faction_b": "granada_emirate",
-    "score": 55,
-    "stance": "allied"
+    "score": -40,
+    "stance": "peace"
   },
   {
     "faction_a": "aragon",
@@ -2246,8 +2246,8 @@
   {
     "faction_a": "aragon",
     "faction_b": "naples_kingdom",
-    "score": -80,
-    "stance": "war"
+    "score": 10,
+    "stance": "peace"
   },
   {
     "faction_a": "navarra",
@@ -4844,8 +4844,8 @@
   {
     "faction_a": "barqa_emirate",
     "faction_b": "ilkhanate",
-    "score": -80,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "barqa_emirate",
@@ -4892,8 +4892,8 @@
   {
     "faction_a": "barqa_emirate",
     "faction_b": "mamluk",
-    "score": 60,
-    "stance": "allied"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "barqa_emirate",
@@ -4904,8 +4904,8 @@
   {
     "faction_a": "barqa_emirate",
     "faction_b": "mecca_sharifate",
-    "score": 40,
-    "stance": "allied"
+    "score": 0,
+    "stance": "peace"
   },
   {
     "faction_a": "barqa_emirate",
@@ -8384,8 +8384,8 @@
   {
     "faction_a": "carniola_margraviate",
     "faction_b": "flanders_county",
-    "score": 40,
-    "stance": "allied"
+    "score": 0,
+    "stance": "peace"
   },
   {
     "faction_a": "carniola_margraviate",
@@ -8396,8 +8396,8 @@
   {
     "faction_a": "carniola_margraviate",
     "faction_b": "france",
-    "score": -80,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "carniola_margraviate",
@@ -8924,8 +8924,8 @@
   {
     "faction_a": "navarra",
     "faction_b": "castile_kingdom",
-    "score": 25,
-    "stance": "war"
+    "score": 10,
+    "stance": "peace"
   },
   {
     "faction_a": "norway_kingdom",
@@ -12158,8 +12158,8 @@
   {
     "faction_a": "flanders_county",
     "faction_b": "france",
-    "score": -80,
-    "stance": "war"
+    "score": -35,
+    "stance": "peace"
   },
   {
     "faction_a": "flanders_county",
@@ -12818,8 +12818,8 @@
   {
     "faction_a": "france",
     "faction_b": "hre",
-    "score": -80,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "france",
@@ -14654,8 +14654,8 @@
   {
     "faction_a": "hafsid_sultanate",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "hafsid_sultanate",
@@ -15164,8 +15164,8 @@
   {
     "faction_a": "hormuz_sultanate",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "hormuz_sultanate",
@@ -15794,8 +15794,8 @@
   {
     "faction_a": "ilkhanate",
     "faction_b": "mecca_sharifate",
-    "score": -80,
-    "stance": "war"
+    "score": -40,
+    "stance": "peace"
   },
   {
     "faction_a": "ilkhanate",
@@ -17720,8 +17720,8 @@
   {
     "faction_a": "marinid_sultanate",
     "faction_b": "safavid",
-    "score": -40,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "marinid_sultanate",
@@ -19850,8 +19850,8 @@
   {
     "faction_a": "safavid",
     "faction_b": "usfurid_emirate",
-    "score": -40,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "safavid",
@@ -19868,8 +19868,8 @@
   {
     "faction_a": "safavid",
     "faction_b": "zayyanid_tlemcen",
-    "score": -40,
-    "stance": "war"
+    "score": -10,
+    "stance": "peace"
   },
   {
     "faction_a": "saruhan_bey",

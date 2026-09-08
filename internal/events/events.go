@@ -31,22 +31,29 @@ type RelationRequirement struct {
 }
 
 type Effect struct {
-	Target                 string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
-	SatDelta               int              `json:"sat_delta,omitempty"`
-	GoldDelta              int              `json:"gold_delta,omitempty"`
-	GrainDelta             int              `json:"grain_delta,omitempty"`
-	ArmyHPMod              float64          `json:"army_hp_mod,omitempty"`              // 1.0 = değişmez
-	GrainProductionPercent int              `json:"grain_production_percent,omitempty"` // aktif olay süresince üretim etkisi
-	GrainDemandPercent     int              `json:"grain_demand_percent,omitempty"`     // aktif olay süresince sivil tüketim etkisi
-	AffectedFaction        string           `json:"affected_faction,omitempty"`         // specific_faction için
-	RelationDeltaAll       int              `json:"relation_delta_all,omitempty"`       // etkilenen fraksiyonun tüm ilişkilerine uygulanır
-	CompleteTechs          []string         `json:"complete_techs,omitempty"`
-	StartResearchTech      string           `json:"start_research_tech,omitempty"`
-	Relations              []RelationEffect `json:"relations,omitempty"`
-	SetFlags               []string         `json:"set_flags,omitempty"`
-	ClearFlags             []string         `json:"clear_flags,omitempty"`
-	CapitalSettlementID    string           `json:"capital_settlement_id,omitempty"`
-	CapitalMoveTurns       int              `json:"capital_move_turns,omitempty"`
+	Target                    string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
+	SatDelta                  int              `json:"sat_delta,omitempty"`
+	GoldDelta                 int              `json:"gold_delta,omitempty"`
+	GrainDelta                int              `json:"grain_delta,omitempty"`
+	ArmyHPMod                 float64          `json:"army_hp_mod,omitempty"`                // 1.0 = değişmez
+	GrainProductionPercent    int              `json:"grain_production_percent,omitempty"`   // aktif olay süresince üretim etkisi
+	GrainDemandPercent        int              `json:"grain_demand_percent,omitempty"`       // aktif olay süresince sivil tüketim etkisi
+	TradeIncomePercent        int              `json:"trade_income_percent,omitempty"`       // aktif olay süresince ticaret geliri etkisi
+	RegionGoldIncomePercent   int              `json:"region_gold_income_percent,omitempty"` // aktif olay süresince vergi geliri etkisi
+	ArmyUpkeepPercent         int              `json:"army_upkeep_percent,omitempty"`        // aktif bölgede ordu ikmal etkisi
+	PopulationDelta           int              `json:"population_delta,omitempty"`           // anlık bölge nüfusu etkisi
+	BuildingEfficiencyPercent int              `json:"building_efficiency_percent,omitempty"`
+	CombatAttackPercent       int              `json:"combat_attack_percent,omitempty"`
+	CombatDefensePercent      int              `json:"combat_defense_percent,omitempty"`
+	AffectedFaction           string           `json:"affected_faction,omitempty"`   // specific_faction için
+	RelationDeltaAll          int              `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
+	CompleteTechs             []string         `json:"complete_techs,omitempty"`
+	StartResearchTech         string           `json:"start_research_tech,omitempty"`
+	Relations                 []RelationEffect `json:"relations,omitempty"`
+	SetFlags                  []string         `json:"set_flags,omitempty"`
+	ClearFlags                []string         `json:"clear_flags,omitempty"`
+	CapitalSettlementID       string           `json:"capital_settlement_id,omitempty"`
+	CapitalMoveTurns          int              `json:"capital_move_turns,omitempty"`
 }
 
 type Choice struct {
@@ -59,18 +66,25 @@ type Choice struct {
 
 // Event bir tarihsel olayı tanımlar.
 type Event struct {
-	ID                     string  `json:"id"`
-	NameTR                 string  `json:"name_tr"`
-	DescTR                 string  `json:"desc_tr"`
-	Probability            float64 `json:"probability"` // 0 = sadece tarihsel tetiklenme
-	MinTurn                int     `json:"min_turn"`    // en erken tur (rastgele olaylar için)
-	Target                 string  `json:"target"`      // "player_faction"|"random_region"|"all_armies"|"all_factions"
-	SatDelta               int     `json:"sat_delta"`
-	GoldDelta              int     `json:"gold_delta"`
-	GrainDelta             int     `json:"grain_delta"`
-	ArmyHPMod              float64 `json:"army_hp_mod"` // 1.0 = değişmez
-	GrainProductionPercent int     `json:"grain_production_percent,omitempty"`
-	GrainDemandPercent     int     `json:"grain_demand_percent,omitempty"`
+	ID                        string  `json:"id"`
+	NameTR                    string  `json:"name_tr"`
+	DescTR                    string  `json:"desc_tr"`
+	Probability               float64 `json:"probability"` // 0 = sadece tarihsel tetiklenme
+	MinTurn                   int     `json:"min_turn"`    // en erken tur (rastgele olaylar için)
+	Target                    string  `json:"target"`      // "player_faction"|"random_region"|"all_armies"|"all_factions"
+	SatDelta                  int     `json:"sat_delta"`
+	GoldDelta                 int     `json:"gold_delta"`
+	GrainDelta                int     `json:"grain_delta"`
+	ArmyHPMod                 float64 `json:"army_hp_mod"` // 1.0 = değişmez
+	GrainProductionPercent    int     `json:"grain_production_percent,omitempty"`
+	GrainDemandPercent        int     `json:"grain_demand_percent,omitempty"`
+	TradeIncomePercent        int     `json:"trade_income_percent,omitempty"`
+	RegionGoldIncomePercent   int     `json:"region_gold_income_percent,omitempty"`
+	ArmyUpkeepPercent         int     `json:"army_upkeep_percent,omitempty"`
+	PopulationDelta           int     `json:"population_delta,omitempty"`
+	BuildingEfficiencyPercent int     `json:"building_efficiency_percent,omitempty"`
+	CombatAttackPercent       int     `json:"combat_attack_percent,omitempty"`
+	CombatDefensePercent      int     `json:"combat_defense_percent,omitempty"`
 
 	// Tarihsel tetiklenme alanları
 	HistoricalYear  int    `json:"historical_year,omitempty"`  // 0 = tarihsel değil
@@ -178,20 +192,27 @@ func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
 
 func (e *Event) BaseEffect() Effect {
 	return Effect{
-		Target:                 e.Target,
-		SatDelta:               e.SatDelta,
-		GoldDelta:              e.GoldDelta,
-		GrainDelta:             e.GrainDelta,
-		ArmyHPMod:              e.ArmyHPMod,
-		GrainProductionPercent: e.GrainProductionPercent,
-		GrainDemandPercent:     e.GrainDemandPercent,
-		AffectedFaction:        e.AffectedFaction,
-		RelationDeltaAll:       0,
-		CompleteTechs:          nil,
-		StartResearchTech:      "",
-		Relations:              nil,
-		CapitalSettlementID:    "",
-		CapitalMoveTurns:       0,
+		Target:                    e.Target,
+		SatDelta:                  e.SatDelta,
+		GoldDelta:                 e.GoldDelta,
+		GrainDelta:                e.GrainDelta,
+		ArmyHPMod:                 e.ArmyHPMod,
+		GrainProductionPercent:    e.GrainProductionPercent,
+		GrainDemandPercent:        e.GrainDemandPercent,
+		TradeIncomePercent:        e.TradeIncomePercent,
+		RegionGoldIncomePercent:   e.RegionGoldIncomePercent,
+		ArmyUpkeepPercent:         e.ArmyUpkeepPercent,
+		PopulationDelta:           e.PopulationDelta,
+		BuildingEfficiencyPercent: e.BuildingEfficiencyPercent,
+		CombatAttackPercent:       e.CombatAttackPercent,
+		CombatDefensePercent:      e.CombatDefensePercent,
+		AffectedFaction:           e.AffectedFaction,
+		RelationDeltaAll:          0,
+		CompleteTechs:             nil,
+		StartResearchTech:         "",
+		Relations:                 nil,
+		CapitalSettlementID:       "",
+		CapitalMoveTurns:          0,
 	}
 }
 
@@ -558,6 +579,7 @@ func applyEffect(gs *state.GameState, eff Effect) world.RegionID {
 		rid := candidates[rand.Intn(len(candidates))]
 		r := gs.Regions[rid]
 		r.Satisfaction = clamp(r.Satisfaction+eff.SatDelta, 0, 100)
+		applyPopulationDelta(r, eff.PopulationDelta)
 		if eff.GrainDelta != 0 {
 			if f, ok := gs.Factions[faction.FactionID(r.OwnerID)]; ok {
 				f.Grain = max0(f.Grain + eff.GrainDelta)
@@ -593,6 +615,7 @@ func applyToFaction(gs *state.GameState, fid string, eff Effect) {
 			continue
 		}
 		r.Satisfaction = clamp(r.Satisfaction+eff.SatDelta, 0, 100)
+		applyPopulationDelta(r, eff.PopulationDelta)
 	}
 	if f, ok := gs.Factions[faction.FactionID(fid)]; ok {
 		f.Gold = max0(f.Gold + eff.GoldDelta)
@@ -797,15 +820,29 @@ func addRegionEventStatus(gs *state.GameState, e *Event, choice *Choice, targetR
 		}
 
 		gs.ActiveRegionEvents = append(gs.ActiveRegionEvents, state.RegionEventStatus{
-			EventID:                e.ID,
-			RegionID:               rid,
-			TurnsLeft:              turnsVisible,
-			Type:                   eventType,
-			LabelTR:                labelTR,
-			GrainProductionPercent: effect.GrainProductionPercent,
-			GrainDemandPercent:     effect.GrainDemandPercent,
+			EventID:                   e.ID,
+			RegionID:                  rid,
+			TurnsLeft:                 turnsVisible,
+			Type:                      eventType,
+			LabelTR:                   labelTR,
+			GrainProductionPercent:    effect.GrainProductionPercent,
+			GrainDemandPercent:        effect.GrainDemandPercent,
+			TradeIncomePercent:        effect.TradeIncomePercent,
+			RegionGoldIncomePercent:   effect.RegionGoldIncomePercent,
+			ArmyUpkeepPercent:         effect.ArmyUpkeepPercent,
+			BuildingEfficiencyPercent: effect.BuildingEfficiencyPercent,
+			CombatAttackPercent:       effect.CombatAttackPercent,
+			CombatDefensePercent:      effect.CombatDefensePercent,
 		})
 	}
+}
+
+func applyPopulationDelta(region *world.Region, delta int) {
+	if region == nil || delta == 0 {
+		return
+	}
+	region.RuralPopulation = max0(region.RuralPopulation + delta)
+	region.Population = max0(region.Population + delta)
 }
 
 // eventIconType bir event'in haritada hangi ikon tipiyle gösterileceğini belirler.

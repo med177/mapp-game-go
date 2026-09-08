@@ -366,6 +366,9 @@ func buildingRequirementLines(region *world.Region, b *city.Building) ([]tooltip
 
 func buildingEffectLines(b *city.Building) []string {
 	lines := []string{}
+	if b.GoldMaintenance > 0 {
+		lines = append(lines, fmt.Sprintf("Bina bakımı: %d altın/tur", b.GoldMaintenance))
+	}
 	if b.GoldMod != 1 {
 		lines = append(lines, fmt.Sprintf("Altın geliri: x%.1f", b.GoldMod))
 	}

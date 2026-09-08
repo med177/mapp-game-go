@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-09-04
+last_updated: 2026-09-08
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -95,13 +95,19 @@ de kaldırıldığında temizlenir; senaryo ile tanımlı port yerleşimleri kor
 
 ---
 
-## Sabit Altın Ordu Bakımı
+## Sabit Altın Ordu ve Bina Bakımı
 
 `UnitType.GoldUpkeep` (`gold_upkeep`) her kara ve deniz biriminin tur başı
 sabit maaş/bakım gideridir. `GoldCost` yalnızca üretim emrinin peşin maliyetidir;
 iki kavram birbirine karıştırılmaz. `GameState.EffectiveArmyGoldUpkeep()` ve
 `FactionGoldUpkeep()` kanonik toplamı üretir; hareket, kuşatma, garnizon veya
 bölgesel ikmal bu gideri değiştirmez.
+
+`Building.GoldMaintenance` (`gold_maintenance`) tamamlanmış her bina seviyesi
+için tur başına sabit altın bakım gideridir. `GameState.FactionBuildingGoldUpkeep()`
+aynı bina türünün tüm seviyelerini toplar. Ekonomi tick'inde ordu maaşından
+sonra tahsil edilir; hazine yetmezse bina bakım ödemesi mevcut bakiye ile
+sınırlanır, ancak bina yıkılmaz ve ordu maaşı açığı cezası uygulanmaz.
 
 `applyEconomyTick()` önce normal altın gelirini uygular, sonra fraksiyonun tüm
 ordularının `GoldUpkeep` toplamını hazine bakiyesinden düşer. Hazine yetersizse
@@ -111,12 +117,16 @@ HP yıpranması ve moral kaybı alır; tam maaş açığında mevcut kuvvetin ya
 %10'u deterministik asker kaçağıyla kaybedilebilir. İsyan bu aşamanın
 kapsamında değildir.
 
-1300 verisindeki başlangıç ölçeği temel olarak milis `1`, piyade `2`, elit
-piyade `3`; hafif/orta/ağır süvari `2/3/4`; kuşatma `3/4/5`; savaş gemisi `4`,
-nakliye ve ticaret gemisi `2` altın/tur olacak şekilde kalibre edilmiştir.
+1300 verisindeki başlangıç ölçeği temel olarak milis `2`, piyade `4`, elit
+piyade `6`; hafif/orta/ağır süvari `5/7/9`; kuşatma `7/9/12`; savaş gemisi `10`,
+nakliye ve ticaret gemisi `5/4` altın/tur olacak şekilde kalibre edilmiştir.
+
+1300 bina bakım değerleri seviye başına pazar `2`, çiftlik `1`, kışla `4`,
+liman `6`, sur `3`, ibadet yeri `1`, ambar `2`, demirhane `3` ve atölye `3`
+altın/tur olarak tanımlıdır.
 
 `GoldEconomy` runtime snapshot'ı vergi, pasif ticaret, rota transferleri,
-teknoloji, haraç, ganimet, bakım, ödenen bakım, ödenemeyen açık ve tur sonu
+teknoloji, haraç, ganimet, ordu/bina bakımı, ödenen bakım, ödenemeyen açık ve tur sonu
 hazineyi taşır. Bu gider ekonomik zaferin brüt gelir ölçümünden ayrı tutulur;
 HUD'daki Gelir satırı artık bakım düşülmüş net tur değişimini gösterir. Rakamın
 üzerine gelindiğinde açılan popup, bu net değerin hesabını kalem kalem gösterir.

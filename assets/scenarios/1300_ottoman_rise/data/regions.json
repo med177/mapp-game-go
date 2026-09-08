@@ -472,7 +472,7 @@
     "satisfaction": 75,
     "tax_rate": 45,
     "population": 500,
-    "rural_population": 325,
+    "rural_population": 345,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -1199,7 +1199,7 @@
     "satisfaction": 68,
     "tax_rate": 38,
     "population": 580,
-    "rural_population": 390,
+    "rural_population": 410,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -1282,7 +1282,7 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 350,
-    "rural_population": 228,
+    "rural_population": 178,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -1320,7 +1320,7 @@
     "satisfaction": 70,
     "tax_rate": 40,
     "population": 900,
-    "rural_population": 585,
+    "rural_population": 540,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -1415,7 +1415,7 @@
     "satisfaction": 68,
     "tax_rate": 38,
     "population": 1200,
-    "rural_population": 780,
+    "rural_population": 890,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -1609,7 +1609,7 @@
     "satisfaction": 78,
     "tax_rate": 20,
     "population": 651,
-    "rural_population": 455,
+    "rural_population": 431,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -1655,7 +1655,7 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 600,
-    "rural_population": 390,
+    "rural_population": 311,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -2891,7 +2891,7 @@
     "satisfaction": 55,
     "tax_rate": 20,
     "population": 300,
-    "rural_population": 195,
+    "rural_population": 170,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -3147,7 +3147,7 @@
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 600,
-    "rural_population": 390,
+    "rural_population": 350,
     "religion": "shia",
     "active_event_id": "",
     "buildings": [
@@ -5252,8 +5252,8 @@
     "trade_capacity": 8,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 376,
-    "rural_population": 338,
+    "population": 780,
+    "rural_population": 380,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -5401,7 +5401,7 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 250,
-    "rural_population": 163,
+    "rural_population": 143,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -5443,7 +5443,7 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 456,
-    "rural_population": 293,
+    "rural_population": 243,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -5481,7 +5481,7 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 312,
-    "rural_population": 195,
+    "rural_population": 170,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -6053,7 +6053,7 @@
     "satisfaction": 60,
     "tax_rate": 30,
     "population": 350,
-    "rural_population": 228,
+    "rural_population": 193,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -6340,7 +6340,7 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 250,
-    "rural_population": 163,
+    "rural_population": 128,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -6782,7 +6782,7 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 317,
-    "rural_population": 273,
+    "rural_population": 198,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -6821,7 +6821,7 @@
     "satisfaction": 55,
     "tax_rate": 25,
     "population": 420,
-    "rural_population": 273,
+    "rural_population": 208,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -6861,7 +6861,7 @@
     "satisfaction": 68,
     "tax_rate": 35,
     "population": 750,
-    "rural_population": 488,
+    "rural_population": 448,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -6910,7 +6910,7 @@
     "satisfaction": 70,
     "tax_rate": 35,
     "population": 674,
-    "rural_population": 390,
+    "rural_population": 330,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -7004,7 +7004,7 @@
     "satisfaction": 65,
     "tax_rate": 30,
     "population": 700,
-    "rural_population": 455,
+    "rural_population": 375,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -7621,7 +7621,7 @@
     "satisfaction": 60,
     "tax_rate": 28,
     "population": 414,
-    "rural_population": 247,
+    "rural_population": 227,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -8265,7 +8265,7 @@
     "satisfaction": 66,
     "tax_rate": 35,
     "population": 454,
-    "rural_population": 358,
+    "rural_population": 338,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -8307,7 +8307,7 @@
     "satisfaction": 66,
     "tax_rate": 35,
     "population": 454,
-    "rural_population": 358,
+    "rural_population": 333,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -8393,7 +8393,7 @@
     "satisfaction": 65,
     "tax_rate": 33,
     "population": 480,
-    "rural_population": 312,
+    "rural_population": 292,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -8435,7 +8435,7 @@
     "satisfaction": 62,
     "tax_rate": 28,
     "population": 450,
-    "rural_population": 293,
+    "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -8524,7 +8524,7 @@
     "satisfaction": 65,
     "tax_rate": 32,
     "population": 277,
-    "rural_population": 247,
+    "rural_population": 217,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -9818,7 +9818,7 @@
     "satisfaction": 62,
     "tax_rate": 25,
     "population": 208,
-    "rural_population": 208,
+    "rural_population": 103,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [

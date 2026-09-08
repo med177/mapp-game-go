@@ -297,7 +297,7 @@ func TestLoadScenarioDataLoads1300AIStrategyProfiles(t *testing.T) {
 		t.Fatalf("1300 üretim süreleri pozitif olmalı: tech=%d building=%d unit=%d", gs.TechTypes["iron_weapons"].TurnsRequired, gs.BuildingTypes["market"].TurnsRequired, gs.UnitTypes["militia"].TurnsRequired)
 	}
 	level, ok := gs.AIDifficultyPolicy.Level(2)
-	if !ok || !gs.AIDifficultyPolicy.FairMovement || level.PlanHorizonTurns != 2 || level.MinAttackPowerPercent != 115 {
+	if !ok || !gs.AIDifficultyPolicy.FairMovement || level.PlanHorizonTurns != 2 || level.MinAttackPowerPercent != 110 {
 		t.Fatalf("1300 AI zorluk politikası runtime state'e yüklenmedi: policy=%+v level=%+v", gs.AIDifficultyPolicy, level)
 	}
 }
@@ -311,8 +311,8 @@ func Test1300OttomanOpeningPlanBuildsAnatolianPowerBase(t *testing.T) {
 	ai.TakeTurn(gs, "ottoman")
 
 	plan := gs.AIPlans["ottoman"]
-	if plan == nil || plan.ObjectiveID != "forge_anatolian_power_base" || plan.Kind != state.AIObjectiveConsolidate {
-		t.Fatalf("Osmanlı açılışta uzun vadeli Rumeli seferinden önce Anadolu güç tabanını kurmalıydı: %+v", plan)
+	if plan == nil || plan.ObjectiveID != "secure_bithynian_frontier_1310" || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID != "east_rome" {
+		t.Fatalf("Osmanlı açılışta Bursa merkezli Anadolu genişleme planını kurmalıydı: %+v", plan)
 	}
 }
 

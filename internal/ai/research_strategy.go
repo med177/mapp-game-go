@@ -29,6 +29,8 @@ type aiResearchSignals struct {
 	IronProduction        int
 	TimberProduction      int
 	StoneProduction       int
+	SpiceProduction       int
+	ClothProduction       int
 	NavalReserveShortfall int
 }
 
@@ -224,6 +226,8 @@ func aiResearchEffectScore(gs *state.GameState, self *faction.Faction, technolog
 	projectedValue += aiResearchResourceProjectedValue(gs, self.Iron, signals.IronProduction, effects.IronMod, economy.GoodIron)
 	projectedValue += aiResearchResourceProjectedValue(gs, self.Timber, signals.TimberProduction, effects.TimberMod, economy.GoodTimber)
 	projectedValue += aiResearchResourceProjectedValue(gs, self.Stone, signals.StoneProduction, effects.StoneMod, economy.GoodStone)
+	projectedValue += aiResearchResourceProjectedValue(gs, self.Spice, signals.SpiceProduction, effects.SpiceMod, economy.GoodSpice)
+	projectedValue += aiResearchResourceProjectedValue(gs, self.Cloth, signals.ClothProduction, effects.ClothMod, economy.GoodCloth)
 	if projectedValue > 0 {
 		score += minInt(350, projectedValue*20/maxInt(1, technology.GoldCost))
 	}
@@ -390,6 +394,8 @@ func aiBuildResearchSignals(gs *state.GameState, self *faction.Faction, ctx *Str
 		signals.IronProduction += production.Iron
 		signals.TimberProduction += production.Timber
 		signals.StoneProduction += production.Stone
+		signals.SpiceProduction += production.Spice
+		signals.ClothProduction += production.Cloth
 		if region.Satisfaction < 60 {
 			signals.LowSatisfaction++
 			signals.SatisfactionDeficit += 60 - region.Satisfaction

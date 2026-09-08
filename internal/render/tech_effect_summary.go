@@ -95,6 +95,12 @@ func techEffectsSummary(e tech.Effects, fallback string) string {
 	if e.StoneMod > 0 {
 		parts = append(parts, "Taş +%"+itoa(int(e.StoneMod*100)))
 	}
+	if e.SpiceMod > 0 {
+		parts = append(parts, "Baharat +%"+itoa(int(e.SpiceMod*100)))
+	}
+	if e.ClothMod > 0 {
+		parts = append(parts, "Kumaş +%"+itoa(int(e.ClothMod*100)))
+	}
 	if e.MarketGoldMod > 0 {
 		parts = append(parts, "Ticaret +%"+itoa(int(e.MarketGoldMod*100)))
 	}

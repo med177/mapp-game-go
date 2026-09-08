@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-08-04
+last_updated: 2026-09-08
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -16,6 +16,23 @@ Olaylar JSON'dan yüklenir ve `events.LoadEvents()` ile `[]*Event` listesine dö
 Her olay `events.Tick()` içinde yalnızca **tespit edilir**; uygulama sonrasında `events.Apply()` / `events.ApplyChoice()` ile yapılır. Tek seferlik event'ler `gs.FiredEventIDs` içinde takip edilir.
 
 Deterministik simülasyon için `random_region` adayları ile `all_factions`, `all_armies` ve fraksiyon-sahipliği tabanlı aktif event bölge listeleri `RegionID` sırasına sokulur. Rastgele indeks ve `ActiveRegionEvents` sıra düzeni Go map iterasyonundan etkilenmez.
+
+1300 başlangıçlı senaryoda olay havuzu 54 kayda çıkarılmıştır. 1310 öncesinde
+kalmış olan Doğu Roma maliye olayı başlangıç tarihine taşınmış; Bursa'nın merkez
+oluşu, Gelibolu geçişi, Osmanlı restorasyonu, Varna, Çaldıran ve bölgesel ticaret
+gelişmeleri gibi tarihsel zincirler eklenmiştir. Rastgele havuza kuraklık,
+çekirge, kervan baskını, liman yangını, vergi isyanı, maden keşfi, hac panayırı
+ve sınır akınları eklenerek uzun oyunlarda tekrar çeşitliliği artırılmıştır.
+
+Genişletilmiş olay havuzu 82 kayda ulaşır. Dinamik olaylar düşük memnuniyet,
+sınır baskısı, ticaret dalgalanması, hazine ve ikmal sorunlarını temsil eder.
+Aktif bölgesel etkiler ayrıca `trade_income_percent`,
+`region_gold_income_percent` ve `army_upkeep_percent` alanlarıyla ticaret,
+yerel vergi ve o bölgedeki orduların ikmal yükünü geçici olarak değiştirir.
+`building_efficiency_percent` bina kaynaklı üretimi, `combat_attack_percent` ve
+`combat_defense_percent` ise aktif bölgedeki sahip orduların geçici savaş
+modlarını değiştirir. `population_delta` kırsal nüfusa uygulanır ve bölgenin
+toplam nüfusuyla birlikte güncellenir.
 
 ---
 

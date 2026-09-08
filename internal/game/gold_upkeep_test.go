@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -52,6 +53,23 @@ func TestApplyEconomyTickClampsUnpaidGoldUpkeepAtZero(t *testing.T) {
 	}
 	if got, want := report.PlayerGoldStatus.Shortage, 3; got != want {
 		t.Fatalf("ödenemeyen bakım miktarı hatalı: got=%d want=%d", got, want)
+	}
+}
+
+func TestApplyEconomyTickDeductsBuildingGoldMaintenance(t *testing.T) {
+	gs := goldUpkeepFixture(10, 20, 0)
+	gs.BuildingTypes = map[string]*city.Building{
+		"market": {ID: "market", GoldMod: 1, GoldMaintenance: 3},
+	}
+	gs.Regions["home"].Buildings = []string{"market", "market"}
+
+	report := applyEconomyTick(gs)
+	if got, want := gs.Factions["player"].Gold, 24; got != want {
+		t.Fatalf("bina bakımı gelirden sonra düşülmedi: got=%d want=%d", got, want)
+	}
+	status := report.PlayerGoldStatus
+	if status.Income != 20 || status.BuildingUpkeep != 6 || status.PaidBuildingUpkeep != 6 || status.NetChange != 14 {
+		t.Fatalf("bina bakım raporu hatalı: %+v", status)
 	}
 }
 

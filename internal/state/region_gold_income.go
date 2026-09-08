@@ -61,6 +61,11 @@ func (s *GameState) regionGoldIncomeBreakdown(region *world.Region, applyBlockad
 		appendLine(fmt.Sprintf("%s etkisi", building.NameTR), next-local)
 		local = next
 	}
+	if buildingPercent := s.RegionBuildingEfficiencyModifier(region.ID); buildingPercent != 0 {
+		adjusted := local * (100 + buildingPercent) / 100
+		appendLine("Olay (bina verimi)", adjusted-local)
+		local = adjusted
+	}
 
 	seasonValue := local * s.CurrentSeason().HarvestMod() / 100
 	appendLine("Mevsim etkisi", seasonValue-local)
@@ -73,6 +78,12 @@ func (s *GameState) regionGoldIncomeBreakdown(region *world.Region, applyBlockad
 	retained := scaleBlockadeOutput(local, retention)
 	appendLine("Abluka etkisi", retained-local)
 	local = retained
+	regionGoldPercent := s.RegionGoldIncomeModifier(region.ID)
+	if regionGoldPercent != 0 {
+		adjusted := local * (100 + regionGoldPercent) / 100
+		appendLine("Olay (yerel vergi)", adjusted-local)
+		local = adjusted
+	}
 
 	tradeBase := s.BaseRegionTradeIncome(region) - s.RegionTradeCenterIncome(region)
 	trade := s.BaseRegionTradeIncome(region) * s.CurrentSeason().TradeMod() / 100
@@ -90,6 +101,12 @@ func (s *GameState) regionGoldIncomeBreakdown(region *world.Region, applyBlockad
 	} else {
 		appendLine("Pasif ticaret", tradeBase)
 		appendLine("Ticaret merkezi", trade-tradeBase)
+	}
+	tradePercent := s.RegionTradeIncomeModifier(region.ID)
+	if tradePercent != 0 {
+		adjusted := trade * (100 + tradePercent) / 100
+		appendLine("Olay (ticaret)", adjusted-trade)
+		trade = adjusted
 	}
 
 	appendLine("Teknoloji (bölge)", s.regionTechnologyGoldBonus(region))

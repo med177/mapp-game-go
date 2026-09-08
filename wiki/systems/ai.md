@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-08-28
+last_updated: 2026-09-08
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -378,6 +378,15 @@ dinamik hedef olarak seçilir ve plan `expand`/recovery türünde bu bölgeleri 
 hazırlığı yapar. Claim geri alındığında recovery planı yeniden tamamlanmış sayılır.
 Profil bulunmayan 1300 devletleri `ai_expansion_targets`, aktif savaş ve konsolidasyon
 fallback'ini kullanmaya devam eder.
+
+1300 açılışında Osmanlı'nın `forge_anatolian_power_base` hedefi yalnızca mevcut
+Bilecik-Bitinya çekirdeğini konsolide eder; Bursa ve Aydın-Karesi hattı ayrı
+`secure_bithynian_frontier_1310` genişleme objective'idir. Böylece Anadolu iç
+hazırlığı tamamlandığında AI aynı açılışta yakın tarihsel cepheye geçebilir.
+Flandre'nin HRE içindeki Friesland/Hollanda bölgeleri de konsolidasyon hedefinden
+çıkarılmıştır; aynı realm içi bölgeler yanlış bir fetih planı üretmez.
+Normal zorlukta proaktif savaş eşiği ve cephe hazırlığı daha kısa aralıklarla
+değerlendirilir; Zor zorlukta oyuncu hedefi önceliği ve savaş temposu daha yüksektir.
 
 ### Anadolu Beylikleri Objective Kalibrasyonu
 

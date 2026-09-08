@@ -661,9 +661,13 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep/GoldUpkeep)
 	upkeepByFaction := make(map[string]int)
 	goldUpkeepByFaction := make(map[string]int)
+	buildingGoldUpkeepByFaction := make(map[string]int)
 	for _, a := range gs.Armies {
 		upkeepByFaction[a.OwnerID] += gs.EffectiveArmyGrainUpkeep(a)
 		goldUpkeepByFaction[a.OwnerID] += gs.EffectiveArmyGoldUpkeep(a)
+	}
+	for fid := range gs.Factions {
+		buildingGoldUpkeepByFaction[string(fid)] = gs.FactionBuildingGoldUpkeep(fid)
 	}
 
 	for fid, f := range gs.Factions {
@@ -698,6 +702,12 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			paidGoldUpkeep = f.Gold
 		}
 		f.Gold -= paidGoldUpkeep
+		buildingGoldUpkeep := buildingGoldUpkeepByFaction[fidStr]
+		paidBuildingGoldUpkeep := buildingGoldUpkeep
+		if paidBuildingGoldUpkeep > f.Gold {
+			paidBuildingGoldUpkeep = f.Gold
+		}
+		f.Gold -= paidBuildingGoldUpkeep
 		goldStatus := state.GoldEconomyStatus{
 			FactionID:               fid,
 			Income:                  goldIncome,
@@ -713,16 +723,19 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			TradeRouteCustomsIncome: tradeRouteCustomsByFaction[fidStr],
 			TradePowerIncome:        tradePowerIncome,
 			Upkeep:                  goldUpkeep,
+			BuildingUpkeep:          buildingGoldUpkeep,
 			GoldBefore:              goldBefore,
 			GoldAfter:               f.Gold,
 			PaidUpkeep:              paidGoldUpkeep,
+			PaidBuildingUpkeep:      paidBuildingGoldUpkeep,
 			Shortage:                goldUpkeep - paidGoldUpkeep,
+			BuildingShortage:        buildingGoldUpkeep - paidBuildingGoldUpkeep,
 		}
 		if ledger := gs.GoldTurnLedger[fid]; ledger.Turn == gs.Turn {
 			goldStatus.GiftIncome = ledger.GiftIncome
 			goldStatus.GiftExpense = ledger.GiftExpense
 		}
-		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.TradePowerIncome - goldUpkeep
+		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.TradePowerIncome - goldUpkeep - buildingGoldUpkeep
 		if goldStatus.Shortage > 0 {
 			applyGoldUpkeepShortagePenalty(gs, fidStr, goldStatus.Upkeep, goldStatus.Shortage, &goldStatus)
 		}

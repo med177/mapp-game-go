@@ -261,14 +261,14 @@
         "label_tr": "Sınırı tahkim et"
       }
     ],
-    "desc_tr": "Koyunhisar civarındaki baskınlar Osmanlı uç beylerine moral kazandırdı. Doğu Roma sınırındaki akınlar yoğunlaşıyor.",
+    "desc_tr": "Bithynia sınırındaki akınlar Osmanlı uç beylerine moral kazandırdı. Doğu Roma sınırında yeni bir sefer dönemi başlıyor.",
     "gold_delta": 100,
     "grain_delta": 20,
     "historical_month": 7,
     "historical_year": 1312,
     "id": "battle_of_bapheus_1312",
     "min_turn": 0,
-    "name_tr": "Koyunhisar Baskınları",
+    "name_tr": "Bithynia Uç Seferleri",
     "one_shot": true,
     "probability": 0,
     "requires_owned_regions": [
@@ -281,14 +281,14 @@
   {
     "affected_faction": "east_rome",
     "army_hp_mod": 1,
-    "desc_tr": "İmparatorluk hazinesi paralı asker ödemeleri ve saray entrikaları yüzünden dar boğaza girdi. Sınır garnizonları zayıflıyor.",
+    "desc_tr": "İmparatorluk hazinesi saray harcamaları ve sınır savunması arasındaki baskı altında kaldı. Anadolu garnizonları için kaynak bulmak zorlaşıyor.",
     "gold_delta": -110,
     "grain_delta": -15,
-    "historical_month": 5,
-    "historical_year": 1303,
-    "id": "east_rome_treasury_crisis_1303",
+    "historical_month": 6,
+    "historical_year": 1310,
+    "id": "east_rome_frontier_crisis_1310",
     "min_turn": 0,
-    "name_tr": "Doğu Roma Hazine Krizi",
+    "name_tr": "Doğu Roma Sınır Maliyesi",
     "one_shot": true,
     "probability": 0,
     "sat_delta": -10,
@@ -1126,5 +1126,963 @@
     "probability": 0,
     "sat_delta": 30,
     "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Bursa'nın ardından devletin yeni merkezi nasıl örgütlenecek?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Şehir pazarlarını, vakıfları ve saray teşkilatını güçlendirerek kalıcı bir merkez kurarsın.",
+        "effect": {
+          "complete_techs": ["urban_markets"],
+          "gold_delta": -70,
+          "sat_delta": 12,
+          "target": "player_faction"
+        },
+        "id": "organize_bursa",
+        "label_tr": "Bursa'yı Örgütle"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Kaynakları sınır ordularına aktarır, şehir teşkilatını sonraya bırakırsın.",
+        "effect": {
+          "army_hp_mod": 1.08,
+          "gold_delta": -40,
+          "sat_delta": -4,
+          "target": "player_faction"
+        },
+        "id": "prioritize_frontier",
+        "label_tr": "Sınırı Önceliklendir"
+      }
+    ],
+    "desc_tr": "Bursa'nın alınması, Osmanlı beyliğinin uç teşkilatından daha merkezî bir devlete dönüşmesi için yeni bir imkân yarattı.",
+    "historical_month": 4,
+    "historical_year": 1326,
+    "id": "bursa_conquest_1326",
+    "min_turn": 0,
+    "name_tr": "Bursa'nın Merkez Oluşu",
+    "one_shot": true,
+    "probability": 0,
+    "requires_owned_regions": ["bursa"],
+    "sat_delta": 10,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "east_rome",
+    "army_hp_mod": 0.92,
+    "choice_prompt_tr": "İç savaşın baskısı altında imparatorluk hangi yolu izleyecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Yerel soylularla uzlaşarak Anadolu garnizonlarını korumaya çalışırsın.",
+        "effect": {
+          "gold_delta": -80,
+          "grain_delta": 20,
+          "relation_delta_all": 5,
+          "sat_delta": 8,
+          "target": "player_faction"
+        },
+        "id": "appease_provincial_elites",
+        "label_tr": "Yerel Elitlerle Uzlaş"
+      },
+      {
+        "ai_weight": 5,
+        "desc_tr": "Başkentteki otoriteyi zorla korursun; hazine rahatlar fakat eyaletlerin huzuru bozulur.",
+        "effect": {
+          "gold_delta": 70,
+          "relation_delta_all": -8,
+          "sat_delta": -12,
+          "target": "player_faction"
+        },
+        "id": "centralize_by_force",
+        "label_tr": "Merkeziyetçiliği Zorla"
+      }
+    ],
+    "desc_tr": "Andronikos III ile Ioannes Kantakuzenos arasındaki mücadele Doğu Roma'nın kaynaklarını ve sınır savunmasını tüketiyor.",
+    "historical_month": 6,
+    "historical_year": 1341,
+    "id": "byzantine_civil_war_1341",
+    "min_turn": 0,
+    "name_tr": "Doğu Roma İç Savaşı",
+    "one_shot": true,
+    "probability": 0,
+    "sat_delta": -10,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1.1,
+    "choice_prompt_tr": "Gelibolu'daki dayanak noktası nasıl kullanılacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Boğaz geçişlerini ve tersane imkânlarını güvence altına alarak Rumeli'ye kalıcı geçiş kurarsın.",
+        "effect": {
+          "complete_techs": ["naval_supply_bases"],
+          "gold_delta": -90,
+          "grain_delta": 30,
+          "sat_delta": 10,
+          "target": "player_faction"
+        },
+        "id": "secure_gallipoli",
+        "label_tr": "Gelibolu'yu Tahkim Et"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Fırsatı doğrudan Balkan seferine çevirirsin; hızlı kazanım elde edilir fakat ikmal zorlanır.",
+        "effect": {
+          "army_hp_mod": 1.1,
+          "gold_delta": -120,
+          "grain_delta": -20,
+          "sat_delta": -4,
+          "target": "player_faction"
+        },
+        "id": "cross_into_thrace",
+        "label_tr": "Rumeli'ye Geç"
+      }
+    ],
+    "desc_tr": "Gelibolu'daki üs, Osmanlıların Avrupa yakasına asker ve iaşe taşımasını mümkün kılarak Balkan siyasetini değiştirdi.",
+    "historical_month": 3,
+    "historical_year": 1354,
+    "id": "gallipoli_crossing_1354",
+    "min_turn": 0,
+    "name_tr": "Gelibolu Geçişi",
+    "one_shot": true,
+    "probability": 0,
+    "requires_owned_regions": ["thrace"],
+    "sat_delta": 8,
+    "target": "specific_faction"
+  },
+  {
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Akdeniz ticaretindeki rekabet nasıl yönetilecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Rakip tüccarların ayrıcalıklarını dengeleyerek liman gelirlerini korursun.",
+        "effect": {
+          "gold_delta": 100,
+          "relation_delta_all": 4,
+          "sat_delta": 5,
+          "target": "player_faction"
+        },
+        "id": "balance_merchants",
+        "label_tr": "Tüccarları Dengele"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Bir ticaret cumhuriyetine geniş imtiyaz vererek kısa vadeli kredi ve donanma desteği alırsın.",
+        "effect": {
+          "gold_delta": 180,
+          "relation_delta_all": -6,
+          "sat_delta": -3,
+          "target": "player_faction"
+        },
+        "id": "grant_trade_privileges",
+        "label_tr": "Ticaret İmtiyazı Ver"
+      }
+    ],
+    "desc_tr": "Venedik ve Ceneviz arasındaki rekabet, Doğu Akdeniz limanlarında devletlerin pazarlık gücünü artırıyor.",
+    "historical_month": 8,
+    "historical_year": 1350,
+    "id": "venetian_genoese_rivalry_1350",
+    "min_turn": 0,
+    "name_tr": "Venedik-Ceneviz Rekabeti",
+    "one_shot": true,
+    "probability": 0,
+    "sat_delta": 0,
+    "target": "all_factions"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1.06,
+    "desc_tr": "Edirne'nin alınması Rumeli seferleri için yeni bir merkez ve Balkanlar üzerinde kalıcı bir idare imkânı sağladı.",
+    "gold_delta": 160,
+    "grain_delta": 35,
+    "historical_month": 7,
+    "historical_year": 1362,
+    "id": "edirne_capture_1362",
+    "min_turn": 0,
+    "name_tr": "Edirne'nin Alınışı",
+    "one_shot": true,
+    "probability": 0,
+    "requires_owned_regions": ["thrace"],
+    "sat_delta": 15,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "mamluk",
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Kızıldeniz ve hac yolları için hangi yatırım yapılacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Kervansarayları ve su noktalarını destekleyerek hac ve baharat akışını güvence altına alırsın.",
+        "effect": {
+          "complete_techs": ["caravanserai_network"],
+          "gold_delta": -90,
+          "grain_delta": 30,
+          "sat_delta": 10,
+          "target": "player_faction"
+        },
+        "id": "secure_pilgrimage_roads",
+        "label_tr": "Hac Yollarını Güvenceye Al"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Gümrükleri artırarak kısa vadeli gelir toplarsın; tüccarların memnuniyeti azalır.",
+        "effect": {
+          "gold_delta": 160,
+          "relation_delta_all": -8,
+          "sat_delta": -4,
+          "target": "player_faction"
+        },
+        "id": "raise_caravan_tolls",
+        "label_tr": "Kervan Vergilerini Artır"
+      }
+    ],
+    "desc_tr": "Mısır, Suriye ve Hicaz arasındaki kervanlar Memlük hazinesi için olduğu kadar bölgesel istikrar için de önem taşıyor.",
+    "historical_month": 2,
+    "historical_year": 1370,
+    "id": "mamluk_red_sea_trade_1370",
+    "min_turn": 0,
+    "name_tr": "Kızıldeniz Ticaret Yolları",
+    "one_shot": true,
+    "probability": 0,
+    "sat_delta": 5,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Fetret devrinin ardından devlet nasıl yeniden birleştirilecek?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Beyleri ve şehirleri uzlaştırarak vergi ve iaşe düzenini yeniden kurarsın.",
+        "effect": {
+          "complete_techs": ["legal_codification"],
+          "gold_delta": 80,
+          "grain_delta": 50,
+          "relation_delta_all": 10,
+          "sat_delta": 15,
+          "target": "player_faction"
+        },
+        "id": "restore_the_realm",
+        "label_tr": "Devleti Yeniden Kur"
+      },
+      {
+        "ai_weight": 7,
+        "desc_tr": "Merkezî orduyu hızla büyütürsün; düzen sağlanır fakat hazine ve halk ağır yük taşır.",
+        "effect": {
+          "army_hp_mod": 1.12,
+          "gold_delta": -160,
+          "relation_delta_all": -8,
+          "sat_delta": -8,
+          "target": "player_faction"
+        },
+        "id": "rebuild_the_army",
+        "label_tr": "Orduyu Yeniden Kur"
+      }
+    ],
+    "desc_tr": "Mehmed Çelebi'nin zaferiyle Osmanlı hanedanı yeniden tek merkez altında birleşiyor.",
+    "historical_month": 7,
+    "historical_year": 1413,
+    "id": "ottoman_restoration_1413",
+    "min_turn": 0,
+    "name_tr": "Osmanlı'nın Yeniden Birleşmesi",
+    "one_shot": true,
+    "probability": 0,
+    "sat_delta": 12,
+    "target": "specific_faction"
+  },
+  {
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Balkan koalisyonunun meydan okumasına nasıl karşılık verilecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Sınır kalelerini ve ikmal yollarını güçlendirerek savunmada kalırsın.",
+        "effect": {
+          "gold_delta": -100,
+          "grain_delta": 30,
+          "relation_delta_all": 5,
+          "sat_delta": 7,
+          "target": "player_faction"
+        },
+        "id": "defend_the_danube",
+        "label_tr": "Tuna'yı Savun"
+      },
+      {
+        "ai_weight": 7,
+        "desc_tr": "Koalisyonu meydan savaşında karşılamayı seçersin; zafer büyük, yenilgi ise yıkıcı olacaktır.",
+        "effect": {
+          "army_hp_mod": 1.1,
+          "gold_delta": -80,
+          "relation_delta_all": -6,
+          "sat_delta": -3,
+          "target": "player_faction"
+        },
+        "id": "meet_the_crusade",
+        "label_tr": "Haçlı Ordusunu Karşıla"
+      }
+    ],
+    "desc_tr": "Varna'da Osmanlı karşıtı bir Balkan koalisyonu kuruldu. Tuna ve Karadeniz arasındaki denge yeniden sınanıyor.",
+    "historical_month": 11,
+    "historical_year": 1444,
+    "id": "varna_crusade_1444",
+    "min_turn": 0,
+    "name_tr": "Varna Haçlı Seferi",
+    "one_shot": true,
+    "probability": 0,
+    "sat_delta": 0,
+    "target": "all_factions"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1,
+    "desc_tr": "Yeni başkentte defter, hukuk ve taşra idaresi birleştiriliyor; merkezî devletin kalıcı kurumları güçleniyor.",
+    "gold_delta": 180,
+    "grain_delta": 40,
+    "complete_techs": ["central_divan"],
+    "historical_month": 9,
+    "historical_year": 1470,
+    "id": "ottoman_provincial_reform_1470",
+    "min_turn": 0,
+    "name_tr": "Taşra İdare Reformu",
+    "one_shot": true,
+    "probability": 0,
+    "requires_owned_regions": ["constantinople"],
+    "requires_techs": ["legal_codification"],
+    "sat_delta": 12,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "safavid",
+    "army_hp_mod": 0.9,
+    "choice_prompt_tr": "Çaldıran yenilgisinin ardından Safevî devleti nasıl toparlanacak?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Anadolu ve İran arasındaki lojistik hatları güçlendirerek ordunun dayanıklılığını artırırsın.",
+        "effect": {
+          "gold_delta": -120,
+          "grain_delta": 50,
+          "sat_delta": 10,
+          "target": "player_faction"
+        },
+        "id": "reform_supply_lines",
+        "label_tr": "İkmal Hatlarını Düzelt"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Kızılbaş savaşçılarını yeniden seferber edersin; kısa vadede ordu güçlenir fakat merkezî denetim zayıflar.",
+        "effect": {
+          "army_hp_mod": 1.12,
+          "gold_delta": -80,
+          "relation_delta_all": -8,
+          "sat_delta": -5,
+          "target": "player_faction"
+        },
+        "id": "mobilize_qizilbash",
+        "label_tr": "Kızılbaşları Seferber Et"
+      }
+    ],
+    "desc_tr": "Çaldıran yenilgisi Safevîlerin ateşli silahlar ve Osmanlı askerî düzeni karşısındaki zaaflarını ortaya çıkardı.",
+    "historical_month": 8,
+    "historical_year": 1514,
+    "id": "battle_of_chaldiran_1514",
+    "min_turn": 0,
+    "name_tr": "Çaldıran Muharebesi",
+    "one_shot": true,
+    "probability": 0,
+    "sat_delta": -10,
+    "target": "specific_faction"
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Uzun süren kuraklık kuyuları ve nehirleri zorluyor; kırsal üretim ve şehir iaşesi baskı altında.",
+    "gold_delta": -70,
+    "grain_delta": -55,
+    "grain_production_percent": -20,
+    "id": "drought",
+    "min_turn": 8,
+    "name_tr": "Kuraklık",
+    "probability": 0.035,
+    "sat_delta": -10,
+    "target": "player_faction"
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Çekirge sürüleri ekinleri tahrip etti. Depoların açılması ve pazara tahıl sürülmesi gerekiyor.",
+    "gold_delta": -45,
+    "grain_delta": -65,
+    "grain_production_percent": -25,
+    "id": "locust_swarm",
+    "min_turn": 10,
+    "name_tr": "Çekirge İstilası",
+    "probability": 0.025,
+    "sat_delta": -8,
+    "target": "random_region"
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Dağ geçitlerindeki eşkıya ve akıncılar kervanları vurdu. Ticaret gelirleri ve şehir güveni düşüyor.",
+    "gold_delta": -90,
+    "grain_delta": -20,
+    "id": "caravan_raids",
+    "min_turn": 6,
+    "name_tr": "Kervan Baskınları",
+    "probability": 0.035,
+    "sat_delta": -7,
+    "target": "player_faction"
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Bir liman mahallesindeki yangın depoları ve atölyeleri yok etti. Ticaretin yeniden başlaması zaman alacak.",
+    "gold_delta": -100,
+    "grain_delta": -15,
+    "id": "harbor_fire",
+    "min_turn": 12,
+    "name_tr": "Liman Yangını",
+    "probability": 0.025,
+    "sat_delta": -6,
+    "target": "random_region"
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Yeni vergi tahsilatı köylerde ve şehirlerde tepki doğurdu. Düzen sağlanmazsa üretim kesintiye uğrayacak.",
+    "gold_delta": 110,
+    "grain_delta": -25,
+    "id": "tax_revolt",
+    "min_turn": 14,
+    "name_tr": "Vergi İsyanı",
+    "probability": 0.025,
+    "sat_delta": -15,
+    "target": "player_faction"
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Bir maden damarının keşfi demir ve taş arzını artırdı; ocakların güvenliği için başlangıç yatırımı gerekiyor.",
+    "gold_delta": -35,
+    "grain_delta": 0,
+    "id": "mine_discovery",
+    "min_turn": 10,
+    "name_tr": "Yeni Maden Damarı",
+    "probability": 0.02,
+    "sat_delta": 5,
+    "target": "player_faction"
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Büyük bir hac kafilesi şehirlerden geçiyor. Pazarlar canlanırken iaşe ve güvenlik harcamaları artıyor.",
+    "gold_delta": 90,
+    "grain_delta": -20,
+    "id": "pilgrimage_fair",
+    "min_turn": 12,
+    "name_tr": "Hac Panayırı",
+    "probability": 0.025,
+    "sat_delta": 8,
+    "target": "player_faction"
+  },
+  {
+    "army_hp_mod": 0.94,
+    "desc_tr": "Sınır akınları köyleri ve ikmal yollarını tehdit ediyor. Garnizonlar takviye edilmezse ordu yıpranacak.",
+    "gold_delta": -60,
+    "grain_delta": -30,
+    "id": "frontier_raids",
+    "min_turn": 8,
+    "name_tr": "Sınır Akınları",
+    "probability": 0.035,
+    "sat_delta": -9,
+    "target": "player_faction"
+  },
+  {
+    "affected_faction": "ilkhanate",
+    "army_hp_mod": 0.9,
+    "desc_tr": "Ebu Said Bahadır Han'ın ölümüyle İlhanlı merkezî otoritesi sarsıldı; eyaletler ve yerel hanlıklar kendi yollarını arıyor.",
+    "gold_delta": -120,
+    "grain_delta": -35,
+    "historical_month": 12,
+    "historical_year": 1335,
+    "id": "ilkhanate_breakup_1335",
+    "min_turn": 0,
+    "name_tr": "İlhanlı Parçalanması",
+    "one_shot": true,
+    "probability": 0,
+    "relation_delta_all": -8,
+    "sat_delta": -12,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1.06,
+    "choice_prompt_tr": "Yeni fetihlerin gelir ve asker düzeni nasıl kurulacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Toprak gelirlerini hizmet karşılığı dağıtarak sınır ordusunu besleyen düzenli bir sistem kurarsın.",
+        "effect": {
+          "army_upkeep_percent": -10,
+          "gold_delta": 100,
+          "sat_delta": 8,
+          "target": "player_faction"
+        },
+        "id": "establish_timars",
+        "label_tr": "Timar Düzenini Kur"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Vergiyi doğrudan merkezde toplarsın; hazine büyür fakat taşra seçkinleri huzursuzlanır.",
+        "effect": {
+          "gold_delta": 180,
+          "relation_delta_all": -6,
+          "sat_delta": -8,
+          "target": "player_faction"
+        },
+        "id": "central_tax_collection",
+        "label_tr": "Merkezî Vergi Topla"
+      }
+    ],
+    "desc_tr": "Balkan ve Anadolu fetihleri büyüdükçe sipahilerin, köylülerin ve merkez hazinesinin payını düzenlemek gerekiyor.",
+    "historical_month": 4,
+    "historical_year": 1375,
+    "id": "ottoman_timar_system_1375",
+    "min_turn": 0,
+    "name_tr": "Timar Düzeninin Yayılması",
+    "one_shot": true,
+    "probability": 0,
+    "sat_delta": 6,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1.08,
+    "desc_tr": "Kapıkulu çekirdeği ve yeni piyade ocakları merkezî ordunun sürekliliğini artırıyor; taşra orduları üzerindeki bağımlılık azalıyor.",
+    "gold_delta": -100,
+    "grain_delta": -30,
+    "historical_month": 1,
+    "historical_year": 1380,
+    "id": "janissary_foundation_1380",
+    "min_turn": 0,
+    "name_tr": "Merkezî Piyade Ocağı",
+    "one_shot": true,
+    "probability": 0,
+    "requires_techs": ["standing_infantry"],
+    "sat_delta": 4,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "east_rome",
+    "army_hp_mod": 0.94,
+    "choice_prompt_tr": "İmparatorluk liman gelirleri için Ceneviz'e ne verilecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Ticaret ayrıcalıkları karşılığında kredi ve gemi desteği alırsın.",
+        "effect": {
+          "gold_delta": 130,
+          "relation_delta_all": 5,
+          "sat_delta": 4,
+          "target": "player_faction"
+        },
+        "id": "grant_genoese_privileges",
+        "label_tr": "Ceneviz İmtiyazı Ver"
+      },
+      {
+        "ai_weight": 5,
+        "desc_tr": "Limanları korursun; gelir düşer ama bağımsızlık ve şehir tüccarlarının desteği korunur.",
+        "effect": {
+          "gold_delta": -70,
+          "relation_delta_all": -8,
+          "sat_delta": 7,
+          "target": "player_faction"
+        },
+        "id": "protect_imperial_ports",
+        "label_tr": "İmparatorluk Limanlarını Koru"
+      }
+    ],
+    "desc_tr": "Doğu Roma hazinesi daralırken Ceneviz tüccarları liman ve kredi karşılığında daha geniş ayrıcalıklar talep ediyor.",
+    "historical_month": 5,
+    "historical_year": 1387,
+    "id": "byzantine_genoese_concession_1387",
+    "min_turn": 0,
+    "name_tr": "Ceneviz Ticaret İmtiyazları",
+    "one_shot": true,
+    "probability": 0,
+    "sat_delta": -4,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "mamluk",
+    "army_hp_mod": 0.95,
+    "desc_tr": "İkta sahipleri vergi ve asker yükünün yeniden dağıtılmasına direniyor. Suriye eyaletlerinde huzursuzluk artıyor.",
+    "gold_delta": -90,
+    "grain_delta": -20,
+    "historical_month": 3,
+    "historical_year": 1382,
+    "id": "mamluk_iqta_crisis_1382",
+    "min_turn": 0,
+    "name_tr": "Memlük İkta Bunalımı",
+    "one_shot": true,
+    "probability": 0,
+    "relation_delta_all": -5,
+    "sat_delta": -10,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "venice",
+    "army_hp_mod": 1,
+    "desc_tr": "Venedik tüccarları Karadeniz ve Ege limanlarında yeni koloni hakları arıyor. Devlet ticaret ağını genişletebilir.",
+    "gold_delta": 180,
+    "historical_month": 7,
+    "historical_year": 1400,
+    "id": "venice_black_sea_colonies_1400",
+    "min_turn": 0,
+    "name_tr": "Venedik Karadeniz Kolonileri",
+    "one_shot": true,
+    "probability": 0,
+    "requires_techs": ["trade_routes"],
+    "sat_delta": 6,
+    "target": "specific_faction",
+    "trade_income_percent": 18
+  },
+  {
+    "affected_faction": "genoa",
+    "army_hp_mod": 1.05,
+    "desc_tr": "Ceneviz kolonileri Karadeniz ticaretini korumak için yeni bir filo ve liman savunması talep ediyor.",
+    "gold_delta": -80,
+    "historical_month": 2,
+    "historical_year": 1410,
+    "id": "genoa_black_sea_defense_1410",
+    "min_turn": 0,
+    "name_tr": "Ceneviz Karadeniz Savunması",
+    "one_shot": true,
+    "probability": 0,
+    "requires_techs": ["naval_doctrine"],
+    "sat_delta": 4,
+    "target": "specific_faction",
+    "trade_income_percent": 12
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1.1,
+    "choice_prompt_tr": "Konstantiniyye kuşatmasına hazırlık nasıl yapılacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Mühendisleri, ağır topları ve ikmal depolarını tek bir kuşatma planında birleştirirsin.",
+        "effect": {
+          "army_upkeep_percent": -10,
+          "complete_techs": ["military_engineering"],
+          "gold_delta": -180,
+          "grain_delta": -50,
+          "target": "player_faction"
+        },
+        "id": "prepare_great_siege",
+        "label_tr": "Büyük Kuşatmayı Hazırla"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Donanma ve Boğaz kontrolüne yatırım yaparak şehri dış yardımdan izole etmeye çalışırsın.",
+        "effect": {
+          "gold_delta": -140,
+          "relation_delta_all": -5,
+          "target": "player_faction",
+          "trade_income_percent": 15
+        },
+        "id": "close_the_bosphorus",
+        "label_tr": "Boğazı Kapat"
+      }
+    ],
+    "desc_tr": "Konstantiniyye'nin surlarını aşmak için topçu, mühendislik, donanma ve iaşe hazırlıkları bir araya getiriliyor.",
+    "historical_month": 1,
+    "historical_year": 1451,
+    "id": "constantinople_siege_preparations_1451",
+    "min_turn": 0,
+    "name_tr": "Konstantiniyye Kuşatması Hazırlıkları",
+    "one_shot": true,
+    "probability": 0,
+    "requires_techs": ["military_engineering"],
+    "sat_delta": 5,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1,
+    "desc_tr": "Fetih sonrası şehrin nüfusu, pazarları ve atölyeleri yeniden canlandırılmak üzere farklı bölgelerden aileler yerleştiriliyor.",
+    "gold_delta": -130,
+    "grain_delta": 45,
+    "historical_month": 10,
+    "historical_year": 1454,
+    "id": "constantinople_resettlement_1454",
+    "min_turn": 0,
+    "name_tr": "Konstantiniyye İskânı",
+    "one_shot": true,
+    "probability": 0,
+    "population_delta": 25,
+    "requires_flags": ["capital_rebuild"],
+    "requires_owned_regions": ["constantinople"],
+    "sat_delta": 8,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1,
+    "desc_tr": "Merkezî hukuk, vergi ve taşra yönetimi için ortak hükümler hazırlanıyor; başkentten eyaletlere uzanan idare güçleniyor.",
+    "gold_delta": 160,
+    "historical_month": 6,
+    "historical_year": 1470,
+    "id": "ottoman_kanunname_1470",
+    "min_turn": 0,
+    "name_tr": "Kanunname ve Merkezî Hukuk",
+    "one_shot": true,
+    "probability": 0,
+    "requires_owned_regions": ["constantinople"],
+    "requires_techs": ["legal_codification"],
+    "region_gold_income_percent": 15,
+    "sat_delta": 10,
+    "target": "specific_faction"
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Uzun savaşlar ve yüksek vergiler askerlerin ve halkın dayanıklılığını azaltıyor; devlet savaş temposunu yeniden değerlendirmeli.",
+    "gold_delta": -60,
+    "grain_delta": -20,
+    "id": "war_weariness",
+    "min_turn": 18,
+    "name_tr": "Savaş Yorgunluğu",
+    "probability": 0.028,
+    "sat_delta": -12,
+    "target": "player_faction",
+    "army_upkeep_percent": 12
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Bir bölgedeki düşük memnuniyet, yerel ileri gelenleri vergi toplamayı reddetmeye ve garnizona direnmeye itti.",
+    "gold_delta": -50,
+    "grain_delta": -15,
+    "id": "local_revolt",
+    "min_turn": 12,
+    "name_tr": "Yerel İsyan",
+    "probability": 0.025,
+    "sat_delta": -18,
+    "target": "random_region",
+    "region_gold_income_percent": -25,
+    "population_delta": -8
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Hazine açığı büyüdü; saray ve ordu masrafları için yeni borçlanma veya sert tasarruf gerekiyor.",
+    "gold_delta": -90,
+    "grain_delta": -10,
+    "id": "treasury_crisis",
+    "min_turn": 16,
+    "name_tr": "Hazine Bunalımı",
+    "probability": 0.022,
+    "sat_delta": -8,
+    "target": "player_faction",
+    "region_gold_income_percent": -10
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Ordunun uzun süre ikmal hatlarından uzakta kalması tahıl tüketimini ve nakliye maliyetini yükseltti.",
+    "gold_delta": -60,
+    "grain_delta": -70,
+    "id": "campaign_supply_crisis",
+    "min_turn": 14,
+    "name_tr": "Sefer İkmal Krizi",
+    "probability": 0.03,
+    "sat_delta": -10,
+    "target": "player_faction",
+    "army_upkeep_percent": 18
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Bir şehirdeki pazar ve atölyeler büyüdü. Devlet gelirleri artarken nüfusun iaşe ihtiyacı da yükseldi.",
+    "gold_delta": 110,
+    "grain_delta": -15,
+    "id": "urban_growth",
+    "min_turn": 14,
+    "name_tr": "Şehirlerin Büyümesi",
+    "probability": 0.025,
+    "sat_delta": 9,
+    "target": "random_region",
+    "trade_income_percent": 20,
+    "population_delta": 15
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Tüccarlar güvenli geçiş ve düşük gümrük karşılığında yeni bir ticaret sözleşmesi öneriyor.",
+    "gold_delta": 80,
+    "id": "merchant_charter",
+    "min_turn": 18,
+    "name_tr": "Tüccar Fermanı",
+    "probability": 0.024,
+    "sat_delta": 5,
+    "target": "random_region",
+    "trade_income_percent": 25,
+    "region_gold_income_percent": -5
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Sınırdaki bir bey veya yerel komutan kendi garnizonunu büyütmek istiyor; merkez destek verirse sınır güvenliği artacak.",
+    "combat_defense_percent": 8,
+    "gold_delta": -70,
+    "grain_delta": -25,
+    "id": "frontier_garrison",
+    "min_turn": 10,
+    "name_tr": "Sınır Garnizonu Talebi",
+    "probability": 0.03,
+    "sat_delta": 4,
+    "target": "random_region",
+    "army_upkeep_percent": -12
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Tüccar loncaları arasındaki rekabet büyüdü. Devlet hakemlik yapmazsa pazar gelirleri ve şehir huzuru zarar görecek.",
+    "gold_delta": -30,
+    "id": "guild_dispute",
+    "min_turn": 12,
+    "name_tr": "Lonca Anlaşmazlığı",
+    "probability": 0.026,
+    "sat_delta": -8,
+    "target": "random_region",
+    "trade_income_percent": -18
+  },
+  {
+    "army_hp_mod": 1,
+    "building_efficiency_percent": 10,
+    "desc_tr": "Bir liman veya nehir iskelesi yenilendi. Tahıl, kumaş ve baharat akışı hızlanıyor.",
+    "gold_delta": 70,
+    "id": "harbor_repair",
+    "min_turn": 15,
+    "name_tr": "Liman Onarımı",
+    "probability": 0.022,
+    "sat_delta": 6,
+    "target": "random_region",
+    "trade_income_percent": 22,
+    "region_gold_income_percent": 8
+  },
+  {
+    "army_hp_mod": 0.92,
+    "desc_tr": "Sınır halkı akınlar ve zorunlu göç nedeniyle yerinden edildi; bölgenin üretimi ve nüfusu geçici olarak düştü.",
+    "gold_delta": -45,
+    "grain_delta": -30,
+    "id": "war_refugees",
+    "min_turn": 10,
+    "name_tr": "Savaş Mültecileri",
+    "probability": 0.024,
+    "sat_delta": -11,
+    "target": "random_region",
+    "trade_income_percent": -12,
+    "population_delta": -15
+  },
+  {
+    "army_hp_mod": 1.04,
+    "desc_tr": "Bir komutan veya şehir ileri geleni yerel halkı seferber etti. Kısa süreli savunma gücü arttı ancak iaşe masrafı yükseldi.",
+    "gold_delta": -35,
+    "grain_delta": -30,
+    "id": "militia_muster",
+    "min_turn": 12,
+    "name_tr": "Yerel Milis Seferberliği",
+    "probability": 0.026,
+    "sat_delta": 5,
+    "target": "random_region",
+    "army_upkeep_percent": 10
+  },
+  {
+    "army_hp_mod": 1,
+    "building_efficiency_percent": 12,
+    "desc_tr": "Şehir bilginleri ve zanaatkârlar yeni bir okul veya tercüme çevresi kurmak için destek istiyor.",
+    "gold_delta": -65,
+    "id": "scholarly_patronage",
+    "min_turn": 20,
+    "name_tr": "İlim ve Sanat Himayesi",
+    "probability": 0.02,
+    "sat_delta": 12,
+    "target": "random_region",
+    "population_delta": 5
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Bir bölgedeki pazar denetimi iyileşti; kaçakçılık azalırken devletin vergi tahsilatı güçlendi.",
+    "gold_delta": 90,
+    "id": "customs_enforcement",
+    "min_turn": 16,
+    "name_tr": "Gümrük Denetimi",
+    "probability": 0.022,
+    "sat_delta": 3,
+    "target": "random_region",
+    "trade_income_percent": 10,
+    "region_gold_income_percent": 18
+  },
+  {
+    "army_hp_mod": 1,
+    "combat_attack_percent": 8,
+    "desc_tr": "Sınırdaki bir komutan başarı kazandı. Merkez, bu fırsatı yeni bir sefer veya savunma yatırımı için kullanabilir.",
+    "gold_delta": 80,
+    "grain_delta": 15,
+    "id": "frontier_commander_success",
+    "min_turn": 15,
+    "name_tr": "Sınır Komutanının Başarısı",
+    "probability": 0.021,
+    "sat_delta": 8,
+    "target": "player_faction",
+    "army_upkeep_percent": -8
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Bir ticaret merkezindeki fiyatlar ve güvenlik sorunları tüccarları rakip limanlara yöneltti.",
+    "gold_delta": -100,
+    "id": "trade_center_decline",
+    "min_turn": 18,
+    "name_tr": "Ticaret Merkezinin Gerilemesi",
+    "probability": 0.018,
+    "sat_delta": -6,
+    "target": "random_region",
+    "trade_income_percent": -30,
+    "region_gold_income_percent": -12
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Vergi kayıtları, pazar denetimi ve yerel arabuluculuk aynı bölgede birleştirildi; idare kısa süreli verim kazandı.",
+    "gold_delta": 130,
+    "id": "administrative_reform",
+    "min_turn": 20,
+    "name_tr": "Yerel İdare Reformu",
+    "probability": 0.018,
+    "sat_delta": 10,
+    "target": "random_region",
+    "region_gold_income_percent": 22
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Kıyı savunması ve deniz ticareti için halktan ve tüccarlardan olağanüstü katkı toplanıyor.",
+    "gold_delta": 100,
+    "id": "naval_war_contribution",
+    "min_turn": 18,
+    "name_tr": "Donanma Seferberlik Payı",
+    "probability": 0.018,
+    "sat_delta": -6,
+    "target": "player_faction",
+    "trade_income_percent": -8,
+    "army_upkeep_percent": -5
+  },
+  {
+    "army_hp_mod": 1,
+    "desc_tr": "Bir bölgedeki su kanalları ve bentler onarıldı. Hasat ve şehir nüfusu toparlanıyor.",
+    "gold_delta": -55,
+    "grain_delta": 45,
+    "grain_production_percent": 20,
+    "id": "irrigation_repair",
+    "min_turn": 16,
+    "name_tr": "Sulama Kanallarının Onarımı",
+    "probability": 0.02,
+    "sat_delta": 8,
+    "target": "random_region",
+    "population_delta": 10
   }
 ]

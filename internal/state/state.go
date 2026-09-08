@@ -193,13 +193,19 @@ func (s *SiegeState) TurnsUntilSurrender() int {
 // Event choice sonrası veya otomatik çözümlenen event'ler sonrası haritada
 // birkaç tur boyunca ikon gösterimi için kullanılır.
 type RegionEventStatus struct {
-	EventID                string         `json:"event_id"`
-	RegionID               world.RegionID `json:"region_id"`
-	TurnsLeft              int            `json:"turns_left"` // kaç tur daha görünür kalacak
-	Type                   string         `json:"type"`       // plague, famine, blessing, revolt, notification
-	LabelTR                string         `json:"label_tr"`   // kısa açıklama (tooltip için)
-	GrainProductionPercent int            `json:"grain_production_percent,omitempty"`
-	GrainDemandPercent     int            `json:"grain_demand_percent,omitempty"`
+	EventID                   string         `json:"event_id"`
+	RegionID                  world.RegionID `json:"region_id"`
+	TurnsLeft                 int            `json:"turns_left"` // kaç tur daha görünür kalacak
+	Type                      string         `json:"type"`       // plague, famine, blessing, revolt, notification
+	LabelTR                   string         `json:"label_tr"`   // kısa açıklama (tooltip için)
+	GrainProductionPercent    int            `json:"grain_production_percent,omitempty"`
+	GrainDemandPercent        int            `json:"grain_demand_percent,omitempty"`
+	TradeIncomePercent        int            `json:"trade_income_percent,omitempty"`
+	RegionGoldIncomePercent   int            `json:"region_gold_income_percent,omitempty"`
+	ArmyUpkeepPercent         int            `json:"army_upkeep_percent,omitempty"`
+	BuildingEfficiencyPercent int            `json:"building_efficiency_percent,omitempty"`
+	CombatAttackPercent       int            `json:"combat_attack_percent,omitempty"`
+	CombatDefensePercent      int            `json:"combat_defense_percent,omitempty"`
 }
 
 // GameState oyunun tüm anlık durumunu tutar. Save/load ham struct snapshot'ı
@@ -659,6 +665,112 @@ func (s *GameState) RegionGrainDemandModifier(regionID world.RegionID) int {
 	return modifier
 }
 
+// RegionTradeIncomeModifier aktif bölge olaylarının ticaret gelirine etkisini
+// yüzde puan olarak döner. Süresi bitmiş kayıtlar etkisizdir.
+func (s *GameState) RegionTradeIncomeModifier(regionID world.RegionID) int {
+	if s == nil || regionID == "" {
+		return 0
+	}
+	modifier := 0
+	for _, event := range s.ActiveRegionEvents {
+		if event.RegionID == regionID && event.TurnsLeft > 0 {
+			modifier += event.TradeIncomePercent
+		}
+	}
+	if modifier < -100 {
+		return -100
+	}
+	if modifier > 200 {
+		return 200
+	}
+	return modifier
+}
+
+// RegionGoldIncomeModifier aktif bölge olaylarının yerel vergi gelirine
+// etkisini yüzde puan olarak döner.
+func (s *GameState) RegionGoldIncomeModifier(regionID world.RegionID) int {
+	if s == nil || regionID == "" {
+		return 0
+	}
+	modifier := 0
+	for _, event := range s.ActiveRegionEvents {
+		if event.RegionID == regionID && event.TurnsLeft > 0 {
+			modifier += event.RegionGoldIncomePercent
+		}
+	}
+	if modifier < -100 {
+		return -100
+	}
+	if modifier > 200 {
+		return 200
+	}
+	return modifier
+}
+
+// RegionArmyUpkeepModifier aktif bölge olaylarının ordu ikmaline etkisini
+// yüzde puan olarak döner.
+func (s *GameState) RegionArmyUpkeepModifier(regionID world.RegionID) int {
+	if s == nil || regionID == "" {
+		return 0
+	}
+	modifier := 0
+	for _, event := range s.ActiveRegionEvents {
+		if event.RegionID == regionID && event.TurnsLeft > 0 {
+			modifier += event.ArmyUpkeepPercent
+		}
+	}
+	if modifier < -75 {
+		return -75
+	}
+	if modifier > 200 {
+		return 200
+	}
+	return modifier
+}
+
+func (s *GameState) RegionBuildingEfficiencyModifier(regionID world.RegionID) int {
+	if s == nil || regionID == "" {
+		return 0
+	}
+	modifier := 0
+	for _, event := range s.ActiveRegionEvents {
+		if event.RegionID == regionID && event.TurnsLeft > 0 {
+			modifier += event.BuildingEfficiencyPercent
+		}
+	}
+	if modifier < -100 {
+		return -100
+	}
+	if modifier > 200 {
+		return 200
+	}
+	return modifier
+}
+
+// FactionEventCombatModifiers aktif olayların aynı fraksiyonun ordularına
+// uyguladığı saldırı/savunma etkisini döner. Faction hedefli bir olay tüm
+// bölgelerde status ürettiği için EventID başına yalnızca bir kez sayılır.
+func (s *GameState) FactionEventCombatModifiers(fid faction.FactionID) (float64, float64) {
+	if s == nil || fid == "" {
+		return 0, 0
+	}
+	seen := make(map[string]bool)
+	attack, defense := 0, 0
+	for _, event := range s.ActiveRegionEvents {
+		if event.TurnsLeft <= 0 || seen[event.EventID] {
+			continue
+		}
+		region := s.Regions[event.RegionID]
+		if region == nil || region.OwnerID != string(fid) {
+			continue
+		}
+		seen[event.EventID] = true
+		attack += event.CombatAttackPercent
+		defense += event.CombatDefensePercent
+	}
+	return float64(attack) / 100, float64(defense) / 100
+}
+
 // RegionMilitaryGrainProduction, sivil talep karşılandıktan sonra aynı bölgede
 // kara ordusu ikmaline kalabilecek efektif tahıl üretimini döner. Oyun ve AI
 // lojistik hesapları bu ortak seam'i kullanır.
@@ -784,11 +896,14 @@ type GoldEconomyStatus struct {
 	GiftIncome              int
 	GiftExpense             int
 	Upkeep                  int
+	BuildingUpkeep          int
 	NetChange               int
 	GoldBefore              int
 	GoldAfter               int
 	PaidUpkeep              int
+	PaidBuildingUpkeep      int
 	Shortage                int
+	BuildingShortage        int
 	AttritionHPDamage       int
 	UnitsLost               int
 	DesertedUnits           int
@@ -1828,7 +1943,13 @@ func (s *GameState) EffectiveArmyGoldUpkeep(a *army.Army) int {
 	if s == nil || a == nil {
 		return 0
 	}
-	return a.TotalGoldUpkeep(s.UnitTypes)
+	upkeep := a.TotalGoldUpkeep(s.UnitTypes)
+	modifier := s.RegionArmyUpkeepModifier(a.RegionID)
+	upkeep = upkeep * (100 + modifier) / 100
+	if upkeep < 0 {
+		return 0
+	}
+	return upkeep
 }
 
 // FactionGoldUpkeep bir fraksiyona ait tüm orduların tur başı sabit altın
@@ -1841,6 +1962,27 @@ func (s *GameState) FactionGoldUpkeep(fid faction.FactionID) int {
 	for _, a := range s.Armies {
 		if a != nil && a.OwnerID == string(fid) {
 			total += s.EffectiveArmyGoldUpkeep(a)
+		}
+	}
+	return total
+}
+
+// FactionBuildingGoldUpkeep bir fraksiyona ait binaların tur başı altın
+// bakımını döner. GoldMaintenance bina başına tanımlandığı için aynı bina
+// türünün her seviyesi ayrı bir bakım yükü oluşturur.
+func (s *GameState) FactionBuildingGoldUpkeep(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	total := 0
+	for _, region := range s.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		for _, buildingID := range region.Buildings {
+			if building := s.BuildingTypes[buildingID]; building != nil && building.GoldMaintenance > 0 {
+				total += building.GoldMaintenance
+			}
 		}
 	}
 	return total
@@ -1903,6 +2045,10 @@ func (s *GameState) armyGrainUpkeep(a *army.Army, includeRegionalSupply, externa
 	}
 	if includeRegionalSupply {
 		percent += s.capitalSupplyPenaltyPercent(a, externalSupplyActive)
+	}
+	percent += s.RegionArmyUpkeepModifier(a.RegionID)
+	if percent < 0 {
+		percent = 0
 	}
 
 	upkeep := base * percent / 100
@@ -2393,6 +2539,9 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 			grainMod *= b.GrainMod
 		}
 	}
+	if buildingPercent := s.RegionBuildingEfficiencyModifier(region.ID); buildingPercent != 0 {
+		grainMod *= float64(100+buildingPercent) / 100
+	}
 
 	_, goldTotal := s.regionGoldIncomeBreakdown(region, applyBlockade)
 	out := RegionProductionSummary{
@@ -2420,6 +2569,8 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 		out.Iron = int(float64(out.Iron) * (1.0 + effects.IronMod))
 		out.Timber = int(float64(out.Timber) * (1.0 + effects.TimberMod))
 		out.Stone = int(float64(out.Stone) * (1.0 + effects.StoneMod))
+		out.Spice = int(float64(out.Spice) * (1.0 + effects.SpiceMod))
+		out.Cloth = int(float64(out.Cloth) * (1.0 + effects.ClothMod))
 	}
 
 	if bonus := s.CapitalRegionBonus(region); bonus != (RegionProductionSummary{}) {

@@ -211,17 +211,18 @@
   },
   {
     "category": "military",
-    "description_tr": "Ağır süvari ve elit piyade için zırh standardı.",
+    "description_tr": "Erken plaka ve brigandin takviyeleri; ağır süvari ile elit piyadenin savunma standardı.",
     "effects": {
       "land_defense_mod": 0.1
     },
     "gold_cost": 34,
     "id": "plate_armor",
-    "name_tr": "Plaka Zırh",
+    "name_tr": "Erken Plaka Zırh",
     "requires": [
       "heavy_armor",
       "steel_blades"
     ],
+    "min_year": 1350,
     "turns_required": 10
   },
   {
@@ -336,13 +337,13 @@
   },
   {
     "category": "economy",
-    "description_tr": "Vergi kaydı standardizasyonu ile ölçülü gelir artışı.",
+    "description_tr": "Düzenli vergi ve arazi kayıtlarının standardizasyonu ile ölçülü gelir artışı.",
     "effects": {
       "gold_per_region": 3
     },
     "gold_cost": 22,
     "id": "tax_registers",
-    "name_tr": "Tahrir Defterleri",
+    "name_tr": "Vergi ve Arazi Kayıtları",
     "requires": [
       "trade_routes"
     ],
@@ -635,5 +636,613 @@
       "trade_routes"
     ],
     "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Mızrak, kalkan ve sıkı piyade düzeni kara savunmasını güçlendirir.",
+    "effects": {
+      "land_defense_mod": 0.1
+    },
+    "gold_cost": 24,
+    "id": "spear_shield_formations",
+    "name_tr": "Mızrak ve Kalkan Düzeni",
+    "requires": [
+      "iron_weapons"
+    ],
+    "min_year": 1320,
+    "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Saray ve merkez ordusu için sürekli piyade talimi ve maaş düzeni.",
+    "effects": {
+      "infantry_attack_mod": 0.1,
+      "satisfaction_bonus": 1
+    },
+    "gold_cost": 32,
+    "id": "professional_retinues",
+    "name_tr": "Profesyonel Hassa Birlikleri",
+    "requires": [
+      "standing_infantry"
+    ],
+    "min_year": 1380,
+    "turns_required": 10
+  },
+  {
+    "category": "military",
+    "description_tr": "Atlı okçu birliklerinin menzil, dönüş ve hücum talimleri.",
+    "effects": {
+      "cavalry_attack_mod": 0.12
+    },
+    "gold_cost": 30,
+    "id": "mounted_archer_doctrine",
+    "name_tr": "Atlı Okçu Doktrini",
+    "requires": [
+      "composite_bow_drills"
+    ],
+    "min_year": 1340,
+    "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Mühimmat, yol ve kuşatma trenlerinin daha gelişmiş sevk düzeni.",
+    "effects": {
+      "siege_attack_mod": 0.12,
+      "land_defense_mod": 0.03
+    },
+    "gold_cost": 34,
+    "id": "siege_logistics_reform",
+    "name_tr": "Kuşatma Lojistiği Reformu",
+    "requires": [
+      "siege_logistics"
+    ],
+    "min_year": 1350,
+    "turns_required": 10
+  },
+  {
+    "category": "military",
+    "description_tr": "Erken el ateşli silahlarının ve küçük barutlu silahların askerî kullanımı.",
+    "effects": {
+      "infantry_attack_mod": 0.08,
+      "siege_attack_mod": 0.05
+    },
+    "gold_cost": 42,
+    "id": "early_firearms",
+    "name_tr": "Erken Barutlu El Silahları",
+    "requires": [
+      "gunpowder"
+    ],
+    "min_year": 1400,
+    "turns_required": 12
+  },
+  {
+    "category": "military",
+    "description_tr": "Toprak setler, hendekler ve çok katmanlı yıldız biçimli savunma düzeni.",
+    "effects": {
+      "land_defense_mod": 0.15
+    },
+    "gold_cost": 48,
+    "id": "star_fortifications",
+    "name_tr": "Yıldız Tahkimatları",
+    "requires": [
+      "field_fortifications",
+      "siege_logistics_reform"
+    ],
+    "min_year": 1450,
+    "turns_required": 14
+  },
+  {
+    "category": "economy",
+    "description_tr": "Liman ve pazar geçişlerinde gümrük tahsilatını düzenleyen idare.",
+    "effects": {
+      "gold_per_region": 1,
+      "market_gold_mod": 0.1
+    },
+    "gold_cost": 20,
+    "id": "customs_administration",
+    "name_tr": "Gümrük İdaresi",
+    "requires": [
+      "trade_routes",
+      "harbor_administration"
+    ],
+    "turns_required": 6
+  },
+  {
+    "category": "economy",
+    "description_tr": "İpek, yün ve keten üretimini şehir atölyelerinde uzmanlaştırır.",
+    "effects": {
+      "cloth_mod": 0.2,
+      "market_gold_mod": 0.05
+    },
+    "gold_cost": 32,
+    "id": "silk_textile_workshops",
+    "name_tr": "İpek ve Kumaş Atölyeleri",
+    "requires": [
+      "guilds"
+    ],
+    "min_year": 1350,
+    "turns_required": 10
+  },
+  {
+    "category": "economy",
+    "description_tr": "Sulama kanalları ve su bentlerinin bakımıyla tarımsal verim artar.",
+    "effects": {
+      "grain_mod": 0.15,
+      "satisfaction_bonus": 1
+    },
+    "gold_cost": 26,
+    "id": "irrigation_works",
+    "name_tr": "Sulama ve Kanal Bakımı",
+    "requires": [
+      "crop_rotation"
+    ],
+    "turns_required": 8
+  },
+  {
+    "category": "economy",
+    "description_tr": "Kervan geçişleri ve menzil noktaları için düzenli vergi sistemi.",
+    "effects": {
+      "gold_per_region": 2,
+      "market_gold_mod": 0.1
+    },
+    "gold_cost": 30,
+    "id": "caravan_taxation",
+    "name_tr": "Kervan Vergi Sistemi",
+    "requires": [
+      "caravanserai_network"
+    ],
+    "turns_required": 8
+  },
+  {
+    "category": "economy",
+    "description_tr": "Gelir ve borçların çift kayıtla izlenmesini sağlayan muhasebe düzeni.",
+    "effects": {
+      "gold_per_region": 1,
+      "market_gold_mod": 0.15
+    },
+    "gold_cost": 34,
+    "id": "accounting_books",
+    "name_tr": "Muhasebe Defterleri",
+    "requires": [
+      "banking",
+      "tax_registers"
+    ],
+    "turns_required": 10
+  },
+  {
+    "category": "economy",
+    "description_tr": "Madeni para ayarı ve darphane denetimini devlet standardına bağlar.",
+    "effects": {
+      "gold_per_region": 3
+    },
+    "gold_cost": 42,
+    "id": "monetary_standardization",
+    "name_tr": "Devlet Para Standardı",
+    "requires": [
+      "mint_standardization"
+    ],
+    "min_year": 1380,
+    "turns_required": 10
+  },
+  {
+    "category": "naval",
+    "description_tr": "Manyetik pusula ve açık deniz yön bulma usullerinin yaygınlaşması.",
+    "effects": {
+      "naval_move_bonus": 1
+    },
+    "gold_cost": 24,
+    "id": "magnetic_compass",
+    "name_tr": "Manyetik Pusula",
+    "requires": [
+      "navigation"
+    ],
+    "min_year": 1350,
+    "turns_required": 8
+  },
+  {
+    "category": "naval",
+    "description_tr": "Kadırgalarda kürek ritmi, manevra ve bordalama düzenini geliştirir.",
+    "effects": {
+      "naval_attack_mod": 0.1,
+      "naval_defense_mod": 0.08
+    },
+    "gold_cost": 26,
+    "id": "galley_oar_drills",
+    "name_tr": "Kadırga Kürek Düzeni",
+    "requires": [
+      "naval_doctrine"
+    ],
+    "turns_required": 8
+  },
+  {
+    "category": "naval",
+    "description_tr": "Tersane ölçüleri, kereste seçimi ve gemi omurgası üretimini standartlaştırır.",
+    "effects": {
+      "naval_defense_mod": 0.1,
+      "naval_move_bonus": 1
+    },
+    "gold_cost": 30,
+    "id": "shipyard_standards",
+    "name_tr": "Tersane Standartları",
+    "requires": [
+      "shipyard_organization"
+    ],
+    "turns_required": 8
+  },
+  {
+    "category": "naval",
+    "description_tr": "Liman kapatma, devriye ve ticaret kesme usullerini sistemleştirir.",
+    "effects": {
+      "naval_attack_mod": 0.1,
+      "naval_defense_mod": 0.05
+    },
+    "gold_cost": 36,
+    "id": "blockade_doctrine",
+    "name_tr": "Deniz Abluka Doktrini",
+    "requires": [
+      "latin_naval_architecture"
+    ],
+    "min_year": 1400,
+    "turns_required": 10
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Merkezî divan, taşra yöneticileri ve gelir denetimi arasındaki bağı güçlendirir.",
+    "effects": {
+      "gold_per_region": 2,
+      "satisfaction_bonus": 2
+    },
+    "gold_cost": 32,
+    "id": "central_divan",
+    "name_tr": "Merkezî Divan",
+    "requires": [
+      "chancery_network"
+    ],
+    "min_year": 1350,
+    "turns_required": 10
+  },
+  {
+    "category": "economy",
+    "description_tr": "Askerî hizmet karşılığında arazi ve gelir tahsisini düzenler.",
+    "effects": {
+      "gold_per_region": 1,
+      "cavalry_attack_mod": 0.05,
+      "satisfaction_bonus": 1
+    },
+    "gold_cost": 30,
+    "id": "iqta_timar_system",
+    "name_tr": "İkta ve Tımar Düzeni",
+    "requires": [
+      "tax_registers"
+    ],
+    "turns_required": 8
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Tüccar elçilikleri, güvenli geçiş ve diplomatik protokolü kalıcılaştırır.",
+    "effects": {
+      "peace_relation_bonus": 10
+    },
+    "gold_cost": 30,
+    "id": "embassy_protocol",
+    "name_tr": "Elçilik Protokolleri",
+    "requires": [
+      "merchant_embassies"
+    ],
+    "turns_required": 8
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Hukuk ve idarî teamülleri ortaklaştırarak taşra istikrarını artırır.",
+    "effects": {
+      "satisfaction_bonus": 3,
+      "peace_relation_bonus": 4
+    },
+    "gold_cost": 34,
+    "id": "legal_codification",
+    "name_tr": "Hukuk Kodifikasyonu",
+    "requires": [
+      "chancery_network",
+      "theology"
+    ],
+    "min_year": 1350,
+    "turns_required": 10
+  },
+  {
+    "category": "military",
+    "description_tr": "Mühendislik birliklerini kuşatma makineleri, yollar ve saha tahkimatında uzmanlaştırır.",
+    "effects": {
+      "siege_attack_mod": 0.08,
+      "land_defense_mod": 0.03
+    },
+    "gold_cost": 38,
+    "id": "military_engineering",
+    "name_tr": "Askerî Mühendislik",
+    "requires": ["engineering_corps"],
+    "min_year": 1330,
+    "turns_required": 10
+  },
+  {
+    "category": "military",
+    "description_tr": "Düzenli talim ve ortak komuta usulleriyle piyade birliklerinin savaş dayanıklılığını artırır.",
+    "effects": {
+      "infantry_attack_mod": 0.08,
+      "land_defense_mod": 0.04
+    },
+    "gold_cost": 34,
+    "id": "infantry_drill",
+    "name_tr": "Piyade Talimi",
+    "requires": ["standing_infantry"],
+    "min_year": 1340,
+    "turns_required": 9
+  },
+  {
+    "category": "military",
+    "description_tr": "Sefer hekimleri ve temel sıhhiye teşkilatı sayesinde ordunun kayıplarını azaltır.",
+    "effects": {
+      "satisfaction_bonus": 1,
+      "land_defense_mod": 0.03
+    },
+    "gold_cost": 36,
+    "id": "field_medics",
+    "name_tr": "Sefer Sıhhiyesi",
+    "requires": ["standing_infantry"],
+    "min_year": 1360,
+    "turns_required": 9
+  },
+  {
+    "category": "military",
+    "description_tr": "Yaylı silahlar ve menzilli birlikler için ortak mevzi ve atış doktrini geliştirir.",
+    "effects": {
+      "infantry_attack_mod": 0.07,
+      "siege_attack_mod": 0.04
+    },
+    "gold_cost": 35,
+    "id": "ranged_weapon_doctrine",
+    "name_tr": "Menzilli Silah Doktrini",
+    "requires": ["composite_bow_drills"],
+    "min_year": 1340,
+    "turns_required": 9
+  },
+  {
+    "category": "military",
+    "description_tr": "Subay kadroları, maaş kayıtları ve ortak talim düzeniyle merkezî komuta kapasitesini güçlendirir.",
+    "effects": {
+      "infantry_attack_mod": 0.12,
+      "cavalry_attack_mod": 0.06,
+      "land_defense_mod": 0.05
+    },
+    "gold_cost": 58,
+    "id": "professional_officer_corps",
+    "name_tr": "Profesyonel Subay Ocağı",
+    "requires": ["professional_retinues", "infantry_drill"],
+    "min_year": 1450,
+    "turns_required": 14
+  },
+  {
+    "category": "military",
+    "description_tr": "Daha ağır topların dökümü ve sevkiyle kuşatma savaşlarında belirleyici üstünlük sağlar.",
+    "effects": {
+      "siege_attack_mod": 0.15,
+      "infantry_attack_mod": 0.04
+    },
+    "gold_cost": 64,
+    "id": "siege_artillery",
+    "name_tr": "Kuşatma Topçuluğu",
+    "requires": ["artillery_foundries", "early_firearms"],
+    "min_year": 1480,
+    "turns_required": 15
+  },
+  {
+    "category": "military",
+    "description_tr": "Eski kalelerin topçu tehdidine göre yenilenmesini ve savunma hatlarının derinleştirilmesini sağlar.",
+    "effects": {
+      "land_defense_mod": 0.12,
+      "siege_attack_mod": 0.04
+    },
+    "gold_cost": 60,
+    "id": "fortress_reconstruction",
+    "name_tr": "Kale Yeniden Yapılanması",
+    "requires": ["star_fortifications", "military_engineering"],
+    "min_year": 1500,
+    "turns_required": 14
+  },
+  {
+    "category": "economy",
+    "description_tr": "Şehir pazarlarını düzenleyerek üreticileri, tüccarları ve bölgesel ticaret akışını birleştirir.",
+    "effects": {
+      "market_gold_mod": 0.10,
+      "gold_per_region": 1
+    },
+    "gold_cost": 38,
+    "id": "urban_markets",
+    "name_tr": "Şehir Pazarları",
+    "requires": ["customs_administration"],
+    "min_year": 1340,
+    "turns_required": 9
+  },
+  {
+    "category": "economy",
+    "description_tr": "Ticari sözleşmeleri ve borç ilişkilerini standartlaştırarak pazar güvenini artırır.",
+    "effects": {
+      "market_gold_mod": 0.15,
+      "peace_relation_bonus": 2
+    },
+    "gold_cost": 46,
+    "id": "commercial_law",
+    "name_tr": "Ticaret Hukuku",
+    "requires": ["accounting_books", "legal_codification"],
+    "min_year": 1400,
+    "turns_required": 11
+  },
+  {
+    "category": "economy",
+    "description_tr": "Stratejik mallarda devlet tekelleri ve denetimli satış düzeni kurarak hazine gelirini artırır.",
+    "effects": {
+      "gold_per_region": 2,
+      "spice_mod": 0.10,
+      "iron_mod": 0.05
+    },
+    "gold_cost": 55,
+    "id": "state_monopolies",
+    "name_tr": "Devlet Tekelleri",
+    "requires": ["customs_administration", "monetary_standardization"],
+    "min_year": 1450,
+    "turns_required": 13
+  },
+  {
+    "category": "economy",
+    "description_tr": "Kanallar, bentler ve su dağıtımıyla kurak bölgelerde tarımsal verimliliği yükseltir.",
+    "effects": {
+      "grain_mod": 0.20,
+      "stone_mod": 0.05
+    },
+    "gold_cost": 45,
+    "id": "water_management",
+    "name_tr": "Su Yönetimi",
+    "requires": ["irrigation_works", "military_engineering"],
+    "min_year": 1400,
+    "turns_required": 11
+  },
+  {
+    "category": "economy",
+    "description_tr": "Maden ocaklarında daha derin işletme, güvenli galeriler ve uzman iş gücü kullanır.",
+    "effects": {
+      "iron_mod": 0.20,
+      "stone_mod": 0.15
+    },
+    "gold_cost": 48,
+    "id": "advanced_mining",
+    "name_tr": "İleri Madencilik",
+    "requires": ["mining_concessions", "military_engineering"],
+    "min_year": 1380,
+    "turns_required": 11
+  },
+  {
+    "category": "naval",
+    "description_tr": "Latin yelken donanımlarını geliştirerek gemilerin rüzgâra karşı hareket kabiliyetini artırır.",
+    "effects": {
+      "naval_move_bonus": 1,
+      "naval_defense_mod": 0.04
+    },
+    "gold_cost": 34,
+    "id": "lateen_rigging",
+    "name_tr": "Latin Yelken Donanımı",
+    "requires": ["navigation"],
+    "min_year": 1330,
+    "turns_required": 9
+  },
+  {
+    "category": "naval",
+    "description_tr": "Liman zinciri ve erzak depolarıyla filoların uzun seferlerde ikmal sürekliliğini sağlar.",
+    "effects": {
+      "naval_defense_mod": 0.10,
+      "gold_per_region": 1
+    },
+    "gold_cost": 44,
+    "id": "naval_supply_bases",
+    "name_tr": "Donanma İkmal Üsleri",
+    "requires": ["harbor_administration", "shipyard_organization"],
+    "min_year": 1380,
+    "turns_required": 11
+  },
+  {
+    "category": "naval",
+    "description_tr": "Pusula, açık deniz haritaları ve astronomik gözlemleri birleştirerek uzun menzilli seyrüsefer sağlar.",
+    "effects": {
+      "naval_move_bonus": 2,
+      "naval_defense_mod": 0.05
+    },
+    "gold_cost": 56,
+    "id": "oceanic_navigation",
+    "name_tr": "Okyanus Seyrüseferi",
+    "requires": ["magnetic_compass", "admiralty_charts"],
+    "min_year": 1450,
+    "turns_required": 13
+  },
+  {
+    "category": "naval",
+    "description_tr": "Gemilere daha etkili top yuvaları ve borda ateşi kazandırarak deniz muharebelerini dönüştürür.",
+    "effects": {
+      "naval_attack_mod": 0.15,
+      "naval_defense_mod": 0.04
+    },
+    "gold_cost": 58,
+    "id": "ship_cannons",
+    "name_tr": "Gemi Topçuluğu",
+    "requires": ["galley_artillery", "early_firearms"],
+    "min_year": 1450,
+    "turns_required": 13
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Saraylar arası sürekli elçilikler kurarak bilgi akışını, kriz yönetimini ve diplomatik nüfuzu artırır.",
+    "effects": {
+      "peace_relation_bonus": 8,
+      "reveal_enemy_strength": true
+    },
+    "gold_cost": 52,
+    "id": "permanent_diplomatic_missions",
+    "name_tr": "Daimî Elçilikler",
+    "requires": ["embassy_protocol", "merchant_embassies"],
+    "min_year": 1400,
+    "turns_required": 12
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Taşra yöneticilerinin görev, vergi ve denetim sorumluluklarını belirginleştirerek merkezî idareyi güçlendirir.",
+    "effects": {
+      "gold_per_region": 2,
+      "satisfaction_bonus": 2
+    },
+    "gold_cost": 54,
+    "id": "provincial_governorships",
+    "name_tr": "Eyalet Valilikleri",
+    "requires": ["central_divan", "legal_codification"],
+    "min_year": 1450,
+    "turns_required": 13
+  },
+  {
+    "category": "religion",
+    "description_tr": "Vakıf gelirlerini eğitim, sağlık ve ibadet kurumlarına yönlendirerek toplum desteğini artırır.",
+    "effects": {
+      "satisfaction_bonus": 2,
+      "conversion_speed_mod": 1
+    },
+    "gold_cost": 36,
+    "id": "religious_endowments",
+    "name_tr": "Dini Vakıflar",
+    "requires": ["waqf_foundations"],
+    "min_year": 1340,
+    "turns_required": 9
+  },
+  {
+    "category": "religion",
+    "description_tr": "Çeviri merkezleri ve bilgin ağlarıyla farklı dillerdeki hukuk, tıp ve felsefe birikimini dolaşıma sokar.",
+    "effects": {
+      "satisfaction_bonus": 1,
+      "peace_relation_bonus": 3
+    },
+    "gold_cost": 40,
+    "id": "translation_houses",
+    "name_tr": "Tercüme Meclisleri",
+    "requires": ["scholastic_centers"],
+    "min_year": 1360,
+    "turns_required": 10
+  },
+  {
+    "category": "religion",
+    "description_tr": "Farklı inanç topluluklarının hukuk ve vergi ilişkilerini düzenleyerek çok kültürlü bölgelerde istikrar sağlar.",
+    "effects": {
+      "satisfaction_bonus": 2,
+      "peace_relation_bonus": 8,
+      "conversion_speed_mod": 1
+    },
+    "gold_cost": 52,
+    "id": "interfaith_administration",
+    "name_tr": "İnançlararası İdare",
+    "requires": ["legal_codification", "translation_houses"],
+    "min_year": 1420,
+    "turns_required": 12
   }
 ]

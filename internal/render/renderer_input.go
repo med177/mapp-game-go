@@ -409,10 +409,10 @@ func (r *Renderer) HandleInput() InputAction {
 	return InputAction{}
 }
 
-// handleBuildKey 1–6 rakam tuşlarıyla bina inşaatı başlatır.
+// handleBuildKey 1–9 rakam tuşlarıyla bina inşaatı başlatır.
 func (r *Renderer) handleBuildKey() InputAction {
-	buildingSlots := []string{"market", "farm", "barracks", "port", "walls", "temple"}
-	keys := []ebiten.Key{ebiten.Key1, ebiten.Key2, ebiten.Key3, ebiten.Key4, ebiten.Key5, ebiten.Key6}
+	buildingSlots := []string{"market", "farm", "barracks", "port", "walls", "temple", "granary", "forge", "workshop"}
+	keys := []ebiten.Key{ebiten.Key1, ebiten.Key2, ebiten.Key3, ebiten.Key4, ebiten.Key5, ebiten.Key6, ebiten.Key7, ebiten.Key8, ebiten.Key9}
 	for i, k := range keys {
 		if r.keyJustPressed(k) && i < len(buildingSlots) {
 			return InputAction{Kind: ActionBuild, TargetRegion: r.SelectedRegion, BuildingID: buildingSlots[i]}

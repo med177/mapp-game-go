@@ -35,10 +35,11 @@ func playerGoldEconomyStatus(gs *state.GameState) state.GoldEconomyStatus {
 	gross := victory.CurrentGoldIncome(gs)
 	upkeep := gs.FactionGoldUpkeep(gs.PlayerFactionID)
 	return state.GoldEconomyStatus{
-		FactionID: gs.PlayerFactionID,
-		Income:    gross,
-		Upkeep:    upkeep,
-		NetChange: gross - upkeep,
+		FactionID:      gs.PlayerFactionID,
+		Income:         gross,
+		Upkeep:         upkeep,
+		BuildingUpkeep: gs.FactionBuildingGoldUpkeep(gs.PlayerFactionID),
+		NetChange:      gross - upkeep - gs.FactionBuildingGoldUpkeep(gs.PlayerFactionID),
 	}
 }
 
@@ -48,8 +49,8 @@ type goldIncomePopupLine struct {
 	color color.RGBA
 }
 
-func goldIncomePopupLines(status state.GoldEconomyStatus) [15]goldIncomePopupLine {
-	return [15]goldIncomePopupLine{
+func goldIncomePopupLines(status state.GoldEconomyStatus) [16]goldIncomePopupLine {
+	return [16]goldIncomePopupLine{
 		{label: "Vergi", value: status.TaxIncome, color: ColorGold},
 		{label: "Pasif ticaret", value: status.TradeIncome, color: color.RGBA{145, 220, 155, 255}},
 		{label: "Ticaret merkezi geliri", value: status.TradeCenterIncome, color: color.RGBA{205, 180, 110, 255}},
@@ -65,13 +66,14 @@ func goldIncomePopupLines(status state.GoldEconomyStatus) [15]goldIncomePopupLin
 		{label: "Yağma", value: status.RaidIncome, color: ColorGold},
 		{label: "Hediyeler", value: status.GiftIncome - status.GiftExpense, color: color.RGBA{210, 170, 120, 255}},
 		{label: "Ordu masrafı", value: -status.Upkeep, color: ColorRed},
+		{label: "Bina bakımı", value: -status.BuildingUpkeep, color: ColorRed},
 	}
 }
 
 func goldIncomePopupRect() gameui.Rect {
 	_, _, rightCol, _, rightColW := topResourceHUDColumns()
 	const popupW = 330.0
-	const popupH = 400.0
+	const popupH = 430.0
 	x := rightCol + rightColW - popupW
 	if x < 8 {
 		x = 8

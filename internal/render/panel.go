@@ -148,8 +148,9 @@ var (
 	factionHistoricalFlagNames = map[faction.FactionID]string{}
 )
 
-// buildingDisplayOrder bina slotlarının sırasını belirler.
-var buildingDisplayOrder = []string{"market", "farm", "barracks", "walls", "temple", "port", "granary"}
+// buildingDisplayOrder bina slotlarının sırasını belirler. Liste senaryo
+// verisindeki bina ID'leriyle eşleşir; yeni binalar burada görünür olur.
+var buildingDisplayOrder = []string{"market", "farm", "barracks", "walls", "temple", "port", "granary", "forge", "workshop"}
 
 func buildingSpritePath(id string) string {
 	if ActiveScenarioPath == "" || id == "" {

@@ -18,10 +18,11 @@
         "path_search_depth": 8,
         "plan_move_bonus_percent": 100,
         "proactive_war": true,
-        "war_threshold": 70,
-        "min_attack_power_percent": 115,
-        "war_cadence_turns": 4,
-        "max_concurrent_wars": 1
+        "war_threshold": 65,
+        "min_attack_power_percent": 110,
+        "war_cadence_turns": 3,
+        "max_concurrent_wars": 2,
+        "player_target_score_bonus": 2
       },
       "3": {
         "plan_horizon_turns": 3,
@@ -29,11 +30,11 @@
         "path_search_depth": 12,
         "plan_move_bonus_percent": 125,
         "proactive_war": true,
-        "war_threshold": 65,
+        "war_threshold": 62,
         "min_attack_power_percent": 100,
-        "war_cadence_turns": 3,
+        "war_cadence_turns": 2,
         "max_concurrent_wars": 2,
-        "player_target_score_bonus": 4,
+        "player_target_score_bonus": 6,
         "start_gold_buffer": 80,
         "start_grain_buffer": 30
       }
@@ -128,6 +129,7 @@
     {
       "faction_id": "aragon",
       "profile": "crown_of_aragon_maritime",
+      "naval_focus": true,
       "objectives": [
         {
           "id": "hold_catalan_and_island_crown",
@@ -725,6 +727,7 @@
     {
       "faction_id": "east_rome",
       "profile": "defensive_decline",
+      "naval_focus": true,
       "objectives": [
         {
           "id": "hold_bosporus",
@@ -767,8 +770,8 @@
               "value": 70
             }
           ],
-          "priority": 72,
-          "commitment": 55
+          "priority": 88,
+          "commitment": 68
         }
       ]
     },
@@ -970,14 +973,6 @@
           "territorial_claims": [
             {
               "region_id": "flanders",
-              "value": 76
-            },
-            {
-              "region_id": "friesland",
-              "value": 76
-            },
-            {
-              "region_id": "holland",
               "value": 76
             }
           ],
@@ -2169,26 +2164,30 @@
             {
               "region_id": "bithynia",
               "value": 100
-            },
-            {
-              "region_id": "aydinoglu",
-              "value": 50
-            },
-            {
-              "region_id": "azerbaijan",
-              "value": 80
-            },
-            {
-              "region_id": "bursa",
-              "value": 80
-            },
-            {
-              "region_id": "germiyan",
-              "value": 55
             }
           ],
           "priority": 100,
           "commitment": 82,
+          "readiness_regions": [
+            "bilecik_frontier",
+            "bithynia"
+          ]
+        },
+        {
+          "id": "secure_bithynian_frontier_1310",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "bursa",
+              "value": 96
+            },
+            {
+              "region_id": "aydinoglu",
+              "value": 82
+            }
+          ],
+          "priority": 96,
+          "commitment": 78,
           "readiness_regions": [
             "bilecik_frontier",
             "bithynia"
@@ -2236,6 +2235,16 @@
         {
           "id": "eastern_imperial_rivalry",
           "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "erzurum",
+              "value": 84
+            },
+            {
+              "region_id": "azerbaijan",
+              "value": 78
+            }
+          ],
           "priority": 80,
           "commitment": 75,
           "min_year": 1501,

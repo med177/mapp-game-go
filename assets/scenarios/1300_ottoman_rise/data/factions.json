@@ -342,7 +342,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 28,
+    "ai_aggressiveness": 35,
     "territorial_claims": [
       {
         "region_id": "bilecik_frontier",
@@ -1021,7 +1021,7 @@
     "is_playable": false,
     "is_eliminated": false,
     "capital_settlement_id": "genoa_main",
-    "gold": 620,
+    "gold": 800,
     "grain": 8260,
     "iron": 55,
     "timber": 90,
@@ -1695,7 +1695,7 @@
     "is_playable": false,
     "is_eliminated": false,
     "capital_settlement_id": "persia_west_main",
-    "gold": 620,
+    "gold": 800,
     "grain": 13520,
     "iron": 110,
     "timber": 70,
@@ -2005,7 +2005,7 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "cairo",
-    "gold": 560,
+    "gold": 750,
     "grain": 12720,
     "iron": 70,
     "timber": 60,
@@ -2022,7 +2022,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 20,
+    "ai_aggressiveness": 38,
     "ai_expansion_targets": [
       "ilkhanate",
       "ramazan_bey"
@@ -2313,10 +2313,6 @@
         "value": 50
       },
       {
-        "region_id": "azerbaijan",
-        "value": 80
-      },
-      {
         "region_id": "bilecik_frontier",
         "value": 100,
         "core": true
@@ -2605,7 +2601,7 @@
     "id": "safavid",
     "name": "Safavid Order of Ardabil",
     "name_tr": "Erdebil Safeviyye Tarikatı",
-    "religion": "shia",
+    "religion": "sunni",
     "color": [
       80,
       180,
@@ -2631,29 +2627,9 @@
     "ai_aggressiveness": 35,
     "territorial_claims": [
       {
-        "region_id": "azerbaijan",
-        "value": 96
-      },
-      {
-        "region_id": "baghdad",
-        "value": 96
-      },
-      {
-        "region_id": "mosul",
-        "value": 96
-      },
-      {
-        "region_id": "northern_persia",
-        "value": 96
-      },
-      {
         "region_id": "southern_persia",
         "value": 100,
         "core": true
-      },
-      {
-        "region_id": "western_persia",
-        "value": 96
       }
     ]
   },
@@ -2943,7 +2919,7 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "venice",
-    "gold": 680,
+    "gold": 1500,
     "grain": 18040,
     "iron": 50,
     "timber": 95,

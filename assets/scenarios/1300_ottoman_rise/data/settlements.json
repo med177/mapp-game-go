@@ -395,7 +395,7 @@
         "y": 310,
         "type": "city",
         "is_center": true,
-        "population": 100
+        "population": 80
       },
       {
         "id": "champagne_troyes",
@@ -921,7 +921,7 @@
         "y": 179,
         "type": "city",
         "is_center": true,
-        "population": 120
+        "population": 100
       },
       {
         "id": "scania_malmo",
@@ -973,7 +973,7 @@
         "x": 494,
         "y": 396,
         "type": "city",
-        "population": 0
+        "population": 50
       }
     ]
   },
@@ -1011,7 +1011,7 @@
         "x": 293,
         "y": 498,
         "type": "port",
-        "population": 0
+        "population": 45
       }
     ]
   },
@@ -1046,7 +1046,7 @@
         "x": 354,
         "y": 458,
         "type": "town",
-        "population": 280
+        "population": 170
       },
       {
         "id": "castile_settlement_2",
@@ -1191,7 +1191,7 @@
         "x": 768,
         "y": 436,
         "type": "town",
-        "population": 0
+        "population": 12
       },
       {
         "id": "papal_states_settlement_5",
@@ -1199,7 +1199,7 @@
         "x": 752,
         "y": 422,
         "type": "town",
-        "population": 0
+        "population": 12
       }
     ]
   },
@@ -1229,7 +1229,7 @@
         "x": 769,
         "y": 465,
         "type": "port",
-        "population": 0
+        "population": 25
       },
       {
         "id": "naples_settlement_4",
@@ -1237,7 +1237,7 @@
         "x": 760,
         "y": 467,
         "type": "town",
-        "population": 0
+        "population": 12
       },
       {
         "id": "naples_settlement_5",
@@ -1245,7 +1245,7 @@
         "x": 819,
         "y": 488,
         "type": "town",
-        "population": 0
+        "population": 12
       },
       {
         "id": "naples_settlement_6",
@@ -1253,7 +1253,7 @@
         "x": 791,
         "y": 513,
         "type": "town",
-        "population": 0
+        "population": 20
       },
       {
         "id": "naples_settlement_7",
@@ -1261,7 +1261,7 @@
         "x": 804,
         "y": 453,
         "type": "town",
-        "population": 0
+        "population": 10
       }
     ]
   },
@@ -2407,7 +2407,7 @@
         "x": 1395,
         "y": 447,
         "type": "city",
-        "population": 0
+        "population": 25
       }
     ]
   },
@@ -2691,7 +2691,7 @@
         "x": 1546,
         "y": 558,
         "type": "town",
-        "population": 0
+        "population": 20
       },
       {
         "id": "northern_persia_settlement_8",
@@ -2699,7 +2699,7 @@
         "x": 1553,
         "y": 533,
         "type": "port",
-        "population": 0
+        "population": 20
       }
     ]
   },
@@ -3392,16 +3392,16 @@
         "x": 1053,
         "y": 454,
         "type": "town",
-        "population": 26
+      "population": 120
       },
       {
-        "id": "constantinople_main",
+      "id": "constantinople_main",
         "name_tr": "Konstantiniyye",
         "x": 1057,
         "y": 459,
         "type": "fortress",
         "is_center": true,
-        "population": 12
+      "population": 280
       }
     ]
   },
@@ -3499,7 +3499,7 @@
         "x": 1176,
         "y": 678,
         "type": "port",
-        "population": 0
+        "population": 20
       }
     ]
   },
@@ -3553,7 +3553,7 @@
         "x": 1450,
         "y": 477,
         "type": "fortress",
-        "population": 0
+        "population": 25
       },
       {
         "id": "azerbaijan_settlement_7",
@@ -3561,7 +3561,7 @@
         "x": 1416,
         "y": 458,
         "type": "city",
-        "population": 0
+        "population": 25
       }
     ]
   },
@@ -3591,7 +3591,7 @@
         "x": 1371,
         "y": 452,
         "type": "city",
-        "population": 0
+        "population": 25
       }
     ]
   },
@@ -3963,7 +3963,7 @@
         "x": 963,
         "y": 563,
         "type": "port",
-        "population": 0
+        "population": 35
       }
     ]
   },
@@ -4117,7 +4117,7 @@
         "x": 1043,
         "y": 544,
         "type": "port",
-        "population": 0
+        "population": 35
       }
     ]
   },
@@ -4440,7 +4440,7 @@
         "x": 1313,
         "y": 498,
         "type": "city",
-        "population": 0
+        "population": 30
       },
       {
         "id": "akkoyunlu_settlement_7",
@@ -4449,7 +4449,7 @@
         "y": 524,
         "type": "city",
         "is_center": true,
-        "population": 0
+        "population": 45
       },
       {
         "id": "mosul_nisibis",
@@ -4470,7 +4470,7 @@
         "x": 1352,
         "y": 526,
         "type": "city",
-        "population": 0
+        "population": 15
       },
       {
         "id": "akkoyunlu_main",
@@ -4487,7 +4487,7 @@
         "x": 1334,
         "y": 491,
         "type": "town",
-        "population": 0
+        "population": 20
       },
       {
         "id": "armenia_settlement_4",
@@ -4495,7 +4495,7 @@
         "x": 1364,
         "y": 484,
         "type": "town",
-        "population": 0
+        "population": 15
       },
       {
         "id": "akkoyunlu_settlement_4",
@@ -4503,7 +4503,7 @@
         "x": 1354,
         "y": 491,
         "type": "town",
-        "population": 0
+        "population": 15
       }
     ]
   },
@@ -4549,7 +4549,7 @@
         "x": 683,
         "y": 411,
         "type": "port",
-        "population": 0
+        "population": 40
       }
     ]
   },
@@ -4603,7 +4603,7 @@
         "x": 630,
         "y": 372,
         "type": "fortress",
-        "population": 0
+        "population": 25
       },
       {
         "id": "genoa_settlement_7",
@@ -4611,7 +4611,7 @@
         "x": 623,
         "y": 385,
         "type": "city",
-        "population": 0
+        "population": 35
       }
     ]
   },
@@ -4719,7 +4719,7 @@
         "x": 348,
         "y": 538,
         "type": "port",
-        "population": 0
+        "population": 35
       },
       {
         "id": "granada_settlement_9",
@@ -4727,7 +4727,7 @@
         "x": 355,
         "y": 524,
         "type": "port",
-        "population": 0
+        "population": 45
       }
     ]
   },
@@ -5177,7 +5177,7 @@
         "x": 1153,
         "y": 550,
         "type": "port",
-        "population": 0
+        "population": 20
       }
     ]
   },
@@ -5697,7 +5697,7 @@
         "x": 695,
         "y": 349,
         "type": "fortress",
-        "population": 0
+        "population": 20
       }
     ]
   },
@@ -5719,7 +5719,7 @@
         "x": 684,
         "y": 368,
         "type": "fortress",
-        "population": 0
+        "population": 25
       }
     ]
   },
@@ -5803,7 +5803,7 @@
         "x": 698,
         "y": 430,
         "type": "port",
-        "population": 0
+        "population": 20
       }
     ]
   },
@@ -5841,7 +5841,7 @@
         "x": 845,
         "y": 474,
         "type": "fortress",
-        "population": 0
+        "population": 20
       }
     ]
   },
@@ -5901,7 +5901,7 @@
         "y": 374,
         "type": "port",
         "is_center": true,
-        "population": 0
+        "population": 30
       },
       {
         "id": "croatia_karlovac",
@@ -6896,7 +6896,7 @@
         "x": 1438,
         "y": 356,
         "type": "city",
-        "population": 0
+        "population": 45
       },
       {
         "id": "new_region_272_settlement_2",
@@ -6905,7 +6905,7 @@
         "y": 342,
         "type": "fortress",
         "is_center": true,
-        "population": 0
+        "population": 30
       },
       {
         "id": "new_region_272_settlement_3",
@@ -6913,7 +6913,7 @@
         "x": 1269,
         "y": 404,
         "type": "city",
-        "population": 0
+        "population": 30
       }
     ]
   },

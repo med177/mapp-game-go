@@ -12,6 +12,7 @@ type Building struct {
 	Name             string  `json:"name"`
 	NameTR           string  `json:"name_tr"`
 	GoldCost         int     `json:"gold_cost"`
+	GoldMaintenance  int     `json:"gold_maintenance"` // seviye başına turda altın bakımı
 	GrainCost        int     `json:"grain_cost"`
 	IronCost         int     `json:"iron_cost"`
 	TimberCost       int     `json:"timber_cost"`
