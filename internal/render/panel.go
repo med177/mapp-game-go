@@ -1370,49 +1370,24 @@ func minimapHit(mx, my float64) bool {
 	return mx >= float64(x) && mx <= float64(x+minimapW) && my >= float64(y) && my <= float64(y+minimapH)
 }
 
-func drawEventDetailPopup(screen *ebiten.Image, message string) {
+func drawEventDetailPopup(screen *ebiten.Image, titleMessage, detailMessage string) {
 	modal := buildEventDetailModal()
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
 	layout := buildEventDetailLayout()
 	drawUIPanelTopBar(screen, layout.panelRect, 3, panelBorder)
 
-	lines := eventDetailLines(message, layout.bodyRect.W)
-	title := "Olay Detayı"
-	bodyLines := lines
-	if len(lines) > 0 {
-		if trimmed := strings.TrimSpace(lines[0]); trimmed != "" {
-			title = trimmed
-		}
-		if len(lines) > 1 {
-			bodyStart := 1
-			for bodyStart < len(lines) && strings.TrimSpace(lines[bodyStart]) == "" {
-				bodyStart++
-			}
-			if bodyStart < len(lines) && strings.HasPrefix(strings.TrimSpace(lines[bodyStart]), "Kaynak:") {
-				bodyStart++
-			}
-			for bodyStart < len(lines) && strings.TrimSpace(lines[bodyStart]) == "" {
-				bodyStart++
-			}
-			if bodyStart < len(lines) {
-				bodyLines = lines[bodyStart:]
-			} else {
-				bodyLines = nil
-			}
-		} else {
-			bodyLines = nil
-		}
+	category, subtitle := eventDetailHeader(titleMessage)
+	if subtitle == "" {
+		_, subtitle = eventDetailHeader(detailMessage)
 	}
-
-	DrawText(screen, title, layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
-	if source := eventDetailSourceLabel(title, bodyLines); source != "" {
-		drawUILabel(screen, layout.filtersRect, source, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	}
+	DrawText(screen, category, layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
+	drawUIWrappedLabel(screen, layout.filtersRect, subtitle, color.RGBA{220, 210, 185, 240}, gameui.TextMedium, 18, 2)
 
 	closeBtn := buildEventDetailCloseButton()
 	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
 
+	bodyLines := eventDetailLines(detailMessage, layout.bodyRect.W)
 	if len(bodyLines) == 0 {
 		return
 	}
@@ -1440,7 +1415,26 @@ func drawEventDetailPopup(screen *ebiten.Image, message string) {
 			Align:   gameui.TextAlignStart,
 		})
 	}
-	drawUIRichTextBlock(screen, gameui.Rect{X: layout.bodyRect.X, Y: layout.bodyRect.Y, W: layout.bodyRect.W}, linesForDraw, 19)
+	if source := eventDetailSourceLabel(titleMessage, bodyLines); source != "" {
+		drawUILabel(screen, layout.bodyRect, source, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		layout.bodyRect.Y += 20
+	}
+	drawUIRichTextBlock(screen, layout.bodyRect, linesForDraw, 19)
+}
+
+func eventDetailHeader(message string) (category, subtitle string) {
+	message = strings.TrimSpace(message)
+	category = "[BİLDİRİM]"
+	if strings.HasPrefix(message, "[") {
+		if end := strings.Index(message, "]"); end > 1 {
+			category = message[:end+1]
+			subtitle = strings.TrimSpace(message[end+1:])
+		}
+	}
+	if subtitle == "" {
+		subtitle = message
+	}
+	return category, subtitle
 }
 
 func eventDetailSourceLabel(title string, bodyLines []string) string {
@@ -3855,7 +3849,7 @@ func drawFactionResourceGrid(screen *ebiten.Image, gs *state.GameState, fid fact
 		{label: "Taş", value: itoa(f.Stone), col: color.RGBA{185, 185, 185, 255}},
 		{label: "Baharat", value: itoa(f.Spice), col: color.RGBA{230, 165, 90, 255}},
 		{label: "Kumaş", value: itoa(f.Cloth), col: color.RGBA{175, 150, 220, 255}},
-		{label: "Gelir", value: "+" + itoa(victory.GoldIncomeForFaction(gs, fid)) + "/tur", col: ColorGold},
+		{label: "Gelir", value: formatSignedAmount(victory.GoldEconomyPreview(gs, fid).NetChange) + "/tur", col: ColorGold},
 	}
 
 	colGap := 14.0

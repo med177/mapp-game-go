@@ -27,20 +27,7 @@ func playerGoldEconomyStatus(gs *state.GameState) state.GoldEconomyStatus {
 	if gs == nil {
 		return state.GoldEconomyStatus{}
 	}
-	if status, ok := gs.GoldEconomy[gs.PlayerFactionID]; ok {
-		return status
-	}
-	// İlk ekonomi çözümlemesi gerçekleşmeden önce de HUD net değeri gösterebilir.
-	// Ayrıntılı kalemler ilk tur çözümünde aynı snapshot'a dolar.
-	gross := victory.CurrentGoldIncome(gs)
-	upkeep := gs.FactionGoldUpkeep(gs.PlayerFactionID)
-	return state.GoldEconomyStatus{
-		FactionID:      gs.PlayerFactionID,
-		Income:         gross,
-		Upkeep:         upkeep,
-		BuildingUpkeep: gs.FactionBuildingGoldUpkeep(gs.PlayerFactionID),
-		NetChange:      gross - upkeep - gs.FactionBuildingGoldUpkeep(gs.PlayerFactionID),
-	}
+	return victory.GoldEconomyPreview(gs, gs.PlayerFactionID)
 }
 
 type goldIncomePopupLine struct {

@@ -195,6 +195,7 @@ type Renderer struct {
 	eventCodexFocus     int
 	eventCodexScroll    int
 	eventDetail         string
+	eventDetailTitle    string
 	showVictoryDetail   bool
 	victoryDetailScroll float64
 	eventLogScroll      int
@@ -1008,6 +1009,13 @@ func (r *Renderer) EventDetailAt(idx int) string {
 	return ""
 }
 
+func (r *Renderer) EventTitleAt(idx int) string {
+	if idx >= 0 && idx < len(r.eventLog) {
+		return r.eventLog[idx]
+	}
+	return ""
+}
+
 func (r *Renderer) SetEventCodexEntries(entries [4][]EventCodexEntry) {
 	r.eventCodexEntries = entries
 	if !r.HasEventCodex() {
@@ -1561,7 +1569,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	if r.eventDetail != "" {
-		drawEventDetailPopup(screen, r.eventDetail)
+		drawEventDetailPopup(screen, r.eventDetailTitle, r.eventDetail)
 	}
 
 	if r.showVictoryDetail {
@@ -3835,6 +3843,17 @@ func (r *Renderer) clampActiveRegionEventScreenPoint(rid world.RegionID, sx, sy 
 func (r *Renderer) activeRegionEventHovering(fx, fy float64) bool {
 	_, ok := r.activeRegionEventHitAt(fx, fy)
 	return ok
+}
+
+func (r *Renderer) activeRegionEventTitleAt(idx int) string {
+	if r == nil || r.gs == nil || idx < 0 || idx >= len(r.gs.ActiveRegionEvents) {
+		return ""
+	}
+	evt := r.gs.ActiveRegionEvents[idx]
+	if evt.LabelTR != "" {
+		return evt.LabelTR
+	}
+	return evt.EventID
 }
 
 func (r *Renderer) activeRegionEventDetailAt(idx int) string {

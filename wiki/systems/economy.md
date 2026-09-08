@@ -132,6 +132,10 @@ HUD'daki Gelir satırı artık bakım düşülmüş net tur değişimini göster
 üzerine gelindiğinde açılan popup, bu net değerin hesabını kalem kalem gösterir.
 Pasif ticaret ile ticaret merkezlerinin kapasite ve doğrudan gelir katkısı popup'ta
 ayrı satırlardır; bölge altın tooltip'i de merkez katkısını pasif ticaretten ayırır.
+`victory.GoldEconomyPreview()` aynı hesabı tur içindeki güncel state üzerinden
+yan etkisiz yeniden kurar; bu nedenle vergi, haraç, abluka, yağma ve yeni ticaret
+anlaşması değişiklikleri HUD popup'ında ve devlet panelinde bir sonraki tur net
+gelirine hemen yansır.
 
 Hediye gibi tek seferlik diplomatik transferler aynı popup'ta ayrıca gösterilir.
 

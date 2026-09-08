@@ -105,6 +105,7 @@ func (r *Renderer) HandleInput() InputAction {
 			r.keyJustPressed(ebiten.KeySpace) || (r.mouseJustPressed(ebiten.MouseButtonLeft) &&
 			(eventDetailCloseHit(float64(mx), float64(my)) || !eventDetailPopupHit(float64(mx), float64(my)))) {
 			r.eventDetail = ""
+			r.eventDetailTitle = ""
 		}
 		return InputAction{}
 	}
@@ -519,6 +520,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 	if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
+		r.eventDetailTitle = r.EventTitleAt(idx)
 		r.eventDetail = r.EventDetailAt(idx)
 		return InputAction{}
 	}
@@ -683,6 +685,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		if r.regionPanelTab == regionPanelTabEvents {
 			if idx, ok := regionActiveEventPanelHit(fx, fy, r.gs, r.gs.Regions[r.SelectedRegion], r.regionPanelScroll); ok {
+				r.eventDetailTitle = r.activeRegionEventTitleAt(idx)
 				r.eventDetail = r.activeRegionEventDetailAt(idx)
 				return InputAction{}
 			}

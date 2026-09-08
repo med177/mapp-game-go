@@ -137,7 +137,7 @@ Olay tetiklendiğinde:
 - Aktif event'ler ana harita ve minimap üzerinde marker olarak çizilmez; event kaydı ilgili bölge seçildiğinde bölge bilgi panelindeki `OLAYLAR` sekmesinde gösterilir
 - Bölge panelindeki `OLAYLAR` sekmesi aktif olayları ve `Komşu Bölgeler` listesini `BİNALAR` kartlarıyla aynı içerik alanında gösterir. Event satırı olay adını, tipini ve kalan tur sayısını taşır; aynı bölgede birden fazla aktif event varsa ayrı satırlarda listelenir.
 - Event satırına tıklamak mevcut detay popup'ını açar; olay/komşu viewport'u kendi scrollbar'ını ve mouse wheel akışını korur. Komşu başlığındaki `[Daralt] / [Tümünü Göster]` kontrolü kara bölge olaylar sekmesinde de çalışır.
-- Detay popup artık başlık, kaynak etiketi ve satır bazlı iz bloğunu ayrı gösterir; `[OLAY]`, `[KARAR]` ve harita izi birbirine karışmaz
+- Detay popup artık `[TAHIL]` gibi mesaj tipini sabit başlıkta, mevcut mesaj başlığını sarılmış alt başlıkta ve normal açıklamayı ayrı gövdede gösterir; kaynak etiketi ve satır bazlı iz bloğu `[OLAY]`, `[KARAR]` ve harita izini birbirine karıştırmaz
 - Event log panelindeki `Kodex` düğmesi, oyuncu fraksiyonu için bekleyen tarihsel event havuzunu açar:
   - `Hazir`: tarih ve koşullar uygun
   - `Takvim`: koşullar uygun ama event tarihi henüz gelmedi

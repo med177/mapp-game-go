@@ -170,7 +170,7 @@ func eventCodexHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Box)
 
 func buildEventDetailLayout() eventDetailLayout {
 	panelRect, titleRect, closeRect, rest := eventDetailHeaderRects()
-	filtersRect, bodyBox := rest.CutTop(28, 22)
+	filtersRect, bodyBox := rest.CutTop(42, 12)
 	cols := bodyBox.SplitColumns(18, 0.36, 0.64)
 	layout := eventDetailLayout{
 		panelRect:   panelRect,
