@@ -102,17 +102,20 @@ tarih/yıl/event açılış kapıları önce korunur. Detay: [[systems/ai]].
 
 ### 1300 Senaryosu Kalibrasyonu
 
-`1300_ottoman_rise`, her oynanabilir devlet için yalnız o devlete görünen bir
-tarihsel hedef taşır: Osmanlı (1453 Konstantinopolis), Aragon (1442 Napoli),
-İngiltere (1422 Fransız tacı iddiası), Fransa (1453 yeniden fetih), Kutsal Roma
-(1495 imparatorluk reformu), Memlük (1341 Levant-Hicaz savunması), Venedik
-(1453 ticaret üstünlüğü), Portekiz (1415 Atlantik açılımı), Moskova (1478
-Novgorod) ve Safevîler (1514 İran çekirdeği).
+`1300_ottoman_rise`, her oynanabilir devlet için iki tarihsel rota taşır. Böylece
+oyuncu tek bir doğrusal fetih zincirine mahkûm kalmaz: Osmanlı (Bursa-
+Konstantinopolis ve Rumeli), Aragon (Akdeniz tacı ve Batı Akdeniz ağı), İngiltere
+ve Fransa (Fransız tacı/kıta köprüsü ve yeniden fetih), Kutsal Roma (Alman
+çekirdeği ve İtalyan tacı), Memlük (Levant savunması ve kutsal şehirler), Venedik
+(talassokrasi ve Levant ticareti), Portekiz (Atlantik açılımı ve Mağrip köprüsü),
+Moskova (Rus topraklarını toplama ve kuzey birliği) ve Safevîler (İran çekirdeği
+ve Kafkas geçidi).
 
-Genel seçim havuzu ayrıca yüksek eşikli toprak, ekonomi ve askerî hedefler;
-Osmanlı/Memlük için kutsal yollar hedefi; bütün devletler için 20 yıllık beka
-hedefi içerir. Bu kartların tarihleri, 1561'e uzanan ortak son tarih yerine
-ilgili tarihsel dönüm noktasına göre tanımlanır.
+Genel seçim havuzu artık kıtalar arası hâkimiyet, yüksek eşikli ekonomi ve askerî
+üstünlüğün yanında kutsal yollar ve 20 yıllık beka hedeflerini içerir. Tüm tarihsel
+hedefler, 1310 başlangıcındaki fiilî sahiplikleri tekrar ettirmek yerine ilgili
+devletin orta vadeli genişleme yönünü ve tarihsel dönüm noktasını ölçer. Son
+tarihleri ortak bir takvim yerine hedefin tarihsel bağlamına göre tanımlanır.
 
 ## Zafer Popup
 

@@ -67,6 +67,25 @@
       ]
     },
     {
+      "id": "ottoman_balkan_imperium",
+      "title": "Rumeli'nin Fethi",
+      "description": "Gelibolu köprüsünü kullan, Bulgar ve Sırp topraklarında kalıcı bir Osmanlı üstünlüğü kur ve Konstantinopolis kuşatmasına hazırlan.",
+      "detail": "14 bölge; Gelibolu, Trakya, Sırbistan ve Bulgaristan",
+      "type": "domination",
+      "target_region_count": 14,
+      "required_regions": [
+        "gallipoli",
+        "thrace",
+        "serbia",
+        "bulgaria"
+      ],
+      "deadline_year": 1453,
+      "deadline_month": 5,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
       "id": "aragonese_mediterranean_crown",
       "title": "Akdeniz Tacı",
       "description": "Murcia ve Napoli'yi taç topraklarına kat; Batı Akdeniz'de kalıcı bir Aragon hakimiyeti kur.",
@@ -77,6 +96,26 @@
         "aragon",
         "sicily",
         "sardinia",
+        "murcia",
+        "naples"
+      ],
+      "deadline_year": 1442,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "aragon"
+      ]
+    },
+    {
+      "id": "aragon_western_mediterranean",
+      "title": "Aragon'un Batı Akdeniz Ağı",
+      "description": "Sicilya, Sardinya ve Mayorka hattını elde tut; Napoli ve Murcia üzerindeki Aragon nüfuzunu kalıcı bir Akdeniz tacına dönüştür.",
+      "detail": "14 bölge; Sicilya, Sardinya, Mayorka, Murcia ve Napoli",
+      "type": "domination",
+      "target_region_count": 14,
+      "required_regions": [
+        "sicily",
+        "sardinia",
+        "mallorca",
         "murcia",
         "naples"
       ],
@@ -103,6 +142,42 @@
       "deadline_month": 12,
       "allowed_factions": [
         "england"
+      ]
+    },
+    {
+      "id": "english_continental_foothold",
+      "title": "İngiliz Kıta Köprüsü",
+      "description": "Londra'nın mali gücünü Normandiya ve Aquitaine'deki kalıcı hâkimiyetle birleştir; İngiliz krallarının Fransa üzerindeki iddiasını yaşat.",
+      "detail": "20 bölge; Londra, Normandiya ve Aquitaine",
+      "type": "domination",
+      "target_region_count": 20,
+      "required_regions": [
+        "london",
+        "normandy",
+        "aquitaine"
+      ],
+      "deadline_year": 1453,
+      "deadline_month": 10,
+      "allowed_factions": [
+        "england"
+      ]
+    },
+    {
+      "id": "french_capetian_recovery",
+      "title": "Capet Hanedanının Yeniden Doğuşu",
+      "description": "Paris merkezli krallığı yeniden birleştir, Normandiya ve Aquitaine'i geri alarak Fransa'yı kıtanın başat gücü yap.",
+      "detail": "22 bölge; Paris, Normandiya ve Aquitaine",
+      "type": "domination",
+      "target_region_count": 22,
+      "required_regions": [
+        "paris",
+        "normandy",
+        "aquitaine"
+      ],
+      "deadline_year": 1453,
+      "deadline_month": 10,
+      "allowed_factions": [
+        "france"
       ]
     },
     {
@@ -143,6 +218,46 @@
       ]
     },
     {
+      "id": "imperial_italian_crown",
+      "title": "İmparatorluğun İtalyan Tacı",
+      "description": "Alman çekirdeğini Avusturya ve Bohemya ile sağlamlaştır; Milano ve Papalık toprakları üzerinde imparatorluk nüfuzunu kur.",
+      "detail": "24 bölge; Vestfalya, Avusturya, Bohemya, Milano ve Papalık Devletleri",
+      "type": "domination",
+      "target_region_count": 24,
+      "required_regions": [
+        "westphalia",
+        "austria",
+        "bohemia",
+        "milan",
+        "papal_states"
+      ],
+      "deadline_year": 1495,
+      "deadline_month": 8,
+      "allowed_factions": [
+        "hre"
+      ]
+    },
+    {
+      "id": "mamluk_holy_cities_guardian",
+      "title": "Kutsal Şehirlerin Hamisi",
+      "description": "Kahire'nin mali gücünü Şam ve Halep savunmasıyla birleştir; Filistin ve Hicaz üzerindeki Memlük koruyuculuğunu güvenceye al.",
+      "detail": "18 bölge; Mısır, Şam, Halep, Filistin ve Hicaz",
+      "type": "domination",
+      "target_region_count": 18,
+      "required_regions": [
+        "egypt",
+        "damascus",
+        "aleppo",
+        "palestine",
+        "hejaz"
+      ],
+      "deadline_year": 1341,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "mamluk"
+      ]
+    },
+    {
       "id": "mamluk_levant_guard",
       "title": "Levant'ın Muhafızları",
       "description": "Mısır-Levant çekirdeğini koru, Hicaz hac yolunu güvenceye al ve sultanlığın sınırlarını güçlendir.",
@@ -163,6 +278,20 @@
       ]
     },
     {
+      "id": "venetian_levant_trade",
+      "title": "Levant Ticaret İmtiyazı",
+      "description": "Venedik'in ada, liman ve gümrük ağını büyüt; Doğu Akdeniz ticaretini devlet gelirinin temel direği hâline getir.",
+      "detail": "Tur başı 1.600 altın gelir; 8 tur koru",
+      "type": "economic",
+      "target_gold_income": 1600,
+      "gold_hold_turns": 8,
+      "deadline_year": 1453,
+      "deadline_month": 5,
+      "allowed_factions": [
+        "venice"
+      ]
+    },
+    {
       "id": "venetian_thalassocracy",
       "title": "Venedik Talassokrasisi",
       "description": "Adriyatik ve Doğu Akdeniz ağını işleterek Serenissima'yı kıtanın en güçlü ticaret cumhuriyetine dönüştür.",
@@ -174,6 +303,25 @@
       "deadline_month": 5,
       "allowed_factions": [
         "venice"
+      ]
+    },
+    {
+      "id": "russian_northern_unification",
+      "title": "Kuzey Rusya'nın Birliği",
+      "description": "Moskova ve Nijniy Novgorod çevresini birleştir, Novgorod'un ticaret yollarını ve Kiev yönündeki Rus mirasını merkezî otoriteye bağla.",
+      "detail": "16 bölge; Moskova, Nijniy Novgorod, Novgorod ve Kiev",
+      "type": "domination",
+      "target_region_count": 16,
+      "required_regions": [
+        "moscow",
+        "nizhny_novgorod",
+        "novgorod",
+        "kiev"
+      ],
+      "deadline_year": 1478,
+      "deadline_month": 11,
+      "allowed_factions": [
+        "russia"
       ]
     },
     {
@@ -195,6 +343,27 @@
       ]
     },
     {
+      "id": "safavid_caucasian_bridge",
+      "title": "Safevî Kafkas Geçidi",
+      "description": "Azerbaycan merkezli siyasî yükselişi İran platosu ve Kafkas geçitleriyle birleştirerek Safevî devletinin bölgesel temelini kur.",
+      "detail": "10 bölge; Azerbaycan, Erivan, Gürcistan ve İran çekirdeği",
+      "type": "domination",
+      "target_region_count": 10,
+      "required_regions": [
+        "azerbaijan",
+        "armenia",
+        "georgia",
+        "northern_persia",
+        "western_persia",
+        "southern_persia"
+      ],
+      "deadline_year": 1514,
+      "deadline_month": 8,
+      "allowed_factions": [
+        "safavid"
+      ]
+    },
+    {
       "id": "safavid_persian_revival",
       "title": "Safevî İranı'nın Doğuşu",
       "description": "Tarikatın nüfuzunu siyasî iktidara çevir; Azerbaycan ve İran çekirdeğini tek bir Safevî devleti altında birleştir.",
@@ -211,6 +380,24 @@
       "deadline_month": 8,
       "allowed_factions": [
         "safavid"
+      ]
+    },
+    {
+      "id": "portuguese_maghreb_bridge",
+      "title": "Mağrip Köprüsü",
+      "description": "Portekiz'in Atlantik kıyılarını Kuzey Afrika'ya bağla; Ceuta seferinin tarihsel karşılığı olan Mağrip dayanağını ve İberya güvenliğini kur.",
+      "detail": "10 bölge; Portekiz, Fas ve Granada",
+      "type": "domination",
+      "target_region_count": 10,
+      "required_regions": [
+        "portugal",
+        "morocco",
+        "granada"
+      ],
+      "deadline_year": 1415,
+      "deadline_month": 8,
+      "allowed_factions": [
+        "portugal"
       ]
     },
     {
@@ -254,6 +441,46 @@
       "target_gold_income": 1100,
       "gold_hold_turns": 10,
       "deadline_year": 1460,
+      "deadline_month": 12
+    },
+    {
+      "id": "crossroads_empire",
+      "title": "Kıtaların Kavşağı",
+      "description": "Akdeniz, Avrupa ve doğu ticaret yollarının kilit merkezlerini ele geçirerek kıtalar arası bir imparatorluk kur.",
+      "detail": "45 bölge; Konstantinopolis, Papalık Devletleri, Mısır, Paris, Venedik ve Moskova",
+      "type": "domination",
+      "target_region_count": 45,
+      "required_regions": [
+        "constantinople",
+        "papal_states",
+        "egypt",
+        "paris",
+        "venice",
+        "moscow"
+      ],
+      "deadline_year": 1517,
+      "deadline_month": 12
+    },
+    {
+      "id": "merchant_princes",
+      "title": "Tüccarların Hâkimiyeti",
+      "description": "Üretim, vergi ve deniz ticaretini tek bir mali sistemde birleştirerek savaşları finanse edebilen kalıcı bir ekonomik güç ol.",
+      "detail": "Tur başı 1.500 altın gelir; 12 tur koru",
+      "type": "economic",
+      "target_gold_income": 1500,
+      "gold_hold_turns": 12,
+      "deadline_year": 1500,
+      "deadline_month": 12
+    },
+    {
+      "id": "warrior_kingdom",
+      "title": "Savaşçı Krallık",
+      "description": "Uzun seferleri kaldırabilecek bir ordu kur ve rakip devletleri yenerek kıtanın askerî dengesini değiştir.",
+      "detail": "900 ordu gücü ve 6 elenmiş devlet",
+      "type": "military",
+      "target_army_strength": 900,
+      "target_defeated": 6,
+      "deadline_year": 1500,
       "deadline_month": 12
     },
     {

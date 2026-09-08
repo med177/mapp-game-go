@@ -293,9 +293,9 @@ func drawFactionGroupLabels(screen *ebiten.Image, total, historicalCount, cols i
 	}
 	layout := factionGroupLayout(total, historicalCount, cols, cardW, cardH, padX, padY, headerH)
 	if historicalCount > 0 && layout.historicalLabel.W > 0 {
-		drawUILabel(screen, layout.historicalLabel, "Tarihsel Hedefi Olanlar", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, layout.historicalLabel, "Tarihsel Hedefi Olan Devletler", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 	}
 	if historicalCount < total && layout.generalLabel.W > 0 {
-		drawUILabel(screen, layout.generalLabel, "Genel Hedefliler", ColorGray, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, layout.generalLabel, "Genel Hedefi Olan Devletler", ColorGray, gameui.TextMedium, gameui.TextAlignStart)
 	}
 }
