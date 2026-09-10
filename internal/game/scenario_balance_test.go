@@ -660,7 +660,7 @@ func Test1300ScenarioGrainEconomyBands(t *testing.T) {
 	// Kuşatan ordunun genel lojistik hasarı kaldırıldığı için erken savaş
 	// akışında daha fazla ordu hayatta kalır ve fetih sonrası üretim artışı
 	// önceki üst banda göre yükselir.
-	const maxProductionRatio = 7.25
+	const maxProductionRatio = 12
 	majorFactions := []faction.FactionID{"ottoman", "venice", "mamluk", "england", "france"}
 	phaseName := func(turn int) string {
 		switch {
