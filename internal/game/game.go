@@ -153,10 +153,26 @@ func (g *Game) Update() error {
 	}
 	audio.UpdateMusic()
 
+	// Pencerenin X düğmesine basılması varsayılan olarak oyunu doğrudan
+	// kapatmasın; mevcut iki seçenekli onay modalını kullan.
+	if ebiten.IsWindowBeingClosed() && !g.renderer.ConfirmDialogVisible() {
+		g.renderer.ShowConfirmDialog(
+			"Oyundan Çık",
+			"Oyundan çıkmak istediğinize emin misiniz?",
+			"Evet",
+			"Hayır",
+			render.InputAction{Kind: render.ActionQuit},
+			nil,
+		)
+	}
+
 	action := g.renderer.HandleInput()
 
 	if action.Kind != render.ActionNone {
 		audio.PlaySound("click")
+	}
+	if action.Kind == render.ActionQuit {
+		return ebiten.Termination
 	}
 
 	switch g.gs.Phase {
@@ -178,8 +194,6 @@ func (g *Game) Update() error {
 		case render.ActionOpenSettings:
 			g.gs.Phase = state.PhaseSettings
 			g.renderer.SetCursor(0)
-		case render.ActionQuit:
-			os.Exit(0)
 		}
 
 	case state.PhaseLoadSelect:
@@ -525,8 +539,6 @@ func (g *Game) Update() error {
 			render.SaveSettingsToFile(g.renderer.CurrentSettings)
 		case render.ActionGoMainMenu:
 			g.resetToNewGame()
-		case render.ActionQuit:
-			os.Exit(0)
 		}
 
 	case state.PhaseSaveSelect:

@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-10: Savaş yorgunluğu artık bağımsız savaş başına sabit `-3` yerine
+  sınır türüne göre hesaplanıyor: kara sınırında `-3`, ortak deniz sınırında
+  `-2`, uzak savaşta `-1`. Kara sınırı önceliği ve uzak/deniz ayrımı için
+  `internal/diplomacy/war_fatigue.go` içinde ortak hesap ve regression testi
+  eklendi; AI, ekonomi ve HUD aynı helper'ı kullanmaya devam ediyor.
+
 - 2026-09-10: AI'nin `Heyet`/`Hediye` ilişki onarımı yakın çevre ve somut
   diplomatik bağlarla sınırlandırıldı. Kara komşusu olmayan, aktif ticaret veya
   güvenlik bağlantısı bulunmayan uzak devletlere yalnızca uzak ticaret hattı

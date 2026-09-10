@@ -33,6 +33,9 @@ func main() {
 	ebiten.SetWindowSize(1920, 1080)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.MaximizeWindow()
+	// Pencerenin X düğmesine basıldığında uygulamanın kapanmasını oyunun
+	// onay modalına bırak. Ebitengine aksi halde pencereyi hemen kapatır.
+	ebiten.SetWindowClosingHandled(true)
 	loadWindowIcon()
 
 	g := game.New()

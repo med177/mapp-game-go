@@ -1327,6 +1327,15 @@ func (r *Renderer) applyMapGeoM(op *ebiten.DrawImageOptions, sourceW, sourceH fl
 
 // Draw her frame çağrılır.
 func (r *Renderer) Draw(screen *ebiten.Image) {
+	// Bu defer, ana menü ve diğer erken dönüş yapan ekranlarda da pencere
+	// kapatma onayının görünmesini sağlar. Modal her zaman son çizilen katman
+	// olarak kalır ve arka plandaki inputu HandleInput zaten engeller.
+	defer func() {
+		if r.confirmDialog.show {
+			r.drawConfirmDialog(screen)
+		}
+	}()
+
 	// İlk frame'de Layout() zaten gerçek pencere boyutunu güncellemiştir;
 	// kamerayı bu boyuta göre yeniden ayarla.
 	if !r.firstDraw {
@@ -1548,8 +1557,6 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 9. Onay diyalogu (diğer popupların altında kalmaması için üst katman)
 	if r.regionTaskDialog.show {
 		r.drawRegionTaskDialog(screen)
-	} else if r.confirmDialog.show {
-		r.drawConfirmDialog(screen)
 	} else if r.warConfirm.show {
 		r.drawWarConfirmDialog(screen)
 	} else if r.warSummary.show {
