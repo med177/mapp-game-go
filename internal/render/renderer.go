@@ -404,7 +404,9 @@ type editWorldSnapshot struct {
 	AIStrategies         map[string]scenario.AIFactionStrategy
 	TradeCenters         world.TradeCenterConfig
 	Armies               map[army.ArmyID]*army.Army
+	ArmyOrder            []army.ArmyID
 	Relations            map[string]*faction.Relation
+	RelationOrder        []string
 	ShapeData            world.CountryShapeJSON
 	RegionPaintOverrides map[int]world.RegionID
 	TerrainAreas         []world.TerrainArea

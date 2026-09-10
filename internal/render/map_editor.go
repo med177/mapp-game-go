@@ -2851,7 +2851,9 @@ func (r *Renderer) worldSnapshot() editWorldSnapshot {
 		AIStrategies:         cloneAIStrategyMap(r.gs.AIStrategies),
 		TradeCenters:         cloneTradeCenterConfig(r.gs.TradeCenters),
 		Armies:               cloneArmyMap(r.gs.Armies),
+		ArmyOrder:            append([]army.ArmyID(nil), r.gs.ArmyOrder...),
 		Relations:            cloneRelationMap(r.gs.Relations),
+		RelationOrder:        append([]string(nil), r.gs.RelationOrder...),
 		ShapeData:            cloneCountryShapeJSON(r.gs.ShapeData),
 		RegionPaintOverrides: cloneRegionPaintOverrides(r.editRegionPaintOverrides),
 		TerrainAreas:         cloneTerrainAreas(r.gs.TerrainAreas),
@@ -2879,7 +2881,9 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.AIStrategies = cloneAIStrategyMap(snapshot.AIStrategies)
 	r.gs.TradeCenters = cloneTradeCenterConfig(snapshot.TradeCenters)
 	r.gs.Armies = cloneArmyMap(snapshot.Armies)
+	r.gs.ArmyOrder = append([]army.ArmyID(nil), snapshot.ArmyOrder...)
 	r.gs.Relations = cloneRelationMap(snapshot.Relations)
+	r.gs.RelationOrder = append([]string(nil), snapshot.RelationOrder...)
 	r.gs.ShapeData = cloneCountryShapeJSON(snapshot.ShapeData)
 	r.editRegionPaintOverrides = cloneRegionPaintOverrides(snapshot.RegionPaintOverrides)
 	// Region paint overrides'ı oyun durumuna da senkronize et
@@ -3872,6 +3876,7 @@ func (r *Renderer) addEditLandArmy() {
 		MaxMovePoints: 2,
 		IsNaval:       false,
 	}
+	r.gs.ArmyOrder = append(r.gs.ArmyOrder, aid)
 	r.SelectedArmy = aid
 	r.editSelectedFaction = faction.FactionID(ownerID)
 	r.editSelectedUnitType = unitTypeID
@@ -3904,6 +3909,7 @@ func (r *Renderer) addEditFleet() {
 		MaxMovePoints:      2,
 		IsNaval:            true,
 	}
+	r.gs.ArmyOrder = append(r.gs.ArmyOrder, aid)
 	r.SelectedArmy = aid
 	r.editSelectedFaction = faction.FactionID(ownerID)
 	r.editSelectedUnitType = unitTypeID

@@ -42,19 +42,32 @@ func LoadFactions(path string) (map[FactionID]*Faction, error) {
 // LoadRelations başlangıç diplomasi ilişkilerini JSON'dan okur.
 // Dosya yoksa din temelli varsayılan ilişkiler döner.
 func LoadRelations(path string, factions map[FactionID]*Faction) (map[string]*Relation, error) {
+	result, _, err := LoadRelationsWithOrder(path, factions)
+	return result, err
+}
+
+// LoadRelationsWithOrder ilişkileri JSON'dan yükler ve kaynak dosyadaki geçerli
+// ilişki sırasını ayrıca döner. Edit Mode kaydında bu sıra korunmalıdır.
+func LoadRelationsWithOrder(path string, factions map[FactionID]*Faction) (map[string]*Relation, []string, error) {
 	relations := BuildInitialRelations(factions)
+	order := make([]string, 0, len(relations))
+	for key := range relations {
+		order = append(order, key)
+	}
+	sort.Strings(order)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return relations, nil
+			return relations, order, nil
 		}
-		return nil, fmt.Errorf("relations dosyası okunamadı: %w", err)
+		return nil, nil, fmt.Errorf("relations dosyası okunamadı: %w", err)
 	}
 
 	var list []*Relation
 	if err := json.Unmarshal(data, &list); err != nil {
-		return nil, fmt.Errorf("relations JSON parse hatası: %w", err)
+		return nil, nil, fmt.Errorf("relations JSON parse hatası: %w", err)
 	}
+	order = order[:0]
 	for _, rel := range list {
 		if rel == nil {
 			continue
@@ -74,8 +87,9 @@ func LoadRelations(path string, factions map[FactionID]*Faction) (map[string]*Re
 			Score:    rel.Score,
 			Stance:   normalizeStance(rel.Stance),
 		}
+		order = append(order, key)
 	}
-	return relations, nil
+	return relations, order, nil
 }
 
 func normalizeStance(stance DiplomaticStance) DiplomaticStance {

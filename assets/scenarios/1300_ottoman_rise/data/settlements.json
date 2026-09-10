@@ -3338,24 +3338,8 @@
     ]
   },
   {
-    "region_id": "gallipoli",
+    "region_id": "tekfurdagi",
     "settlements": [
-      {
-        "id": "gallipoli",
-        "name_tr": "Kallipolis",
-        "x": 1008,
-        "y": 466,
-        "type": "town",
-        "population": 20
-      },
-      {
-        "id": "kallipolis_south",
-        "name_tr": "Bolair",
-        "x": 1012,
-        "y": 463,
-        "type": "town",
-        "population": 18
-      },
       {
         "id": "tekirdag",
         "name_tr": "Tekfurdağı",
@@ -3384,6 +3368,32 @@
     ]
   },
   {
+    "region_id": "dardanel",
+    "settlements": [
+      {
+        "id": "kallipolis_south",
+        "name_tr": "Çimpe Kalesi",
+        "x": 1012,
+        "y": 466,
+        "type": "fortress",
+        "population": 18
+      },
+      {
+        "id": "gallipoli",
+        "name_tr": "Kallipolis",
+        "x": 1007,
+        "y": 467,
+        "type": "town",
+        "is_center": true,
+        "population": 20
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_287",
+    "settlements": null
+  },
+  {
     "region_id": "constantinople",
     "settlements": [
       {
@@ -3392,16 +3402,16 @@
         "x": 1053,
         "y": 454,
         "type": "town",
-      "population": 120
+        "population": 120
       },
       {
-      "id": "constantinople_main",
+        "id": "constantinople_main",
         "name_tr": "Konstantiniyye",
         "x": 1057,
         "y": 459,
         "type": "fortress",
         "is_center": true,
-      "population": 280
+        "population": 280
       }
     ]
   },

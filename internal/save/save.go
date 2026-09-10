@@ -495,7 +495,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		return nil, err
 	}
 	scenario.ApplyInitialTerritorialClaims(regions, factions, aiConfig.Strategies)
-	relations, err := faction.LoadRelations(dp("relations.json"), factions)
+	relations, relationOrder, err := faction.LoadRelationsWithOrder(dp("relations.json"), factions)
 	if err != nil {
 		return nil, err
 	}
@@ -517,7 +517,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		log.Printf("Teknolojiler yüklenemedi: %v", err)
 	}
-	armies, err := army.LoadArmies(dp("armies.json"), unitTypes)
+	armies, _, err := army.LoadArmiesWithOrder(dp("armies.json"), unitTypes)
 	if err != nil {
 		log.Printf("Ordular yüklenemedi: %v", err)
 		armies = map[army.ArmyID]*army.Army{}
@@ -549,6 +549,8 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		Factions:           factions,
 		FactionOrder:       factionOrder,
 		Armies:             armies,
+		ArmyOrder:          nil,
+		RelationOrder:      relationOrder,
 		AIStrategies:       aiConfig.Strategies,
 		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
 		ShapeData:          shapeData,

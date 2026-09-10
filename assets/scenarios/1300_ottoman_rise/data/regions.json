@@ -4313,7 +4313,7 @@
     "neighbors": [
       "aydinoglu",
       "cretan_sea",
-      "gallipoli",
+      "dardanel",
       "izmir",
       "mediterranean_open_6",
       "mentese_hinterland",
@@ -4465,8 +4465,9 @@
       "bursa",
       "constantinople",
       "galata",
-      "gallipoli",
+      "tekfurdagi",
       "khalkedon",
+      "dardanel",
       "nicomedia",
       "silivri"
     ],
@@ -5155,7 +5156,7 @@
     "successor_faction_id": "east_rome",
     "neighbors": [
       "bulgaria",
-      "gallipoli",
+      "tekfurdagi",
       "serres",
       "silivri"
     ],
@@ -5186,22 +5187,21 @@
     ]
   },
   {
-    "id": "gallipoli",
-    "name": "Gallipoli",
-    "name_tr": "Gelibolu",
+    "id": "tekfurdagi",
+    "name": "Tekfurdagi",
+    "name_tr": "Tekfurdağı",
     "terrain": "coast",
     "owner_id": "east_rome",
     "successor_faction_id": "east_rome",
     "neighbors": [
-      "aegean_sea",
-      "aydinoglu",
+      "dardanel",
       "sea_of_marmara",
       "serres",
       "silivri",
       "thrace"
     ],
     "world_x": 1023,
-    "world_y": 456,
+    "world_y": 454,
     "shape_id": "TRA",
     "is_sea": false,
     "is_locked": false,
@@ -5216,12 +5216,52 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 350,
+    "population": 312,
     "rural_population": 228,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "walls"
+    ]
+  },
+  {
+    "id": "dardanel",
+    "name": "Gallipoli",
+    "name_tr": "Gelibolu",
+    "terrain": "coast",
+    "owner_id": "east_rome",
+    "successor_faction_id": "east_rome",
+    "neighbors": [
+      "aegean_sea",
+      "aydinoglu",
+      "sea_of_marmara",
+      "serres",
+      "tekfurdagi"
+    ],
+    "world_x": 1002,
+    "world_y": 472,
+    "shape_id": "TRA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 20,
+    "base_grain_output": 16,
+    "base_iron_output": 0,
+    "base_timber_output": 3,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 1,
+    "satisfaction": 60,
+    "tax_rate": 30,
+    "population": 136,
+    "rural_population": 108,
+    "religion": "orthodox",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "walls"
     ]
   },
   {
@@ -5288,7 +5328,7 @@
       "bulgaria",
       "constantinople",
       "galata",
-      "gallipoli",
+      "tekfurdagi",
       "sea_of_marmara",
       "thrace"
     ],
@@ -5333,7 +5373,6 @@
     "neighbors": [
       "bosphorus",
       "constantinople",
-      "khalkedon",
       "sea_of_marmara",
       "silivri"
     ],
@@ -6443,7 +6482,7 @@
       "aegean_sea",
       "bithynia",
       "bursa",
-      "gallipoli",
+      "dardanel",
       "saruhan",
       "sea_of_marmara"
     ],
@@ -9495,7 +9534,6 @@
     "successor_faction_id": "east_rome",
     "neighbors": [
       "bosphorus",
-      "galata",
       "nicomedia",
       "sea_of_marmara"
     ],
@@ -9910,8 +9948,9 @@
       "aegean_sea",
       "bulgaria",
       "chalcidice",
-      "gallipoli",
+      "dardanel",
       "mediterranean_open_6",
+      "tekfurdagi",
       "thrace",
       "vidin"
     ],

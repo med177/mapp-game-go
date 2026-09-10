@@ -3124,10 +3124,22 @@ func rasterBoundaryForShapeSave(value float64) int {
 func writeScenarioRelations(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "relations.json")
 	keys := make([]string, 0, len(gs.Relations))
-	for key := range gs.Relations {
+	seen := make(map[string]struct{}, len(gs.RelationOrder))
+	for _, key := range gs.RelationOrder {
+		if gs.Relations[key] == nil {
+			continue
+		}
 		keys = append(keys, key)
+		seen[key] = struct{}{}
 	}
-	sort.Strings(keys)
+	newKeys := make([]string, 0)
+	for key := range gs.Relations {
+		if _, ok := seen[key]; !ok {
+			newKeys = append(newKeys, key)
+		}
+	}
+	sort.Strings(newKeys)
+	keys = append(keys, newKeys...)
 
 	relations := make([]*faction.Relation, 0, len(keys))
 	for _, key := range keys {
@@ -3148,10 +3160,22 @@ func writeScenarioRelations(gs *state.GameState) error {
 func writeScenarioArmies(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "armies.json")
 	ids := make([]army.ArmyID, 0, len(gs.Armies))
-	for aid := range gs.Armies {
+	seen := make(map[army.ArmyID]struct{}, len(gs.ArmyOrder))
+	for _, aid := range gs.ArmyOrder {
+		if gs.Armies[aid] == nil {
+			continue
+		}
 		ids = append(ids, aid)
+		seen[aid] = struct{}{}
 	}
-	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	newIDs := make([]army.ArmyID, 0)
+	for aid := range gs.Armies {
+		if _, ok := seen[aid]; !ok {
+			newIDs = append(newIDs, aid)
+		}
+	}
+	sort.Slice(newIDs, func(i, j int) bool { return newIDs[i] < newIDs[j] })
+	ids = append(ids, newIDs...)
 
 	type unitCountJSON struct {
 		TypeID string `json:"type_id"`
@@ -3178,10 +3202,22 @@ func writeScenarioArmies(gs *state.GameState) error {
 			counts[u.TypeID]++
 		}
 		unitIDs := make([]string, 0, len(counts))
-		for typeID := range counts {
-			unitIDs = append(unitIDs, typeID)
+		seenUnitTypes := make(map[string]struct{}, len(counts))
+		for _, unit := range a.Units {
+			if _, ok := seenUnitTypes[unit.TypeID]; ok {
+				continue
+			}
+			seenUnitTypes[unit.TypeID] = struct{}{}
+			unitIDs = append(unitIDs, unit.TypeID)
 		}
-		sort.Strings(unitIDs)
+		newUnitTypes := make([]string, 0, len(counts)-len(unitIDs))
+		for typeID := range counts {
+			if _, ok := seenUnitTypes[typeID]; !ok {
+				newUnitTypes = append(newUnitTypes, typeID)
+			}
+		}
+		sort.Strings(newUnitTypes)
+		unitIDs = append(unitIDs, newUnitTypes...)
 		units := make([]unitCountJSON, 0, len(unitIDs))
 		for _, typeID := range unitIDs {
 			units = append(units, unitCountJSON{TypeID: typeID, Count: counts[typeID]})
@@ -3389,10 +3425,12 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	if err != nil {
 		return nil, nil, err
 	}
-	scenario.ApplyInitialTerritorialClaims(regions, factions, aiConfig.Strategies)
+	if !editMode {
+		scenario.ApplyInitialTerritorialClaims(regions, factions, aiConfig.Strategies)
+	}
 	advance()
 	yield()
-	relations, err := faction.LoadRelations(dp("relations.json"), factions)
+	relations, relationOrder, err := faction.LoadRelationsWithOrder(dp("relations.json"), factions)
 	if err != nil {
 		return nil, nil, fmt.Errorf("ilişkiler yüklenemedi: %w", err)
 	}
@@ -3429,12 +3467,14 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	}
 	advance()
 	yield()
-	armies, err := army.LoadArmies(dp("armies.json"), unitTypes)
+	armies, armyOrder, err := army.LoadArmiesWithOrder(dp("armies.json"), unitTypes)
 	if err != nil {
 		log.Printf("Ordular yüklenemedi: %v", err)
 		armies = map[army.ArmyID]*army.Army{}
 	}
-	army.NormalizeLegacyGarrisons(armies)
+	if !editMode {
+		army.NormalizeLegacyGarrisons(armies)
+	}
 	advance()
 	yield()
 	tradeCenters, err := world.LoadTradeCenters(dp("trade_centers.json"), regions)
@@ -3485,6 +3525,8 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		Factions:           factions,
 		FactionOrder:       factionOrder,
 		Armies:             armies,
+		ArmyOrder:          nil,
+		RelationOrder:      relationOrder,
 		AIStrategies:       aiConfig.Strategies,
 		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
 		ShapeData:          shapeData,
@@ -3502,17 +3544,17 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		NextArmySeq:        len(armies),
 		FiredEventIDs:      map[string]bool{},
 	}
-	gs.ApplyHistoricalFactionChanges()
-	army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
-	diplomacy.NormalizeVassalage(gs)
-	gs.SyncWarLedgers()
-	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
-	gs.SyncTimedRegionUnlocks()
-	gs.NormalizeFactionCapitals()
 	if editMode {
-		for _, region := range gs.Regions {
-			world.EnsureRequiredSettlementBuildings(region, gs.IsCapitalRegion(region))
-		}
+		gs.ArmyOrder = armyOrder
+	}
+	if !editMode {
+		gs.ApplyHistoricalFactionChanges()
+		army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
+		diplomacy.NormalizeVassalage(gs)
+		gs.SyncWarLedgers()
+		diplomacy.EnsureTradeRoutesForActiveRelations(gs)
+		gs.SyncTimedRegionUnlocks()
+		gs.NormalizeFactionCapitals()
 	}
 	if editMode {
 		gs.Phase = state.PhaseEditMode

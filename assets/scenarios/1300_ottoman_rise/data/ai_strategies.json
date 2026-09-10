@@ -2198,7 +2198,7 @@
           "kind": "expand",
           "territorial_claims": [
             {
-              "region_id": "gallipoli",
+              "region_id": "tekfurdagi",
               "value": 94
             },
             {
@@ -2228,7 +2228,7 @@
           "min_year": 1453,
           "max_year": 1453,
           "readiness_regions": [
-            "gallipoli",
+            "tekfurdagi",
             "thrace"
           ]
         },

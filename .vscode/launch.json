@@ -2,13 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run All Go Tests",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "go test ./... -count=1",
-      "cwd": "${workspaceFolder}"
-    },
-    {
       "name": "Debug Game",
       "type": "go",
       "request": "launch",
@@ -27,6 +20,13 @@
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "output": "${workspaceFolder}/bin/game/mapp.exe"
-    }
+    },
+    {
+      "name": "Run All Go Tests",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "go test ./... -count=1",
+      "cwd": "${workspaceFolder}"
+    },
   ]
 }

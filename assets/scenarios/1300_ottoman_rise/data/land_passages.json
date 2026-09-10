@@ -15,21 +15,6 @@
     ]
   },
   {
-    "from": "constantinople",
-    "to": "bithynia",
-    "type": "strait",
-    "move_cost": 1,
-    "defense_bonus": 15,
-    "start": [
-      1059,
-      453
-    ],
-    "end": [
-      1060,
-      453
-    ]
-  },
-  {
     "from": "denmark",
     "to": "scania",
     "type": "strait",
@@ -75,7 +60,7 @@
     ]
   },
   {
-    "from": "gallipoli",
+    "from": "tekfurdagi",
     "to": "aydinoglu",
     "type": "strait",
     "move_cost": 1,

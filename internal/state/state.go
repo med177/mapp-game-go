@@ -256,6 +256,7 @@ type GameState struct {
 	FactionOrder            []faction.FactionID                    `json:"-"`
 	Armies                  map[army.ArmyID]*army.Army             `json:"armies"`
 	ArmyOrder               []army.ArmyID                          `json:"-"`
+	RelationOrder           []string                               `json:"-"`
 	Commanders              map[string]*army.Commander             `json:"commanders,omitempty"`
 	CommanderArrivalNotices map[string]bool                        `json:"commander_arrival_notices,omitempty"`
 	AIPlans                 map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`

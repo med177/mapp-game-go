@@ -60,19 +60,27 @@ type unitCountJSON struct {
 // LoadArmies armies.json'dan başlangıç ordularını yükler. unitTypes verilirse
 // başlangıç hareket havuzu ordu kompozisyonuna göre hesaplanır.
 func LoadArmies(path string, unitTypeSets ...map[string]*UnitType) (map[ArmyID]*Army, error) {
+	result, _, err := LoadArmiesWithOrder(path, unitTypeSets...)
+	return result, err
+}
+
+// LoadArmiesWithOrder başlangıç ordularını JSON'daki sıra ile birlikte yükler.
+// Edit Mode kaydında map sıralaması kaynak dosyanın sırasını ezmemelidir.
+func LoadArmiesWithOrder(path string, unitTypeSets ...map[string]*UnitType) (map[ArmyID]*Army, []ArmyID, error) {
 	var unitTypes map[string]*UnitType
 	if len(unitTypeSets) > 0 {
 		unitTypes = unitTypeSets[0]
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("ordular okunamadı: %w", err)
+		return nil, nil, fmt.Errorf("ordular okunamadı: %w", err)
 	}
 	var specs []armySpecJSON
 	if err := json.Unmarshal(data, &specs); err != nil {
-		return nil, fmt.Errorf("ordular parse edilemedi: %w", err)
+		return nil, nil, fmt.Errorf("ordular parse edilemedi: %w", err)
 	}
 	armies := make(map[ArmyID]*Army, len(specs))
+	order := make([]ArmyID, 0, len(specs))
 	for _, s := range specs {
 		var units []Unit
 		for _, uc := range s.Units {
@@ -98,8 +106,9 @@ func LoadArmies(path string, unitTypeSets ...map[string]*UnitType) (map[ArmyID]*
 		loadedArmy.MaxMovePoints = loadedArmy.BaseMovePoints(unitTypes)
 		loadedArmy.MovePoints = loadedArmy.MaxMovePoints
 		armies[id] = loadedArmy
+		order = append(order, id)
 	}
-	return armies, nil
+	return armies, order, nil
 }
 
 // MakeUnits belirtilen tip ve sayıda yeni birim listesi oluşturur.

@@ -2,12 +2,56 @@ package game
 
 import (
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 )
+
+func TestEditModeLoadPreservesScenarioFactionRelationAndArmyData(t *testing.T) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime caller unavailable")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
+	scenarioPath := filepath.Join(root, "assets", "scenarios", "1300_ottoman_rise")
+
+	gs, _, err := loadScenarioDataForMode(scenarioPath, 2, true, nil)
+	if err != nil {
+		t.Fatalf("1300 senaryosu Edit Mode'da yüklenemedi: %v", err)
+	}
+
+	dataDir := filepath.Join(scenarioPath, "data")
+	wantFactions, _, err := faction.LoadFactionsWithOrder(filepath.Join(dataDir, "factions.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantRelations, _, err := faction.LoadRelationsWithOrder(filepath.Join(dataDir, "relations.json"), wantFactions)
+	if err != nil {
+		t.Fatal(err)
+	}
+	unitTypes, _, err := army.LoadUnitTypesWithOrder(filepath.Join(dataDir, "units.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantArmies, _, err := army.LoadArmiesWithOrder(filepath.Join(dataDir, "armies.json"), unitTypes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(gs.Factions, wantFactions) {
+		t.Fatal("Edit Mode factions.json verisini yükleme sırasında değiştirdi")
+	}
+	if !reflect.DeepEqual(gs.Relations, wantRelations) {
+		t.Fatal("Edit Mode relations.json verisini yükleme sırasında değiştirdi")
+	}
+	if !reflect.DeepEqual(gs.Armies, wantArmies) {
+		t.Fatal("Edit Mode armies.json verisini yükleme sırasında değiştirdi")
+	}
+}
 
 func TestLoad1300LoadsImperialState(t *testing.T) {
 	_, file, _, ok := runtime.Caller(0)

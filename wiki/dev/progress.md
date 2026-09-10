@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-10: Edit Mode senaryo yükleme/kaydetme akışı kaynak JSON verisini koruyacak
+  şekilde ayrıştırıldı. Edit Mode artık normal oyun başlangıcındaki claim, vassal,
+  başkent, filo dock ve bina normalizasyonlarını çalıştırmıyor; `factions.json`,
+  `relations.json` ve `armies.json` sıraları yüklenip kayıtta korunuyor. Regression:
+  `TestEditModeLoadPreservesScenarioFactionRelationAndArmyData`; kapsam:
+  `internal/game/game.go`, `internal/{army,faction}/loader.go`,
+  `internal/state/state.go`, `internal/render/map_editor.go`.
+
 - 2026-09-10: Birim JSON'larına opsiyonel `siege_breach_multiplier` alanı eklendi.
   Eksik alanlar `1.0` kabul ediliyor; 1300 senaryosundaki lağımcılar `1.10`
   katsayısıyla gedik ilerlemesini hızlandırıyor. Regression:
