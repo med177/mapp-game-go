@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-09-08
+last_updated: 2026-09-10
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -94,10 +94,15 @@ hesaplandığı için hedef devlet fetih veya el değiştirme sonrasında da do�
 güncellenir. Ancak hedef askeri olarak doğrudan tehdit oluşturuyor ve AI
 `HasDirectThreat` ile müşkül durumdaysa yalnız `Heyet` gönderilebilir; bu
 istisnada `Hediye` hiçbir zaman seçilmez. Stratejik hedef olmayan doğrudan
-tehditlerdeki mevcut yatıştırma heyeti davranışı korunur.
+tehditlerdeki mevcut yatıştırma heyeti davranışı korunur. Buna ek olarak
+ilişki onarımı, doğrudan kara komşuluğu veya mevcut ticaret hattı olmayan ve
+ortak düşman/paylaşılan ciddi tehdit gibi somut güvenlik bağı taşımayan uzak
+devletlere gönderilmez; yalnızca gelecekte kurulabilecek uzak bir ticaret hattı
+artık tek başına yeterli değildir.
 
 Kaynak: `internal/ai/diplomacy.go:aiRelationshipRepairAction`,
-`internal/ai/strategic_plan.go:aiIsStrategicDiplomacyTarget`
+`internal/ai/strategic_plan.go:aiIsStrategicDiplomacyTarget`,
+`internal/diplomacy/diplomacy.go:SharesLandBorder`
 
 1300 bina yatırım skoru da aynı savaş yorgunluğu projeksiyonunu kullanır.
 Vergi etkisinin %30 nötr tabanı ve yüksek vergideki `-10` kademeleri,

@@ -370,10 +370,10 @@ func buildingEffectLines(b *city.Building) []string {
 		lines = append(lines, fmt.Sprintf("Bina bakımı: %d altın/tur", b.GoldMaintenance))
 	}
 	if b.GoldMod != 1 {
-		lines = append(lines, fmt.Sprintf("Altın geliri: x%.1f", b.GoldMod))
+		lines = append(lines, fmt.Sprintf("Altın geliri: x%.2f", b.GoldMod))
 	}
 	if b.GrainMod != 1 {
-		lines = append(lines, fmt.Sprintf("Tahıl üretimi: x%.1f", b.GrainMod))
+		lines = append(lines, fmt.Sprintf("Tahıl üretimi: x%.2f", b.GrainMod))
 	}
 	if b.TradeCapacityMod != 1 {
 		lines = append(lines, fmt.Sprintf("Ticaret kapasitesi: x%.2f", b.TradeCapacityMod))

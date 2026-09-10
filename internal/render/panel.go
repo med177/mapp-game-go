@@ -148,10 +148,6 @@ var (
 	factionHistoricalFlagNames = map[faction.FactionID]string{}
 )
 
-// buildingDisplayOrder bina slotlarının sırasını belirler. Liste senaryo
-// verisindeki bina ID'leriyle eşleşir; yeni binalar burada görünür olur.
-var buildingDisplayOrder = []string{"market", "farm", "barracks", "walls", "temple", "port", "granary", "forge", "workshop"}
-
 func buildingSpritePath(id string) string {
 	if ActiveScenarioPath == "" || id == "" {
 		return ""
@@ -3411,12 +3407,15 @@ func drawBuildingGrid(screen *ebiten.Image, gs *state.GameState, region *world.R
 }
 
 func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
+	if gs == nil || region == nil {
+		return nil
+	}
 	builtCount := make(map[string]int, len(region.Buildings))
 	for _, bid := range region.Buildings {
 		builtCount[bid]++
 	}
-	ids := make([]string, 0, len(buildingDisplayOrder))
-	for _, bid := range buildingDisplayOrder {
+	ids := make([]string, 0, len(gs.BuildingOrder))
+	for _, bid := range gs.BuildingOrder {
 		b, ok := gs.BuildingTypes[bid]
 		if !ok {
 			continue

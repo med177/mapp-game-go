@@ -1337,6 +1337,9 @@ func landRegionCount(gs *state.GameState, fid faction.FactionID) int {
 }
 
 func sharesBorder(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
 	for _, region := range gs.Regions {
 		if region == nil || region.IsSea || region.OwnerID != string(a) {
 			continue
@@ -1349,6 +1352,13 @@ func sharesBorder(gs *state.GameState, a, b faction.FactionID) bool {
 		}
 	}
 	return false
+}
+
+// SharesLandBorder iki devletin sahip olduğu kara bölgelerinin doğrudan
+// komşuluğunu bildirir. AI ve diğer paketler, diplomatik yakınlık kararlarında
+// içteki sınır kontrolünü tekrar etmemelidir.
+func SharesLandBorder(gs *state.GameState, a, b faction.FactionID) bool {
+	return sharesBorder(gs, a, b)
 }
 
 func frontierArmyCount(gs *state.GameState, owner, against faction.FactionID) int {

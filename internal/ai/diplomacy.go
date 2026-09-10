@@ -329,11 +329,18 @@ func aiRelationshipRepairAction(gs *state.GameState, fid, otherID faction.Factio
 
 	strategicTarget := aiIsStrategicDiplomacyTarget(gs, fid, otherID)
 	hasActiveTrade := diplomacy.HasTradeRouteBetween(gs, fid, otherID)
-	hasTradeInterest := hasActiveTrade || diplomacy.CanEstablishTradeRoute(gs, fid, otherID)
 	hasAllianceInterest := aiAllianceHasMeaningfulBenefit(gs, fid, otherID)
 	commonEnemy := diplomacy.HasCommonEnemy(gs, fid, otherID)
 	sharedThreat := diplomacy.HasSharedMajorThreat(gs, fid, otherID)
 	directThreat := diplomacy.HasDirectThreat(gs, fid, otherID)
+	// İlişki onarımı öncelikle AI'nin yakın çevresine yönelir. Sadece uzak bir
+	// deniz ticareti ihtimali veya genel ittifak puanı, tek başına heyet/hediye
+	// göndermek için yeterli değildir; mevcut ticaret ya da gerçek güvenlik
+	// bağlantıları uzak hedefleri yine meşru kılar.
+	if !diplomacy.SharesLandBorder(gs, fid, otherID) && !hasActiveTrade && !commonEnemy && !sharedThreat && !directThreat {
+		return "", "", false
+	}
+	hasTradeInterest := hasActiveTrade || diplomacy.CanEstablishTradeRoute(gs, fid, otherID)
 	// AI stratejik hedefinden vazgeçmiş değildir; ancak hedef sınırında askeri
 	// olarak müşkül durumdaysa zaman kazanmak için ucuz heyet kullanabilir.
 	// Hediye daha sonra seçilmesin diye bu istisna aşağıda doğrudan heyete

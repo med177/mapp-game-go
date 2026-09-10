@@ -263,6 +263,7 @@ type GameState struct {
 	AIDifficultyPolicy scenario.AIDifficultyPolicy              `json:"-"`
 	UnitTypes          map[string]*army.UnitType                `json:"-"`
 	BuildingTypes      map[string]*city.Building                `json:"-"`
+	BuildingOrder      []string                                 `json:"-"`
 	TechTypes          map[string]*tech.Technology              `json:"-"`
 	CommanderTemplates map[string][]*army.Commander             `json:"-"`
 	ScenarioVictories  []scenario.VictoryOptionDef              `json:"-"`

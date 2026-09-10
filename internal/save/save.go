@@ -509,7 +509,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		log.Printf("Komutan şablonları yüklenemedi: %v", err)
 		commanderTemplates = map[string][]*army.Commander{}
 	}
-	buildingTypes, err := city.LoadBuildings(dp("buildings.json"))
+	buildingTypes, buildingOrder, err := city.LoadBuildingsWithOrder(dp("buildings.json"))
 	if err != nil {
 		log.Printf("Binalar yüklenemedi: %v", err)
 	}
@@ -555,6 +555,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		UnitTypes:          unitTypes,
 		CommanderTemplates: commanderTemplates,
 		BuildingTypes:      buildingTypes,
+		BuildingOrder:      buildingOrder,
 		TechTypes:          techTypes,
 		ScenarioVictories:  sc.VictoryConditions,
 		AvailableVictories: scenario.FilterVictoryOptionsForFaction(sc.VictoryConditions, ""),

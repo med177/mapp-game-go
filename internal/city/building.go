@@ -32,16 +32,28 @@ type Building struct {
 
 // LoadBuildings bina tiplerini JSON'dan yükler.
 func LoadBuildings(path string) (map[string]*Building, error) {
+	buildings, _, err := LoadBuildingsWithOrder(path)
+	return buildings, err
+}
+
+// LoadBuildingsWithOrder bina tiplerini JSON'dan yükler ve dosyadaki bina ID
+// sırasını ayrıca döner. Map bina tanımlarını hızlı erişim için, slice ise
+// JSON'daki gösterim sırasını korumak için kullanılır.
+func LoadBuildingsWithOrder(path string) (map[string]*Building, []string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("binalar okunamadı: %w", err)
+		return nil, nil, fmt.Errorf("binalar okunamadı: %w", err)
 	}
 	var list []*Building
 	if err := json.Unmarshal(data, &list); err != nil {
-		return nil, fmt.Errorf("binalar parse edilemedi: %w", err)
+		return nil, nil, fmt.Errorf("binalar parse edilemedi: %w", err)
 	}
 	m := make(map[string]*Building, len(list))
+	order := make([]string, 0, len(list))
 	for _, b := range list {
+		if b == nil {
+			continue
+		}
 		if b.TurnsRequired <= 0 {
 			b.TurnsRequired = 2
 		}
@@ -49,8 +61,9 @@ func LoadBuildings(path string) (map[string]*Building, error) {
 			b.TradeCapacityMod = 1.0
 		}
 		m[b.ID] = b
+		order = append(order, b.ID)
 	}
-	return m, nil
+	return m, order, nil
 }
 
 // GetGoldMod Building.GoldMod değerini döner (interface uyumluluğu için).

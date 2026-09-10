@@ -1,11 +1,17 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-05
+last_updated: 2026-09-10
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-10: AI'nin `Heyet`/`Hediye` ilişki onarımı yakın çevre ve somut
+  diplomatik bağlarla sınırlandırıldı. Kara komşusu olmayan, aktif ticaret veya
+  güvenlik bağlantısı bulunmayan uzak devletlere yalnızca uzak ticaret hattı
+  kurulabilir diye tekrar tekrar teklif gönderilmiyor; kapsam:
+  `internal/ai/diplomacy.go`, `internal/diplomacy/diplomacy.go`.
 
 - 2026-09-05: Savaşa otomatik katılamayan savunma müttefiklerinin ittifakı artık
   korunmuyor; ilişki barışa/ticarete düşürülüyor ve ret raporlanıyor. Ayrıca
