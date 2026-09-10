@@ -11,6 +11,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/joho/godotenv"
+	"golang.org/x/image/draw"
 )
 
 //go:embed mapp_window_icon.png
@@ -22,13 +23,25 @@ func loadWindowIcon() {
 		log.Printf("Icon decode failed: %v", err)
 		return
 	}
-	ebiten.SetWindowIcon([]image.Image{ebiten.NewImageFromImage(img)})
+
+	// Windows görev çubuğu ve başlık çubuğu farklı ikon boyutları ister.
+	// Tek bir 512x512 görsel vermek bazı Windows sürümlerinde varsayılan
+	// pencere ikonuna geri dönülmesine neden olabiliyor.
+	iconSizes := []int{16, 32, 48, 64, 128, 256}
+	icons := make([]image.Image, 0, len(iconSizes))
+	for _, size := range iconSizes {
+		resized := image.NewNRGBA(image.Rect(0, 0, size, size))
+		draw.CatmullRom.Scale(resized, resized.Bounds(), img, img.Bounds(), draw.Src, nil)
+		icons = append(icons, ebiten.NewImageFromImage(resized))
+	}
+	ebiten.SetWindowIcon(icons)
 }
 
 func main() {
 	// .env dosyasını yüklemeyi dene (varsa)
 	_ = godotenv.Load()
 
+	loadWindowIcon()
 	ebiten.SetWindowTitle("Mapp Game — Harita Strateji Oyunu")
 	ebiten.SetWindowSize(1920, 1080)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
@@ -36,7 +49,6 @@ func main() {
 	// Pencerenin X düğmesine basıldığında uygulamanın kapanmasını oyunun
 	// onay modalına bırak. Ebitengine aksi halde pencereyi hemen kapatır.
 	ebiten.SetWindowClosingHandled(true)
-	loadWindowIcon()
 
 	g := game.New()
 	if err := ebiten.RunGame(g); err != nil {

@@ -16,7 +16,7 @@
       "program": "${workspaceFolder}/cmd/game",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "output": "${workspaceFolder}/mapp.exe"
+      "output": "${workspaceFolder}/bin/mapp-debug.exe"
     },
     {
       "name": "Build Game",
