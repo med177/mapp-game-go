@@ -198,8 +198,14 @@ func siegeForceForArmy(gs *state.GameState, attacker *army.Army, fortLevel int) 
 	force.HighestTier = attacker.HighestSiegeTier(gs.UnitTypes)
 	for _, unit := range attacker.Units {
 		unitType := gs.UnitTypes[unit.TypeID]
-		if unitType == nil || unitType.Category != army.CategorySiege ||
-			fortLevel > int(unitType.Tier)+2 {
+		maxFortLevel := 0
+		if unitType != nil && unitType.Category == army.CategorySiege {
+			maxFortLevel = int(unitType.Tier) + 2
+			if unitType.SiegeBreachMaxFortLevel > maxFortLevel {
+				maxFortLevel = unitType.SiegeBreachMaxFortLevel
+			}
+		}
+		if unitType == nil || unitType.Category != army.CategorySiege || fortLevel > maxFortLevel {
 			continue
 		}
 		hp := unit.CurrentHP

@@ -375,6 +375,19 @@ func TestSiegeBreachGainRequiresCompatibleSiegeTier(t *testing.T) {
 	if gain := siegeBreachGain(gs, attacker, gs.Regions["dst"], nil); gain <= 0 {
 		t.Fatalf("T3 top T5 surda gedik oluşturabilmeli: gain=%.2f", gain)
 	}
+
+	gs.UnitTypes["sappers"] = &army.UnitType{
+		ID:                      "sappers",
+		Category:                army.CategorySiege,
+		Tier:                    3,
+		SiegeBreachMultiplier:   1.1,
+		SiegeBreachMaxFortLevel: 6,
+	}
+	gs.Regions["dst"].Buildings = []string{"walls", "walls", "walls", "walls"}
+	attacker.Units = []army.Unit{{TypeID: "sappers", CurrentHP: 100}}
+	if gain := siegeBreachGain(gs, attacker, gs.Regions["dst"], nil); gain <= 0 {
+		t.Fatalf("özel gedik kapasitesi olan lağımcı T6 surda etkili olabilmeli: gain=%.2f", gain)
+	}
 }
 
 func TestMoveArmyWhileBesiegingClearsSiegeAndMoves(t *testing.T) {

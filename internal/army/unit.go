@@ -38,6 +38,9 @@ type UnitType struct {
 	// katkısını çarpar. Alan yoksa kuşatma hesabı geriye dönük olarak 1.0
 	// katsayısını kullanır.
 	SiegeBreachMultiplier float64 `json:"siege_breach_multiplier,omitempty"`
+	// SiegeBreachMaxFortLevel, birimin gedik açabileceği en yüksek tahkimat
+	// seviyesini belirtir. Alan yoksa tier + 2 kuralı kullanılır.
+	SiegeBreachMaxFortLevel int `json:"siege_breach_max_fort_level,omitempty"`
 
 	// Maliyet
 	GoldCost      int `json:"gold_cost"`

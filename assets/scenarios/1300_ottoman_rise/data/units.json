@@ -279,6 +279,7 @@
     "hp": 100,
     "morale": 20,
     "siege_breach_multiplier": 1.1,
+    "siege_breach_max_fort_level": 6,
     "required_bldg": "barracks",
     "required_bldg_level": 2,
     "required_tech": [

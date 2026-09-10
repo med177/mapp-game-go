@@ -47,6 +47,20 @@ func siegeBreachProgressLabel(siege *state.SiegeState) string {
 	return fmt.Sprintf("%d / %d", progress, target)
 }
 
+func siegeCapabilityLabel(attacker *army.Army, types map[string]*army.UnitType, fortLevel int) string {
+	if attacker == nil {
+		return "Kuşatma ordusu yok"
+	}
+	maxFortLevel := attacker.HighestSiegeBreachFortLevel(types)
+	if maxFortLevel == 0 {
+		return "Gedik açacak kuşatma birimi yok"
+	}
+	if maxFortLevel < fortLevel {
+		return fmt.Sprintf("Yetersiz: en fazla T%d, hedef T%d", maxFortLevel, fortLevel)
+	}
+	return fmt.Sprintf("Gedik için uygun: T%d / T%d", maxFortLevel, fortLevel)
+}
+
 func siegeElapsedLabelTR(turns int) string {
 	if turns < 0 {
 		turns = 0
@@ -59,10 +73,11 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 		return
 	}
 	fortLevel := target.FortificationLevel()
-	bestTier := attacker.HighestSiegeTier(r.gs.UnitTypes)
+	maxBreachFortLevel := attacker.HighestSiegeBreachFortLevel(r.gs.UnitTypes)
 	commanderSummary := commanderSiegeSummary(attacker.Commander)
 	if active := r.gs.SiegeAt(target.ID); active != nil && active.AttackerArmyID == attacker.ID {
-		msg := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik kapasitesi: T%d/T%d. %s", target.NameTR, active.FortLevel, active.BreachProgress, siegeBreachLabelTR(active.BreachLevel), bestTier, active.FortLevel, commanderSummary)
+		maxBreachFortLevel = attacker.HighestSiegeBreachFortLevel(r.gs.UnitTypes)
+		msg := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik kapasitesi: T%d/T%d. %s | %s", target.NameTR, active.FortLevel, active.BreachProgress, siegeBreachLabelTR(active.BreachLevel), maxBreachFortLevel, active.FortLevel, siegeCapabilityLabel(attacker, r.gs.UnitTypes, active.FortLevel), commanderSummary)
 		r.confirmDialog = confirmDialogState{
 			show:          true,
 			title:         "Kuşatma Kararı",
@@ -76,7 +91,7 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 		}
 		return
 	}
-	msg := fmt.Sprintf("%s tahkimli. Tahkimat seviyesi: %d | Kuşatma gücü: %d | Gedik kapasitesi: T%d/T%d. %s", target.NameTR, fortLevel, attacker.SiegeUnitScore(r.gs.UnitTypes), bestTier, fortLevel, commanderSummary)
+	msg := fmt.Sprintf("%s tahkimli. Tahkimat seviyesi: %d | Kuşatma gücü: %d | Gedik kapasitesi: T%d/T%d. %s | %s", target.NameTR, fortLevel, attacker.SiegeUnitScore(r.gs.UnitTypes), maxBreachFortLevel, fortLevel, siegeCapabilityLabel(attacker, r.gs.UnitTypes, fortLevel), commanderSummary)
 	thirdLabel := "Genel Hücum"
 	r.confirmDialog = confirmDialogState{
 		show:          true,
@@ -317,6 +332,9 @@ func (r *Renderer) drawAttackerSiegePanel(screen *ebiten.Image, attacker *army.A
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 76, Y: statusRect.Y + 8, W: statusRect.W - 88}, status, statusColor, gameui.TextMedium, gameui.TextAlignStart)
 	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", "Teslimiyet", siege.TurnsUntilSurrender())
+	if attacker.HighestSiegeBreachFortLevel(r.gs.UnitTypes) < siege.FortLevel {
+		remainingText = siegeCapabilityLabel(attacker, r.gs.UnitTypes, siege.FortLevel)
+	}
 	if siege.BreachLevel >= 2 && siege.DefenderArmyID == "" {
 		remainingText = "Büyük gedik: teslim olabilir"
 	}
@@ -381,6 +399,9 @@ func (r *Renderer) drawDefensiveSiegePanel(screen *ebiten.Image, defender, attac
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 76, Y: statusRect.Y + 8, W: statusRect.W - 88}, status, statusColor, gameui.TextMedium, gameui.TextAlignStart)
 	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", "Teslimiyet", siege.TurnsUntilSurrender())
+	if attacker.HighestSiegeBreachFortLevel(r.gs.UnitTypes) < siege.FortLevel {
+		remainingText = siegeCapabilityLabel(attacker, r.gs.UnitTypes, siege.FortLevel)
+	}
 	if siege.BreachLevel >= 2 {
 		remainingText = "Büyük gedik: teslim olabilir"
 	}

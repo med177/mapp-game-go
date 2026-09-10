@@ -445,11 +445,34 @@ func (a *Army) HighestSiegeTier(types map[string]*UnitType) int {
 	return best
 }
 
+// HighestSiegeBreachFortLevel ordudaki kuşatma birimlerinin etkileyebileceği
+// en yüksek tahkimat seviyesini döner.
+func (a *Army) HighestSiegeBreachFortLevel(types map[string]*UnitType) int {
+	if a == nil {
+		return 0
+	}
+	best := 0
+	for _, u := range a.Units {
+		t, ok := types[u.TypeID]
+		if !ok || t == nil || t.Category != CategorySiege {
+			continue
+		}
+		maxFortLevel := int(t.Tier) + 2
+		if t.SiegeBreachMaxFortLevel > maxFortLevel {
+			maxFortLevel = t.SiegeBreachMaxFortLevel
+		}
+		if maxFortLevel > best {
+			best = maxFortLevel
+		}
+	}
+	return best
+}
+
 func (a *Army) CanBreachFortification(types map[string]*UnitType, fortLevel int) bool {
 	if fortLevel <= 0 {
 		return true
 	}
-	return a.HighestSiegeTier(types) >= fortLevel
+	return a.HighestSiegeBreachFortLevel(types) >= fortLevel
 }
 
 func (a *Army) HasSiegeUnits(types map[string]*UnitType) bool {
