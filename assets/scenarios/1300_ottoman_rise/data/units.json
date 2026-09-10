@@ -282,8 +282,7 @@
     "required_bldg": "barracks",
     "required_bldg_level": 2,
     "required_tech": [
-      "siege_engines",
-      "gunpowder"
+      "siege_engines"
     ],
     "tier": 3,
     "turns_required": 6,
