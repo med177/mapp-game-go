@@ -34,6 +34,11 @@ type UnitType struct {
 	Morale  int `json:"morale"` // bozguna dayanıklılık
 	HP      int `json:"hp"`     // başlangıç can puanı
 
+	// SiegeBreachMultiplier, birimin tier ve canlı HP'sinden türetilen gedik
+	// katkısını çarpar. Alan yoksa kuşatma hesabı geriye dönük olarak 1.0
+	// katsayısını kullanır.
+	SiegeBreachMultiplier float64 `json:"siege_breach_multiplier,omitempty"`
+
 	// Maliyet
 	GoldCost      int `json:"gold_cost"`
 	GrainCost     int `json:"grain_cost"`

@@ -333,6 +333,32 @@ func TestSiegeBreachGainScalesWithUnitCountAndHP(t *testing.T) {
 	}
 }
 
+func TestSiegeBreachMultiplierAcceleratesSappers(t *testing.T) {
+	gs := siegeTestState()
+	gs.UnitTypes["sappers"] = &army.UnitType{
+		ID:                    "sappers",
+		Category:              army.CategorySiege,
+		Tier:                  3,
+		SiegeBreachMultiplier: 1.1,
+	}
+	region := gs.Regions["dst"]
+	attacker := &army.Army{OwnerID: "p1", Units: []army.Unit{{TypeID: "sappers", CurrentHP: 100}}}
+
+	if got := siegeBreachGain(gs, attacker, region, nil); got != 4.5 {
+		t.Fatalf("lağımcı gedik katsayısı sonrası 4.5 kazanım üretmeliydi: got=%.2f", got)
+	}
+}
+
+func TestMissingSiegeBreachMultiplierKeepsLegacyBreachGain(t *testing.T) {
+	gs := siegeTestState()
+	region := gs.Regions["dst"]
+	attacker := &army.Army{OwnerID: "p1", Units: []army.Unit{{TypeID: "siege", CurrentHP: 100}}}
+
+	if got := siegeBreachGain(gs, attacker, region, nil); got != 2 {
+		t.Fatalf("katsayı alanı olmayan eski birim 1.0 varsayılanını korumalıydı: got=%.2f", got)
+	}
+}
+
 func TestSiegeBreachGainRequiresCompatibleSiegeTier(t *testing.T) {
 	gs := siegeTestState()
 	// Fortress settlement + dört duvar seviyesi = toplam sur seviyesi 5.

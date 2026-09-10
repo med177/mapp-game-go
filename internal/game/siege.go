@@ -192,8 +192,8 @@ type siegeForce struct {
 }
 
 // siegeForceForArmy tek bir ordunun kuşatma katkısını hesaplar. Gedik gücü,
-// yalnızca ilgili sur seviyesine erişebilen kuşatma birimlerinden ve canlı HP
-// oranlarından oluşur.
+// yalnızca ilgili sur seviyesine erişebilen kuşatma birimlerinden, canlı HP
+// oranlarından ve veri tanımındaki gedik katsayısından oluşur.
 func siegeForceForArmy(gs *state.GameState, attacker *army.Army, fortLevel int) siegeForce {
 	force := siegeForce{}
 	if gs == nil || attacker == nil || attacker.IsNaval || len(attacker.Units) == 0 {
@@ -214,7 +214,11 @@ func siegeForceForArmy(gs *state.GameState, attacker *army.Army, fortLevel int) 
 		if hp > army.MaxUnitHP {
 			hp = army.MaxUnitHP
 		}
-		force.BreachPower += float64(2+int(unitType.Tier)) * float64(hp) / float64(army.MaxUnitHP)
+		breachMultiplier := unitType.SiegeBreachMultiplier
+		if breachMultiplier <= 0 {
+			breachMultiplier = 1
+		}
+		force.BreachPower += float64(2+int(unitType.Tier)) * float64(hp) / float64(army.MaxUnitHP) * breachMultiplier
 	}
 	force.ProgressBonus, force.BreachBonus = attacker.CommanderSiegeBonuses()
 	return force

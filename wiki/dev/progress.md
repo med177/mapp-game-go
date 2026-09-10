@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-10: Birim JSON'larına opsiyonel `siege_breach_multiplier` alanı eklendi.
+  Eksik alanlar `1.0` kabul ediliyor; 1300 senaryosundaki lağımcılar `1.10`
+  katsayısıyla gedik ilerlemesini hızlandırıyor. Regression:
+  `TestSiegeBreachMultiplierAcceleratesSappers`,
+  `TestMissingSiegeBreachMultiplierKeepsLegacyBreachGain`; kapsam:
+  `internal/army/unit.go`, `internal/game/siege.go`, `assets/scenarios/1300_ottoman_rise/data/units.json`.
+
 - 2026-09-10: Savaş yorgunluğu artık bağımsız savaş başına sabit `-3` yerine
   sınır türüne göre hesaplanıyor: kara sınırında `-3`, ortak deniz sınırında
   `-2`, uzak savaşta `-1`. Kara sınırı önceliği ve uzak/deniz ayrımı için

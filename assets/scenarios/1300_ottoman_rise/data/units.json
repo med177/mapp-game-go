@@ -266,6 +266,36 @@
     "movement_points": 1
   },
   {
+    "attack": 5,
+    "category": "siege",
+    "defense": 2,
+    "embarkable": true,
+    "gold_cost": 100,
+    "grain_upkeep": 14,
+    "gold_upkeep": 12,
+    "hp": 100,
+    "id": "sappers",
+    "morale": 20,
+    "name": "Sappers",
+    "name_tr": "Lağımcılar",
+    "siege_breach_multiplier": 1.1,
+    "required_bldg": "barracks",
+    "required_bldg_level": 2,
+    "required_tech": [
+      "siege_engines",
+      "gunpowder"
+    ],
+    "tier": 3,
+    "turns_required": 6,
+    "grain_cost": 50,
+    "iron_cost": 8,
+    "timber_cost": 20,
+    "stone_cost": 10,
+    "cloth_cost": 5,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
     "attack": 30,
     "category": "naval_war",
     "defense": 30,
