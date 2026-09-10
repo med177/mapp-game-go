@@ -4225,6 +4225,9 @@ func (r *Renderer) rebuildEditWorldMap() {
 	// Editör oturumundaki bölge boya override'ları arazi alanı hücrelerini
 	// ezmesin diye alanlar son katman olarak yeniden boyanır.
 	r.worldMap.applyTerrainAreaRegions(r.gs)
+	// Geçişlerin uçları sabit harita koordinatlarına bağlıdır; harita üzerinde
+	// bölge ataması değiştiğinde From/To ilişkisini aynı rasterdan yenile.
+	r.syncLandPassageRegionsFromMap()
 }
 
 func (r *Renderer) buildRegionPaintBaseline() {

@@ -79,6 +79,47 @@ func (r *Renderer) landPassageScreenEndpoints(passage *world.LandPassage, from, 
 	return x1, y1, x2, y2
 }
 
+// syncLandPassageRegionsFromMap, Edit Mode haritasında geçiş uçlarının
+// altındaki güncel bölge kimliklerini geçiş kaydına yansıtır. Geçişin çizgisi
+// sabit koordinatlarda kaldığı için bölge boyama veya şekil değişikliği sonrası
+// From/To değerleri eski bölgede kalmamalıdır.
+func (r *Renderer) syncLandPassageRegionsFromMap() bool {
+	if r == nil || r.gs == nil || r.worldMap == nil {
+		return false
+	}
+
+	changed := false
+	for i := range r.gs.LandPassages {
+		passage := &r.gs.LandPassages[i]
+		if !passage.HasCustomEndpoints() {
+			continue
+		}
+
+		startX, startY := shapeRasterWorldPoint([2]float32{
+			float32(passage.Start[0]), float32(passage.Start[1]),
+		})
+		endX, endY := shapeRasterWorldPoint([2]float32{
+			float32(passage.End[0]), float32(passage.End[1]),
+		})
+		fromID := r.worldMap.RegionAt(int(math.Round(startX)), int(math.Round(startY)))
+		toID := r.worldMap.RegionAt(int(math.Round(endX)), int(math.Round(endY)))
+		from := r.gs.Regions[fromID]
+		to := r.gs.Regions[toID]
+		if from == nil || to == nil || from.IsSea || to.IsSea || fromID == toID {
+			continue
+		}
+		if passage.From != fromID {
+			passage.From = fromID
+			changed = true
+		}
+		if passage.To != toID {
+			passage.To = toID
+			changed = true
+		}
+	}
+	return changed
+}
+
 func drawDashedLandPassage(screen *ebiten.Image, x1, y1, x2, y2 float64, width float32, col color.RGBA) {
 	dx := x2 - x1
 	dy := y2 - y1
@@ -380,10 +421,4 @@ func cloneLandPassages(src []world.LandPassage) []world.LandPassage {
 			start := *src[i].Start
 			dst[i].Start = &start
 		}
-		if src[i].End != nil {
-			end := *src[i].End
-			dst[i].End = &end
-		}
-	}
-	return dst
-}
+		if src[i].End != ni

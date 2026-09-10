@@ -105,21 +105,6 @@
     ]
   },
   {
-    "from": "tekfurdagi",
-    "to": "aydinoglu",
-    "type": "strait",
-    "move_cost": 1,
-    "defense_bonus": 15,
-    "start": [
-      1009,
-      468
-    ],
-    "end": [
-      1011,
-      469
-    ]
-  },
-  {
     "from": "ulster",
     "to": "scotland",
     "type": "strait",
@@ -147,6 +132,21 @@
     "end": [
       947,
       400
+    ]
+  },
+  {
+    "from": "gallipoli",
+    "to": "aydinoglu",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1009,
+      468
+    ],
+    "end": [
+      1010,
+      470
     ]
   }
 ]
