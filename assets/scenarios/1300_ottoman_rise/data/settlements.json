@@ -3368,7 +3368,7 @@
     ]
   },
   {
-    "region_id": "dardanel",
+    "region_id": "gallipoli",
     "settlements": [
       {
         "id": "kallipolis_south",
@@ -3388,10 +3388,6 @@
         "population": 20
       }
     ]
-  },
-  {
-    "region_id": "new_region_287",
-    "settlements": null
   },
   {
     "region_id": "constantinople",

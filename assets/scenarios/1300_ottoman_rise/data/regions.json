@@ -4313,7 +4313,7 @@
     "neighbors": [
       "aydinoglu",
       "cretan_sea",
-      "dardanel",
+      "gallipoli",
       "izmir",
       "mediterranean_open_6",
       "mentese_hinterland",
@@ -4467,7 +4467,7 @@
       "galata",
       "tekfurdagi",
       "khalkedon",
-      "dardanel",
+      "gallipoli",
       "nicomedia",
       "silivri"
     ],
@@ -5194,7 +5194,7 @@
     "owner_id": "east_rome",
     "successor_faction_id": "east_rome",
     "neighbors": [
-      "dardanel",
+      "gallipoli",
       "sea_of_marmara",
       "serres",
       "silivri",
@@ -5226,7 +5226,7 @@
     ]
   },
   {
-    "id": "dardanel",
+    "id": "gallipoli",
     "name": "Gallipoli",
     "name_tr": "Gelibolu",
     "terrain": "coast",
@@ -5255,7 +5255,7 @@
     "trade_capacity": 1,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 136,
+    "population": 146,
     "rural_population": 108,
     "religion": "orthodox",
     "active_event_id": "",
@@ -6482,7 +6482,7 @@
       "aegean_sea",
       "bithynia",
       "bursa",
-      "dardanel",
+      "gallipoli",
       "saruhan",
       "sea_of_marmara"
     ],
@@ -9948,7 +9948,7 @@
       "aegean_sea",
       "bulgaria",
       "chalcidice",
-      "dardanel",
+      "gallipoli",
       "mediterranean_open_6",
       "tekfurdagi",
       "thrace",

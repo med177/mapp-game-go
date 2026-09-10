@@ -60,21 +60,6 @@
     ]
   },
   {
-    "from": "tekfurdagi",
-    "to": "aydinoglu",
-    "type": "strait",
-    "move_cost": 1,
-    "defense_bonus": 15,
-    "start": [
-      1009,
-      468
-    ],
-    "end": [
-      1011,
-      469
-    ]
-  },
-  {
     "from": "morocco",
     "to": "granada",
     "type": "strait",
@@ -117,6 +102,21 @@
     "end": [
       791,
       511
+    ]
+  },
+  {
+    "from": "tekfurdagi",
+    "to": "aydinoglu",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1009,
+      468
+    ],
+    "end": [
+      1011,
+      469
     ]
   },
   {
