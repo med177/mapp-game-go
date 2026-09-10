@@ -375,6 +375,39 @@ func buildingEffectLines(b *city.Building) []string {
 	if b.GrainMod != 1 {
 		lines = append(lines, fmt.Sprintf("Tahıl üretimi: x%.2f", b.GrainMod))
 	}
+	if b.GrainBonus != 0 {
+		lines = append(lines, fmt.Sprintf("Tahıl üretimi: %+d", b.GrainBonus))
+	}
+	if b.IronMod != 1 {
+		lines = append(lines, fmt.Sprintf("Demir üretimi: x%.2f", b.IronMod))
+	}
+	if b.IronBonus != 0 {
+		lines = append(lines, fmt.Sprintf("Demir üretimi: %+d", b.IronBonus))
+	}
+	if b.TimberMod != 1 {
+		lines = append(lines, fmt.Sprintf("Kereste üretimi: x%.2f", b.TimberMod))
+	}
+	if b.TimberBonus != 0 {
+		lines = append(lines, fmt.Sprintf("Kereste üretimi: %+d", b.TimberBonus))
+	}
+	if b.StoneMod != 1 {
+		lines = append(lines, fmt.Sprintf("Taş üretimi: x%.2f", b.StoneMod))
+	}
+	if b.StoneBonus != 0 {
+		lines = append(lines, fmt.Sprintf("Taş üretimi: %+d", b.StoneBonus))
+	}
+	if b.SpiceMod != 1 {
+		lines = append(lines, fmt.Sprintf("Baharat üretimi: x%.2f", b.SpiceMod))
+	}
+	if b.SpiceBonus != 0 {
+		lines = append(lines, fmt.Sprintf("Baharat üretimi: %+d", b.SpiceBonus))
+	}
+	if b.ClothMod != 1 {
+		lines = append(lines, fmt.Sprintf("Kumaş üretimi: x%.2f", b.ClothMod))
+	}
+	if b.ClothBonus != 0 {
+		lines = append(lines, fmt.Sprintf("Kumaş üretimi: %+d", b.ClothBonus))
+	}
 	if b.TradeCapacityMod != 1 {
 		lines = append(lines, fmt.Sprintf("Ticaret kapasitesi: x%.2f", b.TradeCapacityMod))
 	}

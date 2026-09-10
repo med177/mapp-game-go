@@ -2535,9 +2535,31 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 	}
 
 	grainMod := 1.0
+	ironMod := 1.0
+	timberMod := 1.0
+	stoneMod := 1.0
+	spiceMod := 1.0
+	clothMod := 1.0
+	grainBonus := 0
+	ironBonus := 0
+	timberBonus := 0
+	stoneBonus := 0
+	spiceBonus := 0
+	clothBonus := 0
 	for _, bid := range region.Buildings {
 		if b, ok := s.BuildingTypes[bid]; ok && b != nil {
-			grainMod *= b.GrainMod
+			grainMod *= buildingProductionMod(b.GrainMod)
+			ironMod *= buildingProductionMod(b.IronMod)
+			timberMod *= buildingProductionMod(b.TimberMod)
+			stoneMod *= buildingProductionMod(b.StoneMod)
+			spiceMod *= buildingProductionMod(b.SpiceMod)
+			clothMod *= buildingProductionMod(b.ClothMod)
+			grainBonus += b.GrainBonus
+			ironBonus += b.IronBonus
+			timberBonus += b.TimberBonus
+			stoneBonus += b.StoneBonus
+			spiceBonus += b.SpiceBonus
+			clothBonus += b.ClothBonus
 		}
 	}
 	if buildingPercent := s.RegionBuildingEfficiencyModifier(region.ID); buildingPercent != 0 {
@@ -2547,12 +2569,12 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 	_, goldTotal := s.regionGoldIncomeBreakdown(region, applyBlockade)
 	out := RegionProductionSummary{
 		Gold:   goldTotal,
-		Grain:  int(float64(region.BaseGrainOutput) * grainMod),
-		Iron:   region.BaseIronOutput,
-		Timber: region.BaseTimberOutput,
-		Stone:  region.BaseStoneOutput,
-		Spice:  region.BaseSpiceOutput,
-		Cloth:  region.BaseClothOutput,
+		Grain:  int(float64(region.BaseGrainOutput)*grainMod) + grainBonus,
+		Iron:   int(float64(region.BaseIronOutput)*ironMod) + ironBonus,
+		Timber: int(float64(region.BaseTimberOutput)*timberMod) + timberBonus,
+		Stone:  int(float64(region.BaseStoneOutput)*stoneMod) + stoneBonus,
+		Spice:  int(float64(region.BaseSpiceOutput)*spiceMod) + spiceBonus,
+		Cloth:  int(float64(region.BaseClothOutput)*clothMod) + clothBonus,
 	}
 	out.Grain, out.Iron, out.Timber, out.Stone, out.Spice, out.Cloth = applyRegionTerrainSpecialization(
 		region.Terrain, out.Grain, out.Iron, out.Timber, out.Stone, out.Spice, out.Cloth,
@@ -2590,6 +2612,13 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 	out.Grain = out.Grain * productionPercent / 100
 
 	return out
+}
+
+func buildingProductionMod(mod float64) float64 {
+	if mod <= 0 {
+		return 1
+	}
+	return mod
 }
 
 // RegionProductionSummary, abluka etkisi dahil bölgenin sonraki tur üretim

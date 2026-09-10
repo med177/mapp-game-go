@@ -540,30 +540,22 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 
 		// Bina çarpanları
 		goldMod := 1.0
-		grainMod := 1.0
 		for _, bid := range r.Buildings {
 			if b, ok := gs.BuildingTypes[bid]; ok {
 				goldMod *= b.GoldMod
-				grainMod *= b.GrainMod
 				storageCapacityByFaction[r.OwnerID] += b.StorageCapacity
 			}
 		}
 
 		blockadeRetention := gs.RegionBlockadeOutputRetentionPercent(r)
 		income := state.ScaleBlockadeOutputForEconomy(int(float64(r.GoldIncome())*goldMod*float64(harvestMod)/100), blockadeRetention)
-		grain := int(float64(r.BaseGrainOutput) * grainMod)
-		iron := r.BaseIronOutput
-		timber := r.BaseTimberOutput
-		stone := r.BaseStoneOutput
-		spice := r.BaseSpiceOutput
-		cloth := r.BaseClothOutput
-		grain, iron, timber, stone, spice, cloth = applyTerrainSpecialization(r.Terrain, grain, iron, timber, stone, spice, cloth)
-		grain = state.ScaleBlockadeOutputForEconomy(grain, blockadeRetention)
-		iron = state.ScaleBlockadeOutputForEconomy(iron, blockadeRetention)
-		timber = state.ScaleBlockadeOutputForEconomy(timber, blockadeRetention)
-		stone = state.ScaleBlockadeOutputForEconomy(stone, blockadeRetention)
-		spice = state.ScaleBlockadeOutputForEconomy(spice, blockadeRetention)
-		cloth = state.ScaleBlockadeOutputForEconomy(cloth, blockadeRetention)
+		production := gs.RegionProductionSummary(r)
+		grain := production.Grain
+		iron := production.Iron
+		timber := production.Timber
+		stone := production.Stone
+		spice := production.Spice
+		cloth := production.Cloth
 
 		// Pasif ticaret geliri ortak efektif kapasite üzerinden hesaplanır.
 		tradeIncome := gs.BaseRegionTradeIncome(r)
@@ -589,22 +581,10 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		stoneByFaction[r.OwnerID] += stone
 		spiceByFaction[r.OwnerID] += spice
 		clothByFaction[r.OwnerID] += cloth
-		capitalGrainBonus := 0
-		if bonus := gs.CapitalRegionBonus(r); bonus != (state.RegionProductionSummary{}) {
+		if bonus := gs.CapitalRegionBonus(r); bonus.Gold != 0 {
 			incomeByFaction[r.OwnerID] += bonus.Gold
 			capitalIncomeByFaction[r.OwnerID] += bonus.Gold
-			capitalGrainBonus = bonus.Grain
-			ironByFaction[r.OwnerID] += bonus.Iron
-			timberByFaction[r.OwnerID] += bonus.Timber
-			stoneByFaction[r.OwnerID] += bonus.Stone
-			spiceByFaction[r.OwnerID] += bonus.Spice
-			clothByFaction[r.OwnerID] += bonus.Cloth
 		}
-		productionPercent := 100 + gs.RegionGrainProductionModifier(r.ID)
-		if productionPercent < 0 {
-			productionPercent = 0
-		}
-		grain = (grain + capitalGrainBonus) * productionPercent / 100
 		if raid := gs.Raids[r.ID]; raid != nil && raid.Turn == gs.Turn && raid.RaiderFactionID != faction.FactionID(r.OwnerID) {
 			loot := gs.RaidLootPreview(r)
 			income -= loot.Gold
@@ -682,7 +662,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		techGold := fx.GoldPerRegion * ownedCount
 
 		raidLoot := raidLootByFaction[fidStr]
-		netGrain := int(float64(grainByFaction[fidStr])*(1.0+fx.GrainMod)) + loot.Grain + raidLoot.Grain
+		netGrain := grainByFaction[fidStr] + loot.Grain + raidLoot.Grain
 		civilianDemand := civilianGrainDemandByFaction[fidStr]
 		status := grainEconomyStatus(fid, f.Grain, netGrain, civilianDemand, upkeepByFaction[fidStr], storageCapacityByFaction[fidStr])
 		goldBefore := goldBeforeEconomy[fidStr]

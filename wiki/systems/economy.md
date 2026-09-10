@@ -81,6 +81,15 @@ bölgeleri kontrol eder.
 
 Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini ister (`grain/iron/timber/stone/spice/cloth_cost`). Pazar, liman ve ibadet yeri gibi ticaret/kültür yapıları baharat veya kumaş tüketebilir; temel tarım ve savunma yapıları bölgesel hammaddelere dayanır.
 Bina `MaxPerRegion` ile sınırlıdır.
+
+Bina tanımları bölgesel hammadde üretimini de veri üzerinden değiştirebilir. `*_mod`
+alanları bina seviyeleri arasında çarpılır; `*_bonus` alanları her kurulu seviye
+için sabit katkı olarak toplanır. Desteklenen kaynaklar `grain`, `iron`, `timber`,
+`stone`, `spice` ve `cloth` kaynaklarıdır. Örneğin `iron_mod: 1.15` ve
+`iron_bonus: 1`, bir Demirhane seviyesinde temel demir üretimini `%15` artırıp
+sonuca `+1` ekler. Bu hesap `RegionProductionSummary()` ve gerçek ekonomi tick'i
+tarafından ortak kullanılır; abluka, arazi uzmanlaşması, teknoloji ve yağma
+akışları da aynı üretim sonucunu temel alır.
 Bazı binalar `RequiredTerrain` kısıtı taşır (ör. liman → kıyı).
 
 Oyuncu, bölge panelindeki tamamlanmış bina seviyelerinden birini kırmızı `X`

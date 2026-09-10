@@ -22,6 +22,17 @@ type Building struct {
 	TurnsRequired    int     `json:"turns_required"`
 	GoldMod          float64 `json:"gold_mod"`           // altın gelir çarpanı (1.0 = değişmez)
 	GrainMod         float64 `json:"grain_mod"`          // tahıl üretim çarpanı
+	GrainBonus       int     `json:"grain_bonus"`        // bina seviyesi başına sabit tahıl katkısı
+	IronMod          float64 `json:"iron_mod"`           // demir üretim çarpanı (1.0 = değişmez)
+	IronBonus        int     `json:"iron_bonus"`         // bina seviyesi başına sabit demir katkısı
+	TimberMod        float64 `json:"timber_mod"`         // kereste üretim çarpanı (1.0 = değişmez)
+	TimberBonus      int     `json:"timber_bonus"`       // bina seviyesi başına sabit kereste katkısı
+	StoneMod         float64 `json:"stone_mod"`          // taş üretim çarpanı (1.0 = değişmez)
+	StoneBonus       int     `json:"stone_bonus"`        // bina seviyesi başına sabit taş katkısı
+	SpiceMod         float64 `json:"spice_mod"`          // baharat üretim çarpanı (1.0 = değişmez)
+	SpiceBonus       int     `json:"spice_bonus"`        // bina seviyesi başına sabit baharat katkısı
+	ClothMod         float64 `json:"cloth_mod"`          // kumaş üretim çarpanı (1.0 = değişmez)
+	ClothBonus       int     `json:"cloth_bonus"`        // bina seviyesi başına sabit kumaş katkısı
 	TradeCapacityMod float64 `json:"trade_capacity_mod"` // ticaret kapasitesi çarpanı (1.0 = değişmez)
 	SatBonus         int     `json:"sat_bonus"`          // tur başına memnuniyet bonusu
 	DefBonus         int     `json:"def_bonus"`          // savunma bonusu
@@ -59,6 +70,24 @@ func LoadBuildingsWithOrder(path string) (map[string]*Building, []string, error)
 		}
 		if b.TradeCapacityMod <= 0 {
 			b.TradeCapacityMod = 1.0
+		}
+		if b.GrainMod <= 0 {
+			b.GrainMod = 1.0
+		}
+		if b.IronMod <= 0 {
+			b.IronMod = 1.0
+		}
+		if b.TimberMod <= 0 {
+			b.TimberMod = 1.0
+		}
+		if b.StoneMod <= 0 {
+			b.StoneMod = 1.0
+		}
+		if b.SpiceMod <= 0 {
+			b.SpiceMod = 1.0
+		}
+		if b.ClothMod <= 0 {
+			b.ClothMod = 1.0
 		}
 		m[b.ID] = b
 		order = append(order, b.ID)

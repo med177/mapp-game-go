@@ -28,11 +28,9 @@ func (s *GameState) RaidLootPreview(region *world.Region) RegionProductionSummar
 	}
 
 	goldMod := 1.0
-	grainMod := 1.0
 	for _, bid := range region.Buildings {
 		if building := s.BuildingTypes[bid]; building != nil {
 			goldMod *= building.GoldMod
-			grainMod *= building.GrainMod
 		}
 	}
 	retention := s.RegionBlockadeOutputRetentionPercent(region)
@@ -40,36 +38,16 @@ func (s *GameState) RaidLootPreview(region *world.Region) RegionProductionSummar
 		int(float64(region.GoldIncome())*goldMod*float64(s.CurrentSeason().HarvestMod())/100),
 		retention,
 	)
-	grain := int(float64(region.BaseGrainOutput) * grainMod)
-	iron := region.BaseIronOutput
-	timber := region.BaseTimberOutput
-	stone := region.BaseStoneOutput
-	spice := region.BaseSpiceOutput
-	cloth := region.BaseClothOutput
-	grain, iron, timber, stone, spice, cloth = applyRegionTerrainSpecialization(region.Terrain, grain, iron, timber, stone, spice, cloth)
-	grain = ScaleBlockadeOutputForEconomy(grain, retention)
-	iron = ScaleBlockadeOutputForEconomy(iron, retention)
-	timber = ScaleBlockadeOutputForEconomy(timber, retention)
-	stone = ScaleBlockadeOutputForEconomy(stone, retention)
-	spice = ScaleBlockadeOutputForEconomy(spice, retention)
-	cloth = ScaleBlockadeOutputForEconomy(cloth, retention)
-	if bonus := s.CapitalRegionBonus(region); bonus != (RegionProductionSummary{}) {
-		grain += bonus.Grain
-	}
-	productionPercent := 100 + s.RegionGrainProductionModifier(region.ID)
-	if productionPercent < 0 {
-		productionPercent = 0
-	}
-	grain = grain * productionPercent / 100
+	production := s.RegionProductionSummary(region)
 
 	return RegionProductionSummary{
 		Gold:   income * RaidTaxLossPercent / 100,
-		Grain:  grain * RaidProductionLossPercent / 100,
-		Iron:   iron * RaidProductionLossPercent / 100,
-		Timber: timber * RaidProductionLossPercent / 100,
-		Stone:  stone * RaidProductionLossPercent / 100,
-		Spice:  spice * RaidProductionLossPercent / 100,
-		Cloth:  cloth * RaidProductionLossPercent / 100,
+		Grain:  production.Grain * RaidProductionLossPercent / 100,
+		Iron:   production.Iron * RaidProductionLossPercent / 100,
+		Timber: production.Timber * RaidProductionLossPercent / 100,
+		Stone:  production.Stone * RaidProductionLossPercent / 100,
+		Spice:  production.Spice * RaidProductionLossPercent / 100,
+		Cloth:  production.Cloth * RaidProductionLossPercent / 100,
 	}
 }
 
