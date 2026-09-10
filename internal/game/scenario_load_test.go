@@ -53,6 +53,29 @@ func TestLoadScenarioInitializesBuildingOrderForRegionPanel(t *testing.T) {
 	}
 }
 
+func TestLoadScenarioInitializesUnitOrderForRecruitPanel(t *testing.T) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime caller unavailable")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
+	scenarioPath := filepath.Join(root, "assets", "scenarios", "1300_ottoman_rise")
+
+	gs, _, err := loadScenarioData(scenarioPath, 2, nil)
+	if err != nil {
+		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+	}
+	wantPrefix := []string{"militia", "infantry", "elite_infantry", "light_cavalry", "cavalry", "heavy_cavalry", "catapult", "bombard"}
+	if len(gs.UnitTypeOrder) < len(wantPrefix) {
+		t.Fatalf("birim sırası eksik: got=%v", gs.UnitTypeOrder)
+	}
+	for i, want := range wantPrefix {
+		if got := gs.UnitTypeOrder[i]; got != want {
+			t.Fatalf("birim üretme paneli units.json sırasını korumalı: index=%d got=%q want=%q order=%v", i, got, want, gs.UnitTypeOrder)
+		}
+	}
+}
+
 func TestLoad1300StartingGrainAndArmyUpkeepArePositive(t *testing.T) {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {

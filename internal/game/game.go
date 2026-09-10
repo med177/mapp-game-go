@@ -3393,7 +3393,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	}
 	advance()
 	yield()
-	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
+	unitTypes, unitTypeOrder, err := army.LoadUnitTypesWithOrder(dp("units.json"))
 	if err != nil {
 		log.Printf("Birim tipleri yüklenemedi: %v", err)
 	}
@@ -3484,6 +3484,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
 		ShapeData:          shapeData,
 		UnitTypes:          unitTypes,
+		UnitTypeOrder:      unitTypeOrder,
 		CommanderTemplates: commanderTemplates,
 		BuildingTypes:      buildingTypes,
 		BuildingOrder:      buildingOrder,
