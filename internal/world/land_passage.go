@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
 )
 
 // LandPassageType karasal iki bölge arasındaki özel geçişin türünü tanımlar.
@@ -76,12 +75,9 @@ func LoadLandPassages(path string, regions map[RegionID]*Region) ([]LandPassage,
 		valid = append(valid, passage)
 	}
 
-	sort.SliceStable(valid, func(i, j int) bool {
-		if valid[i].From != valid[j].From {
-			return valid[i].From < valid[j].From
-		}
-		return valid[i].To < valid[j].To
-	})
+	// JSON dizilim sırası Edit Mode kaydında da korunur. Runtime için
+	// alfabetik bir sıralama gerekmiyor; bu sıralamayı burada yapmak her
+	// aç-kaydet döngüsünde land_passages.json dosyasını gereksiz yere değiştirir.
 	return valid, nil
 }
 

@@ -30,21 +30,6 @@
     ]
   },
   {
-    "from": "scania",
-    "to": "sweden",
-    "type": "strait",
-    "move_cost": 1,
-    "defense_bonus": 15,
-    "start": [
-      725,
-      170
-    ],
-    "end": [
-      729,
-      168
-    ]
-  },
-  {
     "from": "dobruja",
     "to": "podolia",
     "type": "strait",
@@ -102,6 +87,21 @@
     "end": [
       929,
       385
+    ]
+  },
+  {
+    "from": "scania",
+    "to": "sweden",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      725,
+      170
+    ],
+    "end": [
+      729,
+      168
     ]
   },
   {
