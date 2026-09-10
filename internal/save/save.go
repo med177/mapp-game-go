@@ -500,7 +500,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		return nil, err
 	}
 
-	unitTypes, err := army.LoadUnitTypes(dp("units.json"))
+	unitTypes, unitTypeOrder, err := army.LoadUnitTypesWithOrder(dp("units.json"))
 	if err != nil {
 		log.Printf("Birim tipleri yüklenemedi: %v", err)
 	}
@@ -553,6 +553,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
 		ShapeData:          shapeData,
 		UnitTypes:          unitTypes,
+		UnitTypeOrder:      unitTypeOrder,
 		CommanderTemplates: commanderTemplates,
 		BuildingTypes:      buildingTypes,
 		BuildingOrder:      buildingOrder,

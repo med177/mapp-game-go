@@ -28,6 +28,25 @@ func siegeBreachLabelTR(level int) string {
 	}
 }
 
+func siegeBreachProgressLabel(siege *state.SiegeState) string {
+	if siege == nil {
+		return "—"
+	}
+	minor, major := state.SiegeBreachThresholds(siege.FortLevel)
+	target := minor
+	if siege.BreachLevel >= 1 {
+		target = major
+	}
+	progress := siege.BreachProgress
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > target {
+		progress = target
+	}
+	return fmt.Sprintf("%d / %d", progress, target)
+}
+
 func siegeElapsedLabelTR(turns int) string {
 	if turns < 0 {
 		turns = 0
@@ -306,7 +325,7 @@ func (r *Renderer) drawAttackerSiegePanel(screen *ebiten.Image, attacker *army.A
 	metricY := panel.Rect.Y + 112
 	metricW := (panel.Rect.W - 44) / 2
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY, W: metricW, H: 46}, "TAHKİMAT", fmt.Sprintf("T%d", siege.FortLevel), ColorWhite)
-	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 46}, "İLERLEME", itoa(siege.BreachProgress), color.RGBA{238, 210, 138, 255})
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 46}, "İLERLEME", siegeBreachProgressLabel(siege), color.RGBA{238, 210, 138, 255})
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY + 54, W: metricW, H: 46}, "GEDİK", status, statusColor)
 	assaultValue := fmt.Sprintf("T%d / T%d", bestTier, siege.FortLevel)
 	assaultColor := color.RGBA{202, 222, 190, 255}
@@ -375,7 +394,7 @@ func (r *Renderer) drawDefensiveSiegePanel(screen *ebiten.Image, defender, attac
 	metricY := panel.Rect.Y + 108
 	metricW := (panel.Rect.W - 44) / 2
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY, W: metricW, H: 44}, "TAHKİMAT", fmt.Sprintf("T%d", siege.FortLevel), ColorWhite)
-	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 44}, "İLERLEME", itoa(siege.BreachProgress), color.RGBA{238, 210, 138, 255})
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 44}, "İLERLEME", siegeBreachProgressLabel(siege), color.RGBA{238, 210, 138, 255})
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY + 50, W: metricW, H: 44}, "GEDİK", status, statusColor)
 	defenderValue := "GARNİZON YOK"
 	defenderColor := color.RGBA{214, 130, 112, 255}

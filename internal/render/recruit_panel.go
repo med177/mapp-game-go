@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"math"
 	"path/filepath"
+	"sort"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
@@ -62,6 +63,7 @@ var unitSpriteAssetNames = map[string]string{
 	"catapult":       "siege_trebuchet.png",
 	"bombard":        "siege_mortar.png",
 	"cannon":         "siege_cannon.png",
+	"sappers":        "sappers.png",
 	"transport":      "ship_transport.png",
 	"merchant_ship":  "ship_merchant.png",
 	"warship":        "ship_war_galley.png",
@@ -200,13 +202,6 @@ func recruitCardFooterColor(availability recruitCardAvailability) color.RGBA {
 	default:
 		return color.RGBA{184, 220, 184, 245}
 	}
-}
-
-var unitDisplayOrder = []string{
-	"militia", "infantry", "elite_infantry",
-	"light_cavalry", "cavalry", "heavy_cavalry",
-	"catapult", "bombard", "cannon",
-	"transport", "merchant_ship", "warship",
 }
 
 type unitSpriteLoc struct {
@@ -776,9 +771,20 @@ func unitCost(utype *army.UnitType) economy.ResourceCost {
 }
 
 func visibleUnitIDs(gs *state.GameState, region *world.Region) []string {
+	if gs == nil {
+		return nil
+	}
 	showNaval := region != nil && region.IsCoastal(gs.Regions)
-	ids := make([]string, 0, len(unitDisplayOrder))
-	for _, uid := range unitDisplayOrder {
+	order := gs.UnitTypeOrder
+	if len(order) == 0 {
+		order = make([]string, 0, len(gs.UnitTypes))
+		for uid := range gs.UnitTypes {
+			order = append(order, uid)
+		}
+		sort.Strings(order)
+	}
+	ids := make([]string, 0, len(order))
+	for _, uid := range order {
 		utype := gs.UnitTypes[uid]
 		if utype == nil {
 			continue

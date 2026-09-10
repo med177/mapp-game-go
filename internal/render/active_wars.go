@@ -221,6 +221,14 @@ func activeWarArmyStats(gs *state.GameState, owner faction.FactionID) (armies, u
 	return armies, units
 }
 
+func activeWarFactionIsVassal(gs *state.GameState, id faction.FactionID) bool {
+	if gs == nil {
+		return false
+	}
+	f := gs.Factions[id]
+	return f != nil && !f.IsEliminated && f.OverlordID != ""
+}
+
 // collectActiveWarSummaries yalnızca savaş stance'ındaki ilişkileri okur.
 // dst Renderer tarafından yeniden kullanıldığı için normal Draw akışında yeni
 // özet slice'ı oluşturmaz.
@@ -237,6 +245,9 @@ func collectActiveWarSummaries(gs *state.GameState, dst []ActiveWarSummary) []Ac
 			continue
 		}
 		if factionB := gs.Factions[faction.FactionID(rel.FactionB)]; factionB == nil || factionB.IsEliminated {
+			continue
+		}
+		if activeWarFactionIsVassal(gs, faction.FactionID(rel.FactionA)) || activeWarFactionIsVassal(gs, faction.FactionID(rel.FactionB)) {
 			continue
 		}
 		ledger := gs.WarLedgerFor(rel.FactionA, rel.FactionB)
@@ -296,6 +307,9 @@ func countActiveWars(gs *state.GameState) int {
 				continue
 			}
 			if b := gs.Factions[faction.FactionID(rel.FactionB)]; b == nil || b.IsEliminated {
+				continue
+			}
+			if activeWarFactionIsVassal(gs, faction.FactionID(rel.FactionA)) || activeWarFactionIsVassal(gs, faction.FactionID(rel.FactionB)) {
 				continue
 			}
 			count++

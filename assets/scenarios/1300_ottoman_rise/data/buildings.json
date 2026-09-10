@@ -14,7 +14,7 @@
     "gold_cost": 180,
     "gold_maintenance": 5,
     "grain_cost": 60,
-    "iron_cost": 70,
+    "iron_cost": 35,
     "stone_cost": 90,
     "timber_cost": 100
   },
@@ -36,7 +36,7 @@
     "gold_cost": 130,
     "gold_maintenance": 2,
     "grain_cost": 15,
-    "iron_cost": 35,
+    "iron_cost": 17,
     "spice_cost": 0,
     "stone_cost": 45,
     "timber_cost": 35
@@ -60,7 +60,7 @@
     "gold_cost": 150,
     "gold_maintenance": 2,
     "grain_cost": 20,
-    "iron_cost": 20,
+    "iron_cost": 10,
     "spice_cost": 8,
     "stone_cost": 30,
     "timber_cost": 50
@@ -79,7 +79,7 @@
     "gold_cost": 300,
     "gold_maintenance": 5,
     "grain_cost": 12,
-    "iron_cost": 45,
+    "iron_cost": 22,
     "stone_cost": 180,
     "timber_cost": 100
   },
@@ -99,7 +99,7 @@
     "gold_cost": 90,
     "gold_maintenance": 1,
     "grain_cost": 40,
-    "iron_cost": 8,
+    "iron_cost": 4,
     "spice_cost": 4,
     "stone_cost": 60,
     "timber_cost": 25
@@ -131,7 +131,7 @@
     "cloth_cost": 10,
     "gold_cost": 100,
     "grain_cost": 8,
-    "iron_cost": 10,
+    "iron_cost": 5,
     "spice_cost": 8,
     "stone_cost": 20,
     "timber_cost": 25
@@ -151,7 +151,7 @@
     "gold_cost": 90,
     "gold_maintenance": 2,
     "grain_cost": 25,
-    "iron_cost": 5,
+    "iron_cost": 2,
     "stone_cost": 5,
     "timber_cost": 15
   },
@@ -171,7 +171,7 @@
     "gold_cost": 100,
     "gold_maintenance": 1,
     "grain_cost": 30,
-    "iron_cost": 10,
+    "iron_cost": 5,
     "stone_cost": 25,
     "timber_cost": 35
   },
@@ -194,7 +194,7 @@
     "gold_cost": 220,
     "gold_maintenance": 2,
     "grain_cost": 15,
-    "iron_cost": 45,
+    "iron_cost": 22,
     "spice_cost": 4,
     "stone_cost": 100,
     "timber_cost": 110

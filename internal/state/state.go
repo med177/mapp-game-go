@@ -189,6 +189,16 @@ func (s *SiegeState) TurnsUntilSurrender() int {
 	return remaining
 }
 
+// SiegeBreachThresholds kuşatmanın küçük ve büyük gedik eşiklerini döner.
+// Eşikler tahkimat seviyesiyle birlikte yükselir.
+func SiegeBreachThresholds(fortLevel int) (minor, major int) {
+	if fortLevel < 1 {
+		fortLevel = 1
+	}
+	minor = 8 + fortLevel*2
+	return minor, minor * 2
+}
+
 // RegionEventStatus bir bölgede aktif olan event görünürlük kaydını tutar.
 // Event choice sonrası veya otomatik çözümlenen event'ler sonrası haritada
 // birkaç tur boyunca ikon gösterimi için kullanılır.
@@ -262,6 +272,7 @@ type GameState struct {
 	AIStrategies       map[string]scenario.AIFactionStrategy    `json:"-"`
 	AIDifficultyPolicy scenario.AIDifficultyPolicy              `json:"-"`
 	UnitTypes          map[string]*army.UnitType                `json:"-"`
+	UnitTypeOrder      []string                                 `json:"-"`
 	BuildingTypes      map[string]*city.Building                `json:"-"`
 	BuildingOrder      []string                                 `json:"-"`
 	TechTypes          map[string]*tech.Technology              `json:"-"`

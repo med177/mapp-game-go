@@ -118,12 +118,7 @@ func canArmyAssaultSiege(gs *state.GameState, attacker *army.Army, targetRegion 
 }
 
 func siegeBreachThresholds(fortLevel int) (int, int) {
-	if fortLevel < 1 {
-		fortLevel = 1
-	}
-	minor := 8 + fortLevel*2
-	major := minor * 2
-	return minor, major
+	return state.SiegeBreachThresholds(fortLevel)
 }
 
 func siegeBreachLevel(progress, fortLevel int) int {

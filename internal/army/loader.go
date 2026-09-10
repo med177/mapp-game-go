@@ -8,24 +8,36 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-// LoadUnitTypes birim tiplerini JSON'dan yükler ve ID'ye göre indeksler.
-func LoadUnitTypes(path string) (map[string]*UnitType, error) {
+// LoadUnitTypesWithOrder birim tiplerini JSON'dan yükler, ID'ye göre indeksler
+// ve dosyadaki tanım sırasını ayrıca döner.
+func LoadUnitTypesWithOrder(path string) (map[string]*UnitType, []string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("birim tipleri okunamadı: %w", err)
+		return nil, nil, fmt.Errorf("birim tipleri okunamadı: %w", err)
 	}
 	var list []*UnitType
 	if err := json.Unmarshal(data, &list); err != nil {
-		return nil, fmt.Errorf("birim tipleri parse edilemedi: %w", err)
+		return nil, nil, fmt.Errorf("birim tipleri parse edilemedi: %w", err)
 	}
 	m := make(map[string]*UnitType, len(list))
+	order := make([]string, 0, len(list))
 	for _, t := range list {
+		if t == nil {
+			continue
+		}
 		if t.TurnsRequired <= 0 {
 			t.TurnsRequired = 1
 		}
 		m[t.ID] = t
+		order = append(order, t.ID)
 	}
-	return m, nil
+	return m, order, nil
+}
+
+// LoadUnitTypes birim tiplerini JSON'dan yükler ve ID'ye göre indeksler.
+func LoadUnitTypes(path string) (map[string]*UnitType, error) {
+	result, _, err := LoadUnitTypesWithOrder(path)
+	return result, err
 }
 
 // armySpecJSON armies.json'daki tek ordu tanımını temsil eder.
