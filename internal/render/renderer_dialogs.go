@@ -61,6 +61,21 @@ func siegeCapabilityLabel(attacker *army.Army, types map[string]*army.UnitType, 
 	return fmt.Sprintf("Gedik için uygun: T%d / T%d", maxFortLevel, fortLevel)
 }
 
+func siegeFirstBreachLabel(gs *state.GameState, siege *state.SiegeState, attacker *army.Army) string {
+	if siege == nil || siege.BreachLevel >= 1 {
+		return "gedik oluştu"
+	}
+	gain := gs.SiegeBreachGainPreview(siege, attacker)
+	turns, possible := state.SiegeTurnsUntilMinorBreach(siege, gain)
+	if !possible {
+		return "gedik oluşmaz"
+	}
+	if turns <= 0 {
+		return "bu tur"
+	}
+	return fmt.Sprintf("~%d tur sonra", turns)
+}
+
 func siegeElapsedLabelTR(turns int) string {
 	if turns < 0 {
 		turns = 0
@@ -320,7 +335,6 @@ func (r *Renderer) drawAttackerSiegePanel(screen *ebiten.Image, attacker *army.A
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 42}, "Hedef", color.RGBA{164, 132, 76, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 74, Y: panel.Rect.Y + 40, W: panel.Rect.W - 92}, trimTextToWidth(target.NameTR, FaceMed, panel.Rect.W-92), color.RGBA{244, 238, 222, 255}, gameui.TextMedium, gameui.TextAlignStart)
 
-	bestTier := attacker.HighestSiegeTier(r.gs.UnitTypes)
 	status := siegeBreachLabelTR(siege.BreachLevel)
 	statusColor := color.RGBA{204, 184, 126, 255}
 	if siege.BreachLevel > 0 {
@@ -328,30 +342,38 @@ func (r *Renderer) drawAttackerSiegePanel(screen *ebiten.Image, attacker *army.A
 	}
 	canAssault := true
 	statusRect := gameui.Rect{X: panel.Rect.X + 16, Y: panel.Rect.Y + 64, W: panel.Rect.W - 32, H: 36}
+	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", "Teslimiyet", siege.TurnsUntilSurrender())
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + panel.Rect.W - 18 - 220, Y: panel.Rect.Y + 31, W: 220}, trimTextToWidth(remainingText, FaceSmall, 220), color.RGBA{190, 208, 170, 245}, gameui.TextSmall, gameui.TextAlignEnd)
 	drawUICardRect(screen, statusRect, color.RGBA{38, 28, 15, 238}, color.RGBA{128, 96, 42, 220}, 1)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 76, Y: statusRect.Y + 8, W: statusRect.W - 88}, status, statusColor, gameui.TextMedium, gameui.TextAlignStart)
-	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", "Teslimiyet", siege.TurnsUntilSurrender())
+	statusInfoText := ""
 	if attacker.HighestSiegeBreachFortLevel(r.gs.UnitTypes) < siege.FortLevel {
-		remainingText = siegeCapabilityLabel(attacker, r.gs.UnitTypes, siege.FortLevel)
+		statusInfoText = siegeCapabilityLabel(attacker, r.gs.UnitTypes, siege.FortLevel)
 	}
 	if siege.BreachLevel >= 2 && siege.DefenderArmyID == "" {
-		remainingText = "Büyük gedik: teslim olabilir"
+		statusInfoText = "Büyük gedik: teslim olabilir"
 	}
-	drawUILabel(screen, gameui.Rect{X: statusRect.X + statusRect.W - 220, Y: statusRect.Y + 10, W: 208}, remainingText, color.RGBA{190, 208, 170, 245}, gameui.TextSmall, gameui.TextAlignEnd)
+	if statusInfoText != "" {
+		drawUILabel(screen, gameui.Rect{X: statusRect.X + statusRect.W - 220, Y: statusRect.Y + 10, W: 208}, trimTextToWidth(statusInfoText, FaceSmall, 208), color.RGBA{190, 208, 170, 245}, gameui.TextSmall, gameui.TextAlignEnd)
+	}
 
 	metricY := panel.Rect.Y + 112
 	metricW := (panel.Rect.W - 44) / 2
+	progressLabel := fmt.Sprintf("%s (%s)", siegeBreachProgressLabel(siege), siegeFirstBreachLabel(r.gs, siege, attacker))
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY, W: metricW, H: 46}, "TAHKİMAT", fmt.Sprintf("T%d", siege.FortLevel), ColorWhite)
-	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 46}, "İLERLEME", siegeBreachProgressLabel(siege), color.RGBA{238, 210, 138, 255})
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 46}, "İLERLEME", progressLabel, color.RGBA{238, 210, 138, 255})
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY + 54, W: metricW, H: 46}, "GEDİK", status, statusColor)
-	assaultValue := fmt.Sprintf("T%d / T%d", bestTier, siege.FortLevel)
-	assaultColor := color.RGBA{202, 222, 190, 255}
-	if !canAssault {
-		assaultValue = "KULLANILAMAZ"
-		assaultColor = color.RGBA{214, 130, 112, 255}
+	maxBreachFortLevel := attacker.HighestSiegeBreachFortLevel(r.gs.UnitTypes)
+	breachCapabilityValue := "YOK"
+	breachCapabilityColor := color.RGBA{214, 130, 112, 255}
+	if maxBreachFortLevel > 0 {
+		breachCapabilityValue = fmt.Sprintf("T%d / T%d", maxBreachFortLevel, siege.FortLevel)
+		if maxBreachFortLevel >= siege.FortLevel {
+			breachCapabilityColor = color.RGBA{202, 222, 190, 255}
+		}
 	}
-	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY + 54, W: metricW, H: 46}, "GENEL HÜCUM", assaultValue, assaultColor)
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY + 54, W: metricW, H: 46}, "GEDİK ETKİSİ", breachCapabilityValue, breachCapabilityColor)
 
 	commanderInfo := trimTextToWidth(commanderSiegeSummary(attacker.Commander), FaceSmall, panel.Rect.W-36)
 	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + 18, Y: panel.Rect.Y + 216, W: panel.Rect.W - 36}, commanderInfo, color.RGBA{154, 190, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
@@ -395,27 +417,32 @@ func (r *Renderer) drawDefensiveSiegePanel(screen *ebiten.Image, defender, attac
 		statusColor = color.RGBA{232, 170, 76, 255}
 	}
 	statusRect := gameui.Rect{X: panel.Rect.X + 16, Y: panel.Rect.Y + 64, W: panel.Rect.W - 32, H: 36}
+	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", "Teslimiyet", siege.TurnsUntilSurrender())
+	drawUILabel(screen, gameui.Rect{X: panel.Rect.X + panel.Rect.W - 18 - 220, Y: panel.Rect.Y + 31, W: 220}, trimTextToWidth(remainingText, FaceSmall, 220), color.RGBA{190, 208, 170, 245}, gameui.TextSmall, gameui.TextAlignEnd)
 	drawUICardRect(screen, statusRect, color.RGBA{38, 28, 15, 238}, color.RGBA{128, 96, 42, 220}, 1)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 12, Y: statusRect.Y + 9}, "DURUM", color.RGBA{226, 185, 92, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: statusRect.X + 76, Y: statusRect.Y + 8, W: statusRect.W - 88}, status, statusColor, gameui.TextMedium, gameui.TextAlignStart)
-	remainingText := fmt.Sprintf("%s için yaklaşık %d tur", "Teslimiyet", siege.TurnsUntilSurrender())
+	statusInfoText := ""
 	if attacker.HighestSiegeBreachFortLevel(r.gs.UnitTypes) < siege.FortLevel {
-		remainingText = siegeCapabilityLabel(attacker, r.gs.UnitTypes, siege.FortLevel)
+		statusInfoText = siegeCapabilityLabel(attacker, r.gs.UnitTypes, siege.FortLevel)
 	}
 	if siege.BreachLevel >= 2 {
-		remainingText = "Büyük gedik: teslim olabilir"
+		statusInfoText = "Büyük gedik: teslim olabilir"
 	}
 	if surrenderOffered {
-		remainingText = defensiveSiegeSettlementOfferStatus(r.gs, target)
+		statusInfoText = defensiveSiegeSettlementOfferStatus(r.gs, target)
 	}
-	drawUILabel(screen, gameui.Rect{X: statusRect.X + statusRect.W - 220, Y: statusRect.Y + 10, W: 208}, remainingText, color.RGBA{190, 208, 170, 245}, gameui.TextSmall, gameui.TextAlignEnd)
+	if statusInfoText != "" {
+		drawUILabel(screen, gameui.Rect{X: statusRect.X + statusRect.W - 220, Y: statusRect.Y + 10, W: 208}, trimTextToWidth(statusInfoText, FaceSmall, 208), color.RGBA{190, 208, 170, 245}, gameui.TextSmall, gameui.TextAlignEnd)
+	}
 
 	// Kartları birkaç piksel sıkıştırarak alt bilgi satırları, ayırıcı ve
 	// düğmeler arasında net boşluk bırak.
 	metricY := panel.Rect.Y + 108
 	metricW := (panel.Rect.W - 44) / 2
+	progressLabel := fmt.Sprintf("%s (%s)", siegeBreachProgressLabel(siege), siegeFirstBreachLabel(r.gs, siege, attacker))
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY, W: metricW, H: 44}, "TAHKİMAT", fmt.Sprintf("T%d", siege.FortLevel), ColorWhite)
-	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 44}, "İLERLEME", siegeBreachProgressLabel(siege), color.RGBA{238, 210, 138, 255})
+	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY, W: metricW, H: 44}, "İLERLEME", progressLabel, color.RGBA{238, 210, 138, 255})
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 16, Y: metricY + 50, W: metricW, H: 44}, "GEDİK", status, statusColor)
 	defenderValue := "GARNİZON YOK"
 	defenderColor := color.RGBA{214, 130, 112, 255}

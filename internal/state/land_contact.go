@@ -123,14 +123,14 @@ func (s *GameState) LandContactBothClash(contact *LandContact) bool {
 	return contact != nil && contact.AttackerDecision == LandContactClash && contact.DefenderDecision == LandContactClash
 }
 
-// LandContactWillClash, geri çekilmeyen taraflardan en az biri çatışmayı
-// kabul ettiğinde muharebenin başlayacağını belirtir. Pozisyonu koru,
-// çatışmadan kaçış değil savunma hazırlığıdır.
+// LandContactWillClash, taraflardan hiçbiri geri çekilmeyi seçmediğinde
+// muharebenin başlayacağını belirtir. Pozisyonu koru çatışmadan kaçış değil,
+// savaş planında savunma bonusu sağlayan savunma hazırlığıdır.
 func (s *GameState) LandContactWillClash(contact *LandContact) bool {
 	if contact == nil || contact.AttackerDecision == LandContactWithdraw || contact.DefenderDecision == LandContactWithdraw {
 		return false
 	}
-	return contact.AttackerDecision == LandContactClash || contact.DefenderDecision == LandContactClash
+	return true
 }
 
 // LandContactRetreatRegion, savunan kara ordusunun düşman olmayan komşu kara

@@ -1668,7 +1668,10 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	}
 
 	var landContactEnemy *army.Army
-	if !a.IsNaval && targetRegion.CanLandEnter() && gs.SiegeAt(target) == nil && !contactResolved {
+	activeTargetSiege := gs.SiegeAt(target)
+	canContactActiveSiege := activeTargetSiege == nil ||
+		(activeTargetSiege.AttackerArmyID != a.ID && !gs.CanJoinActiveSiege(a, target))
+	if !a.IsNaval && targetRegion.CanLandEnter() && canContactActiveSiege && !contactResolved {
 		landContactEnemy = gs.SelectAmbushDefender(a, target, false)
 		if landContactEnemy == nil {
 			landContactEnemy = gs.SelectBattleDefender(a, target, false)
@@ -1725,59 +1728,61 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	// Kuşatma altındaki ordu hareket edemez; önce huruç savaşı yapmalı.
 	// Eğer kuşatan oyuncu ise sortie step'i döner (battle plan UI için).
 	if !a.IsNaval {
-		if siege := gs.SiegeAt(fromRegion); siege != nil && siege.AttackerArmyID != a.ID && gs.IsArmyDefendingSiegedRegion(a) {
-			siegeArmy := gs.Armies[siege.AttackerArmyID]
-			sourceRegion := gs.Regions[fromRegion]
-			if siegeArmy != nil && sourceRegion != nil {
-				// Oyuncunun kuşatma ordusu huruçla karşılaşıyorsa kararı oyun/UI
-				// katmanına bırak. AI-AI huruçları otomatik çözülmeye devam eder.
-				if siegeArmy.OwnerID == string(gs.PlayerFactionID) {
-					return moveOutcome{survived: true, step: TurnStep{
-						FactionID:    fid,
-						Kind:         TurnStepSortie,
-						ArmyID:       a.ID,
-						FromRegion:   fromRegion,
-						TargetRegion: target,
-						FocusRegion:  fromRegion,
-						Message:      actorName + " " + sourceName + " kuşatmasından huruç yapıyor.",
-					}}
-				}
-				// AI vs AI huruç: hemen çöz.
-				atkMods := aiTechMods(gs, a.OwnerID)
-				defMods := aiTechMods(gs, siegeArmy.OwnerID)
-				defMods.DefenseMod += 0.10
-				result := combat.ResolveBattleWithMods(a, siegeArmy, sourceRegion.Terrain, gs.UnitTypes, atkMods, defMods)
-				gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost)
-				recordCommanderBattle(gs, a, siegeArmy, nil, result.AttackerWins)
-				if result.AttackerWins {
+		if !contactResolved {
+			if siege := gs.SiegeAt(fromRegion); siege != nil && siege.AttackerArmyID != a.ID && gs.IsArmyDefendingSiegedRegion(a) {
+				siegeArmy := gs.Armies[siege.AttackerArmyID]
+				sourceRegion := gs.Regions[fromRegion]
+				if siegeArmy != nil && sourceRegion != nil {
+					// Oyuncunun kuşatma ordusu huruçla karşılaşıyorsa kararı oyun/UI
+					// katmanına bırak. AI-AI huruçları otomatik çözülmeye devam eder.
+					if siegeArmy.OwnerID == string(gs.PlayerFactionID) {
+						return moveOutcome{survived: true, step: TurnStep{
+							FactionID:    fid,
+							Kind:         TurnStepSortie,
+							ArmyID:       a.ID,
+							FromRegion:   fromRegion,
+							TargetRegion: target,
+							FocusRegion:  fromRegion,
+							Message:      actorName + " " + sourceName + " kuşatmasından huruç yapıyor.",
+						}}
+					}
+					// AI vs AI huruç: hemen çöz.
+					atkMods := aiTechMods(gs, a.OwnerID)
+					defMods := aiTechMods(gs, siegeArmy.OwnerID)
+					defMods.DefenseMod += 0.10
+					result := combat.ResolveBattleWithMods(a, siegeArmy, sourceRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+					gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost)
+					recordCommanderBattle(gs, a, siegeArmy, nil, result.AttackerWins)
+					if result.AttackerWins {
+						if len(siegeArmy.Units) == 0 {
+							gs.RemoveArmy(siegeArmy.ID)
+						}
+						delete(gs.Sieges, fromRegion)
+						canExitToTarget := targetRegion.OwnerID == "" || targetRegion.OwnerID == a.OwnerID || diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+						if !canExitToTarget && targetRegion.OwnerID != "" {
+							_, stance := relationScore(gs, a.OwnerID, targetRegion.OwnerID)
+							canExitToTarget = stance == faction.StanceAllied
+						}
+						if canExitToTarget && len(a.Units) > 0 {
+							a.PreviousRegionID = a.RegionID
+							a.RegionID = target
+							a.MovePoints = maxInt(0, a.MovePoints-1)
+							gs.ApplyLandRegionEntryAttrition(a)
+						}
+						msg := actorName + " " + sourceName + " kuşatmasını yardı ve çıktı."
+						return moveOutcome{survived: len(a.Units) > 0, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: fromRegion, Message: msg}}
+					}
+					a.MovePoints = 0
+					if len(a.Units) == 0 {
+						gs.RemoveArmy(a.ID)
+					}
 					if len(siegeArmy.Units) == 0 {
 						gs.RemoveArmy(siegeArmy.ID)
+						delete(gs.Sieges, fromRegion)
 					}
-					delete(gs.Sieges, fromRegion)
-					canExitToTarget := targetRegion.OwnerID == "" || targetRegion.OwnerID == a.OwnerID || diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
-					if !canExitToTarget && targetRegion.OwnerID != "" {
-						_, stance := relationScore(gs, a.OwnerID, targetRegion.OwnerID)
-						canExitToTarget = stance == faction.StanceAllied
-					}
-					if canExitToTarget && len(a.Units) > 0 {
-						a.PreviousRegionID = a.RegionID
-						a.RegionID = target
-						a.MovePoints = maxInt(0, a.MovePoints-1)
-						gs.ApplyLandRegionEntryAttrition(a)
-					}
-					msg := actorName + " " + sourceName + " kuşatmasını yardı ve çıktı."
+					msg := actorName + " " + sourceName + " kuşatmasını yaramadı."
 					return moveOutcome{survived: len(a.Units) > 0, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: fromRegion, Message: msg}}
 				}
-				a.MovePoints = 0
-				if len(a.Units) == 0 {
-					gs.RemoveArmy(a.ID)
-				}
-				if len(siegeArmy.Units) == 0 {
-					gs.RemoveArmy(siegeArmy.ID)
-					delete(gs.Sieges, fromRegion)
-				}
-				msg := actorName + " " + sourceName + " kuşatmasını yaramadı."
-				return moveOutcome{survived: len(a.Units) > 0, step: TurnStep{FactionID: fid, Kind: TurnStepBattle, ArmyID: a.ID, FromRegion: fromRegion, TargetRegion: target, FocusRegion: fromRegion, Message: msg}}
 			}
 		}
 	}

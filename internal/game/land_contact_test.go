@@ -20,7 +20,7 @@ func newLandContactGame(playerAttacker bool) *Game {
 		attackerOwner = playerOwner
 		defenderOwner = enemyOwner
 	}
-	return &Game{
+	g := &Game{
 		gs: &state.GameState{
 			PlayerFactionID: faction.FactionID(playerOwner),
 			Regions: map[world.RegionID]*world.Region{
@@ -45,9 +45,10 @@ func newLandContactGame(playerAttacker bool) *Game {
 		},
 		renderer: &render.Renderer{},
 	}
+	return g
 }
 
-func TestPlayerLandContactBothHoldEndsWithoutBattle(t *testing.T) {
+func TestPlayerLandContactBothHoldResolvesBattle(t *testing.T) {
 	g := newLandContactGame(true)
 	g.moveArmyWithStance("attacker", "front", combat.BattleStanceBalanced)
 
@@ -63,11 +64,11 @@ func TestPlayerLandContactBothHoldEndsWithoutBattle(t *testing.T) {
 	beforeAttackerHP := totalArmyHP(g.gs.Armies["attacker"])
 	beforeDefenderHP := totalArmyHP(g.gs.Armies["defender"])
 	g.resolveLandContactChoice(2)
-	if g.gs.PendingLandContact != nil || g.gs.Armies["attacker"].RegionID != "front" {
-		t.Fatalf("pozisyonu koru temasını savaşa çevirmeden emri sonlandırmalı: contact=%+v attacker=%+v", g.gs.PendingLandContact, g.gs.Armies["attacker"])
+	if g.gs.PendingLandContact != nil {
+		t.Fatalf("pozisyonu koru kararından sonra temas çözülmeli: %+v", g.gs.PendingLandContact)
 	}
-	if totalArmyHP(g.gs.Armies["attacker"]) != beforeAttackerHP || totalArmyHP(g.gs.Armies["defender"]) != beforeDefenderHP {
-		t.Fatal("iki taraf da pozisyonunu koruduğunda kayıp oluşmamalı")
+	if totalArmyHP(g.gs.Armies["attacker"]) == beforeAttackerHP && totalArmyHP(g.gs.Armies["defender"]) == beforeDefenderHP {
+		t.Fatal("iki taraf da pozisyonunu koruduğunda savaş çözülmeli")
 	}
 }
 

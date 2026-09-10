@@ -788,7 +788,7 @@ func (g *Game) updateAITurnSequence() {
 	if g.renderer.WarSummaryVisible() || g.renderer.BattleReportVisible() {
 		return
 	}
-	if g.renderer.ConfirmDialogVisible() || g.pendingSortie != nil {
+	if g.renderer.ConfirmDialogVisible() || g.renderer.BattlePlanVisible() || g.pendingSortie != nil {
 		return
 	}
 	if g.aiTurn == nil {
@@ -5312,7 +5312,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	targetSiege := g.gs.SiegeAt(target)
 	allyJoiningSiege := false
 	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
-		if targetSiege != nil && targetSiege.AttackerArmyID == aid {
+		if targetSiege != nil && targetSiege.AttackerArmyID == aid && !resolved {
 			// Hareket emri doğrudan oyun katmanına geldiyse (ör. renderer'ın
 			// hedef kararını atladığı eski kayıt/akış), aynı tahkimat kararını
 			// burada da aç. Böylece ordu sessizce hareketten düşmez ve mevcut

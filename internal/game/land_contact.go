@@ -146,6 +146,15 @@ func (g *Game) resolveLandContactChoice(choice int) {
 			g.moveArmyToSettlementWithStanceAndContactResolved(attacker.ID, contact.LandRegionID, "", combat.BattleStanceBalanced, false, true, movementConsumed, attackerHolding, defenderHolding)
 			return
 		}
+		// Oyuncu kuşatan taraftaysa temas ekranındaki çatışma kararı yine
+		// oyuncunun savaş duruşunu seçebileceği mevcut savaş planına gitmeli.
+		// Plan ekranı oyuncu ordusunu saldıran perspektifinde gösterir; gerçek
+		// temas saldıranı olan AI ordusunun çözümü, seçimden sonra
+		// contactResolved akışıyla sürdürülür.
+		g.gs.ClearLandContact()
+		if g.renderer.ShowLandContactBattlePlan(defender.ID, attacker.ID, contact.LandRegionID, defenderHolding, attackerHolding) {
+			return
+		}
 		step := ai.ResolveLandContactBattle(g.gs, attacker.ID, contact.LandRegionID, movementConsumed, attackerHolding, defenderHolding)
 		if step.Message != "" {
 			g.renderer.ShowCombatResult(step.Message)
@@ -154,7 +163,13 @@ func (g *Game) resolveLandContactChoice(choice int) {
 		return
 	}
 
+	playerWasBesieger := defender.OwnerID == string(g.gs.PlayerFactionID) &&
+		g.gs.SiegeAt(contact.LandRegionID) != nil &&
+		g.gs.SiegeAt(contact.LandRegionID).AttackerArmyID == defender.ID
 	ai.ResolveLandContactWithoutBattle(g.gs, contact, defender)
+	if playerWasBesieger {
+		g.releaseSiegeForArmyMovement(contact.LandRegionID, defender.ID)
+	}
 	if ambusher := g.gs.Armies[contact.AmbushArmyID]; ambusher != nil {
 		ambusher.InAmbush = false
 	}

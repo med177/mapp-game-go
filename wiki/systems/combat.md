@@ -17,6 +17,12 @@ Oyuncunun kuşatması altındaki AI ordusu huruç yaptığında `Huruç Kararı`
 oyuncuya `Çatış` veya `Kuşatmayı Kaldır` seçimini verir; karar AI turunu
 bekletir ve seçime göre ortak oyun çözümüne aktarılır.
 
+Kuşatma bölgesine dışarıdan gelen ve kuşatanla savaş halinde olan AI ordusu,
+kuşatmayı sessizce kaldırıp doğrudan savaş çözemez: önce `PendingLandContact`
+üzerinden aynı kara temas kararını açar. Kuşatan oyuncu geri çekilirse kuşatma
+güvenli biçimde bırakılır; `Çatış` seçerse mevcut savaş planında `Agresif /
+Dengeli / Savunmacı` duruş seçimi yapılır.
+
 Tüm çarpışmalar harita üzerinde otomatik hesaplanır — ayrı taktik sahne yok. Düşman
 orduya hareket emri verildiğinde önce kara teması değerlendirilir; taraflardan
 biri `Çatış` seçip diğeri `Geri Çekil` seçmediyse `ResolveBattleWithPlan()` veya
@@ -52,9 +58,10 @@ yoksa geri çekilme seçeneği kullanılamaz.
 
 İki düşman kara ordusu komşu bir bölgeye aynı hareket emri üzerinden karşı karşıya
 geldiğinde `PendingLandContact` geçici state'i oluşturulur. Oyuncuya donanma
-temasıyla aynı üç seçenek gösterilir. Savaş, taraflardan biri `Çatış` seçip diğeri
-`Geri Çekil` seçmediyse başlar; iki taraf da `Pozisyonu Koru` seçerse temas
-savaşsız sonlanır. Koru seçen taraf muharebede temas savunma bonusu alır.
+temasıyla aynı üç seçenek gösterilir. Savaş, taraflardan hiçbiri `Geri Çekil`
+seçmediği sürece başlar; `Pozisyonu Koru` çatışmadan kaçış değildir, savaş planını
+açar ve koruyan tarafa temas savunma bonusu verir. Oyuncu duruşunu seçene kadar
+oyun akışı bekler.
 Saldıran ordunun
 `Geri çekil` kararı hareketi iptal edip kaynak konumunda bırakır; savunmacının
 geri çekilmesi ise hareket puanı ve güvenli kara komşusu şartlarına bağlıdır.
@@ -62,8 +69,9 @@ geri çekilmesi ise hareket puanı ve güvenli kara komşusu şartlarına bağl�
 AI kara temasında güç farkı `%135` veya daha yüksekse ve güvenli geri çekilme
 rotası varsa geri çekilir; aksi halde çatışmayı kabul eder. Tahkimli hedeflerde
 de aynı temas popup'ı kullanılır; `Çatış` sonrası düşman ordusuyla kara
-muharebesi çözülür. Zaten aktif kuşatma altındaki destek/huruç akışı ise kendi mevcut
-kuşatma kurallarıyla devam eder.
+muharebesi çözülür. Aktif kuşatmaya destek veren müttefik/aynı realm orduları
+temas açmadan destek akışında kalır; kuşatanla savaş halindeki yardım orduları
+ise önce bu temas kararından geçer.
 
 Temas sonrası `Pozisyonu Koru` seçilip ordu düşman toprağında kaldığında aynı
 bölgeye sağ tıklama yeni görev akışını açar. Hedef tahkimliyse mevcut kuşatma

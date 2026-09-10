@@ -390,6 +390,30 @@ func TestSiegeBreachGainRequiresCompatibleSiegeTier(t *testing.T) {
 	}
 }
 
+func TestSiegeBreachPreviewEstimatesFirstMinorBreach(t *testing.T) {
+	gs := siegeTestState()
+	gs.Regions["dst"].Buildings = []string{"walls", "walls", "walls", "walls"}
+	gs.UnitTypes["sappers"] = &army.UnitType{
+		ID:                      "sappers",
+		Category:                army.CategorySiege,
+		Tier:                    3,
+		SiegeBreachMultiplier:   1.1,
+		SiegeBreachMaxFortLevel: 6,
+	}
+	attacker := &army.Army{
+		ID:      "atk",
+		OwnerID: "p1",
+		Units:   []army.Unit{{TypeID: "sappers", CurrentHP: 100}},
+	}
+	siege := &state.SiegeState{RegionID: "dst", FortLevel: 6}
+
+	gain := gs.SiegeBreachGainPreview(siege, attacker)
+	turns, possible := state.SiegeTurnsUntilMinorBreach(siege, gain)
+	if !possible || gain <= 0 || turns <= 0 {
+		t.Fatalf("T6 lağımcı gedik önizlemesi pozitif ve süreli olmalı: gain=%.2f turns=%d possible=%v", gain, turns, possible)
+	}
+}
+
 func TestMoveArmyWhileBesiegingClearsSiegeAndMoves(t *testing.T) {
 	gs := siegeTestState()
 	gs.Regions["src"].Neighbors = []world.RegionID{"dst", "ally"}
