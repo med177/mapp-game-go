@@ -30,7 +30,7 @@
     ]
   },
   {
-    "from": "denmark",
+    "from": "scania",
     "to": "sweden",
     "type": "strait",
     "move_cost": 1,
@@ -60,8 +60,23 @@
     ]
   },
   {
+    "from": "gallipoli",
+    "to": "aydinoglu",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1009,
+      468
+    ],
+    "end": [
+      1010,
+      470
+    ]
+  },
+  {
     "from": "morocco",
-    "to": "granada",
+    "to": "sevilla",
     "type": "strait",
     "move_cost": 1,
     "defense_bonus": 15,
@@ -132,21 +147,6 @@
     "end": [
       947,
       400
-    ]
-  },
-  {
-    "from": "gallipoli",
-    "to": "aydinoglu",
-    "type": "strait",
-    "move_cost": 1,
-    "defense_bonus": 15,
-    "start": [
-      1009,
-      468
-    ],
-    "end": [
-      1010,
-      470
     ]
   }
 ]
