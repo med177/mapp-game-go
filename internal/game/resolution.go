@@ -1804,7 +1804,11 @@ func checkRebellions(gs *state.GameState) {
 		id := rebellionArmyID(gs, r.ID)
 		rebelOwner := r.SuccessorFactionID
 		virtualRebel := false
-		if rebelOwner == "" {
+		// Bir bölgenin ardıl fraksiyonu mevcut sahibiyle aynıysa bu gerçek
+		// bir ardıl devlet değildir. Bu metadata, normal sahiplikte sıkça
+		// mevcut fraksiyonla aynı tutulur; isyan sırasında ordu kesinlikle
+		// eski sahibin ordusu olarak oluşturulmamalıdır.
+		if rebelOwner == "" || rebelOwner == formerOwner {
 			rebelOwner = "rebel_" + string(r.ID)
 			virtualRebel = true
 		}

@@ -101,8 +101,10 @@ kimliğinden sanal fraksiyonu ve savaş ilişkisine göre eski sahibini yeniden 
 İsyan başladığında nüfus, yerleşim/bina gelişmişliği ve eski sahibin tahıl ikmal
 seviyesi 1–20 milislik kuvveti belirler; üretim kuyruğu kullanılmaz. Sonraki turda
 eski sahibin kara ordusu bölgeye gelirse isyan bastırılır. Bölge sahipsiz kalır ve
-`SuccessorFactionID` gerçekten elenmiş bir fraksiyona işaret ederse ardıl devlet
-aktifleşir, isyancı ordu ona devredilir ve bölgeyi alır.
+`SuccessorFactionID` gerçekten elenmiş ve eski sahibinden farklı bir fraksiyona
+işaret ederse ardıl devlet aktifleşir, isyancı ordu ona devredilir ve bölgeyi alır.
+Metadata mevcut sahiple aynıysa ardıl devlet kabul edilmez; isyan sanal Rebel
+fraksiyonuna bağlanır.
 
 Geliştirme modunda save yükleme sonrası ilk beş AI fazı için
 `AIDiagnosticHistory` ve `AIDiagnosticCaptureTurnsRemain` geçici runtime alanları

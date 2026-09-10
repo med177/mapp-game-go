@@ -145,6 +145,39 @@ func TestCheckRebellionsSpawnsScaledRebelArmy(t *testing.T) {
 	}
 }
 
+func TestCheckRebellionsDoesNotUseCurrentOwnerAsRebelFaction(t *testing.T) {
+	const owner = faction.FactionID("ottoman")
+	const regionID world.RegionID = "bilecik_frontier"
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			owner: {ID: owner},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			regionID: {
+				ID:                 regionID,
+				OwnerID:            string(owner),
+				SuccessorFactionID: string(owner),
+				Satisfaction:       10,
+				Population:         1200,
+			},
+		},
+		Armies: map[army.ArmyID]*army.Army{},
+	}
+
+	checkRebellions(gs)
+
+	if got := gs.Regions[regionID].OwnerID; got != "rebel_bilecik_frontier" {
+		t.Fatalf("mevcut sahip isyan fraksiyonu olarak kullanılmamalı, got=%q", got)
+	}
+	rebel := gs.Armies[army.ArmyID("army_rebel_bilecik_frontier_1")]
+	if rebel == nil {
+		t.Fatal("bilecik için isyancı ordu oluşturulmadı")
+	}
+	if rebel.OwnerID != "rebel_bilecik_frontier" || !rebel.IsRebel || rebel.RebelAgainstID != string(owner) {
+		t.Fatalf("isyancı ordusunun sahiplik bilgisi hatalı: %+v", rebel)
+	}
+}
+
 func TestCheckRebellionsSuccessorFormsAfterRebellionWins(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

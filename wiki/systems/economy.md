@@ -57,6 +57,8 @@ Vergi etkisi tam 10 puanlık kademelerle hesaplanır; örneğin %20 `+5`, %40 `-
 bir sonraki tam kademeye ulaşmadığı için nötr kalır.
 
 **İsyan:** `checkRebellions()` memnuniyet eşiğini kontrol eder → bölge kontrolü kaybedilebilir.
+`SuccessorFactionID`, mevcut bölge sahibiyle aynıysa geçerli bir ardıl devlet sayılmaz;
+ordu `rebel_<region>` sanal fraksiyonuna bağlanır.
 
 Tahıl stoku ekonomi tick'i sonunda sıfır olan fraksiyonun tüm kara bölgelerinde
 memnuniyet tur başına `-5` azalır. Bu delta diğer vergi, bina, savaş ve ordu
