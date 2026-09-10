@@ -10,9 +10,13 @@ import (
 )
 
 func (g *Game) buildWarSummary(targetID faction.FactionID, result diplomacy.WarDeclarationResult) render.WarSummaryReport {
-	attackerRoot := diplomacy.RealmRoot(g.gs, g.gs.PlayerFactionID)
+	return g.buildWarSummaryFor(g.gs.PlayerFactionID, targetID, result)
+}
+
+func (g *Game) buildWarSummaryFor(attackerID, targetID faction.FactionID, result diplomacy.WarDeclarationResult) render.WarSummaryReport {
+	attackerRoot := diplomacy.RealmRoot(g.gs, attackerID)
 	if attackerRoot == "" {
-		attackerRoot = g.gs.PlayerFactionID
+		attackerRoot = attackerID
 	}
 	defenderRoot := diplomacy.RealmRoot(g.gs, targetID)
 	if defenderRoot == "" {

@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -35,6 +36,9 @@ type TurnStep struct {
 	FocusRegion   world.RegionID
 	TargetFaction faction.FactionID
 	Message       string
+	// WarDeclaration, AI'nin ilan ettiği savaşın iki cephe ve katılımcı
+	// sonuçlarını oyun katmanına taşır; oyuncuya savaş özeti gösterilebilir.
+	WarDeclaration *diplomacy.WarDeclarationResult
 }
 
 type TurnStepper struct {

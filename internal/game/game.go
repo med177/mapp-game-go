@@ -854,6 +854,11 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 		g.presentAISortieDecision(step)
 		return
 	}
+	if step.WarDeclaration != nil && step.WarDeclaration.Applied && step.TargetFaction == g.gs.PlayerFactionID {
+		report := g.buildWarSummaryFor(step.FactionID, step.TargetFaction, *step.WarDeclaration)
+		g.renderer.ShowWarSummary(report)
+		g.renderer.AddEventDetail("[SAVAŞ] "+step.WarDeclaration.Message, warSummaryDetailText(report))
+	}
 	actor := turnActorName(g.gs, step.FactionID)
 	detail := step.Message
 	if detail == "" {

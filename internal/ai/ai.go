@@ -1201,14 +1201,15 @@ func formCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID, step
 		return
 	}
 
-	result := diplomacy.Execute(gs, fid, gs.PlayerFactionID, diplomacy.ActionDeclareWar)
-	if result.Applied || result.Accepted {
+	result := diplomacy.ExecuteWarDeclaration(gs, fid, gs.PlayerFactionID, nil)
+	if result.Applied {
 		gs.QueueNavalContactForWar(fid, gs.PlayerFactionID)
 		addTurnStep(steps, TurnStep{
-			FactionID:     fid,
-			Kind:          TurnStepDiplomacy,
-			TargetFaction: gs.PlayerFactionID,
-			Message:       turnFactionName(gs, fid) + ": " + result.Message,
+			FactionID:      fid,
+			Kind:           TurnStepDiplomacy,
+			TargetFaction:  gs.PlayerFactionID,
+			Message:        turnFactionName(gs, fid) + ": " + result.Message,
+			WarDeclaration: &result,
 		})
 	}
 

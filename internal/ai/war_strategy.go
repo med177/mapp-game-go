@@ -344,10 +344,10 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 	if bestTarget == "" {
 		return
 	}
-	result := diplomacy.Execute(gs, fid, bestTarget, diplomacy.ActionDeclareWar)
-	if result.Applied || result.Accepted {
+	result := diplomacy.ExecuteWarDeclaration(gs, fid, bestTarget, nil)
+	if result.Applied {
 		gs.QueueNavalContactForWar(fid, bestTarget)
-		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: bestTarget, Message: turnFactionName(gs, fid) + ": " + result.Message})
+		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: bestTarget, Message: turnFactionName(gs, fid) + ": " + result.Message, WarDeclaration: &result})
 	}
 }
 
@@ -371,12 +371,12 @@ func aiEvaluateHistoricalWarOpportunity(gs *state.GameState, fid faction.Faction
 	if score := aiWarOpportunityScoreWithContext(gs, fid, target, rel, ctx); score < aiHistoricalWarThreshold {
 		return false
 	}
-	result := diplomacy.Execute(gs, fid, target, diplomacy.ActionDeclareWar)
-	if !result.Applied && !result.Accepted {
+	result := diplomacy.ExecuteWarDeclaration(gs, fid, target, nil)
+	if !result.Applied {
 		return false
 	}
 	gs.QueueNavalContactForWar(fid, target)
-	addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: target, Message: turnFactionName(gs, fid) + " tarihsel hedefi için " + result.Message})
+	addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: target, Message: turnFactionName(gs, fid) + " tarihsel hedefi için " + result.Message, WarDeclaration: &result})
 	return true
 }
 

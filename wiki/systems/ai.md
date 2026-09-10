@@ -1206,6 +1206,7 @@ gelecek hedefi tek başına bu sert temizliği yapmaz. Tehdit/fayda kaybolduğun
 eşiğinin altındaki veya müttefik tavanını aşan düşük değerli ittifaklar çözülür. Bu model
  tüm senaryolar için aktiftir.
 - AI savaş ilanında hem saldıran hem savunan taraftaki oyuncu müttefikleri otomatik çekilmez; önce oyuncuya savaş çağrısı modalı düşer
+- AI doğrudan oyuncuya savaş ilan ettiğinde aynı savaş özeti paneli açılır; cephe katılımcıları gösterilir ve oyuncu paneli kapatana kadar AI tur sırası ilerlemez (`internal/game/game.go`, `internal/render/war_summary.go`).
 
 ---
 

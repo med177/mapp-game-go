@@ -132,6 +132,45 @@ func TestAITurnSequenceWaitsWhileBattleReportVisible(t *testing.T) {
 	}
 }
 
+func TestAITurnWarDeclarationShowsSummaryAndPausesSequence(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Phase:           state.PhaseAITurn,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+			"enemy":  {ID: "enemy", NameTR: "Saldıran"},
+		},
+	}
+	r := &render.Renderer{}
+	g := &Game{
+		gs:       gs,
+		renderer: r,
+		aiTurn: &aiTurnState{
+			order: []faction.FactionID{"enemy"},
+			index: 0,
+		},
+	}
+	war := diplomacy.WarDeclarationResult{
+		Result: diplomacy.Result{Applied: true, Message: "Saldıran ile Oyuncu arasında savaş başladı."},
+	}
+
+	g.handleAITurnStep(ai.TurnStep{
+		FactionID:      "enemy",
+		Kind:           ai.TurnStepDiplomacy,
+		TargetFaction:  "player",
+		Message:        "Saldıran: savaş başladı.",
+		WarDeclaration: &war,
+	})
+
+	if !r.WarSummaryVisible() {
+		t.Fatal("AI oyuncuya savaş ilan ettiğinde savaş özeti açılmalıydı")
+	}
+	g.updateAITurnSequence()
+	if g.aiTurn.index != 0 {
+		t.Fatalf("savaş özeti açıkken AI sırası ilerlememeliydi, got=%d", g.aiTurn.index)
+	}
+}
+
 func TestAcceptedOfferEndsCurrentAIFactionTurn(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
