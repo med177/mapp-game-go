@@ -31,6 +31,28 @@ func TestLoad1300LoadsImperialState(t *testing.T) {
 	}
 }
 
+func TestLoadScenarioInitializesBuildingOrderForRegionPanel(t *testing.T) {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime caller unavailable")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(file), "..", ".."))
+	scenarioPath := filepath.Join(root, "assets", "scenarios", "1300_ottoman_rise")
+
+	gs, _, err := loadScenarioData(scenarioPath, 2, nil)
+	if err != nil {
+		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+	}
+	if len(gs.BuildingOrder) == 0 {
+		t.Fatal("yeni oyun yüklemesinde bina sırası boş")
+	}
+	for _, buildingID := range gs.BuildingOrder {
+		if gs.BuildingTypes[buildingID] == nil {
+			t.Fatalf("bina sırası bilinmeyen bina içeriyor: %s", buildingID)
+		}
+	}
+}
+
 func TestLoad1300StartingGrainAndArmyUpkeepArePositive(t *testing.T) {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {

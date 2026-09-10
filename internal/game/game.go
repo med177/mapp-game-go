@@ -3394,7 +3394,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	}
 	advance()
 	yield()
-	buildingTypes, err := city.LoadBuildings(dp("buildings.json"))
+	buildingTypes, buildingOrder, err := city.LoadBuildingsWithOrder(dp("buildings.json"))
 	if err != nil {
 		log.Printf("Binalar yüklenemedi: %v", err)
 	}
@@ -3474,6 +3474,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		UnitTypes:          unitTypes,
 		CommanderTemplates: commanderTemplates,
 		BuildingTypes:      buildingTypes,
+		BuildingOrder:      buildingOrder,
 		TechTypes:          techTypes,
 		ScenarioVictories:  victoryOpts,
 		AvailableVictories: scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
