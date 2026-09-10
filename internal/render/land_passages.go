@@ -421,4 +421,10 @@ func cloneLandPassages(src []world.LandPassage) []world.LandPassage {
 			start := *src[i].Start
 			dst[i].Start = &start
 		}
-		if src[i].End != ni
+		if src[i].End != nil {
+			end := *src[i].End
+			dst[i].End = &end
+		}
+	}
+	return dst
+}
