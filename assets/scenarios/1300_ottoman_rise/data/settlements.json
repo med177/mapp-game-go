@@ -7004,5 +7004,19 @@
         "population": 98
       }
     ]
+  },
+  {
+    "region_id": "ceuta",
+    "settlements": [
+      {
+        "id": "ceuta_main",
+        "name_tr": "Sebte",
+        "x": 371,
+        "y": 554,
+        "type": "port",
+        "is_center": true,
+        "population": 200
+      }
+    ]
   }
 ]

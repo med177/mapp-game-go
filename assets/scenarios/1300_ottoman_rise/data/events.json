@@ -68,7 +68,10 @@
           "gold_delta": 180,
           "grain_delta": 80,
           "complete_techs": ["composite_bow_drills"],
-          "set_flags": ["safavid_rise"]
+          "set_flags": [
+            "safavid_rise",
+            "safavid_state_formed"
+          ]
         }
       }
     ]
@@ -482,6 +485,9 @@
     "name_tr": "Kosova Savaşı",
     "one_shot": true,
     "probability": 0,
+    "requires_flags": [
+      "balkan_coalition_1389_formed"
+    ],
     "sat_delta": 15,
     "target": "specific_faction"
   },
@@ -712,8 +718,58 @@
     "target": "all_factions"
   },
   {
-    "affected_faction": "aragon",
+    "id": "reconquista_granada_war_1482",
+    "name_tr": "Granada Savaşı Başlıyor",
+    "desc_tr": "Kastilya-Aragon tacı Granada Emirliği'ne karşı son büyük seferi başlatıyor. Granada aktif kaldığı sürece savaş diplomatik olarak ilan edilecek.",
+    "historical_year": 1482,
+    "historical_month": 2,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "castile_kingdom",
+    "requires_flags": [
+      "iberian_dynastic_union_formed"
+    ],
+    "requires_active_factions": [
+      "granada_emirate"
+    ],
+    "choice_prompt_tr": "Granada Emirliği'ne karşı son sefer başlatılsın mı?",
+    "choices": [
+      {
+        "id": "declare_granada_war",
+        "label_tr": "Granada'ya savaş ilan et",
+        "desc_tr": "Granada ile savaşı başlatır; Kastilya-İspanya orduları Granada'nın kalan bölgelerini fethetmeye yönelir.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "castile_kingdom",
+          "relations": [
+            {
+              "faction_id": "granada_emirate",
+              "score_delta": -100,
+              "stance": "war"
+            }
+          ],
+          "set_flags": [
+            "reconquista_granada_war_started"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "affected_faction": "castile_kingdom",
     "army_hp_mod": 1,
+    "requires_flags": [
+      "reconquista_granada_war_started"
+    ],
+    "requires_owned_regions": [
+      "algarve",
+      "granada",
+      "murcia",
+      "sevilla"
+    ],
     "choice_prompt_tr": "Granada sonrası İber düzeni nasıl şekillenecek?",
     "choices": [
       {
@@ -724,7 +780,8 @@
           "grain_delta": 15,
           "relation_delta_all": 8,
           "sat_delta": 12,
-          "target": "player_faction"
+          "target": "specific_faction",
+          "affected_faction": "castile_kingdom"
         },
         "id": "integration",
         "label_tr": "Kademeli Entegrasyon"
@@ -736,13 +793,14 @@
           "gold_delta": 140,
           "relation_delta_all": -10,
           "sat_delta": -12,
-          "target": "player_faction"
+          "target": "specific_faction",
+          "affected_faction": "castile_kingdom"
         },
         "id": "purge",
         "label_tr": "Sert Tasfiye"
       }
     ],
-    "desc_tr": "İspanya'nın son Müslüman kalesi Granada düştü. Aragon ve Kastilya birleşik güçleri İber Yarımadası'nın tamamını ele geçirdi.",
+    "desc_tr": "İspanya'nın son Müslüman kalesi Granada düştü. Kastilya-İspanya tacı, Granada'nın bütün bölgelerini ele geçirerek Reconquista'yı tamamladı.",
     "gold_delta": 500,
     "grain_delta": 0,
     "historical_month": 1,
@@ -851,6 +909,95 @@
     "target": "specific_faction"
   },
   {
+    "id": "portugal_reconquista_consolidation_1411",
+    "name_tr": "Portekiz'in Reconquista Sonrası Konsolidasyonu",
+    "desc_tr": "Portekiz Krallığı iç düzenini sağlamlaştırdı ve Atlantik kıyısındaki limanlarını ortak bir kraliyet siyasetinde birleştirdi.",
+    "historical_year": 1411,
+    "historical_month": 1,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "portugal",
+    "requires_owned_regions": [ "portugal" ],
+    "gold_delta": 120,
+    "grain_delta": 20,
+    "sat_delta": 8,
+    "set_flags": [ "portugal_reconquista_consolidated" ]
+  },
+  {
+    "id": "portugal_ceuta_1415",
+    "name_tr": "Ceuta'nın Fethi",
+    "desc_tr": "Portekiz, Kuzey Afrika'da kalıcı bir deniz üssü kurarak Afrika kıyılarına ve Sahra ticaretine açılan kapıyı ele geçirmek istiyor.",
+    "historical_year": 1415,
+    "historical_month": 8,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "portugal",
+    "requires_flags": [ "portugal_reconquista_consolidated" ],
+    "requires_active_factions": [ "marinid_sultanate" ],
+    "requires_owned_regions": [ "portugal" ],
+    "choice_prompt_tr": "Ceuta seferi başlatılsın mı?",
+    "choices": [
+      {
+        "id": "conquer_ceuta",
+        "label_tr": "Ceuta'ya Sefer Düzenle",
+        "desc_tr": "Portekiz ile Marinid Sultanlığı arasında savaş başlatır ve Afrika kıyısındaki genişleme programını açar.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "portugal",
+          "relations": [
+            {
+              "faction_id": "marinid_sultanate",
+              "stance": "war",
+              "score_delta": -100
+            }
+          ],
+          "set_flags": [ "portugal_ceuta_campaign_started" ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "portugal_naval_program_1480",
+    "name_tr": "Portekiz Denizcilik Programı",
+    "desc_tr": "Ceuta tecrübesi, Portekiz sarayını okyanus seyrüseferi, haritacılık ve uzun menzilli konvoylar için düzenli yatırım yapmaya yöneltti.",
+    "historical_year": 1480,
+    "historical_month": 1,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "portugal",
+    "requires_flags": [ "portugal_ceuta_campaign_started" ],
+    "requires_owned_regions": [ "portugal", "ceuta" ],
+    "gold_delta": -160,
+    "sat_delta": 5,
+    "complete_techs": [ "latin_naval_architecture" ],
+    "set_flags": [ "portugal_naval_program_started" ]
+  },
+  {
+    "id": "portugal_cape_rounding_1488",
+    "name_tr": "Ümit Burnu'nun Dönülmesi",
+    "desc_tr": "Bartolomeu Dias'ın seferi, Afrika'nın güney ucunun aşılabileceğini kanıtladı ve Hindistan yolunun son halkasını görünür kıldı.",
+    "historical_year": 1488,
+    "historical_month": 2,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "portugal",
+    "requires_flags": [ "portugal_naval_program_started" ],
+    "requires_owned_regions": [ "portugal" ],
+    "gold_delta": 180,
+    "grain_delta": 10,
+    "sat_delta": 6,
+    "set_flags": [ "portugal_cape_route_opened" ]
+  },
+  {
     "affected_faction": "portugal",
     "army_hp_mod": 1,
     "choice_prompt_tr": "Hindistan yolunun açılmasıyla strateji ne olacak?",
@@ -862,6 +1009,20 @@
           "gold_delta": -120,
           "grain_delta": 10,
           "relation_delta_all": -6,
+          "trade_network_modifiers": [
+            {
+              "id": "portuguese_spice_route_loss",
+              "center_ids": [ "egypt", "basra", "spice_route" ],
+              "region_ids": [ "egypt", "basra" ],
+              "trade_income_percent": -35,
+              "spice_percent": -30
+            },
+            {
+              "id": "portuguese_spice_route_gain",
+              "center_ids": [ "portugal", "cape_route" ],
+              "trade_income_percent": 40
+            }
+          ],
           "set_flags": [ "estado_da_india" ],
           "sat_delta": 10,
           "target": "player_faction"
@@ -877,6 +1038,20 @@
           "gold_delta": -60,
           "grain_delta": 30,
           "relation_delta_all": 7,
+          "trade_network_modifiers": [
+            {
+              "id": "portuguese_spice_route_loss",
+              "center_ids": [ "egypt", "basra", "spice_route" ],
+              "region_ids": [ "egypt", "basra" ],
+              "trade_income_percent": -35,
+              "spice_percent": -30
+            },
+            {
+              "id": "portuguese_spice_route_gain",
+              "center_ids": [ "portugal", "cape_route" ],
+              "trade_income_percent": 40
+            }
+          ],
           "set_flags": [ "port_chain" ],
           "sat_delta": 4,
           "target": "player_faction"
@@ -895,6 +1070,8 @@
     "name_tr": "Hindistan Deniz Yolu",
     "one_shot": true,
     "probability": 0,
+    "requires_flags": [ "portugal_cape_route_opened" ],
+    "requires_owned_regions": [ "portugal" ],
     "sat_delta": 15,
     "target": "specific_faction"
   },
@@ -1094,6 +1271,9 @@
           "gold_delta": -100,
           "grain_delta": 15,
           "relation_delta_all": 6,
+          "set_flags": [
+            "battle_of_mohacs_1526_resolved"
+          ],
           "sat_delta": 10,
           "target": "player_faction"
         },
@@ -1107,6 +1287,9 @@
           "army_hp_mod": 1.12,
           "gold_delta": -140,
           "relation_delta_all": -8,
+          "set_flags": [
+            "battle_of_mohacs_1526_resolved"
+          ],
           "sat_delta": -6,
           "target": "player_faction"
         },
@@ -1124,6 +1307,10 @@
     "name_tr": "Mohaç Meydan Muharebesi",
     "one_shot": true,
     "probability": 0,
+    "requires_flags": [
+      "hungarian_defensive_coalition_1525_formed",
+      "ottoman_mohacs_prepared_1526"
+    ],
     "sat_delta": 30,
     "target": "specific_faction"
   },
@@ -1437,6 +1624,9 @@
     "name_tr": "Varna Haçlı Seferi",
     "one_shot": true,
     "probability": 0,
+    "requires_flags": [
+      "varna_crusade_coalition_formed"
+    ],
     "sat_delta": 0,
     "target": "all_factions"
   },
@@ -1498,6 +1688,9 @@
     "name_tr": "Çaldıran Muharebesi",
     "one_shot": true,
     "probability": 0,
+    "requires_flags": [
+      "ottoman_safavid_war_1514_started"
+    ],
     "sat_delta": -10,
     "target": "specific_faction"
   },
@@ -1602,6 +1795,44 @@
   {
     "affected_faction": "ilkhanate",
     "army_hp_mod": 0.9,
+    "successor_revivals": [
+      {
+        "faction_id": "jelayirids",
+        "region_id": "baghdad",
+        "mode": "independent",
+        "militia_count": 6
+      },
+      {
+        "faction_id": "muzaffarids",
+        "region_id": "western_persia",
+        "mode": "independent",
+        "militia_count": 6
+      },
+      {
+        "faction_id": "afshar_beyligi",
+        "region_id": "erzurum",
+        "mode": "independent",
+        "militia_count": 5
+      },
+      {
+        "faction_id": "kadi_burhaneddin",
+        "region_id": "sivas",
+        "mode": "independent",
+        "militia_count": 5
+      },
+      {
+        "faction_id": "eretna_state",
+        "region_id": "kayseri",
+        "mode": "independent",
+        "militia_count": 5
+      },
+      {
+        "faction_id": "artuklu",
+        "region_id": "mosul",
+        "mode": "independent",
+        "militia_count": 5
+      }
+    ],
     "desc_tr": "Ebu Said Bahadır Han'ın ölümüyle İlhanlı merkezî otoritesi sarsıldı; eyaletler ve yerel hanlıklar kendi yollarını arıyor.",
     "gold_delta": -120,
     "grain_delta": -35,
@@ -1613,6 +1844,9 @@
     "one_shot": true,
     "probability": 0,
     "relation_delta_all": -8,
+    "set_flags": [
+      "ilkhanate_successors_emerged"
+    ],
     "sat_delta": -12,
     "target": "specific_faction"
   },
@@ -2084,5 +2318,1135 @@
     "sat_delta": 8,
     "target": "random_region",
     "population_delta": 10
+  },
+  {
+    "affected_faction": "ilkhanate",
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "İlhanlı mirası parçalanırken doğudaki hanedanlarla nasıl ilişki kurulacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Celayirliler, Timurîler, Muzafferîler, Afşar, Karakoyunlu ve Akkoyunlu hanedanlarını meşru ardıl ortaklar olarak tanırsın.",
+        "effect": {
+          "gold_delta": -80,
+          "relation_delta_all": 5,
+          "relations": [
+            { "faction_id": "jelayirids", "score_delta": 25, "stance": "allied" },
+            { "faction_id": "timurid_empire", "score_delta": 15, "stance": "peace" },
+            { "faction_id": "muzaffarids", "score_delta": 15, "stance": "peace" },
+            { "faction_id": "afshar_beyligi", "score_delta": 10, "stance": "peace" },
+            { "faction_id": "karakoyunlu_state", "score_delta": 10, "stance": "peace" },
+            { "faction_id": "akkoyunlu_state", "score_delta": 10, "stance": "peace" },
+            { "faction_id": "kadi_burhaneddin", "score_delta": 8, "stance": "peace" },
+            { "faction_id": "eretna_state", "score_delta": 8, "stance": "peace" },
+            { "faction_id": "artuklu", "score_delta": 8, "stance": "peace" }
+          ],
+          "sat_delta": 8
+        },
+        "id": "recognize_eastern_successors",
+        "label_tr": "Ardıl Hanedanları Tanı"
+      },
+      {
+        "ai_weight": 3,
+        "desc_tr": "İlhanlı topraklarının tamamını zorla elde tutmaya çalışırsın; doğudaki bütün ardıl hanedanlarla savaş başlar.",
+        "effect": {
+          "gold_delta": -160,
+          "relations": [
+            { "faction_id": "jelayirids", "score_delta": -35, "stance": "war" },
+            { "faction_id": "timurid_empire", "score_delta": -35, "stance": "war" },
+            { "faction_id": "muzaffarids", "score_delta": -30, "stance": "war" },
+            { "faction_id": "afshar_beyligi", "score_delta": -25, "stance": "war" },
+            { "faction_id": "karakoyunlu_state", "score_delta": -25, "stance": "war" },
+            { "faction_id": "akkoyunlu_state", "score_delta": -25, "stance": "war" },
+            { "faction_id": "kadi_burhaneddin", "score_delta": -20, "stance": "war" },
+            { "faction_id": "eretna_state", "score_delta": -20, "stance": "war" },
+            { "faction_id": "artuklu", "score_delta": -20, "stance": "war" }
+          ],
+          "sat_delta": -10
+        },
+        "id": "defend_ilkhanid_claim",
+        "label_tr": "İlhanlı Mirasını Zorla Koru"
+      }
+    ],
+    "desc_tr": "Ebu Said Bahadır Han'ın ölümünden sonra eyaletler ve yerel hanedanlar bağımsız bir gelecek arıyor. İlhanlı mirasının ardıllarıyla kurulacak ilişki doğu siyasetini belirleyecek.",
+    "historical_month": 12,
+    "historical_year": 1335,
+    "id": "ilkhanate_successor_diplomacy_1335",
+    "min_turn": 0,
+    "name_tr": "İlhanlı Mirasının Ardılları",
+    "one_shot": true,
+    "probability": 0,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1.05,
+    "choice_prompt_tr": "Rumeli'ye geçişten sonra Osmanlı'nın Balkan siyaseti nasıl şekillenecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Sırp ve Bulgar saraylarına karşı ortak bir Osmanlı cephesi kurarak Balkanlarda kalıcı üstünlük ararsın.",
+        "effect": {
+          "relations": [
+            { "faction_id": "serbian_empire", "score_delta": -35, "stance": "war" },
+            { "faction_id": "bulgarian_empire", "score_delta": -25, "stance": "war" },
+            { "faction_id": "east_rome", "score_delta": -15, "stance": "war" }
+          ],
+          "sat_delta": 5
+        },
+        "id": "open_balkan_front",
+        "label_tr": "Balkan Cephesini Aç"
+      },
+      {
+        "ai_weight": 6,
+        "desc_tr": "Gelibolu'yu savunurken Sırp ve Bulgar güçleriyle geçici barış, Doğu Roma ile ticari yakınlık kurarsın.",
+        "effect": {
+          "diplomatic_offers": [
+            { "faction_id": "serbian_empire", "action": "propose_peace", "priority": 30, "reason_tr": "Gelibolu sonrası Balkan ateşkesi" },
+            { "faction_id": "bulgarian_empire", "action": "propose_peace", "priority": 30, "reason_tr": "Gelibolu sonrası Balkan ateşkesi" },
+            { "faction_id": "east_rome", "action": "propose_trade", "priority": 20, "reason_tr": "Boğaz ve Rumeli ticaret güvenliği" }
+          ],
+          "gold_delta": 90,
+          "sat_delta": 4
+        },
+        "id": "secure_balkan_truce",
+        "label_tr": "Balkan Ateşkesini Kur"
+      }
+    ],
+    "desc_tr": "Gelibolu'daki dayanak noktası Osmanlı'yı Balkan siyasetinin içine çekti. Sınır devletleriyle savaş mı, yoksa geçici ittifak ve ticaret mi seçilecek?",
+    "historical_month": 3,
+    "historical_year": 1354,
+    "id": "balkan_diplomacy_after_gallipoli_1354",
+    "min_turn": 0,
+    "name_tr": "Gelibolu Sonrası Balkan Diplomasisi",
+    "one_shot": true,
+    "probability": 0,
+    "requires_owned_regions": ["thrace"],
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "venice",
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Venedik-Ceneviz rekabeti açık bir deniz savaşına mı dönüşecek?",
+    "choices": [
+      {
+        "ai_weight": 7,
+        "desc_tr": "Karadeniz kolonileri için Ceneviz'e meydan okur, limanlarda açık deniz savaşı başlatırsın.",
+        "effect": {
+          "relations": [
+            { "faction_id": "genoa", "score_delta": -35, "stance": "war" },
+            { "faction_id": "ottoman", "score_delta": -10, "stance": "peace" }
+          ],
+          "trade_income_percent": 12
+        },
+        "id": "venice_declares_war_on_genoa",
+        "label_tr": "Ceneviz'e Savaş İlan Et"
+      },
+      {
+        "ai_weight": 8,
+        "desc_tr": "İki ticaret cumhuriyeti deniz yollarını paylaşır ve Osmanlı ile de ticari güvence kurar.",
+        "effect": {
+          "diplomatic_offers": [
+            { "faction_id": "genoa", "action": "propose_alliance", "priority": 35, "reason_tr": "Karadeniz deniz ticareti güvenliği" },
+            { "faction_id": "ottoman", "action": "propose_trade", "priority": 20, "reason_tr": "Akdeniz ve Karadeniz ticaret güvenliği" }
+          ],
+          "gold_delta": 160,
+          "trade_income_percent": 18
+        },
+        "id": "venice_genoa_maritime_pact",
+        "label_tr": "Deniz Ticaret Paktı Kur"
+      }
+    ],
+    "desc_tr": "Ege ve Karadeniz'deki koloniler Venedik ile Ceneviz'i aynı limanlarda karşı karşıya getirdi. Rekabet savaş veya ticari ittifakla sonuçlanabilir.",
+    "historical_month": 8,
+    "historical_year": 1350,
+    "id": "venice_genoa_diplomatic_choice_1350",
+    "min_turn": 0,
+    "name_tr": "Venedik-Ceneviz Deniz Bunalımı",
+    "one_shot": true,
+    "probability": 0,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 1.08,
+    "choice_prompt_tr": "Kosova zaferinden sonra Balkan düzeni nasıl kurulacak?",
+    "choices": [
+      {
+        "ai_weight": 9,
+        "desc_tr": "Sırp İmparatorluğu ve Macar Krallığı'nın karşı saldırılarını önlemek için iki cephede de savaş ilan edersin.",
+        "effect": {
+          "relations": [
+            { "faction_id": "serbian_empire", "score_delta": -40, "stance": "war" },
+            { "faction_id": "hungarian_kingdom", "score_delta": -30, "stance": "war" }
+          ],
+          "sat_delta": 6
+        },
+        "id": "press_kosovo_victory",
+        "label_tr": "Kosova Zaferini İlerle"
+      },
+      {
+        "ai_weight": 5,
+        "desc_tr": "Sırp vasallarıyla barış yapıp Macaristan'a karşı Bulgar ve Eflak güçleriyle savunma ittifakı kurarsın.",
+        "effect": {
+          "diplomatic_offers": [
+            { "faction_id": "serbian_empire", "action": "propose_peace", "priority": 40, "reason_tr": "Kosova sonrası Sırp ateşkesi" },
+            { "faction_id": "bulgarian_empire", "action": "propose_alliance", "priority": 30, "reason_tr": "Tuna savunma ittifakı" },
+            { "faction_id": "wallachia_prince", "action": "propose_alliance", "priority": 30, "reason_tr": "Tuna savunma ittifakı" }
+          ],
+          "relations": [
+            { "faction_id": "hungarian_kingdom", "score_delta": -18, "stance": "war" }
+          ],
+          "gold_delta": 80,
+          "sat_delta": 4
+        },
+        "id": "build_danube_coalition",
+        "label_tr": "Tuna İttifakı Kur"
+      }
+    ],
+    "desc_tr": "Kosova zaferi Osmanlı'nın Balkanlardaki ağırlığını artırdı. Zafer, yeni savaşlar için bir basamak veya Tuna'da ittifaklar kurmak için bir fırsat olabilir.",
+    "historical_month": 6,
+    "historical_year": 1389,
+    "id": "kosovo_diplomatic_settlement_1389",
+    "min_turn": 0,
+    "name_tr": "Kosova Sonrası Balkan Düzeni",
+    "one_shot": true,
+    "probability": 0,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "army_hp_mod": 0.96,
+    "choice_prompt_tr": "Timur'un Anadolu'ya yürüyüşü karşısında Osmanlı hangi diplomatik yolu izleyecek?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Timurî kuvvetlerle açık savaşı kabul eder, Anadolu beyliklerinin Osmanlı karşıtı safına katılmasını savaş sebebi sayarsın.",
+        "effect": {
+          "relations": [
+            { "faction_id": "timurid_empire", "score_delta": -50, "stance": "war" },
+            { "faction_id": "karakoyunlu_state", "score_delta": -25, "stance": "war" },
+            { "faction_id": "akkoyunlu_state", "score_delta": -25, "stance": "war" }
+          ],
+          "sat_delta": -4
+        },
+        "id": "face_timur_in_war",
+        "label_tr": "Timur'a Karşı Savaşa Gir"
+      },
+      {
+        "ai_weight": 4,
+        "desc_tr": "Timur'la barış arar, Anadolu'nun ardıl beylikleriyle de karşılıklı güvence kurarak fetret ihtimalini azaltırsın.",
+        "effect": {
+          "relations": [
+            { "faction_id": "timurid_empire", "score_delta": 20, "stance": "peace" },
+            { "faction_id": "karakoyunlu_state", "score_delta": 18, "stance": "allied" },
+            { "faction_id": "akkoyunlu_state", "score_delta": 18, "stance": "allied" },
+            { "faction_id": "eretna_state", "score_delta": 15, "stance": "peace" },
+            { "faction_id": "kadi_burhaneddin", "score_delta": 15, "stance": "peace" }
+          ],
+          "gold_delta": -120,
+          "sat_delta": 5
+        },
+        "id": "seek_truce_with_timur",
+        "label_tr": "Timur'la Ateşkes Ara"
+      }
+    ],
+    "desc_tr": "Timur'un Anadolu seferi Osmanlı'nın yalnızca bir savaşını değil, ardıl beyliklerin geleceğini de belirleyecek.",
+    "historical_month": 7,
+    "historical_year": 1402,
+    "id": "timur_invasion_diplomacy_1402",
+    "min_turn": 0,
+    "name_tr": "Timur Seferi ve Anadolu Ardılları",
+    "one_shot": true,
+    "probability": 0,
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "safavid",
+    "army_hp_mod": 1,
+    "choice_prompt_tr": "Safevî hareketi Osmanlı ve İran hanedanlarıyla nasıl bir düzen kuracak?",
+    "choices": [
+      {
+        "ai_weight": 8,
+        "desc_tr": "Anadolu'daki nüfuz mücadelesini açık savaşa çevirerek Osmanlı'ya savaş ilan edersin.",
+        "effect": {
+          "relations": [
+            { "faction_id": "ottoman", "score_delta": -45, "stance": "war" },
+            { "faction_id": "akkoyunlu_state", "score_delta": -25, "stance": "war" },
+            { "faction_id": "karakoyunlu_state", "score_delta": 15, "stance": "allied" }
+          ],
+          "sat_delta": 5
+        },
+        "id": "safavid_ottoman_rivalry",
+        "label_tr": "Osmanlı'ya Savaş İlan Et"
+      },
+      {
+        "ai_weight": 5,
+        "desc_tr": "Osmanlı ile barış kurup Akkoyunlu ve Karakoyunlu ardıllarıyla doğu sınırı ittifakı oluşturursun.",
+        "effect": {
+          "diplomatic_offers": [
+            { "faction_id": "ottoman", "action": "propose_peace", "priority": 40, "reason_tr": "Safevî-Osmanlı sınır barışı" }
+          ],
+          "relations": [
+            { "faction_id": "akkoyunlu_state", "score_delta": 20, "stance": "allied" },
+            { "faction_id": "karakoyunlu_state", "score_delta": 20, "stance": "allied" },
+            { "faction_id": "timurid_empire", "score_delta": 12, "stance": "peace" }
+          ],
+          "gold_delta": 100,
+          "sat_delta": 4
+        },
+        "id": "safavid_eastern_pact",
+        "label_tr": "Doğu Hanedanlarıyla Pakt Kur"
+      }
+    ],
+    "desc_tr": "Erdebil hareketi devletleşirken Osmanlı, Akkoyunlu ve Karakoyunlu ardılları arasındaki denge yeniden kuruluyor.",
+    "historical_month": 1,
+    "historical_year": 1501,
+    "id": "safavid_diplomatic_rise_1501",
+    "min_turn": 0,
+    "name_tr": "Safevî Devleti'nin Diplomatik Doğuşu",
+    "one_shot": true,
+    "probability": 0,
+    "requires_flags": [
+      "safavid_state_formed"
+    ],
+    "target": "specific_faction"
+  },
+  {
+    "id": "war_of_the_roses_1455",
+    "name_tr": "Güller Savaşı Başlıyor",
+    "desc_tr": "Lancaster ve York hanedanları İngiltere tahtı için karşı karşıya geliyor. İngiliz toprakları iki hanedan arasında bölünürken uzun bir iç savaş başlıyor.",
+    "historical_year": 1455,
+    "historical_month": 5,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "england",
+    "player_choice_factions": [
+      "house_lancaster",
+      "house_york"
+    ],
+    "choice_prompt_tr": "Hanedanlar arasındaki taht mücadelesi açık savaşa dönüştürülsün mü?",
+    "choices": [
+      {
+        "id": "start_war_of_the_roses",
+        "label_tr": "Lancaster tarafında savaşa katıl",
+        "desc_tr": "Lancaster hanedanını yönetirsin; kuzey İngiltere'deki Lancaster toprakları ve orduları senin kontrolüne geçer.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "player_faction_id": "house_lancaster",
+          "political_transformation_id": "war_of_the_roses",
+          "set_flags": [
+            "war_of_the_roses_started"
+          ]
+        }
+      },
+      {
+        "id": "join_york",
+        "label_tr": "York tarafında savaşa katıl",
+        "desc_tr": "York hanedanını yönetirsin; Yorkshire ve York kuvvetleri senin kontrolüne geçer.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "player_faction_id": "house_york",
+          "political_transformation_id": "war_of_the_roses",
+          "set_flags": [
+            "war_of_the_roses_started"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "war_of_the_roses_early_reunification_offer",
+    "name_tr": "İngiltere Tacını Yeniden Birleştirme Teklifi",
+    "desc_tr": "Seçtiğin hanedan rakibini savaşta etkisiz hale getirdi. Artık İngiltere tacını yeniden birleştirerek daha güçlü bir devlet olarak devam edebilirsin.",
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "england",
+    "player_choice_factions": [
+      "house_lancaster",
+      "house_york"
+    ],
+    "requires_flags": [
+      "war_of_the_roses_started"
+    ],
+    "blocks_flags": [
+      "war_of_the_roses_resolved"
+    ],
+    "faction_subjugation_trigger": {
+      "faction_ids": [
+        "house_lancaster",
+        "house_york"
+      ],
+      "require_player_actor": true
+    },
+    "choice_prompt_tr": "Rakip hanedan yenildi. İngiltere tacını yeniden birleştirmek ister misin?",
+    "choices": [
+      {
+        "id": "early_england_reunification",
+        "label_tr": "Evet, İngiltere olarak birleş",
+        "desc_tr": "Seçtiğin hanedanın zaferini İngiltere tacı altında birleştirir ve oyuna İngiltere olarak devam edersin.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "political_transformation_id": "war_of_the_roses_reunification",
+          "political_winner_faction_id": "house_lancaster",
+          "political_winner_from_player": true,
+          "set_flags": [
+            "war_of_the_roses_resolved",
+            "war_of_the_roses_early_reunified"
+          ]
+        }
+      },
+      {
+        "id": "continue_as_dynasty",
+        "label_tr": "Hayır, hanedan olarak devam et",
+        "desc_tr": "Birleşmeyi reddeder ve seçtiğin Lancaster veya York hanedanıyla oyuna devam edersin.",
+        "ai_weight": 1,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "set_flags": [
+            "war_of_the_roses_reunification_declined"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "war_of_the_roses_resolution_1485",
+    "name_tr": "Güller Savaşı'nın Sonu",
+    "desc_tr": "İç savaş tarihsel dönüm noktasına ulaştı. Galip hanedan isterse İngiltere tacını yeniden birleştirebilir.",
+    "historical_year": 1485,
+    "historical_month": 8,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "england",
+    "player_choice_factions": [
+      "house_lancaster",
+      "house_york"
+    ],
+    "requires_flags": [
+      "war_of_the_roses_started"
+    ],
+    "blocks_flags": [
+      "war_of_the_roses_resolved"
+    ],
+    "choice_prompt_tr": "İngiltere tacını yeniden birleştirmek ister misin?",
+    "choices": [
+      {
+        "id": "historical_england_reunification",
+        "label_tr": "Evet, İngiltere olarak birleş",
+        "desc_tr": "Savaşı kesin olarak kazanamamış olsan bile İngiltere tacını yeniden kurar ve İngiltere olarak devam edersin.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "political_transformation_id": "war_of_the_roses_reunification",
+          "political_winner_faction_id": "house_lancaster",
+          "political_winner_from_player": true,
+          "set_flags": [
+            "war_of_the_roses_resolved",
+            "war_of_the_roses_historical_reunified"
+          ]
+        }
+      },
+      {
+        "id": "historical_continue_as_dynasty",
+        "label_tr": "Hayır, hanedan olarak devam et",
+        "desc_tr": "Birleşmeyi reddeder ve seçtiğin Lancaster veya York hanedanıyla oyuna devam edersin.",
+        "ai_weight": 1,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "set_flags": [
+            "war_of_the_roses_historical_reunification_declined"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "iberian_dynastic_union_1479",
+    "name_tr": "Aragon-Kastilya Birliği",
+    "desc_tr": "Aragon ve Kastilya hanedanlarının ortak tacı kalıcı bir siyasi birliğe dönüşüyor. İberya'daki topraklar, ordular ve donanmalar tek bir taç altında birleşiyor.",
+    "historical_year": 1479,
+    "historical_month": 1,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "castile_kingdom",
+    "requires_active_factions": [
+      "aragon"
+    ],
+    "choice_prompt_tr": "Aragon ve Kastilya ortak tacı kalıcı birliğe dönüştürülsün mü?",
+    "choices": [
+      {
+        "id": "form_iberian_union",
+        "label_tr": "İber Birliği'ni ilan et",
+        "desc_tr": "Aragon, Kastilya tacı altında birleşir; bölgeler, kaynaklar, ordular ve filolar tek bir devlette toplanır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "castile_kingdom",
+          "political_transformation_id": "iberian_dynastic_union",
+          "set_flags": [
+            "iberian_dynastic_union_formed"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "navarra_campaign_1512",
+    "name_tr": "Navarra Seferi",
+    "desc_tr": "Fransa ile Navarra arasındaki bağlar Kastilya-İspanya için stratejik bir tehdit oluşturuyor. Navarra üzerine sefer başlıyor.",
+    "historical_year": 1512,
+    "historical_month": 7,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "castile_kingdom",
+    "choice_prompt_tr": "Navarra'ya karşı sefer başlatılsın mı?",
+    "choices": [
+      {
+        "id": "invade_navarra",
+        "label_tr": "Navarra'ya savaş ilan et",
+        "desc_tr": "İspanyol kuvvetleri Navarra'ya girer; krallığın kesin ilhakı için süreç başlar.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "castile_kingdom",
+          "relations": [
+            {
+              "faction_id": "navarra",
+              "score_delta": -100,
+              "stance": "war"
+            }
+          ],
+          "set_flags": [
+            "navarra_campaign_started"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "navarra_incorporation_1515",
+    "name_tr": "Navarra'nın İspanya'ya Katılması",
+    "desc_tr": "Navarra'nın güney toprakları Kastilya-İspanya tacına dahil ediliyor. Navarra Krallığı ayrı siyasi varlığını kaybediyor.",
+    "historical_year": 1515,
+    "historical_month": 6,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "castile_kingdom",
+    "requires_flags": [
+      "navarra_campaign_started"
+    ],
+    "choice_prompt_tr": "Navarra Kastilya-İspanya tacına katılsın mı?",
+    "choices": [
+      {
+        "id": "incorporate_navarra",
+        "label_tr": "Navarra'yı ilhak et",
+        "desc_tr": "Navarra'nın bölgeleri, orduları ve kaynakları İspanya'ya aktarılır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "castile_kingdom",
+          "political_transformation_id": "navarra_incorporation",
+          "set_flags": [
+            "navarra_incorporated"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "polish_lithuanian_union_1385",
+    "name_tr": "Polonya-Litvanya Birliği",
+    "desc_tr": "Polonya Krallığı ile Litvanya Büyük Prensliği arasında hanedan ve siyasi birlik kuruluyor.",
+    "historical_year": 1385,
+    "historical_month": 8,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "polish_kingdom",
+    "choice_prompt_tr": "Polonya-Litvanya birliği ilan edilsin mi?",
+    "choices": [
+      {
+        "id": "form_polish_lithuanian_union",
+        "label_tr": "Birliği kur",
+        "desc_tr": "Polonya ve Litvanya toprakları, orduları ve kaynakları yeni Polonya-Litvanya Birliği altında toplanır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "polish_kingdom",
+          "political_transformation_id": "polish_lithuanian_union_1385",
+          "set_flags": [
+            "polish_lithuanian_union_formed"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "kalmar_union_1397",
+    "name_tr": "Kalmar Birliği",
+    "desc_tr": "Danimarka, Norveç ve İsveç aynı hükümdar altında birleşerek Kuzey'in en güçlü siyasi birliğini oluşturuyor.",
+    "historical_year": 1397,
+    "historical_month": 7,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "denmark_kingdom",
+    "choice_prompt_tr": "Üç Kuzey krallığı Kalmar Birliği altında birleşsin mi?",
+    "choices": [
+      {
+        "id": "form_kalmar_union",
+        "label_tr": "Kalmar Birliği'ni kur",
+        "desc_tr": "Danimarka, Norveç ve İsveç yeni Kalmar Birliği faction'ı altında birleşir.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "denmark_kingdom",
+          "political_transformation_id": "kalmar_union_1397",
+          "set_flags": [
+            "kalmar_union_formed"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "aragon_naples_union_1442",
+    "name_tr": "Aragon-Napoli Birliği",
+    "desc_tr": "Aragon Tacı Napoli Krallığı üzerinde hâkimiyet kuruyor. Akdeniz'deki Aragon varlığı yeni bir hanedan birliğiyle güçleniyor.",
+    "historical_year": 1442,
+    "historical_month": 6,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "aragon",
+    "choice_prompt_tr": "Napoli Aragon Tacı altında birleştirilsin mi?",
+    "choices": [
+      {
+        "id": "unite_aragon_naples",
+        "label_tr": "Napoli tacını birleştir",
+        "desc_tr": "Napoli'nin bölgeleri, orduları, donanması ve kaynakları Aragon'a aktarılır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "aragon",
+          "political_transformation_id": "aragon_naples_union_1442",
+          "set_flags": [
+            "aragon_naples_union_formed"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "burgundian_habsburg_inheritance_1477",
+    "name_tr": "Burgonya Habsburg Mirası",
+    "desc_tr": "Burgonya mirası Habsburg hanedanının eline geçiyor. Avusturya artık Batı Avrupa siyasetinde yeni bir güç merkezi haline geliyor.",
+    "historical_year": 1477,
+    "historical_month": 1,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "austria_duchy",
+    "choice_prompt_tr": "Burgonya mirası Habsburg tacına katılsın mı?",
+    "choices": [
+      {
+        "id": "accept_burgundian_inheritance",
+        "label_tr": "Burgonya mirasını kabul et",
+        "desc_tr": "Burgonya mirası Avusturya ile birleşir ve devlet Habsburg Monarşisi kimliğine geçer.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "austria_duchy",
+          "political_transformation_id": "burgundian_habsburg_inheritance_1477",
+          "set_flags": [
+            "burgundian_habsburg_inheritance"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "novgorod_moscow_annexation_1478",
+    "name_tr": "Novgorod'un Moskova'ya Katılması",
+    "desc_tr": "Moskova Büyük Prensliği Novgorod'un bağımsızlığını sona erdirerek kuzey Rusya'daki siyasi merkezini genişletiyor.",
+    "historical_year": 1478,
+    "historical_month": 1,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "russia",
+    "choice_prompt_tr": "Novgorod Moskova yönetimine katılsın mı?",
+    "choices": [
+      {
+        "id": "annex_novgorod",
+        "label_tr": "Novgorod'u ilhak et",
+        "desc_tr": "Novgorod'un bölgeleri, orduları ve kaynakları Moskova'ya aktarılır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "russia",
+          "political_transformation_id": "novgorod_moscow_annexation_1478",
+          "set_flags": [
+            "novgorod_annexed_by_moscow"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "habsburg_bohemian_hungarian_succession_1526",
+    "name_tr": "Bohemya ve Macaristan Habsburg Veraseti",
+    "desc_tr": "Mohaç yenilgisi Orta Avrupa'daki veraset dengesini değiştiriyor. Bohemya ve Macaristan taçları Habsburg Avusturyası'na bağlanıyor.",
+    "historical_year": 1526,
+    "historical_month": 9,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "austria_duchy",
+    "requires_flags": [
+      "battle_of_mohacs_1526_resolved"
+    ],
+    "choice_prompt_tr": "Bohemya ve Macaristan Habsburg tacına bağlansın mı?",
+    "choices": [
+      {
+        "id": "form_habsburg_central_europe",
+        "label_tr": "Habsburg verasetini kabul et",
+        "desc_tr": "Bohemya ve Macaristan'ın bölgeleri, orduları ve kaynakları Avusturya'ya aktarılır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "austria_duchy",
+          "political_transformation_id": "habsburg_bohemian_hungarian_succession_1526",
+          "set_flags": [
+            "habsburg_central_europe_formed"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "aragon_naples_dissolution_1458",
+    "name_tr": "Aragon-Napoli Birliğinin Çözülmesi",
+    "desc_tr": "Alfonso'nun ölümünden sonra Aragon ve Napoli aynı hükümdarın farklı taçları olarak ayrılıyor. Napoli kendi krallığına geri dönüyor.",
+    "historical_year": 1458,
+    "historical_month": 8,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "aragon",
+    "requires_flags": [
+      "aragon_naples_union_formed"
+    ],
+    "choice_prompt_tr": "Aragon ve Napoli yeniden ayrı taçlar olarak düzenlensin mi?",
+    "choices": [
+      {
+        "id": "dissolve_aragon_naples_union",
+        "label_tr": "Napoli'yi yeniden ayır",
+        "desc_tr": "Napoli'nin bölgeleri, kuvvetleri ve kaynak payı Napoli Krallığı'na aktarılır; Aragon Tacı kendi topraklarında kalır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "aragon",
+          "political_transformation_id": "aragon_naples_dissolution_1458",
+          "set_flags": [
+            "aragon_naples_union_dissolved"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "kalmar_union_dissolution_1523",
+    "name_tr": "Kalmar Birliğinin Dağılması",
+    "desc_tr": "İsveç'in bağımsızlık hareketi Kalmar Birliği'ni çözüyor. Danimarka, Norveç ve İsveç yeniden ayrı krallıklar oluyor.",
+    "historical_year": 1523,
+    "historical_month": 6,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "kalmar_union",
+    "requires_flags": [
+      "kalmar_union_formed"
+    ],
+    "choice_prompt_tr": "Kalmar Birliği dağıtılarak üç krallık yeniden etkinleştirilsin mi?",
+    "choices": [
+      {
+        "id": "dissolve_kalmar_union",
+        "label_tr": "Birliği dağıt",
+        "desc_tr": "Danimarka, Norveç ve İsveç'in bölgeleri, kuvvetleri ve kaynak payları kendi krallıklarına döner.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "kalmar_union",
+          "political_transformation_id": "kalmar_union_dissolution_1523",
+          "set_flags": [
+            "kalmar_union_dissolved"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "timurid_rise_1370",
+    "name_tr": "Timurîlerin Yükselişi",
+    "desc_tr": "Timur, eski İlhanlı coğrafyasındaki güç boşluğundan yararlanarak kendi imparatorluk çekirdeğini kuruyor.",
+    "historical_year": 1370,
+    "historical_month": 4,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "ilkhanate",
+    "requires_flags": [
+      "ilkhanate_successors_emerged"
+    ],
+    "successor_revival": {
+      "faction_id": "timurid_empire",
+      "region_id": "northern_persia",
+      "mode": "independent",
+      "militia_count": 12
+    },
+    "set_flags": [
+      "timurid_empire_formed"
+    ]
+  },
+  {
+    "id": "karakoyunlu_rise_1375",
+    "name_tr": "Karakoyunlu'nun Yükselişi",
+    "desc_tr": "Karakoyunlu Türkmenleri Doğu Anadolu'daki güç boşluğundan yararlanarak bağımsız bir siyasi merkez oluşturuyor.",
+    "historical_year": 1375,
+    "historical_month": 6,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "ilkhanate",
+    "requires_flags": [
+      "ilkhanate_successors_emerged"
+    ],
+    "successor_revival": {
+      "faction_id": "karakoyunlu_state",
+      "region_id": "karakoyunlu",
+      "mode": "independent",
+      "militia_count": 8
+    },
+    "set_flags": [
+      "karakoyunlu_state_formed"
+    ]
+  },
+  {
+    "id": "akkoyunlu_rise_1378",
+    "name_tr": "Akkoyunlu'nun Yükselişi",
+    "desc_tr": "Akkoyunlu Türkmenleri Yukarı Mezopotamya'da bağımsız bir güç olarak örgütleniyor.",
+    "historical_year": 1378,
+    "historical_month": 5,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "ilkhanate",
+    "requires_flags": [
+      "ilkhanate_successors_emerged"
+    ],
+    "successor_revival": {
+      "faction_id": "akkoyunlu_state",
+      "region_id": "akkoyunlu",
+      "mode": "independent",
+      "militia_count": 8
+    },
+    "set_flags": [
+      "akkoyunlu_state_formed"
+    ]
+  },
+  {
+    "id": "turkmen_successor_rivalry_1386",
+    "name_tr": "Türkmen Ardıllarının Rekabeti",
+    "desc_tr": "Akkoyunlu ve Karakoyunlu arasındaki hâkimiyet mücadelesi açık savaşa dönüşüyor; Timurî baskısı da doğu sınırını tehdit ediyor.",
+    "historical_year": 1386,
+    "historical_month": 9,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "karakoyunlu_state",
+    "requires_flags": [
+      "karakoyunlu_state_formed",
+      "akkoyunlu_state_formed",
+      "timurid_empire_formed"
+    ],
+    "relations": [
+      {
+        "faction_id": "akkoyunlu_state",
+        "score_delta": -40,
+        "stance": "war"
+      },
+      {
+        "faction_id": "timurid_empire",
+        "score_delta": -20,
+        "stance": "war"
+      }
+    ]
+  },
+  {
+    "id": "timurid_karakoyunlu_war_1390",
+    "name_tr": "Timurî-Karakoyunlu Savaşı",
+    "desc_tr": "Timurîler, Doğu Anadolu ve Azerbaycan'daki Karakoyunlu nüfuzunu kırmak için yeni bir sefer başlatıyor.",
+    "historical_year": 1390,
+    "historical_month": 3,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "timurid_empire",
+    "requires_flags": [
+      "karakoyunlu_state_formed",
+      "timurid_empire_formed"
+    ],
+    "relations": [
+      {
+        "faction_id": "karakoyunlu_state",
+        "score_delta": -35,
+        "stance": "war"
+      },
+      {
+        "faction_id": "jelayirids",
+        "score_delta": -25,
+        "stance": "war"
+      }
+    ]
+  },
+  {
+    "id": "balkan_coalition_1389",
+    "name_tr": "Kosova Balkan Koalisyonu",
+    "desc_tr": "Sırp, Bulgar ve Eflak güçleri Osmanlı ilerleyişine karşı ortak bir Balkan cephesi kuruyor.",
+    "historical_year": 1389,
+    "historical_month": 4,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "serbian_empire",
+    "coalition": {
+      "members": [
+        "serbian_empire",
+        "bulgarian_empire",
+        "wallachia_prince"
+      ],
+      "opponents": ["ottoman"],
+      "member_stance": "allied",
+      "opponent_stance": "war",
+      "member_score_delta": 40,
+      "opponent_score_delta": -70
+    },
+    "set_flags": [
+      "balkan_coalition_1389_formed"
+    ]
+  },
+  {
+    "id": "varna_crusade_coalition_1444",
+    "name_tr": "Varna Haçlı Koalisyonu",
+    "desc_tr": "Macaristan, Sırbistan, Bulgaristan ve Eflak Osmanlı'ya karşı Tuna hattında ortak savaş cephesi kuruyor.",
+    "historical_year": 1444,
+    "historical_month": 9,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "hungarian_kingdom",
+    "coalition": {
+      "members": [
+        "hungarian_kingdom",
+        "serbian_empire",
+        "bulgarian_empire",
+        "wallachia_prince"
+      ],
+      "opponents": ["ottoman"],
+      "member_stance": "allied",
+      "opponent_stance": "war",
+      "member_score_delta": 35,
+      "opponent_score_delta": -65
+    },
+    "set_flags": [
+      "varna_crusade_coalition_formed"
+    ]
+  },
+  {
+    "id": "ottoman_hungarian_war_1521",
+    "name_tr": "Osmanlı-Macaristan Savaşı",
+    "desc_tr": "Belgrad seferiyle Osmanlı ve Macaristan arasındaki sınır mücadelesi açık savaşa dönüşüyor.",
+    "historical_year": 1521,
+    "historical_month": 5,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "ottoman",
+    "relations": [
+      {
+        "faction_id": "hungarian_kingdom",
+        "score_delta": -70,
+        "stance": "war"
+      }
+    ],
+    "set_flags": [
+      "ottoman_hungarian_war_1521_started"
+    ]
+  },
+  {
+    "id": "hungarian_defensive_coalition_1525",
+    "name_tr": "Macar Savunma Koalisyonu",
+    "desc_tr": "Macaristan, Bohemya ve Avusturya'dan yardım isteyerek Osmanlı ilerleyişine karşı Tuna savunma ittifakı kuruyor.",
+    "historical_year": 1525,
+    "historical_month": 10,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "hungarian_kingdom",
+    "requires_flags": [
+      "ottoman_hungarian_war_1521_started"
+    ],
+    "coalition": {
+      "members": [
+        "hungarian_kingdom",
+        "bohemian_kingdom",
+        "austria_duchy"
+      ],
+      "opponents": ["ottoman"],
+      "member_stance": "allied",
+      "opponent_stance": "war",
+      "member_score_delta": 35,
+      "opponent_score_delta": -55
+    },
+    "set_flags": [
+      "hungarian_defensive_coalition_1525_formed"
+    ]
+  },
+  {
+    "id": "hungarian_mohacs_mobilization_1526",
+    "name_tr": "Mohaç İçin Macar Seferberliği",
+    "desc_tr": "Macar ordusu Tuna hattından çekilerek Mohaç ovasında toplanıyor; koalisyon kuvvetleri son hazırlıklarını tamamlıyor.",
+    "historical_year": 1526,
+    "historical_month": 5,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "hungarian_kingdom",
+    "requires_flags": [
+      "hungarian_defensive_coalition_1525_formed"
+    ],
+    "gold_delta": -100,
+    "grain_delta": -25,
+    "sat_delta": -5,
+    "set_flags": [
+      "hungarian_mohacs_mobilized_1526"
+    ]
+  },
+  {
+    "id": "ottoman_mohacs_preparation_1526",
+    "name_tr": "Mohaç Seferi Hazırlıkları",
+    "desc_tr": "Osmanlı ordusu Macaristan cephesindeki savaş için iaşe, topçu ve sefer ordusunu hazırlıyor.",
+    "historical_year": 1526,
+    "historical_month": 6,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "ottoman",
+    "requires_flags": [
+      "ottoman_hungarian_war_1521_started",
+      "hungarian_mohacs_mobilized_1526"
+    ],
+    "choice_prompt_tr": "Mohaç seferi için Osmanlı kaynakları nasıl kullanılacak?",
+    "choices": [
+      {
+        "id": "prepare_artillery_train",
+        "label_tr": "Topçu ve iaşeyi güçlendir",
+        "desc_tr": "Hazine ve tahıl harcanır; ordu kuşatma ve meydan savaşı için daha iyi hazırlanır.",
+        "ai_weight": 9,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "ottoman",
+          "gold_delta": -180,
+          "grain_delta": -35,
+          "sat_delta": 4,
+          "set_flags": [
+            "ottoman_mohacs_prepared_1526"
+          ]
+        }
+      },
+      {
+        "id": "rush_to_mohacs",
+        "label_tr": "Hızlıca Mohaç'a ilerle",
+        "desc_tr": "Sefer masrafı azalır ancak ordunun hazırlık seviyesi daha düşük kalır.",
+        "ai_weight": 6,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "ottoman",
+          "gold_delta": -90,
+          "grain_delta": -20,
+          "sat_delta": -2,
+          "set_flags": [
+            "ottoman_mohacs_prepared_1526"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "ottoman_safavid_war_1514",
+    "name_tr": "Osmanlı-Safevî Savaşı",
+    "desc_tr": "Osmanlı ile yeni kurulan Safevî Devleti arasındaki mezhep, sınır ve nüfuz rekabeti açık savaşa dönüşüyor.",
+    "historical_year": 1514,
+    "historical_month": 3,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "ottoman",
+    "requires_flags": [
+      "safavid_state_formed"
+    ],
+    "relations": [
+      {
+        "faction_id": "safavid",
+        "score_delta": -70,
+        "stance": "war"
+      }
+    ],
+    "set_flags": [
+      "ottoman_safavid_war_1514_started"
+    ]
   }
 ]

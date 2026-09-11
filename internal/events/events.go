@@ -21,6 +21,17 @@ type RelationEffect struct {
 	ScoreDelta int    `json:"score_delta,omitempty"`
 }
 
+// CoalitionEffect bir grup faction arasında müttefiklik kurar ve grubun
+// belirlenen rakiplere karşı ortak savaş ilişkisi oluşturmasını sağlar.
+type CoalitionEffect struct {
+	Members            []string `json:"members"`
+	Opponents          []string `json:"opponents"`
+	MemberStance       string   `json:"member_stance,omitempty"`
+	OpponentStance     string   `json:"opponent_stance,omitempty"`
+	MemberScoreDelta   int      `json:"member_score_delta,omitempty"`
+	OpponentScoreDelta int      `json:"opponent_score_delta,omitempty"`
+}
+
 type RelationRequirement struct {
 	FactionID     string   `json:"faction_id"`
 	Stance        string   `json:"stance,omitempty"`
@@ -30,30 +41,75 @@ type RelationRequirement struct {
 	MaxScore      int      `json:"max_score,omitempty"`
 }
 
+// DiplomaticOfferEffect event seçiminin doğrudan ilişki değiştirmek yerine
+// mevcut diplomasi teklif kuyruğuna bırakacağı teklifi tanımlar.
+type DiplomaticOfferEffect struct {
+	FactionID string `json:"faction_id"`
+	Action    string `json:"action"`
+	Priority  int    `json:"priority,omitempty"`
+	ReasonTR  string `json:"reason_tr,omitempty"`
+}
+
+// SuccessorRevivalEffect tarihsel bir event'in elenmiş ardıl faction'ı
+// belirli bir bölgede yeniden kurmasını tanımlar.
+type SuccessorRevivalEffect struct {
+	FactionID    string `json:"faction_id"`
+	RegionID     string `json:"region_id"`
+	Mode         string `json:"mode,omitempty"` // independent | vassal
+	OverlordID   string `json:"overlord_id,omitempty"`
+	MilitiaCount int    `json:"militia_count,omitempty"`
+}
+
+// TradeNetworkModifierEffect, bir event'in ticaret ağı üzerindeki kalıcı
+// gelir ve kaynak etkisini veri üzerinden tanımlar.
+type TradeNetworkModifierEffect struct {
+	ID                 string   `json:"id"`
+	CenterIDs          []string `json:"center_ids,omitempty"`
+	RegionIDs          []string `json:"region_ids,omitempty"`
+	TradeIncomePercent int      `json:"trade_income_percent,omitempty"`
+	SpicePercent       int      `json:"spice_percent,omitempty"`
+}
+
+// FactionSubjugationTrigger, bir event'in oyuncunun seçtiği faction başka
+// bir üyeyi elediğinde veya vassal yaptığında açılmasını sağlar.
+type FactionSubjugationTrigger struct {
+	FactionIDs         []string `json:"faction_ids"`
+	RequirePlayerActor bool     `json:"require_player_actor,omitempty"`
+}
+
 type Effect struct {
-	Target                    string           `json:"target,omitempty"` // boşsa event target'ı kullanılır
-	SatDelta                  int              `json:"sat_delta,omitempty"`
-	GoldDelta                 int              `json:"gold_delta,omitempty"`
-	GrainDelta                int              `json:"grain_delta,omitempty"`
-	ArmyHPMod                 float64          `json:"army_hp_mod,omitempty"`                // 1.0 = değişmez
-	GrainProductionPercent    int              `json:"grain_production_percent,omitempty"`   // aktif olay süresince üretim etkisi
-	GrainDemandPercent        int              `json:"grain_demand_percent,omitempty"`       // aktif olay süresince sivil tüketim etkisi
-	TradeIncomePercent        int              `json:"trade_income_percent,omitempty"`       // aktif olay süresince ticaret geliri etkisi
-	RegionGoldIncomePercent   int              `json:"region_gold_income_percent,omitempty"` // aktif olay süresince vergi geliri etkisi
-	ArmyUpkeepPercent         int              `json:"army_upkeep_percent,omitempty"`        // aktif bölgede ordu ikmal etkisi
-	PopulationDelta           int              `json:"population_delta,omitempty"`           // anlık bölge nüfusu etkisi
-	BuildingEfficiencyPercent int              `json:"building_efficiency_percent,omitempty"`
-	CombatAttackPercent       int              `json:"combat_attack_percent,omitempty"`
-	CombatDefensePercent      int              `json:"combat_defense_percent,omitempty"`
-	AffectedFaction           string           `json:"affected_faction,omitempty"`   // specific_faction için
-	RelationDeltaAll          int              `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
-	CompleteTechs             []string         `json:"complete_techs,omitempty"`
-	StartResearchTech         string           `json:"start_research_tech,omitempty"`
-	Relations                 []RelationEffect `json:"relations,omitempty"`
-	SetFlags                  []string         `json:"set_flags,omitempty"`
-	ClearFlags                []string         `json:"clear_flags,omitempty"`
-	CapitalSettlementID       string           `json:"capital_settlement_id,omitempty"`
-	CapitalMoveTurns          int              `json:"capital_move_turns,omitempty"`
+	Target                    string                       `json:"target,omitempty"` // boşsa event target'ı kullanılır
+	SatDelta                  int                          `json:"sat_delta,omitempty"`
+	GoldDelta                 int                          `json:"gold_delta,omitempty"`
+	GrainDelta                int                          `json:"grain_delta,omitempty"`
+	ArmyHPMod                 float64                      `json:"army_hp_mod,omitempty"`                // 1.0 = değişmez
+	GrainProductionPercent    int                          `json:"grain_production_percent,omitempty"`   // aktif olay süresince üretim etkisi
+	GrainDemandPercent        int                          `json:"grain_demand_percent,omitempty"`       // aktif olay süresince sivil tüketim etkisi
+	TradeIncomePercent        int                          `json:"trade_income_percent,omitempty"`       // aktif olay süresince ticaret geliri etkisi
+	RegionGoldIncomePercent   int                          `json:"region_gold_income_percent,omitempty"` // aktif olay süresince vergi geliri etkisi
+	ArmyUpkeepPercent         int                          `json:"army_upkeep_percent,omitempty"`        // aktif bölgede ordu ikmal etkisi
+	PopulationDelta           int                          `json:"population_delta,omitempty"`           // anlık bölge nüfusu etkisi
+	BuildingEfficiencyPercent int                          `json:"building_efficiency_percent,omitempty"`
+	CombatAttackPercent       int                          `json:"combat_attack_percent,omitempty"`
+	CombatDefensePercent      int                          `json:"combat_defense_percent,omitempty"`
+	AffectedFaction           string                       `json:"affected_faction,omitempty"`   // specific_faction için
+	RelationDeltaAll          int                          `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
+	CompleteTechs             []string                     `json:"complete_techs,omitempty"`
+	StartResearchTech         string                       `json:"start_research_tech,omitempty"`
+	Relations                 []RelationEffect             `json:"relations,omitempty"`
+	Coalition                 *CoalitionEffect             `json:"coalition,omitempty"`
+	DiplomaticOffers          []DiplomaticOfferEffect      `json:"diplomatic_offers,omitempty"`
+	PoliticalTransformationID string                       `json:"political_transformation_id,omitempty"`
+	PoliticalWinnerFactionID  string                       `json:"political_winner_faction_id,omitempty"`
+	PoliticalWinnerFromPlayer bool                         `json:"political_winner_from_player,omitempty"`
+	PlayerFactionID           string                       `json:"player_faction_id,omitempty"`
+	SuccessorRevival          *SuccessorRevivalEffect      `json:"successor_revival,omitempty"`
+	SuccessorRevivals         []SuccessorRevivalEffect     `json:"successor_revivals,omitempty"`
+	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
+	SetFlags                  []string                     `json:"set_flags,omitempty"`
+	ClearFlags                []string                     `json:"clear_flags,omitempty"`
+	CapitalSettlementID       string                       `json:"capital_settlement_id,omitempty"`
+	CapitalMoveTurns          int                          `json:"capital_move_turns,omitempty"`
 }
 
 type Choice struct {
@@ -66,25 +122,35 @@ type Choice struct {
 
 // Event bir tarihsel olayı tanımlar.
 type Event struct {
-	ID                        string  `json:"id"`
-	NameTR                    string  `json:"name_tr"`
-	DescTR                    string  `json:"desc_tr"`
-	Probability               float64 `json:"probability"` // 0 = sadece tarihsel tetiklenme
-	MinTurn                   int     `json:"min_turn"`    // en erken tur (rastgele olaylar için)
-	Target                    string  `json:"target"`      // "player_faction"|"random_region"|"all_armies"|"all_factions"
-	SatDelta                  int     `json:"sat_delta"`
-	GoldDelta                 int     `json:"gold_delta"`
-	GrainDelta                int     `json:"grain_delta"`
-	ArmyHPMod                 float64 `json:"army_hp_mod"` // 1.0 = değişmez
-	GrainProductionPercent    int     `json:"grain_production_percent,omitempty"`
-	GrainDemandPercent        int     `json:"grain_demand_percent,omitempty"`
-	TradeIncomePercent        int     `json:"trade_income_percent,omitempty"`
-	RegionGoldIncomePercent   int     `json:"region_gold_income_percent,omitempty"`
-	ArmyUpkeepPercent         int     `json:"army_upkeep_percent,omitempty"`
-	PopulationDelta           int     `json:"population_delta,omitempty"`
-	BuildingEfficiencyPercent int     `json:"building_efficiency_percent,omitempty"`
-	CombatAttackPercent       int     `json:"combat_attack_percent,omitempty"`
-	CombatDefensePercent      int     `json:"combat_defense_percent,omitempty"`
+	ID                        string                       `json:"id"`
+	NameTR                    string                       `json:"name_tr"`
+	DescTR                    string                       `json:"desc_tr"`
+	Probability               float64                      `json:"probability"` // 0 = sadece tarihsel tetiklenme
+	MinTurn                   int                          `json:"min_turn"`    // en erken tur (rastgele olaylar için)
+	Target                    string                       `json:"target"`      // "player_faction"|"random_region"|"all_armies"|"all_factions"
+	SatDelta                  int                          `json:"sat_delta"`
+	GoldDelta                 int                          `json:"gold_delta"`
+	GrainDelta                int                          `json:"grain_delta"`
+	ArmyHPMod                 float64                      `json:"army_hp_mod"` // 1.0 = değişmez
+	GrainProductionPercent    int                          `json:"grain_production_percent,omitempty"`
+	GrainDemandPercent        int                          `json:"grain_demand_percent,omitempty"`
+	TradeIncomePercent        int                          `json:"trade_income_percent,omitempty"`
+	RegionGoldIncomePercent   int                          `json:"region_gold_income_percent,omitempty"`
+	ArmyUpkeepPercent         int                          `json:"army_upkeep_percent,omitempty"`
+	PopulationDelta           int                          `json:"population_delta,omitempty"`
+	BuildingEfficiencyPercent int                          `json:"building_efficiency_percent,omitempty"`
+	CombatAttackPercent       int                          `json:"combat_attack_percent,omitempty"`
+	CombatDefensePercent      int                          `json:"combat_defense_percent,omitempty"`
+	RelationDeltaAll          int                          `json:"relation_delta_all,omitempty"`
+	CompleteTechs             []string                     `json:"complete_techs,omitempty"`
+	StartResearchTech         string                       `json:"start_research_tech,omitempty"`
+	Relations                 []RelationEffect             `json:"relations,omitempty"`
+	Coalition                 *CoalitionEffect             `json:"coalition,omitempty"`
+	SetFlags                  []string                     `json:"set_flags,omitempty"`
+	SuccessorRevival          *SuccessorRevivalEffect      `json:"successor_revival,omitempty"`
+	SuccessorRevivals         []SuccessorRevivalEffect     `json:"successor_revivals,omitempty"`
+	ClearFlags                []string                     `json:"clear_flags,omitempty"`
+	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
 
 	// Tarihsel tetiklenme alanları
 	HistoricalYear  int    `json:"historical_year,omitempty"`  // 0 = tarihsel değil
@@ -92,15 +158,18 @@ type Event struct {
 	OneShot         bool   `json:"one_shot,omitempty"`         // true = yalnızca bir kez tetiklenir
 	AffectedFaction string `json:"affected_faction,omitempty"` // belirli fraksiyonu hedefle
 
-	ChoicePromptTR            string                `json:"choice_prompt_tr,omitempty"`
-	Choices                   []Choice              `json:"choices,omitempty"`
-	RequiresFlags             []string              `json:"requires_flags,omitempty"`
-	BlocksFlags               []string              `json:"blocks_flags,omitempty"`
-	BlocksCapitalSettlementID string                `json:"blocks_capital_settlement_id,omitempty"`
-	RequiresTechs             []string              `json:"requires_techs,omitempty"`
-	BlocksTechs               []string              `json:"blocks_techs,omitempty"`
-	RequiresOwnedRegions      []world.RegionID      `json:"requires_owned_regions,omitempty"`
-	RelationRequirements      []RelationRequirement `json:"relation_requirements,omitempty"`
+	ChoicePromptTR            string                     `json:"choice_prompt_tr,omitempty"`
+	Choices                   []Choice                   `json:"choices,omitempty"`
+	PlayerChoiceFactions      []string                   `json:"player_choice_factions,omitempty"`
+	RequiresFlags             []string                   `json:"requires_flags,omitempty"`
+	BlocksFlags               []string                   `json:"blocks_flags,omitempty"`
+	BlocksCapitalSettlementID string                     `json:"blocks_capital_settlement_id,omitempty"`
+	RequiresTechs             []string                   `json:"requires_techs,omitempty"`
+	BlocksTechs               []string                   `json:"blocks_techs,omitempty"`
+	RequiresOwnedRegions      []world.RegionID           `json:"requires_owned_regions,omitempty"`
+	RequiresActiveFactions    []string                   `json:"requires_active_factions,omitempty"`
+	RelationRequirements      []RelationRequirement      `json:"relation_requirements,omitempty"`
+	FactionSubjugationTrigger *FactionSubjugationTrigger `json:"faction_subjugation_trigger,omitempty"`
 }
 
 // LoadEvents olayları JSON'dan yükler.
@@ -122,6 +191,42 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		gs.FiredEventIDs = make(map[string]bool)
 	}
 
+	// Önce aynı turda oluşan siyasi üstünlüğe bağlı event'leri kontrol et.
+	// Böylece oyuncu rakip hanedanı elediğinde veya vassal yaptığında 1485'i
+	// beklemek zorunda kalmaz.
+	actor, target := gs.LastSubjugationActorID, gs.LastSubjugatedFactionID
+	if actor != "" || target != "" {
+		for _, e := range evts {
+			if e == nil || e.FactionSubjugationTrigger == nil || gs.FiredEventIDs[e.ID] ||
+				!eventConditionsSatisfied(gs, e) || !factionSubjugationTriggerSatisfied(gs, e, actor, target) {
+				continue
+			}
+			if e.OneShot {
+				gs.FiredEventIDs[e.ID] = true
+			}
+			gs.ConsumeFactionSubjugation()
+			return e
+		}
+		gs.ConsumeFactionSubjugation()
+	}
+
+	// Aynı takvim penceresinde birden fazla tarihsel olay varsa, önceki turda
+	// ertelenen olayları normal tarih taramasından önce sıraya al.
+	for _, e := range evts {
+		if e == nil || e.HistoricalYear == 0 || gs.FiredEventIDs[e.ID] ||
+			!gs.FiredEventIDs[pendingHistoricalEventKey(e.ID)] {
+			continue
+		}
+		if !eventConditionsSatisfied(gs, e) {
+			continue
+		}
+		if e.OneShot {
+			gs.FiredEventIDs[e.ID] = true
+		}
+		delete(gs.FiredEventIDs, pendingHistoricalEventKey(e.ID))
+		return e
+	}
+
 	// Önce tarihsel olayları kontrol et (kesinlikle tetiklenir)
 	for _, e := range evts {
 		if e.HistoricalYear == 0 {
@@ -136,6 +241,7 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if !historicalEventDueThisTurn(gs, e) {
 			continue
 		}
+		queueHistoricalEventsSharingDate(gs, evts, e)
 		if e.OneShot {
 			gs.FiredEventIDs[e.ID] = true
 		}
@@ -167,9 +273,8 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 	return nil
 }
 
-// historicalEventDueThisTurn üç aylık takvim penceresine denk gelen olayları
-// tetikler. Bir turda yalnız ilk olay sunulabildiği için aynı penceredeki ikinci
-// tek seferlik olay, en fazla bir sonraki turda güvenli biçimde yakalanır.
+// historicalEventDueThisTurn tarihsel olayın aktif turun takvim aralığına
+// denk gelip gelmediğini bildirir.
 func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
 	if gs == nil || e == nil {
 		return false
@@ -190,6 +295,27 @@ func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
 	return targetAbs < startAbs && targetAbs >= startAbs-graceMonths
 }
 
+func pendingHistoricalEventKey(id string) string {
+	return "pending:event:" + id
+}
+
+func queueHistoricalEventsSharingDate(gs *state.GameState, evts []*Event, selected *Event) {
+	if gs == nil || selected == nil || gs.FiredEventIDs == nil {
+		return
+	}
+	for _, candidate := range evts {
+		if candidate == nil || candidate == selected || candidate.HistoricalYear == 0 ||
+			candidate.HistoricalYear != selected.HistoricalYear ||
+			candidate.HistoricalMonth != selected.HistoricalMonth ||
+			gs.FiredEventIDs[candidate.ID] ||
+			!eventConditionsSatisfied(gs, candidate) ||
+			!historicalEventDueThisTurn(gs, candidate) {
+			continue
+		}
+		gs.FiredEventIDs[pendingHistoricalEventKey(candidate.ID)] = true
+	}
+}
+
 func (e *Event) BaseEffect() Effect {
 	return Effect{
 		Target:                    e.Target,
@@ -207,10 +333,16 @@ func (e *Event) BaseEffect() Effect {
 		CombatAttackPercent:       e.CombatAttackPercent,
 		CombatDefensePercent:      e.CombatDefensePercent,
 		AffectedFaction:           e.AffectedFaction,
-		RelationDeltaAll:          0,
-		CompleteTechs:             nil,
-		StartResearchTech:         "",
-		Relations:                 nil,
+		RelationDeltaAll:          e.RelationDeltaAll,
+		CompleteTechs:             e.CompleteTechs,
+		StartResearchTech:         e.StartResearchTech,
+		Relations:                 e.Relations,
+		Coalition:                 e.Coalition,
+		SetFlags:                  e.SetFlags,
+		ClearFlags:                e.ClearFlags,
+		SuccessorRevival:          e.SuccessorRevival,
+		SuccessorRevivals:         e.SuccessorRevivals,
+		TradeNetworkModifiers:     e.TradeNetworkModifiers,
 		CapitalSettlementID:       "",
 		CapitalMoveTurns:          0,
 	}
@@ -224,7 +356,15 @@ func RequiresPlayerChoice(gs *state.GameState, e *Event) bool {
 	case "player_faction", "all_factions", "all_armies":
 		return true
 	case "specific_faction":
-		return e.AffectedFaction == string(gs.PlayerFactionID)
+		if e.AffectedFaction == string(gs.PlayerFactionID) {
+			return true
+		}
+		for _, playerFactionID := range e.PlayerChoiceFactions {
+			if playerFactionID == string(gs.PlayerFactionID) {
+				return true
+			}
+		}
+		return false
 	default:
 		return false
 	}
@@ -235,6 +375,7 @@ func Apply(gs *state.GameState, e *Event) {
 		return
 	}
 	targetRegionID := applyEffect(gs, e.BaseEffect())
+	applySuccessorRevival(gs, e.BaseEffect())
 	addRegionEventStatus(gs, e, nil, targetRegionID)
 }
 
@@ -245,8 +386,45 @@ func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
 	choice := e.Choices[idx]
 	eff := choiceEffect(e, choice)
 	targetRegionID := applyEffect(gs, eff)
+	applySuccessorRevival(gs, eff)
 	addRegionEventStatus(gs, e, &choice, targetRegionID)
 	return choice, true
+}
+
+func applySuccessorRevival(gs *state.GameState, eff Effect) {
+	if gs == nil {
+		return
+	}
+	if eff.SuccessorRevival != nil {
+		applyOneSuccessorRevival(gs, eff, *eff.SuccessorRevival)
+	}
+	for _, revival := range eff.SuccessorRevivals {
+		applyOneSuccessorRevival(gs, eff, revival)
+	}
+}
+
+func applyOneSuccessorRevival(gs *state.GameState, eff Effect, revival SuccessorRevivalEffect) {
+	successorID := faction.FactionID(revival.FactionID)
+	regionID := world.RegionID(revival.RegionID)
+	if successorID == "" || regionID == "" {
+		return
+	}
+	if _, ok := gs.ReviveSuccessorAtRegion(regionID, successorID, revival.MilitiaCount); !ok {
+		return
+	}
+	overlordID := faction.FactionID(revival.OverlordID)
+	if overlordID == "" && revival.Mode == "vassal" {
+		overlordID = faction.FactionID(eff.AffectedFaction)
+	}
+	if revival.Mode == "vassal" && overlordID != "" && gs.Factions[overlordID] != nil {
+		successor := gs.Factions[successorID]
+		successor.OverlordID = overlordID
+		successor.TributeRate = 20
+		successor.TributeRateConfigured = true
+		diplomacy.ForceRelation(gs, overlordID, successorID, faction.StanceAllied, 50)
+	} else if eff.AffectedFaction != "" {
+		diplomacy.ForceRelation(gs, faction.FactionID(eff.AffectedFaction), successorID, faction.StanceAllied, 50)
+	}
 }
 
 func ConditionsMet(gs *state.GameState, e *Event) bool {
@@ -256,6 +434,10 @@ func ConditionsMet(gs *state.GameState, e *Event) bool {
 func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 	if gs == nil || e == nil {
 		return []string{"gecersiz event"}
+	}
+	if !eventTargetFactionActive(gs, e) {
+		reasons := []string{"hedef faction aktif değil"}
+		return reasons
 	}
 	reasons := make([]string, 0, 6)
 	for _, flag := range e.RequiresFlags {
@@ -302,6 +484,9 @@ func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 			}
 		}
 	}
+	if failedFaction := firstInactiveRequiredFaction(gs, e.RequiresActiveFactions); failedFaction != "" {
+		reasons = append(reasons, "aktif faction gerekli: "+failedFaction)
+	}
 	if blockedSettlement := blockedCapitalSettlementID(gs, e); blockedSettlement != "" {
 		reasons = append(reasons, "zaten hedef başkent: "+blockedSettlement)
 	}
@@ -318,11 +503,17 @@ func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 			}
 		}
 	}
+	if !factionSubjugationTriggerSatisfied(gs, e, gs.LastSubjugationActorID, gs.LastSubjugatedFactionID) {
+		reasons = append(reasons, "siyasi üstünlük koşulu bekleniyor")
+	}
 	return reasons
 }
 
 func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 	if gs == nil || e == nil {
+		return false
+	}
+	if !eventTargetFactionActive(gs, e) {
 		return false
 	}
 	for _, flag := range e.RequiresFlags {
@@ -350,13 +541,82 @@ func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 			}
 		}
 	}
+	if firstInactiveRequiredFaction(gs, e.RequiresActiveFactions) != "" {
+		return false
+	}
 	if blockedCapitalSettlementID(gs, e) != "" {
 		return false
 	}
 	if !eventRelationsSatisfied(gs, e) {
 		return false
 	}
+	if !factionSubjugationTriggerSatisfied(gs, e, gs.LastSubjugationActorID, gs.LastSubjugatedFactionID) {
+		return false
+	}
 	return true
+}
+
+func firstInactiveRequiredFaction(gs *state.GameState, factionIDs []string) string {
+	if len(factionIDs) == 0 {
+		return ""
+	}
+	for _, id := range factionIDs {
+		if id == "" {
+			continue
+		}
+		f := gs.Factions[faction.FactionID(id)]
+		if f == nil || f.IsEliminated {
+			return id
+		}
+	}
+	return ""
+}
+
+func factionSubjugationTriggerSatisfied(gs *state.GameState, e *Event, actor, target faction.FactionID) bool {
+	if e == nil || e.FactionSubjugationTrigger == nil {
+		return true
+	}
+	if gs == nil || actor == "" || target == "" || actor == target {
+		return false
+	}
+	trigger := e.FactionSubjugationTrigger
+	actorListed, targetListed := false, false
+	for _, id := range trigger.FactionIDs {
+		if id == string(actor) {
+			actorListed = true
+		}
+		if id == string(target) {
+			targetListed = true
+		}
+	}
+	if !actorListed || !targetListed {
+		return false
+	}
+	return !trigger.RequirePlayerActor || actor == gs.PlayerFactionID
+}
+
+// eventTargetFactionActive tarihsel veya rastgele olayın doğrudan hedeflediği
+// faction'ın oyunda kalmasını zorunlu kılar. Böylece elenmiş bir İngiltere
+// Güller Savaşı'nı, elenmiş bir Osmanlı da Mohaç/Çaldıran zincirini başlatamaz.
+// all_factions ve all_armies gibi toplu hedeflerde özel faction aranmaz.
+func eventTargetFactionActive(gs *state.GameState, e *Event) bool {
+	if gs == nil || e == nil {
+		return false
+	}
+	var fid faction.FactionID
+	switch e.Target {
+	case "specific_faction":
+		fid = faction.FactionID(e.AffectedFaction)
+	case "player_faction":
+		fid = gs.PlayerFactionID
+	default:
+		return true
+	}
+	if fid == "" {
+		return false
+	}
+	target := gs.Factions[fid]
+	return target != nil && !target.IsEliminated
 }
 
 func blockedCapitalSettlementID(gs *state.GameState, e *Event) string {
@@ -604,8 +864,49 @@ func applyEffect(gs *state.GameState, eff Effect) world.RegionID {
 			applyToFaction(gs, eff.AffectedFaction, eff)
 		}
 	}
+	applyCoalition(gs, eff.Coalition)
+	applyTradeNetworkModifiers(gs, eff.TradeNetworkModifiers)
 	applyFlags(gs, eff)
 	return targetRegionID
+}
+
+func applyTradeNetworkModifiers(gs *state.GameState, modifiers []TradeNetworkModifierEffect) {
+	if gs == nil || len(modifiers) == 0 {
+		return
+	}
+	for _, modifier := range modifiers {
+		if modifier.ID == "" {
+			continue
+		}
+		converted := state.TradeNetworkModifier{
+			ID:                 modifier.ID,
+			CenterIDs:          make([]world.RegionID, 0, len(modifier.CenterIDs)),
+			RegionIDs:          make([]world.RegionID, 0, len(modifier.RegionIDs)),
+			TradeIncomePercent: modifier.TradeIncomePercent,
+			SpicePercent:       modifier.SpicePercent,
+		}
+		for _, id := range modifier.CenterIDs {
+			if id != "" {
+				converted.CenterIDs = append(converted.CenterIDs, world.RegionID(id))
+			}
+		}
+		for _, id := range modifier.RegionIDs {
+			if id != "" {
+				converted.RegionIDs = append(converted.RegionIDs, world.RegionID(id))
+			}
+		}
+		found := false
+		for i := range gs.TradeNetworkModifiers {
+			if gs.TradeNetworkModifiers[i].ID == converted.ID {
+				gs.TradeNetworkModifiers[i] = converted
+				found = true
+				break
+			}
+		}
+		if !found {
+			gs.TradeNetworkModifiers = append(gs.TradeNetworkModifiers, converted)
+		}
+	}
 }
 
 // applyToFaction bir fraksiyonun tüm bölgelerine ve hazinesine olay etkilerini uygular.
@@ -754,6 +1055,43 @@ func applyRelationEffects(gs *state.GameState, fid faction.FactionID, rels []Rel
 			stance = faction.StanceTrade
 		}
 		diplomacy.ForceRelation(gs, fid, faction.FactionID(rel.FactionID), stance, rel.ScoreDelta)
+	}
+}
+
+func applyCoalition(gs *state.GameState, coalition *CoalitionEffect) {
+	if gs == nil || coalition == nil || len(coalition.Members) == 0 {
+		return
+	}
+	memberStance := parseCoalitionStance(coalition.MemberStance, faction.StanceAllied)
+	opponentStance := parseCoalitionStance(coalition.OpponentStance, faction.StanceWar)
+	for i, leftID := range coalition.Members {
+		left := faction.FactionID(leftID)
+		if gs.Factions[left] == nil {
+			continue
+		}
+		for _, rightID := range coalition.Members[i+1:] {
+			right := faction.FactionID(rightID)
+			if gs.Factions[right] == nil {
+				continue
+			}
+			diplomacy.ForceRelation(gs, left, right, memberStance, coalition.MemberScoreDelta)
+		}
+		for _, opponentID := range coalition.Opponents {
+			opponent := faction.FactionID(opponentID)
+			if gs.Factions[opponent] == nil {
+				continue
+			}
+			diplomacy.ForceRelation(gs, left, opponent, opponentStance, coalition.OpponentScoreDelta)
+		}
+	}
+}
+
+func parseCoalitionStance(value string, fallback faction.DiplomaticStance) faction.DiplomaticStance {
+	switch faction.DiplomaticStance(value) {
+	case faction.StanceWar, faction.StancePeace, faction.StanceAllied, faction.StanceTrade:
+		return faction.DiplomaticStance(value)
+	default:
+		return fallback
 	}
 }
 

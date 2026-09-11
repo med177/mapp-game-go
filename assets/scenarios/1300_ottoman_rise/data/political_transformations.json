@@ -1,0 +1,288 @@
+[
+  {
+    "id": "war_of_the_roses",
+    "type": "dynastic_civil_war",
+    "members": [
+      "house_lancaster",
+      "house_york"
+    ],
+    "result_faction": "england",
+    "trigger": {
+      "event_id": "war_of_the_roses_1455",
+      "year": 1455,
+      "month": 5
+    },
+    "region_assignments": {
+      "lancashire": "house_lancaster",
+      "yorkshire": "house_york"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "restore_result_faction"
+    },
+    "description_tr": "Lancaster ve York hanedanlarının iç savaşı sonunda kazanan hanedan İngiltere'yi yeniden birleştirir."
+  },
+  {
+    "id": "iberian_dynastic_union",
+    "type": "dynastic_union",
+    "members": [
+      "aragon",
+      "castile_kingdom"
+    ],
+    "result_faction": "castile_kingdom",
+    "trigger": {
+      "year": 1479,
+      "month": 1
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Aragon ve Kastilya hanedanlarının birleşmesiyle Kastilya kimliği altında İspanya Krallığı oluşur."
+  },
+  {
+    "id": "war_of_the_roses_reunification",
+    "type": "reunification",
+    "members": [
+      "house_lancaster",
+      "house_york"
+    ],
+    "result_faction": "england",
+    "trigger": {
+      "event_id": "war_of_the_roses_resolution_1485",
+      "year": 1485,
+      "month": 8
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "restore_result_faction"
+    },
+    "description_tr": "Güller Savaşı'nın galibi İngiltere'yi yeniden birleştirir."
+  },
+  {
+    "id": "navarra_incorporation",
+    "type": "dynastic_union",
+    "members": [
+      "navarra",
+      "castile_kingdom"
+    ],
+    "result_faction": "castile_kingdom",
+    "trigger": {
+      "event_id": "navarra_incorporation_1515",
+      "year": 1515,
+      "month": 6
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "restore_result_faction"
+    },
+    "description_tr": "Navarra Krallığı Kastilya-İspanya tacına katılır."
+  },
+  {
+    "id": "kalmar_union_1397",
+    "type": "dynastic_union",
+    "members": [
+      "denmark_kingdom",
+      "norway_kingdom",
+      "sweden_kingdom"
+    ],
+    "result_faction": "kalmar_union",
+    "trigger": {
+      "event_id": "kalmar_union_1397",
+      "year": 1397,
+      "month": 7
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Danimarka, Norveç ve İsveç Kalmar Birliği altında tek siyasi yapıda birleşir."
+  },
+  {
+    "id": "polish_lithuanian_union_1385",
+    "type": "dynastic_union",
+    "members": [
+      "polish_kingdom",
+      "lithuanian_gd"
+    ],
+    "result_faction": "polish_lithuania",
+    "trigger": {
+      "event_id": "polish_lithuanian_union_1385",
+      "year": 1385,
+      "month": 8
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Polonya Krallığı ve Litvanya Büyük Prensliği ortak bir siyasi birlik oluşturur."
+  },
+  {
+    "id": "aragon_naples_union_1442",
+    "type": "dynastic_union",
+    "members": [
+      "aragon",
+      "naples_kingdom"
+    ],
+    "result_faction": "aragon",
+    "trigger": {
+      "event_id": "aragon_naples_union_1442",
+      "year": 1442,
+      "month": 6
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Aragon Tacı Napoli Krallığı üzerinde hanedan birliği kurar."
+  },
+  {
+    "id": "burgundian_habsburg_inheritance_1477",
+    "type": "dynastic_union",
+    "members": [
+      "austria_duchy",
+      "burgundy"
+    ],
+    "result_faction": "austria_duchy",
+    "trigger": {
+      "event_id": "burgundian_habsburg_inheritance_1477",
+      "year": 1477,
+      "month": 1
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Burgonya mirası Habsburg hanedanının Avrupa'daki yükselişini başlatır."
+  },
+  {
+    "id": "novgorod_moscow_annexation_1478",
+    "type": "dynastic_union",
+    "members": [
+      "russia",
+      "novgorod_rep"
+    ],
+    "result_faction": "russia",
+    "trigger": {
+      "event_id": "novgorod_moscow_annexation_1478",
+      "year": 1478,
+      "month": 1
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Moskova, Novgorod Cumhuriyeti'ni kendi siyasi çatısı altında birleştirir."
+  },
+  {
+    "id": "habsburg_bohemian_hungarian_succession_1526",
+    "type": "dynastic_union",
+    "members": [
+      "austria_duchy",
+      "bohemian_kingdom",
+      "hungarian_kingdom"
+    ],
+    "result_faction": "austria_duchy",
+    "trigger": {
+      "event_id": "habsburg_bohemian_hungarian_succession_1526",
+      "year": 1526,
+      "month": 9
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Mohaç sonrası Bohemya ve Macaristan taçları Habsburg Avusturyası ile birleşir."
+  },
+  {
+    "id": "kalmar_union_dissolution_1523",
+    "type": "dissolution",
+    "members": [
+      "denmark_kingdom",
+      "norway_kingdom",
+      "sweden_kingdom"
+    ],
+    "result_faction": "kalmar_union",
+    "trigger": {
+      "event_id": "kalmar_union_dissolution_1523",
+      "year": 1523,
+      "month": 6
+    },
+    "region_assignments": {
+      "denmark": "denmark_kingdom",
+      "scania": "denmark_kingdom",
+      "norway": "norway_kingdom",
+      "sweden": "sweden_kingdom"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "split"
+    },
+    "description_tr": "Kalmar Birliği çözülür; Danimarka, Norveç ve İsveç yeniden ayrı krallıklar olarak etkinleşir."
+  },
+  {
+    "id": "aragon_naples_dissolution_1458",
+    "type": "dissolution",
+    "members": [
+      "aragon",
+      "naples_kingdom"
+    ],
+    "result_faction": "aragon",
+    "trigger": {
+      "event_id": "aragon_naples_dissolution_1458",
+      "year": 1458,
+      "month": 8
+    },
+    "region_assignments": {
+      "aragon": "aragon",
+      "sicily": "aragon",
+      "sardinia": "aragon",
+      "malta": "aragon",
+      "mallorca": "aragon",
+      "catalonia": "aragon",
+      "naples": "naples_kingdom",
+      "apulia": "naples_kingdom"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "split"
+    },
+    "description_tr": "Aragon ve Napoli aynı hanedan çatısı altında kalmadan yeniden ayrı siyasi yapılar olarak etkinleşir."
+  }
+]

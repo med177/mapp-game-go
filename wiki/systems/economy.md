@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-09-08
+last_updated: 2026-09-11
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -35,6 +35,21 @@ ordu yağmalayamaz. `RaidLootPreview()` aynı hesabı görev rozetinin hover
 tooltip'ine taşır; `RaidState.RaiderArmyID` yağma kazancını doğru marker'a
 bağlar (`internal/state/raid_ambush.go`, `internal/game/resolution.go`,
 `internal/render/army_task_status.go`).
+
+---
+
+## Tarihsel Ticaret Ağı Etkileri
+
+`GameState.TradeNetworkModifiers` event kaynaklı ticaret ağı değişimlerini
+save/load ile taşır. `TradeNetworkIncomeModifier` merkez sahibinin pasif
+ticaret gelirini ve ticaret gücü gelir havuzunu; `RegionSpiceProductionModifier`
+ise bağlı bölgelerin baharat üretimini ortak hesapla etkiler. Modifier'lar
+senaryo-ID’ye özel değildir; event JSON’ı `center_ids` ve `region_ids` listeleri
+ile herhangi bir ticaret ağına uygulanabilir.
+
+1300 senaryosunda `cape_route`, 1498'de Ümit Burnu bağlantısı olarak açılır.
+Vasco da Gama event'i uygulandığında Portekiz hattı güçlenir, Mısır ve Basra
+üzerinden gelen eski baharat yolunun ticaret geliri ve baharat üretimi azalır.
 
 ---
 

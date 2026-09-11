@@ -585,6 +585,7 @@ func applyVassalization(gs *state.GameState, actor, target faction.FactionID) Re
 		return Result{Message: "Fraksiyon bulunamadı."}
 	}
 	targetFaction.OverlordID = actor
+	gs.MarkFactionSubjugation(actor, target)
 	targetFaction.TributeRate = vassalTributeRatePercent
 	targetFaction.TributeRateConfigured = true
 	targetFaction.VassalizedTurn = gs.Turn

@@ -136,6 +136,8 @@ func (s *GameState) BaseRegionTradeIncome(region *world.Region) int {
 	}
 	_, incomeBonus := s.TradeCenterBenefits(region)
 	income := economy.RegionTradeIncome(s.EffectiveRegionTradeCapacity(region)) + incomeBonus
+	modifier := s.TradeNetworkIncomeModifier(region.ID)
+	income = income * (100 + modifier) / 100
 	if income < 0 {
 		return 0
 	}

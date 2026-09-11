@@ -1,5 +1,11 @@
 [
   {
+    "faction_a": "lithuanian_gd",
+    "faction_b": "polish_kingdom",
+    "score": 55,
+    "stance": "allied"
+  },
+  {
     "faction_a": "achaea_principality",
     "faction_b": "barqa_emirate",
     "score": -20,

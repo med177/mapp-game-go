@@ -1467,9 +1467,102 @@ func (g *Game) applyHistoricalChoice(evt *events.Event, idx int) {
 	if !ok {
 		return
 	}
+	playerWasEventFaction := evt != nil && evt.Target == "specific_faction" &&
+		g.gs.PlayerFactionID == faction.FactionID(evt.AffectedFaction)
+	g.resolvePoliticalTransformation(choice.Effect)
+	if playerWasEventFaction && choice.Effect.PlayerFactionID != "" {
+		selectedFaction := faction.FactionID(choice.Effect.PlayerFactionID)
+		if selected := g.gs.Factions[selectedFaction]; selected != nil && !selected.IsEliminated {
+			g.gs.PlayerFactionID = selectedFaction
+		}
+	}
+	g.resolveHistoricalDiplomaticOffers(evt, choice.Effect)
 	msg := fmt.Sprintf("Karar: %s -> %s", evt.NameTR, choice.LabelTR)
 	g.renderer.ShowCombatResult(msg)
 	g.renderer.AddEventDetail("[KARAR] "+evt.NameTR+": "+choice.LabelTR, g.historicalChoiceDetail(evt, choice))
+}
+
+// resolveHistoricalDiplomaticOffers, event kararındaki barış/ittifak
+// seçeneklerini mevcut diplomasi teklif kuyruğuna bağlar. Hedef AI ise aynı
+// kabul değerlendirmesiyle teklif hemen çözülür; hedef oyuncu ise mevcut teklif
+// modalı üzerinden yanıt beklenir.
+func (g *Game) resolveHistoricalDiplomaticOffers(evt *events.Event, effect events.Effect) {
+	if g == nil || g.gs == nil || evt == nil || len(effect.DiplomaticOffers) == 0 {
+		return
+	}
+	targetType := effect.Target
+	if targetType == "" {
+		targetType = evt.Target
+	}
+	sourceID := faction.FactionID(effect.AffectedFaction)
+	if sourceID == "" {
+		sourceID = faction.FactionID(evt.AffectedFaction)
+	}
+	if sourceID == "" && targetType == "player_faction" {
+		sourceID = g.gs.PlayerFactionID
+	}
+	if sourceID == "" {
+		return
+	}
+
+	for _, proposal := range effect.DiplomaticOffers {
+		targetID := faction.FactionID(proposal.FactionID)
+		action := diplomacy.Action(proposal.Action)
+		if targetID == "" || targetID == sourceID ||
+			(action != diplomacy.ActionProposePeace && action != diplomacy.ActionProposeAlliance && action != diplomacy.ActionProposeTrade) {
+			continue
+		}
+		reason := proposal.ReasonTR
+		if reason == "" {
+			reason = evt.NameTR
+		}
+		if !diplomacy.QueueOfferWithMeta(g.gs, sourceID, targetID, action, proposal.Priority, reason) {
+			g.renderer.AddEvent("[DİPLOMASİ] " + g.factionNameTR(string(targetID)) + " için teklif gönderilemedi.")
+			continue
+		}
+		offerIndex := len(g.gs.DiplomaticOffers) - 1
+		if targetID == g.gs.PlayerFactionID {
+			g.renderer.AddEvent("[DİPLOMASİ] " + g.factionNameTR(string(sourceID)) + " sana " + historicalDiplomaticOfferActionLabel(action) + " gönderdi.")
+			continue
+		}
+
+		accepted := g.aiAcceptHistoricalDiplomaticOffer(sourceID, targetID, action)
+		offer, result, ok := g.resolveDiplomacyOffer(offerIndex, accepted)
+		if !ok {
+			continue
+		}
+		g.renderer.AddEventDetail("[DİPLOMASİ] "+historicalDiplomaticOfferActionLabel(action), fmt.Sprintf("%s → %s\n%s", g.factionNameTR(string(offer.FromFactionID)), g.factionNameTR(string(offer.ToFactionID)), result.Message))
+	}
+}
+
+func (g *Game) aiAcceptHistoricalDiplomaticOffer(from, to faction.FactionID, action diplomacy.Action) bool {
+	if g == nil || g.gs == nil {
+		return false
+	}
+	switch action {
+	case diplomacy.ActionProposePeace:
+		return diplomacy.AssessPeaceProposal(g.gs, from, to).Accepted
+	case diplomacy.ActionProposeAlliance:
+		rel := diplomacy.Relation(g.gs, from, to)
+		return diplomacy.AssessAllianceProposal(g.gs, rel, from, to).Accepted()
+	case diplomacy.ActionProposeTrade:
+		return diplomacy.AssessTradeProposal(g.gs, diplomacy.Relation(g.gs, from, to), from, to).Accepted()
+	default:
+		return false
+	}
+}
+
+func historicalDiplomaticOfferActionLabel(action diplomacy.Action) string {
+	switch action {
+	case diplomacy.ActionProposePeace:
+		return "barış teklifi"
+	case diplomacy.ActionProposeAlliance:
+		return "ittifak teklifi"
+	case diplomacy.ActionProposeTrade:
+		return "ticaret teklifi"
+	default:
+		return "diplomasi teklifi"
+	}
 }
 
 func (g *Game) historicalChoiceViews(evt *events.Event) []render.HistoricalEventChoice {
@@ -1969,6 +2062,19 @@ func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) strin
 		if len(relParts) > 0 {
 			parts = append(parts, "Iliski: "+strings.Join(relParts, ", "))
 		}
+	}
+	if len(eff.DiplomaticOffers) > 0 {
+		offerParts := make([]string, 0, len(eff.DiplomaticOffers))
+		for _, offer := range eff.DiplomaticOffers {
+			name := offer.FactionID
+			if gs != nil && gs.Factions != nil {
+				if f := gs.Factions[faction.FactionID(offer.FactionID)]; f != nil && f.NameTR != "" {
+					name = f.NameTR
+				}
+			}
+			offerParts = append(offerParts, historicalDiplomaticOfferActionLabel(diplomacy.Action(offer.Action))+" → "+name)
+		}
+		parts = append(parts, "Teklif: "+strings.Join(offerParts, ", "))
 	}
 	return strings.Join(parts, "  |  ")
 }
@@ -3409,7 +3515,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		}
 	}
 	yield := func() { runtime.Gosched() }
-	progressTotal := 13
+	progressTotal := 14
 	progressStep := 0
 	advance := func() {
 		progressStep++
@@ -3493,6 +3599,12 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	}
 	advance()
 	yield()
+	politicalTransformations, err := scenario.LoadPoliticalTransformations(dp("political_transformations.json"))
+	if err != nil {
+		return nil, nil, err
+	}
+	advance()
+	yield()
 	evts, err := events.LoadEvents(dp("events.json"))
 	if err != nil {
 		log.Printf("Olaylar yüklenemedi: %v", err)
@@ -3538,44 +3650,45 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	}
 
 	gs := &state.GameState{
-		Turn:               1,
-		Year:               year,
-		Month:              month,
-		MonthsPerTurn:      monthsPerTurn,
-		StartYear:          year,
-		Phase:              state.PhaseFactionSelect,
-		Difficulty:         difficulty,
-		DevelopmentMode:    devMode,
-		EditMode:           editMode,
-		ScenarioID:         scenarioIDFromPath(scenarioPath),
-		ScenarioPath:       scenarioPath,
-		MapConfig:          mapConfig,
-		Regions:            regions,
-		RegionOrder:        regionOrder,
-		LandPassages:       landPassages,
-		TerrainAreas:       terrainAreas,
-		Factions:           factions,
-		FactionOrder:       factionOrder,
-		Armies:             armies,
-		ArmyOrder:          nil,
-		RelationOrder:      relationOrder,
-		AIStrategies:       aiConfig.Strategies,
-		AIStrategyOrder:    append([]string(nil), aiConfig.StrategyOrder...),
-		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
-		ShapeData:          shapeData,
-		UnitTypes:          unitTypes,
-		UnitTypeOrder:      unitTypeOrder,
-		CommanderTemplates: commanderTemplates,
-		BuildingTypes:      buildingTypes,
-		BuildingOrder:      buildingOrder,
-		TechTypes:          techTypes,
-		ScenarioVictories:  victoryOpts,
-		AvailableVictories: scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
-		Relations:          relations,
-		Imperial:           imperialState,
-		TradeCenters:       tradeCenters,
-		NextArmySeq:        len(armies),
-		FiredEventIDs:      map[string]bool{},
+		Turn:                     1,
+		Year:                     year,
+		Month:                    month,
+		MonthsPerTurn:            monthsPerTurn,
+		StartYear:                year,
+		Phase:                    state.PhaseFactionSelect,
+		Difficulty:               difficulty,
+		DevelopmentMode:          devMode,
+		EditMode:                 editMode,
+		ScenarioID:               scenarioIDFromPath(scenarioPath),
+		ScenarioPath:             scenarioPath,
+		MapConfig:                mapConfig,
+		Regions:                  regions,
+		RegionOrder:              regionOrder,
+		LandPassages:             landPassages,
+		TerrainAreas:             terrainAreas,
+		Factions:                 factions,
+		FactionOrder:             factionOrder,
+		Armies:                   armies,
+		ArmyOrder:                nil,
+		RelationOrder:            relationOrder,
+		AIStrategies:             aiConfig.Strategies,
+		AIStrategyOrder:          append([]string(nil), aiConfig.StrategyOrder...),
+		AIDifficultyPolicy:       aiConfig.DifficultyPolicy,
+		ShapeData:                shapeData,
+		UnitTypes:                unitTypes,
+		UnitTypeOrder:            unitTypeOrder,
+		CommanderTemplates:       commanderTemplates,
+		BuildingTypes:            buildingTypes,
+		BuildingOrder:            buildingOrder,
+		TechTypes:                techTypes,
+		ScenarioVictories:        victoryOpts,
+		PoliticalTransformations: politicalTransformations,
+		AvailableVictories:       scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
+		Relations:                relations,
+		Imperial:                 imperialState,
+		TradeCenters:             tradeCenters,
+		NextArmySeq:              len(armies),
+		FiredEventIDs:            map[string]bool{},
 	}
 	if editMode {
 		gs.ArmyOrder = armyOrder

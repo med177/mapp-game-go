@@ -2194,6 +2194,42 @@
     ]
   },
   {
+    "id": "ceuta",
+    "name": "Ceuta",
+    "name_tr": "Sebte",
+    "terrain": "coast",
+    "owner_id": "marinid_sultanate",
+    "neighbors": [
+      "morocco",
+      "gulf_of_cadiz",
+      "alboran_sea"
+    ],
+    "world_x": 371,
+    "world_y": 554,
+    "shape_id": "CEU",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 65,
+    "base_grain_output": 8,
+    "base_iron_output": 1,
+    "base_timber_output": 1,
+    "base_stone_output": 12,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 3,
+    "satisfaction": 60,
+    "tax_rate": 30,
+    "population": 300,
+    "rural_population": 100,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "walls"
+    ]
+  },
+  {
     "id": "morocco",
     "name": "Morocco",
     "name_tr": "Fas",
@@ -2204,7 +2240,8 @@
       "algiers",
       "atlantic_ocean",
       "alboran_sea",
-      "gulf_of_cadiz"
+      "gulf_of_cadiz",
+      "ceuta"
     ],
     "world_x": 349,
     "world_y": 581,
@@ -3741,6 +3778,7 @@
       "alboran_sea",
       "algarve",
       "atlantic_ocean",
+      "ceuta",
       "morocco",
       "sevilla",
       "portuguese_atlantic"
@@ -10061,6 +10099,7 @@
     "neighbors": [
       "algiers",
       "balearic_sea",
+      "ceuta",
       "granada",
       "gulf_of_cadiz",
       "morocco",

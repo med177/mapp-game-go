@@ -517,6 +517,10 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		log.Printf("Teknolojiler yüklenemedi: %v", err)
 	}
+	politicalTransformations, err := scenario.LoadPoliticalTransformations(dp("political_transformations.json"))
+	if err != nil {
+		return nil, err
+	}
 	armies, _, err := army.LoadArmiesWithOrder(dp("armies.json"), unitTypes)
 	if err != nil {
 		log.Printf("Ordular yüklenemedi: %v", err)
@@ -534,40 +538,41 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	}
 
 	gs := &state.GameState{
-		Turn:               1,
-		Year:               sc.Year,
-		Month:              sc.Month,
-		MonthsPerTurn:      sc.CalendarMonthsPerTurn(),
-		StartYear:          sc.Year,
-		Phase:              state.PhasePlayerTurn,
-		ScenarioID:         scenarioIDFromPath(scenarioPath),
-		ScenarioPath:       scenarioPath,
-		MapConfig:          sc.MapConfig,
-		Regions:            regions,
-		RegionOrder:        regionOrder,
-		LandPassages:       landPassages,
-		Factions:           factions,
-		FactionOrder:       factionOrder,
-		Armies:             armies,
-		ArmyOrder:          nil,
-		RelationOrder:      relationOrder,
-		AIStrategies:       aiConfig.Strategies,
-		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
-		ShapeData:          shapeData,
-		UnitTypes:          unitTypes,
-		UnitTypeOrder:      unitTypeOrder,
-		CommanderTemplates: commanderTemplates,
-		BuildingTypes:      buildingTypes,
-		BuildingOrder:      buildingOrder,
-		TechTypes:          techTypes,
-		ScenarioVictories:  sc.VictoryConditions,
-		AvailableVictories: scenario.FilterVictoryOptionsForFaction(sc.VictoryConditions, ""),
-		Relations:          relations,
-		Imperial:           imperialState,
-		WarLedgers:         map[string]*state.WarLedger{},
-		TradeCenters:       tradeCenters,
-		NextArmySeq:        len(armies),
-		FiredEventIDs:      map[string]bool{},
+		Turn:                     1,
+		Year:                     sc.Year,
+		Month:                    sc.Month,
+		MonthsPerTurn:            sc.CalendarMonthsPerTurn(),
+		StartYear:                sc.Year,
+		Phase:                    state.PhasePlayerTurn,
+		ScenarioID:               scenarioIDFromPath(scenarioPath),
+		ScenarioPath:             scenarioPath,
+		MapConfig:                sc.MapConfig,
+		Regions:                  regions,
+		RegionOrder:              regionOrder,
+		LandPassages:             landPassages,
+		Factions:                 factions,
+		FactionOrder:             factionOrder,
+		Armies:                   armies,
+		ArmyOrder:                nil,
+		RelationOrder:            relationOrder,
+		AIStrategies:             aiConfig.Strategies,
+		AIDifficultyPolicy:       aiConfig.DifficultyPolicy,
+		ShapeData:                shapeData,
+		UnitTypes:                unitTypes,
+		UnitTypeOrder:            unitTypeOrder,
+		CommanderTemplates:       commanderTemplates,
+		BuildingTypes:            buildingTypes,
+		BuildingOrder:            buildingOrder,
+		TechTypes:                techTypes,
+		ScenarioVictories:        sc.VictoryConditions,
+		PoliticalTransformations: politicalTransformations,
+		AvailableVictories:       scenario.FilterVictoryOptionsForFaction(sc.VictoryConditions, ""),
+		Relations:                relations,
+		Imperial:                 imperialState,
+		WarLedgers:               map[string]*state.WarLedger{},
+		TradeCenters:             tradeCenters,
+		NextArmySeq:              len(armies),
+		FiredEventIDs:            map[string]bool{},
 	}
 	gs.ApplyHistoricalFactionChanges()
 	gs.SyncWarLedgers()

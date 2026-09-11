@@ -248,6 +248,9 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 		return eliminationResult{}
 	}
 	f.IsEliminated = true
+	if successor != "" && successor != fid {
+		gs.MarkFactionSubjugation(successor, fid)
+	}
 	if gs.AIPlans != nil {
 		delete(gs.AIPlans, fid)
 	}

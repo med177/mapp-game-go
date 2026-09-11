@@ -219,6 +219,16 @@ type RegionEventStatus struct {
 	CombatDefensePercent      int            `json:"combat_defense_percent,omitempty"`
 }
 
+// TradeNetworkModifier, bir veya daha fazla ticaret merkezinin ve bağlı
+// kaynak bölgesinin event kaynaklı gelir/üretim değişimini taşır.
+type TradeNetworkModifier struct {
+	ID                 string           `json:"id"`
+	CenterIDs          []world.RegionID `json:"center_ids,omitempty"`
+	RegionIDs          []world.RegionID `json:"region_ids,omitempty"`
+	TradeIncomePercent int              `json:"trade_income_percent,omitempty"`
+	SpicePercent       int              `json:"spice_percent,omitempty"`
+}
+
 // GameState oyunun tüm anlık durumunu tutar. Save/load ham struct snapshot'ı
 // yerine bu state'in mutable campaign alanlarını serialize eder ve senaryo baz
 // state'i yükleme sırasında yeniden kurar.
@@ -271,23 +281,24 @@ type GameState struct {
 	ShapeData world.CountryShapeJSON `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
-	AIStrategies       map[string]scenario.AIFactionStrategy    `json:"-"`
-	AIStrategyOrder    []string                                 `json:"-"`
-	AIDifficultyPolicy scenario.AIDifficultyPolicy              `json:"-"`
-	UnitTypes          map[string]*army.UnitType                `json:"-"`
-	UnitTypeOrder      []string                                 `json:"-"`
-	BuildingTypes      map[string]*city.Building                `json:"-"`
-	BuildingOrder      []string                                 `json:"-"`
-	TechTypes          map[string]*tech.Technology              `json:"-"`
-	CommanderTemplates map[string][]*army.Commander             `json:"-"`
-	ScenarioVictories  []scenario.VictoryOptionDef              `json:"-"`
-	AvailableVictories []scenario.VictoryOptionDef              `json:"-"`
-	RegionLogistics    map[world.RegionID]RegionLogisticsStatus `json:"-"`
-	ArmyLogistics      map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
-	GrainEconomy       map[faction.FactionID]GrainEconomyStatus `json:"-"`
-	GoldEconomy        map[faction.FactionID]GoldEconomyStatus  `json:"-"`
-	GoldTurnLedger     map[faction.FactionID]GoldTurnLedger     `json:"-"`
-	GrainSaleGoldUsed  map[faction.FactionID]int                `json:"-"`
+	AIStrategies             map[string]scenario.AIFactionStrategy    `json:"-"`
+	AIStrategyOrder          []string                                 `json:"-"`
+	AIDifficultyPolicy       scenario.AIDifficultyPolicy              `json:"-"`
+	UnitTypes                map[string]*army.UnitType                `json:"-"`
+	UnitTypeOrder            []string                                 `json:"-"`
+	BuildingTypes            map[string]*city.Building                `json:"-"`
+	BuildingOrder            []string                                 `json:"-"`
+	TechTypes                map[string]*tech.Technology              `json:"-"`
+	CommanderTemplates       map[string][]*army.Commander             `json:"-"`
+	ScenarioVictories        []scenario.VictoryOptionDef              `json:"-"`
+	PoliticalTransformations []scenario.PoliticalTransformation       `json:"-"`
+	AvailableVictories       []scenario.VictoryOptionDef              `json:"-"`
+	RegionLogistics          map[world.RegionID]RegionLogisticsStatus `json:"-"`
+	ArmyLogistics            map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
+	GrainEconomy             map[faction.FactionID]GrainEconomyStatus `json:"-"`
+	GoldEconomy              map[faction.FactionID]GoldEconomyStatus  `json:"-"`
+	GoldTurnLedger           map[faction.FactionID]GoldTurnLedger     `json:"-"`
+	GrainSaleGoldUsed        map[faction.FactionID]int                `json:"-"`
 
 	// Zafer takibi
 	EconomicVictoryTurns  int  `json:"economic_victory_turns"`
@@ -298,6 +309,12 @@ type GameState struct {
 
 	// Tetiklenmiş tek seferlik olay ID'leri
 	FiredEventIDs map[string]bool `json:"fired_event_ids"`
+
+	// Son savaş/kuşatma/diplomasi çözümünde gerçekleşen faction
+	// üstünlüğünü aynı turdaki veri odaklı event'lere aktarır. Kalıcı campaign
+	// verisi değildir; event kontrolünden sonra tüketilir.
+	LastSubjugationActorID  faction.FactionID `json:"-"`
+	LastSubjugatedFactionID faction.FactionID `json:"-"`
 
 	// Diplomatik ilişkiler (key: RelationKey)
 	Relations map[string]*faction.Relation `json:"relations"`
@@ -320,9 +337,10 @@ type GameState struct {
 	OfferRejectionTurns map[string]int `json:"diplomatic_offer_last_rejected_turns,omitempty"`
 
 	// Ticaret güzergahları
-	TradeRoutes  []*economy.TradeRoute          `json:"trade_routes"`
-	TradeCenters world.TradeCenterConfig        `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
-	Sieges       map[world.RegionID]*SiegeState `json:"sieges,omitempty"`
+	TradeRoutes           []*economy.TradeRoute          `json:"trade_routes"`
+	TradeCenters          world.TradeCenterConfig        `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
+	TradeNetworkModifiers []TradeNetworkModifier         `json:"trade_network_modifiers,omitempty"`
+	Sieges                map[world.RegionID]*SiegeState `json:"sieges,omitempty"`
 	// Bu tur uygulanacak yağmalar. Ekonomi tick'inde hedef üretiminden düşülüp
 	// yağmalayan fraksiyona aktarılır; aynı bölge aynı turda yalnız bir kez
 	// yağmalanabilir.
@@ -2593,6 +2611,12 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 	out.Grain, out.Iron, out.Timber, out.Stone, out.Spice, out.Cloth = applyRegionTerrainSpecialization(
 		region.Terrain, out.Grain, out.Iron, out.Timber, out.Stone, out.Spice, out.Cloth,
 	)
+	if modifier := s.RegionSpiceProductionModifier(region.ID); modifier != 0 {
+		out.Spice = out.Spice * (100 + modifier) / 100
+		if out.Spice < 0 {
+			out.Spice = 0
+		}
+	}
 	out.Grain = scaleBlockadeOutput(out.Grain, blockadeRetention)
 	out.Iron = scaleBlockadeOutput(out.Iron, blockadeRetention)
 	out.Timber = scaleBlockadeOutput(out.Timber, blockadeRetention)

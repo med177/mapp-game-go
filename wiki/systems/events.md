@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-09-08
+last_updated: 2026-09-11
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -24,7 +24,7 @@ gelişmeleri gibi tarihsel zincirler eklenmiştir. Rastgele havuza kuraklık,
 çekirge, kervan baskını, liman yangını, vergi isyanı, maden keşfi, hac panayırı
 ve sınır akınları eklenerek uzun oyunlarda tekrar çeşitliliği artırılmıştır.
 
-Genişletilmiş olay havuzu 82 kayda ulaşır. Dinamik olaylar düşük memnuniyet,
+Genişletilmiş olay havuzu 119 kayda ulaşır. Dinamik olaylar düşük memnuniyet,
 sınır baskısı, ticaret dalgalanması, hazine ve ikmal sorunlarını temsil eder.
 Aktif bölgesel etkiler ayrıca `trade_income_percent`,
 `region_gold_income_percent` ve `army_upkeep_percent` alanlarıyla ticaret,
@@ -33,6 +33,12 @@ yerel vergi ve o bölgedeki orduların ikmal yükünü geçici olarak değiştir
 `combat_defense_percent` ise aktif bölgedeki sahip orduların geçici savaş
 modlarını değiştirir. `population_delta` kırsal nüfusa uygulanır ve bölgenin
 toplam nüfusuyla birlikte güncellenir.
+
+Event seçimleri `trade_network_modifiers` ile belirli ticaret merkezlerinin
+gelirini ve bağlı bölgelerin baharat üretimini kalıcı olarak değiştirebilir.
+Modifier kimliği aynı event tekrar uygulanırsa mevcut kaydı günceller; böylece
+aynı etki üst üste çoğalmaz. Portekiz'in 1498 zinciri Mısır ve Basra baharat
+ağını zayıflatırken Portekiz/Ümit Burnu hattını güçlendirir.
 
 ---
 
@@ -46,6 +52,24 @@ Tetikleme kriterleri:
   takvim penceresinde arar.
 - **Rastgele olay:** `probability > 0` ve `min_turn` eşiği
 - **Tek seferlik olay:** `one_shot=true` ise tekrar tetiklenmez
+
+Siyasi dönüşümler anlık state sonucu ile de tetiklenebilir. Event içindeki
+`faction_subjugation_trigger`, listelenen faction'lardan birinin diğerini
+elemesi veya vassal yapması sonrasında çalışır; `require_player_actor=true`
+ise yalnız oyuncunun kazandığı sonuçlar event'i açar. Bu bağlam kayıt/yükleme
+akışında korunur ve bir kez tüketilir.
+
+Güller Savaşı bu sözleşmeyi kullanır: oyuncu 1455'te Lancaster veya York'u
+seçer; seçtiği hanedan rakibini yenerse 1485'i beklemeden İngiltere'ye dönme
+teklifi alır. Teklif reddedilirse hanedanla devam edilir. 1485 tarihsel event'i
+ise savaş sonuçsuz kalırsa aynı birleşme teklifini yedek yol olarak sunar.
+
+Event'ler ayrıca `requires_active_factions` ile bir veya daha fazla faction'ın
+oyunda kalmasını şart koşabilir. 1300 senaryosundaki Reconquista zinciri,
+Aragon-Kastilya birliğinden sonra Granada aktifse 1482'de Granada'ya savaş
+ilan eder; 1492 sonucu yalnızca savaş flag'i mevcut ve Granada'nın dört çekirdek
+bölgesi (`algarve`, `granada`, `murcia`, `sevilla`) Kastilya tarafından tutuluyorsa
+tetiklenir.
 
 Bir turda yalnız bir tarihsel modal açılabildiği için aynı üç aylık pencerede
 birden fazla tek-seferlik olay uygun hale gelirse ilk olay hemen, ikincisi en

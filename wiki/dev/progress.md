@@ -7,6 +7,36 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-11: 1300 senaryosuna Ceuta/Sebte kara bölgesi, liman yerleşimi,
+  komşulukları ve harita şekli eklendi. `portugal_ceuta_1415` savaşı artık
+  oynanabilir Ceuta fethine; Portekiz'in sonraki denizcilik event'i de
+  `portugal` ve `ceuta` sahipliğine bağlı.
+
+- 2026-09-11: Portekiz'in Reconquista sonrası konsolidasyon, Ceuta (1415),
+  denizcilik programı, Ümit Burnu (1488) ve Vasco da Gama (1498) event zinciri
+  tamamlandı. `trade_network_modifiers` ile Cape hattı açıldığında Mısır/Basra
+  baharat yolunun gelir ve baharat üretimi azalıyor; Portekiz hattı güçleniyor.
+  Modifier state/save/load üzerinden veri odaklıdır. Doğrulama: `go test ./...
+  -count=1`.
+
+- 2026-09-11: Reconquista event zinciri oynanabilir hale getirildi. Aragon ve
+  Kastilya aktif değilse 1479 birliği kurulmaz; birlik kurulduktan sonra
+  Granada aktifse 1482 `reconquista_granada_war_1482` event'i Kastilya'nın
+  Granada'ya savaş ilan etmesini sağlar. 1492 `reconquista_1492` sonucu artık
+  Castile faction'ını hedefler ve savaş flag'i ile Granada'nın dört çekirdek
+  bölgesinin Kastilya kontrolünü şart koşar. `requires_active_factions` event
+  koşulu eklendi. Doğrulama: JSON şema alanları ve hedefli event/scenario testleri.
+
+- 2026-09-11: Güller Savaşı oyuncu akışı tamamlandı. 1455 event'inde oyuncu
+  Lancaster veya York tarafını seçerek ilgili faction'a geçirilir. Seçilen
+  hanedan rakibini eler veya vassal yaparsa `faction_subjugation_trigger`
+  üzerinden 1485'i beklemeden İngiltere'ye birleşme teklifi açılır; kabulde
+  bölgeler, kuvvetler, kaynaklar ve oyuncu kontrolü `england` faction'ına
+  döner, redde hanedanla devam edilir. 1485 event'i savaş sonuçsuz kalırsa
+  aynı seçimi tarihsel yedek olarak sunar. Siyasi üstünlük bağlamı compact
+  save/load ile korunur. Regression: `TestTickTriggersFactionSubjugationEventForPlayer`;
+  doğrulama: `go test ./... -count=1`.
+
 - 2026-09-11: Kırım Hanlığı için `crimean_steppe_revival` AI profili eklendi.
   Profil Kırım çekirdeği savunmasını ve Altın Orda/Rusya yönündeki kuzey Karadeniz
   bozkırı genişlemesini `ai_strategies.json` içinde tanımlıyor.

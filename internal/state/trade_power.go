@@ -130,6 +130,7 @@ func (s *GameState) TradePowerCommerceIncome(fid faction.FactionID) int {
 			continue
 		}
 		pool := 4 + s.TradeCenterVolume(region)/10
+		pool = pool * (100 + s.TradeNetworkIncomeModifier(center.ID)) / 100
 		income += pool * s.TradeCenterPowerSharePercent(center.ID, fid) / 100
 	}
 	return income

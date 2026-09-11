@@ -133,6 +133,9 @@ type campaignSaveState struct {
 	VictoryAchieved         bool                                     `json:"va,omitempty"`
 	VictoryAchievedTurn     int                                      `json:"vat,omitempty"`
 	FiredEventIDs           []string                                 `json:"fe,omitempty"`
+	TradeNetworkModifiers   []state.TradeNetworkModifier             `json:"tnm,omitempty"`
+	LastSubjugationActorID  faction.FactionID                        `json:"lsa,omitempty"`
+	LastSubjugatedFactionID faction.FactionID                        `json:"lst,omitempty"`
 	Relations               map[string]relationSaveState             `json:"rl,omitempty"`
 	DiplomaticOffers        []state.DiplomaticOffer                  `json:"do,omitempty"`
 	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry      `json:"dh,omitempty"`
@@ -501,6 +504,9 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		VictoryAchieved:         gs.VictoryAchieved,
 		VictoryAchievedTurn:     gs.VictoryAchievedTurn,
 		FiredEventIDs:           firedEventIDsToSlice(gs.FiredEventIDs),
+		TradeNetworkModifiers:   append([]state.TradeNetworkModifier(nil), gs.TradeNetworkModifiers...),
+		LastSubjugationActorID:  gs.LastSubjugationActorID,
+		LastSubjugatedFactionID: gs.LastSubjugatedFactionID,
 		Relations:               makeRelationDelta(gs.Relations, base.Relations),
 		DiplomaticOffers:        append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
 		DiplomaticOfferHistory:  append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
@@ -676,6 +682,9 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.VictoryAchieved = saved.VictoryAchieved
 	gs.VictoryAchievedTurn = saved.VictoryAchievedTurn
 	gs.FiredEventIDs = firedEventIDsFromSlice(saved.FiredEventIDs)
+	gs.TradeNetworkModifiers = append([]state.TradeNetworkModifier(nil), saved.TradeNetworkModifiers...)
+	gs.LastSubjugationActorID = saved.LastSubjugationActorID
+	gs.LastSubjugatedFactionID = saved.LastSubjugatedFactionID
 	gs.DiplomaticOffers = append([]state.DiplomaticOffer(nil), saved.DiplomaticOffers...)
 	gs.DiplomaticOfferHistory = append([]state.DiplomaticOfferHistoryEntry(nil), saved.DiplomaticOfferHistory...)
 	gs.DiplomacyOfferCounts = cloneFactionIntMap(saved.DiplomacyOfferCounts)

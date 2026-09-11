@@ -684,6 +684,13 @@
     "id": "safavid",
     "name": "Safavid Order of Ardabil",
     "name_tr": "Erdebil Safeviyye Tarikatı",
+    "historical_changes": [
+      {
+        "year": 1501,
+        "name": "Safavid Empire",
+        "name_tr": "Safevî Devleti"
+      }
+    ],
     "religion": "sunni",
     "color": [
       80,
@@ -1884,6 +1891,14 @@
     "id": "austria_duchy",
     "name": "Duchy of Austria",
     "name_tr": "Avusturya Dükalığı",
+    "historical_changes": [
+      {
+        "year": 1477,
+        "flag": "habsburg.png",
+        "name": "Habsburg Monarchy",
+        "name_tr": "Habsburg Monarşisi"
+      }
+    ],
     "religion": "catholic",
     "color": [
       255,
@@ -2359,6 +2374,9 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "overlord_id": "castile_kingdom",
+    "tribute_rate": 20,
+    "tribute_rate_configured": true,
     "capital_settlement_id": "castile_settlement_2",
     "gold": 5000,
     "grain": 2260,
@@ -4211,6 +4229,147 @@
         "value": 100,
         "core": true
       }
+    ]
+  },
+  {
+    "id": "house_lancaster",
+    "name": "House of Lancaster",
+    "name_tr": "Lancaster Hanedanı",
+    "flag": "house_lancaster.png",
+    "religion": "catholic",
+    "color": [
+      180,
+      25,
+      35
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "gold": 0,
+    "grain": 0,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 70,
+    "territorial_claims": [
+      {
+        "region_id": "lancashire",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "london",
+        "value": 85
+      }
+    ]
+  },
+  {
+    "id": "house_york",
+    "name": "House of York",
+    "name_tr": "York Hanedanı",
+    "flag": "house_york.png",
+    "religion": "catholic",
+    "color": [
+      55,
+      75,
+      175
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "gold": 0,
+    "grain": 0,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 70,
+    "territorial_claims": [
+      {
+        "region_id": "yorkshire",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "mercia",
+        "value": 85
+      }
+    ]
+  },
+  {
+    "id": "kalmar_union",
+    "name": "Kalmar Union",
+    "name_tr": "Kalmar Birliği",
+    "flag": "kalmar_union.png",
+    "religion": "catholic",
+    "color": [
+      180,
+      40,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "gold": 0,
+    "grain": 0,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 60,
+    "territorial_claims": [
+      { "region_id": "denmark", "value": 100, "core": true },
+      { "region_id": "norway", "value": 100, "core": true },
+      { "region_id": "sweden", "value": 100, "core": true }
+    ]
+  },
+  {
+    "id": "polish_lithuania",
+    "name": "Polish-Lithuanian Union",
+    "name_tr": "Polonya-Litvanya Birliği",
+    "flag": "polish_lithuanian_union.png",
+    "religion": "catholic",
+    "color": [
+      170,
+      110,
+      35
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "gold": 0,
+    "grain": 0,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 60,
+    "territorial_claims": [
+      { "region_id": "poland", "value": 100, "core": true },
+      { "region_id": "lithuania", "value": 100, "core": true },
+      { "region_id": "belarus", "value": 90 },
+      { "region_id": "kiev", "value": 80 }
     ]
   }
 ]

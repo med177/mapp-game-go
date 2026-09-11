@@ -20,6 +20,7 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -451,6 +452,67 @@ func Test1300SafavidRiseWaitsFor1501Event(t *testing.T) {
 	ai.TakeTurn(gs, "safavid")
 	if plan := gs.AIPlans["safavid"]; plan == nil || plan.ObjectiveID != "rise_into_persian_heartland_1501" || plan.TargetFactionID != "ilkhanate" {
 		t.Fatalf("1501 sonrası Safevî İran çekirdeği objective'ine geçmeli: %+v", plan)
+	}
+}
+
+func Test1300DiplomaticEventsResolveRelationsAfterSameDateQueue(t *testing.T) {
+	tests := []struct {
+		name       string
+		eventID    string
+		year       int
+		month      int
+		factionA   faction.FactionID
+		factionB   faction.FactionID
+		wantStance faction.DiplomaticStance
+	}{
+		{"İlhanlı ardıl diplomasisi", "ilkhanate_successor_diplomacy_1335", 1335, 12, "ilkhanate", "jelayirids", faction.StanceAllied},
+		{"Gelibolu sonrası Balkan diplomasisi", "balkan_diplomacy_after_gallipoli_1354", 1354, 3, "ottoman", "serbian_empire", faction.StanceWar},
+		{"Venedik Ceneviz seçimi", "venice_genoa_diplomatic_choice_1350", 1350, 8, "venice", "genoa", faction.StancePeace},
+		{"Kosova sonrası diplomasi", "kosovo_diplomatic_settlement_1389", 1389, 6, "ottoman", "serbian_empire", faction.StanceWar},
+		{"Timur seferi diplomasisi", "timur_invasion_diplomacy_1402", 1402, 7, "ottoman", "timurid_empire", faction.StanceWar},
+		{"Safevi diplomatik yükselişi", "safavid_diplomatic_rise_1501", 1501, 1, "safavid", "ottoman", faction.StanceWar},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs, evts, err := loadScenarioData(scenario1300Path(t), 2, nil)
+			if err != nil {
+				t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+			}
+			gs.PlayerFactionID = ""
+			gs.Year = tt.year
+			gs.Month = tt.month
+			game := &Game{gs: gs, renderer: &render.Renderer{}}
+			if tt.eventID == "balkan_diplomacy_after_gallipoli_1354" {
+				gs.Regions["thrace"].OwnerID = "ottoman"
+			}
+
+			var triggered *events.Event
+			for i := 0; i < len(evts)+1; i++ {
+				triggered = events.Tick(gs, evts)
+				if triggered == nil {
+					break
+				}
+				events.Apply(gs, triggered)
+				if choiceIndex := events.AutoChoose(triggered); choiceIndex >= 0 {
+					choice, ok := events.ApplyChoice(gs, triggered, choiceIndex)
+					if !ok {
+						t.Fatalf("%s otomatik seçimi uygulanamadı", triggered.ID)
+					}
+					game.resolveHistoricalDiplomaticOffers(triggered, choice.Effect)
+				}
+				if triggered.ID == tt.eventID {
+					break
+				}
+			}
+
+			if triggered == nil || triggered.ID != tt.eventID {
+				t.Fatalf("%s tetiklenmedi, son event=%v", tt.eventID, triggered)
+			}
+			if relation := diplomacy.Relation(gs, tt.factionA, tt.factionB); relation == nil || relation.Stance != tt.wantStance {
+				t.Fatalf("%s sonrası ilişki %s-%s beklenen %s değil: %+v", tt.eventID, tt.factionA, tt.factionB, tt.wantStance, diplomacy.Relation(gs, tt.factionA, tt.factionB))
+			}
+		})
 	}
 }
 
