@@ -4,15 +4,13 @@ import (
 	"strconv"
 
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 )
 
 const (
-	RelationImprovementGoldCost = 40
-	relationImprovementBonus    = 8
-	GiftGoldCost                = 120
-	giftReceiverGold            = 80
-	giftRelationBonus           = 15
+	RelationImprovementGoldCost = 40  // eski çağıranlar için senaryo varsayılanı
+	GiftGoldCost                = 120 // eski çağıranlar için senaryo varsayılanı
 	vassalizationMinScore       = 55
 	vassalAcceptanceThreshold   = 65
 	vassalMilitaryPowerRatio    = 5
@@ -25,6 +23,33 @@ const (
 	// edilebilmesi için realm içinde kalması gereken asgari tur sayısıdır.
 	VassalAnnexationMinimumTurns = 12
 )
+
+func diplomacyConfig(gs *state.GameState) scenario.DiplomacyConfig {
+	if gs == nil {
+		return scenario.DefaultDiplomacyConfig()
+	}
+	return gs.DiplomacyConfig.WithDefaults()
+}
+
+func RelationImprovementGoldCostFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).RelationImprovementGoldCost
+}
+
+func RelationImprovementBonusFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).RelationImprovementBonus
+}
+
+func GiftGoldCostFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).GiftGoldCost
+}
+
+func GiftReceiverGoldFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).GiftReceiverGold
+}
+
+func GiftRelationBonusFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).GiftRelationBonus
+}
 
 type VassalProposalAssessment struct {
 	Chance      int
@@ -348,8 +373,9 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 			return "Bu devletle aktif bir ticaret anlaşması yok."
 		}
 	case ActionImproveRelations:
-		if actorFaction.Gold < RelationImprovementGoldCost {
-			return "Heyet göndermek için 40 altın gerekiyor."
+		cost := RelationImprovementGoldCostFor(gs)
+		if actorFaction.Gold < cost {
+			return "Heyet göndermek için " + strconv.Itoa(cost) + " altın gerekiyor."
 		}
 		if score >= 95 {
 			return "İlişki zaten çok yüksek."
@@ -358,8 +384,9 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if stance == faction.StanceWar {
 			return "Savaş halindeyken hediye gönderilemez."
 		}
-		if actorFaction.Gold < GiftGoldCost {
-			return "Hediye göndermek için 120 altın gerekiyor."
+		cost := GiftGoldCostFor(gs)
+		if actorFaction.Gold < cost {
+			return "Hediye göndermek için " + strconv.Itoa(cost) + " altın gerekiyor."
 		}
 		if score >= 98 {
 			return "İlişki zaten çok yüksek."

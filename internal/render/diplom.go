@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"sort"
+	"strconv"
 
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
@@ -165,12 +166,12 @@ func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID
 	return diplomacy.ActionBlockReason(gs, gs.PlayerFactionID, target, actionValue)
 }
 
-func diplomacyActionPaymentNote(action ActionKind) string {
+func diplomacyActionPaymentNote(gs *state.GameState, action ActionKind) string {
 	switch action {
 	case ActionImproveRelations:
 		return "Karşı devlete ödeme gitmez"
 	case ActionSendGift:
-		return "Karşı devletin hazinesine 80 altın gider"
+		return "Karşı devletin hazinesine " + strconv.Itoa(diplomacy.GiftReceiverGoldFor(gs)) + " altın gider"
 	default:
 		return ""
 	}
@@ -1238,7 +1239,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		// Ayrıntı satırını alt kenardan en az 7 px içeride tut.
 		detailX := float64(bx) + 14
 		detailW := float64(bw - 28)
-		paymentNote := diplomacyActionPaymentNote(action)
+		paymentNote := diplomacyActionPaymentNote(gs, action)
 		if paymentNote != "" {
 			paymentW := MeasureText(paymentNote, FaceSmall)
 			statusW := detailW - paymentW - 12
@@ -2086,9 +2087,9 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		assessment := diplomacy.AssessTradeProposal(gs, rel, gs.PlayerFactionID, target)
 		chance = assessment.Chance
 	case ActionImproveRelations:
-		return 100, "İlişki +8 / 40 altın"
+		return 100, "İlişki +" + strconv.Itoa(diplomacy.RelationImprovementBonusFor(gs)) + " / " + strconv.Itoa(diplomacy.RelationImprovementGoldCostFor(gs)) + " altın"
 	case ActionSendGift:
-		return 100, "İlişki +15 / 120 altın"
+		return 100, "İlişki +" + strconv.Itoa(diplomacy.GiftRelationBonusFor(gs)) + " / " + strconv.Itoa(diplomacy.GiftGoldCostFor(gs)) + " altın"
 	case ActionOfferVassalization:
 		chance = diplomacy.AssessVassalizationProposal(gs, rel, gs.PlayerFactionID, target).Chance
 	case ActionCancelAlliance:

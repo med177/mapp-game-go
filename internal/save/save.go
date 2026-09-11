@@ -547,6 +547,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		ScenarioID:               scenarioIDFromPath(scenarioPath),
 		ScenarioPath:             scenarioPath,
 		MapConfig:                sc.MapConfig,
+		DiplomacyConfig:          sc.Diplomacy.WithDefaults(),
 		Regions:                  regions,
 		RegionOrder:              regionOrder,
 		LandPassages:             landPassages,

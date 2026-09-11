@@ -3640,12 +3640,14 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	month := 3
 	monthsPerTurn := 1
 	var mapConfig scenario.MapConfig
+	diplomacyConfig := scenario.DefaultDiplomacyConfig()
 	var victoryOpts []scenario.VictoryOptionDef
 	if sc != nil {
 		year = sc.Year
 		month = sc.Month
 		monthsPerTurn = sc.CalendarMonthsPerTurn()
 		mapConfig = sc.MapConfig
+		diplomacyConfig = sc.Diplomacy.WithDefaults()
 		victoryOpts = sc.VictoryConditions
 	}
 
@@ -3662,6 +3664,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		ScenarioID:               scenarioIDFromPath(scenarioPath),
 		ScenarioPath:             scenarioPath,
 		MapConfig:                mapConfig,
+		DiplomacyConfig:          diplomacyConfig,
 		Regions:                  regions,
 		RegionOrder:              regionOrder,
 		LandPassages:             landPassages,

@@ -243,9 +243,10 @@ type GameState struct {
 	StartYear     int `json:"start_year"`
 
 	// Senaryo
-	ScenarioID   string             `json:"scenario_id"`   // aktif senaryo ID'si
-	ScenarioPath string             `json:"scenario_path"` // aktif senaryo klasörü
-	MapConfig    scenario.MapConfig `json:"map"`           // aktif senaryonun harita hizalama ayarları
+	ScenarioID      string                   `json:"scenario_id"`   // aktif senaryo ID'si
+	ScenarioPath    string                   `json:"scenario_path"` // aktif senaryo klasörü
+	MapConfig       scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
+	DiplomacyConfig scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
 
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`

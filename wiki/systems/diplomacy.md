@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-09-04
+last_updated: 2026-09-11
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -154,8 +154,8 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 |---|---|---|
 | Savaş ilan et | `declareWar()` | Zaten savaşta değilse; önce koalisyon önizlemesi açılır, hedefin vassalları ile iki tarafın çağrılabilir müttefikleri ve katılım ihtimali gösterilir |
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kalıcı savaş ledger'ı, objective, toprak/kayıp dengesi, süre, güç, ekonomi, çoklu savaş ve başkent tehdidi tüm senaryolarda değerlendirilir. Teklif ekranı ve backend aynı `AssessPeaceProposal()` sonucunu kullanır |
-| Heyet gönder | `improveRelations()` | `40` altın; savaş sırasında da gönderilebilir ve ilişkiyi duruşu bozmadan deterministik `+8` artırır |
-| Hediye gönder | `sendGift()` | Savaşta değil + `120` altın; ilişkiyi deterministik `+15` artırır |
+| Heyet gönder | `improveRelations()` | Aktif senaryonun `diplomacy.relation_improvement_gold_cost` değeri; savaş sırasında da gönderilebilir ve `relation_improvement_bonus` kadar artırır |
+| Hediye gönder | `sendGift()` | Savaşta değil + aktif senaryonun `diplomacy.gift_gold_cost` değeri; `gift_relation_bonus` kadar artırır ve `gift_receiver_gold` kadar altın aktarır |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + tüm senaryolarda `Score >= 40`; iki tarafın doğrudan müttefikleriyle mevcut savaş çakışması varsa oyuncu ve AI için teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
@@ -382,7 +382,7 @@ AI:
 - ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
 - AI dış ittifak açarken artık stratejik bağ, müttefik kapasitesi, `ai_expansion_targets` gerilimi ve hedefin somut katkısını da dikkate alır; ortak tehdit yoksa uzak/alakasız, tarihsel hedef olan veya büyük güç için gerçek askeri/stratejik fayda üretmeyen küçük devlete ittifak spam atmaz
 - barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar
-- AI, kendi çıkarı olan ve genişleme hedefi olmayan barışçıl ilişkilerde ticaret/ittifak/güvenlik eşiğini yükseltmek için aynı `Heyet` ve `Hediye` aksiyonlarını kullanır; heyet `40` altın karşılığında `+8`, hediye `120` altın karşılığında `+15` verir ve hediyenin `80` altını alıcıya aktarılır. Bu harcamalar AI hazinesinde tahıl/kaynak tedariki ile araştırma, ekonomi, donanma ve ordu yatırımlarından sonra gelir; `1300_ottoman_rise` bütçesinde yalnız bu önceliklerden arta kalan altın kullanılabilir. Harcama kararı sonrasında deterministik `%60` başarı zarı atılır; başarısız zar teklif veya ödeme üretmez. Aynı fraksiyon turunda en fazla bir ilişki bakım aksiyonu yapar ve uygulanan bakım aksiyonu ilgili ilişkiyi dört tur cooldown'a alır; oyuncuya gönderilen teklif de bu korumayı kuyruğa girişte başlatır. AI-AI işlemleri anında, oyuncuya gönderilenler ise `DiplomaticOffers` kuyruğunda yalnız `Tamam` bildirimiyle çözülür.
+- AI, kendi çıkarı olan ve genişleme hedefi olmayan barışçıl ilişkilerde ticaret/ittifak/güvenlik eşiğini yükseltmek için senaryonun `diplomacy` ayarlarını kullanan aynı `Heyet` ve `Hediye` aksiyonlarını kullanır. `1300_ottoman_rise` içindeki güncel değerler `scenario.json` dosyasından okunur. Bu harcamalar AI hazinesinde tahıl/kaynak tedariki ile araştırma, ekonomi, donanma ve ordu yatırımlarından sonra gelir; yalnız bu önceliklerden arta kalan altın kullanılabilir. Harcama kararı sonrasında deterministik `%60` başarı zarı atılır; başarısız zar teklif veya ödeme üretmez. Aynı fraksiyon turunda en fazla bir ilişki bakım aksiyonu yapar ve uygulanan bakım aksiyonu ilgili ilişkiyi dört tur cooldown'a alır; oyuncuya gönderilen teklif de bu korumayı kuyruğa girişte başlatır. AI-AI işlemleri anında, oyuncuya gönderilenler ise `DiplomaticOffers` kuyruğunda yalnız `Tamam` bildirimiyle çözülür.
 - vassal durumundaki AI bağımsız diplomasi ve savaş değerlendirmesi yapmaz
 - barış kabul edildiğinde taraf çifti `GameState.RecentTruces` içinde beş turluk
   save-backed ateşkes alır; bu sürede `ActionDeclareWar` engellenir, süre bitince

@@ -8,8 +8,15 @@
   "turn_months": 3,
   "year": 1310,
   "month": 3,
+  "diplomacy": {
+    "relation_improvement_gold_cost": 400,
+    "relation_improvement_bonus": 8,
+    "gift_gold_cost": 1000,
+    "gift_receiver_gold": 800,
+    "gift_relation_bonus": 15
+  },
   "map": {
-    "shape_set_id": "akdeniz_havzasi",
+    "shape_set_id": "mediterranean_basin",
     "world_width": 2892,
     "world_height": 1440,
     "shape_offset_x": -530,

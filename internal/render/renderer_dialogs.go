@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"image/color"
+	"strconv"
 	"strings"
 
 	"mapp-game-go/internal/army"
@@ -1270,10 +1271,10 @@ func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) s
 		return fromName + " devleti " + regionName + " kuşatmasında vassallığını istiyor. Kabul edersen devletin onun vassalı olur, bölgeni korursun ve kuşatma sona erer."
 	}
 	if offer.Action == string(diplomacy.ActionImproveRelations) {
-		return fromName + " devleti size diplomatik heyet gönderdi. İlişkiniz +8 artacak."
+		return fromName + " devleti size diplomatik heyet gönderdi. İlişkiniz +" + strconv.Itoa(diplomacy.RelationImprovementBonusFor(gs)) + " artacak."
 	}
 	if offer.Action == string(diplomacy.ActionSendGift) {
-		return fromName + " devleti size hediye gönderdi. İlişkiniz +15 artacak ve hazinenize 80 altın eklenecek."
+		return fromName + " devleti size hediye gönderdi. İlişkiniz +" + strconv.Itoa(diplomacy.GiftRelationBonusFor(gs)) + " artacak ve hazinenize " + strconv.Itoa(diplomacy.GiftReceiverGoldFor(gs)) + " altın eklenecek."
 	}
 	if offer.Action != string(diplomacy.ActionJoinWarCall) {
 		return fromName + " devleti size " + diplomacyOfferActionLabelTR(offer.Action) + " teklif etti."

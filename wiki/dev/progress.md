@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-11: Heyet ve hediye maliyet/bonusları `scenario.json` içindeki
+  `diplomacy` yapılandırmasına taşındı. Yeni oyun, save/load, AI bütçesi,
+  diplomasi çözümlemesi ve UI bildirimleri aynı senaryo ayarını kullanıyor;
+  eksik alanlar eski varsayılanlara tamamlanıyor. Doğrulama: `go test ./...
+  -count=1` ve Linux build.
+
 - 2026-09-11: 1300 senaryosunda oynanabilir İberya devleti Aragon'dan
   Kastilya'ya geçirildi. Aragon AI-only bırakıldı; Kastilya'nın altı tarihsel
   zafer rotası Reconquista, Endülüs, İberya birleşmesi, Pirene sınırı,

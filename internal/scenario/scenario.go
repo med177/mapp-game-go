@@ -155,12 +155,55 @@ type Scenario struct {
 	// 0 değeri eski senaryolar için bir aylık uyumluluk davranışını korur.
 	TurnMonths int `json:"turn_months,omitempty"`
 
+	Diplomacy DiplomacyConfig `json:"diplomacy,omitempty"`
+
 	MapConfig         MapConfig          `json:"map"`
 	Music             MusicConfig        `json:"music"`
 	VictoryConditions []VictoryOptionDef `json:"victory_conditions"`
 
 	// Path: runtime-only, klasörün tam yolu (JSON'da yok)
 	Path string `json:"-"`
+}
+
+// DiplomacyConfig senaryoya bağlı diplomatik ilişki geliştirme maliyetlerini
+// ve etkilerini tanımlar. Alanları eksik eski senaryolar varsayılan değerlere
+// tamamlanır.
+type DiplomacyConfig struct {
+	RelationImprovementGoldCost int `json:"relation_improvement_gold_cost,omitempty"`
+	RelationImprovementBonus    int `json:"relation_improvement_bonus,omitempty"`
+	GiftGoldCost                int `json:"gift_gold_cost,omitempty"`
+	GiftReceiverGold            int `json:"gift_receiver_gold,omitempty"`
+	GiftRelationBonus           int `json:"gift_relation_bonus,omitempty"`
+}
+
+func DefaultDiplomacyConfig() DiplomacyConfig {
+	return DiplomacyConfig{
+		RelationImprovementGoldCost: 40,
+		RelationImprovementBonus:    8,
+		GiftGoldCost:                120,
+		GiftReceiverGold:            80,
+		GiftRelationBonus:           15,
+	}
+}
+
+func (c DiplomacyConfig) WithDefaults() DiplomacyConfig {
+	d := DefaultDiplomacyConfig()
+	if c.RelationImprovementGoldCost > 0 {
+		d.RelationImprovementGoldCost = c.RelationImprovementGoldCost
+	}
+	if c.RelationImprovementBonus > 0 {
+		d.RelationImprovementBonus = c.RelationImprovementBonus
+	}
+	if c.GiftGoldCost > 0 {
+		d.GiftGoldCost = c.GiftGoldCost
+	}
+	if c.GiftReceiverGold > 0 {
+		d.GiftReceiverGold = c.GiftReceiverGold
+	}
+	if c.GiftRelationBonus > 0 {
+		d.GiftRelationBonus = c.GiftRelationBonus
+	}
+	return d
 }
 
 // DataPath senaryo data/ klasöründeki bir dosyanın tam yolunu döner.
@@ -199,6 +242,7 @@ func Load(path string) (*Scenario, error) {
 		return nil, fmt.Errorf("geçersiz senaryo period değeri %q", definition.Period)
 	}
 	definition.Path = path
+	definition.Diplomacy = definition.Diplomacy.WithDefaults()
 	return &definition, nil
 }
 

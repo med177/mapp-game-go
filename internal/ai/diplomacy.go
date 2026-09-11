@@ -246,13 +246,13 @@ func aiHandleRelationshipRepairWithBudget(gs *state.GameState, fid, otherID fact
 	if self == nil {
 		return false
 	}
-	cost := aiRelationshipActionCost(action)
+	cost := aiRelationshipActionCost(gs, action)
 	if !aiCanAffordForBudget(self, cost, budget, aiBudgetEconomy) {
-		if action != diplomacy.ActionSendGift || !aiCanAffordForBudget(self, economy.ResourceCost{Gold: diplomacy.RelationImprovementGoldCost}, budget, aiBudgetEconomy) {
+		if action != diplomacy.ActionSendGift || !aiCanAffordForBudget(self, economy.ResourceCost{Gold: diplomacy.RelationImprovementGoldCostFor(gs)}, budget, aiBudgetEconomy) {
 			return false
 		}
 		action = diplomacy.ActionImproveRelations
-		cost = aiRelationshipActionCost(action)
+		cost = aiRelationshipActionCost(gs, action)
 	}
 	// İlişki onarımı uygun ve karşılanabilir olsa bile her tur otomatikleşmesin;
 	// aynı deterministik tur/faction/hedef zarı save ve replay akışını korur.
@@ -308,11 +308,11 @@ func aiHandleRelationshipRepairsAfterBudget(gs *state.GameState, fid faction.Fac
 	}
 }
 
-func aiRelationshipActionCost(action diplomacy.Action) economy.ResourceCost {
+func aiRelationshipActionCost(gs *state.GameState, action diplomacy.Action) economy.ResourceCost {
 	if action == diplomacy.ActionSendGift {
-		return economy.ResourceCost{Gold: diplomacy.GiftGoldCost}
+		return economy.ResourceCost{Gold: diplomacy.GiftGoldCostFor(gs)}
 	}
-	return economy.ResourceCost{Gold: diplomacy.RelationImprovementGoldCost}
+	return economy.ResourceCost{Gold: diplomacy.RelationImprovementGoldCostFor(gs)}
 }
 
 // aiRelationshipRepairAction, ilişki aksiyonunu yalnızca somut ticari veya
@@ -371,21 +371,21 @@ func aiRelationshipRepairAction(gs *state.GameState, fid, otherID faction.Factio
 	}
 
 	if rel.Score < 15 {
-		if self.Gold < diplomacy.RelationImprovementGoldCost+aiMinGoldReserve {
+		if self.Gold < diplomacy.RelationImprovementGoldCostFor(gs)+aiMinGoldReserve {
 			return "", "", false
 		}
 		return diplomacy.ActionImproveRelations, reason, true
 	}
 	if strategicTarget {
-		if self.Gold < diplomacy.RelationImprovementGoldCost+aiMinGoldReserve {
+		if self.Gold < diplomacy.RelationImprovementGoldCostFor(gs)+aiMinGoldReserve {
 			return "", "", false
 		}
 		return diplomacy.ActionImproveRelations, "stratejik hedef karşısında sınır baskısını azaltma", true
 	}
-	if self.Gold >= diplomacy.GiftGoldCost+aiMinGoldReserve {
+	if self.Gold >= diplomacy.GiftGoldCostFor(gs)+aiMinGoldReserve {
 		return diplomacy.ActionSendGift, reason, true
 	}
-	if self.Gold >= diplomacy.RelationImprovementGoldCost+aiMinGoldReserve {
+	if self.Gold >= diplomacy.RelationImprovementGoldCostFor(gs)+aiMinGoldReserve {
 		return diplomacy.ActionImproveRelations, reason, true
 	}
 	return "", "", false

@@ -254,10 +254,10 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ticaret anlaşması sona erdirildi."}
 
 	case ActionImproveRelations:
-		return applyRelationImprovement(gs, actor, target, RelationImprovementGoldCost, relationImprovementBonus, 0, "diplomatik heyet")
+		return applyRelationImprovement(gs, actor, target, RelationImprovementGoldCostFor(gs), RelationImprovementBonusFor(gs), 0, "diplomatik heyet")
 
 	case ActionSendGift:
-		return applyRelationImprovement(gs, actor, target, GiftGoldCost, giftRelationBonus, giftReceiverGold, "hediye")
+		return applyRelationImprovement(gs, actor, target, GiftGoldCostFor(gs), GiftRelationBonusFor(gs), GiftReceiverGoldFor(gs), "hediye")
 
 	case ActionOfferVassalization:
 		if !AssessVassalizationProposal(gs, rel, actor, target).Accepted() {
