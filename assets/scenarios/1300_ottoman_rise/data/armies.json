@@ -1940,5 +1940,30 @@
         "count": 4
       }
     ]
+  },
+  {
+    "id": "army_edit_125",
+    "owner_id": "ottoman",
+    "region_id": "bilecik_frontier",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_126",
+    "owner_id": "cyprus_kingdom",
+    "region_id": "east_mediterranean",
+    "docked_region_id": "north_cyprus",
+    "docked_settlement_id": "north_cyprus_settlement_2",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 8
+      }
+    ]
   }
 ]

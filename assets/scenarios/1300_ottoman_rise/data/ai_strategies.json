@@ -602,6 +602,55 @@
       ]
     },
     {
+      "faction_id": "crimean_khanate",
+      "profile": "crimean_steppe_revival",
+      "expansion_targets": [
+        "golden_horde",
+        "russia"
+      ],
+      "objectives": [
+        {
+          "id": "hold_crimean_khanate_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "crimea",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "crimea"
+          ]
+        },
+        {
+          "id": "press_northern_black_sea_steppe",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "lower_ukrainian_steppe",
+              "value": 82
+            },
+            {
+              "region_id": "ukrainian_steppe",
+              "value": 74
+            },
+            {
+              "region_id": "north_caucasus",
+              "value": 62
+            }
+          ],
+          "priority": 78,
+          "commitment": 58,
+          "readiness_regions": [
+            "crimea"
+          ],
+          "allow_vassalization": true
+        }
+      ]
+    },
+    {
       "faction_id": "croatian_kingdom",
       "profile": "subic_adriatic_frontier",
       "expansion_targets": [
@@ -656,6 +705,33 @@
       ]
     },
     {
+      "faction_id": "cyprus_kingdom",
+      "profile": "cypriot_island_kingdom",
+      "naval_focus": true,
+      "objectives": [
+        {
+          "id": "hold_cypriot_island",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "cyprus",
+              "value": 100
+            },
+            {
+              "region_id": "north_cyprus",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "cyprus",
+            "north_cyprus"
+          ]
+        }
+      ]
+    },
+    {
       "faction_id": "denmark_kingdom",
       "profile": "danish_sound_and_union",
       "objectives": [
@@ -690,82 +766,6 @@
             "scania"
           ],
           "allow_vassalization": true
-        }
-      ]
-    },
-    {
-      "faction_id": "crimean_khanate",
-      "profile": "crimean_steppe_revival",
-      "expansion_targets": [
-        "golden_horde",
-        "russia"
-      ],
-      "objectives": [
-        {
-          "id": "hold_crimean_khanate_core",
-          "kind": "defend",
-          "territorial_claims": [
-            {
-              "region_id": "crimea",
-              "value": 100
-            }
-          ],
-          "priority": 100,
-          "commitment": 84,
-          "readiness_regions": [
-            "crimea"
-          ]
-        },
-        {
-          "id": "press_northern_black_sea_steppe",
-          "kind": "expand",
-          "territorial_claims": [
-            {
-              "region_id": "lower_ukrainian_steppe",
-              "value": 82
-            },
-            {
-              "region_id": "ukrainian_steppe",
-              "value": 74
-            },
-            {
-              "region_id": "north_caucasus",
-              "value": 62
-            }
-          ],
-          "priority": 78,
-          "commitment": 58,
-          "readiness_regions": [
-            "crimea"
-          ],
-          "allow_vassalization": true
-        }
-      ]
-    },
-    {
-      "faction_id": "cyprus_kingdom",
-      "profile": "cypriot_island_kingdom",
-      "naval_focus": true,
-      "objectives": [
-        {
-          "id": "hold_cypriot_island",
-          "kind": "defend",
-          "territorial_claims": [
-            {
-              "region_id": "cyprus",
-              "value": 100
-            },
-            {
-              "region_id": "north_cyprus",
-              "value": 100
-            }
-          ],
-          "priority": 100,
-          "commitment": 84,
-          "readiness_regions": [
-            "cyprus",
-            "north_cyprus"
-          ]
         }
       ]
     },
@@ -1512,6 +1512,48 @@
           "readiness_regions": [
             "uae"
           ]
+        }
+      ]
+    },
+    {
+      "faction_id": "hospitaller",
+      "profile": "rhodes_knightly_fortress",
+      "naval_focus": true,
+      "expansion_targets": [
+        "mamluk",
+        "ottoman"
+      ],
+      "objectives": [
+        {
+          "id": "hold_rhodes_fortress",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "rhodes",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 92,
+          "readiness_regions": [
+            "rhodes"
+          ]
+        },
+        {
+          "id": "contest_eastern_mediterranean_islands",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "cyprus",
+              "value": 68
+            }
+          ],
+          "priority": 68,
+          "commitment": 42,
+          "readiness_regions": [
+            "rhodes"
+          ],
+          "allow_vassalization": true
         }
       ]
     },
@@ -3073,48 +3115,6 @@
             "venice",
             "crete"
           ]
-        }
-      ]
-    },
-    {
-      "faction_id": "hospitaller",
-      "profile": "rhodes_knightly_fortress",
-      "naval_focus": true,
-      "expansion_targets": [
-        "mamluk",
-        "ottoman"
-      ],
-      "objectives": [
-        {
-          "id": "hold_rhodes_fortress",
-          "kind": "defend",
-          "territorial_claims": [
-            {
-              "region_id": "rhodes",
-              "value": 100
-            }
-          ],
-          "priority": 100,
-          "commitment": 92,
-          "readiness_regions": [
-            "rhodes"
-          ]
-        },
-        {
-          "id": "contest_eastern_mediterranean_islands",
-          "kind": "expand",
-          "territorial_claims": [
-            {
-              "region_id": "cyprus",
-              "value": 68
-            }
-          ],
-          "priority": 68,
-          "commitment": 42,
-          "readiness_regions": [
-            "rhodes"
-          ],
-          "allow_vassalization": true
         }
       ]
     },
