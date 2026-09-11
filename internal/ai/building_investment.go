@@ -5,6 +5,7 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/satisfaction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -178,13 +179,16 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 	bottleneckScore := aiBuildingBottleneckScore(self, btype.ID, cost, snapshot)
 	threatScore := aiBuildingThreatScore(btype.ID, signals)
 	objectiveScore := aiBuildingObjectiveScore(btype.ID, signals, gs.AIPlans[self.ID])
-	projectedWarPenalty := diplomacy.IndependentWarSatisfactionPenalty(gs, self.ID)
-	stabilityNeed := maxInt(0, 70-region.Satisfaction+projectedWarPenalty)
+	projectedSatisfaction := region.Satisfaction + satisfaction.Calculate(gs, region).Total
+	stabilityNeed := maxInt(0, 70-projectedSatisfaction)
 	stabilityScore := btype.SatBonus * stabilityNeed / 2
 	tradeScore := aiTradeBuildingScore(gs, self.ID, region, btype.ID, level, queued)
 	tradeScore += aiTradePowerBuildingScore(gs, self.ID, region, btype.ID)
-	if btype.ID == "temple" && region.Satisfaction < 30 {
-		stabilityScore += 180
+	if btype.SatBonus > 0 && projectedSatisfaction < 30 {
+		// Kritik memnuniyet açığında istikrar binaları, yalnızca genel
+		// ROI'ye bırakılmayacak kadar önceliklidir. Sabit bir bina ID'si
+		// kullanmak yerine senaryo verisindeki sat_bonus'u ölçekle.
+		stabilityScore += btype.SatBonus * 36
 	}
 	if btype.ID == "granary" {
 		// Granary doğrudan üretim vermez; bu yüzden tahıl rezervi ve ordu

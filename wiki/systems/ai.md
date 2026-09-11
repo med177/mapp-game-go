@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-09-10
+last_updated: 2026-09-12
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -647,8 +647,10 @@ Skorun bileşenleri:
 - **Tehdit ve objective:** Aktif savaş, kritik cephe, başkent, defend hedefi ve yüksek
   yerel tehdit surları öne çıkarır. Expand rally/hedef sınırı çiftlik ve pazarı;
   consolidate planı uzun vadeli pazar, çiftlik ve istikrar yatırımlarını destekler.
-- **İstikrar:** Bina memnuniyet bonusu mevcut açığa göre değerlenir; gerçek isyan
-  eşiğindeki bölgede ibadet yeri acil bonus alır.
+- **İstikrar:** Bina memnuniyet bonusu, ortak ekonomi-tick memnuniyet
+  projeksiyonundaki açığa göre değerlenir. Pozitif `sat_bonus` taşıyan her bina
+  düşük veya düşmekte olan memnuniyette öncelik kazanır; kritik isyan eşiğinde
+  bu bonus ayrıca güçlendirilir.
 - **Ticaret kapasitesi hedefi:** Maksimum seviyeye yaklaşan pazar yatırımları
   kademeli ticaret skoru alır; son pazar seviyesi anlaşma başına `+2` hacim
   tavanını açtığı için güçlü ek bonus alır. Kıyı limanı seviyeleri aynı bölgede
