@@ -70,10 +70,10 @@ AI-AI huruçları otomatik çözülür.
 
 ## Memnuniyet ve vergi politikası
 
-AI her tur başında bölgelerinin vergi oranını memnuniyet ve bağımsız savaş
-sayısına göre ayarlar. Savaş yorgunluğu projeksiyonu overlord/vassal realm'lerini
-tek devlet sayar ve ekonomi tick'indeki gerçek `-3 × bağımsız düşman` etkisini
-önceden hesaba katar. Projeksiyon 35'in altındaysa vergi `20` puan, 50'nin
+AI her tur başında bölgelerinin vergi oranını ortak ekonomi-tick memnuniyet
+projeksiyonuna göre ayarlar. Bu projeksiyon vergi, tahıl, haraç, kuşatma,
+tarihsel baskı, savaş yorgunluğu, aşırı genişleme, ordu ve bina etkilerini
+birlikte hesaba katar. Projeksiyon 35'in altındaysa vergi `20` puan, 50'nin
 altındaysa `10` puan azaltılır; amaç `Satisfaction < 30` isyan kontrolüne
 gelmeden bölgeyi ve gelir tabanını korumaktır. Projeksiyon 75 veya üzerindeyse
 vergi `10` puan artırılır; böylece güvenli memnuniyet seviyelerinde gelir

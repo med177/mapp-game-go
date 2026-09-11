@@ -1,8 +1,8 @@
 package ai
 
 import (
-	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/satisfaction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -16,20 +16,25 @@ const (
 	aiTaxIncreaseStep                   = 10
 )
 
-// aiAdjustTaxesWithSteps vergi politikasını bölge bazında uygular. Savaş
-// yorgunluğu da projeksiyona katılır; böylece savaşta yüksek görünen ama
-// ekonomi tick'inden sonra isyan eşiğine yaklaşacak bölgelerde vergi azaltılır.
+// aiAdjustTaxesWithSteps vergi politikasını bölge bazında uygular. Ortak
+// ekonomi-tick memnuniyet projeksiyonu kullanılır; böylece mevcut değeri
+// yüksek görünen ama bir sonraki tick'te düşecek bölgelerde vergi azaltılır.
 func aiAdjustTaxesWithSteps(gs *state.GameState, fid faction.FactionID, _ *[]TurnStep) {
 	if gs == nil || fid == "" {
 		return
 	}
-	warPenalty := diplomacy.IndependentWarSatisfactionPenalty(gs, fid)
+	satisfactionCalculator := satisfaction.NewCalculator(gs)
 	for _, region := range aiSortedRegions(gs) {
 		if region == nil || region.IsSea || region.IsLocked || region.OwnerID != string(fid) {
 			continue
 		}
 
-		projectedSatisfaction := region.Satisfaction - warPenalty
+		// Vergi kararı, bir sonraki ekonomi tick'inde uygulanacak ortak
+		// memnuniyet deltalarını hesaba katmalı. Aksi halde AI, örneğin
+		// mevcut memnuniyeti 55 olan ancak vergi/tahıl/kuşatma nedeniyle
+		// bir sonraki tick'te 50'nin altına inecek bölgede indirimi bir tur
+		// geciktirir.
+		projectedSatisfaction := region.Satisfaction + satisfactionCalculator.ForRegion(region).Total
 		delta := 0
 		switch {
 		case projectedSatisfaction < aiTaxEmergencySatisfactionThreshold:
