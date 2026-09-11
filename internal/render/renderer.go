@@ -402,6 +402,7 @@ type editWorldSnapshot struct {
 	LandPassages         []world.LandPassage
 	Factions             map[faction.FactionID]*faction.Faction
 	AIStrategies         map[string]scenario.AIFactionStrategy
+	AIStrategyOrder      []string
 	TradeCenters         world.TradeCenterConfig
 	Armies               map[army.ArmyID]*army.Army
 	ArmyOrder            []army.ArmyID

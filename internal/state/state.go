@@ -272,6 +272,7 @@ type GameState struct {
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
 	AIStrategies       map[string]scenario.AIFactionStrategy    `json:"-"`
+	AIStrategyOrder    []string                                 `json:"-"`
 	AIDifficultyPolicy scenario.AIDifficultyPolicy              `json:"-"`
 	UnitTypes          map[string]*army.UnitType                `json:"-"`
 	UnitTypeOrder      []string                                 `json:"-"`

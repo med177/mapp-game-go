@@ -2849,6 +2849,7 @@ func (r *Renderer) worldSnapshot() editWorldSnapshot {
 		LandPassages:         cloneLandPassages(r.gs.LandPassages),
 		Factions:             cloneFactionMap(r.gs.Factions),
 		AIStrategies:         cloneAIStrategyMap(r.gs.AIStrategies),
+		AIStrategyOrder:      append([]string(nil), r.gs.AIStrategyOrder...),
 		TradeCenters:         cloneTradeCenterConfig(r.gs.TradeCenters),
 		Armies:               cloneArmyMap(r.gs.Armies),
 		ArmyOrder:            append([]army.ArmyID(nil), r.gs.ArmyOrder...),
@@ -2879,6 +2880,7 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.gs.TerrainAreas = cloneTerrainAreas(snapshot.TerrainAreas)
 	r.gs.Factions = cloneFactionMap(snapshot.Factions)
 	r.gs.AIStrategies = cloneAIStrategyMap(snapshot.AIStrategies)
+	r.gs.AIStrategyOrder = append([]string(nil), snapshot.AIStrategyOrder...)
 	r.gs.TradeCenters = cloneTradeCenterConfig(snapshot.TradeCenters)
 	r.gs.Armies = cloneArmyMap(snapshot.Armies)
 	r.gs.ArmyOrder = append([]army.ArmyID(nil), snapshot.ArmyOrder...)

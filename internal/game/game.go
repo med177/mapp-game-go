@@ -2982,10 +2982,27 @@ func writeScenarioAIStrategies(gs *state.GameState) error {
 	}
 	path := filepath.Join(gs.ScenarioPath, "data", "ai_strategies.json")
 	ids := make([]string, 0, len(gs.AIStrategies))
+	seen := make(map[string]struct{}, len(gs.AIStrategies))
+	for _, id := range gs.AIStrategyOrder {
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		if _, ok := gs.AIStrategies[id]; !ok {
+			continue
+		}
+		ids = append(ids, id)
+		seen[id] = struct{}{}
+	}
+	orderedCount := len(ids)
 	for id := range gs.AIStrategies {
+		if _, ok := seen[id]; ok {
+			continue
+		}
 		ids = append(ids, id)
 	}
-	sort.Strings(ids)
+	if len(ids) > orderedCount {
+		sort.Strings(ids[orderedCount:])
+	}
 	factions := make([]scenario.AIFactionStrategy, 0, len(ids))
 	for _, id := range ids {
 		factions = append(factions, gs.AIStrategies[id])
@@ -3543,6 +3560,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		ArmyOrder:          nil,
 		RelationOrder:      relationOrder,
 		AIStrategies:       aiConfig.Strategies,
+		AIStrategyOrder:    append([]string(nil), aiConfig.StrategyOrder...),
 		AIDifficultyPolicy: aiConfig.DifficultyPolicy,
 		ShapeData:          shapeData,
 		UnitTypes:          unitTypes,

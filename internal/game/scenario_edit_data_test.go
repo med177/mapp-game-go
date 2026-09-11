@@ -24,7 +24,8 @@ func TestWriteScenarioEditDataWritesAIStrategiesAndTradeCenters(t *testing.T) {
 			"faction_b": {FactionID: "faction_b"},
 			"faction_a": {FactionID: "faction_a", Objectives: []scenario.AIObjectiveDef{{TargetRegions: []string{"new_region"}}}},
 		},
-		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{{ID: "new_region", Links: []world.RegionID{"faction_a"}}}},
+		AIStrategyOrder: []string{"faction_b", "faction_a"},
+		TradeCenters:    world.TradeCenterConfig{Centers: []world.TradeCenterDef{{ID: "new_region", Links: []world.RegionID{"faction_a"}}}},
 	}
 
 	if err := writeScenarioAIStrategies(gs); err != nil {
@@ -36,8 +37,8 @@ func TestWriteScenarioEditDataWritesAIStrategiesAndTradeCenters(t *testing.T) {
 
 	var aiConfig scenario.AIStrategyConfig
 	readScenarioEditTestJSON(t, filepath.Join(dataDir, "ai_strategies.json"), &aiConfig)
-	if len(aiConfig.Factions) != 2 || aiConfig.Factions[0].FactionID != "faction_a" || aiConfig.Factions[1].FactionID != "faction_b" {
-		t.Fatalf("AI stratejileri deterministik yazılmadı: %+v", aiConfig.Factions)
+	if len(aiConfig.Factions) != 2 || aiConfig.Factions[0].FactionID != "faction_b" || aiConfig.Factions[1].FactionID != "faction_a" {
+		t.Fatalf("AI strateji kaynak sırası korunmadı: %+v", aiConfig.Factions)
 	}
 
 	var tradeConfig world.TradeCenterConfig

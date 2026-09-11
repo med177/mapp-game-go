@@ -50,6 +50,7 @@ func (p AIDifficultyPolicy) Level(difficulty int) (AIDifficultyLevel, bool) {
 // taşır; ikisi de save'e yazılmadan senaryo baz state'inde tutulur.
 type LoadedAIConfig struct {
 	Strategies       map[string]AIFactionStrategy
+	StrategyOrder    []string
 	DifficultyPolicy AIDifficultyPolicy
 }
 
@@ -125,6 +126,7 @@ func LoadAIConfig(path string) (LoadedAIConfig, error) {
 	}
 
 	strategies := make(map[string]AIFactionStrategy, len(config.Factions))
+	strategyOrder := make([]string, 0, len(config.Factions))
 	for _, strategy := range config.Factions {
 		if strategy.FactionID == "" {
 			return LoadedAIConfig{}, fmt.Errorf("AI stratejisinde faction_id boş")
@@ -171,8 +173,9 @@ func LoadAIConfig(path string) (LoadedAIConfig, error) {
 			objectiveIDs[objective.ID] = struct{}{}
 		}
 		strategies[strategy.FactionID] = strategy
+		strategyOrder = append(strategyOrder, strategy.FactionID)
 	}
-	return LoadedAIConfig{Strategies: strategies, DifficultyPolicy: config.DifficultyPolicy}, nil
+	return LoadedAIConfig{Strategies: strategies, StrategyOrder: strategyOrder, DifficultyPolicy: config.DifficultyPolicy}, nil
 }
 
 // LoadAIStrategies yalnız profil index'ine ihtiyaç duyan doğrulama ve araçlar
