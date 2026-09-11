@@ -1703,36 +1703,12 @@
     "region_id": "morocco",
     "settlements": [
       {
-        "id": "morocco_agadir",
-        "name_tr": "Agadir",
-        "x": 284,
-        "y": 656,
-        "type": "port",
-        "population": 37
-      },
-      {
-        "id": "morocco_casablanca",
-        "name_tr": "Kazablanka",
-        "x": 327,
-        "y": 595,
-        "type": "port",
-        "population": 31
-      },
-      {
         "id": "morocco_main",
         "name_tr": "Fas",
         "x": 373,
         "y": 585,
         "type": "city",
         "is_center": true,
-        "population": 42
-      },
-      {
-        "id": "morocco_marrakesh",
-        "name_tr": "Marakeş",
-        "x": 326,
-        "y": 627,
-        "type": "city",
         "population": 42
       },
       {
@@ -1762,10 +1738,62 @@
       {
         "id": "morocco_tangier",
         "name_tr": "Tanca",
-        "x": 357,
+        "x": 359,
         "y": 555,
         "type": "fortress",
         "population": 10
+      }
+    ]
+  },
+  {
+    "region_id": "ceuta",
+    "settlements": [
+      {
+        "id": "ceuta_harbour",
+        "name_tr": "Sebte",
+        "x": 369,
+        "y": 553,
+        "type": "port",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "ceuta_fortaleza",
+        "name_tr": "Fortaleza",
+        "x": 366,
+        "y": 553,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "magrib",
+    "settlements": [
+      {
+        "id": "morocco_casablanca",
+        "name_tr": "Kazablanka",
+        "x": 327,
+        "y": 595,
+        "type": "port",
+        "is_center": true,
+        "population": 31
+      },
+      {
+        "id": "morocco_marrakesh",
+        "name_tr": "Marakeş",
+        "x": 326,
+        "y": 627,
+        "type": "city",
+        "population": 42
+      },
+      {
+        "id": "morocco_agadir",
+        "name_tr": "Agadir",
+        "x": 284,
+        "y": 656,
+        "type": "port",
+        "population": 37
       }
     ]
   },
@@ -7002,20 +7030,6 @@
         "type": "city",
         "is_center": true,
         "population": 98
-      }
-    ]
-  },
-  {
-    "region_id": "ceuta",
-    "settlements": [
-      {
-        "id": "ceuta_main",
-        "name_tr": "Sebte",
-        "x": 371,
-        "y": 554,
-        "type": "port",
-        "is_center": true,
-        "population": 200
       }
     ]
   }

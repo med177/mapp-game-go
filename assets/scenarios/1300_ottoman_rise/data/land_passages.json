@@ -60,18 +60,18 @@
     ]
   },
   {
-    "from": "morocco",
+    "from": "ceuta",
     "to": "sevilla",
     "type": "strait",
     "move_cost": 1,
     "defense_bonus": 15,
     "start": [
-      367,
-      553
+      360,
+      555
     ],
     "end": [
-      366,
-      549
+      363,
+      550
     ]
   },
   {

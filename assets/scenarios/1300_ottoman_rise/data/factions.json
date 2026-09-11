@@ -4334,9 +4334,21 @@
     },
     "ai_aggressiveness": 60,
     "territorial_claims": [
-      { "region_id": "denmark", "value": 100, "core": true },
-      { "region_id": "norway", "value": 100, "core": true },
-      { "region_id": "sweden", "value": 100, "core": true }
+      {
+        "region_id": "denmark",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "norway",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "sweden",
+        "value": 100,
+        "core": true
+      }
     ]
   },
   {
@@ -4366,10 +4378,24 @@
     },
     "ai_aggressiveness": 60,
     "territorial_claims": [
-      { "region_id": "poland", "value": 100, "core": true },
-      { "region_id": "lithuania", "value": 100, "core": true },
-      { "region_id": "belarus", "value": 90 },
-      { "region_id": "kiev", "value": 80 }
+      {
+        "region_id": "poland",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lithuania",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "belarus",
+        "value": 90
+      },
+      {
+        "region_id": "kiev",
+        "value": 80
+      }
     ]
   }
 ]
