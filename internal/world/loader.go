@@ -88,6 +88,7 @@ type countryShapeEntry struct {
 
 // countryShapesFile JSON dosyasının kök yapısı.
 type countryShapesFile struct {
+	ID     string              `json:"id"`
 	Shapes []countryShapeEntry `json:"shapes"`
 }
 
@@ -98,6 +99,7 @@ type ShapeBounds struct {
 
 // CountryShapeJSON işlenmiş harita poligon verilerini tutar.
 type CountryShapeJSON struct {
+	ID     string
 	Shapes map[string][][][2]float32
 	Names  map[string]string
 	Bounds ShapeBounds
@@ -105,6 +107,16 @@ type CountryShapeJSON struct {
 
 // LoadCountryShapes poligon verilerini JSON'dan okur, bölgelere atar ve sınırları hesaplar.
 func LoadCountryShapes(path string, regions map[RegionID]*Region) (CountryShapeJSON, error) {
+	return loadCountryShapes(path, regions, "")
+}
+
+// LoadCountryShapesForSet shape dosyasının kimliğini senaryonun istediği
+// shape-set kimliğiyle doğrulayarak yükler. expectedID boşsa doğrulama yapılmaz.
+func LoadCountryShapesForSet(path string, regions map[RegionID]*Region, expectedID string) (CountryShapeJSON, error) {
+	return loadCountryShapes(path, regions, expectedID)
+}
+
+func loadCountryShapes(path string, regions map[RegionID]*Region, expectedID string) (CountryShapeJSON, error) {
 	var result CountryShapeJSON
 
 	data, err := os.ReadFile(path)
@@ -116,6 +128,10 @@ func LoadCountryShapes(path string, regions map[RegionID]*Region) (CountryShapeJ
 	if err := json.Unmarshal(data, &file); err != nil {
 		return result, fmt.Errorf("shapes JSON parse hatası: %w", err)
 	}
+	if expectedID != "" && file.ID != expectedID {
+		return result, fmt.Errorf("shape-set kimliği uyuşmuyor: senaryo=%q dosya=%q", expectedID, file.ID)
+	}
+	result.ID = file.ID
 
 	// id → rings map'i oluştur
 	shapeMap := make(map[string][][][2]float32, len(file.Shapes))

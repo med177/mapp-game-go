@@ -25,6 +25,7 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
   "year": 1300,
   "month": 3,
   "map": {
+    "shape_set_id": "akdeniz_havzasi",
     "world_width": 2892,
     "world_height": 1440,
     "shape_offset_x": -530,
@@ -574,6 +575,6 @@ Başlangıç orduları senaryo verisidir:
 
 `tools/populate_all_shapes.py` tarafından Natural Earth `ne_10m_admin_0_countries` şekillerinden üretilir. Büyük toplu üretimler hâlâ araç tarafında yapılır; küçük kıyı/sınır düzeltmeleri edit mode `Shape` sekmesinden oyun içi paint editor ile yapılabilir.
 
-Format: `{"shapes": [{"id": string, "name": string, "rings": [[[x, y], ...]]}]}`. `rings` içindeki koordinatlar shape/scenario uzayındadır ve ondalıklı olabilir; aktif senaryonun `map.shape_offset_*` ve `map.shape_scale_*` alanlarıyla world pikseline dönüştürülür. Edit mode kayıt akışı koordinatları virgülden sonra tek basamakla yazar; tam sayıya yuvarlama dünya pikseli sınırını kaydırabilir.
+Format: `{"id": string, "shapes": [{"id": string, "name": string, "rings": [[[x, y], ...]]}]}`. Dosyanın kök `id` değeri bir shape-set kimliğidir; senaryo bunu `map.shape_set_id` ile belirtir ve yükleyici iki değeri eşleştirir. `rings` içindeki koordinatlar shape/scenario uzayındadır ve ondalıklı olabilir; aktif senaryonun `map.shape_offset_*` ve `map.shape_scale_*` alanlarıyla world pikseline dönüştürülür. Edit mode kayıt akışı koordinatları virgülden sonra tek basamakla yazar; tam sayıya yuvarlama dünya pikseli sınırını kaydırabilir.
 
 > **Not:** Eski `assets/data/generated/country_shapes.json` yolu artık kullanılmıyor. Her senaryo kendi `data/country_shapes.json` dosyasına sahip.

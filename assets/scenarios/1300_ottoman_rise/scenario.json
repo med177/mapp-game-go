@@ -9,6 +9,7 @@
   "year": 1310,
   "month": 3,
   "map": {
+    "shape_set_id": "akdeniz_havzasi",
     "world_width": 2892,
     "world_height": 1440,
     "shape_offset_x": -530,

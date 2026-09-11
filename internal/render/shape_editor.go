@@ -1402,7 +1402,7 @@ func recalculateCountryShapeBounds(shapeData *world.CountryShapeJSON) {
 }
 
 func cloneCountryShapeJSON(src world.CountryShapeJSON) world.CountryShapeJSON {
-	dst := world.CountryShapeJSON{Bounds: src.Bounds}
+	dst := world.CountryShapeJSON{ID: src.ID, Bounds: src.Bounds}
 	if src.Shapes != nil {
 		dst.Shapes = make(map[string][][][2]float32, len(src.Shapes))
 		for id, rings := range src.Shapes {

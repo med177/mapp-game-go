@@ -86,6 +86,7 @@ func FilterVictoryOptionsForFaction(options []VictoryOptionDef, factionID string
 type MapConfig struct {
 	WorldWidth   *int     `json:"world_width,omitempty"`
 	WorldHeight  *int     `json:"world_height,omitempty"`
+	ShapeSetID   string   `json:"shape_set_id,omitempty"`
 	ShapeOffsetX *float64 `json:"shape_offset_x,omitempty"`
 	ShapeOffsetY *float64 `json:"shape_offset_y,omitempty"`
 	ShapeScaleX  *float64 `json:"shape_scale_x,omitempty"`

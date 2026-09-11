@@ -481,7 +481,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		return nil, err
 	}
 
-	shapeData, err := world.LoadCountryShapes(dp("country_shapes.json"), regions)
+	shapeData, err := world.LoadCountryShapesForSet(dp("country_shapes.json"), regions, sc.MapConfig.ShapeSetID)
 	if err != nil {
 		log.Printf("Ülke sınırları yüklenemedi: %v", err)
 	}
