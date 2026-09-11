@@ -303,7 +303,10 @@ Rota detayları:
 
 `faction.BuildInitialRelations(factions)` — `internal/faction/loader.go`
 
-Tüm fraksiyon çiftleri için skor `internal/religion.Relation()` sonucuyla başlatılır. Varsayılan duruş barıştır; Sünni-Şii çiftleri başlangıçta savaş durumuna alınır.
+Relation kaydı bulunmayan tüm fraksiyon çiftleri `internal/faction/loader.go`
+üzerinden aynı dinde `25`, farklı dinde `-30` skor ve barış duruşuyla başlatılır.
+Sünni-Şii savaşı ve diğer tarihsel istisnalar `relations.json` içinde açık kayıt
+olarak tanımlanır.
 
 `1300_ottoman_rise` senaryo override'ı bu varsayılanı gerçek 1300 cepheleriyle düzeltir:
 Osmanlı-Doğu Roma, Memlük-İlhanlı, Aragon-Kastilya, Aragon-Napoli, İngiltere-Fransa,

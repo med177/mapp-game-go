@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-11: Başlangıç diplomasi varsayılanları sadeleştirildi. Eksik relation
+  kayıtları aynı dinde `25`, farklı dinde `-30` ve `peace` olarak runtime'da
+  oluşturuluyor; `relations.json` yalnız özel puan/duruş kayıtlarını taşıyor.
+
+- 2026-09-11: 1300 senaryosuna Kırım Hanlığı ardıl devleti eklendi. Kırım
+  bölgesi `successor_faction_id` ile bu elenmiş faction’a bağlandı; 1441–1783
+  tarih aralığı, Kırım çekirdek iddiası ve `crimean_khanate.png` bayrağı tanımlandı.
+
 - 2026-09-10: Edit Mode senaryo yükleme/kaydetme akışı kaynak JSON verisini koruyacak
   şekilde ayrıştırıldı. Edit Mode artık normal oyun başlangıcındaki claim, vassal,
   başkent, filo dock ve bina normalizasyonlarını çalıştırmıyor; `factions.json`,

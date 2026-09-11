@@ -118,7 +118,8 @@ seçeneği üretmez; fethedilen bölge doğrudan ilhak edilir.
 elenmiş olarak tutulur. Artuklular (Musul çekirdeği), Eretna (Kayseri), Kadı
 Burhaneddin (Sivas), Karakoyunlu (Van), Akkoyunlu (Diyarbekir), Celayirliler
 (Bağdat), Muzafferiler (İsfahan çekirdeği), Şirvanşahlar (Şamahı), Timur
-İmparatorluğu (senaryodaki Meşhed çekirdeği) ve Afşar Beyliği (Erzurum)
+İmparatorluğu (senaryodaki Meşhed çekirdeği), Afşar Beyliği (Erzurum) ve Kırım
+Hanlığı (Kırım)
 `historical_start_year`/`historical_end_year` alanlarıyla tarih aralıklarını
 taşır. Bu yıllar tarihçe metadata'sıdır; devletin fiilî kuruluşu bölgedeki
 `successor_faction_id` üzerinden isyan, fetih sonrası karar veya özgürleştirme
@@ -150,16 +151,16 @@ hedefi ise claim edilen bölgenin güncel sahibinden dinamik olarak türetilir.
 | Sünni İslam | `sunni` | Osmanlı, Memlük |
 | Şii İslam | `shia` | Safevi |
 
-**`religion.Relation(a, b religion.Type) int`** — `internal/religion/religion.go`
+**Başlangıç ilişki varsayılanı** — `internal/faction/loader.go`
 
 | Kombinasyon | Puan |
 |---|---|
 | Aynı din | +25 |
-| Sünni ↔ Şii | -40 |
-| Katolik ↔ Ortodoks | -20 |
-| Diğer farklı din | -30 |
+| Farklı din | -30 |
 
-Bu puan `BuildInitialRelations()` sırasında ilişki skorlarına eklenir.
+Eksik relation kaydı `BuildInitialRelations()` tarafından bu puanlarla ve
+`peace` duruşuyla oluşturulur. Özel tarihsel puan veya duruş taşıyan çiftler
+`relations.json` içinde açıkça tutulur.
 
 Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık `internal/religion/religion.go` içindeki metadata üzerinden (`DisplayNameTR`, `All`, `Next`) merkezi olarak yönetilir; render katmanı aynı mapping'i tekrar etmez.
 
@@ -169,7 +170,10 @@ Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık
 
 ## Başlangıç İlişkileri ve Hedefler
 
-`faction.BuildInitialRelations(factions)` — tüm çiftlerin skoru `religion.Relation()` sonucuyla başlatılır. Sünni-Şii çiftleri başlangıçta savaş duruşu alır, diğer çiftler barışta başlar.
+`faction.BuildInitialRelations(factions)` — relation kaydı bulunmayan tüm çiftler
+aynı dinde `25`, farklı dinde `-30` skor ve `peace` duruşuyla başlatılır.
+Sünni-Şii savaşı veya başka tarihsel istisnalar otomatik varsayılan değildir;
+`relations.json` içindeki açık kayıtlarla tanımlanır.
 
 Senaryo `relations.json` dosyası bu varsayılanları tarihsel başlangıç skorlarıyla ezer. AI'nın proaktif genişleme hedefleri 1300'de `ai_strategies.json` içindeki `expansion_targets` alanından yüklenir; faction üzerindeki `AIExpansionTargets` yalnız runtime uyumluluk görünümüdür.
 

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"sort"
-
-	"mapp-game-go/internal/religion"
 )
 
 // LoadFactionsWithOrder assets/data/factions.json dosyasını okur, map ve dosya sırasını döner.
@@ -110,23 +108,24 @@ func BuildInitialRelations(factions map[FactionID]*Faction) map[string]*Relation
 		for j := i + 1; j < len(ids); j++ {
 			a := factions[ids[i]]
 			b := factions[ids[j]]
-			score := religion.Relation(a.Religion, b.Religion)
-
-			stance := StancePeace
-			// Sünni-Şii arasını baştan gergin başlat
-			if !a.IsEliminated && !b.IsEliminated && ((a.Religion == religion.Sunni && b.Religion == religion.Shia) ||
-				(a.Religion == religion.Shia && b.Religion == religion.Sunni)) {
-				stance = StanceWar
-			}
 
 			key := RelationKey(a.ID, b.ID)
 			relations[key] = &Relation{
 				FactionA: a.ID,
 				FactionB: b.ID,
-				Score:    score,
-				Stance:   stance,
+				Score:    DefaultRelationScore(a, b),
+				Stance:   StancePeace,
 			}
 		}
 	}
 	return relations
+}
+
+// DefaultRelationScore, relations.json içinde kaydı olmayan çiftlerin
+// başlangıç puanını belirler. Özel tarihsel ilişkiler JSON'da açıkça tutulur.
+func DefaultRelationScore(a, b *Faction) int {
+	if a != nil && b != nil && a.Religion == b.Religion {
+		return 25
+	}
+	return -30
 }

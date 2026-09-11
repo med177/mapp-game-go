@@ -163,6 +163,14 @@
     "id": "england",
     "name": "Kingdom of England",
     "name_tr": "İngiltere Krallığı",
+    "historical_changes": [
+      {
+        "year": 1707,
+        "flag": "britania.png",
+        "name": "Kingdom of Great Britain",
+        "name_tr": "Büyük Britanya Krallığı"
+      }
+    ],
     "religion": "catholic",
     "color": [
       120,
@@ -267,8 +275,16 @@
   },
   {
     "id": "france",
-    "name": "Kingdom of France",
-    "name_tr": "Fransa Krallığı",
+    "name": "Kingdom of France (Capet/Valois)",
+    "name_tr": "Fransa Krallığı (Capet/Valois)",
+    "historical_changes": [
+      {
+        "year": 1590,
+        "flag": "france_kingdom.png",
+        "name": "Kingdom of France (Bourbon)",
+        "name_tr": "Fransa Krallığı (Bourbon)"
+      }
+    ],
     "religion": "catholic",
     "color": [
       30,
@@ -1235,6 +1251,20 @@
     "id": "castile_kingdom",
     "name": "Kingdom of Castile",
     "name_tr": "Kastilya Krallığı",
+    "historical_changes": [
+      {
+        "year": 1479,
+        "flag": "spain_kingdom.png",
+        "name": "Kingdom of Spain",
+        "name_tr": "İspanya Krallığı"
+      },
+      {
+        "year": 1516,
+        "flag": "spain_emp.png",
+        "name": "Spanish Empire",
+        "name_tr": "İspanyol İmparatorluğu"
+      }
+    ],
     "religion": "catholic",
     "color": [
       210,
@@ -4068,6 +4098,44 @@
     "territorial_claims": [
       {
         "region_id": "erzurum",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "crimean_khanate",
+    "name": "Crimean Khanate",
+    "name_tr": "Kırım Hanlığı",
+    "flag": "crimean_khanate.png",
+    "religion": "sunni",
+    "color": [
+      76,
+      128,
+      64
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "historical_start_year": 1441,
+    "historical_end_year": 1783,
+    "gold": 5000,
+    "grain": 240,
+    "iron": 45,
+    "timber": 35,
+    "stone": 40,
+    "spice": 20,
+    "cloth": 25,
+    "research": {
+      "completed": {
+        "horse_breeding": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 55,
+    "territorial_claims": [
+      {
+        "region_id": "crimea",
         "value": 100,
         "core": true
       }

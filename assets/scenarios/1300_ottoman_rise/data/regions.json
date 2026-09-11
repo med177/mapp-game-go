@@ -2693,6 +2693,7 @@
     "name_tr": "Kırım",
     "terrain": "coast",
     "owner_id": "genoa",
+    "successor_faction_id": "crimean_khanate",
     "neighbors": [
       "black_open_4",
       "crimean_black_sea",

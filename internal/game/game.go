@@ -3133,10 +3133,25 @@ func writeScenarioRelations(gs *state.GameState) error {
 		seen[key] = struct{}{}
 	}
 	newKeys := make([]string, 0)
+	// relations.json yalnız varsayılan ilişkilerden farklı açık kayıtları
+	// taşır. BuildInitialRelations tarafından üretilen eksik kayıtları tekrar
+	// dosyaya yazarak senaryoyu gereksiz yere büyütme.
 	for key := range gs.Relations {
-		if _, ok := seen[key]; !ok {
-			newKeys = append(newKeys, key)
+		if _, ok := seen[key]; ok {
+			continue
 		}
+		if gs.Factions != nil {
+			parts := strings.SplitN(key, "|", 2)
+			if len(parts) == 2 {
+				a := gs.Factions[faction.FactionID(parts[0])]
+				b := gs.Factions[faction.FactionID(parts[1])]
+				rel := gs.Relations[key]
+				if rel != nil && rel.Score == faction.DefaultRelationScore(a, b) && rel.Stance == faction.StancePeace {
+					continue
+				}
+			}
+		}
+		newKeys = append(newKeys, key)
 	}
 	sort.Strings(newKeys)
 	keys = append(keys, newKeys...)
