@@ -1722,26 +1722,10 @@
       {
         "id": "morocco_rabat",
         "name_tr": "Rabat",
-        "x": 341,
-        "y": 587,
+        "x": 339,
+        "y": 588,
         "type": "port",
         "population": 31
-      },
-      {
-        "id": "morocco_sale",
-        "name_tr": "Sale",
-        "x": 343,
-        "y": 582,
-        "type": "port",
-        "population": 31
-      },
-      {
-        "id": "morocco_tangier",
-        "name_tr": "Tanca",
-        "x": 359,
-        "y": 555,
-        "type": "fortress",
-        "population": 10
       }
     ]
   },
@@ -1749,21 +1733,43 @@
     "region_id": "ceuta",
     "settlements": [
       {
-        "id": "ceuta_harbour",
-        "name_tr": "Sebte",
+        "id": "ceuta_fortaleza",
+        "name_tr": "Fortaleza",
         "x": 369,
         "y": 553,
-        "type": "port",
+        "type": "fortress",
         "is_center": true,
         "population": 0
       },
       {
-        "id": "ceuta_fortaleza",
-        "name_tr": "Fortaleza",
-        "x": 366,
-        "y": 553,
-        "type": "fortress",
+        "id": "ceuta_harbour",
+        "name_tr": "Sebte",
+        "x": 373,
+        "y": 550,
+        "type": "port",
         "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "tanca_region",
+    "settlements": [
+      {
+        "id": "morocco_tangier",
+        "name_tr": "Tanca",
+        "x": 359,
+        "y": 555,
+        "type": "fortress",
+        "is_center": true,
+        "population": 10
+      },
+      {
+        "id": "morocco_sale",
+        "name_tr": "Sale",
+        "x": 345,
+        "y": 581,
+        "type": "port",
+        "population": 31
       }
     ]
   },
@@ -1774,7 +1780,7 @@
         "id": "morocco_casablanca",
         "name_tr": "Kazablanka",
         "x": 327,
-        "y": 595,
+        "y": 596,
         "type": "port",
         "is_center": true,
         "population": 31

@@ -2203,13 +2203,12 @@
     "neighbors": [
       "alboran_sea",
       "algiers",
-      "ceuta",
       "gulf_of_cadiz",
       "magrib",
-      "sevilla"
+      "tanca_region"
     ],
-    "world_x": 368,
-    "world_y": 558,
+    "world_x": 373,
+    "world_y": 595,
     "shape_id": "MAR",
     "is_sea": false,
     "is_locked": false,
@@ -2224,7 +2223,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 590,
+    "population": 549,
     "rural_population": 455,
     "religion": "sunni",
     "active_event_id": "",
@@ -2251,11 +2250,51 @@
     "successor_faction_id": "marinid_sultanate",
     "neighbors": [
       "alboran_sea",
-      "gulf_of_cadiz",
-      "morocco"
+      "tanca_region"
     ],
-    "world_x": 369,
+    "world_x": 372,
     "world_y": 553,
+    "shape_id": "CEU",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 20,
+    "base_grain_output": 2,
+    "base_iron_output": 1,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 3,
+    "satisfaction": 60,
+    "tax_rate": 30,
+    "population": 25,
+    "rural_population": 20,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "walls",
+      "market",
+      "farm"
+    ]
+  },
+  {
+    "id": "tanca_region",
+    "name": "Tanca Region",
+    "name_tr": "Tanca Bölgesi",
+    "terrain": "plain",
+    "owner_id": "marinid_sultanate",
+    "successor_faction_id": "marinid_sultanate",
+    "neighbors": [
+      "alboran_sea",
+      "ceuta",
+      "gulf_of_cadiz",
+      "morocco",
+      "sevilla"
+    ],
+    "world_x": 359,
+    "world_y": 557,
     "shape_id": "MAR",
     "is_sea": false,
     "is_locked": false,
@@ -2270,7 +2309,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 455,
+    "population": 496,
     "rural_population": 455,
     "religion": "sunni",
     "active_event_id": "",
@@ -2346,8 +2385,8 @@
       "alboran_sea",
       "balearic_sea",
       "central_algeria",
-      "morocco",
-      "magrib"
+      "magrib",
+      "morocco"
     ],
     "world_x": 501,
     "world_y": 584,
@@ -3837,12 +3876,11 @@
       "alboran_sea",
       "algarve",
       "atlantic_ocean",
-      "ceuta",
-      "morocco",
-      "ceuta",
       "magrib",
+      "morocco",
       "portuguese_atlantic",
-      "sevilla"
+      "sevilla",
+      "tanca_region"
     ],
     "world_x": 334,
     "world_y": 556,
@@ -7179,8 +7217,8 @@
       "castile",
       "granada",
       "gulf_of_cadiz",
-      "morocco",
-      "portugal"
+      "portugal",
+      "tanca_region"
     ],
     "world_x": 351,
     "world_y": 521,
@@ -10166,7 +10204,7 @@
       "gulf_of_cadiz",
       "morocco",
       "murcia",
-      "ceuta",
+      "tanca_region",
       "sevilla"
     ],
     "world_x": 393,

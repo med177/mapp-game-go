@@ -60,7 +60,7 @@
     ]
   },
   {
-    "from": "ceuta",
+    "from": "tanca_region",
     "to": "sevilla",
     "type": "strait",
     "move_cost": 1,
