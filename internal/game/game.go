@@ -6022,6 +6022,7 @@ func (g *Game) applyVictoryChoice(optionID string) {
 		Type:               state.VictoryType(opt.Type),
 		TargetRegionCount:  opt.TargetRegionCount,
 		RequiredRegions:    requiredRegions,
+		RequiredEventFlags: append([]string(nil), opt.RequiredEventFlags...),
 		AllowVassalControl: opt.AllowVassalControl,
 		TargetGoldIncome:   opt.TargetGoldIncome,
 		GoldHoldTurns:      opt.GoldHoldTurns,
@@ -6030,6 +6031,9 @@ func (g *Game) applyVictoryChoice(optionID string) {
 		TargetTurns:        opt.Turns,
 		DeadlineYear:       opt.DeadlineYear,
 		DeadlineMonth:      opt.DeadlineMonth,
+	}
+	for _, centerID := range opt.RequiredTradeCenters {
+		g.gs.Victory.RequiredTradeCenters = append(g.gs.Victory.RequiredTradeCenters, world.RegionID(centerID))
 	}
 	g.gs.SelectedVictoryOptionID = opt.ID
 }

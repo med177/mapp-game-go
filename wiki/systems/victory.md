@@ -91,6 +91,11 @@ vassalların kara bölgelerini içerir.
 
 Senaryo hedefleri gerçek `regions.json` ID'leriyle eşleşmelidir; kısa kodlar (`CON`, `ROM`, vb.) kullanılmaz.
 
+Tarihsel bir hedef opsiyonel `required_event_flags` ve `required_trade_centers`
+alanlarıyla keşif veya ticaret ağı açılışını da şart koşabilir. Event bayrağı
+`GameState.FiredEventIDs` içinde bulunmalı; ticaret merkezi ise senaryodaki
+`unlock_year` değerine göre aktif olmalıdır.
+
 ### Fraksiyon Bazlı Görünürlük
 
 Senaryo `victory_conditions` kayıtları opsiyonel `allowed_factions` alanı taşıyabilir.
@@ -112,8 +117,9 @@ tarih/yıl/event açılış kapıları önce korunur. Detay: [[systems/ai]].
 `1300_ottoman_rise`, her oynanabilir devlet için tarihsel alternatif rotalar taşır.
 Böylece oyuncu tek bir doğrusal fetih zincirine mahkûm kalmaz: Osmanlı
 (Bursa-Konstantinopolis, Rumeli-Viyana, Kırım, Güney İtalya, Memlük, Tebriz,
-Mağrip ve Aachen seferleri), Aragon (Akdeniz tacı ve Batı Akdeniz ağı), İngiltere
-ve Fransa (Fransız tacı/kıta köprüsü ve yeniden fetih), Kutsal Roma (Alman
+Mağrip ve Aachen seferleri), Kastilya (Reconquista, Endülüs, İberya'nın birleşik tacı,
+Pirene sınırı ve Atlantik hazinesi), İngiltere ve Fransa (Fransız tacı/kıta
+köprüsü, ada-Manş hâkimiyeti, kraliyet maliyesi, askerî güç ve yeniden fetih), Kutsal Roma (Alman
 çekirdeği ve İtalyan tacı), Memlük (Levant savunması ve kutsal şehirler), Venedik
 (talassokrasi ve Levant ticareti), Portekiz (Atlantik açılımı ve Mağrip köprüsü),
 Moskova (Rus topraklarını toplama ve kuzey birliği) ve Safevîler (İran çekirdeği

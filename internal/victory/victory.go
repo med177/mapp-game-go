@@ -209,6 +209,11 @@ func Check(gs *state.GameState) {
 		gs.WinnerID = ""
 		return
 	}
+	if !victoryPrerequisitesMet(gs) {
+		gs.EconomicVictoryTurns = 0
+		gs.ReligiousVictoryTurns = 0
+		return
+	}
 
 	// Seçilen zafer tipine göre kontrol
 	switch gs.Victory.Type {
@@ -234,6 +239,33 @@ func Check(gs *state.GameState) {
 		gs.Phase = state.PhaseGameOver
 		gs.WinnerID = ""
 	}
+}
+
+// victoryPrerequisitesMet tarihsel event ve ticaret ağı eşiklerini kontrol eder.
+// Ticaret merkezleri yıl bazlı açılır; böylece bir hedef, yalnızca açıklamasında
+// Atlantik ticaretinden söz etmek yerine gerçekten açılmış ağı şart koşabilir.
+func victoryPrerequisitesMet(gs *state.GameState) bool {
+	if gs == nil {
+		return false
+	}
+	for _, flag := range gs.Victory.RequiredEventFlags {
+		if flag == "" || !gs.FiredEventIDs["flag:"+flag] {
+			return false
+		}
+	}
+	for _, requiredID := range gs.Victory.RequiredTradeCenters {
+		found := false
+		for _, center := range gs.TradeCenters.Centers {
+			if center.ID == requiredID {
+				found = center.ActiveInYear(gs.Year)
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
 func deadlineExpired(gs *state.GameState) bool {

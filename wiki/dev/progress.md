@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-11: 1300 senaryosunda oynanabilir İberya devleti Aragon'dan
+  Kastilya'ya geçirildi. Aragon AI-only bırakıldı; Kastilya'nın altı tarihsel
+  zafer rotası Reconquista, Endülüs, İberya birleşmesi, Pirene sınırı,
+  Atlantik hazinesi ve Yeni Dünya ticaret imparatorluğu olarak tanımlandı.
+  Kolomb/Atlantik event zinciri de Kastilya'ya bağlandı. Regression:
+  `TestLoad1300UsesCastileAsPlayableIberianFaction`; doğrulama: hedefli ve tam
+  `go test ./... -count=1`.
+
 - 2026-09-11: 1300 senaryosuna Ceuta/Sebte kara bölgesi, liman yerleşimi,
   komşulukları ve harita şekli eklendi. `portugal_ceuta_1415` savaşı artık
   oynanabilir Ceuta fethine; Portekiz'in sonraki denizcilik event'i de
@@ -1014,6 +1022,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   zafer grupları ortak kart rect'iyle iki sütunda çizilerek 1280×720'de seçilebilir
   kaldı. Regression: `Test1300PlayableFactionsHaveHistoricalVictoryOption`,
   `TestCoreUIGeometryFitsCommonViewports`.
+
+- 2026-09-11: İngiltere ve Fransa'nın 1300 zafer rotaları zenginleştirildi.
+  Her iki fraksiyona krallık/toprak konsolidasyonu, ekonomik güç ve askerî
+  üstünlük alternatifleri eklendi; hedefler mevcut `domination`, `economic`
+  ve `military` çözümleyicilerini kullanıyor.
 
 - 2026-08-04: 1300 ve 1455 senaryoları üç aylık (mevsimlik) stratejik tura geçti:
   dört tur bir yılı temsil ediyor. Bina, birlik ve teknoloji kuyrukları tur bazlı

@@ -813,7 +813,7 @@
     "target": "specific_faction"
   },
   {
-    "affected_faction": "aragon",
+    "affected_faction": "castile_kingdom",
     "army_hp_mod": 1,
     "choice_prompt_tr": "Yeni Dünya haberine saray nasıl tepki verecek?",
     "choices": [
@@ -846,7 +846,7 @@
         "label_tr": "İç Pazarı Besle"
       }
     ],
-    "desc_tr": "Kristof Kolomb Atlantik'i geçerek bilinmeyen topraklara ulaştı. Portekiz ve Aragon için yeni ticaret kapıları aralandı.",
+    "desc_tr": "Kristof Kolomb Atlantik'i geçerek bilinmeyen topraklara ulaştı. Kastilya ve Portekiz için yeni ticaret kapıları aralandı.",
     "gold_delta": 400,
     "grain_delta": 0,
     "historical_month": 10,
@@ -860,7 +860,7 @@
     "target": "specific_faction"
   },
   {
-    "affected_faction": "aragon",
+    "affected_faction": "castile_kingdom",
     "army_hp_mod": 1,
     "blocks_flags": [ "iberian_market" ],
     "desc_tr": "Taç, Atlantik girişimlerini daha da büyüttü. Yeni tersaneler ve keşif hazırlıkları Akdeniz ufkunu Atlantik'e taşıyor.",
@@ -868,7 +868,7 @@
     "grain_delta": 20,
     "complete_techs": [ "navigation" ],
     "start_research_tech": "cartography",
-    "relations": [ { "faction_id": "castile_kingdom", "score_delta": 15, "stance": "allied" } ],
+    "relations": [ { "faction_id": "portugal", "score_delta": 15, "stance": "allied" } ],
     "historical_month": 4,
     "historical_year": 1494,
     "id": "atlantic_casa_program_1494",
@@ -877,14 +877,14 @@
     "one_shot": true,
     "probability": 0,
     "blocks_techs": [ "navigation" ],
-    "relation_requirements": [ { "faction_id": "castile_kingdom", "any_of_stances": [ "peace", "trade", "allied" ], "min_score": -10 } ],
+    "relation_requirements": [ { "faction_id": "portugal", "any_of_stances": [ "peace", "trade", "allied" ], "min_score": -10 } ],
     "requires_flags": [ "atlantic_expedition" ],
     "requires_owned_regions": [ "granada" ],
     "sat_delta": 8,
     "target": "specific_faction"
   },
   {
-    "affected_faction": "aragon",
+    "affected_faction": "castile_kingdom",
     "army_hp_mod": 1,
     "blocks_flags": [ "atlantic_expedition" ],
     "desc_tr": "Yeni Dünya'dan gelen servet, İber iç pazarı ve kraliyet hazinesine aktı. Deniz atılımı yavaş kalsa da mali denge güçlendi.",

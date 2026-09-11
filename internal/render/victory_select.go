@@ -194,6 +194,12 @@ func victoryTargetSummary(gs *state.GameState, opt scenario.VictoryOptionDef) st
 		if opt.AllowVassalControl {
 			parts = append(parts, "fetih veya doğrudan vassallık")
 		}
+		if len(opt.RequiredTradeCenters) > 0 {
+			parts = append(parts, "ticaret ağı: "+itoa(len(opt.RequiredTradeCenters))+" merkez")
+		}
+		if len(opt.RequiredEventFlags) > 0 {
+			parts = append(parts, "tarihsel keşif eşiği")
+		}
 		if deadline != "" {
 			parts = append(parts, deadline)
 		}
@@ -366,12 +372,6 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		targetSummary := victoryTargetSummary(gs, opt)
 		drawUIWrappedLabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 84, W: rect.W - 36}, targetSummary, color.RGBA{140, 120, 80, 220}, gameui.TextSmall, 16, 2)
 	}
-
-	footerY := layout.generalStack.Y + layout.generalStack.H
-	if historicalCount == len(opts) {
-		footerY = layout.historicalStack.Y + layout.historicalStack.H
-	}
-	drawUILabel(screen, gameui.Rect{X: 0, Y: footerY + 20, W: ScreenWidth}, "Zafer koşulunu seçmek için tıkla", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 // handleVictorySelectInput zafer seçim ekranı girişini işler.

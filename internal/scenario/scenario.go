@@ -17,6 +17,9 @@ type VictoryOptionDef struct {
 	Detail      string `json:"detail"`
 	// Boşsa tüm oynanabilir fraksiyonlar için görünür.
 	AllowedFactions []string `json:"allowed_factions,omitempty"`
+	// Hedefin tarihsel açılış koşulları.
+	RequiredEventFlags   []string `json:"required_event_flags,omitempty"`
+	RequiredTradeCenters []string `json:"required_trade_centers,omitempty"`
 
 	// Kazanma türü: domination | economic | military | religious | conquer_city
 	Type string `json:"type"`

@@ -96,7 +96,7 @@
       0,
       0
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "capital_settlement_id": "aragon_zaragoza",
     "gold": 5000,
@@ -1273,7 +1273,7 @@
       170,
       40
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "castile_burgos",
     "gold": 5000,

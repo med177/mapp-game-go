@@ -43,10 +43,25 @@ func resetCommanderPortraitCache() {
 }
 
 func commanderPortraitAsset(asset string) *ebiten.Image {
-	if asset == "" || ActiveScenarioPath == "" {
+	if ActiveScenarioPath == "" {
 		return nil
 	}
 	path := commanderPortraitPath(asset)
+	if path == "" {
+		path = commanderPortraitPath(army.DefaultPortraitAsset)
+	}
+	if img := loadCommanderPortrait(path); img != nil {
+		return img
+	}
+
+	defaultPath := commanderPortraitPath(army.DefaultPortraitAsset)
+	if path == defaultPath {
+		return nil
+	}
+	return loadCommanderPortrait(defaultPath)
+}
+
+func loadCommanderPortrait(path string) *ebiten.Image {
 	if path == "" {
 		return nil
 	}

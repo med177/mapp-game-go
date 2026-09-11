@@ -73,17 +73,19 @@ const (
 
 // VictoryCondition seçilen zafer koşulunu tutar.
 type VictoryCondition struct {
-	Type               VictoryType      `json:"type"`
-	TargetRegionCount  int              `json:"target_region_count"`  // domination
-	RequiredRegions    []world.RegionID `json:"required_regions"`     // domination
-	AllowVassalControl bool             `json:"allow_vassal_control"` // doğrudan vassal bölgeleri de hedefi karşılar
-	TargetGoldIncome   int              `json:"target_gold_income"`   // economic
-	GoldHoldTurns      int              `json:"gold_hold_turns"`      // economic — kaç tur sürdürülmeli
-	TargetArmyStrength int              `json:"target_army_strength"` // military
-	TargetDefeated     int              `json:"target_defeated"`      // military — kaç fraksiyon yenilgisi
-	TargetTurns        int              `json:"turns"`                // survive_turns
-	DeadlineYear       int              `json:"deadline_year"`        // 0 = süresiz
-	DeadlineMonth      int              `json:"deadline_month"`       // 1-12, 0 = yıl sonu
+	Type                 VictoryType      `json:"type"`
+	TargetRegionCount    int              `json:"target_region_count"` // domination
+	RequiredRegions      []world.RegionID `json:"required_regions"`    // domination
+	RequiredEventFlags   []string         `json:"required_event_flags,omitempty"`
+	RequiredTradeCenters []world.RegionID `json:"required_trade_centers,omitempty"`
+	AllowVassalControl   bool             `json:"allow_vassal_control"` // doğrudan vassal bölgeleri de hedefi karşılar
+	TargetGoldIncome     int              `json:"target_gold_income"`   // economic
+	GoldHoldTurns        int              `json:"gold_hold_turns"`      // economic — kaç tur sürdürülmeli
+	TargetArmyStrength   int              `json:"target_army_strength"` // military
+	TargetDefeated       int              `json:"target_defeated"`      // military — kaç fraksiyon yenilgisi
+	TargetTurns          int              `json:"turns"`                // survive_turns
+	DeadlineYear         int              `json:"deadline_year"`        // 0 = süresiz
+	DeadlineMonth        int              `json:"deadline_month"`       // 1-12, 0 = yıl sonu
 }
 
 // DiplomaticOffer AI/oyuncu arasında bekleyen diplomatik teklif kaydıdır.

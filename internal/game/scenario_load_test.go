@@ -8,6 +8,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 )
 
@@ -71,6 +72,102 @@ func TestLoad1300LoadsImperialState(t *testing.T) {
 	for _, memberID := range []string{"flanders_county", "carniola_margraviate", "milan_duchy", "savoy_county", "teutonic_order", "austria_duchy", "bohemian_kingdom", "bavaria_duchy", "saxony_duchy", "brandenburg_margraviate"} {
 		if gs.Imperial.Members[faction.FactionID(memberID)] == nil {
 			t.Fatalf("HRE üyesi eksik: %s", memberID)
+		}
+	}
+}
+
+func TestLoad1300UsesCastileAsPlayableIberianFaction(t *testing.T) {
+	gs, _, err := loadScenarioData(scenario1300Path(t), 2, nil)
+	if err != nil {
+		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+	}
+
+	if gs.Factions["castile_kingdom"] == nil || !gs.Factions["castile_kingdom"].IsPlayable {
+		t.Fatal("Kastilya 1300 senaryosunda oynanabilir olmalı")
+	}
+	if gs.Factions["aragon"] == nil || gs.Factions["aragon"].IsPlayable {
+		t.Fatal("Aragon 1300 senaryosunda AI-only kalmalı")
+	}
+
+	castileOptions := make(map[string]bool)
+	aragonOptions := make(map[string]bool)
+	for _, option := range gs.ScenarioVictories {
+		if len(option.AllowedFactions) != 1 {
+			continue
+		}
+		if option.AllowedFactions[0] == "castile_kingdom" {
+			castileOptions[option.ID] = true
+		}
+		if option.AllowedFactions[0] == "aragon" {
+			aragonOptions[option.ID] = true
+		}
+	}
+	wantCastileOptions := []string{
+		"castilian_reconquista",
+		"castilian_iberian_crown",
+		"castilian_andalusian_crown",
+		"castilian_navarrese_frontier",
+		"castilian_atlantic_treasury",
+		"castilian_new_world_trade_empire",
+	}
+	for _, optionID := range wantCastileOptions {
+		if !castileOptions[optionID] {
+			t.Fatalf("Kastilya'nın tarihsel zafer hedefi yüklenmedi: %s; mevcut=%v", optionID, castileOptions)
+		}
+	}
+	if len(castileOptions) != len(wantCastileOptions) {
+		t.Fatalf("Kastilya'nın tarihsel zafer hedefleri yüklenmedi: %v", castileOptions)
+	}
+	var newWorldTrade *scenario.VictoryOptionDef
+	for i := range gs.ScenarioVictories {
+		if gs.ScenarioVictories[i].ID == "castilian_new_world_trade_empire" {
+			newWorldTrade = &gs.ScenarioVictories[i]
+			break
+		}
+	}
+	if newWorldTrade == nil || len(newWorldTrade.RequiredEventFlags) != 1 || newWorldTrade.RequiredEventFlags[0] != "atlantic_expedition" || len(newWorldTrade.RequiredTradeCenters) != 3 {
+		t.Fatalf("Kastilya Yeni Dünya ticaret hedefinin açılış şartları eksik: %+v", newWorldTrade)
+	}
+	if len(aragonOptions) != 0 {
+		t.Fatalf("Aragon için tarihsel zafer hedefi kalmamalı: %v", aragonOptions)
+	}
+}
+
+func TestLoad1300IncludesEnrichedEnglishAndFrenchVictoryRoutes(t *testing.T) {
+	gs, _, err := loadScenarioData(scenario1300Path(t), 2, nil)
+	if err != nil {
+		t.Fatalf("1300 senaryosu yüklenemedi: %v", err)
+	}
+
+	want := map[string]struct {
+		faction string
+		typeID  state.VictoryType
+	}{
+		"english_isles_and_channel": {faction: "england", typeID: state.VictoryDomination},
+		"english_royal_treasury":    {faction: "england", typeID: state.VictoryEconomic},
+		"english_field_army":        {faction: "england", typeID: state.VictoryMilitary},
+		"french_royal_domain":       {faction: "france", typeID: state.VictoryDomination},
+		"french_italian_campaign":   {faction: "france", typeID: state.VictoryDomination},
+		"french_royal_treasury":     {faction: "france", typeID: state.VictoryEconomic},
+	}
+
+	seen := make(map[string]bool, len(want))
+	for _, option := range gs.ScenarioVictories {
+		expectation, ok := want[option.ID]
+		if !ok {
+			continue
+		}
+		if len(option.AllowedFactions) != 1 || option.AllowedFactions[0] != expectation.faction {
+			t.Fatalf("%s yanlış fraksiyon kapsamına sahip: %+v", option.ID, option.AllowedFactions)
+		}
+		if option.Type != string(expectation.typeID) {
+			t.Fatalf("%s yanlış zafer tipine sahip: got=%q want=%q", option.ID, option.Type, expectation.typeID)
+		}
+		seen[option.ID] = true
+	}
+	for optionID := range want {
+		if !seen[optionID] {
+			t.Fatalf("zenginleştirilmiş zafer rotası yüklenmedi: %s", optionID)
 		}
 	}
 }

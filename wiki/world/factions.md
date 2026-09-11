@@ -146,7 +146,7 @@ hedefi ise claim edilen bölgenin güncel sahibinden dinamik olarak türetilir.
 
 | Din | Sabit | Fraksiyonlar |
 |---|---|---|
-| Katolik | `catholic` | Fransa, İngiltere, Venedik, Aragon, Portekiz |
+| Katolik | `catholic` | Fransa, İngiltere, Venedik, Kastilya, Portekiz |
 | Ortodoks | `orthodox` | Rusya |
 | Sünni İslam | `sunni` | Osmanlı, Memlük |
 | Şii İslam | `shia` | Safevi |

@@ -228,43 +228,127 @@
       ]
     },
     {
-      "id": "aragonese_mediterranean_crown",
-      "title": "Akdeniz Tacı",
-      "description": "Murcia ve Napoli'yi taç topraklarına kat; Batı Akdeniz'de kalıcı bir Aragon hakimiyeti kur.",
-      "detail": "10 bölge; Aragon, Sicilya, Sardinya, Murcia ve Napoli",
+      "id": "castilian_reconquista",
+      "title": "Reconquista'nın Tamamlanışı",
+      "description": "Toledo çevresindeki Kastilya çekirdeğini güçlendir, Murcia ve Gırnata'yı alarak İberya'daki Reconquista'yı tamamla.",
+      "detail": "10 bölge; Toledo, Murcia ve Gırnata",
       "type": "domination",
       "target_region_count": 10,
       "required_regions": [
-        "aragon",
-        "sicily",
-        "sardinia",
+        "toledo",
         "murcia",
-        "naples"
+        "granada"
       ],
-      "deadline_year": 1442,
+      "deadline_year": 1492,
       "deadline_month": 7,
       "allowed_factions": [
-        "aragon"
+        "castile_kingdom"
       ]
     },
     {
-      "id": "aragon_western_mediterranean",
-      "title": "Aragon'un Batı Akdeniz Ağı",
-      "description": "Sicilya, Sardinya ve Mayorka hattını elde tut; Napoli ve Murcia üzerindeki Aragon nüfuzunu kalıcı bir Akdeniz tacına dönüştür.",
-      "detail": "14 bölge; Sicilya, Sardinya, Mayorka, Murcia ve Napoli",
+      "id": "castilian_iberian_crown",
+      "title": "İberya'nın Birleşik Tacı",
+      "description": "Kastilya ve Aragon taçlarını aynı siyasî çatı altında birleştir; İberya'nın ana merkezlerini İspanya tacı etrafında topla.",
+      "detail": "14 bölge; Kastilya, Toledo, Aragon, Katalonya, Murcia ve Gırnata",
       "type": "domination",
       "target_region_count": 14,
       "required_regions": [
-        "sicily",
-        "sardinia",
-        "mallorca",
+        "castile",
+        "toledo",
+        "aragon",
+        "catalonia",
         "murcia",
-        "naples"
+        "granada"
       ],
-      "deadline_year": 1442,
+      "deadline_year": 1516,
       "deadline_month": 7,
       "allowed_factions": [
-        "aragon"
+        "castile_kingdom"
+      ]
+    },
+    {
+      "id": "castilian_andalusian_crown",
+      "title": "Endülüs Tacı",
+      "description": "Toledo'dan Sevilla ve Gırnata'ya uzanan Endülüs çekirdeğini birleştir; Kastilya'nın güney sınırını güvenceye al.",
+      "detail": "12 bölge; Kastilya, Toledo, Sevilla, Murcia ve Gırnata",
+      "type": "domination",
+      "target_region_count": 12,
+      "required_regions": [
+        "castile",
+        "toledo",
+        "sevilla",
+        "murcia",
+        "granada"
+      ],
+      "deadline_year": 1492,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "castile_kingdom"
+      ]
+    },
+    {
+      "id": "castilian_navarrese_frontier",
+      "title": "Pirene Sınırının Birliği",
+      "description": "Navarra'yı ve Aragon tacının İberya çekirdeğini denetim altına al; Kastilya'nın kuzey ve doğu sınırlarını tek bir İspanya tacında birleştir.",
+      "detail": "16 bölge; Navarra, Kastilya, Toledo, Aragon, Katalonya ve Gırnata",
+      "type": "domination",
+      "target_region_count": 16,
+      "required_regions": [
+        "navarra",
+        "castile",
+        "toledo",
+        "aragon",
+        "catalonia",
+        "granada"
+      ],
+      "deadline_year": 1512,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "castile_kingdom"
+      ]
+    },
+    {
+      "id": "castilian_atlantic_treasury",
+      "title": "Atlantik Hazinesi",
+      "description": "Reconquista'nın ardından limanları, ticaret yollarını ve yeni Atlantik gelirlerini birleştirerek İspanya tacını kalıcı bir mali güce dönüştür.",
+      "detail": "Tur başı 1.400 altın gelir; 8 tur koru",
+      "type": "economic",
+      "target_gold_income": 1400,
+      "gold_hold_turns": 8,
+      "deadline_year": 1516,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "castile_kingdom"
+      ]
+    },
+    {
+      "id": "castilian_new_world_trade_empire",
+      "title": "Ticaret İmparatorluğu",
+      "description": "Amerika keşfinin ardından Atlantik ticaret hattını işlet; Sevilla'yı Güney İtalya, Hollanda ve Kutsal Roma'nın ticaret merkezlerine bağlayarak Kastilya hazinesini küresel bir güce dönüştür.",
+      "detail": "24 bölge; Sevilla, Napoli, Apulia, Flandre, Hollanda, Vestfalya ve Palatinate; Atlantik, Kuzey Amerika ve Güney Amerika ticaret merkezleri",
+      "type": "domination",
+      "target_region_count": 24,
+      "required_regions": [
+        "sevilla",
+        "naples",
+        "apulia",
+        "flanders",
+        "holland",
+        "westphalia",
+        "palatinate"
+      ],
+      "required_event_flags": [
+        "atlantic_expedition"
+      ],
+      "required_trade_centers": [
+        "atlantic_route",
+        "north_america_route",
+        "south_america_route"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "castile_kingdom"
       ]
     },
     {
@@ -323,6 +407,54 @@
       ]
     },
     {
+      "id": "english_isles_and_channel",
+      "title": "Albion ve Manş'ın Tacı",
+      "description": "Galler ve İskoçya üzerindeki İngiliz hâkimiyetini pekiştir, Normandiya ve Akitanya'yı koruyarak Manş'ın iki yakasını aynı taç altında birleştir.",
+      "detail": "20 bölge; Londra, Galler, İskoçya, Normandiya ve Akitanya",
+      "type": "domination",
+      "target_region_count": 20,
+      "required_regions": [
+        "london",
+        "wales",
+        "scotland",
+        "normandy",
+        "aquitaine"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "england"
+      ]
+    },
+    {
+      "id": "english_royal_treasury",
+      "title": "Kraliyet Hazinesinin Gücü",
+      "description": "Londra'nın vergi ve liman gelirlerini büyüt; kıta savaşlarını ve donanmayı taşıyacak istikrarlı bir İngiliz maliyesi kur.",
+      "detail": "Tur başı 1.100 altın gelir; 8 tur koru",
+      "type": "economic",
+      "target_gold_income": 1100,
+      "gold_hold_turns": 8,
+      "deadline_year": 1492,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "england"
+      ]
+    },
+    {
+      "id": "english_field_army",
+      "title": "Uzun Yay ve Kraliyet Ordusu",
+      "description": "Uzun seferleri kaldırabilecek bir ordu kur ve Fransa'daki İngiliz iddiasını askerî zaferlerle kabul ettir.",
+      "detail": "En az 550 ordu gücü ve 2 düşman fraksiyonunun yenilgisi",
+      "type": "military",
+      "target_army_strength": 550,
+      "target_defeated": 2,
+      "deadline_year": 1453,
+      "deadline_month": 10,
+      "allowed_factions": [
+        "england"
+      ]
+    },
+    {
       "id": "french_reconquest",
       "title": "Fransa'nın Yeniden Fethi",
       "description": "Krallığı toparla, Aquitaine'i geri al ve İngilizleri kıtadan çıkaracak güce ulaş.",
@@ -336,6 +468,57 @@
       ],
       "deadline_year": 1453,
       "deadline_month": 10,
+      "allowed_factions": [
+        "france"
+      ]
+    },
+    {
+      "id": "french_royal_domain",
+      "title": "Kraliyet Alanının Birliği",
+      "description": "Paris çevresindeki kraliyet alanını genişlet, Normandiya, Bretonya ve Burgonya'yı Valois tacı altında birleştir.",
+      "detail": "18 bölge; Paris, Normandiya, Bretonya ve Burgonya",
+      "type": "domination",
+      "target_region_count": 18,
+      "required_regions": [
+        "paris",
+        "normandy",
+        "brittany",
+        "burgundy"
+      ],
+      "deadline_year": 1492,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "france"
+      ]
+    },
+    {
+      "id": "french_italian_campaign",
+      "title": "İtalya Seferlerinin Tacı",
+      "description": "Provence üzerinden Alpleri aş, Milano'ya uzanan seferleri finanse ederek Fransa'yı Avrupa siyasetinin belirleyici gücü hâline getir.",
+      "detail": "24 bölge; Paris, Provence ve Milano",
+      "type": "domination",
+      "target_region_count": 24,
+      "required_regions": [
+        "paris",
+        "provence",
+        "milan"
+      ],
+      "deadline_year": 1515,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "france"
+      ]
+    },
+    {
+      "id": "french_royal_treasury",
+      "title": "Fransız Kraliyet Maliyesi",
+      "description": "Kraliyet alanının vergi ve ticaret gelirlerini kalıcılaştır; büyük orduları ve İtalya seferlerini finanse eden merkezî bir hazine kur.",
+      "detail": "Tur başı 1.300 altın gelir; 8 tur koru",
+      "type": "economic",
+      "target_gold_income": 1300,
+      "gold_hold_turns": 8,
+      "deadline_year": 1515,
+      "deadline_month": 12,
       "allowed_factions": [
         "france"
       ]
