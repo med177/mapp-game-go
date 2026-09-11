@@ -1,11 +1,15 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-10
+last_updated: 2026-09-11
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-11: Kırım Hanlığı için `crimean_steppe_revival` AI profili eklendi.
+  Profil Kırım çekirdeği savunmasını ve Altın Orda/Rusya yönündeki kuzey Karadeniz
+  bozkırı genişlemesini `ai_strategies.json` içinde tanımlıyor.
 
 - 2026-09-11: Başlangıç diplomasi varsayılanları sadeleştirildi. Eksik relation
   kayıtları aynı dinde `25`, farklı dinde `-30` ve `peace` olarak runtime'da

@@ -4408,5 +4408,41 @@
     "faction_b": "wallachia_prince",
     "score": -20,
     "stance": "peace"
+  },
+  {
+    "faction_a": "cyprus_kingdom",
+    "faction_b": "hospitaller",
+    "score": 35,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "east_rome",
+    "faction_b": "hospitaller",
+    "score": -50,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "genoa",
+    "faction_b": "hospitaller",
+    "score": 10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "hospitaller",
+    "faction_b": "mamluk",
+    "score": -50,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "hospitaller",
+    "faction_b": "ottoman",
+    "score": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "hospitaller",
+    "faction_b": "venice",
+    "score": -35,
+    "stance": "peace"
   }
 ]

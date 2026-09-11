@@ -6112,7 +6112,7 @@
     "name_tr": "Malta",
     "terrain": "coast",
     "owner_id": "aragon",
-    "successor_faction_id": "aragon",
+    "successor_faction_id": "hospitaller",
     "neighbors": [
       "ionian_sea"
     ],
@@ -6358,8 +6358,8 @@
     "name": "Rhodes",
     "name_tr": "Rodos",
     "terrain": "coast",
-    "owner_id": "venice",
-    "successor_faction_id": "venice",
+    "owner_id": "hospitaller",
+    "successor_faction_id": "hospitaller",
     "neighbors": [
       "mediterranean_open_1"
     ],

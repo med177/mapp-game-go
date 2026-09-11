@@ -494,6 +494,9 @@ hedefi Novgorod ve Kırım'ı birlikte kapsar; 1478'e kadar kapalı olduğundan 
 oyunda Altın Orda sınırına bedelsiz bir bozkır akınıyla yönelmez. Altın Orda
 `steppe_hegemony` profili Kiev-Ukrayna bozkırını ana cephe yapar, Rusya ve Litvanya
 yönündeki baskıyı önceliklendirir ve Moldova/Kiev hattını savunma rezerviyle tutar.
+Kırım Hanlığı'nın elenmiş ardıl profili `crimean_steppe_revival`, yeniden kurulduğunda
+önce Kırım çekirdeğini savunur; ardından Aşağı Ukrayna, Ukrayna bozkırı ve Kuzey
+Kafkasya üzerinden Altın Orda/Rusya yönünde sınırlı genişleme arar.
 
 Teuton Tarikatı `baltic_crusader_frontier` profili Konigsberg, Letonya ve Estonya
 limanlarını korurken Litvanya sınırına baskı kurar. Novgorod `northern_trade_survival`

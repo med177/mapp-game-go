@@ -788,11 +788,6 @@
         "core": true
       },
       {
-        "region_id": "rhodes",
-        "value": 100,
-        "core": true
-      },
-      {
         "region_id": "rijeka",
         "value": 100,
         "core": true
@@ -4175,6 +4170,44 @@
       },
       {
         "region_id": "north_cyprus",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "hospitaller",
+    "name": "Knights Hospitaller",
+    "name_tr": "Hospitalier Şövalyeleri",
+    "flag": "hospitaller.png",
+    "religion": "catholic",
+    "color": [
+      180,
+      35,
+      35
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "rhodes_main",
+    "gold": 2200,
+    "grain": 820,
+    "iron": 25,
+    "timber": 35,
+    "stone": 180,
+    "spice": 20,
+    "cloth": 15,
+    "research": {
+      "completed": {
+        "harbor_administration": true,
+        "navigation": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 58,
+    "territorial_claims": [
+      {
+        "region_id": "rhodes",
         "value": 100,
         "core": true
       }

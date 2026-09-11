@@ -290,6 +290,10 @@ func TestLoadScenarioDataLoads1300AIStrategyProfiles(t *testing.T) {
 	if _, ok := gs.AIStrategies["east_rome"]; !ok {
 		t.Fatal("Doğu Roma AI profili runtime state'e yüklenmedi")
 	}
+	crimean, ok := gs.AIStrategies["crimean_khanate"]
+	if !ok || crimean.Profile != "crimean_steppe_revival" || len(crimean.Objectives) != 2 {
+		t.Fatalf("Kırım Hanlığı AI profili runtime state'e yüklenmedi: %+v", crimean)
+	}
 	if gs.MonthsPerTurn != 3 {
 		t.Fatalf("1300 senaryosu üç aylık tur temposuyla yüklenmeli: %d", gs.MonthsPerTurn)
 	}
