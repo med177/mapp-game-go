@@ -765,7 +765,6 @@
       "reconquista_granada_war_started"
     ],
     "requires_owned_regions": [
-      "algarve",
       "granada",
       "murcia",
       "sevilla"
@@ -919,7 +918,7 @@
     "one_shot": true,
     "target": "specific_faction",
     "affected_faction": "portugal",
-    "requires_owned_regions": [ "portugal" ],
+    "requires_owned_regions": [ "portugal", "alentejo", "algarve" ],
     "gold_delta": 120,
     "grain_delta": 20,
     "sat_delta": 8,
@@ -938,7 +937,7 @@
     "affected_faction": "portugal",
     "requires_flags": [ "portugal_reconquista_consolidated" ],
     "requires_active_factions": [ "marinid_sultanate" ],
-    "requires_owned_regions": [ "portugal" ],
+    "requires_owned_regions": [ "portugal", "alentejo", "algarve" ],
     "choice_prompt_tr": "Ceuta seferi başlatılsın mı?",
     "choices": [
       {
@@ -973,7 +972,7 @@
     "target": "specific_faction",
     "affected_faction": "portugal",
     "requires_flags": [ "portugal_ceuta_campaign_started" ],
-    "requires_owned_regions": [ "portugal", "ceuta" ],
+    "requires_owned_regions": [ "portugal", "alentejo", "algarve", "ceuta" ],
     "gold_delta": -160,
     "sat_delta": 5,
     "complete_techs": [ "latin_naval_architecture" ],
@@ -991,7 +990,7 @@
     "target": "specific_faction",
     "affected_faction": "portugal",
     "requires_flags": [ "portugal_naval_program_started" ],
-    "requires_owned_regions": [ "portugal" ],
+    "requires_owned_regions": [ "portugal", "alentejo", "algarve" ],
     "gold_delta": 180,
     "grain_delta": 10,
     "sat_delta": 6,
@@ -1071,7 +1070,7 @@
     "one_shot": true,
     "probability": 0,
     "requires_flags": [ "portugal_cape_route_opened" ],
-    "requires_owned_regions": [ "portugal" ],
+    "requires_owned_regions": [ "portugal", "alentejo", "algarve", "ceuta" ],
     "sat_delta": 15,
     "target": "specific_faction"
   },

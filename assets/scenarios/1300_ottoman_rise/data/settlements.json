@@ -1021,11 +1021,41 @@
       {
         "id": "portugal_main",
         "name_tr": "Lagos",
-        "x": 301,
-        "y": 528,
+        "x": 299,
+        "y": 531,
         "type": "port",
         "is_center": true,
         "population": 210
+      },
+      {
+        "id": "alentejo_settlement_3",
+        "name_tr": "Silves",
+        "x": 306,
+        "y": 529,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "alentejo_settlement_2",
+        "name_tr": "Faro",
+        "x": 318,
+        "y": 531,
+        "type": "city",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "alentejo",
+    "settlements": [
+      {
+        "id": "algarve_settlement_2",
+        "name_tr": "Beja",
+        "x": 314,
+        "y": 513,
+        "type": "city",
+        "is_center": true,
+        "population": 0
       },
       {
         "id": "portugal_evora",
