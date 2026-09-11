@@ -1425,11 +1425,17 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 		return
 	}
 	baseMsg := "OLAY: " + evt.NameTR + ": " + evt.DescTR
-	g.renderer.ShowCombatResult(baseMsg)
 	g.renderer.AddEventDetail("[OLAY] "+evt.NameTR, g.historicalEventDetail(evt))
+	if !events.IsPlayerRelevant(g.gs, evt) {
+		if idx := events.AutoChoose(evt); idx >= 0 {
+			g.applyHistoricalChoiceWithNotification(evt, idx, false)
+		}
+		return
+	}
+	g.renderer.ShowCombatResult(baseMsg)
 	if !events.RequiresPlayerChoice(g.gs, evt) {
 		if idx := events.AutoChoose(evt); idx >= 0 {
-			g.applyHistoricalChoice(evt, idx)
+			g.applyHistoricalChoiceWithNotification(evt, idx, true)
 		}
 		if evt.HistoricalYear != 0 {
 			g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, "", nil)
@@ -1463,6 +1469,10 @@ func (g *Game) resolveHistoricalChoice(idx int) {
 }
 
 func (g *Game) applyHistoricalChoice(evt *events.Event, idx int) {
+	g.applyHistoricalChoiceWithNotification(evt, idx, true)
+}
+
+func (g *Game) applyHistoricalChoiceWithNotification(evt *events.Event, idx int, showNotification bool) {
 	choice, ok := events.ApplyChoice(g.gs, evt, idx)
 	if !ok {
 		return
@@ -1478,7 +1488,9 @@ func (g *Game) applyHistoricalChoice(evt *events.Event, idx int) {
 	}
 	g.resolveHistoricalDiplomaticOffers(evt, choice.Effect)
 	msg := fmt.Sprintf("Karar: %s -> %s", evt.NameTR, choice.LabelTR)
-	g.renderer.ShowCombatResult(msg)
+	if showNotification {
+		g.renderer.ShowCombatResult(msg)
+	}
 	g.renderer.AddEventDetail("[KARAR] "+evt.NameTR+": "+choice.LabelTR, g.historicalChoiceDetail(evt, choice))
 }
 

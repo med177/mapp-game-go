@@ -370,6 +370,35 @@ func RequiresPlayerChoice(gs *state.GameState, e *Event) bool {
 	}
 }
 
+// IsPlayerRelevant, bir event'in oyuncuya görünür bir bildirim olarak
+// sunulması gerekip gerekmediğini bildirir. Oyuncuya ait olmayan specific
+// faction event'leri oyun durumuna uygulanmaya devam eder; yalnızca oyuncunun
+// ekranını gereksiz yere meşgul etmez.
+func IsPlayerRelevant(gs *state.GameState, e *Event) bool {
+	if gs == nil || e == nil {
+		return false
+	}
+
+	switch e.Target {
+	case "specific_faction":
+		if e.AffectedFaction == string(gs.PlayerFactionID) {
+			return true
+		}
+		for _, playerFactionID := range e.PlayerChoiceFactions {
+			if playerFactionID == string(gs.PlayerFactionID) {
+				return true
+			}
+		}
+		return false
+	case "player_faction", "all_factions", "all_armies", "random_region":
+		return true
+	default:
+		// Tanımsız hedeflerde mevcut görünür davranışı koru; yeni event
+		// hedefleri eklenirken sessizce kaybolmasın.
+		return true
+	}
+}
+
 func Apply(gs *state.GameState, e *Event) {
 	if gs == nil || e == nil {
 		return

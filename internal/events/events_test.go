@@ -287,6 +287,28 @@ func TestSpecificFactionEventOffersChoiceToListedPlayerFaction(t *testing.T) {
 	}
 }
 
+func TestSpecificFactionEventForAnotherFactionIsNotPlayerRelevant(t *testing.T) {
+	gs := &state.GameState{PlayerFactionID: "england"}
+	evt := &Event{Target: "specific_faction", AffectedFaction: "ottoman"}
+
+	if IsPlayerRelevant(gs, evt) {
+		t.Fatal("başka faction'a ait event oyuncuya ilgili sayılmamalı")
+	}
+}
+
+func TestSpecificFactionEventListedPlayerFactionIsPlayerRelevant(t *testing.T) {
+	gs := &state.GameState{PlayerFactionID: "house_york"}
+	evt := &Event{
+		Target:               "specific_faction",
+		AffectedFaction:      "england",
+		PlayerChoiceFactions: []string{"house_lancaster", "house_york"},
+	}
+
+	if !IsPlayerRelevant(gs, evt) {
+		t.Fatal("oyuncu faction'ı karar listesinde olan event oyuncuya ilgili sayılmalı")
+	}
+}
+
 func TestEventRequiresActiveSupportingFaction(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

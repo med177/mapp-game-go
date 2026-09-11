@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-09-11
+last_updated: 2026-09-12
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -150,8 +150,12 @@ Uygulama notu:
 ## Bildirim
 
 Olay tetiklendiğinde:
-- `renderer.ShowCombatResult("OLAY: ...")` → kısa bildirim
-- Tarihsel event varsa `ShowHistoricalEvent(...)` → tam ekran popup
+- Event her durumda event log'a (`[OLAY]`) yazılır; `specific_faction` hedefi
+  oyuncunun faction'ı veya oyuncu karar listesiyle ilgili değilse merkezî kısa
+  bildirim ve tarihsel popup açılmaz. Event etkisi ve gerekiyorsa AI seçimi
+  yine uygulanır.
+- Oyuncuyla ilgili eventlerde `renderer.ShowCombatResult("OLAY: ...")` → kısa bildirim
+- Oyuncuyla ilgili tarihsel event varsa `ShowHistoricalEvent(...)` → tam ekran popup
 - Choice varsa historical modal içinde A/B butonları açılır ve sonuç ayrı `KARAR` event log kaydı üretir
 - Historical modal artık choice etkisi yanında:
   - açılacak follow-up event adını / tarihini

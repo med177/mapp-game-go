@@ -7,6 +7,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-12: Oyuncuyla doğrudan ilgili olmayan faction event'leri event log'a
+  yazılmaya devam ediyor; ancak merkezî kısa bildirim ve tarihsel karar popup'ı
+  açılmıyor. Bu event'lerin otomatik seçimleri sessizce uygulanıyor. Doğrulama:
+  `go test ./... -count=1`.
+
 - 2026-09-11: Heyet ve hediye maliyet/bonusları `scenario.json` içindeki
   `diplomacy` yapılandırmasına taşındı. Yeni oyun, save/load, AI bütçesi,
   diplomasi çözümlemesi ve UI bildirimleri aynı senaryo ayarını kullanıyor;
