@@ -1862,8 +1862,8 @@
   {
     "faction_a": "leon_kingdom",
     "faction_b": "castile_kingdom",
-    "score": -20,
-    "stance": "peace"
+    "score": 90,
+    "stance": "allied"
   },
   {
     "faction_a": "castile_kingdom",
@@ -3866,8 +3866,8 @@
   {
     "faction_a": "naples_kingdom",
     "faction_b": "papal_states_f",
-    "score": -10,
-    "stance": "peace"
+    "score": 70,
+    "stance": "allied"
   },
   {
     "faction_a": "naples_kingdom",
@@ -4441,8 +4441,26 @@
   },
   {
     "faction_a": "hospitaller",
+    "faction_b": "papal_states_f",
+    "score": 80,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "hospitaller",
     "faction_b": "venice",
     "score": -35,
     "stance": "peace"
+  },
+  {
+    "faction_a": "france",
+    "faction_b": "navarra",
+    "score": 90,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "france",
+    "faction_b": "scotland_kingdom",
+    "score": 80,
+    "stance": "allied"
   }
 ]
