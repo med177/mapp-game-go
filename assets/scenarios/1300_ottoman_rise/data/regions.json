@@ -6370,7 +6370,7 @@
     "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 43,
-    "base_grain_output": 18,
+    "base_grain_output": 33,
     "base_iron_output": 2,
     "base_timber_output": 2,
     "base_stone_output": 25,
@@ -6388,11 +6388,17 @@
       "walls",
       "walls",
       "port",
+      "port",
+      "port",
       "farm",
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "market",
+      "market",
+      "granary",
+      "granary"
     ]
   },
   {

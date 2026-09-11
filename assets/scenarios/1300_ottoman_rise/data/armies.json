@@ -1922,5 +1922,23 @@
         "count": 2
       }
     ]
+  },
+  {
+    "id": "fleet_hospitaller_guard",
+    "owner_id": "hospitaller",
+    "region_id": "mediterranean_open_1",
+    "docked_region_id": "rhodes",
+    "docked_settlement_id": "rhodes_main",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 4
+      }
+    ]
   }
 ]
