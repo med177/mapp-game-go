@@ -5,9 +5,9 @@
   "version": 1.0,
   "author": "Mapp Team",
   "period": "medieval",
+  "turn_months": 3,
   "year": 1310,
   "month": 3,
-  "turn_months": 3,
   "map": {
     "world_width": 2892,
     "world_height": 1440,

@@ -1,8 +1,8 @@
 package render
 
 import (
+	"fmt"
 	"image/color"
-	"strings"
 
 	"mapp-game-go/internal/scenario"
 	gameui "mapp-game-go/internal/ui"
@@ -14,14 +14,17 @@ import (
 // game.go tarafından doldurulur, render paketince okunur.
 var ScenarioList []*scenario.Scenario
 
+const (
+	scenarioCardW   = 560.0
+	scenarioCardH   = 180.0
+	scenarioCardGap = 16.0
+)
+
 func buildScenarioCardButtons(scenarios []*scenario.Scenario) []gameui.Button {
-	cardW := 560.0
-	cardH := 130.0
-	padY := 16.0
-	stack := centeredStackRect(len(scenarios), cardW, cardH, padY, 20)
+	stack := centeredStackRect(len(scenarios), scenarioCardW, scenarioCardH, scenarioCardGap, 20)
 	buttons := make([]gameui.Button, 0, len(scenarios))
 	for i, sc := range scenarios {
-		r := stackItemRect(stack, cardH, padY, i)
+		r := stackItemRect(stack, scenarioCardH, scenarioCardGap, i)
 		buttons = append(buttons, gameui.NewButton(r.X, r.Y, r.W, r.H, sc.Name))
 	}
 	return buttons
@@ -45,13 +48,10 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 		return
 	}
 
-	cardW := 560.0
-	cardH := 130.0
-	padY := 16.0
-	stack := centeredStackRect(len(scenarios), cardW, cardH, padY, 20)
+	stack := centeredStackRect(len(scenarios), scenarioCardW, scenarioCardH, scenarioCardGap, 20)
 
 	for i, sc := range scenarios {
-		rect := stackItemRect(stack, cardH, padY, i)
+		rect := stackItemRect(stack, scenarioCardH, scenarioCardGap, i)
 		x := float32(rect.X)
 		y := float32(rect.Y)
 		isSelected := i == cursor
@@ -80,16 +80,18 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 		yearStr := itoa(sc.Year) + " — " + monthName(sc.Month)
 		drawUILabel(screen, gameui.Rect{X: float64(x) + 18, Y: float64(y) + 46}, yearStr, color.RGBA{160, 140, 90, 200}, gameui.TextSmall, gameui.TextAlignStart)
 
-		// Açıklama (uzunsa kes)
-		desc := sc.Description
-		if len(desc) > 90 {
-			desc = desc[:87] + "..."
-		}
-		// Açıklamayı satırlara sar
-		lines := splitLines(desc, 72)
-		for j, line := range lines {
-			drawUILabel(screen, gameui.Rect{X: float64(x) + 18, Y: float64(y) + 68 + float64(j)*18}, line, color.RGBA{140, 125, 90, 180}, gameui.TextSmall, gameui.TextAlignStart)
-		}
+		metadata := fmt.Sprintf("Sürüm: %.1f  •  Yazar: %s  •  Dönem: %s  •  Tur: %d ay", sc.Version, sc.Author, sc.Period, sc.CalendarMonthsPerTurn())
+		drawUILabel(screen, gameui.Rect{X: float64(x) + 18, Y: float64(y) + 68}, metadata, color.RGBA{170, 155, 120, 200}, gameui.TextSmall, gameui.TextAlignStart)
+
+		// Açıklamayı kartın gerçek yazı genişliğine göre sar. Sabit karakter
+		// kesimi Türkçe UTF-8 metinleri bozabildiği gibi, yazı genişliği farklı
+		// kelimelerde kart dışına taşmaya da neden oluyordu.
+		drawUIWrappedLabel(screen, gameui.Rect{
+			X: float64(x) + 18,
+			Y: float64(y) + 94,
+			W: rect.W - 36,
+			H: 72,
+		}, sc.Description, color.RGBA{140, 125, 90, 180}, gameui.TextSmall, 18, 4)
 	}
 }
 
@@ -100,31 +102,6 @@ func monthName(m int) string {
 		return ""
 	}
 	return names[m]
-}
-
-// splitLines metni maxChars genişliğinde kelime bazlı satırlara böler.
-func splitLines(text string, maxChars int) []string {
-	words := strings.Fields(text)
-	var lines []string
-	current := ""
-	for _, w := range words {
-		if len(current)+len(w)+1 > maxChars {
-			if current != "" {
-				lines = append(lines, current)
-			}
-			current = w
-		} else {
-			if current == "" {
-				current = w
-			} else {
-				current += " " + w
-			}
-		}
-	}
-	if current != "" {
-		lines = append(lines, current)
-	}
-	return lines
 }
 
 // handleScenarioSelectInput senaryo seçim ekranı klavye ve fare girişini işler.

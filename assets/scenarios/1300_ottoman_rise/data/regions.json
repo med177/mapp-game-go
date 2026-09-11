@@ -4532,7 +4532,7 @@
     "name": "Chios",
     "name_tr": "Sakız",
     "terrain": "plain",
-    "owner_id": "",
+    "owner_id": "genoa",
     "neighbors": [
       "aegean_sea"
     ],
@@ -4552,7 +4552,7 @@
     "trade_capacity": 1,
     "satisfaction": 70,
     "tax_rate": 45,
-    "population": 30,
+    "population": 20,
     "rural_population": 20,
     "religion": "orthodox",
     "active_event_id": "",
@@ -4584,7 +4584,7 @@
     "trade_capacity": 0,
     "satisfaction": 70,
     "tax_rate": 45,
-    "population": 30,
+    "population": 20,
     "rural_population": 20,
     "religion": "orthodox",
     "active_event_id": "",
