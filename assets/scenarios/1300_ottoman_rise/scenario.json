@@ -86,6 +86,148 @@
       ]
     },
     {
+      "id": "ottoman_balkans_to_vienna",
+      "title": "Viyana'ya Uzanan Rumeli",
+      "description": "Eflak, Boğdan, Sırbistan, Arnavutluk ve Macaristan üzerinden Balkanları birleştir; Avusturya kapılarına kadar ilerle.",
+      "detail": "24 bölge; Eflak, Boğdan, Sırbistan, Arnavutluk, Macaristan ve Avusturya",
+      "type": "domination",
+      "target_region_count": 24,
+      "required_regions": [
+        "gallipoli",
+        "thrace",
+        "bulgaria",
+        "serbia",
+        "wallachia",
+        "moldova",
+        "albania",
+        "hungary",
+        "austria"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "ottoman_crimean_protectorate",
+      "title": "Kırım Hanlığı'nın Himayesi",
+      "description": "Kırım'da Tatar devletinin temelini kur ve Karadeniz'in kuzey kapısını Osmanlı himayesine bağla.",
+      "detail": "Kırım bölgesini ele geçir veya doğrudan vassal üzerinden kontrol et",
+      "type": "conquer_city",
+      "required_regions": [
+        "crimea"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "ottoman_southern_italy",
+      "title": "Otranto'dan Napoli'ye",
+      "description": "Otranto geçidini güvenceye al, Apulia ve Napoli üzerinden Güney İtalya'yı Osmanlı topraklarına kat.",
+      "detail": "Apulia, Napoli ve Sicilya",
+      "type": "domination",
+      "target_region_count": 30,
+      "required_regions": [
+        "apulia",
+        "naples",
+        "sicily"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "ottoman_mamluk_submission",
+      "title": "Memlük Sultanlığı'nın Sonu",
+      "description": "Kahire'ye girerek Memlüklerin Mısır-Levant çekirdeğini ele geçir veya Memlük Sultanlığı'nı Osmanlı vassalı hâline getir.",
+      "detail": "Mısır, Kahire çevresi ve Levant'ın 9 çekirdek bölgesi; fetih veya vassallık",
+      "type": "domination",
+      "target_region_count": 35,
+      "required_regions": [
+        "egypt",
+        "luxor",
+        "aleppo",
+        "damascus",
+        "israel",
+        "jordan",
+        "lebanon",
+        "palestine",
+        "raqqa"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "ottoman_tabriz_campaign",
+      "title": "Tebriz Seferi",
+      "description": "Anadolu'nun doğusundan İran içlerine ilerle; Azerbaycan ve İran platosunu alarak Tebriz yolunu Osmanlı'ya aç.",
+      "detail": "Azerbaycan, Kuzey İran ve Batı İran",
+      "type": "domination",
+      "target_region_count": 32,
+      "required_regions": [
+        "azerbaijan",
+        "northern_persia",
+        "western_persia"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "ottoman_maghreb_unification",
+      "title": "Mağrip'in Birliği",
+      "description": "Fas'tan Libya'ya uzanan Kuzey Afrika kıyılarını birleştir ve Mağrip'i Osmanlı hakimiyetine bağla.",
+      "detail": "Fas, Cezayir, Tunus, Trablusgarp ve Sirenayka",
+      "type": "domination",
+      "target_region_count": 40,
+      "required_regions": [
+        "morocco",
+        "algiers",
+        "central_algeria",
+        "tunis",
+        "tripolitania",
+        "cyrenaica"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "ottoman_german_frontier",
+      "title": "Aachen Seferleri",
+      "description": "Almanya içlerine art arda seferler düzenle; Vestfalya, Pfalz ve Lorraine hattını aşarak Aachen kapılarına dayan.",
+      "detail": "Vestfalya, Pfalz, Lorraine, Saksonya ve Thüringen hattı",
+      "type": "domination",
+      "target_region_count": 50,
+      "required_regions": [
+        "westphalia",
+        "palatinate",
+        "lorraine",
+        "saxony",
+        "thuringia"
+      ],
+      "deadline_year": 1520,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
       "id": "aragonese_mediterranean_crown",
       "title": "Akdeniz Tacı",
       "description": "Murcia ve Napoli'yi taç topraklarına kat; Batı Akdeniz'de kalıcı bir Aragon hakimiyeti kur.",

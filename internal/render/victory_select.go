@@ -191,6 +191,9 @@ func victoryTargetSummary(gs *state.GameState, opt scenario.VictoryOptionDef) st
 	deadline := formatVictoryDeadline(opt.DeadlineYear, opt.DeadlineMonth)
 
 	appendDeadline := func(parts []string) string {
+		if opt.AllowVassalControl {
+			parts = append(parts, "fetih veya doğrudan vassallık")
+		}
 		if deadline != "" {
 			parts = append(parts, deadline)
 		}

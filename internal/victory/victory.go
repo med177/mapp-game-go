@@ -255,14 +255,49 @@ func deadlineExpired(gs *state.GameState) bool {
 	return gs.Month > deadlineMonth
 }
 
-// checkConquerCity gerekli tüm hedef bölgeler oyuncuya geçtiğinde zafer verir.
+// regionControlledForVictory doğrudan vassal bölgelerini, seçenekte izin
+// verilmişse oyuncunun kontrolünde sayar.
+func regionControlledForVictory(gs *state.GameState, region *world.Region) bool {
+	if gs == nil || region == nil || region.OwnerID == "" {
+		return false
+	}
+	if region.OwnerID == string(gs.PlayerFactionID) {
+		return true
+	}
+	return gs.Victory.AllowVassalControl && diplomacy.DirectOverlord(gs, faction.FactionID(region.OwnerID)) == gs.PlayerFactionID
+}
+
+// IsRegionControlledForVictory UI ve diğer read-only özetlerin zaferle aynı
+// sahiplik kuralını kullanmasını sağlar.
+func IsRegionControlledForVictory(gs *state.GameState, region *world.Region) bool {
+	return regionControlledForVictory(gs, region)
+}
+
+// ControlledRegionCount seçilen zafer koşulunun kontrol ettiği kara bölgesi
+// sayısını döner.
+func ControlledRegionCount(gs *state.GameState) int {
+	return victoryControlledRegionCount(gs)
+}
+
+func victoryControlledRegionCount(gs *state.GameState) int {
+	count := 0
+	for _, region := range gs.Regions {
+		if !region.IsSea && !region.IsTerrainArea && regionControlledForVictory(gs, region) {
+			count++
+		}
+	}
+	return count
+}
+
+// checkConquerCity gerekli tüm hedef bölgeler oyuncuya veya izin verilen
+// doğrudan vassallarına geçtiğinde zafer verir.
 func checkConquerCity(gs *state.GameState) {
 	if len(gs.Victory.RequiredRegions) == 0 {
 		return
 	}
 	for _, targetID := range gs.Victory.RequiredRegions {
 		region, ok := gs.Regions[targetID]
-		if !ok || region.OwnerID != string(gs.PlayerFactionID) {
+		if !ok || !regionControlledForVictory(gs, region) {
 			return
 		}
 	}
@@ -275,13 +310,17 @@ func checkDomination(gs *state.GameState, playerRegions []*world.Region) {
 	if target == 0 {
 		target = defaultDominationTarget
 	}
-	if len(playerRegions) < target {
+	controlledRegions := len(playerRegions)
+	if gs.Victory.AllowVassalControl {
+		controlledRegions = victoryControlledRegionCount(gs)
+	}
+	if controlledRegions < target {
 		return
 	}
 	// Zorunlu bölgeler var mı?
 	for _, rid := range gs.Victory.RequiredRegions {
 		region, ok := gs.Regions[rid]
-		if !ok || region.OwnerID != string(gs.PlayerFactionID) {
+		if !ok || !regionControlledForVictory(gs, region) {
 			return
 		}
 	}
@@ -420,7 +459,7 @@ func checkReligious(gs *state.GameState, _ []*world.Region) {
 	allHeld := true
 	for _, rid := range gs.Victory.RequiredRegions {
 		region, ok := gs.Regions[rid]
-		if !ok || region.OwnerID != string(gs.PlayerFactionID) {
+		if !ok || !regionControlledForVictory(gs, region) {
 			allHeld = false
 			break
 		}

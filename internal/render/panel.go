@@ -2976,7 +2976,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		if target == 0 {
 			target = 20
 		}
-		current := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
+		current := victory.ControlledRegionCount(gs)
 		drawUIKeyValueRow(screen, vx, vy, float64(barW), "Hedef", itoa(current)+"/"+itoa(target), titleCol, ColorWhite)
 		vy += 18
 		drawTopProgressBar(screen, barX, float32(vy), barW, 7, clampF(float64(current)/float64(target)), ColorGold)
@@ -3024,7 +3024,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 		held := 0
 		total := len(gs.Victory.RequiredRegions)
 		for _, rid := range gs.Victory.RequiredRegions {
-			if r, ok := gs.Regions[rid]; ok && r.OwnerID == string(gs.PlayerFactionID) {
+			if r, ok := gs.Regions[rid]; ok && victory.IsRegionControlledForVictory(gs, r) {
 				held++
 			}
 		}
@@ -3039,7 +3039,7 @@ func drawVictoryProgress(screen *ebiten.Image, gs *state.GameState, panelY float
 			return
 		}
 		for _, rid := range gs.Victory.RequiredRegions {
-			if r, ok := gs.Regions[rid]; ok && r.OwnerID == string(gs.PlayerFactionID) {
+			if r, ok := gs.Regions[rid]; ok && victory.IsRegionControlledForVictory(gs, r) {
 				held++
 			}
 		}
@@ -3085,7 +3085,7 @@ func victoryDetailProgressLines(gs *state.GameState) []string {
 			target = 20
 		}
 		return append(lines,
-			"Kontrol edilen bölge: "+itoa(len(gs.RegionsOwnedBy(gs.PlayerFactionID)))+" / "+itoa(target),
+			"Kontrol edilen bölge: "+itoa(victory.ControlledRegionCount(gs))+" / "+itoa(target),
 		)
 	case state.VictoryEconomic:
 		threshold := gs.Victory.TargetGoldIncome
@@ -3128,7 +3128,7 @@ func victoryDetailProgressLines(gs *state.GameState) []string {
 	case state.VictoryReligious:
 		held := 0
 		for _, rid := range gs.Victory.RequiredRegions {
-			if r, ok := gs.Regions[rid]; ok && r.OwnerID == string(gs.PlayerFactionID) {
+			if r, ok := gs.Regions[rid]; ok && victory.IsRegionControlledForVictory(gs, r) {
 				held++
 			}
 		}
@@ -3139,7 +3139,7 @@ func victoryDetailProgressLines(gs *state.GameState) []string {
 	case state.VictoryConquerCity:
 		held := 0
 		for _, rid := range gs.Victory.RequiredRegions {
-			if r, ok := gs.Regions[rid]; ok && r.OwnerID == string(gs.PlayerFactionID) {
+			if r, ok := gs.Regions[rid]; ok && victory.IsRegionControlledForVictory(gs, r) {
 				held++
 			}
 		}
@@ -3216,12 +3216,12 @@ func victoryChecklistEntries(gs *state.GameState) ([]string, []color.Color) {
 		if target == 0 {
 			target = 20
 		}
-		current := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
+		current := victory.ControlledRegionCount(gs)
 		addItem(current >= target, "Bölge sayısı: "+itoa(current)+"/"+itoa(target))
 		for _, rid := range gs.Victory.RequiredRegions {
 			name := regionDisplayName(gs, string(rid))
 			owned := false
-			if region, ok := gs.Regions[rid]; ok && region.OwnerID == string(gs.PlayerFactionID) {
+			if region, ok := gs.Regions[rid]; ok && victory.IsRegionControlledForVictory(gs, region) {
 				owned = true
 			}
 			if !owned {

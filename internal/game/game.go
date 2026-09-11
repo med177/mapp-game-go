@@ -5876,6 +5876,7 @@ func (g *Game) applyVictoryChoice(optionID string) {
 		Type:               state.VictoryType(opt.Type),
 		TargetRegionCount:  opt.TargetRegionCount,
 		RequiredRegions:    requiredRegions,
+		AllowVassalControl: opt.AllowVassalControl,
 		TargetGoldIncome:   opt.TargetGoldIncome,
 		GoldHoldTurns:      opt.GoldHoldTurns,
 		TargetArmyStrength: opt.TargetArmyStrength,

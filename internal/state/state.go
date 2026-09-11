@@ -76,6 +76,7 @@ type VictoryCondition struct {
 	Type               VictoryType      `json:"type"`
 	TargetRegionCount  int              `json:"target_region_count"`  // domination
 	RequiredRegions    []world.RegionID `json:"required_regions"`     // domination
+	AllowVassalControl bool             `json:"allow_vassal_control"` // doğrudan vassal bölgeleri de hedefi karşılar
 	TargetGoldIncome   int              `json:"target_gold_income"`   // economic
 	GoldHoldTurns      int              `json:"gold_hold_turns"`      // economic — kaç tur sürdürülmeli
 	TargetArmyStrength int              `json:"target_army_strength"` // military

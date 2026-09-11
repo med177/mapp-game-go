@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [victory, win-condition, game-over]
-last_updated: 2026-08-07
+last_updated: 2026-09-11
 related: [systems/ai, architecture/state-management, architecture/game-loop, architecture/render-pipeline]
 ---
 
@@ -82,6 +82,13 @@ Senaryo JSON'larında `conquer_city` tipi `required_regions` listesini kullanır
 
 `applyVictoryChoice()` hedef bölge listesini `VictoryCondition.RequiredRegions` içine yazar. `internal/victory/victory.go` bu tipte listedeki tüm hedef bölgeler oyuncuya geçtiğinde zafer verir.
 
+Senaryo seçeneğinde `allow_vassal_control: true` varsa hedef bölge oyuncunun
+kendisinde veya doğrudan vassalındaysa kontrol edilmiş sayılır. Bu kural
+`conquer_city`, `domination` ve `religious` kontrolleriyle HUD/checklist
+özetlerinde ortak `victory.IsRegionControlledForVictory()` helper'ı üzerinden
+aynı uygulanır. `domination` bölge sayısı da bu seçenek açıkken doğrudan
+vassalların kara bölgelerini içerir.
+
 Senaryo hedefleri gerçek `regions.json` ID'leriyle eşleşmelidir; kısa kodlar (`CON`, `ROM`, vb.) kullanılmaz.
 
 ### Fraksiyon Bazlı Görünürlük
@@ -102,9 +109,10 @@ tarih/yıl/event açılış kapıları önce korunur. Detay: [[systems/ai]].
 
 ### 1300 Senaryosu Kalibrasyonu
 
-`1300_ottoman_rise`, her oynanabilir devlet için iki tarihsel rota taşır. Böylece
-oyuncu tek bir doğrusal fetih zincirine mahkûm kalmaz: Osmanlı (Bursa-
-Konstantinopolis ve Rumeli), Aragon (Akdeniz tacı ve Batı Akdeniz ağı), İngiltere
+`1300_ottoman_rise`, her oynanabilir devlet için tarihsel alternatif rotalar taşır.
+Böylece oyuncu tek bir doğrusal fetih zincirine mahkûm kalmaz: Osmanlı
+(Bursa-Konstantinopolis, Rumeli-Viyana, Kırım, Güney İtalya, Memlük, Tebriz,
+Mağrip ve Aachen seferleri), Aragon (Akdeniz tacı ve Batı Akdeniz ağı), İngiltere
 ve Fransa (Fransız tacı/kıta köprüsü ve yeniden fetih), Kutsal Roma (Alman
 çekirdeği ve İtalyan tacı), Memlük (Levant savunması ve kutsal şehirler), Venedik
 (talassokrasi ve Levant ticareti), Portekiz (Atlantik açılımı ve Mağrip köprüsü),

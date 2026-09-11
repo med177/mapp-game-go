@@ -22,8 +22,9 @@ type VictoryOptionDef struct {
 	Type string `json:"type"`
 
 	// Domination
-	TargetRegionCount int      `json:"target_region_count"`
-	RequiredRegions   []string `json:"required_regions"`
+	TargetRegionCount  int      `json:"target_region_count"`
+	RequiredRegions    []string `json:"required_regions"`
+	AllowVassalControl bool     `json:"allow_vassal_control,omitempty"`
 
 	// Economic
 	TargetGoldIncome int `json:"target_gold_income"`

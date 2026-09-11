@@ -53,7 +53,11 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 ## Değişiklik ve doğrulama akışı
 
 1. `git status --short` ve ilgili dosyaları incele; kirli çalışma ağacındaki
-   kullanıcı değişikliklerini ayır.
+   kullanıcı değişikliklerini ayır. Windows/WSL çalışma akışında yalnızca
+   CRLF/LF veya satır sonu farkı varsa bunu anlamlı kullanıcı değişikliği
+   olarak yorumlama; ilgili dosyalarda `git diff --ignore-space-at-eol` ve
+   `git diff --cached --ignore-space-at-eol` ile içerik farkını doğrula.
+   Yalnızca satır sonu farkı varsa kullanıcıya bunu dosya değişikliği uyarısı olarak üretme.
 2. Arama için `rg`/`rg --files`, JSON/YAML için `jq`/`yq` kullan. Düzenlemeleri
    `apply_patch` ile yap.
 3. Go kodunda `gofmt` çalıştır. Davranış, state, save/load, input, routing veya
