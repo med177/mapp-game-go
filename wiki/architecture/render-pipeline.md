@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-08-24
+last_updated: 2026-09-11
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -629,6 +629,19 @@ Shape ve Bölge boya/sil fırçaları sol tık sürüklemeyle çalışır. Sol t
 seçimi ve diğer editor aksiyonları için korunur. Boya/sil bırakıldığında yalnız
 geçici önizleme ve bekleyen değişiklik tutulur; ilgili araç `Uygula` ile
 kesinleştirilince hesaplama, harita yenileme ve tek undo snapshot'ı üretilir.
+
+Edit Mode bölge merkezleri `WorldX/WorldY` konumunda artı işaretiyle çizilir.
+Merkez marker'ı raster bölge hit-test'inden önce ortak bir ekran yarıçapıyla
+seçilir; başka bir bölgenin üstünde olsa da hover'da sarı halka ve pointer
+gösterir. Tıklama bölgeyi seçer, `Ctrl+sol` sürükleme ise seçilen marker'ın
+merkezini taşır (`internal/render/map_editor.go`, `cursor.go`).
+
+Edit Mode'da `Bölge Verileri` formu seçili region'ın `regions.json` alanlarını
+düzenler: adlar, kaynak gelirleri, ticaret kapasitesi, memnuniyet, vergi,
+nüfus, din (ortak combobox), aktif olay ve açılış turu aynı kaydetme işleminde
+güncellenir. Merkez koordinatları bu formda yer almaz; harita üzerindeki merkez
+işareti cursor ile taşınır. Form kaydı tek world snapshot'ı üretir; geçersiz sayısal
+değerler kaydedilmez (`internal/render/region_form.go`).
 
 Edit Mode'da seçili ordu veya filonun `Birim Tipi` dropdown'ı seçildiğinde,
 ordudaki mevcut `Unit.TypeID` değerleri seçilen kara/deniz tipine uygulanır ve

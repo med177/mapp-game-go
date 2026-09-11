@@ -77,7 +77,7 @@ func (r *Renderer) invalidateShapeEditSession() {
 
 func (r *Renderer) selectedShapeRegion() *world.Region {
 	region := r.gs.Regions[r.editSelectedRegion]
-	if region == nil || region.IsSea || region.ShapeID == "" {
+	if region == nil || region.ShapeID == "" {
 		return nil
 	}
 	return region
@@ -247,6 +247,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		ringCount = len(r.gs.ShapeData.Shapes[shapeRegion.ShapeID])
 	}
 	DrawText(screen, "Ring: "+itoa(ringCount), float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorButton(screen, editButtonShapeNew, "Yeni Kara Sınırı", selectedRegion.IsSea && !r.editShapePaintPending)
 	ly += 18
 	toolLabel := "Kapalı"
 	switch r.editShapeTool {
@@ -423,6 +424,8 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 		r.editShapeBrushRadius = decreaseEditShapeBrushRadius(r.editShapeBrushRadius)
 	case editButtonShapeBrushPlus:
 		r.editShapeBrushRadius = increaseEditShapeBrushRadius(r.editShapeBrushRadius)
+	case editButtonShapeNew:
+		r.beginNewShapeCreation()
 	case editButtonLandPassageAdd:
 		r.toggleEditLandPassageMode()
 	case editButtonLandPassageAdjust:

@@ -289,6 +289,11 @@ type Renderer struct {
 	editTextTarget                    editTextTarget
 	editTextRunes                     []rune
 	editTextError                     string
+	editNewShapeID                    string
+	editNewShapeRegion                world.RegionID
+	editSelectedWorldX                int
+	editSelectedWorldY                int
+	editSelectedWorldPointSet         bool
 	editInspectorTab                  editInspectorTab
 	editDirty                         bool
 	editVoronoiDebug                  bool
@@ -298,6 +303,7 @@ type Renderer struct {
 	editTerrainDropdown               *gameui.Dropdown
 	editSettlementTypeDropdown        *gameui.Dropdown
 	editUnitTypeDropdown              *gameui.Dropdown
+	editRegionReligionDropdown        *gameui.Dropdown
 	editSelectedUnitType              string
 	armyNeighborBuf                   []world.RegionID
 	editVisualNeighborBuf             []world.RegionID
@@ -328,6 +334,7 @@ type Renderer struct {
 	editRegionDragStart               *editRegionCenterSnapshot
 	editSettlementDragStart           []editRegionSettlementsSnapshot
 	editFactionForm                   editFactionFormState
+	editRegionForm                    editRegionFormState
 }
 
 type confirmDialogState struct {
@@ -442,7 +449,39 @@ type editFactionFormState struct {
 	errorText      string
 }
 
+type editRegionFormState struct {
+	show      bool
+	regionID  world.RegionID
+	active    editRegionFormField
+	values    [editRegionFormFieldCount]string
+	errorText string
+}
+
 type editFactionFormField int
+
+type editRegionFormField int
+
+const (
+	editRegionFieldNone editRegionFormField = iota
+	editRegionFieldNameTR
+	editRegionFieldName
+	editRegionFieldGold
+	editRegionFieldGrain
+	editRegionFieldIron
+	editRegionFieldTimber
+	editRegionFieldStone
+	editRegionFieldSpice
+	editRegionFieldCloth
+	editRegionFieldTradeCapacity
+	editRegionFieldSatisfaction
+	editRegionFieldTaxRate
+	editRegionFieldPopulation
+	editRegionFieldRuralPopulation
+	editRegionFieldReligion
+	editRegionFieldActiveEvent
+	editRegionFieldUnlockTurn
+	editRegionFormFieldCount
+)
 
 type HistoricalEventChoice struct {
 	Label      string
@@ -492,6 +531,8 @@ const (
 	editTextRegionNameTR
 	editTextRegionName
 	editTextRegionID
+	editTextShapeID
+	editTextShapeName
 )
 
 type editInspectorTab int
@@ -643,6 +684,7 @@ func New(gs *state.GameState) *Renderer {
 		editTerrainDropdown:         gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Arazi Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editSettlementTypeDropdown:  gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editUnitTypeDropdown:        gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Birim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
+		editRegionReligionDropdown:  gameui.NewDropdown(0, 0, 292, 30+24*4+10, "Din seç", 30, 24, 4),
 		tradeCorridors:              make([]tradeCorridorInfo, 0, 96),
 		activeWarsBuf:               make([]ActiveWarSummary, 0, 16),
 		tradeHoverIdx:               -1,
@@ -1537,6 +1579,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawEditModeHud(screen)
 		r.drawEditInspector(screen)
 		r.drawEditFactionForm(screen)
+		r.drawEditRegionForm(screen)
 	}
 
 	// 7. Diplomasi paneli (üst katman)

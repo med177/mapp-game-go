@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, editor, shapes, country-shapes, tooling]
-last_updated: 2026-07-30
+last_updated: 2026-09-11
 related: [architecture/render-pipeline, architecture/state-management, dev/data-format, dev/progress]
 ---
 
@@ -33,6 +33,14 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 5. Yeni ring'ler hem `GameState.ShapeData.Shapes[shape_id]` hem ilgili `Region.Shape` alanlarına geri yazılır.
 6. `rebuildEditWorldMap()` ile harita cache'i yeniden üretilir.
 7. Senaryo kaydında `writeScenarioShapes()` ile `data/country_shapes.json` güncellenir.
+
+`Yeni Kara Sınırı` düğmesi yalnızca seçili deniz bölgesinde aktif olur. Editör
+sırasıyla `Shape ID` ve `Shape Adı` ister; ID boşluk içeremez ve mevcut bir
+shape ile çakışamaz. Onaylandığında son tıklanan deniz hücresinde küçük bir
+başlangıç halkasıyla yeni bir `IsSea=false` kara bölgesi ve ona bağlı shape
+oluşturulur. Yeni bölge hemen `Sınır Boya/Sil` araçlarıyla genişletilebilir;
+shape, bölge ve bölge sırası değişikliği tek undo/redo snapshot'ı olarak
+tutulur ve `Kaydet` ile `country_shapes.json` içine yazılır.
 
 `Bolge Boya/Sil` performans notu:
 - Stroke sırasında `regionAt` canlı olarak güncellenir ama ağır `regionPx` dilim bakımı mouse hareketi başına yapılmaz; bu toplu indeks yenilemesi rebuild aşamasına bırakılır.
@@ -76,7 +84,7 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
   çakışan ID reddedilir. Kabul edilen değişiklik region map anahtarını,
   komşuları, geçişleri, ordu/donanma konumlarını, paint override'larını ve
   editor seçim state'ini birlikte taşır; undo/redo world snapshot ile korunur.
-- Deniz region'ları `shape_id` taşımadıkları için `Sınır Boya/Sil` değil, aynı sekmedeki `Bölge Boya/Sil` aracıyla düzenlenir; bu akış `region_shapes.json` override katmanına yazar ve deniz bölgeleri arasında alan aktarımı yapar. Aynı araç kara region seçiliyken de ülke dış sınırının dışına taşan bölge genişletmelerini kalıcı override olarak saklar; sonraki stroke'larda baseline override öncesi world map'ten üretildiği için daha önce boyanan dış piksel tekrar fırçadan geçti diye kayıttan düşmez.
+- Deniz region'larında `Yeni Kara Sınırı` düğmesi aktif olur; yeni `shape_id` ve ad girildiğinde seçilen deniz pikselinde küçük bir başlangıç halkası oluşturulur. Yeni shape'e bağlanan deniz bölgesi `Sınır Boya` ile genişletilebilir. Deniz alanı dağılımı için `Bölge Boya/Sil` aracı da aynı `region_shapes.json` override katmanına yazmaya devam eder; kara region'larda ise `Yeni Kara Sınırı` pasiftir.
 
 ## Sınırlamalar
 

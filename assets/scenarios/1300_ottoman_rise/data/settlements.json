@@ -3248,6 +3248,34 @@
     ]
   },
   {
+    "region_id": "chios",
+    "settlements": [
+      {
+        "id": "chios_settlement_1",
+        "name_tr": "Sakız",
+        "x": 1000,
+        "y": 507,
+        "type": "city",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "midilli",
+    "settlements": [
+      {
+        "id": "midilli_settlement_1",
+        "name_tr": "Midilli",
+        "x": 1007,
+        "y": 492,
+        "type": "city",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
     "region_id": "slovakia",
     "settlements": [
       {

@@ -267,6 +267,7 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 	drawEditInspectorButton(screen, editButtonUnlockPlus, "+10 Tur", canRegion)
 	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komşu Sync", canRegion)
 	drawEditInspectorButton(screen, editButtonAddNeighbor, "Komşu Ekle", canRegion)
+	drawEditInspectorButton(screen, editButtonEditRegionData, "Bölge Verileri", canRegion)
 }
 
 func drawEditInspectorSaveButton(screen *ebiten.Image) {
@@ -580,6 +581,7 @@ const (
 	editButtonUnlockPlus
 	editButtonSyncNeighbors
 	editButtonAddRegion
+	editButtonEditRegionData
 	editButtonDeleteRegion
 	editButtonDeleteSettlement
 	editButtonSaveScenario
@@ -589,6 +591,7 @@ const (
 	editButtonShapeRegionErase
 	editButtonShapeBrushMinus
 	editButtonShapeBrushPlus
+	editButtonShapeNew
 	editButtonLandPassageAdd
 	editButtonLandPassageAdjust
 	editButtonLandPassageDelete
@@ -675,6 +678,8 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return leftRect(5)
 	case editButtonAddNeighbor:
 		return rightRect(5)
+	case editButtonEditRegionData:
+		return full(6)
 	case editButtonSetFactionCapital:
 		return leftRect(1)
 	case editButtonSaveScenario:
@@ -695,6 +700,8 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return leftRect(2)
 	case editButtonShapeBrushPlus:
 		return rightRect(2)
+	case editButtonShapeNew:
+		return uiRect{left + bw - 140, float64(y) + 128, 140, bh}
 	case editButtonLandPassageAdd:
 		return leftRect(3)
 	case editButtonLandPassageAdjust:
@@ -828,6 +835,7 @@ func editRegionInspectorButtonAt(mx, my float64) editInspectorButton {
 		editButtonUnlockPlus,
 		editButtonSyncNeighbors,
 		editButtonAddNeighbor,
+		editButtonEditRegionData,
 	} {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
@@ -860,6 +868,7 @@ func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
 		editButtonShapeRegionErase,
 		editButtonShapeBrushMinus,
 		editButtonShapeBrushPlus,
+		editButtonShapeNew,
 		editButtonLandPassageAdd,
 		editButtonLandPassageAdjust,
 		editButtonLandPassageDelete,
@@ -963,7 +972,35 @@ func editMinInt(a, b int) int {
 	return b
 }
 
+const editRegionCenterHitRadius = 12.0
+
+// editRegionCenterAt, rasterdaki bölge yerine Edit Mode'da çizilen merkez
+// işaretini hedefler. Merkez işareti başka bir bölgenin raster alanının üstünde
+// kalabileceği için merkez seçimi her zaman raster RegionAt'tan önce yapılır.
+func (r *Renderer) editRegionCenterAt(fx, fy float64) (world.RegionID, bool) {
+	if r == nil || r.gs == nil {
+		return "", false
+	}
+	bestRID := world.RegionID("")
+	bestDist := editRegionCenterHitRadius * editRegionCenterHitRadius
+	for rid, region := range r.gs.Regions {
+		if region == nil || region.IsLocked {
+			continue
+		}
+		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+		dx, dy := fx-sx, fy-sy
+		dist := dx*dx + dy*dy
+		if dist <= bestDist {
+			bestDist = dist
+			bestRID = rid
+		}
+	}
+	return bestRID, bestRID != ""
+}
+
 func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
+	mx, my := ebiten.CursorPosition()
+	hoverRID, hoveringCenter := r.editRegionCenterAt(float64(mx), float64(my))
 	for _, region := range r.gs.Regions {
 		if region == nil || region.IsLocked {
 			continue
@@ -980,10 +1017,16 @@ func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
 				col = color.RGBA{255, 190, 45, 240}
 			}
 		}
+		if hoveringCenter && region.ID == hoverRID {
+			col = color.RGBA{255, 220, 70, 245}
+		}
 		x, y := float32(sx), float32(sy)
 		vector.StrokeCircle(screen, x, y, 6, 1.5, col, true)
 		vector.StrokeLine(screen, x-8, y, x+8, y, 1.5, col, true)
 		vector.StrokeLine(screen, x, y-8, x, y+8, 1.5, col, true)
+		if hoveringCenter && region.ID == hoverRID {
+			vector.StrokeCircle(screen, x, y, 11, 2, color.RGBA{255, 220, 70, 245}, true)
+		}
 	}
 }
 
@@ -1303,6 +1346,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if r.editFactionForm.show {
 		return r.handleEditFactionFormInput()
 	}
+	if r.editRegionForm.show {
+		return r.handleEditRegionFormInput()
+	}
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
@@ -1497,7 +1543,10 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if leftJustPressed {
 		r.editSuccessorDropdown.Close()
 		if editModifierPressed() {
-			rid := r.editRegionAt(fx, fy)
+			rid, centerHit := r.editRegionCenterAt(fx, fy)
+			if !centerHit {
+				rid = r.editRegionAt(fx, fy)
+			}
 			if rid != "" {
 				r.editOwnerDropdown.Close()
 				r.editTerrainDropdown.Close()
@@ -1546,6 +1595,23 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			return InputAction{}
 		}
 
+		if rid, ok := r.editRegionCenterAt(fx, fy); ok {
+			r.editOwnerDropdown.Close()
+			r.editTerrainDropdown.Close()
+			r.editSettlementTypeDropdown.Close()
+			r.editUnitTypeDropdown.Close()
+			r.SelectedArmy = ""
+			r.editSelectedRegion = rid
+			r.rememberEditSelectedWorldPoint(rid, fx, fy)
+			r.syncSelectedTerrainArea(rid)
+			r.setEditFactionFromRegion(rid)
+			r.editSelectedSettlement = -1
+			r.editRenaming = false
+			r.editDraggingRegion = false
+			r.editDraggingSettlement = false
+			return InputAction{}
+		}
+
 		rid, idx, ok := r.editSettlementAt(fx, fy)
 		if ok {
 			r.editOwnerDropdown.Close()
@@ -1568,6 +1634,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editUnitTypeDropdown.Close()
 			r.SelectedArmy = ""
 			r.editSelectedRegion = rid
+			r.rememberEditSelectedWorldPoint(rid, fx, fy)
 			r.syncSelectedTerrainArea(rid)
 			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = -1
@@ -1778,6 +1845,8 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.syncSelectedRegionNeighborsFromVisual()
 	case editButtonAddNeighbor:
 		r.toggleEditNeighborAddMode()
+	case editButtonEditRegionData:
+		r.openEditRegionForm()
 	case editButtonAddRegion:
 		r.addRegionNearSelected()
 	case editButtonDeleteRegion:
@@ -1947,11 +2016,27 @@ func (r *Renderer) beginEditRename(target editTextTarget) {
 	r.editDraggingSettlement = false
 }
 
+func (r *Renderer) beginNewShapeCreation() {
+	region := r.selectedRegionForShapeTools()
+	if region == nil || !region.IsSea || r.editShapePaintPending {
+		return
+	}
+	r.editNewShapeID = ""
+	r.editNewShapeRegion = region.ID
+	r.editTextTarget = editTextShapeID
+	r.editTextError = ""
+	r.editTextRunes = r.editTextRunes[:0]
+	r.editRenaming = true
+	r.editDraggingSettlement = false
+}
+
 func (r *Renderer) handleEditRenameInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		r.editRenaming = false
 		r.editTextTarget = editTextNone
 		r.editTextError = ""
+		r.editNewShapeID = ""
+		r.editNewShapeRegion = ""
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) {
@@ -1961,7 +2046,7 @@ func (r *Renderer) handleEditRenameInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyBackspace) && len(r.editTextRunes) > 0 {
 		r.editTextRunes = r.editTextRunes[:len(r.editTextRunes)-1]
 	}
-	if r.editTextTarget == editTextRegionID && r.keyJustPressed(ebiten.KeyA) && editUndoPressed() {
+	if (r.editTextTarget == editTextRegionID || r.editTextTarget == editTextShapeID) && r.keyJustPressed(ebiten.KeyA) && editUndoPressed() {
 		r.editTextRunes = r.editTextRunes[:0]
 		return InputAction{}
 	}
@@ -1973,6 +2058,10 @@ func (r *Renderer) handleEditRenameInput() InputAction {
 }
 
 func (r *Renderer) commitEditRename() {
+	if r.editTextTarget == editTextShapeID || r.editTextTarget == editTextShapeName {
+		r.commitNewShapeInput()
+		return
+	}
 	region := r.gs.Regions[r.editSelectedRegion]
 	if region == nil {
 		r.editRenaming = false
@@ -2051,6 +2140,153 @@ func (r *Renderer) commitEditRename() {
 	r.editTextError = ""
 }
 
+func (r *Renderer) commitNewShapeInput() {
+	source := r.gs.Regions[r.editNewShapeRegion]
+	if source == nil || !source.IsSea {
+		r.editTextError = "Yeni Kara Sınırı için deniz bölgesi seçilmeli."
+		return
+	}
+	value := strings.TrimSpace(string(r.editTextRunes))
+	if r.editTextTarget == editTextShapeID {
+		if value == "" {
+			r.editTextError = "Shape ID boş olamaz."
+			return
+		}
+		if strings.IndexFunc(value, unicode.IsSpace) >= 0 {
+			r.editTextError = "Shape ID boşluk içermemeli."
+			return
+		}
+		if _, exists := r.gs.ShapeData.Shapes[value]; exists {
+			r.editTextError = "Bu Shape ID zaten var."
+			return
+		}
+		r.editNewShapeID = value
+		r.editTextTarget = editTextShapeName
+		r.editTextError = ""
+		r.editTextRunes = r.editTextRunes[:0]
+		return
+	}
+	if value == "" {
+		r.editTextError = "Shape adı boş olamaz."
+		return
+	}
+	shapeID := r.editNewShapeID
+	if shapeID == "" {
+		r.editTextError = "Önce Shape ID girilmeli."
+		return
+	}
+
+	before := r.worldSnapshot()
+	rings := r.initialRingsForNewShape(source, shapeID)
+	if r.gs.ShapeData.Shapes == nil {
+		r.gs.ShapeData.Shapes = make(map[string][][][2]float32)
+	}
+	if r.gs.ShapeData.Names == nil {
+		r.gs.ShapeData.Names = make(map[string]string)
+	}
+	r.gs.ShapeData.Shapes[shapeID] = cloneFloatRings(rings)
+	r.gs.ShapeData.Names[shapeID] = value
+	newRegionID := nextRegionID(r.gs)
+	newRegionX, newRegionY := source.WorldX, source.WorldY
+	if r.editSelectedWorldPointSet {
+		newRegionX, newRegionY = scenarioCoordsFromWorld(
+			float64(r.editSelectedWorldX)+0.5,
+			float64(r.editSelectedWorldY)+0.5,
+		)
+	}
+	newRegion := &world.Region{
+		ID:           newRegionID,
+		Name:         value,
+		NameTR:       value,
+		Terrain:      world.TerrainPlain,
+		WorldX:       newRegionX,
+		WorldY:       newRegionY,
+		ShapeID:      shapeID,
+		Shape:        cloneFloatRings(rings),
+		IsSea:        false,
+		Satisfaction: 70,
+		TaxRate:      45,
+	}
+	r.gs.Regions[newRegionID] = newRegion
+	r.insertRegionOrderAfter(source.ID, newRegionID)
+	recalculateCountryShapeBounds(&r.gs.ShapeData)
+	r.editSelectedRegion = newRegionID
+	r.editSelectedSettlement = -1
+	r.editShapeSession = nil
+	r.rebuildEditWorldMap()
+	visual := r.worldMap.VisualNeighbors(newRegionID, r.editVisualNeighborBuf[:0])
+	r.applyVisualNeighbors(newRegionID, visual)
+	after := r.worldSnapshot()
+	r.pushWorldSnapshotCommand(before, after)
+	r.editDirty = true
+	r.editRenaming = false
+	r.editTextTarget = editTextNone
+	r.editTextError = ""
+	r.editNewShapeID = ""
+	r.editNewShapeRegion = ""
+}
+
+func (r *Renderer) initialRingsForNewShape(region *world.Region, shapeID string) [][][2]float32 {
+	if region == nil {
+		return nil
+	}
+	if region.IsSea {
+		return r.initialSeaShapeRings(shapeID)
+	}
+	if len(region.Shape) > 0 {
+		return cloneFloatRings(region.Shape)
+	}
+	if region.ShapeID != "" {
+		if rings := r.gs.ShapeData.Shapes[region.ShapeID]; len(rings) > 0 {
+			return cloneFloatRings(rings)
+		}
+	}
+	if r.worldMap == nil {
+		return nil
+	}
+	session := newBlankShapeEditSession(r.gs, shapeID)
+	if session == nil {
+		return nil
+	}
+	for _, pIdx := range r.worldMap.regionPx[region.ID] {
+		x, y := pIdx%WorldW, pIdx/WorldW
+		if session.inBounds(x, y) {
+			session.Mask[session.index(x, y)] = 1
+		}
+	}
+	return shapeMaskToFloatRings(session)
+}
+
+func (r *Renderer) initialSeaShapeRings(shapeID string) [][][2]float32 {
+	if r == nil || r.gs == nil || r.worldMap == nil {
+		return nil
+	}
+	session := newBlankShapeEditSession(r.gs, shapeID)
+	if session == nil {
+		return nil
+	}
+	cx, cy := r.editSelectedWorldX, r.editSelectedWorldY
+	if !r.editSelectedWorldPointSet {
+		region := r.gs.Regions[r.editSelectedRegion]
+		if region == nil {
+			return nil
+		}
+		cx = shapeRasterWorldPixelX(region.WorldX)
+		cy = shapeRasterWorldPixelY(region.WorldY)
+	}
+	const radius = 3
+	for y := cy - radius; y <= cy+radius; y++ {
+		for x := cx - radius; x <= cx+radius; x++ {
+			dx, dy := x-cx, y-cy
+			if dx*dx+dy*dy > radius*radius || !session.inBounds(x, y) {
+				continue
+			}
+			session.Mask[session.index(x, y)] = 1
+		}
+	}
+	return shapeMaskToFloatRings(session)
+}
+
 func (r *Renderer) editTextLabel() string {
 	switch r.editTextTarget {
 	case editTextRegionNameTR:
@@ -2059,6 +2295,10 @@ func (r *Renderer) editTextLabel() string {
 		return "Bolge Ad EN"
 	case editTextRegionID:
 		return "Bolge ID"
+	case editTextShapeID:
+		return "Yeni Kara Sınırı ID"
+	case editTextShapeName:
+		return "Yeni Kara Sınırı Adı"
 	default:
 		return "Isim"
 	}
@@ -2097,6 +2337,17 @@ func (r *Renderer) editRegionAt(fx, fy float64) world.RegionID {
 		return rid
 	}
 	return ""
+}
+
+func (r *Renderer) rememberEditSelectedWorldPoint(rid world.RegionID, fx, fy float64) {
+	r.editSelectedWorldPointSet = false
+	region := r.gs.Regions[rid]
+	if region == nil || !region.IsSea {
+		return
+	}
+	wx, wy := r.screenToWorld(fx, fy)
+	r.editSelectedWorldX, r.editSelectedWorldY = shapePaintCellFromWorld(wx, wy)
+	r.editSelectedWorldPointSet = true
 }
 
 func (r *Renderer) editArmyAt(fx, fy float64) (army.ArmyID, bool) {

@@ -215,6 +215,14 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhaseEditMode:
+		if r.editRegionForm.show {
+			if r.editRegionFormInteractiveHit(fx, fy) {
+				ebiten.SetCursorShape(ebiten.CursorShapePointer)
+				return
+			}
+			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+			return
+		}
 		if r.editFactionForm.show {
 			if editFactionFormHit(fx, fy) {
 				ebiten.SetCursorShape(ebiten.CursorShapePointer)
@@ -245,6 +253,10 @@ func (r *Renderer) updateCursorShape() {
 		}
 		if r.editShapeHelpPanelHit(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+			return
+		}
+		if _, ok := r.editRegionCenterAt(fx, fy); ok {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
 		if editModifierPressed() && r.editRegionAt(fx, fy) != "" {

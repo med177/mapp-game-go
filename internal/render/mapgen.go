@@ -697,7 +697,7 @@ func (wm *WorldMap) buildCountryShapes(gs *state.GameState, shapes map[string]co
 
 	regionsByShape := make(map[string][]*world.Region)
 	for _, r := range gs.Regions {
-		if r.ShapeID != "" && !r.IsSea && !r.IsTerrainArea {
+		if r.ShapeID != "" && !r.IsTerrainArea {
 			regionsByShape[r.ShapeID] = append(regionsByShape[r.ShapeID], r)
 		}
 	}
@@ -766,6 +766,9 @@ func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Reg
 				ridx = uint16(len(wm.regionIDs))
 				wm.regionIDs = append(wm.regionIDs, r.ID)
 				wm.regionIdx[r.ID] = ridx
+			}
+			if r.IsSea {
+				wm.seaIdx[ridx] = true
 			}
 			wm.regionAt[pIdx] = ridx
 			wm.regionPx[r.ID] = append(wm.regionPx[r.ID], pIdx)

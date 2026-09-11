@@ -2032,8 +2032,8 @@ func (r *Renderer) showEditExitConfirm() {
 		message:       "Edit mode degisiklikleri kaydedilmedi. Cikmadan once ne yapmak istiyorsunuz?",
 		messageLines:  wrapTextLines("Edit mode degisiklikleri kaydedilmedi. Cikmadan once ne yapmak istiyorsunuz?", FaceSmall, float64(confirmDialogW)-40),
 		acceptLabel:   "Kaydet",
-		thirdLabel:    "Kaydetmeden Cik",
-		declineLabel:  "Iptal",
+		thirdLabel:    "Çıkış",
+		declineLabel:  "İptal",
 		pendingAction: InputAction{Kind: ActionSaveScenarioAndGoMainMenu},
 		thirdAction:   InputAction{Kind: ActionGoMainMenu},
 	}
@@ -2169,7 +2169,7 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 		}
 		return btn.WithIcon(gameui.IconCheck)
 	case "third":
-		if label == "Kaydetmeden Cik" {
+		if label == "Çıkış" {
 			return btn.WithIcon(gameui.IconExit)
 		}
 		if label == "Serbest Bırak" {
