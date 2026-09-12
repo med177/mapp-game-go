@@ -682,7 +682,8 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "walls"
     ]
   },
   {
@@ -1248,7 +1249,9 @@
     "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "sch_fribourg",
@@ -1321,7 +1324,9 @@
     "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "sch_zurich",
@@ -1355,7 +1360,9 @@
     "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "sch_basel",
@@ -1390,7 +1397,9 @@
     "rural_population": 260,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "aquitaine",
@@ -8407,7 +8416,9 @@
     "rural_population": 182,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "moravia",

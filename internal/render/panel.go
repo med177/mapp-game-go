@@ -2251,7 +2251,7 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		if meter > 1 {
 			meter = 1
 		}
-		drawRegionMeterRow(screen, lx, ly, sepW, "İkmal", fmt.Sprintf("%d / %d", logistics.Demand, logistics.Capacity), meter, logisticsPressureColor(logistics))
+		drawRegionMeterRow(screen, lx, ly, sepW, fmt.Sprintf("İkmal (%d)", logistics.Capacity), itoa(logistics.Demand), meter, logisticsPressureColor(logistics))
 		ly += regionPanelStatRowGap
 		if logistics.FriendlySupplyGrainSpent > 0 {
 			drawUILabel(

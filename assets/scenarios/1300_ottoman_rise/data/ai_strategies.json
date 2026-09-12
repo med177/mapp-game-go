@@ -69,7 +69,6 @@
         {
           "id": "join_bern_1353",
           "kind": "expand",
-          "min_year": 1353,
           "territorial_claims": [
             {
               "region_id": "sch_bern",
@@ -78,6 +77,7 @@
           ],
           "priority": 62,
           "commitment": 35,
+          "min_year": 1353,
           "readiness_regions": [
             "switzerland"
           ]
@@ -85,7 +85,6 @@
         {
           "id": "join_zurich_1351",
           "kind": "expand",
-          "min_year": 1351,
           "territorial_claims": [
             {
               "region_id": "sch_zurich",
@@ -94,6 +93,7 @@
           ],
           "priority": 60,
           "commitment": 35,
+          "min_year": 1351,
           "readiness_regions": [
             "switzerland"
           ]
@@ -101,7 +101,6 @@
         {
           "id": "join_fribourg_1481",
           "kind": "expand",
-          "min_year": 1481,
           "territorial_claims": [
             {
               "region_id": "sch_fribourg",
@@ -110,6 +109,7 @@
           ],
           "priority": 52,
           "commitment": 30,
+          "min_year": 1481,
           "readiness_regions": [
             "switzerland"
           ]
@@ -117,7 +117,6 @@
         {
           "id": "join_basel_1501",
           "kind": "expand",
-          "min_year": 1501,
           "territorial_claims": [
             {
               "region_id": "sch_basel",
@@ -126,6 +125,7 @@
           ],
           "priority": 48,
           "commitment": 28,
+          "min_year": 1501,
           "readiness_regions": [
             "switzerland"
           ]
@@ -359,7 +359,6 @@
         {
           "id": "secure_habsburg_alpine_claims",
           "kind": "expand",
-          "min_year": 1315,
           "territorial_claims": [
             {
               "region_id": "switzerland",
@@ -376,6 +375,7 @@
           ],
           "priority": 72,
           "commitment": 52,
+          "min_year": 1315,
           "readiness_regions": [
             "austria"
           ]

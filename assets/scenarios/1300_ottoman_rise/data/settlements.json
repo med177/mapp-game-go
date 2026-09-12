@@ -575,7 +575,7 @@
         "name_tr": "Burgonya",
         "x": 594,
         "y": 324,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 53
       }
@@ -941,7 +941,7 @@
         "name_tr": "Schwyz",
         "x": 656,
         "y": 348,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 0
       }
@@ -969,7 +969,7 @@
         "name_tr": "Bern",
         "x": 626,
         "y": 346,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 70
       }
@@ -983,7 +983,7 @@
         "name_tr": "Zurich",
         "x": 653,
         "y": 334,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 70
       }
@@ -997,7 +997,7 @@
         "name_tr": "Basel",
         "x": 619,
         "y": 337,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 0
       }
@@ -5641,7 +5641,7 @@
         "name_tr": "Tirol",
         "x": 690,
         "y": 342,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 98
       }
