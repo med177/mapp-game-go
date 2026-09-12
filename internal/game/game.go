@@ -688,6 +688,10 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	case loadingWorldMap:
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.ReloadGameStateWithPreparedMap(g.gs, res.worldMap)
+		if evt := events.TickOpeningHistoricalEvent(g.gs, g.evts); evt != nil {
+			events.Apply(g.gs, evt)
+			g.handleTriggeredEvent(evt)
+		}
 		if g.gs.Imperial != nil && g.gs.Imperial.PendingDecision != nil && g.gs.Imperial.EmpireID == g.gs.PlayerFactionID {
 			g.renderer.ShowImperialPanel()
 		}

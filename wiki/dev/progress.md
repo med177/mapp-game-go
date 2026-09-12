@@ -25,6 +25,26 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   flag'i, Avusturya/HRE ile barış ve ticaret bonusuyla temsil ediyor; hukuki bağımsızlık
   1648'e bırakıldı.
 
+- 2026-09-12: Yeni oyun açılışında başlangıç tarihine denk gelen ilk tarihsel event'in
+  bir tur gecikmesi düzeltildi. `events.TickOpeningHistoricalEvent` ile 1310 Mart'taki
+  İsviçre kuruluşu ilk oyuncu turuna girerken uygulanıyor; rastgele ve siyasi üstünlük
+  event'leri açılışta çalıştırılmıyor.
+
+- 2026-09-12: Morgarten sonrasında HRE'nin Avusturya'ya imparatorluk desteği vermesini
+  temsil eden `hre_supports_austria_against_swiss_1315` event'i eklendi. Event yalnızca
+  İsviçre-Avusturya savaşı başladıktan sonra HRE ve Avusturya'yı İsviçre'ye karşı ortak
+  koalisyona alıyor.
+
+- 2026-09-12: HRE ile bağımsız imparatorluk prensleri/elektörleri arasındaki başlangıç
+  ticareti `relations.json` içinde `trade` ilişkileriyle tamamlandı. Askerî bağlılık
+  bağımsız üyelerde hâlâ `imperial.json` savaş çağrısı üzerinden, vassal ticareti ise
+  mevcut otomatik realm akışı üzerinden çalışıyor.
+
+- 2026-09-12: Imperial panel görsel düzeni iyileştirildi. Responsive özet kolonları,
+  otorite progress bar'ı, üye satırlarında sadakat/özerklik/askerî katkı barları,
+  görünür liste scrollbar'ı, ortak kapatma ikonu ve çizim-hit-test ortak satır
+  geometrisi eklendi; karar paneli de aynı ortak rect helper'ını kullanıyor.
+
 - 2026-09-12: 1300 senaryosuna erken İsviçre Konfederasyonu modeli eklendi. Schwyz
   başlangıç çekirdeği ve başkent olarak tanımlandı; Bern, Zürih, Fribourg ve Basel
   bölgeleri HRE içinde bırakılarak kaynakları Alp tarımı, kereste, maden, taş ve bölgesel

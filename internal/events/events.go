@@ -53,11 +53,12 @@ type DiplomaticOfferEffect struct {
 // SuccessorRevivalEffect tarihsel bir event'in elenmiş ardıl faction'ı
 // belirli bir bölgede yeniden kurmasını tanımlar.
 type SuccessorRevivalEffect struct {
-	FactionID    string `json:"faction_id"`
-	RegionID     string `json:"region_id"`
-	Mode         string `json:"mode,omitempty"` // independent | vassal
-	OverlordID   string `json:"overlord_id,omitempty"`
-	MilitiaCount int    `json:"militia_count,omitempty"`
+	FactionID        string `json:"faction_id"`
+	RegionID         string `json:"region_id"`
+	Mode             string `json:"mode,omitempty"` // independent | vassal
+	OverlordID       string `json:"overlord_id,omitempty"`
+	MilitiaCount     int    `json:"militia_count,omitempty"`
+	SuppressRelation bool   `json:"suppress_relation,omitempty"`
 }
 
 // TradeNetworkModifierEffect, bir event'in ticaret ağı üzerindeki kalıcı
@@ -273,6 +274,31 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 	return nil
 }
 
+// TickOpeningHistoricalEvent yeni oyun açılırken başlangıç tarihine denk gelen
+// tarihsel event'i işler. Rastgele veya siyasi üstünlük event'lerini çalıştırmaz;
+// böylece senaryo başlangıç olayları ilk oyuncu turundan önce uygulanabilir.
+func TickOpeningHistoricalEvent(gs *state.GameState, evts []*Event) *Event {
+	if gs == nil {
+		return nil
+	}
+	if gs.FiredEventIDs == nil {
+		gs.FiredEventIDs = make(map[string]bool)
+	}
+
+	for _, e := range evts {
+		if e == nil || e.HistoricalYear == 0 || gs.FiredEventIDs[e.ID] ||
+			!eventConditionsSatisfied(gs, e) || !historicalEventDueThisTurn(gs, e) {
+			continue
+		}
+		if e.OneShot {
+			gs.FiredEventIDs[e.ID] = true
+		}
+		queueHistoricalEventsSharingDate(gs, evts, e)
+		return e
+	}
+	return nil
+}
+
 // historicalEventDueThisTurn tarihsel olayın aktif turun takvim aralığına
 // denk gelip gelmediğini bildirir.
 func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
@@ -450,8 +476,10 @@ func applyOneSuccessorRevival(gs *state.GameState, eff Effect, revival Successor
 		successor.OverlordID = overlordID
 		successor.TributeRate = 20
 		successor.TributeRateConfigured = true
-		diplomacy.ForceRelation(gs, overlordID, successorID, faction.StanceAllied, 50)
-	} else if eff.AffectedFaction != "" {
+		if !revival.SuppressRelation {
+			diplomacy.ForceRelation(gs, overlordID, successorID, faction.StanceAllied, 50)
+		}
+	} else if eff.AffectedFaction != "" && !revival.SuppressRelation {
 		diplomacy.ForceRelation(gs, faction.FactionID(eff.AffectedFaction), successorID, faction.StanceAllied, 50)
 	}
 }

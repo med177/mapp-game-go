@@ -3464,7 +3464,8 @@
       "faction_id": "swiss_confederacy",
       "region_id": "switzerland",
       "mode": "independent",
-      "militia_count": 3
+      "militia_count": 3,
+      "suppress_relation": true
     },
     "set_flags": ["swiss_confederacy_formed"]
   },
@@ -3487,6 +3488,32 @@
     ],
     "combat_defense_percent": 15,
     "set_flags": ["swiss_morgarten_war_started"]
+  },
+  {
+    "id": "hre_supports_austria_against_swiss_1315",
+    "name_tr": "İmparatorluğun Avusturya'ya Yardımı",
+    "desc_tr": "Morgarten yenilgisi ve Habsburgların çağrısı, imparatorluk otoritesini İsviçre konfederasyonuna karşı harekete geçiriyor. HRE artık Avusturya'nın yanında savaşa katılarak çatışmayı imparatorluk meselesi olarak görüyor.",
+    "historical_year": 1315,
+    "historical_month": 12,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "hre",
+    "requires_flags": ["swiss_morgarten_war_started"],
+    "requires_active_factions": ["hre", "austria_duchy", "swiss_confederacy"],
+    "relation_requirements": [
+      {"faction_id": "swiss_confederacy", "stance": "peace"}
+    ],
+    "coalition": {
+      "members": ["hre", "austria_duchy"],
+      "opponents": ["swiss_confederacy"],
+      "member_stance": "allied",
+      "opponent_stance": "war",
+      "member_score_delta": 25,
+      "opponent_score_delta": -20
+    },
+    "set_flags": ["hre_austrian_support_1315"]
   },
   {
     "id": "swiss_zurich_joining_1351",

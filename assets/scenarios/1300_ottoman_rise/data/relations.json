@@ -4510,5 +4510,53 @@
     "faction_b": "swiss_confederacy",
     "score": 15,
     "stance": "peace"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "milan_duchy",
+    "score": 35,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "austria_duchy",
+    "score": 45,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "bohemian_kingdom",
+    "score": 45,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "bavaria_duchy",
+    "score": 40,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "saxony_duchy",
+    "score": 40,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "brandenburg_margraviate",
+    "score": 38,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "savoy_county",
+    "score": 30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "teutonic_order",
+    "score": 32,
+    "stance": "trade"
   }
 ]

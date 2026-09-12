@@ -19,7 +19,7 @@ const (
 	imperialPanelMinH          = 500.0
 	imperialPanelHeaderH       = 54.0
 	imperialPanelSummaryH      = 88.0
-	imperialPanelMemberRowH    = 48.0
+	imperialPanelMemberRowH    = 56.0
 	imperialPanelMemberFooterH = 28.0
 	imperialDecisionOptionRowH = 68.0
 	imperialDecisionDescY      = 46.0
@@ -56,7 +56,7 @@ func imperialPanelRect() gameui.Rect {
 
 func imperialPanelCloseButton() gameui.Button {
 	r := imperialPanelRect()
-	btn := gameui.NewButton(r.X+r.W-42, r.Y+12, 28, 28, "").WithIcon(gameui.IconBack)
+	btn := gameui.NewButton(r.X+r.W-42, r.Y+12, 28, 28, "").WithIcon(gameui.IconClose)
 	btn.IconSize = 14
 	return btn
 }
@@ -167,6 +167,49 @@ func imperialMemberListLayout(panel gameui.Rect) (left, viewport, footer gameui.
 	return left, viewport, footer, visible
 }
 
+func imperialDecisionBoxRect(panel gameui.Rect) gameui.Rect {
+	return gameui.Rect{X: panel.X + panel.W*0.60, Y: panel.Y + 160, W: panel.W*0.38 - 18, H: panel.H - 178}
+}
+
+func imperialMemberRowRect(viewport gameui.Rect, visibleIndex int) gameui.Rect {
+	return gameui.Rect{
+		X: viewport.X,
+		Y: viewport.Y + float64(visibleIndex)*imperialPanelMemberRowH,
+		W: viewport.W - 10,
+		H: imperialPanelMemberRowH - 4,
+	}
+}
+
+func clampImperialMemberScroll(total, visible, scroll int) int {
+	maxScroll := total - visible
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if scroll < 0 {
+		return 0
+	}
+	if scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func drawImperialMemberScrollbar(screen *ebiten.Image, viewport gameui.Rect, total, visible, scroll int) {
+	maxScroll := total - visible
+	if maxScroll <= 0 {
+		return
+	}
+	track := gameui.Rect{X: viewport.X + viewport.W - 6, Y: viewport.Y + 2, W: 4, H: viewport.H - 4}
+	drawRoundedRect(screen, float32(track.X), float32(track.Y), float32(track.W), float32(track.H), 2, color.RGBA{64, 52, 34, 180})
+	thumbH := track.H * float64(visible) / float64(total)
+	if thumbH < 22 {
+		thumbH = 22
+	}
+	scroll = clampImperialMemberScroll(total, visible, scroll)
+	thumbY := track.Y + (track.H-thumbH)*float64(scroll)/float64(maxScroll)
+	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{204, 164, 76, 235})
+}
+
 func (r *Renderer) DrawImperialPanel(screen *ebiten.Image) {
 	if r == nil || r.gs == nil || !imperialPanelAvailable(r.gs) {
 		return
@@ -187,13 +230,17 @@ func (r *Renderer) DrawImperialPanel(screen *ebiten.Image) {
 	}
 	summary := gameui.Rect{X: panel.X + 18, Y: panel.Y + imperialPanelHeaderH, W: panel.W - 36, H: imperialPanelSummaryH}
 	drawUIPanelFrame(screen, summary, color.RGBA{30, 24, 14, 235}, color.RGBA{100, 78, 40, 230}, 1, 3)
-	drawUILabel(screen, gameui.Rect{X: summary.X + 14, Y: summary.Y + 10, W: 235}, "İmparator", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: summary.X + 14, Y: summary.Y + 30, W: 235}, emperorName, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: summary.X + 270, Y: summary.Y + 10, W: 180}, "Otorite", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: summary.X + 270, Y: summary.Y + 30, W: 180}, itoa(imperial.Authority)+" / 100", imperialAuthorityColor(imperial.Authority), gameui.TextMedium, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: summary.X + 470, Y: summary.Y + 10, W: summary.W - 484}, "Siyasi takvim", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	calendar := trimTextToWidth(imperialCalendarText(r.gs), FaceSmall, summary.W-484)
-	drawUILabel(screen, gameui.Rect{X: summary.X + 470, Y: summary.Y + 30, W: summary.W - 484}, calendar, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	columnW := (summary.W - 28) / 3
+	drawUILabel(screen, gameui.Rect{X: summary.X + 14, Y: summary.Y + 10, W: columnW}, "İmparator", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: summary.X + 14, Y: summary.Y + 30, W: columnW}, emperorName, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+	authorityX := summary.X + 14 + columnW + 8
+	drawUILabel(screen, gameui.Rect{X: authorityX, Y: summary.Y + 10, W: columnW}, "Otorite", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: authorityX, Y: summary.Y + 30, W: columnW}, itoa(imperial.Authority)+" / 100", imperialAuthorityColor(imperial.Authority), gameui.TextMedium, gameui.TextAlignStart)
+	drawUIProgressBar(screen, float32(authorityX), float32(summary.Y+53), float32(columnW-8), 7, float64(imperial.Authority)/100, color.RGBA{20, 18, 13, 230}, color.RGBA{92, 70, 36, 220}, imperialAuthorityColor(imperial.Authority), 1)
+	calendarX := authorityX + columnW + 8
+	drawUILabel(screen, gameui.Rect{X: calendarX, Y: summary.Y + 10, W: columnW}, "Siyasi takvim", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	calendar := trimTextToWidth(imperialCalendarText(r.gs), FaceSmall, columnW)
+	drawUILabel(screen, gameui.Rect{X: calendarX, Y: summary.Y + 30, W: columnW}, calendar, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 	lastCall = trimTextToWidth(lastCall, FaceSmall, summary.W-28)
 	drawUILabel(screen, gameui.Rect{X: summary.X + 14, Y: summary.Y + 58, W: summary.W - 28}, lastCall, color.RGBA{190, 174, 136, 235}, gameui.TextSmall, gameui.TextAlignStart)
 
@@ -204,12 +251,7 @@ func (r *Renderer) DrawImperialPanel(screen *ebiten.Image) {
 	if maxScroll < 0 {
 		maxScroll = 0
 	}
-	if r.imperialScroll > maxScroll {
-		r.imperialScroll = maxScroll
-	}
-	if r.imperialScroll < 0 {
-		r.imperialScroll = 0
-	}
+	r.imperialScroll = clampImperialMemberScroll(len(members), visible, r.imperialScroll)
 	for row := 0; row < visible; row++ {
 		idx := r.imperialScroll + row
 		if idx >= len(members) {
@@ -220,21 +262,20 @@ func (r *Renderer) DrawImperialPanel(screen *ebiten.Image) {
 		if member == nil {
 			continue
 		}
-		rowRect := gameui.Rect{X: viewport.X, Y: viewport.Y + float64(row)*imperialPanelMemberRowH, W: viewport.W, H: imperialPanelMemberRowH - 4}
+		rowRect := imperialMemberRowRect(viewport, row)
 		fill := color.RGBA{28, 23, 15, 225}
 		border := color.RGBA{76, 61, 34, 220}
 		drawUICardRect(screen, rowRect, fill, border, 1)
 		name := factionLabelForRender(r.gs, memberID)
-		drawUILabel(screen, gameui.Rect{X: rowRect.X + 10, Y: rowRect.Y + 5, W: rowRect.W - 250}, trimTextToWidth(name, FaceSmall, rowRect.W-250), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
-		drawUILabel(screen, gameui.Rect{X: rowRect.X + 10, Y: rowRect.Y + 25, W: 120}, imperialMemberStatusLabel(member.Status), color.RGBA{198, 170, 108, 255}, gameui.TextSmall, gameui.TextAlignStart)
-		stats := "Sadakat " + itoa(member.Loyalty) + "  Özerklik " + itoa(member.Autonomy)
-		statsW := rowRect.W - 270
-		stats = trimTextToWidth(stats, FaceSmall, statsW)
-		drawUILabel(screen, gameui.Rect{X: rowRect.X + 132, Y: rowRect.Y + 25, W: statsW}, stats, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-		weight := "Oy " + itoa(member.ElectorWeight) + "  Askerî " + itoa(member.MilitaryCommitment)
-		weight = trimTextToWidth(weight, FaceSmall, 122)
-		drawUILabel(screen, gameui.Rect{X: rowRect.X + rowRect.W - 132, Y: rowRect.Y + 25, W: 122}, weight, color.RGBA{184, 190, 204, 230}, gameui.TextSmall, gameui.TextAlignEnd)
+		nameW := rowRect.W - 78
+		drawUILabel(screen, gameui.Rect{X: rowRect.X + 10, Y: rowRect.Y + 5, W: nameW}, trimTextToWidth(name, FaceSmall, nameW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: rowRect.X + rowRect.W - 68, Y: rowRect.Y + 5, W: 58}, "Oy "+itoa(member.ElectorWeight), color.RGBA{218, 188, 110, 255}, gameui.TextSmall, gameui.TextAlignEnd)
+		drawUILabel(screen, gameui.Rect{X: rowRect.X + 10, Y: rowRect.Y + 27, W: 78}, imperialMemberStatusLabel(member.Status), color.RGBA{198, 170, 108, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		drawImperialMemberMetric(screen, rowRect.X+94, rowRect.Y+25, 102, "Sadakat", member.Loyalty, color.RGBA{104, 184, 126, 255})
+		drawImperialMemberMetric(screen, rowRect.X+204, rowRect.Y+25, 102, "Özerklik", member.Autonomy, color.RGBA{112, 158, 208, 255})
+		drawImperialMemberMetric(screen, rowRect.X+314, rowRect.Y+25, rowRect.W-324, "Askerî", member.MilitaryCommitment, color.RGBA{204, 136, 88, 255})
 	}
+	drawImperialMemberScrollbar(screen, viewport, len(members), visible, r.imperialScroll)
 	footerText := "Satıra tıklayarak diplomasi aç"
 	if len(members) > visible {
 		footerText = "Tekerlek: listeyi kaydır • Satır: diplomasi"
@@ -244,6 +285,23 @@ func (r *Renderer) DrawImperialPanel(screen *ebiten.Image) {
 	}
 
 	r.drawImperialDecisionArea(screen, panel)
+}
+
+func drawImperialMemberMetric(screen *ebiten.Image, x, y, w float64, label string, value int, fill color.Color) {
+	if w < 24 {
+		return
+	}
+	labelW := w
+	if labelW > 72 {
+		labelW = 72
+	}
+	drawUILabel(screen, gameui.Rect{X: x, Y: y, W: labelW}, label, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	barX := x + labelW
+	barW := w - labelW
+	if barW >= 28 {
+		drawUIProgressBar(screen, float32(barX), float32(y+3), float32(barW-22), 6, float64(value)/100, color.RGBA{20, 18, 13, 220}, color.RGBA{74, 58, 36, 180}, fill, 1)
+		drawUILabel(screen, gameui.Rect{X: x + w - 20, Y: y - 1, W: 20}, itoa(value), ColorWhite, gameui.TextSmall, gameui.TextAlignEnd)
+	}
 }
 
 func factionLabelForRender(gs *state.GameState, id faction.FactionID) string {
@@ -282,7 +340,7 @@ func imperialCalendarText(gs *state.GameState) string {
 }
 
 func (r *Renderer) drawImperialDecisionArea(screen *ebiten.Image, panel gameui.Rect) {
-	box := gameui.Rect{X: panel.X + panel.W*0.60, Y: panel.Y + 160, W: panel.W*0.38 - 18, H: panel.H - 178}
+	box := imperialDecisionBoxRect(panel)
 	drawUICardRect(screen, box, color.RGBA{26, 21, 14, 235}, color.RGBA{90, 70, 38, 230}, 1)
 	pending := r.gs.Imperial.PendingDecision
 	if pending == nil {
@@ -356,7 +414,7 @@ func (r *Renderer) handleImperialPanelInput() InputAction {
 		return InputAction{}
 	}
 	if pending := r.gs.Imperial.PendingDecision; pending != nil {
-		box := gameui.Rect{X: panel.X + panel.W*0.60, Y: panel.Y + 160, W: panel.W*0.38 - 18, H: panel.H - 178}
+		box := imperialDecisionBoxRect(panel)
 		if pending.Kind == state.ImperialDecisionDiet {
 			for i, rect := range imperialDecisionButtonRects(box) {
 				if gameui.NewButton(rect.X, rect.Y, rect.W, rect.H, "").HitTest(fx, fy) {
@@ -381,7 +439,7 @@ func (r *Renderer) handleImperialPanelInput() InputAction {
 		if idx < 0 || idx >= len(members) {
 			continue
 		}
-		rowRect := gameui.Rect{X: viewport.X, Y: viewport.Y + float64(row)*imperialPanelMemberRowH, W: viewport.W, H: imperialPanelMemberRowH - 4}
+		rowRect := imperialMemberRowRect(viewport, row)
 		if rowRect.Hit(fx, fy) {
 			target := members[idx]
 			r.CloseImperialPanel()

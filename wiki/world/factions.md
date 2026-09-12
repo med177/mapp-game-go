@@ -48,6 +48,9 @@ fiilî özerkliği temsil eder: Avusturya ile barış kurar, HRE ile ilişkiyi n
 ticaret bonusu verir ve `swiss_de_facto_independence_1499` flag'ini yazar. Bu, 1648'deki
 hukuki bağımsızlık tanınmasından önceki siyasi durumu temsil eder; HRE vassallığı
 olmayan mevcut modelde teknik bir overlord koparımı yapmaz.
+Morgarten sonrasında `hre_supports_austria_against_swiss_1315` event'i HRE'nin
+Avusturya çağrısına cevap vermesini temsil eder; yalnızca İsviçre-Avusturya savaşı
+başladıktan sonra HRE ve Avusturya'yı aynı savaş koalisyonuna alır.
 
 1300 Balkan başlangıcında Macar tacının doğrudan yönetimi dört çekirdek bölgeyle
 (`hungary`, `alfold`, `slovakia`, `transylvania`) sınırlandırıldı. Sırbistan mevcut
@@ -220,6 +223,11 @@ prenslikleri ile Milano, Savoy ve Töton Şövalyeleri `OverlordID` almadan impa
 tarafsız kalabilirler. Beş çekirdek prensliğin ayrıca başlangıç ordusu, komutan şablonu
 ve kendi AI savunma hedefi vardır. Flandre ve Kranj ise gerçek vassal olarak otomatik realm
 katılımını korur.
+
+Bağımsız imparatorluk üyeleriyle HRE arasındaki başlangıç ekonomik bağları
+`relations.json` içinde `trade` ilişkileriyle tanımlıdır; bu, onları HRE vassalı veya
+kalıcı askerî müttefiki yapmaz. Vassal iç ticareti ise `NormalizeVassalage` tarafından
+otomatik kurulur.
 
 → İlişki sistemi: [[systems/diplomacy]]
 
