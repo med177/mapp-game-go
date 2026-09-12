@@ -298,7 +298,7 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		switch action {
 		case ActionProposeTrade, ActionImproveRelations, ActionSendGift:
 		default:
-			return factionLabel(gs, target) + " doğrudan diplomasi yürütemez; " + factionLabel(gs, targetOverlord) + " ile görüş."
+			return factionLabel(gs, targetOverlord) + " ile görüş."
 		}
 	case actorOverlord == target || targetOverlord == actor:
 		switch action {

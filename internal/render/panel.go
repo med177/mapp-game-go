@@ -1457,7 +1457,7 @@ func eventDetailSourceLabel(title string, bodyLines []string) string {
 	return ""
 }
 
-func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries []EventCodexEntry, focus int, scroll int) {
+func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries []EventCodexEntry, focus int, scroll int, detailScroll int) {
 	modal := buildEventCodexModal()
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
@@ -1545,20 +1545,37 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 		Y: layout.detailRect.Y + 68,
 		W: layout.detailRect.W,
 		H: layout.detailRect.H - 68,
-	}, selected.Detail)
+	}, selected.Detail, detailScroll)
 }
 
-func drawEventCodexDetail(screen *ebiten.Image, rect gameui.Rect, detail string) {
+func drawEventCodexDetail(screen *ebiten.Image, rect gameui.Rect, detail string, scroll int) {
 	const (
 		inset    = 16.0
 		lineStep = 20.0
 	)
-	maxLines := int((rect.H - inset*2) / lineStep)
-	if maxLines <= 0 || detail == "" {
+	visibleLines := int((rect.H - inset*2) / lineStep)
+	if visibleLines <= 0 || detail == "" {
 		return
 	}
 	width := rect.W - inset*2
-	lines := make([]gameui.RichTextLine, 0, maxLines)
+	lines := eventCodexDetailLines(detail, width)
+	maxScroll := max(0, len(lines)-visibleLines)
+	scroll = max(0, min(scroll, maxScroll))
+	end := min(len(lines), scroll+visibleLines)
+	visible := lines[scroll:end]
+	gameui.NewRichTextBlock(gameui.Rect{
+		X: rect.X + inset,
+		Y: rect.Y + inset,
+		W: width,
+		H: float64(len(visible)) * lineStep,
+	}, visible, lineStep).Draw(screen, renderText)
+	if maxScroll > 0 {
+		drawEventCodexDetailScrollbar(screen, rect, visibleLines, len(lines), scroll)
+	}
+}
+
+func eventCodexDetailLines(detail string, width float64) []gameui.RichTextLine {
+	lines := make([]gameui.RichTextLine, 0, 16)
 	paragraphs := strings.Split(detail, "\n")
 	for paragraphIndex, paragraph := range paragraphs {
 		wrapped := wrapTextLines(paragraph, FaceMed, width)
@@ -1566,9 +1583,6 @@ func drawEventCodexDetail(screen *ebiten.Image, rect gameui.Rect, detail string)
 			continue
 		}
 		for _, line := range wrapped {
-			if len(lines) >= maxLines {
-				break
-			}
 			lines = append(lines, gameui.RichTextLine{
 				Text:    line,
 				Color:   eventCodexLineColor(paragraph),
@@ -1576,19 +1590,43 @@ func drawEventCodexDetail(screen *ebiten.Image, rect gameui.Rect, detail string)
 				Align:   gameui.TextAlignStart,
 			})
 		}
-		if paragraphIndex < len(paragraphs)-1 && len(lines) < maxLines {
+		if paragraphIndex < len(paragraphs)-1 {
 			lines = append(lines, gameui.RichTextLine{})
 		}
-		if len(lines) >= maxLines {
-			break
-		}
 	}
-	gameui.NewRichTextBlock(gameui.Rect{
-		X: rect.X + inset,
-		Y: rect.Y + inset,
-		W: width,
-		H: float64(len(lines)) * lineStep,
-	}, lines, lineStep).Draw(screen, renderText)
+	return lines
+}
+
+func eventCodexDetailContentRect() gameui.Rect {
+	layout := buildEventCodexLayout()
+	return gameui.Rect{X: layout.detailRect.X, Y: layout.detailRect.Y + 68, W: layout.detailRect.W, H: layout.detailRect.H - 68}
+}
+
+func eventCodexDetailMaxScroll(detail string) int {
+	const lineStep = 20.0
+	rect := eventCodexDetailContentRect()
+	visible := int((rect.H - 32) / lineStep)
+	if visible <= 0 {
+		return 0
+	}
+	return max(0, len(eventCodexDetailLines(detail, rect.W-32))-visible)
+}
+
+func drawEventCodexDetailScrollbar(screen *ebiten.Image, rect gameui.Rect, visibleLines, lineCount, scroll int) {
+	trackX := float32(rect.X + rect.W - 9)
+	trackY := float32(rect.Y + 2)
+	trackH := float32(rect.H - 4)
+	vector.FillRect(screen, trackX, trackY, 3, trackH, color.RGBA{56, 46, 28, 210}, false)
+	thumbH := trackH * float32(visibleLines) / float32(lineCount)
+	if thumbH < 28 {
+		thumbH = 28
+	}
+	maxScroll := lineCount - visibleLines
+	thumbY := trackY
+	if maxScroll > 0 {
+		thumbY += (trackH - thumbH) * float32(scroll) / float32(maxScroll)
+	}
+	vector.FillRect(screen, trackX-1, thumbY, 5, thumbH, color.RGBA{180, 145, 70, 220}, false)
 }
 
 func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState, scroll float64) {
@@ -1631,13 +1669,14 @@ func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState, scroll fl
 func eventCodexEntryRect(index int) (x, y, w, h float32) {
 	layout := buildEventCodexLayout()
 	const (
-		cardH = 60.0
-		gap   = 8.0
-		pad   = 10.0
+		cardH          = 60.0
+		gap            = 8.0
+		pad            = 10.0
+		scrollbarSpace = 16.0
 	)
 	x = float32(layout.listRect.X + pad)
 	y = float32(layout.listRect.Y + pad + float64(index)*(cardH+gap))
-	w = float32(layout.listRect.W - pad*2)
+	w = float32(layout.listRect.W - pad*2 - scrollbarSpace)
 	h = float32(cardH)
 	return x, y, w, h
 }
@@ -1687,6 +1726,12 @@ func eventCodexListHit(mx, my float64) bool {
 	layout := buildEventCodexLayout()
 	return mx >= layout.listRect.X && mx <= layout.listRect.X+layout.listRect.W &&
 		my >= layout.listRect.Y && my <= layout.listRect.Y+layout.listRect.H
+}
+
+func eventCodexDetailHit(mx, my float64) bool {
+	layout := buildEventCodexLayout()
+	return mx >= layout.detailRect.X && mx <= layout.detailRect.X+layout.detailRect.W &&
+		my >= layout.detailRect.Y+68 && my <= layout.detailRect.Y+layout.detailRect.H
 }
 
 func drawEventCodexScrollbar(screen *ebiten.Image, count int, visibleCount int, scroll int) {

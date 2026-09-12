@@ -1794,6 +1794,14 @@ func (r *Renderer) handleEventCodexInput() InputAction {
 		r.cycleEventCodexFilter(1)
 		return InputAction{}
 	}
+	if r.keyJustPressed(ebiten.KeyPageUp) {
+		r.scrollEventCodexDetail(-3)
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyPageDown) {
+		r.scrollEventCodexDetail(3)
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyUp) {
 		r.cycleEventCodexFocus(-1)
 		return InputAction{}
@@ -1805,6 +1813,14 @@ func (r *Renderer) handleEventCodexInput() InputAction {
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float64(mxi), float64(myi)
 	_, wheelY := ebiten.Wheel()
+	if wheelY != 0 && eventCodexDetailHit(mx, my) {
+		if wheelY > 0 {
+			r.scrollEventCodexDetail(-1)
+		} else if wheelY < 0 {
+			r.scrollEventCodexDetail(1)
+		}
+		return InputAction{}
+	}
 	if wheelY != 0 && eventCodexListHit(mx, my) {
 		if wheelY > 0 {
 			r.scrollEventCodex(-1)
@@ -1824,11 +1840,13 @@ func (r *Renderer) handleEventCodexInput() InputAction {
 				r.eventCodexFilter = EventCodexFilter(i)
 				r.eventCodexFocus = 0
 				r.eventCodexScroll = 0
+				r.eventCodexDetailScroll = 0
 				return InputAction{}
 			}
 		}
 		if idx := eventCodexEntryHit(mx, my, len(r.currentEventCodexEntries()), r.eventCodexScroll); idx >= 0 {
 			r.eventCodexFocus = idx
+			r.eventCodexDetailScroll = 0
 			r.ensureEventCodexFocusVisible()
 			return InputAction{}
 		}

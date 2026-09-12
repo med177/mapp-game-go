@@ -186,19 +186,20 @@ type Renderer struct {
 	pendingDeleteSlot string // onay bekleyen slot adı ("" = onay yok)
 
 	// Olay logu (sağ üst panel)
-	eventLog            []string
-	eventLogDetails     []string
-	eventLogCollapsed   bool
-	eventCodexEntries   [5][]EventCodexEntry
-	showEventCodex      bool
-	eventCodexFilter    EventCodexFilter
-	eventCodexFocus     int
-	eventCodexScroll    int
-	eventDetail         string
-	eventDetailTitle    string
-	showVictoryDetail   bool
-	victoryDetailScroll float64
-	eventLogScroll      int
+	eventLog               []string
+	eventLogDetails        []string
+	eventLogCollapsed      bool
+	eventCodexEntries      [5][]EventCodexEntry
+	showEventCodex         bool
+	eventCodexFilter       EventCodexFilter
+	eventCodexFocus        int
+	eventCodexScroll       int
+	eventCodexDetailScroll int
+	eventDetail            string
+	eventDetailTitle       string
+	showVictoryDetail      bool
+	victoryDetailScroll    float64
+	eventLogScroll         int
 
 	// Savaş / bildirim mesajı (kısa süreli)
 	combatLog       string
@@ -1065,6 +1066,7 @@ func (r *Renderer) EventTitleAt(idx int) string {
 
 func (r *Renderer) SetEventCodexEntries(entries [5][]EventCodexEntry) {
 	r.eventCodexEntries = entries
+	r.eventCodexDetailScroll = 0
 	if !r.HasEventCodex() {
 		r.showEventCodex = false
 		r.eventCodexFilter = EventCodexAll
@@ -1090,6 +1092,7 @@ func (r *Renderer) OpenEventCodex() {
 	r.eventCodexFilter = EventCodexAll
 	r.eventCodexFocus = 0
 	r.eventCodexScroll = 0
+	r.eventCodexDetailScroll = 0
 }
 
 func (r *Renderer) CloseEventCodex() {
@@ -1221,6 +1224,7 @@ func (r *Renderer) cycleEventCodexFilter(delta int) {
 	r.eventCodexFilter = EventCodexFilter(next)
 	r.eventCodexFocus = 0
 	r.eventCodexScroll = 0
+	r.eventCodexDetailScroll = 0
 }
 
 func (r *Renderer) cycleEventCodexFocus(delta int) {
@@ -1228,9 +1232,11 @@ func (r *Renderer) cycleEventCodexFocus(delta int) {
 	if len(entries) == 0 {
 		r.eventCodexFocus = 0
 		r.eventCodexScroll = 0
+		r.eventCodexDetailScroll = 0
 		return
 	}
 	r.eventCodexFocus = (r.eventCodexFocus + delta + len(entries)) % len(entries)
+	r.eventCodexDetailScroll = 0
 	r.ensureEventCodexFocusVisible()
 }
 
@@ -1264,6 +1270,26 @@ func (r *Renderer) ensureEventCodexFocusVisible() {
 func (r *Renderer) scrollEventCodex(delta int) {
 	r.eventCodexScroll += delta
 	r.clampEventCodexScroll()
+}
+
+func (r *Renderer) clampEventCodexDetailScroll() {
+	entry := r.currentEventCodexEntry()
+	if entry == nil {
+		r.eventCodexDetailScroll = 0
+		return
+	}
+	maxScroll := eventCodexDetailMaxScroll(entry.Detail)
+	if r.eventCodexDetailScroll < 0 {
+		r.eventCodexDetailScroll = 0
+	}
+	if r.eventCodexDetailScroll > maxScroll {
+		r.eventCodexDetailScroll = maxScroll
+	}
+}
+
+func (r *Renderer) scrollEventCodexDetail(delta int) {
+	r.eventCodexDetailScroll += delta
+	r.clampEventCodexDetailScroll()
 }
 
 // ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~3 saniye gösterir.
@@ -1620,7 +1646,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	if r.showEventCodex {
-		drawEventCodexPopup(screen, r.eventCodexFilter, r.currentEventCodexEntries(), r.eventCodexFocus, r.eventCodexScroll)
+		drawEventCodexPopup(screen, r.eventCodexFilter, r.currentEventCodexEntries(), r.eventCodexFocus, r.eventCodexScroll, r.eventCodexDetailScroll)
 	}
 
 	if r.eventDetail != "" {
