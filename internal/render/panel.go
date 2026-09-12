@@ -1520,6 +1520,9 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 		if entry.MonthsUntil > 0 {
 			meta += fmt.Sprintf(" • %d ay", entry.MonthsUntil)
 		}
+		if entry.TurnsUntil > 0 {
+			meta += fmt.Sprintf(" • %d tur", entry.TurnsUntil)
+		}
 		DrawText(screen, trimTextToWidth(meta, FaceSmall, float64(cardW)-24), float64(cardX)+12, float64(cardY)+24, FaceSmall, ColorGray)
 		summary := trimTextToWidth(entry.Summary, FaceSmall, float64(cardW)-24)
 		DrawText(screen, summary, float64(cardX)+12, float64(cardY)+42, FaceSmall, color.RGBA{196, 184, 160, 230})
@@ -1532,9 +1535,60 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	if selected.MonthsUntil > 0 {
 		meta += fmt.Sprintf(" • %d ay", selected.MonthsUntil)
 	}
+	if selected.TurnsUntil > 0 {
+		meta += fmt.Sprintf(" • %d tur", selected.TurnsUntil)
+	}
 	DrawText(screen, meta, layout.detailRect.X+16, layout.detailRect.Y+40, FaceSmall, ColorGray)
 
-	drawUIWrappedLabel(screen, gameui.Rect{X: layout.detailRect.X + 16, Y: layout.detailRect.Y + 68, W: layout.detailRect.W - 32}, selected.Detail, eventCodexLineColor(selected.Detail), gameui.TextMedium, 19, int((layout.detailRect.H-76)/19))
+	drawEventCodexDetail(screen, gameui.Rect{
+		X: layout.detailRect.X,
+		Y: layout.detailRect.Y + 68,
+		W: layout.detailRect.W,
+		H: layout.detailRect.H - 68,
+	}, selected.Detail)
+}
+
+func drawEventCodexDetail(screen *ebiten.Image, rect gameui.Rect, detail string) {
+	const (
+		inset    = 16.0
+		lineStep = 20.0
+	)
+	maxLines := int((rect.H - inset*2) / lineStep)
+	if maxLines <= 0 || detail == "" {
+		return
+	}
+	width := rect.W - inset*2
+	lines := make([]gameui.RichTextLine, 0, maxLines)
+	paragraphs := strings.Split(detail, "\n")
+	for paragraphIndex, paragraph := range paragraphs {
+		wrapped := wrapTextLines(paragraph, FaceMed, width)
+		if len(wrapped) == 0 {
+			continue
+		}
+		for _, line := range wrapped {
+			if len(lines) >= maxLines {
+				break
+			}
+			lines = append(lines, gameui.RichTextLine{
+				Text:    line,
+				Color:   eventCodexLineColor(paragraph),
+				Variant: gameui.TextMedium,
+				Align:   gameui.TextAlignStart,
+			})
+		}
+		if paragraphIndex < len(paragraphs)-1 && len(lines) < maxLines {
+			lines = append(lines, gameui.RichTextLine{})
+		}
+		if len(lines) >= maxLines {
+			break
+		}
+	}
+	gameui.NewRichTextBlock(gameui.Rect{
+		X: rect.X + inset,
+		Y: rect.Y + inset,
+		W: width,
+		H: float64(len(lines)) * lineStep,
+	}, lines, lineStep).Draw(screen, renderText)
 }
 
 func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState, scroll float64) {
@@ -1665,6 +1719,12 @@ func eventCodexLineColor(line string) color.RGBA {
 		return color.RGBA{226, 196, 104, 240}
 	case strings.HasPrefix(line, "[!]"):
 		return color.RGBA{218, 120, 120, 240}
+	case strings.HasPrefix(line, "Kritik eksik: beklenen event:") || strings.HasPrefix(line, "Neden: beklenen event:") || strings.HasPrefix(line, "Kritik eksik: bloklayan event:") || strings.HasPrefix(line, "Neden: bloklayan event:"):
+		return color.RGBA{224, 156, 92, 245}
+	case strings.HasPrefix(line, "İlgili devletler:") || strings.HasPrefix(line, "İlgili bölgeler:"):
+		return color.RGBA{224, 194, 112, 245}
+	case strings.HasPrefix(line, "Etki:") || strings.HasPrefix(line, "Seçim etkisi"):
+		return color.RGBA{140, 208, 154, 245}
 	case strings.HasPrefix(line, "Kritik eksik:") || strings.HasPrefix(line, "Neden:") || strings.HasPrefix(line, "Kritik eksik"):
 		return color.RGBA{212, 154, 154, 235}
 	case strings.HasPrefix(line, "Kalan süre:"):

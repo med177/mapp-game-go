@@ -79,6 +79,8 @@ type eventCodexEntry struct {
 	monthsUntil  int
 }
 
+const eventCodexPlayerFilter = "player"
+
 const scenarioBaseDir = "assets/scenarios"
 
 const (
@@ -1602,12 +1604,13 @@ func (g *Game) refreshEventCodex() {
 	g.renderer.SetEventCodexEntries(g.buildEventCodexPages())
 }
 
-func (g *Game) buildEventCodexPages() [4][]render.EventCodexEntry {
-	return [4][]render.EventCodexEntry{
+func (g *Game) buildEventCodexPages() [5][]render.EventCodexEntry {
+	return [5][]render.EventCodexEntry{
 		g.buildEventCodexFor("all"),
 		g.buildEventCodexFor("ready"),
 		g.buildEventCodexFor("calendar"),
 		g.buildEventCodexFor("locked"),
+		g.buildEventCodexFor(eventCodexPlayerFilter),
 	}
 }
 
@@ -1627,13 +1630,15 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 		if evt.DescTR != "" {
 			detail = append(detail, evt.DescTR)
 		}
+		detail = append(detail, g.eventCodexContextLines(evt)...)
+		detail = append(detail, g.eventCodexEffectLines(evt)...)
 		if entry.monthsUntil > 0 {
-			detail = append(detail, fmt.Sprintf("Kalan süre: %d ay", entry.monthsUntil))
+			detail = append(detail, fmt.Sprintf("Kalan süre: %d ay (%d tur)", entry.monthsUntil, turnsUntilHistoricalEvent(g.gs, evt)))
 		}
 		if len(entry.reasons) > 0 {
-			detail = append(detail, "Kritik eksik: "+g.codexReasonLabel(entry.reasons[0]))
+			detail = append(detail, "Kritik eksik: "+g.codexReasonLabel(entry.reasons[0], evt))
 			for _, reason := range entry.reasons {
-				detail = append(detail, "Neden: "+g.codexReasonLabel(reason))
+				detail = append(detail, "Neden: "+g.codexReasonLabel(reason, evt))
 			}
 		} else if entry.timingReason != "" {
 			detail = append(detail, "Neden: "+entry.timingReason)
@@ -1647,6 +1652,7 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 			Summary:     evt.DescTR,
 			Detail:      strings.Join(detail, "\n"),
 			MonthsUntil: entry.monthsUntil,
+			TurnsUntil:  turnsUntilHistoricalEvent(g.gs, evt),
 		})
 		if len(views) >= 12 {
 			break
@@ -1661,7 +1667,7 @@ func (g *Game) collectEventCodexEntries(filter string) []eventCodexEntry {
 		if evt == nil || evt.HistoricalYear == 0 || g.gs.FiredEventIDs[evt.ID] {
 			continue
 		}
-		if !g.eventRelevantToPlayer(evt) {
+		if filter == eventCodexPlayerFilter && !g.eventRelevantToPlayer(evt) {
 			continue
 		}
 		if evt.HistoricalYear < g.gs.Year || (evt.HistoricalYear == g.gs.Year && evt.HistoricalMonth != 0 && evt.HistoricalMonth < g.gs.Month) {
@@ -1749,21 +1755,23 @@ func monthsUntilHistoricalEvent(gs *state.GameState, evt *events.Event) int {
 	return targetAbs - currentAbs
 }
 
+func turnsUntilHistoricalEvent(gs *state.GameState, evt *events.Event) int {
+	months := monthsUntilHistoricalEvent(gs, evt)
+	if months <= 0 {
+		return 0
+	}
+	monthsPerTurn := gs.CalendarMonthsPerTurn()
+	return (months + monthsPerTurn - 1) / monthsPerTurn
+}
+
 func (g *Game) eventRelevantToPlayer(evt *events.Event) bool {
 	if g == nil || g.gs == nil || evt == nil {
 		return false
 	}
-	switch evt.Target {
-	case "player_faction", "all_factions", "all_armies":
-		return true
-	case "specific_faction":
-		return evt.AffectedFaction == string(g.gs.PlayerFactionID)
-	default:
-		return false
-	}
+	return events.IsPlayerRelevant(g.gs, evt)
 }
 
-func (g *Game) codexReasonLabel(reason string) string {
+func (g *Game) codexReasonLabel(reason string, evt *events.Event) string {
 	if reason == "" {
 		return ""
 	}
@@ -1773,12 +1781,137 @@ func (g *Game) codexReasonLabel(reason string) string {
 	}
 	key, value := parts[0], parts[1]
 	switch key {
+	case "flag bekleniyor":
+		return "beklenen event: " + g.eventNameForFlag(value)
+	case "bloklayan flag":
+		return "bloklayan event: " + g.eventNameForFlag(value)
 	case "gerekli tech", "zaten acik tech":
 		value = strings.Join(techLabels(g.gs, []string{value}), ", ")
 	case "bolge gerekli":
 		value = strings.Join(regionLabels(g.gs, []world.RegionID{world.RegionID(value)}), ", ")
 	}
 	return key + ": " + value
+}
+
+func (g *Game) eventNameForFlag(flag string) string {
+	for _, evt := range g.evts {
+		if evt == nil {
+			continue
+		}
+		for _, candidate := range append(append([]string{}, evt.SetFlags...), evt.BaseEffect().SetFlags...) {
+			if candidate == flag {
+				if evt.NameTR != "" {
+					return evt.NameTR
+				}
+				return evt.ID
+			}
+		}
+	}
+	return flag
+}
+
+func (g *Game) eventCodexContextLines(evt *events.Event) []string {
+	if g == nil || evt == nil {
+		return nil
+	}
+	factionIDs := make([]string, 0, 8)
+	regionIDs := make([]world.RegionID, 0, 8)
+	seenFactions := make(map[string]bool)
+	seenRegions := make(map[world.RegionID]bool)
+	addFaction := func(id string) {
+		if id != "" && !seenFactions[id] {
+			seenFactions[id] = true
+			factionIDs = append(factionIDs, id)
+		}
+	}
+	addRegion := func(id string) {
+		rid := world.RegionID(id)
+		if id != "" && !seenRegions[rid] {
+			seenRegions[rid] = true
+			regionIDs = append(regionIDs, rid)
+		}
+	}
+	addFaction(evt.AffectedFaction)
+	for _, id := range evt.PlayerChoiceFactions {
+		addFaction(id)
+	}
+	for _, id := range evt.RequiresActiveFactions {
+		addFaction(id)
+	}
+	for _, req := range evt.RelationRequirements {
+		addFaction(req.FactionID)
+	}
+	for _, id := range evt.RequiresOwnedRegions {
+		addRegion(string(id))
+	}
+	addEffectContext := func(e events.Effect) {
+		addFaction(e.AffectedFaction)
+		for _, rel := range e.Relations {
+			addFaction(rel.FactionID)
+		}
+		for _, offer := range e.DiplomaticOffers {
+			addFaction(offer.FactionID)
+		}
+		if e.Coalition != nil {
+			for _, id := range e.Coalition.Members {
+				addFaction(id)
+			}
+			for _, id := range e.Coalition.Opponents {
+				addFaction(id)
+			}
+		}
+		for _, revival := range append(append([]events.SuccessorRevivalEffect{}, e.SuccessorRevivals...), func() []events.SuccessorRevivalEffect {
+			if e.SuccessorRevival == nil {
+				return nil
+			}
+			return []events.SuccessorRevivalEffect{*e.SuccessorRevival}
+		}()...) {
+			addFaction(revival.FactionID)
+			addFaction(revival.OverlordID)
+			addRegion(revival.RegionID)
+		}
+		for _, modifier := range e.TradeNetworkModifiers {
+			for _, id := range modifier.RegionIDs {
+				addRegion(id)
+			}
+		}
+	}
+	addEffectContext(evt.BaseEffect())
+	for _, choice := range evt.Choices {
+		addEffectContext(choice.Effect)
+	}
+	lines := make([]string, 0, 2)
+	if len(factionIDs) > 0 {
+		names := make([]string, 0, len(factionIDs))
+		for _, id := range factionIDs {
+			name := id
+			if f := g.gs.Factions[faction.FactionID(id)]; f != nil && f.NameTR != "" {
+				name = f.NameTR
+			}
+			names = append(names, name)
+		}
+		lines = append(lines, "İlgili devletler: "+strings.Join(names, ", "))
+	}
+	if len(regionIDs) > 0 {
+		lines = append(lines, "İlgili bölgeler: "+strings.Join(regionLabels(g.gs, regionIDs), ", "))
+	}
+	return lines
+}
+
+func (g *Game) eventCodexEffectLines(evt *events.Event) []string {
+	if g == nil || evt == nil {
+		return nil
+	}
+	lines := make([]string, 0, 1+len(evt.Choices))
+	if effect := historicalChoiceEffectSummary(g.gs, evt.BaseEffect()); effect != "" {
+		lines = append(lines, "Etki: "+effect)
+	}
+	for _, choice := range evt.Choices {
+		if effect := historicalChoiceEffectSummary(g.gs, choice.Effect); effect != "" {
+			lines = append(lines, "Seçim etkisi — "+choice.LabelTR+": "+effect)
+		}
+	}
+	return lines
 }
 
 func (g *Game) historicalEventDetail(evt *events.Event) string {
@@ -3459,7 +3592,7 @@ func (g *Game) resetToScenarioSelect(editMode bool) {
 	g.pendingWarFollowUp = nil
 	g.warDeclarationContinuationPending = false
 	g.renderer.ReloadGameState(gs)
-	g.renderer.SetEventCodexEntries([4][]render.EventCodexEntry{})
+	g.renderer.SetEventCodexEntries([5][]render.EventCodexEntry{})
 	g.renderer.SetCursor(0)
 }
 

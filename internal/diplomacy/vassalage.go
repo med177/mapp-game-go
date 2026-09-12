@@ -292,10 +292,17 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	case actorOverlord != "" && target != actorOverlord:
 		return factionLabel(gs, actor) + " yalnız " + factionLabel(gs, actorOverlord) + " adına diplomasi yürütebilir."
 	case targetOverlord != "" && actor != targetOverlord:
-		return factionLabel(gs, target) + " doğrudan diplomasi yürütemez; " + factionLabel(gs, targetOverlord) + " ile görüş."
+		// Ticaret, vassalın üst devleti adına yürütülen bir siyasî karar
+		// değildir. Dış devletler doğrudan vassalla ticaret anlaşması
+		// yapabilir; diğer diplomasi aksiyonları üst devlete yönlendirilir.
+		switch action {
+		case ActionProposeTrade, ActionImproveRelations, ActionSendGift:
+		default:
+			return factionLabel(gs, target) + " doğrudan diplomasi yürütemez; " + factionLabel(gs, targetOverlord) + " ile görüş."
+		}
 	case actorOverlord == target || targetOverlord == actor:
 		switch action {
-		case ActionImproveRelations, ActionSendGift:
+		case ActionImproveRelations, ActionSendGift, ActionProposeTrade:
 		case ActionReleaseVassal, ActionAnnexVassal:
 			if targetOverlord != actor {
 				return "Yalnız doğrudan bağlı devlet yönetilebilir."

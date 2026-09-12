@@ -275,11 +275,11 @@ func buildVictoryDetailCloseButton() gameui.Button {
 func buildEventCodexFilterButtons() []gameui.Button {
 	layout := buildEventCodexLayout()
 	const (
-		btnW = 132.0
+		btnW = 118.0
 		btnH = 30.0
-		gap  = 12.0
+		gap  = 8.0
 	)
-	labels := []string{"Tümü", "Hazır", "Takvim", "Kilitli"}
+	labels := []string{"Tümü", "Hazır", "Takvim", "Kilitli", "Oyuncu"}
 	buttons := make([]gameui.Button, 0, len(labels))
 	startX := layout.filtersRect.X
 	y := layout.filtersRect.Y

@@ -189,7 +189,7 @@ type Renderer struct {
 	eventLog            []string
 	eventLogDetails     []string
 	eventLogCollapsed   bool
-	eventCodexEntries   [4][]EventCodexEntry
+	eventCodexEntries   [5][]EventCodexEntry
 	showEventCodex      bool
 	eventCodexFilter    EventCodexFilter
 	eventCodexFocus     int
@@ -498,6 +498,7 @@ const (
 	EventCodexReady
 	EventCodexCalendar
 	EventCodexLocked
+	EventCodexPlayer
 )
 
 type EventCodexEntry struct {
@@ -507,6 +508,7 @@ type EventCodexEntry struct {
 	Summary     string
 	Detail      string
 	MonthsUntil int
+	TurnsUntil  int
 }
 
 const (
@@ -1061,7 +1063,7 @@ func (r *Renderer) EventTitleAt(idx int) string {
 	return ""
 }
 
-func (r *Renderer) SetEventCodexEntries(entries [4][]EventCodexEntry) {
+func (r *Renderer) SetEventCodexEntries(entries [5][]EventCodexEntry) {
 	r.eventCodexEntries = entries
 	if !r.HasEventCodex() {
 		r.showEventCodex = false

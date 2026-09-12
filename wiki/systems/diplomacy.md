@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-09-11
+last_updated: 2026-09-12
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -99,7 +99,9 @@ Vassallık relation duruşu olarak değil, doğrudan fraksiyon üstünde `Overlo
 
 - bir devlet yalnız tek bir overlord'a bağlı olur
 - realm içi dostluk `StanceAllied` ile korunurken hiyerarşi ayrı kalır
-- vassal için üçüncü taraf diplomasi yasağı relation katmanına zorla sığdırılmaz
+- vassal için genel üçüncü taraf ittifak/vassallık kısıtı korunurken, ticaret,
+  heyet ve hediye teklifleri vassala doğrudan gönderilebilir; overlord onayı
+  gerekmez
 
 1300 senaryosunda AI savaş sonrası aynı modeli kullanır. Anadolu beylikleri objective'i
 aktifken son toprağında yenilen zayıf ve dış müttefiksiz hedef,
@@ -154,10 +156,10 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 |---|---|---|
 | Savaş ilan et | `declareWar()` | Zaten savaşta değilse; önce koalisyon önizlemesi açılır, hedefin vassalları ile iki tarafın çağrılabilir müttefikleri ve katılım ihtimali gösterilir |
 | Barış teklif et | `proposePeace()` | Savaş halinde gerekli; kalıcı savaş ledger'ı, objective, toprak/kayıp dengesi, süre, güç, ekonomi, çoklu savaş ve başkent tehdidi tüm senaryolarda değerlendirilir. Teklif ekranı ve backend aynı `AssessPeaceProposal()` sonucunu kullanır |
-| Heyet gönder | `improveRelations()` | Aktif senaryonun `diplomacy.relation_improvement_gold_cost` değeri; savaş sırasında da gönderilebilir ve `relation_improvement_bonus` kadar artırır |
-| Hediye gönder | `sendGift()` | Savaşta değil + aktif senaryonun `diplomacy.gift_gold_cost` değeri; `gift_relation_bonus` kadar artırır ve `gift_receiver_gold` kadar altın aktarır |
+| Heyet gönder | `improveRelations()` | Aktif senaryonun `diplomacy.relation_improvement_gold_cost` değeri; savaş sırasında da gönderilebilir, vassala doğrudan uygulanabilir ve `relation_improvement_bonus` kadar artırır |
+| Hediye gönder | `sendGift()` | Savaşta değil + aktif senaryonun `diplomacy.gift_gold_cost` değeri; vassala doğrudan gönderilebilir, `gift_relation_bonus` kadar artırır ve `gift_receiver_gold` kadar altın aktarır |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + tüm senaryolarda `Score >= 40`; iki tarafın doğrudan müttefikleriyle mevcut savaş çakışması varsa oyuncu ve AI için teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
-| Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
+| Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Vassala doğrudan teklif edilebilir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
 | Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse ve hedef başka devlete bağlı değilse; savaş duruşu teklifi göndermeyi engellemez, barışta mevcut `Score >= 55` ve askerî ön koşullar korunur |
