@@ -103,6 +103,12 @@ Vassallık relation duruşu olarak değil, doğrudan fraksiyon üstünde `Overlo
   heyet ve hediye teklifleri vassala doğrudan gönderilebilir; overlord onayı
   gerekmez
 
+Edit Mode'da `Devleti Düzenle` formundaki `Vassal üst devleti` alanı ile bu bağ
+senaryo başlangıç verisine doğrudan atanabilir veya kaldırılabilir. Form, kendi
+devletini, elenmiş devletleri ve zaten vassal olan devletleri overlord olarak
+seçtirmez; tribute oranı ve vassallık turu da `Faction` state'iyle birlikte
+kaydedilir (`internal/render/map_editor.go`).
+
 1300 senaryosunda AI savaş sonrası aynı modeli kullanır. Anadolu beylikleri objective'i
 aktifken son toprağında yenilen zayıf ve dış müttefiksiz hedef,
 `ForceVassalizeAfterWar()` üzerinden vassal bırakılabilir. Direnç eşiğini aşan veya

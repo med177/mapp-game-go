@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
@@ -399,6 +400,11 @@ func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
 	drawEditFactionFormButton(screen, editFactionFormRelationScoreMinus, "Skor -10")
 	drawEditFactionFormButton(screen, editFactionFormRelationScorePlus, "Skor +10")
 	DrawText(screen, "Skor: "+r.editFactionForm.relationScore, float64(x)+18, float64(y)+304, FaceSmall, ColorGray)
+	overlordLabel := "Vassal üst devleti: yok"
+	if r.editFactionForm.overlordID != "" {
+		overlordLabel = "Vassal üst devleti: " + string(r.editFactionForm.overlordID)
+	}
+	drawEditFactionFormButton(screen, editFactionFormOverlordTarget, overlordLabel)
 
 	col := r.editFactionForm.color
 	preview := editFactionFormColorPreviewRect()
@@ -502,6 +508,7 @@ const (
 	editFactionFormRelationStance
 	editFactionFormRelationScoreMinus
 	editFactionFormRelationScorePlus
+	editFactionFormOverlordTarget
 	editFactionFormRedMinus
 	editFactionFormRedPlus
 	editFactionFormGreenMinus
@@ -526,6 +533,8 @@ func editFactionFormButtonRect(kind editFactionFormButton) uiRect {
 		return uiRect{float64(x) + 166, float64(y) + 272, 64, 28}
 	case editFactionFormRelationScorePlus:
 		return uiRect{float64(x) + 238, float64(y) + 272, 64, 28}
+	case editFactionFormOverlordTarget:
+		return uiRect{float64(x) + 338, float64(y) + 312, 284, 28}
 	case editFactionFormRedMinus:
 		return uiRect{right, float64(y) + 382, 42, 26}
 	case editFactionFormRedPlus:
@@ -3629,6 +3638,7 @@ func (r *Renderer) openFactionEditForm() {
 		spice:      itoa(f.Spice),
 		cloth:      itoa(f.Cloth),
 		ai:         itoa(f.AIAggressiveness),
+		overlordID: f.OverlordID,
 	}
 	r.setFactionFormRelationTarget(firstRelationTarget(r.gs, f.ID))
 }
@@ -3709,6 +3719,11 @@ func (r *Renderer) saveFactionForm() bool {
 				a.OwnerID = string(fid)
 			}
 		}
+		for _, other := range r.gs.Factions {
+			if other != nil && other.OverlordID == form.originalID {
+				other.OverlordID = fid
+			}
+		}
 		if r.gs.PlayerFactionID == form.originalID {
 			r.gs.PlayerFactionID = fid
 		}
@@ -3731,6 +3746,29 @@ func (r *Renderer) saveFactionForm() bool {
 	if existingFaction != nil {
 		next.IsEliminated = existingFaction.IsEliminated
 		next.Research = existingFaction.Research
+	}
+	if !r.validEditFactionOverlord(fid, form.overlordID) {
+		form.errorText = "Geçersiz vassal üst devleti seçimi."
+		return false
+	}
+	next.OverlordID = form.overlordID
+	if next.OverlordID != "" {
+		next.TributeRate = diplomacy.VassalTributeRatePercent()
+		next.TributeRateConfigured = true
+		next.VassalizedTurn = r.gs.Turn
+		if existingFaction != nil && existingFaction.OverlordID == next.OverlordID && existingFaction.VassalizedTurn > 0 {
+			next.TributeRate = existingFaction.TributeRate
+			next.TributeRateConfigured = existingFaction.TributeRateConfigured
+			next.VassalizedTurn = existingFaction.VassalizedTurn
+		}
+		if !next.TributeRateConfigured {
+			next.TributeRate = diplomacy.VassalTributeRatePercent()
+			next.TributeRateConfigured = true
+		}
+	} else {
+		next.TributeRate = 0
+		next.TributeRateConfigured = false
+		next.VassalizedTurn = 0
 	}
 	r.gs.Factions[fid] = next
 	r.ensureRelationsForFaction(fid)
@@ -3803,6 +3841,8 @@ func (r *Renderer) handleFactionFormClick(fx, fy float64) bool {
 		r.adjustFactionFormRelationScore(-10)
 	case buildEditFactionFormButton(editFactionFormRelationScorePlus, "").HitTest(fx, fy):
 		r.adjustFactionFormRelationScore(10)
+	case buildEditFactionFormButton(editFactionFormOverlordTarget, "").HitTest(fx, fy):
+		r.cycleFactionFormOverlordTarget()
 	case buildEditFactionFormButton(editFactionFormRedMinus, "").HitTest(fx, fy):
 		r.adjustFactionFormColor(0, -10)
 	case buildEditFactionFormButton(editFactionFormRedPlus, "").HitTest(fx, fy):
@@ -3817,6 +3857,32 @@ func (r *Renderer) handleFactionFormClick(fx, fy float64) bool {
 		r.adjustFactionFormColor(2, 10)
 	}
 	return false
+}
+
+func (r *Renderer) cycleFactionFormOverlordTarget() {
+	self := faction.FactionID(strings.TrimSpace(r.editFactionForm.id))
+	ids := sortedFactionIDs(r.gs.Factions)
+	options := []faction.FactionID{""}
+	for _, fid := range ids {
+		if fid != self && r.validEditFactionOverlord(self, fid) {
+			options = append(options, fid)
+		}
+	}
+	for i, fid := range options {
+		if fid == r.editFactionForm.overlordID {
+			r.editFactionForm.overlordID = options[(i+1)%len(options)]
+			return
+		}
+	}
+	r.editFactionForm.overlordID = ""
+}
+
+func (r *Renderer) validEditFactionOverlord(self, overlord faction.FactionID) bool {
+	if overlord == "" {
+		return true
+	}
+	overlordFaction := r.gs.Factions[overlord]
+	return self != overlord && overlordFaction != nil && !overlordFaction.IsEliminated && overlordFaction.OverlordID == ""
 }
 
 func (r *Renderer) editFactionFormBackspace() {

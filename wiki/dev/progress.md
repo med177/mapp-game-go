@@ -1,11 +1,16 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-11
+last_updated: 2026-09-12
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-12: Edit Mode devlet düzenleme formuna doğrudan vassal üst devleti
+  seçimi eklendi. `OverlordID`, vassal tribute varsayılanı ve vassallık turu
+  `factions.json` başlangıç verisiyle birlikte korunuyor; geçersiz veya döngüsel
+  overlord seçimleri engelleniyor. Doğrulama: `go test ./... -count=1`.
 
 - 2026-09-12: İsviçre-Konfederasyonu için 1310 başlangıcından 1501'e uzanan event zinciri
   eklendi. Schwyz, `successor_revival` ile 1310'da üç milisle ortaya çıkıyor; Morgarten,

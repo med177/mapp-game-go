@@ -444,6 +444,7 @@ type editFactionFormState struct {
 	spice          string
 	cloth          string
 	ai             string
+	overlordID     faction.FactionID
 	relationTarget faction.FactionID
 	relationScore  string
 	relationStance faction.DiplomaticStance
