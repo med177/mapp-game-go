@@ -40,6 +40,12 @@ func (b RichTextBlock) Draw(screen *ebiten.Image, text TextRenderer) {
 		return
 	}
 	for i, line := range b.Lines {
+		// Boş satırlar yalnızca dikey boşluk oluşturmak için kullanılabilir.
+		// Bunları render etmeye çalışmak nil renk ile DrawText çağrısına ve
+		// Ebiten ColorScale panic'ine yol açar.
+		if line.Text == "" {
+			continue
+		}
 		x := alignedTextX(text, b.Rect, line.Text, line.Variant, line.Align)
 		text.Draw(screen, line.Text, x, b.Rect.Y+float64(i)*b.LineStep, line.Color, line.Variant)
 	}
