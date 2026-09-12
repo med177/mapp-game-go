@@ -1929,6 +1929,18 @@
         "region_id": "austria",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "switzerland",
+        "value": 90
+      },
+      {
+        "region_id": "sch_zurich",
+        "value": 60
+      },
+      {
+        "region_id": "sch_bern",
+        "value": 60
       }
     ]
   },
@@ -4395,6 +4407,57 @@
       {
         "region_id": "kiev",
         "value": 80
+      }
+    ]
+  },
+  {
+    "id": "swiss_confederacy",
+    "name": "Swiss Confederacy",
+    "name_tr": "İsviçre Konfederasyonu",
+    "religion": "catholic",
+    "color": [
+      255,
+      0,
+      0
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "capital_settlement_id": "switzerland_settlement_5",
+    "historical_start_year": 1291,
+    "gold": 5000,
+    "grain": 500,
+    "iron": 50,
+    "timber": 80,
+    "stone": 60,
+    "spice": 60,
+    "cloth": 40,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 35,
+    "territorial_claims": [
+      {
+        "region_id": "switzerland",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "sch_bern",
+        "value": 62
+      },
+      {
+        "region_id": "sch_zurich",
+        "value": 60
+      },
+      {
+        "region_id": "sch_fribourg",
+        "value": 52
+      },
+      {
+        "region_id": "sch_basel",
+        "value": 48
       }
     ]
   }

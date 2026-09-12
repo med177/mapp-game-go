@@ -3604,7 +3604,6 @@ func (r *Renderer) openFactionCreateForm() {
 		form.religion = f.Religion
 	}
 	r.editFactionForm = form
-	r.setFactionFormRelationTarget(firstRelationTarget(r.gs, fid))
 }
 
 func (r *Renderer) openFactionEditForm() {
@@ -4061,6 +4060,12 @@ func (r *Renderer) ensureRelationsForFaction(fid faction.FactionID) {
 func (r *Renderer) setRelationValue(a, b faction.FactionID, score int, stance faction.DiplomaticStance) {
 	key := faction.RelationKey(a, b)
 	r.gs.Relations[key] = &faction.Relation{FactionA: a, FactionB: b, Score: score, Stance: stance}
+	for _, existing := range r.gs.RelationOrder {
+		if existing == key {
+			return
+		}
+	}
+	r.gs.RelationOrder = append(r.gs.RelationOrder, key)
 }
 
 func (r *Renderer) renameFactionRelations(oldID, newID faction.FactionID) {

@@ -3293,6 +3293,7 @@ func writeScenarioShapes(gs *state.GameState) error {
 		Rings [][][2]float32 `json:"rings"`
 	}
 	type shapeFileJSON struct {
+		ID     string           `json:"id"`
 		Shapes []shapeEntryJSON `json:"shapes"`
 	}
 
@@ -3331,7 +3332,7 @@ func writeScenarioShapes(gs *state.GameState) error {
 		entries = append(entries, entry)
 	}
 
-	data, err := json.MarshalIndent(shapeFileJSON{Shapes: entries}, "", "  ")
+	data, err := json.MarshalIndent(shapeFileJSON{ID: gs.ShapeData.ID, Shapes: entries}, "", "  ")
 	if err != nil {
 		return err
 	}
@@ -3392,37 +3393,12 @@ func rasterBoundaryForShapeSave(value float64) int {
 func writeScenarioRelations(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "relations.json")
 	keys := make([]string, 0, len(gs.Relations))
-	seen := make(map[string]struct{}, len(gs.RelationOrder))
 	for _, key := range gs.RelationOrder {
 		if gs.Relations[key] == nil {
 			continue
 		}
 		keys = append(keys, key)
-		seen[key] = struct{}{}
 	}
-	newKeys := make([]string, 0)
-	// relations.json yalnız varsayılan ilişkilerden farklı açık kayıtları
-	// taşır. BuildInitialRelations tarafından üretilen eksik kayıtları tekrar
-	// dosyaya yazarak senaryoyu gereksiz yere büyütme.
-	for key := range gs.Relations {
-		if _, ok := seen[key]; ok {
-			continue
-		}
-		if gs.Factions != nil {
-			parts := strings.SplitN(key, "|", 2)
-			if len(parts) == 2 {
-				a := gs.Factions[faction.FactionID(parts[0])]
-				b := gs.Factions[faction.FactionID(parts[1])]
-				rel := gs.Relations[key]
-				if rel != nil && rel.Score == faction.DefaultRelationScore(a, b) && rel.Stance == faction.StancePeace {
-					continue
-				}
-			}
-		}
-		newKeys = append(newKeys, key)
-	}
-	sort.Strings(newKeys)
-	keys = append(keys, newKeys...)
 
 	relations := make([]*faction.Relation, 0, len(keys))
 	for _, key := range keys {

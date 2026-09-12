@@ -937,21 +937,69 @@
     "region_id": "switzerland",
     "settlements": [
       {
-        "id": "switzerland_settlement_2",
-        "name_tr": "Bern",
-        "x": 622,
-        "y": 345,
+        "id": "switzerland_schwyz",
+        "name_tr": "Schwyz",
+        "x": 656,
+        "y": 348,
         "type": "city",
-        "population": 70
-      },
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "sch_fribourg",
+    "settlements": [
       {
-        "id": "switzerland_settlement_3",
+        "id": "switzerland_fribourg",
+        "name_tr": "Fribourg",
+        "x": 612,
+        "y": 348,
+        "type": "city",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "sch_bern",
+    "settlements": [
+      {
+        "id": "switzerland_bern",
+        "name_tr": "Bern",
+        "x": 626,
+        "y": 346,
+        "type": "city",
+        "is_center": true,
+        "population": 70
+      }
+    ]
+  },
+  {
+    "region_id": "sch_zurich",
+    "settlements": [
+      {
+        "id": "switzerland_zurich",
         "name_tr": "Zurich",
         "x": 653,
         "y": 334,
         "type": "city",
         "is_center": true,
         "population": 70
+      }
+    ]
+  },
+  {
+    "region_id": "sch_basel",
+    "settlements": [
+      {
+        "id": "switzerland_basel",
+        "name_tr": "Basel",
+        "x": 619,
+        "y": 337,
+        "type": "city",
+        "is_center": true,
+        "population": 0
       }
     ]
   },

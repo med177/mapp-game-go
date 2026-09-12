@@ -4468,5 +4468,47 @@
     "faction_b": "scotland_kingdom",
     "score": 80,
     "stance": "allied"
+  },
+  {
+    "faction_a": "austria_duchy",
+    "faction_b": "swiss_confederacy",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "burgundy",
+    "faction_b": "swiss_confederacy",
+    "score": 5,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "france",
+    "faction_b": "swiss_confederacy",
+    "score": 10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "genoa",
+    "faction_b": "swiss_confederacy",
+    "score": 5,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "hre",
+    "faction_b": "swiss_confederacy",
+    "score": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "milan_duchy",
+    "faction_b": "swiss_confederacy",
+    "score": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "savoy_county",
+    "faction_b": "swiss_confederacy",
+    "score": 15,
+    "stance": "peace"
   }
 ]

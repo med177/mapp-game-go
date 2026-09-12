@@ -42,6 +42,97 @@
   },
   "factions": [
     {
+      "faction_id": "swiss_confederacy",
+      "profile": "alpine_confederacy",
+      "expansion_targets": [
+        "sch_bern",
+        "sch_zurich",
+        "sch_fribourg",
+        "sch_basel"
+      ],
+      "objectives": [
+        {
+          "id": "hold_schwyz_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "switzerland",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88,
+          "readiness_regions": [
+            "switzerland"
+          ]
+        },
+        {
+          "id": "join_bern_1353",
+          "kind": "expand",
+          "min_year": 1353,
+          "territorial_claims": [
+            {
+              "region_id": "sch_bern",
+              "value": 62
+            }
+          ],
+          "priority": 62,
+          "commitment": 35,
+          "readiness_regions": [
+            "switzerland"
+          ]
+        },
+        {
+          "id": "join_zurich_1351",
+          "kind": "expand",
+          "min_year": 1351,
+          "territorial_claims": [
+            {
+              "region_id": "sch_zurich",
+              "value": 60
+            }
+          ],
+          "priority": 60,
+          "commitment": 35,
+          "readiness_regions": [
+            "switzerland"
+          ]
+        },
+        {
+          "id": "join_fribourg_1481",
+          "kind": "expand",
+          "min_year": 1481,
+          "territorial_claims": [
+            {
+              "region_id": "sch_fribourg",
+              "value": 52
+            }
+          ],
+          "priority": 52,
+          "commitment": 30,
+          "readiness_regions": [
+            "switzerland"
+          ]
+        },
+        {
+          "id": "join_basel_1501",
+          "kind": "expand",
+          "min_year": 1501,
+          "territorial_claims": [
+            {
+              "region_id": "sch_basel",
+              "value": 48
+            }
+          ],
+          "priority": 48,
+          "commitment": 28,
+          "readiness_regions": [
+            "switzerland"
+          ]
+        }
+      ]
+    },
+    {
       "faction_id": "achaea_principality",
       "profile": "morean_latin_survival",
       "objectives": [
@@ -244,6 +335,11 @@
     {
       "faction_id": "austria_duchy",
       "profile": "austrian_imperial_frontier",
+      "expansion_targets": [
+        "switzerland",
+        "sch_zurich",
+        "sch_bern"
+      ],
       "objectives": [
         {
           "id": "hold_austrian_core",
@@ -256,6 +352,30 @@
           ],
           "priority": 100,
           "commitment": 78,
+          "readiness_regions": [
+            "austria"
+          ]
+        },
+        {
+          "id": "secure_habsburg_alpine_claims",
+          "kind": "expand",
+          "min_year": 1315,
+          "territorial_claims": [
+            {
+              "region_id": "switzerland",
+              "value": 90
+            },
+            {
+              "region_id": "sch_zurich",
+              "value": 60
+            },
+            {
+              "region_id": "sch_bern",
+              "value": 60
+            }
+          ],
+          "priority": 72,
+          "commitment": 52,
           "readiness_regions": [
             "austria"
           ]
@@ -1570,10 +1690,6 @@
               "value": 100
             },
             {
-              "region_id": "switzerland",
-              "value": 100
-            },
-            {
               "region_id": "thuringia",
               "value": 100
             },
@@ -1586,7 +1702,7 @@
           "commitment": 78,
           "readiness_regions": [
             "thuringia",
-            "switzerland"
+            "lorraine"
           ]
         },
         {

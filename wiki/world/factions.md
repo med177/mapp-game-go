@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-09-04
+last_updated: 2026-09-12
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -30,6 +30,24 @@ aynı senaryo veri dosyalarında tutulur.
 Hicaz doğrudan Memlük toprağı yerine `mecca_sharifate` adlı AI-only vassal ile modellenir;
 Mekke Şerifliği Memlük üst-egemenliğini kabul eder, fakat yerel yönetim ve kutsal şehirlerin
 korunması kendisinde kalır.
+
+1300 açılışında İsviçre, modern beş kantonlu devlet olarak değil, 1291 tarihli erken
+konfederasyon çekirdeği olarak modellenir. Senaryo 1310 Mart'ta başladığı için
+`swiss_confederacy_emerges_1310` olayı, 1291 yemininden kalan siyasi çekirdeği Schwyz'de
+oyuna çıkarır ve ilk milis gücünü kurar. Bern, Zürih, Fribourg ve Basel HRE içinde kalır;
+bu bölgeler için AI hedefleri tarihsel katılım yıllarına göre (1351, 1353, 1481, 1501)
+açılır. Bölgesel ekonomi Alp kerestesi, demir/taş, tarım ve Basel-Fribourg tekstil
+uzmanlaşmasını temsil eder. Morgarten, Sempach, Näfels ve Schwaben savaşı event'leri
+doğrudan Avusturya-Habsburg (`austria_duchy`) ile çatışmayı başlatır; HRE bu savaşın
+doğrudan tarafı değil, Avusturya'nın bağlı olduğu imparatorluk çatısıdır. Avusturya'nın
+İsviçre, Zürih ve Bern üzerinde claim ve AI hedefleri bulunur. Kanton katılım event'leri
+ise ilgili bölgelerin gerçekten İsviçre tarafından alınmasını şart koşar; kesin zafer
+Avusturya-Habsburg faction'ının yenilmesiyle tamamlanır.
+1499 tarihli `swiss_peace_of_basel_1499` event'i ise Schwaben Savaşı sonrasında HRE'den
+fiilî özerkliği temsil eder: Avusturya ile barış kurar, HRE ile ilişkiyi normalleştirir,
+ticaret bonusu verir ve `swiss_de_facto_independence_1499` flag'ini yazar. Bu, 1648'deki
+hukuki bağımsızlık tanınmasından önceki siyasi durumu temsil eder; HRE vassallığı
+olmayan mevcut modelde teknik bir overlord koparımı yapmaz.
 
 1300 Balkan başlangıcında Macar tacının doğrudan yönetimi dört çekirdek bölgeyle
 (`hungary`, `alfold`, `slovakia`, `transylvania`) sınırlandırıldı. Sırbistan mevcut
