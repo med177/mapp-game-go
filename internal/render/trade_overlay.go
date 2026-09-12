@@ -362,7 +362,7 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 			DrawText(screen, "Askıda: "+itoa(c.route.SuspendedTurns)+" tur", float64(x)+10, float64(y)+118, FaceSmall, color.RGBA{230, 170, 135, 240})
 		}
 	} else {
-		DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   Fraksiyon: "+itoa(c.factions), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
+		DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   Devlet: "+itoa(c.factions), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
 		DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{197, 190, 168, 230})
 	}
 }

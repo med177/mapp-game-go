@@ -258,7 +258,7 @@ for r in sorted([r for r in regions if r.get('shape_id') == 'RUS'], key=lambda x
     print(f"  {r['id']:20} wx={r['world_x']:4} wy={r['world_y']:4}  {r.get('owner_id','')}")
 print(f"\nToplam: {len(land)} kara bolge")
 print(f"Sahipli: {len(land)-len(neutral)}, Sahipsiz: {len(neutral)}")
-print(f"Fraksiyon: {len(factions)}")
+print(f"Devlet: {len(factions)}")
 
 # ════════════════════════════════════════════════════════════════
 # 5. KAYDET

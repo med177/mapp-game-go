@@ -150,7 +150,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 				if faction == "" {
 					faction = "Bilinmiyor"
 				}
-				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 44}, "Fraksiyon: "+faction, detailCol, gameui.TextSmall, gameui.TextAlignStart)
+				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 44}, "Devlet: "+faction, detailCol, gameui.TextSmall, gameui.TextAlignStart)
 				drawUILabel(screen, gameui.Rect{X: cx + slotCardW/2, Y: cy + 44}, "Tur: "+itoa(slot.Turn)+"  |  "+itoa(slot.Year), detailCol, gameui.TextSmall, gameui.TextAlignCenter)
 
 				modStr := slot.ModTime.Format("02.01.2006 15:04")

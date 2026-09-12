@@ -297,7 +297,7 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 		if name == "" {
 			name = f.Name
 		}
-		DrawText(screen, "Fraksiyon: "+name+" ["+string(f.ID)+"]", float64(x)+14, ly, FaceSmall, ColorWhite)
+		DrawText(screen, "Devlet: "+name+" ["+string(f.ID)+"]", float64(x)+14, ly, FaceSmall, ColorWhite)
 		ly += 18
 		DrawText(screen, economy.FormatResourceAmountTR(economy.ResourceGold, f.Gold)+"  "+economy.FormatResourceAmountTR(economy.ResourceGrain, f.Grain)+"  "+economy.FormatResourceAmountTR(economy.ResourceIron, f.Iron), float64(x)+14, ly, FaceSmall, ColorGray)
 		ly += 18
