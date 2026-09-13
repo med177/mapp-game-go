@@ -1,0 +1,140 @@
+package world
+
+import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func TestTerrainAreaPolygonContains(t *testing.T) {
+	area := TerrainArea{Polygons: [][][2]int{{
+		{0, 0}, {4, 0}, {4, 4}, {0, 4},
+	}}}
+	if !area.Contains(1, 1) || area.Contains(5, 5) {
+		t.Fatal("polygon containment is incorrect")
+	}
+}
+
+func TestLoadTerrainAreasTreatsEmptyJSONAsNoAreas(t *testing.T) {
+	for _, content := range []string{"null", "[]"} {
+		path := filepath.Join(t.TempDir(), "terrain_areas.json")
+		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		areas, err := LoadTerrainAreas(path, nil)
+		if err != nil {
+			t.Fatalf("content %q: %v", content, err)
+		}
+		if areas != nil {
+			t.Fatalf("content %q: expected no areas, got %#v", content, areas)
+		}
+	}
+}
+
+func TestTerrainAreaCenterStaysInsidePolygon(t *testing.T) {
+	area := TerrainArea{Polygons: [][][2]int{{
+		{0, 0}, {6, 0}, {0, 2},
+	}}}
+	x, y := area.Center()
+	if !PointInPolygon(float64(x)+0.5, float64(y)+0.5, area.Polygons[0]) {
+		t.Fatalf("center is outside polygon: %d,%d", x, y)
+	}
+}
+
+func TestMergeTerrainAreaPolygonsCombinesIntersectingRings(t *testing.T) {
+	existing := [][][2]int{{{0, 0}, {4, 0}, {4, 4}, {0, 4}}}
+	added := [][2]int{{2, 2}, {6, 2}, {6, 6}, {2, 6}}
+
+	merged, intersects := MergeTerrainAreaPolygons(existing, added)
+	if !intersects || len(merged) != 1 {
+		t.Fatalf("expected one merged contour, got intersects=%v contours=%d", intersects, len(merged))
+	}
+	if !PointInPolygon(1.5, 1.5, merged[0]) || !PointInPolygon(5.5, 5.5, merged[0]) {
+		t.Fatalf("merged contour does not contain both source areas: %#v", merged[0])
+	}
+}
+
+func TestMergeTerrainAreaPolygonsKeepsDisjointRingsSeparate(t *testing.T) {
+	existing := [][][2]int{{{0, 0}, {2, 0}, {2, 2}, {0, 2}}}
+	added := [][2]int{{4, 4}, {6, 4}, {6, 6}, {4, 6}}
+
+	merged, intersects := MergeTerrainAreaPolygons(existing, added)
+	if intersects || merged != nil {
+		t.Fatalf("disjoint contours should not be merged: intersects=%v merged=%#v", intersects, merged)
+	}
+}
+
+func TestTerrainAreaPassabilityUsesMoveCostOnly(t *testing.T) {
+	if !TerrainAreaIsPassable(TerrainArea{Terrain: TerrainDesert, MoveCost: -1}) {
+		t.Fatal("desert with a non-zero move cost should be passable")
+	}
+	if TerrainAreaIsPassable(TerrainArea{Terrain: TerrainDesert, MoveCost: 0}) {
+		t.Fatal("zero move cost should block the area")
+	}
+	if !TerrainAreaIsPassable(TerrainArea{Terrain: TerrainMountain, MoveCost: -1}) {
+		t.Fatal("mountain label with a non-zero move cost should be passable")
+	}
+	if !TerrainAreaIsPassable(TerrainArea{Terrain: TerrainLake, MoveCost: -2}) {
+		t.Fatal("lake label with a non-zero move cost should be passable")
+	}
+}
+
+func TestTerrainAreaJSONStoresPolygonsWithoutCells(t *testing.T) {
+	data, err := json.Marshal(TerrainArea{
+		ID: "sahara", ParentRegionID: "luxor", Terrain: TerrainDesert,
+		MoveCost: 0, Polygons: [][][2]int{{{0, 0}, {2, 0}, {2, 2}}},
+		Cells: [][2]int{{0, 0}, {1, 1}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(data), `"polygons"`) || strings.Contains(string(data), `"cells"`) || strings.Contains(string(data), `"parent_region_id"`) {
+		t.Fatalf("unexpected terrain area JSON: %s", data)
+	}
+}
+
+func TestSyncTerrainAreaRegionsKeepsOnlyParentNeighbor(t *testing.T) {
+	regions := map[RegionID]*Region{
+		"parent":   {ID: "parent", OwnerID: "faction", Neighbors: []RegionID{"neighbor"}},
+		"neighbor": {ID: "neighbor"},
+	}
+	areas := []TerrainArea{{
+		ID: "mountain", ParentRegionID: "parent", Terrain: TerrainMountain,
+		Polygons: [][][2]int{{{0, 0}, {4, 0}, {4, 4}, {0, 4}}},
+	}}
+
+	SyncTerrainAreaRegions(regions, areas)
+	child := regions["area::mountain"]
+	if child == nil {
+		t.Fatal("terrain child was not created")
+	}
+	if child.OwnerID != "" {
+		t.Fatalf("terrain child unexpectedly inherited owner: %q", child.OwnerID)
+	}
+	if len(child.Neighbors) != 1 || child.Neighbors[0] != "parent" {
+		t.Fatalf("unexpected terrain child neighbors: %#v", child.Neighbors)
+	}
+}
+
+func TestSyncTerrainAreaRegionsAllowsTopLevelAreaWithoutParent(t *testing.T) {
+	regions := map[RegionID]*Region{
+		"plain": {ID: "plain", Terrain: TerrainPlain},
+	}
+	areas := []TerrainArea{{
+		ID: "sahara", Terrain: "", Polygons: [][][2]int{{{0, 0}, {4, 0}, {4, 4}, {0, 4}}},
+	}}
+
+	SyncTerrainAreaRegions(regions, areas)
+	child := regions["area::sahara"]
+	if child == nil {
+		t.Fatal("top-level terrain area runtime node was not created")
+	}
+	if child.Terrain != TerrainPlain {
+		t.Fatalf("unexpected default terrain: %q", child.Terrain)
+	}
+	if child.ParentRegionID != "" {
+		t.Fatalf("top-level terrain area unexpectedly has parent: %q", child.ParentRegionID)
+	}
+}

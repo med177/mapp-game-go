@@ -22,6 +22,8 @@ const (
 	mapBorderStyleTradeSubtle
 	mapBorderStyleSea
 	mapBorderStyleBlockade
+	mapBorderStyleTerrainArea
+	mapBorderStyleTerrainAreaSelected
 	mapBorderStyleCount
 )
 
@@ -242,6 +244,19 @@ func borderStyleForAffiliation(affiliation uint8) uint8 {
 	}
 }
 
+func terrainAreaBorderID(gs *state.GameState, regionIDs []world.RegionID, a, b uint16) (string, bool) {
+	if gs == nil || a == 0 || b == 0 || int(a) >= len(regionIDs) || int(b) >= len(regionIDs) {
+		return "", false
+	}
+	left := gs.Regions[regionIDs[a]]
+	right := gs.Regions[regionIDs[b]]
+	if left == nil || right == nil || !left.IsTerrainArea || !right.IsTerrainArea ||
+		left.TerrainAreaID == "" || left.TerrainAreaID != right.TerrainAreaID {
+		return "", false
+	}
+	return left.TerrainAreaID, true
+}
+
 // updateBorderStyles, geometriyi değiştirmeden mevcut diplomasi/map-mode
 // durumuna göre hangi vektör path'ine gideceğini belirler.
 func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.RegionID, mode MapMode) {
@@ -263,6 +278,10 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 	}
 
 	realmByRegion, affiliationByRegion := buildBorderDiplomacyContext(gs, wm.regionIDs)
+	selectedTerrainAreaID := ""
+	if selectedRegion := gs.Regions[selected]; selectedRegion != nil && selectedRegion.IsTerrainArea {
+		selectedTerrainAreaID = selectedRegion.TerrainAreaID
+	}
 	regionTradeNode := make(map[world.RegionID]int, len(gs.Regions))
 	if mode == MapModeTrade && len(gs.TradeCenters.Centers) > 0 {
 		for rid, r := range gs.Regions {
@@ -307,6 +326,14 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 				} else {
 					wm.borderStyles[i] = mapBorderStyleSea
 				}
+			}
+			continue
+		}
+		if terrainAreaID, ok := terrainAreaBorderID(gs, wm.regionIDs, segment.a, segment.b); ok {
+			if gs.Phase == state.PhaseEditMode && terrainAreaID == selectedTerrainAreaID {
+				wm.borderStyles[i] = mapBorderStyleTerrainAreaSelected
+			} else {
+				wm.borderStyles[i] = mapBorderStyleTerrainArea
 			}
 			continue
 		}
@@ -392,6 +419,10 @@ func mapBorderStyleColor(style uint8) color.RGBA {
 		return color.RGBA{100, 160, 220, 160}
 	case mapBorderStyleBlockade:
 		return color.RGBA{128, 24, 24, 255}
+	case mapBorderStyleTerrainArea:
+		return color.RGBA{210, 185, 125, 145}
+	case mapBorderStyleTerrainAreaSelected:
+		return color.RGBA{255, 220, 70, 235}
 	default:
 		return color.RGBA{}
 	}
@@ -400,6 +431,9 @@ func mapBorderStyleColor(style uint8) color.RGBA {
 func mapBorderStyleStrokeWidth(style uint8) float32 {
 	if style == mapBorderStyleSelected {
 		return selectedMapBorderStrokeWidth
+	}
+	if style == mapBorderStyleTerrainAreaSelected {
+		return 2
 	}
 	if style == mapBorderStyleBlockade {
 		return blockadeMapBorderStrokeWidth
@@ -454,6 +488,24 @@ func appendMapBorderQuad(meshes *mapBorderMeshSet, style uint8, x1, y1, x2, y2 f
 		ebiten.Vertex{DstX: float32(x2 + nx), DstY: float32(y2 + ny), SrcX: 0.5, SrcY: 0.5, ColorR: cr, ColorG: cg, ColorB: cb, ColorA: ca},
 	)
 	chunk.indices = append(chunk.indices, base, base+1, base+2, base+2, base+3, base)
+}
+
+func appendMapBorderDashed(meshes *mapBorderMeshSet, style uint8, x1, y1, x2, y2 float64, strokeWidth float32) {
+	dx, dy := x2-x1, y2-y1
+	length := math.Hypot(dx, dy)
+	if length <= 0.001 {
+		return
+	}
+	const dashLength = 7.0
+	const gapLength = 4.0
+	for offset := 0.0; offset < length; offset += dashLength + gapLength {
+		end := math.Min(offset+dashLength, length)
+		startRatio := offset / length
+		endRatio := end / length
+		appendMapBorderQuad(meshes, style,
+			x1+dx*startRatio, y1+dy*startRatio,
+			x1+dx*endRatio, y1+dy*endRatio, strokeWidth)
+	}
 }
 
 func appendMapBorderQuadFraction(meshes *mapBorderMeshSet, style uint8, x1, y1, x2, y2 float64, fraction float32, strokeWidth float32) {
@@ -513,7 +565,11 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 			math.Max(y1, y2) < -2 || math.Min(y1, y2) > float64(screenHeight)+2 {
 			continue
 		}
-		appendMapBorderQuad(&r.mapBorderMeshes, style, x1, y1, x2, y2, mapBorderStyleStrokeWidth(style))
+		if style == mapBorderStyleTerrainAreaSelected {
+			appendMapBorderDashed(&r.mapBorderMeshes, style, x1, y1, x2, y2, mapBorderStyleStrokeWidth(style))
+		} else {
+			appendMapBorderQuad(&r.mapBorderMeshes, style, x1, y1, x2, y2, mapBorderStyleStrokeWidth(style))
+		}
 	}
 	for i, segment := range r.worldMap.borderSegments {
 		if i >= len(r.worldMap.blockadeFractions) || r.worldMap.blockadeFractions[i] <= 0 {

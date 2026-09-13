@@ -2,6 +2,7 @@ package render
 
 import (
 	"image/color"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -90,10 +91,9 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 
 func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	x, y, w, h := editInspectorRect()
-	drawRoundedRect(screen, x, y, w, h, 8, color.RGBA{16, 20, 24, 226})
-	drawPanelBorder(screen, x, y, w, h)
+	drawUIPanelRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, color.RGBA{16, 20, 24, 226}, panelBorder, 1)
 
-	DrawText(screen, "EDITOR", float64(x)+14, float64(y)+10, FaceMed, ColorGold)
+	drawEditInspectorLabel(screen, float64(x)+14, float64(y)+10, "EDITOR", ColorGold, gameui.TextMedium)
 	r.drawEditInspectorTab(screen, editInspectorSettlement, "Yerleşim Birimi")
 	r.drawEditInspectorTab(screen, editInspectorRegion, "Bölge")
 	r.drawEditInspectorTab(screen, editInspectorFaction, "Devlet")
@@ -103,30 +103,30 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		r.drawEditShapeInspector(screen, ly)
-		drawEditInspectorSaveButton(screen)
+		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
 		return
 	}
 
 	if r.editInspectorTab == editInspectorData {
 		r.drawEditScenarioDataInspector(screen, ly)
-		drawEditInspectorSaveButton(screen)
+		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
 		return
 	}
 
 	if r.editInspectorTab == editInspectorFaction {
 		r.drawEditDataInspector(screen, ly)
-		drawEditInspectorSaveButton(screen)
+		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
 		return
 	}
 
 	region := r.gs.Regions[r.editSelectedRegion]
 	if r.SelectedArmy != "" {
 		if a, ok := r.gs.Armies[r.SelectedArmy]; ok && a != nil {
-			DrawText(screen, "Ordu: "+string(a.ID), float64(x)+14, ly, FaceSmall, ColorWhite)
+			drawEditInspectorLabel(screen, float64(x)+14, ly, "Ordu: "+string(a.ID), ColorWhite, gameui.TextSmall)
 			ly += 18
-			DrawText(screen, "Bolge: "+string(a.RegionID), float64(x)+14, ly, FaceSmall, ColorGray)
+			drawEditInspectorLabel(screen, float64(x)+14, ly, "Bolge: "+string(a.RegionID), ColorGray, gameui.TextSmall)
 			ly += 18
-			DrawText(screen, "Birim: "+itoa(len(a.Units))+" / 20", float64(x)+14, ly, FaceSmall, ColorGray)
+			drawEditInspectorLabel(screen, float64(x)+14, ly, "Birim: "+itoa(len(a.Units))+" / 20", ColorGray, gameui.TextSmall)
 			if r.editInspectorTab == editInspectorSettlement {
 				r.drawEditSettlementButtons(screen, region)
 			} else {
@@ -136,15 +136,15 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 			// gerekir. Aksi halde Birim Tipi düğmesi listeyi açar, ancak liste
 			// görünmediği için kullanıcı bir seçim yapamaz.
 			drawUIDropdown(screen, r.editUnitTypeDropdown)
-			drawEditInspectorSaveButton(screen)
+			drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
 			return
 		}
 	}
 
 	if region == nil {
-		DrawText(screen, "Haritadan bir bolge veya yerlesim sec.", float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Haritadan bir bolge veya yerlesim sec.", ColorGray, gameui.TextSmall)
 		r.drawEditRegionButtons(screen, nil)
-		drawEditInspectorSaveButton(screen)
+		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
 		return
 	}
 
@@ -162,21 +162,21 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 		}
 		settlementLabel = "yok"
 	}
-	DrawText(screen, name, float64(x)+14, ly, FaceSmall, ColorWhite)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, name, ColorWhite, gameui.TextSmall)
 	ly += 18
-	DrawText(screen, "ID: "+string(region.ID), float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "ID: "+string(region.ID), ColorGray, gameui.TextSmall)
 	ly += 18
-	DrawText(screen, "Tur: "+regionKind+"   Sahip: "+ownerLabel+"   Arazi: "+string(region.Terrain), float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Tur: "+regionKind+"   Sahip: "+ownerLabel+"   Arazi: "+string(region.Terrain), ColorGray, gameui.TextSmall)
 	ly += 18
 	successorLabel := region.SuccessorFactionID
 	if successorLabel == "" {
 		successorLabel = "-"
 	}
-	DrawText(screen, "Ardil Devlet: "+successorLabel, float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Ardil Devlet: "+successorLabel, ColorGray, gameui.TextSmall)
 	ly += 18
-	DrawText(screen, "Merkez: "+itoa(region.WorldX)+","+itoa(region.WorldY)+"   Yerlesim: "+settlementLabel, float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Merkez: "+itoa(region.WorldX)+","+itoa(region.WorldY)+"   Yerlesim: "+settlementLabel, ColorGray, gameui.TextSmall)
 	ly += 22
-	DrawText(screen, "Kilit: "+editBoolLabel(region.IsLocked)+"   Acilis: "+itoa(region.UnlockTurn)+"   Komsu: "+itoa(len(region.Neighbors)), float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Kilit: "+editBoolLabel(region.IsLocked)+"   Acilis: "+itoa(region.UnlockTurn)+"   Komsu: "+itoa(len(region.Neighbors)), ColorGray, gameui.TextSmall)
 	ly += 20
 
 	if r.hasEditSelection() {
@@ -185,18 +185,17 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 		if sName == "" {
 			sName = settlement.Name
 		}
-		DrawText(screen, "Secili yerlesim: "+sName, float64(x)+14, ly, FaceSmall, ColorGold)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Secili yerlesim: "+sName, ColorGold, gameui.TextSmall)
 		ly += 18
-		DrawText(screen, settlement.ID+"  "+string(settlement.Type)+"  nüfus "+itoa(settlement.Population)+"  "+itoa(settlement.X)+","+itoa(settlement.Y),
-			float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, settlement.ID+"  "+string(settlement.Type)+"  nüfus "+itoa(settlement.Population)+"  "+itoa(settlement.X)+","+itoa(settlement.Y), ColorGray, gameui.TextSmall)
 		if settlement.IsCenter {
 			ly += 18
-			DrawText(screen, "Ana yerlesim", float64(x)+14, ly, FaceSmall, ColorGray)
+			drawEditInspectorLabel(screen, float64(x)+14, ly, "Ana yerlesim", ColorGray, gameui.TextSmall)
 		}
 	} else if region.IsSea {
-		DrawText(screen, "Deniz bolgesinde yerlesim yok.", float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Deniz bolgesinde yerlesim yok.", ColorGray, gameui.TextSmall)
 	} else {
-		DrawText(screen, "Yerlesim secili degil.", float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Yerlesim secili degil.", ColorGray, gameui.TextSmall)
 	}
 
 	if r.editInspectorTab == editInspectorSettlement {
@@ -209,7 +208,11 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	drawUIDropdown(screen, r.editTerrainDropdown)
 	drawUIDropdown(screen, r.editSettlementTypeDropdown)
 	drawUIDropdown(screen, r.editUnitTypeDropdown)
-	drawEditInspectorSaveButton(screen)
+	drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+}
+
+func drawEditInspectorLabel(screen *ebiten.Image, x, y float64, text string, col color.Color, variant gameui.TextVariant) {
+	drawUILabel(screen, gameui.Rect{X: x, Y: y, W: 404}, text, col, variant, gameui.TextAlignStart)
 }
 
 func (r *Renderer) drawEditSettlementButtons(screen *ebiten.Image, region *world.Region) {
@@ -260,20 +263,32 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 		terrainLabel = "Arazi Tipi"
 	}
 	drawEditInspectorButton(screen, editButtonRegionTerrain, terrainLabel, canRegion)
-	drawEditInspectorButton(screen, editButtonRegionNameTR, "Ad TR", canRegion)
-	drawEditInspectorButton(screen, editButtonRegionName, "Ad EN", canRegion)
+	nameTRLabel := "Ad TR"
+	nameLabel := "Ad EN"
+	nameEnabled := canRegion
+	if region != nil && region.IsTerrainArea {
+		nameTRLabel = "Arazi Adı"
+		nameLabel = "Arazi Adı Yok"
+		nameEnabled = false
+	}
+	drawEditInspectorButton(screen, editButtonRegionNameTR, nameTRLabel, canRegion)
+	drawEditInspectorButton(screen, editButtonRegionName, nameLabel, nameEnabled)
 	drawEditInspectorButton(screen, editButtonRegionID, "ID", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionLock, "Kilit", canRegion)
 	drawEditInspectorButton(screen, editButtonUnlockMinus, "-10 Tur", canRegion)
 	drawEditInspectorButton(screen, editButtonUnlockPlus, "+10 Tur", canRegion)
 	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komşu Sync", canRegion)
-	drawEditInspectorButton(screen, editButtonAddNeighbor, "Komşu Ekle", canRegion)
+	neighborLabel := "Komşu Ekle"
+	if r.editNeighborAddMode && r.editNeighborAddFrom == r.editSelectedRegion {
+		neighborLabel = "Uygula"
+	}
+	drawEditInspectorButton(screen, editButtonAddNeighbor, neighborLabel, canRegion)
 	drawEditInspectorButton(screen, editButtonEditRegionData, "Bölge Verileri", canRegion)
 }
 
-func drawEditInspectorSaveButton(screen *ebiten.Image) {
+func drawEditInspectorSaveButton(screen *ebiten.Image, enabled bool) {
 	rect := editInspectorButtonRect(editButtonSaveScenario)
-	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), "Değişiklikleri Kaydet", true)
+	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), "Değişiklikleri Kaydet", enabled)
 }
 
 func (r *Renderer) drawEditInspectorTab(screen *ebiten.Image, tab editInspectorTab, label string) {
@@ -287,43 +302,43 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 	region := r.gs.Regions[r.editSelectedRegion]
 	f := r.selectedEditFaction()
 
-	DrawText(screen, "DEVLET VE ORDU", float64(x)+14, ly, FaceSmall, ColorGold)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "DEVLET VE ORDU", ColorGold, gameui.TextSmall)
 	ly += 22
 	if f == nil {
-		DrawText(screen, "Sahipli bolge veya ordu sec.", float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Sahipli bolge veya ordu sec.", ColorGray, gameui.TextSmall)
 		ly += 20
 	} else {
 		name := f.NameTR
 		if name == "" {
 			name = f.Name
 		}
-		DrawText(screen, "Devlet: "+name+" ["+string(f.ID)+"]", float64(x)+14, ly, FaceSmall, ColorWhite)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Devlet: "+name+" ["+string(f.ID)+"]", ColorWhite, gameui.TextSmall)
 		ly += 18
-		DrawText(screen, economy.FormatResourceAmountTR(economy.ResourceGold, f.Gold)+"  "+economy.FormatResourceAmountTR(economy.ResourceGrain, f.Grain)+"  "+economy.FormatResourceAmountTR(economy.ResourceIron, f.Iron), float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, economy.FormatResourceAmountTR(economy.ResourceGold, f.Gold)+"  "+economy.FormatResourceAmountTR(economy.ResourceGrain, f.Grain)+"  "+economy.FormatResourceAmountTR(economy.ResourceIron, f.Iron), ColorGray, gameui.TextSmall)
 		ly += 18
-		DrawText(screen, economy.FormatResourceAmountTR(economy.ResourceTimber, f.Timber)+"  "+economy.FormatResourceAmountTR(economy.ResourceSpice, f.Spice)+"  "+economy.FormatResourceAmountTR(economy.ResourceCloth, f.Cloth), float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, economy.FormatResourceAmountTR(economy.ResourceTimber, f.Timber)+"  "+economy.FormatResourceAmountTR(economy.ResourceSpice, f.Spice)+"  "+economy.FormatResourceAmountTR(economy.ResourceCloth, f.Cloth), ColorGray, gameui.TextSmall)
 		ly += 18
-		DrawText(screen, "Playable: "+editBoolLabel(f.IsPlayable)+"  AI: "+itoa(f.AIAggressiveness), float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Playable: "+editBoolLabel(f.IsPlayable)+"  AI: "+itoa(f.AIAggressiveness), ColorGray, gameui.TextSmall)
 	}
 	ly += 24
 
 	if r.SelectedArmy != "" {
 		if a := r.gs.Armies[r.SelectedArmy]; a != nil {
 			r.ensureEditSelectedUnitType(a)
-			DrawText(screen, "Ordu: "+string(a.ID), float64(x)+14, ly, FaceSmall, ColorGold)
+			drawEditInspectorLabel(screen, float64(x)+14, ly, "Ordu: "+string(a.ID), ColorGold, gameui.TextSmall)
 			ly += 18
 			kind := "Kara"
 			if a.IsNaval {
 				kind = "Donanma"
 			}
-			DrawText(screen, "Tip: "+kind+"  Sahip: "+a.OwnerID+"  Bolge: "+string(a.RegionID), float64(x)+14, ly, FaceSmall, ColorGray)
+			drawEditInspectorLabel(screen, float64(x)+14, ly, "Tip: "+kind+"  Sahip: "+a.OwnerID+"  Bolge: "+string(a.RegionID), ColorGray, gameui.TextSmall)
 			ly += 18
-			DrawText(screen, "Birim: "+itoa(len(a.Units))+" / "+itoa(army.MaxArmySize)+"  Secili: "+r.editSelectedUnitType, float64(x)+14, ly, FaceSmall, ColorGray)
+			drawEditInspectorLabel(screen, float64(x)+14, ly, "Birim: "+itoa(len(a.Units))+" / "+itoa(army.MaxArmySize)+"  Secili: "+r.editSelectedUnitType, ColorGray, gameui.TextSmall)
 			ly += 18
 			r.drawEditArmyUnitCounts(screen, a, float64(x)+14, ly)
 		}
 	} else {
-		DrawText(screen, "Ordu secili degil.", float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Ordu secili degil.", ColorGray, gameui.TextSmall)
 	}
 
 	canRegion := region != nil
@@ -340,29 +355,29 @@ func (r *Renderer) drawEditDataInspector(screen *ebiten.Image, ly float64) {
 
 func (r *Renderer) drawEditScenarioDataInspector(screen *ebiten.Image, ly float64) {
 	x, _, _, _ := editInspectorRect()
-	DrawText(screen, "SENARYO VERİLERİ", float64(x)+14, ly, FaceSmall, ColorGold)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "SENARYO VERİLERİ", ColorGold, gameui.TextSmall)
 	ly += 24
-	DrawText(screen, "Bu senaryodaki düzenlemeler geçici olarak tutulur.", float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Bu senaryodaki düzenlemeler geçici olarak tutulur.", ColorGray, gameui.TextSmall)
 	ly += 18
-	DrawText(screen, "Kaydet düğmesi tüm sekmelerde panelin altındadır.", float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Kaydet düğmesi tüm sekmelerde panelin altındadır.", ColorGray, gameui.TextSmall)
 	ly += 24
-	DrawText(screen, "Undo: "+itoa(len(r.editUndoStack))+"   Redo: "+itoa(len(r.editRedoStack)), float64(x)+14, ly, FaceSmall, ColorWhite)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Undo: "+itoa(len(r.editUndoStack))+"   Redo: "+itoa(len(r.editRedoStack)), ColorWhite, gameui.TextSmall)
 	ly += 22
 	if r.editDirty {
-		DrawText(screen, "Durum: Kaydedilmemiş değişiklikler var.", float64(x)+14, ly, FaceSmall, ColorGold)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Durum: Kaydedilmemiş değişiklikler var.", ColorGold, gameui.TextSmall)
 	} else {
-		DrawText(screen, "Durum: Tüm değişiklikler kayıtlı.", float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Durum: Tüm değişiklikler kayıtlı.", ColorGray, gameui.TextSmall)
 	}
 }
 
 func (r *Renderer) drawEditArmyUnitCounts(screen *ebiten.Image, a *army.Army, x, y float64) {
 	if len(a.Units) == 0 {
-		DrawText(screen, "Birim yok.", x, y, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, x, y, "Birim yok.", ColorGray, gameui.TextSmall)
 		return
 	}
 	// Devlet sekmesinin düğmeleriyle çakışmaması için ayrıntılı dağılımı
 	// satır satır büyütmek yerine tek satırlık özet tutuyoruz.
-	DrawText(screen, "Birim toplamı: "+itoa(len(a.Units)), x, y, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, x, y, "Birim toplamı: "+itoa(len(a.Units)), ColorGray, gameui.TextSmall)
 }
 
 func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
@@ -606,10 +621,12 @@ const (
 	editButtonLandPassageDelete
 	editButtonAddNeighbor
 	editButtonTerrainArea
+	editButtonTerrainAreaAppend
 	editButtonTerrainAreaType
 	editButtonTerrainAreaCost
 	editButtonTerrainAreaAttrition
 	editButtonTerrainAreaDelete
+	editButtonTerrainAreaCancel
 	editButtonAddFaction
 	editButtonEditFaction
 	editButtonDeleteFaction
@@ -719,9 +736,13 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return leftRect(4)
 	case editButtonTerrainArea:
 		return leftRect(6)
+	case editButtonTerrainAreaAppend:
+		return rightRect(5)
 	case editButtonTerrainAreaType:
-		return full(5)
+		return leftRect(5)
 	case editButtonTerrainAreaCost:
+		return rightRect(6)
+	case editButtonTerrainAreaCancel:
 		return rightRect(6)
 	case editButtonTerrainAreaAttrition:
 		return leftRect(7)
@@ -869,8 +890,12 @@ func editFactionInspectorButtonAt(mx, my float64) editInspectorButton {
 	return editButtonNone
 }
 
-func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
-	for _, kind := range [...]editInspectorButton{
+func editShapeInspectorButtonKinds() []editInspectorButton {
+	// Bu liste yalnız drawEditShapeInspector/drawEditShapeLandPassageButtons
+	// tarafından gerçekten çizilen shape sekmesi düğmelerini içerir. Bölge
+	// sekmesine ait Komşu Ekle gibi düğmeler burada bulunmaz; aksi halde aynı
+	// rect'i paylaşan görünmez bir hit-test alanı oluşur.
+	return []editInspectorButton{
 		editButtonShapePaint,
 		editButtonShapeErase,
 		editButtonShapeRegionPaint,
@@ -881,13 +906,22 @@ func editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
 		editButtonLandPassageAdd,
 		editButtonLandPassageAdjust,
 		editButtonLandPassageDelete,
-		editButtonAddNeighbor,
 		editButtonTerrainArea,
+		editButtonTerrainAreaAppend,
 		editButtonTerrainAreaType,
 		editButtonTerrainAreaCost,
 		editButtonTerrainAreaAttrition,
 		editButtonTerrainAreaDelete,
-	} {
+		editButtonTerrainAreaCancel,
+	}
+}
+
+func (r *Renderer) editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
+	if r != nil && r.terrainAreaEditPending() &&
+		buildEditInspectorActionButton(editButtonTerrainAreaCancel, "").HitTest(mx, my) {
+		return editButtonTerrainAreaCancel
+	}
+	for _, kind := range editShapeInspectorButtonKinds() {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
 		}
@@ -914,7 +948,7 @@ func (r *Renderer) editInspectorActiveButtonAt(mx, my float64) editInspectorButt
 		return editButtonSaveScenario
 	}
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
-		kind := editShapeInspectorButtonAt(mx, my)
+		kind := r.editShapeInspectorButtonAt(mx, my)
 		if isEditShapeToolButton(kind) {
 			active := r.activeEditShapeToolButton()
 			if active != editButtonNone && kind != active {
@@ -993,7 +1027,7 @@ func (r *Renderer) editRegionCenterAt(fx, fy float64) (world.RegionID, bool) {
 	bestRID := world.RegionID("")
 	bestDist := editRegionCenterHitRadius * editRegionCenterHitRadius
 	for rid, region := range r.gs.Regions {
-		if region == nil || region.IsLocked {
+		if region == nil || region.IsLocked || region.IsTerrainArea {
 			continue
 		}
 		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
@@ -1009,9 +1043,9 @@ func (r *Renderer) editRegionCenterAt(fx, fy float64) (world.RegionID, bool) {
 
 func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
 	mx, my := ebiten.CursorPosition()
-	hoverRID, hoveringCenter := r.editRegionCenterAt(float64(mx), float64(my))
+	hoveredID, _ := r.editRegionCenterAt(float64(mx), float64(my))
 	for _, region := range r.gs.Regions {
-		if region == nil || region.IsLocked {
+		if region == nil || region.IsLocked || region.IsTerrainArea {
 			continue
 		}
 		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
@@ -1026,21 +1060,41 @@ func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
 				col = color.RGBA{255, 190, 45, 240}
 			}
 		}
-		if hoveringCenter && region.ID == hoverRID {
-			col = color.RGBA{255, 220, 70, 245}
+		x, y := float32(sx), float32(sy)
+		vector.StrokeCircle(screen, x, y, 6, 1.5, col, true)
+		vector.StrokeLine(screen, x-8, y, x+8, y, 1.5, col, true)
+		vector.StrokeLine(screen, x, y-8, x, y+8, 1.5, col, true)
+		if region.ID == hoveredID {
+			vector.StrokeCircle(screen, x, y, 11, 2.5, color.RGBA{255, 220, 70, 245}, true)
+		}
+	}
+}
+
+// drawEditTerrainAreaCenters gösterge amaçlıdır: arazi alanının otomatik
+// poligon merkezini görünür tutar, ancak merkez editör seçim/taşıma hedefi
+// değildir.
+func (r *Renderer) drawEditTerrainAreaCenters(screen *ebiten.Image) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	for _, region := range r.gs.Regions {
+		if region == nil || !region.IsTerrainArea {
+			continue
+		}
+		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+		col := color.RGBA{255, 220, 70, 220}
+		if region.ID == r.editSelectedRegion {
+			col = color.RGBA{255, 180, 35, 250}
 		}
 		x, y := float32(sx), float32(sy)
 		vector.StrokeCircle(screen, x, y, 6, 1.5, col, true)
 		vector.StrokeLine(screen, x-8, y, x+8, y, 1.5, col, true)
 		vector.StrokeLine(screen, x, y-8, x, y+8, 1.5, col, true)
-		if hoveringCenter && region.ID == hoverRID {
-			vector.StrokeCircle(screen, x, y, 11, 2, color.RGBA{255, 220, 70, 245}, true)
-		}
 	}
 }
 
 func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
-	if !r.editVoronoiDebug {
+	if !r.editVoronoiDebug || r.editTerrainAreaMode {
 		return
 	}
 	rid := r.editSelectedRegion
@@ -1048,18 +1102,21 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 		mx, my := ebiten.CursorPosition()
 		rid = r.editRegionAt(float64(mx), float64(my))
 	}
-	r.editVoronoiDebugRegion = rid
 	region := r.gs.Regions[rid]
 	if region == nil {
 		return
 	}
 
-	r.editVisualNeighborBuf = r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf)
-	r.editBoundaryPixelBuf = r.worldMap.BoundaryPixels(rid, r.editBoundaryPixelBuf)
-	r.drawEditVoronoiBoundary(screen, r.editBoundaryPixelBuf)
+	if r.editVoronoiDebugWorldMap != r.worldMap || r.editVoronoiDebugRegion != rid {
+		r.editVoronoiDebugVisualNeighborBuf = r.worldMap.VisualNeighbors(rid, r.editVoronoiDebugVisualNeighborBuf[:0])
+		r.editVoronoiDebugBoundaryPixelBuf = r.worldMap.BoundaryPixels(rid, r.editVoronoiDebugBoundaryPixelBuf[:0])
+		r.editVoronoiDebugWorldMap = r.worldMap
+		r.editVoronoiDebugRegion = rid
+	}
+	r.drawEditVoronoiBoundary(screen, r.editVoronoiDebugBoundaryPixelBuf)
 
 	cx, cy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
-	for _, nrid := range r.editVisualNeighborBuf {
+	for _, nrid := range r.editVoronoiDebugVisualNeighborBuf {
 		neighbor := r.gs.Regions[nrid]
 		if neighbor == nil {
 			continue
@@ -1075,7 +1132,7 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 	}
 
 	for _, nrid := range region.Neighbors {
-		if visualNeighborContains(r.editVisualNeighborBuf, nrid) {
+		if visualNeighborContains(r.editVoronoiDebugVisualNeighborBuf, nrid) {
 			continue
 		}
 		neighbor := r.gs.Regions[nrid]
@@ -1090,11 +1147,152 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 	vector.StrokeCircle(screen, float32(cx), float32(cy), 12, 2.5, color.RGBA{255, 220, 70, 245}, true)
 }
 
-func (r *Renderer) drawEditVoronoiLegendOverlay(screen *ebiten.Image) {
-	if !r.editVoronoiDebug {
+// drawEditNeighborLinks, editörün sürekli göstereceği ucuz komşuluk
+// görünümüdür. Voronoi sınırı/BoundaryPixels hesabı yalnız ayrıca açılan
+// debug görünümünde kalır.
+func (r *Renderer) drawEditNeighborLinks(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.editSelectedRegion == "" {
 		return
 	}
-	r.drawEditVoronoiLegend(screen, r.editVoronoiDebugRegion, r.editVisualNeighborBuf)
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil {
+		return
+	}
+	visual := r.cachedEditVisualNeighbors(region)
+	cx, cy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+	for _, nrid := range region.Neighbors {
+		neighbor := r.gs.Regions[nrid]
+		if neighbor == nil {
+			continue
+		}
+		nx, ny := r.worldToScreen(wcX(neighbor.WorldX), wcY(neighbor.WorldY))
+		col := color.RGBA{180, 180, 180, 150}
+		if visualNeighborContains(visual, nrid) {
+			col = color.RGBA{90, 220, 125, 190}
+		}
+		vector.StrokeLine(screen, float32(cx), float32(cy), float32(nx), float32(ny), 1.5, col, true)
+		mx, my := (cx+nx)/2, (cy+ny)/2
+		vector.FillRect(screen, float32(mx)-3, float32(my)-3, 6, 6, col, true)
+	}
+	for _, nrid := range visual {
+		if regionHasNeighbor(region, nrid) {
+			continue
+		}
+		neighbor := r.gs.Regions[nrid]
+		if neighbor == nil {
+			continue
+		}
+		nx, ny := r.worldToScreen(wcX(neighbor.WorldX), wcY(neighbor.WorldY))
+		col := color.RGBA{235, 80, 80, 220}
+		vector.StrokeLine(screen, float32(cx), float32(cy), float32(nx), float32(ny), 1.5, col, true)
+		mx, my := (cx+nx)/2, (cy+ny)/2
+		vector.FillRect(screen, float32(mx)-3, float32(my)-3, 6, 6, col, true)
+	}
+	if r.editNeighborAddMode && r.editNeighborAddFrom == region.ID {
+		for _, nrid := range r.editNeighborAddTargets {
+			neighbor := r.gs.Regions[nrid]
+			if neighbor == nil {
+				continue
+			}
+			nx, ny := r.worldToScreen(wcX(neighbor.WorldX), wcY(neighbor.WorldY))
+			drawEditNeighborArrow(screen, cx, cy, nx, ny, color.RGBA{255, 220, 70, 245})
+		}
+	}
+}
+
+func (r *Renderer) cachedEditVisualNeighbors(region *world.Region) []world.RegionID {
+	if r == nil || r.worldMap == nil || region == nil {
+		return nil
+	}
+	if r.editVisualNeighborWorldMap != r.worldMap || r.editVisualNeighborRegion != region.ID {
+		if region.IsTerrainArea {
+			r.editVisualNeighborBuf = r.terrainAreaVisualNeighbors(region.ID, r.editVisualNeighborBuf[:0])
+		} else {
+			r.editVisualNeighborBuf = r.worldMap.VisualNeighbors(region.ID, r.editVisualNeighborBuf[:0])
+		}
+		r.editVisualNeighborWorldMap = r.worldMap
+		r.editVisualNeighborRegion = region.ID
+	}
+	return r.editVisualNeighborBuf
+}
+
+func (r *Renderer) invalidateEditVisualNeighborCache() {
+	if r == nil {
+		return
+	}
+	r.editVisualNeighborWorldMap = nil
+	r.editVisualNeighborRegion = ""
+}
+
+func drawEditNeighborArrow(screen *ebiten.Image, x1, y1, x2, y2 float64, col color.RGBA) {
+	vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 2.5, col, true)
+	angle := math.Atan2(y2-y1, x2-x1)
+	const head = 9.0
+	leftX := x2 - math.Cos(angle-0.5)*head
+	leftY := y2 - math.Sin(angle-0.5)*head
+	rightX := x2 - math.Cos(angle+0.5)*head
+	rightY := y2 - math.Sin(angle+0.5)*head
+	vector.StrokeLine(screen, float32(x2), float32(y2), float32(leftX), float32(leftY), 2.5, col, true)
+	vector.StrokeLine(screen, float32(x2), float32(y2), float32(rightX), float32(rightY), 2.5, col, true)
+}
+
+// drawSelectedEditRegionBoundary, Bölge sekmesinde seçili bölgenin yalnızca
+// gerçek raster sınırını noktalı olarak gösterir. Voronoi veya görsel komşu
+// hesabı kullanmaz; sınır yalnızca harita yeniden oluşturulduğunda hesaplanır.
+func (r *Renderer) drawSelectedEditRegionBoundary(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.worldMap == nil || r.editInspectorTab != editInspectorRegion || r.editSelectedRegion == "" {
+		return
+	}
+	if r.gs.Regions[r.editSelectedRegion] == nil {
+		return
+	}
+	if r.editBoundaryWorldMap != r.worldMap || r.editBoundaryRegion != r.editSelectedRegion {
+		r.editBoundaryPixelBuf = r.worldMap.BoundaryPixels(r.editSelectedRegion, r.editBoundaryPixelBuf[:0])
+		r.editBoundaryWorldMap = r.worldMap
+		r.editBoundaryRegion = r.editSelectedRegion
+	}
+	r.drawEditVoronoiBoundary(screen, r.editBoundaryPixelBuf)
+}
+
+// drawEditCountryHover, Devlet sekmesinde tıklanarak seçilmiş ülkenin shape'ini
+// vurgular. Fare hareketiyle seçim veya raster sorgusu yapmaz.
+func (r *Renderer) drawEditCountryHover(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.editInspectorTab != editInspectorFaction {
+		return
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || region.IsTerrainArea || region.ShapeID == "" {
+		return
+	}
+	rings := r.gs.ShapeData.Shapes[region.ShapeID]
+	if len(rings) == 0 {
+		return
+	}
+	col := color.RGBA{255, 220, 70, 235}
+	for _, ring := range rings {
+		if len(ring) < 2 {
+			continue
+		}
+		for i, point := range ring {
+			next := ring[(i+1)%len(ring)]
+			x1, y1 := r.worldToScreen(shapeRasterWorldPoint(point))
+			x2, y2 := r.worldToScreen(shapeRasterWorldPoint(next))
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 3, col, true)
+		}
+	}
+}
+
+func (r *Renderer) drawEditVoronoiLegendOverlay(screen *ebiten.Image) {
+	if r.editTerrainAreaMode || r.editSelectedRegion == "" {
+		return
+	}
+	rid := r.editSelectedRegion
+	visual := []world.RegionID(nil)
+	if r.editVoronoiDebug {
+		rid = r.editVoronoiDebugRegion
+		visual = r.editVoronoiDebugVisualNeighborBuf
+	}
+	r.drawEditVoronoiLegend(screen, rid, visual)
 }
 
 func (r *Renderer) drawEditVoronoiBoundary(screen *ebiten.Image, pixels []int) {
@@ -1128,22 +1326,38 @@ func (r *Renderer) drawEditVoronoiLegend(screen *ebiten.Image, rid world.RegionI
 	y := float32(18)
 	drawRoundedRect(screen, x, y, panelW, panelH, 8, color.RGBA{16, 20, 24, 218})
 	drawPanelBorder(screen, x, y, panelW, panelH)
-	DrawText(screen, "VORONOI DEBUG", float64(x)+12, float64(y)+10, FaceSmall, ColorGold)
-	DrawText(screen, "camgobegi: raster sinir", float64(x)+12, float64(y)+31, FaceSmall, ColorGray)
-	DrawText(screen, "yesil: gorunen+JSON   kirmizi: sadece gorunen", float64(x)+12, float64(y)+48, FaceSmall, ColorGray)
+	title := "BÖLGE BİLGİSİ"
+	line := "V ile Voronoi debug açılır"
+	legend := "Komşuluk: JSON kaydı"
+	if r.editVoronoiDebug {
+		title = "VORONOI DEBUG"
+		line = "camgobegi: raster sinir"
+		legend = "yesil: gorunen+JSON   kirmizi: sadece gorunen"
+	}
+	DrawText(screen, title, float64(x)+12, float64(y)+10, FaceSmall, ColorGold)
+	DrawText(screen, line, float64(x)+12, float64(y)+31, FaceSmall, ColorGray)
+	DrawText(screen, legend, float64(x)+12, float64(y)+48, FaceSmall, ColorGray)
 
-	mx, my := ebiten.CursorPosition()
-	wx, wy := r.screenToWorld(float64(mx), float64(my))
-	hover := r.worldMap.RegionAt(int(wx), int(wy))
-	sx, sy := scenarioCoordsFromWorld(wx, wy)
-	DrawText(screen, "Hover: "+string(hover)+"  "+itoa(sx)+","+itoa(sy), float64(x)+12, float64(y)+68, FaceSmall, ColorWhite)
+	hoverLabel := "kapalı"
+	if r.editVoronoiDebug {
+		mx, my := ebiten.CursorPosition()
+		wx, wy := r.screenToWorld(float64(mx), float64(my))
+		hover := r.worldMap.RegionAt(int(wx), int(wy))
+		sx, sy := scenarioCoordsFromWorld(wx, wy)
+		hoverLabel = string(hover) + "  " + itoa(sx) + "," + itoa(sy)
+	}
+	DrawText(screen, "Hover: "+hoverLabel, float64(x)+12, float64(y)+68, FaceSmall, ColorWhite)
 	if rid != "" {
 		region := r.gs.Regions[rid]
 		jsonCount := 0
 		if region != nil {
 			jsonCount = len(region.Neighbors)
 		}
-		DrawText(screen, "Secili: "+string(rid)+"  visual/json: "+itoa(len(visual))+"/"+itoa(jsonCount),
+		visualLabel := "-"
+		if r.editVoronoiDebug {
+			visualLabel = itoa(len(visual))
+		}
+		DrawText(screen, "Secili: "+string(rid)+"  visual/json: "+visualLabel+"/"+itoa(jsonCount),
 			float64(x)+12, float64(y)+85, FaceSmall, ColorWhite)
 	}
 }
@@ -1494,6 +1708,11 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.editTerrainDropdown.IsOpen() ||
 		r.editSettlementTypeDropdown.IsOpen() ||
 		r.editUnitTypeDropdown.IsOpen()
+	if r.editTerrainAreaMode && rightJustPressed && !inspectorOverlayOpen &&
+		!editInspectorHit(fx, fy) && !r.editShapeHelpPanelHit(fx, fy) {
+		r.resetTerrainAreaDrawing()
+		return InputAction{}
+	}
 	if !r.editShapePainting && rightJustPressed && !inspectorOverlayOpen && !editInspectorHit(fx, fy) && !r.editShapeHelpPanelHit(fx, fy) {
 		if rid, idx, ok := r.editSettlementAt(fx, fy); ok {
 			r.editOwnerDropdown.Close()
@@ -1504,6 +1723,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.editSelectedRegion = rid
 			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = idx
+			r.editInspectorTab = editInspectorSettlement
 			r.editDraggingRegion = false
 			r.editRenaming = false
 			r.beginSettlementDrag(rid)
@@ -1527,6 +1747,25 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if r.editNeighborAddMode && leftJustPressed {
 		r.handleEditNeighborAddClick(fx, fy)
 		return InputAction{}
+	}
+	if r.editTerrainAreaMode && !inspectorOverlayOpen && !r.editShapeHelpPanelHit(fx, fy) {
+		if r.editShapePaintPending {
+			return InputAction{}
+		}
+		if rightJustPressed {
+			return InputAction{}
+		}
+		if leftJustPressed {
+			if len(r.editTerrainAreaPolygon) == 0 && r.selectTerrainAreaAt(fx, fy) {
+				return InputAction{}
+			}
+			if r.terrainAreaPolygonStartHovered(fx, fy) {
+				r.finishTerrainAreaPolygon()
+				return InputAction{}
+			}
+			r.addTerrainAreaPolygonPoint(fx, fy)
+			return InputAction{}
+		}
 	}
 
 	if (r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape || r.editInspectorTab == editInspectorRegion) && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
@@ -1564,6 +1803,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 				r.editSelectedRegion = rid
 				r.setEditFactionFromRegion(rid)
 				r.editSelectedSettlement = -1
+				r.editInspectorTab = editInspectorRegion
 				r.editDraggingRegion = true
 				r.editDraggingSettlement = false
 				r.editRenaming = false
@@ -1597,10 +1837,15 @@ func (r *Renderer) handleEditModeInput() InputAction {
 				r.setEditFactionFromArmy(a)
 				r.ensureEditSelectedUnitType(a)
 			}
+			r.editInspectorTab = editInspectorSettlement
 			r.editSelectedSettlement = -1
 			r.editDraggingSettlement = false
 			r.editDraggingRegion = false
 			r.editRenaming = false
+			return InputAction{}
+		}
+
+		if r.editShapeTool == editShapeToolNone && !r.editTerrainAreaMode && r.selectTerrainAreaAt(fx, fy) {
 			return InputAction{}
 		}
 
@@ -1615,6 +1860,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.syncSelectedTerrainArea(rid)
 			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = -1
+			r.editInspectorTab = editInspectorRegion
 			r.editRenaming = false
 			r.editDraggingRegion = false
 			r.editDraggingSettlement = false
@@ -1632,6 +1878,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.syncSelectedTerrainArea(rid)
 			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = idx
+			r.editInspectorTab = editInspectorSettlement
 			r.editDraggingSettlement = false
 			r.editDraggingRegion = false
 			return InputAction{}
@@ -1647,6 +1894,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.syncSelectedTerrainArea(rid)
 			r.setEditFactionFromRegion(rid)
 			r.editSelectedSettlement = -1
+			r.editInspectorTab = editInspectorRegion
 			r.editRenaming = false
 			r.editDraggingRegion = false
 			r.editDraggingSettlement = false
@@ -1686,6 +1934,67 @@ func (r *Renderer) syncSelectedTerrainArea(rid world.RegionID) {
 			return
 		}
 	}
+}
+
+func (r *Renderer) selectTerrainAreaAt(fx, fy float64) bool {
+	if r == nil || r.worldMap == nil || r.gs == nil {
+		return false
+	}
+	rid, ok := r.terrainAreaRegionAt(fx, fy)
+	if !ok {
+		return false
+	}
+	r.editOwnerDropdown.Close()
+	r.editTerrainDropdown.Close()
+	r.editSettlementTypeDropdown.Close()
+	r.editUnitTypeDropdown.Close()
+	r.SelectedArmy = ""
+	r.editSelectedRegion = rid
+	r.rememberEditSelectedWorldPoint(rid, fx, fy)
+	r.syncSelectedTerrainArea(rid)
+	r.setEditFactionFromRegion(rid)
+	r.editSelectedSettlement = -1
+	r.editInspectorTab = editInspectorMap
+	r.editRenaming = false
+	r.editDraggingRegion = false
+	r.editDraggingSettlement = false
+	return true
+}
+
+func (r *Renderer) terrainAreaRegionAt(fx, fy float64) (world.RegionID, bool) {
+	if r == nil || r.worldMap == nil || r.gs == nil {
+		return "", false
+	}
+	wx, wy := r.screenToWorld(fx, fy)
+	cellX, cellY := int(math.Floor(wx)), int(math.Floor(wy))
+	rid := r.worldMap.RegionAt(cellX, cellY)
+	if region := r.gs.Regions[rid]; region != nil && region.IsTerrainArea {
+		return rid, true
+	}
+	for i := len(r.gs.TerrainAreas) - 1; i >= 0; i-- {
+		area := r.gs.TerrainAreas[i]
+		if !area.Contains(cellX, cellY) {
+			continue
+		}
+		for candidate, candidateRegion := range r.gs.Regions {
+			if candidateRegion != nil && candidateRegion.IsTerrainArea && candidateRegion.TerrainAreaID == area.ID {
+				return candidate, true
+			}
+		}
+	}
+	return "", false
+}
+
+func (r *Renderer) terrainAreaRuntimeRegionID(areaID string) world.RegionID {
+	if r == nil || r.gs == nil {
+		return ""
+	}
+	for rid, region := range r.gs.Regions {
+		if region != nil && region.IsTerrainArea && region.TerrainAreaID == areaID {
+			return rid
+		}
+	}
+	return ""
 }
 
 func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) {
@@ -1761,6 +2070,18 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	}
 	if !editInspectorHit(fx, fy) {
 		return InputAction{}, false
+	}
+	if r.terrainAreaEditPending() {
+		if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(fx, fy) {
+			r.cancelTerrainAreaEdit()
+			return InputAction{}, true
+		}
+		if buildEditInspectorTabButton(editInspectorSettlement, "Yerleşim Birimi").HitTest(fx, fy) ||
+			buildEditInspectorTabButton(editInspectorRegion, "Bölge").HitTest(fx, fy) ||
+			buildEditInspectorTabButton(editInspectorFaction, "Devlet").HitTest(fx, fy) ||
+			buildEditInspectorTabButton(editInspectorData, "Veri").HitTest(fx, fy) {
+			return InputAction{}, true
+		}
 	}
 	if buildEditInspectorTabButton(editInspectorSettlement, "Yerleşim Birimi").HitTest(fx, fy) {
 		r.editInspectorTab = editInspectorSettlement
@@ -1964,6 +2285,10 @@ func (r *Renderer) toggleEditTerrainDropdown() {
 		r.editTerrainDropdown.Close()
 		return
 	}
+	r.editOwnerDropdown.Close()
+	r.editSuccessorDropdown.Close()
+	r.editSettlementTypeDropdown.Close()
+	r.editUnitTypeDropdown.Close()
 
 	dx, dy, _, _ := editTerrainDropdownRect()
 	r.editTerrainDropdown.SetPosition(float64(dx), float64(dy))
@@ -2011,6 +2336,9 @@ func (r *Renderer) beginEditRename(target editTextTarget) {
 		}
 	case editTextRegionNameTR:
 	case editTextRegionName:
+		if region.IsTerrainArea {
+			return
+		}
 	case editTextRegionID:
 	default:
 		return
@@ -2018,6 +2346,14 @@ func (r *Renderer) beginEditRename(target editTextTarget) {
 	r.editTextTarget = target
 	r.editTextError = ""
 	r.editTextRunes = r.editTextRunes[:0]
+	if target == editTextRegionNameTR && region.IsTerrainArea {
+		for _, area := range r.gs.TerrainAreas {
+			if area.ID == region.TerrainAreaID {
+				r.editTextRunes = append(r.editTextRunes, []rune(area.Name)...)
+				break
+			}
+		}
+	}
 	if target == editTextRegionID {
 		r.editTextRunes = append(r.editTextRunes, []rune(string(region.ID))...)
 	}
@@ -2124,6 +2460,24 @@ func (r *Renderer) commitEditRename() {
 			r.editDirty = true
 		}
 	case editTextRegionNameTR:
+		if region.IsTerrainArea {
+			oldName := ""
+			for _, area := range r.gs.TerrainAreas {
+				if area.ID == region.TerrainAreaID {
+					oldName = area.Name
+					break
+				}
+			}
+			if newName != "" && oldName != newName {
+				r.setTerrainAreaName(region.TerrainAreaID, newName)
+				r.pushEditCommand(editCommand{
+					undo: func(rr *Renderer) { rr.setTerrainAreaName(region.TerrainAreaID, oldName) },
+					redo: func(rr *Renderer) { rr.setTerrainAreaName(region.TerrainAreaID, newName) },
+				})
+				r.editDirty = true
+			}
+			break
+		}
 		oldName := region.NameTR
 		if newName != "" && oldName != newName {
 			region.NameTR = newName
@@ -2299,6 +2653,9 @@ func (r *Renderer) initialSeaShapeRings(shapeID string) [][][2]float32 {
 func (r *Renderer) editTextLabel() string {
 	switch r.editTextTarget {
 	case editTextRegionNameTR:
+		if region := r.gs.Regions[r.editSelectedRegion]; region != nil && region.IsTerrainArea {
+			return "Arazi Adı"
+		}
 		return "Bolge Ad TR"
 	case editTextRegionName:
 		return "Bolge Ad EN"
@@ -2743,16 +3100,29 @@ func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
 	if !ok || region == nil {
 		return
 	}
-	if region.Terrain == terrain {
+	if region.Terrain == terrain && (!region.IsTerrainArea || !r.terrainAreaHasTouched()) {
 		return
 	}
 	if region.IsTerrainArea {
+		if r.terrainAreaEditPending() {
+			for i := range r.gs.TerrainAreas {
+				if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
+					r.gs.TerrainAreas[i].Terrain = terrain
+				}
+			}
+			r.syncTerrainAreaChildValues()
+			return
+		}
 		for i := range r.gs.TerrainAreas {
-			if r.gs.TerrainAreas[i].ID != region.TerrainAreaID {
+			if r.gs.TerrainAreas[i].ID != region.TerrainAreaID && !r.terrainAreaWasTouched(i) {
 				continue
 			}
 			before := r.worldSnapshot()
-			r.gs.TerrainAreas[i].Terrain = terrain
+			for j := range r.gs.TerrainAreas {
+				if r.gs.TerrainAreas[j].ID == region.TerrainAreaID || r.terrainAreaWasTouched(j) {
+					r.gs.TerrainAreas[j].Terrain = terrain
+				}
+			}
 			r.rebuildEditWorldMap()
 			after := r.worldSnapshot()
 			r.pushWorldSnapshotCommand(before, after)
@@ -2772,6 +3142,42 @@ func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
 		},
 	})
 	r.editDirty = true
+}
+
+func (r *Renderer) terrainAreaWasTouched(index int) bool {
+	if r == nil || index < 0 || index >= len(r.gs.TerrainAreas) || r.editTerrainAreaTouchedIDs == nil {
+		return false
+	}
+	_, ok := r.editTerrainAreaTouchedIDs[r.gs.TerrainAreas[index].ID]
+	return ok
+}
+
+func (r *Renderer) syncTerrainAreaChildValues() {
+	if r == nil || r.gs == nil {
+		return
+	}
+	byID := make(map[string]*world.TerrainArea, len(r.gs.TerrainAreas))
+	for i := range r.gs.TerrainAreas {
+		byID[r.gs.TerrainAreas[i].ID] = &r.gs.TerrainAreas[i]
+	}
+	for _, region := range r.gs.Regions {
+		if region == nil || !region.IsTerrainArea {
+			continue
+		}
+		area := byID[region.TerrainAreaID]
+		if area == nil {
+			continue
+		}
+		region.Terrain = area.Terrain
+		region.IsLocked = !world.TerrainData[area.Terrain].Passable
+	}
+}
+
+func (r *Renderer) terrainAreaHasTouched() bool {
+	if r == nil || r.editTerrainAreaTouchedIDs == nil {
+		return false
+	}
+	return len(r.editTerrainAreaTouchedIDs) > 0
 }
 
 func (r *Renderer) setSelectedSettlementType(typ string) {
@@ -2858,6 +3264,26 @@ func (r *Renderer) setRegionNameTR(rid world.RegionID, name string) {
 	region.NameTR = name
 	r.editSelectedRegion = rid
 	r.editSelectedSettlement = -1
+}
+
+func (r *Renderer) setTerrainAreaName(areaID, name string) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	for i := range r.gs.TerrainAreas {
+		if r.gs.TerrainAreas[i].ID != areaID {
+			continue
+		}
+		r.gs.TerrainAreas[i].Name = name
+		for _, region := range r.gs.Regions {
+			if region != nil && region.IsTerrainArea && region.TerrainAreaID == areaID {
+				region.Name = name
+				region.NameTR = name
+			}
+		}
+		r.editSelectedSettlement = -1
+		return
+	}
 }
 
 func (r *Renderer) setRegionName(rid world.RegionID, name string) {
@@ -3077,6 +3503,28 @@ func (r *Renderer) syncSelectedRegionNeighborsFromVisual() {
 	if region == nil {
 		return
 	}
+	if region.IsTerrainArea {
+		visual := r.terrainAreaVisualNeighbors(region.ID, r.editVisualNeighborBuf[:0])
+		before := r.worldSnapshot()
+		changed := false
+		for _, neighborID := range visual {
+			neighbor := r.gs.Regions[neighborID]
+			if neighbor == nil || neighbor.IsSea || neighbor.ID == region.ID {
+				continue
+			}
+			if r.appendTerrainAreaExtraNeighbor(region.TerrainAreaID, neighbor.ID) {
+				changed = true
+			}
+		}
+		if !changed {
+			return
+		}
+		r.rebuildEditWorldMap()
+		after := r.worldSnapshot()
+		r.pushWorldSnapshotCommand(before, after)
+		r.editDirty = true
+		return
+	}
 	visual := r.worldMap.VisualNeighbors(region.ID, r.editVisualNeighborBuf[:0])
 	before := r.neighborSnapshot(region.ID, visual)
 	r.applyVisualNeighbors(region.ID, visual)
@@ -3100,6 +3548,21 @@ func (r *Renderer) syncSelectedRegionNeighborsFromVisual() {
 		},
 	})
 	r.editDirty = true
+}
+
+// terrainAreaVisualNeighbors, arazi proxy'sinin tek bir raster düğümüne bağlı
+// kalmadan poligonun kapladığı gerçek bölgeleri bulur. Bu hesap yalnız Komşu
+// Sync tıklamasında çalışır; normal çizim döngüsüne girmez.
+func (r *Renderer) terrainAreaVisualNeighbors(regionID world.RegionID, dst []world.RegionID) []world.RegionID {
+	dst = dst[:0]
+	if r == nil || r.worldMap == nil || r.gs == nil {
+		return dst
+	}
+	region := r.gs.Regions[regionID]
+	if region == nil || !region.IsTerrainArea {
+		return dst
+	}
+	return r.worldMap.VisualNeighbors(region.ID, dst)
 }
 
 func (r *Renderer) worldSnapshot() editWorldSnapshot {
@@ -3218,6 +3681,10 @@ func cloneTerrainAreas(src []world.TerrainArea) []world.TerrainArea {
 	for i, area := range src {
 		dst[i] = area
 		dst[i].Cells = append([][2]int(nil), area.Cells...)
+		dst[i].Polygons = make([][][2]int, len(area.Polygons))
+		for j := range area.Polygons {
+			dst[i].Polygons[j] = append([][2]int(nil), area.Polygons[j]...)
+		}
 	}
 	return dst
 }
@@ -3413,6 +3880,7 @@ func (r *Renderer) applyVisualNeighbors(rid world.RegionID, visual []world.Regio
 	for _, nrid := range visual {
 		addNeighborID(r.gs.Regions[nrid], rid)
 	}
+	r.invalidateEditVisualNeighborCache()
 }
 
 func (r *Renderer) restoreNeighborSnapshots(snaps []editRegionNeighborsSnapshot) {
@@ -3427,6 +3895,7 @@ func (r *Renderer) restoreNeighborSnapshots(snaps []editRegionNeighborsSnapshot)
 	r.editDraggingSettlement = false
 	r.editDraggingRegion = false
 	r.editRenaming = false
+	r.invalidateEditVisualNeighborCache()
 }
 
 func uniqueNeighborSnapshots(snaps []editRegionNeighborsSnapshot) []editRegionNeighborsSnapshot {
@@ -4500,6 +4969,7 @@ func (r *Renderer) setArmyLocation(aid army.ArmyID, rid, dockedRegionID world.Re
 		r.editSelectedRegion = rid
 		r.editSelectedSettlement = -1
 	}
+	r.invalidateEditVisualNeighborCache()
 }
 
 func (r *Renderer) editPreferredDockSettlementID(region *world.Region) string {
@@ -4552,6 +5022,37 @@ func (r *Renderer) rebuildEditWorldMap() {
 	// Geçişlerin uçları sabit harita koordinatlarına bağlıdır; harita üzerinde
 	// bölge ataması değiştiğinde From/To ilişkisini aynı rasterdan yenile.
 	r.syncLandPassageRegionsFromMap()
+}
+
+// refreshTerrainAreasInEditMap güncellenen terrain polygonlarını mevcut temel
+// rasterı yeniden üretmeden harita atamalarına işler. Terrain editöründe shape,
+// sahiplik ve bölge override'ı değişmediği için NewWorldMap çağırmak gereksiz
+// ve özellikle büyük haritalarda editörü saniyelerce kilitliyor.
+func (r *Renderer) refreshTerrainAreasInEditMap() {
+	if r == nil || r.gs == nil || r.worldMap == nil {
+		return
+	}
+	// Önce eski terrain child atamalarını parent rasterına geri bırak; aksi
+	// halde aynı WorldMap üzerinde yeni alanları uygularken eski child indeksleri
+	// parent kontrolünü engeller.
+	for rid, pixels := range r.worldMap.regionPx {
+		region := r.gs.Regions[rid]
+		if region == nil || !region.IsTerrainArea {
+			continue
+		}
+		for _, pixel := range pixels {
+			if pixel >= 0 && pixel < len(r.worldMap.regionAt) {
+				if len(r.worldMap.baseRegionAt) == len(r.worldMap.regionAt) {
+					r.worldMap.regionAt[pixel] = r.worldMap.baseRegionAt[pixel]
+					continue
+				}
+				parentIdx := r.worldMap.regionIdx[region.ParentRegionID]
+				r.worldMap.regionAt[pixel] = parentIdx
+			}
+		}
+	}
+	world.SyncTerrainAreaRegions(r.gs.Regions, r.gs.TerrainAreas)
+	r.worldMap.applyTerrainAreaRegions(r.gs)
 }
 
 func (r *Renderer) buildRegionPaintBaseline() {

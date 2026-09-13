@@ -5386,15 +5386,31 @@ func DrawTerrainAreaPanel(screen *ebiten.Image, gs *state.GameState, region *wor
 	drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Tip", "Yerleşimsiz arazi alanı", ColorGray, ColorWhite)
 	ly += 18
 	status := "Geçilebilir"
+	var terrainArea *world.TerrainArea
 	if region.TerrainAreaID != "" {
-		for _, area := range gs.TerrainAreas {
-			if area.ID == region.TerrainAreaID && area.MoveCost == 0 {
+		for i := range gs.TerrainAreas {
+			if gs.TerrainAreas[i].ID != region.TerrainAreaID {
+				continue
+			}
+			terrainArea = &gs.TerrainAreas[i]
+			if !world.TerrainAreaIsPassable(*terrainArea) {
 				status = "Geçilemez"
 			}
+			break
 		}
 	}
 	drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Hareket", status, ColorGray, ColorWhite)
-	ly += 26
+	ly += 18
+	if terrainArea != nil && world.TerrainAreaIsPassable(*terrainArea) {
+		// TerrainArea.MoveCost ek maliyeti -1/-2 olarak saklar; oyuncuya
+		// girilecek toplam hareket puanını göster.
+		drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Hareket Maliyeti", itoa(1-terrainArea.MoveCost)+" PU", ColorGray, ColorWhite)
+		ly += 18
+		drawUIKeyValueRow(screen, lx, ly, float64(sepW), "Yıpranma", "%"+itoa(terrainArea.AttritionCost), ColorGray, ColorWhite)
+		ly += 26
+	} else {
+		ly += 8
+	}
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+sepW, 1, panelBorder)
 	ly += 8
 	drawNeighborBlock(screen, gs, region, lx, ly, sepW, neighborExpanded, ColorGold)

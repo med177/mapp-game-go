@@ -7,6 +7,106 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-13: Oyun içinde seçilen geçilebilir terrain alanlarının bölge bilgi
+  panelinde toplam hareket maliyeti ve yıpranma yüzdesi gösteriliyor; maliyeti
+  `0` olan alanlarda bu ek satırlar gösterilmiyor.
+
+- 2026-09-13: Geçilebilir terrain alanlarının runtime iç bölge sınırları
+  normal oyunda ince yardımcı çizgiyle, Edit Mode'da seçili alan için kesikli
+  sarı çizgiyle gösteriliyor. Terrain dolgusu sınır mesh'inden önce çizilerek
+  bu sınırların görünür kalması sağlandı.
+
+- 2026-09-13: Terrain alanlarında geçilebilirlik artık yalnız `move_cost` ile
+  belirleniyor. `0` alanı kilitli tutuyor; negatif maliyetli alanlar terrain
+  etiketi `dağ` veya `göl` olsa bile hareket edilebilir runtime parçalarına
+  ayrılıyor. Terrain tipi yalnız etiket, renk ve arazi savaş özelliklerini
+  belirliyor.
+
+- 2026-09-13: Ordu hareketinde arazi alanları devlet toprağı gibi savaş/işgal
+  onayı açmıyor ve savaşsız geçişte fetih akışına girmiyor. Arazi alanında
+  başka bir kara ordusu varsa tarafsız düğüm üzerinden kara teması başlatılıyor;
+  temas çözülürse hareket devam ediyor.
+
+- 2026-09-13: Arazi alanı maliyeti `0` olduğunda Edit Mode'da yıpranma
+  düğmesi pasif ve değer `%0` gösteriliyor. Maliyet tekrar `0` yapılınca
+  yıpranma kaydı sıfırlanıyor; oyun çözümlemesi de bloklu alanda yıpranma
+  uygulamıyor.
+
+- 2026-09-13: Edit Mode'da yeni arazi alanlarının varsayılan hareket maliyeti
+  `0` olarak bırakılıyor. Poligon uygulandığında geçilebilir arazi parçaları
+  oluşturulmuyor; maliyet `-1` veya `-2` yapıldığında alan yeniden kurulup
+  bölge bazlı runtime parçalanması devreye giriyor.
+
+- 2026-09-13: Geçilebilir terrain alanları harita yüklenirken temel bölgelere
+  göre runtime parçalarına ayrılıyor (`area::<alan>::<bölge>`). Geçiş maliyeti
+  ve yıpranma her parçaya girişte uygulanıyor; `move_cost: 0` veya terrain
+  tanımı geçişe kapalı olan alanlar parçalanmadan blok olarak kalıyor.
+
+- 2026-09-13: Terrain alanı runtime düğümleri artık hiçbir devletin sahibi
+  değil. Geçilebilir alanlara tüm devletler savaş halkası olmadan girebilir;
+  geçilemez alanlar `IsLocked` olarak hareket hedeflerinden çıkarılır.
+
+- 2026-09-13: Edit Mode'da seçili arazi alanına `Arazi Adı` üzerinden isim
+  verilebiliyor. İsim `terrain_areas.json` içindeki `name` alanına yazılıyor ve
+  undo/redo akışına dahil ediliyor.
+
+- 2026-09-13: `terrain_areas.json` ve `region_shapes.json` dosyaları `null`,
+  `[]` veya boş içerik olduğunda boş veri olarak yükleniyor; bu durum artık
+  harita yüklemesini engellemiyor.
+
+- 2026-09-13: Edit Mode komşuluk çizgileri veri ile görsel sınır karşılaştırmasına
+  göre renklendiriliyor: yeşil eşleşen komşuyu, kırmızı görsel olarak var olup
+  veride eksik komşuyu, soluk beyaz ise veride olup sınırla kesişmeyen elle
+  eklenmiş komşuyu gösteriyor. Görsel komşuluk yalnız seçili bölge/harita
+  değiştiğinde hesaplanıyor.
+
+- 2026-09-13: Edit Mode'da Shape yardım paneli ordu ikonlarından sonra çiziliyor;
+  Bölge sekmesinde seçili bölgenin raster sınırı noktalı vurguyla gösteriliyor.
+  Sınır pikselleri seçili bölge/harita için önbelleklenerek her karede yeniden
+  hesaplanmıyor.
+
+- 2026-09-13: Arazi alanları senaryo verisinde bölge alt kaydı olmadan üst seviye
+  poligon olarak saklanıyor. Runtime hareket grafiği için oluşturulan sentetik
+  düğüm merkez/komşuluk işareti çizmeden poligonun değdiği bölgelerle bağlanıyor;
+  Edit Mode'da arazi tipi düğmesi açılır liste yerine çevrimsel çalışıyor.
+
+- 2026-09-13: Edit Mode sağ üst bölge bilgi paneli seçili bölgeyle birlikte
+  görünür. Voronoi hesabı yalnız `V` debug modu açıldığında çalışır; normal
+  seçim paneli yalnız JSON komşuluk bilgisini gösterir.
+
+- 2026-09-13: Voronoi debug komşuluk ve sınır pikselleri seçili bölge/WorldMap
+  değişene kadar önbellekleniyor; kamera veya normal çizim kareleri pahalı hesabı
+  tekrar çalıştırmıyor.
+
+- 2026-09-13: Edit Mode Bölge sekmesinde seçili bölge sınırı ordu ikonlarının
+  üstünde noktalı gösteriliyor; Devlet sekmesinde fare altındaki ülke shape'i
+  vurgulanıyor.
+
+- 2026-09-13: Edit Mode harita seçimleri ilgili inspector sekmesine otomatik
+  geçiyor: yerleşim için Yerleşim Birimi, bölge için Bölge, ordu/donanma için
+  ordu düzenleme kontrollerinin bulunduğu Yerleşim Birimi sekmesi.
+
+- 2026-09-13: Arazi alanlarının sabit poligon merkez göstergesi geri getirildi;
+  merkez taşıma hedefi değil. Arazi seçimi ve komşuluk hedef hit-test'i doğrudan
+  poligonlardan çalışıyor, böylece runtime raster proxy'sine bağlı kalmıyor.
+
+- 2026-09-13: Edit Mode normal harita hareketinde hover koordinat/bölge sorgusu
+  kaldırıldı. Sağ üst panel yalnız seçili bölgeyi gösteriyor; koordinat hover'ı
+  sadece açık Voronoi debug modunda, ülke sınırı da yalnız tıklanmış seçimde
+  çiziliyor.
+
+- 2026-09-13: Edit Mode komşuluk ekleme geçici seçim moduna dönüştürüldü.
+  Komşu Ekle düğmesi Uygula'ya dönüşüyor, seçilen hedefler merkezden merkeze
+  oklarla önizleniyor ve tüm ilişkiler tek undo/rebuild işlemiyle kaydediliyor.
+
+- 2026-09-13: Arazi alanı seçiliyken Komşu Sync, poligon proxy'sinin görsel
+  komşularını `ExtraNeighbors` içine aktarıyor; tek rebuild sonrası arazi merkezi
+  bağlantıları haritada görünür hale geliyor.
+
+- 2026-09-13: Arazi Komşu Sync hesabı proxy raster komşuluğuna bağımlı olmaktan
+  çıkarıldı; düğme tıklamasında poligonun kapladığı harita bölgeleri doğrudan
+  taranıyor.
+
 - 2026-09-12: Edit Mode devlet düzenleme formuna doğrudan vassal üst devleti
   seçimi eklendi. `OverlordID`, vassal tribute varsayılanı ve vassallık turu
   `factions.json` başlangıç verisiyle birlikte korunuyor; geçersiz veya döngüsel
@@ -224,6 +324,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `Arazi Tipi` olarak ayrıştırıldı. Kapsam: `internal/render/map_editor.go`,
   `internal/render/shape_editor.go`.
 
+- 2026-09-12: Edit Mode arazi alanı aracı hücre fırçasından poligon çizimine
+  geçirildi. Kapatılan poligon parent bölge sınırlarını aşabiliyor; runtime
+  için parent başına türetilen alt alanlar kullanılıyor; JSON kaynağı yalnızca
+  poligon geometrisi tutuyor. Kapsam: `internal/world/terrain_area.go`,
+  `internal/render/shape_editor.go`, `internal/render/mapgen.go`.
+
 - 2026-08-25: Edit Mode arazi alanlarına seçili alanı silme ve bağımsız arazi
   tipi değiştirme kontrolleri eklendi. Alanlar parent devlet renginin tonlarıyla
   çiziliyor; runtime merkezi boyalı hücrelerin ortasında hesaplanıyor ve merkez
@@ -244,11 +350,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `internal/render/mapgen.go`, `internal/render/panel.go`, `internal/state/movement.go`.
 
 - 2026-08-24: Yerleşimsiz dağ/çöl/sık orman gibi alt arazi alanları eklendi.
-  Edit modda seçili kara bölgesinin mevcut ortak fırçasıyla çizilir; `0`
-  geçişi engeller, `-1` ve `-2` ek hareket puanı tüketir. Alanlar
-  `terrain_areas.json` içinde parent bölgeye bağlı hücreler olarak saklanır,
-  oyun ve AI hareket kurallarına uygulanır. Kapsam: `internal/world/terrain_area.go`,
-  `internal/state/movement.go`, `internal/render/terrain_areas.go`.
+  Edit Mode’da poligon olarak çizilir; eski `cells` kayıtları yükleme sırasında
+  poligona dönüştürülür ve yeni JSON kayıtlarında yalnızca poligon geometrisi
+  saklanır. `0` geçişi engeller, `-1` ve `-2` ek hareket puanı tüketir. Kapsam:
+  `internal/world/terrain_area.go`, `internal/state/movement.go`,
+  `internal/render/terrain_areas.go`, `internal/render/shape_editor.go`.
 
 - 2026-08-24: Bölgesel vergi oranı oyuncu ve AI için en fazla `%60` olacak şekilde
   sınırlandı. Senaryo ve kayıt yükleme sırasında eski `%60` üzeri oranlar da
@@ -3040,6 +3146,10 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 - 2026-08-01: Taşınan birlik içeren filolarda `Taşıma: X/Y` butonu yeşil aktif taşıma rengine alındı. Footer ile buton arasında üst-alt 4 px margin bırakıldı; boşluk merchant/görev footer butonlarıyla hizalandı. Regression: `TestArmyTransportFooterTextUsesInfoButtonGeometry`, `go test ./internal/render -count=1`.
 - 2026-08-01: Filonun taşıdığı kara ordusu rozeti 16 px'e büyütüldü; çift siyah/sarı katman yerine yalnız sarı border ve siyah iç dolgu kullanılıyor. Birlik sayısı outlinesız beyaz metin olarak kalıyor. Regression: `TestNavalEmbarkedArmyBadgeStaysAtUpperRight`, `TestEmbarkedArmyBadgeHitSelectsTransportedArmyView`, `go test ./internal/render -count=1`.
 - 2026-08-06: Yan yana ordu marker'larının ortak merkez aralığı 40 px'e çıkarıldı; komutan portreleri artık bitişmiyor, üst görev/bonus rozetleri komşu portrelerin üzerine taşmıyor. Kuşatma, donanma ve farklı grupların yeniden dağıtım geometrileri aynı adımı kullanıyor. Regression: `TestArmyIconSpacingSeparatesCommanderPortraitsAndBadges`, `go test ./internal/render -run 'TestArmyIcon|TestArmyCommanderBadge|TestArmySelectionIndicator|TestNavalArmyBadges|TestNavalDamageBadge|TestArmyDamageBadge' -count=1`.
+- 2026-09-13: Edit Mode terrain poligon kapanışı başlangıç noktasına hover + sol tık akışına taşındı; kapanış sonrası yeni çizim `Uygula` veya `İptal` seçilene kadar kilitleniyor. Merkez polygon centroid'ine göre shape koordinatına çevriliyor, poligon parent tespiti bbox raster taraması yerine kenar/anchor örnekleriyle yapılıyor ve terrain child bölgeleri yalnız parent komşuluğunu tutuyor. Regression: `go test ./... -count=1`, `go build ./cmd/game`.
+- 2026-09-13: Terrain edit sırasında varsayılan açık kalan Voronoi debug overlay'i kapatıldı; terrain modunda sınır/komşuluk debug hesabı çizilmiyor. Bu akışta temel dünya rasterı yeniden oluşturulmadan yalnız terrain ataması güncelleniyor.
+- 2026-09-13: Edit Mode inspector paneli `gameui` panel/label/button/dropdown yapılarına hizalandı; shape sekmesinin hit-test listesi yalnız görünür düğmeleri kullanıyor ve panel rect'i çizim ile input arasında ortak kalıyor.
+- 2026-09-13: Edit Mode'da seçili bölgenin komşu merkez linkleri Voronoi sınır hesabından bağımsız ucuz overlay olarak gösteriliyor; terrain alanı seçimi polygon border ile vurgulanıyor ve terrain dropdown geçişinde diğer açık dropdown'lar kapatılıyor.
 - 2026-09-10: Kuşatma paneli ve karar penceresi, ordunun gedik kapasitesini hedef tahkimatla karşılaştırarak yetersiz kuşatma ekipmanını açıkça gösteriyor. Birimlere opsiyonel `siege_breach_max_fort_level` alanı eklendi; 1300 senaryosunda Lağımcılar T6 tahkimata kadar gedik açabiliyor. Regression: `TestSiegeBreachGainRequiresCompatibleSiegeTier`; kapsam: `internal/army/{army.go,unit.go}`, `internal/game/siege.go`, `internal/render/renderer_dialogs.go`, `assets/scenarios/1300_ottoman_rise/data/units.json`.
 - 2026-09-10: Aktif kuşatma panelindeki ilerleme kartı ilk küçük gediğin tahmini çözümleme turunu gösteriyor; mevcut kuşatma gücü yoksa `gedik oluşmaz` uyarısı veriyor. Önizleme canlı HP, uygun kuşatma tier'ı, Lağımcı kapasitesi, komutan, teknoloji, savunucu ve destek ordularını hesaba katıyor; `internal/state/siege_preview.go`, `internal/render/renderer_dialogs.go`.
 - 2026-09-10: Edit Mode karasal geçişlerinin özel uç noktaları harita rasterındaki

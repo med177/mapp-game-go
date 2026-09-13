@@ -1656,6 +1656,32 @@ func (s *GameState) SelectBattleDefender(attacker *army.Army, target world.Regio
 	return best
 }
 
+// SelectLandContactOpponent, tarafsız arazi alanında bulunan yabancı kara
+// ordusunu temas için seçer. Arazi alanı bir devlet toprağı olmadığı için
+// temasın tetiklenmesi hedefin OwnerID veya diplomatik savaş durumuna bağlı
+// değildir; gerçek savaş çözümlemesi temas kararından sonra yapılır.
+func (s *GameState) SelectLandContactOpponent(attacker *army.Army, target world.RegionID) *army.Army {
+	if s == nil || attacker == nil {
+		return nil
+	}
+	var best *army.Army
+	bestPower := -1
+	for _, candidate := range s.Armies {
+		if candidate == nil || candidate.ID == attacker.ID || candidate.RegionID != target || candidate.IsNaval || candidate.OwnerID == attacker.OwnerID {
+			continue
+		}
+		power := 0
+		if s.UnitTypes != nil {
+			power = candidate.TotalStrength(s.UnitTypes)
+		}
+		if best == nil || power > bestPower || (power == bestPower && string(candidate.ID) < string(best.ID)) {
+			best = candidate
+			bestPower = power
+		}
+	}
+	return best
+}
+
 // HasCapableSiegeReliefArmy, kuşatılan devletin hedefe komşu ve bu tur
 // ilerleyebilecek bir ordusunun kuşatanı yenebilecek güçte olup olmadığını
 // döner. Hedefteki savunmacı ayrıca değerlendirilir; bu yardımcı yalnızca

@@ -217,7 +217,7 @@ func chooseBestMoveWithStrategicContext(gs *state.GameState, a *army.Army, strat
 		return bestTarget
 	}
 	ctx := newMoveScoreContext(gs, a)
-	for _, nid := range src.Neighbors {
+	for _, nid := range aiRouteNeighborIDs(gs, src) {
 		n, ok := gs.Regions[nid]
 		if !ok {
 			continue
@@ -250,6 +250,22 @@ func scoreMove(gs *state.GameState, a *army.Army, target *world.Region) int {
 }
 
 func scoreMoveWithContext(gs *state.GameState, a *army.Army, target *world.Region, ctx *moveScoreContext) int {
+	if gs == nil || a == nil || target == nil {
+		return -1
+	}
+	if !a.IsNaval && target.ID != a.RegionID && target.CanLandEnter() {
+		if cost, allowed := aiLandEntryMoveCost(gs, a.RegionID, target); !allowed || a.MovePoints < cost {
+			return -1
+		}
+	}
+	score := scoreMoveWithContextRaw(gs, a, target, ctx)
+	if score <= 0 || a.IsNaval || target.ID == a.RegionID || !target.CanLandEnter() {
+		return score
+	}
+	return maxInt(0, score-aiTerrainMovePenalty(gs, a.RegionID, target))
+}
+
+func scoreMoveWithContextRaw(gs *state.GameState, a *army.Army, target *world.Region, ctx *moveScoreContext) int {
 	source := gs.Regions[a.RegionID]
 	planBonus := aiPlanMoveScoreBonus(gs, faction.FactionID(a.OwnerID), target)
 	armyDemand := gs.RegionalArmyGrainDemand(a)

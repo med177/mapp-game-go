@@ -557,7 +557,7 @@
   {
     "id": "army_england_1",
     "owner_id": "england",
-    "region_id": "london",
+    "region_id": "essex",
     "units": [
       {
         "type_id": "infantry",
@@ -1763,7 +1763,7 @@
     "id": "fleet_england_channel",
     "owner_id": "england",
     "region_id": "english_channel",
-    "docked_region_id": "london",
+    "docked_region_id": "essex",
     "docked_settlement_id": "london_greenwich",
     "is_naval": true,
     "units": [

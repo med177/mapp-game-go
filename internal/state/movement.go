@@ -52,6 +52,9 @@ func (s *GameState) LandRegionAttritionPercent(region *world.Region) int {
 	}
 	for _, area := range s.TerrainAreas {
 		if area.ID == region.TerrainAreaID {
+			if area.MoveCost == 0 {
+				return 0
+			}
 			return area.AttritionCost
 		}
 	}

@@ -7,8 +7,8 @@ import (
 )
 
 // LandPassageType karasal iki bölge arasındaki özel geçişin türünü tanımlar.
-// Şimdilik yalnızca boğaz görselleştirmesi kullanılıyor; diğer türler ileride
-// hareket ve savaş kurallarına bağlanabilir.
+// Geçitler harita bağlantısının yanı sıra AI rota ve hareket maliyetlerinde
+// de kullanılır.
 type LandPassageType string
 
 const (

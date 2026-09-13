@@ -51,7 +51,7 @@
     "stone_cost": 0,
     "cloth_cost": 4,
     "spice_cost": 2,
-    "movement_points": 2
+    "movement_points": 3
   },
   {
     "id": "elite_infantry",
@@ -81,7 +81,7 @@
     "stone_cost": 0,
     "cloth_cost": 6,
     "spice_cost": 2,
-    "movement_points": 2
+    "movement_points": 3
   },
   {
     "id": "light_cavalry",
@@ -138,7 +138,7 @@
     "stone_cost": 0,
     "cloth_cost": 4,
     "spice_cost": 2,
-    "movement_points": 3
+    "movement_points": 4
   },
   {
     "id": "heavy_cavalry",
@@ -169,7 +169,7 @@
     "stone_cost": 0,
     "cloth_cost": 8,
     "spice_cost": 2,
-    "movement_points": 3
+    "movement_points": 4
   },
   {
     "id": "catapult",
@@ -293,7 +293,7 @@
     "stone_cost": 10,
     "cloth_cost": 5,
     "spice_cost": 0,
-    "movement_points": 2
+    "movement_points": 3
   },
   {
     "id": "transport",
@@ -351,7 +351,7 @@
     "stone_cost": 0,
     "spice_cost": 2,
     "cloth_cost": 6,
-    "movement_points": 3
+    "movement_points": 4
   },{
     "id": "warship",
     "name": "Warship",
@@ -379,6 +379,6 @@
     "stone_cost": 0,
     "cloth_cost": 8,
     "spice_cost": 8,
-    "movement_points": 3
+    "movement_points": 2
   }
 ]

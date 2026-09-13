@@ -1366,7 +1366,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
 		// Müttefik bölgesine çıkarma için "Karaya In" göster.
-		if !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
+		if !target.IsTerrainArea && !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
 			if armyRegionIsFriendly(r.gs, a, target) && len(a.EmbarkedUnits) > 0 {
 				// Müttefik kıyısına çıkarma — savaş popup'ı değil, karaya inme onayı
 				r.ShowConfirmDialog(

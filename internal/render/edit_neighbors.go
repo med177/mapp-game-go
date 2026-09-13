@@ -3,6 +3,10 @@ package render
 import "mapp-game-go/internal/world"
 
 func (r *Renderer) toggleEditNeighborAddMode() {
+	if r.editNeighborAddMode {
+		r.applyEditNeighborAddMode()
+		return
+	}
 	r.editNeighborAddMode = !r.editNeighborAddMode
 	r.editLandPassageMode = false
 	r.editLandPassageAdjustMode = false
@@ -15,6 +19,7 @@ func (r *Renderer) toggleEditNeighborAddMode() {
 	r.editLandPassageDragChanged = false
 	if !r.editNeighborAddMode {
 		r.editNeighborAddFrom = ""
+		r.editNeighborAddTargets = nil
 		r.editNeighborAddMessage = ""
 		return
 	}
@@ -26,6 +31,7 @@ func (r *Renderer) toggleEditNeighborAddMode() {
 		return
 	}
 	r.editNeighborAddFrom = source.ID
+	r.editNeighborAddTargets = nil
 	r.editNeighborAddMessage = "hedef kara bölgesine tıkla"
 }
 
@@ -33,7 +39,10 @@ func (r *Renderer) handleEditNeighborAddClick(fx, fy float64) {
 	if !r.editNeighborAddMode || r.editNeighborAddFrom == "" {
 		return
 	}
-	targetID := r.editRegionAt(fx, fy)
+	targetID, terrainHit := r.terrainAreaRegionAt(fx, fy)
+	if !terrainHit {
+		targetID = r.editRegionAt(fx, fy)
+	}
 	target := r.gs.Regions[targetID]
 	if target == nil || target.IsSea {
 		r.editNeighborAddMessage = "yalnızca kara bölgesi seç"
@@ -43,7 +52,62 @@ func (r *Renderer) handleEditNeighborAddClick(fx, fy float64) {
 		r.editNeighborAddMessage = "aynı bölge seçilemez"
 		return
 	}
-	r.addNeighborBetween(r.editNeighborAddFrom, target.ID)
+	for _, existing := range r.editNeighborAddTargets {
+		if existing == target.ID {
+			r.editNeighborAddMessage = "hedef zaten seçildi"
+			return
+		}
+	}
+	r.editNeighborAddTargets = append(r.editNeighborAddTargets, target.ID)
+	r.editNeighborAddMessage = "hedef eklendi; Uygula ile kaydet"
+}
+
+func (r *Renderer) applyEditNeighborAddMode() {
+	if r == nil || !r.editNeighborAddMode {
+		return
+	}
+	source := r.gs.Regions[r.editNeighborAddFrom]
+	if source == nil || len(r.editNeighborAddTargets) == 0 {
+		r.editNeighborAddMode = false
+		r.editNeighborAddFrom = ""
+		r.editNeighborAddTargets = nil
+		r.editNeighborAddMessage = "komşuluk seçimi iptal edildi"
+		return
+	}
+	before := r.worldSnapshot()
+	changed := false
+	for _, targetID := range r.editNeighborAddTargets {
+		target := r.gs.Regions[targetID]
+		if target == nil || target.IsSea || target.ID == source.ID {
+			continue
+		}
+		if source.IsTerrainArea {
+			changed = r.appendTerrainAreaExtraNeighbor(source.TerrainAreaID, target.ID) || changed
+		} else {
+			beforeLen := len(source.Neighbors)
+			addNeighborID(source, target.ID)
+			changed = changed || len(source.Neighbors) != beforeLen
+		}
+		if target.IsTerrainArea {
+			changed = r.appendTerrainAreaExtraNeighbor(target.TerrainAreaID, source.ID) || changed
+		} else {
+			beforeLen := len(target.Neighbors)
+			addNeighborID(target, source.ID)
+			changed = changed || len(target.Neighbors) != beforeLen
+		}
+	}
+	if changed {
+		r.rebuildEditWorldMap()
+		after := r.worldSnapshot()
+		r.pushWorldSnapshotCommand(before, after)
+		r.editDirty = true
+		r.editNeighborAddMessage = "komşuluklar uygulandı"
+	} else {
+		r.editNeighborAddMessage = "yeni komşuluk yok"
+	}
+	r.editNeighborAddMode = false
+	r.editNeighborAddFrom = ""
+	r.editNeighborAddTargets = nil
 }
 
 func (r *Renderer) addNeighborBetween(from, to world.RegionID) {

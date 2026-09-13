@@ -1,6 +1,7 @@
 package render
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -590,24 +591,219 @@ func (wm *WorldMap) applyTerrainAreaRegions(gs *state.GameState) {
 	if wm == nil || gs == nil {
 		return
 	}
-	for _, area := range gs.TerrainAreas {
-		childID := world.RegionID("terrain_area::" + area.ID)
-		if gs.Regions[childID] == nil {
+	baseRegionAt := make([]uint16, len(wm.regionAt))
+	copy(baseRegionAt, wm.regionAt)
+	for areaIndex := range gs.TerrainAreas {
+		area := &gs.TerrainAreas[areaIndex]
+		rootID := world.TerrainAreaRegionID(area.ID)
+		root := gs.Regions[rootID]
+		if root == nil {
 			continue
 		}
-		idx := wm.ensureRegionIndex(childID)
-		for _, cell := range area.Cells {
-			x, y := cell[0], cell[1]
-			if x < 0 || y < 0 || x >= WorldW || y >= WorldH {
+		if world.TerrainAreaIsPassable(*area) {
+			wm.applyPassableTerrainAreaFragments(gs, area, rootID, baseRegionAt)
+			continue
+		}
+		wm.applyTerrainAreaRoot(gs, area, rootID, baseRegionAt)
+	}
+	wm.rebuildRegionPixelsFromAssignments()
+	wm.linkTerrainAreaNeighbors(gs)
+}
+
+func (wm *WorldMap) applyTerrainAreaRoot(gs *state.GameState, area *world.TerrainArea, childID world.RegionID, baseRegionAt []uint16) {
+	idx := wm.ensureRegionIndex(childID)
+	centerX, centerY, centerCount := 0, 0, 0
+	wm.forEachTerrainAreaCell(area, func(x, y int, baseRegion *world.Region) {
+		if baseRegion == nil || baseRegion.IsSea || (area.ParentRegionID != "" && baseRegion.ID != area.ParentRegionID) {
+			return
+		}
+		wm.regionAt[y*WorldW+x] = idx
+		centerX += x
+		centerY += y
+		centerCount++
+	}, gs, baseRegionAt)
+	if child := gs.Regions[childID]; child != nil && centerCount > 0 {
+		centerPixelX := float64(centerX) / float64(centerCount)
+		centerPixelY := float64(centerY) / float64(centerCount)
+		if polygonX, polygonY, ok := area.PolygonCenter(); ok {
+			centerPixelX, centerPixelY = float64(polygonX), float64(polygonY)
+		}
+		area.RuntimeCenterX = worldPixelToShapeX(centerPixelX)
+		area.RuntimeCenterY = worldPixelToShapeY(centerPixelY)
+		area.RuntimeCenterValid = true
+		child.WorldX = area.RuntimeCenterX
+		child.WorldY = area.RuntimeCenterY
+	}
+}
+
+func (wm *WorldMap) applyPassableTerrainAreaFragments(gs *state.GameState, area *world.TerrainArea, rootID world.RegionID, baseRegionAt []uint16) {
+	fragments := make(map[world.RegionID]*world.Region)
+	fragmentCenters := make(map[world.RegionID][3]int)
+	wm.forEachTerrainAreaCell(area, func(x, y int, baseRegion *world.Region) {
+		if baseRegion == nil || baseRegion.IsSea || (area.ParentRegionID != "" && baseRegion.ID != area.ParentRegionID) {
+			return
+		}
+		fragmentID := world.TerrainAreaFragmentRegionID(area.ID, baseRegion.ID)
+		fragment := fragments[fragmentID]
+		if fragment == nil {
+			fragment = &world.Region{
+				ID:             fragmentID,
+				Name:           area.Name,
+				NameTR:         area.Name,
+				Terrain:        area.Terrain,
+				OwnerID:        "",
+				IsTerrainArea:  true,
+				ParentRegionID: baseRegion.ID,
+				TerrainAreaID:  area.ID,
+				IsLocked:       false,
+			}
+			fragments[fragmentID] = fragment
+			gs.Regions[fragmentID] = fragment
+		}
+		idx := wm.ensureRegionIndex(fragmentID)
+		wm.regionAt[y*WorldW+x] = idx
+		center := fragmentCenters[fragmentID]
+		center[0] += x
+		center[1] += y
+		center[2]++
+		fragmentCenters[fragmentID] = center
+	}, gs, baseRegionAt)
+	delete(gs.Regions, rootID)
+	for fragmentID, fragment := range fragments {
+		center := fragmentCenters[fragmentID]
+		if center[2] == 0 {
+			continue
+		}
+		fragment.WorldX = worldPixelToShapeX(float64(center[0]) / float64(center[2]))
+		fragment.WorldY = worldPixelToShapeY(float64(center[1]) / float64(center[2]))
+	}
+}
+
+func (wm *WorldMap) forEachTerrainAreaCell(area *world.TerrainArea, fn func(x, y int, baseRegion *world.Region), gs *state.GameState, baseRegionAt []uint16) {
+	visit := func(x, y int) {
+		if x < 0 || y < 0 || x >= WorldW || y >= WorldH {
+			return
+		}
+		idx := baseRegionAt[y*WorldW+x]
+		if idx == 0 || idx >= uint16(len(wm.regionIDs)) {
+			return
+		}
+		fn(x, y, gs.Regions[wm.regionIDs[idx]])
+	}
+	if len(area.Polygons) > 0 {
+		for _, polygon := range area.Polygons {
+			if len(polygon) < 3 {
 				continue
 			}
-			p := y*WorldW + x
-			if wm.regionAt[p] != 0 {
-				wm.regionAt[p] = idx
+			minX, minY := WorldW-1, WorldH-1
+			maxX, maxY := 0, 0
+			for _, point := range polygon {
+				minX, minY = minInt(minX, point[0]), minInt(minY, point[1])
+				maxX, maxY = maxInt(maxX, point[0]), maxInt(maxY, point[1])
+			}
+			minX, minY = maxInt(0, minX), maxInt(0, minY)
+			maxX, maxY = minInt(WorldW-1, maxX), minInt(WorldH-1, maxY)
+			for y := minY; y <= maxY; y++ {
+				for x := minX; x <= maxX; x++ {
+					if world.PointInPolygon(float64(x)+0.5, float64(y)+0.5, polygon) {
+						visit(x, y)
+					}
+				}
+			}
+		}
+		return
+	}
+	for _, cell := range area.Cells {
+		visit(cell[0], cell[1])
+	}
+}
+
+// linkTerrainAreaNeighbors connects a top-level terrain proxy to every region
+// whose raster boundary it touches. This keeps movement graph traversal valid
+// without making the terrain area a child of one arbitrary region.
+func (wm *WorldMap) linkTerrainAreaNeighbors(gs *state.GameState) {
+	if wm == nil || gs == nil {
+		return
+	}
+	for _, area := range gs.TerrainAreas {
+		for childID, child := range gs.Regions {
+			if child == nil || !child.IsTerrainArea || child.TerrainAreaID != area.ID {
+				continue
+			}
+			childIdx := wm.regionIdx[childID]
+			if childIdx == 0 {
+				continue
+			}
+			for _, pIdx := range wm.regionPx[childID] {
+				px, py := pIdx%WorldW, pIdx/WorldW
+				neighborIndices, neighborCount := wm.orthogonalRegionIndices(pIdx, px, py)
+				for i := 0; i < neighborCount; i++ {
+					neighborIdx := neighborIndices[i]
+					if neighborIdx == 0 || neighborIdx == childIdx {
+						continue
+					}
+					neighbor := gs.Regions[wm.regionIDs[neighborIdx]]
+					if neighbor == nil {
+						continue
+					}
+					child.Neighbors = appendRegionIDOnce(child.Neighbors, neighbor.ID)
+					neighbor.Neighbors = appendRegionIDOnce(neighbor.Neighbors, child.ID)
+				}
+			}
+			if child.ParentRegionID != "" {
+				if parent := gs.Regions[child.ParentRegionID]; parent != nil {
+					child.Neighbors = appendRegionIDOnce(child.Neighbors, parent.ID)
+					parent.Neighbors = appendRegionIDOnce(parent.Neighbors, child.ID)
+				}
+			}
+			for _, extraID := range area.ExtraNeighbors {
+				extra := gs.Regions[extraID]
+				if extra == nil || extra.ID == child.ID {
+					continue
+				}
+				child.Neighbors = appendRegionIDOnce(child.Neighbors, extra.ID)
+				extra.Neighbors = appendRegionIDOnce(extra.Neighbors, child.ID)
 			}
 		}
 	}
-	wm.rebuildRegionPixelsFromAssignments()
+}
+
+func (wm *WorldMap) orthogonalRegionIndices(pIdx, px, py int) ([4]uint16, int) {
+	var indices [4]uint16
+	count := 0
+	if px > 0 {
+		indices[count] = wm.regionAt[pIdx-1]
+		count++
+	}
+	if px < WorldW-1 {
+		indices[count] = wm.regionAt[pIdx+1]
+		count++
+	}
+	if py > 0 {
+		indices[count] = wm.regionAt[pIdx-WorldW]
+		count++
+	}
+	if py < WorldH-1 {
+		indices[count] = wm.regionAt[pIdx+WorldW]
+		count++
+	}
+	return indices, count
+}
+
+func appendRegionIDOnce(ids []world.RegionID, id world.RegionID) []world.RegionID {
+	for _, existing := range ids {
+		if existing == id {
+			return ids
+		}
+	}
+	return append(ids, id)
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func (wm *WorldMap) VisualNeighbors(rid world.RegionID, dst []world.RegionID) []world.RegionID {
@@ -1518,6 +1714,20 @@ func maxF(a, b float64) float64 {
 func wcX(v int) float64 { return shapeOffX + float64(v)*shapeScaleX }
 func wcY(v int) float64 { return shapeOffY + float64(v)*shapeScaleY }
 
+func worldPixelToShapeX(v float64) int {
+	if shapeScaleX == 0 {
+		return int(math.Round(v))
+	}
+	return int(math.Round((v - shapeOffX) / shapeScaleX))
+}
+
+func worldPixelToShapeY(v float64) int {
+	if shapeScaleY == 0 {
+		return int(math.Round(v))
+	}
+	return int(math.Round((v - shapeOffY) / shapeScaleY))
+}
+
 // Shape rasterı önce senaryo koordinatını dünya koordinatına ölçekler,
 // ardından dünya piksel sınırına keser. Shape çizgisi ve renkli raster aynı
 // dönüşüm sırasını kullanmalıdır; wcX/wcY ise merkez/anchor hesapları içindir.
@@ -1552,14 +1762,17 @@ func loadRegionPaintOverrides(path string) map[int]world.RegionID {
 	if path == "" {
 		return nil
 	}
-	f, err := os.Open(path)
+	dataBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil
 	}
-	defer f.Close()
+	trimmed := bytes.TrimSpace(dataBytes)
+	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) || bytes.Equal(trimmed, []byte("[]")) {
+		return nil
+	}
 
 	var data regionShapeOverridesFile
-	if err := json.NewDecoder(f).Decode(&data); err != nil {
+	if err := json.Unmarshal(trimmed, &data); err != nil {
 		log.Printf("region_shapes.json decode hatası: %v", err)
 		return nil
 	}

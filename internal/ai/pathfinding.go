@@ -2,6 +2,7 @@ package ai
 
 import (
 	"container/heap"
+	"sort"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
@@ -12,6 +13,7 @@ import (
 
 const (
 	aiRouteTerrainCostScale    = 10
+	aiRouteAttritionCostScale  = 2
 	aiRouteAlliedAccessCost    = 5
 	aiRouteTerminalAccessCost  = 10
 	aiRouteSiegeCost           = 20
@@ -201,6 +203,9 @@ func (snapshot *aiRouteSnapshot) entryCost(region *world.Region) (int, bool) {
 		cost += (extra - 1) * aiRouteTerrainCostScale
 	}
 	cost += accessCost
+	if attrition := snapshot.gs.LandRegionAttritionPercent(region); attrition > 0 {
+		cost += attrition * aiRouteAttritionCostScale
+	}
 
 	armyPower := maxInt(1, snapshot.armyRef.TotalStrength(snapshot.gs.UnitTypes))
 	threatCost := (snapshot.hostilePower[region.ID]*aiRouteThreatCostAtParity + armyPower - 1) / armyPower
@@ -283,12 +288,13 @@ func aiWeightedLandRoutes(gs *state.GameState, armyRef *army.Army, start world.R
 			}
 		}
 
-		for _, neighborID := range currentRegion.Neighbors {
+		for _, neighborID := range aiRouteNeighborIDs(gs, currentRegion) {
 			neighbor := gs.Regions[neighborID]
 			entryCost, allowed := snapshot.entryCost(neighbor)
 			if !allowed {
 				continue
 			}
+			entryCost += aiRouteLandPassagePenalty(gs, currentRegion.ID, neighbor)
 			candidate := aiRouteQueueItem{
 				regionID: neighborID,
 				cost:     current.cost + entryCost,
@@ -309,6 +315,84 @@ func aiWeightedLandRoutes(gs *state.GameState, armyRef *army.Army, start world.R
 		}
 	}
 	return routes
+}
+
+func aiRouteNeighborIDs(gs *state.GameState, region *world.Region) []world.RegionID {
+	if gs == nil || region == nil {
+		return nil
+	}
+	seen := make(map[world.RegionID]struct{}, len(region.Neighbors)+2)
+	neighbors := make([]world.RegionID, 0, len(region.Neighbors)+2)
+	appendNeighbor := func(id world.RegionID) {
+		if id == "" || id == region.ID {
+			return
+		}
+		if _, ok := seen[id]; ok {
+			return
+		}
+		if gs.Regions[id] == nil {
+			return
+		}
+		seen[id] = struct{}{}
+		neighbors = append(neighbors, id)
+	}
+	for _, id := range region.Neighbors {
+		appendNeighbor(id)
+	}
+	for _, passage := range gs.LandPassages {
+		switch region.ID {
+		case passage.From:
+			appendNeighbor(passage.To)
+		case passage.To:
+			appendNeighbor(passage.From)
+		}
+	}
+	sort.Slice(neighbors, func(i, j int) bool { return neighbors[i] < neighbors[j] })
+	return neighbors
+}
+
+func aiRouteLandPassagePenalty(gs *state.GameState, from world.RegionID, target *world.Region) int {
+	if gs == nil || target == nil {
+		return 0
+	}
+	passage := world.LandPassageBetween(gs.LandPassages, from, target.ID)
+	if passage == nil {
+		return 0
+	}
+	landCost, blocked := gs.LandRegionMoveCost(target)
+	if blocked {
+		return 0
+	}
+	return maxInt(0, passage.MoveCost-landCost) * aiRouteTerrainCostScale
+}
+
+func aiLandEntryMoveCost(gs *state.GameState, from world.RegionID, target *world.Region) (int, bool) {
+	if gs == nil || target == nil || target.IsSea {
+		return 0, false
+	}
+	cost, blocked := gs.LandRegionMoveCost(target)
+	if blocked {
+		return 0, false
+	}
+	if passage := world.LandPassageBetween(gs.LandPassages, from, target.ID); passage != nil && passage.MoveCost > cost {
+		cost = passage.MoveCost
+	}
+	if cost < 1 {
+		cost = 1
+	}
+	return cost, true
+}
+
+func aiTerrainMovePenalty(gs *state.GameState, from world.RegionID, target *world.Region) int {
+	cost, allowed := aiLandEntryMoveCost(gs, from, target)
+	if !allowed {
+		return aiRouteTerrainCostScale
+	}
+	penalty := maxInt(0, cost-1) * aiRouteTerrainCostScale
+	if attrition := gs.LandRegionAttritionPercent(target); attrition > 0 {
+		penalty += attrition * aiRouteAttritionCostScale
+	}
+	return penalty
 }
 
 func aiRouteLabelBetter(candidate aiRouteQueueItem, oldCost, oldHops int, oldFirst world.RegionID) bool {

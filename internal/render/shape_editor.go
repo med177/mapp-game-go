@@ -72,6 +72,8 @@ func (r *Renderer) invalidateShapeEditSession() {
 	r.editShapeStrokeBefore = nil
 	r.editShapePendingBefore = nil
 	r.editShapePendingAffectsLandShapes = false
+	r.editTerrainAreaPolygon = nil
+	r.editTerrainAreaPolygonBefore = nil
 	r.clearEditPaintPreview()
 }
 
@@ -207,7 +209,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	selectedRegion := r.selectedRegionForShapeTools()
 	shapeRegion := r.selectedShapeRegion()
 	if selectedRegion == nil {
-		DrawText(screen, "Shape editor icin bolge sec.", float64(x)+14, ly, FaceSmall, ColorGray)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Shape editor icin bolge sec.", ColorGray, gameui.TextSmall)
 		drawEditInspectorButton(screen, editButtonShapePaint, "Boya", false)
 		drawEditInspectorButton(screen, editButtonShapeErase, "Sil", false)
 		drawEditInspectorButton(screen, editButtonShapeRegionPaint, "Bolge Boya", false)
@@ -236,17 +238,17 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 			name = shapeName
 		}
 	}
-	DrawText(screen, "Bolge: "+string(selectedRegion.ID), float64(x)+14, ly, FaceSmall, ColorWhite)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Bolge: "+string(selectedRegion.ID), ColorWhite, gameui.TextSmall)
 	ly += 18
-	DrawText(screen, "Ad: "+name, float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Ad: "+name, ColorGray, gameui.TextSmall)
 	ly += 18
-	DrawText(screen, "Shape ID: "+shapeID+"   Firca: "+editShapeBrushRadiusLabel(r.editShapeBrushRadius), float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Shape ID: "+shapeID+"   Firca: "+editShapeBrushRadiusLabel(r.editShapeBrushRadius), ColorGray, gameui.TextSmall)
 	ly += 18
 	ringCount := 0
 	if shapeRegion != nil {
 		ringCount = len(r.gs.ShapeData.Shapes[shapeRegion.ShapeID])
 	}
-	DrawText(screen, "Ring: "+itoa(ringCount), float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Ring: "+itoa(ringCount), ColorGray, gameui.TextSmall)
 	drawEditInspectorButton(screen, editButtonShapeNew, "Yeni Kara Sınırı", selectedRegion.IsSea && !r.editShapePaintPending)
 	ly += 18
 	toolLabel := "Kapalı"
@@ -267,10 +269,16 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	} else if r.editShapeBrushMode == editShapeBrushErase {
 		modeLabel = "Sil"
 	}
-	DrawText(screen, "Arac: "+toolLabel+"  Mod: "+modeLabel+"   Girdi: sol drag | Shift: ters", float64(x)+14, ly, FaceSmall, ColorGray)
+	inputHelp := "Girdi: sol drag | Shift: ters"
+	if r.editTerrainAreaMode {
+		inputHelp = "Girdi: sol tık nokta | başlangıca gel ve tıkla"
+	}
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Arac: "+toolLabel+"  Mod: "+modeLabel+"   "+inputHelp, ColorGray, gameui.TextSmall)
 	ly += 18
 	info := "Araç seçilmedi. Shape/Bolge araclarından birini seç."
-	if r.editShapeTool != editShapeToolNone {
+	if r.editTerrainAreaMode {
+		info = "Noktaları sol tıkla ekle; yeşil başlangıç noktasına gelerek sol tıkla kapat."
+	} else if r.editShapeTool != editShapeToolNone {
 		info = "Canli preview acik. Yesil ekler, kirmizi siler. Uygula ile kesinlestir."
 	}
 	if selectedRegion.IsSea {
@@ -278,7 +286,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	} else if !r.canEditSelectedShape() {
 		info = "Shape ID yoksa yalniz Bolge Boya/Sil kullanilabilir."
 	}
-	DrawText(screen, info, float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, info, ColorGray, gameui.TextSmall)
 	ly += 18
 	strokeLabel := "Bekliyor"
 	if r.editShapePainting {
@@ -287,7 +295,7 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	if r.editShapePaintPending {
 		strokeLabel = "Uygulama bekliyor"
 	}
-	DrawText(screen, "Durum: "+strokeLabel+"   Uygula ile haritaya işle", float64(x)+14, ly, FaceSmall, ColorGray)
+	drawEditInspectorLabel(screen, float64(x)+14, ly, "Durum: "+strokeLabel+"   Uygula ile haritaya işle", ColorGray, gameui.TextSmall)
 
 	shapePaintLabel := "Sınır Boya"
 	shapeEraseLabel := "Sınır Sil"
@@ -302,6 +310,9 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	drawEditShapeToolButton(screen, editButtonShapeRegionPaint, regionPaintLabel, regionPaintEnabled, regionPaintApply)
 	drawEditShapeToolButton(screen, editButtonShapeRegionErase, regionEraseLabel, regionEraseEnabled, regionEraseApply)
 	canAdjustBrush := r.canEditSelectedShape() || r.canRegionPaintSelected()
+	if r.editTerrainAreaMode {
+		canAdjustBrush = false
+	}
 	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > editShapeBrushMinRadius)
 	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < editShapeBrushMaxRadius)
 	r.drawEditShapeLandPassageButtons(screen)
@@ -358,6 +369,8 @@ func isEditShapeToolButton(kind editInspectorButton) bool {
 }
 
 func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
+	terrainPending := r.editTerrainAreaMode && r.editShapePaintPending
+	terrainDraft := r.editTerrainAreaMode && len(r.editTerrainAreaPolygon) > 0 && !terrainPending
 	addLabel := "Geçiş Ekle"
 	if r.editLandPassageMode {
 		addLabel = "> Geçiş Ekle"
@@ -367,34 +380,117 @@ func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
 		adjustLabel = "> Geçiş Düzenle"
 	}
 	// Arazi alanı boyama aktifken geçiş araçları karışıklığı önlemek için pasif.
-	landPassageAvailable := !r.editTerrainAreaMode
+	landPassageAvailable := !r.editTerrainAreaMode && !terrainPending
 	canDelete := landPassageAvailable && r.editLandPassageSelected >= 0 && r.editLandPassageSelected < len(r.gs.LandPassages)
 	drawEditInspectorButton(screen, editButtonLandPassageAdd, addLabel, landPassageAvailable)
 	drawEditInspectorButton(screen, editButtonLandPassageAdjust, adjustLabel, landPassageAvailable)
 	drawEditInspectorButton(screen, editButtonLandPassageDelete, "Geçiş Sil", canDelete)
 	region := r.gs.Regions[r.editSelectedRegion]
-	canArea := region != nil && !region.IsSea && !r.editLandPassageMode && !r.editLandPassageAdjustMode
+	canArea := region != nil && !region.IsSea && !r.editLandPassageMode && !r.editLandPassageAdjustMode && !terrainDraft
+	canAppendArea := region != nil && region.IsTerrainArea && !r.editTerrainAreaMode &&
+		!r.editLandPassageMode && !r.editLandPassageAdjustMode
 	areaTypeLabel := "Arazi Tipi"
 	if region != nil && region.IsTerrainArea {
 		areaTypeLabel += ": " + region.Terrain.LabelTR()
 	}
-	drawEditInspectorButton(screen, editButtonTerrainAreaType, areaTypeLabel, region != nil && region.IsTerrainArea)
+	areaControlsAvailable := region != nil && region.IsTerrainArea && !terrainDraft
+	attritionControlsAvailable := areaControlsAvailable && r.editTerrainAreaMoveCost != 0
+	attritionLabel := r.editTerrainAreaAttritionCost
+	if r.editTerrainAreaMoveCost == 0 {
+		attritionLabel = 0
+	}
+	drawEditInspectorButton(screen, editButtonTerrainAreaType, areaTypeLabel, areaControlsAvailable)
+	appendLabel := "Araziye Ekle"
+	if r.editTerrainAreaAppendMode {
+		appendLabel = "> Araziye Ekle"
+	}
+	drawEditInspectorButton(screen, editButtonTerrainAreaAppend, appendLabel, canAppendArea)
 	areaLabel := "Arazi Alanı Boya"
 	if r.editTerrainAreaMode {
-		areaLabel = "> Arazi Alanı Boya"
-		if r.editShapePaintPending {
+		areaLabel = "> Poligon Çiz"
+		if terrainPending {
 			areaLabel = "Uygula"
+		} else if len(r.editTerrainAreaPolygon) >= 3 {
+			areaLabel = "Başlangıç Noktasına Tıkla"
 		}
 	}
-	drawEditInspectorButton(screen, editButtonTerrainArea, areaLabel, canArea)
-	drawEditInspectorButton(screen, editButtonTerrainAreaCost, "Alan Maliyeti: "+itoa(r.editTerrainAreaMoveCost), canArea)
-	drawEditInspectorButton(screen, editButtonTerrainAreaAttrition, "Yıpranma: %"+itoa(r.editTerrainAreaAttritionCost), canArea)
-	canDeleteArea := canArea && r.editTerrainAreaSelected >= 0 && r.editTerrainAreaSelected < len(r.gs.TerrainAreas)
+	if terrainPending {
+		rect := editInspectorButtonRect(editButtonTerrainArea)
+		drawUIButton(screen, rect[0], rect[1], rect[2], rect[3], areaLabel, true, applyTinyButtonStyle)
+	} else {
+		drawEditInspectorButton(screen, editButtonTerrainArea, areaLabel, canArea)
+	}
+	if terrainDraft || terrainPending {
+		// Çizim sırasında sağ sütun, Uygula'nın yanındaki İptal düğmesine ayrılır.
+		drawEditInspectorButton(screen, editButtonTerrainAreaCancel, "İptal", true)
+	} else {
+		drawEditInspectorButton(screen, editButtonTerrainAreaCost, "Alan Maliyeti: "+itoa(r.editTerrainAreaMoveCost), areaControlsAvailable)
+	}
+	drawEditInspectorButton(screen, editButtonTerrainAreaAttrition, "Yıpranma: %"+itoa(attritionLabel), attritionControlsAvailable)
+	canDeleteArea := areaControlsAvailable && !terrainPending && r.editTerrainAreaSelected >= 0 && r.editTerrainAreaSelected < len(r.gs.TerrainAreas)
 	drawEditInspectorButton(screen, editButtonTerrainAreaDelete, "Arazi Alanını Sil", canDeleteArea)
 }
 
+func (r *Renderer) terrainAreaEditPending() bool {
+	return r != nil && r.editTerrainAreaMode &&
+		(len(r.editTerrainAreaPolygon) > 0 || r.editShapePaintPending)
+}
+
+func (r *Renderer) cancelTerrainAreaEdit() {
+	if r == nil {
+		return
+	}
+	if r.editShapePaintPending && r.editShapePendingBefore != nil {
+		before := *r.editShapePendingBefore
+		r.restoreWorldSnapshot(before)
+	}
+	r.editTerrainAreaPolygon = nil
+	r.editTerrainAreaPolygonBefore = nil
+	r.editShapePendingBefore = nil
+	r.editShapePaintPending = false
+	r.editShapePainting = false
+	r.editShapeTool = editShapeToolNone
+	r.editTerrainAreaMode = false
+	r.editTerrainAreaAppendMode = false
+	r.editTerrainAreaTouchedIDs = nil
+	r.editTerrainAreaStrokeAreas = nil
+	r.rebuildEditWorldMap()
+}
+
+// resetTerrainAreaDrawing çizim aracını kapatmadan mevcut poligon taslağını
+// siler. Uygulanmış fakat henüz onaylanmamış yeni alan varsa, çizim
+// başlangıcındaki dünya snapshot'ına geri döner.
+func (r *Renderer) resetTerrainAreaDrawing() {
+	if r == nil {
+		return
+	}
+	if r.editShapePaintPending && r.editShapePendingBefore != nil {
+		before := *r.editShapePendingBefore
+		r.restoreWorldSnapshot(before)
+	}
+	r.editTerrainAreaPolygon = nil
+	r.editTerrainAreaPolygonBefore = nil
+	r.editShapePendingBefore = nil
+	r.editShapePaintPending = false
+	r.editShapePainting = false
+	r.editShapeStrokeBefore = nil
+	r.editShapeStrokeHasLast = false
+	r.editShapeStrokeDirty = false
+	r.editShapeTool = editShapeToolTerrainArea
+	r.editShapeBrushMode = editShapeBrushPaint
+	r.editTerrainAreaTouchedIDs = nil
+	r.editTerrainAreaStrokeAreas = nil
+	r.editTerrainAreaMode = true
+	if r.gs != nil {
+		r.syncSelectedTerrainArea(r.editSelectedRegion)
+	}
+}
+
 func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, bool) {
-	kind := editShapeInspectorButtonAt(fx, fy)
+	kind := r.editShapeInspectorButtonAt(fx, fy)
+	if kind == editButtonTerrainAreaAppend && !r.canBeginTerrainAreaAppend() {
+		return InputAction{}, true
+	}
 	if isEditShapeToolButton(kind) {
 		active := r.activeEditShapeToolButton()
 		if active != editButtonNone && kind != active {
@@ -409,6 +505,14 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 		return InputAction{}, true
 	}
 	if (r.editLandPassageMode || r.editLandPassageAdjustMode) && kind == editButtonTerrainArea {
+		return InputAction{}, true
+	}
+	if r.editTerrainAreaMode && r.editShapePaintPending && kind != editButtonTerrainArea &&
+		kind != editButtonTerrainAreaType && kind != editButtonTerrainAreaCost &&
+		kind != editButtonTerrainAreaAttrition && kind != editButtonTerrainAreaCancel {
+		return InputAction{}, true
+	}
+	if r.editTerrainAreaMode && len(r.editTerrainAreaPolygon) > 0 && !r.editShapePaintPending && kind != editButtonTerrainAreaCancel {
 		return InputAction{}, true
 	}
 	switch kind {
@@ -435,17 +539,25 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 	case editButtonAddNeighbor:
 		r.toggleEditNeighborAddMode()
 	case editButtonTerrainAreaType:
-		r.toggleEditTerrainDropdown()
+		r.cycleEditTerrainAreaType()
+	case editButtonTerrainAreaAppend:
+		r.beginTerrainAreaAppendMode()
 	case editButtonTerrainArea:
 		if r.editTerrainAreaMode && r.editShapePaintPending {
 			r.applyPendingShapePaint()
+		} else if r.editTerrainAreaMode && len(r.editTerrainAreaPolygon) >= 3 {
+			r.finishTerrainAreaPolygon()
 		} else {
 			r.toggleEditTerrainAreaMode()
 		}
+	case editButtonTerrainAreaCancel:
+		r.cancelTerrainAreaEdit()
 	case editButtonTerrainAreaCost:
 		r.cycleEditTerrainAreaCost()
 	case editButtonTerrainAreaAttrition:
-		r.cycleEditTerrainAreaAttrition()
+		if r.editTerrainAreaMoveCost != 0 {
+			r.cycleEditTerrainAreaAttrition()
+		}
 	case editButtonTerrainAreaDelete:
 		r.deleteSelectedTerrainArea()
 	case editButtonSaveScenario:
@@ -476,25 +588,75 @@ func (r *Renderer) toggleEditTerrainAreaMode() {
 	if r.editTerrainAreaMode {
 		r.editShapeTool = editShapeToolTerrainArea
 		r.editShapeBrushMode = editShapeBrushPaint
-		if r.editTerrainAreaMoveCost == 0 {
-			r.editTerrainAreaMoveCost = -1
-		}
+		r.editTerrainAreaAppendMode = false
 	} else if r.editShapeTool == editShapeToolTerrainArea {
 		r.editShapeTool = editShapeToolNone
+		r.editTerrainAreaPolygon = nil
+		r.editTerrainAreaPolygonBefore = nil
+		r.editTerrainAreaAppendMode = false
 	}
+}
+
+func (r *Renderer) beginTerrainAreaAppendMode() {
+	if !r.canBeginTerrainAreaAppend() {
+		return
+	}
+	r.editTerrainAreaAppendMode = true
+	r.editTerrainAreaMode = true
+	r.editShapeTool = editShapeToolTerrainArea
+	r.editShapeBrushMode = editShapeBrushPaint
+	r.editTerrainAreaPolygon = nil
+	r.editTerrainAreaPolygonBefore = nil
+	r.editShapePaintPending = false
+	r.editShapePendingBefore = nil
+}
+
+func (r *Renderer) canBeginTerrainAreaAppend() bool {
+	if r == nil || r.gs == nil || r.editTerrainAreaSelected < 0 ||
+		r.editTerrainAreaSelected >= len(r.gs.TerrainAreas) {
+		return false
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	return region != nil && region.IsTerrainArea &&
+		region.TerrainAreaID == r.gs.TerrainAreas[r.editTerrainAreaSelected].ID &&
+		!r.editTerrainAreaMode && !r.editShapePaintPending
 }
 
 func (r *Renderer) cycleEditTerrainAreaCost() {
 	next := nextTerrainAreaMoveCost(r.editTerrainAreaMoveCost)
 	region := r.gs.Regions[r.editSelectedRegion]
 	if region != nil && region.IsTerrainArea {
-		for i := range r.gs.TerrainAreas {
-			if r.gs.TerrainAreas[i].ID != region.TerrainAreaID {
-				continue
+		if r.terrainAreaEditPending() {
+			for i := range r.gs.TerrainAreas {
+				if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
+					r.gs.TerrainAreas[i].MoveCost = next
+					if next == 0 {
+						r.gs.TerrainAreas[i].AttritionCost = 0
+					}
+				}
 			}
-			before := r.worldSnapshot()
-			r.gs.TerrainAreas[i].MoveCost = next
 			r.editTerrainAreaMoveCost = next
+			if next == 0 {
+				r.editTerrainAreaAttritionCost = 0
+			}
+			return
+		}
+		before := r.worldSnapshot()
+		changed := false
+		for i := range r.gs.TerrainAreas {
+			if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
+				r.gs.TerrainAreas[i].MoveCost = next
+				if next == 0 {
+					r.gs.TerrainAreas[i].AttritionCost = 0
+				}
+				changed = true
+			}
+		}
+		if changed {
+			r.editTerrainAreaMoveCost = next
+			if next == 0 {
+				r.editTerrainAreaAttritionCost = 0
+			}
 			r.rebuildEditWorldMap()
 			after := r.worldSnapshot()
 			r.pushWorldSnapshotCommand(before, after)
@@ -520,21 +682,88 @@ func (r *Renderer) cycleEditTerrainAreaAttrition() {
 	next := nextTerrainAreaAttritionCost(r.editTerrainAreaAttritionCost)
 	region := r.gs.Regions[r.editSelectedRegion]
 	if region != nil && region.IsTerrainArea {
-		for i := range r.gs.TerrainAreas {
-			if r.gs.TerrainAreas[i].ID != region.TerrainAreaID {
-				continue
+		if r.terrainAreaEditPending() {
+			for i := range r.gs.TerrainAreas {
+				if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
+					r.gs.TerrainAreas[i].AttritionCost = next
+				}
 			}
-			before := r.worldSnapshot()
-			r.gs.TerrainAreas[i].AttritionCost = next
 			r.editTerrainAreaAttritionCost = next
-			r.rebuildEditWorldMap()
-			after := r.worldSnapshot()
-			r.pushWorldSnapshotCommand(before, after)
+			return
+		}
+		changes := make([]terrainAreaAttritionChange, 0)
+		for i := range r.gs.TerrainAreas {
+			if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
+				if r.gs.TerrainAreas[i].AttritionCost == next {
+					continue
+				}
+				changes = append(changes, terrainAreaAttritionChange{
+					ID: r.gs.TerrainAreas[i].ID, Old: r.gs.TerrainAreas[i].AttritionCost, New: next,
+				})
+				r.gs.TerrainAreas[i].AttritionCost = next
+			}
+		}
+		if len(changes) > 0 {
+			r.editTerrainAreaAttritionCost = next
+			r.pushEditCommand(editCommand{
+				undo: func(rr *Renderer) { rr.applyTerrainAreaAttritionChanges(changes, false) },
+				redo: func(rr *Renderer) { rr.applyTerrainAreaAttritionChanges(changes, true) },
+			})
 			r.editDirty = true
 			return
 		}
 	}
 	r.editTerrainAreaAttritionCost = next
+}
+
+type terrainAreaAttritionChange struct {
+	ID  string
+	Old int
+	New int
+}
+
+func (r *Renderer) applyTerrainAreaAttritionChanges(changes []terrainAreaAttritionChange, redo bool) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	for i := range r.gs.TerrainAreas {
+		for _, change := range changes {
+			if r.gs.TerrainAreas[i].ID != change.ID {
+				continue
+			}
+			if redo {
+				r.gs.TerrainAreas[i].AttritionCost = change.New
+			} else {
+				r.gs.TerrainAreas[i].AttritionCost = change.Old
+			}
+			break
+		}
+	}
+	r.syncSelectedTerrainArea(r.editSelectedRegion)
+}
+
+// cycleEditTerrainAreaType, arazi alanı tipini açılır liste açmadan maliyet ve
+// yıpranma düğmeleriyle aynı tıklamalı kullanım modelinde değiştirir.
+func (r *Renderer) cycleEditTerrainAreaType() {
+	if r == nil || r.gs == nil {
+		return
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || !region.IsTerrainArea {
+		return
+	}
+	options := editTerrainAreaOptions()
+	if len(options) == 0 {
+		return
+	}
+	current := 0
+	for i, option := range options {
+		if option == region.Terrain {
+			current = i
+			break
+		}
+	}
+	r.setSelectedRegionTerrain(options[(current+1)%len(options)])
 }
 
 func nextTerrainAreaAttritionCost(percent int) int {
@@ -547,28 +776,31 @@ func nextTerrainAreaAttritionCost(percent int) int {
 }
 
 func (r *Renderer) applyTerrainAreaBrushAt(cx, cy int) {
-	parent := r.selectedRegionForShapeTools()
-	if parent == nil || r.worldMap == nil {
+	if r == nil || r.worldMap == nil || r.gs == nil {
 		return
 	}
 	fill := editShapeBrushFill(r.editShapeBrushMode, editModifierPressed())
-	idx := r.editTerrainAreaSelected
-	if idx < 0 || idx >= len(r.gs.TerrainAreas) || r.gs.TerrainAreas[idx].ParentRegionID != parent.ID {
-		if !fill {
-			return
-		}
-		r.gs.TerrainAreas = append(r.gs.TerrainAreas, world.TerrainArea{ID: "area_" + string(parent.ID) + "_" + itoa(len(r.gs.TerrainAreas)+1), ParentRegionID: parent.ID, MoveCost: r.editTerrainAreaMoveCost, AttritionCost: r.editTerrainAreaAttritionCost})
-		idx = len(r.gs.TerrainAreas) - 1
-		r.editTerrainAreaSelected = idx
-	}
-	area := &r.gs.TerrainAreas[idx]
 	r2 := r.editShapeBrushRadius * r.editShapeBrushRadius
-	parentIdx := r.worldMap.ensureRegionIndex(parent.ID)
 	for y := int(math.Ceil(float64(cy) - r.editShapeBrushRadius)); y <= int(math.Floor(float64(cy)+r.editShapeBrushRadius)); y++ {
 		for x := int(math.Ceil(float64(cx) - r.editShapeBrushRadius)); x <= int(math.Floor(float64(cx)+r.editShapeBrushRadius)); x++ {
-			if x < 0 || y < 0 || x >= WorldW || y >= WorldH || float64((x-cx)*(x-cx)+(y-cy)*(y-cy)) > r2 || r.worldMap.regionAt[y*WorldW+x] != parentIdx {
+			if x < 0 || y < 0 || x >= WorldW || y >= WorldH || float64((x-cx)*(x-cx)+(y-cy)*(y-cy)) > r2 {
 				continue
 			}
+			parentID, existingIdx, ok := r.terrainAreaCellTarget(x, y)
+			if !ok {
+				continue
+			}
+			idx := existingIdx
+			if fill && idx < 0 {
+				idx = r.terrainAreaStrokeIndex(parentID)
+				if idx < 0 {
+					idx = r.newTerrainAreaForParent(parentID)
+				}
+			}
+			if idx < 0 || idx >= len(r.gs.TerrainAreas) {
+				continue
+			}
+			area := &r.gs.TerrainAreas[idx]
 			found := -1
 			for i, cell := range area.Cells {
 				if cell[0] == x && cell[1] == y {
@@ -580,12 +812,79 @@ func (r *Renderer) applyTerrainAreaBrushAt(cx, cy int) {
 				area.Cells = append(area.Cells, [2]int{x, y})
 				r.drawRegionPaintPreviewPixel(x, y, true)
 			}
-			if !fill && found >= 0 {
+			if !fill && existingIdx >= 0 && found >= 0 {
 				area.Cells = append(area.Cells[:found], area.Cells[found+1:]...)
 				r.drawRegionPaintPreviewPixel(x, y, false)
 			}
 		}
 	}
+}
+
+// terrainAreaCellTarget resolves a raster cell to its land parent and, when
+// applicable, the existing terrain-area record occupying that cell. Using the
+// displayed raster lets one brush stroke cross region boundaries naturally.
+func (r *Renderer) terrainAreaCellTarget(x, y int) (world.RegionID, int, bool) {
+	rid := r.worldMap.RegionAt(x, y)
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return "", -1, false
+	}
+	if !region.IsTerrainArea {
+		return region.ID, -1, true
+	}
+	for i := range r.gs.TerrainAreas {
+		if r.gs.TerrainAreas[i].ID == region.TerrainAreaID {
+			return region.ParentRegionID, i, true
+		}
+	}
+	return region.ParentRegionID, -1, true
+}
+
+func (r *Renderer) terrainAreaStrokeIndex(parentID world.RegionID) int {
+	if r.editTerrainAreaStrokeAreas == nil {
+		r.editTerrainAreaStrokeAreas = make(map[world.RegionID]int)
+	}
+	if idx, ok := r.editTerrainAreaStrokeAreas[parentID]; ok {
+		return idx
+	}
+	if r.editTerrainAreaSelected >= 0 && r.editTerrainAreaSelected < len(r.gs.TerrainAreas) &&
+		r.gs.TerrainAreas[r.editTerrainAreaSelected].ParentRegionID == parentID {
+		r.editTerrainAreaStrokeAreas[parentID] = r.editTerrainAreaSelected
+		return r.editTerrainAreaSelected
+	}
+	return -1
+}
+
+func (r *Renderer) newTerrainAreaForParent(parentID world.RegionID) int {
+	base := "area_" + string(parentID) + "_"
+	serial := len(r.gs.TerrainAreas) + 1
+	id := base + itoa(serial)
+	for {
+		duplicate := false
+		for _, area := range r.gs.TerrainAreas {
+			if area.ID == id {
+				duplicate = true
+				break
+			}
+		}
+		if !duplicate {
+			break
+		}
+		serial++
+		id = base + itoa(serial)
+	}
+	r.gs.TerrainAreas = append(r.gs.TerrainAreas, world.TerrainArea{
+		ID: id, ParentRegionID: parentID,
+		MoveCost: r.editTerrainAreaMoveCost, AttritionCost: r.editTerrainAreaAttritionCost,
+	})
+	idx := len(r.gs.TerrainAreas) - 1
+	r.editTerrainAreaStrokeAreas[parentID] = idx
+	if r.editTerrainAreaTouchedIDs == nil {
+		r.editTerrainAreaTouchedIDs = make(map[string]struct{})
+	}
+	r.editTerrainAreaTouchedIDs[id] = struct{}{}
+	r.editTerrainAreaSelected = idx
+	return idx
 }
 
 func (r *Renderer) editShapeToolButtonAvailable(kind editInspectorButton) bool {
@@ -664,9 +963,8 @@ func (r *Renderer) applyPendingShapePaint() {
 		after := r.worldSnapshot()
 		r.pushWorldSnapshotCommand(*before, after)
 		r.editDirty = true
-	} else if tool == editShapeToolTerrainArea && r.editShapeStrokeDirty {
-		world.SyncTerrainAreaRegions(r.gs.Regions, r.gs.TerrainAreas)
-		r.rebuildEditWorldMap()
+	} else if tool == editShapeToolTerrainArea && (r.editShapeStrokeDirty || r.editShapePaintPending) {
+		r.refreshTerrainAreasInEditMap()
 		after := r.worldSnapshot()
 		r.pushWorldSnapshotCommand(*before, after)
 		r.editDirty = true
@@ -685,7 +983,13 @@ func (r *Renderer) applyPendingShapePaint() {
 	r.editShapeStrokeDirty = false
 	r.editShapeStrokeAffectsLandShapes = false
 	r.editShapePendingAffectsLandShapes = false
+	r.editTerrainAreaStrokeAreas = nil
+	r.editTerrainAreaTouchedIDs = nil
 	r.clearEditPaintPreview()
+	if tool == editShapeToolTerrainArea {
+		r.editTerrainAreaMode = false
+		r.editTerrainAreaAppendMode = false
+	}
 }
 
 func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
@@ -711,14 +1015,14 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 			}
 		}
 	}
-	session := r.editShapeSession
 	r.drawEditPaintPreview(screen)
-	r.drawEditShapeHelp(screen, session)
 	switch r.editShapeTool {
 	case editShapeToolTerrainArea:
 		if !r.editTerrainAreaMode || !r.canRegionPaintSelected() {
 			return
 		}
+		r.drawTerrainAreaPolygonPreview(screen)
+		return
 	case editShapeToolShape:
 		if !r.canEditSelectedShape() {
 			return
@@ -753,6 +1057,199 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 		brushCol = color.RGBA{255, 110, 110, 185}
 	}
 	vector.StrokeCircle(screen, float32(screenX), float32(screenY), radius, 2, brushCol, true)
+}
+
+func (r *Renderer) drawTerrainAreaPolygonPreview(screen *ebiten.Image) {
+	if r == nil || len(r.editTerrainAreaPolygon) == 0 {
+		return
+	}
+	for i, point := range r.editTerrainAreaPolygon {
+		x, y := r.worldToScreen(float64(point[0]), float64(point[1]))
+		vector.FillCircle(screen, float32(x), float32(y), 4, color.RGBA{255, 220, 80, 230}, true)
+		if i == 0 {
+			continue
+		}
+		px, py := r.worldToScreen(float64(r.editTerrainAreaPolygon[i-1][0]), float64(r.editTerrainAreaPolygon[i-1][1]))
+		vector.StrokeLine(screen, float32(px), float32(py), float32(x), float32(y), 2, color.RGBA{255, 220, 80, 230}, true)
+	}
+	if len(r.editTerrainAreaPolygon) >= 3 {
+		mx, my := ebiten.CursorPosition()
+		if r.terrainAreaPolygonStartHovered(float64(mx), float64(my)) {
+			x, y := r.worldToScreen(float64(r.editTerrainAreaPolygon[0][0]), float64(r.editTerrainAreaPolygon[0][1]))
+			vector.FillCircle(screen, float32(x), float32(y), 8, color.RGBA{80, 235, 120, 230}, true)
+			vector.StrokeCircle(screen, float32(x), float32(y), 12, 2, color.RGBA{150, 255, 170, 245}, true)
+		}
+	}
+	mx, my := ebiten.CursorPosition()
+	wx, wy := r.screenToWorld(float64(mx), float64(my))
+	if len(r.editTerrainAreaPolygon) > 0 {
+		px, py := r.worldToScreen(float64(r.editTerrainAreaPolygon[len(r.editTerrainAreaPolygon)-1][0]), float64(r.editTerrainAreaPolygon[len(r.editTerrainAreaPolygon)-1][1]))
+		cx, cy := r.worldToScreen(wx, wy)
+		vector.StrokeLine(screen, float32(px), float32(py), float32(cx), float32(cy), 1, color.RGBA{255, 220, 80, 150}, true)
+	}
+}
+
+func (r *Renderer) terrainAreaPolygonStartHovered(fx, fy float64) bool {
+	if r == nil || len(r.editTerrainAreaPolygon) < 3 {
+		return false
+	}
+	x, y := r.worldToScreen(float64(r.editTerrainAreaPolygon[0][0]), float64(r.editTerrainAreaPolygon[0][1]))
+	dx, dy := fx-x, fy-y
+	return dx*dx+dy*dy <= 14*14
+}
+
+func (r *Renderer) addTerrainAreaPolygonPoint(fx, fy float64) {
+	if r == nil || r.worldMap == nil {
+		return
+	}
+	if r.editTerrainAreaPolygonBefore == nil {
+		before := r.worldSnapshot()
+		r.editTerrainAreaPolygonBefore = &before
+	}
+	wx, wy := r.screenToWorld(fx, fy)
+	x, y := int(math.Round(wx)), int(math.Round(wy))
+	if x < 0 || y < 0 || x >= WorldW || y >= WorldH {
+		return
+	}
+	if len(r.editTerrainAreaPolygon) > 0 {
+		last := r.editTerrainAreaPolygon[len(r.editTerrainAreaPolygon)-1]
+		if last[0] == x && last[1] == y {
+			return
+		}
+	}
+	r.editTerrainAreaPolygon = append(r.editTerrainAreaPolygon, [2]int{x, y})
+}
+
+func (r *Renderer) finishTerrainAreaPolygon() {
+	polygon := append([][2]int(nil), r.editTerrainAreaPolygon...)
+	before := r.editTerrainAreaPolygonBefore
+	r.editTerrainAreaPolygon = nil
+	r.editTerrainAreaPolygonBefore = nil
+	if len(polygon) < 3 || before == nil || r.worldMap == nil {
+		return
+	}
+	if r.editTerrainAreaAppendMode {
+		idx := r.editTerrainAreaSelected
+		if idx < 0 || idx >= len(r.gs.TerrainAreas) {
+			return
+		}
+		area := &r.gs.TerrainAreas[idx]
+		if merged, intersects := world.MergeTerrainAreaPolygons(area.Polygons, polygon); intersects && len(merged) > 0 {
+			area.Polygons = merged
+		} else {
+			area.Polygons = append(area.Polygons, polygon)
+		}
+		selectedAreaID := area.ID
+		r.refreshTerrainAreasInEditMap()
+		if terrainRegionID := r.terrainAreaRuntimeRegionID(selectedAreaID); r.gs.Regions[terrainRegionID] != nil {
+			r.editSelectedRegion = terrainRegionID
+			r.syncSelectedTerrainArea(terrainRegionID)
+			r.editInspectorTab = editInspectorMap
+		}
+		pendingBefore := *before
+		r.editShapePendingBefore = &pendingBefore
+		r.editShapePaintPending = true
+		return
+	}
+	areaTerrain := world.TerrainType("")
+	if r.editTerrainAreaSelected >= 0 && r.editTerrainAreaSelected < len(r.gs.TerrainAreas) {
+		areaTerrain = r.gs.TerrainAreas[r.editTerrainAreaSelected].Terrain
+	} else if region := r.gs.Regions[r.editSelectedRegion]; region != nil {
+		areaTerrain = region.Terrain
+	}
+	// Her tamamlanan çizim bağımsız bir arazi alanıdır. Aynı tip/maliyet
+	// değerlerine sahip mevcut kayda eklemek, farklı poligonları tek ID altında
+	// topluyor ve Edit Mode'da her boya işleminin ayrı odak merkezini bozuyordu.
+	id := r.newTerrainAreaPolygonID("")
+	r.gs.TerrainAreas = append(r.gs.TerrainAreas, world.TerrainArea{
+		ID: id, Terrain: areaTerrain,
+		MoveCost: r.editTerrainAreaMoveCost, AttritionCost: r.editTerrainAreaAttritionCost,
+		Polygons: [][][2]int{polygon},
+	})
+	r.editTerrainAreaSelected = len(r.gs.TerrainAreas) - 1
+	selectedAreaID := id
+	r.refreshTerrainAreasInEditMap()
+	terrainRegionID := r.terrainAreaRuntimeRegionID(selectedAreaID)
+	if r.gs.Regions[terrainRegionID] != nil {
+		r.editSelectedRegion = terrainRegionID
+		r.syncSelectedTerrainArea(terrainRegionID)
+		r.editInspectorTab = editInspectorMap
+	}
+	if before != nil {
+		pendingBefore := *before
+		r.editShapePendingBefore = &pendingBefore
+		r.editShapePaintPending = true
+	}
+}
+
+func (r *Renderer) terrainAreaParentsForPolygon(polygon [][2]int) map[world.RegionID]struct{} {
+	parents := make(map[world.RegionID]struct{})
+	if r == nil || r.worldMap == nil || len(polygon) < 3 {
+		return parents
+	}
+	addAt := func(x, y int) {
+		if x < 0 || y < 0 || x >= WorldW || y >= WorldH {
+			return
+		}
+		region := r.gs.Regions[r.worldMap.RegionAt(x, y)]
+		if region == nil || region.IsSea {
+			return
+		}
+		parentID := region.ID
+		if region.IsTerrainArea {
+			parentID = region.ParentRegionID
+		}
+		parents[parentID] = struct{}{}
+	}
+
+	// Köşe ve kenar örnekleri sınırdan geçen bölgeleri yakalar; tüm bbox'u
+	// piksel piksel taramak yerine yalnızca poligonun çevresinde çalışır.
+	for i, point := range polygon {
+		addAt(point[0], point[1])
+		next := polygon[(i+1)%len(polygon)]
+		steps := maxInt(absInt(next[0]-point[0]), absInt(next[1]-point[1]))
+		if steps < 1 {
+			continue
+		}
+		for step := 1; step < steps; step++ {
+			x := point[0] + (next[0]-point[0])*step/steps
+			y := point[1] + (next[1]-point[1])*step/steps
+			addAt(x, y)
+		}
+	}
+	var centerX, centerY int
+	for _, point := range polygon {
+		centerX += point[0]
+		centerY += point[1]
+	}
+	addAt(centerX/len(polygon), centerY/len(polygon))
+
+	// Poligonun içinde kalan, ancak kenara değmeyen bölgeleri anchor noktası
+	// üzerinden bulur. Anchor sayısı bölge sayısı kadardır ve raster taramasına
+	// göre çok daha ucuzdur.
+	for _, anchor := range r.worldMap.regionAnchor {
+		if world.PointInPolygon(float64(anchor[0])+0.5, float64(anchor[1])+0.5, polygon) {
+			addAt(anchor[0], anchor[1])
+		}
+	}
+	return parents
+}
+
+func (r *Renderer) newTerrainAreaPolygonID(parentID world.RegionID) string {
+	base := "area_" + string(parentID) + "_"
+	for serial := len(r.gs.TerrainAreas) + 1; ; serial++ {
+		candidate := base + itoa(serial)
+		found := false
+		for _, area := range r.gs.TerrainAreas {
+			if area.ID == candidate {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return candidate
+		}
+	}
 }
 
 func buildEditShapeHelpPanel() gameui.Panel {
@@ -894,9 +1391,7 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 	}
 	switch r.editShapeTool {
 	case editShapeToolTerrainArea:
-		if !r.editTerrainAreaMode || !r.canRegionPaintSelected() {
-			return false
-		}
+		return false
 	case editShapeToolShape:
 		if !r.canEditSelectedShape() {
 			return false
@@ -934,6 +1429,10 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 	r.editShapeStrokeHasLast = false
 	r.editShapeStrokeDirty = false
 	r.editShapeStrokeAffectsLandShapes = false
+	if r.editShapeTool == editShapeToolTerrainArea {
+		r.editTerrainAreaStrokeAreas = make(map[world.RegionID]int)
+		r.editTerrainAreaTouchedIDs = make(map[string]struct{})
+	}
 	if session != nil {
 		session.Dirty = false
 		session.HasLast = false

@@ -283,6 +283,7 @@ type Renderer struct {
 	editLandPassageMessage            string
 	editNeighborAddMode               bool
 	editNeighborAddFrom               world.RegionID
+	editNeighborAddTargets            []world.RegionID
 	editNeighborAddMessage            string
 	editDraggingSettlement            bool
 	editDraggingRegion                bool
@@ -299,6 +300,9 @@ type Renderer struct {
 	editDirty                         bool
 	editVoronoiDebug                  bool
 	editVoronoiDebugRegion            world.RegionID
+	editVoronoiDebugWorldMap          *WorldMap
+	editVoronoiDebugVisualNeighborBuf []world.RegionID
+	editVoronoiDebugBoundaryPixelBuf  []int
 	editOwnerDropdown                 *gameui.Dropdown
 	editSuccessorDropdown             *gameui.Dropdown
 	editTerrainDropdown               *gameui.Dropdown
@@ -308,16 +312,25 @@ type Renderer struct {
 	editSelectedUnitType              string
 	armyNeighborBuf                   []world.RegionID
 	editVisualNeighborBuf             []world.RegionID
+	editVisualNeighborRegion          world.RegionID
+	editVisualNeighborWorldMap        *WorldMap
 	editBoundaryPixelBuf              []int
+	editBoundaryRegion                world.RegionID
+	editBoundaryWorldMap              *WorldMap
 	editShapeSession                  *shapeEditSession
 	editShapePainting                 bool
 	editShapePaintPending             bool
 	editPaintPreviewImage             *ebiten.Image
 	editShapeTool                     editShapeTool
 	editTerrainAreaMode               bool
+	editTerrainAreaAppendMode         bool
 	editTerrainAreaSelected           int
 	editTerrainAreaMoveCost           int
 	editTerrainAreaAttritionCost      int
+	editTerrainAreaStrokeAreas        map[world.RegionID]int
+	editTerrainAreaTouchedIDs         map[string]struct{}
+	editTerrainAreaPolygon            [][2]int
+	editTerrainAreaPolygonBefore      *editWorldSnapshot
 	editShapeBrushMode                editShapeBrushMode
 	editShapeBrushRadius              float64
 	editShapeStrokeBefore             *editWorldSnapshot
@@ -674,7 +687,7 @@ func New(gs *state.GameState) *Renderer {
 		worldMap:                    NewWorldMap(gs),
 		prevKeys:                    make(map[ebiten.Key]bool),
 		prevMouse:                   make(map[ebiten.MouseButton]bool),
-		editVoronoiDebug:            true,
+		editVoronoiDebug:            false,
 		armyNeighborBuf:             make([]world.RegionID, 0, 16),
 		editVisualNeighborBuf:       make([]world.RegionID, 0, 16),
 		editBoundaryPixelBuf:        make([]int, 0, 4096),
@@ -1509,9 +1522,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	mapOp := &ebiten.DrawImageOptions{}
 	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 	screen.DrawImage(r.worldMap.Image(), mapOp)
+	r.drawTerrainAreas(screen)
 	r.drawVectorMapBorders(screen)
 	r.drawLandPassages(screen)
-	r.drawTerrainAreas(screen)
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
 
@@ -1540,8 +1553,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	r.drawRegionLabels(screen, armyPositions)
 	if r.gs.Phase == state.PhaseEditMode {
 		r.drawEditRegionCenters(screen)
+		r.drawEditTerrainAreaCenters(screen)
+		r.drawEditNeighborLinks(screen)
 		r.drawEditVoronoiDebug(screen)
 		r.drawEditShapeOverlay(screen)
+		r.drawEditCountryHover(screen)
 	}
 
 	// 6. Ordu ikonları (ticaret modunda gizlenir)
@@ -1555,6 +1571,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawSelectedArmyIndicator(screen, armyPositions)
 	}
 	if r.gs.Phase == state.PhaseEditMode {
+		// Seçili bölgenin sınırı ordu ikonlarının altında kaybolmamalı.
+		r.drawSelectedEditRegionBoundary(screen)
 		// Debug paneli ordu karelerinin altında kalmamalı; harita işaretleri
 		// önce, panel ise ordu ikonlarından sonra çizilir.
 		r.drawEditVoronoiLegendOverlay(screen)
@@ -1606,6 +1624,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawNavalEmbarkedArmyHoverTooltip(screen)
 	} else {
 		r.drawEditModeHud(screen)
+		// Shape yardım paneli harita işaretlerinden sonra çizilir; böylece ordu
+		// kareleri panelin önüne geçemez. Inspector daha sonra çizildiği için
+		// panelin etkileşimli alanları da üstte kalır.
+		r.drawEditShapeHelp(screen, r.editShapeSession)
 		r.drawEditInspector(screen)
 		r.drawEditFactionForm(screen)
 		r.drawEditRegionForm(screen)

@@ -1,6 +1,6 @@
 [
   {
-    "region_id": "london",
+    "region_id": "essex",
     "settlements": [
       {
         "id": "london_greenwich",
@@ -147,7 +147,7 @@
       {
         "id": "lancashire_main",
         "name_tr": "Lancashire",
-        "x": 415,
+        "x": 416,
         "y": 213,
         "type": "city",
         "is_center": true,
@@ -160,14 +160,28 @@
         "y": 208,
         "type": "town",
         "population": 22
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "newcastle_region",
+    "settlements": [
       {
         "id": "yorkshire_main",
         "name_tr": "Newcastle",
         "x": 442,
         "y": 188,
         "type": "fortress",
+        "is_center": true,
         "population": 11
+      },
+      {
+        "id": "lancashire_settlement_4",
+        "name_tr": "Carlisle",
+        "x": 417,
+        "y": 192,
+        "type": "fortress",
+        "population": 0
       }
     ]
   },
@@ -268,6 +282,14 @@
         "y": 170,
         "type": "fortress",
         "population": 8
+      },
+      {
+        "id": "scotland_settlement_6",
+        "name_tr": "Berwick",
+        "x": 430,
+        "y": 172,
+        "type": "town",
+        "population": 0
       }
     ]
   },
@@ -587,8 +609,8 @@
       {
         "id": "dijon_main",
         "name_tr": "Dijon",
-        "x": 588,
-        "y": 348,
+        "x": 591,
+        "y": 341,
         "type": "city",
         "is_center": true,
         "population": 54
@@ -608,6 +630,14 @@
         "y": 348,
         "type": "fortress",
         "population": 13
+      },
+      {
+        "id": "dijon_settlement_4",
+        "name_tr": "Lyon",
+        "x": 579,
+        "y": 368,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -647,8 +677,8 @@
       {
         "id": "savoy_main",
         "name_tr": "Savoy",
-        "x": 611,
-        "y": 371,
+        "x": 601,
+        "y": 369,
         "type": "fortress",
         "is_center": true,
         "population": 72
@@ -5639,8 +5669,8 @@
       {
         "id": "tyrol_main",
         "name_tr": "Tirol",
-        "x": 690,
-        "y": 342,
+        "x": 705,
+        "y": 341,
         "type": "fortress",
         "is_center": true,
         "population": 98
@@ -5831,8 +5861,8 @@
       {
         "id": "verona_main",
         "name_tr": "Verona",
-        "x": 699,
-        "y": 371,
+        "x": 694,
+        "y": 369,
         "type": "city",
         "is_center": true,
         "population": 96
@@ -5840,8 +5870,8 @@
       {
         "id": "verona_settlement_2",
         "name_tr": "Trent",
-        "x": 695,
-        "y": 349,
+        "x": 698,
+        "y": 356,
         "type": "fortress",
         "population": 20
       }

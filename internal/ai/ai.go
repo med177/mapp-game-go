@@ -1621,6 +1621,14 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		return moveOutcome{survived: true}
 	}
 	fromRegion := a.RegionID
+	landMoveCost := 1
+	if !a.IsNaval && target != fromRegion && targetRegion.CanLandEnter() {
+		var allowed bool
+		landMoveCost, allowed = aiLandEntryMoveCost(gs, fromRegion, targetRegion)
+		if !allowed || a.MovePoints < landMoveCost {
+			return moveOutcome{survived: true}
+		}
+	}
 	if a.InAmbush && target != a.RegionID {
 		a.InAmbush = false
 	}
@@ -1690,7 +1698,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					a.RegionID = target
 					a.DockedRegionID = ""
 					a.DockedSettlementID = ""
-					a.MovePoints--
+					a.MovePoints -= landMoveCost
 					gs.ApplyLandRegionEntryAttrition(a)
 					contactMovementConsumed = true
 					contact.MovementConsumed = true
@@ -1766,7 +1774,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 						if canExitToTarget && len(a.Units) > 0 {
 							a.PreviousRegionID = a.RegionID
 							a.RegionID = target
-							a.MovePoints = maxInt(0, a.MovePoints-1)
+							a.MovePoints = maxInt(0, a.MovePoints-landMoveCost)
 							gs.ApplyLandRegionEntryAttrition(a)
 						}
 						msg := actorName + " " + sourceName + " kuşatmasını yardı ve çıktı."
@@ -1993,7 +2001,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					a.RegionID = target
 					a.DockedRegionID = ""
 					a.DockedSettlementID = ""
-					a.MovePoints--
+					a.MovePoints -= landMoveCost
 					vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied
 					if !vassalized {
 						aiApplyConquest(gs, targetRegion, a.OwnerID)
@@ -2196,7 +2204,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					}
 				}
 				if !contactMovementConsumed && a.MovePoints > 0 {
-					a.MovePoints--
+					a.MovePoints = maxInt(0, a.MovePoints-landMoveCost)
 				}
 				message := actorName + " " + targetName + " bölgesindeki savaşı kazandı."
 				if activeSiegeSupport {
@@ -2256,7 +2264,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	a.RegionID = target
 	a.DockedRegionID = ""
 	a.DockedSettlementID = ""
-	a.MovePoints--
+	a.MovePoints -= landMoveCost
 	gs.ApplyLandRegionEntryAttrition(a)
 	stepKind := TurnStepMove
 	msg := actorName + " " + sourceName + " bölgesinden " + targetName + " bölgesine ilerledi."

@@ -5502,6 +5502,10 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	if !ok {
 		return
 	}
+	// Arazi alanları devlet toprağı değildir. OwnerID kalıntısı bulunsa bile
+	// normal hareketi savaş/işgal akışına sokma; yalnız hedefteki gerçek düşman
+	// ordu SelectBattleDefender üzerinden temas başlatabilsin.
+	neutralTerrainArea := targetRegion.IsTerrainArea
 	landMoveCost := 1
 	blocked := false
 	if !a.IsNaval && target != a.RegionID && !targetRegion.IsSea {
@@ -5588,8 +5592,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	// Sahipli yabancı kara bölgesine girmek için savaş, ittifak veya aynı vassal
 	// zincirinde askeri geçiş hakkı gerekir.
 	// Donanma-deniz hareketinde bu kural uygulanmaz; denizde serbest dolaşım var.
-	isAlliedRegion := false
-	if !navalSeaMove && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+	isAlliedRegion := neutralTerrainArea
+	if !neutralTerrainArea && !navalSeaMove && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
 		if diplomacy.SameRealm(g.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
 			isAlliedRegion = true
 		}
@@ -5613,6 +5617,9 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	enemyArmy := g.gs.SelectBattleDefender(a, target, navalSeaMove)
 	if enemyArmy == nil && !a.IsNaval && !navalSeaMove {
 		enemyArmy = g.gs.SelectAmbushDefender(a, target, false)
+	}
+	if enemyArmy == nil && neutralTerrainArea && !a.IsNaval {
+		enemyArmy = g.gs.SelectLandContactOpponent(a, target)
 	}
 	if navalSeaMove && !navalAttack && !resolved && enemyArmy != nil {
 		trigger := state.NavalContactMovement
@@ -5738,7 +5745,9 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 					a.MovePoints -= landMoveCost
 				}
 				g.gs.ApplyLandRegionEntryAttrition(a)
-				if isAlliedRegion {
+				if neutralTerrainArea {
+					outcomeDetail = "Düşman ordu yenildi; tarafsız arazi alanında hareket devam etti."
+				} else if isAlliedRegion {
 					if navalSeaMove {
 						outcomeDetail = navalBattleOutcomeDetail("Düşman filosu battı ve deniz hattı açıldı.", defenderCargoLost)
 					} else {
