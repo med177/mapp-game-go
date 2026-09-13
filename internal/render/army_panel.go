@@ -1315,8 +1315,8 @@ func drawArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelL
 	}
 	drawCommanderSummaryCard(screen, commander, float64(layout.commanderX), float64(layout.commanderY), float64(layout.commanderW), float64(layout.commanderH), commanderCardOptions{
 		Role:            role,
-		EmptySummary:    "Komutan atayarak savaş, hareket ve kuşatma bonusu kazan.",
-		EmptyEffectText: "Katkı: atanmış komutan yok.",
+		EmptySummary:    "Ata bonus kazan.",
+		EmptyEffectText: "Komutan yok.",
 		ExtraLine:       extra,
 		ShowEffectText:  false,
 		MaxTraitRows:    1,

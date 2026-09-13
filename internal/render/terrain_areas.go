@@ -18,11 +18,11 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 	if selected := r.gs.Regions[r.editSelectedRegion]; selected != nil && selected.IsTerrainArea {
 		selectedAreaID = selected.TerrainAreaID
 	}
-	for _, area := range r.gs.TerrainAreas {
-		col := color.RGBA{120, 120, 120, 110}
+	drawArea := func(area world.TerrainArea) {
+		col := color.RGBA{120, 120, 120, 90}
 		if parent := r.gs.Regions[area.ParentRegionID]; parent != nil {
 			if owner := r.gs.Factions[faction.FactionID(parent.OwnerID)]; owner != nil {
-				col = color.RGBA{owner.Color[0], owner.Color[1], owner.Color[2], 145}
+				col = color.RGBA{owner.Color[0], owner.Color[1], owner.Color[2], 155}
 			}
 		}
 		switch area.Terrain {
@@ -39,11 +39,23 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 		case world.TerrainSwamp:
 			col = tintTerrainAreaColor(col, 0.7)
 		}
-		if area.MoveCost == 0 {
-			col.A = 190
+		passable := world.TerrainAreaIsPassable(area)
+		if passable {
+			// Geçilebilir alan daha saydam çizilir; border ve altındaki harita
+			// görünür kalır.
+			col.A = 85
+		} else {
+			// Geçilemeyen alan parlak bir terrain rengi üretmesin; koyu
+			// grimsi-siyah bir örtü olarak kalsın.
+			col = tintTerrainAreaColor(col, 0.32)
+			col.A = 165
 		}
 		if area.ParentRegionID == r.editSelectedRegion || area.ID == selectedAreaID {
-			col.A = 180
+			if passable {
+				col.A = 200
+			} else {
+				col.A = 175
+			}
 		}
 		if len(area.Polygons) > 0 {
 			var path vector.Path
@@ -66,12 +78,25 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 				options.ColorScale.ScaleWithColor(col)
 				vector.FillPath(screen, &path, nil, &options)
 			}
-			continue
+			return
 		}
 		for _, cell := range area.Cells {
 			x0, y0 := r.worldToScreen(float64(cell[0]), float64(cell[1]))
 			x1, y1 := r.worldToScreen(float64(cell[0]+1), float64(cell[1]+1))
 			vector.FillRect(screen, float32(x0), float32(y0), float32(x1-x0), float32(y1-y0), col, true)
+		}
+	}
+	// Geçilemeyen alanları önce, geçilebilir alanları sonra çiz. Böylece
+	// geçilebilir alanın dolgusu ve üstteki border'ı komşu engelli alanın
+	// altında kalmaz.
+	for _, area := range r.gs.TerrainAreas {
+		if !world.TerrainAreaIsPassable(area) {
+			drawArea(area)
+		}
+	}
+	for _, area := range r.gs.TerrainAreas {
+		if world.TerrainAreaIsPassable(area) {
+			drawArea(area)
 		}
 	}
 	if selectedAreaID != "" {

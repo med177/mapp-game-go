@@ -531,12 +531,13 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 
 	upkeepY := reqY + 14 + float64(len(reqLines))*14 + 6
 	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl + %d altın/tur", utype.GrainUpkeep, utype.GoldUpkeep), textX, upkeepY, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Hareket: %d PU", utype.BaseMovementPoints()), textX, upkeepY+18, FaceSmall, ColorGray)
 
 	if sprite != nil {
 		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})
 	}
 
-	statY := upkeepY + 18
+	statY := upkeepY + 36
 	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), textX, statY, FaceSmall, ColorGray)
 	statY += 16
 	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), textX, statY, FaceSmall, ColorGray)
@@ -577,8 +578,9 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 	DrawText(screen, utype.NameTR, textX, y+12, FaceMed, ColorGold)
 	DrawText(screen, fmt.Sprintf("Birlik adedi: %d", unitCount), textX, y+38, FaceSmall, ColorWhite)
 	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl + %d altın/tur", utype.GrainUpkeep, utype.GoldUpkeep), textX, y+56, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Hareket: %d PU", utype.BaseMovementPoints()), textX, y+74, FaceSmall, ColorGray)
 
-	statY := y + 80
+	statY := y + 98
 	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), textX, statY, FaceSmall, ColorGray)
 	statY += 16
 	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), textX, statY, FaceSmall, ColorGray)

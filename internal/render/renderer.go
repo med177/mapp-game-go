@@ -60,9 +60,15 @@ const (
 	capitalLabelIconSmallSize    = float32(18)
 	capitalLabelIconMediumSize   = float32(20)
 	navalDockTargetRadius        = float32(18)
+	terrainAreaMoveTargetRadius  = float32(11)
+	terrainAreaMoveTargetFillRad = float32(8)
 )
 
 var navalDockTargetColor = color.RGBA{24, 72, 145, 235}
+
+var terrainAreaMoveTargetColor = color.RGBA{255, 165, 40, 225}
+
+var terrainAreaMoveTargetHoverColor = color.RGBA{70, 220, 100, 190}
 
 // Renderer kamerayı ve dünya haritasını yönetir.
 type Renderer struct {
@@ -2120,11 +2126,21 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 	if !ok {
 		return
 	}
+	mx, my := ebiten.CursorPosition()
 
 	for _, nid := range src.Neighbors {
 		nRegion, ok := r.gs.Regions[nid]
 		if !ok || nRegion.IsLocked {
 			continue
+		}
+		// Bir normal bölgenin içindeki move_cost: 0 arazi alanı bölgenin
+		// kendisini kilitlemez; hareket hedefi marker'ı da bu alanı geçilebilir
+		// sanmamalıdır. Kara bölgeleri için gerçek movement maliyeti kontrolünü
+		// kullan, deniz hedeflerinde bu kara maliyeti hesabını uygulama.
+		if !nRegion.IsSea {
+			if _, blocked := r.gs.LandRegionMoveCost(nRegion); blocked {
+				continue
+			}
 		}
 		canPreviewWarLanding := a.IsNaval &&
 			len(a.EmbarkedUnits) > 0 &&
@@ -2150,6 +2166,18 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		}
 
 		sx, sy := r.regionScreenPos(nRegion)
+		if nRegion.IsTerrainArea {
+			// Arazi alanı hedefleri, normal bölge hedefinden daha küçük ve
+			// turuncu halka ile çizilir; böylece hedefin bir bölge değil,
+			// geçilebilir bir arazi parçası olduğu haritada anlaşılır.
+			dx := float64(mx) - sx
+			dy := float64(my) - sy
+			if dx*dx+dy*dy <= float64(terrainAreaMoveTargetRadius*terrainAreaMoveTargetRadius) {
+				vector.FillCircle(screen, float32(sx), float32(sy), terrainAreaMoveTargetFillRad, terrainAreaMoveTargetHoverColor, true)
+			}
+			vector.StrokeCircle(screen, float32(sx), float32(sy), terrainAreaMoveTargetRadius, 2, terrainAreaMoveTargetColor, true)
+			continue
+		}
 
 		var col color.RGBA
 		if a.IsNaval {

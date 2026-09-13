@@ -257,6 +257,22 @@ func terrainAreaBorderID(gs *state.GameState, regionIDs []world.RegionID, a, b u
 	return left.TerrainAreaID, true
 }
 
+func blockedTerrainAreaRegion(gs *state.GameState, regionID world.RegionID) bool {
+	if gs == nil {
+		return false
+	}
+	region := gs.Regions[regionID]
+	if region == nil || !region.IsTerrainArea {
+		return false
+	}
+	for _, area := range gs.TerrainAreas {
+		if area.ID == region.TerrainAreaID {
+			return !world.TerrainAreaIsPassable(area)
+		}
+	}
+	return region.IsLocked
+}
+
 // updateBorderStyles, geometriyi değiştirmeden mevcut diplomasi/map-mode
 // durumuna göre hangi vektör path'ine gideceğini belirler.
 func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.RegionID, mode MapMode) {
@@ -327,6 +343,12 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 					wm.borderStyles[i] = mapBorderStyleSea
 				}
 			}
+			continue
+		}
+		if blockedTerrainAreaRegion(gs, wm.regionIDs[landIdx]) ||
+			(otherIdx != 0 && int(otherIdx) < len(wm.regionIDs) && blockedTerrainAreaRegion(gs, wm.regionIDs[otherIdx])) {
+			// Geçilemeyen terrain-area sınırları, hem terrain-area özel
+			// çizgisinde hem de normal bölge border'ında görünmemelidir.
 			continue
 		}
 		if terrainAreaID, ok := terrainAreaBorderID(gs, wm.regionIDs, segment.a, segment.b); ok {

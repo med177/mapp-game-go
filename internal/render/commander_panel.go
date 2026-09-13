@@ -116,17 +116,23 @@ func drawCommanderPortraitAsset(screen *ebiten.Image, asset string, x, y, w, h f
 			screen.DrawImage(img, op)
 		}
 	} else {
-		DrawTextCentered(screen, "Yok", x+w/2, y+h/2-8, FaceSmall, ColorGray)
+		DrawTextCentered(screen, "Ata", x+w/2, y+h/2-8, FaceSmall, ColorGray)
 	}
 	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1, color.RGBA{160, 120, 40, 220}, false)
 }
 
+func drawCommanderPortraitPlaceholder(screen *ebiten.Image, x, y, w, h float64) {
+	vector.FillRect(screen, float32(x), float32(y), float32(w), float32(h), color.RGBA{20, 16, 10, 230}, false)
+	DrawTextCentered(screen, "Ata", x+w/2, y+h/2-8, FaceSmall, ColorGray)
+	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1, color.RGBA{160, 120, 40, 220}, false)
+}
+
 func drawCommanderPortrait(screen *ebiten.Image, commander *army.Commander, x, y, w, h float64) {
-	asset := ""
-	if commander != nil {
-		asset = commander.PortraitAsset
+	if commander == nil {
+		drawCommanderPortraitPlaceholder(screen, x, y, w, h)
+		return
 	}
-	drawCommanderPortraitAsset(screen, asset, x, y, w, h)
+	drawCommanderPortraitAsset(screen, commander.PortraitAsset, x, y, w, h)
 }
 
 func commanderPanelRect() gameui.Rect {
