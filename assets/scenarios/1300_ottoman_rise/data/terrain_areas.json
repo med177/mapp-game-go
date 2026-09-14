@@ -9112,6 +9112,7 @@
   },
   {
     "id": "area__27",
+    "name": "Apennin Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -9220,6 +9221,7 @@
   },
   {
     "id": "area__28",
+    "name": "Apennin Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -9321,6 +9323,7 @@
   },
   {
     "id": "area__29",
+    "name": "Apennin Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -9497,6 +9500,7 @@
   },
   {
     "id": "area__32",
+    "name": "Apennin Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -9657,6 +9661,7 @@
   },
   {
     "id": "area__34",
+    "name": "Apennin Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [

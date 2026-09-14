@@ -657,8 +657,8 @@
       "normandy",
       "paris",
       "area::area__11::flanders",
-      "area::area__11::lorraine",
-      "area::area__11::champagne"
+      "area::area__11::champagne",
+      "area::area__11::lorraine"
     ],
     "world_x": 568,
     "world_y": 289,
@@ -1464,9 +1464,9 @@
       "bay_of_biscay",
       "languedoc",
       "navarra",
-      "area::area__9::aquitaine",
+      "area::area__9::languedoc",
       "area::area__9::navarra",
-      "area::area__9::languedoc"
+      "area::area__9::aquitaine"
     ],
     "world_x": 468,
     "world_y": 398,
@@ -1880,15 +1880,15 @@
     "owner_id": "papal_states_f",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
-      "campania",
-      "mediterranean_open_5",
-      "northern_tyrrhenian_sea",
-      "siena",
       "area::area__28",
       "area::area__31::lazio",
       "area::area__32",
       "area::area__33::lazio",
-      "area::area__34"
+      "area::area__34",
+      "campania",
+      "mediterranean_open_5",
+      "northern_tyrrhenian_sea",
+      "siena"
     ],
     "world_x": 749,
     "world_y": 442,
@@ -1931,11 +1931,10 @@
       "adriatic_sea",
       "adriatic_sea_dalmatia",
       "apulia",
-      "marche",
       "area::area__28",
       "area::area__31::abruzzo",
       "area::area__32",
-      "area::area__33::abruzzo"
+      "marche"
     ],
     "world_x": 755,
     "world_y": 433,
@@ -1977,11 +1976,10 @@
     "neighbors": [
       "abruzzo",
       "adriatic_sea_dalmatia",
-      "ferrara",
-      "siena",
       "area::area__32",
       "area::area__33::marche",
-      "area::area__34"
+      "area::area__34",
+      "ferrara"
     ],
     "world_x": 744,
     "world_y": 407,
@@ -4051,13 +4049,13 @@
       "isfahan",
       "siraz",
       "area::area__5",
-      "area::area__6::gurgan",
-      "area::area__6::southern_persia",
-      "area::area__6::meshed",
       "area::area__6::isfahan",
-      "area::area__6::kazvin",
       "area::area__6::northern_persia",
-      "area::area__6::hourmuz"
+      "area::area__6::gurgan",
+      "area::area__6::kazvin",
+      "area::area__6::hourmuz",
+      "area::area__6::meshed",
+      "area::area__6::southern_persia"
     ],
     "world_x": 1588,
     "world_y": 657,
@@ -4157,13 +4155,13 @@
       "persian_open_1",
       "siraz",
       "southern_persia",
-      "area::area__6::gurgan",
-      "area::area__6::southern_persia",
-      "area::area__6::meshed",
       "area::area__6::isfahan",
-      "area::area__6::kazvin",
       "area::area__6::northern_persia",
-      "area::area__6::hourmuz"
+      "area::area__6::gurgan",
+      "area::area__6::kazvin",
+      "area::area__6::hourmuz",
+      "area::area__6::meshed",
+      "area::area__6::southern_persia"
     ],
     "world_x": 1632,
     "world_y": 697,
@@ -6750,8 +6748,8 @@
       "flanders",
       "lorraine",
       "palatinate",
-      "area::area__11::flanders",
-      "area::area__11::luxembourg"
+      "area::area__11::luxembourg",
+      "area::area__11::flanders"
     ],
     "world_x": 597,
     "world_y": 290,
@@ -7165,8 +7163,8 @@
       "levantine_sea",
       "luxor",
       "palestine",
-      "area::area__3::luxor",
-      "area::area__3::israel"
+      "area::area__3::israel",
+      "area::area__3::luxor"
     ],
     "world_x": 1170,
     "world_y": 635,
@@ -7932,12 +7930,12 @@
     "owner_id": "florence_rep",
     "successor_faction_id": "florence_rep",
     "neighbors": [
-      "genoa",
-      "northern_tyrrhenian_sea",
-      "siena",
       "area::area__27",
       "area::area__30::florence",
-      "area::area__34"
+      "area::area__34",
+      "genoa",
+      "northern_tyrrhenian_sea",
+      "siena"
     ],
     "world_x": 702,
     "world_y": 415,
@@ -8229,9 +8227,9 @@
       "gulf_of_lion",
       "languedoc",
       "navarra",
-      "area::area__9::navarra",
       "area::area__9::languedoc",
-      "area::area__9::catalonia"
+      "area::area__9::catalonia",
+      "area::area__9::navarra"
     ],
     "world_x": 493,
     "world_y": 439,
@@ -9431,13 +9429,12 @@
     "successor_faction_id": "papal_states_f",
     "neighbors": [
       "adriatic_sea_dalmatia",
-      "marche",
-      "siena",
-      "venice",
-      "verona",
       "area::area__27",
       "area::area__30::ferrara",
-      "area::area__34"
+      "area::area__34",
+      "marche",
+      "venice",
+      "verona"
     ],
     "world_x": 721,
     "world_y": 397,
@@ -9481,13 +9478,10 @@
     "owner_id": "florence_rep",
     "successor_faction_id": "florence_rep",
     "neighbors": [
-      "ferrara",
+      "area::area__34",
       "florence",
       "lazio",
-      "marche",
-      "mediterranean_open_5",
-      "northern_tyrrhenian_sea",
-      "area::area__34"
+      "northern_tyrrhenian_sea"
     ],
     "world_x": 712,
     "world_y": 428,
@@ -11108,8 +11102,8 @@
     "neighbors": [
       "irish_sea_shore",
       "north_sea_shore",
-      "area::area__11::flanders",
       "area::area__11::luxembourg",
+      "area::area__11::flanders",
       "area::area__11::lorraine"
     ],
     "world_x": 592,
@@ -11467,8 +11461,8 @@
       "norwegian_sea",
       "scotland",
       "yorkshire",
-      "area::area__26::scotland",
-      "area::area__26::newcastle_region"
+      "area::area__26::newcastle_region",
+      "area::area__26::scotland"
     ],
     "world_x": 450,
     "world_y": 164,
@@ -11833,8 +11827,7 @@
       "campania",
       "calabria",
       "northern_tyrrhenian_sea",
-      "sicily",
-      "siena"
+      "sicily"
     ],
     "world_x": 748,
     "world_y": 487,
@@ -12472,8 +12465,8 @@
       "jordan",
       "luxor",
       "red_sea",
-      "area::area__3::luxor",
-      "area::area__3::israel"
+      "area::area__3::israel",
+      "area::area__3::luxor"
     ],
     "world_x": 1167,
     "world_y": 716,

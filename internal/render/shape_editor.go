@@ -369,8 +369,6 @@ func isEditShapeToolButton(kind editInspectorButton) bool {
 }
 
 func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
-	terrainPending := r.editTerrainAreaMode && r.editShapePaintPending
-	terrainDraft := r.editTerrainAreaMode && len(r.editTerrainAreaPolygon) > 0 && !terrainPending
 	addLabel := "Geçiş Ekle"
 	if r.editLandPassageMode {
 		addLabel = "> Geçiş Ekle"
@@ -379,12 +377,39 @@ func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
 	if r.editLandPassageAdjustMode {
 		adjustLabel = "> Geçiş Düzenle"
 	}
-	// Arazi alanı boyama aktifken geçiş araçları karışıklığı önlemek için pasif.
-	landPassageAvailable := !r.editTerrainAreaMode && !terrainPending
+	// Arazi alanı araçları ayrı sekmede tutulur.
+	landPassageAvailable := !r.editTerrainAreaMode
 	canDelete := landPassageAvailable && r.editLandPassageSelected >= 0 && r.editLandPassageSelected < len(r.gs.LandPassages)
 	drawEditInspectorButton(screen, editButtonLandPassageAdd, addLabel, landPassageAvailable)
 	drawEditInspectorButton(screen, editButtonLandPassageAdjust, adjustLabel, landPassageAvailable)
 	drawEditInspectorButton(screen, editButtonLandPassageDelete, "Geçiş Sil", canDelete)
+}
+
+func (r *Renderer) drawEditTerrainAreaInspector(screen *ebiten.Image, ly float64) {
+	x, _, _, _ := editInspectorRect()
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || !region.IsTerrainArea {
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Haritadan bir arazi alanı seç.", ColorGray, gameui.TextSmall)
+	} else {
+		name := region.NameTR
+		if name == "" {
+			name = region.Name
+		}
+		if name == "" {
+			name = region.TerrainAreaID
+		}
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Arazi Alanı: "+name, ColorWhite, gameui.TextSmall)
+		ly += 18
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "ID: "+region.TerrainAreaID+"   Tip: "+region.Terrain.LabelTR(), ColorGray, gameui.TextSmall)
+		ly += 18
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Maliyet: "+itoa(r.editTerrainAreaMoveCost)+"   Yıpranma: %"+itoa(r.editTerrainAreaAttritionCost), ColorGray, gameui.TextSmall)
+	}
+	r.drawEditTerrainAreaButtons(screen)
+}
+
+func (r *Renderer) drawEditTerrainAreaButtons(screen *ebiten.Image) {
+	terrainPending := r.editTerrainAreaMode && r.editShapePaintPending
+	terrainDraft := r.editTerrainAreaMode && len(r.editTerrainAreaPolygon) > 0 && !terrainPending
 	region := r.gs.Regions[r.editSelectedRegion]
 	canArea := region != nil && !region.IsSea && !r.editLandPassageMode && !r.editLandPassageAdjustMode && !terrainDraft
 	canAppendArea := region != nil && region.IsTerrainArea && !r.editTerrainAreaMode &&
@@ -401,6 +426,8 @@ func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
 	if r.editTerrainAreaMoveCost == 0 {
 		attritionLabel = 0
 	}
+	drawEditInspectorButton(screen, editButtonRegionTerrain, "Arazi Tipi", areaControlsAvailable)
+	drawEditInspectorButton(screen, editButtonRegionNameTR, "Arazi Adı", region != nil && region.IsTerrainArea && !terrainPending)
 	drawEditInspectorButton(screen, editButtonTerrainAreaType, areaTypeLabel, areaControlsAvailable)
 	appendLabel := "Araziye Ekle"
 	if r.editTerrainAreaAppendMode {
@@ -490,6 +517,9 @@ func (r *Renderer) resetTerrainAreaDrawing() {
 
 func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, bool) {
 	kind := r.editShapeInspectorButtonAt(fx, fy)
+	if r.editInspectorTab == editInspectorTerrainArea {
+		kind = r.editTerrainAreaInspectorButtonAt(fx, fy)
+	}
 	if kind == editButtonTerrainAreaAppend && !r.canBeginTerrainAreaAppend() {
 		return InputAction{}, true
 	}
@@ -518,6 +548,10 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 		return InputAction{}, true
 	}
 	switch kind {
+	case editButtonRegionTerrain:
+		r.toggleEditTerrainDropdown()
+	case editButtonRegionNameTR:
+		r.beginEditRename(editTextRegionNameTR)
 	case editButtonShapePaint:
 		r.handleEditShapeToolButton(editShapeToolShape, editShapeBrushPaint)
 	case editButtonShapeErase:
@@ -1066,7 +1100,7 @@ func (r *Renderer) applyPendingShapePaint() {
 }
 
 func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
-	if r.gs.Phase != state.PhaseEditMode || (r.editInspectorTab != editInspectorMap && r.editInspectorTab != editInspectorShape && r.editInspectorTab != editInspectorRegion) {
+	if r.gs.Phase != state.PhaseEditMode || (r.editInspectorTab != editInspectorMap && r.editInspectorTab != editInspectorShape && r.editInspectorTab != editInspectorRegion && r.editInspectorTab != editInspectorTerrainArea) {
 		return
 	}
 	selectedRegion := r.selectedRegionForShapeTools()
@@ -1217,7 +1251,7 @@ func (r *Renderer) finishTerrainAreaPolygon() {
 		if terrainRegionID := r.terrainAreaRuntimeRegionID(selectedAreaID); r.gs.Regions[terrainRegionID] != nil {
 			r.editSelectedRegion = terrainRegionID
 			r.syncSelectedTerrainArea(terrainRegionID)
-			r.editInspectorTab = editInspectorMap
+			r.editInspectorTab = editInspectorTerrainArea
 		}
 		pendingBefore := *before
 		r.editShapePendingBefore = &pendingBefore
@@ -1246,7 +1280,7 @@ func (r *Renderer) finishTerrainAreaPolygon() {
 	if r.gs.Regions[terrainRegionID] != nil {
 		r.editSelectedRegion = terrainRegionID
 		r.syncSelectedTerrainArea(terrainRegionID)
-		r.editInspectorTab = editInspectorMap
+		r.editInspectorTab = editInspectorTerrainArea
 	}
 	if before != nil {
 		pendingBefore := *before
@@ -1331,7 +1365,7 @@ func buildEditShapeHelpPanel() gameui.Panel {
 }
 
 func (r *Renderer) editShapeHelpPanelHit(mx, my float64) bool {
-	if r.gs.Phase != state.PhaseEditMode || (r.editInspectorTab != editInspectorMap && r.editInspectorTab != editInspectorShape && r.editInspectorTab != editInspectorRegion) {
+	if r.gs.Phase != state.PhaseEditMode || (r.editInspectorTab != editInspectorMap && r.editInspectorTab != editInspectorShape && r.editInspectorTab != editInspectorRegion && r.editInspectorTab != editInspectorTerrainArea) {
 		return false
 	}
 	if !r.canEditSelectedShape() && !r.canRegionPaintSelected() {

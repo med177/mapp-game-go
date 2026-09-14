@@ -61,6 +61,9 @@ tutulur ve `Kaydet` ile `country_shapes.json` içine yazılır.
 ## UX kuralları
 
 - Sol tık seçim davranışını korur.
+- Arazi alanı ekleme ve düzenleme düğmeleri `Arazi` sekmesinde toplanır; haritadan
+  bir arazi alanı seçildiğinde bu sekme otomatik olarak aktifleşir. `Harita`
+  sekmesi shape ve karasal geçiş araçlarını barındırır.
 - Shape düzenleme `Shape` sekmesinde ve **sağ mouse drag** ile yapılır; böylece region seçimiyle çakışmaz.
 - `Boya` ve `Sil` modları inspector butonlarından değişir.
 - Fırça yarıçapı inspector'dan artırılıp azaltılır; `1.00` altına iki ince kademe

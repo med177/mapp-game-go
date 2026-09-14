@@ -94,12 +94,20 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	drawUIPanelRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, color.RGBA{16, 20, 24, 226}, panelBorder, 1)
 
 	drawEditInspectorLabel(screen, float64(x)+14, float64(y)+10, "EDITOR", ColorGold, gameui.TextMedium)
-	r.drawEditInspectorTab(screen, editInspectorSettlement, "Yerleşim Birimi")
+	r.drawEditInspectorTab(screen, editInspectorSettlement, "Yerleşim")
 	r.drawEditInspectorTab(screen, editInspectorRegion, "Bölge")
 	r.drawEditInspectorTab(screen, editInspectorFaction, "Devlet")
 	r.drawEditInspectorTab(screen, editInspectorMap, "Harita")
+	r.drawEditInspectorTab(screen, editInspectorTerrainArea, "Arazi")
 	r.drawEditInspectorTab(screen, editInspectorData, "Veri")
 	ly := float64(y) + 82
+
+	if r.editInspectorTab == editInspectorTerrainArea {
+		r.drawEditTerrainAreaInspector(screen, ly)
+		drawUIDropdown(screen, r.editTerrainDropdown)
+		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+		return
+	}
 
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		r.drawEditShapeInspector(screen, ly)
@@ -260,18 +268,18 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bölgeyi Sil", canRegion)
 	terrainLabel := "Bölge Tipi"
 	if region != nil && region.IsTerrainArea {
-		terrainLabel = "Arazi Tipi"
+		terrainLabel = "Bölge Tipi"
 	}
-	drawEditInspectorButton(screen, editButtonRegionTerrain, terrainLabel, canRegion)
+	drawEditInspectorButton(screen, editButtonRegionTerrain, terrainLabel, canRegion && (region == nil || !region.IsTerrainArea))
 	nameTRLabel := "Ad TR"
 	nameLabel := "Ad EN"
 	nameEnabled := canRegion
 	if region != nil && region.IsTerrainArea {
-		nameTRLabel = "Arazi Adı"
+		nameTRLabel = "Ad TR"
 		nameLabel = "Arazi Adı Yok"
 		nameEnabled = false
 	}
-	drawEditInspectorButton(screen, editButtonRegionNameTR, nameTRLabel, canRegion)
+	drawEditInspectorButton(screen, editButtonRegionNameTR, nameTRLabel, canRegion && (region == nil || !region.IsTerrainArea))
 	drawEditInspectorButton(screen, editButtonRegionName, nameLabel, nameEnabled)
 	drawEditInspectorButton(screen, editButtonRegionID, "ID", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionLock, "Kilit", canRegion)
@@ -777,7 +785,7 @@ func editInspectorTabRect(tab editInspectorTab) uiRect {
 	x, y, _, _ := editInspectorRect()
 	const th, gap = float64(30), float64(5)
 	left := float64(x) + 82
-	widths := [...]float64{112, 54, 54, 58, 54}
+	widths := [...]float64{82, 44, 44, 48, 48, 44}
 	index := -1
 	switch tab {
 	case editInspectorSettlement:
@@ -788,8 +796,10 @@ func editInspectorTabRect(tab editInspectorTab) uiRect {
 		index = 2
 	case editInspectorMap:
 		index = 3
-	case editInspectorData:
+	case editInspectorTerrainArea:
 		index = 4
+	case editInspectorData:
+		index = 5
 	default:
 		return uiRect{}
 	}
@@ -906,6 +916,11 @@ func editShapeInspectorButtonKinds() []editInspectorButton {
 		editButtonLandPassageAdd,
 		editButtonLandPassageAdjust,
 		editButtonLandPassageDelete,
+	}
+}
+
+func editTerrainAreaInspectorButtonKinds() []editInspectorButton {
+	return []editInspectorButton{
 		editButtonTerrainArea,
 		editButtonTerrainAreaAppend,
 		editButtonTerrainAreaType,
@@ -917,11 +932,21 @@ func editShapeInspectorButtonKinds() []editInspectorButton {
 }
 
 func (r *Renderer) editShapeInspectorButtonAt(mx, my float64) editInspectorButton {
-	if r != nil && r.terrainAreaEditPending() &&
-		buildEditInspectorActionButton(editButtonTerrainAreaCancel, "").HitTest(mx, my) {
-		return editButtonTerrainAreaCancel
-	}
 	for _, kind := range editShapeInspectorButtonKinds() {
+		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
+			return kind
+		}
+	}
+	return editButtonNone
+}
+
+func (r *Renderer) editTerrainAreaInspectorButtonAt(mx, my float64) editInspectorButton {
+	for _, kind := range []editInspectorButton{editButtonRegionTerrain, editButtonRegionNameTR} {
+		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
+			return kind
+		}
+	}
+	for _, kind := range editTerrainAreaInspectorButtonKinds() {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
 		}
@@ -941,11 +966,15 @@ func (r *Renderer) editInspectorActiveButtonAt(mx, my float64) editInspectorButt
 		buildEditInspectorTabButton(editInspectorRegion, "").HitTest(mx, my) ||
 		buildEditInspectorTabButton(editInspectorFaction, "").HitTest(mx, my) ||
 		buildEditInspectorTabButton(editInspectorMap, "").HitTest(mx, my) ||
+		buildEditInspectorTabButton(editInspectorTerrainArea, "").HitTest(mx, my) ||
 		buildEditInspectorTabButton(editInspectorData, "").HitTest(mx, my) {
 		return editButtonSaveScenario
 	}
 	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(mx, my) {
 		return editButtonSaveScenario
+	}
+	if r.editInspectorTab == editInspectorTerrainArea {
+		return r.editTerrainAreaInspectorButtonAt(mx, my)
 	}
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		kind := r.editShapeInspectorButtonAt(mx, my)
@@ -969,7 +998,19 @@ func (r *Renderer) editInspectorActiveButtonAt(mx, my float64) editInspectorButt
 	if r.editInspectorTab == editInspectorFaction {
 		return editFactionInspectorButtonAt(mx, my)
 	}
-	return editRegionInspectorButtonAt(mx, my)
+	return r.editRegionInspectorButtonAt(mx, my)
+}
+
+func (r *Renderer) editRegionInspectorButtonAt(mx, my float64) editInspectorButton {
+	kind := editRegionInspectorButtonAt(mx, my)
+	if r == nil || r.gs == nil {
+		return kind
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region != nil && region.IsTerrainArea && (kind == editButtonRegionTerrain || kind == editButtonRegionNameTR) {
+		return editButtonNone
+	}
+	return kind
 }
 
 const (
@@ -1776,11 +1817,11 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		}
 	}
 
-	if (r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape || r.editInspectorTab == editInspectorRegion) && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
+	if (r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape || r.editInspectorTab == editInspectorRegion || r.editInspectorTab == editInspectorTerrainArea) && leftJustPressed && r.editShapeHelpPanelHit(fx, fy) {
 		return InputAction{}
 	}
 
-	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape || r.editInspectorTab == editInspectorRegion {
+	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape || r.editInspectorTab == editInspectorRegion || r.editInspectorTab == editInspectorTerrainArea {
 		if leftJustPressed && r.beginShapePaintStroke(fx, fy) {
 			return InputAction{}
 		}
@@ -1964,7 +2005,7 @@ func (r *Renderer) selectTerrainAreaAt(fx, fy float64) bool {
 	r.syncSelectedTerrainArea(rid)
 	r.setEditFactionFromRegion(rid)
 	r.editSelectedSettlement = -1
-	r.editInspectorTab = editInspectorMap
+	r.editInspectorTab = editInspectorTerrainArea
 	r.editRenaming = false
 	r.editDraggingRegion = false
 	r.editDraggingSettlement = false
@@ -2089,6 +2130,8 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		if buildEditInspectorTabButton(editInspectorSettlement, "Yerleşim Birimi").HitTest(fx, fy) ||
 			buildEditInspectorTabButton(editInspectorRegion, "Bölge").HitTest(fx, fy) ||
 			buildEditInspectorTabButton(editInspectorFaction, "Devlet").HitTest(fx, fy) ||
+			buildEditInspectorTabButton(editInspectorMap, "Harita").HitTest(fx, fy) ||
+			buildEditInspectorTabButton(editInspectorTerrainArea, "Arazi").HitTest(fx, fy) ||
 			buildEditInspectorTabButton(editInspectorData, "Veri").HitTest(fx, fy) {
 			return InputAction{}, true
 		}
@@ -2109,12 +2152,19 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.editInspectorTab = editInspectorMap
 		return InputAction{}, true
 	}
+	if buildEditInspectorTabButton(editInspectorTerrainArea, "Arazi").HitTest(fx, fy) {
+		r.editInspectorTab = editInspectorTerrainArea
+		return InputAction{}, true
+	}
 	if buildEditInspectorTabButton(editInspectorData, "Veri").HitTest(fx, fy) {
 		r.editInspectorTab = editInspectorData
 		return InputAction{}, true
 	}
 	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(fx, fy) {
 		return InputAction{Kind: ActionSaveScenario}, true
+	}
+	if r.editInspectorTab == editInspectorTerrainArea {
+		return r.handleEditShapeInspectorClick(fx, fy)
 	}
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		return r.handleEditShapeInspectorClick(fx, fy)
@@ -2166,7 +2216,7 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.setSelectedFactionCapital()
 		return InputAction{}, true
 	}
-	switch editRegionInspectorButtonAt(fx, fy) {
+	switch r.editRegionInspectorButtonAt(fx, fy) {
 	case editButtonRegionTerrain:
 		r.toggleEditTerrainDropdown()
 	case editButtonRegionNameTR:

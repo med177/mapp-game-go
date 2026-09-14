@@ -568,6 +568,7 @@ const (
 	editInspectorSettlement
 	editInspectorFaction
 	editInspectorMap
+	editInspectorTerrainArea
 	editInspectorData
 	// Shape ayrı bir görünür sekme değildir. Eski shape editor testleri ve
 	// kayıtlı editor state'leri için geriye dönük bir çalışma modu olarak kalır.
