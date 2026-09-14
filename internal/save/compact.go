@@ -105,20 +105,24 @@ type armySaveState struct {
 }
 
 type campaignSaveState struct {
-	Turn                    int                                      `json:"t"`
-	Year                    int                                      `json:"y"`
-	Month                   int                                      `json:"m"`
-	StartYear               int                                      `json:"sy,omitempty"`
-	ScenarioID              string                                   `json:"sc"`
-	ScenarioPath            string                                   `json:"scp,omitempty"`
-	PlayerFactionID         faction.FactionID                        `json:"pf"`
-	Difficulty              int                                      `json:"d,omitempty"`
-	AutoGrainExport         bool                                     `json:"age,omitempty"`
-	DevelopmentMode         bool                                     `json:"dev,omitempty"`
-	EditMode                bool                                     `json:"em,omitempty"`
-	Victory                 state.VictoryCondition                   `json:"v"`
-	SelectedVictoryOptionID string                                   `json:"sv,omitempty"`
-	Regions                 map[world.RegionID]regionSaveState       `json:"rg,omitempty"`
+	Turn                    int                                `json:"t"`
+	Year                    int                                `json:"y"`
+	Month                   int                                `json:"m"`
+	StartYear               int                                `json:"sy,omitempty"`
+	ScenarioID              string                             `json:"sc"`
+	ScenarioPath            string                             `json:"scp,omitempty"`
+	PlayerFactionID         faction.FactionID                  `json:"pf"`
+	Difficulty              int                                `json:"d,omitempty"`
+	AutoGrainExport         bool                               `json:"age,omitempty"`
+	DevelopmentMode         bool                               `json:"dev,omitempty"`
+	EditMode                bool                               `json:"em,omitempty"`
+	Victory                 state.VictoryCondition             `json:"v"`
+	SelectedVictoryOptionID string                             `json:"sv,omitempty"`
+	Regions                 map[world.RegionID]regionSaveState `json:"rg,omitempty"`
+	// TerrainAreas senaryonun kaynak dosyasından bağımsız olarak kampanya
+	// sırasında düzenlenen arazi yerleşimini taşır. Tam liste tutulur; çünkü
+	// arazi poligonları ve maliyetleri bölge delta'sına indirgenemez.
+	TerrainAreas            []world.TerrainArea                      `json:"ta"`
 	Factions                map[faction.FactionID]factionSaveState   `json:"fx,omitempty"`
 	Armies                  map[army.ArmyID]armySaveState            `json:"ar,omitempty"`
 	Commanders              map[string]*army.Commander               `json:"cmd,omitempty"`
@@ -204,6 +208,7 @@ type legacyCampaignSaveState struct {
 	Victory                 state.VictoryCondition                         `json:"victory"`
 	SelectedVictoryOptionID string                                         `json:"selected_victory_option_id"`
 	Regions                 map[world.RegionID]legacyRegionSaveState       `json:"regions"`
+	TerrainAreas            []world.TerrainArea                            `json:"terrain_areas,omitempty"`
 	Factions                map[faction.FactionID]legacyFactionSaveState   `json:"factions"`
 	Armies                  map[army.ArmyID]*army.Army                     `json:"armies"`
 	Commanders              map[string]*army.Commander                     `json:"commanders,omitempty"`
@@ -365,6 +370,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Victory:                 legacy.Victory,
 		SelectedVictoryOptionID: legacy.SelectedVictoryOptionID,
 		Regions:                 savedRegions,
+		TerrainAreas:            cloneTerrainAreas(legacy.TerrainAreas),
 		Factions:                savedFactions,
 		Armies:                  convertArmiesToSaveState(legacy.Armies),
 		Commanders:              cloneCommanders(legacy.Commanders),
@@ -490,6 +496,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Victory:                 gs.Victory,
 		SelectedVictoryOptionID: gs.SelectedVictoryOptionID,
 		Regions:                 emptyMapAsNil(savedRegions),
+		TerrainAreas:            cloneTerrainAreas(gs.TerrainAreas),
 		Factions:                emptyMapAsNil(savedFactions),
 		Armies:                  convertArmiesToSaveState(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
@@ -592,6 +599,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Victory:                 gs.Victory,
 		SelectedVictoryOptionID: gs.SelectedVictoryOptionID,
 		Regions:                 regions,
+		TerrainAreas:            cloneTerrainAreas(gs.TerrainAreas),
 		Factions:                factions,
 		Armies:                  cloneArmies(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
@@ -706,6 +714,11 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	}
 	gs.WinnerID = saved.WinnerID
 	gs.ActiveRegionEvents = append([]state.RegionEventStatus(nil), saved.ActiveRegionEvents...)
+	if saved.TerrainAreas != nil {
+		gs.TerrainAreas = cloneTerrainAreas(saved.TerrainAreas)
+		world.SyncTerrainAreaRegions(gs.Regions, gs.TerrainAreas)
+		world.UpdateTerrainAreaRegionOwners(gs.Regions)
+	}
 
 	for rid, regionState := range saved.Regions {
 		region := gs.Regions[rid]
@@ -750,6 +763,24 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 
 	applyRelationDelta(gs, saved.Relations)
 	repairLoadedRebelArmies(gs)
+}
+
+func cloneTerrainAreas(src []world.TerrainArea) []world.TerrainArea {
+	if src == nil {
+		return nil
+	}
+	out := make([]world.TerrainArea, len(src))
+	for i, area := range src {
+		out[i] = area
+		if area.Polygons != nil {
+			out[i].Polygons = make([][][2]int, len(area.Polygons))
+			for j, polygon := range area.Polygons {
+				out[i].Polygons[j] = append([][2]int(nil), polygon...)
+			}
+		}
+		out[i].ExtraNeighbors = append([]world.RegionID(nil), area.ExtraNeighbors...)
+	}
+	return out
 }
 
 func makeRegionSaveState(current, base *world.Region) (regionSaveState, bool) {

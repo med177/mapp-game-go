@@ -478,6 +478,11 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		return nil, err
 	}
+	terrainAreas, err := world.LoadTerrainAreas(dp("terrain_areas.json"), regions)
+	if err != nil {
+		return nil, err
+	}
+	world.SyncTerrainAreaRegions(regions, terrainAreas)
 	if err := world.LoadRegionSettlements(dp("settlements.json"), regions); err != nil {
 		return nil, err
 	}
@@ -559,6 +564,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		Regions:                  regions,
 		RegionOrder:              regionOrder,
 		LandPassages:             landPassages,
+		TerrainAreas:             terrainAreas,
 		Factions:                 factions,
 		FactionOrder:             factionOrder,
 		Armies:                   armies,
