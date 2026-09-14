@@ -238,11 +238,11 @@
   {
     "affected_faction": "ottoman",
     "army_hp_mod": 1.08,
-    "choice_prompt_tr": "Uç beylerinin başarısı nasıl değerlendirilsin?",
+    "choice_prompt_tr": "Köse Mihal'in katılımı ve Bithynia sınırı nasıl değerlendirilsin?",
     "choices": [
       {
         "ai_weight": 9,
-        "desc_tr": "Bizans sınırına baskı artar, savaş kaçınılmaz hale gelir.",
+        "desc_tr": "Köse Mihal'in Osmanlı safına katılmasıyla yerel sınır bilgisi ve askerî baskı Osmanlı lehine kullanılır; Doğu Roma ile savaş derinleşir.",
         "effect": {
           "relations": [
             {
@@ -253,8 +253,8 @@
           ],
           "sat_delta": 4
         },
-        "id": "raid_deeper",
-        "label_tr": "Akınları derinleştir"
+        "id": "accept_kose_mihal",
+        "label_tr": "Köse Mihal'i uç beyliğine dahil et"
       },
       {
         "ai_weight": 3,
@@ -263,18 +263,18 @@
           "grain_delta": 10,
           "sat_delta": 6
         },
-        "id": "fortify_frontier",
-        "label_tr": "Sınırı tahkim et"
+        "id": "fortify_bithynian_frontier",
+        "label_tr": "Bithynia sınırını tahkim et"
       }
     ],
-    "desc_tr": "Bithynia sınırındaki akınlar Osmanlı uç beylerine moral kazandırdı. Doğu Roma sınırında yeni bir sefer dönemi başlıyor.",
+    "desc_tr": "Harmankaya hâkimi Köse Mihal'in Osman Bey'e katılması, Bithynia sınırındaki yerel güç dengesini Osmanlı lehine değiştiriyor. Mekece, Akhisar ve Gölpazarı çevresindeki ilerlemeler için yeni bir dayanak oluşuyor.",
     "gold_delta": 100,
     "grain_delta": 20,
-    "historical_month": 7,
-    "historical_year": 1312,
-    "id": "battle_of_bapheus_1312",
+    "historical_month": 1,
+    "historical_year": 1313,
+    "id": "ottoman_kose_mihal_1313",
     "min_turn": 0,
-    "name_tr": "Bithynia Uç Seferleri",
+    "name_tr": "Köse Mihal'in Osmanlı'ya Katılması",
     "one_shot": true,
     "probability": 0,
     "requires_owned_regions": [

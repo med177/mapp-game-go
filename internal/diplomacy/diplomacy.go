@@ -1088,7 +1088,7 @@ func buildTradeRoute(gs *state.GameState, from, to faction.FactionID) *economy.T
 		ToFactionID:   string(to),
 		Good:          good,
 		AmountPerTurn: tradeAmount(gs, from, to),
-		GoldPerUnit:   economy.BaseGoldValue[good],
+		GoldPerUnit:   gs.BasePrice(good),
 	}
 }
 
@@ -1121,7 +1121,7 @@ func chooseExportGood(gs *state.GameState, fid faction.FactionID) economy.GoodTy
 	best := options[len(options)-1].good
 	bestScore := -1
 	for _, option := range options {
-		score := option.stock * economy.BaseGoldValue[option.good]
+		score := option.stock * gs.BasePrice(option.good)
 		if score > bestScore {
 			bestScore = score
 			best = option.good

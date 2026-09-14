@@ -625,7 +625,7 @@ func aiResourcePrice(gs *state.GameState, good economy.GoodType) int {
 	if gs != nil && gs.MarketPrices != nil && gs.MarketPrices[good] > 0 {
 		return gs.MarketPrices[good]
 	}
-	return maxInt(1, economy.BaseGoldValue[good])
+	return maxInt(1, gs.BasePrice(good))
 }
 
 func aiBuildingResourceCost(building *city.Building) economy.ResourceCost {

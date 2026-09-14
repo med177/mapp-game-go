@@ -39,7 +39,7 @@
   { "id": "commander_ottoman_abdurrahman", "owner_id": "ottoman", "name": "Abdurrahman Gazi", "portrait_asset": "ottoman_abdurrahman.png", "level": 2, "traits": [ "aggressor" ], "start_year": 1299, "end_year": 1329 },
   { "id": "commander_ottoman_aykut", "owner_id": "ottoman", "name": "Aykut Alp", "portrait_asset": "ottoman_aykut.png", "level": 1, "traits": [ "tactician" ], "start_year": 1299, "end_year": 1320 },
   { "id": "commander_ottoman_samsa", "owner_id": "ottoman", "name": "Samsa Çavuş", "portrait_asset": "ottoman_samsa.png", "level": 2, "traits": [ "defender" ], "start_year": 1299, "end_year": 1330 },
-  { "id": "commander_ottoman_kose_mihal", "owner_id": "ottoman", "name": "Köse Mihal", "portrait_asset": "ottoman_kose_mihal.png", "level": 3, "traits": [ "tactician" ], "start_year": 1300, "end_year": 1340 },
+  { "id": "commander_ottoman_kose_mihal", "owner_id": "ottoman", "name": "Köse Mihal", "portrait_asset": "ottoman_kose_mihal.png", "level": 3, "traits": [ "tactician" ], "start_year": 1313, "end_year": 1340 },
   { "id": "commander_papal_boniface", "owner_id": "papal_states_f", "name": "Bonifatius VIII", "portrait_asset": "papal_boniface.png", "level": 2, "traits": [ "defender" ], "start_year": 1294, "end_year": 1303 },
   { "id": "commander_poland_wenceslaus", "owner_id": "polish_kingdom", "name": "Wenceslaus II of Bohemia and Poland", "portrait_asset": "poland_wenceslaus.png", "level": 3, "traits": [ "tactician" ], "start_year": 1278, "end_year": 1305 },
   { "id": "commander_portugal_dinis", "owner_id": "portugal", "name": "Dinis I de Portugal", "portrait_asset": "portugal_dinis.png", "level": 3, "traits": [ "defender" ], "start_year": 1279, "end_year": 1325 },

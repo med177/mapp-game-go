@@ -1,0 +1,10 @@
+{
+  "base_prices": {
+    "grain": 1,
+    "iron": 5,
+    "timber": 2,
+    "stone": 1,
+    "spice": 3,
+    "cloth": 4
+  }
+}

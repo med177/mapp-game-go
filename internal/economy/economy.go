@@ -1,6 +1,10 @@
 package economy
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
+
 	"mapp-game-go/internal/faction"
 )
 
@@ -24,6 +28,42 @@ var BaseGoldValue = map[GoodType]int{
 	GoodStone:  4,
 	GoodSpice:  12,
 	GoodCloth:  8,
+}
+
+// LoadBaseGoldValues senaryonun resources.json dosyasındaki temel mal
+// fiyatlarını yükler. Eksik mallar varsayılan fiyatlarını korur.
+func LoadBaseGoldValues(path string) (map[GoodType]int, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("kaynak fiyatları okunamadı: %w", err)
+	}
+	var raw struct {
+		BasePrices map[GoodType]int `json:"base_prices"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, fmt.Errorf("kaynak fiyatları parse edilemedi: %w", err)
+	}
+	prices := cloneBaseGoldValues(BaseGoldValue)
+	for good, price := range raw.BasePrices {
+		if price > 0 {
+			prices[good] = price
+		}
+	}
+	return prices, nil
+}
+
+func cloneBaseGoldValues(src map[GoodType]int) map[GoodType]int {
+	dst := make(map[GoodType]int, len(src))
+	for good, price := range src {
+		dst[good] = price
+	}
+	return dst
+}
+
+// DefaultBaseGoldValues testler ve resources.json bulunmayan eski senaryolar
+// için yeni bir varsayılan fiyat cache'i döndürür.
+func DefaultBaseGoldValues() map[GoodType]int {
+	return cloneBaseGoldValues(BaseGoldValue)
 }
 
 // EmergencySalePricePercent acil pazar satışında güncel fiyatın uygulanan oranıdır.
@@ -66,7 +106,7 @@ type CurrentMarketPrice map[GoodType]int
 // Arz arttıkça fiyat düşer, arz azaldıkça fiyat yükselir.
 // Minimum fiyat basePrice'ın %25'i, maksimum %300'ü.
 func ComputeMarketPrices(factions map[faction.FactionID]*faction.Faction) CurrentMarketPrice {
-	return ComputeMarketPricesWithStrategicDemand(factions, nil)
+	return ComputeMarketPricesWithMarketSupplyAndBaseValues(factions, nil, nil, BaseGoldValue)
 }
 
 // ComputeMarketPricesWithStrategicDemand, kıtlık yaşayan fraksiyonların
@@ -76,7 +116,7 @@ func ComputeMarketPricesWithStrategicDemand(
 	factions map[faction.FactionID]*faction.Faction,
 	demandByFaction map[faction.FactionID]int,
 ) CurrentMarketPrice {
-	return ComputeMarketPricesWithMarketSupply(factions, nil, demandByFaction)
+	return ComputeMarketPricesWithMarketSupplyAndBaseValues(factions, nil, demandByFaction, BaseGoldValue)
 }
 
 // ComputeMarketPricesWithMarketSupply, fiyatı açık pazarda gerçekten satışa
@@ -88,7 +128,21 @@ func ComputeMarketPricesWithMarketSupply(
 	marketSupply map[GoodType]int,
 	demandByFaction map[faction.FactionID]int,
 ) CurrentMarketPrice {
-	prices := make(CurrentMarketPrice, len(BaseGoldValue))
+	return ComputeMarketPricesWithMarketSupplyAndBaseValues(factions, marketSupply, demandByFaction, BaseGoldValue)
+}
+
+// ComputeMarketPricesWithMarketSupplyAndBaseValues, verilen senaryonun temel
+// fiyat cache'ini arz-talep hesabında kullanır.
+func ComputeMarketPricesWithMarketSupplyAndBaseValues(
+	factions map[faction.FactionID]*faction.Faction,
+	marketSupply map[GoodType]int,
+	demandByFaction map[faction.FactionID]int,
+	baseValues map[GoodType]int,
+) CurrentMarketPrice {
+	if len(baseValues) == 0 {
+		baseValues = BaseGoldValue
+	}
+	prices := make(CurrentMarketPrice, len(baseValues))
 
 	// Açık pazar arzını hesapla. Emir defteri verilmiyorsa eski save/test
 	// davranışını korumak için tüm aktif fraksiyon stoklarına geri dön.
@@ -122,7 +176,7 @@ func ComputeMarketPricesWithMarketSupply(
 		activeFactions = 1
 	}
 
-	for good, basePrice := range BaseGoldValue {
+	for good, basePrice := range baseValues {
 		supply := totalSupply[good]
 		if supply <= 0 {
 			supply = 1 // sıfıra bölmeyi önle

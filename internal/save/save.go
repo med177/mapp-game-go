@@ -402,10 +402,11 @@ func loadFromPath(path string) (*state.GameState, error) {
 	for fid := range gs.Factions {
 		grainDemandByFaction[fid] = gs.StrategicGrainDemand(fid)
 	}
-	gs.MarketPrices = economy.ComputeMarketPricesWithMarketSupply(
+	gs.MarketPrices = economy.ComputeMarketPricesWithMarketSupplyAndBaseValues(
 		gs.Factions,
 		gs.OpenMarketSupplyByGood(),
 		grainDemandByFaction,
+		gs.BaseGoldValues,
 	)
 	return gs, nil
 }
@@ -532,6 +533,12 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		log.Printf("Ticaret merkezleri yüklenemedi: %v", err)
 	}
+	baseGoldValues := economy.DefaultBaseGoldValues()
+	if loadedPrices, loadErr := economy.LoadBaseGoldValues(dp("resources.json")); loadErr != nil {
+		log.Printf("Temel kaynak fiyatları yüklenemedi, varsayılanlar kullanılacak: %v", loadErr)
+	} else {
+		baseGoldValues = loadedPrices
+	}
 	imperialState, err := state.LoadImperialState(dp("imperial.json"), factions)
 	if err != nil {
 		return nil, err
@@ -548,6 +555,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		ScenarioPath:             scenarioPath,
 		MapConfig:                sc.MapConfig,
 		DiplomacyConfig:          sc.Diplomacy.WithDefaults(),
+		BaseGoldValues:           baseGoldValues,
 		Regions:                  regions,
 		RegionOrder:              regionOrder,
 		LandPassages:             landPassages,

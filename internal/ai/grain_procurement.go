@@ -65,7 +65,7 @@ func aiProcureGrain(gs *state.GameState, fid faction.FactionID) int {
 	amount := minInt(shortfall, maxInt(aiGrainPurchaseMinimum, totalDemand*aiGrainPurchaseWindow))
 	price := gs.MarketPrices[economy.GoodGrain]
 	if price <= 0 {
-		price = economy.BaseGoldValue[economy.GoodGrain]
+		price = gs.BasePrice(economy.GoodGrain)
 	}
 	if price <= 0 {
 		return 0

@@ -91,7 +91,7 @@ func marketOrderPrice(gs *state.GameState, good economy.GoodType) int {
 	if gs != nil && gs.MarketPrices != nil && gs.MarketPrices[good] > 0 {
 		return gs.MarketPrices[good]
 	}
-	return economy.BaseGoldValue[good]
+	return gs.BasePrice(good)
 }
 
 // aiStrategicResourceDemand açık pazardaki alım talebinin ortak kaynağıdır.

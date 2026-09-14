@@ -838,7 +838,7 @@ func drawTradePricesTab(screen *ebiten.Image, gs *state.GameState, px float32, y
 
 	ry := y + 38
 	for _, good := range goods {
-		basePrice := economy.BaseGoldValue[good]
+		basePrice := gs.BasePrice(good)
 		currentPrice := gs.MarketPrices[good]
 		goodName := economy.GoodNameTR(good)
 
@@ -1091,7 +1091,7 @@ func tradeMarketPrice(gs *state.GameState, good economy.GoodType) int {
 	if gs != nil && gs.MarketPrices != nil && gs.MarketPrices[good] > 0 {
 		return gs.MarketPrices[good]
 	}
-	return economy.BaseGoldValue[good]
+	return gs.BasePrice(good)
 }
 
 func tradeMaxAffordableAmount(player *faction.Faction, price int) int {

@@ -247,6 +247,7 @@ type GameState struct {
 	ScenarioPath    string                   `json:"scenario_path"` // aktif senaryo klasörü
 	MapConfig       scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
 	DiplomacyConfig scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
+	BaseGoldValues  map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
 
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
@@ -387,6 +388,14 @@ type GameState struct {
 	PendingNavalContact *NavalContact `json:"-"`
 	// Geçici kara temas kararı; temas çözülünce temizlenir ve save'e yazılmaz.
 	PendingLandContact *LandContact `json:"-"`
+}
+
+// BasePrice aktif senaryonun cache'lenmiş temel mal fiyatını döndürür.
+func (s *GameState) BasePrice(good economy.GoodType) int {
+	if s != nil && s.BaseGoldValues != nil && s.BaseGoldValues[good] > 0 {
+		return s.BaseGoldValues[good]
+	}
+	return economy.BaseGoldValue[good]
 }
 
 // MarketOrderBook açık pazardaki devlet bazlı satış arzı ve alım talebidir.
@@ -1372,7 +1381,7 @@ func (s *GameState) EmergencyGrainSaleUnitPrice() int {
 	}
 	price := s.MarketPrices[economy.GoodGrain]
 	if price <= 0 {
-		price = economy.BaseGoldValue[economy.GoodGrain]
+		price = s.BasePrice(economy.GoodGrain)
 	}
 	return economy.EmergencySaleUnitPrice(price)
 }
@@ -1410,7 +1419,7 @@ func (s *GameState) ApplyAutomaticGrainExport() (sold, gold int) {
 	limit := s.grainExcessStock(s.PlayerFactionID)
 	price := economy.AutomaticExportUnitPrice(s.MarketPrices[economy.GoodGrain])
 	if price <= 0 {
-		price = economy.AutomaticExportUnitPrice(economy.BaseGoldValue[economy.GoodGrain])
+		price = economy.AutomaticExportUnitPrice(s.BasePrice(economy.GoodGrain))
 	}
 	if price <= 0 || limit <= 0 {
 		return 0, 0

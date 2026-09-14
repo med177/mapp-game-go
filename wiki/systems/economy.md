@@ -215,6 +215,12 @@ Mevcut fiyatlar `GameState.MarketPrices`'ta tutulur (serialize edilmez, her tur
 yeniden hesaplanır). Save yükleme, yeni oyun, AI turu başlangıcı ve ekonomi tick'i
 aynı arz/talep yardımcılarını kullanır.
 
+Mal başına referans fiyatlar senaryonun `data/resources.json` dosyasındaki
+`base_prices` alanından yüklenir. Oyun başlangıcında `GameState.BaseGoldValues`
+cache'ine alınır; piyasa paneli, dinamik fiyat hesabı, ticaret rotaları ve AI
+aynı temel fiyat kaynağını kullanır. Dosya eksikse eski senaryolar için
+varsayılan ekonomi fiyatlarıyla geriye dönük uyumluluk korunur.
+
 ## Açık Pazar Arz ve Talep Kotaları
 
 `GameState.MarketOrders` her AI devleti için tur başında iki kota taşır:

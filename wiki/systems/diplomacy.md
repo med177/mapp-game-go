@@ -316,16 +316,15 @@ Relation kaydı bulunmayan tüm fraksiyon çiftleri `internal/faction/loader.go`
 Sünni-Şii savaşı ve diğer tarihsel istisnalar `relations.json` içinde açık kayıt
 olarak tanımlanır.
 
-`1300_ottoman_rise` senaryo override'ı bu varsayılanı gerçek 1300 cepheleriyle düzeltir:
-Osmanlı-Doğu Roma, Memlük-İlhanlı, Aragon-Kastilya, Aragon-Napoli, İngiltere-Fransa,
-İngiltere-İskoçya ve Fransa-HRE savaşta başlar. Aragon-Granada müttefik kalır;
-Venedik-Ceneviz ile Doğu Roma-Bulgaristan barışta bırakılır. İttifak eşiği ve
-başlangıç sürtüşme puanları Kastilya-Portekiz, Leon-Kastilya,
-Osmanlı-Karamanoğulları, Macaristan/Venedik ve benzeri çiftlerin hemen müttefik
-olmasını engeller. Flandre, HRE'nin vassalı
-olduğu için Flandre-Fransa düşmanlığı HRE-Fransa kök savaşıyla birlikte koalisyona
-katılır; overlord-vassal arasındaki iç ticaret ve geçiş garantisi korunur. İlişki çiftleri
-loader'da sıralı faction ID'leriyle üretildiğinden save/replay yönü deterministiktir.
+`1300_ottoman_rise` senaryo override'ı bu varsayılanı gerçek 1310 cepheleriyle düzeltir:
+Osmanlı-Doğu Roma ve İngiltere-İskoçya açık savaşta başlar; İlhanlı-Memlük kaydı
+düşük skorlu düşman barışıdır. Fransa-İskoçya ve Hospitalier-Papalık doğrudan askerî
+ittifak olarak kalır. León-Kastilya, Navarra-Fransa, Napoli-Papalık, Flandre-HRE,
+Kranj-HRE, Hırvatistan-Macaristan, Bosna-Macaristan ve Mekke-Memlük bağları
+`OverlordID` ile modellenir; bu çiftlerde ayrıca `allied` relation tutulmaz.
+Overlord-vassal arasındaki iç ticaret, geçiş ve savaş koalisyonu garantisi korunur.
+İlişki çiftleri loader'da sıralı faction ID'leriyle üretildiğinden save/replay yönü
+deterministiktir.
 
 ---
 

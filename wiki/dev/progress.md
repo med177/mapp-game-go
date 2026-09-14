@@ -1,11 +1,16 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-12
+last_updated: 2026-09-15
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-15: Pazar mallarının temel fiyatları senaryoya özel
+  `data/resources.json` içindeki `base_prices` alanından yükleniyor ve oyun
+  başlangıcında `GameState.BaseGoldValues` cache'ine alınıyor. Piyasa paneli,
+  dinamik fiyat, ticaret rotaları ve AI aynı temel fiyat kaynağını kullanıyor.
 
 - 2026-09-13: Oyun içinde seçilen geçilebilir terrain alanlarının bölge bilgi
   panelinde toplam hareket maliyeti ve yıpranma yüzdesi gösteriliyor; maliyeti
@@ -3173,3 +3178,4 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
   güncel bölge atamalarından yeniden çözümleniyor. Bölge Boya/Sil veya shape
   düzenlemesi sonrası geçişlerin eski `from/to` kimliklerinde kalması engellendi;
   geçersiz, deniz veya aynı bölgeye düşen uçlarda mevcut ilişki korunuyor.
+- 2026-09-15: 1300 senaryosundaki Bapheus event'i 1313 Köse Mihal'in Osmanlı'ya katılması ve Bithynia sınırındaki genişleme event'i olarak güncellendi; Köse Mihal komutanının başlangıç yılı 1313'e taşındı.

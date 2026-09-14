@@ -1,11 +1,5 @@
 [
   {
-    "faction_a": "lithuanian_gd",
-    "faction_b": "polish_kingdom",
-    "score": 55,
-    "stance": "allied"
-  },
-  {
     "faction_a": "achaea_principality",
     "faction_b": "barqa_emirate",
     "score": -20,
@@ -985,12 +979,6 @@
   },
   {
     "faction_a": "bosnian_banate",
-    "faction_b": "croatian_kingdom",
-    "score": 40,
-    "stance": "allied"
-  },
-  {
-    "faction_a": "bosnian_banate",
     "faction_b": "dulkadir_bey",
     "score": -20,
     "stance": "peace"
@@ -1060,12 +1048,6 @@
     "faction_b": "hormuz_sultanate",
     "score": -20,
     "stance": "peace"
-  },
-  {
-    "faction_a": "hungarian_kingdom",
-    "faction_b": "bosnian_banate",
-    "score": 55,
-    "stance": "allied"
   },
   {
     "faction_a": "bosnian_banate",
@@ -1692,12 +1674,6 @@
     "stance": "peace"
   },
   {
-    "faction_a": "hre",
-    "faction_b": "carniola_margraviate",
-    "score": 68,
-    "stance": "allied"
-  },
-  {
     "faction_a": "carniola_margraviate",
     "faction_b": "ilkhanate",
     "score": -20,
@@ -1866,12 +1842,6 @@
     "stance": "peace"
   },
   {
-    "faction_a": "leon_kingdom",
-    "faction_b": "castile_kingdom",
-    "score": 90,
-    "stance": "allied"
-  },
-  {
     "faction_a": "castile_kingdom",
     "faction_b": "mecca_sharifate",
     "score": -20,
@@ -1996,12 +1966,6 @@
     "faction_b": "hormuz_sultanate",
     "score": -20,
     "stance": "peace"
-  },
-  {
-    "faction_a": "hungarian_kingdom",
-    "faction_b": "croatian_kingdom",
-    "score": 68,
-    "stance": "allied"
   },
   {
     "faction_a": "croatian_kingdom",
@@ -2809,12 +2773,6 @@
   },
   {
     "faction_a": "flanders_county",
-    "faction_b": "hre",
-    "score": 60,
-    "stance": "allied"
-  },
-  {
-    "faction_a": "flanders_county",
     "faction_b": "ilkhanate",
     "score": -20,
     "stance": "peace"
@@ -3469,12 +3427,6 @@
   },
   {
     "faction_a": "ilkhanate",
-    "faction_b": "mamluk",
-    "score": -80,
-    "stance": "war"
-  },
-  {
-    "faction_a": "ilkhanate",
     "faction_b": "mecca_sharifate",
     "score": -40,
     "stance": "peace"
@@ -3640,12 +3592,6 @@
     "faction_b": "wallachia_prince",
     "score": -20,
     "stance": "peace"
-  },
-  {
-    "faction_a": "mamluk",
-    "faction_b": "mecca_sharifate",
-    "score": 70,
-    "stance": "allied"
   },
   {
     "faction_a": "mamluk",
@@ -3868,12 +3814,6 @@
     "faction_b": "novgorod_rep",
     "score": -20,
     "stance": "peace"
-  },
-  {
-    "faction_a": "naples_kingdom",
-    "faction_b": "papal_states_f",
-    "score": 70,
-    "stance": "allied"
   },
   {
     "faction_a": "naples_kingdom",
@@ -4452,16 +4392,16 @@
     "stance": "allied"
   },
   {
+    "faction_a": "ilkhanate",
+    "faction_b": "mamluk",
+    "score": -80,
+    "stance": "peace"
+  },
+  {
     "faction_a": "hospitaller",
     "faction_b": "venice",
     "score": -35,
     "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "navarra",
-    "score": 90,
-    "stance": "allied"
   },
   {
     "faction_a": "france",
