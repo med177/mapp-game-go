@@ -299,6 +299,7 @@ type Renderer struct {
 	editTextError                     string
 	editNewShapeID                    string
 	editNewShapeRegion                world.RegionID
+	editNewShapeModal                 editNewShapeModalState
 	editSelectedWorldX                int
 	editSelectedWorldY                int
 	editSelectedWorldPointSet         bool
@@ -1637,6 +1638,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawEditInspector(screen)
 		r.drawEditFactionForm(screen)
 		r.drawEditRegionForm(screen)
+		r.drawEditNewShapeModal(screen)
 	}
 
 	// 7. Diplomasi paneli (üst katman)

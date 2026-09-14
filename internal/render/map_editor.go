@@ -1566,6 +1566,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	if r.editRenaming {
 		return r.handleEditRenameInput()
 	}
+	if r.editNewShapeModal.show {
+		return r.handleEditNewShapeModalInput()
+	}
 	if r.editFactionForm.show {
 		return r.handleEditFactionFormInput()
 	}
@@ -2366,12 +2369,13 @@ func (r *Renderer) beginNewShapeCreation() {
 	if region == nil || !region.IsSea || r.editShapePaintPending {
 		return
 	}
+	r.editRenaming = false
+	r.editNewShapeModal.show = true
 	r.editNewShapeID = ""
 	r.editNewShapeRegion = region.ID
 	r.editTextTarget = editTextShapeID
 	r.editTextError = ""
 	r.editTextRunes = r.editTextRunes[:0]
-	r.editRenaming = true
 	r.editDraggingSettlement = false
 }
 
@@ -2582,11 +2586,7 @@ func (r *Renderer) commitNewShapeInput() {
 	after := r.worldSnapshot()
 	r.pushWorldSnapshotCommand(before, after)
 	r.editDirty = true
-	r.editRenaming = false
-	r.editTextTarget = editTextNone
-	r.editTextError = ""
-	r.editNewShapeID = ""
-	r.editNewShapeRegion = ""
+	r.closeEditNewShapeModal()
 }
 
 func (r *Renderer) initialRingsForNewShape(region *world.Region, shapeID string) [][][2]float32 {

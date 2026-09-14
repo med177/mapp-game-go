@@ -34,8 +34,10 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 6. `rebuildEditWorldMap()` ile harita cache'i yeniden üretilir.
 7. Senaryo kaydında `writeScenarioShapes()` ile `data/country_shapes.json` güncellenir.
 
-`Yeni Kara Sınırı` düğmesi yalnızca seçili deniz bölgesinde aktif olur. Editör
-sırasıyla `Shape ID` ve `Shape Adı` ister; ID boşluk içeremez ve mevcut bir
+`Yeni Kara Sınırı` düğmesi yalnızca seçili deniz bölgesinde aktif olur. Düğme
+küçük bir modal açar; editör modal içinde sırasıyla `Shape ID` ve `Shape Adı`
+ister. Her iki adımda Enter veya `OK` ile ilerlenebilir, Escape/`İptal` ile
+vazgeçilebilir. ID boşluk içeremez ve mevcut bir
 shape ile çakışamaz. Onaylandığında son tıklanan deniz hücresinde küçük bir
 başlangıç halkasıyla yeni bir `IsSea=false` kara bölgesi ve ona bağlı shape
 oluşturulur. Yeni bölge hemen `Sınır Boya/Sil` araçlarıyla genişletilebilir;
