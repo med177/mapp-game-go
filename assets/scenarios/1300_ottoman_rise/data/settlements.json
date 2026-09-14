@@ -2756,28 +2756,12 @@
         "population": 14
       },
       {
-        "id": "baghdad_diyala",
-        "name_tr": "Diyala",
-        "x": 1382,
-        "y": 576,
-        "type": "town",
-        "population": 29
-      },
-      {
         "id": "baghdad_hilla",
         "name_tr": "Hille",
         "x": 1373,
         "y": 611,
         "type": "town",
         "population": 29
-      },
-      {
-        "id": "baghdad_samarra",
-        "name_tr": "Samarra",
-        "x": 1357,
-        "y": 586,
-        "type": "city",
-        "population": 58
       },
       {
         "id": "kufa",
@@ -2813,22 +2797,6 @@
         "name_tr": "Gürgan",
         "x": 1568,
         "y": 533,
-        "type": "town",
-        "population": 28
-      },
-      {
-        "id": "persia_north_main",
-        "name_tr": "Meşhed",
-        "x": 1668,
-        "y": 543,
-        "type": "city",
-        "population": 56
-      },
-      {
-        "id": "persia_north_nishapur",
-        "name_tr": "Nişabur",
-        "x": 1648,
-        "y": 545,
         "type": "town",
         "population": 28
       },
@@ -2872,6 +2840,28 @@
         "y": 533,
         "type": "port",
         "population": 20
+      }
+    ]
+  },
+  {
+    "region_id": "meshed",
+    "settlements": [
+      {
+        "id": "persia_north_main",
+        "name_tr": "Meşhed",
+        "x": 1669,
+        "y": 543,
+        "type": "city",
+        "is_center": true,
+        "population": 56
+      },
+      {
+        "id": "persia_north_nishapur",
+        "name_tr": "Nişabur",
+        "x": 1648,
+        "y": 545,
+        "type": "town",
+        "population": 28
       }
     ]
   },
@@ -2973,9 +2963,45 @@
     "region_id": "southern_persia",
     "settlements": [
       {
+        "id": "persia_south_kerman",
+        "name_tr": "Kirman",
+        "x": 1608,
+        "y": 665,
+        "type": "city",
+        "is_center": true,
+        "population": 96
+      }
+    ]
+  },
+  {
+    "region_id": "siraz",
+    "settlements": [
+      {
+        "id": "persia_south_shiraz",
+        "name_tr": "Şiraz",
+        "x": 1538,
+        "y": 677,
+        "type": "city",
+        "is_center": true,
+        "population": 96
+      },
+      {
+        "id": "persia_south_shushtar",
+        "name_tr": "Şuşter",
+        "x": 1578,
+        "y": 705,
+        "type": "fortress",
+        "population": 24
+      }
+    ]
+  },
+  {
+    "region_id": "hourmuz",
+    "settlements": [
+      {
         "id": "persia_south_bam",
         "name_tr": "Bam",
-        "x": 1635,
+        "x": 1634,
         "y": 699,
         "type": "fortress",
         "is_center": true,
@@ -2988,30 +3014,6 @@
         "y": 718,
         "type": "port",
         "population": 72
-      },
-      {
-        "id": "persia_south_kerman",
-        "name_tr": "Kirman",
-        "x": 1608,
-        "y": 665,
-        "type": "city",
-        "population": 96
-      },
-      {
-        "id": "persia_south_shiraz",
-        "name_tr": "Şiraz",
-        "x": 1538,
-        "y": 676,
-        "type": "city",
-        "population": 96
-      },
-      {
-        "id": "persia_south_shushtar",
-        "name_tr": "Şuşter",
-        "x": 1578,
-        "y": 703,
-        "type": "fortress",
-        "population": 24
       }
     ]
   },
@@ -4671,14 +4673,6 @@
     "region_id": "karakoyunlu",
     "settlements": [
       {
-        "id": "karakoyunlu_hakkari",
-        "name_tr": "Hakkari",
-        "x": 1352,
-        "y": 526,
-        "type": "city",
-        "population": 15
-      },
-      {
         "id": "akkoyunlu_main",
         "name_tr": "Van",
         "x": 1343,
@@ -4709,6 +4703,20 @@
         "x": 1354,
         "y": 491,
         "type": "town",
+        "population": 15
+      }
+    ]
+  },
+  {
+    "region_id": "hakkari",
+    "settlements": [
+      {
+        "id": "karakoyunlu_hakkari",
+        "name_tr": "Hakkari",
+        "x": 1352,
+        "y": 525,
+        "type": "city",
+        "is_center": true,
         "population": 15
       }
     ]
@@ -6712,20 +6720,26 @@
         "population": 38
       },
       {
-        "id": "mosul_kirkuk",
-        "name_tr": "Kerkük",
-        "x": 1362,
-        "y": 569,
-        "type": "city",
-        "population": 38
-      },
-      {
         "id": "mosul_sinjar",
         "name_tr": "Sincar",
         "x": 1317,
         "y": 546,
         "type": "town",
         "population": 19
+      }
+    ]
+  },
+  {
+    "region_id": "kerkuk",
+    "settlements": [
+      {
+        "id": "mosul_kirkuk",
+        "name_tr": "Kerkük",
+        "x": 1362,
+        "y": 569,
+        "type": "city",
+        "is_center": true,
+        "population": 38
       },
       {
         "id": "mosul_tikrit",
@@ -6734,6 +6748,22 @@
         "y": 578,
         "type": "fortress",
         "population": 9
+      },
+      {
+        "id": "baghdad_samarra",
+        "name_tr": "Samarra",
+        "x": 1356,
+        "y": 585,
+        "type": "city",
+        "population": 58
+      },
+      {
+        "id": "baghdad_diyala",
+        "name_tr": "Diyala",
+        "x": 1382,
+        "y": 576,
+        "type": "town",
+        "population": 29
       }
     ]
   },
@@ -6753,7 +6783,7 @@
         "id": "ubulla",
         "name_tr": "Ubulla",
         "x": 1433,
-        "y": 650,
+        "y": 652,
         "type": "port",
         "population": 30
       },

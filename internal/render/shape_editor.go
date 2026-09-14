@@ -1102,13 +1102,9 @@ func (r *Renderer) addTerrainAreaPolygonPoint(fx, fy float64) {
 	if r == nil || r.worldMap == nil {
 		return
 	}
-	if r.editTerrainAreaPolygonBefore == nil {
-		before := r.worldSnapshot()
-		r.editTerrainAreaPolygonBefore = &before
-	}
 	wx, wy := r.screenToWorld(fx, fy)
-	x, y := int(math.Round(wx)), int(math.Round(wy))
-	if x < 0 || y < 0 || x >= WorldW || y >= WorldH {
+	x, y, ok := terrainAreaPolygonPointFromWorld(wx, wy)
+	if !ok {
 		return
 	}
 	if len(r.editTerrainAreaPolygon) > 0 {
@@ -1116,6 +1112,10 @@ func (r *Renderer) addTerrainAreaPolygonPoint(fx, fy float64) {
 		if last[0] == x && last[1] == y {
 			return
 		}
+	}
+	if r.editTerrainAreaPolygonBefore == nil {
+		before := r.worldSnapshot()
+		r.editTerrainAreaPolygonBefore = &before
 	}
 	r.editTerrainAreaPolygon = append(r.editTerrainAreaPolygon, [2]int{x, y})
 }
@@ -1345,6 +1345,18 @@ func shapePaintCellCenterWorld(x, y int) (float64, float64) {
 
 func regionPaintCellCenterWorld(x, y int) (float64, float64) {
 	return float64(x) + 0.5, float64(y) + 0.5
+}
+
+// terrainAreaPolygonPointFromWorld, poligon köşelerinin raster hücrelerinden
+// farklı olarak harita sınır çizgisi üzerinde de bulunabilmesini sağlar.
+// WorldW/WorldH koordinatları sağ/alt dış kenardır; hücre değildir ancak
+// poligon geometrisi için geçerli köşe noktalarıdır.
+func terrainAreaPolygonPointFromWorld(wx, wy float64) (int, int, bool) {
+	x, y := int(math.Round(wx)), int(math.Round(wy))
+	if x < 0 || y < 0 || x > WorldW || y > WorldH {
+		return 0, 0, false
+	}
+	return x, y, true
 }
 
 func (r *Renderer) drawEditPaintPreview(screen *ebiten.Image) {

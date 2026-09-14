@@ -783,7 +783,14 @@
         ]
       ]
     ],
-    "attrition_cost": 10
+    "attrition_cost": 10,
+    "extra_neighbors": [
+      "area::area__6::southern_persia",
+      "hourmuz",
+      "area::area__6::northern_persia",
+      "southern_persia",
+      "area::area__6::hourmuz"
+    ]
   },
   {
     "id": "area__7",

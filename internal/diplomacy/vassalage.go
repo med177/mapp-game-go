@@ -428,7 +428,7 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 			return "İsyana teşvik yalnız vassal devletlere karşı yapılabilir."
 		}
 		if overlord == actor {
-			return "Kendi vassalını isyana teşvik edemezsin."
+			return "Bu devlet sana bağlı"
 		}
 		cost := InciteRevoltGoldCostFor(gs)
 		if actorFaction.Gold < cost {
