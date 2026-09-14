@@ -10,6 +10,9 @@
     "one_shot": true,
     "target": "specific_faction",
     "affected_faction": "england",
+    "requires_active_factions": [
+      "france"
+    ],
     "choice_prompt_tr": "Fransa tahtı üzerindeki iddia savaşa dönüştürülsün mü?",
     "choices": [
       {

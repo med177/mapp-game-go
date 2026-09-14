@@ -612,6 +612,11 @@
         "region_id": "provence",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "toulouse",
+        "value": 100,
+        "core": true
       }
     ]
   },

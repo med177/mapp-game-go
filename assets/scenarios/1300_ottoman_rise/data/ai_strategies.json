@@ -1262,6 +1262,10 @@
               "value": 100
             },
             {
+              "region_id": "dijon",
+              "value": 100
+            },
+            {
               "region_id": "languedoc",
               "value": 100
             },
@@ -1275,6 +1279,10 @@
             },
             {
               "region_id": "provence",
+              "value": 100
+            },
+            {
+              "region_id": "toulouse",
               "value": 100
             }
           ],
