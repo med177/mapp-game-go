@@ -186,13 +186,13 @@
       "id": "ottoman_tabriz_campaign",
       "title": "Tebriz Seferi",
       "description": "Anadolu'nun doğusundan İran içlerine ilerle; Azerbaycan ve İran platosunu alarak Tebriz yolunu Osmanlı'ya aç.",
-      "detail": "Azerbaycan, Kuzey İran ve Batı İran",
+      "detail": "Azerbaycan, Tebriz hattı ve İran platosu",
       "type": "domination",
       "target_region_count": 32,
       "required_regions": [
         "azerbaijan",
         "northern_persia",
-        "western_persia"
+        "urmiye"
       ],
       "deadline_year": 1520,
       "deadline_month": 12,
@@ -693,7 +693,7 @@
         "armenia",
         "georgia",
         "northern_persia",
-        "western_persia",
+        "urmiye",
         "southern_persia"
       ],
       "deadline_year": 1514,
@@ -706,12 +706,12 @@
       "id": "safavid_persian_revival",
       "title": "Safevî İranı'nın Doğuşu",
       "description": "Tarikatın nüfuzunu siyasî iktidara çevir; Azerbaycan ve İran çekirdeğini tek bir Safevî devleti altında birleştir.",
-      "detail": "7 bölge; Güney, Batı ve Kuzey İran ile Azerbaycan",
+      "detail": "İran platosu, Azerbaycan ve Safevî çekirdeği",
       "type": "domination",
       "target_region_count": 7,
       "required_regions": [
         "southern_persia",
-        "western_persia",
+        "isfahan",
         "northern_persia",
         "azerbaijan"
       ],

@@ -2264,7 +2264,7 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "western_persia",
+              "region_id": "isfahan",
               "value": 100
             }
           ],
@@ -2795,7 +2795,7 @@
               "value": 96
             },
             {
-              "region_id": "western_persia",
+              "region_id": "hemedan",
               "value": 96
             }
           ],

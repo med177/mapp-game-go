@@ -2293,7 +2293,27 @@
         "core": true
       },
       {
-        "region_id": "western_persia",
+        "region_id": "hemedan",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "isfahan",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "kazvin",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "persian_basra",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "urmiye",
         "value": 100,
         "core": true
       }
@@ -4019,7 +4039,7 @@
     "ai_aggressiveness": 50,
     "territorial_claims": [
       {
-        "region_id": "western_persia",
+        "region_id": "isfahan",
         "value": 100,
         "core": true
       }

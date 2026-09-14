@@ -2793,52 +2793,50 @@
     "region_id": "northern_persia",
     "settlements": [
       {
-        "id": "persia_north_gorgan",
-        "name_tr": "Gürgan",
-        "x": 1568,
-        "y": 533,
-        "type": "town",
-        "population": 28
-      },
-      {
         "id": "persia_north_sabzevar",
         "name_tr": "Sebzevar",
         "x": 1626,
-        "y": 546,
+        "y": 545,
         "type": "town",
         "population": 28
       },
       {
         "id": "persia_north_tus",
         "name_tr": "Tus",
-        "x": 1622,
+        "x": 1623,
         "y": 569,
         "type": "fortress",
         "is_center": true,
         "population": 14
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "gurgan",
+    "settlements": [
       {
-        "id": "persia_south_yazd",
-        "name_tr": "Yezd",
-        "x": 1545,
-        "y": 628,
-        "type": "city",
-        "population": 56
-      },
-      {
-        "id": "northern_persia_semnan",
-        "name_tr": "Semnan",
-        "x": 1546,
-        "y": 558,
+        "id": "persia_north_gorgan",
+        "name_tr": "Gürgan",
+        "x": 1568,
+        "y": 533,
         "type": "town",
-        "population": 20
+        "is_center": true,
+        "population": 28
       },
       {
         "id": "northern_persia_turkmen_port",
         "name_tr": "Türkmen Limanı",
         "x": 1553,
-        "y": 533,
+        "y": 535,
         "type": "port",
+        "population": 20
+      },
+      {
+        "id": "northern_persia_semnan",
+        "name_tr": "Semnan",
+        "x": 1546,
+        "y": 559,
+        "type": "town",
         "population": 20
       }
     ]
@@ -2866,22 +2864,51 @@
     ]
   },
   {
-    "region_id": "western_persia",
+    "region_id": "hemedan",
     "settlements": [
       {
         "id": "persia_west_hamadan",
         "name_tr": "Hemedan",
         "x": 1439,
-        "y": 570,
+        "y": 569,
         "type": "town",
+        "is_center": true,
         "population": 20
       },
       {
         "id": "persia_west_kermanshah",
         "name_tr": "Kirmanşah",
-        "x": 1413,
-        "y": 579,
+        "x": 1414,
+        "y": 580,
         "type": "town",
+        "population": 18
+      }
+    ]
+  },
+  {
+    "region_id": "persian_basra",
+    "settlements": [
+      {
+        "id": "persia_south_main",
+        "name_tr": "Hürremşehr",
+        "x": 1446,
+        "y": 657,
+        "type": "city",
+        "is_center": true,
+        "population": 36
+      }
+    ]
+  },
+  {
+    "region_id": "urmiye",
+    "settlements": [
+      {
+        "id": "persia_west_maragheh",
+        "name_tr": "Merağa",
+        "x": 1402,
+        "y": 526,
+        "type": "town",
+        "is_center": true,
         "population": 18
       },
       {
@@ -2890,40 +2917,7 @@
         "x": 1405,
         "y": 514,
         "type": "fortress",
-        "is_center": true,
         "population": 9
-      },
-      {
-        "id": "persia_west_maragheh",
-        "name_tr": "Merağa",
-        "x": 1402,
-        "y": 525,
-        "type": "town",
-        "population": 18
-      },
-      {
-        "id": "persia_west_qazvin",
-        "name_tr": "Kazvin",
-        "x": 1477,
-        "y": 545,
-        "type": "town",
-        "population": 18
-      },
-      {
-        "id": "persia_west_soltaniyeh",
-        "name_tr": "Sultaniye",
-        "x": 1474,
-        "y": 582,
-        "type": "city",
-        "population": 36
-      },
-      {
-        "id": "persia_west_urmia",
-        "name_tr": "Urmiye",
-        "x": 1375,
-        "y": 523,
-        "type": "town",
-        "population": 18
       },
       {
         "id": "azerbaijan_khoy",
@@ -2934,26 +2928,54 @@
         "population": 18
       },
       {
+        "id": "persia_west_urmia",
+        "name_tr": "Urmiye",
+        "x": 1376,
+        "y": 523,
+        "type": "town",
+        "population": 18
+      }
+    ]
+  },
+  {
+    "region_id": "kazvin",
+    "settlements": [
+      {
         "id": "persia_north_rey",
         "name_tr": "Rey",
         "x": 1517,
-        "y": 562,
+        "y": 563,
         "type": "town",
+        "is_center": true,
         "population": 18
       },
+      {
+        "id": "persia_west_qazvin",
+        "name_tr": "Kazvin",
+        "x": 1477,
+        "y": 546,
+        "type": "town",
+        "population": 18
+      }
+    ]
+  },
+  {
+    "region_id": "isfahan",
+    "settlements": [
       {
         "id": "persia_south_isfahan",
         "name_tr": "İsfahan",
         "x": 1514,
         "y": 610,
         "type": "town",
+        "is_center": true,
         "population": 18
       },
       {
-        "id": "persia_south_main",
-        "name_tr": "Hürremşehr",
-        "x": 1446,
-        "y": 656,
+        "id": "persia_west_soltaniyeh",
+        "name_tr": "Sultaniye",
+        "x": 1476,
+        "y": 583,
         "type": "city",
         "population": 36
       }
@@ -2965,11 +2987,19 @@
       {
         "id": "persia_south_kerman",
         "name_tr": "Kirman",
-        "x": 1608,
-        "y": 665,
+        "x": 1607,
+        "y": 666,
         "type": "city",
         "is_center": true,
         "population": 96
+      },
+      {
+        "id": "persia_south_yazd",
+        "name_tr": "Yezd",
+        "x": 1544,
+        "y": 628,
+        "type": "city",
+        "population": 56
       }
     ]
   },
@@ -3011,7 +3041,7 @@
         "id": "persia_south_bandar_hormuz",
         "name_tr": "Hürmüz Limanı",
         "x": 1616,
-        "y": 718,
+        "y": 720,
         "type": "port",
         "population": 72
       }

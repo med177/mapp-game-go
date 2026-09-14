@@ -256,9 +256,6 @@
       "atlantic_open_6",
       "irish_sea",
       "lancashire",
-      "area::area__21",
-      "area::area__22",
-      "area::area__23",
       "area::area__24::newcastle_region",
       "area::area__25::scotland",
       "area::area__26::newcastle_region"
@@ -338,9 +335,6 @@
       "atlantic_open_5",
       "atlantic_open_6",
       "irish_sea",
-      "area::area__21",
-      "area::area__22",
-      "area::area__23",
       "area::area__24::newcastle_region",
       "area::area__25::scotland",
       "area::area__26::scotland"
@@ -657,8 +651,8 @@
       "normandy",
       "paris",
       "area::area__11::lorraine",
-      "area::area__11::flanders",
-      "area::area__11::champagne"
+      "area::area__11::champagne",
+      "area::area__11::flanders"
     ],
     "world_x": 568,
     "world_y": 289,
@@ -746,9 +740,7 @@
       "languedoc",
       "paris",
       "savoy",
-      "sch_fribourg",
-      "area::area__14",
-      "area::area__15"
+      "sch_fribourg"
     ],
     "world_x": 584,
     "world_y": 352,
@@ -790,8 +782,7 @@
       "genoa",
       "gulf_of_genoa",
       "gulf_of_lion",
-      "languedoc",
-      "area::area__15"
+      "languedoc"
     ],
     "world_x": 602,
     "world_y": 413,
@@ -829,8 +820,6 @@
       "dijon",
       "sch_fribourg",
       "area::area__13",
-      "area::area__14",
-      "area::area__15",
       "area::area__16::savoy"
     ],
     "world_x": 607,
@@ -880,8 +869,7 @@
       "gulf_of_lion",
       "paris",
       "provence",
-      "area::area__9::languedoc",
-      "area::area__15"
+      "area::area__9::languedoc"
     ],
     "world_x": 560,
     "world_y": 400,
@@ -1279,8 +1267,7 @@
       "sch_zurich",
       "tyrol",
       "area::area__13",
-      "area::area__17::switzerland",
-      "area::area__19"
+      "area::area__17::switzerland"
     ],
     "world_x": 659,
     "world_y": 346,
@@ -1464,8 +1451,8 @@
       "bay_of_biscay",
       "languedoc",
       "navarra",
-      "area::area__9::languedoc",
       "area::area__9::aquitaine",
+      "area::area__9::languedoc",
       "area::area__9::navarra"
     ],
     "world_x": 468,
@@ -1835,8 +1822,7 @@
       "adriatic_sea_dalmatia",
       "ferrara",
       "slovenia",
-      "verona",
-      "area::area__10"
+      "verona"
     ],
     "world_x": 730,
     "world_y": 360,
@@ -1976,8 +1962,7 @@
       "moravia",
       "slovakia",
       "slovenia",
-      "styria",
-      "area::area__10"
+      "styria"
     ],
     "world_x": 787,
     "world_y": 327,
@@ -2075,8 +2060,7 @@
       "mazovia",
       "moravia",
       "silesia",
-      "slovakia",
-      "area::area__8"
+      "slovakia"
     ],
     "world_x": 864,
     "world_y": 244,
@@ -2330,8 +2314,7 @@
       "moldova",
       "oltenia",
       "prut_river_south",
-      "transylvania",
-      "area::area__8"
+      "transylvania"
     ],
     "world_x": 1018,
     "world_y": 392,
@@ -2371,8 +2354,7 @@
       "serbia",
       "transylvania",
       "vidin",
-      "wallachia",
-      "area::area__8"
+      "wallachia"
     ],
     "world_x": 981,
     "world_y": 385,
@@ -2415,8 +2397,7 @@
       "prut_river_north",
       "prut_river_south",
       "transylvania",
-      "wallachia",
-      "area::area__8"
+      "wallachia"
     ],
     "world_x": 1018,
     "world_y": 339,
@@ -2505,8 +2486,7 @@
       "algiers",
       "gulf_of_cadiz",
       "magrib",
-      "tanca_region",
-      "area::area__1"
+      "tanca_region"
     ],
     "world_x": 373,
     "world_y": 595,
@@ -2637,8 +2617,7 @@
     "neighbors": [
       "atlantic_ocean",
       "gulf_of_cadiz",
-      "morocco",
-      "area::area__1"
+      "morocco"
     ],
     "world_x": 325,
     "world_y": 637,
@@ -2685,8 +2664,7 @@
       "alboran_sea",
       "balearic_sea",
       "central_algeria",
-      "morocco",
-      "area::area__1"
+      "morocco"
     ],
     "world_x": 501,
     "world_y": 584,
@@ -2730,8 +2708,7 @@
       "algiers",
       "balearic_sea",
       "constantine",
-      "western_mediterranean",
-      "area::area__1"
+      "western_mediterranean"
     ],
     "world_x": 569,
     "world_y": 581,
@@ -2772,8 +2749,7 @@
       "mediterranean_open_2",
       "sardinia_channel",
       "tunis",
-      "western_mediterranean",
-      "area::area__1"
+      "western_mediterranean"
     ],
     "world_x": 624,
     "world_y": 549,
@@ -2815,8 +2791,7 @@
       "ligurian_sea",
       "mediterranean_open_2",
       "mediterranean_open_3",
-      "tripolitania",
-      "area::area__1"
+      "tripolitania"
     ],
     "world_x": 669,
     "world_y": 548,
@@ -2863,8 +2838,7 @@
       "gulf_of_sirte",
       "ligurian_sea",
       "tunis",
-      "western_mediterranean_shore",
-      "area::area__1"
+      "western_mediterranean_shore"
     ],
     "world_x": 766,
     "world_y": 645,
@@ -2908,8 +2882,7 @@
       "egypt",
       "gulf_of_sirte",
       "libyan_sea",
-      "tripolitania",
-      "area::area__1"
+      "tripolitania"
     ],
     "world_x": 884,
     "world_y": 643,
@@ -3308,8 +3281,7 @@
       "erzurum",
       "karakoyunlu",
       "north_caucasus",
-      "trebizond",
-      "area::area__7"
+      "trebizond"
     ],
     "world_x": 1312,
     "world_y": 430,
@@ -3357,8 +3329,7 @@
       "eastern_mediterranean",
       "eastern_mediterranean_shore",
       "levantine_sea",
-      "luxor",
-      "area::area__1"
+      "luxor"
     ],
     "world_x": 1021,
     "world_y": 649,
@@ -3409,7 +3380,6 @@
       "levantine_sea",
       "red_open_2",
       "red_sea",
-      "area::area__1",
       "area::area__3::luxor"
     ],
     "world_x": 1124,
@@ -3488,7 +3458,6 @@
       "israel",
       "jordan",
       "lebanon",
-      "mosul",
       "raqqa"
     ],
     "world_x": 1214,
@@ -3525,8 +3494,8 @@
     "neighbors": [
       "basra",
       "kerkuk",
-      "western_persia",
-      "area::area__2"
+      "persian_basra",
+      "hemedan"
     ],
     "world_x": 1372,
     "world_y": 610,
@@ -3565,11 +3534,9 @@
     "owner_id": "ilkhanate",
     "successor_faction_id": "timurid_empire",
     "neighbors": [
-      "caspian_sea",
       "dagestan",
       "meshed",
-      "western_persia",
-      "area::area__6::western_persia",
+      "gurgan",
       "area::area__6::northern_persia"
     ],
     "world_x": 1602,
@@ -3588,7 +3555,48 @@
     "trade_capacity": 3,
     "satisfaction": 65,
     "tax_rate": 35,
-    "population": 516,
+    "population": 392,
+    "rural_population": 350,
+    "religion": "shia",
+    "active_event_id": "",
+    "buildings": [
+      "barracks",
+      "barracks",
+      "walls",
+      "port"
+    ]
+  },
+  {
+    "id": "gurgan",
+    "name": "Gurgan Region",
+    "name_tr": "Gürgan Bölgesi",
+    "terrain": "mountain",
+    "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
+    "neighbors": [
+      "caspian_sea",
+      "dagestan",
+      "kazvin",
+      "northern_persia",
+      "area::area__6::gurgan"
+    ],
+    "world_x": 1562,
+    "world_y": 549,
+    "shape_id": "IRN",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 68,
+    "base_grain_output": 35,
+    "base_iron_output": 1,
+    "base_timber_output": 8,
+    "base_stone_output": 8,
+    "base_spice_output": 0,
+    "base_cloth_output": 18,
+    "trade_capacity": 4,
+    "satisfaction": 65,
+    "tax_rate": 35,
+    "population": 418,
     "rural_population": 350,
     "religion": "shia",
     "active_event_id": "",
@@ -3605,12 +3613,10 @@
     "name_tr": "Meşhed",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "timurid_empire",
     "neighbors": [
       "dagestan",
-      "hourmuz",
       "northern_persia",
-      "area::area__6::hourmuz",
       "area::area__6::meshed"
     ],
     "world_x": 1683,
@@ -3619,14 +3625,14 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 75,
-    "base_grain_output": 30,
+    "base_gold_income": 92,
+    "base_grain_output": 35,
     "base_iron_output": 2,
-    "base_timber_output": 8,
-    "base_stone_output": 0,
-    "base_spice_output": 0,
-    "base_cloth_output": 0,
-    "trade_capacity": 3,
+    "base_timber_output": 4,
+    "base_stone_output": 8,
+    "base_spice_output": 8,
+    "base_cloth_output": 14,
+    "trade_capacity": 4,
     "satisfaction": 65,
     "tax_rate": 35,
     "population": 434,
@@ -3641,29 +3647,19 @@
     ]
   },
   {
-    "id": "western_persia",
-    "name": "Western Persia",
-    "name_tr": "Batı İran",
+    "id": "hemedan",
+    "name": "Hemedan",
+    "name_tr": "Hemedan",
     "terrain": "plain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "muzaffarids",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
-      "armenia",
-      "azerbaijan",
       "baghdad",
-      "basra",
-      "caspian_sea",
-      "hakkari",
-      "karakoyunlu",
+      "isfahan",
+      "kazvin",
       "kerkuk",
-      "mosul",
-      "northern_persia",
-      "persian_open_2",
-      "siraz",
-      "southern_persia",
-      "area::area__18",
-      "area::area__5",
-      "area::area__6::western_persia"
+      "persian_basra",
+      "urmiye"
     ],
     "world_x": 1458,
     "world_y": 580,
@@ -3671,17 +3667,190 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 98,
-    "base_grain_output": 40,
-    "base_iron_output": 2,
+    "base_gold_income": 90,
+    "base_grain_output": 48,
+    "base_iron_output": 3,
     "base_timber_output": 2,
     "base_stone_output": 22,
-    "base_spice_output": 15,
-    "base_cloth_output": 12,
+    "base_spice_output": 0,
+    "base_cloth_output": 18,
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 682,
+    "population": 493,
+    "rural_population": 455,
+    "religion": "shia",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "persian_basra",
+    "name": "Basra Region",
+    "name_tr": "Basra Bölgesi",
+    "terrain": "plain",
+    "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
+    "neighbors": [
+      "baghdad",
+      "basra",
+      "hemedan",
+      "persian_open_2",
+      "siraz"
+    ],
+    "world_x": 1448,
+    "world_y": 643,
+    "shape_id": "IRN",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 105,
+    "base_grain_output": 55,
+    "base_iron_output": 1,
+    "base_timber_output": 2,
+    "base_stone_output": 0,
+    "base_spice_output": 18,
+    "base_cloth_output": 16,
+    "trade_capacity": 5,
+    "satisfaction": 70,
+    "tax_rate": 40,
+    "population": 491,
+    "rural_population": 455,
+    "religion": "shia",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "urmiye",
+    "name": "Urmiye",
+    "name_tr": "Urmiye",
+    "terrain": "plain",
+    "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
+    "neighbors": [
+      "armenia",
+      "azerbaijan",
+      "hakkari",
+      "hemedan",
+      "karakoyunlu",
+      "kazvin",
+      "kerkuk",
+      "mosul"
+    ],
+    "world_x": 1382,
+    "world_y": 503,
+    "shape_id": "IRN",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 100,
+    "base_grain_output": 38,
+    "base_iron_output": 2,
+    "base_timber_output": 3,
+    "base_stone_output": 10,
+    "base_spice_output": 0,
+    "base_cloth_output": 25,
+    "trade_capacity": 5,
+    "satisfaction": 70,
+    "tax_rate": 40,
+    "population": 518,
+    "rural_population": 455,
+    "religion": "shia",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "kazvin",
+    "name": "Kazvin",
+    "name_tr": "Kazvin",
+    "terrain": "plain",
+    "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
+    "neighbors": [
+      "azerbaijan",
+      "caspian_sea",
+      "gurgan",
+      "hemedan",
+      "isfahan",
+      "urmiye",
+      "area::area__6::isfahan",
+      "area::area__6::kazvin"
+    ],
+    "world_x": 1494,
+    "world_y": 557,
+    "shape_id": "IRN",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 100,
+    "base_grain_output": 48,
+    "base_iron_output": 1,
+    "base_timber_output": 3,
+    "base_stone_output": 8,
+    "base_spice_output": 0,
+    "base_cloth_output": 28,
+    "trade_capacity": 5,
+    "satisfaction": 70,
+    "tax_rate": 40,
+    "population": 491,
+    "rural_population": 455,
+    "religion": "shia",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "isfahan",
+    "name": "Isfahan",
+    "name_tr": "İsfahan",
+    "terrain": "plain",
+    "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
+    "neighbors": [
+      "kazvin",
+      "southern_persia",
+      "hemedan",
+      "area::area__6::isfahan"
+    ],
+    "world_x": 1482,
+    "world_y": 590,
+    "shape_id": "IRN",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 108,
+    "base_grain_output": 45,
+    "base_iron_output": 2,
+    "base_timber_output": 2,
+    "base_stone_output": 12,
+    "base_spice_output": 0,
+    "base_cloth_output": 30,
+    "trade_capacity": 5,
+    "satisfaction": 70,
+    "tax_rate": 40,
+    "population": 509,
     "rural_population": 455,
     "religion": "shia",
     "active_event_id": "",
@@ -3702,17 +3871,18 @@
     "successor_faction_id": "safavid",
     "neighbors": [
       "hourmuz",
+      "isfahan",
       "siraz",
-      "western_persia",
-      "area::area__5",
-      "area::area__6::southern_persia",
-      "area::area__6::western_persia",
-      "area::area__6::northern_persia",
+      "area::area__6::meshed",
       "area::area__6::hourmuz",
-      "area::area__6::meshed"
+      "area::area__6::isfahan",
+      "area::area__6::kazvin",
+      "area::area__6::northern_persia",
+      "area::area__6::southern_persia",
+      "area::area__6::gurgan"
     ],
-    "world_x": 1595,
-    "world_y": 665,
+    "world_x": 1588,
+    "world_y": 657,
     "shape_id": "IRN",
     "is_sea": false,
     "is_locked": false,
@@ -3727,7 +3897,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 681,
+    "population": 737,
     "rural_population": 585,
     "religion": "shia",
     "active_event_id": "",
@@ -3755,12 +3925,11 @@
     "successor_faction_id": "safavid",
     "neighbors": [
       "hourmuz",
+      "persian_basra",
       "persian_gulf",
       "persian_open_1",
       "persian_open_2",
-      "southern_persia",
-      "western_persia",
-      "area::area__5"
+      "southern_persia"
     ],
     "world_x": 1564,
     "world_y": 714,
@@ -3805,16 +3974,17 @@
     "owner_id": "safavid",
     "successor_faction_id": "safavid",
     "neighbors": [
-      "meshed",
       "persian_gulf_shore",
       "persian_open_1",
       "siraz",
       "southern_persia",
-      "area::area__6::southern_persia",
-      "area::area__6::western_persia",
-      "area::area__6::northern_persia",
+      "area::area__6::meshed",
       "area::area__6::hourmuz",
-      "area::area__6::meshed"
+      "area::area__6::isfahan",
+      "area::area__6::kazvin",
+      "area::area__6::northern_persia",
+      "area::area__6::southern_persia",
+      "area::area__6::gurgan"
     ],
     "world_x": 1632,
     "world_y": 697,
@@ -3862,8 +4032,7 @@
       "arabian_desert",
       "jordan",
       "red_open_2",
-      "red_sea",
-      "area::area__2"
+      "red_sea"
     ],
     "world_x": 1258,
     "world_y": 780,
@@ -3911,8 +4080,7 @@
       "persian_gulf",
       "persian_open_2",
       "qatar",
-      "uae",
-      "area::area__2"
+      "uae"
     ],
     "world_x": 1466,
     "world_y": 732,
@@ -3953,8 +4121,7 @@
       "kvarner",
       "rijeka",
       "styria",
-      "venice",
-      "area::area__10"
+      "venice"
     ],
     "world_x": 780,
     "world_y": 361,
@@ -4447,8 +4614,7 @@
       "ulster",
       "wales",
       "welsh_marches",
-      "wessex",
-      "area::area__21"
+      "wessex"
     ],
     "world_x": 372,
     "world_y": 224,
@@ -5515,8 +5681,8 @@
       "azerbaijan",
       "caspian_open_2",
       "dagestan",
-      "northern_persia",
-      "western_persia"
+      "gurgan",
+      "kazvin"
     ],
     "world_x": 1522,
     "world_y": 500,
@@ -5589,8 +5755,7 @@
       "mazovia",
       "moravia",
       "danube_hungary",
-      "poland",
-      "area::area__8"
+      "poland"
     ],
     "world_x": 865,
     "world_y": 310,
@@ -6080,14 +6245,12 @@
     "owner_id": "mamluk",
     "successor_faction_id": "mamluk",
     "neighbors": [
+      "area::area__3::israel",
       "damascus",
       "hejaz",
       "israel",
-      "mosul",
       "palestine",
-      "red_open_2",
-      "area::area__2",
-      "area::area__3::israel"
+      "red_open_2"
     ],
     "world_x": 1198,
     "world_y": 640,
@@ -6128,9 +6291,9 @@
       "caspian_open_2",
       "caspian_sea",
       "georgia",
-      "north_caucasus",
-      "western_persia",
-      "area::area__7"
+      "urmiye",
+      "kazvin",
+      "north_caucasus"
     ],
     "world_x": 1429,
     "world_y": 469,
@@ -6163,12 +6326,11 @@
     "name_tr": "Erivan",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "azerbaijan",
       "georgia",
       "karakoyunlu",
-      "western_persia"
+      "urmiye"
     ],
     "world_x": 1374,
     "world_y": 469,
@@ -6240,8 +6402,7 @@
     "neighbors": [
       "arabian_desert",
       "basra",
-      "persian_open_2",
-      "area::area__2"
+      "persian_open_2"
     ],
     "world_x": 1427,
     "world_y": 678,
@@ -6321,8 +6482,8 @@
       "luxembourg",
       "north_sea_shore",
       "palatinate",
-      "area::area__11::flanders",
-      "area::area__11::champagne"
+      "area::area__11::champagne",
+      "area::area__11::flanders"
     ],
     "world_x": 569,
     "world_y": 271,
@@ -6860,8 +7021,7 @@
       "arabian_desert",
       "persian_gulf",
       "persian_gulf_shore",
-      "persian_open_1",
-      "area::area__2"
+      "persian_open_1"
     ],
     "world_x": 1562,
     "world_y": 780,
@@ -7517,7 +7677,7 @@
       "erzurum",
       "georgia",
       "hakkari",
-      "western_persia"
+      "urmiye"
     ],
     "world_x": 1350,
     "world_y": 495,
@@ -7549,13 +7709,13 @@
     "name_tr": "Hakkari",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
+    "successor_faction_id": "karakoyunlu_state",
     "neighbors": [
       "akkoyunlu",
       "karakoyunlu",
       "mosul",
-      "raqqa",
-      "western_persia"
+      "urmiye",
+      "raqqa"
     ],
     "world_x": 1343,
     "world_y": 519,
@@ -7644,7 +7804,6 @@
       "northern_tyrrhenian_sea",
       "provence",
       "area::area__13",
-      "area::area__15",
       "area::area__16::savoy"
     ],
     "world_x": 652,
@@ -7693,8 +7852,7 @@
       "florence",
       "genoa",
       "area::area__13",
-      "area::area__17::milan",
-      "area::area__19"
+      "area::area__17::milan"
     ],
     "world_x": 666,
     "world_y": 369,
@@ -7887,8 +8045,8 @@
       "languedoc",
       "navarra",
       "area::area__9::languedoc",
-      "area::area__9::navarra",
-      "area::area__9::catalonia"
+      "area::area__9::catalonia",
+      "area::area__9::navarra"
     ],
     "world_x": 493,
     "world_y": 439,
@@ -8013,8 +8171,7 @@
       "bessarabia",
       "galicia_volhynia",
       "oltenia",
-      "wallachia",
-      "area::area__8"
+      "wallachia"
     ],
     "world_x": 985,
     "world_y": 353,
@@ -8667,8 +8824,7 @@
       "bavaria",
       "bohemia",
       "slovenia",
-      "tyrol",
-      "area::area__10"
+      "tyrol"
     ],
     "world_x": 738,
     "world_y": 337,
@@ -8705,8 +8861,6 @@
       "styria",
       "switzerland",
       "thuringia",
-      "area::area__10",
-      "area::area__19",
       "area::area__20::verona"
     ],
     "world_x": 694,
@@ -8744,8 +8898,7 @@
       "bohemia",
       "poland",
       "silesia",
-      "slovakia",
-      "area::area__8"
+      "slovakia"
     ],
     "world_x": 825,
     "world_y": 299,
@@ -8826,8 +8979,7 @@
       "konigsberg",
       "lithuania",
       "poland",
-      "slovakia",
-      "area::area__8"
+      "slovakia"
     ],
     "world_x": 921,
     "world_y": 245,
@@ -9010,8 +9162,6 @@
       "ferrara",
       "florence",
       "venice",
-      "area::area__10",
-      "area::area__19",
       "area::area__20::verona"
     ],
     "world_x": 693,
@@ -9052,8 +9202,7 @@
     "neighbors": [
       "florence",
       "milan",
-      "verona",
-      "area::area__19"
+      "verona"
     ],
     "world_x": 684,
     "world_y": 364,
@@ -9933,8 +10082,7 @@
       "mazovia",
       "prut_river_north",
       "slovakia",
-      "transylvania",
-      "area::area__8"
+      "transylvania"
     ],
     "world_x": 995,
     "world_y": 275,
@@ -10140,14 +10288,10 @@
     "owner_id": "ilkhanate",
     "successor_faction_id": "artuklu",
     "neighbors": [
-      "damascus",
       "hakkari",
-      "jordan",
       "kerkuk",
       "raqqa",
-      "western_persia",
-      "area::area__2",
-      "area::area__18"
+      "urmiye"
     ],
     "world_x": 1344,
     "world_y": 552,
@@ -10184,9 +10328,8 @@
     "neighbors": [
       "baghdad",
       "mosul",
-      "western_persia",
-      "area::area__2",
-      "area::area__18"
+      "urmiye",
+      "hemedan"
     ],
     "world_x": 1356,
     "world_y": 564,
@@ -10222,9 +10365,8 @@
     "neighbors": [
       "baghdad",
       "kuwait",
-      "persian_open_2",
-      "western_persia",
-      "area::area__2"
+      "persian_basra",
+      "persian_open_2"
     ],
     "world_x": 1434,
     "world_y": 659,
@@ -10604,8 +10746,7 @@
       "moscow",
       "nizhny_novgorod",
       "sea_of_azov",
-      "upper_ukrainian_steppe",
-      "area::area__7"
+      "upper_ukrainian_steppe"
     ],
     "world_x": 1355,
     "world_y": 414,
@@ -10641,6 +10782,7 @@
       "caspian_open_2",
       "caspian_sea",
       "meshed",
+      "gurgan",
       "nizhny_novgorod",
       "north_caucasus",
       "northern_persia"
@@ -11113,8 +11255,8 @@
       "norwegian_sea",
       "scotland",
       "yorkshire",
-      "area::area__26::scotland",
-      "area::area__26::newcastle_region"
+      "area::area__26::newcastle_region",
+      "area::area__26::scotland"
     ],
     "world_x": 450,
     "world_y": 164,
@@ -12151,8 +12293,7 @@
       "siraz",
       "persian_gulf",
       "persian_gulf_shore",
-      "uae",
-      "area::area__2"
+      "uae"
     ],
     "world_x": 1593,
     "world_y": 731,
@@ -12186,9 +12327,9 @@
       "bahrain",
       "basra",
       "kuwait",
+      "persian_basra",
       "persian_gulf",
-      "siraz",
-      "western_persia"
+      "siraz"
     ],
     "world_x": 1479,
     "world_y": 704,
@@ -12220,8 +12361,7 @@
     "neighbors": [
       "hourmuz",
       "persian_open_1",
-      "uae",
-      "area::area__2"
+      "uae"
     ],
     "world_x": 1660,
     "world_y": 784,
