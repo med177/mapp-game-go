@@ -9,6 +9,7 @@ import (
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
+	gameevents "mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
@@ -64,7 +65,14 @@ func relationScore(gs *state.GameState, a, b string) (int, faction.DiplomaticSta
 
 // TakeTurn belirtilen fraksiyon için tüm AI kararlarını verir ve uygular.
 func TakeTurn(gs *state.GameState, fid faction.FactionID) {
-	strategicContext := runTurnPrelude(gs, fid, nil)
+	TakeTurnWithEvents(gs, fid, nil)
+}
+
+// TakeTurnWithEvents doğrudan çalışan AI giriş noktasına oyun başında
+// yüklenen event cache'ini taşır. Normal oyun akışı görünür TurnStepper'ı
+// kullansa da testler ve hızlı çözümleme aynı event-aware kararları kullanır.
+func TakeTurnWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event) {
+	strategicContext := runTurnPreludeWithEvents(gs, fid, eventDefs, nil)
 
 	// Ordu listesinin anlık kopyasını al — iterasyon sırasında map değişebilir
 	var ownArmies []*army.Army
@@ -84,12 +92,16 @@ func TakeTurn(gs *state.GameState, fid faction.FactionID) {
 }
 
 func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) *StrategicContext {
+	return runTurnPreludeWithEvents(gs, fid, nil, steps)
+}
+
+func runTurnPreludeWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event, steps *[]TurnStep) *StrategicContext {
 	if gs == nil {
 		return nil
 	}
 	var planningContext *StrategicContext
 	if aiStrategicPlanningEnabled(gs) {
-		planningContext = prepareStrategicContext(gs, fid)
+		planningContext = prepareStrategicContextWithEvents(gs, fid, eventDefs)
 	}
 	// Difficulty 3: koalisyon mantığını çalıştır
 	if gs.Difficulty >= 3 {
@@ -147,7 +159,7 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 	gs.EnsureFactionCommanders(string(fid))
 
 	if aiStrategicPlanningEnabled(gs) {
-		result := prepareStrategicContext(gs, fid)
+		result := prepareStrategicContextWithEvents(gs, fid, eventDefs)
 		result.budget = budget
 		return result
 	}

@@ -85,6 +85,11 @@ func aiForceRequirements(gs *state.GameState, fid faction.FactionID, ctx *Strate
 		requirement.LandTarget += maxInt(1, bonus)
 	}
 	requirement.LandTarget = minInt(requirement.LandTarget, gs.ManpowerCap(fid))
+	// Ekonomik/stratejik taban hedef tamamlandıktan sonra üretim boşta
+	// kalmasın: kullanıcı kontrollü oyun limitleri elverdiği sürece AI kara
+	// birimi kapasitesini doldurmayı dener. Kaynak, lojistik, teknoloji ve
+	// üretim hattı kontrolleri yine gerçek üretim kararında uygulanır.
+	requirement.LandTarget = gs.ManpowerCap(fid)
 	requirement.applyExpansionPowerTarget(gs, fid, planKind)
 
 	if requirement.CoastalRegions > 0 {
@@ -100,6 +105,10 @@ func aiForceRequirements(gs *state.GameState, fid faction.FactionID, ctx *Strate
 		} else if planKind == state.AIObjectiveExpand {
 			requirement.WarshipTarget++
 		}
+		// Donanma da kapasiteye kadar doldurulacak hedef olarak ele alınır.
+		// Nakliye/ticaret gemileri aynı kapasiteyi tükettiğinden savaş gemisi
+		// rezervi mevcut ortak kapasiteyi aşamaz.
+		requirement.WarshipTarget = gs.NavalCap(fid)
 	}
 
 	for _, armyRef := range aiSortedArmies(gs) {

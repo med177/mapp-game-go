@@ -40,6 +40,7 @@ type StrategicContext struct {
 	RallyGatheredPower   int
 	RallyActive          bool
 	RallyReady           bool
+	UpcomingEvents       []AIUpcomingEvent
 	NavalThreats         []AINavalThreat
 	ThreatenedPortIDs    []world.RegionID
 	navalMission         *aiNavalMission
@@ -51,6 +52,18 @@ type StrategicContext struct {
 	routeCache       map[aiRouteCacheKey]*aiRouteMap
 	navalThreatPower map[world.RegionID]int
 	budget           *aiBudget
+}
+
+// AIUpcomingEvent, oyun başında yüklenen event cache'inden bu AI turu için
+// çıkarılan hazırlık sinyalidir. Event tanımı state/save içine kopyalanmaz.
+type AIUpcomingEvent struct {
+	EventID          string
+	TurnsUntil       int
+	GrainRisk        bool
+	GoldRisk         bool
+	SatisfactionRisk bool
+	MilitaryRisk     bool
+	RequiredTechs    []string
 }
 
 type scenarioObjectiveCandidate struct {

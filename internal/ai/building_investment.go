@@ -1,6 +1,8 @@
 package ai
 
 import (
+	"sort"
+
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
@@ -15,7 +17,11 @@ const (
 	aiMinBuildingInvestmentScore = 80
 )
 
-var aiEconomyBuildingIDs = []string{"granary", "farm", "market", "port", "temple", "walls"}
+// Bu sıra yalnız eşit öncelikli adaylarda deterministik bağ kırıcıdır. Asıl
+// öncelik aiBuildingPriority içinde, binanın gerçek üretim/sat_bonus
+// değerlerinden türetilir; böylece senaryo yeni bir üretim binası eklediğinde
+// sabit bir ID listesine bağlı kalınmaz.
+var aiEconomyBuildingIDs = []string{"granary", "farm", "market", "port", "forge", "workshop", "temple", "walls"}
 
 type aiBuildingCandidate struct {
 	RegionID        world.RegionID
@@ -30,6 +36,7 @@ type aiBuildingCandidate struct {
 	StabilityScore  int
 	TradeScore      int
 	QueuePenalty    int
+	Priority        int
 }
 
 type aiEconomySnapshot struct {
@@ -57,6 +64,9 @@ type aiRegionInvestmentSignals struct {
 	ObjectiveStaging bool
 	Rally            bool
 	Threat           int
+	EventGrainRisk   bool
+	EventGoldRisk    bool
+	EventSatRisk     bool
 }
 
 func aiEconomyBuildWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, ctx *StrategicContext, steps *[]TurnStep) {
@@ -112,12 +122,13 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 	queuedFarmCount := aiQueuedBuildingCountForFaction(gs, fid, "farm")
 	var best aiBuildingCandidate
 	found := false
+	buildingIDs := aiEconomyBuildingIDsForState(gs)
 	for _, region := range aiSortedRegions(gs) {
 		if region.IsSea || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
 			continue
 		}
 		signals := aiInvestmentSignals(gs, fid, region, ctx)
-		for _, buildingID := range aiEconomyBuildingIDs {
+		for _, buildingID := range buildingIDs {
 			if buildingID == "farm" && queuedFarmCount >= 2 {
 				continue
 			}
@@ -161,6 +172,29 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 		}
 	}
 	return best, found
+}
+
+func aiEconomyBuildingIDsForState(gs *state.GameState) []string {
+	if gs == nil || len(gs.BuildingTypes) == 0 {
+		return aiEconomyBuildingIDs
+	}
+	if len(gs.BuildingOrder) > 0 {
+		ids := make([]string, 0, len(gs.BuildingOrder))
+		for _, id := range gs.BuildingOrder {
+			if id != "barracks" && gs.BuildingTypes[id] != nil {
+				ids = append(ids, id)
+			}
+		}
+		return ids
+	}
+	ids := make([]string, 0, len(gs.BuildingTypes))
+	for id := range gs.BuildingTypes {
+		if id != "barracks" {
+			ids = append(ids, id)
+		}
+	}
+	sort.Strings(ids)
+	return ids
 }
 
 func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, region *world.Region, btype *city.Building, cost economy.ResourceCost, turns, level, queued int, snapshot aiEconomySnapshot, signals aiRegionInvestmentSignals) aiBuildingCandidate {
@@ -212,13 +246,14 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 	queuePenalty := aiQueuedBuildingCountForRegion(gs, region.ID, self.ID)*30 + queued*25
 	durationPenalty := maxInt(0, turns-1) * 8
 	levelPenalty := level * 12
+	priority := aiBuildingPriority(btype, grainGain, snapshot, projectedSatisfaction, signals)
 
 	return aiBuildingCandidate{
 		RegionID:        region.ID,
 		BuildingID:      btype.ID,
 		Cost:            cost,
 		Turns:           turns,
-		Score:           roiScore + bottleneckScore + threatScore + objectiveScore + stabilityScore + tradeScore - queuePenalty - durationPenalty - levelPenalty,
+		Score:           priority + roiScore + bottleneckScore + threatScore + objectiveScore + stabilityScore + tradeScore - queuePenalty - durationPenalty - levelPenalty,
 		ROIScore:        roiScore,
 		BottleneckScore: bottleneckScore,
 		ThreatScore:     threatScore,
@@ -226,7 +261,29 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 		StabilityScore:  stabilityScore,
 		TradeScore:      tradeScore,
 		QueuePenalty:    queuePenalty,
+		Priority:        priority,
 	}
+}
+
+// aiBuildingPriority, üretim kararının kullanıcı tarafından tarif edilen
+// sırasını ROI'nin önüne koyar. Öncelik yalnız ilgili ihtiyaç varken verilir;
+// tahıl dengesi sağlıklıysa AI sonsuza kadar çiftlik/ambar seçmez.
+func aiBuildingPriority(btype *city.Building, grainGain int, snapshot aiEconomySnapshot, projectedSatisfaction int, signals aiRegionInvestmentSignals) int {
+	if btype == nil {
+		return 0
+	}
+	grainPressure := signals.EventGrainRisk || snapshot.GrainProduction <= snapshot.GrainDemand || snapshot.GrainStock < snapshot.GrainDemand*2
+	capacityPressure := snapshot.GrainCapacity < maxInt(120, snapshot.GrainDemand*2)
+	if grainPressure && (grainGain > 0 || (btype.ID == "granary" && capacityPressure)) {
+		return 10000
+	}
+	if btype.SatBonus > 0 && (signals.EventSatRisk || projectedSatisfaction < 55) {
+		return 8000
+	}
+	if signals.EventGoldRisk || btype.GoldMod > 1 || btype.IronMod > 1 || btype.TimberMod > 1 || btype.StoneMod > 1 || btype.SpiceMod > 1 || btype.ClothMod > 1 || btype.TradeCapacityMod > 1 {
+		return 5000
+	}
+	return 0
 }
 
 // aiTradeBuildingScore, yeni ticaret limitlerinin bina yatırımı tarafından
@@ -518,6 +575,13 @@ func aiInvestmentSignals(gs *state.GameState, fid faction.FactionID, region *wor
 	if ctx == nil {
 		return signals
 	}
+	for _, upcoming := range ctx.UpcomingEvents {
+		if upcoming.TurnsUntil <= 2 {
+			signals.EventGrainRisk = signals.EventGrainRisk || upcoming.GrainRisk
+			signals.EventGoldRisk = signals.EventGoldRisk || upcoming.GoldRisk
+			signals.EventSatRisk = signals.EventSatRisk || upcoming.SatisfactionRisk
+		}
+	}
 	for _, front := range ctx.Fronts {
 		if !regionIDInList(region.ID, front.FriendlyRegions) {
 			continue
@@ -596,6 +660,9 @@ func aiQueuedBuildingCountForFaction(gs *state.GameState, fid faction.FactionID,
 }
 
 func aiBuildingCandidateBetter(candidate, best aiBuildingCandidate) bool {
+	if candidate.Priority != best.Priority {
+		return candidate.Priority > best.Priority
+	}
 	if candidate.Score != best.Score {
 		return candidate.Score > best.Score
 	}

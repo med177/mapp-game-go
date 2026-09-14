@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
+	gameevents "mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -60,7 +61,12 @@ type aiFrontBuilder struct {
 // prepareStrategicContext planı doğrular ve yalnız bu AI turunda kullanılacak
 // cephe, rezerv ve ordu rolü snapshot'ını üretir.
 func prepareStrategicContext(gs *state.GameState, fid faction.FactionID) *StrategicContext {
+	return prepareStrategicContextWithEvents(gs, fid, nil)
+}
+
+func prepareStrategicContextWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event) *StrategicContext {
 	ctx := buildStrategicContext(gs, fid)
+	ctx.UpcomingEvents = aiUpcomingEventSignals(gs, fid, eventDefs)
 	if !aiStrategicPlanningEnabled(gs) {
 		return ctx
 	}
@@ -75,6 +81,64 @@ func prepareStrategicContext(gs *state.GameState, fid faction.FactionID) *Strate
 	ctx.navalMission = buildAINavalMission(ctx)
 	assignAINavalRoles(ctx)
 	return ctx
+}
+
+func aiUpcomingEventSignals(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event) []AIUpcomingEvent {
+	if gs == nil || fid == "" || len(eventDefs) == 0 {
+		return nil
+	}
+	const horizonTurns = 8
+	current := gs.Year*12 + maxInt(1, gs.Month) - 1
+	turnMonths := maxInt(1, gs.CalendarMonthsPerTurn())
+	result := make([]AIUpcomingEvent, 0, 4)
+	for _, evt := range eventDefs {
+		if evt == nil || evt.HistoricalYear <= 0 || evt.ID == "" || gs.FiredEventIDs[evt.ID] || gs.FiredEventIDs["pending:event:"+evt.ID] {
+			continue
+		}
+		if evt.Target == "specific_faction" && evt.AffectedFaction != string(fid) {
+			continue
+		}
+		if evt.Target == "player_faction" && fid != gs.PlayerFactionID {
+			continue
+		}
+		if !gameevents.ConditionsMet(gs, evt) {
+			continue
+		}
+		month := evt.HistoricalMonth
+		if month < 1 || month > 12 {
+			month = 1
+		}
+		monthsUntil := evt.HistoricalYear*12 + month - 1 - current
+		if monthsUntil < 0 {
+			continue
+		}
+		turnsUntil := (monthsUntil + turnMonths - 1) / turnMonths
+		if turnsUntil > horizonTurns {
+			continue
+		}
+		signal := AIUpcomingEvent{EventID: evt.ID, TurnsUntil: turnsUntil, RequiredTechs: append([]string(nil), evt.RequiresTechs...)}
+		effects := make([]gameevents.Effect, 0, 1+len(evt.Choices))
+		effects = append(effects, evt.BaseEffect())
+		for _, choice := range evt.Choices {
+			effects = append(effects, choice.Effect)
+		}
+		for _, effect := range effects {
+			signal.GrainRisk = signal.GrainRisk || effect.GrainDelta < 0 || effect.GrainProductionPercent < 0 || effect.GrainDemandPercent > 0
+			signal.GoldRisk = signal.GoldRisk || effect.GoldDelta < 0 || effect.RegionGoldIncomePercent < 0 || effect.TradeIncomePercent < 0
+			signal.SatisfactionRisk = signal.SatisfactionRisk || effect.SatDelta < 0
+			signal.MilitaryRisk = signal.MilitaryRisk || (effect.ArmyHPMod > 0 && effect.ArmyHPMod < 1) || effect.ArmyUpkeepPercent > 0 || effect.CombatAttackPercent < 0 || effect.CombatDefensePercent < 0
+		}
+		if signal.GrainRisk || signal.GoldRisk || signal.SatisfactionRisk || signal.MilitaryRisk || len(signal.RequiredTechs) > 0 {
+			result = append(result, signal)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].TurnsUntil != result[j].TurnsUntil {
+			return result[i].TurnsUntil < result[j].TurnsUntil
+		}
+		return result[i].EventID < result[j].EventID
+	})
+	return result
 }
 
 // assignAINavalRoles projects the active naval mission onto the same runtime

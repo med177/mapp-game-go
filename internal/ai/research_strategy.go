@@ -134,6 +134,18 @@ func aiScoreResearchCandidate(gs *state.GameState, self *faction.Faction, techno
 	effectScore := aiResearchEffectScore(gs, self, technology, signals)
 	unlockScore := aiResearchUnitUnlockScore(gs, self, technology, signals)
 	futureScore := aiResearchFollowOnScore(gs, self, technology)
+	for _, upcoming := range signals.Context.UpcomingEvents {
+		if upcoming.TurnsUntil > 8 {
+			continue
+		}
+		for _, requiredTech := range upcoming.RequiredTechs {
+			if requiredTech == technology.ID {
+				// Yaklaşan event'in önkoşul teknolojisi, genel ROI'den
+				// bağımsız olarak hazırlanması gereken bir hedef olur.
+				futureScore += maxInt(200, 1000-upcoming.TurnsUntil*100)
+			}
+		}
+	}
 	durationCost := maxInt(1, technology.TurnsRequired)*5 + technology.GoldCost/4
 	return aiResearchCandidate{
 		Technology:    technology,

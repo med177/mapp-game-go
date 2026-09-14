@@ -832,7 +832,7 @@ func (g *Game) updateAITurnSequence() {
 				g.aiTurn.index++
 				continue
 			}
-			g.aiTurn.stepper = ai.NewTurnStepper(g.gs, fid)
+			g.aiTurn.stepper = ai.NewTurnStepperWithEvents(g.gs, fid, g.evts)
 			g.renderer.SetAITurnStatus(g.aiTurn.stepper.FactionID(), g.aiTurn.stepper.FactionNameTR(), "Hamle sırası bu devlette.")
 			g.aiTurn.waitFrames = g.aiTurnWaitFrames(aiTurnFactionIntroFrames)
 			return

@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
+	gameevents "mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -50,13 +51,19 @@ type TurnStepper struct {
 	armyOrder        []army.ArmyID
 	armyIdx          int
 	strategicContext *StrategicContext
+	eventDefs        []*gameevents.Event
 }
 
 func NewTurnStepper(gs *state.GameState, fid faction.FactionID) *TurnStepper {
+	return NewTurnStepperWithEvents(gs, fid, nil)
+}
+
+func NewTurnStepperWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event) *TurnStepper {
 	return &TurnStepper{
-		gs:      gs,
-		fid:     fid,
-		prelude: make([]TurnStep, 0, 8),
+		gs:        gs,
+		fid:       fid,
+		prelude:   make([]TurnStep, 0, 8),
+		eventDefs: eventDefs,
 	}
 }
 
@@ -80,7 +87,7 @@ func (s *TurnStepper) Step() (TurnStep, bool) {
 	}
 	for {
 		if !s.preludeDone {
-			s.strategicContext = runTurnPrelude(s.gs, s.fid, &s.prelude)
+			s.strategicContext = runTurnPreludeWithEvents(s.gs, s.fid, s.eventDefs, &s.prelude)
 			s.preludeDone = true
 			if len(s.prelude) > 0 {
 				step := s.prelude[0]

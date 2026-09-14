@@ -135,28 +135,30 @@ func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicC
 }
 
 func aiBudgetExecutionOrder(hasCoast bool) []aiBudgetCategory {
-	order := []aiBudgetCategory{aiBudgetResearch, aiBudgetEconomy}
+	// Üretim sırası: önce sivil ekonomi, sonra donanma ve kara ordusu.
+	// Araştırma üretim kuyruğunu bloke etmemeli; kalan bütçeyi kullanır.
+	order := []aiBudgetCategory{aiBudgetEconomy}
 	if hasCoast {
 		order = append(order, aiBudgetNaval)
 	}
-	return append(order, aiBudgetArmy)
+	return append(order, aiBudgetArmy, aiBudgetResearch)
 }
 
 func aiBudgetWeights(planKind state.AIObjectiveKind, atWar, hasCoast bool) map[aiBudgetCategory]int {
 	weights := map[aiBudgetCategory]int{
-		aiBudgetArmy:     35,
-		aiBudgetEconomy:  35,
-		aiBudgetResearch: 20,
+		aiBudgetArmy:     30,
+		aiBudgetEconomy:  50,
+		aiBudgetResearch: 10,
 		aiBudgetNaval:    10,
 	}
 	if atWar || planKind == state.AIObjectiveDefend {
-		weights[aiBudgetArmy] = 70
-		weights[aiBudgetEconomy] = 10
+		weights[aiBudgetArmy] = 45
+		weights[aiBudgetEconomy] = 25
 		weights[aiBudgetResearch] = 10
 		weights[aiBudgetNaval] = 10
 	} else if planKind == state.AIObjectiveExpand {
-		weights[aiBudgetArmy] = 55
-		weights[aiBudgetEconomy] = 20
+		weights[aiBudgetArmy] = 40
+		weights[aiBudgetEconomy] = 35
 		weights[aiBudgetResearch] = 15
 		weights[aiBudgetNaval] = 10
 	}
