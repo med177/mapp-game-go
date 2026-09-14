@@ -1181,6 +1181,10 @@
             {
               "region_id": "flanders",
               "value": 100
+            },
+            {
+              "region_id": "walonia",
+              "value": 100
             }
           ],
           "priority": 100,
@@ -1192,6 +1196,10 @@
           "territorial_claims": [
             {
               "region_id": "flanders",
+              "value": 76
+            },
+            {
+              "region_id": "walonia",
               "value": 76
             }
           ],
@@ -1726,6 +1734,18 @@
               "value": 100
             },
             {
+              "region_id": "friesland",
+              "value": 100
+            },
+            {
+              "region_id": "holland",
+              "value": 100
+            },
+            {
+              "region_id": "luxembourg",
+              "value": 100
+            },
+            {
               "region_id": "thuringia",
               "value": 100
             },
@@ -1738,7 +1758,8 @@
           "commitment": 78,
           "readiness_regions": [
             "thuringia",
-            "lorraine"
+            "lorraine",
+            "holland"
           ]
         },
         {
