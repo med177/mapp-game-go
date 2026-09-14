@@ -3,6 +3,7 @@ package ai
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -55,5 +56,42 @@ func TestAITerrainMovePenaltyIncludesAttrition(t *testing.T) {
 	penalty := aiTerrainMovePenalty(gs, from.ID, target)
 	if penalty != 30 {
 		t.Fatalf("unexpected terrain risk penalty: %d", penalty)
+	}
+}
+
+func TestAIRouteUsesMoveCostInsteadOfTerrainLabelPassability(t *testing.T) {
+	from := &world.Region{ID: "from", OwnerID: "f", Neighbors: []world.RegionID{"lake"}}
+	target := &world.Region{ID: "lake", OwnerID: "f", Terrain: world.TerrainLake}
+	armyRef := &army.Army{ID: "army", OwnerID: "f", RegionID: from.ID}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			from.ID:   from,
+			target.ID: target,
+		},
+		Armies: map[army.ArmyID]*army.Army{armyRef.ID: armyRef},
+	}
+
+	routes := aiWeightedLandRoutes(gs, armyRef, from.ID, aiRouteFriendly, 0, nil)
+	if _, reachable := routes.distance(target.ID); !reachable {
+		t.Fatal("a non-zero move-cost terrain label should not block the AI route")
+	}
+}
+
+func TestAIRouteRejectsBlockedTerrainArea(t *testing.T) {
+	from := &world.Region{ID: "from", OwnerID: "f", Neighbors: []world.RegionID{"blocked"}}
+	target := &world.Region{ID: "blocked", OwnerID: "", IsTerrainArea: true, TerrainAreaID: "area"}
+	armyRef := &army.Army{ID: "army", OwnerID: "f", RegionID: from.ID}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			from.ID:   from,
+			target.ID: target,
+		},
+		Armies:       map[army.ArmyID]*army.Army{armyRef.ID: armyRef},
+		TerrainAreas: []world.TerrainArea{{ID: "area", MoveCost: 0}},
+	}
+
+	routes := aiWeightedLandRoutes(gs, armyRef, from.ID, aiRouteGeneral, 0, nil)
+	if _, reachable := routes.distance(target.ID); reachable {
+		t.Fatal("a zero move-cost terrain area must remain blocked for the AI route")
 	}
 }

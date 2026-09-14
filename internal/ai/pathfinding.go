@@ -124,9 +124,6 @@ func (snapshot *aiRouteSnapshot) regionAccess(region *world.Region) (allowed, tr
 	if snapshot == nil || snapshot.gs == nil || snapshot.armyRef == nil || region == nil || !region.CanLandEnter() {
 		return false, false, 0
 	}
-	if props, ok := aiRouteTerrainProps(region); !ok || !props.Passable {
-		return false, false, 0
-	}
 	if snapshot.mode == aiRouteFriendly {
 		if region.OwnerID != snapshot.armyRef.OwnerID || snapshot.gs.SiegeAt(region.ID) != nil || snapshot.foreignArmyPresent[region.ID] {
 			return false, false, 0
