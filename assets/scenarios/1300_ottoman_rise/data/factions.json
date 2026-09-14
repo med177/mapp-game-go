@@ -1276,18 +1276,19 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "castile_burgos",
-    "gold": 5000,
-    "grain": 3360,
-    "iron": 100,
-    "timber": 70,
-    "stone": 1000,
-    "spice": 480,
-    "cloth": 80,
+    "gold": 6500,
+    "grain": 7200,
+    "iron": 220,
+    "timber": 160,
+    "stone": 1800,
+    "spice": 850,
+    "cloth": 180,
     "research": {
       "completed": {
         "cavalry_tactics": true,
         "horse_breeding": true,
         "iron_weapons": true,
+        "naval_doctrine": true,
         "navigation": true,
         "trade_routes": true
       },
@@ -1308,7 +1309,7 @@
         "value": 72
       },
       {
-        "region_id": "toledo",
+        "region_id": "castile",
         "value": 100,
         "core": true
       }
@@ -1835,7 +1836,7 @@
         "core": true
       },
       {
-        "region_id": "toledo",
+        "region_id": "castile",
         "value": 66
       }
     ]
@@ -2348,7 +2349,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "aydinoglu_settlement_3",
+    "capital_settlement_id": "aydinoglu_atikhisar",
     "gold": 5000,
     "grain": 420,
     "iron": 45,
@@ -2387,16 +2388,16 @@
     "is_playable": false,
     "is_eliminated": false,
     "overlord_id": "castile_kingdom",
-    "tribute_rate": 20,
+    "tribute_rate": 35,
     "tribute_rate_configured": true,
-    "capital_settlement_id": "castile_settlement_2",
-    "gold": 5000,
-    "grain": 2260,
-    "iron": 50,
-    "timber": 50,
-    "stone": 1000,
-    "spice": 240,
-    "cloth": 0,
+    "capital_settlement_id": "leon_leon",
+    "gold": 6000,
+    "grain": 5000,
+    "iron": 120,
+    "timber": 100,
+    "stone": 1500,
+    "spice": 500,
+    "cloth": 80,
     "research": {
       "completed": null,
       "active_id": "",
@@ -3286,7 +3287,7 @@
     "tribute_rate": 20,
     "tribute_rate_configured": true,
     "vassalized_turn": 1,
-    "capital_settlement_id": "tripolitania_settlement_10",
+    "capital_settlement_id": "cyrenaica_benghazi",
     "gold": 5000,
     "grain": 980,
     "iron": 25,
@@ -3666,7 +3667,7 @@
         "core": true
       },
       {
-        "region_id": "toledo",
+        "region_id": "castile",
         "value": 62
       }
     ]
@@ -4422,7 +4423,7 @@
     ],
     "is_playable": false,
     "is_eliminated": true,
-    "capital_settlement_id": "switzerland_settlement_5",
+    "capital_settlement_id": "switzerland_schwyz",
     "historical_start_year": 1291,
     "gold": 5000,
     "grain": 500,

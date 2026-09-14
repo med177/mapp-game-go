@@ -164,6 +164,17 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   eksik alanlar eski varsayılanlara tamamlanıyor. Doğrulama: `go test ./...
   -count=1` ve Linux build.
 
+- 2026-09-14: Dış devletlerin vassal hedeflere `İsyana Teşvik` aksiyonu
+  eklenerek senaryo `diplomacy` ayarından maliyet, vassal ilişki bonusu ve
+  doğrudan sahibin ilişki cezası yapılandırılabilir hale getirildi. Her başarılı
+  tetiklemede maliyet düşülür, maliyetin tamamı vassala aktarılır, vassalla
+  ilişki artar, vassal-sahip ilişkisi azalır ve vassalın tüm bölgelerinde
+  memnuniyet JSON’daki miktar kadar düşer. JSON eşikleri aşıldığında
+  vassallık kaldırılır ve vassal sahibine karşı bağımsızlık savaşı başlatır.
+  Diplomasi listesinden vassal hedefler üst devlete yönlendirilmeden doğrudan
+  seçilebilir.
+  Doğrulama: hedefli diplomasi, senaryo, render ve game testleri.
+
 - 2026-09-11: 1300 senaryosunda oynanabilir İberya devleti Aragon'dan
   Kastilya'ya geçirildi. Aragon AI-only bırakıldı; Kastilya'nın altı tarihsel
   zafer rotası Reconquista, Endülüs, İberya birleşmesi, Pirene sınırı,

@@ -103,6 +103,7 @@ var diplomActions = []diplomAction{
 	{diplomacy.ActionLabelTR(diplomacy.ActionProposeTrade), color.RGBA{160, 130, 50, 220}, ActionProposeTrade},
 	{diplomacy.ActionLabelTR(diplomacy.ActionImproveRelations), color.RGBA{72, 124, 174, 220}, ActionImproveRelations},
 	{diplomacy.ActionLabelTR(diplomacy.ActionSendGift), color.RGBA{182, 120, 58, 220}, ActionSendGift},
+	{diplomacy.ActionLabelTR(diplomacy.ActionInciteRevolt), color.RGBA{142, 72, 48, 220}, ActionInciteRevolt},
 	{diplomacy.ActionLabelTR(diplomacy.ActionOfferVassalization), color.RGBA{86, 132, 68, 220}, ActionOfferVassalization},
 }
 
@@ -129,6 +130,8 @@ func actionKindForDiplomacyAction(action diplomacy.Action) ActionKind {
 		return ActionImproveRelations
 	case diplomacy.ActionSendGift:
 		return ActionSendGift
+	case diplomacy.ActionInciteRevolt:
+		return ActionInciteRevolt
 	case diplomacy.ActionOfferVassalization:
 		return ActionOfferVassalization
 	default:
@@ -158,6 +161,8 @@ func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID
 		actionValue = diplomacy.ActionImproveRelations
 	case ActionSendGift:
 		actionValue = diplomacy.ActionSendGift
+	case ActionInciteRevolt:
+		actionValue = diplomacy.ActionInciteRevolt
 	case ActionOfferVassalization:
 		actionValue = diplomacy.ActionOfferVassalization
 	default:
@@ -172,6 +177,8 @@ func diplomacyActionPaymentNote(gs *state.GameState, action ActionKind) string {
 		return "Karşı devlete ödeme gitmez"
 	case ActionSendGift:
 		return "Karşı devletin hazinesine " + strconv.Itoa(diplomacy.GiftReceiverGoldFor(gs)) + " altın gider"
+	case ActionInciteRevolt:
+		return "Maliyet: " + strconv.Itoa(diplomacy.InciteRevoltGoldCostFor(gs)) + " altın (tamamı vassala)"
 	default:
 		return ""
 	}
@@ -885,12 +892,10 @@ func diplomacyListClickedIndex(list gameui.ListView, input gameui.InputState) (i
 }
 
 func diplomacyDoubleClickTarget(gs *state.GameState, target faction.FactionID) faction.FactionID {
-	if gs == nil || target == "" {
-		return target
-	}
-	if overlord := diplomacy.DirectOverlord(gs, target); overlord != "" && overlord != gs.PlayerFactionID {
-		return overlord
-	}
+	// Vassal hedefleri de ticaret, heyet, hediye ve isyana teşvik gibi
+	// doğrudan diplomasi aksiyonları için kendi kimliğiyle açılır. Üst devlete
+	// yönlendirme, bu aksiyonların hedef vassala ulaşmasını engeller.
+	_ = gs
 	return target
 }
 
@@ -2090,6 +2095,8 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		return 100, "İlişki +" + strconv.Itoa(diplomacy.RelationImprovementBonusFor(gs)) + " / " + strconv.Itoa(diplomacy.RelationImprovementGoldCostFor(gs)) + " altın"
 	case ActionSendGift:
 		return 100, "İlişki +" + strconv.Itoa(diplomacy.GiftRelationBonusFor(gs)) + " / " + strconv.Itoa(diplomacy.GiftGoldCostFor(gs)) + " altın"
+	case ActionInciteRevolt:
+		return 100, "Vassal ilişki +" + strconv.Itoa(diplomacy.InciteRevoltRelationBonusFor(gs)) + ", sahibi -" + strconv.Itoa(diplomacy.InciteRevoltOverlordPenaltyFor(gs)) + ", bölge memnuniyeti -" + strconv.Itoa(diplomacy.InciteRevoltSatisfactionPenaltyFor(gs)) + " / eşik " + strconv.Itoa(diplomacy.InciteRevoltVassalThresholdFor(gs)) + ", " + strconv.Itoa(diplomacy.InciteRevoltOwnerThresholdFor(gs)) + " / " + strconv.Itoa(diplomacy.InciteRevoltGoldCostFor(gs)) + " altın"
 	case ActionOfferVassalization:
 		chance = diplomacy.AssessVassalizationProposal(gs, rel, gs.PlayerFactionID, target).Chance
 	case ActionCancelAlliance:

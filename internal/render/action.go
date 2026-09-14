@@ -42,6 +42,7 @@ const (
 	ActionProposePeace             ActionKind = "propose_peace"
 	ActionImproveRelations         ActionKind = "improve_relations"
 	ActionSendGift                 ActionKind = "send_gift"
+	ActionInciteRevolt             ActionKind = "incite_revolt"
 	ActionGrainAid                 ActionKind = "grain_aid"
 	ActionOfferVassalization       ActionKind = "offer_vassalization"
 	ActionReleaseVassal            ActionKind = "release_vassal"

@@ -419,6 +419,8 @@ func (g *Game) Update() error {
 			g.improveRelations(action.TargetFaction)
 		case render.ActionSendGift:
 			g.sendGift(action.TargetFaction)
+		case render.ActionInciteRevolt:
+			g.inciteRevolt(action.TargetFaction)
 		case render.ActionGrainAid:
 			g.applyGrainAid(action.TargetRegion)
 		case render.ActionLiberateSuccessor:
@@ -2542,6 +2544,11 @@ func (g *Game) improveRelations(targetID faction.FactionID) {
 
 func (g *Game) sendGift(targetID faction.FactionID) {
 	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionSendGift)
+	g.renderer.ShowCombatResult(result.Message)
+}
+
+func (g *Game) inciteRevolt(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionInciteRevolt)
 	g.renderer.ShowCombatResult(result.Message)
 }
 

@@ -13,7 +13,13 @@
     "relation_improvement_bonus": 8,
     "gift_gold_cost": 1000,
     "gift_receiver_gold": 800,
-    "gift_relation_bonus": 15
+    "gift_relation_bonus": 15,
+    "incite_revolt_gold_cost": 2000,
+    "incite_revolt_relation_bonus": 10,
+    "incite_revolt_overlord_penalty": 10,
+    "incite_revolt_vassal_threshold": 50,
+    "incite_revolt_owner_threshold": -20,
+    "incite_revolt_satisfaction_penalty": 10
   },
   "map": {
     "shape_set_id": "mediterranean_basin",
@@ -243,7 +249,7 @@
       "type": "domination",
       "target_region_count": 10,
       "required_regions": [
-        "toledo",
+        "castile",
         "murcia",
         "granada"
       ],
@@ -262,7 +268,7 @@
       "target_region_count": 14,
       "required_regions": [
         "castile",
-        "toledo",
+        "castile",
         "aragon",
         "catalonia",
         "murcia",
@@ -283,7 +289,7 @@
       "target_region_count": 12,
       "required_regions": [
         "castile",
-        "toledo",
+        "castile",
         "sevilla",
         "murcia",
         "granada"
@@ -304,7 +310,7 @@
       "required_regions": [
         "navarra",
         "castile",
-        "toledo",
+        "castile",
         "aragon",
         "catalonia",
         "granada"

@@ -169,20 +169,32 @@ type Scenario struct {
 // ve etkilerini tanımlar. Alanları eksik eski senaryolar varsayılan değerlere
 // tamamlanır.
 type DiplomacyConfig struct {
-	RelationImprovementGoldCost int `json:"relation_improvement_gold_cost,omitempty"`
-	RelationImprovementBonus    int `json:"relation_improvement_bonus,omitempty"`
-	GiftGoldCost                int `json:"gift_gold_cost,omitempty"`
-	GiftReceiverGold            int `json:"gift_receiver_gold,omitempty"`
-	GiftRelationBonus           int `json:"gift_relation_bonus,omitempty"`
+	RelationImprovementGoldCost     int `json:"relation_improvement_gold_cost,omitempty"`
+	RelationImprovementBonus        int `json:"relation_improvement_bonus,omitempty"`
+	GiftGoldCost                    int `json:"gift_gold_cost,omitempty"`
+	GiftReceiverGold                int `json:"gift_receiver_gold,omitempty"`
+	GiftRelationBonus               int `json:"gift_relation_bonus,omitempty"`
+	InciteRevoltGoldCost            int `json:"incite_revolt_gold_cost,omitempty"`
+	InciteRevoltRelationBonus       int `json:"incite_revolt_relation_bonus,omitempty"`
+	InciteRevoltOverlordPenalty     int `json:"incite_revolt_overlord_penalty,omitempty"`
+	InciteRevoltVassalThreshold     int `json:"incite_revolt_vassal_threshold,omitempty"`
+	InciteRevoltOwnerThreshold      int `json:"incite_revolt_owner_threshold,omitempty"`
+	InciteRevoltSatisfactionPenalty int `json:"incite_revolt_satisfaction_penalty,omitempty"`
 }
 
 func DefaultDiplomacyConfig() DiplomacyConfig {
 	return DiplomacyConfig{
-		RelationImprovementGoldCost: 40,
-		RelationImprovementBonus:    8,
-		GiftGoldCost:                120,
-		GiftReceiverGold:            80,
-		GiftRelationBonus:           15,
+		RelationImprovementGoldCost:     40,
+		RelationImprovementBonus:        8,
+		GiftGoldCost:                    120,
+		GiftReceiverGold:                80,
+		GiftRelationBonus:               15,
+		InciteRevoltGoldCost:            600,
+		InciteRevoltRelationBonus:       10,
+		InciteRevoltOverlordPenalty:     10,
+		InciteRevoltVassalThreshold:     50,
+		InciteRevoltOwnerThreshold:      -20,
+		InciteRevoltSatisfactionPenalty: 10,
 	}
 }
 
@@ -202,6 +214,24 @@ func (c DiplomacyConfig) WithDefaults() DiplomacyConfig {
 	}
 	if c.GiftRelationBonus > 0 {
 		d.GiftRelationBonus = c.GiftRelationBonus
+	}
+	if c.InciteRevoltGoldCost > 0 {
+		d.InciteRevoltGoldCost = c.InciteRevoltGoldCost
+	}
+	if c.InciteRevoltRelationBonus > 0 {
+		d.InciteRevoltRelationBonus = c.InciteRevoltRelationBonus
+	}
+	if c.InciteRevoltOverlordPenalty > 0 {
+		d.InciteRevoltOverlordPenalty = c.InciteRevoltOverlordPenalty
+	}
+	if c.InciteRevoltVassalThreshold > 0 {
+		d.InciteRevoltVassalThreshold = c.InciteRevoltVassalThreshold
+	}
+	if c.InciteRevoltOwnerThreshold < 0 {
+		d.InciteRevoltOwnerThreshold = c.InciteRevoltOwnerThreshold
+	}
+	if c.InciteRevoltSatisfactionPenalty > 0 {
+		d.InciteRevoltSatisfactionPenalty = c.InciteRevoltSatisfactionPenalty
 	}
 	return d
 }

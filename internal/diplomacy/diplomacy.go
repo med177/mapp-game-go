@@ -25,6 +25,7 @@ const (
 	ActionCancelTrade               Action = "cancel_trade"
 	ActionImproveRelations          Action = "improve_relations"
 	ActionSendGift                  Action = "send_gift"
+	ActionInciteRevolt              Action = "incite_revolt"
 	ActionOfferVassalization        Action = "offer_vassalization"
 	ActionReleaseVassal             Action = "release_vassal"
 	ActionAnnexVassal               Action = "annex_vassal"
@@ -258,6 +259,9 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 
 	case ActionSendGift:
 		return applyRelationImprovement(gs, actor, target, GiftGoldCostFor(gs), GiftRelationBonusFor(gs), GiftReceiverGoldFor(gs), "hediye")
+
+	case ActionInciteRevolt:
+		return applyInciteRevolt(gs, actor, target)
 
 	case ActionOfferVassalization:
 		if !AssessVassalizationProposal(gs, rel, actor, target).Accepted() {

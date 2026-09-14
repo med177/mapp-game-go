@@ -684,6 +684,7 @@
     {
       "faction_id": "castile_kingdom",
       "profile": "toledan_reconquista_frontier",
+      "naval_focus": true,
       "expansion_targets": [
         "granada_emirate"
       ],
@@ -693,12 +694,25 @@
           "kind": "defend",
           "territorial_claims": [
             {
+              "region_id": "castile",
+              "value": 100
+            },
+            {
               "region_id": "toledo",
+              "value": 100
+            },
+            {
+              "region_id": "sevilla",
               "value": 100
             }
           ],
           "priority": 100,
-          "commitment": 78
+          "commitment": 78,
+          "readiness_regions": [
+            "castile",
+            "toledo",
+            "sevilla"
+          ]
         },
         {
           "id": "press_granadan_approaches",
@@ -715,8 +729,13 @@
           ],
           "priority": 72,
           "commitment": 48,
+          "min_year": 1482,
+          "required_event_flags": [
+            "reconquista_granada_war_started"
+          ],
           "readiness_regions": [
-            "toledo"
+            "toledo",
+            "sevilla"
           ]
         }
       ]
@@ -1493,12 +1512,17 @@
             {
               "region_id": "toledo",
               "value": 66
+            },
+            {
+              "region_id": "sevilla",
+              "value": 66
             }
           ],
           "priority": 66,
           "commitment": 42,
           "readiness_regions": [
-            "granada"
+            "granada",
+            "murcia"
           ]
         }
       ]
@@ -1966,7 +1990,7 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "castile",
+              "region_id": "leon",
               "value": 100
             }
           ],
@@ -1985,7 +2009,7 @@
           "priority": 70,
           "commitment": 46,
           "readiness_regions": [
-            "castile"
+            "leon"
           ]
         }
       ]
@@ -2308,7 +2332,7 @@
           "kind": "expand",
           "territorial_claims": [
             {
-              "region_id": "toledo",
+              "region_id": "castile",
               "value": 62
             }
           ],

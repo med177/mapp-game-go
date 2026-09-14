@@ -9,7 +9,7 @@ const diplomacyOfferQuotaBlockReasonTR = "Bu tur diplomasi elçisi hakkın doldu
 
 func actionUsesDiplomacyOfferQuota(action Action) bool {
 	switch action {
-	case ActionProposePeace, ActionProposeAlliance, ActionProposeTrade, ActionImproveRelations, ActionSendGift, ActionOfferVassalization, ActionJoinWarCall:
+	case ActionProposePeace, ActionProposeAlliance, ActionProposeTrade, ActionImproveRelations, ActionSendGift, ActionInciteRevolt, ActionOfferVassalization, ActionJoinWarCall:
 		return true
 	default:
 		return false

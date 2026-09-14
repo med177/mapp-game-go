@@ -110,7 +110,7 @@
         "population": 35
       },
       {
-        "id": "mercia_settlement_2",
+        "id": "mercia_northampton",
         "name_tr": "Northampton",
         "x": 476,
         "y": 242,
@@ -176,7 +176,7 @@
         "population": 11
       },
       {
-        "id": "lancashire_settlement_4",
+        "id": "newcastle_carlisle",
         "name_tr": "Carlisle",
         "x": 417,
         "y": 192,
@@ -284,7 +284,7 @@
         "population": 8
       },
       {
-        "id": "scotland_settlement_6",
+        "id": "scotland_berwick",
         "name_tr": "Berwick",
         "x": 430,
         "y": 172,
@@ -382,7 +382,7 @@
         "population": 12
       },
       {
-        "id": "the_pale_settlement_2",
+        "id": "the_pale_galway",
         "name_tr": "Galway",
         "x": 295,
         "y": 223,
@@ -390,7 +390,7 @@
         "population": 45
       },
       {
-        "id": "the_pale_settlement_3",
+        "id": "the_pale_cork",
         "name_tr": "Cork",
         "x": 307,
         "y": 251,
@@ -398,7 +398,7 @@
         "population": 45
       },
       {
-        "id": "the_pale_settlement_4",
+        "id": "the_pale_limerick",
         "name_tr": "Limerick",
         "x": 298,
         "y": 235,
@@ -632,7 +632,7 @@
         "population": 13
       },
       {
-        "id": "dijon_settlement_4",
+        "id": "dijon_lyon",
         "name_tr": "Lyon",
         "x": 579,
         "y": 368,
@@ -782,7 +782,7 @@
         "population": 59
       },
       {
-        "id": "saxony_settlement_3",
+        "id": "saxony_hamburg",
         "name_tr": "Hamburg",
         "x": 674,
         "y": 216,
@@ -790,7 +790,7 @@
         "population": 59
       },
       {
-        "id": "saxony_settlement_4",
+        "id": "saxony_lubeck",
         "name_tr": "Lübeck",
         "x": 690,
         "y": 209,
@@ -850,7 +850,7 @@
         "population": 135
       },
       {
-        "id": "westphalia_settlement_2",
+        "id": "westphalia_hannover",
         "name_tr": "Hannover",
         "x": 648,
         "y": 247,
@@ -863,7 +863,7 @@
     "region_id": "thuringia",
     "settlements": [
       {
-        "id": "thuringia_settlement_2",
+        "id": "thuringia_stuttgart",
         "name_tr": "Stutgart",
         "x": 657,
         "y": 311,
@@ -872,7 +872,7 @@
         "population": 45
       },
       {
-        "id": "thuringia_settlement_3",
+        "id": "thuringia_frankfurt",
         "name_tr": "Frankfurt",
         "x": 652,
         "y": 291,
@@ -880,7 +880,7 @@
         "population": 44
       },
       {
-        "id": "thuringia_settlement_4",
+        "id": "thuringia_wurzburg",
         "name_tr": "Würzburg",
         "x": 675,
         "y": 285,
@@ -901,7 +901,7 @@
         "population": 66
       },
       {
-        "id": "palatinate_settlement_2",
+        "id": "palatinate_cologne",
         "name_tr": "Köln",
         "x": 618,
         "y": 269,
@@ -910,7 +910,7 @@
         "population": 65
       },
       {
-        "id": "palatinate_settlement_3",
+        "id": "palatinate_koblenz",
         "name_tr": "Koblenz",
         "x": 624,
         "y": 288,
@@ -932,7 +932,7 @@
         "population": 168
       },
       {
-        "id": "denmark_settlement_2",
+        "id": "denmark_randers",
         "name_tr": "Randers",
         "x": 677,
         "y": 164,
@@ -1046,7 +1046,7 @@
         "population": 122
       },
       {
-        "id": "aquitaine_settlement_2",
+        "id": "aquitaine_toulouse",
         "name_tr": "Toulouse",
         "x": 494,
         "y": 396,
@@ -1084,7 +1084,7 @@
         "population": 135
       },
       {
-        "id": "portugal_settlement_4",
+        "id": "portugal_lisboa_port",
         "name_tr": "Lizbon Limanı",
         "x": 293,
         "y": 498,
@@ -1106,7 +1106,7 @@
         "population": 210
       },
       {
-        "id": "alentejo_settlement_3",
+        "id": "algarve_silves",
         "name_tr": "Silves",
         "x": 306,
         "y": 529,
@@ -1114,7 +1114,7 @@
         "population": 0
       },
       {
-        "id": "alentejo_settlement_2",
+        "id": "algarve_faro",
         "name_tr": "Faro",
         "x": 318,
         "y": 531,
@@ -1127,7 +1127,7 @@
     "region_id": "alentejo",
     "settlements": [
       {
-        "id": "algarve_settlement_2",
+        "id": "alentejo_beja",
         "name_tr": "Beja",
         "x": 314,
         "y": 513,
@@ -1146,29 +1146,29 @@
     ]
   },
   {
-    "region_id": "castile",
+    "region_id": "leon",
     "settlements": [
       {
-        "id": "castile_salamanca",
+        "id": "leon_salamanca",
         "name_tr": "Salamanca",
         "x": 354,
         "y": 458,
         "type": "town",
-        "population": 170
+        "population": 280
       },
       {
-        "id": "castile_settlement_2",
+        "id": "leon_leon",
         "name_tr": "Leon",
         "x": 364,
         "y": 429,
         "type": "fortress",
         "is_center": true,
-        "population": 140
+        "population": 320
       }
     ]
   },
   {
-    "region_id": "toledo",
+    "region_id": "castile",
     "settlements": [
       {
         "id": "castile_burgos",
@@ -1177,7 +1177,7 @@
         "y": 427,
         "type": "fortress",
         "is_center": true,
-        "population": 60
+        "population": 180
       },
       {
         "id": "castile_valladolid",
@@ -1185,7 +1185,37 @@
         "x": 379,
         "y": 442,
         "type": "town",
-        "population": 120
+        "population": 220
+      },
+      {
+        "id": "castile_bilbao",
+        "name_tr": "Bilbao",
+        "x": 416,
+        "y": 414,
+        "type": "fortress",
+        "population": 140
+      }
+    ]
+  },
+  {
+    "region_id": "toledo",
+    "settlements": [
+      {
+        "id": "toledo_toledo",
+        "name_tr": "Toledo",
+        "x": 398,
+        "y": 486,
+        "type": "city",
+        "is_center": true,
+        "population": 44
+      },
+      {
+        "id": "toledo_guadalajara",
+        "name_tr": "Guadalajara",
+        "x": 416,
+        "y": 476,
+        "type": "fortress",
+        "population": 110
       }
     ]
   },
@@ -1202,20 +1232,20 @@
         "population": 17
       },
       {
-        "id": "navarre_tudela",
-        "name_tr": "Tudela",
-        "x": 446,
-        "y": 438,
-        "type": "town",
-        "population": 8
-      },
-      {
         "id": "aragon_main",
         "name_tr": "Teruel",
         "x": 453,
         "y": 466,
         "type": "city",
         "population": 17
+      },
+      {
+        "id": "aragon_valencia",
+        "name_tr": "Valensiya",
+        "x": 468,
+        "y": 487,
+        "type": "city",
+        "population": 83
       }
     ]
   },
@@ -1294,7 +1324,7 @@
         "population": 24
       },
       {
-        "id": "papal_states_settlement_4",
+        "id": "papal_states_lanciano",
         "name_tr": "Lanciano",
         "x": 768,
         "y": 436,
@@ -1302,7 +1332,7 @@
         "population": 12
       },
       {
-        "id": "papal_states_settlement_5",
+        "id": "papal_states_fermo",
         "name_tr": "Fermo",
         "x": 752,
         "y": 422,
@@ -1332,7 +1362,7 @@
         "population": 70
       },
       {
-        "id": "naples_settlement_3",
+        "id": "naples_amalfi",
         "name_tr": "Amalfi",
         "x": 769,
         "y": 465,
@@ -1340,7 +1370,7 @@
         "population": 25
       },
       {
-        "id": "naples_settlement_4",
+        "id": "naples_capri",
         "name_tr": "Capri",
         "x": 760,
         "y": 467,
@@ -1348,7 +1378,7 @@
         "population": 12
       },
       {
-        "id": "naples_settlement_5",
+        "id": "naples_cotrona",
         "name_tr": "Cotrona",
         "x": 819,
         "y": 488,
@@ -1356,7 +1386,7 @@
         "population": 12
       },
       {
-        "id": "naples_settlement_6",
+        "id": "naples_reggio",
         "name_tr": "Reggio",
         "x": 791,
         "y": 513,
@@ -1364,7 +1394,7 @@
         "population": 20
       },
       {
-        "id": "naples_settlement_7",
+        "id": "naples_cannae",
         "name_tr": "Cannae",
         "x": 804,
         "y": 453,
@@ -1743,7 +1773,7 @@
     "region_id": "bessarabia",
     "settlements": [
       {
-        "id": "bessarabia_settlement_2",
+        "id": "bessarabia_bacau",
         "name_tr": "Bacau",
         "x": 1012,
         "y": 343,
@@ -1915,7 +1945,7 @@
     "region_id": "algiers",
     "settlements": [
       {
-        "id": "algiers_settlement_1",
+        "id": "algiers_oran",
         "name_tr": "Vahran",
         "x": 460,
         "y": 557,
@@ -1932,7 +1962,7 @@
         "population": 55
       },
       {
-        "id": "algiers_settlement_2",
+        "id": "algiers_laghouat",
         "name_tr": "Lagvat",
         "x": 526,
         "y": 593,
@@ -1959,7 +1989,7 @@
     "region_id": "constantine",
     "settlements": [
       {
-        "id": "central_algeria_settlement_2",
+        "id": "constantine_annaba",
         "name_tr": "Annaba",
         "x": 620,
         "y": 535,
@@ -1968,7 +1998,7 @@
         "population": 46
       },
       {
-        "id": "central_algeria_settlement_3",
+        "id": "constantine_biskra",
         "name_tr": "Biskra",
         "x": 592,
         "y": 571,
@@ -2121,7 +2151,7 @@
     "region_id": "cyrenaica",
     "settlements": [
       {
-        "id": "tripolitania_settlement_10",
+        "id": "cyrenaica_benghazi",
         "name_tr": "Bingazi",
         "x": 880,
         "y": 632,
@@ -2130,7 +2160,7 @@
         "population": 53
       },
       {
-        "id": "tripolitania_settlement_9",
+        "id": "cyrenaica_tobruk",
         "name_tr": "Tobruk",
         "x": 954,
         "y": 626,
@@ -2211,7 +2241,7 @@
         "population": 52
       },
       {
-        "id": "constantinople_settlement_3",
+        "id": "bursa_prusa",
         "name_tr": "Prusa",
         "x": 1052,
         "y": 474,
@@ -2544,7 +2574,7 @@
         "population": 5
       },
       {
-        "id": "georgia_settlement_8",
+        "id": "georgia_seki",
         "name_tr": "Seki",
         "x": 1395,
         "y": 447,
@@ -2828,7 +2858,7 @@
         "population": 56
       },
       {
-        "id": "northern_persia_settlement_7",
+        "id": "northern_persia_semnan",
         "name_tr": "Semnan",
         "x": 1546,
         "y": 558,
@@ -2836,7 +2866,7 @@
         "population": 20
       },
       {
-        "id": "northern_persia_settlement_8",
+        "id": "northern_persia_turkmen_port",
         "name_tr": "Türkmen Limanı",
         "x": 1553,
         "y": 533,
@@ -3329,7 +3359,7 @@
     "region_id": "chios",
     "settlements": [
       {
-        "id": "chios_settlement_1",
+        "id": "chios_sakiz",
         "name_tr": "Sakız",
         "x": 1000,
         "y": 507,
@@ -3343,7 +3373,7 @@
     "region_id": "midilli",
     "settlements": [
       {
-        "id": "midilli_settlement_1",
+        "id": "midilli_midilli",
         "name_tr": "Midilli",
         "x": 1007,
         "y": 492,
@@ -3357,7 +3387,7 @@
     "region_id": "slovakia",
     "settlements": [
       {
-        "id": "slovakia_settlement_2",
+        "id": "slovakia_trnava",
         "name_tr": "Tırnava",
         "x": 831,
         "y": 314,
@@ -3366,7 +3396,7 @@
         "population": 35
       },
       {
-        "id": "slovakia_settlement_3",
+        "id": "slovakia_kosice",
         "name_tr": "Kösice",
         "x": 908,
         "y": 310,
@@ -3670,7 +3700,7 @@
         "population": 10
       },
       {
-        "id": "jordan_settlement_6",
+        "id": "jordan_aqaba",
         "name_tr": "Akabe",
         "x": 1176,
         "y": 678,
@@ -3724,7 +3754,7 @@
         "population": 18
       },
       {
-        "id": "azerbaijan_settlement_6",
+        "id": "azerbaijan_shirvan",
         "name_tr": "Şirvan",
         "x": 1450,
         "y": 477,
@@ -3732,7 +3762,7 @@
         "population": 25
       },
       {
-        "id": "azerbaijan_settlement_7",
+        "id": "azerbaijan_mingachevir",
         "name_tr": "Mingeçevir",
         "x": 1416,
         "y": 458,
@@ -3762,7 +3792,7 @@
         "population": 12
       },
       {
-        "id": "armenia_settlement_3",
+        "id": "armenia_lori",
         "name_tr": "Lori",
         "x": 1371,
         "y": 452,
@@ -3879,7 +3909,7 @@
     "region_id": "holland",
     "settlements": [
       {
-        "id": "holland_settlement_2",
+        "id": "holland_amsterdam",
         "name_tr": "Amsterdam",
         "x": 575,
         "y": 240,
@@ -3888,7 +3918,7 @@
         "population": 105
       },
       {
-        "id": "holland_settlement_3",
+        "id": "holland_rotterdam",
         "name_tr": "Rotterdam",
         "x": 566,
         "y": 248,
@@ -4134,7 +4164,7 @@
         "population": 122
       },
       {
-        "id": "crete_settlement_2",
+        "id": "crete_hanya",
         "name_tr": "Hanya",
         "x": 963,
         "y": 563,
@@ -4266,7 +4296,7 @@
         "population": 18
       },
       {
-        "id": "north_cyprus_settlement_2",
+        "id": "north_cyprus_girne",
         "name_tr": "Girne",
         "x": 1144,
         "y": 563,
@@ -4288,7 +4318,7 @@
         "population": 87
       },
       {
-        "id": "rhodes_settlement_2",
+        "id": "rhodes_port",
         "name_tr": "Rodos Limanı",
         "x": 1043,
         "y": 544,
@@ -4337,7 +4367,7 @@
         "population": 32
       },
       {
-        "id": "aydinoglu_settlement_2",
+        "id": "aydinoglu_biga",
         "name_tr": "Biga",
         "x": 1017,
         "y": 473,
@@ -4345,7 +4375,7 @@
         "population": 64
       },
       {
-        "id": "aydinoglu_settlement_3",
+        "id": "aydinoglu_atikhisar",
         "name_tr": "Atikhisar",
         "x": 1021,
         "y": 479,
@@ -4427,7 +4457,7 @@
         "population": 20
       },
       {
-        "id": "mentese_settlement_2",
+        "id": "mentese_hinterland_marmaris",
         "name_tr": "Marmaris",
         "x": 1038,
         "y": 537,
@@ -4611,7 +4641,7 @@
     "region_id": "akkoyunlu",
     "settlements": [
       {
-        "id": "akkoyunlu_settlement_6",
+        "id": "akkoyunlu_mus",
         "name_tr": "Muş",
         "x": 1313,
         "y": 498,
@@ -4619,7 +4649,7 @@
         "population": 30
       },
       {
-        "id": "akkoyunlu_settlement_7",
+        "id": "akkoyunlu_diyarbakir",
         "name_tr": "Diyarbekir",
         "x": 1311,
         "y": 524,
@@ -4641,7 +4671,7 @@
     "region_id": "karakoyunlu",
     "settlements": [
       {
-        "id": "akkoyunlu_settlement_5",
+        "id": "karakoyunlu_hakkari",
         "name_tr": "Hakkari",
         "x": 1352,
         "y": 526,
@@ -4658,7 +4688,7 @@
         "population": 147
       },
       {
-        "id": "akkoyunlu_settlement_3",
+        "id": "karakoyunlu_ahlat",
         "name_tr": "Ahlat",
         "x": 1334,
         "y": 491,
@@ -4666,7 +4696,7 @@
         "population": 20
       },
       {
-        "id": "armenia_settlement_4",
+        "id": "karakoyunlu_dogubayazit",
         "name_tr": "Doğubeyazıt",
         "x": 1364,
         "y": 484,
@@ -4674,7 +4704,7 @@
         "population": 15
       },
       {
-        "id": "akkoyunlu_settlement_4",
+        "id": "karakoyunlu_chaldiran",
         "name_tr": "Çaldıran",
         "x": 1354,
         "y": 491,
@@ -4720,7 +4750,7 @@
         "population": 26
       },
       {
-        "id": "florence_settlement_5",
+        "id": "florence_livorno",
         "name_tr": "Livorno",
         "x": 683,
         "y": 411,
@@ -4774,7 +4804,7 @@
         "population": 74
       },
       {
-        "id": "genoa_settlement_6",
+        "id": "genoa_turin",
         "name_tr": "Turin",
         "x": 630,
         "y": 372,
@@ -4782,7 +4812,7 @@
         "population": 25
       },
       {
-        "id": "genoa_settlement_7",
+        "id": "genoa_saluzzo",
         "name_tr": "Saluzzo",
         "x": 623,
         "y": 385,
@@ -4866,31 +4896,29 @@
         "population": 22
       },
       {
-        "id": "granada_settlement_5",
-        "name_tr": "Kurtuba",
-        "x": 375,
-        "y": 516,
-        "type": "fortress",
-        "population": 44
-      },
+        "id": "granada_almeria",
+        "name_tr": "Almeria",
+        "x": 427,
+        "y": 535,
+        "type": "port",
+        "population": 82
+      }
+    ]
+  },
+  {
+    "region_id": "sevilla",
+    "settlements": [
       {
-        "id": "castile_toledo",
-        "name_tr": "Toledo",
-        "x": 399,
-        "y": 485,
-        "type": "city",
-        "population": 44
-      },
-      {
-        "id": "granada_settlement_7",
+        "id": "sevilla_sevilla",
         "name_tr": "Sevilla",
-        "x": 356,
+        "x": 357,
         "y": 521,
         "type": "city",
+        "is_center": true,
         "population": 44
       },
       {
-        "id": "granada_settlement_8",
+        "id": "sevilla_cadiz",
         "name_tr": "Cadiz",
         "x": 348,
         "y": 538,
@@ -4898,18 +4926,22 @@
         "population": 35
       },
       {
-        "id": "granada_settlement_9",
+        "id": "sevilla_sevilla_port",
         "name_tr": "Sevilla Limanı",
         "x": 355,
         "y": 524,
         "type": "port",
         "population": 45
+      },
+      {
+        "id": "sevilla_cordoba",
+        "name_tr": "Kurtuba",
+        "x": 375,
+        "y": 516,
+        "type": "fortress",
+        "population": 44
       }
     ]
-  },
-  {
-    "region_id": "sevilla",
-    "settlements": null
   },
   {
     "region_id": "navarra",
@@ -4940,12 +4972,12 @@
         "population": 17
       },
       {
-        "id": "toledo_settlement_4",
-        "name_tr": "Bilbao",
-        "x": 416,
-        "y": 414,
-        "type": "fortress",
-        "population": 140
+        "id": "navarra_tudela",
+        "name_tr": "Tudela",
+        "x": 446,
+        "y": 438,
+        "type": "town",
+        "population": 8
       }
     ]
   },
@@ -4965,7 +4997,7 @@
         "id": "aragon_tarragona",
         "name_tr": "Tarragona",
         "x": 490,
-        "y": 460,
+        "y": 459,
         "type": "port",
         "population": 12
       }
@@ -4975,37 +5007,13 @@
     "region_id": "murcia",
     "settlements": [
       {
-        "id": "aragon_settlement_4",
-        "name_tr": "Guadalajara",
-        "x": 417,
-        "y": 473,
-        "type": "fortress",
-        "is_center": true,
-        "population": 110
-      },
-      {
-        "id": "aragon_settlement_5",
-        "name_tr": "Cartegena",
+        "id": "murcia_cartagena",
+        "name_tr": "Cartagena",
         "x": 458,
         "y": 520,
         "type": "city",
+        "is_center": true,
         "population": 110
-      },
-      {
-        "id": "granada_almeria",
-        "name_tr": "Almeria",
-        "x": 427,
-        "y": 535,
-        "type": "port",
-        "population": 82
-      },
-      {
-        "id": "aragon_valencia",
-        "name_tr": "Valensiya",
-        "x": 468,
-        "y": 486,
-        "type": "city",
-        "population": 83
       }
     ]
   },
@@ -5348,7 +5356,7 @@
         "population": 19
       },
       {
-        "id": "karaman_settlement_8",
+        "id": "karaman_tasucu",
         "name_tr": "Taşucu",
         "x": 1153,
         "y": 550,
@@ -5654,7 +5662,7 @@
         "population": 23
       },
       {
-        "id": "styria_settlement_2",
+        "id": "styria_klagenfurt",
         "name_tr": "Klagenfurt",
         "x": 762,
         "y": 348,
@@ -5779,7 +5787,7 @@
     "region_id": "friesland",
     "settlements": [
       {
-        "id": "friesland_settlement_1",
+        "id": "friesland_frizelya",
         "name_tr": "Frizelya",
         "x": 592,
         "y": 224,
@@ -5868,7 +5876,7 @@
         "population": 96
       },
       {
-        "id": "verona_settlement_2",
+        "id": "verona_trent",
         "name_tr": "Trent",
         "x": 698,
         "y": 356,
@@ -5890,7 +5898,7 @@
         "population": 96
       },
       {
-        "id": "cremona_settlement_2",
+        "id": "cremona_brescia",
         "name_tr": "Brescia",
         "x": 684,
         "y": 368,
@@ -5974,7 +5982,7 @@
         "population": 42
       },
       {
-        "id": "siena_settlement_4",
+        "id": "siena_piombino",
         "name_tr": "Piombino",
         "x": 698,
         "y": 430,
@@ -6012,7 +6020,7 @@
         "population": 47
       },
       {
-        "id": "apulia_settlement_4",
+        "id": "apulia_otranto",
         "name_tr": "Otranto",
         "x": 845,
         "y": 474,
@@ -6071,7 +6079,7 @@
         "population": 23
       },
       {
-        "id": "rijeka_settlement_2",
+        "id": "rijeka_rijeka",
         "name_tr": "Rijeka",
         "x": 764,
         "y": 374,
@@ -6281,7 +6289,7 @@
         "population": 14
       },
       {
-        "id": "thessaly_settlement_8",
+        "id": "thessaly_teselya",
         "name_tr": "Teselya",
         "x": 918,
         "y": 498,
@@ -6665,7 +6673,7 @@
     "region_id": "raqqa",
     "settlements": [
       {
-        "id": "raqqa_settlement_1",
+        "id": "raqqa_rakka",
         "name_tr": "Rakka",
         "x": 1257,
         "y": 552,
@@ -7054,7 +7062,7 @@
         "population": 32
       },
       {
-        "id": "nizhny_novgorod_settlement_6",
+        "id": "nizhny_novgorod_samara",
         "name_tr": "Samara",
         "x": 1500,
         "y": 221,
@@ -7067,7 +7075,7 @@
     "region_id": "north_caucasus",
     "settlements": [
       {
-        "id": "new_region_272_settlement_1",
+        "id": "north_caucasus_astrahan",
         "name_tr": "Astrahan",
         "x": 1438,
         "y": 356,
@@ -7075,7 +7083,7 @@
         "population": 45
       },
       {
-        "id": "new_region_272_settlement_2",
+        "id": "north_caucasus_azak",
         "name_tr": "Azak",
         "x": 1266,
         "y": 342,
@@ -7084,7 +7092,7 @@
         "population": 30
       },
       {
-        "id": "new_region_272_settlement_3",
+        "id": "north_caucasus_cherkezya",
         "name_tr": "Çerkezya",
         "x": 1269,
         "y": 404,
@@ -7097,7 +7105,7 @@
     "region_id": "dagestan",
     "settlements": [
       {
-        "id": "dagestan_settlement_1",
+        "id": "dagestan_aktav",
         "name_tr": "Aktav",
         "x": 1535,
         "y": 468,
@@ -7106,7 +7114,7 @@
         "population": 42
       },
       {
-        "id": "dagestan_settlement_2",
+        "id": "dagestan_nukus",
         "name_tr": "Nukus",
         "x": 1674,
         "y": 428,
@@ -7114,7 +7122,7 @@
         "population": 42
       },
       {
-        "id": "dagestan_settlement_3",
+        "id": "dagestan_urgenc",
         "name_tr": "Urgenç",
         "x": 1683,
         "y": 437,
@@ -7165,7 +7173,7 @@
     "region_id": "serres",
     "settlements": [
       {
-        "id": "serres_settlement_1",
+        "id": "serres_koumoutzina",
         "name_tr": "Koumoutzina",
         "x": 991,
         "y": 456,

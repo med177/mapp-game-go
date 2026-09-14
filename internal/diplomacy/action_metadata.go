@@ -19,6 +19,7 @@ var actionDefs = []ActionDef{
 	{Action: ActionCancelTrade, LabelTR: "Ticareti Bitir", Contextual: true},
 	{Action: ActionImproveRelations, LabelTR: "Heyet"},
 	{Action: ActionSendGift, LabelTR: "Hediye"},
+	{Action: ActionInciteRevolt, LabelTR: "İsyana Teşvik"},
 	{Action: ActionOfferVassalization, LabelTR: "Vassallık"},
 	{Action: ActionReleaseVassal, LabelTR: "Vasallığı Bitir", Contextual: true},
 	{Action: ActionAnnexVassal, LabelTR: "İlhak Et", Contextual: true},

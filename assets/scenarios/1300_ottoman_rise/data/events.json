@@ -126,7 +126,7 @@
     "requires_owned_regions": [
       "bursa"
     ],
-    "blocks_capital_settlement_id": "constantinople_settlement_3",
+    "blocks_capital_settlement_id": "bursa_prusa",
     "choices": [
       {
         "id": "move_to_bursa",
@@ -136,7 +136,7 @@
         "effect": {
           "gold_delta": -40,
           "sat_delta": 6,
-          "capital_settlement_id": "constantinople_settlement_3",
+    "capital_settlement_id": "bursa_prusa",
           "capital_move_turns": 5
         }
       },
@@ -728,6 +728,10 @@
     "one_shot": true,
     "target": "specific_faction",
     "affected_faction": "castile_kingdom",
+    "requires_owned_regions": [
+      "toledo",
+      "sevilla"
+    ],
     "requires_flags": [
       "iberian_dynastic_union_formed"
     ],
@@ -766,8 +770,7 @@
     ],
     "requires_owned_regions": [
       "granada",
-      "murcia",
-      "sevilla"
+      "murcia"
     ],
     "choice_prompt_tr": "Granada sonrası İber düzeni nasıl şekillenecek?",
     "choices": [
@@ -2786,6 +2789,10 @@
     "one_shot": true,
     "target": "specific_faction",
     "affected_faction": "castile_kingdom",
+    "requires_owned_regions": [
+      "toledo",
+      "sevilla"
+    ],
     "requires_active_factions": [
       "aragon"
     ],

@@ -51,6 +51,30 @@ func GiftRelationBonusFor(gs *state.GameState) int {
 	return diplomacyConfig(gs).GiftRelationBonus
 }
 
+func InciteRevoltGoldCostFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).InciteRevoltGoldCost
+}
+
+func InciteRevoltRelationBonusFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).InciteRevoltRelationBonus
+}
+
+func InciteRevoltOverlordPenaltyFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).InciteRevoltOverlordPenalty
+}
+
+func InciteRevoltVassalThresholdFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).InciteRevoltVassalThreshold
+}
+
+func InciteRevoltOwnerThresholdFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).InciteRevoltOwnerThreshold
+}
+
+func InciteRevoltSatisfactionPenaltyFor(gs *state.GameState) int {
+	return diplomacyConfig(gs).InciteRevoltSatisfactionPenalty
+}
+
 type VassalProposalAssessment struct {
 	Chance      int
 	BlockReason string
@@ -296,7 +320,7 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		// değildir. Dış devletler doğrudan vassalla ticaret anlaşması
 		// yapabilir; diğer diplomasi aksiyonları üst devlete yönlendirilir.
 		switch action {
-		case ActionProposeTrade, ActionImproveRelations, ActionSendGift:
+		case ActionProposeTrade, ActionImproveRelations, ActionSendGift, ActionInciteRevolt:
 		default:
 			return factionLabel(gs, targetOverlord) + " ile görüş."
 		}
@@ -397,6 +421,21 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		}
 		if score >= 98 {
 			return "İlişki zaten çok yüksek."
+		}
+	case ActionInciteRevolt:
+		overlord := DirectOverlord(gs, target)
+		if overlord == "" {
+			return "İsyana teşvik yalnız vassal devletlere karşı yapılabilir."
+		}
+		if overlord == actor {
+			return "Kendi vassalını isyana teşvik edemezsin."
+		}
+		cost := InciteRevoltGoldCostFor(gs)
+		if actorFaction.Gold < cost {
+			return "İsyana teşvik için " + strconv.Itoa(cost) + " altın gerekiyor."
+		}
+		if score >= 100 {
+			return "Vassal ile ilişki zaten çok yüksek."
 		}
 	case ActionOfferVassalization:
 		if sameRealm(gs, actor, target) {
@@ -610,6 +649,60 @@ func applyRelationImprovement(gs *state.GameState, actor, target faction.Faction
 		Accepted: true,
 		Applied:  true,
 		Message:  factionLabel(gs, target) + " için " + sourceLabel + " gönderildi. İlişki +" + strconv.Itoa(delta) + ".",
+	}
+}
+
+// applyInciteRevolt her çalıştırmada hedef vassalla ilişkiyi artırır ve aynı
+// vassalın doğrudan sahibiyle ilişkiyi azaltır. Bu iki ilişki birbirinden ayrı
+// kayıtlarda tutulur; dolayısıyla maliyet ödendiği her tetikleme kalıcıdır.
+func applyInciteRevolt(gs *state.GameState, actor, target faction.FactionID) Result {
+	overlord := DirectOverlord(gs, target)
+	if overlord == "" || overlord == actor {
+		return Result{Message: "İsyana teşvik için geçerli bir vassal hedefi yok."}
+	}
+	actorFaction := gs.Factions[actor]
+	if actorFaction == nil {
+		return Result{Message: "Fraksiyon bulunamadı."}
+	}
+	actorFaction.Gold -= InciteRevoltGoldCostFor(gs)
+	if actorFaction.Gold < 0 {
+		actorFaction.Gold = 0
+	}
+	targetFaction := gs.Factions[target]
+	if targetFaction == nil {
+		return Result{Message: "Fraksiyon bulunamadı."}
+	}
+	cost := InciteRevoltGoldCostFor(gs)
+	targetFaction.Gold += cost
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(target) {
+			continue
+		}
+		region.Satisfaction -= InciteRevoltSatisfactionPenaltyFor(gs)
+		if region.Satisfaction < 0 {
+			region.Satisfaction = 0
+		}
+	}
+	targetRel := EnsureRelation(gs, actor, target)
+	targetRel.Score = clamp(targetRel.Score+InciteRevoltRelationBonusFor(gs), -100, 100)
+	ownerRel := EnsureRelation(gs, target, overlord)
+	ownerRel.Score = clamp(ownerRel.Score-InciteRevoltOverlordPenaltyFor(gs), -100, 100)
+	if targetRel.Score >= InciteRevoltVassalThresholdFor(gs) && ownerRel.Score <= InciteRevoltOwnerThresholdFor(gs) {
+		targetFaction.OverlordID = ""
+		targetFaction.TributeRate = 0
+		targetFaction.TributeRateConfigured = false
+		targetFaction.VassalizedTurn = 0
+		setWarBetweenCoalitions(gs, target, overlord)
+		return Result{
+			Accepted: true,
+			Applied:  true,
+			Message:  factionLabel(gs, target) + " isyan etti ve " + factionLabel(gs, overlord) + " devletine karşı bağımsızlık savaşı başlattı. " + strconv.Itoa(cost) + " altın vassal hazinesine aktarıldı.",
+		}
+	}
+	return Result{
+		Accepted: true,
+		Applied:  true,
+		Message:  factionLabel(gs, target) + " devleti isyana teşvik edildi. " + strconv.Itoa(cost) + " altın vassal hazinesine aktarıldı; vassalla ilişki +" + strconv.Itoa(InciteRevoltRelationBonusFor(gs)) + ", sahibiyle ilişki -" + strconv.Itoa(InciteRevoltOverlordPenaltyFor(gs)) + ".",
 	}
 }
 

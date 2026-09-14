@@ -206,23 +206,23 @@
   {
     "id": "army_castile_murcia_front",
     "owner_id": "castile_kingdom",
-    "region_id": "toledo",
+    "region_id": "castile",
     "units": [
       {
         "type_id": "cavalry",
-        "count": 1
+        "count": 2
       },
       {
         "type_id": "infantry",
-        "count": 3
+        "count": 7
       },
       {
         "type_id": "light_cavalry",
-        "count": 1
+        "count": 2
       },
       {
         "type_id": "militia",
-        "count": 2
+        "count": 3
       }
     ]
   },
@@ -527,11 +527,11 @@
   {
     "id": "army_edit_73",
     "owner_id": "castile_kingdom",
-    "region_id": "toledo",
+    "region_id": "castile",
     "units": [
       {
         "type_id": "infantry",
-        "count": 5
+        "count": 8
       },
       {
         "type_id": "militia",
@@ -542,14 +542,50 @@
   {
     "id": "army_edit_74",
     "owner_id": "leon_kingdom",
-    "region_id": "castile",
+    "region_id": "leon",
     "units": [
       {
         "type_id": "infantry",
-        "count": 5
+        "count": 9
       },
       {
         "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "fleet_castile_atlantic",
+    "owner_id": "castile_kingdom",
+    "region_id": "atlantic_open_3",
+    "docked_region_id": "sevilla",
+    "docked_settlement_id": "sevilla_sevilla_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_castile_cadiz",
+    "owner_id": "castile_kingdom",
+    "region_id": "gulf_of_cadiz",
+    "docked_region_id": "sevilla",
+    "docked_settlement_id": "sevilla_cadiz",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
         "count": 1
       }
     ]
@@ -1957,7 +1993,7 @@
     "owner_id": "cyprus_kingdom",
     "region_id": "east_mediterranean",
     "docked_region_id": "north_cyprus",
-    "docked_settlement_id": "north_cyprus_settlement_2",
+    "docked_settlement_id": "north_cyprus_girne",
     "is_naval": true,
     "units": [
       {
