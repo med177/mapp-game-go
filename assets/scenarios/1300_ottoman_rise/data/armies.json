@@ -1404,7 +1404,7 @@
   {
     "id": "army_naples_1",
     "owner_id": "naples_kingdom",
-    "region_id": "naples",
+    "region_id": "campania",
     "units": [
       {
         "type_id": "militia",
@@ -1415,7 +1415,7 @@
   {
     "id": "army_naples_sicily_front",
     "owner_id": "naples_kingdom",
-    "region_id": "naples",
+    "region_id": "campania",
     "units": [
       {
         "type_id": "cavalry",
@@ -1468,7 +1468,7 @@
   {
     "id": "army_papal_states_1",
     "owner_id": "papal_states_f",
-    "region_id": "papal_states",
+    "region_id": "lazio",
     "units": [
       {
         "type_id": "militia",

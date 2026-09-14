@@ -341,6 +341,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   poligon geometrisi tutuyor. Kapsam: `internal/world/terrain_area.go`,
   `internal/render/shape_editor.go`, `internal/render/mapgen.go`.
 
+- 2026-09-14: Edit Mode `Alan Maliyeti` çizim başlamadan önce taslak alan için
+  ayarlanabilir. Mevcut alanda pahalı harita yeniden üretimi yalnızca
+  `move_cost=0` değerinden geçilebilir bir maliyete geçerken çalışır; `-1/-2`
+  geçişleri ve `0` değerine dönüş doğrudan alan metadata'sını günceller.
+  Kapsam: `internal/render/shape_editor.go`.
+
 - 2026-08-25: Edit Mode arazi alanlarına seçili alanı silme ve bağımsız arazi
   tipi değiştirme kontrolleri eklendi. Alanlar parent devlet renginin tonlarıyla
   çiziliyor; runtime merkezi boyalı hücrelerin ortasında hesaplanıyor ve merkez

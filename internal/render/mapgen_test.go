@@ -21,6 +21,64 @@ func TestLoadRegionPaintOverridesTreatsEmptyJSONAsNoOverrides(t *testing.T) {
 	}
 }
 
+func TestEnsureEditRegionPaintOverridesInitializesNilMap(t *testing.T) {
+	r := &Renderer{}
+	r.ensureEditRegionPaintOverrides()
+	if r.editRegionPaintOverrides == nil {
+		t.Fatal("expected edit region paint overrides map to be initialized")
+	}
+}
+
+func TestSetTerrainAreaTypeValueUpdatesOnlySelectedArea(t *testing.T) {
+	first := &world.Region{ID: "first_area", IsTerrainArea: true, TerrainAreaID: "area_a"}
+	second := &world.Region{ID: "second_area", IsTerrainArea: true, TerrainAreaID: "area_b"}
+	r := &Renderer{gs: &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			first.ID:  first,
+			second.ID: second,
+		},
+		TerrainAreas: []world.TerrainArea{
+			{ID: "area_a", Terrain: world.TerrainPlain},
+			{ID: "area_b", Terrain: world.TerrainForest},
+		},
+	}}
+
+	r.setTerrainAreaTypeValue("area_a", world.TerrainMountain)
+	if got := r.gs.TerrainAreas[0].Terrain; got != world.TerrainMountain {
+		t.Fatalf("selected area terrain = %q, want %q", got, world.TerrainMountain)
+	}
+	if got := first.Terrain; got != world.TerrainMountain {
+		t.Fatalf("selected child terrain = %q, want %q", got, world.TerrainMountain)
+	}
+	if got := r.gs.TerrainAreas[1].Terrain; got != world.TerrainForest {
+		t.Fatalf("other area terrain changed to %q", got)
+	}
+	if got := second.Terrain; got != "" {
+		t.Fatalf("other child terrain changed to %q", got)
+	}
+}
+
+func TestCycleTerrainAreaCostSkipsMapRebuildForNonZeroTransitions(t *testing.T) {
+	region := &world.Region{ID: "area_region", IsTerrainArea: true, TerrainAreaID: "area_a"}
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions:      map[world.RegionID]*world.Region{region.ID: region},
+			TerrainAreas: []world.TerrainArea{{ID: "area_a", MoveCost: -1}},
+		},
+		editSelectedRegion:      region.ID,
+		editTerrainAreaMoveCost: -1,
+	}
+	r.cycleEditTerrainAreaCost()
+	if got := r.gs.TerrainAreas[0].MoveCost; got != -2 {
+		t.Fatalf("move cost = %d, want -2", got)
+	}
+
+	r.cycleEditTerrainAreaCost()
+	if got := r.gs.TerrainAreas[0].MoveCost; got != 0 {
+		t.Fatalf("move cost = %d, want 0", got)
+	}
+}
+
 func TestNextTerrainAreaMoveCostStartsWithDraftCost(t *testing.T) {
 	if got := nextTerrainAreaMoveCost(0); got != -1 {
 		t.Fatalf("cost 0 should cycle to -1, got %d", got)

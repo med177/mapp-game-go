@@ -1676,6 +1676,11 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.deleteSelectedLandPassage()
 		return InputAction{}
 	}
+	if r.keyJustPressed(ebiten.KeyDelete) && !r.terrainAreaEditPending() &&
+		r.editTerrainAreaSelected >= 0 && r.editTerrainAreaSelected < len(r.gs.TerrainAreas) {
+		r.deleteSelectedTerrainArea()
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyDelete) && !r.hasEditSelection() && r.editSelectedRegion != "" {
 		r.deleteSelectedRegion()
 		return InputAction{}
@@ -1925,6 +1930,8 @@ func (r *Renderer) handleEditModeInput() InputAction {
 
 func (r *Renderer) syncSelectedTerrainArea(rid world.RegionID) {
 	r.editTerrainAreaSelected = -1
+	r.editTerrainAreaMoveCost = 0
+	r.editTerrainAreaAttritionCost = 0
 	region := r.gs.Regions[rid]
 	if region == nil || !region.IsTerrainArea {
 		return

@@ -273,7 +273,8 @@
       "malta": "aragon",
       "mallorca": "aragon",
       "catalonia": "aragon",
-      "naples": "naples_kingdom",
+      "calabria": "naples_kingdom",
+      "campania": "naples_kingdom",
       "apulia": "naples_kingdom"
     },
     "transfer": {

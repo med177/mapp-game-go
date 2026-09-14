@@ -148,7 +148,8 @@
       "target_region_count": 30,
       "required_regions": [
         "apulia",
-        "naples",
+        "calabria",
+        "campania",
         "sicily"
       ],
       "deadline_year": 1520,
@@ -344,7 +345,8 @@
       "target_region_count": 24,
       "required_regions": [
         "sevilla",
-        "naples",
+        "calabria",
+        "campania",
         "apulia",
         "flanders",
         "holland",
@@ -568,7 +570,9 @@
         "austria",
         "bohemia",
         "milan",
-        "papal_states"
+        "abruzzo",
+        "lazio",
+        "marche"
       ],
       "deadline_year": 1495,
       "deadline_month": 8,
@@ -762,7 +766,9 @@
       "target_region_count": 36,
       "required_regions": [
         "constantinople",
-        "papal_states",
+        "abruzzo",
+        "lazio",
+        "marche",
         "egypt",
         "paris",
         "palestine",
@@ -791,7 +797,9 @@
       "target_region_count": 45,
       "required_regions": [
         "constantinople",
-        "papal_states",
+        "abruzzo",
+        "lazio",
+        "marche",
         "egypt",
         "paris",
         "venice",

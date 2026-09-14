@@ -1296,13 +1296,13 @@
     ]
   },
   {
-    "region_id": "papal_states",
+    "region_id": "lazio",
     "settlements": [
       {
         "id": "papal_states_ostia",
         "name_tr": "Ostia",
         "x": 737,
-        "y": 452,
+        "y": 451,
         "type": "port",
         "population": 74
       },
@@ -1322,6 +1322,20 @@
         "y": 452,
         "type": "fortress",
         "population": 24
+      }
+    ]
+  },
+  {
+    "region_id": "abruzzo",
+    "settlements": [
+      {
+        "id": "papal_states_fermo",
+        "name_tr": "Fermo",
+        "x": 753,
+        "y": 423,
+        "type": "town",
+        "is_center": true,
+        "population": 12
       },
       {
         "id": "papal_states_lanciano",
@@ -1330,19 +1344,33 @@
         "y": 436,
         "type": "town",
         "population": 12
-      },
-      {
-        "id": "papal_states_fermo",
-        "name_tr": "Fermo",
-        "x": 752,
-        "y": 422,
-        "type": "town",
-        "population": 12
       }
     ]
   },
   {
-    "region_id": "naples",
+    "region_id": "marche",
+    "settlements": [
+      {
+        "id": "ancona",
+        "name_tr": "Ancona",
+        "x": 747,
+        "y": 408,
+        "type": "port",
+        "is_center": true,
+        "population": 33
+      },
+      {
+        "id": "perugia",
+        "name_tr": "Perugia",
+        "x": 742,
+        "y": 421,
+        "type": "fortress",
+        "population": 49
+      }
+    ]
+  },
+  {
+    "region_id": "campania",
     "settlements": [
       {
         "id": "naples_main",
@@ -1376,13 +1404,19 @@
         "y": 467,
         "type": "town",
         "population": 12
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "calabria",
+    "settlements": [
       {
         "id": "naples_cotrona",
         "name_tr": "Cotrona",
-        "x": 819,
+        "x": 818,
         "y": 488,
         "type": "town",
+        "is_center": true,
         "population": 12
       },
       {
@@ -1392,14 +1426,6 @@
         "y": 513,
         "type": "town",
         "population": 20
-      },
-      {
-        "id": "naples_cannae",
-        "name_tr": "Cannae",
-        "x": 804,
-        "y": 453,
-        "type": "town",
-        "population": 10
       }
     ]
   },
@@ -5966,28 +5992,12 @@
         "population": 33
       },
       {
-        "id": "ancona",
-        "name_tr": "Ancona",
-        "x": 748,
-        "y": 407,
-        "type": "port",
-        "population": 33
-      },
-      {
         "id": "papal_states_rimini",
         "name_tr": "Rimini",
-        "x": 735,
-        "y": 399,
+        "x": 732,
+        "y": 400,
         "type": "port",
         "population": 33
-      },
-      {
-        "id": "perugia",
-        "name_tr": "Perugia",
-        "x": 734,
-        "y": 416,
-        "type": "fortress",
-        "population": 49
       }
     ]
   },
@@ -5995,20 +6005,12 @@
     "region_id": "siena",
     "settlements": [
       {
-        "id": "siena_main",
-        "name_tr": "Siena",
-        "x": 709,
-        "y": 423,
-        "type": "fortress",
-        "is_center": true,
-        "population": 84
-      },
-      {
         "id": "florence_arezzo",
         "name_tr": "Arezzo",
         "x": 723,
-        "y": 420,
+        "y": 421,
         "type": "town",
+        "is_center": true,
         "population": 42
       },
       {
@@ -6026,6 +6028,14 @@
         "y": 430,
         "type": "port",
         "population": 20
+      },
+      {
+        "id": "siena_main",
+        "name_tr": "Siena",
+        "x": 709,
+        "y": 424,
+        "type": "fortress",
+        "population": 84
       }
     ]
   },
@@ -6064,6 +6074,14 @@
         "y": 474,
         "type": "fortress",
         "population": 20
+      },
+      {
+        "id": "naples_cannae",
+        "name_tr": "Cannae",
+        "x": 804,
+        "y": 453,
+        "type": "town",
+        "population": 10
       }
     ]
   },
@@ -7242,5 +7260,9 @@
         "population": 98
       }
     ]
+  },
+  {
+    "region_id": "umman_hourmuz",
+    "settlements": null
   }
 ]

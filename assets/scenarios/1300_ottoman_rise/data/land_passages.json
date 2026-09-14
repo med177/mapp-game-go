@@ -106,7 +106,7 @@
   },
   {
     "from": "sicily",
-    "to": "naples",
+    "to": "calabria",
     "type": "strait",
     "move_cost": 1,
     "defense_bonus": 15,

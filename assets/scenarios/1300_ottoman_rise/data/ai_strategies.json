@@ -251,7 +251,11 @@
               "value": 94
             },
             {
-              "region_id": "naples",
+              "region_id": "campania",
+              "value": 94
+            },
+            {
+              "region_id": "calabria",
               "value": 94
             }
           ],
@@ -2286,7 +2290,11 @@
               "value": 100
             },
             {
-              "region_id": "naples",
+              "region_id": "campania",
+              "value": 100
+            },
+            {
+              "region_id": "calabria",
               "value": 100
             }
           ],
@@ -2305,7 +2313,8 @@
           "priority": 68,
           "commitment": 44,
           "readiness_regions": [
-            "naples"
+            "campania",
+            "calabria"
           ],
           "allow_vassalization": true
         }
@@ -2526,7 +2535,15 @@
               "value": 100
             },
             {
-              "region_id": "papal_states",
+              "region_id": "lazio",
+              "value": 100
+            },
+            {
+              "region_id": "abruzzo",
+              "value": 100
+            },
+            {
+              "region_id": "marche",
               "value": 100
             }
           ],
@@ -2549,7 +2566,9 @@
           "priority": 66,
           "commitment": 42,
           "readiness_regions": [
-            "papal_states"
+            "lazio",
+            "abruzzo",
+            "marche"
           ]
         }
       ]

@@ -256,6 +256,9 @@
       "atlantic_open_6",
       "irish_sea",
       "lancashire",
+      "area::area__21",
+      "area::area__22",
+      "area::area__23",
       "area::area__24::newcastle_region",
       "area::area__25::scotland",
       "area::area__26::newcastle_region"
@@ -335,6 +338,9 @@
       "atlantic_open_5",
       "atlantic_open_6",
       "irish_sea",
+      "area::area__21",
+      "area::area__22",
+      "area::area__23",
       "area::area__24::newcastle_region",
       "area::area__25::scotland",
       "area::area__26::scotland"
@@ -650,9 +656,9 @@
       "lorraine",
       "normandy",
       "paris",
+      "area::area__11::flanders",
       "area::area__11::lorraine",
-      "area::area__11::champagne",
-      "area::area__11::flanders"
+      "area::area__11::champagne"
     ],
     "world_x": 568,
     "world_y": 289,
@@ -740,7 +746,9 @@
       "languedoc",
       "paris",
       "savoy",
-      "sch_fribourg"
+      "sch_fribourg",
+      "area::area__14",
+      "area::area__15"
     ],
     "world_x": 584,
     "world_y": 352,
@@ -782,7 +790,8 @@
       "genoa",
       "gulf_of_genoa",
       "gulf_of_lion",
-      "languedoc"
+      "languedoc",
+      "area::area__15"
     ],
     "world_x": 602,
     "world_y": 413,
@@ -820,6 +829,8 @@
       "dijon",
       "sch_fribourg",
       "area::area__13",
+      "area::area__14",
+      "area::area__15",
       "area::area__16::savoy"
     ],
     "world_x": 607,
@@ -869,7 +880,8 @@
       "gulf_of_lion",
       "paris",
       "provence",
-      "area::area__9::languedoc"
+      "area::area__9::languedoc",
+      "area::area__15"
     ],
     "world_x": 560,
     "world_y": 400,
@@ -1267,7 +1279,8 @@
       "sch_zurich",
       "tyrol",
       "area::area__13",
-      "area::area__17::switzerland"
+      "area::area__17::switzerland",
+      "area::area__19"
     ],
     "world_x": 659,
     "world_y": 346,
@@ -1452,8 +1465,8 @@
       "languedoc",
       "navarra",
       "area::area__9::aquitaine",
-      "area::area__9::languedoc",
-      "area::area__9::navarra"
+      "area::area__9::navarra",
+      "area::area__9::languedoc"
     ],
     "world_x": 468,
     "world_y": 398,
@@ -1822,7 +1835,8 @@
       "adriatic_sea_dalmatia",
       "ferrara",
       "slovenia",
-      "verona"
+      "verona",
+      "area::area__10"
     ],
     "world_x": 730,
     "world_y": 360,
@@ -1859,19 +1873,22 @@
     ]
   },
   {
-    "id": "papal_states",
-    "name": "Papal States",
-    "name_tr": "Papalık Devletleri",
+    "id": "lazio",
+    "name": "Lazio",
+    "name_tr": "Lazio",
     "terrain": "plain",
     "owner_id": "papal_states_f",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
-      "adriatic_sea",
-      "adriatic_sea_dalmatia",
-      "ferrara",
+      "campania",
       "mediterranean_open_5",
-      "naples",
-      "siena"
+      "northern_tyrrhenian_sea",
+      "siena",
+      "area::area__28",
+      "area::area__31::lazio",
+      "area::area__32",
+      "area::area__33::lazio",
+      "area::area__34"
     ],
     "world_x": 749,
     "world_y": 442,
@@ -1889,7 +1906,7 @@
     "trade_capacity": 3,
     "satisfaction": 78,
     "tax_rate": 20,
-    "population": 651,
+    "population": 627,
     "rural_population": 431,
     "religion": "catholic",
     "active_event_id": "",
@@ -1904,20 +1921,112 @@
     ]
   },
   {
-    "id": "naples",
-    "name": "Naples",
-    "name_tr": "Napoli Krallığı",
+    "id": "abruzzo",
+    "name": "Abruzzo",
+    "name_tr": "Abruzzo",
+    "terrain": "plain",
+    "owner_id": "papal_states_f",
+    "successor_faction_id": "papal_states_f",
+    "neighbors": [
+      "adriatic_sea",
+      "adriatic_sea_dalmatia",
+      "apulia",
+      "marche",
+      "area::area__28",
+      "area::area__31::abruzzo",
+      "area::area__32",
+      "area::area__33::abruzzo"
+    ],
+    "world_x": 755,
+    "world_y": 433,
+    "shape_id": "ITA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 55,
+    "base_grain_output": 35,
+    "base_iron_output": 2,
+    "base_timber_output": 3,
+    "base_stone_output": 15,
+    "base_spice_output": 0,
+    "base_cloth_output": 8,
+    "trade_capacity": 1,
+    "satisfaction": 78,
+    "tax_rate": 20,
+    "population": 455,
+    "rural_population": 431,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "farm"
+    ]
+  },
+  {
+    "id": "marche",
+    "name": "Marche",
+    "name_tr": "Marche",
+    "terrain": "plain",
+    "owner_id": "papal_states_f",
+    "successor_faction_id": "papal_states_f",
+    "neighbors": [
+      "abruzzo",
+      "adriatic_sea_dalmatia",
+      "ferrara",
+      "siena",
+      "area::area__32",
+      "area::area__33::marche",
+      "area::area__34"
+    ],
+    "world_x": 744,
+    "world_y": 407,
+    "shape_id": "ITA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 65,
+    "base_grain_output": 45,
+    "base_iron_output": 2,
+    "base_timber_output": 3,
+    "base_stone_output": 15,
+    "base_spice_output": 0,
+    "base_cloth_output": 10,
+    "trade_capacity": 2,
+    "satisfaction": 78,
+    "tax_rate": 20,
+    "population": 513,
+    "rural_population": 431,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "farm"
+    ]
+  },
+  {
+    "id": "campania",
+    "name": "Campania",
+    "name_tr": "Kampania",
     "terrain": "coast",
     "owner_id": "naples_kingdom",
     "neighbors": [
-      "adriatic_sea",
-      "adriatic_sea_shore",
       "apulia",
-      "ionian_sea",
+      "calabria",
+      "lazio",
       "mediterranean_open_5",
-      "otranto_strait",
-      "papal_states",
-      "sicily"
+      "area::area__28",
+      "area::area__29",
+      "area::area__35::campania"
     ],
     "world_x": 774,
     "world_y": 464,
@@ -1935,7 +2044,52 @@
     "trade_capacity": 3,
     "satisfaction": 65,
     "tax_rate": 35,
-    "population": 600,
+    "population": 558,
+    "rural_population": 311,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "calabria",
+    "name": "Calabria",
+    "name_tr": "Kalabria",
+    "terrain": "coast",
+    "owner_id": "naples_kingdom",
+    "successor_faction_id": "naples_kingdom",
+    "neighbors": [
+      "adriatic_sea_shore",
+      "apulia",
+      "campania",
+      "ionian_sea",
+      "mediterranean_open_5",
+      "otranto_strait",
+      "area::area__29"
+    ],
+    "world_x": 792,
+    "world_y": 481,
+    "shape_id": "ITA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 50,
+    "base_grain_output": 38,
+    "base_iron_output": 2,
+    "base_timber_output": 3,
+    "base_stone_output": 15,
+    "base_spice_output": 0,
+    "base_cloth_output": 8,
+    "trade_capacity": 1,
+    "satisfaction": 65,
+    "tax_rate": 35,
+    "population": 343,
     "rural_population": 311,
     "religion": "catholic",
     "active_event_id": "",
@@ -1962,7 +2116,8 @@
       "moravia",
       "slovakia",
       "slovenia",
-      "styria"
+      "styria",
+      "area::area__10"
     ],
     "world_x": 787,
     "world_y": 327,
@@ -2060,7 +2215,8 @@
       "mazovia",
       "moravia",
       "silesia",
-      "slovakia"
+      "slovakia",
+      "area::area__8"
     ],
     "world_x": 864,
     "world_y": 244,
@@ -2314,7 +2470,8 @@
       "moldova",
       "oltenia",
       "prut_river_south",
-      "transylvania"
+      "transylvania",
+      "area::area__8"
     ],
     "world_x": 1018,
     "world_y": 392,
@@ -2354,7 +2511,8 @@
       "serbia",
       "transylvania",
       "vidin",
-      "wallachia"
+      "wallachia",
+      "area::area__8"
     ],
     "world_x": 981,
     "world_y": 385,
@@ -2397,7 +2555,8 @@
       "prut_river_north",
       "prut_river_south",
       "transylvania",
-      "wallachia"
+      "wallachia",
+      "area::area__8"
     ],
     "world_x": 1018,
     "world_y": 339,
@@ -2486,7 +2645,8 @@
       "algiers",
       "gulf_of_cadiz",
       "magrib",
-      "tanca_region"
+      "tanca_region",
+      "area::area__1"
     ],
     "world_x": 373,
     "world_y": 595,
@@ -2617,7 +2777,8 @@
     "neighbors": [
       "atlantic_ocean",
       "gulf_of_cadiz",
-      "morocco"
+      "morocco",
+      "area::area__1"
     ],
     "world_x": 325,
     "world_y": 637,
@@ -2664,7 +2825,8 @@
       "alboran_sea",
       "balearic_sea",
       "central_algeria",
-      "morocco"
+      "morocco",
+      "area::area__1"
     ],
     "world_x": 501,
     "world_y": 584,
@@ -2708,7 +2870,8 @@
       "algiers",
       "balearic_sea",
       "constantine",
-      "western_mediterranean"
+      "western_mediterranean",
+      "area::area__1"
     ],
     "world_x": 569,
     "world_y": 581,
@@ -2749,7 +2912,8 @@
       "mediterranean_open_2",
       "sardinia_channel",
       "tunis",
-      "western_mediterranean"
+      "western_mediterranean",
+      "area::area__1"
     ],
     "world_x": 624,
     "world_y": 549,
@@ -2791,7 +2955,8 @@
       "ligurian_sea",
       "mediterranean_open_2",
       "mediterranean_open_3",
-      "tripolitania"
+      "tripolitania",
+      "area::area__1"
     ],
     "world_x": 669,
     "world_y": 548,
@@ -2838,7 +3003,8 @@
       "gulf_of_sirte",
       "ligurian_sea",
       "tunis",
-      "western_mediterranean_shore"
+      "western_mediterranean_shore",
+      "area::area__1"
     ],
     "world_x": 766,
     "world_y": 645,
@@ -2882,7 +3048,8 @@
       "egypt",
       "gulf_of_sirte",
       "libyan_sea",
-      "tripolitania"
+      "tripolitania",
+      "area::area__1"
     ],
     "world_x": 884,
     "world_y": 643,
@@ -3281,7 +3448,8 @@
       "erzurum",
       "karakoyunlu",
       "north_caucasus",
-      "trebizond"
+      "trebizond",
+      "area::area__7"
     ],
     "world_x": 1312,
     "world_y": 430,
@@ -3329,7 +3497,8 @@
       "eastern_mediterranean",
       "eastern_mediterranean_shore",
       "levantine_sea",
-      "luxor"
+      "luxor",
+      "area::area__1"
     ],
     "world_x": 1021,
     "world_y": 649,
@@ -3380,6 +3549,7 @@
       "levantine_sea",
       "red_open_2",
       "red_sea",
+      "area::area__1",
       "area::area__3::luxor"
     ],
     "world_x": 1124,
@@ -3458,7 +3628,8 @@
       "israel",
       "jordan",
       "lebanon",
-      "raqqa"
+      "raqqa",
+      "area::area__2"
     ],
     "world_x": 1214,
     "world_y": 602,
@@ -3495,7 +3666,8 @@
       "basra",
       "kerkuk",
       "persian_basra",
-      "hemedan"
+      "hemedan",
+      "area::area__2"
     ],
     "world_x": 1372,
     "world_y": 610,
@@ -3659,7 +3831,9 @@
       "kazvin",
       "kerkuk",
       "persian_basra",
-      "urmiye"
+      "urmiye",
+      "area::area__18",
+      "area::area__5"
     ],
     "world_x": 1458,
     "world_y": 580,
@@ -3701,7 +3875,8 @@
       "basra",
       "hemedan",
       "persian_open_2",
-      "siraz"
+      "siraz",
+      "area::area__5"
     ],
     "world_x": 1448,
     "world_y": 643,
@@ -3746,7 +3921,8 @@
       "karakoyunlu",
       "kazvin",
       "kerkuk",
-      "mosul"
+      "mosul",
+      "area::area__18"
     ],
     "world_x": 1382,
     "world_y": 503,
@@ -3832,6 +4008,7 @@
       "kazvin",
       "southern_persia",
       "hemedan",
+      "area::area__5",
       "area::area__6::isfahan"
     ],
     "world_x": 1482,
@@ -3873,13 +4050,14 @@
       "hourmuz",
       "isfahan",
       "siraz",
+      "area::area__5",
+      "area::area__6::gurgan",
+      "area::area__6::southern_persia",
       "area::area__6::meshed",
-      "area::area__6::hourmuz",
       "area::area__6::isfahan",
       "area::area__6::kazvin",
       "area::area__6::northern_persia",
-      "area::area__6::southern_persia",
-      "area::area__6::gurgan"
+      "area::area__6::hourmuz"
     ],
     "world_x": 1588,
     "world_y": 657,
@@ -3929,7 +4107,8 @@
       "persian_gulf",
       "persian_open_1",
       "persian_open_2",
-      "southern_persia"
+      "southern_persia",
+      "area::area__5"
     ],
     "world_x": 1564,
     "world_y": 714,
@@ -3978,13 +4157,13 @@
       "persian_open_1",
       "siraz",
       "southern_persia",
+      "area::area__6::gurgan",
+      "area::area__6::southern_persia",
       "area::area__6::meshed",
-      "area::area__6::hourmuz",
       "area::area__6::isfahan",
       "area::area__6::kazvin",
       "area::area__6::northern_persia",
-      "area::area__6::southern_persia",
-      "area::area__6::gurgan"
+      "area::area__6::hourmuz"
     ],
     "world_x": 1632,
     "world_y": 697,
@@ -4029,10 +4208,10 @@
     "owner_id": "mecca_sharifate",
     "successor_faction_id": "mecca_sharifate",
     "neighbors": [
-      "arabian_desert",
       "jordan",
       "red_open_2",
-      "red_sea"
+      "red_sea",
+      "area::area__2"
     ],
     "world_x": 1258,
     "world_y": 780,
@@ -4073,14 +4252,13 @@
     "name": "Arabian Desert",
     "name_tr": "Arab Çölü",
     "terrain": "pass",
-    "owner_id": "",
+    "owner_id": "usfurid_emirate",
     "neighbors": [
-      "hejaz",
       "kuwait",
       "persian_gulf",
       "persian_open_2",
-      "qatar",
-      "uae"
+      "uae",
+      "area::area__2"
     ],
     "world_x": 1466,
     "world_y": 732,
@@ -4121,7 +4299,8 @@
       "kvarner",
       "rijeka",
       "styria",
-      "venice"
+      "venice",
+      "area::area__10"
     ],
     "world_x": 780,
     "world_y": 361,
@@ -4614,7 +4793,8 @@
       "ulster",
       "wales",
       "welsh_marches",
-      "wessex"
+      "wessex",
+      "area::area__21"
     ],
     "world_x": 372,
     "world_y": 224,
@@ -4892,15 +5072,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "abruzzo",
       "adriatic_sea_dalmatia",
       "apulia",
       "dalmatia",
       "herzegovina",
       "knin",
       "montenegro",
-      "naples",
-      "otranto_strait",
-      "papal_states"
+      "otranto_strait"
     ],
     "world_x": 818,
     "world_y": 434,
@@ -4939,9 +5118,9 @@
       "greece",
       "montenegro",
       "morea",
-      "naples",
-      "yanya",
-      "thessaly"
+      "calabria",
+      "thessaly",
+      "yanya"
     ],
     "world_x": 863,
     "world_y": 488,
@@ -4971,9 +5150,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "abruzzo",
       "adriatic_sea",
       "ferrara",
-      "papal_states",
+      "marche",
       "rijeka",
       "slovenia",
       "venice"
@@ -5010,7 +5190,7 @@
       "malta",
       "mediterranean_open_3",
       "mediterranean_open_5",
-      "naples",
+      "calabria",
       "sicily",
       "tyrrhenian_sea"
     ],
@@ -5755,7 +5935,8 @@
       "mazovia",
       "moravia",
       "danube_hungary",
-      "poland"
+      "poland",
+      "area::area__8"
     ],
     "world_x": 865,
     "world_y": 310,
@@ -6245,12 +6426,13 @@
     "owner_id": "mamluk",
     "successor_faction_id": "mamluk",
     "neighbors": [
-      "area::area__3::israel",
       "damascus",
       "hejaz",
       "israel",
       "palestine",
-      "red_open_2"
+      "red_open_2",
+      "area::area__2",
+      "area::area__3::israel"
     ],
     "world_x": 1198,
     "world_y": 640,
@@ -6293,7 +6475,8 @@
       "georgia",
       "urmiye",
       "kazvin",
-      "north_caucasus"
+      "north_caucasus",
+      "area::area__7"
     ],
     "world_x": 1429,
     "world_y": 469,
@@ -6402,7 +6585,8 @@
     "neighbors": [
       "arabian_desert",
       "basra",
-      "persian_open_2"
+      "persian_open_2",
+      "area::area__2"
     ],
     "world_x": 1427,
     "world_y": 678,
@@ -6482,8 +6666,8 @@
       "luxembourg",
       "north_sea_shore",
       "palatinate",
-      "area::area__11::champagne",
-      "area::area__11::flanders"
+      "area::area__11::flanders",
+      "area::area__11::champagne"
     ],
     "world_x": 569,
     "world_y": 271,
@@ -6780,8 +6964,7 @@
     "neighbors": [
       "ionian_sea",
       "mediterranean_open_3",
-      "mediterranean_open_5",
-      "naples"
+      "mediterranean_open_5"
     ],
     "world_x": 759,
     "world_y": 521,
@@ -7020,8 +7203,9 @@
     "neighbors": [
       "arabian_desert",
       "persian_gulf",
-      "persian_gulf_shore",
-      "persian_open_1"
+      "persian_open_1",
+      "umman_hourmuz",
+      "area::area__2"
     ],
     "world_x": 1562,
     "world_y": 780,
@@ -7063,7 +7247,6 @@
     "terrain": "desert",
     "owner_id": "usfurid_emirate",
     "neighbors": [
-      "arabian_desert",
       "persian_gulf"
     ],
     "world_x": 1499,
@@ -7749,16 +7932,15 @@
     "owner_id": "florence_rep",
     "successor_faction_id": "florence_rep",
     "neighbors": [
-      "cremona",
-      "ferrara",
       "genoa",
-      "milan",
       "northern_tyrrhenian_sea",
       "siena",
-      "verona"
+      "area::area__27",
+      "area::area__30::florence",
+      "area::area__34"
     ],
-    "world_x": 697,
-    "world_y": 399,
+    "world_x": 702,
+    "world_y": 415,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -7804,7 +7986,9 @@
       "northern_tyrrhenian_sea",
       "provence",
       "area::area__13",
-      "area::area__16::savoy"
+      "area::area__15",
+      "area::area__16::savoy",
+      "area::area__27"
     ],
     "world_x": 652,
     "world_y": 389,
@@ -7849,10 +8033,11 @@
     "successor_faction_id": "milan_duchy",
     "neighbors": [
       "cremona",
-      "florence",
       "genoa",
       "area::area__13",
-      "area::area__17::milan"
+      "area::area__17::milan",
+      "area::area__19",
+      "area::area__27"
     ],
     "world_x": 666,
     "world_y": 369,
@@ -8044,9 +8229,9 @@
       "gulf_of_lion",
       "languedoc",
       "navarra",
+      "area::area__9::navarra",
       "area::area__9::languedoc",
-      "area::area__9::catalonia",
-      "area::area__9::navarra"
+      "area::area__9::catalonia"
     ],
     "world_x": 493,
     "world_y": 439,
@@ -8171,7 +8356,8 @@
       "bessarabia",
       "galicia_volhynia",
       "oltenia",
-      "wallachia"
+      "wallachia",
+      "area::area__8"
     ],
     "world_x": 985,
     "world_y": 353,
@@ -8824,7 +9010,8 @@
       "bavaria",
       "bohemia",
       "slovenia",
-      "tyrol"
+      "tyrol",
+      "area::area__10"
     ],
     "world_x": 738,
     "world_y": 337,
@@ -8861,6 +9048,8 @@
       "styria",
       "switzerland",
       "thuringia",
+      "area::area__10",
+      "area::area__19",
       "area::area__20::verona"
     ],
     "world_x": 694,
@@ -8898,7 +9087,8 @@
       "bohemia",
       "poland",
       "silesia",
-      "slovakia"
+      "slovakia",
+      "area::area__8"
     ],
     "world_x": 825,
     "world_y": 299,
@@ -8979,7 +9169,8 @@
       "konigsberg",
       "lithuania",
       "poland",
-      "slovakia"
+      "slovakia",
+      "area::area__8"
     ],
     "world_x": 921,
     "world_y": 245,
@@ -9160,9 +9351,11 @@
     "neighbors": [
       "cremona",
       "ferrara",
-      "florence",
       "venice",
-      "area::area__20::verona"
+      "area::area__10",
+      "area::area__19",
+      "area::area__20::verona",
+      "area::area__27"
     ],
     "world_x": 693,
     "world_y": 363,
@@ -9200,9 +9393,10 @@
     "terrain": "plain",
     "owner_id": "milan_duchy",
     "neighbors": [
-      "florence",
       "milan",
-      "verona"
+      "verona",
+      "area::area__19",
+      "area::area__27"
     ],
     "world_x": 684,
     "world_y": 364,
@@ -9237,14 +9431,16 @@
     "successor_faction_id": "papal_states_f",
     "neighbors": [
       "adriatic_sea_dalmatia",
-      "florence",
-      "papal_states",
+      "marche",
       "siena",
       "venice",
-      "verona"
+      "verona",
+      "area::area__27",
+      "area::area__30::ferrara",
+      "area::area__34"
     ],
-    "world_x": 719,
-    "world_y": 393,
+    "world_x": 721,
+    "world_y": 397,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -9259,7 +9455,7 @@
     "trade_capacity": 3,
     "satisfaction": 65,
     "tax_rate": 32,
-    "population": 469,
+    "population": 387,
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
@@ -9283,15 +9479,18 @@
     "name_tr": "Siena Cumhuriyeti",
     "terrain": "plain",
     "owner_id": "florence_rep",
+    "successor_faction_id": "florence_rep",
     "neighbors": [
       "ferrara",
       "florence",
+      "lazio",
+      "marche",
       "mediterranean_open_5",
       "northern_tyrrhenian_sea",
-      "papal_states"
+      "area::area__34"
     ],
     "world_x": 712,
-    "world_y": 435,
+    "world_y": 428,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -9328,12 +9527,17 @@
     "owner_id": "naples_kingdom",
     "successor_faction_id": "naples_kingdom",
     "neighbors": [
+      "abruzzo",
       "adriatic_sea",
-      "naples",
-      "otranto_strait"
+      "calabria",
+      "campania",
+      "otranto_strait",
+      "area::area__28",
+      "area::area__29",
+      "area::area__35::apulia"
     ],
-    "world_x": 847,
-    "world_y": 437,
+    "world_x": 799,
+    "world_y": 453,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -9348,7 +9552,7 @@
     "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 28,
-    "population": 450,
+    "population": 460,
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
@@ -10082,7 +10286,8 @@
       "mazovia",
       "prut_river_north",
       "slovakia",
-      "transylvania"
+      "transylvania",
+      "area::area__8"
     ],
     "world_x": 995,
     "world_y": 275,
@@ -10249,7 +10454,8 @@
       "damascus",
       "dulkadir",
       "hakkari",
-      "mosul"
+      "mosul",
+      "area::area__2"
     ],
     "world_x": 1252,
     "world_y": 557,
@@ -10291,7 +10497,9 @@
       "hakkari",
       "kerkuk",
       "raqqa",
-      "urmiye"
+      "urmiye",
+      "area::area__2",
+      "area::area__18"
     ],
     "world_x": 1344,
     "world_y": 552,
@@ -10329,7 +10537,9 @@
       "baghdad",
       "mosul",
       "urmiye",
-      "hemedan"
+      "hemedan",
+      "area::area__2",
+      "area::area__18"
     ],
     "world_x": 1356,
     "world_y": 564,
@@ -10366,7 +10576,8 @@
       "baghdad",
       "kuwait",
       "persian_basra",
-      "persian_open_2"
+      "persian_open_2",
+      "area::area__2"
     ],
     "world_x": 1434,
     "world_y": 659,
@@ -10746,7 +10957,8 @@
       "moscow",
       "nizhny_novgorod",
       "sea_of_azov",
-      "upper_ukrainian_steppe"
+      "upper_ukrainian_steppe",
+      "area::area__7"
     ],
     "world_x": 1355,
     "world_y": 414,
@@ -10896,9 +11108,9 @@
     "neighbors": [
       "irish_sea_shore",
       "north_sea_shore",
-      "area::area__11::lorraine",
       "area::area__11::flanders",
-      "area::area__11::luxembourg"
+      "area::area__11::luxembourg",
+      "area::area__11::lorraine"
     ],
     "world_x": 592,
     "world_y": 308,
@@ -11255,8 +11467,8 @@
       "norwegian_sea",
       "scotland",
       "yorkshire",
-      "area::area__26::newcastle_region",
-      "area::area__26::scotland"
+      "area::area__26::scotland",
+      "area::area__26::newcastle_region"
     ],
     "world_x": 450,
     "world_y": 164,
@@ -11615,11 +11827,12 @@
     "owner_id": "",
     "neighbors": [
       "ionian_sea",
+      "lazio",
       "mediterranean_open_2",
       "mediterranean_open_3",
-      "naples",
+      "campania",
+      "calabria",
       "northern_tyrrhenian_sea",
-      "papal_states",
       "sicily",
       "siena"
     ],
@@ -11655,6 +11868,7 @@
       "florence",
       "genoa",
       "gulf_of_genoa",
+      "lazio",
       "mediterranean_open_2",
       "mediterranean_open_5",
       "sardinia",
@@ -11761,7 +11975,7 @@
       "aegean_sea_shore",
       "gulf_of_sirte",
       "ionian_sea",
-      "naples",
+      "calabria",
       "otranto_strait",
       "tyrrhenian_sea"
     ],
@@ -12290,9 +12504,10 @@
     "owner_id": "",
     "neighbors": [
       "hourmuz",
-      "siraz",
+      "umman_hourmuz",
       "persian_gulf",
       "persian_gulf_shore",
+      "siraz",
       "uae"
     ],
     "world_x": 1593,
@@ -12360,8 +12575,8 @@
     "owner_id": "",
     "neighbors": [
       "hourmuz",
-      "persian_open_1",
-      "uae"
+      "umman_hourmuz",
+      "persian_open_1"
     ],
     "world_x": 1660,
     "world_y": 784,
@@ -12378,6 +12593,40 @@
     "trade_capacity": 0,
     "satisfaction": 100,
     "tax_rate": 0,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "umman_hourmuz",
+    "name": "Umman Hourmuz",
+    "name_tr": "Umman Hürmüz",
+    "terrain": "plain",
+    "owner_id": "hormuz_sultanate",
+    "neighbors": [
+      "persian_gulf_shore",
+      "persian_open_1",
+      "uae",
+      "area::area__2"
+    ],
+    "world_x": 1639,
+    "world_y": 790,
+    "shape_id": "umman",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 45,
     "population": 0,
     "rural_population": 0,
     "religion": "",

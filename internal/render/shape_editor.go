@@ -393,7 +393,9 @@ func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
 	if region != nil && region.IsTerrainArea {
 		areaTypeLabel += ": " + region.Terrain.LabelTR()
 	}
-	areaControlsAvailable := region != nil && region.IsTerrainArea && !terrainDraft
+	areaControlsAvailable := region != nil && !region.IsSea &&
+		(region.IsTerrainArea || r.editTerrainAreaMode) && !r.editLandPassageMode &&
+		!r.editLandPassageAdjustMode && !terrainDraft
 	attritionControlsAvailable := areaControlsAvailable && r.editTerrainAreaMoveCost != 0
 	attritionLabel := r.editTerrainAreaAttritionCost
 	if r.editTerrainAreaMoveCost == 0 {
@@ -625,46 +627,75 @@ func (r *Renderer) canBeginTerrainAreaAppend() bool {
 func (r *Renderer) cycleEditTerrainAreaCost() {
 	next := nextTerrainAreaMoveCost(r.editTerrainAreaMoveCost)
 	region := r.gs.Regions[r.editSelectedRegion]
-	if region != nil && region.IsTerrainArea {
-		if r.terrainAreaEditPending() {
-			for i := range r.gs.TerrainAreas {
-				if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
-					r.gs.TerrainAreas[i].MoveCost = next
-					if next == 0 {
-						r.gs.TerrainAreas[i].AttritionCost = 0
-					}
-				}
-			}
-			r.editTerrainAreaMoveCost = next
-			if next == 0 {
-				r.editTerrainAreaAttritionCost = 0
-			}
-			return
+	if region == nil || region.IsSea {
+		return
+	}
+
+	// Çizim başlamadan önce maliyet yalnızca yeni alanın taslak ayarıdır.
+	// Henüz bir TerrainArea kaydı olmadığı için harita hesabı yapılmaz.
+	if !region.IsTerrainArea && r.editTerrainAreaMode && !r.terrainAreaEditPending() {
+		r.editTerrainAreaMoveCost = next
+		if next == 0 {
+			r.editTerrainAreaAttritionCost = 0
 		}
-		before := r.worldSnapshot()
-		changed := false
-		for i := range r.gs.TerrainAreas {
-			if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
-				r.gs.TerrainAreas[i].MoveCost = next
-				if next == 0 {
-					r.gs.TerrainAreas[i].AttritionCost = 0
-				}
-				changed = true
-			}
-		}
-		if changed {
-			r.editTerrainAreaMoveCost = next
+		return
+	}
+	if !region.IsTerrainArea {
+		return
+	}
+
+	areaID := region.TerrainAreaID
+	old := r.editTerrainAreaMoveCost
+	if old == next {
+		return
+	}
+	oldAttrition := r.editTerrainAreaAttritionCost
+	r.setTerrainAreaCostValue(areaID, next)
+	r.editTerrainAreaMoveCost = next
+	if next == 0 {
+		r.editTerrainAreaAttritionCost = 0
+	}
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) {
+			rr.setTerrainAreaCostValue(areaID, old)
+			rr.editTerrainAreaMoveCost = old
+			rr.editTerrainAreaAttritionCost = oldAttrition
+		},
+		redo: func(rr *Renderer) {
+			rr.setTerrainAreaCostValue(areaID, next)
+			rr.editTerrainAreaMoveCost = next
 			if next == 0 {
-				r.editTerrainAreaAttritionCost = 0
+				rr.editTerrainAreaAttritionCost = 0
 			}
-			r.rebuildEditWorldMap()
-			after := r.worldSnapshot()
-			r.pushWorldSnapshotCommand(before, after)
-			r.editDirty = true
-			return
+		},
+	})
+	// Passable terrain alanları haritaya child fragment olarak dağıtıldığı için
+	// yalnız blokludan geçilebilire geçişte bu pahalı yeniden üretim gerekir.
+	if old == 0 && next != 0 {
+		r.rebuildEditWorldMap()
+	}
+	r.editDirty = true
+}
+
+func (r *Renderer) setTerrainAreaCostValue(areaID string, moveCost int) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	for i := range r.gs.TerrainAreas {
+		if r.gs.TerrainAreas[i].ID == areaID {
+			r.gs.TerrainAreas[i].MoveCost = moveCost
+			if moveCost == 0 {
+				r.gs.TerrainAreas[i].AttritionCost = 0
+			}
+			break
 		}
 	}
-	r.editTerrainAreaMoveCost = next
+	for _, child := range r.gs.Regions {
+		if child == nil || !child.IsTerrainArea || child.TerrainAreaID != areaID {
+			continue
+		}
+		child.IsLocked = moveCost == 0
+	}
 }
 
 func nextTerrainAreaMoveCost(cost int) int {
@@ -752,18 +783,60 @@ func (r *Renderer) cycleEditTerrainAreaType() {
 	if region == nil || !region.IsTerrainArea {
 		return
 	}
+	areaIndex := -1
+	for i := range r.gs.TerrainAreas {
+		if r.gs.TerrainAreas[i].ID == region.TerrainAreaID {
+			areaIndex = i
+			break
+		}
+	}
+	if areaIndex < 0 {
+		return
+	}
 	options := editTerrainAreaOptions()
 	if len(options) == 0 {
 		return
 	}
 	current := 0
 	for i, option := range options {
-		if option == region.Terrain {
+		if option == r.gs.TerrainAreas[areaIndex].Terrain {
 			current = i
 			break
 		}
 	}
-	r.setSelectedRegionTerrain(options[(current+1)%len(options)])
+	next := options[(current+1)%len(options)]
+	old := r.gs.TerrainAreas[areaIndex].Terrain
+	if old == next {
+		return
+	}
+	areaID := r.gs.TerrainAreas[areaIndex].ID
+	r.setTerrainAreaTypeValue(areaID, next)
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) { rr.setTerrainAreaTypeValue(areaID, old) },
+		redo: func(rr *Renderer) { rr.setTerrainAreaTypeValue(areaID, next) },
+	})
+	r.editTerrainAreaMoveCost = r.gs.TerrainAreas[areaIndex].MoveCost
+	r.editTerrainAreaAttritionCost = r.gs.TerrainAreas[areaIndex].AttritionCost
+	r.editDirty = true
+}
+
+func (r *Renderer) setTerrainAreaTypeValue(areaID string, terrain world.TerrainType) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	for i := range r.gs.TerrainAreas {
+		if r.gs.TerrainAreas[i].ID == areaID {
+			r.gs.TerrainAreas[i].Terrain = terrain
+			break
+		}
+	}
+	for _, child := range r.gs.Regions {
+		if child == nil || !child.IsTerrainArea || child.TerrainAreaID != areaID {
+			continue
+		}
+		child.Terrain = terrain
+		child.IsLocked = !world.TerrainData[terrain].Passable
+	}
 }
 
 func nextTerrainAreaAttritionCost(percent int) int {
@@ -1675,6 +1748,7 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool)
 	if r.worldMap == nil || radius < 0 || !r.canRegionPaintSelected() {
 		return false
 	}
+	r.ensureEditRegionPaintOverrides()
 	regionID := r.editSelectedRegion
 	targetRegion := r.selectedRegionForShapeTools()
 	targetIdx := r.worldMap.ensureRegionIndex(regionID)
@@ -1732,6 +1806,12 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool)
 		}
 	}
 	return changed
+}
+
+func (r *Renderer) ensureEditRegionPaintOverrides() {
+	if r != nil && r.editRegionPaintOverrides == nil {
+		r.editRegionPaintOverrides = make(map[int]world.RegionID)
+	}
 }
 
 func (r *Renderer) editRegionPaintCurrentIndex(pIdx int, baselineIdx uint16) uint16 {
