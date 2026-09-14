@@ -496,12 +496,13 @@
       "anjou",
       "burgundy",
       "champagne",
-      "languedoc",
       "dijon",
-      "normandy"
+      "toulouse",
+      "normandy",
+      "area::area__36"
     ],
     "world_x": 522,
-    "world_y": 323,
+    "world_y": 327,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -537,6 +538,7 @@
     "name_tr": "Normandiya",
     "terrain": "coast",
     "owner_id": "france",
+    "successor_faction_id": "france",
     "neighbors": [
       "anjou",
       "brittany",
@@ -577,13 +579,14 @@
     "owner_id": "france",
     "neighbors": [
       "anjou",
+      "aquitaine",
       "bay_of_biscay",
-      "irish_sea_shore",
       "english_channel",
+      "irish_sea_shore",
       "normandy"
     ],
-    "world_x": 445,
-    "world_y": 320,
+    "world_x": 457,
+    "world_y": 321,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -615,14 +618,13 @@
     "owner_id": "france",
     "neighbors": [
       "aquitaine",
-      "bay_of_biscay",
       "brittany",
-      "languedoc",
       "normandy",
-      "paris"
+      "paris",
+      "toulouse"
     ],
-    "world_x": 478,
-    "world_y": 346,
+    "world_x": 494,
+    "world_y": 341,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -644,11 +646,49 @@
     "buildings": null
   },
   {
+    "id": "toulouse",
+    "name": "Toulouse",
+    "name_tr": "Toulouse",
+    "terrain": "plain",
+    "owner_id": "france",
+    "successor_faction_id": "france",
+    "neighbors": [
+      "anjou",
+      "aquitaine",
+      "languedoc",
+      "paris",
+      "area::area__9::toulouse",
+      "area::area__36"
+    ],
+    "world_x": 513,
+    "world_y": 396,
+    "shape_id": "FRA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 60,
+    "base_grain_output": 30,
+    "base_iron_output": 2,
+    "base_timber_output": 2,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 3,
+    "satisfaction": 70,
+    "tax_rate": 36,
+    "population": 258,
+    "rural_population": 208,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "champagne",
     "name": "Champagne",
     "name_tr": "Şampanya",
     "terrain": "plain",
     "owner_id": "france",
+    "successor_faction_id": "france",
     "neighbors": [
       "burgundy",
       "english_channel",
@@ -656,9 +696,9 @@
       "lorraine",
       "normandy",
       "paris",
-      "area::area__11::flanders",
+      "area::area__11::lorraine",
       "area::area__11::champagne",
-      "area::area__11::lorraine"
+      "area::area__11::flanders"
     ],
     "world_x": 568,
     "world_y": 289,
@@ -686,7 +726,8 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "port"
     ]
   },
   {
@@ -705,8 +746,8 @@
       "sch_basel",
       "sch_fribourg"
     ],
-    "world_x": 596,
-    "world_y": 325,
+    "world_x": 589,
+    "world_y": 327,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -748,9 +789,10 @@
       "savoy",
       "sch_fribourg",
       "area::area__14",
-      "area::area__15"
+      "area::area__15",
+      "area::area__36"
     ],
-    "world_x": 584,
+    "world_x": 583,
     "world_y": 352,
     "shape_id": "FRA",
     "is_sea": false,
@@ -873,18 +915,18 @@
     "terrain": "coast",
     "owner_id": "france",
     "neighbors": [
-      "anjou",
-      "aquitaine",
       "catalonia",
       "dijon",
       "gulf_of_lion",
-      "paris",
+      "toulouse",
       "provence",
       "area::area__9::languedoc",
-      "area::area__15"
+      "area::area__9::toulouse",
+      "area::area__15",
+      "area::area__36"
     ],
-    "world_x": 560,
-    "world_y": 400,
+    "world_x": 557,
+    "world_y": 407,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -1459,17 +1501,18 @@
     "name_tr": "Akitanya",
     "terrain": "plain",
     "owner_id": "england",
+    "successor_faction_id": "england",
     "neighbors": [
       "anjou",
-      "bay_of_biscay",
-      "languedoc",
-      "navarra",
-      "area::area__9::languedoc",
+      "area::area__9::aquitaine",
       "area::area__9::navarra",
-      "area::area__9::aquitaine"
+      "bay_of_biscay",
+      "brittany",
+      "navarra",
+      "toulouse"
     ],
-    "world_x": 468,
-    "world_y": 398,
+    "world_x": 472,
+    "world_y": 397,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -1484,12 +1527,13 @@
     "trade_capacity": 2,
     "satisfaction": 65,
     "tax_rate": 35,
-    "population": 350,
+    "population": 300,
     "rural_population": 178,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "port"
     ]
   },
   {
@@ -1880,15 +1924,15 @@
     "owner_id": "papal_states_f",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
+      "campania",
+      "mediterranean_open_5",
+      "northern_tyrrhenian_sea",
+      "siena",
       "area::area__28",
       "area::area__31::lazio",
       "area::area__32",
       "area::area__33::lazio",
-      "area::area__34",
-      "campania",
-      "mediterranean_open_5",
-      "northern_tyrrhenian_sea",
-      "siena"
+      "area::area__34"
     ],
     "world_x": 749,
     "world_y": 442,
@@ -1931,10 +1975,11 @@
       "adriatic_sea",
       "adriatic_sea_dalmatia",
       "apulia",
+      "marche",
       "area::area__28",
       "area::area__31::abruzzo",
       "area::area__32",
-      "marche"
+      "area::area__33::abruzzo"
     ],
     "world_x": 755,
     "world_y": 433,
@@ -1976,10 +2021,10 @@
     "neighbors": [
       "abruzzo",
       "adriatic_sea_dalmatia",
+      "ferrara",
       "area::area__32",
       "area::area__33::marche",
-      "area::area__34",
-      "ferrara"
+      "area::area__34"
     ],
     "world_x": 744,
     "world_y": 407,
@@ -3964,8 +4009,8 @@
       "hemedan",
       "isfahan",
       "urmiye",
-      "area::area__6::isfahan",
-      "area::area__6::kazvin"
+      "area::area__6::kazvin",
+      "area::area__6::isfahan"
     ],
     "world_x": 1494,
     "world_y": 557,
@@ -4049,12 +4094,12 @@
       "isfahan",
       "siraz",
       "area::area__5",
-      "area::area__6::isfahan",
-      "area::area__6::northern_persia",
       "area::area__6::gurgan",
+      "area::area__6::meshed",
       "area::area__6::kazvin",
       "area::area__6::hourmuz",
-      "area::area__6::meshed",
+      "area::area__6::isfahan",
+      "area::area__6::northern_persia",
       "area::area__6::southern_persia"
     ],
     "world_x": 1588,
@@ -4155,12 +4200,12 @@
       "persian_open_1",
       "siraz",
       "southern_persia",
-      "area::area__6::isfahan",
-      "area::area__6::northern_persia",
       "area::area__6::gurgan",
+      "area::area__6::meshed",
       "area::area__6::kazvin",
       "area::area__6::hourmuz",
-      "area::area__6::meshed",
+      "area::area__6::isfahan",
+      "area::area__6::northern_persia",
       "area::area__6::southern_persia"
     ],
     "world_x": 1632,
@@ -6664,8 +6709,8 @@
       "luxembourg",
       "north_sea_shore",
       "palatinate",
-      "area::area__11::flanders",
-      "area::area__11::champagne"
+      "area::area__11::champagne",
+      "area::area__11::flanders"
     ],
     "world_x": 569,
     "world_y": 271,
@@ -7163,8 +7208,8 @@
       "levantine_sea",
       "luxor",
       "palestine",
-      "area::area__3::israel",
-      "area::area__3::luxor"
+      "area::area__3::luxor",
+      "area::area__3::israel"
     ],
     "world_x": 1170,
     "world_y": 635,
@@ -7930,12 +7975,12 @@
     "owner_id": "florence_rep",
     "successor_faction_id": "florence_rep",
     "neighbors": [
-      "area::area__27",
-      "area::area__30::florence",
-      "area::area__34",
       "genoa",
       "northern_tyrrhenian_sea",
-      "siena"
+      "siena",
+      "area::area__27",
+      "area::area__30::florence",
+      "area::area__34"
     ],
     "world_x": 702,
     "world_y": 415,
@@ -9429,12 +9474,12 @@
     "successor_faction_id": "papal_states_f",
     "neighbors": [
       "adriatic_sea_dalmatia",
-      "area::area__27",
-      "area::area__30::ferrara",
-      "area::area__34",
       "marche",
       "venice",
-      "verona"
+      "verona",
+      "area::area__27",
+      "area::area__30::ferrara",
+      "area::area__34"
     ],
     "world_x": 721,
     "world_y": 397,
@@ -9478,10 +9523,10 @@
     "owner_id": "florence_rep",
     "successor_faction_id": "florence_rep",
     "neighbors": [
-      "area::area__34",
       "florence",
       "lazio",
-      "northern_tyrrhenian_sea"
+      "northern_tyrrhenian_sea",
+      "area::area__34"
     ],
     "world_x": 712,
     "world_y": 428,
@@ -11102,9 +11147,9 @@
     "neighbors": [
       "irish_sea_shore",
       "north_sea_shore",
+      "area::area__11::lorraine",
       "area::area__11::luxembourg",
-      "area::area__11::flanders",
-      "area::area__11::lorraine"
+      "area::area__11::flanders"
     ],
     "world_x": 592,
     "world_y": 308,
@@ -11461,8 +11506,8 @@
       "norwegian_sea",
       "scotland",
       "yorkshire",
-      "area::area__26::newcastle_region",
-      "area::area__26::scotland"
+      "area::area__26::scotland",
+      "area::area__26::newcastle_region"
     ],
     "world_x": 450,
     "world_y": 164,
@@ -12465,8 +12510,8 @@
       "jordan",
       "luxor",
       "red_sea",
-      "area::area__3::israel",
-      "area::area__3::luxor"
+      "area::area__3::luxor",
+      "area::area__3::israel"
     ],
     "world_x": 1167,
     "world_y": 716,
@@ -12804,7 +12849,6 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "anjou",
       "aquitaine",
       "atlantic_ocean_shore",
       "brittany",

@@ -472,6 +472,14 @@
         "y": 299,
         "type": "city",
         "population": 40
+      },
+      {
+        "id": "normandy_settlement_5",
+        "name_tr": "Calais",
+        "x": 509,
+        "y": 269,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -544,6 +552,20 @@
     ]
   },
   {
+    "region_id": "toulouse",
+    "settlements": [
+      {
+        "id": "aquitaine_toulouse",
+        "name_tr": "Toulouse",
+        "x": 502,
+        "y": 404,
+        "type": "city",
+        "is_center": true,
+        "population": 50
+      }
+    ]
+  },
+  {
     "region_id": "champagne",
     "settlements": [
       {
@@ -582,10 +604,18 @@
       {
         "id": "flanders_lille",
         "name_tr": "Lille",
-        "x": 554,
-        "y": 281,
+        "x": 547,
+        "y": 278,
         "type": "fortress",
         "population": 11
+      },
+      {
+        "id": "champagne_settlement_6",
+        "name_tr": "Dunkirk",
+        "x": 524,
+        "y": 266,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -609,8 +639,8 @@
       {
         "id": "dijon_main",
         "name_tr": "Dijon",
-        "x": 591,
-        "y": 341,
+        "x": 579,
+        "y": 340,
         "type": "city",
         "is_center": true,
         "population": 54
@@ -618,8 +648,8 @@
       {
         "id": "burgundy_beaune",
         "name_tr": "Beaune",
-        "x": 580,
-        "y": 345,
+        "x": 573,
+        "y": 350,
         "type": "town",
         "population": 28
       },
@@ -1046,12 +1076,12 @@
         "population": 122
       },
       {
-        "id": "aquitaine_toulouse",
-        "name_tr": "Toulouse",
-        "x": 494,
-        "y": 396,
-        "type": "city",
-        "population": 50
+        "id": "aquitaine_settlement_2",
+        "name_tr": "Bordeaux Limanı",
+        "x": 465,
+        "y": 381,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -3956,7 +3986,7 @@
       {
         "id": "flanders_ypres",
         "name_tr": "Ypres",
-        "x": 552,
+        "x": 554,
         "y": 275,
         "type": "fortress",
         "population": 30
