@@ -87,6 +87,17 @@ func (r *Renderer) drawEditModeHud(screen *ebiten.Image) {
 	if !(r.editRenaming && r.editTextError != "") {
 		DrawText(screen, passageState, float64(x)+14, float64(y)+100, FaceSmall, ColorGold)
 	}
+	status := ""
+	if r.editMapBuildPending {
+		status = "Harita hazırlanıyor..."
+	} else if r.editMapLastBuildDuration > 0 {
+		status = "Son harita: " + itoa(int(r.editMapLastBuildDuration.Milliseconds())) +
+			" ms  raster: " + itoa(int(r.editMapLastRasterDuration.Milliseconds())) +
+			" ms  post: " + itoa(int(r.editMapLastPostProcessDuration.Milliseconds())) + " ms"
+	}
+	if status != "" {
+		DrawText(screen, status, float64(x)+14, float64(y)+118, FaceSmall, ColorGold)
+	}
 }
 
 func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
@@ -1058,6 +1069,54 @@ func editMinInt(a, b int) int {
 
 const editRegionCenterHitRadius = 12.0
 
+type editRegionCenterMarker struct {
+	ID    world.RegionID
+	SX    float64
+	SY    float64
+	IsSea bool
+}
+
+func (r *Renderer) invalidateEditRegionCenterMarkers() {
+	if r == nil {
+		return
+	}
+	r.editCenterMarkersVersion++
+}
+
+// editRegionCenterMarkers ortak ekran geometrisini draw, hit-test ve cursor
+// akışlarına sağlar. Kamera veya merkez verisi değişmedikçe region map'i tekrar
+// taranmaz.
+func (r *Renderer) editRegionCenterMarkers() []editRegionCenterMarker {
+	if r == nil || r.gs == nil {
+		return nil
+	}
+	if r.editCenterMarkersGameState == r.gs &&
+		r.editCenterMarkersCacheVersion == r.editCenterMarkersVersion &&
+		r.editCenterMarkersCamX == r.camX &&
+		r.editCenterMarkersCamY == r.camY &&
+		r.editCenterMarkersCamScale == r.camScale {
+		return r.editCenterMarkers
+	}
+
+	markers := make([]editRegionCenterMarker, 0, len(r.gs.Regions))
+	for rid, region := range r.gs.Regions {
+		if region == nil || region.IsLocked || region.IsTerrainArea {
+			continue
+		}
+		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
+		markers = append(markers, editRegionCenterMarker{ID: rid, SX: sx, SY: sy, IsSea: region.IsSea})
+	}
+	// Map iteration sırası hit-test eşitliklerinde kararsızlık üretmesin.
+	sort.Slice(markers, func(i, j int) bool { return markers[i].ID < markers[j].ID })
+	r.editCenterMarkers = markers
+	r.editCenterMarkersCamX = r.camX
+	r.editCenterMarkersCamY = r.camY
+	r.editCenterMarkersCamScale = r.camScale
+	r.editCenterMarkersCacheVersion = r.editCenterMarkersVersion
+	r.editCenterMarkersGameState = r.gs
+	return markers
+}
+
 // editRegionCenterAt, rasterdaki bölge yerine Edit Mode'da çizilen merkez
 // işaretini hedefler. Merkez işareti başka bir bölgenin raster alanının üstünde
 // kalabileceği için merkez seçimi her zaman raster RegionAt'tan önce yapılır.
@@ -1067,16 +1126,12 @@ func (r *Renderer) editRegionCenterAt(fx, fy float64) (world.RegionID, bool) {
 	}
 	bestRID := world.RegionID("")
 	bestDist := editRegionCenterHitRadius * editRegionCenterHitRadius
-	for rid, region := range r.gs.Regions {
-		if region == nil || region.IsLocked || region.IsTerrainArea {
-			continue
-		}
-		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
-		dx, dy := fx-sx, fy-sy
+	for _, marker := range r.editRegionCenterMarkers() {
+		dx, dy := fx-marker.SX, fy-marker.SY
 		dist := dx*dx + dy*dy
 		if dist <= bestDist {
 			bestDist = dist
-			bestRID = rid
+			bestRID = marker.ID
 		}
 	}
 	return bestRID, bestRID != ""
@@ -1085,27 +1140,26 @@ func (r *Renderer) editRegionCenterAt(fx, fy float64) (world.RegionID, bool) {
 func (r *Renderer) drawEditRegionCenters(screen *ebiten.Image) {
 	mx, my := ebiten.CursorPosition()
 	hoveredID, _ := r.editRegionCenterAt(float64(mx), float64(my))
-	for _, region := range r.gs.Regions {
-		if region == nil || region.IsLocked || region.IsTerrainArea {
+	for _, marker := range r.editRegionCenterMarkers() {
+		if marker.SX < -12 || marker.SY < -12 || marker.SX > float64(ScreenWidth+12) || marker.SY > float64(ScreenHeight+12) {
 			continue
 		}
-		sx, sy := r.worldToScreen(wcX(region.WorldX), wcY(region.WorldY))
 		col := color.RGBA{80, 220, 255, 190}
-		if region.IsSea {
+		if marker.IsSea {
 			col = color.RGBA{120, 210, 255, 210}
 		}
-		if region.ID == r.editSelectedRegion && r.editSelectedSettlement < 0 {
-			if region.IsSea {
+		if marker.ID == r.editSelectedRegion && r.editSelectedSettlement < 0 {
+			if marker.IsSea {
 				col = color.RGBA{70, 235, 255, 245}
 			} else {
 				col = color.RGBA{255, 190, 45, 240}
 			}
 		}
-		x, y := float32(sx), float32(sy)
+		x, y := float32(marker.SX), float32(marker.SY)
 		vector.StrokeCircle(screen, x, y, 6, 1.5, col, true)
 		vector.StrokeLine(screen, x-8, y, x+8, y, 1.5, col, true)
 		vector.StrokeLine(screen, x, y-8, x, y+8, 1.5, col, true)
-		if region.ID == hoveredID {
+		if marker.ID == hoveredID {
 			vector.StrokeCircle(screen, x, y, 11, 2.5, color.RGBA{255, 220, 70, 245}, true)
 		}
 	}
@@ -1832,9 +1886,16 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 
 	if r.editDraggingRegion && !leftPressed {
-		r.finishRegionCenterDrag()
+		changed := r.finishRegionCenterDrag()
 		r.editDraggingRegion = false
-		r.rebuildEditWorldMap()
+		if changed {
+			region := r.gs.Regions[r.editSelectedRegion]
+			if region != nil && r.regionCenterAffectsRaster(region) {
+				r.requestEditWorldMapRebuild()
+			} else {
+				r.invalidateEditRegionCenterMarkers()
+			}
+		}
 	}
 
 	if leftJustPressed {
@@ -2637,13 +2698,18 @@ func (r *Renderer) commitNewShapeInput() {
 	r.editSelectedRegion = newRegionID
 	r.editSelectedSettlement = -1
 	r.editShapeSession = nil
-	r.rebuildEditWorldMap()
-	visual := r.worldMap.VisualNeighbors(newRegionID, r.editVisualNeighborBuf[:0])
-	r.applyVisualNeighbors(newRegionID, visual)
-	after := r.worldSnapshot()
-	r.pushWorldSnapshotCommand(before, after)
-	r.editDirty = true
-	r.closeEditNewShapeModal()
+	complete := func() {
+		visual := r.worldMap.VisualNeighbors(newRegionID, r.editVisualNeighborBuf[:0])
+		r.applyVisualNeighbors(newRegionID, visual)
+		after := r.worldSnapshot()
+		r.pushWorldSnapshotCommand(before, after)
+		r.editDirty = true
+		r.closeEditNewShapeModal()
+	}
+	if !r.requestEditWorldMapRebuildWithCompletion(complete) {
+		r.rebuildEditWorldMap()
+		complete()
+	}
 }
 
 func (r *Renderer) initialRingsForNewShape(region *world.Region, shapeID string) [][][2]float32 {
@@ -2799,15 +2865,15 @@ func (r *Renderer) beginRegionCenterDrag(rid world.RegionID) {
 	}
 }
 
-func (r *Renderer) finishRegionCenterDrag() {
+func (r *Renderer) finishRegionCenterDrag() bool {
 	start := r.editRegionDragStart
 	r.editRegionDragStart = nil
 	if start == nil {
-		return
+		return false
 	}
 	region := r.gs.Regions[start.Region]
 	if region == nil || region.IsTerrainArea || (region.WorldX == start.X && region.WorldY == start.Y) {
-		return
+		return false
 	}
 	begin := *start
 	end := editRegionCenterSnapshot{Region: start.Region, X: region.WorldX, Y: region.WorldY}
@@ -2819,6 +2885,26 @@ func (r *Renderer) finishRegionCenterDrag() {
 			rr.restoreRegionCenter(end)
 		},
 	})
+	return true
+}
+
+func (r *Renderer) regionCenterAffectsRaster(region *world.Region) bool {
+	if region == nil {
+		return false
+	}
+	if region.IsSea || region.ShapeID == "" {
+		return region.IsSea
+	}
+	count := 0
+	for _, candidate := range r.gs.Regions {
+		if candidate != nil && !candidate.IsSea && !candidate.IsTerrainArea && candidate.ShapeID == region.ShapeID {
+			count++
+			if count > 1 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (r *Renderer) restoreRegionCenter(snapshot editRegionCenterSnapshot) {
@@ -2832,7 +2918,11 @@ func (r *Renderer) restoreRegionCenter(snapshot editRegionCenterSnapshot) {
 	r.editSelectedSettlement = -1
 	r.editDraggingRegion = false
 	r.editDraggingSettlement = false
-	r.rebuildEditWorldMap()
+	if r.regionCenterAffectsRaster(region) {
+		r.requestEditWorldMapRebuild()
+	} else {
+		r.invalidateEditRegionCenterMarkers()
+	}
 }
 
 func (r *Renderer) beginSettlementDrag(rid world.RegionID) {
@@ -2897,6 +2987,7 @@ func (r *Renderer) moveSelectedRegionCenterTo(fx, fy float64) {
 	}
 	region.WorldX = newX
 	region.WorldY = newY
+	r.invalidateEditRegionCenterMarkers()
 	r.editDirty = true
 }
 
@@ -3048,12 +3139,17 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 	r.editSelectedRegion = rid
 	r.editSelectedSettlement = -1
 	r.SelectedArmy = ""
-	r.rebuildEditWorldMap()
-	visual := r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf[:0])
-	r.applyVisualNeighbors(rid, visual)
-	after := r.worldSnapshot()
-	r.pushWorldSnapshotCommand(before, after)
-	r.editDirty = true
+	complete := func() {
+		visual := r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf[:0])
+		r.applyVisualNeighbors(rid, visual)
+		after := r.worldSnapshot()
+		r.pushWorldSnapshotCommand(before, after)
+		r.editDirty = true
+	}
+	if !r.requestEditWorldMapRebuildWithCompletion(complete) {
+		r.rebuildEditWorldMap()
+		complete()
+	}
 }
 
 func (r *Renderer) deleteSelectedRegion() {
@@ -3080,7 +3176,7 @@ func (r *Renderer) deleteSelectedRegion() {
 	r.editSelectedRegion = ""
 	r.editSelectedSettlement = -1
 	r.SelectedArmy = ""
-	r.rebuildEditWorldMap()
+	r.requestEditWorldMapRebuild()
 	after := r.worldSnapshot()
 	r.pushWorldSnapshotCommand(before, after)
 	r.editDirty = true
@@ -3180,7 +3276,7 @@ func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
 					r.gs.TerrainAreas[j].Terrain = terrain
 				}
 			}
-			r.rebuildEditWorldMap()
+			r.requestEditWorldMapRebuild()
 			after := r.worldSnapshot()
 			r.pushWorldSnapshotCommand(before, after)
 			r.editDirty = true
@@ -3463,7 +3559,7 @@ func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
 	if r.editNeighborAddFrom == oldID {
 		r.editNeighborAddFrom = newID
 	}
-	r.rebuildEditWorldMap()
+	r.requestEditWorldMapRebuild()
 }
 
 func (r *Renderer) toggleSelectedRegionLock() {
@@ -3576,7 +3672,7 @@ func (r *Renderer) syncSelectedRegionNeighborsFromVisual() {
 		if !changed {
 			return
 		}
-		r.rebuildEditWorldMap()
+		r.requestEditWorldMapRebuild()
 		after := r.worldSnapshot()
 		r.pushWorldSnapshotCommand(before, after)
 		r.editDirty = true
@@ -3654,6 +3750,14 @@ func (r *Renderer) pushWorldSnapshotCommand(before, after editWorldSnapshot) {
 }
 
 func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
+	r.restoreWorldSnapshotMode(snapshot, true)
+}
+
+func (r *Renderer) restoreWorldSnapshotSync(snapshot editWorldSnapshot) {
+	r.restoreWorldSnapshotMode(snapshot, false)
+}
+
+func (r *Renderer) restoreWorldSnapshotMode(snapshot editWorldSnapshot, asyncBuild bool) {
 	r.gs.Regions = cloneRegionMap(snapshot.Regions)
 	r.gs.RegionOrder = cloneRegionIDSlice(snapshot.RegionOrder)
 	r.gs.LandPassages = cloneLandPassages(snapshot.LandPassages)
@@ -3704,8 +3808,14 @@ func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
 	r.editShapeStrokeBefore = nil
 	r.editShapePendingBefore = nil
 	r.editShapePendingAffectsLandShapes = false
+	r.editShapeStrokeLandShapeIDs = nil
+	r.editShapePendingLandShapeIDs = nil
 	r.editRenaming = false
-	r.rebuildEditWorldMap()
+	if asyncBuild {
+		r.requestEditWorldMapRebuild()
+	} else {
+		r.rebuildEditWorldMap()
+	}
 }
 
 func cloneRegionMap(src map[world.RegionID]*world.Region) map[world.RegionID]*world.Region {
@@ -5066,18 +5176,60 @@ func editBoolLabel(value bool) string {
 }
 
 func (r *Renderer) rebuildEditWorldMap() {
+	r.cancelEditMapBuild()
 	r.invalidateShapeEditSession()
-	world.SyncTerrainAreaRegions(r.gs.Regions, r.gs.TerrainAreas)
+	r.invalidateEditRegionCenterMarkers()
 	r.worldMap = NewWorldMap(r.gs)
 	r.buildRegionPaintBaseline()
-	if !regionPaintOverridesEqual(r.editRegionPaintOverrides, r.gs.RegionPaintOverrides) {
+	overridesChanged := !regionPaintOverridesEqual(r.editRegionPaintOverrides, r.gs.RegionPaintOverrides)
+	if overridesChanged {
 		r.applyRegionPaintOverrides()
+		// NewWorldMap önce kaynak override'larını, sonra terrain alanlarını işler.
+		// Sadece edit oturumu override'ları değiştiyse terrain katmanı bir kez daha
+		// uygulanmalı; aksi halde aynı terrain rasterı gereksiz yere iki kez üretilir.
+		r.worldMap.applyTerrainAreaRegions(r.gs)
 	}
-	// Editör oturumundaki bölge boya override'ları arazi alanı hücrelerini
-	// ezmesin diye alanlar son katman olarak yeniden boyanır.
-	r.worldMap.applyTerrainAreaRegions(r.gs)
 	// Geçişlerin uçları sabit harita koordinatlarına bağlıdır; harita üzerinde
 	// bölge ataması değiştiğinde From/To ilişkisini aynı rasterdan yenile.
+	r.syncLandPassageRegionsFromMap()
+}
+
+// refreshRegionPaintInEditMap, ülke shape rasterını ve deniz BFS'ini yeniden
+// üretmeden yalnız stroke sırasında değişen region paint pixel'lerini mevcut
+// haritaya işler. Terrain alanları override'ların üst katmanı olduğu için
+// sonunda tek seferde yeniden uygulanır.
+func (r *Renderer) refreshRegionPaintInEditMap(dirtyPixels map[int]struct{}) {
+	if r == nil || r.gs == nil || r.worldMap == nil {
+		return
+	}
+	baseline := r.editRegionPaintBaseline
+	if len(baseline) != len(r.worldMap.regionAt) {
+		baseline = r.worldMap.baseRegionAt
+	}
+
+	for pIdx := range dirtyPixels {
+		if pIdx < 0 || pIdx >= len(r.worldMap.regionAt) {
+			continue
+		}
+		if target, ok := r.editRegionPaintOverrides[pIdx]; ok && target != "" {
+			r.worldMap.regionAt[pIdx] = r.worldMap.ensureRegionIndex(target)
+			continue
+		}
+		if pIdx < len(baseline) {
+			r.worldMap.regionAt[pIdx] = baseline[pIdx]
+		}
+	}
+
+	r.worldMap.rebuildRegionPixelsFromAssignments()
+	world.SyncTerrainAreaRegions(r.gs.Regions, r.gs.TerrainAreas)
+	r.worldMap.applyTerrainAreaRegions(r.gs)
+	r.worldMap.rebuildBorderSegments(r.gs)
+	clear(r.worldMap.regionAnchor)
+	r.worldMap.computeRegionAnchors()
+	clear(r.worldMap.settlementAnchor)
+	clear(r.worldMap.primarySettlement)
+	r.worldMap.computeSettlementAnchors(r.gs)
+	r.worldMap.applyOwnership(r.gs, "", MapModeNormal)
 	r.syncLandPassageRegionsFromMap()
 }
 
@@ -5135,8 +5287,22 @@ func (r *Renderer) applyRegionPaintOverrides() {
 	if r.worldMap == nil || len(r.editRegionPaintOverrides) == 0 {
 		return
 	}
+	changed := false
 	for pIdx, rid := range r.editRegionPaintOverrides {
-		r.applyRegionOverride(pIdx, rid)
+		if pIdx < 0 || pIdx >= len(r.worldMap.regionAt) || rid == "" {
+			continue
+		}
+		newIdx := r.worldMap.ensureRegionIndex(rid)
+		if r.worldMap.regionAt[pIdx] == newIdx {
+			continue
+		}
+		r.worldMap.regionAt[pIdx] = newIdx
+		changed = true
+	}
+	if changed {
+		// Her pikselde eski region pixel listesinden lineer silme yerine tek
+		// geçişte ters indeksleri yeniden oluştur.
+		r.worldMap.rebuildRegionPixelsFromAssignments()
 	}
 }
 
@@ -5161,40 +5327,6 @@ func regionPaintOverridesEqual(a, b map[int]world.RegionID) bool {
 		}
 	}
 	return true
-}
-
-func (r *Renderer) applyRegionOverride(pIdx int, rid world.RegionID) {
-	if r.worldMap == nil || pIdx < 0 || pIdx >= len(r.worldMap.regionAt) {
-		return
-	}
-	if rid == "" {
-		return
-	}
-	newIdx, ok := r.worldMap.regionIdx[rid]
-	if !ok {
-		newIdx = uint16(len(r.worldMap.regionIDs))
-		r.worldMap.regionIDs = append(r.worldMap.regionIDs, rid)
-		r.worldMap.regionIdx[rid] = newIdx
-	}
-	oldIdx := r.worldMap.regionAt[pIdx]
-	if oldIdx == newIdx {
-		return
-	}
-	if oldIdx != 0 {
-		oldID := r.worldMap.regionIDs[oldIdx]
-		r.worldMap.regionPx[oldID] = removePixelIndex(r.worldMap.regionPx[oldID], pIdx)
-	}
-	r.worldMap.regionAt[pIdx] = newIdx
-	r.worldMap.regionPx[rid] = append(r.worldMap.regionPx[rid], pIdx)
-}
-
-func removePixelIndex(slice []int, value int) []int {
-	for i, v := range slice {
-		if v == value {
-			return append(slice[:i], slice[i+1:]...)
-		}
-	}
-	return slice
 }
 
 func scenarioCoordsFromWorld(wx, wy float64) (int, int) {

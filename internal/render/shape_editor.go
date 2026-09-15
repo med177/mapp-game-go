@@ -72,6 +72,10 @@ func (r *Renderer) invalidateShapeEditSession() {
 	r.editShapeStrokeBefore = nil
 	r.editShapePendingBefore = nil
 	r.editShapePendingAffectsLandShapes = false
+	r.editShapeStrokeLandShapeIDs = nil
+	r.editShapePendingLandShapeIDs = nil
+	r.editShapeStrokeRegionPaintPixels = nil
+	r.editShapePendingRegionPaintPixels = nil
 	r.editTerrainAreaPolygon = nil
 	r.editTerrainAreaPolygonBefore = nil
 	r.clearEditPaintPreview()
@@ -471,7 +475,7 @@ func (r *Renderer) cancelTerrainAreaEdit() {
 	}
 	if r.editShapePaintPending && r.editShapePendingBefore != nil {
 		before := *r.editShapePendingBefore
-		r.restoreWorldSnapshot(before)
+		r.restoreWorldSnapshotSync(before)
 	}
 	r.editTerrainAreaPolygon = nil
 	r.editTerrainAreaPolygonBefore = nil
@@ -483,7 +487,6 @@ func (r *Renderer) cancelTerrainAreaEdit() {
 	r.editTerrainAreaAppendMode = false
 	r.editTerrainAreaTouchedIDs = nil
 	r.editTerrainAreaStrokeAreas = nil
-	r.rebuildEditWorldMap()
 }
 
 // resetTerrainAreaDrawing çizim aracını kapatmadan mevcut poligon taslağını
@@ -495,7 +498,7 @@ func (r *Renderer) resetTerrainAreaDrawing() {
 	}
 	if r.editShapePaintPending && r.editShapePendingBefore != nil {
 		before := *r.editShapePendingBefore
-		r.restoreWorldSnapshot(before)
+		r.restoreWorldSnapshotSync(before)
 	}
 	r.editTerrainAreaPolygon = nil
 	r.editTerrainAreaPolygonBefore = nil
@@ -610,7 +613,7 @@ func (r *Renderer) deleteSelectedTerrainArea() {
 	before := r.worldSnapshot()
 	r.gs.TerrainAreas = append(r.gs.TerrainAreas[:idx], r.gs.TerrainAreas[idx+1:]...)
 	r.editTerrainAreaSelected = -1
-	r.rebuildEditWorldMap()
+	r.requestEditWorldMapRebuild()
 	after := r.worldSnapshot()
 	r.pushWorldSnapshotCommand(before, after)
 	r.editDirty = true
@@ -706,7 +709,7 @@ func (r *Renderer) cycleEditTerrainAreaCost() {
 	// Passable terrain alanları haritaya child fragment olarak dağıtıldığı için
 	// yalnız blokludan geçilebilire geçişte bu pahalı yeniden üretim gerekir.
 	if old == 0 && next != 0 {
-		r.rebuildEditWorldMap()
+		r.requestEditWorldMapRebuild()
 	}
 	r.editDirty = true
 }
@@ -1052,7 +1055,7 @@ func (r *Renderer) applyPendingShapePaint() {
 	if tool == editShapeToolShape && session != nil && session.Dirty {
 		rings := shapeMaskToFloatRings(session)
 		applyShapeRingsToState(r.gs, session.ShapeID, rings)
-		r.rebuildEditWorldMap()
+		r.requestEditWorldMapRebuild()
 		after := r.worldSnapshot()
 		r.pushWorldSnapshotCommand(*before, after)
 		r.editDirty = true
@@ -1061,11 +1064,13 @@ func (r *Renderer) applyPendingShapePaint() {
 		}
 	} else if tool == editShapeToolRegion {
 		pendingAffectsLandShapes := r.editShapePendingAffectsLandShapes
+		pendingLandShapeIDs := r.editShapePendingLandShapeIDs
+		pendingRegionPaintPixels := r.editShapePendingRegionPaintPixels
 		r.syncRegionPaintOverridesToGameState()
-		r.rebuildEditWorldMap()
+		r.refreshRegionPaintInEditMap(pendingRegionPaintPixels)
 		if pendingAffectsLandShapes {
-			syncLandShapesFromWorldMap(r.gs, r.worldMap)
-			r.rebuildEditWorldMap()
+			syncLandShapesFromWorldMapForIDs(r.gs, r.worldMap, pendingLandShapeIDs)
+			r.requestEditWorldMapRebuild()
 		}
 		after := r.worldSnapshot()
 		r.pushWorldSnapshotCommand(*before, after)
@@ -1090,6 +1095,10 @@ func (r *Renderer) applyPendingShapePaint() {
 	r.editShapeStrokeDirty = false
 	r.editShapeStrokeAffectsLandShapes = false
 	r.editShapePendingAffectsLandShapes = false
+	r.editShapeStrokeLandShapeIDs = nil
+	r.editShapePendingLandShapeIDs = nil
+	r.editShapeStrokeRegionPaintPixels = nil
+	r.editShapePendingRegionPaintPixels = nil
 	r.editTerrainAreaStrokeAreas = nil
 	r.editTerrainAreaTouchedIDs = nil
 	r.clearEditPaintPreview()
@@ -1552,6 +1561,10 @@ func (r *Renderer) beginShapePaintStroke(fx, fy float64) bool {
 		r.editTerrainAreaStrokeAreas = make(map[world.RegionID]int)
 		r.editTerrainAreaTouchedIDs = make(map[string]struct{})
 	}
+	if r.editShapeTool == editShapeToolRegion {
+		r.editShapeStrokeLandShapeIDs = make(map[string]struct{})
+		r.editShapeStrokeRegionPaintPixels = make(map[int]struct{})
+	}
 	if session != nil {
 		session.Dirty = false
 		session.HasLast = false
@@ -1606,11 +1619,28 @@ func (r *Renderer) finishShapePaintStroke() {
 		(r.editShapeTool == editShapeToolRegion && r.editShapeStrokeDirty) {
 		r.editShapePaintPending = true
 		r.editShapePendingAffectsLandShapes = r.editShapePendingAffectsLandShapes || r.editShapeStrokeAffectsLandShapes
+		if r.editShapeTool == editShapeToolRegion && len(r.editShapeStrokeLandShapeIDs) > 0 {
+			if r.editShapePendingLandShapeIDs == nil {
+				r.editShapePendingLandShapeIDs = make(map[string]struct{}, len(r.editShapeStrokeLandShapeIDs))
+			}
+			for shapeID := range r.editShapeStrokeLandShapeIDs {
+				r.editShapePendingLandShapeIDs[shapeID] = struct{}{}
+			}
+		}
+		if r.editShapeTool == editShapeToolRegion && len(r.editShapeStrokeRegionPaintPixels) > 0 {
+			if r.editShapePendingRegionPaintPixels == nil {
+				r.editShapePendingRegionPaintPixels = make(map[int]struct{}, len(r.editShapeStrokeRegionPaintPixels))
+			}
+			for pIdx := range r.editShapeStrokeRegionPaintPixels {
+				r.editShapePendingRegionPaintPixels[pIdx] = struct{}{}
+			}
+		}
 	} else if !r.editShapePaintPending {
 		r.editShapePendingBefore = nil
 	}
 	r.editShapeStrokeDirty = false
 	r.editShapeStrokeAffectsLandShapes = false
+	r.editShapeStrokeLandShapeIDs = nil
 }
 
 func (r *Renderer) applyShapeBrushAt(session *shapeEditSession, x, y int) {
@@ -1810,19 +1840,23 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool)
 				baselineIdx = r.editRegionPaintBaseline[pIdx]
 			}
 			oldIdx := r.editRegionPaintCurrentIndex(pIdx, baselineIdx)
-			if regionPaintTouchesLandShape(r.gs, targetRegion, baselineIdx, oldIdx, r.worldMap.regionIDs) {
-				r.editShapeStrokeAffectsLandShapes = true
-			}
+			r.recordRegionPaintLandShapeIDs(targetRegion, baselineIdx, oldIdx)
 			if fill {
 				if baselineIdx == targetIdx {
-					delete(r.editRegionPaintOverrides, pIdx)
+					if _, exists := r.editRegionPaintOverrides[pIdx]; exists {
+						delete(r.editRegionPaintOverrides, pIdx)
+						r.recordRegionPaintDirtyPixel(pIdx)
+					}
 					if oldIdx != baselineIdx {
 						r.drawRegionPaintPreviewPixel(x, y, false)
 						changed = true
 					}
 					continue
 				}
-				r.editRegionPaintOverrides[pIdx] = regionID
+				if r.editRegionPaintOverrides[pIdx] != regionID {
+					r.editRegionPaintOverrides[pIdx] = regionID
+					r.recordRegionPaintDirtyPixel(pIdx)
+				}
 				if oldIdx != targetIdx {
 					r.drawRegionPaintPreviewPixel(x, y, true)
 					changed = true
@@ -1833,6 +1867,7 @@ func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool)
 				continue
 			}
 			delete(r.editRegionPaintOverrides, pIdx)
+			r.recordRegionPaintDirtyPixel(pIdx)
 			if oldIdx != baselineIdx {
 				r.drawRegionPaintPreviewPixel(x, y, false)
 				changed = true
@@ -1846,6 +1881,16 @@ func (r *Renderer) ensureEditRegionPaintOverrides() {
 	if r != nil && r.editRegionPaintOverrides == nil {
 		r.editRegionPaintOverrides = make(map[int]world.RegionID)
 	}
+}
+
+func (r *Renderer) recordRegionPaintDirtyPixel(pIdx int) {
+	if r == nil || r.editShapeTool != editShapeToolRegion {
+		return
+	}
+	if r.editShapeStrokeRegionPaintPixels == nil {
+		r.editShapeStrokeRegionPaintPixels = make(map[int]struct{})
+	}
+	r.editShapeStrokeRegionPaintPixels[pIdx] = struct{}{}
 }
 
 func (r *Renderer) editRegionPaintCurrentIndex(pIdx int, baselineIdx uint16) uint16 {
@@ -1899,17 +1944,27 @@ func hasLandRegionPaintOverrides(gs *state.GameState) bool {
 	return false
 }
 
-func regionPaintTouchesLandShape(gs *state.GameState, target *world.Region, baselineIdx, currentIdx uint16, regionIDs []world.RegionID) bool {
-	if target != nil && !target.IsSea && target.ShapeID != "" {
-		return true
+func (r *Renderer) recordRegionPaintLandShapeIDs(target *world.Region, baselineIdx, currentIdx uint16) {
+	if r == nil || r.gs == nil || r.worldMap == nil {
+		return
 	}
-	if regionShapeTouchIsLand(gs, baselineIdx, regionIDs) {
-		return true
+	if r.editShapeStrokeLandShapeIDs == nil {
+		r.editShapeStrokeLandShapeIDs = make(map[string]struct{})
 	}
-	if regionShapeTouchIsLand(gs, currentIdx, regionIDs) {
-		return true
+	add := func(region *world.Region) {
+		if region == nil || region.IsSea || region.ShapeID == "" {
+			return
+		}
+		r.editShapeStrokeAffectsLandShapes = true
+		r.editShapeStrokeLandShapeIDs[region.ShapeID] = struct{}{}
 	}
-	return false
+	add(target)
+	if baselineIdx != 0 && int(baselineIdx) < len(r.worldMap.regionIDs) {
+		add(r.gs.Regions[r.worldMap.regionIDs[baselineIdx]])
+	}
+	if currentIdx != 0 && int(currentIdx) < len(r.worldMap.regionIDs) {
+		add(r.gs.Regions[r.worldMap.regionIDs[currentIdx]])
+	}
 }
 
 func regionShapeTouchIsLand(gs *state.GameState, idx uint16, regionIDs []world.RegionID) bool {
@@ -1921,6 +1976,10 @@ func regionShapeTouchIsLand(gs *state.GameState, idx uint16, regionIDs []world.R
 }
 
 func syncLandShapesFromWorldMap(gs *state.GameState, wm *WorldMap) {
+	syncLandShapesFromWorldMapForIDs(gs, wm, nil)
+}
+
+func syncLandShapesFromWorldMapForIDs(gs *state.GameState, wm *WorldMap, requested map[string]struct{}) {
 	if gs == nil || wm == nil {
 		return
 	}
@@ -1928,6 +1987,11 @@ func syncLandShapesFromWorldMap(gs *state.GameState, wm *WorldMap) {
 	for rid, region := range gs.Regions {
 		if region == nil || region.IsSea || region.ShapeID == "" {
 			continue
+		}
+		if requested != nil {
+			if _, ok := requested[region.ShapeID]; !ok {
+				continue
+			}
 		}
 		shapeRegions[region.ShapeID] = append(shapeRegions[region.ShapeID], rid)
 	}
@@ -1961,19 +2025,31 @@ func syncLandShapesFromWorldMap(gs *state.GameState, wm *WorldMap) {
 }
 
 func newBlankShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSession {
-	session := newShapeEditSession(gs, shapeID)
-	if session == nil {
+	if gs == nil {
 		return nil
 	}
-	for i := range session.Mask {
-		session.Mask[i] = 0
+	minX, minY, maxX, maxY := editableShapePixelBounds()
+	if maxX < minX || maxY < minY {
+		return nil
 	}
-	for i := range session.BaseMask {
-		session.BaseMask[i] = 0
+	width := maxX - minX + 1
+	height := maxY - minY + 1
+	name := gs.ShapeData.Names[shapeID]
+	if name == "" {
+		name = shapeID
 	}
-	session.Dirty = false
-	session.HasLast = false
-	return session
+	return &shapeEditSession{
+		ShapeID:  shapeID,
+		Name:     name,
+		MinX:     minX,
+		MinY:     minY,
+		MaxX:     maxX,
+		MaxY:     maxY,
+		Width:    width,
+		Height:   height,
+		Mask:     make([]byte, width*height),
+		BaseMask: make([]byte, width*height),
+	}
 }
 
 func applyShapeRingsToState(gs *state.GameState, shapeID string, rings [][][2]float32) {

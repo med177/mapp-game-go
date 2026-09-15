@@ -29,6 +29,25 @@ func TestEnsureEditRegionPaintOverridesInitializesNilMap(t *testing.T) {
 	}
 }
 
+func TestRegionCenterAffectsRasterOnlyForSeaOrSharedShape(t *testing.T) {
+	r := &Renderer{gs: &state.GameState{Regions: map[world.RegionID]*world.Region{
+		"single":   {ID: "single", ShapeID: "single_shape"},
+		"shared_a": {ID: "shared_a", ShapeID: "shared_shape"},
+		"shared_b": {ID: "shared_b", ShapeID: "shared_shape"},
+		"sea":      {ID: "sea", IsSea: true},
+	}}}
+
+	if r.regionCenterAffectsRaster(r.gs.Regions["single"]) {
+		t.Fatal("a unique land shape center should not require raster rebuild")
+	}
+	if !r.regionCenterAffectsRaster(r.gs.Regions["shared_a"]) {
+		t.Fatal("a shared-shape center should require raster rebuild")
+	}
+	if !r.regionCenterAffectsRaster(r.gs.Regions["sea"]) {
+		t.Fatal("a sea center should require raster rebuild")
+	}
+}
+
 func TestSetTerrainAreaTypeValueUpdatesOnlySelectedArea(t *testing.T) {
 	first := &world.Region{ID: "first_area", IsTerrainArea: true, TerrainAreaID: "area_a"}
 	second := &world.Region{ID: "second_area", IsTerrainArea: true, TerrainAreaID: "area_b"}

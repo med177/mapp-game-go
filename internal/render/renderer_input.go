@@ -35,6 +35,7 @@ func (r *Renderer) diplomacyNotificationAutoCloseFrameLimit() int {
 }
 
 func (r *Renderer) HandleInput() InputAction {
+	r.pollEditMapBuild()
 	r.updateCursorShape()
 	r.updateEditDropdownPositions()
 
@@ -206,6 +207,9 @@ func (r *Renderer) HandleInput() InputAction {
 	}
 	if r.gs.Phase == state.PhaseEditMode {
 		r.ensureWorldMap()
+		if r.editMapBuildPending {
+			return InputAction{}
+		}
 		return r.handleEditModeInput()
 	}
 	if r.showAIDiagnostic {

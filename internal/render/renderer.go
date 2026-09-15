@@ -348,11 +348,30 @@ type Renderer struct {
 	editShapeStrokeDirty              bool
 	editShapeStrokeAffectsLandShapes  bool
 	editShapePendingAffectsLandShapes bool
+	editShapeStrokeLandShapeIDs       map[string]struct{}
+	editShapePendingLandShapeIDs      map[string]struct{}
+	editShapeStrokeRegionPaintPixels  map[int]struct{}
+	editShapePendingRegionPaintPixels map[int]struct{}
 	editRegionPaintOverrides          map[int]world.RegionID
 	editRegionPaintBaseline           []uint16
 	editUndoStack                     []editCommand
 	editRedoStack                     []editCommand
 	editRegionDragStart               *editRegionCenterSnapshot
+	editCenterMarkers                 []editRegionCenterMarker
+	editCenterMarkersCamX             float64
+	editCenterMarkersCamY             float64
+	editCenterMarkersCamScale         float64
+	editCenterMarkersVersion          uint64
+	editCenterMarkersCacheVersion     uint64
+	editCenterMarkersGameState        *state.GameState
+	editMapBuildPending               bool
+	editMapBuildGeneration            uint64
+	editMapBuildResult                <-chan editMapBuildResult
+	editMapBuildCancel                func()
+	editMapBuildCompletion            func()
+	editMapLastBuildDuration          time.Duration
+	editMapLastRasterDuration         time.Duration
+	editMapLastPostProcessDuration    time.Duration
 	editSettlementDragStart           []editRegionSettlementsSnapshot
 	editFactionForm                   editFactionFormState
 	editRegionForm                    editRegionFormState
@@ -985,7 +1004,9 @@ func RefreshFactionHistoricalVisuals(gs *state.GameState) {
 }
 
 func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
+	r.cancelEditMapBuild()
 	r.gs = gs
+	r.invalidateEditRegionCenterMarkers()
 	syncFactionHistoricalFlagNames(gs)
 	r.editSuccessorDropdown.Close()
 	r.LoadingScenarioPath = gs.ScenarioPath

@@ -1228,3 +1228,40 @@ Minimap yalnızca dünya haritasını ve kameranın ekrandaki alanını göstere
 | `victory_select.go` | Zafer koşulu seçim ekranı |
 | `main_menu.go` | Ana menü (opsiyonel `EDIT MODE`, "Devam et" → en yeni `autosave`/`quicksave`, "Kayıttan Yükle" → slot seçim ekranı) |
 | `settings.go` | Ayarlar ekranı |
+
+### Edit Mode performans notu
+
+Edit Mode bölge merkez marker'ları draw, hit-test ve cursor akışlarında ortak
+ekran-geometri cache'ini kullanır; kamera, merkez verisi veya GameState
+değişmediği sürece region map'i tekrar taranmaz. Tekil kara shape merkezlerinde
+marker değişimi raster haritayı yeniden kurmaz; deniz merkezleri veya aynı
+shape'i paylaşan Voronoi bölgeleri raster rebuild gerektirebilir.
+
+Bölge boya/sil onayı mevcut raster üzerinde lokal override güncellemesi yapar.
+Ülke shape rasterı ve deniz BFS'i yalnızca boya işlemi kara shape gruplarını
+etkilediğinde yeniden çalışır; terrain alanları overlay katmanı olarak bundan
+sonra bir kez uygulanır. Shape değişiklikleri, kara shape grubunu etkileyen
+bölge boyaları ile rasterı etkileyen merkez değişikliklerinin ağır tam harita
+ üretimi, immutable map-build snapshot'ı ile goroutine'e taşınmıştır. Sonuç ana
+döngüde generation kontrolüyle kabul edilir;
+Ebiten image'ı yalnızca ana döngüde finalize edilir ve hesap sürerken Edit Mode
+input'u geçici olarak bekletilir. Bu sırada Edit Mode HUD'unda “Harita
+hazırlanıyor...” durumu gösterilir.
+
+Worker toplam süresini sonuçla birlikte taşır ve son süre HUD'da gösterilir.
+Yeni bir state değişikliği veya yükleme eski generation'ı iptal eder; worker
+hatası canlı haritayı değiştirmeden kullanıcıya bildirilir. Yeni bölge oluşturma
+akışı da worker tamamlandıktan sonra ana döngüde görsel komşulukları ve undo
+snapshot'ını tamamlayacak iki aşamalı yapıya geçirilmiştir.
+
+Undo/redo harita snapshot'ları da worker rebuild yolunu kullanır. Terrain edit
+iptalinde gereken anlık geri dönüş için ayrı senkron yol korunur. Region paint
+lokal yenilemesi stroke dirty-pixel kümesini kullanır; her onayda tüm override
+haritası veya tüm terrain fragment pikselleri yeniden taranmaz. HUD son build
+süresini raster ve post-process bileşenleriyle birlikte gösterir.
+
+Aynı worker yolu, harita sonucunu işlem sonrasında hemen kullanmayan bölge
+silme, komşuluk, terrain alanı, bölge ID ve bölge veri formu değişikliklerinde
+de kullanılır. Yeni bölge oluşturma gibi rebuild sonucundan aynı çağrı içinde
+görsel komşuluk hesaplayan akışlar ile snapshot geri yükleme, tutarlılık için
+senkron kalır.

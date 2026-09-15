@@ -315,7 +315,7 @@ func (r *Renderer) saveEditRegionForm() {
 	region.Religion = strings.TrimSpace(form.values[editRegionFieldReligion])
 	region.ActiveEventID = strings.TrimSpace(form.values[editRegionFieldActiveEvent])
 	region.UnlockTurn = ints[editRegionFieldUnlockTurn]
-	r.rebuildEditWorldMap()
+	r.requestEditWorldMapRebuild()
 	after := r.worldSnapshot()
 	r.pushWorldSnapshotCommand(before, after)
 	r.editDirty = true

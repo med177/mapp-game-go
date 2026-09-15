@@ -1511,8 +1511,8 @@
       "brittany",
       "navarra",
       "toulouse",
-      "area::area__9::navarra",
-      "area::area__9::aquitaine"
+      "area::area__9::aquitaine",
+      "area::area__9::navarra"
     ],
     "world_x": 472,
     "world_y": 397,
@@ -4097,12 +4097,12 @@
       "isfahan",
       "siraz",
       "area::area__5",
-      "area::area__6::hourmuz",
       "area::area__6::kazvin",
-      "area::area__6::southern_persia",
-      "area::area__6::meshed",
-      "area::area__6::gurgan",
       "area::area__6::northern_persia",
+      "area::area__6::southern_persia",
+      "area::area__6::hourmuz",
+      "area::area__6::gurgan",
+      "area::area__6::meshed",
       "area::area__6::isfahan"
     ],
     "world_x": 1588,
@@ -4203,12 +4203,12 @@
       "persian_open_1",
       "siraz",
       "southern_persia",
-      "area::area__6::hourmuz",
       "area::area__6::kazvin",
-      "area::area__6::southern_persia",
-      "area::area__6::meshed",
-      "area::area__6::gurgan",
       "area::area__6::northern_persia",
+      "area::area__6::southern_persia",
+      "area::area__6::hourmuz",
+      "area::area__6::gurgan",
+      "area::area__6::meshed",
       "area::area__6::isfahan"
     ],
     "world_x": 1632,
@@ -6728,7 +6728,7 @@
     "trade_capacity": 4,
     "satisfaction": 65,
     "tax_rate": 30,
-    "population": 450,
+    "population": 538,
     "rural_population": 293,
     "religion": "catholic",
     "active_event_id": "",
@@ -6778,7 +6778,7 @@
     "trade_capacity": 2,
     "satisfaction": 65,
     "tax_rate": 30,
-    "population": 250,
+    "population": 163,
     "rural_population": 163,
     "religion": "catholic",
     "active_event_id": "",
@@ -6840,8 +6840,8 @@
       "lorraine",
       "walonia",
       "palatinate",
-      "area::area__11::walonia",
-      "area::area__11::luxembourg"
+      "area::area__11::luxembourg",
+      "area::area__11::walonia"
     ],
     "world_x": 597,
     "world_y": 290,
@@ -11194,9 +11194,9 @@
     "neighbors": [
       "irish_sea_shore",
       "north_sea_shore",
+      "area::area__11::luxembourg",
       "area::area__11::lorraine",
-      "area::area__11::walonia",
-      "area::area__11::luxembourg"
+      "area::area__11::walonia"
     ],
     "world_x": 592,
     "world_y": 308,
@@ -11553,8 +11553,8 @@
       "norwegian_sea",
       "scotland",
       "yorkshire",
-      "area::area__26::scotland",
-      "area::area__26::newcastle_region"
+      "area::area__26::newcastle_region",
+      "area::area__26::scotland"
     ],
     "world_x": 450,
     "world_y": 164,

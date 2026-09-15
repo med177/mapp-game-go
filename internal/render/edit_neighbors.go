@@ -97,7 +97,7 @@ func (r *Renderer) applyEditNeighborAddMode() {
 		}
 	}
 	if changed {
-		r.rebuildEditWorldMap()
+		r.requestEditWorldMapRebuild()
 		after := r.worldSnapshot()
 		r.pushWorldSnapshotCommand(before, after)
 		r.editDirty = true
@@ -176,7 +176,7 @@ func (r *Renderer) addTerrainAreaNeighbor(source, target *world.Region) {
 	if !changed {
 		return
 	}
-	r.rebuildEditWorldMap()
+	r.requestEditWorldMapRebuild()
 	after := r.worldSnapshot()
 	r.pushWorldSnapshotCommand(before, after)
 	r.editSelectedRegion = source.ID
