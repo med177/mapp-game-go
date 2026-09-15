@@ -10,7 +10,7 @@
       "links": [
         "constantinople",
         "dalmatia",
-        "egypt",
+        "alexandria",
         "genoa",
         "tunis"
       ]
@@ -22,7 +22,7 @@
         "aleppo",
         "crimea",
         "dalmatia",
-        "egypt",
+        "alexandria",
         "trebizond",
         "venice"
       ]
@@ -84,12 +84,12 @@
         "azerbaijan",
         "baghdad",
         "constantinople",
-        "egypt",
+        "alexandria",
         "trebizond"
       ]
     },
     {
-      "region_id": "egypt",
+      "region_id": "alexandria",
       "tier": "primary",
       "links": [
         "aleppo",
@@ -129,7 +129,7 @@
       "region_id": "tunis",
       "tier": "secondary",
       "links": [
-        "egypt",
+        "alexandria",
         "genoa",
         "trans_saharan_route",
         "venice"
@@ -263,7 +263,7 @@
       "links": [
         "basra",
         "cape_route",
-        "egypt"
+        "alexandria"
       ],
       "world_x": 2880,
       "world_y": 1260,

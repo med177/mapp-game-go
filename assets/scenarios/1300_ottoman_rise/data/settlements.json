@@ -2640,7 +2640,7 @@
     ]
   },
   {
-    "region_id": "egypt",
+    "region_id": "alexandria",
     "settlements": [
       {
         "id": "alexandria",
@@ -2648,16 +2648,60 @@
         "x": 1079,
         "y": 641,
         "type": "port",
+        "is_center": true,
         "population": 90
+      }
+    ]
+  },
+  {
+    "region_id": "luxor",
+    "settlements": [
+      {
+        "id": "egypt_aswan",
+        "name_tr": "Asvan",
+        "x": 1136,
+        "y": 772,
+        "type": "fortress",
+        "is_center": true,
+        "population": 70
       },
+      {
+        "id": "egypt_fustat",
+        "name_tr": "Luksor",
+        "x": 1129,
+        "y": 750,
+        "type": "city",
+        "population": 280
+      }
+    ]
+  },
+  {
+    "region_id": "upper_egypt",
+    "settlements": [
       {
         "id": "cairo",
         "name_tr": "Kahire",
         "x": 1099,
-        "y": 663,
+        "y": 664,
         "type": "fortress",
         "is_center": true,
         "population": 28
+      },
+      {
+        "id": "egypt_giza",
+        "name_tr": "Gize",
+        "x": 1100,
+        "y": 672,
+        "type": "town",
+        "population": 57
+      },
+      {
+        "id": "egypt_rosetta",
+        "name_tr": "Reşid",
+        "x": 1086,
+        "y": 637,
+        "type": "port",
+        "population": 86
       },
       {
         "id": "damietta",
@@ -2665,6 +2709,20 @@
         "x": 1101,
         "y": 636,
         "type": "port",
+        "population": 86
+      }
+    ]
+  },
+  {
+    "region_id": "lower_egypt",
+    "settlements": [
+      {
+        "id": "egypt_suez",
+        "name_tr": "Süveyş",
+        "x": 1127,
+        "y": 667,
+        "type": "port",
+        "is_center": true,
         "population": 86
       },
       {
@@ -2676,71 +2734,24 @@
         "population": 57
       },
       {
-        "id": "egypt_giza",
-        "name_tr": "Gize",
-        "x": 1100,
-        "y": 673,
-        "type": "town",
-        "population": 57
-      },
-      {
-        "id": "egypt_rosetta",
-        "name_tr": "Reşid",
-        "x": 1086,
-        "y": 637,
-        "type": "port",
-        "population": 86
-      }
-    ]
-  },
-  {
-    "region_id": "luxor",
-    "settlements": [
-      {
         "id": "egypt_qena",
         "name_tr": "Kına",
         "x": 1132,
         "y": 739,
         "type": "town",
-        "is_center": true,
         "population": 140
-      },
-      {
-        "id": "egypt_aswan",
-        "name_tr": "Asvan",
-        "x": 1136,
-        "y": 771,
-        "type": "fortress",
-        "population": 70
-      },
-      {
-        "id": "egypt_fustat",
-        "name_tr": "Luksor",
-        "x": 1129,
-        "y": 751,
-        "type": "city",
-        "population": 280
-      },
-      {
-        "id": "egypt_suez",
-        "name_tr": "Süveyş",
-        "x": 1127,
-        "y": 668,
-        "type": "port",
-        "population": 86
       }
     ]
   },
   {
-    "region_id": "palestine",
+    "region_id": "palestine_jerusalem",
     "settlements": [
       {
         "id": "palestine_nablus",
         "name_tr": "Nablus",
-        "x": 1186,
-        "y": 617,
+        "x": 1184,
+        "y": 620,
         "type": "town",
-        "is_center": true,
         "population": 70
       },
       {
@@ -2757,6 +2768,7 @@
         "x": 1181,
         "y": 630,
         "type": "fortress",
+        "is_center": true,
         "population": 35
       }
     ]
@@ -3109,16 +3121,16 @@
       {
         "id": "hejaz_khaybar",
         "name_tr": "Hayber",
-        "x": 1259,
-        "y": 743,
+        "x": 1254,
+        "y": 741,
         "type": "fortress",
         "population": 17
       },
       {
         "id": "hejaz_mecca",
         "name_tr": "Mekke",
-        "x": 1270,
-        "y": 799,
+        "x": 1267,
+        "y": 794,
         "type": "city",
         "is_center": true,
         "population": 70
@@ -3126,26 +3138,44 @@
       {
         "id": "hejaz_medina",
         "name_tr": "Medine",
-        "x": 1263,
-        "y": 759,
+        "x": 1252,
+        "y": 751,
         "type": "city",
         "population": 62
       },
+      {
+        "id": "hejaz_yanbu",
+        "name_tr": "Yenbu",
+        "x": 1236,
+        "y": 777,
+        "type": "port",
+        "population": 46
+      },
+      {
+        "id": "hejaz_settlement_5",
+        "name_tr": "Cidde",
+        "x": 1251,
+        "y": 795,
+        "type": "port",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "haram",
+    "settlements": null
+  },
+  {
+    "region_id": "tebuk",
+    "settlements": [
       {
         "id": "hejaz_tabuk",
         "name_tr": "Tebük",
         "x": 1201,
         "y": 693,
         "type": "fortress",
+        "is_center": true,
         "population": 15
-      },
-      {
-        "id": "hejaz_yanbu",
-        "name_tr": "Yenbu",
-        "x": 1239,
-        "y": 781,
-        "type": "port",
-        "population": 46
       }
     ]
   },
@@ -3752,7 +3782,6 @@
         "x": 1195,
         "y": 632,
         "type": "town",
-        "is_center": true,
         "population": 25
       },
       {
@@ -3761,6 +3790,7 @@
         "x": 1194,
         "y": 622,
         "type": "fortress",
+        "is_center": true,
         "population": 10
       },
       {
@@ -3772,28 +3802,34 @@
         "population": 21
       },
       {
-        "id": "jordan_tafila",
-        "name_tr": "Tafile",
-        "x": 1189,
-        "y": 655,
-        "type": "town",
-        "population": 21
-      },
-      {
-        "id": "karak_jordan",
-        "name_tr": "Kerek",
-        "x": 1190,
-        "y": 643,
-        "type": "fortress",
-        "population": 10
-      },
-      {
         "id": "jordan_aqaba",
         "name_tr": "Akabe",
         "x": 1176,
         "y": 678,
         "type": "port",
         "population": 20
+      }
+    ]
+  },
+  {
+    "region_id": "kerek",
+    "settlements": [
+      {
+        "id": "karak_jordan",
+        "name_tr": "Kerek",
+        "x": 1190,
+        "y": 643,
+        "type": "fortress",
+        "is_center": true,
+        "population": 10
+      },
+      {
+        "id": "jordan_tafila",
+        "name_tr": "Tafile",
+        "x": 1189,
+        "y": 655,
+        "type": "town",
+        "population": 21
       }
     ]
   },
@@ -4330,41 +4366,30 @@
     ]
   },
   {
-    "region_id": "israel",
+    "region_id": "palestine_acre",
     "settlements": [
-      {
-        "id": "gaza",
-        "name_tr": "Gazze",
-        "x": 1161,
-        "y": 639,
-        "type": "town",
-        "population": 14
-      },
-      {
-        "id": "israel_main",
-        "name_tr": "Han Yunus",
-        "x": 1165,
-        "y": 637,
-        "type": "city",
-        "is_center": true,
-        "population": 28
-      },
       {
         "id": "acre",
         "name_tr": "Akka",
         "x": 1178,
         "y": 610,
         "type": "fortress",
+        "is_center": true,
         "population": 7
       },
       {
-        "id": "israel_beersheba",
-        "name_tr": "Birüssebi",
-        "x": 1175,
-        "y": 645,
-        "type": "town",
-        "population": 14
-      },
+        "id": "palestine_jaffa",
+        "name_tr": "Yafa",
+        "x": 1174,
+        "y": 621,
+        "type": "port",
+        "population": 21
+      }
+    ]
+  },
+  {
+    "region_id": "gaza",
+    "settlements": [
       {
         "id": "israel_ashkelon",
         "name_tr": "Aşkelon",
@@ -4374,12 +4399,29 @@
         "population": 21
       },
       {
-        "id": "palestine_jaffa",
-        "name_tr": "Yafa",
-        "x": 1174,
-        "y": 621,
-        "type": "port",
-        "population": 21
+        "id": "israel_main",
+        "name_tr": "Han Yunus",
+        "x": 1165,
+        "y": 637,
+        "type": "city",
+        "population": 28
+      },
+      {
+        "id": "gaza",
+        "name_tr": "Gazze",
+        "x": 1162,
+        "y": 639,
+        "type": "town",
+        "is_center": true,
+        "population": 14
+      },
+      {
+        "id": "israel_beersheba",
+        "name_tr": "Birüssebi",
+        "x": 1175,
+        "y": 645,
+        "type": "town",
+        "population": 14
       }
     ]
   },

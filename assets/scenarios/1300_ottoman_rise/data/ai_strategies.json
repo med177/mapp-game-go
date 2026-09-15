@@ -44,12 +44,6 @@
     {
       "faction_id": "swiss_confederacy",
       "profile": "alpine_confederacy",
-      "expansion_targets": [
-        "sch_bern",
-        "sch_zurich",
-        "sch_fribourg",
-        "sch_basel"
-      ],
       "objectives": [
         {
           "id": "hold_schwyz_core",
@@ -340,9 +334,7 @@
       "faction_id": "austria_duchy",
       "profile": "austrian_imperial_frontier",
       "expansion_targets": [
-        "switzerland",
-        "sch_zurich",
-        "sch_bern"
+        "swiss_confederacy"
       ],
       "objectives": [
         {
@@ -2136,8 +2128,28 @@
               "value": 86
             },
             {
-              "region_id": "egypt",
+              "region_id": "alexandria",
               "value": 86
+            },
+            {
+              "region_id": "upper_egypt",
+              "value": 86
+            },
+            {
+              "region_id": "lower_egypt",
+              "value": 82
+            },
+            {
+              "region_id": "palestine_jerusalem",
+              "value": 82
+            },
+            {
+              "region_id": "palestine_acre",
+              "value": 78
+            },
+            {
+              "region_id": "gaza",
+              "value": 78
             },
             {
               "region_id": "jordan",

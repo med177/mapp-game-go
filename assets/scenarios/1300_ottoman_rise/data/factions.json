@@ -685,7 +685,7 @@
         "core": true
       },
       {
-        "region_id": "london",
+        "region_id": "essex",
         "value": 100,
         "core": true
       },
@@ -1016,12 +1016,27 @@
         "core": true
       },
       {
-        "region_id": "egypt",
+        "region_id": "alexandria",
         "value": 100,
         "core": true
       },
       {
-        "region_id": "israel",
+        "region_id": "upper_egypt",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lower_egypt",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "gaza",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "palestine_acre",
         "value": 100,
         "core": true
       },
@@ -1045,7 +1060,7 @@
         "value": 94
       },
       {
-        "region_id": "palestine",
+        "region_id": "palestine_jerusalem",
         "value": 100,
         "core": true
       },
@@ -4327,7 +4342,7 @@
         "core": true
       },
       {
-        "region_id": "london",
+        "region_id": "essex",
         "value": 85
       }
     ]

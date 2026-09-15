@@ -1275,7 +1275,7 @@
   {
     "id": "army_mamluk_1",
     "owner_id": "mamluk",
-    "region_id": "egypt",
+    "region_id": "alexandria",
     "units": [
       {
         "type_id": "cavalry",
@@ -1885,7 +1885,7 @@
     "id": "fleet_mamluk_east_med",
     "owner_id": "mamluk",
     "region_id": "eastern_mediterranean",
-    "docked_region_id": "egypt",
+    "docked_region_id": "alexandria",
     "docked_settlement_id": "alexandria",
     "is_naval": true,
     "units": [

@@ -5858,7 +5858,14 @@
         ]
       ]
     ],
-    "attrition_cost": 20
+    "attrition_cost": 20,
+    "extra_neighbors": [
+      "area::area__3::upper_egypt",
+      "area::area__3::gaza",
+      "gaza",
+      "upper_egypt",
+      "lower_egypt"
+    ]
   },
   {
     "id": "area__18",

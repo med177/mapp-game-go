@@ -92,6 +92,8 @@ type WorldMap struct {
 	selected           world.RegionID
 	currentMode        MapMode
 	diplomacySignature uint64
+	signatureValid     bool
+	refreshFrame       uint32
 }
 
 type countryShapeFile struct {
@@ -193,6 +195,7 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 	// Arazi alanları her zaman son katman olarak boyanır; bu sayede altındaki
 	// bölge/deniz boya override'ları alan seçimini ve boyasını ezemez.
 	world.SyncTerrainAreaRegions(gs.Regions, gs.TerrainAreas)
+	world.UpdateTerrainAreaRegionOwners(gs.Regions)
 	wm.applyTerrainAreaRegions(gs)
 	wm.rebuildBorderSegments(gs)
 	wm.computeRegionAnchors()
@@ -354,7 +357,13 @@ func loadPNGAsBasePixels(path string) ([]byte, bool) {
 	return pixels, true
 }
 
-func (wm *WorldMap) MarkDirty()                            { wm.ownerDirty = true }
+func (wm *WorldMap) MarkDirty() {
+	if wm == nil {
+		return
+	}
+	wm.ownerDirty = true
+	wm.signatureValid = false
+}
 func (wm *WorldMap) RegionPixels(rid world.RegionID) []int { return wm.regionPx[rid] }
 func (wm *WorldMap) Image() *ebiten.Image                  { return wm.img }
 
@@ -549,8 +558,15 @@ func (wm *WorldMap) RebuildSettlementAnchors(gs *state.GameState) {
 }
 
 func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID, mode MapMode) {
-	world.UpdateTerrainAreaRegionOwners(gs.Regions)
-	diplomacySignature := borderDiplomacySignature(gs)
+	if wm == nil {
+		return
+	}
+	wm.refreshFrame++
+	diplomacySignature := wm.diplomacySignature
+	if !wm.signatureValid || wm.ownerDirty || wm.selected != selected || wm.currentMode != mode || wm.refreshFrame%30 == 0 {
+		diplomacySignature = borderDiplomacySignature(gs)
+		wm.signatureValid = true
+	}
 	if !wm.ownerDirty && wm.selected == selected && wm.currentMode == mode && wm.diplomacySignature == diplomacySignature {
 		return
 	}

@@ -1242,7 +1242,7 @@ Bölge boya/sil onayı mevcut raster üzerinde lokal override güncellemesi yapa
 etkilediğinde yeniden çalışır; terrain alanları overlay katmanı olarak bundan
 sonra bir kez uygulanır. Shape değişiklikleri, kara shape grubunu etkileyen
 bölge boyaları ile rasterı etkileyen merkez değişikliklerinin ağır tam harita
- üretimi, immutable map-build snapshot'ı ile goroutine'e taşınmıştır. Sonuç ana
+üretimi, immutable map-build snapshot'ı ile goroutine'e taşınmıştır. Sonuç ana
 döngüde generation kontrolüyle kabul edilir;
 Ebiten image'ı yalnızca ana döngüde finalize edilir ve hesap sürerken Edit Mode
 input'u geçici olarak bekletilir. Bu sırada Edit Mode HUD'unda “Harita
@@ -1259,6 +1259,11 @@ iptalinde gereken anlık geri dönüş için ayrı senkron yol korunur. Region p
 lokal yenilemesi stroke dirty-pixel kümesini kullanır; her onayda tüm override
 haritası veya tüm terrain fragment pikselleri yeniden taranmaz. HUD son build
 süresini raster ve post-process bileşenleriyle birlikte gösterir.
+
+Oyun haritası çizilirken diplomasi imzası artık her frame hesaplanmaz; dirty
+durumunda veya periyodik kontrol aralığında yenilenir. Terrain-area owner
+normalizasyonu harita üretimine taşınır. Aktif savaş özetleri panel kapalıyken
+oluşturulmaz ve panel açıkken dirty/seyrek yenileme ile güncel tutulur.
 
 Aynı worker yolu, harita sonucunu işlem sonrasında hemen kullanmayan bölge
 silme, komşuluk, terrain alanı, bölge ID ve bölge veri formu değişikliklerinde

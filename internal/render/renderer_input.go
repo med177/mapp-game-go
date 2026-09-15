@@ -579,6 +579,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if activeWarsHudButtonHit(fx, fy) {
 		r.showActiveWars = !r.showActiveWars
+		r.activeWarsDirty = true
 		if !r.showActiveWars {
 			r.activeWarsScroll = 0
 		} else {

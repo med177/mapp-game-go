@@ -1017,8 +1017,8 @@
           "trade_network_modifiers": [
             {
               "id": "portuguese_spice_route_loss",
-              "center_ids": [ "egypt", "basra", "spice_route" ],
-              "region_ids": [ "egypt", "basra" ],
+              "center_ids": [ "alexandria", "basra", "spice_route" ],
+              "region_ids": [ "alexandria", "basra" ],
               "trade_income_percent": -35,
               "spice_percent": -30
             },
@@ -1046,8 +1046,8 @@
           "trade_network_modifiers": [
             {
               "id": "portuguese_spice_route_loss",
-              "center_ids": [ "egypt", "basra", "spice_route" ],
-              "region_ids": [ "egypt", "basra" ],
+              "center_ids": [ "alexandria", "basra", "spice_route" ],
+              "region_ids": [ "alexandria", "basra" ],
               "trade_income_percent": -35,
               "spice_percent": -30
             },

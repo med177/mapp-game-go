@@ -174,6 +174,7 @@ type Renderer struct {
 
 	// Ana menü
 	menuTick        int
+	renderFrame     uint64
 	HasSave         bool
 	HasAutoSave     bool
 	EditModeEnabled bool
@@ -230,6 +231,8 @@ type Renderer struct {
 	showActiveWars           bool
 	activeWarsScroll         int
 	activeWarsBuf            []ActiveWarSummary
+	activeWarsDirty          bool
+	activeWarsLastRefresh    uint64
 	showCommanderPanel       bool
 	commanderPanelArmy       army.ArmyID
 	commanderPanelFocus      int
@@ -731,6 +734,7 @@ func New(gs *state.GameState) *Renderer {
 		editRegionReligionDropdown:  gameui.NewDropdown(0, 0, 292, 30+24*4+10, "Din seç", 30, 24, 4),
 		tradeCorridors:              make([]tradeCorridorInfo, 0, 96),
 		activeWarsBuf:               make([]ActiveWarSummary, 0, 16),
+		activeWarsDirty:             true,
 		tradeHoverIdx:               -1,
 		tradeCenters:                make([]tradeCenterVisual, 0, 12),
 		tradeCenterIdx:              -1,
@@ -1190,6 +1194,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.warSummary = warSummaryState{}
 	r.showActiveWars = false
 	r.activeWarsScroll = 0
+	r.activeWarsDirty = true
 	r.queuedBattleReport = battleReportState{}
 	r.combatLog = ""
 	r.combatLogTimer = 0
@@ -1443,6 +1448,7 @@ func (r *Renderer) applyMapGeoM(op *ebiten.DrawImageOptions, sourceW, sourceH fl
 
 // Draw her frame çağrılır.
 func (r *Renderer) Draw(screen *ebiten.Image) {
+	r.renderFrame++
 	// Bu defer, ana menü ve diğer erken dönüş yapan ekranlarda da pencere
 	// kapatma onayının görünmesini sağlar. Modal her zaman son çizilen katman
 	// olarak kalır ve arka plandaki inputu HandleInput zaten engeller.
@@ -1545,7 +1551,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		}
 	}
 	r.worldMap.Refresh(r.gs, highlightRegion, r.mapMode)
-	r.activeWarsBuf = collectActiveWarSummaries(r.gs, r.activeWarsBuf)
+	if r.showActiveWars && (r.activeWarsDirty || r.renderFrame-r.activeWarsLastRefresh >= 30) {
+		r.activeWarsBuf = collectActiveWarSummaries(r.gs, r.activeWarsBuf)
+		r.activeWarsLastRefresh = r.renderFrame
+		r.activeWarsDirty = false
+	}
 
 	// 1. Üretilen dünya haritası
 	mapOp := &ebiten.DrawImageOptions{}
