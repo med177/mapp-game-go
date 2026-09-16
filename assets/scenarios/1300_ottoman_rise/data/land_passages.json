@@ -61,7 +61,7 @@
   },
   {
     "from": "tanca_region",
-    "to": "sevilla",
+    "to": "area::area__86",
     "type": "strait",
     "move_cost": 1,
     "defense_bonus": 15,

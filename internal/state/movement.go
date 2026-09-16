@@ -1,6 +1,8 @@
 package state
 
 import (
+	"sort"
+
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/tech"
@@ -72,6 +74,73 @@ func terrainAreaCostForID(area world.TerrainArea) (int, bool) {
 		return 0, true
 	}
 	return area.MoveCost, false
+}
+
+// RepairArmiesInBlockedTerrain, senaryo veya eski kayıt yüklenirken geçilmez
+// arazi alanının içinde kalmış kara ordularını bir kez geçerli bir kara
+// bölgesine taşır.
+func (s *GameState) RepairArmiesInBlockedTerrain() int {
+	if s == nil || len(s.Armies) == 0 {
+		return 0
+	}
+	repaired := 0
+	for _, currentArmy := range s.Armies {
+		if currentArmy == nil || currentArmy.IsNaval {
+			continue
+		}
+		region := s.Regions[currentArmy.RegionID]
+		if region == nil || region.IsSea {
+			continue
+		}
+		if _, blocked := s.LandRegionMoveCost(region); !blocked {
+			continue
+		}
+		destination := s.nearestRepairLandRegion(region.ID, currentArmy.OwnerID)
+		if destination == "" {
+			continue
+		}
+		currentArmy.PreviousRegionID = currentArmy.RegionID
+		currentArmy.RegionID = destination
+		currentArmy.DockedRegionID = ""
+		currentArmy.DockedSettlementID = ""
+		repaired++
+	}
+	return repaired
+}
+
+func (s *GameState) nearestRepairLandRegion(start world.RegionID, ownerID string) world.RegionID {
+	if s == nil || start == "" {
+		return ""
+	}
+	type queueItem struct{ id world.RegionID }
+	queue := []queueItem{{id: start}}
+	visited := map[world.RegionID]bool{start: true}
+	var fallback world.RegionID
+	for len(queue) > 0 {
+		currentID := queue[0].id
+		queue = queue[1:]
+		region := s.Regions[currentID]
+		if region != nil && currentID != start && !region.IsSea {
+			if _, blocked := s.LandRegionMoveCost(region); !blocked {
+				if fallback == "" {
+					fallback = currentID
+				}
+				if ownerID != "" && region.OwnerID == ownerID {
+					return currentID
+				}
+			}
+		}
+		neighbors := append([]world.RegionID(nil), region.Neighbors...)
+		sort.Slice(neighbors, func(i, j int) bool { return neighbors[i] < neighbors[j] })
+		for _, neighborID := range neighbors {
+			if neighborID == "" || visited[neighborID] || s.Regions[neighborID] == nil {
+				continue
+			}
+			visited[neighborID] = true
+			queue = append(queue, queueItem{id: neighborID})
+		}
+	}
+	return fallback
 }
 
 // LandRegionAttritionPercent, bir arazi alanına giren ordunun kaybedeceği HP

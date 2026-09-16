@@ -78,6 +78,7 @@ const (
 	ActionEditMode                  ActionKind = "edit_mode"
 	ActionContinue                  ActionKind = "continue"
 	ActionOpenSettings              ActionKind = "open_settings"
+	ActionOpenShortcuts             ActionKind = "open_shortcuts"
 	ActionQuit                      ActionKind = "quit"
 	ActionSaveSettings              ActionKind = "save_settings"
 	ActionBack                      ActionKind = "back"

@@ -37,7 +37,7 @@ func difficultyLabelTR(difficulty int) string {
 
 const settingsPath = "saves/settings.json"
 
-const settingsRowCount = 8
+const settingsRowCount = 9
 
 func settingsRowsRect(rowCount int) gameui.Rect {
 	return centeredStackRect(rowCount, 500, 56, 4, 40)
@@ -80,6 +80,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		{"Müzik Seviyesi", itoa(s.MusicVolume) + "%"},
 		{"Ses Efektleri", boolLabel(s.SoundOn)},
 		{"Ses Seviyesi", itoa(s.SoundVolume) + "%"},
+		{"Kısayollar", ""},
 		{"← Geri Dön", ""},
 	}
 
@@ -132,7 +133,7 @@ func (r *Renderer) toggleFullscreen() {
 
 // handleSettingsInput ayarlar ekranı girişini işler.
 func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
-	rowCount := settingsRowCount // zorluk, ekran modu, AI hamleleri, müzik, müzik seviyesi, ses, ses seviyesi, geri dön
+	rowCount := settingsRowCount // zorluk, ekran modu, AI hamleleri, müzik, müzik seviyesi, ses, ses seviyesi, kısayollar, geri dön
 	mx, my := ebiten.CursorPosition()
 	if i := r.settingsHoverIndex(float64(mx), float64(my)); i >= 0 {
 		r.factionCursor = i
@@ -190,7 +191,11 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 			s.SoundVolume = clampVolume(s.SoundVolume - 5)
 			applyAudioSettings(*s)
 		}
-	case 7: // Geri dön
+	case 7: // Kısayollar
+		if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
+			return InputAction{Kind: ActionOpenShortcuts}
+		}
+	case 8: // Geri dön
 		if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeyEscape) {
 			r.factionCursor = 0
 			return InputAction{Kind: ActionSaveSettings}
@@ -237,6 +242,8 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 			}
 			applyAudioSettings(*s)
 		case 7:
+			return InputAction{Kind: ActionOpenShortcuts}
+		case 8:
 			r.factionCursor = 0
 			return InputAction{Kind: ActionSaveSettings}
 		}

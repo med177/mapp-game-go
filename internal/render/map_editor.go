@@ -4800,6 +4800,9 @@ func (r *Renderer) moveSelectedArmyToEditRegion() {
 	if (a.IsNaval && !region.IsSea) || (!a.IsNaval && region.IsSea) {
 		return
 	}
+	if !a.IsNaval && !canPlaceEditLandArmy(r.gs, region) {
+		return
+	}
 	aid := a.ID
 	old := a.RegionID
 	oldDockedRegion := a.DockedRegionID
@@ -4969,7 +4972,15 @@ func (r *Renderer) toggleEditUnitTypeDropdown() {
 }
 
 func (r *Renderer) canAddEditLandArmy(region *world.Region) bool {
-	return region != nil && !region.IsSea && !region.IsLocked && r.editOwnerForRegion(region) != "" && r.defaultEditUnitType(false) != ""
+	return canPlaceEditLandArmy(r.gs, region) && r.editOwnerForRegion(region) != "" && r.defaultEditUnitType(false) != ""
+}
+
+func canPlaceEditLandArmy(gs *state.GameState, region *world.Region) bool {
+	if gs == nil || region == nil || region.IsSea || region.IsLocked {
+		return false
+	}
+	_, blocked := gs.LandRegionMoveCost(region)
+	return !blocked
 }
 
 func (r *Renderer) canAddEditFleet(region *world.Region) bool {
@@ -5129,6 +5140,9 @@ func (r *Renderer) selectedArmyOwnerRegion(a *army.Army) *world.Region {
 
 func (r *Renderer) setArmyLocation(aid army.ArmyID, rid, dockedRegionID world.RegionID, dockedSettlementID string) {
 	if a := r.gs.Armies[aid]; a != nil {
+		if !a.IsNaval && !canPlaceEditLandArmy(r.gs, r.gs.Regions[rid]) {
+			return
+		}
 		a.RegionID = rid
 		a.DockedRegionID = dockedRegionID
 		a.DockedSettlementID = dockedSettlementID

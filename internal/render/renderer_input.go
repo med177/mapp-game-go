@@ -39,6 +39,10 @@ func (r *Renderer) HandleInput() InputAction {
 	r.updateCursorShape()
 	r.updateEditDropdownPositions()
 
+	if r.showShortcuts {
+		return r.handleShortcutsInput()
+	}
+
 	// Tarihsel olay popup'ı çizimde en üstte olduğundan inputta da ilk öncelik olmalı.
 	if r.showHistoricalEvent {
 		return r.handleHistoricalEventInput()
@@ -139,6 +143,10 @@ func (r *Renderer) HandleInput() InputAction {
 
 	// Ayarlar ekranı inputu
 	if r.gs.Phase == state.PhaseSettings {
+		if r.keyJustPressed(ebiten.KeyQ) || r.keyJustPressed(ebiten.KeyF1) {
+			r.showShortcuts = true
+			return InputAction{}
+		}
 		return r.handleSettingsInput(&r.CurrentSettings)
 	}
 
@@ -215,7 +223,7 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.showAIDiagnostic {
 		return r.handleAIDiagnosticInput()
 	}
-	if r.gs.DevelopmentMode && r.keyJustPressed(ebiten.KeyF3) {
+	if r.gs.DevelopmentMode && r.keyJustPressed(ebiten.KeyF12) {
 		r.toggleAIDiagnostic()
 		return InputAction{}
 	}
@@ -223,6 +231,10 @@ func (r *Renderer) HandleInput() InputAction {
 		if r.keyJustPressed(ebiten.KeyF11) {
 			r.toggleFullscreen()
 		}
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyQ) || r.keyJustPressed(ebiten.KeyF1) {
+		r.showShortcuts = true
 		return InputAction{}
 	}
 
@@ -382,25 +394,25 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyN) && r.SelectedRegion != "" {
 		return InputAction{Kind: ActionRecruitNaval, TargetRegion: r.SelectedRegion}
 	}
-	// B: bina inşa et (1–6 tuşları ile seçim)
+	// 1–9: bina inşa et
 	if r.SelectedRegion != "" {
 		if act := r.handleBuildKey(); act.Kind != ActionNone {
 			return act
 		}
 	}
-	// Ctrl+S: hızlı kaydet, L: yükle. Tek başına S kamera hareketi içindir.
-	if r.keyJustPressed(ebiten.KeyS) && controlKeyPressed() {
+	// Ctrl+S veya F5: hızlı kaydet. Tek başına S kamera hareketi içindir.
+	if (r.keyJustPressed(ebiten.KeyS) && controlKeyPressed()) || r.keyJustPressed(ebiten.KeyF5) {
 		return InputAction{Kind: ActionSave}
 	}
-	if r.keyJustPressed(ebiten.KeyL) {
-		return InputAction{Kind: ActionLoad}
+	if r.keyJustPressed(ebiten.KeyF9) {
+		return InputAction{Kind: ActionOpenLoadSelect}
 	}
-	// Vergi ayarlama: seçili kendi bölgesinde . ve , tuşları
+	// Vergi ayarlama: seçili kendi bölgesinde + ve - tuşları
 	if r.SelectedRegion != "" {
-		if r.keyJustPressed(ebiten.KeyPeriod) {
+		if r.keyJustPressed(ebiten.KeyEqual) || r.keyJustPressed(ebiten.KeyKPAdd) {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: 5}
 		}
-		if r.keyJustPressed(ebiten.KeyComma) {
+		if r.keyJustPressed(ebiten.KeyMinus) || r.keyJustPressed(ebiten.KeyKPSubtract) {
 			return InputAction{Kind: ActionAdjustTax, TargetRegion: r.SelectedRegion, Delta: -5}
 		}
 	}
@@ -416,7 +428,8 @@ func (r *Renderer) HandleInput() InputAction {
 
 // handleBuildKey 1–9 rakam tuşlarıyla bina inşaatı başlatır.
 func (r *Renderer) handleBuildKey() InputAction {
-	buildingSlots := []string{"market", "farm", "barracks", "port", "walls", "temple", "granary", "forge", "workshop"}
+	region := r.gs.Regions[r.SelectedRegion]
+	buildingSlots := visibleBuildingIDs(r.gs, region)
 	keys := []ebiten.Key{ebiten.Key1, ebiten.Key2, ebiten.Key3, ebiten.Key4, ebiten.Key5, ebiten.Key6, ebiten.Key7, ebiten.Key8, ebiten.Key9}
 	for i, k := range keys {
 		if r.keyJustPressed(k) && i < len(buildingSlots) {

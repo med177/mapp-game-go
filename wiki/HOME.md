@@ -77,4 +77,4 @@ Mevcut senaryolar: `1300_ottoman_rise` · `1444_ottoman_empire` · `1648_westpha
 **Tur çözümleme sırası** (`internal/game/game.go:230`):
 `applySeasonEffects` → `applyEconomyTick` → `applyTechTicks` → `applyReligionConversion` → `checkRegionUnlocks` → `checkRebellions` → `checkEliminations` → `applyRelationDecay` → `victory.Check` → `events.Tick`
 
-**Klavye kısayolları:** `Enter/Space` tur sonu · `Tab` diplomasi · `T` teknoloji · `R` asker al · `N` gemi inşa · `1-6` bina · `S/L` kaydet/yükle · `F11` tam ekran
+**Klavye kısayolları:** `Q/F1` kısayol penceresi · `Enter/Space` tur sonu · `Esc` duraklama · `Tab` diplomasi · `C` pazar · `T` teknoloji · `M` harita görünümü · `R` asker al · `N` gemi inşa · `1-9` bina · `Ctrl+S/F5` hızlı kaydet · `F9` kayıt yükleme menüsü · `+/-` vergi · `F11` tam ekran · `F12` geliştirme AI teşhisi

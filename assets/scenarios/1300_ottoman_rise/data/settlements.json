@@ -1203,8 +1203,8 @@
       {
         "id": "castile_burgos",
         "name_tr": "Burgos",
-        "x": 393,
-        "y": 427,
+        "x": 400,
+        "y": 432,
         "type": "fortress",
         "is_center": true,
         "population": 180
@@ -1463,14 +1463,6 @@
     "region_id": "austria",
     "settlements": [
       {
-        "id": "austria_linz",
-        "name_tr": "Linz",
-        "x": 764,
-        "y": 319,
-        "type": "town",
-        "population": 48
-      },
-      {
         "id": "austria_vienna",
         "name_tr": "Viyana",
         "x": 798,
@@ -1494,6 +1486,14 @@
         "y": 345,
         "type": "town",
         "population": 46
+      },
+      {
+        "id": "styria_klagenfurt",
+        "name_tr": "Klagenfurt",
+        "x": 762,
+        "y": 349,
+        "type": "city",
+        "population": 89
       }
     ]
   },
@@ -1708,6 +1708,14 @@
         "type": "fortress",
         "is_center": true,
         "population": 105
+      },
+      {
+        "id": "serbia_smederevo",
+        "name_tr": "Semendire",
+        "x": 895,
+        "y": 388,
+        "type": "fortress",
+        "population": 22
       }
     ]
   },
@@ -1722,14 +1730,6 @@
         "type": "town",
         "is_center": true,
         "population": 48
-      },
-      {
-        "id": "serbia_smederevo",
-        "name_tr": "Semendire",
-        "x": 895,
-        "y": 388,
-        "type": "fortress",
-        "population": 22
       },
       {
         "id": "vidin_negotin",
@@ -1764,7 +1764,7 @@
         "id": "wallachia_bucharest",
         "name_tr": "Bükreş",
         "x": 1002,
-        "y": 392,
+        "y": 391,
         "type": "town",
         "is_center": true,
         "population": 58
@@ -1776,6 +1776,14 @@
         "y": 377,
         "type": "port",
         "population": 87
+      },
+      {
+        "id": "wallachia_giurgiu",
+        "name_tr": "Giurgiu",
+        "x": 994,
+        "y": 399,
+        "type": "fortress",
+        "population": 23
       }
     ]
   },
@@ -1799,14 +1807,6 @@
         "population": 92
       },
       {
-        "id": "wallachia_giurgiu",
-        "name_tr": "Giurgiu",
-        "x": 994,
-        "y": 399,
-        "type": "fortress",
-        "population": 23
-      },
-      {
         "id": "wallachia_targoviste",
         "name_tr": "Targovişte",
         "x": 994,
@@ -1814,14 +1814,6 @@
         "type": "fortress",
         "is_center": true,
         "population": 30
-      },
-      {
-        "id": "transylvania_main",
-        "name_tr": "Tamışvar",
-        "x": 900,
-        "y": 365,
-        "type": "city",
-        "population": 182
       }
     ]
   },
@@ -2252,6 +2244,14 @@
         "y": 518,
         "type": "port",
         "population": 57
+      },
+      {
+        "id": "morea_corinth",
+        "name_tr": "Korint",
+        "x": 934,
+        "y": 514,
+        "type": "fortress",
+        "population": 10
       }
     ]
   },
@@ -3462,6 +3462,50 @@
         "y": 333,
         "type": "town",
         "population": 34
+      }
+    ]
+  },
+  {
+    "region_id": "kefalonia_island",
+    "settlements": [
+      {
+        "id": "kefalonia_island_settlement_1",
+        "name_tr": "Kefalonya",
+        "x": 889,
+        "y": 512,
+        "type": "city",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "kefalonia_island_settlement_2",
+        "name_tr": "Kefalonya Limanı",
+        "x": 891,
+        "y": 509,
+        "type": "port",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "korfu",
+    "settlements": [
+      {
+        "id": "korfu_settlement_1",
+        "name_tr": "Korfu",
+        "x": 875,
+        "y": 484,
+        "type": "city",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "korfu_settlement_2",
+        "name_tr": "Korfu Limanı",
+        "x": 878,
+        "y": 486,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -5238,6 +5282,14 @@
         "type": "fortress",
         "is_center": true,
         "population": 45
+      },
+      {
+        "id": "transylvania_main",
+        "name_tr": "Tamışvar",
+        "x": 900,
+        "y": 365,
+        "type": "city",
+        "population": 182
       }
     ]
   },
@@ -5854,12 +5906,12 @@
         "population": 23
       },
       {
-        "id": "styria_klagenfurt",
-        "name_tr": "Klagenfurt",
-        "x": 762,
-        "y": 348,
-        "type": "city",
-        "population": 89
+        "id": "austria_linz",
+        "name_tr": "Linz",
+        "x": 764,
+        "y": 318,
+        "type": "town",
+        "population": 48
       }
     ]
   },
@@ -6070,8 +6122,8 @@
       {
         "id": "verona_trent",
         "name_tr": "Trent",
-        "x": 698,
-        "y": 356,
+        "x": 702,
+        "y": 354,
         "type": "fortress",
         "population": 20
       }
@@ -6578,14 +6630,6 @@
         "y": 511,
         "type": "port",
         "population": 30
-      },
-      {
-        "id": "morea_corinth",
-        "name_tr": "Korint",
-        "x": 934,
-        "y": 514,
-        "type": "fortress",
-        "population": 10
       }
     ]
   },

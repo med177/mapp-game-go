@@ -26,18 +26,20 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 			}
 		}
 		switch area.Terrain {
+		case world.TerrainPlain:
+			col = terrainAreaTypeColor(col, color.RGBA{224, 202, 112, 255})
 		case world.TerrainMountain:
-			col = tintTerrainAreaColor(col, 0.78)
+			col = terrainAreaTypeColor(col, color.RGBA{98, 65, 32, 255})
 		case world.TerrainDesert:
-			col = tintTerrainAreaColor(col, 1.18)
+			col = terrainAreaTypeColor(col, color.RGBA{190, 154, 40, 255})
 		case world.TerrainDenseForest:
 			col = tintTerrainAreaColor(col, 0.62)
 		case world.TerrainLake:
-			col = tintTerrainAreaColor(col, 0.75)
+			col = terrainAreaTypeColor(col, color.RGBA{120, 195, 232, 255})
 		case world.TerrainRiver:
 			col = tintTerrainAreaColor(col, 0.82)
 		case world.TerrainSwamp:
-			col = tintTerrainAreaColor(col, 0.7)
+			col = terrainAreaTypeColor(col, color.RGBA{38, 98, 48, 255})
 		}
 		passable := world.TerrainAreaIsPassable(area)
 		if passable {
@@ -131,4 +133,8 @@ func tintTerrainAreaColor(col color.RGBA, factor float64) color.RGBA {
 		return uint8(v)
 	}
 	return color.RGBA{clamp(float64(col.R) * factor), clamp(float64(col.G) * factor), clamp(float64(col.B) * factor), col.A}
+}
+
+func terrainAreaTypeColor(col, terrainColor color.RGBA) color.RGBA {
+	return color.RGBA{R: terrainColor.R, G: terrainColor.G, B: terrainColor.B, A: col.A}
 }

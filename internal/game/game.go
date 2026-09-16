@@ -49,6 +49,9 @@ type Game struct {
 	escortFollowDepth                 int
 	pendingWarFollowUp                *render.InputAction
 	warDeclarationContinuationPending bool
+	loadSelectReturnPhase             state.Phase
+	lastLandUnitID                    string
+	lastNavalUnitID                   string
 }
 
 type pendingSortieState struct {
@@ -192,16 +195,23 @@ func (g *Game) Update() error {
 			}
 		case render.ActionOpenLoadSelect:
 			render.SaveSlots = save.ListSlots()
+			g.loadSelectReturnPhase = state.PhaseMainMenu
 			g.gs.Phase = state.PhaseLoadSelect
 		case render.ActionOpenSettings:
 			g.gs.Phase = state.PhaseSettings
 			g.renderer.SetCursor(0)
+		case render.ActionOpenShortcuts:
+			g.renderer.OpenShortcuts()
 		}
 
 	case state.PhaseLoadSelect:
 		switch action.Kind {
 		case render.ActionSelectSave:
-			g.startLoadSlot(action.BuildingID, state.PhaseMainMenu)
+			fallback := g.loadSelectReturnPhase
+			if fallback == "" {
+				fallback = state.PhaseMainMenu
+			}
+			g.startLoadSlot(action.BuildingID, fallback)
 		case render.ActionDeleteSave:
 			if err := save.DeleteSlot(action.BuildingID); err != nil {
 				g.renderer.ShowCombatResult("Silme hatası: " + err.Error())
@@ -210,11 +220,16 @@ func (g *Game) Update() error {
 			g.renderer.HasSave = save.AnySlotExists()
 			g.renderer.HasAutoSave = save.ContinueSaveExists()
 		case render.ActionBack:
-			g.gs.Phase = state.PhaseMainMenu
+			g.gs.Phase = g.loadSelectReturnPhase
+			if g.gs.Phase == "" {
+				g.gs.Phase = state.PhaseMainMenu
+			}
 		}
 
 	case state.PhaseSettings:
-		if action.Kind == render.ActionSaveSettings {
+		if action.Kind == render.ActionOpenShortcuts {
+			g.renderer.OpenShortcuts()
+		} else if action.Kind == render.ActionSaveSettings {
 			g.gs.Difficulty = g.renderer.CurrentSettings.Difficulty
 			render.ApplyDisplaySettings(g.renderer.CurrentSettings)
 			audio.SetMusicEnabled(g.renderer.CurrentSettings.MusicOn)
@@ -263,6 +278,10 @@ func (g *Game) Update() error {
 
 	case state.PhasePlayerTurn:
 		switch action.Kind {
+		case render.ActionOpenLoadSelect:
+			render.SaveSlots = save.ListSlots()
+			g.loadSelectReturnPhase = state.PhasePlayerTurn
+			g.gs.Phase = state.PhaseLoadSelect
 		case render.ActionOpenImperialPanel:
 			// Panel state renderer tarafından yönetilir.
 		case render.ActionImperialDietChoice:
@@ -531,9 +550,11 @@ func (g *Game) Update() error {
 			g.gs.Phase = state.PhasePlayerTurn
 		case render.ActionOpenSaveSelect:
 			render.SaveSlots = save.ListSlots()
+			g.loadSelectReturnPhase = state.PhasePauseMenu
 			g.gs.Phase = state.PhaseSaveSelect
 		case render.ActionLoadFromPause:
 			render.SaveSlots = save.ListSlots()
+			g.loadSelectReturnPhase = state.PhasePauseMenu
 			g.gs.Phase = state.PhaseLoadSelect
 		case render.ActionToggleMusic:
 			g.renderer.CurrentSettings.MusicOn = audio.ToggleMusic()
@@ -647,6 +668,8 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	}
 	switch kind {
 	case loadingScenario:
+		g.lastLandUnitID = ""
+		g.lastNavalUnitID = ""
 		g.gs = res.gs
 		refreshMarketOrdersAndPrices(g.gs)
 		g.pendingWarFollowUp = nil
@@ -663,6 +686,8 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.renderer.SetCursor(0)
 		g.refreshEventCodex()
 	case loadingSave:
+		g.lastLandUnitID = ""
+		g.lastNavalUnitID = ""
 		res.gs.Phase = state.PhasePlayerTurn
 		res.gs.InitializePlayerCommanders()
 		g.gs = res.gs
@@ -3569,6 +3594,8 @@ func (g *Game) resetToScenarioSelect(editMode bool) {
 	}
 	audio.StopMusic()
 	g.finishAITurnSequence()
+	g.lastLandUnitID = ""
+	g.lastNavalUnitID = ""
 	gs := &state.GameState{
 		Phase:      state.PhaseScenarioSelect,
 		Difficulty: difficulty,
@@ -3831,6 +3858,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	if !editMode {
 		gs.ApplyHistoricalFactionChanges()
 		army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
+		gs.RepairArmiesInBlockedTerrain()
 		diplomacy.NormalizeVassalage(gs)
 		gs.SyncWarLedgers()
 		diplomacy.EnsureTradeRoutesForActiveRelations(gs)
@@ -3887,14 +3915,22 @@ func saveExists() bool {
 	return err == nil
 }
 
-// recruitNaval kıyı bölgesinde nakliye gemisi oluşturur.
+// recruitNaval kıyı bölgesinde son kullanılan deniz birimini oluşturur.
 func (g *Game) recruitNaval(rid world.RegionID) {
-	g.recruitSpecific(rid, "transport", 1)
+	unitTypeID := g.lastNavalUnitID
+	if unitTypeID == "" {
+		unitTypeID = "transport"
+	}
+	g.recruitSpecific(rid, unitTypeID, 1)
 }
 
-// recruitUnit seçili bölgede oyuncu adına bir milis birimi alır.
+// recruitUnit seçili bölgede oyuncu adına son kullanılan kara birimini alır.
 func (g *Game) recruitUnit(rid world.RegionID) {
-	g.recruitSpecific(rid, "militia", 1)
+	unitTypeID := g.lastLandUnitID
+	if unitTypeID == "" {
+		unitTypeID = "militia"
+	}
+	g.recruitSpecific(rid, unitTypeID, 1)
 }
 
 // recruitSpecific seçili bölgede belirli türde bir birim alır.
@@ -4031,6 +4067,7 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 			cost.Apply(f)
 			g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
 		}
+		g.lastNavalUnitID = unitTypeID
 		g.renderer.ShowCombatResult(fmt.Sprintf("%s üretimi başladı! x%d (%d tur)", utype.NameTR, quantity, utype.TurnsRequired))
 		return
 	}
@@ -4074,6 +4111,7 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		cost.Apply(f)
 		g.enqueueProduction(productionKindUnit, rid, unitTypeID, utype.TurnsRequired)
 	}
+	g.lastLandUnitID = unitTypeID
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s eğitimi başladı! x%d (%d tur)", utype.NameTR, quantity, utype.TurnsRequired))
 }
 
@@ -4470,6 +4508,10 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		return false
 	}
 	battleStance = combat.NormalizeBattleStance(battleStance)
+	if _, blocked := g.gs.LandRegionMoveCost(targetRegion); blocked {
+		g.renderer.ShowCombatResult("Çıkarma emri reddedildi: hedef geçilemez arazi alanında.")
+		return true
+	}
 	if !g.canDisembarkToLand(fleet, targetRegion) {
 		if len(fleet.EmbarkedUnits) == 0 {
 			g.renderer.ShowCombatResult("Çıkarma emri reddedildi: filoda taşınan kara birimi yok.")

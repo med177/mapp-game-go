@@ -242,6 +242,7 @@ type Renderer struct {
 	commanderRecruitError    string
 	commanderRecruitPortrait string
 	showAIDiagnostic         bool
+	showShortcuts            bool
 	aiDiagnosticFaction      faction.FactionID
 	aiDiagnosticScroll       int
 	aiDiagnosticSnapshot     *ai.AIDiagnosticSnapshot
@@ -1481,6 +1482,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// Ayarlar ekranı
 	if r.gs.Phase == state.PhaseSettings {
 		DrawSettingsScreen(screen, r.CurrentSettings, r.factionCursor)
+		if r.showShortcuts {
+			r.drawShortcutsOverlay(screen)
+		}
 		return
 	}
 
@@ -1763,6 +1767,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 	if r.showCommanderPanel {
 		r.DrawCommanderPanel(screen)
+	}
+	if r.showShortcuts {
+		r.drawShortcutsOverlay(screen)
 	}
 }
 

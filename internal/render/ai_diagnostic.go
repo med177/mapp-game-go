@@ -99,7 +99,7 @@ func (r *Renderer) handleAIDiagnosticInput() InputAction {
 	if r == nil || !r.showAIDiagnostic {
 		return InputAction{}
 	}
-	if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyF3) {
+	if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyF12) {
 		r.toggleAIDiagnostic()
 		return InputAction{}
 	}

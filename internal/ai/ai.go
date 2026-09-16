@@ -1808,6 +1808,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	}
 
 	if a.IsNaval && targetRegion.CanLandEnter() {
+		if _, blocked := gs.LandRegionMoveCost(targetRegion); blocked {
+			return moveOutcome{survived: true}
+		}
 		if !aiCanDisembarkToLand(gs, a, targetRegion) {
 			return moveOutcome{survived: true}
 		}

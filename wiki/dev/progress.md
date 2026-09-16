@@ -1,11 +1,18 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-15
+last_updated: 2026-09-16
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-16: `move_cost: 0` geçilmez arazi alanlarında kalan kara orduları
+  senaryo/kayıt yüklemesinde bir kez en yakın geçilebilir kara bölgesine
+  taşınıyor. Normal kara hareketi ve amfibi çıkarma aynı arazi kontrolünü
+  kullanıyor; Edit Mode'da bu alanlara kara ordusu ekleme veya taşıma
+  engelleniyor (`internal/state/movement.go`, `internal/game/game.go`,
+  `internal/save/save.go`, `internal/render/map_editor.go`).
 
 - 2026-09-15: Pazar mallarının temel fiyatları senaryoya özel
   `data/resources.json` içindeki `base_prices` alanından yükleniyor ve oyun

@@ -29,6 +29,21 @@ func TestEnsureEditRegionPaintOverridesInitializesNilMap(t *testing.T) {
 	}
 }
 
+func TestCanPlaceEditLandArmyRejectsBlockedTerrain(t *testing.T) {
+	blocked := &world.Region{ID: "blocked", IsTerrainArea: true, TerrainAreaID: "area"}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{blocked.ID: blocked},
+		TerrainAreas: []world.TerrainArea{{
+			ID:       "area",
+			MoveCost: 0,
+			Polygons: [][][2]int{{{-1, -1}, {2, -1}, {2, 2}, {-1, 2}}},
+		}},
+	}
+	if canPlaceEditLandArmy(gs, blocked) {
+		t.Fatal("edit mode allowed an army on blocked terrain")
+	}
+}
+
 func TestRegionCenterAffectsRasterOnlyForSeaOrSharedShape(t *testing.T) {
 	r := &Renderer{gs: &state.GameState{Regions: map[world.RegionID]*world.Region{
 		"single":   {ID: "single", ShapeID: "single_shape"},
