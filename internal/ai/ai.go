@@ -2132,21 +2132,18 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		defSourceIDs = nil
 	}
 	if combinedDef == nil && !navalAutoEngagement {
-		for _, ea := range aiSortedArmies(gs) {
-			if ea.RegionID == target && ea.OwnerID != a.OwnerID && !ea.InAmbush && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
-				enemyArmy = ea
-				break
-			}
-		}
+		// Temas aşamasında bulunamayan yabancı orduyu burada doğrudan
+		// düşman kabul etme. Bu seçim aynı savaş ilişkisi sözleşmesini
+		// kullanmazsa, temas modalı atlanarak barış halindeki bir orduya
+		// saldırılabilir.
+		enemyArmy = gs.SelectBattleDefender(a, target, a.IsNaval && targetRegion.IsSea)
 	} else if navalAutoEngagement {
 		enemyArmy = gs.SelectNavalPatrolDefender(a, target)
 	} else {
-		// Birleşik ordudan refakat için ilk orduyu bul.
-		for _, ea := range aiSortedArmies(gs) {
-			if ea.RegionID == target && ea.OwnerID != a.OwnerID && !ea.InAmbush && (!a.IsNaval || !targetRegion.IsSea || ea.IsAtSea()) {
-				enemyArmy = ea
-				break
-			}
+		// Birleşik savunmanın sahibini/kuşatma kaydını belirlemek için
+		// yalnızca gerçekten birleşime alınmış kaynak ordulardan birini kullan.
+		if len(defSourceIDs) > 0 {
+			enemyArmy = gs.Armies[defSourceIDs[0]]
 		}
 	}
 
