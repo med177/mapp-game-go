@@ -7,6 +7,13 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+const (
+	defaultTerrainShapeOffsetX = -530.0
+	defaultTerrainShapeOffsetY = -180.0
+	defaultTerrainShapeScaleX  = 2.025
+	defaultTerrainShapeScaleY  = 2.025
+)
+
 // LandRegionMoveCost returns the cost of entering a land region at its anchor.
 // It keeps the current node-based map model compatible while allowing painted
 // subregions to block or tax movement.
@@ -27,12 +34,37 @@ func (s *GameState) LandRegionMoveCost(region *world.Region) (int, bool) {
 				return 1 - extra, false
 			}
 		}
+	} else {
+		// Normal region WorldX/WorldY değerleri senaryo shape koordinatındadır;
+		// terrain polygonları ise renderer/editör tarafından dünya pikseli olarak
+		// saklanır. Hareket kontrolü bu iki koordinat uzayını eşitlemelidir.
+		x, y = s.shapePointToWorld(region.WorldX, region.WorldY)
 	}
 	extra, blocked := world.TerrainAreaMovementCost(s.TerrainAreas, parentID, x, y)
 	if blocked {
 		return 0, true
 	}
 	return 1 - extra, false
+}
+
+func (s *GameState) shapePointToWorld(x, y int) (int, int) {
+	offX, offY := defaultTerrainShapeOffsetX, defaultTerrainShapeOffsetY
+	scaleX, scaleY := defaultTerrainShapeScaleX, defaultTerrainShapeScaleY
+	if s != nil {
+		if s.MapConfig.ShapeOffsetX != nil {
+			offX = *s.MapConfig.ShapeOffsetX
+		}
+		if s.MapConfig.ShapeOffsetY != nil {
+			offY = *s.MapConfig.ShapeOffsetY
+		}
+		if s.MapConfig.ShapeScaleX != nil && *s.MapConfig.ShapeScaleX != 0 {
+			scaleX = *s.MapConfig.ShapeScaleX
+		}
+		if s.MapConfig.ShapeScaleY != nil && *s.MapConfig.ShapeScaleY != 0 {
+			scaleY = *s.MapConfig.ShapeScaleY
+		}
+	}
+	return int(float64(x)*scaleX + offX), int(float64(y)*scaleY + offY)
 }
 
 func terrainAreaCostForID(area world.TerrainArea) (int, bool) {
