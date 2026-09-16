@@ -1366,7 +1366,7 @@ func minimapHit(mx, my float64) bool {
 	return mx >= float64(x) && mx <= float64(x+minimapW) && my >= float64(y) && my <= float64(y+minimapH)
 }
 
-func drawEventDetailPopup(screen *ebiten.Image, titleMessage, detailMessage string) {
+func drawEventDetailPopup(screen *ebiten.Image, titleMessage, detailMessage string, scroll float64) {
 	modal := buildEventDetailModal()
 	gameui.DrawModal(screen, modal, eventDetailModalStyle, nil, nil)
 
@@ -1411,11 +1411,73 @@ func drawEventDetailPopup(screen *ebiten.Image, titleMessage, detailMessage stri
 			Align:   gameui.TextAlignStart,
 		})
 	}
-	if source := eventDetailSourceLabel(titleMessage, bodyLines); source != "" {
-		drawUILabel(screen, layout.bodyRect, source, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-		layout.bodyRect.Y += 20
+	maxScroll := eventDetailMaxScroll(titleMessage, detailMessage)
+	// Metni modal gövdesinin dışına çizmemek için yalnızca gövde viewport'una
+	// ait alt görüntüye çizeriz. Kaydırma, uzun olay seçimlerinin erişilebilir
+	// kalmasını sağlar.
+	scroll = clampEventDetailScrollValue(scroll, maxScroll)
+	left, top := int(layout.bodyRect.X), int(layout.bodyRect.Y)
+	right, bottom := int(layout.bodyRect.X+layout.bodyRect.W), int(layout.bodyRect.Y+layout.bodyRect.H)
+	if right <= left || bottom <= top {
+		return
 	}
-	drawUIRichTextBlock(screen, layout.bodyRect, linesForDraw, 19)
+	body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
+	contentRect := layout.bodyRect
+	contentRect.Y -= scroll
+	if source := eventDetailSourceLabel(titleMessage, bodyLines); source != "" {
+		drawUILabel(body, contentRect, source, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		contentRect.Y += 20
+	}
+	drawUIRichTextBlock(body, contentRect, linesForDraw, 19)
+	drawEventDetailScrollbar(screen, layout.bodyRect, maxScroll, scroll)
+}
+
+func eventDetailMaxScroll(titleMessage, detailMessage string) float64 {
+	layout := buildEventDetailLayout()
+	lines := eventDetailLines(detailMessage, layout.bodyRect.W)
+	contentHeight := float64(len(lines)) * 19
+	if eventDetailSourceLabel(titleMessage, lines) != "" {
+		contentHeight += 20
+	}
+	maxScroll := contentHeight - layout.bodyRect.H
+	if maxScroll < 0 {
+		return 0
+	}
+	return maxScroll
+}
+
+func clampEventDetailScroll(titleMessage, detailMessage string, scroll float64) float64 {
+	return clampEventDetailScrollValue(scroll, eventDetailMaxScroll(titleMessage, detailMessage))
+}
+
+func clampEventDetailScrollValue(scroll, maxScroll float64) float64 {
+	if scroll < 0 {
+		return 0
+	}
+	if scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func drawEventDetailScrollbar(screen *ebiten.Image, rect gameui.Rect, maxScroll, scroll float64) {
+	if maxScroll <= 0 || rect.H <= 0 {
+		return
+	}
+	track := gameui.Rect{X: rect.X + rect.W - 6, Y: rect.Y, W: 4, H: rect.H}
+	thumbH := track.H * (rect.H / (rect.H + maxScroll))
+	if thumbH < 24 {
+		thumbH = 24
+	}
+	if thumbH > track.H {
+		thumbH = track.H
+	}
+	thumbY := track.Y
+	if track.H > thumbH {
+		thumbY += (track.H - thumbH) * (scroll / maxScroll)
+	}
+	drawRoundedRect(screen, float32(track.X), float32(track.Y), float32(track.W), float32(track.H), 2, color.RGBA{48, 40, 28, 170})
+	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{190, 150, 70, 220})
 }
 
 func eventDetailHeader(message string) (category, subtitle string) {
@@ -1758,6 +1820,8 @@ func drawEventCodexScrollbar(screen *ebiten.Image, count int, visibleCount int, 
 
 func eventCodexLineColor(line string) color.RGBA {
 	switch {
+	case strings.HasPrefix(line, "[✓]"):
+		return color.RGBA{132, 190, 214, 240}
 	case strings.HasPrefix(line, "[+]"):
 		return color.RGBA{132, 214, 132, 240}
 	case strings.HasPrefix(line, "[~]"):
@@ -1785,6 +1849,8 @@ func eventCodexLineColor(line string) color.RGBA {
 
 func codexStatusIcon(status string) string {
 	switch status {
+	case "Gerçekleşti":
+		return "[✓]"
 	case "Hazir":
 		return "[+]"
 	case "Takvim":

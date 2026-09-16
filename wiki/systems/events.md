@@ -182,6 +182,7 @@ Olay tetiklendiğinde:
   - `Takvim`: koşullar uygun ama event tarihi henüz gelmedi
   - `Kilitli`: flag, bölge, tech veya diplomasi koşulu eksik
 - Kodex popup'ında `Tümü / Hazır / Takvim / Kilitli` filtre sekmeleri bulunur; ok tuşları veya mouse ile değiştirilebilir
+- Kodex popup'ında bekleyen event filtrelerinin yanında `Gerçekleşen` sekmesi de bulunur; tarihi gelip uygulanmış tarihsel eventler `FiredEventIDs` kaydından bu sekmede listelenir
 - Kodex listesi artık event başına:
   - takvime kalan ay sayısını
   - kilitliyse ilk ve en kritik eksik koşulu

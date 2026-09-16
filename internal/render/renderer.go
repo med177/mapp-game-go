@@ -196,7 +196,7 @@ type Renderer struct {
 	eventLog               []string
 	eventLogDetails        []string
 	eventLogCollapsed      bool
-	eventCodexEntries      [5][]EventCodexEntry
+	eventCodexEntries      [6][]EventCodexEntry
 	showEventCodex         bool
 	eventCodexFilter       EventCodexFilter
 	eventCodexFocus        int
@@ -204,6 +204,7 @@ type Renderer struct {
 	eventCodexDetailScroll int
 	eventDetail            string
 	eventDetailTitle       string
+	eventDetailScroll      float64
 	showVictoryDetail      bool
 	victoryDetailScroll    float64
 	eventLogScroll         int
@@ -544,6 +545,7 @@ const (
 	EventCodexCalendar
 	EventCodexLocked
 	EventCodexPlayer
+	EventCodexPast
 )
 
 type EventCodexEntry struct {
@@ -1112,7 +1114,7 @@ func (r *Renderer) EventTitleAt(idx int) string {
 	return ""
 }
 
-func (r *Renderer) SetEventCodexEntries(entries [5][]EventCodexEntry) {
+func (r *Renderer) SetEventCodexEntries(entries [6][]EventCodexEntry) {
 	r.eventCodexEntries = entries
 	r.eventCodexDetailScroll = 0
 	if !r.HasEventCodex() {
@@ -1190,6 +1192,8 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.CloseImperialPanel()
 	r.CloseEventCodex()
 	r.eventDetail = ""
+	r.eventDetailTitle = ""
+	r.eventDetailScroll = 0
 	r.showVictoryDetail = false
 	r.victoryDetailScroll = 0
 	r.warSummary = warSummaryState{}
@@ -1247,6 +1251,9 @@ func (r *Renderer) armyPanelTooltipActive() bool {
 }
 
 func (r *Renderer) currentEventCodexEntries() []EventCodexEntry {
+	if int(r.eventCodexFilter) >= len(r.eventCodexEntries) {
+		return nil
+	}
 	return r.eventCodexEntries[int(r.eventCodexFilter)]
 }
 
@@ -1717,7 +1724,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	if r.eventDetail != "" {
-		drawEventDetailPopup(screen, r.eventDetailTitle, r.eventDetail)
+		drawEventDetailPopup(screen, r.eventDetailTitle, r.eventDetail, r.eventDetailScroll)
 	}
 
 	if r.showVictoryDetail {

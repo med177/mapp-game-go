@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-09-12
+last_updated: 2026-09-16
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -249,7 +249,7 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 - Yeni ticaret rotası kurulurken hedef fraksiyonun üç aylık tahıl rezerv açığı ve kaynak fraksiyonun kapasite üstü tahıl fazlası değerlendirilir; ikisi de pozitifse ilgili yön `GoodGrain` olarak oluşturulur ve sonraki ekonomi tick'lerinde normal altın/stok kontrolleriyle tahıl ithalatı gerçekleşir.
 - Aynı vassal realm içindeki normalizasyon kaynaklı `StanceAllied` kayıtları dış ittifak sayılmaz; overlord veya bağlı devlet sayısı üst bilgide ayrıca gösterilir.
 - Teklif geçmişi sağ kolonda sürekli yer kaplamaz; `Geçmiş` düğmesiyle açılır ve `İlişkiler` düğmesiyle güncel ağa dönülür.
-- Standart teklif düğmeleri `ActionBlockReason()` sonucuna göre aktif veya `PASİF` çizilir; pasif düğmeler fare ve klavye odağına alınmaz. Dış devletle ilişki kurulmuşsa aynı `İttifak / Ticaret` düğmeleri `İttifakı Bitir / Ticareti Bitir` işlemine dönüşür ve alt aksiyon `Anlaşmayı Bitir` olur. Savaş `Barış`, vassallık ise `Vasallığı Bitir` yoluyla sona erdirilir. Doğrudan oyuncu vassalında sağ-alt `Vassal Yönetimi` kartı ayrıca onaylı `Vasallığı Bitir / İlhak Et` eylemlerini gösterir.
+- Standart teklif düğmeleri `ActionBlockReason()` sonucuna göre aktif veya `PASİF` çizilir; pasif düğmeler fare ve klavye odağına alınmaz. Dış devletle ilişki kurulmuşsa aynı `İttifak / Ticaret` düğmeleri `İttifakı Bitir / Ticareti Bitir` işlemine dönüşür ve alt aksiyon `Anlaşmayı Bitir` olur. Savaş `Barış`, vassallık ise `Vasallığı Bitir` yoluyla sona erdirilir. Doğrudan oyuncu vassalında sağ-alt `Vassal Yönetimi` kartı ayrıca onaylı `Vasallığı Bitir / İlhak Et` eylemlerini gösterir; 12 turluk ilhak bekleme süresi dolmamışsa pasif `İlhak Et` düğmesi kalan turu etiketinde gösterir.
 - `Savaş` aksiyonu artık doğrudan submit edilmez; teklif sayfasından veya harita üstü saldırı girişiminden sonra özel savaş önizleme modalı açılır. Bu modal iki cepheyi yan yana gösterir: kesin katılacak vassallar ve zaten savaşta olan müttefikler üstte, çağrılabilir müttefikler ise olasılık etiketiyle altta listelenir.
 
 ---

@@ -704,8 +704,8 @@
       "walonia",
       "normandy",
       "paris",
-      "area::area__11::lorraine",
       "area::area__11::walonia",
+      "area::area__11::lorraine",
       "area::area__11::champagne"
     ],
     "world_x": 568,
@@ -753,8 +753,8 @@
       "paris",
       "sch_basel",
       "sch_fribourg",
-      "area::area__11::burgundy",
-      "area::area__11::lorraine"
+      "area::area__11::lorraine",
+      "area::area__11::burgundy"
     ],
     "world_x": 589,
     "world_y": 327,
@@ -1523,8 +1523,8 @@
       "brittany",
       "navarra",
       "toulouse",
-      "area::area__9::navarra",
-      "area::area__9::aquitaine"
+      "area::area__9::aquitaine",
+      "area::area__9::navarra"
     ],
     "world_x": 472,
     "world_y": 397,
@@ -3549,7 +3549,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 380,
+    "population": 247,
     "rural_population": 247,
     "religion": "orthodox",
     "active_event_id": "",
@@ -3717,9 +3717,9 @@
       "gaza",
       "levantine_sea",
       "lower_egypt",
-      "area::area__3::upper_egypt",
       "area::area__3::gaza",
-      "area::area__3::lower_egypt"
+      "area::area__3::lower_egypt",
+      "area::area__3::upper_egypt"
     ],
     "world_x": 1097,
     "world_y": 642,
@@ -3768,9 +3768,9 @@
       "red_open_2",
       "upper_egypt",
       "area::area__1",
-      "area::area__3::upper_egypt",
       "area::area__3::gaza",
-      "area::area__3::lower_egypt"
+      "area::area__3::lower_egypt",
+      "area::area__3::upper_egypt"
     ],
     "world_x": 1119,
     "world_y": 702,
@@ -4197,8 +4197,8 @@
       "gurgan",
       "hemedan",
       "isfahan",
-      "area::area__6::isfahan",
       "area::area__6::kazvin",
+      "area::area__6::isfahan",
       "area::area__47",
       "area::area__48"
     ],
@@ -4284,13 +4284,13 @@
       "isfahan",
       "siraz",
       "area::area__5",
-      "area::area__6::gurgan",
+      "area::area__6::kazvin",
       "area::area__6::hourmuz",
       "area::area__6::northern_persia",
-      "area::area__6::meshed",
       "area::area__6::southern_persia",
-      "area::area__6::isfahan",
-      "area::area__6::kazvin"
+      "area::area__6::meshed",
+      "area::area__6::gurgan",
+      "area::area__6::isfahan"
     ],
     "world_x": 1588,
     "world_y": 657,
@@ -4390,13 +4390,13 @@
       "persian_open_1",
       "siraz",
       "southern_persia",
-      "area::area__6::gurgan",
+      "area::area__6::kazvin",
       "area::area__6::hourmuz",
       "area::area__6::northern_persia",
-      "area::area__6::meshed",
       "area::area__6::southern_persia",
-      "area::area__6::isfahan",
-      "area::area__6::kazvin"
+      "area::area__6::meshed",
+      "area::area__6::gurgan",
+      "area::area__6::isfahan"
     ],
     "world_x": 1632,
     "world_y": 697,
@@ -7257,8 +7257,8 @@
       "lorraine",
       "walonia",
       "palatinate",
-      "area::area__11::luxembourg",
-      "area::area__11::walonia"
+      "area::area__11::walonia",
+      "area::area__11::luxembourg"
     ],
     "world_x": 597,
     "world_y": 290,
@@ -7713,9 +7713,9 @@
       "palestine_acre",
       "palestine_jerusalem",
       "upper_egypt",
-      "area::area__3::upper_egypt",
       "area::area__3::gaza",
       "area::area__3::lower_egypt",
+      "area::area__3::upper_egypt",
       "area::area__59"
     ],
     "world_x": 1174,
@@ -8844,9 +8844,9 @@
       "gulf_of_lion",
       "languedoc",
       "navarra",
-      "area::area__9::navarra",
-      "area::area__9::catalonia",
       "area::area__9::languedoc",
+      "area::area__9::catalonia",
+      "area::area__9::navarra",
       "area::area__94",
       "area::area__95"
     ],
@@ -9287,14 +9287,14 @@
     "owner_id": "ilkhanate",
     "neighbors": [
       "aksaray",
-      "area::area__56",
       "chrysopolis",
       "karaman",
       "kayseri",
       "konya",
       "paphlagonia",
       "sinop",
-      "sivrihisar"
+      "sivrihisar",
+      "area::area__56"
     ],
     "world_x": 1132,
     "world_y": 474,
@@ -9329,13 +9329,13 @@
     "successor_faction_id": "karaman_bey",
     "neighbors": [
       "aksaray",
+      "cankiri",
+      "kayseri",
+      "teke",
       "area::area__40",
       "area::area__56",
       "area::area__79",
-      "area::area__80::karaman",
-      "cankiri",
-      "kayseri",
-      "teke"
+      "area::area__80::karaman"
     ],
     "world_x": 1137,
     "world_y": 522,
@@ -11831,9 +11831,9 @@
     "neighbors": [
       "irish_sea_shore",
       "north_sea_shore",
-      "area::area__11::luxembourg",
+      "area::area__11::walonia",
       "area::area__11::lorraine",
-      "area::area__11::walonia"
+      "area::area__11::luxembourg"
     ],
     "world_x": 592,
     "world_y": 308,
@@ -12192,8 +12192,8 @@
       "norwegian_sea",
       "scotland",
       "yorkshire",
-      "area::area__26::scotland",
       "area::area__26::newcastle_region",
+      "area::area__26::scotland",
       "area::area__102",
       "area::area__103"
     ],

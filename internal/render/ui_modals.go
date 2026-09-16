@@ -279,7 +279,7 @@ func buildEventCodexFilterButtons() []gameui.Button {
 		btnH = 30.0
 		gap  = 8.0
 	)
-	labels := []string{"Tümü", "Hazır", "Takvim", "Kilitli", "Oyuncu"}
+	labels := []string{"Tümü", "Hazır", "Takvim", "Kilitli", "Oyuncu", "Gerçekleşen"}
 	buttons := make([]gameui.Button, 0, len(labels))
 	startX := layout.filtersRect.X
 	y := layout.filtersRect.Y

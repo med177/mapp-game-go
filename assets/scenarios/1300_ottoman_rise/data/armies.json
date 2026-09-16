@@ -416,6 +416,53 @@
     ]
   },
   {
+    "id": "army_edit_124",
+    "owner_id": "ottoman",
+    "region_id": "bilecik_frontier",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_125",
+    "owner_id": "east_rome",
+    "region_id": "constantinople",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "id": "army_edit_126",
+    "owner_id": "cyprus_kingdom",
+    "region_id": "east_mediterranean",
+    "docked_region_id": "north_cyprus",
+    "docked_settlement_id": "north_cyprus_girne",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_127",
+    "owner_id": "karesioglu_bey",
+    "region_id": "karesi",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
     "id": "army_edit_49",
     "owner_id": "venice",
     "region_id": "venice",
@@ -472,42 +519,6 @@
       {
         "type_id": "militia",
         "count": 3
-      }
-    ]
-  },
-  {
-    "id": "fleet_castile_atlantic",
-    "owner_id": "castile_kingdom",
-    "region_id": "atlantic_open_3",
-    "docked_region_id": "sevilla",
-    "docked_settlement_id": "sevilla_sevilla_port",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "fleet_castile_cadiz",
-    "owner_id": "castile_kingdom",
-    "region_id": "gulf_of_cadiz",
-    "docked_region_id": "sevilla",
-    "docked_settlement_id": "sevilla_cadiz",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 1
       }
     ]
   },
@@ -622,9 +633,9 @@
     ]
   },
   {
-    "id": "army_france_normandy",
+    "id": "army_france_burgundy_front",
     "owner_id": "france",
-    "region_id": "normandy",
+    "region_id": "burgundy",
     "units": [
       {
         "type_id": "cavalry",
@@ -632,7 +643,7 @@
       },
       {
         "type_id": "infantry",
-        "count": 3
+        "count": 2
       },
       {
         "type_id": "light_cavalry",
@@ -645,9 +656,9 @@
     ]
   },
   {
-    "id": "army_france_burgundy_front",
+    "id": "army_france_normandy",
     "owner_id": "france",
-    "region_id": "burgundy",
+    "region_id": "normandy",
     "units": [
       {
         "type_id": "cavalry",
@@ -655,7 +666,7 @@
       },
       {
         "type_id": "infantry",
-        "count": 2
+        "count": 3
       },
       {
         "type_id": "light_cavalry",
@@ -1629,6 +1640,42 @@
     ]
   },
   {
+    "id": "fleet_castile_atlantic",
+    "owner_id": "castile_kingdom",
+    "region_id": "atlantic_open_3",
+    "docked_region_id": "sevilla",
+    "docked_settlement_id": "sevilla_sevilla_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_castile_cadiz",
+    "owner_id": "castile_kingdom",
+    "region_id": "gulf_of_cadiz",
+    "docked_region_id": "sevilla",
+    "docked_settlement_id": "sevilla_cadiz",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
     "id": "fleet_east_rome_guard",
     "owner_id": "east_rome",
     "region_id": "sea_of_marmara",
@@ -1733,6 +1780,24 @@
     ]
   },
   {
+    "id": "fleet_hospitaller_guard",
+    "owner_id": "hospitaller",
+    "region_id": "mediterranean_open_1",
+    "docked_region_id": "rhodes",
+    "docked_settlement_id": "rhodes_main",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 4
+      }
+    ]
+  },
+  {
     "id": "fleet_mamluk_east_med",
     "owner_id": "mamluk",
     "region_id": "eastern_mediterranean",
@@ -1811,17 +1876,13 @@
     ]
   },
   {
-    "id": "fleet_hospitaller_guard",
-    "owner_id": "hospitaller",
-    "region_id": "mediterranean_open_1",
-    "docked_region_id": "rhodes",
-    "docked_settlement_id": "rhodes_main",
+    "id": "army_edit_128",
+    "owner_id": "karesioglu_bey",
+    "region_id": "aegean_sea",
+    "docked_region_id": "karesi",
+    "docked_settlement_id": "bithynia_bursa_port",
     "is_naval": true,
     "units": [
-      {
-        "type_id": "transport",
-        "count": 1
-      },
       {
         "type_id": "warship",
         "count": 4
@@ -1829,60 +1890,16 @@
     ]
   },
   {
-    "id": "army_edit_125",
+    "id": "army_edit_129",
     "owner_id": "east_rome",
-    "region_id": "constantinople",
-    "units": [
-      {
-        "type_id": "elite_infantry",
-        "count": 6
-      }
-    ]
-  },
-  {
-    "id": "army_edit_126",
-    "owner_id": "cyprus_kingdom",
-    "region_id": "east_mediterranean",
-    "docked_region_id": "north_cyprus",
-    "docked_settlement_id": "north_cyprus_girne",
+    "region_id": "mediterranean_open_6",
+    "docked_region_id": "chalcidice",
+    "docked_settlement_id": "thessaloniki_kavala",
     "is_naval": true,
     "units": [
       {
-        "type_id": "warship",
-        "count": 8
-      }
-    ]
-  },
-  {
-    "id": "army_edit_127",
-    "owner_id": "karesioglu_bey",
-    "region_id": "karesi",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 5
-      }
-    ]
-  },
-  {
-    "id": "army_edit_124",
-    "owner_id": "ottoman",
-    "region_id": "bilecik_frontier",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 8
-      }
-    ]
-  },
-  {
-    "id": "army_edit_125",
-    "owner_id": "east_rome",
-    "region_id": "constantinople",
-    "units": [
-      {
-        "type_id": "elite_infantry",
-        "count": 6
+        "type_id": "transport",
+        "count": 4
       }
     ]
   }

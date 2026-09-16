@@ -1642,13 +1642,14 @@ func (g *Game) refreshEventCodex() {
 	g.renderer.SetEventCodexEntries(g.buildEventCodexPages())
 }
 
-func (g *Game) buildEventCodexPages() [5][]render.EventCodexEntry {
-	return [5][]render.EventCodexEntry{
+func (g *Game) buildEventCodexPages() [6][]render.EventCodexEntry {
+	return [6][]render.EventCodexEntry{
 		g.buildEventCodexFor("all"),
 		g.buildEventCodexFor("ready"),
 		g.buildEventCodexFor("calendar"),
 		g.buildEventCodexFor("locked"),
 		g.buildEventCodexFor(eventCodexPlayerFilter),
+		g.buildEventCodexFor("past"),
 	}
 }
 
@@ -1673,6 +1674,9 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 		if entry.monthsUntil > 0 {
 			detail = append(detail, fmt.Sprintf("Kalan süre: %d ay (%d tur)", entry.monthsUntil, turnsUntilHistoricalEvent(g.gs, evt)))
 		}
+		if entry.status == "Gerçekleşti" {
+			detail = append(detail, "Durum: Bu event gerçekleşti.")
+		}
 		if len(entry.reasons) > 0 {
 			detail = append(detail, "Kritik eksik: "+g.codexReasonLabel(entry.reasons[0], evt))
 			for _, reason := range entry.reasons {
@@ -1680,7 +1684,7 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 			}
 		} else if entry.timingReason != "" {
 			detail = append(detail, "Neden: "+entry.timingReason)
-		} else {
+		} else if entry.status != "Gerçekleşti" {
 			detail = append(detail, "Koşullar sağlanıyor.")
 		}
 		views = append(views, render.EventCodexEntry{
@@ -1702,13 +1706,21 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 func (g *Game) collectEventCodexEntries(filter string) []eventCodexEntry {
 	entries := make([]eventCodexEntry, 0, len(g.evts))
 	for _, evt := range g.evts {
-		if evt == nil || evt.HistoricalYear == 0 || g.gs.FiredEventIDs[evt.ID] {
+		if evt == nil || evt.HistoricalYear == 0 {
+			continue
+		}
+		past := filter == "past"
+		if past {
+			if !g.gs.FiredEventIDs[evt.ID] {
+				continue
+			}
+		} else if g.gs.FiredEventIDs[evt.ID] {
 			continue
 		}
 		if filter == eventCodexPlayerFilter && !g.eventRelevantToPlayer(evt) {
 			continue
 		}
-		if evt.HistoricalYear < g.gs.Year || (evt.HistoricalYear == g.gs.Year && evt.HistoricalMonth != 0 && evt.HistoricalMonth < g.gs.Month) {
+		if !past && (evt.HistoricalYear < g.gs.Year || (evt.HistoricalYear == g.gs.Year && evt.HistoricalMonth != 0 && evt.HistoricalMonth < g.gs.Month)) {
 			continue
 		}
 		entry := eventCodexEntry{
@@ -1717,11 +1729,15 @@ func (g *Game) collectEventCodexEntries(filter string) []eventCodexEntry {
 			monthsUntil: monthsUntilHistoricalEvent(g.gs, evt),
 			reasons:     events.ConditionFailureReasons(g.gs, evt),
 		}
-		if entry.monthsUntil > 0 {
+		if past {
+			entry.status = "Gerçekleşti"
+			entry.monthsUntil = 0
+			entry.reasons = nil
+		} else if entry.monthsUntil > 0 {
 			entry.status = "Takvim"
 			entry.timingReason = "takvim bekleniyor"
 		}
-		if len(entry.reasons) > 0 {
+		if !past && len(entry.reasons) > 0 {
 			entry.status = "Kilitli"
 		}
 		if filter == "ready" && entry.status != "Hazir" {
@@ -3636,7 +3652,7 @@ func (g *Game) resetToScenarioSelect(editMode bool) {
 	g.pendingWarFollowUp = nil
 	g.warDeclarationContinuationPending = false
 	g.renderer.ReloadGameState(gs)
-	g.renderer.SetEventCodexEntries([5][]render.EventCodexEntry{})
+	g.renderer.SetEventCodexEntries([6][]render.EventCodexEntry{})
 	g.renderer.SetCursor(0)
 }
 

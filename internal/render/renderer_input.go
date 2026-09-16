@@ -106,11 +106,22 @@ func (r *Renderer) HandleInput() InputAction {
 
 	if r.eventDetail != "" {
 		mx, my := ebiten.CursorPosition()
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && eventDetailPopupHit(float64(mx), float64(my)) {
+			r.eventDetailScroll = clampEventDetailScroll(r.eventDetailTitle, r.eventDetail, r.eventDetailScroll-wheelY*38)
+		}
+		if r.keyJustPressed(ebiten.KeyPageUp) {
+			r.eventDetailScroll = clampEventDetailScroll(r.eventDetailTitle, r.eventDetail, r.eventDetailScroll-152)
+		}
+		if r.keyJustPressed(ebiten.KeyPageDown) {
+			r.eventDetailScroll = clampEventDetailScroll(r.eventDetailTitle, r.eventDetail, r.eventDetailScroll+152)
+		}
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) ||
 			r.keyJustPressed(ebiten.KeySpace) || (r.mouseJustPressed(ebiten.MouseButtonLeft) &&
 			(eventDetailCloseHit(float64(mx), float64(my)) || !eventDetailPopupHit(float64(mx), float64(my)))) {
 			r.eventDetail = ""
 			r.eventDetailTitle = ""
+			r.eventDetailScroll = 0
 		}
 		return InputAction{}
 	}
@@ -539,6 +550,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
 		r.eventDetailTitle = r.EventTitleAt(idx)
 		r.eventDetail = r.EventDetailAt(idx)
+		r.eventDetailScroll = 0
 		return InputAction{}
 	}
 	if topDateHudMenuButtonHit(fx, fy) {
@@ -705,6 +717,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			if idx, ok := regionActiveEventPanelHit(fx, fy, r.gs, r.gs.Regions[r.SelectedRegion], r.regionPanelScroll); ok {
 				r.eventDetailTitle = r.activeRegionEventTitleAt(idx)
 				r.eventDetail = r.activeRegionEventDetailAt(idx)
+				r.eventDetailScroll = 0
 				return InputAction{}
 			}
 			if regionActivityNeighborToggleHit(fx, fy, r.gs, r.gs.Regions[r.SelectedRegion], r.regionPanelScroll) {

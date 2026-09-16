@@ -99,6 +99,23 @@ func DirectOverlord(gs *state.GameState, fid faction.FactionID) faction.FactionI
 	return f.OverlordID
 }
 
+// AnnexationTurnsRemaining, doğrudan bağlı bir vassalın ilhak edilebilmesi
+// için beklenmesi gereken tur sayısını döner. İlhak serbestse sıfır döner.
+func AnnexationTurnsRemaining(gs *state.GameState, actor, target faction.FactionID) int {
+	if gs == nil || actor == "" || target == "" || DirectOverlord(gs, target) != actor {
+		return 0
+	}
+	targetFaction := gs.Factions[target]
+	if targetFaction == nil || targetFaction.VassalizedTurn <= 0 {
+		return 0
+	}
+	remaining := VassalAnnexationMinimumTurns - (gs.Turn - targetFaction.VassalizedTurn)
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
+}
+
 func RootOverlord(gs *state.GameState, fid faction.FactionID) faction.FactionID {
 	if gs == nil || fid == "" {
 		return ""
@@ -453,10 +470,8 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if DirectOverlord(gs, target) != actor {
 			return "Hedef doğrudan sana bağlı bir devlet değil."
 		}
-		if action == ActionAnnexVassal && targetFaction.VassalizedTurn > 0 {
-			elapsed := gs.Turn - targetFaction.VassalizedTurn
-			if elapsed < VassalAnnexationMinimumTurns {
-				remaining := VassalAnnexationMinimumTurns - elapsed
+		if action == ActionAnnexVassal {
+			if remaining := AnnexationTurnsRemaining(gs, actor, target); remaining > 0 {
 				return factionLabel(gs, target) + " en az 12 tur vassal kaldıktan sonra ilhak edilebilir (" + itoa(remaining) + " tur kaldı)."
 			}
 		}

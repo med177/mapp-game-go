@@ -301,16 +301,20 @@ func diplomacyOfferLayoutForScreen() diplomacyOfferLayout {
 	}
 }
 
-func buildDiplomacyVassalManagementLayout() diplomacyVassalManagementLayout {
+func buildDiplomacyVassalManagementLayout(gs *state.GameState, target faction.FactionID) diplomacyVassalManagementLayout {
 	side := diplomacyOfferLayoutForScreen().historyRect
 	panel := gameui.Rect{X: side.X, Y: side.Y + side.H + 12, W: side.W, H: 164}
+	annexLabel := diplomacy.ActionLabelTR(diplomacy.ActionAnnexVassal)
+	if remaining := diplomacy.AnnexationTurnsRemaining(gs, gs.PlayerFactionID, target); remaining > 0 {
+		annexLabel += " (" + itoa(remaining) + " tur)"
+	}
 	return diplomacyVassalManagementLayout{
 		panelRect:     panel,
 		tributeLabel:  gameui.Rect{X: panel.X + 12, Y: panel.Y + 34, W: panel.W - 92, H: 24},
 		tributeDec:    gameui.NewButton(panel.X+panel.W-72, panel.Y+30, 28, 28, "-"),
 		tributeInc:    gameui.NewButton(panel.X+panel.W-38, panel.Y+30, 28, 28, "+"),
 		releaseButton: gameui.NewButton(panel.X+12, panel.Y+70, panel.W-24, 32, diplomacy.ActionLabelTR(diplomacy.ActionReleaseVassal)),
-		annexButton:   gameui.NewButton(panel.X+12, panel.Y+110, panel.W-24, 32, diplomacy.ActionLabelTR(diplomacy.ActionAnnexVassal)),
+		annexButton:   gameui.NewButton(panel.X+12, panel.Y+110, panel.W-24, 32, annexLabel),
 	}
 }
 
@@ -1322,7 +1326,7 @@ func drawDiplomacyActionButton(screen *ebiten.Image, btn gameui.Button, bg color
 }
 
 func drawDiplomacyVassalManagementPanel(screen *ebiten.Image, gs *state.GameState, target faction.FactionID) {
-	layout := buildDiplomacyVassalManagementLayout()
+	layout := buildDiplomacyVassalManagementLayout(gs, target)
 	drawUIPanelFrame(screen, layout.panelRect, color.RGBA{18, 14, 10, 228}, color.RGBA{104, 82, 42, 190}, 1, 3)
 	drawUILabel(screen, gameui.Rect{X: layout.panelRect.X + 12, Y: layout.panelRect.Y + 10, W: layout.panelRect.W - 24}, "Vassal Yönetimi", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 	rate := gs.Factions[target].TributeRate
@@ -1685,7 +1689,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			}
 		}
 		if diplomacy.DirectOverlord(r.gs, r.diplomacyTargetFaction) == r.gs.PlayerFactionID {
-			management := buildDiplomacyVassalManagementLayout()
+			management := buildDiplomacyVassalManagementLayout(r.gs, r.diplomacyTargetFaction)
 			target := r.diplomacyTargetFaction
 			name := factionDisplayName(r.gs, string(target))
 			if management.tributeDec.HandleInput(input) {
