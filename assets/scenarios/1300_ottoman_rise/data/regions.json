@@ -698,8 +698,8 @@
       "normandy",
       "paris",
       "area::area__11::lorraine",
-      "area::area__11::walonia",
-      "area::area__11::champagne"
+      "area::area__11::champagne",
+      "area::area__11::walonia"
     ],
     "world_x": 568,
     "world_y": 289,
@@ -3658,9 +3658,9 @@
       "gaza",
       "levantine_sea",
       "lower_egypt",
+      "area::area__3::lower_egypt",
       "area::area__3::gaza",
-      "area::area__3::upper_egypt",
-      "area::area__3::lower_egypt"
+      "area::area__3::upper_egypt"
     ],
     "world_x": 1097,
     "world_y": 642,
@@ -3709,9 +3709,9 @@
       "red_open_2",
       "upper_egypt",
       "area::area__1",
+      "area::area__3::lower_egypt",
       "area::area__3::gaza",
-      "area::area__3::upper_egypt",
-      "area::area__3::lower_egypt"
+      "area::area__3::upper_egypt"
     ],
     "world_x": 1119,
     "world_y": 702,
@@ -4229,12 +4229,12 @@
       "siraz",
       "area::area__5",
       "area::area__6::isfahan",
-      "area::area__6::northern_persia",
-      "area::area__6::kazvin",
+      "area::area__6::meshed",
       "area::area__6::hourmuz",
       "area::area__6::southern_persia",
+      "area::area__6::kazvin",
       "area::area__6::gurgan",
-      "area::area__6::meshed"
+      "area::area__6::northern_persia"
     ],
     "world_x": 1588,
     "world_y": 657,
@@ -4335,12 +4335,12 @@
       "siraz",
       "southern_persia",
       "area::area__6::isfahan",
-      "area::area__6::northern_persia",
-      "area::area__6::kazvin",
+      "area::area__6::meshed",
       "area::area__6::hourmuz",
       "area::area__6::southern_persia",
+      "area::area__6::kazvin",
       "area::area__6::gurgan",
-      "area::area__6::meshed"
+      "area::area__6::northern_persia"
     ],
     "world_x": 1632,
     "world_y": 697,
@@ -7042,8 +7042,8 @@
       "holland",
       "luxembourg",
       "palatinate",
-      "area::area__11::walonia",
-      "area::area__11::champagne"
+      "area::area__11::champagne",
+      "area::area__11::walonia"
     ],
     "world_x": 567,
     "world_y": 277,
@@ -7579,9 +7579,9 @@
       "palestine_acre",
       "palestine_jerusalem",
       "upper_egypt",
+      "area::area__3::lower_egypt",
       "area::area__3::gaza",
       "area::area__3::upper_egypt",
-      "area::area__3::lower_egypt",
       "area::area__59"
     ],
     "world_x": 1174,
@@ -8188,12 +8188,12 @@
     "successor_faction_id": "ramazan_bey",
     "neighbors": [
       "antioch",
+      "east_mediterranean",
+      "gulf_of_iskenderun",
       "area::area__38",
       "area::area__77::cilicia",
       "area::area__78",
-      "area::area__79",
-      "east_mediterranean",
-      "gulf_of_iskenderun"
+      "area::area__79"
     ],
     "world_x": 1192,
     "world_y": 541,
@@ -8211,7 +8211,7 @@
     "trade_capacity": 1,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 300,
+    "population": 292,
     "rural_population": 190,
     "religion": "orthodox",
     "active_event_id": "",
@@ -8238,14 +8238,14 @@
     "successor_faction_id": "ramazan_bey",
     "neighbors": [
       "aleppo",
-      "area::area__38",
-      "area::area__43",
-      "area::area__78",
-      "area::area__81::antioch",
       "cilicia",
       "dulkadir",
       "dulkadirli",
-      "gulf_of_iskenderun"
+      "gulf_of_iskenderun",
+      "area::area__38",
+      "area::area__43",
+      "area::area__78",
+      "area::area__81::antioch"
     ],
     "world_x": 1197,
     "world_y": 544,
@@ -8263,7 +8263,7 @@
     "trade_capacity": 1,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 107,
+    "population": 96,
     "rural_population": 83,
     "religion": "orthodox",
     "active_event_id": "",
@@ -8702,9 +8702,9 @@
       "gulf_of_lion",
       "languedoc",
       "navarra",
+      "area::area__9::navarra",
       "area::area__9::languedoc",
-      "area::area__9::catalonia",
-      "area::area__9::navarra"
+      "area::area__9::catalonia"
     ],
     "world_x": 493,
     "world_y": 439,
@@ -9204,7 +9204,7 @@
     "trade_capacity": 1,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 300,
+    "population": 286,
     "rural_population": 170,
     "religion": "sunni",
     "active_event_id": "",
@@ -9252,7 +9252,7 @@
     "trade_capacity": 1,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 114,
+    "population": 95,
     "rural_population": 57,
     "religion": "sunni",
     "active_event_id": "",
@@ -9405,11 +9405,11 @@
     "successor_faction_id": "dulkadir_bey",
     "neighbors": [
       "antioch",
-      "area::area__43",
-      "area::area__78",
       "konya",
       "malatya",
-      "sivas"
+      "sivas",
+      "area::area__43",
+      "area::area__78"
     ],
     "world_x": 1222,
     "world_y": 508,
@@ -9427,7 +9427,7 @@
     "trade_capacity": 1,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 82,
+    "population": 94,
     "rural_population": 72,
     "religion": "sunni",
     "active_event_id": "",
@@ -9445,8 +9445,8 @@
       "akkoyunlu",
       "aleppo",
       "antioch",
-      "area::area__43",
-      "raqqa"
+      "raqqa",
+      "area::area__43"
     ],
     "world_x": 1240,
     "world_y": 527,
@@ -9464,7 +9464,7 @@
     "trade_capacity": 1,
     "satisfaction": 58,
     "tax_rate": 28,
-    "population": 210,
+    "population": 279,
     "rural_population": 175,
     "religion": "sunni",
     "active_event_id": "",
@@ -11698,8 +11698,8 @@
     "neighbors": [
       "irish_sea_shore",
       "north_sea_shore",
-      "area::area__11::lorraine",
       "area::area__11::luxembourg",
+      "area::area__11::lorraine",
       "area::area__11::walonia"
     ],
     "world_x": 592,
@@ -13065,8 +13065,8 @@
       "luxor",
       "tebuk",
       "red_sea",
-      "area::area__3::gaza",
-      "area::area__3::lower_egypt"
+      "area::area__3::lower_egypt",
+      "area::area__3::gaza"
     ],
     "world_x": 1167,
     "world_y": 716,

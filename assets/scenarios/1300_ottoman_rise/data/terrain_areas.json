@@ -16753,6 +16753,7 @@
   },
   {
     "id": "area__57",
+    "name": "Van Gölü",
     "terrain": "lake",
     "move_cost": 0,
     "polygons": [
@@ -17124,6 +17125,7 @@
   },
   {
     "id": "area__62",
+    "name": "İznik Gölü",
     "terrain": "lake",
     "move_cost": 0,
     "polygons": [
@@ -17931,6 +17933,7 @@
   },
   {
     "id": "area__71",
+    "name": "Karadeniz Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
