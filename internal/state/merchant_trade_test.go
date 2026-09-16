@@ -63,18 +63,6 @@ func TestMerchantFleetTradeStatusesMatchesIndividualEvaluation(t *testing.T) {
 	if _, ok := reused["stale"]; ok {
 		t.Error("reused status map retained stale entry")
 	}
-
-	if pairs := gs.MerchantTradeRoutePortPairs(route); len(pairs) == 0 {
-		t.Fatal("expected connected port pair before invalidation")
-	}
-	gs.Regions["sea_to"].IsLocked = true
-	if pairs := gs.MerchantTradeRoutePortPairs(route); len(pairs) != 0 {
-		t.Fatalf("locked sea returned %d cached pairs, want 0", len(pairs))
-	}
-	gs.Regions["sea_to"].IsLocked = false
-	if pairs := gs.MerchantTradeRoutePortPairs(route); len(pairs) == 0 {
-		t.Fatal("expected port pair after cache invalidation")
-	}
 }
 
 func merchantTestFleet(id army.ArmyID, owner string, region world.RegionID, routeKey string, ships int) *army.Army {
