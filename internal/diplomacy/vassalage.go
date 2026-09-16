@@ -663,7 +663,7 @@ func applyRelationImprovement(gs *state.GameState, actor, target faction.Faction
 	return Result{
 		Accepted: true,
 		Applied:  true,
-		Message:  factionLabel(gs, target) + " için " + sourceLabel + " gönderildi. İlişki +" + strconv.Itoa(delta) + ".",
+		Message:  factionLabel(gs, actor) + " devleti, " + factionLabel(gs, target) + " için " + sourceLabel + " gönderdi. İlişki +" + strconv.Itoa(delta) + ".",
 	}
 }
 

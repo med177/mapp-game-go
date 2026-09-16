@@ -34,3 +34,19 @@ func TestAnnexationTurnsRemainingMatchesAnnexationBlock(t *testing.T) {
 		t.Fatalf("süre dolduktan sonra ilhak engellendi: %s", reason)
 	}
 }
+
+func TestRelationImprovementMessageNamesSenderAndTarget(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"sender": {ID: "sender", NameTR: "Gönderen Devlet"},
+			"target": {ID: "target", NameTR: "Osmanoğulları Beyliği"},
+		},
+		Relations: map[string]*faction.Relation{},
+	}
+
+	result := applyRelationImprovement(gs, "sender", "target", 40, 8, 0, "diplomatik heyet")
+	want := "Gönderen Devlet devleti, Osmanoğulları Beyliği için diplomatik heyet gönderdi. İlişki +8."
+	if result.Message != want {
+		t.Fatalf("ilişki geliştirme mesajı: got=%q want=%q", result.Message, want)
+	}
+}
