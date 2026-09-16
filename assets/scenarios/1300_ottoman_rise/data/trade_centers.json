@@ -8,9 +8,9 @@
       "region_id": "venice",
       "tier": "primary",
       "links": [
+        "alexandria",
         "constantinople",
         "dalmatia",
-        "alexandria",
         "genoa",
         "tunis"
       ]
@@ -20,9 +20,9 @@
       "tier": "primary",
       "links": [
         "aleppo",
+        "alexandria",
         "crimea",
         "dalmatia",
-        "alexandria",
         "trebizond",
         "venice"
       ]
@@ -81,10 +81,10 @@
       "region_id": "aleppo",
       "tier": "primary",
       "links": [
+        "alexandria",
         "azerbaijan",
         "baghdad",
         "constantinople",
-        "alexandria",
         "trebizond"
       ]
     },
@@ -261,9 +261,9 @@
       "name_tr": "Baharat Yolu",
       "tier": "secondary",
       "links": [
+        "alexandria",
         "basra",
-        "cape_route",
-        "alexandria"
+        "cape_route"
       ],
       "world_x": 2880,
       "world_y": 1260,

@@ -2336,14 +2336,6 @@
         "population": 63
       },
       {
-        "id": "kayseri_avanos",
-        "name_tr": "Avanos",
-        "x": 1169,
-        "y": 496,
-        "type": "town",
-        "population": 63
-      },
-      {
         "id": "konya_kaman",
         "name_tr": "Kaman",
         "x": 1175,
@@ -2524,8 +2516,8 @@
       {
         "id": "bayburt_erzurum",
         "name_tr": "Bayburt",
-        "x": 1284,
-        "y": 475,
+        "x": 1281,
+        "y": 471,
         "type": "town",
         "population": 23
       }
@@ -3403,8 +3395,8 @@
       {
         "id": "macedonia_ohrid",
         "name_tr": "Ohri",
-        "x": 890,
-        "y": 455,
+        "x": 893,
+        "y": 452,
         "type": "town",
         "population": 23
       },
@@ -4673,7 +4665,7 @@
       {
         "id": "sinop_unye",
         "name_tr": "Ünye",
-        "x": 1218,
+        "x": 1220,
         "y": 453,
         "type": "port",
         "population": 38
@@ -4681,8 +4673,8 @@
       {
         "id": "sinop_samsun",
         "name_tr": "Samsun",
-        "x": 1201,
-        "y": 450,
+        "x": 1206,
+        "y": 452,
         "type": "port",
         "population": 36
       },
@@ -4693,6 +4685,14 @@
         "y": 466,
         "type": "town",
         "is_center": true,
+        "population": 24
+      },
+      {
+        "id": "sinop_bafra",
+        "name_tr": "Bafra",
+        "x": 1194,
+        "y": 445,
+        "type": "town",
         "population": 24
       }
     ]
@@ -4720,34 +4720,26 @@
       {
         "id": "tokat_sivas",
         "name_tr": "Tokat",
+        "x": 1203,
+        "y": 476,
+        "type": "town",
+        "population": 22
+      },
+      {
+        "id": "eretna_tokat",
+        "name_tr": "Zile",
         "x": 1196,
         "y": 474,
         "type": "town",
-        "population": 22
+        "population": 43
       },
       {
-        "id": "elbistan",
-        "name_tr": "Elbistan",
-        "x": 1224,
-        "y": 505,
-        "type": "town",
-        "population": 22
-      },
-      {
-        "id": "maras",
-        "name_tr": "Maraş",
-        "x": 1217,
-        "y": 517,
+        "id": "eretna_amasya",
+        "name_tr": "Niksar",
+        "x": 1220,
+        "y": 470,
         "type": "city",
-        "population": 45
-      },
-      {
-        "id": "dulkadir_goksun",
-        "name_tr": "Göksun",
-        "x": 1211,
-        "y": 511,
-        "type": "town",
-        "population": 22
+        "population": 88
       }
     ]
   },
@@ -4764,18 +4756,10 @@
         "population": 30
       },
       {
-        "id": "antioch",
-        "name_tr": "Antakya",
-        "x": 1198,
-        "y": 546,
-        "type": "town",
-        "population": 13
-      },
-      {
         "id": "ceyhan_cilicia",
         "name_tr": "Ceyhan",
         "x": 1191,
-        "y": 532,
+        "y": 533,
         "type": "town",
         "population": 13
       },
@@ -4802,21 +4786,19 @@
         "y": 540,
         "type": "port",
         "population": 20
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "antioch",
+    "settlements": [
       {
-        "id": "kayseri_karahisar",
-        "name_tr": "Zamantı",
-        "x": 1164,
-        "y": 528,
+        "id": "antioch",
+        "name_tr": "Antakya",
+        "x": 1198,
+        "y": 546,
         "type": "town",
-        "population": 6
-      },
-      {
-        "id": "nisibis",
-        "name_tr": "Kilis",
-        "x": 1218,
-        "y": 535,
-        "type": "town",
+        "is_center": true,
         "population": 13
       }
     ]
@@ -4830,24 +4812,24 @@
         "x": 1313,
         "y": 498,
         "type": "city",
-        "population": 30
-      },
-      {
-        "id": "akkoyunlu_diyarbakir",
-        "name_tr": "Diyarbekir",
-        "x": 1311,
-        "y": 524,
-        "type": "city",
         "is_center": true,
-        "population": 45
+        "population": 30
       },
       {
         "id": "mosul_nisibis",
         "name_tr": "Nusaybin",
-        "x": 1290,
-        "y": 529,
+        "x": 1302,
+        "y": 530,
         "type": "fortress",
         "population": 44
+      },
+      {
+        "id": "akkoyunlu_diyarbakir",
+        "name_tr": "Diyarbekir",
+        "x": 1283,
+        "y": 518,
+        "type": "city",
+        "population": 45
       }
     ]
   },
@@ -5489,22 +5471,6 @@
     "region_id": "karaman",
     "settlements": [
       {
-        "id": "karaman_ermenek",
-        "name_tr": "Ermenek",
-        "x": 1128,
-        "y": 548,
-        "type": "town",
-        "population": 18
-      },
-      {
-        "id": "larende",
-        "name_tr": "Larende",
-        "x": 1149,
-        "y": 534,
-        "type": "town",
-        "population": 33
-      },
-      {
         "id": "karaman_aksehir",
         "name_tr": "Akşehir",
         "x": 1126,
@@ -5524,8 +5490,8 @@
       {
         "id": "karaman_konya",
         "name_tr": "Karaman",
-        "x": 1137,
-        "y": 523,
+        "x": 1141,
+        "y": 528,
         "type": "town",
         "population": 33
       },
@@ -5540,16 +5506,30 @@
       {
         "id": "eregli_konya",
         "name_tr": "Ereğli",
-        "x": 1156,
+        "x": 1155,
         "y": 522,
         "type": "town",
         "population": 19
+      }
+    ]
+  },
+  {
+    "region_id": "tasucu",
+    "settlements": [
+      {
+        "id": "karaman_ermenek",
+        "name_tr": "Anamur",
+        "x": 1134,
+        "y": 550,
+        "type": "town",
+        "is_center": true,
+        "population": 18
       },
       {
         "id": "karaman_tasucu",
         "name_tr": "Taşucu",
-        "x": 1153,
-        "y": 550,
+        "x": 1152,
+        "y": 548,
         "type": "port",
         "population": 20
       }
@@ -5598,28 +5578,20 @@
         "y": 503,
         "type": "town",
         "population": 63
+      },
+      {
+        "id": "kayseri_avanos",
+        "name_tr": "Avanos",
+        "x": 1169,
+        "y": 496,
+        "type": "town",
+        "population": 63
       }
     ]
   },
   {
     "region_id": "eretna",
     "settlements": [
-      {
-        "id": "eretna_amasya",
-        "name_tr": "Niksar",
-        "x": 1246,
-        "y": 470,
-        "type": "city",
-        "population": 88
-      },
-      {
-        "id": "eretna_tokat",
-        "name_tr": "Zile",
-        "x": 1237,
-        "y": 469,
-        "type": "town",
-        "population": 43
-      },
       {
         "id": "eretna_yildizeli",
         "name_tr": "Yıldızeli",
@@ -5644,6 +5616,14 @@
         "y": 458,
         "type": "port",
         "population": 64
+      },
+      {
+        "id": "sivas_susehri",
+        "name_tr": "Suşehri",
+        "x": 1242,
+        "y": 472,
+        "type": "town",
+        "population": 31
       }
     ]
   },
@@ -5651,37 +5631,65 @@
     "region_id": "malatya",
     "settlements": [
       {
-        "id": "besni_malatya",
-        "name_tr": "Besni",
-        "x": 1230,
-        "y": 512,
-        "type": "town",
-        "population": 32
-      },
-      {
-        "id": "harput_malatya",
-        "name_tr": "Harput",
-        "x": 1253,
-        "y": 492,
-        "type": "town",
-        "population": 31
-      },
-      {
         "id": "malatya",
         "name_tr": "Malatya",
         "x": 1238,
-        "y": 502,
+        "y": 501,
         "type": "town",
         "is_center": true,
         "population": 31
       },
       {
-        "id": "malatya_palu",
-        "name_tr": "Palu",
-        "x": 1253,
-        "y": 482,
+        "id": "malatya_pazarcik",
+        "name_tr": "Pazarcık",
+        "x": 1224,
+        "y": 520,
+        "type": "town",
+        "population": 31
+      },
+      {
+        "id": "dulkadir_goksun",
+        "name_tr": "Göksun",
+        "x": 1211,
+        "y": 511,
+        "type": "town",
+        "population": 22
+      },
+      {
+        "id": "maras",
+        "name_tr": "Maraş",
+        "x": 1217,
+        "y": 517,
+        "type": "city",
+        "population": 45
+      }
+    ]
+  },
+  {
+    "region_id": "dulkadirli",
+    "settlements": [
+      {
+        "id": "elbistan",
+        "name_tr": "Elbistan",
+        "x": 1223,
+        "y": 506,
+        "type": "town",
+        "is_center": true,
+        "population": 22
+      }
+    ]
+  },
+  {
+    "region_id": "dulkadir",
+    "settlements": [
+      {
+        "id": "dulkadir_behisni",
+        "name_tr": "Behisni",
+        "x": 1238,
+        "y": 522,
         "type": "fortress",
-        "population": 15
+        "is_center": true,
+        "population": 45
       },
       {
         "id": "malatya_urfa_gate",
@@ -5692,42 +5700,20 @@
         "population": 31
       },
       {
-        "id": "sivas_susehri",
-        "name_tr": "Suşehri",
-        "x": 1237,
-        "y": 477,
-        "type": "town",
-        "population": 31
-      },
-      {
-        "id": "malatya_pazarcik",
-        "name_tr": "Pazarcık",
-        "x": 1224,
-        "y": 516,
-        "type": "town",
-        "population": 31
-      },
-      {
         "id": "birecik",
         "name_tr": "Birecik",
         "x": 1235,
         "y": 527,
         "type": "fortress",
         "population": 15
-      }
-    ]
-  },
-  {
-    "region_id": "dulkadir",
-    "settlements": [
+      },
       {
-        "id": "dulkadir_behisni",
-        "name_tr": "Behisni",
-        "x": 1272,
-        "y": 524,
-        "type": "fortress",
-        "is_center": true,
-        "population": 45
+        "id": "nisibis",
+        "name_tr": "Kilis",
+        "x": 1219,
+        "y": 535,
+        "type": "town",
+        "population": 13
       }
     ]
   },
@@ -5737,8 +5723,8 @@
       {
         "id": "erzincan",
         "name_tr": "Erzincan",
-        "x": 1274,
-        "y": 486,
+        "x": 1269,
+        "y": 484,
         "type": "town",
         "is_center": true,
         "population": 33
@@ -5774,6 +5760,22 @@
         "y": 501,
         "type": "fortress",
         "population": 44
+      },
+      {
+        "id": "malatya_palu",
+        "name_tr": "Palu",
+        "x": 1253,
+        "y": 482,
+        "type": "fortress",
+        "population": 15
+      },
+      {
+        "id": "harput_malatya",
+        "name_tr": "Harput",
+        "x": 1251,
+        "y": 492,
+        "type": "town",
+        "population": 31
       }
     ]
   },
@@ -7117,14 +7119,6 @@
         "y": 438,
         "type": "town",
         "population": 26
-      },
-      {
-        "id": "sinop_bafra",
-        "name_tr": "Bafra",
-        "x": 1186,
-        "y": 444,
-        "type": "town",
-        "population": 24
       },
       {
         "id": "sinop_castle",

@@ -1369,8 +1369,9 @@
       0
     ],
     "is_playable": false,
-    "is_eliminated": false,
+    "is_eliminated": true,
     "capital_settlement_id": "eretna_yildizeli",
+    "historical_start_year": 1340,
     "gold": 5000,
     "grain": 1140,
     "iron": 65,
@@ -1446,8 +1447,9 @@
       75
     ],
     "is_playable": false,
-    "is_eliminated": false,
+    "is_eliminated": true,
     "capital_settlement_id": "dulkadir_behisni",
+    "historical_start_year": 1337,
     "gold": 5000,
     "grain": 580,
     "iron": 55,
@@ -1468,6 +1470,11 @@
       },
       {
         "region_id": "dulkadir",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "dulkadirli",
         "value": 100,
         "core": true
       }
@@ -2355,7 +2362,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "karaman_konya",
+    "capital_settlement_id": "konya_main",
     "gold": 5000,
     "grain": 1360,
     "iron": 60,
@@ -2378,6 +2385,14 @@
         "region_id": "karaman",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "kayseri",
+        "value": 78
+      },
+      {
+        "region_id": "tasucu",
+        "value": 74
       }
     ]
   },
@@ -2822,7 +2837,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "antioch",
+    "capital_settlement_id": "adana_cilicia",
     "gold": 5000,
     "grain": 1060,
     "iron": 50,
@@ -2845,6 +2860,10 @@
       {
         "region_id": "dulkadir",
         "value": 80
+      },
+      {
+        "region_id": "antioch",
+        "value": 86
       }
     ]
   },

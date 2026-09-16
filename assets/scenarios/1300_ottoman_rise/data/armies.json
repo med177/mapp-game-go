@@ -280,17 +280,6 @@
     ]
   },
   {
-    "id": "army_dulkadir_1",
-    "owner_id": "dulkadir_bey",
-    "region_id": "dulkadir",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_east_rome_1",
     "owner_id": "east_rome",
     "region_id": "constantinople",
@@ -648,17 +637,6 @@
     ]
   },
   {
-    "id": "army_eretna_1",
-    "owner_id": "canik_bey",
-    "region_id": "eretna",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_flanders_bruges_guard",
     "owner_id": "flanders_county",
     "region_id": "flanders",
@@ -847,22 +825,6 @@
     "region_id": "sivrihisar",
     "is_garrison": true,
     "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_garrison_210",
-    "owner_id": "ilkhanate",
-    "region_id": "kayseri",
-    "is_garrison": true,
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 1
-      },
       {
         "type_id": "militia",
         "count": 2
@@ -1244,7 +1206,7 @@
   },
   {
     "id": "army_karaman_1",
-    "owner_id": "ilkhanate",
+    "owner_id": "karaman_bey",
     "region_id": "konya",
     "units": [
       {

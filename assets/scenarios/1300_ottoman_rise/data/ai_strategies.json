@@ -915,6 +915,10 @@
             {
               "region_id": "dulkadir",
               "value": 95
+            },
+            {
+              "region_id": "dulkadirli",
+              "value": 95
             }
           ],
           "priority": 95,
@@ -1965,6 +1969,14 @@
             {
               "region_id": "karaman",
               "value": 84
+            },
+            {
+              "region_id": "kayseri",
+              "value": 78
+            },
+            {
+              "region_id": "tasucu",
+              "value": 74
             }
           ],
           "priority": 84,
@@ -2740,6 +2752,10 @@
             {
               "region_id": "cilicia",
               "value": 96
+            },
+            {
+              "region_id": "antioch",
+              "value": 86
             }
           ],
           "priority": 96,

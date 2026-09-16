@@ -29,7 +29,7 @@
     "trade_capacity": 5,
     "satisfaction": 75,
     "tax_rate": 45,
-    "population": 400,
+    "population": 320,
     "rural_population": 180,
     "religion": "catholic",
     "active_event_id": "",
@@ -237,7 +237,7 @@
     "trade_capacity": 2,
     "satisfaction": 65,
     "tax_rate": 32,
-    "population": 209,
+    "population": 186,
     "rural_population": 120,
     "religion": "catholic",
     "active_event_id": "",
@@ -279,7 +279,7 @@
     "trade_capacity": 2,
     "satisfaction": 65,
     "tax_rate": 32,
-    "population": 154,
+    "population": 101,
     "rural_population": 90,
     "religion": "catholic",
     "active_event_id": "",
@@ -361,7 +361,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 400,
+    "population": 260,
     "rural_population": 120,
     "religion": "catholic",
     "active_event_id": "",
@@ -442,7 +442,7 @@
     "trade_capacity": 2,
     "satisfaction": 55,
     "tax_rate": 25,
-    "population": 500,
+    "population": 425,
     "rural_population": 250,
     "religion": "catholic",
     "active_event_id": "",
@@ -697,9 +697,9 @@
       "walonia",
       "normandy",
       "paris",
+      "area::area__11::lorraine",
       "area::area__11::walonia",
-      "area::area__11::champagne",
-      "area::area__11::lorraine"
+      "area::area__11::champagne"
     ],
     "world_x": 568,
     "world_y": 289,
@@ -746,8 +746,8 @@
       "paris",
       "sch_basel",
       "sch_fribourg",
-      "area::area__11::burgundy",
-      "area::area__11::lorraine"
+      "area::area__11::lorraine",
+      "area::area__11::burgundy"
     ],
     "world_x": 589,
     "world_y": 327,
@@ -1343,7 +1343,7 @@
     "trade_capacity": 2,
     "satisfaction": 76,
     "tax_rate": 32,
-    "population": 260,
+    "population": 80,
     "rural_population": 80,
     "religion": "catholic",
     "active_event_id": "",
@@ -1511,8 +1511,8 @@
       "brittany",
       "navarra",
       "toulouse",
-      "area::area__9::navarra",
-      "area::area__9::aquitaine"
+      "area::area__9::aquitaine",
+      "area::area__9::navarra"
     ],
     "world_x": 472,
     "world_y": 397,
@@ -1690,7 +1690,8 @@
       "north_atlantic_iberia",
       "portugal",
       "sevilla",
-      "toledo"
+      "toledo",
+      "area::area__52"
     ],
     "world_x": 331,
     "world_y": 437,
@@ -1787,7 +1788,8 @@
       "granada",
       "leon",
       "murcia",
-      "sevilla"
+      "sevilla",
+      "area::area__52"
     ],
     "world_x": 398,
     "world_y": 475,
@@ -1836,7 +1838,8 @@
       "catalonia",
       "murcia",
       "navarra",
-      "toledo"
+      "toledo",
+      "area::area__52"
     ],
     "world_x": 458,
     "world_y": 464,
@@ -2652,7 +2655,9 @@
       "silivri",
       "thrace",
       "vidin",
-      "wallachia"
+      "wallachia",
+      "area::area__67",
+      "area::area__68"
     ],
     "world_x": 1015,
     "world_y": 415,
@@ -3144,7 +3149,8 @@
       "mediterranean_open_6",
       "morea",
       "otranto_strait",
-      "thessaly"
+      "thessaly",
+      "area::area__65"
     ],
     "world_x": 953,
     "world_y": 515,
@@ -3273,16 +3279,18 @@
     "name_tr": "Konya",
     "terrain": "plain",
     "owner_id": "ilkhanate",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "candaroglu",
       "cankiri",
-      "cilicia",
       "kayseri",
+      "dulkadirli",
       "sinop",
-      "sivas"
+      "sivas",
+      "area::area__78"
     ],
-    "world_x": 1177,
-    "world_y": 487,
+    "world_x": 1180,
+    "world_y": 490,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -3297,7 +3305,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 850,
+    "population": 787,
     "rural_population": 585,
     "religion": "sunni",
     "active_event_id": "",
@@ -3321,7 +3329,8 @@
       "crimean_black_sea",
       "kerch_strait",
       "lower_ukrainian_steppe",
-      "sea_of_azov"
+      "sea_of_azov",
+      "area::area__55"
     ],
     "world_x": 1162,
     "world_y": 374,
@@ -3407,7 +3416,11 @@
       "eretna",
       "erzincan",
       "erzurum",
-      "georgia"
+      "georgia",
+      "area::area__37",
+      "area::area__44",
+      "area::area__45",
+      "area::area__75::trebizond"
     ],
     "world_x": 1282,
     "world_y": 463,
@@ -3451,14 +3464,18 @@
     "owner_id": "ilkhanate",
     "successor_faction_id": "afshar_beyligi",
     "neighbors": [
-      "akkoyunlu",
       "erzincan",
-      "georgia",
       "karakoyunlu",
-      "trebizond"
+      "trebizond",
+      "area::area__37",
+      "area::area__43",
+      "area::area__44",
+      "area::area__45",
+      "area::area__74::erzurum",
+      "area::area__75::erzurum"
     ],
-    "world_x": 1300,
-    "world_y": 480,
+    "world_x": 1292,
+    "world_y": 486,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -3492,11 +3509,11 @@
       "armenia",
       "azerbaijan",
       "black_sea_shore",
-      "erzurum",
       "karakoyunlu",
       "north_caucasus",
       "trebizond",
-      "area::area__7"
+      "area::area__7",
+      "area::area__37"
     ],
     "world_x": 1312,
     "world_y": 430,
@@ -3563,7 +3580,7 @@
     "trade_capacity": 3,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 650,
+    "population": 590,
     "rural_population": 500,
     "religion": "sunni",
     "active_event_id": "",
@@ -3641,9 +3658,9 @@
       "gaza",
       "levantine_sea",
       "lower_egypt",
+      "area::area__3::gaza",
       "area::area__3::upper_egypt",
-      "area::area__3::lower_egypt",
-      "area::area__3::gaza"
+      "area::area__3::lower_egypt"
     ],
     "world_x": 1097,
     "world_y": 642,
@@ -3661,7 +3678,7 @@
     "trade_capacity": 3,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 750,
+    "population": 857,
     "rural_population": 600,
     "religion": "sunni",
     "active_event_id": "",
@@ -3692,9 +3709,9 @@
       "red_open_2",
       "upper_egypt",
       "area::area__1",
+      "area::area__3::gaza",
       "area::area__3::upper_egypt",
-      "area::area__3::lower_egypt",
-      "area::area__3::gaza"
+      "area::area__3::lower_egypt"
     ],
     "world_x": 1119,
     "world_y": 702,
@@ -3712,7 +3729,7 @@
     "trade_capacity": 3,
     "satisfaction": 70,
     "tax_rate": 40,
-    "population": 950,
+    "population": 1083,
     "rural_population": 800,
     "religion": "sunni",
     "active_event_id": "",
@@ -3737,7 +3754,8 @@
     "neighbors": [
       "palestine_acre",
       "jordan",
-      "gaza"
+      "gaza",
+      "area::area__59"
     ],
     "world_x": 1181,
     "world_y": 628,
@@ -3755,7 +3773,7 @@
     "trade_capacity": 4,
     "satisfaction": 65,
     "tax_rate": 35,
-    "population": 300,
+    "population": 425,
     "rural_population": 250,
     "religion": "sunni",
     "active_event_id": "",
@@ -3855,7 +3873,10 @@
       "dagestan",
       "meshed",
       "gurgan",
-      "area::area__6::northern_persia"
+      "area::area__6::northern_persia",
+      "area::area__48",
+      "area::area__49",
+      "area::area__50"
     ],
     "world_x": 1602,
     "world_y": 549,
@@ -3896,7 +3917,8 @@
       "dagestan",
       "kazvin",
       "northern_persia",
-      "area::area__6::gurgan"
+      "area::area__6::gurgan",
+      "area::area__48"
     ],
     "world_x": 1562,
     "world_y": 549,
@@ -3935,7 +3957,9 @@
     "neighbors": [
       "dagestan",
       "northern_persia",
-      "area::area__6::meshed"
+      "area::area__6::meshed",
+      "area::area__49",
+      "area::area__50"
     ],
     "world_x": 1683,
     "world_y": 548,
@@ -3979,7 +4003,8 @@
       "persian_basra",
       "urmiye",
       "area::area__18",
-      "area::area__5"
+      "area::area__5",
+      "area::area__47"
     ],
     "world_x": 1458,
     "world_y": 580,
@@ -4068,7 +4093,11 @@
       "kazvin",
       "kerkuk",
       "mosul",
-      "area::area__18"
+      "area::area__18",
+      "area::area__43",
+      "area::area__46",
+      "area::area__47",
+      "area::area__58"
     ],
     "world_x": 1382,
     "world_y": 503,
@@ -4113,7 +4142,9 @@
       "isfahan",
       "urmiye",
       "area::area__6::isfahan",
-      "area::area__6::kazvin"
+      "area::area__6::kazvin",
+      "area::area__47",
+      "area::area__48"
     ],
     "world_x": 1494,
     "world_y": 557,
@@ -4197,13 +4228,13 @@
       "isfahan",
       "siraz",
       "area::area__5",
-      "area::area__6::gurgan",
-      "area::area__6::hourmuz",
-      "area::area__6::northern_persia",
-      "area::area__6::southern_persia",
       "area::area__6::isfahan",
-      "area::area__6::meshed",
-      "area::area__6::kazvin"
+      "area::area__6::northern_persia",
+      "area::area__6::kazvin",
+      "area::area__6::hourmuz",
+      "area::area__6::southern_persia",
+      "area::area__6::gurgan",
+      "area::area__6::meshed"
     ],
     "world_x": 1588,
     "world_y": 657,
@@ -4303,13 +4334,13 @@
       "persian_open_1",
       "siraz",
       "southern_persia",
-      "area::area__6::gurgan",
-      "area::area__6::hourmuz",
-      "area::area__6::northern_persia",
-      "area::area__6::southern_persia",
       "area::area__6::isfahan",
-      "area::area__6::meshed",
-      "area::area__6::kazvin"
+      "area::area__6::northern_persia",
+      "area::area__6::kazvin",
+      "area::area__6::hourmuz",
+      "area::area__6::southern_persia",
+      "area::area__6::gurgan",
+      "area::area__6::meshed"
     ],
     "world_x": 1632,
     "world_y": 697,
@@ -4375,7 +4406,7 @@
     "trade_capacity": 3,
     "satisfaction": 80,
     "tax_rate": 20,
-    "population": 220,
+    "population": 375,
     "rural_population": 180,
     "religion": "sunni",
     "active_event_id": "",
@@ -4421,7 +4452,7 @@
     "trade_capacity": 3,
     "satisfaction": 80,
     "tax_rate": 20,
-    "population": 150,
+    "population": 120,
     "rural_population": 120,
     "religion": "sunni",
     "active_event_id": "",
@@ -4469,7 +4500,7 @@
     "trade_capacity": 3,
     "satisfaction": 80,
     "tax_rate": 20,
-    "population": 100,
+    "population": 95,
     "rural_population": 80,
     "religion": "sunni",
     "active_event_id": "",
@@ -4682,7 +4713,8 @@
       "kosovo",
       "dalmatia",
       "otranto_strait",
-      "rascia"
+      "rascia",
+      "area::area__53"
     ],
     "world_x": 860,
     "world_y": 427,
@@ -4724,7 +4756,8 @@
       "north_macedonia",
       "montenegro",
       "nis",
-      "rascia"
+      "rascia",
+      "area::area__53"
     ],
     "world_x": 892,
     "world_y": 426,
@@ -4767,7 +4800,8 @@
       "kosovo",
       "montenegro",
       "otranto_strait",
-      "north_macedonia"
+      "north_macedonia",
+      "area::area__53"
     ],
     "world_x": 875,
     "world_y": 441,
@@ -4815,7 +4849,9 @@
       "kosovo",
       "nis",
       "thessaloniki_hinterland",
-      "vidin"
+      "vidin",
+      "area::area__63",
+      "area::area__64"
     ],
     "world_x": 909,
     "world_y": 444,
@@ -5360,7 +5396,8 @@
       "morea",
       "calabria",
       "thessaly",
-      "yanya"
+      "yanya",
+      "area::area__65"
     ],
     "world_x": 863,
     "world_y": 488,
@@ -6037,7 +6074,8 @@
       "chrysopolis",
       "crimean_black_sea",
       "paphlagonia",
-      "sinop"
+      "sinop",
+      "area::area__69"
     ],
     "world_x": 1135,
     "world_y": 431,
@@ -6674,7 +6712,8 @@
       "kerek",
       "palestine_acre",
       "palestine_jerusalem",
-      "area::area__2"
+      "area::area__2",
+      "area::area__59"
     ],
     "world_x": 1198,
     "world_y": 630,
@@ -6692,7 +6731,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 140,
+    "population": 196,
     "rural_population": 120,
     "religion": "sunni",
     "active_event_id": "",
@@ -6716,7 +6755,8 @@
       "tebuk",
       "red_open_2",
       "area::area__2",
-      "area::area__3::gaza"
+      "area::area__3::gaza",
+      "area::area__59"
     ],
     "world_x": 1198,
     "world_y": 644,
@@ -6734,7 +6774,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 110,
+    "population": 121,
     "rural_population": 90,
     "religion": "sunni",
     "active_event_id": "",
@@ -6760,7 +6800,9 @@
       "urmiye",
       "kazvin",
       "north_caucasus",
-      "area::area__7"
+      "area::area__7",
+      "area::area__46",
+      "area::area__47"
     ],
     "world_x": 1429,
     "world_y": 469,
@@ -6797,7 +6839,9 @@
       "azerbaijan",
       "georgia",
       "karakoyunlu",
-      "urmiye"
+      "urmiye",
+      "area::area__37",
+      "area::area__46"
     ],
     "world_x": 1374,
     "world_y": 469,
@@ -7079,8 +7123,8 @@
       "lorraine",
       "walonia",
       "palatinate",
-      "area::area__11::walonia",
-      "area::area__11::luxembourg"
+      "area::area__11::luxembourg",
+      "area::area__11::walonia"
     ],
     "world_x": 597,
     "world_y": 290,
@@ -7535,8 +7579,10 @@
       "palestine_acre",
       "palestine_jerusalem",
       "upper_egypt",
+      "area::area__3::gaza",
+      "area::area__3::upper_egypt",
       "area::area__3::lower_egypt",
-      "area::area__3::gaza"
+      "area::area__59"
     ],
     "world_x": 1174,
     "world_y": 642,
@@ -7830,7 +7876,8 @@
       "bithynia",
       "hamideli",
       "kutahya",
-      "mentese"
+      "mentese",
+      "area::area__41"
     ],
     "world_x": 1080,
     "world_y": 499,
@@ -7962,7 +8009,8 @@
       "aegean_sea",
       "kutahya",
       "mentese_hinterland",
-      "saruhan"
+      "saruhan",
+      "area::area__42"
     ],
     "world_x": 1022,
     "world_y": 506,
@@ -8011,7 +8059,8 @@
       "izmir",
       "kutahya",
       "mediterranean_open_1",
-      "mentese"
+      "mentese",
+      "area::area__42"
     ],
     "world_x": 1039,
     "world_y": 526,
@@ -8053,15 +8102,18 @@
     "name_tr": "Candaroğulları Beyliği",
     "terrain": "coast",
     "owner_id": "candar_bey",
+    "successor_faction_id": "candar_bey",
     "neighbors": [
       "black_open_1",
       "eretna",
       "konya",
       "sinop",
-      "sivas"
+      "sivas",
+      "area::area__70",
+      "area::area__71"
     ],
-    "world_x": 1212,
-    "world_y": 458,
+    "world_x": 1213,
+    "world_y": 452,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -8076,7 +8128,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 280,
+    "population": 304,
     "rural_population": 182,
     "religion": "sunni",
     "active_event_id": "",
@@ -8094,13 +8146,14 @@
     "name_tr": "Sivas Ucu",
     "terrain": "plain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "kadi_burhaneddin",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "candaroglu",
-      "cilicia",
       "eretna",
+      "erzincan",
       "konya",
-      "malatya"
+      "malatya",
+      "dulkadirli"
     ],
     "world_x": 1212,
     "world_y": 486,
@@ -8118,7 +8171,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 420,
+    "population": 462,
     "rural_population": 273,
     "religion": "sunni",
     "active_event_id": "",
@@ -8129,39 +8182,37 @@
   {
     "id": "cilicia",
     "name": "Cilicia",
-    "name_tr": "Kilikya Ermeni Krallığı",
+    "name_tr": "Kilikya",
     "terrain": "plain",
     "owner_id": "ramazan_bey",
     "successor_faction_id": "ramazan_bey",
     "neighbors": [
-      "aleppo",
-      "dulkadir",
+      "antioch",
+      "area::area__38",
+      "area::area__77::cilicia",
+      "area::area__78",
+      "area::area__79",
       "east_mediterranean",
-      "gulf_of_iskenderun",
-      "karaman",
-      "kayseri",
-      "konya",
-      "malatya",
-      "sivas"
+      "gulf_of_iskenderun"
     ],
-    "world_x": 1184,
-    "world_y": 537,
+    "world_x": 1192,
+    "world_y": 541,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 90,
-    "base_grain_output": 47,
-    "base_iron_output": 2,
-    "base_timber_output": 2,
-    "base_stone_output": 25,
+    "base_gold_income": 60,
+    "base_grain_output": 32,
+    "base_iron_output": 1,
+    "base_timber_output": 1,
+    "base_stone_output": 17,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 2,
+    "trade_capacity": 1,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 407,
-    "rural_population": 273,
+    "population": 300,
+    "rural_population": 190,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -8179,22 +8230,68 @@
     ]
   },
   {
+    "id": "antioch",
+    "name": "Antioch",
+    "name_tr": "Antakya",
+    "terrain": "plain",
+    "owner_id": "mamluk",
+    "successor_faction_id": "ramazan_bey",
+    "neighbors": [
+      "aleppo",
+      "area::area__38",
+      "area::area__43",
+      "area::area__78",
+      "area::area__81::antioch",
+      "cilicia",
+      "dulkadir",
+      "dulkadirli",
+      "gulf_of_iskenderun"
+    ],
+    "world_x": 1197,
+    "world_y": 544,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 30,
+    "base_grain_output": 15,
+    "base_iron_output": 1,
+    "base_timber_output": 1,
+    "base_stone_output": 8,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 1,
+    "satisfaction": 60,
+    "tax_rate": 30,
+    "population": 107,
+    "rural_population": 83,
+    "religion": "orthodox",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "temple",
+      "market",
+      "farm",
+      "farm"
+    ]
+  },
+  {
     "id": "akkoyunlu",
     "name": "Van",
     "name_tr": "Van",
     "terrain": "mountain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "akkoyunlu_state",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "dulkadir",
-      "erzincan",
-      "erzurum",
       "hakkari",
-      "karakoyunlu",
-      "raqqa"
+      "raqqa",
+      "area::area__43",
+      "area::area__72::akkoyunlu",
+      "area::area__74::akkoyunlu"
     ],
-    "world_x": 1302,
-    "world_y": 510,
+    "world_x": 1281,
+    "world_y": 514,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -8225,15 +8322,19 @@
     "owner_id": "ilkhanate",
     "successor_faction_id": "karakoyunlu_state",
     "neighbors": [
-      "akkoyunlu",
       "armenia",
       "erzurum",
       "georgia",
-      "hakkari",
-      "urmiye"
+      "urmiye",
+      "area::area__37",
+      "area::area__43",
+      "area::area__57",
+      "area::area__73::karakoyunlu",
+      "area::area__74::karakoyunlu",
+      "area::area__74::erzurum"
     ],
-    "world_x": 1350,
-    "world_y": 495,
+    "world_x": 1353,
+    "world_y": 506,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -8265,13 +8366,14 @@
     "successor_faction_id": "karakoyunlu_state",
     "neighbors": [
       "akkoyunlu",
-      "karakoyunlu",
       "mosul",
       "urmiye",
-      "raqqa"
+      "raqqa",
+      "area::area__43",
+      "area::area__73::hakkari"
     ],
-    "world_x": 1343,
-    "world_y": 519,
+    "world_x": 1354,
+    "world_y": 530,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -8503,7 +8605,8 @@
       "gulf_of_cadiz",
       "leon",
       "portugal",
-      "toledo"
+      "toledo",
+      "area::area__52"
     ],
     "world_x": 351,
     "world_y": 515,
@@ -8599,9 +8702,9 @@
       "gulf_of_lion",
       "languedoc",
       "navarra",
+      "area::area__9::languedoc",
       "area::area__9::catalonia",
-      "area::area__9::navarra",
-      "area::area__9::languedoc"
+      "area::area__9::navarra"
     ],
     "world_x": 493,
     "world_y": 439,
@@ -8760,12 +8863,12 @@
     "terrain": "coast",
     "owner_id": "mentese_bey",
     "neighbors": [
-      "mediterranean_open_1",
       "germiyan",
-      "mentese_hinterland",
       "kutahya",
-      "hamideli",
-      "teke"
+      "mediterranean_open_1",
+      "mentese_hinterland",
+      "teke",
+      "area::area__41"
     ],
     "world_x": 1071,
     "world_y": 523,
@@ -8806,12 +8909,16 @@
     "successor_faction_id": "hamid_bey",
     "neighbors": [
       "aksaray",
-      "beysehir",
       "east_mediterranean",
       "hamideli",
       "karaman",
       "mediterranean_open_1",
-      "mentese"
+      "mentese",
+      "tasucu",
+      "area::area__40",
+      "area::area__41",
+      "area::area__60",
+      "area::area__61"
     ],
     "world_x": 1101,
     "world_y": 522,
@@ -8854,8 +8961,9 @@
       "aksaray",
       "beysehir",
       "germiyan",
-      "mentese",
-      "teke"
+      "teke",
+      "area::area__41",
+      "area::area__61"
     ],
     "world_x": 1089,
     "world_y": 502,
@@ -8901,8 +9009,7 @@
       "aksaray",
       "sivrihisar",
       "germiyan",
-      "hamideli",
-      "teke"
+      "hamideli"
     ],
     "world_x": 1097,
     "world_y": 491,
@@ -8950,10 +9057,11 @@
       "karaman",
       "kayseri",
       "sivrihisar",
-      "teke"
+      "teke",
+      "area::area__56"
     ],
-    "world_x": 1117,
-    "world_y": 501,
+    "world_x": 1116,
+    "world_y": 497,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -9037,7 +9145,8 @@
       "kayseri",
       "konya",
       "paphlagonia",
-      "sinop"
+      "sinop",
+      "area::area__56"
     ],
     "world_x": 1132,
     "world_y": 474,
@@ -9072,29 +9181,79 @@
     "successor_faction_id": "karaman_bey",
     "neighbors": [
       "aksaray",
-      "cilicia",
-      "east_mediterranean",
       "kayseri",
-      "teke"
+      "teke",
+      "area::area__40",
+      "area::area__56",
+      "area::area__79",
+      "area::area__80::karaman"
     ],
-    "world_x": 1138,
-    "world_y": 525,
+    "world_x": 1137,
+    "world_y": 522,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 118,
-    "base_grain_output": 52,
-    "base_iron_output": 6,
-    "base_timber_output": 8,
-    "base_stone_output": 17,
+    "base_gold_income": 75,
+    "base_grain_output": 32,
+    "base_iron_output": 4,
+    "base_timber_output": 5,
+    "base_stone_output": 12,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 2,
+    "trade_capacity": 1,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 414,
-    "rural_population": 227,
+    "population": 300,
+    "rural_population": 170,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "port",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm"
+    ]
+  },
+  {
+    "id": "tasucu",
+    "name": "Tasucu Region",
+    "name_tr": "Taşucu Bölgesi",
+    "terrain": "plain",
+    "owner_id": "karaman_bey",
+    "successor_faction_id": "karaman_bey",
+    "neighbors": [
+      "east_mediterranean",
+      "teke",
+      "area::area__40",
+      "area::area__79",
+      "area::area__80::tasucu"
+    ],
+    "world_x": 1133,
+    "world_y": 543,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 43,
+    "base_grain_output": 20,
+    "base_iron_output": 2,
+    "base_timber_output": 3,
+    "base_stone_output": 5,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 1,
+    "satisfaction": 60,
+    "tax_rate": 28,
+    "population": 114,
+    "rural_population": 57,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -9116,17 +9275,19 @@
     "name": "Kayseri",
     "name_tr": "Kayseri",
     "terrain": "plain",
-    "owner_id": "ilkhanate",
-    "successor_faction_id": "eretna_state",
+    "owner_id": "karaman_bey",
     "neighbors": [
       "aksaray",
       "cankiri",
-      "cilicia",
       "karaman",
-      "konya"
+      "konya",
+      "area::area__56",
+      "area::area__77::kayseri",
+      "area::area__78",
+      "area::area__79"
     ],
-    "world_x": 1154,
-    "world_y": 503,
+    "world_x": 1161,
+    "world_y": 504,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -9141,7 +9302,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 389,
+    "population": 452,
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
@@ -9152,16 +9313,19 @@
     "name": "Eretna",
     "name_tr": "Eretna Devleti",
     "terrain": "plain",
-    "owner_id": "canik_bey",
+    "owner_id": "ilkhanate",
     "successor_faction_id": "canik_bey",
     "neighbors": [
       "black_open_1",
       "black_sea_shore",
       "candaroglu",
       "erzincan",
-      "malatya",
       "sivas",
-      "trebizond"
+      "trebizond",
+      "area::area__37",
+      "area::area__45",
+      "area::area__71",
+      "area::area__76::eretna"
     ],
     "world_x": 1251,
     "world_y": 458,
@@ -9179,7 +9343,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 800,
+    "population": 700,
     "rural_population": 520,
     "religion": "sunni",
     "active_event_id": "",
@@ -9202,16 +9366,14 @@
     "name_tr": "Malatya",
     "terrain": "plain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "ilkhanate",
     "neighbors": [
-      "cilicia",
-      "dulkadir",
-      "eretna",
+      "dulkadirli",
       "erzincan",
-      "sivas"
+      "sivas",
+      "area::area__43"
     ],
-    "world_x": 1244,
-    "world_y": 494,
+    "world_x": 1227,
+    "world_y": 506,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -9226,8 +9388,47 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 620,
-    "rural_population": 403,
+    "population": 564,
+    "rural_population": 435,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "walls"
+    ]
+  },
+  {
+    "id": "dulkadirli",
+    "name": "Dulkadirli",
+    "name_tr": "Dulkadirli",
+    "terrain": "plain",
+    "owner_id": "mamluk",
+    "successor_faction_id": "dulkadir_bey",
+    "neighbors": [
+      "antioch",
+      "area::area__43",
+      "area::area__78",
+      "konya",
+      "malatya",
+      "sivas"
+    ],
+    "world_x": 1222,
+    "world_y": 508,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 27,
+    "base_grain_output": 18,
+    "base_iron_output": 1,
+    "base_timber_output": 3,
+    "base_stone_output": 6,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 1,
+    "satisfaction": 60,
+    "tax_rate": 30,
+    "population": 82,
+    "rural_population": 72,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -9239,34 +9440,32 @@
     "name": "Dulkadir",
     "name_tr": "Dulkadiroğulları Beyliği",
     "terrain": "mountain",
-    "owner_id": "dulkadir_bey",
-    "successor_faction_id": "dulkadir_bey",
+    "owner_id": "mamluk",
     "neighbors": [
       "akkoyunlu",
       "aleppo",
-      "cilicia",
-      "erzincan",
-      "malatya",
+      "antioch",
+      "area::area__43",
       "raqqa"
     ],
-    "world_x": 1259,
-    "world_y": 523,
+    "world_x": 1240,
+    "world_y": 527,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 97,
-    "base_grain_output": 50,
-    "base_iron_output": 2,
-    "base_timber_output": 10,
-    "base_stone_output": 22,
+    "base_gold_income": 70,
+    "base_grain_output": 32,
+    "base_iron_output": 1,
+    "base_timber_output": 7,
+    "base_stone_output": 16,
     "base_spice_output": 0,
     "base_cloth_output": 0,
-    "trade_capacity": 2,
+    "trade_capacity": 1,
     "satisfaction": 58,
     "tax_rate": 28,
-    "population": 292,
-    "rural_population": 247,
+    "population": 210,
+    "rural_population": 175,
     "religion": "sunni",
     "active_event_id": "",
     "buildings": [
@@ -9290,15 +9489,17 @@
     "owner_id": "ilkhanate",
     "successor_faction_id": "ilkhanate",
     "neighbors": [
-      "akkoyunlu",
-      "dulkadir",
       "eretna",
       "erzurum",
       "malatya",
-      "trebizond"
+      "sivas",
+      "trebizond",
+      "area::area__43",
+      "area::area__45",
+      "area::area__72::erzincan"
     ],
-    "world_x": 1274,
-    "world_y": 492,
+    "world_x": 1260,
+    "world_y": 489,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -9313,7 +9514,7 @@
     "trade_capacity": 2,
     "satisfaction": 58,
     "tax_rate": 28,
-    "population": 404,
+    "population": 450,
     "rural_population": 234,
     "religion": "sunni",
     "active_event_id": "",
@@ -9335,7 +9536,9 @@
       "north_macedonia",
       "oltenia",
       "serres",
-      "thessaloniki_hinterland"
+      "thessaloniki_hinterland",
+      "area::area__67",
+      "area::area__68"
     ],
     "world_x": 943,
     "world_y": 413,
@@ -9947,7 +10150,8 @@
       "kosovo",
       "montenegro",
       "nis",
-      "serbia"
+      "serbia",
+      "area::area__53"
     ],
     "world_x": 878,
     "world_y": 401,
@@ -10250,7 +10454,9 @@
       "north_macedonia",
       "otranto_strait",
       "thessaloniki_hinterland",
-      "yanya"
+      "yanya",
+      "area::area__64",
+      "area::area__66"
     ],
     "world_x": 882,
     "world_y": 470,
@@ -10294,7 +10500,9 @@
       "mediterranean_open_6",
       "otranto_strait",
       "thessaloniki_hinterland",
-      "yanya"
+      "yanya",
+      "area::area__65",
+      "area::area__66"
     ],
     "world_x": 920,
     "world_y": 497,
@@ -10338,7 +10546,10 @@
       "morea",
       "otranto_strait",
       "thessaloniki_hinterland",
-      "thessaly"
+      "thessaly",
+      "area::area__63",
+      "area::area__65",
+      "area::area__66"
     ],
     "world_x": 902,
     "world_y": 497,
@@ -10387,7 +10598,8 @@
       "north_macedonia",
       "thessaly",
       "vidin",
-      "yanya"
+      "yanya",
+      "area::area__63"
     ],
     "world_x": 934,
     "world_y": 463,
@@ -10608,7 +10820,8 @@
       "izmir",
       "mentese",
       "mentese_hinterland",
-      "saruhan"
+      "saruhan",
+      "area::area__42"
     ],
     "world_x": 1051,
     "world_y": 499,
@@ -10770,11 +10983,11 @@
     "owner_id": "mamluk",
     "successor_faction_id": "mamluk",
     "neighbors": [
-      "cilicia",
       "damascus",
       "dulkadir",
       "gulf_of_iskenderun",
       "lebanon",
+      "antioch",
       "raqqa"
     ],
     "world_x": 1217,
@@ -10865,7 +11078,8 @@
       "raqqa",
       "urmiye",
       "area::area__2",
-      "area::area__18"
+      "area::area__18",
+      "area::area__43"
     ],
     "world_x": 1344,
     "world_y": 552,
@@ -10983,7 +11197,8 @@
       "bursa",
       "chrysopolis",
       "khalkedon",
-      "sea_of_marmara"
+      "sea_of_marmara",
+      "area::area__62"
     ],
     "world_x": 1068,
     "world_y": 460,
@@ -11062,7 +11277,8 @@
       "chrysopolis",
       "germiyan",
       "nicomedia",
-      "sivrihisar"
+      "sivrihisar",
+      "area::area__62"
     ],
     "world_x": 1081,
     "world_y": 471,
@@ -11106,7 +11322,8 @@
       "cankiri",
       "chrysopolis",
       "central_black_sea",
-      "sinop"
+      "sinop",
+      "area::area__69"
     ],
     "world_x": 1122,
     "world_y": 447,
@@ -11151,7 +11368,10 @@
       "cankiri",
       "konya",
       "central_black_sea",
-      "paphlagonia"
+      "paphlagonia",
+      "area::area__69",
+      "area::area__70",
+      "area::area__71"
     ],
     "world_x": 1171,
     "world_y": 441,
@@ -11169,7 +11389,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 280,
+    "population": 256,
     "rural_population": 182,
     "religion": "sunni",
     "active_event_id": "",
@@ -11281,7 +11501,8 @@
     "neighbors": [
       "dagestan",
       "moscow",
-      "north_caucasus"
+      "north_caucasus",
+      "area::area__51"
     ],
     "world_x": 1523,
     "world_y": 146,
@@ -11363,7 +11584,8 @@
       "gurgan",
       "nizhny_novgorod",
       "north_caucasus",
-      "northern_persia"
+      "northern_persia",
+      "area::area__50"
     ],
     "world_x": 1540,
     "world_y": 468,
@@ -11400,7 +11622,8 @@
       "mediterranean_open_6",
       "serres",
       "thessaloniki_hinterland",
-      "vidin"
+      "vidin",
+      "area::area__68"
     ],
     "world_x": 956,
     "world_y": 458,
@@ -11441,7 +11664,8 @@
       "mediterranean_open_6",
       "tekfurdagi",
       "thrace",
-      "vidin"
+      "vidin",
+      "area::area__68"
     ],
     "world_x": 993,
     "world_y": 458,
@@ -11474,9 +11698,9 @@
     "neighbors": [
       "irish_sea_shore",
       "north_sea_shore",
-      "area::area__11::walonia",
+      "area::area__11::lorraine",
       "area::area__11::luxembourg",
-      "area::area__11::lorraine"
+      "area::area__11::walonia"
     ],
     "world_x": 592,
     "world_y": 308,
@@ -12554,11 +12778,12 @@
       "cilicia",
       "cyprus",
       "gulf_of_iskenderun",
-      "karaman",
       "levantine_sea",
       "mediterranean_open_1",
+      "tasucu",
       "north_cyprus",
-      "teke"
+      "teke",
+      "area::area__79"
     ],
     "world_x": 1135,
     "world_y": 558,
@@ -12595,8 +12820,10 @@
       "gaza",
       "lebanon",
       "levantine_sea",
+      "antioch",
       "north_cyprus",
-      "palestine_acre"
+      "palestine_acre",
+      "area::area__38"
     ],
     "world_x": 1168,
     "world_y": 586,
@@ -12838,8 +13065,8 @@
       "luxor",
       "tebuk",
       "red_sea",
-      "area::area__3::lower_egypt",
-      "area::area__3::gaza"
+      "area::area__3::gaza",
+      "area::area__3::lower_egypt"
     ],
     "world_x": 1167,
     "world_y": 716,
