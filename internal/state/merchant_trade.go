@@ -21,6 +21,99 @@ type MerchantTradePortPair struct {
 	ToSeaID      world.RegionID
 }
 
+// MerchantFleetTradeStatus, tek bir merchant filosunun mevcut rota konumunda
+// göstereceği bonusu ve hedefe henüz ulaşmamış olma durumunu taşır.
+type MerchantFleetTradeStatus struct {
+	Bonus   int
+	Pending bool
+}
+
+type merchantTradeSeaPair struct {
+	start  world.RegionID
+	target world.RegionID
+}
+
+// MerchantFleetTradeStatuses tüm atanmış merchant filolarının durumunu rota
+// bazında toplu hesaplar. Aynı rotanın hedef denizi ve aktif gemi toplamı bir
+// kez çözülür; renderer bu snapshot'ı aynı input/draw geçişindeki rozet,
+// hit-test ve tooltip sorgularında paylaşabilir.
+//
+// dst verilirse map yeniden kullanılır ve önce temizlenir.
+func (s *GameState) MerchantFleetTradeStatuses(dst map[army.ArmyID]MerchantFleetTradeStatus) map[army.ArmyID]MerchantFleetTradeStatus {
+	if dst == nil {
+		dst = make(map[army.ArmyID]MerchantFleetTradeStatus)
+	} else {
+		clear(dst)
+	}
+	if s == nil {
+		return dst
+	}
+
+	routes := make(map[string]*economy.TradeRoute, len(s.TradeRoutes))
+	for _, route := range s.TradeRoutes {
+		if route == nil {
+			continue
+		}
+		key := route.AssignmentKey()
+		if key == "" || routes[key] != nil {
+			continue
+		}
+		routes[key] = route
+	}
+
+	targetSeas := make(map[string]world.RegionID)
+	targetResolved := make(map[string]bool)
+	activeShips := make(map[string]int)
+	fleetShips := make(map[army.ArmyID]int)
+	supported := make(map[army.ArmyID]bool)
+
+	for fleetID, fleet := range s.Armies {
+		if fleet == nil || !fleet.IsNaval || fleet.TradeRouteKey == "" {
+			continue
+		}
+		route := routes[fleet.TradeRouteKey]
+		if route == nil {
+			continue
+		}
+		dst[fleetID] = MerchantFleetTradeStatus{Pending: true}
+
+		if !targetResolved[fleet.TradeRouteKey] {
+			targetResolved[fleet.TradeRouteKey] = true
+			if seaID, ok := s.MerchantTradeRouteTargetSeaRegion(route); ok {
+				targetSeas[fleet.TradeRouteKey] = seaID
+			}
+		}
+		targetSea := targetSeas[fleet.TradeRouteKey]
+		if targetSea == "" || !fleet.IsAtSea() || fleet.OwnerID != route.FromFactionID || fleet.RegionID != targetSea {
+			continue
+		}
+
+		count := s.merchantShipCount(fleet)
+		fleetShips[fleetID] = count
+		supported[fleetID] = true
+		activeShips[fleet.TradeRouteKey] += count
+	}
+
+	for fleetID := range dst {
+		if !supported[fleetID] {
+			continue
+		}
+		fleet := s.Armies[fleetID]
+		route := routes[fleet.TradeRouteKey]
+		count := fleetShips[fleetID]
+		remaining := economy.MerchantBonusCapacity(route) - (activeShips[fleet.TradeRouteKey] - count)
+		bonus := 0
+		if remaining >= 0 {
+			bonus = count
+			if bonus > remaining {
+				bonus = remaining
+			}
+		}
+		dst[fleetID] = MerchantFleetTradeStatus{Bonus: bonus}
+	}
+	return dst
+}
+
 // MerchantTradeRouteTargetSeaRegion rotanın tek kanonik hedef denizini döner.
 // Gerçek liman çiftleri varsa rota yönündeki hedef limanın denizi kullanılır;
 // böylece örneğin Gemlik -> Özi rotası Karadeniz Açık 4'te çalışır. Gerçek
@@ -79,6 +172,7 @@ func (s *GameState) MerchantTradeRoutePortPairs(route *economy.TradeRoute) []Mer
 	if s == nil || route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
 		return nil
 	}
+	s.ensureMerchantTradeSeaCache()
 	fromPorts := s.merchantTradePortEndpoints(route.FromFactionID)
 	toPorts := s.merchantTradePortEndpoints(route.ToFactionID)
 	if len(fromPorts) == 0 || len(toPorts) == 0 {
@@ -88,7 +182,7 @@ func (s *GameState) MerchantTradeRoutePortPairs(route *economy.TradeRoute) []Mer
 	pairs := make([]MerchantTradePortPair, 0, len(fromPorts)*len(toPorts))
 	for _, from := range fromPorts {
 		for _, to := range toPorts {
-			if !s.merchantTradeSeasConnected(from.seaID, to.seaID) {
+			if !s.merchantTradeSeasConnectedCached(from.seaID, to.seaID) {
 				continue
 			}
 			pairs = append(pairs, MerchantTradePortPair{
@@ -150,7 +244,85 @@ func (s *GameState) merchantTradePortEndpoints(ownerID string) []merchantTradePo
 	return result
 }
 
-func (s *GameState) merchantTradeSeasConnected(start, target world.RegionID) bool {
+func (s *GameState) ensureMerchantTradeSeaCache() {
+	if s == nil {
+		return
+	}
+	signature := s.merchantTradeSeaNetworkSignature()
+	if s.merchantTradeSeaSigSet && s.merchantTradeSeaSignature == signature {
+		return
+	}
+	s.merchantTradeSeaSignature = signature
+	s.merchantTradeSeaSigSet = true
+	s.merchantTradeSeaCache = make(map[merchantTradeSeaPair]bool)
+}
+
+func (s *GameState) merchantTradeSeaNetworkSignature() uint64 {
+	var signature uint64
+	for regionID, region := range s.Regions {
+		if region == nil {
+			continue
+		}
+		regionHash := merchantTradeHashString(1469598103934665603, string(regionID))
+		regionHash = merchantTradeHashString(regionHash, region.OwnerID)
+		regionHash = merchantTradeHashUint(regionHash, uint64(len(region.Neighbors)))
+		regionHash = merchantTradeHashUint(regionHash, uint64(len(region.Settlements)))
+		regionHash = merchantTradeHashUint(regionHash, uint64(len(region.Buildings)))
+		if region.IsSea {
+			regionHash = merchantTradeHashUint(regionHash, 1)
+		}
+		if region.IsLocked {
+			regionHash = merchantTradeHashUint(regionHash, 2)
+		}
+		for _, neighborID := range region.Neighbors {
+			regionHash ^= merchantTradeHashString(1099511628211, string(neighborID))
+		}
+		for _, settlement := range region.Settlements {
+			regionHash ^= merchantTradeHashString(1099511628211, string(settlement.Type))
+		}
+		for _, buildingID := range region.Buildings {
+			regionHash ^= merchantTradeHashString(1099511628211, buildingID)
+		}
+		signature ^= regionHash
+	}
+	return signature
+}
+
+func merchantTradeHashString(hash uint64, value string) uint64 {
+	for i := 0; i < len(value); i++ {
+		hash ^= uint64(value[i])
+		hash *= 1099511628211
+	}
+	return hash
+}
+
+func merchantTradeHashUint(hash, value uint64) uint64 {
+	for i := 0; i < 8; i++ {
+		hash ^= value & 0xff
+		hash *= 1099511628211
+		value >>= 8
+	}
+	return hash
+}
+
+func (s *GameState) merchantTradeSeasConnectedCached(start, target world.RegionID) bool {
+	if s == nil || start == "" || target == "" {
+		return false
+	}
+	if start == target {
+		return true
+	}
+	s.ensureMerchantTradeSeaCache()
+	key := merchantTradeSeaPair{start: start, target: target}
+	if connected, ok := s.merchantTradeSeaCache[key]; ok {
+		return connected
+	}
+	connected := s.merchantTradeSeasConnectedUncached(start, target)
+	s.merchantTradeSeaCache[key] = connected
+	return connected
+}
+
+func (s *GameState) merchantTradeSeasConnectedUncached(start, target world.RegionID) bool {
 	if s == nil || start == "" || target == "" {
 		return false
 	}

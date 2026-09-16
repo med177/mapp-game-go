@@ -57,16 +57,16 @@ type mapBorderMeshSet struct {
 }
 
 type mapBorderOverlayCache struct {
-	image *ebiten.Image
-	white *ebiten.Image
-	key   mapBorderOverlayKey
-	valid bool
+	image                  *ebiten.Image
+	white                  *ebiten.Image
+	key                    mapBorderOverlayKey
+	valid                  bool
+	anchorCamX, anchorCamY float64
 }
 
 type mapBorderOverlayKey struct {
 	worldMap      *WorldMap
 	borderVersion uint64
-	camX, camY    float64
 	camScale      float64
 	screenWidth   int
 	screenHeight  int
@@ -550,14 +550,17 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 	key := mapBorderOverlayKey{
 		worldMap:      r.worldMap,
 		borderVersion: r.worldMap.borderVersion,
-		camX:          r.camX,
-		camY:          r.camY,
 		camScale:      r.camScale,
 		screenWidth:   screenWidth,
 		screenHeight:  screenHeight,
 	}
-	if r.mapBorderCache.image == nil || r.mapBorderCache.image.Bounds().Dx() != screenWidth || r.mapBorderCache.image.Bounds().Dy() != screenHeight {
-		r.mapBorderCache.image = ebiten.NewImage(screenWidth, screenHeight)
+	// Pan sırasında sınır mesh'ini her frame yeniden tessellate etmemek için
+	// cache ekranın etrafında bir ekranlık payla tutulur. Kamera bu pay içinde
+	// kaldığı sürece aynı görüntü yalnızca ekrana ötelenir.
+	marginX, marginY := float64(screenWidth), float64(screenHeight)
+	cacheWidth, cacheHeight := screenWidth*3, screenHeight*3
+	if r.mapBorderCache.image == nil || r.mapBorderCache.image.Bounds().Dx() != cacheWidth || r.mapBorderCache.image.Bounds().Dy() != cacheHeight {
+		r.mapBorderCache.image = ebiten.NewImage(cacheWidth, cacheHeight)
 		r.mapBorderCache.valid = false
 	}
 	if r.mapBorderCache.white == nil {
@@ -565,10 +568,17 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 		r.mapBorderCache.white.WritePixels([]byte{255, 255, 255, 255})
 	}
 	if r.mapBorderCache.valid && r.mapBorderCache.key == key {
-		screen.DrawImage(r.mapBorderCache.image, nil)
-		return
+		deltaX := (r.mapBorderCache.anchorCamX - r.camX) * r.camScale
+		deltaY := (r.mapBorderCache.anchorCamY - r.camY) * r.camScale
+		if math.Abs(deltaX) <= marginX/2 && math.Abs(deltaY) <= marginY/2 {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(-marginX+deltaX, -marginY+deltaY)
+			screen.DrawImage(r.mapBorderCache.image, op)
+			return
+		}
 	}
 
+	cacheWidthF, cacheHeightF := float64(cacheWidth), float64(cacheHeight)
 	r.mapBorderMeshes.reset()
 	for i, segment := range r.worldMap.borderSegments {
 		if i >= len(r.worldMap.borderStyles) {
@@ -580,11 +590,13 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 		}
 		x1, y1 := r.worldToScreen(float64(segment.x1), float64(segment.y1))
 		x2, y2 := r.worldToScreen(float64(segment.x2), float64(segment.y2))
+		x1, y1 = x1+marginX, y1+marginY
+		x2, y2 = x2+marginX, y2+marginY
 		if r.camScale < 1 && math.Hypot(x2-x1, y2-y1) < 0.85 {
 			continue
 		}
-		if math.Max(x1, x2) < -2 || math.Min(x1, x2) > float64(screenWidth)+2 ||
-			math.Max(y1, y2) < -2 || math.Min(y1, y2) > float64(screenHeight)+2 {
+		if math.Max(x1, x2) < -2 || math.Min(x1, x2) > cacheWidthF+2 ||
+			math.Max(y1, y2) < -2 || math.Min(y1, y2) > cacheHeightF+2 {
 			continue
 		}
 		if style == mapBorderStyleTerrainAreaSelected {
@@ -599,16 +611,15 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 		}
 		x1, y1 := r.worldToScreen(float64(segment.x1), float64(segment.y1))
 		x2, y2 := r.worldToScreen(float64(segment.x2), float64(segment.y2))
-		if math.Max(x1, x2) < -2 || math.Min(x1, x2) > float64(screenWidth)+2 ||
-			math.Max(y1, y2) < -2 || math.Min(y1, y2) > float64(screenHeight)+2 {
+		x1, y1 = x1+marginX, y1+marginY
+		x2, y2 = x2+marginX, y2+marginY
+		if math.Max(x1, x2) < -2 || math.Min(x1, x2) > cacheWidthF+2 ||
+			math.Max(y1, y2) < -2 || math.Min(y1, y2) > cacheHeightF+2 {
 			continue
 		}
 		appendMapBorderQuadFraction(&r.mapBorderMeshes, mapBorderStyleBlockade, x1, y1, x2, y2, r.worldMap.blockadeFractions[i], blockadeMapBorderStrokeWidth)
 	}
 
-	// Path tessellation yerine ekran uzayında hazırlanmış mesh kullanılır.
-	// Bu çağrılar yalnız kamera/harita değiştiğinde çalışır; sabit frame'lerde
-	// yalnızca tek bir cache image ekrana kopyalanır.
 	r.mapBorderCache.image.Clear()
 	drawOptions := &ebiten.DrawTrianglesOptions{
 		AntiAlias:      true,
@@ -625,6 +636,11 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 		}
 	}
 	r.mapBorderCache.key = key
+	r.mapBorderCache.anchorCamX = r.camX
+	r.mapBorderCache.anchorCamY = r.camY
 	r.mapBorderCache.valid = true
-	screen.DrawImage(r.mapBorderCache.image, nil)
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(-marginX, -marginY)
+	screen.DrawImage(r.mapBorderCache.image, op)
+	return
 }

@@ -285,24 +285,27 @@ type GameState struct {
 	ShapeData world.CountryShapeJSON `json:"-"`
 
 	// Runtime-only (json:"-") — her başlangıçta assets'ten yüklenir
-	AIStrategies             map[string]scenario.AIFactionStrategy    `json:"-"`
-	AIStrategyOrder          []string                                 `json:"-"`
-	AIDifficultyPolicy       scenario.AIDifficultyPolicy              `json:"-"`
-	UnitTypes                map[string]*army.UnitType                `json:"-"`
-	UnitTypeOrder            []string                                 `json:"-"`
-	BuildingTypes            map[string]*city.Building                `json:"-"`
-	BuildingOrder            []string                                 `json:"-"`
-	TechTypes                map[string]*tech.Technology              `json:"-"`
-	CommanderTemplates       map[string][]*army.Commander             `json:"-"`
-	ScenarioVictories        []scenario.VictoryOptionDef              `json:"-"`
-	PoliticalTransformations []scenario.PoliticalTransformation       `json:"-"`
-	AvailableVictories       []scenario.VictoryOptionDef              `json:"-"`
-	RegionLogistics          map[world.RegionID]RegionLogisticsStatus `json:"-"`
-	ArmyLogistics            map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
-	GrainEconomy             map[faction.FactionID]GrainEconomyStatus `json:"-"`
-	GoldEconomy              map[faction.FactionID]GoldEconomyStatus  `json:"-"`
-	GoldTurnLedger           map[faction.FactionID]GoldTurnLedger     `json:"-"`
-	GrainSaleGoldUsed        map[faction.FactionID]int                `json:"-"`
+	AIStrategies              map[string]scenario.AIFactionStrategy    `json:"-"`
+	AIStrategyOrder           []string                                 `json:"-"`
+	AIDifficultyPolicy        scenario.AIDifficultyPolicy              `json:"-"`
+	UnitTypes                 map[string]*army.UnitType                `json:"-"`
+	UnitTypeOrder             []string                                 `json:"-"`
+	BuildingTypes             map[string]*city.Building                `json:"-"`
+	BuildingOrder             []string                                 `json:"-"`
+	TechTypes                 map[string]*tech.Technology              `json:"-"`
+	CommanderTemplates        map[string][]*army.Commander             `json:"-"`
+	ScenarioVictories         []scenario.VictoryOptionDef              `json:"-"`
+	PoliticalTransformations  []scenario.PoliticalTransformation       `json:"-"`
+	AvailableVictories        []scenario.VictoryOptionDef              `json:"-"`
+	RegionLogistics           map[world.RegionID]RegionLogisticsStatus `json:"-"`
+	ArmyLogistics             map[army.ArmyID]ArmyLogisticsStatus      `json:"-"`
+	GrainEconomy              map[faction.FactionID]GrainEconomyStatus `json:"-"`
+	GoldEconomy               map[faction.FactionID]GoldEconomyStatus  `json:"-"`
+	GoldTurnLedger            map[faction.FactionID]GoldTurnLedger     `json:"-"`
+	GrainSaleGoldUsed         map[faction.FactionID]int                `json:"-"`
+	merchantTradeSeaCache     map[merchantTradeSeaPair]bool            `json:"-"`
+	merchantTradeSeaSignature uint64                                   `json:"-"`
+	merchantTradeSeaSigSet    bool                                     `json:"-"`
 
 	// Zafer takibi
 	EconomicVictoryTurns  int  `json:"economic_victory_turns"`

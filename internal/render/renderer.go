@@ -267,7 +267,12 @@ type Renderer struct {
 	queuedConfirmDialog confirmDialogState
 	offerCursor         int
 
-	armyIconBuf []armyIconPos
+	armyIconBuf                 []armyIconPos
+	armyIconCacheValid          bool
+	merchantTradeStatusCache    map[army.ArmyID]state.MerchantFleetTradeStatus
+	merchantTradeStatusCacheSet bool
+	terrainAreaImage            *ebiten.Image
+	terrainAreaKey              uint64
 	// armyGroupDisplayOrder, aynı anchor'a sonradan giren ordunun mevcut
 	// orduların soluna yerleşebilmesi için grup bazlı ilk görülme sırasını tutar.
 	armyGroupDisplayOrder map[armyDisplayGroupKey]map[army.ArmyID]uint64
@@ -1457,6 +1462,12 @@ func (r *Renderer) applyMapGeoM(op *ebiten.DrawImageOptions, sourceW, sourceH fl
 // Draw her frame çağrılır.
 func (r *Renderer) Draw(screen *ebiten.Image) {
 	r.renderFrame++
+	// Aynı Draw frame'inde harita, tooltip ve ordu efektleri ikon
+	// koordinatlarını tekrar tekrar kullanır. Input cache'i çağrı sonunda
+	// temizlendiği için yeni oyun durumuyla başlayan Draw kendi cache'ini
+	// oluşturur.
+	r.armyIconCacheValid = false
+	r.merchantTradeStatusCacheSet = false
 	// Bu defer, ana menü ve diğer erken dönüş yapan ekranlarda da pencere
 	// kapatma onayının görünmesini sağlar. Modal her zaman son çizilen katman
 	// olarak kalır ve arka plandaki inputu HandleInput zaten engeller.
@@ -2475,6 +2486,11 @@ func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
 // Kara orduları region/yerleşim anchor'ında, sadece demirli donanmalar bağlı
 // liman yerleşimi anchor'ında, diğer donanmalar ise deniz bölgesi anchor'ında çizilir.
 func (r *Renderer) armyIconPositions() []armyIconPos {
+	if r.armyIconCacheValid {
+		return r.armyIconBuf
+	}
+	r.armyIconCacheValid = true
+
 	byGroup := map[armyDisplayGroupKey][]army.ArmyID{}
 	groupBase := map[armyDisplayGroupKey][2]float32{}
 	for aid, a := range r.gs.Armies {
@@ -3068,19 +3084,31 @@ func (r *Renderer) merchantTradeBonusForArmy(a *army.Army) int {
 	if r == nil || r.gs == nil || a == nil || !a.IsNaval || a.TradeRouteKey == "" {
 		return 0
 	}
-	route := merchantRouteForKey(r.gs, a.TradeRouteKey)
-	if route == nil {
+	status, ok := r.merchantTradeStatusForArmy(a.ID)
+	if !ok {
 		return 0
 	}
-	return r.gs.MerchantFleetTradeRouteBonus(a, route)
+	return status.Bonus
 }
 
 func (r *Renderer) merchantTradeAssignmentPendingForArmy(a *army.Army) bool {
 	if r == nil || r.gs == nil || a == nil || !a.IsNaval || a.TradeRouteKey == "" {
 		return false
 	}
-	route := merchantRouteForKey(r.gs, a.TradeRouteKey)
-	return route != nil && !r.gs.MerchantFleetSupportsTradeRoute(a, route)
+	status, ok := r.merchantTradeStatusForArmy(a.ID)
+	return ok && status.Pending
+}
+
+func (r *Renderer) merchantTradeStatusForArmy(id army.ArmyID) (state.MerchantFleetTradeStatus, bool) {
+	if r == nil || r.gs == nil || id == "" {
+		return state.MerchantFleetTradeStatus{}, false
+	}
+	if !r.merchantTradeStatusCacheSet {
+		r.merchantTradeStatusCache = r.gs.MerchantFleetTradeStatuses(r.merchantTradeStatusCache)
+		r.merchantTradeStatusCacheSet = true
+	}
+	status, ok := r.merchantTradeStatusCache[id]
+	return status, ok
 }
 
 func armySiegeBadgeCenterX(attackerX, defenderX float32, hasDefender bool) float32 {

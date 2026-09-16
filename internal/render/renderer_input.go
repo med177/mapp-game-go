@@ -18,7 +18,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-const mapRegionDoubleClickWindow = 400 * time.Millisecond
+const mapRegionDoubleClickWindow = 750 * time.Millisecond
 
 // İlişki iyileştirme ve hediye bildirimleri normalde mevcut 60 TPS akışında
 // üç saniye görünür kalır; hızlı AI açıkken bu süre bir saniyeye iner.
@@ -35,6 +35,16 @@ func (r *Renderer) diplomacyNotificationAutoCloseFrameLimit() int {
 }
 
 func (r *Renderer) HandleInput() InputAction {
+	// İmleç ve input hit-testleri aynı HandleInput çağrısında ordu ikonlarını
+	// tekrar kullanabilir. Game.Update aksiyonu işledikten sonra Draw yeni
+	// durumu hesaplasın diye cache çağrı sınırında temizlenir.
+	r.armyIconCacheValid = false
+	r.merchantTradeStatusCacheSet = false
+	defer func() {
+		r.armyIconCacheValid = false
+		r.merchantTradeStatusCacheSet = false
+	}()
+
 	r.pollEditMapBuild()
 	r.updateCursorShape()
 	r.updateEditDropdownPositions()
@@ -337,6 +347,9 @@ func (r *Renderer) HandleInput() InputAction {
 	}
 
 	r.handleCamera()
+	// Kamera kaymış/zoomlanmış olabilir; cursor kontrolündeki ikon
+	// koordinatları artık geçerli değildir.
+	r.armyIconCacheValid = false
 
 	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
 		return InputAction{Kind: ActionEndTurn}
@@ -852,6 +865,21 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{}
 	}
+
+	// Ordu ve yerleşim ikonları harita bölgesi tıklamasını normalde erken
+	// yakalar. Çift tıklama zamanlamasını ikon hit-testlerinden önce kaydetmek,
+	// rakip ordusu/yerleşimi üzerinde de diplomasi panelinin açılmasını sağlar.
+	mapWX, mapWY := r.screenToWorld(fx, fy)
+	mapRID := r.worldMap.RegionAt(int(mapWX), int(mapWY))
+	mapDoubleClick := r.mapRegionDoubleClicked(mapRID)
+	if mapDoubleClick {
+		ownerID := diplomacyOwnerForMapRegion(r.gs, mapRID)
+		if ownerID != "" && ownerID != string(r.gs.PlayerFactionID) {
+			r.openDiplomacyTarget(faction.FactionID(ownerID), 0)
+			r.resetMapRegionDoubleClick()
+			return InputAction{}
+		}
+	}
 	if aid, ok := r.navalMissionPendingHitAt(fx, fy); ok {
 		if r.SelectedArmy == aid {
 			return InputAction{}
@@ -898,7 +926,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
 	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
-		if r.selectMapRegionFromMapClick(rid) {
+		if r.selectMapRegionFromMapClickResult(rid, mapDoubleClick) {
 			return InputAction{}
 		}
 		r.selectSettlement(rid, idx)
@@ -927,6 +955,29 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 	}
 	if r.settlementPanelHit(fx, fy) {
+		// İlk tıklama bir yerleşim marker'ını açtıysa ikinci tıklama aynı
+		// ekrandaki noktada artık yerleşim panelinin üzerinde kalır. Haritanın
+		// altındaki runtime bölgesini yeniden okuyup çift tıklamayı kaybetme.
+		wx, wy := r.screenToWorld(fx, fy)
+		rid := r.worldMap.RegionAt(int(wx), int(wy))
+		if r.mapRegionDoubleClickPending(rid) {
+			ownerID := diplomacyOwnerForMapRegion(r.gs, rid)
+			if ownerID != "" && ownerID != string(r.gs.PlayerFactionID) {
+				r.openDiplomacyTarget(faction.FactionID(ownerID), 0)
+				r.resetMapRegionDoubleClick()
+				return InputAction{}
+			}
+			if ownerID == string(r.gs.PlayerFactionID) {
+				interactionRID := r.mapRegionClickIdentity(rid)
+				if interactionRID != "" && interactionRID != r.SelectedRegion {
+					r.selectMapRegion(interactionRID)
+				}
+				if r.openRecruitPanelFromMapDoubleClick(interactionRID) {
+					r.resetMapRegionDoubleClick()
+					return InputAction{}
+				}
+			}
+		}
 		return InputAction{}
 	}
 	if r.selectedFactionPanel != "" && factionPanelHit(fx, fy) {
@@ -937,12 +988,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	// Bölge / deniz bölgesi seçimi
-	wx, wy := r.screenToWorld(fx, fy)
-	rid := r.worldMap.RegionAt(int(wx), int(wy))
+	rid := mapRID
 	// Deniz bölgesi sol tıkta sadece seçilir; hareket sağ tıkla verilir.
 	// Kara bölgesine çift tıklanırsa seçimden sonra bölge sahibinin diplomasi
 	// teklif paneli açılır.
-	r.selectMapRegionFromMapClick(rid)
+	r.selectMapRegionFromMapClickResult(rid, mapDoubleClick)
 	return InputAction{}
 }
 
@@ -990,25 +1040,64 @@ func (r *Renderer) toggleTradePanel() {
 }
 
 func (r *Renderer) selectMapRegionFromMapClick(rid world.RegionID) bool {
-	doubleClick := r.mapRegionDoubleClicked(rid)
+	return r.selectMapRegionFromMapClickResult(rid, r.mapRegionDoubleClicked(rid))
+}
+
+func (r *Renderer) selectMapRegionFromMapClickResult(rid world.RegionID, doubleClick bool) bool {
 	r.selectMapRegion(rid)
 	if !doubleClick || r.gs == nil {
 		return false
 	}
-	region := r.gs.Regions[rid]
-	if region == nil || region.IsSea || region.OwnerID == "" {
+	ownerID := diplomacyOwnerForMapRegion(r.gs, rid)
+	if ownerID == "" {
 		return false
 	}
-	if region.OwnerID == string(r.gs.PlayerFactionID) {
-		if r.toggleRecruitPanelFromBottomAction() {
+	if ownerID == string(r.gs.PlayerFactionID) {
+		interactionRID := r.mapRegionClickIdentity(rid)
+		if interactionRID != "" && interactionRID != rid {
+			r.selectMapRegion(interactionRID)
+		}
+		if r.openRecruitPanelFromMapDoubleClick(interactionRID) {
 			r.resetMapRegionDoubleClick()
 			return true
 		}
 		return false
 	}
-	r.openDiplomacyTarget(faction.FactionID(region.OwnerID), 0)
+	r.openDiplomacyTarget(faction.FactionID(ownerID), 0)
 	r.resetMapRegionDoubleClick()
 	return true
+}
+
+func (r *Renderer) openRecruitPanelFromMapDoubleClick(rid world.RegionID) bool {
+	if r == nil || r.gs == nil || rid == "" || rid != r.SelectedRegion ||
+		!RecruitPanelButtonEnabled(r.gs, rid) {
+		return false
+	}
+	r.showRecruitPanel = true
+	r.clearSelectedSettlement()
+	r.showDiplomacy = false
+	r.showTech = false
+	r.resetRecruitSelection()
+	return true
+}
+
+func diplomacyOwnerForMapRegion(gs *state.GameState, rid world.RegionID) string {
+	if gs == nil || rid == "" {
+		return ""
+	}
+	region := gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return ""
+	}
+	if region.OwnerID != "" {
+		return region.OwnerID
+	}
+	if region.IsTerrainArea && region.ParentRegionID != "" {
+		if parent := gs.Regions[region.ParentRegionID]; parent != nil && !parent.IsSea {
+			return parent.OwnerID
+		}
+	}
+	return ""
 }
 
 // toggleRecruitPanelFromBottomAction alt paneldeki Ordu butonunun state geçişini
@@ -1027,17 +1116,40 @@ func (r *Renderer) toggleRecruitPanelFromBottomAction() bool {
 }
 
 func (r *Renderer) mapRegionDoubleClicked(rid world.RegionID) bool {
-	if rid == "" {
+	identity := r.mapRegionClickIdentity(rid)
+	if identity == "" {
 		r.resetMapRegionDoubleClick()
 		return false
 	}
 	now := time.Now()
-	doubleClick := r.lastMapRegionClickID == rid &&
+	doubleClick := r.lastMapRegionClickID == identity &&
 		!r.lastMapRegionClickAt.IsZero() &&
 		now.Sub(r.lastMapRegionClickAt) <= mapRegionDoubleClickWindow
-	r.lastMapRegionClickID = rid
+	r.lastMapRegionClickID = identity
 	r.lastMapRegionClickAt = now
 	return doubleClick
+}
+
+func (r *Renderer) mapRegionDoubleClickPending(rid world.RegionID) bool {
+	identity := r.mapRegionClickIdentity(rid)
+	return identity != "" && r.lastMapRegionClickID == identity && !r.lastMapRegionClickAt.IsZero() &&
+		time.Since(r.lastMapRegionClickAt) <= mapRegionDoubleClickWindow
+}
+
+func (r *Renderer) mapRegionClickIdentity(rid world.RegionID) world.RegionID {
+	if r == nil || r.gs == nil || rid == "" {
+		return ""
+	}
+	region := r.gs.Regions[rid]
+	if region == nil {
+		return ""
+	}
+	if region.IsTerrainArea && region.ParentRegionID != "" {
+		if parent := r.gs.Regions[region.ParentRegionID]; parent != nil && !parent.IsSea {
+			return parent.ID
+		}
+	}
+	return rid
 }
 
 func (r *Renderer) resetMapRegionDoubleClick() {

@@ -6,6 +6,8 @@ import (
 	"image"
 	_ "image/png"
 	"log"
+	"os"
+	"runtime/pprof"
 
 	"mapp-game-go/internal/game"
 
@@ -40,6 +42,8 @@ func loadWindowIcon() {
 func main() {
 	// .env dosyasını yüklemeyi dene (varsa)
 	_ = godotenv.Load()
+	stopCPUProfile := startCPUProfileFromEnv()
+	defer stopCPUProfile()
 
 	loadWindowIcon()
 	ebiten.SetWindowTitle("Mapp Game — Harita Strateji Oyunu")
@@ -53,5 +57,29 @@ func main() {
 	g := game.New()
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func startCPUProfileFromEnv() func() {
+	path := os.Getenv("MAPP_CPU_PROFILE")
+	if path == "" {
+		return func() {}
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		log.Printf("CPU profile oluşturulamadı: %v", err)
+		return func() {}
+	}
+	if err := pprof.StartCPUProfile(file); err != nil {
+		_ = file.Close()
+		log.Printf("CPU profile başlatılamadı: %v", err)
+		return func() {}
+	}
+	log.Printf("CPU profile kaydı başladı: %s", path)
+	return func() {
+		pprof.StopCPUProfile()
+		if err := file.Close(); err != nil {
+			log.Printf("CPU profile kapatılamadı: %v", err)
+		}
 	}
 }

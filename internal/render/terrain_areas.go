@@ -4,6 +4,7 @@ import (
 	"image/color"
 
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,10 +15,21 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 	if r == nil || r.gs == nil {
 		return
 	}
+	if len(r.gs.TerrainAreas) == 0 {
+		return
+	}
 	selectedAreaID := ""
 	if selected := r.gs.Regions[r.editSelectedRegion]; selected != nil && selected.IsTerrainArea {
 		selectedAreaID = selected.TerrainAreaID
 	}
+	key := terrainAreaRenderKey(r.gs, selectedAreaID, r.editSelectedRegion)
+	rebuild := r.terrainAreaImage == nil || r.terrainAreaImage.Bounds().Dx() != WorldW || r.terrainAreaImage.Bounds().Dy() != WorldH || r.terrainAreaKey != key
+	if rebuild {
+		r.terrainAreaImage = ebiten.NewImage(WorldW, WorldH)
+		r.terrainAreaImage.Clear()
+		r.terrainAreaKey = key
+	}
+
 	drawArea := func(area world.TerrainArea) {
 		col := color.RGBA{120, 120, 120, 90}
 		if parent := r.gs.Regions[area.ParentRegionID]; parent != nil {
@@ -67,10 +79,10 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 					continue
 				}
 				hasPolygon = true
-				x0, y0 := r.worldToScreen(float64(polygon[0][0]), float64(polygon[0][1]))
+				x0, y0 := float64(polygon[0][0]), float64(polygon[0][1])
 				path.MoveTo(float32(x0), float32(y0))
 				for _, point := range polygon[1:] {
-					x, y := r.worldToScreen(float64(point[0]), float64(point[1]))
+					x, y := float64(point[0]), float64(point[1])
 					path.LineTo(float32(x), float32(y))
 				}
 				path.Close()
@@ -78,29 +90,34 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 			if hasPolygon {
 				var options vector.DrawPathOptions
 				options.ColorScale.ScaleWithColor(col)
-				vector.FillPath(screen, &path, nil, &options)
+				vector.FillPath(r.terrainAreaImage, &path, nil, &options)
 			}
 			return
 		}
 		for _, cell := range area.Cells {
-			x0, y0 := r.worldToScreen(float64(cell[0]), float64(cell[1]))
-			x1, y1 := r.worldToScreen(float64(cell[0]+1), float64(cell[1]+1))
-			vector.FillRect(screen, float32(x0), float32(y0), float32(x1-x0), float32(y1-y0), col, true)
+			vector.FillRect(r.terrainAreaImage, float32(cell[0]), float32(cell[1]), 1, 1, col, true)
 		}
 	}
 	// Geçilemeyen alanları önce, geçilebilir alanları sonra çiz. Böylece
 	// geçilebilir alanın dolgusu ve üstteki border'ı komşu engelli alanın
 	// altında kalmaz.
-	for _, area := range r.gs.TerrainAreas {
-		if !world.TerrainAreaIsPassable(area) {
-			drawArea(area)
+	if rebuild {
+		// Geçilemeyen alanları önce, geçilebilir alanları sonra çiz. Böylece
+		// geçilebilir alanın dolgusu ve üstteki border'ı komşu engelli alanın altında kalmaz.
+		for _, area := range r.gs.TerrainAreas {
+			if !world.TerrainAreaIsPassable(area) {
+				drawArea(area)
+			}
+		}
+		for _, area := range r.gs.TerrainAreas {
+			if world.TerrainAreaIsPassable(area) {
+				drawArea(area)
+			}
 		}
 	}
-	for _, area := range r.gs.TerrainAreas {
-		if world.TerrainAreaIsPassable(area) {
-			drawArea(area)
-		}
-	}
+	mapOp := &ebiten.DrawImageOptions{}
+	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
+	screen.DrawImage(r.terrainAreaImage, mapOp)
 	if selectedAreaID != "" {
 		for _, area := range r.gs.TerrainAreas {
 			if area.ID != selectedAreaID {
@@ -120,6 +137,45 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 			break
 		}
 	}
+}
+
+func terrainAreaRenderKey(gs *state.GameState, selectedAreaID string, selectedRegionID world.RegionID) uint64 {
+	if gs == nil {
+		return 0
+	}
+	key := borderHashString(selectedAreaID)
+	key ^= borderHashString(string(selectedRegionID))
+	mix := func(value uint64) {
+		key ^= value + 0x9e3779b97f4a7c15 + (key << 6) + (key >> 2)
+	}
+	mixString := func(value string) { mix(borderHashString(value)) }
+	mixInt := func(value int) { mix(uint64(int64(value))) }
+	for _, area := range gs.TerrainAreas {
+		mixString(area.ID)
+		mixString(string(area.Terrain))
+		mixString(string(area.ParentRegionID))
+		mixInt(area.MoveCost)
+		mixInt(area.AttritionCost)
+		if parent := gs.Regions[area.ParentRegionID]; parent != nil {
+			mixString(parent.OwnerID)
+			if owner := gs.Factions[faction.FactionID(parent.OwnerID)]; owner != nil {
+				for _, channel := range owner.Color {
+					mix(uint64(channel))
+				}
+			}
+		}
+		for _, polygon := range area.Polygons {
+			for _, point := range polygon {
+				mixInt(point[0])
+				mixInt(point[1])
+			}
+		}
+		for _, cell := range area.Cells {
+			mixInt(cell[0])
+			mixInt(cell[1])
+		}
+	}
+	return key
 }
 
 func tintTerrainAreaColor(col color.RGBA, factor float64) color.RGBA {
