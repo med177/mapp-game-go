@@ -2244,14 +2244,6 @@
         "y": 518,
         "type": "port",
         "population": 57
-      },
-      {
-        "id": "morea_corinth",
-        "name_tr": "Korint",
-        "x": 934,
-        "y": 514,
-        "type": "fortress",
-        "population": 10
       }
     ]
   },
@@ -2558,8 +2550,28 @@
         "y": 476,
         "type": "town",
         "population": 38
+      },
+      {
+        "id": "tercan_erzincan",
+        "name_tr": "Tercan",
+        "x": 1286,
+        "y": 484,
+        "type": "town",
+        "population": 31
+      },
+      {
+        "id": "akkoyunlu_mus",
+        "name_tr": "Muş",
+        "x": 1316,
+        "y": 500,
+        "type": "city",
+        "population": 30
       }
     ]
+  },
+  {
+    "region_id": "bayburt",
+    "settlements": null
   },
   {
     "region_id": "georgia",
@@ -3520,6 +3532,14 @@
         "type": "city",
         "is_center": true,
         "population": 0
+      },
+      {
+        "id": "chios_settlement_2",
+        "name_tr": "Sakız Limanı",
+        "x": 1000,
+        "y": 505,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -3533,6 +3553,14 @@
         "y": 492,
         "type": "city",
         "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "midilli_settlement_2",
+        "name_tr": "Midilli Limanı",
+        "x": 996,
+        "y": 495,
+        "type": "port",
         "population": 0
       }
     ]
@@ -4531,8 +4559,8 @@
       {
         "id": "rhodes_main",
         "name_tr": "Rodos",
-        "x": 1041,
-        "y": 547,
+        "x": 1039,
+        "y": 548,
         "type": "fortress",
         "is_center": true,
         "population": 87
@@ -4568,7 +4596,7 @@
         "id": "kutahya",
         "name_tr": "Kütahya",
         "x": 1070,
-        "y": 489,
+        "y": 490,
         "type": "fortress",
         "is_center": true,
         "population": 133
@@ -4576,7 +4604,7 @@
     ]
   },
   {
-    "region_id": "aydinoglu",
+    "region_id": "karesi",
     "settlements": [
       {
         "id": "lapseki_gallipoli",
@@ -4648,8 +4676,8 @@
     "settlements": [
       {
         "id": "izmir",
-        "name_tr": "İzmir",
-        "x": 1018,
+        "name_tr": "İzmir Limanı",
+        "x": 1015,
         "y": 504,
         "type": "port",
         "population": 126
@@ -4662,6 +4690,14 @@
         "type": "fortress",
         "is_center": true,
         "population": 9
+      },
+      {
+        "id": "izmir_settlement_3",
+        "name_tr": "İzmir",
+        "x": 1017,
+        "y": 506,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -4707,14 +4743,6 @@
     "region_id": "candaroglu",
     "settlements": [
       {
-        "id": "sinop_unye",
-        "name_tr": "Ünye",
-        "x": 1220,
-        "y": 453,
-        "type": "port",
-        "population": 38
-      },
-      {
         "id": "sinop_samsun",
         "name_tr": "Samsun",
         "x": 1206,
@@ -4726,7 +4754,7 @@
         "id": "amasya_sivas",
         "name_tr": "Amasya",
         "x": 1192,
-        "y": 466,
+        "y": 464,
         "type": "town",
         "is_center": true,
         "population": 24
@@ -4747,8 +4775,8 @@
       {
         "id": "sivas",
         "name_tr": "Sivas",
-        "x": 1210,
-        "y": 482,
+        "x": 1216,
+        "y": 483,
         "type": "town",
         "is_center": true,
         "population": 25
@@ -4757,7 +4785,7 @@
         "id": "sivas_divrigi",
         "name_tr": "Divriği",
         "x": 1223,
-        "y": 492,
+        "y": 491,
         "type": "fortress",
         "population": 11
       },
@@ -4784,6 +4812,14 @@
         "y": 470,
         "type": "city",
         "population": 88
+      },
+      {
+        "id": "sivas_susehri",
+        "name_tr": "Suşehri",
+        "x": 1242,
+        "y": 472,
+        "type": "town",
+        "population": 31
       }
     ]
   },
@@ -4844,6 +4880,14 @@
         "type": "town",
         "is_center": true,
         "population": 13
+      },
+      {
+        "id": "nisibis",
+        "name_tr": "Kilis",
+        "x": 1218,
+        "y": 536,
+        "type": "town",
+        "population": 13
       }
     ]
   },
@@ -4851,20 +4895,12 @@
     "region_id": "akkoyunlu",
     "settlements": [
       {
-        "id": "akkoyunlu_mus",
-        "name_tr": "Muş",
-        "x": 1313,
-        "y": 498,
-        "type": "city",
-        "is_center": true,
-        "population": 30
-      },
-      {
         "id": "mosul_nisibis",
         "name_tr": "Nusaybin",
         "x": 1302,
         "y": 530,
         "type": "fortress",
+        "is_center": true,
         "population": 44
       },
       {
@@ -4921,8 +4957,8 @@
       {
         "id": "karakoyunlu_hakkari",
         "name_tr": "Hakkari",
-        "x": 1352,
-        "y": 525,
+        "x": 1353,
+        "y": 526,
         "type": "city",
         "is_center": true,
         "population": 15
@@ -5305,14 +5341,6 @@
         "population": 24
       },
       {
-        "id": "finike_teke",
-        "name_tr": "Finike",
-        "x": 1079,
-        "y": 548,
-        "type": "port",
-        "population": 22
-      },
-      {
         "id": "elmali",
         "name_tr": "Elmalı",
         "x": 1074,
@@ -5390,6 +5418,14 @@
         "type": "fortress",
         "is_center": true,
         "population": 15
+      },
+      {
+        "id": "finike_teke",
+        "name_tr": "Finike",
+        "x": 1079,
+        "y": 548,
+        "type": "port",
+        "population": 22
       }
     ]
   },
@@ -5670,12 +5706,12 @@
         "population": 64
       },
       {
-        "id": "sivas_susehri",
-        "name_tr": "Suşehri",
-        "x": 1242,
-        "y": 472,
-        "type": "town",
-        "population": 31
+        "id": "sinop_unye",
+        "name_tr": "Ünye",
+        "x": 1220,
+        "y": 453,
+        "type": "port",
+        "population": 38
       }
     ]
   },
@@ -5758,14 +5794,6 @@
         "y": 527,
         "type": "fortress",
         "population": 15
-      },
-      {
-        "id": "nisibis",
-        "name_tr": "Kilis",
-        "x": 1219,
-        "y": 535,
-        "type": "town",
-        "population": 13
       }
     ]
   },
@@ -5794,14 +5822,6 @@
         "name_tr": "Kemah",
         "x": 1265,
         "y": 493,
-        "type": "town",
-        "population": 31
-      },
-      {
-        "id": "tercan_erzincan",
-        "name_tr": "Tercan",
-        "x": 1286,
-        "y": 484,
         "type": "town",
         "population": 31
       },
@@ -6540,12 +6560,7 @@
         "y": 505,
         "type": "fortress",
         "population": 4
-      }
-    ]
-  },
-  {
-    "region_id": "yanya",
-    "settlements": [
+      },
       {
         "id": "thessaly_trikala",
         "name_tr": "Tırhala",
@@ -6553,7 +6568,12 @@
         "y": 484,
         "type": "town",
         "population": 9
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "yanya",
+    "settlements": [
       {
         "id": "epirus_arta",
         "name_tr": "Arta",
@@ -6594,14 +6614,6 @@
         "population": 4
       },
       {
-        "id": "thessaloniki_drama",
-        "name_tr": "Drama",
-        "x": 942,
-        "y": 453,
-        "type": "town",
-        "population": 9
-      },
-      {
         "id": "langadas",
         "name_tr": "Langaza",
         "x": 913,
@@ -6630,6 +6642,14 @@
         "y": 511,
         "type": "port",
         "population": 30
+      },
+      {
+        "id": "morea_corinth",
+        "name_tr": "Korint",
+        "x": 932,
+        "y": 514,
+        "type": "fortress",
+        "population": 10
       }
     ]
   },
@@ -7406,6 +7426,14 @@
         "name_tr": "Zihne",
         "x": 960,
         "y": 454,
+        "type": "town",
+        "population": 9
+      },
+      {
+        "id": "thessaloniki_drama",
+        "name_tr": "Drama",
+        "x": 942,
+        "y": 453,
         "type": "town",
         "population": 9
       }

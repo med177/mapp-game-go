@@ -53,17 +53,6 @@
     ]
   },
   {
-    "id": "army_aydin_1",
-    "owner_id": "aydin_bey",
-    "region_id": "aydinoglu",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_barqa_benghazi",
     "owner_id": "barqa_emirate",
     "region_id": "cyrenaica",
@@ -280,63 +269,6 @@
     ]
   },
   {
-    "id": "army_east_rome_1",
-    "owner_id": "east_rome",
-    "region_id": "constantinople",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_east_rome_2",
-    "owner_id": "east_rome",
-    "region_id": "thrace",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_east_rome_anatolia_guard",
-    "owner_id": "east_rome",
-    "region_id": "nicomedia",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
     "id": "army_edit_111",
     "owner_id": "cyprus_kingdom",
     "region_id": "cyprus",
@@ -402,7 +334,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 8
+        "count": 5
       }
     ]
   },
@@ -904,30 +836,6 @@
     ]
   },
   {
-    "id": "army_garrison_220",
-    "owner_id": "east_rome",
-    "region_id": "serres",
-    "is_garrison": true,
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_garrison_221",
-    "owner_id": "east_rome",
-    "region_id": "gallipoli",
-    "is_garrison": true,
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_garrison_222",
     "owner_id": "serbian_empire",
     "region_id": "nis",
@@ -1405,25 +1313,6 @@
       {
         "type_id": "militia",
         "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_ottoman_1",
-    "owner_id": "ottoman",
-    "region_id": "bithynia",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 10
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 3
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
       }
     ]
   },
@@ -1941,12 +1830,12 @@
   },
   {
     "id": "army_edit_125",
-    "owner_id": "ottoman",
-    "region_id": "bilecik_frontier",
+    "owner_id": "east_rome",
+    "region_id": "constantinople",
     "units": [
       {
         "type_id": "elite_infantry",
-        "count": 5
+        "count": 6
       }
     ]
   },
@@ -1961,6 +1850,39 @@
       {
         "type_id": "warship",
         "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_127",
+    "owner_id": "karesioglu_bey",
+    "region_id": "karesi",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_124",
+    "owner_id": "ottoman",
+    "region_id": "bilecik_frontier",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_125",
+    "owner_id": "east_rome",
+    "region_id": "constantinople",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 6
       }
     ]
   }

@@ -46,7 +46,7 @@
   },
   {
     "from": "gallipoli",
-    "to": "aydinoglu",
+    "to": "karesi",
     "type": "strait",
     "move_cost": 1,
     "defense_bonus": 15,
@@ -57,21 +57,6 @@
     "end": [
       1010,
       470
-    ]
-  },
-  {
-    "from": "tanca_region",
-    "to": "area::area__86",
-    "type": "strait",
-    "move_cost": 1,
-    "defense_bonus": 15,
-    "start": [
-      360,
-      555
-    ],
-    "end": [
-      363,
-      550
     ]
   },
   {

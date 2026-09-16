@@ -1993,7 +1993,7 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "aydinoglu",
+              "region_id": "karesi",
               "value": 96
             }
           ],
@@ -2502,7 +2502,7 @@
               "value": 96
             },
             {
-              "region_id": "aydinoglu",
+              "region_id": "karesi",
               "value": 82
             }
           ],

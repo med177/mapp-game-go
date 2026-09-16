@@ -1083,12 +1083,11 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "morea_main",
     "gold": 5000,
     "grain": 900,
     "iron": 50,
     "timber": 60,
-    "stone": 1000,
+    "stone": 0,
     "spice": 60,
     "cloth": 60,
     "research": {
@@ -1096,23 +1095,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 45,
-    "territorial_claims": [
-      {
-        "region_id": "greece",
-        "value": 66
-      },
-      {
-        "region_id": "morea",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "morea_south",
-        "value": 100,
-        "core": true
-      }
-    ]
+    "ai_aggressiveness": 45
   },
   {
     "id": "ahiler",
