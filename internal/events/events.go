@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -71,6 +72,13 @@ type TradeNetworkModifierEffect struct {
 	SpicePercent       int      `json:"spice_percent,omitempty"`
 }
 
+// UnitReinforcementEffect, event sonucu bir faction'a verilecek yeni birlikleri
+// tanımlar. Her kayıt ayrı bir kara ordusu veya filo olarak oluşturulur.
+type UnitReinforcementEffect struct {
+	UnitType  string `json:"unit_type"`
+	UnitCount int    `json:"unit_count"`
+}
+
 // FactionSubjugationTrigger, bir event'in oyuncunun seçtiği faction başka
 // bir üyeyi elediğinde veya vassal yaptığında açılmasını sağlar.
 type FactionSubjugationTrigger struct {
@@ -107,6 +115,7 @@ type Effect struct {
 	SuccessorRevival          *SuccessorRevivalEffect      `json:"successor_revival,omitempty"`
 	SuccessorRevivals         []SuccessorRevivalEffect     `json:"successor_revivals,omitempty"`
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
+	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
 	SetFlags                  []string                     `json:"set_flags,omitempty"`
 	ClearFlags                []string                     `json:"clear_flags,omitempty"`
 	CapitalSettlementID       string                       `json:"capital_settlement_id,omitempty"`
@@ -152,6 +161,7 @@ type Event struct {
 	SuccessorRevivals         []SuccessorRevivalEffect     `json:"successor_revivals,omitempty"`
 	ClearFlags                []string                     `json:"clear_flags,omitempty"`
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
+	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
 
 	// Tarihsel tetiklenme alanları
 	HistoricalYear  int    `json:"historical_year,omitempty"`  // 0 = tarihsel değil
@@ -369,6 +379,7 @@ func (e *Event) BaseEffect() Effect {
 		SuccessorRevival:          e.SuccessorRevival,
 		SuccessorRevivals:         e.SuccessorRevivals,
 		TradeNetworkModifiers:     e.TradeNetworkModifiers,
+		UnitReinforcements:        e.UnitReinforcements,
 		CapitalSettlementID:       "",
 		CapitalMoveTurns:          0,
 	}
@@ -996,6 +1007,73 @@ func applyToFaction(gs *state.GameState, fid string, eff Effect) {
 	applyStartedResearch(gs, faction.FactionID(fid), eff.StartResearchTech)
 	applyRelationEffects(gs, faction.FactionID(fid), eff.Relations)
 	applyCapitalMove(gs, faction.FactionID(fid), eff.CapitalSettlementID, eff.CapitalMoveTurns)
+	applyUnitReinforcements(gs, fid, eff.UnitReinforcements)
+}
+
+func applyUnitReinforcements(gs *state.GameState, ownerID string, reinforcements []UnitReinforcementEffect) {
+	if gs == nil || ownerID == "" || len(reinforcements) == 0 || gs.Factions[faction.FactionID(ownerID)] == nil {
+		return
+	}
+	if gs.Armies == nil {
+		gs.Armies = make(map[army.ArmyID]*army.Army)
+	}
+
+	capitalRegion, capitalSettlement, _, ok := gs.FactionCapital(faction.FactionID(ownerID))
+	if !ok || capitalRegion == nil || capitalSettlement == nil {
+		return
+	}
+	for _, reinforcement := range reinforcements {
+		if reinforcement.UnitType == "" || reinforcement.UnitCount <= 0 {
+			continue
+		}
+		unitType := gs.UnitTypes[reinforcement.UnitType]
+		if unitType == nil {
+			continue
+		}
+		count := reinforcement.UnitCount
+		if count > army.MaxArmySize {
+			count = army.MaxArmySize
+		}
+		gs.NextArmySeq++
+		id := army.ArmyID(fmt.Sprintf("army_%s_event_%d", ownerID, gs.NextArmySeq))
+		for gs.Armies[id] != nil {
+			gs.NextArmySeq++
+			id = army.ArmyID(fmt.Sprintf("army_%s_event_%d", ownerID, gs.NextArmySeq))
+		}
+
+		newArmy := &army.Army{
+			ID:            id,
+			OwnerID:       ownerID,
+			RegionID:      capitalRegion.ID,
+			Units:         army.MakeUnits(reinforcement.UnitType, count),
+			MovePoints:    unitType.BaseMovementPoints(),
+			MaxMovePoints: unitType.BaseMovementPoints(),
+		}
+		if unitType.Category == army.CategoryNavalWar || unitType.Category == army.CategoryNavalTrans || unitType.Category == army.CategoryNavalTrade {
+			seaRegionID := firstAdjacentSeaRegion(gs, capitalRegion)
+			if seaRegionID == "" {
+				continue
+			}
+			newArmy.IsNaval = true
+			newArmy.RegionID = seaRegionID
+			newArmy.DockedRegionID = capitalRegion.ID
+			newArmy.DockedSettlementID = capitalSettlement.ID
+		}
+		gs.Armies[id] = newArmy
+	}
+}
+
+func firstAdjacentSeaRegion(gs *state.GameState, region *world.Region) world.RegionID {
+	if gs == nil || region == nil {
+		return ""
+	}
+	for _, neighborID := range region.Neighbors {
+		neighbor := gs.Regions[neighborID]
+		if neighbor != nil && neighbor.IsSea {
+			return neighbor.ID
+		}
+	}
+	return ""
 }
 
 func applyRelationDeltaAll(gs *state.GameState, fid faction.FactionID, delta int) {

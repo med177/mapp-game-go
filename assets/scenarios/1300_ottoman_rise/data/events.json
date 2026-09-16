@@ -251,7 +251,10 @@
               "stance": "war"
             }
           ],
-          "sat_delta": 4
+          "sat_delta": 4,
+          "unit_reinforcements": [
+            { "unit_type": "infantry", "unit_count": 3 }
+          ]
         },
         "id": "accept_kose_mihal",
         "label_tr": "Köse Mihal'i uç beyliğine dahil et"
@@ -261,7 +264,10 @@
         "desc_tr": "Uç hattı tahkim edilir, tahıl ve iç düzen güçlenir.",
         "effect": {
           "grain_delta": 10,
-          "sat_delta": 6
+          "sat_delta": 6,
+          "unit_reinforcements": [
+            { "unit_type": "infantry", "unit_count": 3 }
+          ]
         },
         "id": "fortify_bithynian_frontier",
         "label_tr": "Bithynia sınırını tahkim et"
@@ -445,6 +451,39 @@
     "probability": 0,
     "sat_delta": -20,
     "target": "all_factions"
+  },
+  {
+    "affected_faction": "ottoman",
+    "desc_tr": "Macar döküm ustası Urban, Osmanlı hizmetine girerek Konstantiniyye surlarını sarsacak büyük topların ve yeni kuşatma mühendisliğinin önünü açıyor.",
+    "historical_month": 1,
+    "historical_year": 1450,
+    "id": "ottoman_urban_1450",
+    "min_turn": 0,
+    "name_tr": "Top Ustası Urban'ın Osmanlı Hizmetine Girişi",
+    "one_shot": true,
+    "probability": 0,
+    "target": "specific_faction",
+    "unit_reinforcements": [
+      { "unit_type": "cannon", "unit_count": 4 }
+    ]
+  },
+  {
+    "affected_faction": "east_rome",
+    "desc_tr": "Konstantiniyye kuşatma altındayken Batı'dan gelen Katolik yardım kuvvetleri Doğu Roma savunmasına katılıyor; askerler ve savaş gemileri şehrin son savunmasına güç veriyor.",
+    "historical_month": 4,
+    "historical_year": 1453,
+    "id": "catholic_aid_constantinople_1453",
+    "min_turn": 0,
+    "name_tr": "Konstantiniyye'ye Katolik Yardımı",
+    "one_shot": true,
+    "probability": 0,
+    "requires_active_factions": ["east_rome"],
+    "requires_owned_regions": ["constantinople"],
+    "target": "specific_faction",
+    "unit_reinforcements": [
+      { "unit_type": "infantry", "unit_count": 5 },
+      { "unit_type": "warship", "unit_count": 3 }
+    ]
   },
   {
     "affected_faction": "ottoman",

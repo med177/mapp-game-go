@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-09-12
+last_updated: 2026-09-16
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -39,6 +39,14 @@ gelirini ve bağlı bölgelerin baharat üretimini kalıcı olarak değiştirebi
 Modifier kimliği aynı event tekrar uygulanırsa mevcut kaydı günceller; böylece
 aynı etki üst üste çoğalmaz. Portekiz'in 1498 zinciri Mısır ve Basra baharat
 ağını zayıflatırken Portekiz/Ümit Burnu hattını güçlendirir.
+
+Event'ler `unit_reinforcements` ile ilgili faction'ın başkentinde yeni birlik
+orduları oluşturabilir. Her kayıt ayrı bir kara ordusu veya filo üretir;
+filolar başkentin komşu deniz bölgesine dock edilmiş olarak yerleştirilir.
+Örneğin `ottoman_urban_1450` dört top, `ottoman_kose_mihal_1313` seçimleri üç
+piyade ve `catholic_aid_constantinople_1453` beş piyade ile üç savaş gemisi
+verir. Bu birlikler event'in uygulandığı anda oluşturulur ve normal ordu/save
+akışıyla devam eder.
 
 ---
 
