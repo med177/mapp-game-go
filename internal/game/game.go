@@ -1458,6 +1458,13 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 		return
 	}
 	baseMsg := "OLAY: " + evt.NameTR + ": " + evt.DescTR
+	eventDescription := evt.DescTR
+	if len(evt.Choices) == 0 {
+		if effect := historicalChoiceEffectSummary(g.gs, evt.BaseEffect()); effect != "" {
+			baseMsg += " Etki: " + effect
+			eventDescription += "\n\nEtki: " + effect
+		}
+	}
 	g.renderer.AddEventDetail("[OLAY] "+evt.NameTR, g.historicalEventDetail(evt))
 	if !events.IsPlayerRelevant(g.gs, evt) {
 		if idx := events.AutoChoose(evt); idx >= 0 {
@@ -1471,7 +1478,7 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 			g.applyHistoricalChoiceWithNotification(evt, idx, true)
 		}
 		if evt.HistoricalYear != 0 {
-			g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, "", nil)
+			g.renderer.ShowHistoricalEvent(evt.NameTR, eventDescription, "", nil)
 		}
 		return
 	}
@@ -1950,6 +1957,11 @@ func (g *Game) historicalEventDetail(evt *events.Event) string {
 		return ""
 	}
 	lines := []string{evt.NameTR, "", "Kaynak: Olay kaydı", "", evt.DescTR}
+	if len(evt.Choices) == 0 {
+		if eff := historicalChoiceEffectSummary(g.gs, evt.BaseEffect()); eff != "" {
+			lines = append(lines, "", "Etki: "+eff)
+		}
+	}
 	if evt.ChoicePromptTR != "" {
 		lines = append(lines, "", "Seçim:", evt.ChoicePromptTR)
 	}
@@ -2195,6 +2207,24 @@ func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) strin
 	}
 	if eff.ArmyHPMod > 0 && eff.ArmyHPMod != 1 {
 		parts = append(parts, fmt.Sprintf("Ordu HP x%.2f", eff.ArmyHPMod))
+	}
+	if len(eff.UnitReinforcements) > 0 {
+		reinforcementParts := make([]string, 0, len(eff.UnitReinforcements))
+		for _, reinforcement := range eff.UnitReinforcements {
+			if reinforcement.UnitType == "" || reinforcement.UnitCount <= 0 {
+				continue
+			}
+			name := reinforcement.UnitType
+			if gs != nil && gs.UnitTypes != nil {
+				if unitType := gs.UnitTypes[reinforcement.UnitType]; unitType != nil && unitType.NameTR != "" {
+					name = unitType.NameTR
+				}
+			}
+			reinforcementParts = append(reinforcementParts, fmt.Sprintf("%d %s", reinforcement.UnitCount, name))
+		}
+		if len(reinforcementParts) > 0 {
+			parts = append(parts, "Askerî destek: "+strings.Join(reinforcementParts, ", "))
+		}
 	}
 	if eff.StartResearchTech != "" {
 		parts = append(parts, "Arastirma: "+strings.Join(techLabels(gs, []string{eff.StartResearchTech}), ", "))

@@ -237,6 +237,20 @@
   },
   {
     "affected_faction": "ottoman",
+    "desc_tr": "Kahire'nin ele geçirilmesiyle Memlük hazinesinin merkezi Osmanlı yönetimine geçti. Saray, ticaret ve hac yollarından gelen büyük mali kaynak artık Osmanlı hazinesine aktarılıyor.",
+    "gold_delta": 10000,
+    "historical_month": 1,
+    "historical_year": 1517,
+    "id": "ottoman_cairo_conquest_1517",
+    "min_turn": 0,
+    "name_tr": "Kahire'nin Fethi",
+    "one_shot": true,
+    "probability": 0,
+    "requires_owned_regions": ["upper_egypt"],
+    "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
     "army_hp_mod": 1.08,
     "choice_prompt_tr": "Köse Mihal'in katılımı ve Bithynia sınırı nasıl değerlendirilsin?",
     "choices": [
