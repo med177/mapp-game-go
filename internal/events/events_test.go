@@ -95,3 +95,39 @@ func TestApplyChoiceAppliesChoiceReinforcement(t *testing.T) {
 		}
 	}
 }
+
+func TestApplyBaseEventReinforcement(t *testing.T) {
+	const ownerID = faction.FactionID("ottoman")
+	capital := &world.Region{
+		ID:          "bilecik_frontier",
+		OwnerID:     string(ownerID),
+		Settlements: []world.Settlement{{ID: "sogut"}},
+	}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{capital.ID: capital},
+		Factions: map[faction.FactionID]*faction.Faction{
+			ownerID: {ID: ownerID, CapitalSettlementID: "sogut"},
+		},
+		Armies: map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", Category: army.CategoryInfantry},
+		},
+	}
+
+	Apply(gs, &Event{
+		Target:          "specific_faction",
+		AffectedFaction: string(ownerID),
+		UnitReinforcements: []UnitReinforcementEffect{
+			{UnitType: "infantry", UnitCount: 3},
+		},
+	})
+
+	if len(gs.Armies) != 1 {
+		t.Fatalf("temel event takviyesi %d ordu oluşturdu, 1 bekleniyordu", len(gs.Armies))
+	}
+	for _, current := range gs.Armies {
+		if current.RegionID != capital.ID || len(current.Units) != 3 || current.Units[0].TypeID != "infantry" {
+			t.Fatalf("temel event takviyesi başkentte 3 piyade oluşturmadı")
+		}
+	}
+}

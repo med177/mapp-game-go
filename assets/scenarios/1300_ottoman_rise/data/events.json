@@ -265,10 +265,7 @@
               "stance": "war"
             }
           ],
-          "sat_delta": 4,
-          "unit_reinforcements": [
-            { "unit_type": "infantry", "unit_count": 3 }
-          ]
+          "sat_delta": 4
         },
         "id": "accept_kose_mihal",
         "label_tr": "Köse Mihal'i uç beyliğine dahil et"
@@ -278,10 +275,7 @@
         "desc_tr": "Uç hattı tahkim edilir, tahıl ve iç düzen güçlenir.",
         "effect": {
           "grain_delta": 10,
-          "sat_delta": 6,
-          "unit_reinforcements": [
-            { "unit_type": "infantry", "unit_count": 3 }
-          ]
+          "sat_delta": 6
         },
         "id": "fortify_bithynian_frontier",
         "label_tr": "Bithynia sınırını tahkim et"
@@ -302,7 +296,10 @@
       "bilecik_frontier"
     ],
     "sat_delta": 10,
-    "target": "specific_faction"
+    "target": "specific_faction",
+    "unit_reinforcements": [
+      { "unit_type": "infantry", "unit_count": 3 }
+    ]
   },
   {
     "affected_faction": "east_rome",

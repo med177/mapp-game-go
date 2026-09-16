@@ -43,9 +43,9 @@ ağını zayıflatırken Portekiz/Ümit Burnu hattını güçlendirir.
 Event'ler `unit_reinforcements` ile ilgili faction'ın başkentinde yeni birlik
 orduları oluşturabilir. Her kayıt ayrı bir kara ordusu veya filo üretir;
 filolar başkentin komşu deniz bölgesine dock edilmiş olarak yerleştirilir.
-Örneğin `ottoman_urban_1450` dört top, `ottoman_kose_mihal_1313` seçimleri üç
-piyade ve `catholic_aid_constantinople_1453` beş piyade ile üç savaş gemisi
-verir. `gold_delta` aynı event veya seçim etkisinde hazineye anlık altın
+Örneğin `ottoman_urban_1450` dört top, `ottoman_kose_mihal_1313` üç piyade ve
+`catholic_aid_constantinople_1453` beş piyade ile üç savaş gemisi verir.
+`gold_delta` aynı event veya seçim etkisinde hazineye anlık altın
 desteği verir; örneğin Kahire fethi `+10000` altın kazandırır. Altın ve birlik
 etkileri event bildirimi, detay kaydı ve Event Codex özetinde gösterilir. Bu
 birlikler event'in uygulandığı anda oluşturulur ve normal ordu/save akışıyla
