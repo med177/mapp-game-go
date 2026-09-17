@@ -150,7 +150,7 @@ func (s *GameState) LandContactRetreatRegion(armyRef *army.Army, excludedRegions
 		if neighbor == nil || neighbor.IsSea || neighbor.ID == armyRef.RegionID || !landContactRegionExcluded(neighbor.ID, excludedRegions...) {
 			continue
 		}
-		if _, blocked := s.LandRegionMoveCost(neighbor); blocked {
+		if _, allowed := s.LandRegionEntryCost(armyRef.RegionID, neighbor); !allowed {
 			continue
 		}
 		if neighbor.OwnerID != "" && neighbor.OwnerID != armyRef.OwnerID {

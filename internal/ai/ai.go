@@ -1634,9 +1634,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	}
 	fromRegion := a.RegionID
 	landMoveCost := 1
-	if !a.IsNaval && target != fromRegion && targetRegion.CanLandEnter() {
+	if !a.IsNaval && target != fromRegion && !targetRegion.IsSea {
 		var allowed bool
-		landMoveCost, allowed = aiLandEntryMoveCost(gs, fromRegion, targetRegion)
+		landMoveCost, allowed = gs.LandRegionEntryCost(fromRegion, targetRegion)
 		if !allowed || a.MovePoints < landMoveCost {
 			return moveOutcome{survived: true}
 		}

@@ -58,3 +58,34 @@ func TestCampaignSaveStateRestoresTerrainAreasAndRuntimeRegions(t *testing.T) {
 		t.Fatal("restored terrain runtime region was not recreated")
 	}
 }
+
+func TestCampaignSaveStateIgnoresStaleTerrainRegionLock(t *testing.T) {
+	areas := []world.TerrainArea{{
+		ID:       "blocked_area",
+		MoveCost: 0,
+		Polygons: [][][2]int{{{1, 1}, {4, 1}, {4, 4}, {1, 4}}},
+	}}
+	wasUnlocked := false
+	saved := campaignSaveState{
+		ScenarioID:   "1300_ottoman_rise",
+		TerrainAreas: areas,
+		Regions: map[world.RegionID]regionSaveState{
+			world.TerrainAreaRegionID("blocked_area"): {IsLocked: &wasUnlocked},
+		},
+	}
+
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"base": {ID: "base", Terrain: world.TerrainPlain},
+		},
+	}
+	applyCampaignSaveState(gs, saved)
+
+	terrain := gs.Regions[world.TerrainAreaRegionID("blocked_area")]
+	if terrain == nil {
+		t.Fatal("terrain runtime region was not recreated")
+	}
+	if !terrain.IsLocked {
+		t.Fatal("stale saved unlock state made a move_cost=0 terrain area passable")
+	}
+}

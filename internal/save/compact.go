@@ -829,7 +829,10 @@ func makeRegionSaveState(current, base *world.Region) (regionSaveState, bool) {
 }
 
 func applyRegionSaveState(region *world.Region, saved regionSaveState) {
-	if region == nil {
+	if region == nil || region.IsTerrainArea {
+		// Terrain-area runtime nodes are derived from TerrainAreas. Their lock
+		// state is determined exclusively by MoveCost and must not be restored
+		// from stale campaign/debug region state.
 		return
 	}
 	if saved.OwnerID != nil {

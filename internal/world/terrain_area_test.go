@@ -113,6 +113,9 @@ func TestSyncTerrainAreaRegionsKeepsOnlyParentNeighbor(t *testing.T) {
 	if child.OwnerID != "" {
 		t.Fatalf("terrain child unexpectedly inherited owner: %q", child.OwnerID)
 	}
+	if !child.IsLocked {
+		t.Fatal("a move_cost=0 terrain area should start locked")
+	}
 	if len(child.Neighbors) != 1 || child.Neighbors[0] != "parent" {
 		t.Fatalf("unexpected terrain child neighbors: %#v", child.Neighbors)
 	}

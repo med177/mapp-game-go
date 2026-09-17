@@ -24,6 +24,39 @@ func TestLandRegionMoveCostKeepsNormalRegionPassableInsideTerrainPolygon(t *test
 	}
 }
 
+func TestLandRegionEntryCostRejectsLockedOrBlockedTerrain(t *testing.T) {
+	from := world.RegionID("from")
+	gs := &GameState{
+		LandPassages: nil,
+		TerrainAreas: []world.TerrainArea{{ID: "mountain", MoveCost: 0}},
+	}
+
+	tests := []struct {
+		name   string
+		target *world.Region
+	}{
+		{
+			name: "locked terrain",
+			target: &world.Region{
+				ID: "area::mountain", IsTerrainArea: true, TerrainAreaID: "mountain", IsLocked: true,
+			},
+		},
+		{
+			name: "stale unlocked terrain",
+			target: &world.Region{
+				ID: "area::mountain", IsTerrainArea: true, TerrainAreaID: "mountain", IsLocked: false,
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if cost, allowed := gs.LandRegionEntryCost(from, test.target); allowed || cost != 0 {
+				t.Fatalf("blocked terrain entry unexpectedly allowed: cost=%d allowed=%v", cost, allowed)
+			}
+		})
+	}
+}
+
 func TestRepairArmiesInBlockedTerrainMovesArmyToOwnedPassableNeighbor(t *testing.T) {
 	blocked := &world.Region{ID: "blocked", OwnerID: "f", IsTerrainArea: true, TerrainAreaID: "area", Neighbors: []world.RegionID{"safe"}}
 	safe := &world.Region{ID: "safe", OwnerID: "f"}

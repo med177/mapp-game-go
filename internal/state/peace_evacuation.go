@@ -195,6 +195,9 @@ func (s *GameState) armyCanRemainInLandRegion(a *army.Army, region *world.Region
 	if s == nil || a == nil || region == nil || a.OwnerID == "" {
 		return false
 	}
+	if _, allowed := s.LandRegionEntryCost(a.RegionID, region); !allowed {
+		return false
+	}
 	// Sahipsiz bölge başka bir devletin toprağı değildir. Tur çözümlemesinin
 	// başındaki neutral-occupation sanitizer bu konumu tek taraflı işgalse
 	// sahipliğe çevirir; burada orduyu yanlışlıkla geri çekmeyiz.
@@ -284,6 +287,9 @@ func (s *GameState) nearestFriendlyLandRegion(ownerID string, reference *world.R
 	var bestDist int64
 	for _, region := range s.Regions {
 		if region == nil || region.IsSea || region.ID == reference.ID || !s.canFactionReplenishIn(ownerID, region.OwnerID) {
+			continue
+		}
+		if _, allowed := s.LandRegionEntryCost(reference.ID, region); !allowed {
 			continue
 		}
 		dx := int64(region.WorldX - reference.WorldX)

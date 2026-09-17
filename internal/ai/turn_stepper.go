@@ -59,6 +59,12 @@ func NewTurnStepper(gs *state.GameState, fid faction.FactionID) *TurnStepper {
 }
 
 func NewTurnStepperWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event) *TurnStepper {
+	// Eski veya önceki hatalı runtime state'inde kalmış orduları AI kararları
+	// başlamadan önce geçerli bir kara bölgesine taşı. Böylece AI, geçilmez
+	// terrain alanını başlangıç konumu veya hedefi olarak kullanamaz.
+	if gs != nil {
+		gs.RepairArmiesInBlockedTerrain()
+	}
 	return &TurnStepper{
 		gs:        gs,
 		fid:       fid,

@@ -3,10 +3,12 @@ package game
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
+	"mapp-game-go/internal/world"
 )
 
 func TestAutoStartResearchIfIdleStartsNextResearchableTech(t *testing.T) {
@@ -105,5 +107,36 @@ func TestAutoStartResearchIfIdleIgnoresPausedTechsWhenAnotherTechIsAvailable(t *
 	}
 	if player.Research.PausedTurns["paused"] != 3 {
 		t.Fatalf("duraklatilmis tech kaydi korunmaliydi, got=%d", player.Research.PausedTurns["paused"])
+	}
+}
+
+func TestCheckRegionUnlocksDoesNotUnlockTerrainAreas(t *testing.T) {
+	source := &world.Region{
+		ID:        "florence",
+		Neighbors: []world.RegionID{"area::apennin", "hidden_region"},
+	}
+	terrain := &world.Region{
+		ID:            "area::apennin",
+		IsTerrainArea: true,
+		TerrainAreaID: "apennin",
+		IsLocked:      true,
+	}
+	normal := &world.Region{ID: "hidden_region", IsLocked: true}
+	armyRef := &army.Army{ID: "army", OwnerID: "florence_rep", RegionID: source.ID}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			source.ID:  source,
+			terrain.ID: terrain,
+			normal.ID:  normal,
+		},
+		Armies: map[army.ArmyID]*army.Army{armyRef.ID: armyRef},
+	}
+
+	unlocked := checkRegionUnlocks(gs)
+	if !terrain.IsLocked {
+		t.Fatal("terrain area was unlocked by a neighboring army")
+	}
+	if len(unlocked) != 1 || unlocked[0] != normal.ID {
+		t.Fatalf("unexpected unlocked regions: %#v", unlocked)
 	}
 }

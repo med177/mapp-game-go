@@ -1595,7 +1595,7 @@ func (s *GameState) DiplomaticOfferRetryBlocked(from, to, action string, cooldow
 func (s *GameState) SyncTimedRegionUnlocks() []world.RegionID {
 	unlocked := make([]world.RegionID, 0)
 	for _, r := range s.Regions {
-		if r == nil || !r.IsLocked || r.UnlockTurn <= 0 {
+		if r == nil || r.IsTerrainArea || !r.IsLocked || r.UnlockTurn <= 0 {
 			continue
 		}
 		if s.Turn >= r.UnlockTurn {

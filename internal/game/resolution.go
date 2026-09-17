@@ -338,7 +338,7 @@ func techModsFor(gs *state.GameState, ownerID string) combat.TechMods {
 func checkRegionUnlocks(gs *state.GameState) []world.RegionID {
 	unlocked := gs.SyncTimedRegionUnlocks()
 	for _, r := range gs.Regions {
-		if !r.IsLocked || r.UnlockTurn > 0 {
+		if r == nil || r.IsTerrainArea || !r.IsLocked || r.UnlockTurn > 0 {
 			continue
 		}
 		// Komşuya ulaşan ordu kilidi açar

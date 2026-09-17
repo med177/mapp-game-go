@@ -5602,11 +5602,15 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	// ordu SelectBattleDefender üzerinden temas başlatabilsin.
 	neutralTerrainArea := targetRegion.IsTerrainArea
 	landMoveCost := 1
-	blocked := false
 	if !a.IsNaval && target != a.RegionID && !targetRegion.IsSea {
-		landMoveCost, blocked = g.gs.LandRegionMoveCost(targetRegion)
-		if blocked {
-			g.renderer.ShowCombatResult("Bu boyalı arazi alanı geçilemez.")
+		var allowed bool
+		landMoveCost, allowed = g.gs.LandRegionEntryCost(a.RegionID, targetRegion)
+		if !allowed {
+			if targetRegion.IsTerrainArea {
+				g.renderer.ShowCombatResult("Bu boyalı arazi alanı geçilemez.")
+			} else if targetRegion.IsLocked {
+				g.renderer.ShowCombatResult("Bu bölge kilitli.")
+			}
 			return
 		}
 		if a.MovePoints < landMoveCost {

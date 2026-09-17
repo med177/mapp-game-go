@@ -31,6 +31,26 @@ func (s *GameState) LandRegionMoveCost(region *world.Region) (int, bool) {
 	return 1, false
 }
 
+// LandRegionEntryCost returns the complete cost of entering a land region.
+// Both player and AI movement must use this boundary: region locks reject
+// entry, while painted terrain passability is determined by MoveCost.
+func (s *GameState) LandRegionEntryCost(from world.RegionID, target *world.Region) (int, bool) {
+	if target == nil || target.IsSea || !target.CanLandEnter() {
+		return 0, false
+	}
+	cost, blocked := s.LandRegionMoveCost(target)
+	if blocked {
+		return 0, false
+	}
+	if passage := world.LandPassageBetween(s.LandPassages, from, target.ID); passage != nil && passage.MoveCost > cost {
+		cost = passage.MoveCost
+	}
+	if cost < 1 {
+		cost = 1
+	}
+	return cost, true
+}
+
 func terrainAreaCostForID(area world.TerrainArea) (int, bool) {
 	if area.MoveCost == 0 {
 		return 0, true
@@ -83,7 +103,7 @@ func (s *GameState) nearestRepairLandRegion(start world.RegionID, ownerID string
 		queue = queue[1:]
 		region := s.Regions[currentID]
 		if region != nil && currentID != start && !region.IsSea {
-			if _, blocked := s.LandRegionMoveCost(region); !blocked {
+			if _, allowed := s.LandRegionEntryCost(start, region); allowed {
 				if fallback == "" {
 					fallback = currentID
 				}

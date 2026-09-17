@@ -364,20 +364,10 @@ func aiRouteLandPassagePenalty(gs *state.GameState, from world.RegionID, target 
 }
 
 func aiLandEntryMoveCost(gs *state.GameState, from world.RegionID, target *world.Region) (int, bool) {
-	if gs == nil || target == nil || target.IsSea {
+	if gs == nil {
 		return 0, false
 	}
-	cost, blocked := gs.LandRegionMoveCost(target)
-	if blocked {
-		return 0, false
-	}
-	if passage := world.LandPassageBetween(gs.LandPassages, from, target.ID); passage != nil && passage.MoveCost > cost {
-		cost = passage.MoveCost
-	}
-	if cost < 1 {
-		cost = 1
-	}
-	return cost, true
+	return gs.LandRegionEntryCost(from, target)
 }
 
 func aiTerrainMovePenalty(gs *state.GameState, from world.RegionID, target *world.Region) int {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -93,5 +94,27 @@ func TestAIRouteRejectsBlockedTerrainArea(t *testing.T) {
 	routes := aiWeightedLandRoutes(gs, armyRef, from.ID, aiRouteGeneral, 0, nil)
 	if _, reachable := routes.distance(target.ID); reachable {
 		t.Fatal("a zero move-cost terrain area must remain blocked for the AI route")
+	}
+}
+
+func TestAIMovementRejectsLockedBlockedTerrainArea(t *testing.T) {
+	from := &world.Region{ID: "from", Neighbors: []world.RegionID{"blocked"}}
+	target := &world.Region{ID: "blocked", IsTerrainArea: true, TerrainAreaID: "area", IsLocked: true}
+	armyRef := &army.Army{
+		ID: "army", OwnerID: "east_rome", RegionID: from.ID, MovePoints: 1,
+		Units: []army.Unit{{TypeID: "infantry", CurrentHP: army.MaxUnitHP}},
+	}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			from.ID:   from,
+			target.ID: target,
+		},
+		Armies:       map[army.ArmyID]*army.Army{armyRef.ID: armyRef},
+		TerrainAreas: []world.TerrainArea{{ID: "area", MoveCost: 0}},
+	}
+
+	executeMove(gs, armyRef, target.ID, faction.FactionID(armyRef.OwnerID))
+	if armyRef.RegionID != from.ID {
+		t.Fatalf("AI entered blocked terrain area: region=%s", armyRef.RegionID)
 	}
 }

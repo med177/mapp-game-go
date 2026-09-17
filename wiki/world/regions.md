@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal, succession]
-last_updated: 2026-07-31
+last_updated: 2026-09-17
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -126,6 +126,16 @@ Scania ve Ragusa'ya da başlangıç yerleşimleri eklendi.
 | `TerrainSea` (Deniz) | Sadece deniz ordusu | — | — |
 
 Arazi ve yerleşim tiplerinin Türkçe görünen etiketleri artık paket içinde tutulur: `TerrainType.LabelTR()` ve `SettlementType.LabelTR()`. UI panelleri bu değerleri doğrudan `internal/world` metadata'sından alır.
+
+## Boyanmış Arazi Alanları
+
+`terrain_areas.json` içindeki boyanmış alanlar runtime'da `area::<id>` biçiminde
+geçici terrain düğümleri olarak oluşturulur. Bu düğümler normal keşif veya
+zaman bazlı bölge unlock akışına katılmaz. Geçiş kuralı yalnızca alanın
+`move_cost` değeridir: `0` geçilmez, sıfır dışındaki değerler geçilebilir ve
+ek hareket maliyetini belirtir. Save yüklenirken terrain düğümünün kilit durumu
+senaryo `TerrainAreas` verisinden yeniden türetilir; eski save içindeki normal
+bölge kilidi bu değeri değiştiremez.
 
 → Savunma bonusu çarpışmaya etkisi: [[systems/combat]]
 
