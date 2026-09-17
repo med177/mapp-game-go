@@ -1197,6 +1197,7 @@
     "name_tr": "Palatinate",
     "terrain": "plain",
     "owner_id": "hre",
+    "successor_faction_id": "hre",
     "neighbors": [
       "alsace",
       "holland",
@@ -1231,7 +1232,11 @@
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
-      "walls"
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -1523,8 +1528,8 @@
       "brittany",
       "navarra",
       "toulouse",
-      "area::area__9::aquitaine",
-      "area::area__9::navarra"
+      "area::area__9::navarra",
+      "area::area__9::aquitaine"
     ],
     "world_x": 472,
     "world_y": 397,
@@ -3717,9 +3722,9 @@
       "gaza",
       "levantine_sea",
       "lower_egypt",
+      "area::area__3::upper_egypt",
       "area::area__3::gaza",
-      "area::area__3::lower_egypt",
-      "area::area__3::upper_egypt"
+      "area::area__3::lower_egypt"
     ],
     "world_x": 1097,
     "world_y": 642,
@@ -3768,9 +3773,9 @@
       "red_open_2",
       "upper_egypt",
       "area::area__1",
+      "area::area__3::upper_egypt",
       "area::area__3::gaza",
-      "area::area__3::lower_egypt",
-      "area::area__3::upper_egypt"
+      "area::area__3::lower_egypt"
     ],
     "world_x": 1119,
     "world_y": 702,
@@ -4197,8 +4202,8 @@
       "gurgan",
       "hemedan",
       "isfahan",
-      "area::area__6::kazvin",
       "area::area__6::isfahan",
+      "area::area__6::kazvin",
       "area::area__47",
       "area::area__48"
     ],
@@ -4284,13 +4289,13 @@
       "isfahan",
       "siraz",
       "area::area__5",
-      "area::area__6::kazvin",
       "area::area__6::hourmuz",
-      "area::area__6::northern_persia",
       "area::area__6::southern_persia",
       "area::area__6::meshed",
+      "area::area__6::isfahan",
       "area::area__6::gurgan",
-      "area::area__6::isfahan"
+      "area::area__6::northern_persia",
+      "area::area__6::kazvin"
     ],
     "world_x": 1588,
     "world_y": 657,
@@ -4390,13 +4395,13 @@
       "persian_open_1",
       "siraz",
       "southern_persia",
-      "area::area__6::kazvin",
       "area::area__6::hourmuz",
-      "area::area__6::northern_persia",
       "area::area__6::southern_persia",
       "area::area__6::meshed",
+      "area::area__6::isfahan",
       "area::area__6::gurgan",
-      "area::area__6::isfahan"
+      "area::area__6::northern_persia",
+      "area::area__6::kazvin"
     ],
     "world_x": 1632,
     "world_y": 697,
@@ -7713,9 +7718,9 @@
       "palestine_acre",
       "palestine_jerusalem",
       "upper_egypt",
+      "area::area__3::upper_egypt",
       "area::area__3::gaza",
       "area::area__3::lower_egypt",
-      "area::area__3::upper_egypt",
       "area::area__59"
     ],
     "world_x": 1174,
@@ -11832,8 +11837,8 @@
       "irish_sea_shore",
       "north_sea_shore",
       "area::area__11::walonia",
-      "area::area__11::lorraine",
-      "area::area__11::luxembourg"
+      "area::area__11::luxembourg",
+      "area::area__11::lorraine"
     ],
     "world_x": 592,
     "world_y": 308,

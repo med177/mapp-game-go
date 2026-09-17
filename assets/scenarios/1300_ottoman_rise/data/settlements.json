@@ -936,7 +936,6 @@
         "x": 618,
         "y": 269,
         "type": "city",
-        "is_center": true,
         "population": 65
       },
       {
@@ -946,6 +945,15 @@
         "y": 288,
         "type": "fortress",
         "population": 16
+      },
+      {
+        "id": "palatinate_aachen",
+        "name_tr": "Aachen",
+        "x": 596,
+        "y": 271,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
       }
     ]
   },
