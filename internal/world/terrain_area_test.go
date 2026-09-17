@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -118,6 +119,40 @@ func TestSyncTerrainAreaRegionsKeepsOnlyParentNeighbor(t *testing.T) {
 	}
 	if len(child.Neighbors) != 1 || child.Neighbors[0] != "parent" {
 		t.Fatalf("unexpected terrain child neighbors: %#v", child.Neighbors)
+	}
+}
+
+func TestSyncTerrainAreaRegionsPreservesLoadedAreaNeighborOrder(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "regions.json")
+	data, err := json.Marshal([]*Region{
+		{ID: "parent", Neighbors: []RegionID{
+			"neighbor", "area::second", "area::first",
+		}},
+		{ID: "neighbor"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	regions, _, err := LoadRegionsWithOrder(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []RegionID{"area::second", "area::first"}
+	if got := regions["parent"].AreaNeighborOrder; !reflect.DeepEqual(got, want) {
+		t.Fatalf("loaded area neighbor order changed: got %#v want %#v", got, want)
+	}
+	areas := []TerrainArea{
+		{ID: "first", ParentRegionID: "parent", Polygons: [][][2]int{{{0, 0}, {2, 0}, {2, 2}}}},
+		{ID: "second", ParentRegionID: "parent", Polygons: [][][2]int{{{3, 0}, {5, 0}, {5, 2}}}},
+	}
+
+	SyncTerrainAreaRegions(regions, areas)
+	wantNeighbors := []RegionID{"neighbor", "area::second", "area::first"}
+	if got := regions["parent"].Neighbors; !reflect.DeepEqual(got, wantNeighbors) {
+		t.Fatalf("area neighbor order changed: got %#v want %#v", got, wantNeighbors)
 	}
 }
 

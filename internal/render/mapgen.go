@@ -782,6 +782,7 @@ func (wm *WorldMap) linkTerrainAreaNeighbors(gs *state.GameState) {
 			}
 		}
 	}
+	world.RestoreTerrainAreaNeighborOrder(gs.Regions)
 }
 
 func (wm *WorldMap) orthogonalRegionIndices(pIdx, px, py int) ([4]uint16, int) {

@@ -7,9 +7,79 @@ import (
 	"math"
 	"os"
 	"sort"
+	"strings"
 )
 
 const terrainAreaRegionPrefix = "area::"
+
+// IsTerrainAreaRegionID reports whether an ID belongs to a runtime terrain
+// area node or fragment.
+func IsTerrainAreaRegionID(id RegionID) bool {
+	return strings.HasPrefix(string(id), terrainAreaRegionPrefix)
+}
+
+// NeighborsInSourceAreaOrder returns the current neighbor list while replacing
+// its terrain-area entries with the order captured from regions.json. New
+// runtime area entries are appended after the captured entries.
+func (r *Region) NeighborsInSourceAreaOrder() []RegionID {
+	if r == nil {
+		return nil
+	}
+	if len(r.AreaNeighborOrder) == 0 {
+		return append([]RegionID(nil), r.Neighbors...)
+	}
+
+	currentAreaIDs := make([]RegionID, 0)
+	present := make(map[RegionID]bool)
+	for _, neighborID := range r.Neighbors {
+		if !IsTerrainAreaRegionID(neighborID) {
+			continue
+		}
+		currentAreaIDs = append(currentAreaIDs, neighborID)
+		present[neighborID] = true
+	}
+	if len(currentAreaIDs) == 0 {
+		return append([]RegionID(nil), r.Neighbors...)
+	}
+
+	orderedAreaIDs := make([]RegionID, 0, len(currentAreaIDs))
+	seen := make(map[RegionID]bool, len(currentAreaIDs))
+	for _, neighborID := range r.AreaNeighborOrder {
+		if present[neighborID] && !seen[neighborID] {
+			orderedAreaIDs = append(orderedAreaIDs, neighborID)
+			seen[neighborID] = true
+		}
+	}
+	for _, neighborID := range currentAreaIDs {
+		if !seen[neighborID] {
+			orderedAreaIDs = append(orderedAreaIDs, neighborID)
+			seen[neighborID] = true
+		}
+	}
+
+	result := make([]RegionID, 0, len(r.Neighbors))
+	areaIndex := 0
+	for _, neighborID := range r.Neighbors {
+		if IsTerrainAreaRegionID(neighborID) {
+			result = append(result, orderedAreaIDs[areaIndex])
+			areaIndex++
+			continue
+		}
+		result = append(result, neighborID)
+	}
+	return result
+}
+
+// RestoreTerrainAreaNeighborOrder reapplies source ordering after runtime
+// terrain-area links have been rebuilt.
+func RestoreTerrainAreaNeighborOrder(regions map[RegionID]*Region) {
+	for _, region := range regions {
+		if region == nil {
+			continue
+		}
+		region.Neighbors = region.NeighborsInSourceAreaOrder()
+	}
+}
 
 // TerrainAreaRegionID returns the runtime graph ID for a terrain area.
 // Terrain areas are stored separately in scenario data; this ID only exists
@@ -39,6 +109,13 @@ func SyncTerrainAreaRegions(regions map[RegionID]*Region, areas []TerrainArea) {
 	for _, region := range regions {
 		if region == nil {
 			continue
+		}
+		if len(region.AreaNeighborOrder) == 0 {
+			for _, neighborID := range region.Neighbors {
+				if IsTerrainAreaRegionID(neighborID) {
+					region.AreaNeighborOrder = append(region.AreaNeighborOrder, neighborID)
+				}
+			}
 		}
 		filtered := region.Neighbors[:0]
 		for _, neighbor := range region.Neighbors {
@@ -100,6 +177,7 @@ func SyncTerrainAreaRegions(regions map[RegionID]*Region, areas []TerrainArea) {
 			extra.Neighbors = appendUniqueRegionID(extra.Neighbors, child.ID)
 		}
 	}
+	RestoreTerrainAreaNeighborOrder(regions)
 }
 
 func UpdateTerrainAreaRegionOwners(regions map[RegionID]*Region) {

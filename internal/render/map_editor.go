@@ -3826,6 +3826,7 @@ func cloneRegionMap(src map[world.RegionID]*world.Region) map[world.RegionID]*wo
 		}
 		copyRegion := *region
 		copyRegion.Neighbors = cloneRegionIDSlice(region.Neighbors)
+		copyRegion.AreaNeighborOrder = cloneRegionIDSlice(region.AreaNeighborOrder)
 		copyRegion.Settlements = cloneSettlements(region.Settlements)
 		copyRegion.Buildings = cloneStringSlice(region.Buildings)
 		if len(region.Shape) > 0 {

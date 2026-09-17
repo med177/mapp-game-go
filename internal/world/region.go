@@ -28,6 +28,11 @@ type Region struct {
 	// tarihsel devletin fraksiyon kimliğidir.
 	SuccessorFactionID string     `json:"successor_faction_id,omitempty"`
 	Neighbors          []RegionID `json:"neighbors"`
+	// AreaNeighborOrder, regions.json yüklenirken görülen area:: komşularının
+	// kaynak sırasını korur. Arazi alanları runtime'da yeniden üretildiği için
+	// bu bilgi JSON'a yazılmaz; Edit Mode kaydında gereksiz sıra farklarını
+	// önlemek için kullanılır.
+	AreaNeighborOrder []RegionID `json:"-"`
 
 	// Dünya haritası koordinatları (renderer WorldW×WorldH dünya uzayı)
 	WorldX int `json:"world_x"`

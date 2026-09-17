@@ -33,6 +33,11 @@ func LoadRegionsWithOrder(path string) (map[RegionID]*Region, []RegionID, error)
 	for _, r := range list {
 		if r != nil {
 			r.TaxRate = ClampTaxRate(r.TaxRate)
+			for _, neighborID := range r.Neighbors {
+				if IsTerrainAreaRegionID(neighborID) {
+					r.AreaNeighborOrder = append(r.AreaNeighborOrder, neighborID)
+				}
+			}
 		}
 		result[r.ID] = r
 		order = append(order, r.ID)

@@ -3172,7 +3172,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 			Terrain:            region.Terrain,
 			OwnerID:            region.OwnerID,
 			SuccessorFactionID: region.SuccessorFactionID,
-			Neighbors:          append([]world.RegionID(nil), region.Neighbors...),
+			Neighbors:          region.NeighborsInSourceAreaOrder(),
 			WorldX:             region.WorldX,
 			WorldY:             region.WorldY,
 			ShapeID:            region.ShapeID,
