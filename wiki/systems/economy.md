@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-09-11
+last_updated: 2026-09-17
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -98,6 +98,13 @@ bölgeleri kontrol eder.
 
 Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini ister (`grain/iron/timber/stone/spice/cloth_cost`). Pazar, liman ve ibadet yeri gibi ticaret/kültür yapıları baharat veya kumaş tüketebilir; temel tarım ve savunma yapıları bölgesel hammaddelere dayanır.
 Bina `MaxPerRegion` ile sınırlıdır.
+
+`upgrade_cost_multiplier`, bina seviyeleri için bileşik maliyet artışını belirler.
+Seviye 1 JSON'daki taban maliyeti kullanır; sonraki seviyelerde her kaynak
+`round(taban_maliyet × multiplier^(seviye-1))` ile hesaplanır. 1300 senaryosunda
+çarpan `1.25`tir. Oyuncu, AI, bina kartı/tooltip ve iptal iadesi aynı
+`economy.BuildingCostAtLevel()` helper'ını kullanır; devam eden bina emirleri
+ödenen hedef seviyeyi `ProductionOrder.BuildingLevel` alanında taşır.
 
 Bina tanımları bölgesel hammadde üretimini de veri üzerinden değiştirebilir. `*_mod`
 alanları bina seviyeleri arasında çarpılır; `*_bonus` alanları her kurulu seviye

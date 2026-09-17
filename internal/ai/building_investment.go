@@ -151,7 +151,8 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 				continue
 			}
 
-			cost := aiBuildingResourceCost(btype)
+			targetLevel := level + queued + 1
+			cost := aiBuildingResourceCostAtLevel(btype, targetLevel)
 			if requireResources && !aiCanAffordForBudget(self, cost, budget, aiBudgetEconomy) {
 				continue
 			}
@@ -629,14 +630,14 @@ func aiResourcePrice(gs *state.GameState, good economy.GoodType) int {
 }
 
 func aiBuildingResourceCost(building *city.Building) economy.ResourceCost {
+	return aiBuildingResourceCostAtLevel(building, 1)
+}
+
+func aiBuildingResourceCostAtLevel(building *city.Building, level int) economy.ResourceCost {
 	if building == nil {
 		return economy.ResourceCost{}
 	}
-	return economy.ResourceCost{
-		Gold: building.GoldCost, Grain: building.GrainCost, Iron: building.IronCost,
-		Timber: building.TimberCost, Stone: building.StoneCost,
-		Spice: building.SpiceCost, Cloth: building.ClothCost,
-	}
+	return economy.BuildingCostAtLevel(building, level)
 }
 
 func aiQueuedBuildingCountForRegion(gs *state.GameState, regionID world.RegionID, fid faction.FactionID) int {
@@ -706,7 +707,9 @@ func aiLegacyEconomyBuildWithSteps(gs *state.GameState, fid faction.FactionID, b
 			if btype.MaxPerRegion <= 0 || aiBuildingLevel(region, buildingID)+queued >= btype.MaxPerRegion || !aiLegacyBuildingNeeded(gs, fid, region, buildingID) {
 				continue
 			}
-			if !aiApplyBudgetedCost(self, cost, budget, aiBudgetEconomy) {
+			targetLevel := aiBuildingLevel(region, buildingID) + queued + 1
+			levelCost := aiBuildingResourceCostAtLevel(btype, targetLevel)
+			if !aiApplyBudgetedCost(self, levelCost, budget, aiBudgetEconomy) {
 				continue
 			}
 			turns := aiBuildingTurnsRequired(region, buildingID, btype.TurnsRequired, queued)

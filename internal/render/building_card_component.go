@@ -98,15 +98,8 @@ func buildBuildingCardComponents(gs *state.GameState, region *world.Region, pane
 			}
 			if regionBuildingActionsAvailable(gs, region) {
 				if f := gs.Factions[gs.PlayerFactionID]; f != nil {
-					cost := economy.ResourceCost{
-						Gold:   b.GoldCost,
-						Grain:  b.GrainCost,
-						Iron:   b.IronCost,
-						Timber: b.TimberCost,
-						Stone:  b.StoneCost,
-						Spice:  b.SpiceCost,
-						Cloth:  b.ClothCost,
-					}
+					targetLevel := builtCount[bid] + queuedSet[bid] + 1
+					cost := economy.BuildingCostAtLevel(b, targetLevel)
 					canAfford = cost.CanAfford(f)
 				}
 			}

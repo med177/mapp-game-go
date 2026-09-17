@@ -89,3 +89,24 @@ func TestCampaignSaveStateIgnoresStaleTerrainRegionLock(t *testing.T) {
 		t.Fatal("stale saved unlock state made a move_cost=0 terrain area passable")
 	}
 }
+
+func TestCampaignSaveStateRestoresDismissedCommanderIDs(t *testing.T) {
+	saved := campaignSaveState{
+		ScenarioID:            "1300_ottoman_rise",
+		DismissedCommanderIDs: map[string]bool{"commander_template": true},
+	}
+	payload, err := json.Marshal(saved)
+	if err != nil {
+		t.Fatalf("marshal campaign save state: %v", err)
+	}
+	decoded, err := decodeCampaignSaveState(payload)
+	if err != nil {
+		t.Fatalf("decode campaign save state: %v", err)
+	}
+
+	gs := &state.GameState{}
+	applyCampaignSaveState(gs, decoded)
+	if !gs.DismissedCommanderIDs["commander_template"] {
+		t.Fatal("dismissed commander ID was not restored")
+	}
+}

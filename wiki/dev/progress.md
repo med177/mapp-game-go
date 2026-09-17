@@ -1,11 +1,18 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-16
+last_updated: 2026-09-17
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-17: Bina yükseltme maliyetleri senaryo verisindeki
+  `upgrade_cost_multiplier` ile seviye bazında bileşik hesaplanıyor. 1300
+  senaryosunda `1.25` çarpanı kullanılıyor; oyuncu, AI, tooltip ve iptal iadesi
+  ortak `economy.BuildingCostAtLevel()` hesabına bağlandı. Hedef seviye üretim
+  emrinde saklanıyor; `internal/economy/building_cost_test.go` ile seviye ve
+  eski JSON fallback'i doğrulandı.
 
 - 2026-09-16: Diplomasi panelindeki doğrudan vassal yönetim kartında pasif
   `İlhak Et` düğmesi, 12 turluk bekleme süresi bitene kadar kalan tur sayısını
@@ -3192,3 +3199,4 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
   düzenlemesi sonrası geçişlerin eski `from/to` kimliklerinde kalması engellendi;
   geçersiz, deniz veya aynı bölgeye düşen uçlarda mevcut ilişki korunuyor.
 - 2026-09-15: 1300 senaryosundaki Bapheus event'i 1313 Köse Mihal'in Osmanlı'ya katılması ve Bithynia sınırındaki genişleme event'i olarak güncellendi; Köse Mihal komutanının başlangıç yılı 1313'e taşındı.
+- 2026-09-17: AI'nin üretip vassal ilhakı sonrası oyuncuya geçen `Commander` fallback komutanları için isim/portre düzenleme modalı eklendi. Komutan atama panelindeki `Görevden Al` aksiyonu komutanı ordudan ve canonical havuzdan siliyor; şablon komutanların tekrar görünmemesi compact save'e yazılıyor. Regression: `internal/state/commanders_test.go`, `internal/save/save_test.go`, `go test ./... -count=1`.

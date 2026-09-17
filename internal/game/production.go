@@ -40,11 +40,18 @@ func (g *Game) enqueueProduction(kind string, rid world.RegionID, typeID string,
 		TypeID:    typeID,
 		TurnsLeft: turns,
 	}
+	if kind == productionKindBuilding {
+		level := 0
+		if region := g.gs.Regions[rid]; region != nil {
+			level = region.BuildingLevel(typeID)
+		}
+		order.BuildingLevel = level + g.queuedBuildingCount(rid, typeID) + 1
+	}
 	g.gs.ProductionQueue = append(g.gs.ProductionQueue, order)
 	return order
 }
 
-func (g *Game) cancelProduction(kind string, rid world.RegionID, typeID string, ownerID faction.FactionID) bool {
+func (g *Game) cancelProduction(kind string, rid world.RegionID, typeID string, ownerID faction.FactionID) (state.ProductionOrder, bool) {
 	for i := len(g.gs.ProductionQueue) - 1; i >= 0; i-- {
 		order := g.gs.ProductionQueue[i]
 		if order.Kind != kind || order.RegionID != rid || order.TypeID != typeID || order.FactionID != string(ownerID) {
@@ -54,9 +61,9 @@ func (g *Game) cancelProduction(kind string, rid world.RegionID, typeID string, 
 		last := len(g.gs.ProductionQueue) - 1
 		g.gs.ProductionQueue[last] = state.ProductionOrder{}
 		g.gs.ProductionQueue = g.gs.ProductionQueue[:last]
-		return true
+		return order, true
 	}
-	return false
+	return state.ProductionOrder{}, false
 }
 
 // hasProduction iptal etmeden, kuyrukta eşleşen üretim emri olup olmadığını döndürür.

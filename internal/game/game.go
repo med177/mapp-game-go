@@ -390,6 +390,18 @@ func (g *Game) Update() error {
 			} else {
 				g.renderer.ShowCombatResult("Komutan oluşturulamadı. Gerekli: " + state.CommanderRecruitCost.ShortTR())
 			}
+		case render.ActionEditCommander:
+			if g.gs.UpdateCommanderProfile(action.CommanderID, action.CommanderName, action.PortraitAsset) {
+				g.renderer.CloseCommanderPanel()
+				g.renderer.ShowCombatResult("Komutan profili güncellendi.")
+			} else {
+				g.renderer.ShowCombatResult("Komutan profili güncellenemedi.")
+			}
+		case render.ActionDismissCommander:
+			if g.gs.DismissCommander(action.CommanderID) {
+				g.renderer.CloseCommanderPanel()
+				g.renderer.ShowCombatResult("Komutan görevden alındı ve silindi.")
+			}
 		case render.ActionUnassignCommander:
 			if g.gs.UnassignCommanderFromArmy(action.ArmyID) {
 				g.renderer.CloseCommanderPanel()
@@ -2440,28 +2452,20 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 			}, nil)
 		return
 	}
-	cost := economy.ResourceCost{
-		Gold:   b.GoldCost,
-		Grain:  b.GrainCost,
-		Iron:   b.IronCost,
-		Timber: b.TimberCost,
-		Stone:  b.StoneCost,
-		Spice:  b.SpiceCost,
-		Cloth:  b.ClothCost,
-	}
-	if !cost.CanAfford(f) {
-		g.renderer.ShowCombatResult("Yetersiz kaynak! Gerekli: " + cost.ShortTR())
-		return
-	}
 	queuedLevels := g.queuedBuildingCount(rid, buildingID)
 	if count+queuedLevels >= b.MaxPerRegion {
 		g.renderer.ShowCombatResult(fmt.Sprintf("%s için seviye kuyruğu dolu! (Lv%d)", b.NameTR, b.MaxPerRegion))
 		return
 	}
+	targetLevel := count + queuedLevels + 1
+	cost := economy.BuildingCostAtLevel(b, targetLevel)
+	if !cost.CanAfford(f) {
+		g.renderer.ShowCombatResult("Yetersiz kaynak! Gerekli: " + cost.ShortTR())
+		return
+	}
 
 	// Seviye arttıkça inşa süresini uzat:
 	// Lv1 için base, Lv2 için base+1, Lv3 için base+2 ...
-	targetLevel := count + queuedLevels + 1
 	turnsRequired := b.TurnsRequired + (targetLevel - 1)
 	if turnsRequired < 1 {
 		turnsRequired = 1
@@ -4195,20 +4199,21 @@ func (g *Game) cancelBuilding(rid world.RegionID, buildingID string) {
 	if !ok {
 		return
 	}
-	if !g.cancelProduction(productionKindBuilding, rid, buildingID, g.gs.PlayerFactionID) {
+	order, ok := g.cancelProduction(productionKindBuilding, rid, buildingID, g.gs.PlayerFactionID)
+	if !ok {
 		g.renderer.ShowCombatResult("İptal edilecek inşaat bulunamadı.")
 		return
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
-	cost := economy.ResourceCost{
-		Gold:   b.GoldCost,
-		Grain:  b.GrainCost,
-		Iron:   b.IronCost,
-		Timber: b.TimberCost,
-		Stone:  b.StoneCost,
-		Spice:  b.SpiceCost,
-		Cloth:  b.ClothCost,
+	level := order.BuildingLevel
+	if level <= 0 {
+		region := g.gs.Regions[rid]
+		level = 1
+		if region != nil {
+			level += region.BuildingLevel(buildingID) + g.queuedBuildingCount(rid, buildingID)
+		}
 	}
+	cost := economy.BuildingCostAtLevel(b, level)
 	cost.Refund(f)
 	g.renderer.ShowCombatResult(fmt.Sprintf("%s inşaatı iptal edildi. İade: %s", b.NameTR, cost.ShortTR()))
 }

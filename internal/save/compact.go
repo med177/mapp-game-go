@@ -126,6 +126,7 @@ type campaignSaveState struct {
 	Factions                map[faction.FactionID]factionSaveState   `json:"fx,omitempty"`
 	Armies                  map[army.ArmyID]armySaveState            `json:"ar,omitempty"`
 	Commanders              map[string]*army.Commander               `json:"cmd,omitempty"`
+	DismissedCommanderIDs   map[string]bool                          `json:"dcm,omitempty"`
 	AIPlans                 map[faction.FactionID]*state.AIPlanState `json:"ap,omitempty"`
 	AICompletedObjectives   map[faction.FactionID]map[string]bool    `json:"aco,omitempty"`
 	Imperial                *state.ImperialState                     `json:"im,omitempty"`
@@ -212,6 +213,7 @@ type legacyCampaignSaveState struct {
 	Factions                map[faction.FactionID]legacyFactionSaveState   `json:"factions"`
 	Armies                  map[army.ArmyID]*army.Army                     `json:"armies"`
 	Commanders              map[string]*army.Commander                     `json:"commanders,omitempty"`
+	DismissedCommanderIDs   map[string]bool                                `json:"dismissed_commander_ids,omitempty"`
 	AIPlans                 map[faction.FactionID]*state.AIPlanState       `json:"ai_plans,omitempty"`
 	AICompletedObjectives   map[faction.FactionID]map[string]bool          `json:"ai_completed_objectives,omitempty"`
 	Imperial                *state.ImperialState                           `json:"imperial,omitempty"`
@@ -374,6 +376,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Factions:                savedFactions,
 		Armies:                  convertArmiesToSaveState(legacy.Armies),
 		Commanders:              cloneCommanders(legacy.Commanders),
+		DismissedCommanderIDs:   cloneStringBoolMap(legacy.DismissedCommanderIDs),
 		AIPlans:                 cloneAIPlans(legacy.AIPlans),
 		AICompletedObjectives:   cloneAICompletedObjectives(legacy.AICompletedObjectives),
 		Imperial:                legacy.Imperial.Clone(),
@@ -500,6 +503,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Factions:                emptyMapAsNil(savedFactions),
 		Armies:                  convertArmiesToSaveState(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
+		DismissedCommanderIDs:   cloneStringBoolMap(gs.DismissedCommanderIDs),
 		AIPlans:                 cloneAIPlans(gs.AIPlans),
 		AICompletedObjectives:   cloneAICompletedObjectives(gs.AICompletedObjectives),
 		Imperial:                gs.Imperial.Clone(),
@@ -603,6 +607,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Factions:                factions,
 		Armies:                  cloneArmies(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
+		DismissedCommanderIDs:   cloneStringBoolMap(gs.DismissedCommanderIDs),
 		AIPlans:                 cloneAIPlans(gs.AIPlans),
 		AICompletedObjectives:   cloneAICompletedObjectives(gs.AICompletedObjectives),
 		Imperial:                gs.Imperial.Clone(),
@@ -751,6 +756,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 		gs.Armies = map[army.ArmyID]*army.Army{}
 	}
 	gs.Commanders = cloneCommanders(saved.Commanders)
+	gs.DismissedCommanderIDs = cloneStringBoolMap(saved.DismissedCommanderIDs)
 	gs.AIPlans = cloneAIPlans(saved.AIPlans)
 	gs.AICompletedObjectives = cloneAICompletedObjectives(saved.AICompletedObjectives)
 	if saved.Imperial != nil {

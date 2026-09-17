@@ -274,6 +274,7 @@ type GameState struct {
 	RelationOrder           []string                               `json:"-"`
 	Commanders              map[string]*army.Commander             `json:"commanders,omitempty"`
 	CommanderArrivalNotices map[string]bool                        `json:"commander_arrival_notices,omitempty"`
+	DismissedCommanderIDs   map[string]bool                        `json:"dismissed_commander_ids,omitempty"`
 	AIPlans                 map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`
 	// AICompletedObjectives objective'in en az bir kez tamamlandığını taşır.
 	// Bu geçmiş, tamamlanmış bir consolidate objective'inin sonradan kaybedilen
@@ -1063,12 +1064,13 @@ func (s *GameState) StrategicGrainSurplus(fid faction.FactionID) int {
 
 // ProductionOrder bina ve birim üretimlerinin tur bazlı kuyruğunu tutar.
 type ProductionOrder struct {
-	ID        string         `json:"id"`
-	Kind      string         `json:"kind"` // "building" veya "unit"
-	FactionID string         `json:"faction_id"`
-	RegionID  world.RegionID `json:"region_id"`
-	TypeID    string         `json:"type_id"`
-	TurnsLeft int            `json:"turns_left"`
+	ID            string         `json:"id"`
+	Kind          string         `json:"kind"` // "building" veya "unit"
+	FactionID     string         `json:"faction_id"`
+	RegionID      world.RegionID `json:"region_id"`
+	TypeID        string         `json:"type_id"`
+	TurnsLeft     int            `json:"turns_left"`
+	BuildingLevel int            `json:"building_level,omitempty"` // bina emirlerinde ödenen hedef seviye
 }
 
 // ClearProductionOrdersForRegion belirtilen bölgedeki tüm üretim emirlerini kuyruktan siler.

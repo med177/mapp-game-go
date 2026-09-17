@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-08-28
+last_updated: 2026-09-17
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -194,7 +194,7 @@ kararını (`ImperialDecisionKind`) taşır. Bu state tur çözümünden sonra p
 oyuncu kararını zorunlu kılmak ve save/load sonrasında modalı geri kurmak için kullanılır.
 AI kontrollü HRE'de pending state oluşturulmaz; otomatik siyasi çözüm korunur.
 
-`ProductionOrder`, bina ve birim üretimlerini kayıt dosyasına yazılan tur bazlı kuyruk olarak saklar. `kind` alanı `building` veya `unit`, `type_id` ise bina ID'si veya birim tipi ID'sidir. `turns_left` her tur çözümlemede azalır; ancak bölge aktif kuşatma altındaysa bina ve birim emirleri duraklatılır, kuşatma kalkınca aynı sayaçtan devam eder; bölge el değiştirirse o bölgedeki üretim emirleri kuyruktan silinir; sıfırlandığında üretim uygulanır.
+`ProductionOrder`, bina ve birim üretimlerini kayıt dosyasına yazılan tur bazlı kuyruk olarak saklar. `kind` alanı `building` veya `unit`, `type_id` ise bina ID'si veya birim tipi ID'sidir. `turns_left` her tur çözümlemede azalır; bina emirlerindeki `building_level` ise peşin ödenen hedef seviyeyi taşır ve bileşik maliyetli iptal iadesini doğru seviyeye bağlar. Eski kayıtlarda bu alan yoksa iptal akışı mevcut tamamlanmış ve bekleyen seviyelerden geriye dönük hedef seviyeyi çıkarır. Bölge aktif kuşatma altındaysa bina ve birim emirleri duraklatılır, kuşatma kalkınca aynı sayaçtan devam eder; bölge el değiştirirse o bölgedeki üretim emirleri kuyruktan silinir; sıfırlandığında üretim uygulanır.
 
 `GameState.CollectDefenders()` birleşik savunmaya katılan gerçek orduları `ArmyID` sırasıyla toplar. Böylece 20 birim sınırına giren kompozisyon, kaynak ordu ID listesi ve sonrasındaki kayıp dağıtımı map iterasyon sırasından bağımsızdır; aynı state ve aynı savaş zarı aynı sonucu üretir.
 
@@ -289,6 +289,12 @@ canonical havuzdur; `SyncCommanderLinks()` yükleme sonrasında ordu pointer'lar
 havuzdaki nesnelere bağlar. Oyuncu havuzu ve ordu panelindeki atama/ayırma modalı
 `InitializePlayerCommanders()`, `RecruitPlayerCommander()`,
 `AssignCommanderToArmy()` ve `UnassignCommanderFromArmy()` üzerinden çalışır.
+Oyuncu ordusundaki şablon dışı runtime komutanlar `UpdateCommanderProfile()` ile
+isim ve `portrait_asset` değerlerini güncelleyebilir; AI'nin ürettiği `Commander`
+fallback'i vassal ilhakı sonrası oyuncuya geçtiğinde aynı panelden düzenlenebilir.
+`DismissCommander()` komutanı ordudan ayırıp canonical havuzdan siler. Senaryo
+şablonlarının görevden alındıktan sonra yeniden eklenmemesi
+`dismissed_commander_ids` save alanıyla korunur.
 Oyuncu yeni komutan modalında aktif senaryonun `sprites/commanders/` portreleri
 arasından `F2` tuşu veya rastgele portre düğmesiyle seçim yapabilir; seçilen
 `portrait_asset` adla birlikte `ActionRecruitCommander` üzerinden state'e

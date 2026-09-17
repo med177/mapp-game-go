@@ -854,19 +854,17 @@ func drawTechCloseButton(screen *ebiten.Image) {
 		DisabledBG:     color.RGBA{20, 18, 30, 180},
 		DisabledBorder: color.RGBA{60, 50, 30, 140},
 		DisabledText:   color.RGBA{100, 90, 70, 180},
-		TextOffsetY:    6,
 		TextVariant:    gameui.TextSmall,
 		BorderWidth:    1.5,
 	}
 	drawUIButtonWidget(screen, btn, style)
 }
 
-func drawTechButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, textColor color.Color, textOffsetY float64) {
+func drawTechButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, textColor color.Color, _ float64) {
 	style := menuButtonStyle
 	style.BG = bg
 	style.Border = panelBorder
 	style.Text = color.RGBAModel.Convert(textColor).(color.RGBA)
-	style.TextOffsetY = textOffsetY
 	style.TextVariant = gameui.TextSmall
 	drawUIButtonWidget(screen, btn, style)
 }

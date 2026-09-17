@@ -5,7 +5,6 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
-	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -672,11 +671,8 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, embarkRegion, "port", portType.RequiredTerrain) {
 			return
 		}
-		portCost := economy.ResourceCost{
-			Gold: portType.GoldCost, Grain: portType.GrainCost, Iron: portType.IronCost,
-			Timber: portType.TimberCost, Stone: portType.StoneCost,
-			Spice: portType.SpiceCost, Cloth: portType.ClothCost,
-		}
+		targetLevel := currentPortLevel + queuedPortLevels + 1
+		portCost := aiBuildingResourceCostAtLevel(portType, targetLevel)
 		if !aiCanAffordForBudget(self, portCost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, portCost, budget, aiBudgetNaval) {
 			return
 		}
@@ -751,11 +747,8 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, embarkRegion, "port", portType.RequiredTerrain) {
 			return
 		}
-		portCost := economy.ResourceCost{
-			Gold: portType.GoldCost, Grain: portType.GrainCost, Iron: portType.IronCost,
-			Timber: portType.TimberCost, Stone: portType.StoneCost,
-			Spice: portType.SpiceCost, Cloth: portType.ClothCost,
-		}
+		targetLevel := currentPortLevel + queuedPortLevels + 1
+		portCost := aiBuildingResourceCostAtLevel(portType, targetLevel)
 		if !aiCanAffordForBudget(self, portCost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, portCost, budget, aiBudgetNaval) {
 			return
 		}

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-09-11
+last_updated: 2026-09-17
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -587,6 +587,11 @@ Oyuncuya ait ordunun komutan kartında ana komutan mevcutsa kartın altına kır
 gider. `EmbarkedCommander` bu düğmeye dahil değildir; taşınan kara komutanı
 komutan atama panelindeki ayrı `Taşınanı Ayır` aksiyonuyla yönetilir
 (`internal/render/{army_panel.go,commander_panel.go,renderer_input.go}`).
+Komutan atama panelindeki `Görevden Al` düğmesi seçili ana komutan için onay
+ister ve `ActionDismissCommander` üzerinden komutanı tamamen siler. Şablon dışı
+runtime komutanlarda aynı detay alanı `Düzenle` düğmesiyle isim/portre modalını
+açar; modal mevcut kariyer XP'sini ve trait'lerini koruyarak
+`ActionEditCommander` üretir.
 
 Edit Mode Harita sekmesindeki `Başkent Yap` butonu, seçili settlement'ın sahibi olan fraksiyonun `capital_settlement_id` alanını anında günceller ve bekleyen başkent taşımasını temizler. Bu aksiyon, bölgesel ana yerleşimi belirleyen `Ana Yap` (`is_capital`) davranışından ayrıdır; undo/redo world snapshot'ı üzerinden çalışır ve `Kaydet` ile `factions.json` dosyasına yazılır.
 

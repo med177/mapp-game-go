@@ -76,10 +76,12 @@ func aiMerchantTradeResourceReserve(gs *state.GameState, fid faction.FactionID) 
 		return economy.ResourceCost{}
 	}
 	if aiBuildingLevel(port, "port")+aiQueuedBuildingCount(gs, port.ID, "port", fid) < maxInt(1, merchantType.RequiredBldgLevel) {
+		level := aiBuildingLevel(port, "port") + aiQueuedBuildingCount(gs, port.ID, "port", fid) + 1
+		portCost := aiBuildingResourceCostAtLevel(portType, level)
 		return economy.ResourceCost{
-			Gold: portType.GoldCost + merchantType.GoldCost, Grain: portType.GrainCost + merchantType.GrainCost,
-			Iron: portType.IronCost + merchantType.IronCost, Timber: portType.TimberCost + merchantType.TimberCost,
-			Stone: portType.StoneCost + merchantType.StoneCost,
+			Gold: portCost.Gold + merchantType.GoldCost, Grain: portCost.Grain + merchantType.GrainCost,
+			Iron: portCost.Iron + merchantType.IronCost, Timber: portCost.Timber + merchantType.TimberCost,
+			Stone: portCost.Stone + merchantType.StoneCost,
 		}
 	}
 	return economy.ResourceCost{
@@ -271,7 +273,8 @@ func aiProduceMerchantShipIfNeeded(gs *state.GameState, fid faction.FactionID, r
 		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, port, "port", portType.RequiredTerrain) {
 			return false
 		}
-		cost := economy.ResourceCost{Gold: portType.GoldCost, Grain: portType.GrainCost, Iron: portType.IronCost, Timber: portType.TimberCost, Stone: portType.StoneCost, Spice: portType.SpiceCost, Cloth: portType.ClothCost}
+		targetLevel := currentPortLevel + queuedPortLevels + 1
+		cost := aiBuildingResourceCostAtLevel(portType, targetLevel)
 		if !aiCanAffordForBudget(self, cost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
 			return false
 		}
@@ -335,7 +338,8 @@ func aiProduceTradeEscortIfNeeded(gs *state.GameState, fid faction.FactionID, ro
 		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, threatenedPort, "port", portType.RequiredTerrain) {
 			return false
 		}
-		cost := economy.ResourceCost{Gold: portType.GoldCost, Grain: portType.GrainCost, Iron: portType.IronCost, Timber: portType.TimberCost, Stone: portType.StoneCost, Spice: portType.SpiceCost, Cloth: portType.ClothCost}
+		targetLevel := currentPortLevel + queuedPortLevels + 1
+		cost := aiBuildingResourceCostAtLevel(portType, targetLevel)
 		if !aiCanAffordForBudget(self, cost, budget, aiBudgetNaval) || !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
 			return false
 		}

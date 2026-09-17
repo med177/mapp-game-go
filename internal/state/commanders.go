@@ -249,6 +249,9 @@ func (s *GameState) SyncCommanderAvailability() []*army.Commander {
 			if template == nil || !template.ActiveInYear(s.Year) {
 				continue
 			}
+			if s.DismissedCommanderIDs[template.ID] {
+				continue
+			}
 			if _, exists := s.Commanders[template.ID]; exists {
 				continue
 			}
@@ -446,6 +449,9 @@ func (s *GameState) nextCommanderTemplate(ownerID string) *army.Commander {
 		if template == nil || template.ID == "" || !template.ActiveInYear(s.Year) {
 			continue
 		}
+		if s.DismissedCommanderIDs[template.ID] {
+			continue
+		}
 		if _, exists := s.Commanders[template.ID]; !exists {
 			return template
 		}
@@ -575,5 +581,73 @@ func (s *GameState) UnassignCommanderFromArmy(armyID army.ArmyID) bool {
 	}
 	currentArmy.Commander.AssignedArmyID = ""
 	currentArmy.Commander = nil
+	return true
+}
+
+// DismissCommander komutanı atanmış olduğu ordudan ayırır ve canonical
+// komutan havuzundan siler. Senaryo şablonları tekrar otomatik eklenmesin diye
+// görevden alınan şablon ID'si ayrıca save state'inde tutulur; AI fallback'leri
+// ise ihtiyaç oluştuğunda normal üretim akışıyla yeniden oluşturulabilir.
+func (s *GameState) DismissCommander(commanderID string) bool {
+	if s == nil || commanderID == "" || s.Commanders == nil {
+		return false
+	}
+	commander := s.Commanders[commanderID]
+	if commander == nil {
+		return false
+	}
+	for _, currentArmy := range s.Armies {
+		if currentArmy == nil {
+			continue
+		}
+		if currentArmy.Commander == commander || (currentArmy.Commander != nil && currentArmy.Commander.ID == commanderID) {
+			currentArmy.Commander = nil
+		}
+		if currentArmy.EmbarkedCommander == commander || (currentArmy.EmbarkedCommander != nil && currentArmy.EmbarkedCommander.ID == commanderID) {
+			currentArmy.EmbarkedCommander = nil
+		}
+	}
+	commander.AssignedArmyID = ""
+	delete(s.Commanders, commanderID)
+	if s.isTemplateCommander(commander.OwnerID, commanderID) {
+		if s.DismissedCommanderIDs == nil {
+			s.DismissedCommanderIDs = make(map[string]bool)
+		}
+		s.DismissedCommanderIDs[commanderID] = true
+	}
+	return true
+}
+
+// IsGeneratedCommander, senaryo şablonundan gelmeyen runtime komutanlarını
+// ayırt eder. AI'nin ihtiyaç oldukça ürettiği "Commander" fallback'leri bu
+// gruba girer; oyuncunun sonradan aldığı komutanlar da aynı kalıcı profil
+// düzenleme yolunu kullanır.
+func (s *GameState) IsGeneratedCommander(commanderID string) bool {
+	if s == nil || commanderID == "" || s.Commanders == nil {
+		return false
+	}
+	commander := s.Commanders[commanderID]
+	return commander != nil && !s.isTemplateCommander(commander.OwnerID, commander.ID)
+}
+
+// UpdateCommanderProfile komutanın görünen adını ve portresini değiştirir.
+// Portre boş bırakılırsa eski save'lerle uyumlu varsayılan portre kullanılır.
+func (s *GameState) UpdateCommanderProfile(commanderID, name, portraitAsset string) bool {
+	if s == nil || commanderID == "" || s.Commanders == nil {
+		return false
+	}
+	commander := s.Commanders[commanderID]
+	if commander == nil {
+		return false
+	}
+	name = strings.TrimSpace(name)
+	if name == "" || len([]rune(name)) > PlayerCommanderMaxNameRunes {
+		return false
+	}
+	commander.Name = name
+	commander.PortraitAsset = strings.TrimSpace(portraitAsset)
+	if commander.PortraitAsset == "" {
+		commander.PortraitAsset = army.DefaultPortraitAsset
+	}
 	return true
 }

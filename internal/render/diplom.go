@@ -1288,12 +1288,11 @@ func drawDiplomacyCloseButton(screen *ebiten.Image) {
 	drawDiplomacyButton(screen, buildDiplomacyCloseButton(), color.RGBA{45, 34, 25, 230}, panelBorder, FaceSmall, 6)
 }
 
-func drawDiplomacyButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, border color.Color, face *text.GoTextFace, textOffsetY float64) {
+func drawDiplomacyButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, border color.Color, face *text.GoTextFace, _ float64) {
 	style := menuButtonStyle
 	style.BG = bg
 	style.Border = color.RGBAModel.Convert(border).(color.RGBA)
 	style.Text = ColorWhite
-	style.TextOffsetY = textOffsetY
 	if face == FaceMed {
 		style.TextVariant = gameui.TextMedium
 	} else {
@@ -1307,7 +1306,6 @@ func diplomacyActionButtonStyle(bg color.RGBA, disabled, selected bool) gameui.B
 	style.BG = bg
 	style.Border = color.RGBA{108, 88, 52, 185}
 	style.Text = ColorWhite
-	style.TextOffsetY = 7
 	style.TextVariant = gameui.TextMedium
 	if selected && !disabled {
 		style.Border = color.RGBA{242, 198, 82, 255}

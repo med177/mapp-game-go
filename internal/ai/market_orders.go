@@ -122,7 +122,7 @@ func aiStrategicResourceDemand(gs *state.GameState, fid faction.FactionID, ctx *
 		demand = aiMaxResourceCost(demand, candidate.Cost)
 	}
 	if selfManpower := gs.DeployedLandUnits(fid) + aiPendingLandUnitCount(gs, fid); aiNeedsBarracksForMilitaryProduction(gs, fid, ctx, gs.ManpowerCap(fid)-selfManpower) {
-		demand = aiMaxResourceCost(demand, aiBarracksResourceCost(gs))
+		demand = aiMaxResourceCost(demand, aiBarracksResourceCost(gs, fid))
 	}
 	if gs.UnitTypes != nil {
 		if warshipType := gs.UnitTypes["warship"]; warshipType != nil && warshipType.HasAllRequiredTechs(self.Research.Completed) && (len(ctx.NavalThreats) > 0 || len(ctx.ThreatenedPortIDs) > 0) {

@@ -239,6 +239,7 @@ type Renderer struct {
 	commanderPanelFocus      int
 	commanderPanelScroll     int
 	showCommanderRecruit     bool
+	commanderEditID          string
 	commanderRecruitName     gameui.TextBox
 	commanderRecruitError    string
 	commanderRecruitPortrait string

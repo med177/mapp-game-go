@@ -2,8 +2,10 @@ package economy
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
+	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 )
 
@@ -15,6 +17,38 @@ type ResourceCost struct {
 	Stone  int
 	Spice  int
 	Cloth  int
+}
+
+// BuildingCostAtLevel, JSON'daki bina maliyetini hedef seviyeye göre bileşik
+// olarak artırır. Seviye 1 her zaman taban maliyettir; eksik veya 1'in altındaki
+// çarpanlar loader tarafından 1.0'a normalize edilir.
+func BuildingCostAtLevel(building *city.Building, level int) ResourceCost {
+	if building == nil {
+		return ResourceCost{}
+	}
+	if level < 1 {
+		level = 1
+	}
+	multiplier := building.UpgradeCostMultiplier
+	if multiplier < 1.0 {
+		multiplier = 1.0
+	}
+	factor := math.Pow(multiplier, float64(level-1))
+	scale := func(base int) int {
+		if base <= 0 {
+			return 0
+		}
+		return int(math.Round(float64(base) * factor))
+	}
+	return ResourceCost{
+		Gold:   scale(building.GoldCost),
+		Grain:  scale(building.GrainCost),
+		Iron:   scale(building.IronCost),
+		Timber: scale(building.TimberCost),
+		Stone:  scale(building.StoneCost),
+		Spice:  scale(building.SpiceCost),
+		Cloth:  scale(building.ClothCost),
+	}
 }
 
 func (c ResourceCost) Amount(kind ResourceKind) int {

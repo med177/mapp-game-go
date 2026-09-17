@@ -13,7 +13,6 @@ var menuButtonStyle = gameui.ButtonStyle{
 	DisabledBG:     color.RGBA{22, 20, 16, 180},
 	DisabledBorder: color.RGBA{45, 38, 25, 160},
 	DisabledText:   color.RGBA{90, 82, 60, 180},
-	TextOffsetY:    8,
 	BorderWidth:    1,
 }
 
@@ -24,7 +23,6 @@ var tinyButtonStyle = gameui.ButtonStyle{
 	DisabledBG:     color.RGBA{18, 16, 12, 180},
 	DisabledBorder: color.RGBA{45, 38, 25, 160},
 	DisabledText:   color.RGBA{85, 78, 62, 190},
-	TextOffsetY:    2,
 	BorderWidth:    1,
 }
 
@@ -35,7 +33,6 @@ var dangerTinyButtonStyle = gameui.ButtonStyle{
 	DisabledBG:     color.RGBA{65, 28, 25, 180},
 	DisabledBorder: color.RGBA{110, 55, 50, 170},
 	DisabledText:   color.RGBA{170, 125, 120, 190},
-	TextOffsetY:    0,
 	BorderWidth:    1,
 }
 
@@ -46,10 +43,8 @@ var transportInfoButtonStyle = gameui.ButtonStyle{
 	DisabledBG:     color.RGBA{28, 24, 18, 180},
 	DisabledBorder: color.RGBA{70, 58, 38, 160},
 	DisabledText:   color.RGBA{125, 112, 88, 180},
-	// Sıfır offset, gameui.Button'ın ortak dikey merkezleme hesabını kullanır.
-	TextOffsetY: 0,
-	TextVariant: gameui.TextSmall,
-	BorderWidth: 1,
+	TextVariant:    gameui.TextSmall,
+	BorderWidth:    1,
 }
 
 var slotMiniButtonStyle = gameui.ButtonStyle{
@@ -59,7 +54,6 @@ var slotMiniButtonStyle = gameui.ButtonStyle{
 	DisabledBG:     color.RGBA{24, 24, 24, 180},
 	DisabledBorder: color.RGBA{45, 38, 25, 160},
 	DisabledText:   color.RGBA{120, 120, 120, 180},
-	TextOffsetY:    5,
 	BorderWidth:    1,
 }
 
@@ -70,7 +64,6 @@ var transportInfoButtonLoadedStyle = gameui.ButtonStyle{
 	DisabledBG:     color.RGBA{24, 54, 31, 190},
 	DisabledBorder: color.RGBA{62, 106, 68, 180},
 	DisabledText:   color.RGBA{150, 190, 154, 190},
-	TextOffsetY:    0,
 	TextVariant:    gameui.TextSmall,
 	BorderWidth:    1,
 }
@@ -96,7 +89,6 @@ var applyTinyButtonStyle = gameui.ButtonStyle{
 	DisabledBG:     color.RGBA{24, 54, 31, 190},
 	DisabledBorder: color.RGBA{62, 106, 68, 180},
 	DisabledText:   color.RGBA{150, 190, 154, 190},
-	TextOffsetY:    2,
 	BorderWidth:    1,
 }
 
@@ -159,7 +151,6 @@ func mapModeButtonStyle(active bool) gameui.ButtonStyle {
 		DisabledBG:     fill,
 		DisabledBorder: color.RGBA{120, 96, 54, 210},
 		DisabledText:   txt,
-		TextOffsetY:    6,
 		BorderWidth:    1,
 	}
 }
@@ -171,7 +162,6 @@ var dateMenuButtonStyle = gameui.ButtonStyle{
 	DisabledBG:     color.RGBA{45, 38, 28, 230},
 	DisabledBorder: panelBorder,
 	DisabledText:   ColorWhite,
-	TextOffsetY:    8,
 	BorderWidth:    1.5,
 }
 
@@ -183,16 +173,14 @@ func eventLogButtonStyle(text color.RGBA) gameui.ButtonStyle {
 		DisabledBG:     color.RGBA{42, 34, 24, 220},
 		DisabledBorder: panelBorder,
 		DisabledText:   text,
-		TextOffsetY:    2,
 		BorderWidth:    1,
 	}
 }
 
-func solidButtonStyle(bg, border, text color.RGBA, textOffsetY float64) gameui.ButtonStyle {
+func solidButtonStyle(bg, border, text color.RGBA, _ ...float64) gameui.ButtonStyle {
 	style := menuButtonStyle
 	style.BG = bg
 	style.Border = border
 	style.Text = text
-	style.TextOffsetY = textOffsetY
 	return style
 }

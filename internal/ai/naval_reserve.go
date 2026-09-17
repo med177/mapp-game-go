@@ -54,7 +54,8 @@ func aiProduceNavalReserve(gs *state.GameState, fid faction.FactionID, budget *a
 		if current+queued >= requiredPortLevel || current+queued >= portType.MaxPerRegion {
 			continue
 		}
-		cost := aiBuildingResourceCost(portType)
+		targetLevel := current + queued + 1
+		cost := aiBuildingResourceCostAtLevel(portType, targetLevel)
 		if !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
 			return
 		}
@@ -111,7 +112,8 @@ func aiNavalReserveProcurementCost(gs *state.GameState, fid faction.FactionID, c
 			continue
 		}
 		if aiBuildingLevel(region, "port")+aiQueuedBuildingCount(gs, region.ID, "port", fid) < requiredPortLevel {
-			return aiBuildingResourceCost(portType)
+			level := aiBuildingLevel(region, "port") + aiQueuedBuildingCount(gs, region.ID, "port", fid) + 1
+			return aiBuildingResourceCostAtLevel(portType, level)
 		}
 	}
 	return economy.ResourceCost{}

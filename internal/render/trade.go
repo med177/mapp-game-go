@@ -758,7 +758,6 @@ func buildTradeAgreementButton(layout tradeLayout, enabled bool) gameui.Button {
 func tradeButtonStyle(active bool) gameui.ButtonStyle {
 	style := menuButtonStyle
 	style.Text = ColorWhite
-	style.TextOffsetY = 0
 	if active {
 		style.BG = color.RGBA{55, 45, 25, 230}
 	} else {
@@ -788,7 +787,6 @@ func drawTradeActionButton(screen *ebiten.Image, btn gameui.Button, bg, border c
 	style.BG = bg
 	style.Border = border
 	style.Text = ColorWhite
-	style.TextOffsetY = 0
 	drawUIButtonWidget(screen, btn, style)
 }
 
@@ -804,7 +802,6 @@ func drawTradeEmergencyButton(screen *ebiten.Image, btn gameui.Button) {
 
 func drawTradeChoiceButton(screen *ebiten.Image, btn gameui.Button, active bool, activeBG color.RGBA) {
 	style := tradeButtonStyle(true)
-	style.TextOffsetY = 0
 	style.BG = color.RGBA{26, 24, 21, 220}
 	if active {
 		style.BG = activeBG

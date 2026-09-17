@@ -687,6 +687,13 @@ func aiEnqueueProduction(gs *state.GameState, fid faction.FactionID, kind string
 		TypeID:    typeID,
 		TurnsLeft: turns,
 	}
+	if kind == aiProductionKindBuilding {
+		level := 0
+		if region := gs.Regions[rid]; region != nil {
+			level = aiBuildingLevel(region, typeID)
+		}
+		order.BuildingLevel = level + aiQueuedBuildingCount(gs, rid, typeID, fid) + 1
+	}
 	gs.ProductionQueue = append(gs.ProductionQueue, order)
 	return order
 }
@@ -2370,15 +2377,8 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 	// Liman inşası (en az bir liman olsun)
 	for _, r := range coastalRegions {
 		queued := aiQueuedBuildingCount(gs, r.ID, "port", fid)
-		portCost := economy.ResourceCost{
-			Gold:   portType.GoldCost,
-			Grain:  portType.GrainCost,
-			Iron:   portType.IronCost,
-			Timber: portType.TimberCost,
-			Stone:  portType.StoneCost,
-			Spice:  portType.SpiceCost,
-			Cloth:  portType.ClothCost,
-		}
+		targetLevel := aiBuildingLevel(r, "port") + queued + 1
+		portCost := aiBuildingResourceCostAtLevel(portType, targetLevel)
 		if aiBuildingLevel(r, "port")+queued < portType.MaxPerRegion &&
 			aiBuildingAllowed(gs, r, "port", portType.RequiredTerrain) &&
 			aiCanAffordForBudget(f, portCost, budget, aiBudgetNaval) {
@@ -2539,7 +2539,8 @@ func aiProduceNavalDefenseAtThreatenedPort(gs *state.GameState, fid faction.Fact
 		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, threatenedPort, "port", portType.RequiredTerrain) {
 			return
 		}
-		cost := aiBuildingResourceCost(portType)
+		targetLevel := currentPortLevel + queuedPortLevels + 1
+		cost := aiBuildingResourceCostAtLevel(portType, targetLevel)
 		if !aiApplyBudgetedCost(self, cost, budget, aiBudgetNaval) {
 			return
 		}

@@ -14,22 +14,21 @@ type ButtonStyle struct {
 	DisabledBG     color.RGBA
 	DisabledBorder color.RGBA
 	DisabledText   color.RGBA
-	TextOffsetY    float64
 	TextVariant    TextVariant
 	BorderWidth    float32
 }
 
 type Button struct {
-	X       float64
-	Y       float64
-	W       float64
-	H       float64
-	Label   string
-	Icon    IconID
-	IconGap float64
+	X        float64
+	Y        float64
+	W        float64
+	H        float64
+	Label    string
+	Icon     IconID
+	IconGap  float64
 	IconSize float64
-	Enabled bool
-	Focused bool
+	Enabled  bool
+	Focused  bool
 }
 
 func NewButton(x, y, w, h float64, label string) Button {
@@ -127,9 +126,8 @@ func buttonIconSize(b Button) float64 {
 }
 
 func buttonTextY(b Button, style ButtonStyle) float64 {
-	if style.TextOffsetY > 0 {
-		return b.Y + style.TextOffsetY
-	}
+	// Button etiketleri, ikonlar gibi her zaman buton kutusunun dikey merkezine
+	// göre çizilir.
 	textH := buttonTextHeight(style.TextVariant)
 	return b.Y + (b.H-textH)/2
 }

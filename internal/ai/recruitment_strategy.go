@@ -28,7 +28,7 @@ func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid fact
 	}
 	reserveShortfall := aiLandReserveShortfall(gs, fid, strategicContext)
 	deployed := gs.DeployedLandUnits(fid) + aiPendingLandUnitCount(gs, fid)
-	barracksCost := aiBarracksResourceCost(gs)
+	barracksCost := aiBarracksResourceCost(gs, fid)
 	if aiNeedsBarracksForMilitaryProduction(gs, fid, strategicContext, gs.ManpowerCap(fid)-deployed) && aiCanAffordForBudget(f, barracksCost, budget, aiBudgetArmy) {
 		aiBuildBarracksWithBudgetAndSteps(gs, fid, barracksCost, budget, steps)
 	}
@@ -43,11 +43,22 @@ func aiRecruitAndBuildWithStrategicContextAndSteps(gs *state.GameState, fid fact
 	}
 }
 
-func aiBarracksResourceCost(gs *state.GameState) economy.ResourceCost {
+func aiBarracksResourceCost(gs *state.GameState, fid faction.FactionID) economy.ResourceCost {
 	if gs == nil || gs.BuildingTypes == nil {
 		return economy.ResourceCost{Gold: 150}
 	}
 	if btype := gs.BuildingTypes["barracks"]; btype != nil {
+		for _, region := range aiSortedRegions(gs) {
+			if region == nil || region.IsSea || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
+				continue
+			}
+			queued := aiQueuedBuildingCount(gs, region.ID, "barracks", fid)
+			level := aiBuildingLevel(region, "barracks")
+			if btype.MaxPerRegion > 0 && level+queued >= btype.MaxPerRegion || !aiBuildingAllowed(gs, region, "barracks", btype.RequiredTerrain) {
+				continue
+			}
+			return aiBuildingResourceCostAtLevel(btype, level+queued+1)
+		}
 		return aiBuildingResourceCost(btype)
 	}
 	return economy.ResourceCost{Gold: 150}
@@ -165,7 +176,7 @@ func aiBuildBarracksWithSteps(gs *state.GameState, fid faction.FactionID, cost e
 	aiBuildBarracksWithBudgetAndSteps(gs, fid, cost, nil, steps)
 }
 
-func aiBuildBarracksWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, cost economy.ResourceCost, budget *aiBudget, steps *[]TurnStep) {
+func aiBuildBarracksWithBudgetAndSteps(gs *state.GameState, fid faction.FactionID, _ economy.ResourceCost, budget *aiBudget, steps *[]TurnStep) {
 	f := gs.Factions[fid]
 	btype := gs.BuildingTypes["barracks"]
 	if btype == nil {
@@ -179,9 +190,11 @@ func aiBuildBarracksWithBudgetAndSteps(gs *state.GameState, fid faction.FactionI
 		if aiBuildingLevel(r, "barracks")+queued >= btype.MaxPerRegion || !aiBuildingAllowed(gs, r, "barracks", btype.RequiredTerrain) {
 			continue
 		}
+		targetLevel := aiBuildingLevel(r, "barracks") + queued + 1
+		levelCost := aiBuildingResourceCostAtLevel(btype, targetLevel)
 		if budget == nil {
-			cost.Apply(f)
-		} else if !aiApplyBudgetedCost(f, cost, budget, aiBudgetArmy) {
+			levelCost.Apply(f)
+		} else if !aiApplyBudgetedCost(f, levelCost, budget, aiBudgetArmy) {
 			return
 		}
 		turns := aiBuildingTurnsRequired(r, "barracks", btype.TurnsRequired, queued)

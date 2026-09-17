@@ -95,6 +95,8 @@ const (
 	ActionMergeArmies               ActionKind = "merge_armies"     // ArmyID'yi TargetArmyID ile birleştir
 	ActionAssignCommander           ActionKind = "assign_commander"
 	ActionRecruitCommander          ActionKind = "recruit_commander"
+	ActionEditCommander             ActionKind = "edit_commander"
+	ActionDismissCommander          ActionKind = "dismiss_commander"
 	ActionUnassignCommander         ActionKind = "unassign_commander"
 	ActionUnassignEmbarkedCommander ActionKind = "unassign_embarked_commander"
 	ActionSelectScenario            ActionKind = "select_scenario"                // BuildingID = senaryo klasör yolu

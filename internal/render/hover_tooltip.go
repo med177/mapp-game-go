@@ -252,7 +252,7 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 		return
 	}
 
-	costLines := buildingCostRequirementLines(gs, b)
+	costLines := buildingCostRequirementLines(gs, region, b)
 	reqLines, reqMissing := buildingRequirementLines(region, b)
 	effectLines := buildingEffectLines(b)
 	effectLines = append(effectLines, buildingLandCapacityEffectLines(gs, region, b)...)
@@ -318,30 +318,30 @@ func buildingAvailabilityStatus(gs *state.GameState, region *world.Region, b *ci
 	if reqMissing {
 		return "Gereksinim eksik", ColorRed
 	}
-	if !buildingCost(gs, b).CanAfford(gs.Factions[gs.PlayerFactionID]) {
+	if !buildingCost(gs, region, b).CanAfford(gs.Factions[gs.PlayerFactionID]) {
 		return "Kaynak yetersiz", ColorRed
 	}
 	return "İnşa edilebilir", color.RGBA{120, 210, 120, 230}
 }
 
-func buildingCost(gs *state.GameState, b *city.Building) economy.ResourceCost {
-	_ = gs
+func buildingCost(gs *state.GameState, region *world.Region, b *city.Building) economy.ResourceCost {
 	if b == nil {
 		return economy.ResourceCost{}
 	}
-	return economy.ResourceCost{
-		Gold:   b.GoldCost,
-		Grain:  b.GrainCost,
-		Iron:   b.IronCost,
-		Timber: b.TimberCost,
-		Stone:  b.StoneCost,
-		Spice:  b.SpiceCost,
-		Cloth:  b.ClothCost,
+	targetLevel := 1
+	if region != nil {
+		targetLevel = region.BuildingLevel(b.ID) + 1
+		for _, order := range gs.ProductionQueue {
+			if order.Kind == "building" && order.RegionID == region.ID && order.TypeID == b.ID {
+				targetLevel++
+			}
+		}
 	}
+	return economy.BuildingCostAtLevel(b, targetLevel)
 }
 
-func buildingCostRequirementLines(gs *state.GameState, b *city.Building) []tooltipLine {
-	return resourceTooltipLines(gs, buildingCost(gs, b))
+func buildingCostRequirementLines(gs *state.GameState, region *world.Region, b *city.Building) []tooltipLine {
+	return resourceTooltipLines(gs, buildingCost(gs, region, b))
 }
 
 func buildingRequirementLines(region *world.Region, b *city.Building) ([]tooltipLine, bool) {
