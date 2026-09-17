@@ -197,7 +197,7 @@ func commanderPanelUnassignEmbarkedButton(gs *state.GameState, aid army.ArmyID) 
 
 func commanderPanelRecruitButton(gs *state.GameState) gameui.Button {
 	panel := commanderPanelRect()
-	button := gameui.NewButton(panel.X+panel.W-130, panel.Y+58, 132, 28, "Yeni Komutan").WithIcon(gameui.IconPlus)
+	button := gameui.NewButton(panel.X+panel.W-156, panel.Y+58, 132, 28, "Yeni Komutan").WithIcon(gameui.IconPlus)
 	button.Enabled = gs != nil && gs.CanAffordCommanderRecruitment(string(gs.PlayerFactionID))
 	return button
 }
