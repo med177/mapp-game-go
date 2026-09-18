@@ -9996,6 +9996,7 @@
       },
       "palatinate": {
         "owner_id": "hre",
+        "successor_faction_id": "hre",
         "settlements": [
           {
             "id": "palatinate_main",
@@ -10011,7 +10012,6 @@
             "x": 618,
             "y": 269,
             "type": "city",
-            "is_center": true,
             "population": 65
           },
           {
@@ -10021,6 +10021,15 @@
             "y": 288,
             "type": "fortress",
             "population": 16
+          },
+          {
+            "id": "palatinate_aachen",
+            "name_tr": "Aachen",
+            "x": 596,
+            "y": 271,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
           }
         ],
         "is_locked": false,
@@ -10030,7 +10039,11 @@
         "religion": "catholic",
         "active_event_id": "",
         "buildings": [
-          "walls"
+          "walls",
+          "barracks",
+          "granary",
+          "temple",
+          "market"
         ]
       },
       "palestine_acre": {
@@ -38186,7 +38199,7 @@
       },
       "hre": {
         "is_eliminated": false,
-        "capital_settlement_id": "westphalia_main",
+        "capital_settlement_id": "palatinate_aachen",
         "gold": 1318,
         "grain": 7636,
         "iron": 312,
@@ -39076,7 +39089,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39124,7 +39137,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39182,7 +39195,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39224,83 +39237,83 @@
             "experience": 0
           },
           {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "light_cavalry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39358,7 +39371,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39421,7 +39434,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39449,6 +39462,16 @@
         "units": [
           {
             "type_id": "cavalry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
           },
@@ -39496,20 +39519,10 @@
             "type_id": "militia",
             "current_hp": 90,
             "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39556,23 +39569,23 @@
             "experience": 0
           },
           {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false
@@ -39615,7 +39628,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false,
@@ -39633,7 +39646,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -39642,6 +39655,11 @@
         "owner_id": "brandenburg_margraviate",
         "region_id": "brandenburg",
         "units": [
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
           {
             "type_id": "infantry",
             "current_hp": 90,
@@ -39678,18 +39696,13 @@
             "experience": 0
           },
           {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39732,7 +39745,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39836,7 +39849,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39869,6 +39882,11 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
@@ -39885,17 +39903,12 @@
           },
           {
             "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -39983,6 +39996,36 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
@@ -40004,42 +40047,12 @@
           },
           {
             "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -40067,17 +40080,27 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 81,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 81,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 81,
+            "experience": 0
+          },
+          {
             "type_id": "cavalry",
             "current_hp": 81,
             "experience": 0
           },
           {
-            "type_id": "infantry",
-            "current_hp": 81,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
+            "type_id": "light_cavalry",
             "current_hp": 81,
             "experience": 0
           },
@@ -40093,16 +40116,6 @@
           },
           {
             "type_id": "militia",
-            "current_hp": 81,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 81,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
             "current_hp": 81,
             "experience": 0
           },
@@ -40118,7 +40131,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false,
@@ -40136,7 +40149,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -40208,7 +40221,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 62,
         "in_ambush": false
@@ -40286,7 +40299,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -40330,7 +40343,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -40358,7 +40371,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -40431,7 +40444,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -40470,7 +40483,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -40486,7 +40499,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -40502,7 +40515,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -40569,7 +40582,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -40632,7 +40645,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 70,
         "commander": {
@@ -40680,7 +40693,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 93,
         "commander": {
@@ -40743,7 +40756,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false
@@ -40826,7 +40839,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false,
@@ -40884,7 +40897,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -40983,7 +40996,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -41037,7 +41050,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -41181,7 +41194,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": true,
         "morale": 58,
         "in_ambush": false
@@ -41228,7 +41241,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 65,
         "commander": {
@@ -41273,7 +41286,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": true,
         "morale": 65,
         "commander": {
@@ -41332,7 +41345,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": true,
         "morale": 100,
         "commander": {
@@ -41430,7 +41443,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 93,
         "commander": {
@@ -41498,7 +41511,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false
@@ -41519,43 +41532,43 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           },
           {
             "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -41700,12 +41713,12 @@
             "experience": 0
           },
           {
-            "type_id": "militia",
+            "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
           },
           {
-            "type_id": "militia",
+            "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
           },
@@ -41716,6 +41729,36 @@
           },
           {
             "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           },
@@ -41725,37 +41768,7 @@
             "experience": 0
           },
           {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "light_cavalry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           },
@@ -41771,7 +41784,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -41845,7 +41858,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -41888,6 +41901,36 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
@@ -41901,40 +41944,10 @@
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false
@@ -42001,7 +42014,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -42110,7 +42123,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -42139,7 +42152,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -42165,6 +42178,21 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 63,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 63,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 63,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 63,
             "experience": 0
@@ -42185,21 +42213,6 @@
             "experience": 0
           },
           {
-            "type_id": "infantry",
-            "current_hp": 63,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 63,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 63,
-            "experience": 0
-          },
-          {
             "type_id": "light_cavalry",
             "current_hp": 61,
             "experience": 0
@@ -42216,7 +42229,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -42285,7 +42298,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "is_garrison": true,
         "morale": 100,
@@ -42347,6 +42360,26 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
@@ -42355,30 +42388,10 @@
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "is_garrison": true,
         "morale": 100,
@@ -42432,7 +42445,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "is_garrison": true,
         "morale": 100,
@@ -42457,7 +42470,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "is_garrison": true,
         "morale": 100,
@@ -42480,7 +42493,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "is_garrison": true,
         "morale": 100,
@@ -42578,7 +42591,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -42636,7 +42649,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false
@@ -42673,7 +42686,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -42802,7 +42815,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false,
@@ -42851,7 +42864,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false,
@@ -42869,7 +42882,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 4,
         "is_naval": false,
         "in_ambush": false
       },
@@ -42905,6 +42918,31 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 70,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 70,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 70,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 70,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 70,
+            "experience": 0
+          },
+          {
             "type_id": "infantry",
             "current_hp": 70,
             "experience": 0
@@ -42916,37 +42954,12 @@
           },
           {
             "type_id": "infantry",
-            "current_hp": 70,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 70,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 70,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 70,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 70,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 70,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -42988,6 +43001,11 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
@@ -43004,17 +43022,12 @@
           },
           {
             "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43047,7 +43060,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43095,7 +43108,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43128,7 +43141,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -43175,7 +43188,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43305,7 +43318,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43334,6 +43347,21 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "cavalry",
             "current_hp": 90,
             "experience": 0
@@ -43356,21 +43384,6 @@
           {
             "type_id": "militia",
             "current_hp": 80,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
             "experience": 0
           },
           {
@@ -43405,7 +43418,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43427,6 +43440,16 @@
         "region_id": "urmiye",
         "previous_region_id": "azerbaijan",
         "units": [
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
           {
             "type_id": "infantry",
             "current_hp": 90,
@@ -43468,16 +43491,6 @@
             "experience": 0
           },
           {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "militia",
             "current_hp": 90,
             "experience": 0
@@ -43489,7 +43502,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43528,7 +43541,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43615,7 +43628,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -43631,7 +43644,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -43647,7 +43660,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -43663,7 +43676,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -43679,7 +43692,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -43705,7 +43718,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43774,7 +43787,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -43903,7 +43916,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44027,7 +44040,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44060,7 +44073,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -44085,6 +44098,21 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
@@ -44101,27 +44129,12 @@
           },
           {
             "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false
@@ -44138,7 +44151,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -44154,7 +44167,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -44180,47 +44193,47 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           },
@@ -44231,7 +44244,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44352,7 +44365,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44411,7 +44424,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44453,6 +44466,16 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "cavalry",
             "current_hp": 90,
             "experience": 0
@@ -44473,32 +44496,22 @@
             "experience": 0
           },
           {
-            "type_id": "light_cavalry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "light_cavalry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
           },
           {
             "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
           },
@@ -44509,7 +44522,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44537,7 +44550,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -44553,7 +44566,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -44579,7 +44592,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 96,
         "commander": {
@@ -44627,7 +44640,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false
@@ -44700,7 +44713,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44730,6 +44743,16 @@
           },
           {
             "type_id": "militia",
+            "current_hp": 72,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 72,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
             "current_hp": 71,
             "experience": 0
           },
@@ -44737,20 +44760,10 @@
             "type_id": "militia",
             "current_hp": 69,
             "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 72,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 72,
-            "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44780,7 +44793,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44880,7 +44893,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -44952,22 +44965,22 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
           },
           {
             "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           },
@@ -44983,7 +44996,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45011,7 +45024,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": false,
         "in_ambush": false
       },
@@ -45062,7 +45075,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45090,6 +45103,16 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "militia",
             "current_hp": 90,
             "experience": 0
@@ -45100,12 +45123,7 @@
             "experience": 0
           },
           {
-            "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
+            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           },
@@ -45113,15 +45131,10 @@
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45189,6 +45202,16 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "cavalry",
             "current_hp": 90,
             "experience": 0
@@ -45209,23 +45232,13 @@
             "experience": 0
           },
           {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45278,7 +45291,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45320,27 +45333,27 @@
             "experience": 0
           },
           {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           },
@@ -45351,7 +45364,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45388,6 +45401,26 @@
             "experience": 0
           },
           {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
+            "type_id": "militia",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "infantry",
             "current_hp": 90,
             "experience": 0
@@ -45403,33 +45436,13 @@
             "experience": 0
           },
           {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
             "type_id": "light_cavalry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "militia",
             "current_hp": 90,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45553,7 +45566,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45598,7 +45611,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false,
@@ -45617,7 +45630,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false,
@@ -45645,7 +45658,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 99,
         "in_ambush": false
@@ -45672,7 +45685,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 95,
         "commander": {
@@ -45725,7 +45738,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45762,6 +45775,11 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
@@ -45773,17 +45791,12 @@
           },
           {
             "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "in_ambush": false
@@ -45880,7 +45893,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -45938,7 +45951,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -46052,7 +46065,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 93,
         "commander": {
@@ -46090,7 +46103,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 93,
         "commander": {
@@ -46154,7 +46167,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -46187,7 +46200,7 @@
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -46224,6 +46237,11 @@
             "experience": 0
           },
           {
+            "type_id": "infantry",
+            "current_hp": 90,
+            "experience": 0
+          },
+          {
             "type_id": "light_cavalry",
             "current_hp": 90,
             "experience": 0
@@ -46240,17 +46258,12 @@
           },
           {
             "type_id": "infantry",
-            "current_hp": 90,
-            "experience": 0
-          },
-          {
-            "type_id": "infantry",
             "current_hp": 100,
             "experience": 0
           }
         ],
         "move_points": 1,
-        "max_move_points": 1,
+        "max_move_points": 2,
         "is_naval": false,
         "morale": 100,
         "commander": {
@@ -46304,7 +46317,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 5,
         "is_naval": true,
         "morale": 100,
         "commander": {
@@ -46337,17 +46350,17 @@
             "experience": 0
           },
           {
-            "type_id": "warship",
-            "current_hp": 81,
-            "experience": 0
-          },
-          {
-            "type_id": "warship",
-            "current_hp": 81,
-            "experience": 0
-          },
-          {
             "type_id": "transport",
+            "current_hp": 81,
+            "experience": 0
+          },
+          {
+            "type_id": "warship",
+            "current_hp": 81,
+            "experience": 0
+          },
+          {
+            "type_id": "warship",
             "current_hp": 81,
             "experience": 0
           },
@@ -46358,7 +46371,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 4,
         "is_naval": true,
         "morale": 100,
         "commander": {
@@ -46392,7 +46405,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 4,
         "is_naval": true,
         "morale": 100,
         "commander": {
@@ -46431,7 +46444,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 5,
         "is_naval": true,
         "morale": 100,
         "commander": {
@@ -46524,7 +46537,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": true,
         "morale": 100,
         "commander": {
@@ -46563,7 +46576,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 5,
         "is_naval": true,
         "morale": 100,
         "in_ambush": false,
@@ -46581,7 +46594,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 5,
         "is_naval": true,
         "morale": 100,
         "in_ambush": false
@@ -46603,7 +46616,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": true,
         "morale": 100,
         "in_ambush": false
@@ -46640,7 +46653,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": true,
         "morale": 70,
         "commander": {
@@ -46698,7 +46711,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 4,
         "is_naval": true,
         "morale": 100,
         "in_ambush": false
@@ -46715,7 +46728,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 4,
         "is_naval": true,
         "morale": 100,
         "in_ambush": false
@@ -46734,7 +46747,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 4,
         "is_naval": true,
         "in_ambush": false
       },
@@ -46765,7 +46778,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 4,
         "is_naval": true,
         "morale": 100,
         "commander": {
@@ -46894,7 +46907,7 @@
           }
         ],
         "move_points": 2,
-        "max_move_points": 2,
+        "max_move_points": 3,
         "is_naval": true,
         "morale": 93,
         "commander": {
@@ -46933,7 +46946,7 @@
           }
         ],
         "move_points": 3,
-        "max_move_points": 3,
+        "max_move_points": 4,
         "is_naval": true,
         "morale": 93,
         "in_ambush": false,
@@ -48471,20 +48484,20 @@
         "target_region_ids": [
           "morea"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 82,
         "reason": "morean_latin_survival profili: hold_morean_principality"
       },
       "ahiler": {
         "objective_id": "hold_sivrihisar_buffer",
         "kind": "defend",
-        "target_faction_id": "ottoman",
+        "target_faction_id": "germiyan_bey",
         "target_region_ids": [
           "sivrihisar"
         ],
-        "started_turn": 8,
-        "reassess_turn": 8,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "central_buffer_survival profili: hold_sivrihisar_buffer"
       },
@@ -48497,8 +48510,8 @@
           "catalonia",
           "sicily"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 76,
         "reason": "crown_of_aragon_maritime profili: hold_catalan_and_island_crown"
       },
@@ -48509,8 +48522,8 @@
         "target_region_ids": [
           "albania"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 80,
         "reason": "albanian_mountain_survival profili: hold_albanian_mountains"
       },
@@ -48521,8 +48534,8 @@
         "target_region_ids": [
           "greece"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 76,
         "reason": "aegean_city_state_survival profili: hold_athens_coast"
       },
@@ -48533,8 +48546,8 @@
         "target_region_ids": [
           "austria"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "austrian_imperial_frontier profili: hold_austrian_core"
       },
@@ -48545,8 +48558,8 @@
         "target_region_ids": [
           "saruhan"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 62,
         "allow_vassalization": true,
         "reason": "aegean_maritime_competition profili: contest_saruhan_coast"
@@ -48558,8 +48571,8 @@
         "target_region_ids": [
           "cyrenaica"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "barqa_survival profili: hold_barqa_coast"
       },
@@ -48570,8 +48583,8 @@
         "target_region_ids": [
           "bavaria"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 70,
         "reason": "bavarian_imperial_principality profili: hold_bavarian_core"
       },
@@ -48582,8 +48595,8 @@
         "target_region_ids": [
           "bohemia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 74,
         "reason": "bohemian_imperial_electorate profili: hold_bohemian_core"
       },
@@ -48594,8 +48607,8 @@
         "target_region_ids": [
           "bosnia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 82,
         "reason": "bosnian_border_survival profili: hold_bosnian_banate"
       },
@@ -48606,38 +48619,37 @@
         "target_region_ids": [
           "brandenburg"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 66,
         "reason": "brandenburg_eastern_march profili: hold_brandenburg_march"
       },
       "bulgarian_empire": {
-        "objective_id": "hold_danube_balkan_line",
-        "kind": "defend",
+        "objective_id": "secure_lower_danube",
+        "kind": "expand",
         "target_faction_id": "wallachia_prince",
         "target_region_ids": [
-          "bulgaria",
-          "dobruja",
-          "vidin"
+          "oltenia",
+          "wallachia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 80,
-        "reason": "danubian_balkan_defense profili: hold_danube_balkan_line"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "commitment": 52,
+        "allow_vassalization": true,
+        "reason": "danubian_balkan_defense profili: secure_lower_danube"
       },
       "candar_bey": {
-        "objective_id": "hold_sinop_paphlagonia",
-        "kind": "defend",
-        "target_faction_id": "ottoman",
+        "objective_id": "control_pontic_corridor",
+        "kind": "expand",
+        "target_faction_id": "ilkhanate",
         "target_region_ids": [
-          "candaroglu",
-          "paphlagonia",
-          "sinop"
+          "eretna"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 70,
-        "reason": "black_sea_frontier profili: hold_sinop_paphlagonia"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "commitment": 58,
+        "allow_vassalization": true,
+        "reason": "black_sea_frontier profili: control_pontic_corridor"
       },
       "carniola_margraviate": {
         "objective_id": "hold_carniola_passes",
@@ -48646,8 +48658,8 @@
         "target_region_ids": [
           "slovenia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 76,
         "reason": "carniolan_imperial_buffer profili: hold_carniola_passes"
       },
@@ -48660,8 +48672,8 @@
           "toledo",
           "sevilla"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "toledan_reconquista_frontier profili: hold_toledo_frontier"
       },
@@ -48675,8 +48687,8 @@
           "hum",
           "kvarner"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "subic_adriatic_frontier profili: hold_croatian_and_hum_core"
       },
@@ -48686,8 +48698,8 @@
         "target_region_ids": [
           "cyprus"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 50,
         "reason": "senaryo objective'i tamamlandı veya zaman/event bekliyor"
       },
@@ -48699,8 +48711,8 @@
           "denmark",
           "scania"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "danish_sound_and_union profili: hold_sound_and_scania"
       },
@@ -48714,8 +48726,8 @@
           "nicomedia",
           "thrace"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 76,
         "reason": "defensive_decline profili: hold_bosporus"
       },
@@ -48725,8 +48737,8 @@
         "target_region_ids": [
           "aquitaine"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 50,
         "reason": "senaryo objective'i tamamlandı veya zaman/event bekliyor"
       },
@@ -48737,8 +48749,8 @@
         "target_region_ids": [
           "epirus"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 76,
         "reason": "epirus_survival profili: hold_epirus_thessaly"
       },
@@ -48750,8 +48762,8 @@
           "flanders",
           "walonia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 68,
         "reason": "vassal_trade_defense profili: hold_flanders_trade"
       },
@@ -48763,8 +48775,8 @@
           "florence",
           "siena"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 76,
         "reason": "tuscan_republican_trade profili: hold_tuscan_republics"
       },
@@ -48781,8 +48793,8 @@
           "provence",
           "toulouse"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 50,
         "reason": "senaryo objective'i tamamlandı veya zaman/event bekliyor"
       },
@@ -48795,8 +48807,8 @@
           "crimea",
           "genoa"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 70,
         "reason": "western_merchant_network profili: protect_ligurian_and_black_sea_trade"
       },
@@ -48807,8 +48819,8 @@
         "target_region_ids": [
           "georgia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 82,
         "reason": "caucasian_mountain_restoration profili: hold_georgian_mountain_core"
       },
@@ -48820,8 +48832,8 @@
           "hamideli",
           "teke"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 58,
         "allow_vassalization": true,
         "reason": "western_anatolian_rival profili: contest_hamid_frontier"
@@ -48834,8 +48846,8 @@
           "moscow",
           "north_caucasus"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 72,
         "reason": "steppe_hegemony profili: press_rus_steppe"
       },
@@ -48847,8 +48859,8 @@
           "granada",
           "murcia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 84,
         "reason": "nasrid_andalusian_survival profili: hold_andalusian_emirate"
       },
@@ -48859,8 +48871,8 @@
         "target_region_ids": [
           "cyrenaica"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 48,
         "reason": "ifriqiya_coastal_sultanate profili: restore_tripolitanian_influence"
       },
@@ -48872,8 +48884,8 @@
           "mentese",
           "mentese_hinterland"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 56,
         "allow_vassalization": true,
         "reason": "taurus_frontier_competition profili: secure_mentese_passes"
@@ -48886,8 +48898,8 @@
           "bahrain",
           "qatar"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 50,
         "reason": "gulf_maritime_hegemony profili: secure_lower_gulf_trade"
       },
@@ -48898,8 +48910,8 @@
         "target_region_ids": [
           "cyprus"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 42,
         "allow_vassalization": true,
         "reason": "rhodes_knightly_fortress profili: contest_eastern_mediterranean_islands"
@@ -48911,8 +48923,8 @@
         "target_region_ids": [
           "milan"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 76,
         "reason": "imperial_central_europe profili: restore_imperial_authority_in_italy_1311"
       },
@@ -48925,51 +48937,52 @@
           "slovakia",
           "transylvania"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 80,
         "reason": "danubian_royal_frontier profili: hold_hungarian_crownlands"
       },
       "ilkhanate": {
-        "objective_id": "hold_mesopotamia_persia_core",
-        "kind": "defend",
-        "target_faction_id": "georgia_kingdom",
+        "objective_id": "press_levant_frontier",
+        "kind": "expand",
+        "target_faction_id": "mamluk",
         "target_region_ids": [
-          "azerbaijan",
-          "baghdad",
-          "malatya",
-          "mosul"
+          "aleppo",
+          "damascus",
+          "jordan"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 84,
-        "reason": "eastern_imperial_frontier profili: hold_mesopotamia_persia_core"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "rally_region_id": "konya",
+        "rally_deadline_turn": 10,
+        "commitment": 70,
+        "reason": "eastern_imperial_frontier profili: press_levant_frontier"
       },
       "karaman_bey": {
-        "objective_id": "hold_karaman_core",
-        "kind": "defend",
-        "target_faction_id": "hamid_bey",
+        "objective_id": "press_cilician_frontier",
+        "kind": "expand",
+        "target_faction_id": "ramazan_bey",
         "target_region_ids": [
-          "karaman",
-          "kayseri",
-          "tasucu"
+          "cilicia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 78,
-        "reason": "central_anatolian_expansion profili: hold_karaman_core"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "commitment": 65,
+        "allow_vassalization": true,
+        "reason": "central_anatolian_expansion profili: press_cilician_frontier"
       },
       "karesioglu_bey": {
-        "objective_id": "hold_marmara_bridgehead",
-        "kind": "defend",
+        "objective_id": "contest_saruhan_interior",
+        "kind": "expand",
         "target_faction_id": "saruhan_bey",
         "target_region_ids": [
-          "karesi"
+          "saruhan"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 78,
-        "reason": "marmara_buffer_survival profili: hold_marmara_bridgehead"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "commitment": 52,
+        "allow_vassalization": true,
+        "reason": "marmara_buffer_survival profili: contest_saruhan_interior"
       },
       "leon_kingdom": {
         "objective_id": "hold_castilian_crownland",
@@ -48978,8 +48991,8 @@
         "target_region_ids": [
           "leon"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "leonese_iberian_frontier profili: hold_castilian_crownland"
       },
@@ -49008,8 +49021,8 @@
           "luxor",
           "raqqa"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 38,
         "reason": "senaryo objective'i tamamlandı veya zaman/event bekliyor"
       },
@@ -49021,8 +49034,8 @@
           "algiers",
           "central_algeria"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 58,
         "reason": "maghreb_dynastic_expansion profili: contest_tlemcen_frontier"
       },
@@ -49032,8 +49045,8 @@
         "target_region_ids": [
           "tebuk"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 25,
         "reason": "senaryo objective'i tamamlandı veya zaman/event bekliyor"
       },
@@ -49044,8 +49057,8 @@
         "target_region_ids": [
           "izmir"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 56,
         "allow_vassalization": true,
         "reason": "aegean_coastal_survival profili: contest_aydin_coast"
@@ -49057,8 +49070,8 @@
         "target_region_ids": [
           "milan"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "visconti_lombard_power profili: hold_lombard_core"
       },
@@ -49069,8 +49082,8 @@
         "target_region_ids": [
           "sicily"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 44,
         "allow_vassalization": true,
         "reason": "angevin_southern_italy profili: secure_sicilian_strait"
@@ -49082,8 +49095,8 @@
         "target_region_ids": [
           "navarra"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 82,
         "reason": "pyrenean_buffer_kingdom profili: hold_pyrenean_passes"
       },
@@ -49094,8 +49107,8 @@
         "target_region_ids": [
           "norway"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "north_sea_kingdom profili: protect_north_sea_frontier"
       },
@@ -49106,8 +49119,8 @@
         "target_region_ids": [
           "novgorod"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 74,
         "reason": "northern_trade_survival profili: hold_novgorod_trade_gate"
       },
@@ -49133,25 +49146,22 @@
           "abruzzo",
           "marche"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "papal_central_italy profili: hold_papal_territories"
       },
       "polish_kingdom": {
-        "objective_id": "hold_polish_crownlands",
-        "kind": "defend",
-        "target_faction_id": "bohemian_kingdom",
+        "objective_id": "press_teutonic_prussia",
+        "kind": "expand",
+        "target_faction_id": "teutonic_order",
         "target_region_ids": [
-          "galicia_volhynia",
-          "mazovia",
-          "poland",
-          "silesia"
+          "konigsberg"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 80,
-        "reason": "polish_baltic_eastern_frontier profili: hold_polish_crownlands"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "commitment": 46,
+        "reason": "polish_baltic_eastern_frontier profili: press_teutonic_prussia"
       },
       "portugal": {
         "objective_id": "hold_portuguese_atlantic_core",
@@ -49160,22 +49170,23 @@
         "target_region_ids": [
           "portugal"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "portuguese_atlantic_reconquista profili: hold_portuguese_atlantic_core"
       },
       "ramazan_bey": {
-        "objective_id": "hold_cilician_gate",
-        "kind": "defend",
+        "objective_id": "press_northern_buffer",
+        "kind": "expand",
         "target_faction_id": "mamluk",
         "target_region_ids": [
-          "cilicia"
+          "dulkadir"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 78,
-        "reason": "cilician_buffer_survival profili: hold_cilician_gate"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "commitment": 50,
+        "allow_vassalization": true,
+        "reason": "cilician_buffer_survival profili: press_northern_buffer"
       },
       "russia": {
         "objective_id": "hold_moscow_northern_frontier",
@@ -49187,8 +49198,8 @@
           "nizhny_novgorod",
           "north_caucasus"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 78,
         "reason": "moscow_consolidation profili: hold_moscow_northern_frontier"
       },
@@ -49199,8 +49210,8 @@
           "siraz",
           "southern_persia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 35,
         "reason": "senaryo objective'i tamamlandı veya zaman/event bekliyor"
       },
@@ -49211,8 +49222,8 @@
         "target_region_ids": [
           "izmir"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 56,
         "allow_vassalization": true,
         "reason": "aegean_interior_survival profili: contest_aydinoglu_coast"
@@ -49224,8 +49235,8 @@
         "target_region_ids": [
           "savoy"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 82,
         "reason": "alpine_pass_survival profili: hold_alpine_passes"
       },
@@ -49236,8 +49247,8 @@
         "target_region_ids": [
           "saxony"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 68,
         "reason": "saxon_electorate_frontier profili: hold_saxon_core"
       },
@@ -49248,8 +49259,8 @@
         "target_region_ids": [
           "lancashire"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 44,
         "reason": "scottish_independence profili: recover_northern_english_marches"
       },
@@ -49263,22 +49274,22 @@
           "rascia",
           "serbia"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 82,
         "reason": "balkan_hegemony_buffer profili: hold_serbian_mountain_core"
       },
       "sweden_kingdom": {
-        "objective_id": "hold_eastern_baltic_frontier",
-        "kind": "defend",
-        "target_faction_id": "norway_kingdom",
+        "objective_id": "press_novgorod_baltic_frontier",
+        "kind": "expand",
+        "target_faction_id": "novgorod_rep",
         "target_region_ids": [
-          "sweden"
+          "novgorod"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 80,
-        "reason": "baltic_frontier_kingdom profili: hold_eastern_baltic_frontier"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "commitment": 58,
+        "reason": "baltic_frontier_kingdom profili: press_novgorod_baltic_frontier"
       },
       "swiss_confederacy": {
         "objective_id": "hold_schwyz_core",
@@ -49287,8 +49298,8 @@
         "target_region_ids": [
           "switzerland"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 88,
         "reason": "alpine_confederacy profili: hold_schwyz_core"
       },
@@ -49300,8 +49311,8 @@
           "belarus",
           "lithuania"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 68,
         "reason": "baltic_crusader_frontier profili: press_lithuanian_frontier"
       },
@@ -49312,8 +49323,8 @@
         "target_region_ids": [
           "trebizond"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 82,
         "reason": "pontic_imperial_survival profili: hold_trebizond_coast"
       },
@@ -49324,8 +49335,8 @@
         "target_region_ids": [
           "uae"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 42,
         "reason": "eastern_arabian_pearl_trade profili: contest_hormuz_trade"
       },
@@ -49337,24 +49348,23 @@
           "crete",
           "venice"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 72,
         "reason": "adriatic_merchant_thalassocracy profili: protect_adriatic_and_island_trade"
       },
       "wallachia_prince": {
-        "objective_id": "hold_wallachian_buffer",
-        "kind": "defend",
+        "objective_id": "press_dobruja_frontier",
+        "kind": "expand",
         "target_faction_id": "bulgarian_empire",
         "target_region_ids": [
-          "bessarabia",
-          "oltenia",
-          "wallachia"
+          "dobruja"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
-        "commitment": 78,
-        "reason": "danube_buffer_survival profili: hold_wallachian_buffer"
+        "started_turn": 9,
+        "reassess_turn": 11,
+        "commitment": 46,
+        "allow_vassalization": true,
+        "reason": "danube_buffer_survival profili: press_dobruja_frontier"
       },
       "zayyanid_tlemcen": {
         "objective_id": "contest_hafsid_algeria",
@@ -49364,8 +49374,8 @@
           "constantine",
           "tunis"
         ],
-        "started_turn": 7,
-        "reassess_turn": 9,
+        "started_turn": 9,
+        "reassess_turn": 11,
         "commitment": 52,
         "reason": "tlemcen_frontier_survival profili: contest_hafsid_algeria"
       }
@@ -49516,7 +49526,7 @@
         "initial_regions_a": 6,
         "initial_regions_b": 2,
         "target_region_id": "aragon",
-        "target_locked_turn": 8
+        "target_locked_turn": 9
       },
       "arnavut_des|serbian_empire": {
         "faction_a": "arnavut_des",
@@ -49528,7 +49538,7 @@
         "initial_regions_b": 4,
         "last_peace_offer_turn": 8,
         "target_region_id": "albania",
-        "target_locked_turn": 8
+        "target_locked_turn": 9
       },
       "aydin_bey|mentese_bey": {
         "faction_a": "aydin_bey",
@@ -49539,7 +49549,7 @@
         "initial_regions_a": 1,
         "initial_regions_b": 2,
         "target_region_id": "izmir",
-        "target_locked_turn": 8
+        "target_locked_turn": 9
       },
       "aydin_bey|saruhan_bey": {
         "faction_a": "aydin_bey",
@@ -49551,7 +49561,7 @@
         "initial_regions_b": 1,
         "last_peace_offer_turn": 8,
         "target_region_id": "izmir",
-        "target_locked_turn": 8
+        "target_locked_turn": 9
       },
       "east_rome|ottoman": {
         "faction_a": "east_rome",
@@ -49574,7 +49584,7 @@
         "initial_regions_a": 6,
         "initial_regions_b": 4,
         "target_region_id": "moscow",
-        "target_locked_turn": 8
+        "target_locked_turn": 9
       },
       "hormuz_sultanate|usfurid_emirate": {
         "faction_a": "hormuz_sultanate",
@@ -49585,7 +49595,7 @@
         "initial_regions_a": 2,
         "initial_regions_b": 3,
         "target_region_id": "arabian_desert",
-        "target_locked_turn": 8
+        "target_locked_turn": 9
       },
       "marinid_sultanate|zayyanid_tlemcen": {
         "faction_a": "marinid_sultanate",
@@ -49596,7 +49606,7 @@
         "initial_regions_a": 4,
         "initial_regions_b": 2,
         "target_region_id": "morocco",
-        "target_locked_turn": 8
+        "target_locked_turn": 9
       }
     },
     "recent_truces": {
@@ -50808,7 +50818,7 @@
       "ahiler|east_rome": {
         "faction_a": "ahiler",
         "faction_b": "east_rome",
-        "score": -81,
+        "score": -80,
         "stance": "war"
       },
       "ahiler|england": {
@@ -73394,7 +73404,7 @@
         "to_faction_id": "ottoman",
         "good": "grain",
         "amount_per_turn": 2,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73482,7 +73492,7 @@
         "to_faction_id": "mamluk",
         "good": "grain",
         "amount_per_turn": 3,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73506,7 +73516,7 @@
         "to_faction_id": "hungarian_kingdom",
         "good": "grain",
         "amount_per_turn": 1,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73529,7 +73539,7 @@
         "from_faction_id": "bulgarian_empire",
         "to_faction_id": "east_rome",
         "good": "grain",
-        "amount_per_turn": 4,
+        "amount_per_turn": 5,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -73537,7 +73547,7 @@
         "from_faction_id": "bulgarian_empire",
         "to_faction_id": "trebizond_emp",
         "good": "grain",
-        "amount_per_turn": 3,
+        "amount_per_turn": 4,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -73577,8 +73587,8 @@
         "from_faction_id": "carniola_margraviate",
         "to_faction_id": "hre",
         "good": "grain",
-        "amount_per_turn": 3,
-        "gold_per_unit": 2,
+        "amount_per_turn": 4,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73594,7 +73604,7 @@
         "to_faction_id": "leon_kingdom",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73610,7 +73620,7 @@
         "to_faction_id": "hungarian_kingdom",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73665,7 +73675,7 @@
         "from_faction_id": "east_rome",
         "to_faction_id": "bulgarian_empire",
         "good": "grain",
-        "amount_per_turn": 4,
+        "amount_per_turn": 5,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -73730,7 +73740,7 @@
         "to_faction_id": "hre",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73762,7 +73772,7 @@
         "to_faction_id": "navarra",
         "good": "grain",
         "amount_per_turn": 1,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73929,8 +73939,8 @@
         "from_faction_id": "hre",
         "to_faction_id": "carniola_margraviate",
         "good": "grain",
-        "amount_per_turn": 3,
-        "gold_per_unit": 2,
+        "amount_per_turn": 4,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73938,7 +73948,7 @@
         "to_faction_id": "flanders_county",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73946,7 +73956,7 @@
         "to_faction_id": "bosnian_banate",
         "good": "grain",
         "amount_per_turn": 1,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -73954,7 +73964,7 @@
         "to_faction_id": "croatian_kingdom",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74034,7 +74044,7 @@
         "to_faction_id": "castile_kingdom",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74074,7 +74084,7 @@
         "to_faction_id": "barqa_emirate",
         "good": "grain",
         "amount_per_turn": 3,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74082,7 +74092,7 @@
         "to_faction_id": "mecca_sharifate",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74114,7 +74124,7 @@
         "to_faction_id": "mamluk",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74146,7 +74156,7 @@
         "to_faction_id": "papal_states_f",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74154,7 +74164,7 @@
         "to_faction_id": "france",
         "good": "grain",
         "amount_per_turn": 1,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74170,7 +74180,7 @@
         "to_faction_id": "ahiler",
         "good": "grain",
         "amount_per_turn": 2,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74194,7 +74204,7 @@
         "to_faction_id": "naples_kingdom",
         "good": "grain",
         "amount_per_turn": 4,
-        "gold_per_unit": 2,
+        "gold_per_unit": 1,
         "suspended_turns": 0
       },
       {
@@ -74273,7 +74283,7 @@
         "from_faction_id": "trebizond_emp",
         "to_faction_id": "bulgarian_empire",
         "good": "grain",
-        "amount_per_turn": 3,
+        "amount_per_turn": 4,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -74313,648 +74323,598 @@
     "market_orders": {
       "sell_offers": {
         "achaea_principality": {
-          "cloth": 0,
-          "grain": 1442,
-          "iron": 38,
-          "spice": 45,
-          "stone": 0,
-          "timber": 0
+          "cloth": 97,
+          "grain": 1513,
+          "iron": 47,
+          "spice": 50,
+          "timber": 21
         },
         "ahiler": {
-          "grain": 606,
-          "iron": 41
+          "grain": 735,
+          "iron": 16
         },
         "aragon": {
-          "cloth": 0,
-          "grain": 2773,
-          "iron": 58,
-          "spice": 537,
-          "stone": 0,
-          "timber": 0
+          "cloth": 3,
+          "grain": 2205,
+          "iron": 73,
+          "spice": 540,
+          "stone": 182,
+          "timber": 29
         },
         "arnavut_des": {
-          "cloth": 0,
-          "grain": 1175,
-          "iron": 25,
-          "spice": 137,
-          "timber": 0
+          "cloth": 105,
+          "grain": 1243,
+          "iron": 32,
+          "spice": 140,
+          "stone": 82,
+          "timber": 16
         },
         "athena_duk": {
-          "cloth": 0,
-          "grain": 1610,
-          "iron": 16,
-          "spice": 84,
-          "stone": 0,
-          "timber": 0
+          "cloth": 4,
+          "grain": 1712,
+          "iron": 22,
+          "spice": 88,
+          "stone": 36,
+          "timber": 6
         },
         "austria_duchy": {
-          "grain": 1894,
-          "iron": 71,
-          "spice": 368,
-          "stone": 0,
-          "timber": 0
+          "cloth": 108,
+          "grain": 1761,
+          "iron": 88,
+          "spice": 398,
+          "stone": 45,
+          "timber": 11
         },
         "aydin_bey": {
-          "cloth": 0,
-          "grain": 1327,
-          "iron": 22,
-          "spice": 90,
-          "stone": 0,
-          "timber": 0
+          "cloth": 17,
+          "grain": 1422,
+          "iron": 28,
+          "spice": 94,
+          "stone": 36,
+          "timber": 6
         },
         "barqa_emirate": {
-          "grain": 952,
-          "spice": 24
+          "grain": 1008,
+          "spice": 27
         },
         "bavaria_duchy": {
-          "cloth": 0,
-          "grain": 2263,
-          "iron": 55,
-          "spice": 234,
-          "stone": 0,
-          "timber": 0
+          "cloth": 3,
+          "grain": 2143,
+          "iron": 69,
+          "spice": 237,
+          "timber": 37
         },
         "bohemian_kingdom": {
-          "grain": 2053,
-          "iron": 18,
-          "spice": 129,
-          "stone": 0,
-          "timber": 0
+          "grain": 2063,
+          "iron": 25,
+          "spice": 133,
+          "stone": 30,
+          "timber": 21
         },
         "bosnian_banate": {
-          "grain": 1373,
-          "iron": 6,
-          "spice": 54
+          "grain": 1433,
+          "iron": 20,
+          "spice": 58,
+          "timber": 31
         },
         "brandenburg_margraviate": {
-          "grain": 1765,
-          "iron": 31,
-          "spice": 103,
-          "stone": 0,
-          "timber": 0
+          "grain": 1738,
+          "iron": 40,
+          "spice": 107,
+          "stone": 33,
+          "timber": 15
         },
         "bulgarian_empire": {
-          "cloth": 0,
-          "grain": 2122,
-          "iron": 104,
-          "spice": 166,
-          "stone": 0,
-          "timber": 0
+          "cloth": 5,
+          "grain": 2095,
+          "iron": 100,
+          "spice": 171,
+          "stone": 339
         },
         "candar_bey": {
-          "grain": 2438,
-          "iron": 35,
-          "spice": 230,
-          "stone": 0,
-          "timber": 0
+          "grain": 2469,
+          "iron": 59,
+          "spice": 233,
+          "stone": 984,
+          "timber": 145
         },
         "carniola_margraviate": {
-          "grain": 1144,
-          "spice": 14,
-          "timber": 0
+          "grain": 1204,
+          "iron": 7,
+          "spice": 18,
+          "timber": 40
         },
         "castile_kingdom": {
-          "cloth": 0,
-          "grain": 7797,
-          "iron": 80,
-          "spice": 855,
-          "timber": 0
+          "cloth": 20,
+          "grain": 8216,
+          "iron": 99,
+          "spice": 872,
+          "stone": 55,
+          "timber": 17
         },
         "croatian_kingdom": {
-          "grain": 2838,
-          "spice": 242
+          "grain": 2816,
+          "spice": 245,
+          "timber": 4
         },
         "cyprus_kingdom": {
-          "iron": 21,
-          "spice": 58,
-          "stone": 0
+          "iron": 30,
+          "spice": 63,
+          "stone": 63
         },
         "denmark_kingdom": {
-          "grain": 2095,
-          "iron": 35,
-          "spice": 114,
-          "stone": 0,
-          "timber": 0
+          "grain": 2023,
+          "spice": 128
         },
         "east_rome": {
-          "cloth": 0,
-          "grain": 4703,
-          "iron": 51,
-          "spice": 1030
+          "cloth": 293,
+          "grain": 4321,
+          "iron": 99,
+          "spice": 1105,
+          "stone": 405,
+          "timber": 117
         },
         "england": {
-          "cloth": 0,
-          "grain": 3966,
-          "iron": 94,
-          "spice": 575
+          "cloth": 14,
+          "grain": 3910,
+          "iron": 122,
+          "spice": 585,
+          "stone": 323,
+          "timber": 99
         },
         "epir": {
-          "grain": 980,
-          "iron": 30,
-          "stone": 0,
-          "timber": 0
+          "grain": 1042,
+          "iron": 41,
+          "spice": 2,
+          "stone": 75,
+          "timber": 19
         },
         "flanders_county": {
-          "cloth": 0,
-          "grain": 878,
-          "iron": 8,
-          "stone": 0,
-          "timber": 0
+          "cloth": 74,
+          "grain": 793,
+          "iron": 18,
+          "timber": 16
         },
         "florence_rep": {
-          "grain": 1703,
-          "iron": 15,
-          "spice": 74,
-          "stone": 0
+          "cloth": 54,
+          "grain": 1724,
+          "iron": 23,
+          "spice": 78,
+          "stone": 63,
+          "timber": 8
         },
         "france": {
-          "cloth": 0,
-          "grain": 3507,
-          "iron": 146,
-          "spice": 727,
-          "stone": 0,
-          "timber": 0
+          "cloth": 52,
+          "grain": 3002,
+          "iron": 169,
+          "spice": 734,
+          "stone": 239,
+          "timber": 63
         },
         "genoa": {
-          "cloth": 0,
-          "grain": 4934,
-          "spice": 2257
+          "cloth": 31,
+          "grain": 3868,
+          "iron": 41,
+          "spice": 2278,
+          "stone": 529,
+          "timber": 155
         },
         "georgia_kingdom": {
-          "cloth": 0,
-          "grain": 990,
-          "iron": 20,
-          "spice": 9,
-          "timber": 0
+          "cloth": 2,
+          "grain": 1074,
+          "iron": 27,
+          "spice": 12,
+          "stone": 85,
+          "timber": 17
         },
         "germiyan_bey": {
-          "grain": 1392,
-          "iron": 62,
-          "stone": 0,
-          "timber": 0
+          "grain": 1498,
+          "iron": 77,
+          "stone": 44,
+          "timber": 7
         },
         "golden_horde": {
-          "grain": 1797,
-          "iron": 102,
-          "spice": 319,
-          "stone": 0,
-          "timber": 0
+          "grain": 1506,
+          "iron": 116,
+          "spice": 321,
+          "stone": 158,
+          "timber": 56
         },
         "granada_emirate": {
-          "cloth": 0,
-          "grain": 3260,
-          "iron": 24,
-          "spice": 200,
-          "stone": 0,
-          "timber": 0
+          "cloth": 21,
+          "grain": 3292,
+          "iron": 33,
+          "spice": 204,
+          "stone": 734,
+          "timber": 16
         },
         "hafsid_sultanate": {
-          "grain": 2451,
-          "iron": 55,
-          "spice": 171,
-          "stone": 0
+          "grain": 2302,
+          "iron": 49,
+          "spice": 155
         },
         "hamid_bey": {
-          "grain": 1656,
-          "iron": 29,
-          "spice": 39,
-          "stone": 0,
-          "timber": 0
+          "grain": 1659,
+          "iron": 39,
+          "spice": 44,
+          "stone": 69,
+          "timber": 27
         },
         "hormuz_sultanate": {
-          "grain": 1280,
-          "iron": 20,
-          "spice": 319
+          "grain": 1272,
+          "iron": 5,
+          "spice": 335
         },
         "hospitaller": {
-          "cloth": 0,
-          "iron": 32,
-          "spice": 48,
-          "stone": 0
+          "cloth": 3,
+          "iron": 38,
+          "spice": 51,
+          "stone": 38
         },
         "hre": {
-          "cloth": 0,
-          "grain": 5863,
-          "iron": 186,
+          "cloth": 53,
+          "grain": 5398,
+          "iron": 259,
           "spice": 464,
-          "stone": 0,
-          "timber": 0
+          "stone": 32,
+          "timber": 128
         },
         "hungarian_kingdom": {
-          "grain": 3258,
-          "iron": 202,
-          "spice": 359,
-          "stone": 0,
-          "timber": 0
+          "grain": 3239,
+          "iron": 242,
+          "spice": 363,
+          "timber": 47
         },
         "ilkhanate": {
-          "cloth": 0,
-          "grain": 7651,
-          "iron": 181,
-          "spice": 1550
+          "cloth": 182,
+          "grain": 7107,
+          "iron": 285,
+          "spice": 1662,
+          "stone": 1102,
+          "timber": 121
         },
         "karaman_bey": {
-          "cloth": 0,
-          "grain": 1271,
-          "iron": 73,
-          "spice": 131
+          "cloth": 4,
+          "grain": 1387,
+          "iron": 122,
+          "spice": 135,
+          "stone": 586,
+          "timber": 28
         },
         "karesioglu_bey": {
-          "cloth": 0,
-          "iron": 21,
-          "spice": 27,
-          "stone": 0
+          "cloth": 2,
+          "iron": 25,
+          "spice": 29,
+          "stone": 31
         },
         "leon_kingdom": {
-          "grain": 4762,
-          "spice": 391
+          "grain": 5212,
+          "spice": 382
         },
         "lithuanian_gd": {
-          "grain": 2226,
-          "iron": 40,
-          "stone": 0,
-          "timber": 0
+          "grain": 2337,
+          "iron": 48,
+          "spice": 2,
+          "stone": 60,
+          "timber": 35
         },
         "mamluk": {
-          "cloth": 0,
-          "grain": 7766,
-          "iron": 198,
-          "spice": 1777
+          "cloth": 84,
+          "grain": 7578,
+          "iron": 249,
+          "spice": 1912,
+          "stone": 768,
+          "timber": 134
         },
         "marinid_sultanate": {
-          "grain": 4573,
-          "iron": 45,
-          "spice": 107
+          "grain": 4829,
+          "iron": 52,
+          "spice": 114,
+          "stone": 442,
+          "timber": 32
         },
         "mecca_sharifate": {
-          "grain": 1131,
-          "iron": 29,
-          "spice": 71
+          "grain": 882,
+          "iron": 73,
+          "spice": 108,
+          "timber": 130
         },
         "mentese_bey": {
-          "grain": 1511,
-          "iron": 21,
-          "spice": 100,
-          "timber": 0
+          "grain": 1554,
+          "iron": 29,
+          "spice": 104,
+          "stone": 162,
+          "timber": 23
         },
         "milan_duchy": {
-          "cloth": 0,
-          "grain": 1945,
-          "iron": 79,
-          "spice": 20
+          "cloth": 51,
+          "grain": 1983,
+          "iron": 100,
+          "spice": 24,
+          "stone": 644,
+          "timber": 15
         },
         "naples_kingdom": {
-          "cloth": 0,
-          "grain": 2412,
-          "iron": 32,
-          "spice": 258
+          "cloth": 29,
+          "grain": 2046,
+          "iron": 23,
+          "spice": 263,
+          "stone": 7
         },
         "navarra": {
-          "grain": 1117,
-          "iron": 38,
-          "spice": 78
+          "grain": 1185,
+          "iron": 16,
+          "spice": 72
+        },
+        "norway_kingdom": {
+          "iron": 2
         },
         "novgorod_rep": {
-          "grain": 1480,
-          "iron": 9,
-          "timber": 0
+          "grain": 1595,
+          "iron": 18,
+          "stone": 83,
+          "timber": 46
         },
         "papal_states_f": {
-          "cloth": 0,
-          "grain": 2151,
-          "iron": 69,
-          "spice": 187
+          "cloth": 49,
+          "grain": 2079,
+          "iron": 83,
+          "spice": 193,
+          "stone": 100
         },
         "polish_kingdom": {
-          "grain": 3144,
-          "iron": 150,
-          "spice": 352,
-          "stone": 0,
-          "timber": 0
+          "grain": 3041,
+          "iron": 170,
+          "spice": 364,
+          "stone": 106,
+          "timber": 46
         },
         "portugal": {
-          "grain": 1542,
-          "iron": 39,
-          "spice": 150,
-          "stone": 0,
-          "timber": 0
+          "cloth": 1,
+          "grain": 1469,
+          "iron": 47,
+          "spice": 156,
+          "stone": 59,
+          "timber": 33
         },
         "ramazan_bey": {
-          "grain": 674,
-          "iron": 13,
-          "spice": 70,
-          "stone": 0,
-          "timber": 0
+          "grain": 696,
+          "iron": 17,
+          "spice": 46,
+          "stone": 24,
+          "timber": 4
         },
         "russia": {
-          "cloth": 0,
-          "grain": 2326,
-          "iron": 41,
-          "spice": 134,
-          "stone": 0,
-          "timber": 0
+          "grain": 2365,
+          "iron": 52,
+          "spice": 135,
+          "timber": 104
         },
         "safavid": {
-          "grain": 3800,
-          "iron": 42,
-          "spice": 374
+          "cloth": 1,
+          "grain": 4197,
+          "iron": 114,
+          "spice": 429,
+          "stone": 689,
+          "timber": 24
         },
         "saruhan_bey": {
-          "cloth": 0,
-          "grain": 1591,
-          "iron": 26,
-          "spice": 137,
-          "stone": 0,
-          "timber": 0
+          "cloth": 79,
+          "grain": 1705,
+          "iron": 31,
+          "spice": 140,
+          "stone": 81,
+          "timber": 11
         },
         "savoy_county": {
-          "grain": 862,
-          "iron": 17,
-          "stone": 0,
-          "timber": 0
+          "grain": 959,
+          "iron": 24,
+          "stone": 45,
+          "timber": 6
         },
         "saxony_duchy": {
-          "cloth": 0,
-          "grain": 2053,
-          "iron": 40,
-          "spice": 147,
-          "stone": 0,
-          "timber": 0
+          "cloth": 16,
+          "grain": 1986,
+          "iron": 51,
+          "spice": 150,
+          "stone": 31,
+          "timber": 5
         },
         "scotland_kingdom": {
-          "grain": 1658,
-          "spice": 114
+          "grain": 1548,
+          "spice": 118
         },
         "serbian_empire": {
-          "grain": 2370,
-          "iron": 199,
-          "spice": 337,
-          "stone": 0,
-          "timber": 0
+          "grain": 2327,
+          "iron": 237,
+          "spice": 341,
+          "stone": 188,
+          "timber": 28
         },
         "sweden_kingdom": {
-          "grain": 6,
-          "iron": 86,
-          "stone": 0
+          "iron": 78
         },
         "swiss_confederacy": {
-          "iron": 34,
-          "spice": 31,
-          "stone": 0,
-          "timber": 0
+          "iron": 42,
+          "spice": 6,
+          "stone": 28,
+          "timber": 25
         },
         "teutonic_order": {
-          "grain": 2059,
-          "iron": 77,
-          "spice": 61,
-          "stone": 0,
-          "timber": 0
+          "cloth": 65,
+          "grain": 2078,
+          "iron": 86,
+          "spice": 64,
+          "stone": 361,
+          "timber": 97
         },
         "trebizond_emp": {
-          "grain": 1028,
-          "iron": 13,
-          "spice": 200,
-          "stone": 0,
-          "timber": 0
+          "grain": 1038,
+          "iron": 20,
+          "spice": 204,
+          "stone": 86,
+          "timber": 31
         },
         "usfurid_emirate": {
-          "grain": 1191,
-          "iron": 74,
-          "spice": 128,
-          "stone": 0,
-          "timber": 0
+          "grain": 1129,
+          "iron": 54,
+          "spice": 93,
+          "stone": 6
         },
         "venice": {
-          "grain": 4989,
-          "iron": 60,
-          "spice": 3731
+          "cloth": 113,
+          "grain": 4089,
+          "iron": 96,
+          "spice": 3759,
+          "stone": 523,
+          "timber": 176
         },
         "wallachia_prince": {
-          "grain": 1893,
-          "iron": 55,
-          "spice": 128,
-          "stone": 0
+          "grain": 1926,
+          "iron": 64,
+          "spice": 131,
+          "stone": 83,
+          "timber": 33
         },
         "zayyanid_tlemcen": {
-          "grain": 1883,
-          "iron": 8,
-          "spice": 143
+          "grain": 1810,
+          "spice": 145
         }
       },
       "buy_orders": {
         "achaea_principality": {
-          "cloth": 0
+          "stone": 46
         },
-        "arnavut_des": {
-          "cloth": 0,
-          "stone": 52
-        },
-        "austria_duchy": {
-          "cloth": 0
+        "ahiler": {
+          "stone": 50,
+          "timber": 67
         },
         "barqa_emirate": {
-          "cloth": 216,
-          "iron": 0,
-          "stone": 0,
-          "timber": 0
+          "cloth": 185,
+          "iron": 12,
+          "stone": 91,
+          "timber": 30
         },
-        "bohemian_kingdom": {
-          "cloth": 0
+        "bavaria_duchy": {
+          "stone": 46
         },
         "bosnian_banate": {
-          "cloth": 247,
-          "stone": 572,
-          "timber": 0
+          "cloth": 126,
+          "stone": 253
         },
         "brandenburg_margraviate": {
-          "cloth": 0
+          "cloth": 3
         },
         "bulgarian_empire": {
-          "stone": 0
-        },
-        "candar_bey": {
-          "cloth": 1,
-          "stone": 0
+          "timber": 21
         },
         "carniola_margraviate": {
-          "cloth": 222,
-          "stone": 601
-        },
-        "castile_kingdom": {
-          "stone": 0
+          "cloth": 135,
+          "stone": 270
         },
         "croatian_kingdom": {
-          "cloth": 71,
-          "iron": 0,
-          "stone": 1075,
-          "timber": 0
+          "cloth": 68,
+          "iron": 14,
+          "stone": 277
         },
         "denmark_kingdom": {
-          "cloth": 29
-        },
-        "east_rome": {
-          "stone": 0,
-          "timber": 0
-        },
-        "england": {
-          "stone": 0,
-          "timber": 0
+          "cloth": 13,
+          "iron": 36,
+          "stone": 70,
+          "timber": 93
         },
         "epir": {
-          "cloth": 0
+          "cloth": 1
         },
         "flanders_county": {
-          "stone": 0
-        },
-        "florence_rep": {
-          "cloth": 4,
-          "timber": 0
-        },
-        "genoa": {
-          "iron": 0,
-          "stone": 0,
-          "timber": 0
-        },
-        "georgia_kingdom": {
-          "stone": 50
+          "stone": 51
         },
         "germiyan_bey": {
-          "cloth": 0
-        },
-        "granada_emirate": {
-          "stone": 0
+          "cloth": 1
         },
         "hafsid_sultanate": {
-          "cloth": 7,
-          "timber": 0
+          "cloth": 78,
+          "stone": 12,
+          "timber": 41
         },
         "hamid_bey": {
-          "cloth": 0
+          "cloth": 1
         },
         "hormuz_sultanate": {
-          "cloth": 54,
-          "stone": 558,
-          "timber": 0
+          "cloth": 51,
+          "stone": 370,
+          "timber": 30
         },
         "hungarian_kingdom": {
-          "cloth": 0
-        },
-        "ilkhanate": {
-          "stone": 0,
-          "timber": 0
-        },
-        "karaman_bey": {
-          "stone": 0,
-          "timber": 54
+          "cloth": 9,
+          "stone": 18
         },
         "leon_kingdom": {
-          "cloth": 0,
-          "iron": 0,
-          "stone": 0,
-          "timber": 0
-        },
-        "mamluk": {
-          "stone": 0,
-          "timber": 0
+          "cloth": 6,
+          "iron": 28,
+          "stone": 140,
+          "timber": 130
         },
         "marinid_sultanate": {
-          "cloth": 0,
-          "stone": 0,
-          "timber": 0
+          "cloth": 3
         },
         "mecca_sharifate": {
-          "cloth": 296,
-          "stone": 415,
-          "timber": 0
-        },
-        "mentese_bey": {
-          "cloth": 0,
-          "stone": 0
-        },
-        "milan_duchy": {
-          "stone": 0,
-          "timber": 43
+          "cloth": 127,
+          "stone": 254
         },
         "naples_kingdom": {
-          "stone": 0,
-          "timber": 0
+          "timber": 23
         },
         "navarra": {
-          "cloth": 214,
-          "stone": 62,
-          "timber": 0
+          "cloth": 110,
+          "stone": 220,
+          "timber": 95
         },
         "norway_kingdom": {
-          "cloth": 252,
-          "grain": 0,
-          "iron": 0,
-          "stone": 45,
-          "timber": 53
-        },
-        "novgorod_rep": {
-          "stone": 0
+          "cloth": 109,
+          "grain": 103,
+          "spice": 8,
+          "stone": 17,
+          "timber": 55
         },
         "papal_states_f": {
-          "stone": 0,
-          "timber": 7
+          "timber": 9
         },
-        "polish_kingdom": {
-          "cloth": 20
+        "ramazan_bey": {
+          "cloth": 14
         },
-        "safavid": {
-          "cloth": 9,
-          "stone": 0,
-          "timber": 68
-        },
-        "saruhan_bey": {
-          "cloth": 0
+        "russia": {
+          "stone": 109
         },
         "savoy_county": {
-          "cloth": 0
+          "cloth": 1
         },
         "scotland_kingdom": {
-          "cloth": 0,
-          "stone": 0,
-          "timber": 0
-        },
-        "serbian_empire": {
-          "cloth": 0,
-          "stone": 0
+          "iron": 17,
+          "stone": 50,
+          "timber": 8
         },
         "sweden_kingdom": {
-          "cloth": 244,
-          "spice": 0,
-          "timber": 65
+          "cloth": 113,
+          "grain": 27,
+          "stone": 49,
+          "timber": 60
         },
         "swiss_confederacy": {
-          "cloth": 88,
-          "grain": 0
-        },
-        "teutonic_order": {
-          "cloth": 0,
-          "stone": 0,
-          "timber": 0
+          "cloth": 14,
+          "grain": 9
         },
         "trebizond_emp": {
-          "cloth": 0
+          "cloth": 1
         },
         "usfurid_emirate": {
-          "cloth": 59,
-          "stone": 0,
-          "timber": 0
-        },
-        "venice": {
-          "cloth": 5,
-          "stone": 0,
-          "timber": 0
-        },
-        "wallachia_prince": {
-          "timber": 0
+          "cloth": 30,
+          "timber": 6
         },
         "zayyanid_tlemcen": {
-          "cloth": 0,
-          "stone": 0,
-          "timber": 0
+          "iron": 18,
+          "stone": 138,
+          "timber": 88
         }
       }
     },
@@ -78102,7 +78062,7 @@
         ],
         "ReservePercent": 15,
         "ReserveTargetPower": 31,
-        "ReserveAssignedPower": 106,
+        "ReserveAssignedPower": 91,
         "CriticalThreat": false,
         "Fronts": [
           {
@@ -78217,8 +78177,8 @@
           }
         ],
         "ArmyRoleCounts": {
-          "assault": 1,
-          "reserve": 2
+          "assault": 2,
+          "reserve": 1
         },
         "NavalMissionKind": "",
         "NavalTargetRegionID": "",
@@ -78688,8 +78648,7 @@
         ],
         "ArmyRoleCounts": {
           "defense": 1,
-          "reserve": 1,
-          "retreat": 1,
+          "reserve": 2,
           "transport": 1
         },
         "NavalMissionKind": "patrol",

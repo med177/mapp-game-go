@@ -1446,6 +1446,7 @@
     "name_tr": "Zurich Kantonu",
     "terrain": "mountain",
     "owner_id": "hre",
+    "successor_faction_id": "hre",
     "neighbors": [
       "palatinate",
       "sch_bern",

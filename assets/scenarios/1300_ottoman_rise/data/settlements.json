@@ -1049,11 +1049,19 @@
       {
         "id": "switzerland_zurich",
         "name_tr": "Zurich",
-        "x": 653,
-        "y": 334,
+        "x": 650,
+        "y": 336,
         "type": "fortress",
         "is_center": true,
         "population": 70
+      },
+      {
+        "id": "sch_zurich_habsburg",
+        "name_tr": "Habsburg",
+        "x": 642,
+        "y": 334,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -1063,8 +1071,8 @@
       {
         "id": "switzerland_basel",
         "name_tr": "Basel",
-        "x": 619,
-        "y": 337,
+        "x": 628,
+        "y": 333,
         "type": "fortress",
         "is_center": true,
         "population": 0
