@@ -65,6 +65,7 @@ type ImperialState struct {
 	Authority       int                                   `json:"authority"`
 	NextDietTurn    int                                   `json:"next_diet_turn,omitempty"`
 	ElectionDueTurn int                                   `json:"election_due_turn,omitempty"`
+	ElectionLocked  bool                                  `json:"election_locked,omitempty"`
 	Members         map[faction.FactionID]*ImperialMember `json:"members"`
 	LastWarCall     *ImperialWarCall                      `json:"last_war_call,omitempty"`
 	PendingDecision *ImperialPendingDecision              `json:"pending_decision,omitempty"`
@@ -137,6 +138,7 @@ type imperialFile struct {
 	Authority       int               `json:"authority"`
 	NextDietTurn    int               `json:"next_diet_turn,omitempty"`
 	ElectionDueTurn int               `json:"election_due_turn,omitempty"`
+	ElectionLocked  bool              `json:"election_locked,omitempty"`
 	Members         []ImperialMember  `json:"members"`
 }
 
@@ -169,6 +171,7 @@ func LoadImperialState(path string, factions map[faction.FactionID]*faction.Fact
 		Authority:       file.Authority,
 		NextDietTurn:    file.NextDietTurn,
 		ElectionDueTurn: file.ElectionDueTurn,
+		ElectionLocked:  file.ElectionLocked,
 		Members:         make(map[faction.FactionID]*ImperialMember, len(file.Members)),
 	}
 	for _, configured := range file.Members {

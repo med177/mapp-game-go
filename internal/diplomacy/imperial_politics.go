@@ -55,7 +55,7 @@ func AdvanceImperialPolitics(gs *state.GameState) ImperialDietReport {
 			holdImperialDiet(gs)
 		}
 	}
-	if !report.Pending && imperial.ElectionDueTurn > 0 && gs.Turn >= imperial.ElectionDueTurn {
+	if !report.Pending && !imperial.ElectionLocked && imperial.ElectionDueTurn > 0 && gs.Turn >= imperial.ElectionDueTurn {
 		imperial.ElectionDueTurn = 0
 		if gs.PlayerFactionID == imperial.EmpireID {
 			imperial.PendingDecision = &state.ImperialPendingDecision{
@@ -128,6 +128,7 @@ func ResolveImperialDiet(gs *state.GameState, choice int) (bool, string) {
 // kendi siyasi etkisini kullanarak geçerli adaylardan birini tercih edebilir.
 func ResolveImperialElection(gs *state.GameState, candidate faction.FactionID) (bool, string) {
 	if gs == nil || gs.Imperial == nil || gs.PlayerFactionID != gs.Imperial.EmpireID ||
+		gs.Imperial.ElectionLocked ||
 		gs.Imperial.PendingDecision == nil || gs.Imperial.PendingDecision.Kind != state.ImperialDecisionElection {
 		return false, "Bekleyen imparatorluk seçimi yok."
 	}
@@ -182,7 +183,7 @@ func HoldImperialElection(gs *state.GameState) ImperialElectionResult {
 		Votes:  make(map[faction.FactionID]faction.FactionID),
 		Totals: make(map[faction.FactionID]int),
 	}
-	if gs == nil || gs.Imperial == nil {
+	if gs == nil || gs.Imperial == nil || gs.Imperial.ElectionLocked {
 		return result
 	}
 	candidates := imperialElectionCandidates(gs)

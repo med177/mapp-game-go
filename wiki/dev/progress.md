@@ -7,6 +7,21 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-18: 1300 senaryosuna Hussit Savaşları (1419–1434), Litvanya'ya karşı
+  Baltık/Katolik Haçlı seferleri ve Grunwald (1345–1410), Burgonya Veraset
+  Savaşı (1477–1493) ile Habsburg imparatorluk tacı (1440) event zincirleri
+  eklendi. HRE elektör üyeleri korunurken tarihsel Habsburg sonucu sonrasında
+  yeni seçimler `ElectionLocked` state'iyle kapanıyor. JSON referansları ve tam
+  Go test paketi doğrulandı (`assets/scenarios/1300_ottoman_rise/data/events.json`,
+  `internal/diplomacy/imperial_politics.go`).
+
+- 2026-09-18: 1300 senaryosunun eksik tarihsel event kapsamı genişletildi.
+  1356 Altın Fermanı, Jan Hus ve Konstanz Konsili, 1448–1463 Balkan/Osmanlı
+  savaşları, 1494–1527 İtalya Savaşları ve 1521–1529 Worms–Viyana hattı
+  `assets/scenarios/1300_ottoman_rise/data/events.json` içine bağlandı.
+  Event flag'leri, diplomatik duruşlar, koalisyonlar ve birlik takviyeleri
+  mevcut motor sözleşmesine göre doğrulandı; `go test ./... -count=1` başarılı.
+
 - 2026-09-18: Edit Mode yerleşim inspector'ına yerleşim ID değiştirme düğmesi
   eklendi. ID global benzersizlik ve boşluksuzlukla doğrulanıyor; faction
   başkent/pending başkent ve dock edilmiş filo referansları birlikte güncelleniyor.

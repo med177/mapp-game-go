@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-09-16
+last_updated: 2026-09-18
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -24,7 +24,7 @@ gelişmeleri gibi tarihsel zincirler eklenmiştir. Rastgele havuza kuraklık,
 çekirge, kervan baskını, liman yangını, vergi isyanı, maden keşfi, hac panayırı
 ve sınır akınları eklenerek uzun oyunlarda tekrar çeşitliliği artırılmıştır.
 
-Genişletilmiş olay havuzu 119 kayda ulaşır. Dinamik olaylar düşük memnuniyet,
+Genişletilmiş olay havuzu 159 kayda ulaşır. Dinamik olaylar düşük memnuniyet,
 sınır baskısı, ticaret dalgalanması, hazine ve ikmal sorunlarını temsil eder.
 Aktif bölgesel etkiler ayrıca `trade_income_percent`,
 `region_gold_income_percent` ve `army_upkeep_percent` alanlarıyla ticaret,
@@ -33,6 +33,18 @@ yerel vergi ve o bölgedeki orduların ikmal yükünü geçici olarak değiştir
 `combat_defense_percent` ise aktif bölgedeki sahip orduların geçici savaş
 modlarını değiştirir. `population_delta` kırsal nüfusa uygulanır ve bölgenin
 toplam nüfusuyla birlikte güncellenir.
+
+1300 tarihsel zincirleri ayrıca Bohemya'daki Hussit ayaklanması ve savaşlarını,
+Litvanya'ya karşı Töton/HRE öncülüğündeki Baltık Haçlı seferlerini, 1477–1493
+Burgonya Veraset Savaşı'nı ve 1440 Habsburg imparatorluk sonucunu kapsar.
+Eklenen beş tarihsel genişleme hattı 1356 Altın Fermanı, 1415–1417 Konstanz
+Konsili, 1448–1463 İkinci Kosova'dan Bosna ve Trabzon'a uzanan Balkan hattı,
+1494–1527 İtalya Savaşları ve 1521–1529 Worms–Viyana hattıdır. Bu event'ler
+ayrı bir Hussit veya yeni pagan faction üretmez; mevcut Bohemya, Litvanya,
+Töton, HRE, Fransa, Avusturya, Osmanlı ve bölgesel faction'larını ilişki,
+koalisyon, takviye ve event flag'leriyle kullanır. HRE sonucunda elektör
+üyeleri korunur, ancak `ImperialSuccessionEffect` ile tarihsel Habsburg tacı
+seçimi kapatabilir.
 
 Event seçimleri `trade_network_modifiers` ile belirli ticaret merkezlerinin
 gelirini ve bağlı bölgelerin baharat üretimini kalıcı olarak değiştirebilir.

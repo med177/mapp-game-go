@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-09-16
+last_updated: 2026-09-18
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -32,6 +32,11 @@ temelidir. `AdvanceImperialPolitics()` periyodik Diyet'i çalıştırır; `HoldI
 üyelerin `ElectorWeight` değerleri ve adayların askerî/diplomatik gücüyle yeni imparatoru
 belirler. 1300 senaryosunda elektör ağırlıkları Altın Ferman öncesi değişken tutulur;
 senaryo verisi `data/imperial.json` dosyasındadır.
+
+1440 tarihli Habsburg imparatorluk event'i elektör üyeliğini silmez; ancak
+`ImperialSuccessionEffect` ile `ImperialState.EmperorID` değerini Avusturya'ya
+aktarabilir ve `ElectionLocked` ile sonraki seçim takvimini kapatabilir. Bu sonuç
+event seçimi ve save/load state'i üzerinden korunur.
 
 HRE oyuncusu, oyun içindeki `İmparatorluk` HUD düğmesi veya `I` kısayoluyla
 `internal/render/imperial_panel.go` panelini açar. Panel otoriteyi, mevcut imparatoru,

@@ -79,6 +79,14 @@ type UnitReinforcementEffect struct {
 	UnitCount int    `json:"unit_count"`
 }
 
+// ImperialSuccessionEffect tarihsel bir event'in HRE imparatorunu belirleyip
+// sonraki elektör seçimini kapatmasını tanımlar. Elektör üyeleri state'te
+// korunur; yalnızca seçim takvimi bu tarihsel hanedan sonucuna bağlanır.
+type ImperialSuccessionEffect struct {
+	EmperorID      string `json:"emperor_id"`
+	ElectionLocked bool   `json:"election_locked,omitempty"`
+}
+
 // FactionSubjugationTrigger, bir event'in oyuncunun seçtiği faction başka
 // bir üyeyi elediğinde veya vassal yaptığında açılmasını sağlar.
 type FactionSubjugationTrigger struct {
@@ -116,6 +124,7 @@ type Effect struct {
 	SuccessorRevivals         []SuccessorRevivalEffect     `json:"successor_revivals,omitempty"`
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
 	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
+	ImperialSuccession        *ImperialSuccessionEffect    `json:"imperial_succession,omitempty"`
 	SetFlags                  []string                     `json:"set_flags,omitempty"`
 	ClearFlags                []string                     `json:"clear_flags,omitempty"`
 	CapitalSettlementID       string                       `json:"capital_settlement_id,omitempty"`

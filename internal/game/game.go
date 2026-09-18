@@ -1534,6 +1534,7 @@ func (g *Game) applyHistoricalChoiceWithNotification(evt *events.Event, idx int,
 	playerWasEventFaction := evt != nil && evt.Target == "specific_faction" &&
 		g.gs.PlayerFactionID == faction.FactionID(evt.AffectedFaction)
 	g.resolvePoliticalTransformation(choice.Effect)
+	g.resolveImperialSuccession(choice.Effect)
 	if playerWasEventFaction && choice.Effect.PlayerFactionID != "" {
 		selectedFaction := faction.FactionID(choice.Effect.PlayerFactionID)
 		if selected := g.gs.Factions[selectedFaction]; selected != nil && !selected.IsEliminated {
@@ -1546,6 +1547,35 @@ func (g *Game) applyHistoricalChoiceWithNotification(evt *events.Event, idx int,
 		g.renderer.ShowCombatResult(msg)
 	}
 	g.renderer.AddEventDetail("[KARAR] "+evt.NameTR+": "+choice.LabelTR, g.historicalChoiceDetail(evt, choice))
+}
+
+// resolveImperialSuccession tarihsel event'in HRE imparatorluk makamına
+// verdiği sonucu uygular. Elektör üyeleri korunur; election_locked yalnızca
+// sonraki seçim takvimini devre dışı bırakır.
+func (g *Game) resolveImperialSuccession(effect events.Effect) {
+	if g == nil || g.gs == nil || g.gs.Imperial == nil || effect.ImperialSuccession == nil {
+		return
+	}
+	result := effect.ImperialSuccession
+	emperorID := faction.FactionID(result.EmperorID)
+	if emperorID == "" || g.gs.Factions[emperorID] == nil || g.gs.Factions[emperorID].IsEliminated {
+		return
+	}
+	g.gs.Imperial.EmperorID = emperorID
+	if result.ElectionLocked {
+		g.gs.Imperial.ElectionLocked = true
+		g.gs.Imperial.ElectionDueTurn = 0
+		if pending := g.gs.Imperial.PendingDecision; pending != nil && pending.Kind == state.ImperialDecisionElection {
+			g.gs.Imperial.PendingDecision = nil
+		}
+	}
+	if g.renderer != nil {
+		message := "HRE imparatorluk tacı " + g.factionNameTR(string(emperorID)) + " hanedanına geçti."
+		if result.ElectionLocked {
+			message += " Elektör seçimi tarihsel olarak sona erdi."
+		}
+		g.renderer.AddEvent("[İMPARATORLUK] " + message)
+	}
 }
 
 // resolveHistoricalDiplomaticOffers, event kararındaki barış/ittifak
@@ -2261,6 +2291,21 @@ func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) strin
 	}
 	if len(eff.CompleteTechs) > 0 {
 		parts = append(parts, "Teknoloji: "+strings.Join(techLabels(gs, eff.CompleteTechs), ", "))
+	}
+	if eff.ImperialSuccession != nil {
+		name := eff.ImperialSuccession.EmperorID
+		if gs != nil && gs.Factions != nil {
+			if f := gs.Factions[faction.FactionID(name)]; f != nil && f.NameTR != "" {
+				name = f.NameTR
+			}
+		}
+		if name != "" {
+			text := "İmparatorluk tacı: " + name
+			if eff.ImperialSuccession.ElectionLocked {
+				text += " (elektör seçimi kapanır)"
+			}
+			parts = append(parts, text)
+		}
 	}
 	if eff.CapitalSettlementID != "" {
 		turns := eff.CapitalMoveTurns
