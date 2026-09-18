@@ -1258,10 +1258,10 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 			if statusW < 0 {
 				statusW = 0
 			}
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 23, W: statusW}, trimTextToWidth(status, FaceSmall, statusW), color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 23, W: detailW}, paymentNote, color.RGBA{210, 205, 190, 220}, gameui.TextSmall, gameui.TextAlignEnd)
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 29, W: statusW}, trimTextToWidth(status, FaceSmall, statusW), color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 29, W: detailW}, paymentNote, color.RGBA{210, 205, 190, 220}, gameui.TextSmall, gameui.TextAlignEnd)
 		} else {
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 23, W: detailW}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 29, W: detailW}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
 
