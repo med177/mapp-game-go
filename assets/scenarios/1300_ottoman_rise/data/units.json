@@ -335,6 +335,7 @@
     "gold_cost": 180,
     "grain_upkeep": 6,
     "gold_upkeep": 4,
+    "merchant_trade_income": 8,
     "hp": 100,
     "morale": 20,
     "required_bldg": "port",

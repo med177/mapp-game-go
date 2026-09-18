@@ -255,11 +255,19 @@ filolarını yeniden değerlendirir:
 - Merchant gemisi aktif yönlü rotaya `+1 AmountPerTurn` ekler; merchant bonusunun
   üst sınırı rota panelinde görünen o rotanın hacmidir. Merchant filosu bu kapasiteye
   kadar tek stack'te gemi taşıyabilir; ayrı iki gemilik filolara bölünmesi gerekmez.
+- Merchant gemisi bu ek hacim gerçekten taşındığında ayrıca ticari aracılık kârı
+  üretir. Kâr yalnızca `taşınan hacim - AmountPerTurn` kadar merchant kargosuna
+  uygulanır; temel rota hacmi ikinci kez kârlandırılmaz. `UnitType.merchant_trade_income`
+  gemi başı temel kârı belirler; alan eski senaryolarda yoksa geriye uyumlu varsayılan
+  `8` kullanılır.
 - Filo, rotanın `FromFactionID` ihracat fraksiyonuna ait olmalı ve yönlü liman çiftinin hedef
   denizinde bulunmalıdır. Gemlik → Özi gibi rotalarda hedef deniz, Özi tarafındaki
   gerçek liman denizidir; bağlı tüm denizler aynı anda geçerli sayılmaz.
 - Askıdaki rota `ApplyTradeRoutes()` tarafından atlanır. Kaynak mal ya da hedef altın
-  yetersizse merchant katkısı bedava gelir üretmez; rota o tur gerçekleşmez.
+  yetersizse merchant katkısı ve merchant kârı bedava gelir üretmez; rota o tur gerçekleşmez.
+- Merchant kârı hedef denizde ihracat sahibine ait savaş gemisi devriyesi veya aynı
+  rotadaki escort filosu varsa `%100`, güvenlik desteği yoksa `%75` oranında uygulanır.
+  Abluka yüzdesi ise bundan bağımsız olarak taşınan toplam rota hacmini keser.
 - AI merchant görevi `Army.TradeRouteKey` ile kalıcıdır; rota anahtarı `gönderen->alan`
   yönünü korur ve save/load sonrası yeniden bağlanabilir.
 - Oyuncu seçili merchant filosundaki `ROTA ATA` düğmesiyle aynı geçerli rota listesinden
@@ -318,6 +326,14 @@ birimler faction ID sırasındaki ilk anlaşmalara gider. İki yönlü rotanın 
 anlaşma tavanına `+2` ekler ve ikili rota iki tarafın düşük tavanını kullanır.
 Tam maksimum liman ve pazar seviyesine sahip her bölge ayrıca devletin dış partner
 limitine `+1` ekler. Merchant bonusu bu temel kapasite havuzunu tüketmez.
+
+Merchant kapasitesi bu temel havuzdan ayrıdır. Rota uçlarındaki aktif primary ticaret
+merkezi merchant kapasitesine `+2`, secondary merkez `+1` katkı verir; iki uçtaki
+devletlerin en iyi aktif merkezi birlikte değerlendirilir. Aynı merkez merchant
+gemisi başına kâra primary için `+2`, secondary için `+1` ekler. Bu bonuslar
+`TradeCenterConfig` içindeki isteğe bağlı alanlarla veri üzerinden değiştirilebilir
+ve merkez sahibi değiştiğinde otomatik olarak yeni devlete geçer. Efektif kapasite,
+merchant kârı ve rota paneli aynı `GameState` yardımcılarını kullanır.
 
 ## Üretim Reçeteleri ve Lojistik
 

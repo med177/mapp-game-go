@@ -426,7 +426,9 @@ merkezlerini korur; Trabzon Karadeniz kapısı sonraki genişleme yönüdür.
 
 Bu objective'ler doğrudan bedava filo üretmez. Mevcut `merchant_trade.go` akışı aktif
 trade route'ları en az kapsanan merkezden doldurur, tehditli merkezde merchant gemisinden
-önce `%110` escort eşiğini tamamlar ve yalnız gerekli liman seviyesini yükseltir. Böylece
+önce `%110` escort eşiğini tamamlar ve yalnız gerekli liman seviyesini yükseltir. Merchant
+ticaret kararı artık faction ID'sine özel değildir: aktif ihracat rotası ve merchant birim
+tipi olan her AI aynı kapasite, gemi kârı ve güvenlik kurallarından yararlanır. Böylece
 profil, liman/ada/ticaret merkezi önceliğini gerçek üretim ve deniz tehdidi kapılarına
 aktarır; Venedik-Ceneviz rekabeti başlangıçtaki `-10` ilişkiyle korunur.
 

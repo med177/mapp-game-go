@@ -7,6 +7,16 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-18: Merchant filolarının ticari katkısı yeniden dengelendi. Aktif rotadaki
+  merchant gemileri ek hacim yanında yalnızca gerçekten taşınan merchant kargosundan
+  ayrı kâr üretiyor; primary/secondary ticaret merkezleri rota kapasitesine ve gemi
+  başı kâra veri tabanlı katkı veriyor. İhracat sahibinin devriye/escort güvenliği
+  merchant kârını `%75`ten `%100`e çıkarıyor, abluka toplam hacmi ayrıca kesiyor.
+  Preview, ekonomi çözümü, AI ve gelir popup/rota paneli aynı state yardımcılarını
+  kullanıyor. Kapsam: `internal/state/merchant_trade.go`, `internal/game/resolution.go`,
+  `internal/victory/victory.go`, `internal/ai/merchant_trade.go`, `internal/render/`,
+  `assets/scenarios/1300_ottoman_rise/data/{units,trade_centers}.json`.
+
 - 2026-09-18: Diplomasi hedef listesinde Hazine kolonu net tur değişimini,
   mevcut brüt geliri ve hazine rezervini `+net/brüt (rezerv)` biçiminde birlikte
   gösteriyor (`internal/render/diplom.go`). Net değer

@@ -108,13 +108,16 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 		}
 	}
 	for _, route := range gs.TradeRoutes {
-		if route == nil || route.SuspendedTurns > 0 || route.EffectiveAmountPerTurn() <= 0 {
+		if route == nil || route.SuspendedTurns > 0 {
 			continue
 		}
 		fromID := faction.FactionID(route.FromFactionID)
 		toID := faction.FactionID(route.ToFactionID)
-		amountPerTurn := route.EffectiveAmountPerTurn()
-		cost := route.GoldEarned()
+		amountPerTurn := gs.MerchantTradeRouteEffectiveAmount(route)
+		if amountPerTurn <= 0 || route.GoldPerUnit <= 0 {
+			continue
+		}
+		cost := amountPerTurn * route.GoldPerUnit
 		resourceKey := routeResource{fid: fromID, good: route.Good}
 		if availableGoods[resourceKey] < amountPerTurn || availableGold[toID] < cost {
 			continue
@@ -132,6 +135,10 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 			status.TradeRouteCustomsIncome += customs
 			availableGold[toID] += customs
 		}
+		merchantIncome := gs.MerchantTradeIncomeForRoute(route, amountPerTurn)
+		if route.FromFactionID == string(fid) {
+			status.MerchantTradeIncome += merchantIncome
+		}
 	}
 
 	if f := gs.Factions[fid]; f != nil && f.OverlordID != "" {
@@ -144,7 +151,7 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 	}
 	status.Upkeep = gs.FactionGoldUpkeep(fid)
 	status.BuildingUpkeep = gs.FactionBuildingGoldUpkeep(fid)
-	status.NetChange = status.Income + status.TradeRouteIncome - status.TradeRouteExpense + status.TradeRouteCustomsIncome + status.TributeIncome - status.TributePaid - status.Upkeep - status.BuildingUpkeep
+	status.NetChange = status.Income + status.TradePowerIncome + status.MerchantTradeIncome + status.TradeRouteIncome - status.TradeRouteExpense + status.TradeRouteCustomsIncome + status.TributeIncome - status.TributePaid - status.Upkeep - status.BuildingUpkeep
 	return status
 }
 

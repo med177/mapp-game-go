@@ -228,8 +228,10 @@ func merchantRouteFooterInfo(gs *state.GameState, a *army.Army) (label, bonusTex
 		return label, bonusText, bonusColor
 	}
 	bonus := gs.MerchantFleetTradeRouteBonus(a, route)
-	bonusCapacity := economy.MerchantBonusCapacity(route)
-	bonusText = "Gemi bonusu: +" + itoa(bonus) + "/" + itoa(bonusCapacity) + " hacim/tur · " + itoa(shipCount) + " gemi"
+	bonusCapacity := gs.MerchantBonusCapacity(route)
+	expectedVolume := gs.MerchantTradeRouteEffectiveAmount(route)
+	merchantIncome := gs.MerchantTradeIncomeForRoute(route, expectedVolume)
+	bonusText = "Gemi bonusu: +" + itoa(bonus) + "/" + itoa(bonusCapacity) + " hacim/tur · kâr +" + itoa(merchantIncome) + " · " + itoa(shipCount) + " gemi"
 	if gs.MerchantFleetSupportsTradeRoute(a, route) {
 		bonusText += " · konum uygun"
 		bonusColor = color.RGBA{145, 220, 155, 240}
@@ -363,7 +365,7 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 		detailText := fmt.Sprintf("%s · %d/tur · %d altın/birim", economy.GoodNameTR(route.Good), amount, route.GoldPerUnit)
 		fleet := r.gs.Armies[r.merchantRouteArmy]
 		potentialBonus := r.gs.MerchantFleetTradeRouteCapacityBonus(fleet, route)
-		detailText += fmt.Sprintf(" · Bonus +%d/%d", potentialBonus, economy.MerchantBonusCapacity(route))
+		detailText += fmt.Sprintf(" · Bonus +%d/%d", potentialBonus, r.gs.MerchantBonusCapacity(route))
 		if !enabled {
 			detailText += " · KAPASİTE DOLU"
 		}

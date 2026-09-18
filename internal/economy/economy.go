@@ -242,6 +242,8 @@ type TradeRoute struct {
 type TradeRouteGoldTransfer struct {
 	FromFactionID faction.FactionID
 	ToFactionID   faction.FactionID
+	RouteKey      string
+	Volume        int
 	Amount        int
 	CustomsAmount int
 }
@@ -382,6 +384,8 @@ func ApplyTradeRoutesWithTransfersAndCustoms(factions map[faction.FactionID]*fac
 		transfers = append(transfers, TradeRouteGoldTransfer{
 			FromFactionID: faction.FactionID(tr.FromFactionID),
 			ToFactionID:   faction.FactionID(tr.ToFactionID),
+			RouteKey:      tr.AssignmentKey(),
+			Volume:        amount,
 			Amount:        totalCost,
 			CustomsAmount: customs,
 		})

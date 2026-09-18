@@ -43,16 +43,21 @@ type UnitType struct {
 	SiegeBreachMaxFortLevel int `json:"siege_breach_max_fort_level,omitempty"`
 
 	// Maliyet
-	GoldCost      int `json:"gold_cost"`
-	GrainCost     int `json:"grain_cost"`
-	IronCost      int `json:"iron_cost"`
-	TimberCost    int `json:"timber_cost"`
-	StoneCost     int `json:"stone_cost"`
-	SpiceCost     int `json:"spice_cost"`
-	ClothCost     int `json:"cloth_cost"`
-	GrainUpkeep   int `json:"grain_upkeep"` // tur başına tahıl bakımı
-	GoldUpkeep    int `json:"gold_upkeep"`  // tur başına altın maaş/bakımı
-	TurnsRequired int `json:"turns_required"`
+	GoldCost    int `json:"gold_cost"`
+	GrainCost   int `json:"grain_cost"`
+	IronCost    int `json:"iron_cost"`
+	TimberCost  int `json:"timber_cost"`
+	StoneCost   int `json:"stone_cost"`
+	SpiceCost   int `json:"spice_cost"`
+	ClothCost   int `json:"cloth_cost"`
+	GrainUpkeep int `json:"grain_upkeep"` // tur başına tahıl bakımı
+	GoldUpkeep  int `json:"gold_upkeep"`  // tur başına altın maaş/bakımı
+	// MerchantTradeIncome, aktif bir ticaret rotasında hedef denize ulaşan
+	// ticaret gemisinin tur başına aracılık/kâr katkısıdır. Yalnızca
+	// CategoryNavalTrade birimleri için kullanılır; alanı olmayan eski
+	// senaryolar güvenli varsayılanla çalışır.
+	MerchantTradeIncome int `json:"merchant_trade_income,omitempty"`
+	TurnsRequired       int `json:"turns_required"`
 
 	// Gereksinimler
 	RequiredTech      []string `json:"required_tech"`       // tüm listedeki teknolojiler gerekir

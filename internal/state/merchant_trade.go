@@ -96,7 +96,7 @@ func (s *GameState) MerchantFleetTradeStatuses(dst map[army.ArmyID]MerchantFleet
 		fleet := s.Armies[fleetID]
 		route := routes[fleet.TradeRouteKey]
 		count := fleetShips[fleetID]
-		remaining := economy.MerchantBonusCapacity(route) - (activeShips[fleet.TradeRouteKey] - count)
+		remaining := s.MerchantBonusCapacity(route) - (activeShips[fleet.TradeRouteKey] - count)
 		bonus := 0
 		if remaining >= 0 {
 			bonus = count
@@ -331,7 +331,50 @@ func (s *GameState) MerchantTradeRouteHasCapacityForFleet(fleet *army.Army, rout
 	if s == nil || fleet == nil || route == nil {
 		return false
 	}
-	return s.MerchantTradeRouteActiveMerchantShips(route, fleet.ID) < economy.MerchantBonusCapacity(route)
+	return s.MerchantTradeRouteActiveMerchantShips(route, fleet.ID) < s.MerchantBonusCapacity(route)
+}
+
+// MerchantBonusCapacity, bir ticaret rotasının merchant filosuna açtığı
+// ek hacim tavanını döner. Temel rota hacmi korunur; rotanın iki ucundaki
+// aktif ticaret merkezleri, merchant gemilerinin kullanabileceği ek ticari
+// kapasite sağlar.
+func (s *GameState) MerchantBonusCapacity(route *economy.TradeRoute) int {
+	if route == nil {
+		return 0
+	}
+	base := economy.MerchantBonusCapacity(route)
+	if s == nil || base <= 0 {
+		return base
+	}
+	return base + s.merchantRouteCenterCapacityBonus(route)
+}
+
+func (s *GameState) merchantRouteCenterCapacityBonus(route *economy.TradeRoute) int {
+	if s == nil || route == nil {
+		return 0
+	}
+	config := s.TradeCenters.ApplyDefaultBonuses()
+	bonusForFaction := func(fid string) int {
+		best := 0
+		for _, center := range config.Centers {
+			region := s.Regions[center.ID]
+			if region == nil || region.OwnerID != fid || !center.ActiveInYear(s.Year) {
+				continue
+			}
+			bonus := config.SecondaryMerchantCapacityBonus
+			if center.Tier == world.TradeCenterPrimary {
+				bonus = config.PrimaryMerchantCapacityBonus
+			}
+			if center.MerchantCapacityBonus > 0 {
+				bonus = center.MerchantCapacityBonus
+			}
+			if bonus > best {
+				best = bonus
+			}
+		}
+		return best
+	}
+	return bonusForFaction(route.FromFactionID) + bonusForFaction(route.ToFactionID)
 }
 
 // MerchantFleetTradeRouteCapacityBonus, filonun rota kapasitesinden alabileceği
@@ -342,7 +385,7 @@ func (s *GameState) MerchantFleetTradeRouteCapacityBonus(fleet *army.Army, route
 		return 0
 	}
 	count := s.merchantShipCount(fleet)
-	capacity := economy.MerchantBonusCapacity(route) - s.MerchantTradeRouteActiveMerchantShips(route, fleet.ID)
+	capacity := s.MerchantBonusCapacity(route) - s.MerchantTradeRouteActiveMerchantShips(route, fleet.ID)
 	if capacity < 0 {
 		return 0
 	}
@@ -350,6 +393,172 @@ func (s *GameState) MerchantFleetTradeRouteCapacityBonus(fleet *army.Army, route
 		return capacity
 	}
 	return count
+}
+
+// MerchantTradeRouteActiveBonus, ekonomi çözümlemesine yan etki vermeden,
+// hedef denizine ulaşmış merchant gemilerinin rotaya sağlayacağı hacmi döner.
+// RefreshMerchantTradeBonuses aynı sözleşmeyi runtime alanına yazar.
+func (s *GameState) MerchantTradeRouteActiveBonus(route *economy.TradeRoute) int {
+	if s == nil || route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
+		return 0
+	}
+	capacity := s.MerchantBonusCapacity(route)
+	if capacity <= 0 {
+		return 0
+	}
+	fleetIDs := make([]army.ArmyID, 0, len(s.Armies))
+	for fleetID := range s.Armies {
+		fleetIDs = append(fleetIDs, fleetID)
+	}
+	sort.Slice(fleetIDs, func(i, j int) bool { return fleetIDs[i] < fleetIDs[j] })
+	total := 0
+	for _, fleetID := range fleetIDs {
+		fleet := s.Armies[fleetID]
+		if fleet == nil || !s.MerchantFleetSupportsTradeRoute(fleet, route) {
+			continue
+		}
+		remaining := capacity - total
+		if remaining <= 0 {
+			break
+		}
+		count := s.merchantShipCount(fleet)
+		if count > remaining {
+			count = remaining
+		}
+		total += count
+	}
+	return total
+}
+
+// MerchantTradeRouteEffectiveAmount, preview katmanının henüz runtime rota
+// bonusu yenilenmemiş olsa bile mevcut filo konumunu doğru görmesini sağlar.
+func (s *GameState) MerchantTradeRouteEffectiveAmount(route *economy.TradeRoute) int {
+	if s == nil || route == nil {
+		return 0
+	}
+	bonus := s.MerchantTradeRouteActiveBonus(route)
+	amount := route.AmountPerTurn + bonus
+	if amount < 0 {
+		amount = 0
+	}
+	blockade := route.BlockadePercent
+	if blockade < 0 {
+		blockade = 0
+	}
+	if blockade > economy.MaxTradeRouteBlockadePercent {
+		blockade = economy.MaxTradeRouteBlockadePercent
+	}
+	return amount * (economy.MaxTradeRouteBlockadePercent - blockade) / economy.MaxTradeRouteBlockadePercent
+}
+
+// MerchantTradeIncomeForRoute, gerçekten taşınan merchant hacminden doğan
+// aracılık gelirini döner. Aktif olmayan, abluka nedeniyle yalnızca temel
+// hacmi taşıyan veya başarısız olan rotalar merchant kârı üretmez.
+func (s *GameState) MerchantTradeIncomeForRoute(route *economy.TradeRoute, transportedVolume int) int {
+	if s == nil || route == nil || transportedVolume <= 0 || route.SuspendedTurns > 0 {
+		return 0
+	}
+	merchantVolume := transportedVolume - route.AmountPerTurn
+	if merchantVolume <= 0 {
+		return 0
+	}
+	activeBonus := s.MerchantTradeRouteActiveBonus(route)
+	if merchantVolume > activeBonus {
+		merchantVolume = activeBonus
+	}
+	if merchantVolume <= 0 {
+		return 0
+	}
+	perShip := s.merchantTradeIncomePerShip()
+	if perShip <= 0 {
+		return 0
+	}
+	perShip += s.merchantRouteCenterIncomeBonus(route)
+	return merchantVolume * perShip * s.MerchantTradeRouteSafetyPercent(route) / 100
+}
+
+func (s *GameState) merchantTradeIncomePerShip() int {
+	if s == nil {
+		return 8
+	}
+	for _, unitType := range s.UnitTypes {
+		if unitType == nil || unitType.Category != army.CategoryNavalTrade {
+			continue
+		}
+		if unitType.MerchantTradeIncome > 0 {
+			return unitType.MerchantTradeIncome
+		}
+	}
+	return 8
+}
+
+func (s *GameState) merchantRouteCenterIncomeBonus(route *economy.TradeRoute) int {
+	if s == nil || route == nil {
+		return 0
+	}
+	config := s.TradeCenters.ApplyDefaultBonuses()
+	bonusForFaction := func(fid string) int {
+		best := 0
+		for _, center := range config.Centers {
+			region := s.Regions[center.ID]
+			if region == nil || region.OwnerID != fid || !center.ActiveInYear(s.Year) {
+				continue
+			}
+			bonus := config.SecondaryMerchantIncomeBonus
+			if center.Tier == world.TradeCenterPrimary {
+				bonus = config.PrimaryMerchantIncomeBonus
+			}
+			if center.MerchantIncomeBonus > 0 {
+				bonus = center.MerchantIncomeBonus
+			}
+			if bonus > best {
+				best = bonus
+			}
+		}
+		return best
+	}
+	return maxIntState(bonusForFaction(route.FromFactionID), bonusForFaction(route.ToFactionID))
+}
+
+// MerchantTradeRouteSafetyPercent, merchant filosunun aynı hedef denizde
+// devriye veya escort desteği olup olmadığını değerlendirir. Abluka kesintisi
+// ayrıca rota hacminde uygulanır; bu katsayı yalnız merchant kârını etkiler.
+func (s *GameState) MerchantTradeRouteSafetyPercent(route *economy.TradeRoute) int {
+	if s == nil || route == nil {
+		return 0
+	}
+	for _, seaID := range s.MerchantTradeRouteSeaRegions(route) {
+		if s.patrolWarshipCountInSea(seaID, route.FromFactionID) > 0 || s.merchantRouteHasEscort(route, seaID) {
+			return 100
+		}
+	}
+	return 75
+}
+
+func (s *GameState) merchantRouteHasEscort(route *economy.TradeRoute, seaID world.RegionID) bool {
+	if s == nil || route == nil || seaID == "" {
+		return false
+	}
+	for _, fleet := range s.Armies {
+		if fleet == nil || fleet.OwnerID != route.FromFactionID || !fleet.IsAtSea() || fleet.RegionID != seaID || s.fleetWarshipCount(fleet) <= 0 || fleet.NavalMission == nil {
+			continue
+		}
+		if fleet.NavalMission.Kind != army.NavalMissionEscort {
+			continue
+		}
+		merchantFleet := s.Armies[fleet.NavalMission.TargetFleetID]
+		if merchantFleet != nil && merchantFleet.OwnerID == route.FromFactionID && merchantFleet.TradeRouteKey == route.AssignmentKey() && merchantFleet.IsAtSea() && merchantFleet.RegionID == seaID {
+			return true
+		}
+	}
+	return false
+}
+
+func maxIntState(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 // MerchantFleetTradeRouteBonus, seçili merchant filosunun mevcut konumunda
@@ -452,7 +661,7 @@ func (s *GameState) RefreshMerchantTradeBonuses() {
 			continue
 		}
 		count := s.MerchantFleetTradeRouteBonus(fleet, route)
-		remaining := economy.MerchantBonusCapacity(route) - route.MerchantAmountBonus
+		remaining := s.MerchantBonusCapacity(route) - route.MerchantAmountBonus
 		if count > remaining {
 			count = remaining
 		}

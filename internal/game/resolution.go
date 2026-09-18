@@ -625,11 +625,21 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	tradeRouteIncomeByFaction := make(map[string]int)
 	tradeRouteExpenseByFaction := make(map[string]int)
 	tradeRouteCustomsByFaction := make(map[string]int)
+	merchantTradeIncomeByFaction := make(map[string]int)
 	tradePowerIncomeByFaction := make(map[string]int)
+	routesByKey := make(map[string]*economy.TradeRoute, len(gs.TradeRoutes))
+	for _, route := range gs.TradeRoutes {
+		if route != nil && route.AssignmentKey() != "" {
+			routesByKey[route.AssignmentKey()] = route
+		}
+	}
 	for _, transfer := range tradeTransfers {
 		tradeRouteIncomeByFaction[string(transfer.FromFactionID)] += transfer.Amount
 		tradeRouteExpenseByFaction[string(transfer.ToFactionID)] += transfer.Amount
 		tradeRouteCustomsByFaction[string(transfer.ToFactionID)] += transfer.CustomsAmount
+		if route := routesByKey[transfer.RouteKey]; route != nil {
+			merchantTradeIncomeByFaction[string(transfer.FromFactionID)] += gs.MerchantTradeIncomeForRoute(route, transfer.Volume)
+		}
 	}
 	for _, log := range tradeLogs {
 		// Ticaret logları oyuncuya aitse göster
@@ -674,8 +684,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		// devletin tahıl arz cezasından etkilenmez.
 		goldIncome += raidLoot.Gold
 		tradePowerIncome := tradePowerIncomeByFaction[fidStr]
-		goldIncome += tradePowerIncome
-		f.Gold += goldIncome
+		merchantTradeIncome := merchantTradeIncomeByFaction[fidStr]
+		f.Gold += goldIncome + tradePowerIncome + merchantTradeIncome
 		if f.Gold < 0 {
 			f.Gold = 0
 		}
@@ -704,6 +714,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			TradeRouteIncome:        tradeRouteIncomeByFaction[fidStr],
 			TradeRouteExpense:       tradeRouteExpenseByFaction[fidStr],
 			TradeRouteCustomsIncome: tradeRouteCustomsByFaction[fidStr],
+			MerchantTradeIncome:     merchantTradeIncome,
 			TradePowerIncome:        tradePowerIncome,
 			Upkeep:                  goldUpkeep,
 			BuildingUpkeep:          buildingGoldUpkeep,
@@ -718,7 +729,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			goldStatus.GiftIncome = ledger.GiftIncome
 			goldStatus.GiftExpense = ledger.GiftExpense
 		}
-		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.TradePowerIncome - goldUpkeep - buildingGoldUpkeep
+		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.TradePowerIncome + goldStatus.MerchantTradeIncome - goldUpkeep - buildingGoldUpkeep
 		if goldStatus.Shortage > 0 {
 			applyGoldUpkeepShortagePenalty(gs, fidStr, goldStatus.Upkeep, goldStatus.Shortage, &goldStatus)
 		}

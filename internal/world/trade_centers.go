@@ -13,31 +13,41 @@ const (
 	TradeCenterPrimary   TradeCenterTier = "primary"
 	TradeCenterSecondary TradeCenterTier = "secondary"
 
-	defaultPrimaryTradeCapacityBonus   = 2
-	defaultSecondaryTradeCapacityBonus = 1
-	defaultPrimaryTradeIncomeBonus     = 4
-	defaultSecondaryTradeIncomeBonus   = 2
+	defaultPrimaryTradeCapacityBonus      = 2
+	defaultSecondaryTradeCapacityBonus    = 1
+	defaultPrimaryTradeIncomeBonus        = 4
+	defaultSecondaryTradeIncomeBonus      = 2
+	defaultPrimaryMerchantCapacityBonus   = 2
+	defaultSecondaryMerchantCapacityBonus = 1
+	defaultPrimaryMerchantIncomeBonus     = 2
+	defaultSecondaryMerchantIncomeBonus   = 1
 )
 
 type TradeCenterDef struct {
-	ID                 RegionID        `json:"region_id"`
-	NameTR             string          `json:"name_tr,omitempty"`
-	Tier               TradeCenterTier `json:"tier,omitempty"`
-	TradeCapacityBonus int             `json:"trade_capacity_bonus,omitempty"`
-	TradeIncomeBonus   int             `json:"trade_income_bonus,omitempty"`
-	Links              []RegionID      `json:"links,omitempty"`
-	WorldX             int             `json:"world_x,omitempty"`
-	WorldY             int             `json:"world_y,omitempty"`
-	OffMap             bool            `json:"off_map,omitempty"`
-	UnlockYear         int             `json:"unlock_year,omitempty"`
+	ID                    RegionID        `json:"region_id"`
+	NameTR                string          `json:"name_tr,omitempty"`
+	Tier                  TradeCenterTier `json:"tier,omitempty"`
+	TradeCapacityBonus    int             `json:"trade_capacity_bonus,omitempty"`
+	TradeIncomeBonus      int             `json:"trade_income_bonus,omitempty"`
+	MerchantCapacityBonus int             `json:"merchant_capacity_bonus,omitempty"`
+	MerchantIncomeBonus   int             `json:"merchant_income_bonus,omitempty"`
+	Links                 []RegionID      `json:"links,omitempty"`
+	WorldX                int             `json:"world_x,omitempty"`
+	WorldY                int             `json:"world_y,omitempty"`
+	OffMap                bool            `json:"off_map,omitempty"`
+	UnlockYear            int             `json:"unlock_year,omitempty"`
 }
 
 type TradeCenterConfig struct {
-	PrimaryTradeCapacityBonus   int              `json:"primary_trade_capacity_bonus,omitempty"`
-	SecondaryTradeCapacityBonus int              `json:"secondary_trade_capacity_bonus,omitempty"`
-	PrimaryTradeIncomeBonus     int              `json:"primary_trade_income_bonus,omitempty"`
-	SecondaryTradeIncomeBonus   int              `json:"secondary_trade_income_bonus,omitempty"`
-	Centers                     []TradeCenterDef `json:"centers"`
+	PrimaryTradeCapacityBonus      int              `json:"primary_trade_capacity_bonus,omitempty"`
+	SecondaryTradeCapacityBonus    int              `json:"secondary_trade_capacity_bonus,omitempty"`
+	PrimaryTradeIncomeBonus        int              `json:"primary_trade_income_bonus,omitempty"`
+	SecondaryTradeIncomeBonus      int              `json:"secondary_trade_income_bonus,omitempty"`
+	PrimaryMerchantCapacityBonus   int              `json:"primary_merchant_capacity_bonus,omitempty"`
+	SecondaryMerchantCapacityBonus int              `json:"secondary_merchant_capacity_bonus,omitempty"`
+	PrimaryMerchantIncomeBonus     int              `json:"primary_merchant_income_bonus,omitempty"`
+	SecondaryMerchantIncomeBonus   int              `json:"secondary_merchant_income_bonus,omitempty"`
+	Centers                        []TradeCenterDef `json:"centers"`
 }
 
 // ApplyDefaultBonuses eski senaryo verilerinde henüz bulunmayan merkez bonus
@@ -56,6 +66,18 @@ func (c TradeCenterConfig) ApplyDefaultBonuses() TradeCenterConfig {
 	}
 	if c.SecondaryTradeIncomeBonus == 0 {
 		c.SecondaryTradeIncomeBonus = defaultSecondaryTradeIncomeBonus
+	}
+	if c.PrimaryMerchantCapacityBonus == 0 {
+		c.PrimaryMerchantCapacityBonus = defaultPrimaryMerchantCapacityBonus
+	}
+	if c.SecondaryMerchantCapacityBonus == 0 {
+		c.SecondaryMerchantCapacityBonus = defaultSecondaryMerchantCapacityBonus
+	}
+	if c.PrimaryMerchantIncomeBonus == 0 {
+		c.PrimaryMerchantIncomeBonus = defaultPrimaryMerchantIncomeBonus
+	}
+	if c.SecondaryMerchantIncomeBonus == 0 {
+		c.SecondaryMerchantIncomeBonus = defaultSecondaryMerchantIncomeBonus
 	}
 	return c
 }

@@ -3,6 +3,10 @@
   "secondary_trade_capacity_bonus": 1,
   "primary_trade_income_bonus": 4,
   "secondary_trade_income_bonus": 2,
+  "primary_merchant_capacity_bonus": 2,
+  "secondary_merchant_capacity_bonus": 1,
+  "primary_merchant_income_bonus": 2,
+  "secondary_merchant_income_bonus": 1,
   "centers": [
     {
       "region_id": "venice",

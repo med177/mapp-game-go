@@ -950,6 +950,7 @@ type GoldEconomyStatus struct {
 	TradeRouteIncome        int
 	TradeRouteExpense       int
 	TradeRouteCustomsIncome int
+	MerchantTradeIncome     int
 	TradePowerIncome        int
 	TributeIncome           int
 	TributePaid             int
