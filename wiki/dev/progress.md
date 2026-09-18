@@ -7,6 +7,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-18: Diplomasi hedef listesinde Hazine kolonu net tur değişimini,
+  mevcut brüt geliri ve hazine rezervini `+net/brüt (rezerv)` biçiminde birlikte
+  gösteriyor (`internal/render/diplom.go`). Net değer
+  `victory.GoldEconomyPreview()` üzerinden hesaplanıyor.
+
 - 2026-09-18: 1300 senaryosuna Hussit Savaşları (1419–1434), Litvanya'ya karşı
   Baltık/Katolik Haçlı seferleri ve Grunwald (1345–1410), Burgonya Veraset
   Savaşı (1477–1493) ile Habsburg imparatorluk tacı (1440) event zincirleri

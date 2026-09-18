@@ -1868,14 +1868,15 @@ func diplomacyPanelPointerHit(mx, my float64, gs *state.GameState, focusIdx, scr
 
 func factionTreasuryLabel(gs *state.GameState, fid faction.FactionID) string {
 	if gs == nil || fid == "" {
-		return "0 / 0"
+		return "+0/0 (0)"
 	}
+	netIncome := victory.GoldEconomyPreview(gs, fid).NetChange
 	income := victory.GoldIncomeForFaction(gs, fid)
 	gold := 0
 	if f := gs.Factions[fid]; f != nil {
 		gold = f.Gold
 	}
-	return itoa(income) + " / " + itoa(gold)
+	return formatSignedAmount(netIncome) + "/" + itoa(income) + " (" + itoa(gold) + ")"
 }
 
 func sortedFactions(gs *state.GameState) []faction.FactionID {
