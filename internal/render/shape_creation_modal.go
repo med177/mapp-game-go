@@ -128,7 +128,7 @@ func (r *Renderer) handleEditNewShapeModalInput() InputAction {
 
 func (r *Renderer) advanceEditNewShapeModal() {
 	if r.editTextTarget == editTextShapeID {
-		value := strings.TrimSpace(string(r.editTextRunes))
+		value := normalizeEditID(string(r.editTextRunes))
 		if value == "" {
 			r.editTextError = "Shape ID boş olamaz."
 			return

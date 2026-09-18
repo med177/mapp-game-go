@@ -251,11 +251,18 @@ func (r *Renderer) drawEditSettlementButtons(screen *ebiten.Image, region *world
 		renameSettlementLabel = "Isim Sec"
 		deleteSettlementLabel = "Sil Sec"
 	}
+	settlementIDLabel := "Yerleşim ID"
+	if region != nil && region.IsSea {
+		settlementIDLabel = "ID Yok"
+	} else if !canSettlement {
+		settlementIDLabel = "ID Seç"
+	}
 	drawEditInspectorButton(screen, editButtonAddSettlement, addSettlementLabel, canAdd)
 	drawEditInspectorButton(screen, editButtonSettlementType, settlementTypeLabel, canSettlement)
 	drawEditInspectorButton(screen, editButtonSetCenterSettlement, "Merkez Yap", canSettlement)
 	drawEditInspectorButton(screen, editButtonRenameSettlement, renameSettlementLabel, canSettlement)
 	drawEditInspectorButton(screen, editButtonDeleteSettlement, deleteSettlementLabel, canSettlement)
+	drawEditInspectorButton(screen, editButtonSettlementID, settlementIDLabel, canSettlement)
 	r.drawEditArmyButtons(screen, region)
 }
 
@@ -612,6 +619,7 @@ const (
 	editButtonSettlementType
 	editButtonSetCenterSettlement
 	editButtonRenameSettlement
+	editButtonSettlementID
 	editButtonSetFactionCapital
 	editButtonRegionTerrain
 	editButtonRegionOwner
@@ -701,6 +709,8 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return rightRect(1)
 	case editButtonDeleteSettlement:
 		return leftRect(2)
+	case editButtonSettlementID:
+		return rightRect(2)
 	case editButtonAddRegion:
 		return leftRect(0)
 	case editButtonDeleteRegion:
@@ -858,6 +868,7 @@ func editSettlementInspectorButtonAt(mx, my float64) editInspectorButton {
 		editButtonSetCenterSettlement,
 		editButtonRenameSettlement,
 		editButtonDeleteSettlement,
+		editButtonSettlementID,
 		editButtonAddArmy,
 		editButtonAddFleet,
 		editButtonDeleteArmy,
@@ -2252,6 +2263,10 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 			if r.hasEditSelection() {
 				r.beginEditRename(editTextSettlementNameTR)
 			}
+		case editButtonSettlementID:
+			if r.hasEditSelection() {
+				r.beginEditRename(editTextSettlementID)
+			}
 		case editButtonDeleteSettlement:
 			if r.hasEditSelection() {
 				r.deleteSelectedSettlement()
@@ -2452,6 +2467,7 @@ func (r *Renderer) beginEditRename(target editTextTarget) {
 	}
 	switch target {
 	case editTextSettlementNameTR:
+	case editTextSettlementID:
 		if !r.hasEditSelection() {
 			return
 		}
@@ -2477,6 +2493,9 @@ func (r *Renderer) beginEditRename(target editTextTarget) {
 	}
 	if target == editTextRegionID {
 		r.editTextRunes = append(r.editTextRunes, []rune(string(region.ID))...)
+	}
+	if target == editTextSettlementID && r.hasEditSelection() {
+		r.editTextRunes = append(r.editTextRunes, []rune(region.Settlements[r.editSelectedSettlement].ID)...)
 	}
 	r.editRenaming = true
 	r.editDraggingSettlement = false
@@ -2513,7 +2532,7 @@ func (r *Renderer) handleEditRenameInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyBackspace) && len(r.editTextRunes) > 0 {
 		r.editTextRunes = r.editTextRunes[:len(r.editTextRunes)-1]
 	}
-	if (r.editTextTarget == editTextRegionID || r.editTextTarget == editTextShapeID) && r.keyJustPressed(ebiten.KeyA) && editUndoPressed() {
+	if (r.editTextTarget == editTextRegionID || r.editTextTarget == editTextSettlementID || r.editTextTarget == editTextShapeID) && r.keyJustPressed(ebiten.KeyA) && editUndoPressed() {
 		r.editTextRunes = r.editTextRunes[:0]
 		return InputAction{}
 	}
@@ -2539,13 +2558,42 @@ func (r *Renderer) commitEditRename() {
 	newName := strings.TrimSpace(string(r.editTextRunes))
 	rid := region.ID
 	switch r.editTextTarget {
+	case editTextSettlementID:
+		if !r.hasEditSelection() {
+			break
+		}
+		idx := r.editSelectedSettlement
+		oldID := region.Settlements[idx].ID
+		newID := normalizeEditID(newName)
+		if newID == "" {
+			r.editTextError = "Yerleşim ID boş olamaz."
+			return
+		}
+		if strings.IndexFunc(newID, unicode.IsSpace) >= 0 {
+			r.editTextError = "Yerleşim ID boşluk içermemeli."
+			return
+		}
+		if newID != oldID && r.settlementIDInUse(newID, rid, idx) {
+			r.editTextError = "Bu yerleşim ID zaten var."
+			return
+		}
+		if newID != oldID {
+			before := r.worldSnapshot()
+			r.renameSettlementID(rid, idx, oldID, newID)
+			after := r.worldSnapshot()
+			r.pushWorldSnapshotCommand(before, after)
+		}
+		r.editRenaming = false
+		r.editTextTarget = editTextNone
+		r.editTextError = ""
+		return
 	case editTextRegionID:
-		newID := world.RegionID(newName)
+		newID := world.RegionID(normalizeEditID(newName))
 		if newID == "" {
 			r.editTextError = "ID bos olamaz."
 			return
 		}
-		if strings.IndexFunc(newName, unicode.IsSpace) >= 0 {
+		if strings.IndexFunc(string(newID), unicode.IsSpace) >= 0 {
 			r.editTextError = "ID bosluk icermemeli."
 			return
 		}
@@ -2633,6 +2681,7 @@ func (r *Renderer) commitNewShapeInput() {
 	}
 	value := strings.TrimSpace(string(r.editTextRunes))
 	if r.editTextTarget == editTextShapeID {
+		value = normalizeEditID(value)
 		if value == "" {
 			r.editTextError = "Shape ID boş olamaz."
 			return
@@ -2775,6 +2824,10 @@ func (r *Renderer) initialSeaShapeRings(shapeID string) [][][2]float32 {
 
 func (r *Renderer) editTextLabel() string {
 	switch r.editTextTarget {
+	case editTextSettlementNameTR:
+		return "Yerleşim Adı"
+	case editTextSettlementID:
+		return "Yerleşim ID"
 	case editTextRegionNameTR:
 		if region := r.gs.Regions[r.editSelectedRegion]; region != nil && region.IsTerrainArea {
 			return "Arazi Adı"
@@ -3405,6 +3458,56 @@ func (r *Renderer) setSettlementNameTR(rid world.RegionID, index int, name strin
 		return
 	}
 	region.Settlements[index].NameTR = name
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = index
+}
+
+func (r *Renderer) settlementIDInUse(id string, exceptRegion world.RegionID, exceptIndex int) bool {
+	if r == nil || r.gs == nil || id == "" {
+		return false
+	}
+	for rid, region := range r.gs.Regions {
+		if region == nil {
+			continue
+		}
+		for index, settlement := range region.Settlements {
+			if rid == exceptRegion && index == exceptIndex {
+				continue
+			}
+			if settlement.ID == id {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (r *Renderer) renameSettlementID(rid world.RegionID, index int, oldID, newID string) {
+	if r == nil || r.gs == nil || oldID == "" || newID == "" || oldID == newID {
+		return
+	}
+	region := r.gs.Regions[rid]
+	if region == nil || index < 0 || index >= len(region.Settlements) || region.Settlements[index].ID != oldID {
+		return
+	}
+	region.Settlements[index].ID = newID
+
+	for _, f := range r.gs.Factions {
+		if f == nil {
+			continue
+		}
+		if f.CapitalSettlementID == oldID {
+			f.CapitalSettlementID = newID
+		}
+		if f.PendingCapitalSettlementID == oldID {
+			f.PendingCapitalSettlementID = newID
+		}
+	}
+	for _, a := range r.gs.Armies {
+		if a != nil && a.DockedSettlementID == oldID {
+			a.DockedSettlementID = newID
+		}
+	}
 	r.editSelectedRegion = rid
 	r.editSelectedSettlement = index
 }
@@ -4262,7 +4365,7 @@ func (r *Renderer) openFactionEditForm() {
 		create:     false,
 		active:     editFactionFieldNameTR,
 		originalID: f.ID,
-		id:         string(f.ID),
+		id:         normalizeEditID(string(f.ID)),
 		name:       f.Name,
 		nameTR:     f.NameTR,
 		religion:   f.Religion,
@@ -4282,7 +4385,7 @@ func (r *Renderer) openFactionEditForm() {
 
 func (r *Renderer) saveFactionForm() bool {
 	form := &r.editFactionForm
-	fid := faction.FactionID(strings.TrimSpace(form.id))
+	fid := faction.FactionID(normalizeEditID(form.id))
 	if fid == "" {
 		form.errorText = "ID bos olamaz."
 		return false
@@ -4497,7 +4600,7 @@ func (r *Renderer) handleFactionFormClick(fx, fy float64) bool {
 }
 
 func (r *Renderer) cycleFactionFormOverlordTarget() {
-	self := faction.FactionID(strings.TrimSpace(r.editFactionForm.id))
+	self := faction.FactionID(normalizeEditID(r.editFactionForm.id))
 	ids := sortedFactionIDs(r.gs.Factions)
 	options := []faction.FactionID{""}
 	for _, fid := range ids {
@@ -4555,6 +4658,7 @@ func (r *Renderer) appendFactionFormRune(ch rune) {
 	}
 	switch r.editFactionForm.active {
 	case editFactionFieldID:
+		ch = unicode.ToLower(ch)
 		if (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || ch == '_' || ch == '-' {
 			r.editFactionForm.id = limitStringRunes(r.editFactionForm.id+string(ch), 40)
 		}
@@ -4664,7 +4768,7 @@ func (r *Renderer) setFactionFormRelationTarget(target faction.FactionID) {
 		r.editFactionForm.relationStance = faction.StancePeace
 		return
 	}
-	self := faction.FactionID(strings.TrimSpace(r.editFactionForm.id))
+	self := faction.FactionID(normalizeEditID(r.editFactionForm.id))
 	if self == "" {
 		self = r.editFactionForm.originalID
 	}
@@ -4695,7 +4799,7 @@ func (r *Renderer) relationForForm(self, target faction.FactionID) *faction.Rela
 }
 
 func (r *Renderer) cycleFactionFormRelationTarget() {
-	self := faction.FactionID(strings.TrimSpace(r.editFactionForm.id))
+	self := faction.FactionID(normalizeEditID(r.editFactionForm.id))
 	ids := sortedFactionIDs(r.gs.Factions)
 	if len(ids) == 0 {
 		r.setFactionFormRelationTarget("")

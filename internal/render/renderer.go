@@ -583,6 +583,7 @@ type editTextTarget int
 const (
 	editTextNone editTextTarget = iota
 	editTextSettlementNameTR
+	editTextSettlementID
 	editTextRegionNameTR
 	editTextRegionName
 	editTextRegionID

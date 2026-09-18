@@ -313,7 +313,7 @@ func (r *Renderer) saveEditRegionForm() {
 	region.Population = ints[editRegionFieldPopulation]
 	region.RuralPopulation = ints[editRegionFieldRuralPopulation]
 	region.Religion = strings.TrimSpace(form.values[editRegionFieldReligion])
-	region.ActiveEventID = strings.TrimSpace(form.values[editRegionFieldActiveEvent])
+	region.ActiveEventID = normalizeEditID(form.values[editRegionFieldActiveEvent])
 	region.UnlockTurn = ints[editRegionFieldUnlockTurn]
 	r.requestEditWorldMapRebuild()
 	after := r.worldSnapshot()

@@ -1090,6 +1090,12 @@ Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve d
 
 ## Input Yönetimi
 
+Edit Mode yerleşim inspector'ındaki `Yerleşim ID` düğmesi mevcut metin girişini
+açar. Edit Mode'da elle girilen ID'ler boşlukları kırpıp lowercase'e çevrilir;
+yeni settlement değeri ayrıca global olarak benzersiz ve boşluksuz olmalıdır; değişiklik
+faction başkent/pending başkent ve dock edilmiş filo referanslarıyla birlikte
+uygulanır ve dünya snapshot'ı üzerinden undo/redo yapılabilir.
+
 `HandleInput()` döner: `InputAction{Kind, ArmyID, TargetArmyID, TargetRegion, TargetFaction, BuildingID, Delta}`
 
 **Just-pressed takibi:** `prevKeys`, `prevMouse` map'leri tutulur; `keyJustPressed()` / `mouseJustPressed()` bir frame'lik tetikleme sağlar.

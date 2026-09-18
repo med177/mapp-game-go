@@ -1,11 +1,21 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-17
+last_updated: 2026-09-18
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-18: Edit Mode yerleşim inspector'ına yerleşim ID değiştirme düğmesi
+  eklendi. ID global benzersizlik ve boşluksuzlukla doğrulanıyor; faction
+  başkent/pending başkent ve dock edilmiş filo referansları birlikte güncelleniyor.
+  Değişiklik dünya snapshot'ı üzerinden undo/redo ile geri alınabiliyor
+  (`internal/render/map_editor.go`).
+
+- 2026-09-18: Edit Mode'da elle girilen settlement, region, shape, faction ve
+  aktif olay ID'leri kaydedilirken lowercase'e normalize ediliyor; faction ID
+  alanında büyük harfler giriş sırasında da küçültülüyor.
 
 - 2026-09-17: Bina yükseltme maliyetleri senaryo verisindeki
   `upgrade_cost_multiplier` ile seviye bazında bileşik hesaplanıyor. 1300
