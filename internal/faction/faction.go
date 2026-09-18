@@ -25,12 +25,13 @@ type TerritorialClaim struct {
 }
 
 // HistoricalChange bir fraksiyonun belirli bir yıldan itibaren kullanacağı
-// tarihsel isim ve bayrak kimliğini taşır.
+// tarihsel isim, bayrak ve din kimliğini taşır.
 type HistoricalChange struct {
-	Year   int    `json:"year"`
-	Flag   string `json:"flag,omitempty"`
-	Name   string `json:"name,omitempty"`
-	NameTR string `json:"name_tr,omitempty"`
+	Year     int           `json:"year"`
+	Flag     string        `json:"flag,omitempty"`
+	Name     string        `json:"name,omitempty"`
+	NameTR   string        `json:"name_tr,omitempty"`
+	Religion religion.Type `json:"religion,omitempty"`
 }
 
 // Faction oyundaki bir fraksiyonu temsil eder.
@@ -110,6 +111,10 @@ func (f *Faction) ApplyHistoricalChange(year int) bool {
 	}
 	if selected.NameTR != "" && f.NameTR != selected.NameTR {
 		f.NameTR = selected.NameTR
+		changed = true
+	}
+	if selected.Religion != "" && f.Religion != selected.Religion {
+		f.Religion = selected.Religion
 		changed = true
 	}
 	return changed

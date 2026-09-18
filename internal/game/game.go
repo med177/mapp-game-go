@@ -22,6 +22,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/save"
 	"mapp-game-go/internal/scenario"
@@ -1217,7 +1218,7 @@ func (g *Game) resolveTurn() {
 	// Bölge event ikon sürelerini güncelle
 	events.TickActiveRegionEvents(g.gs)
 
-	g.gs.AdvanceTurn()
+	historicalChanges := g.gs.AdvanceTurn()
 	render.RefreshFactionHistoricalVisuals(g.gs)
 	if arrivals := g.gs.SyncCommanderAvailability(); len(arrivals) > 0 {
 		g.showCommanderArrivals(arrivals)
@@ -1230,6 +1231,7 @@ func (g *Game) resolveTurn() {
 	}
 	unlocked := checkRegionUnlocks(g.gs)
 	g.showRegionUnlockNotifications(unlocked)
+	g.showHistoricalFactionChangeNotifications(historicalChanges)
 	if g.gs.Phase != state.PhaseGameOver {
 		g.presentPendingNavalContact()
 		g.presentPendingLandContact()
@@ -2400,6 +2402,48 @@ func (g *Game) showRegionUnlockNotifications(ids []world.RegionID) {
 	}
 	g.renderer.ShowCombatResult(msg)
 	g.renderer.AddEvent("[UNLOCK] " + msg)
+}
+
+func (g *Game) showHistoricalFactionChangeNotifications(reports []state.HistoricalFactionChangeReport) {
+	if g == nil || g.renderer == nil || len(reports) == 0 {
+		return
+	}
+	popupLines := make([]string, 0, minInt(len(reports), 3))
+	for _, report := range reports {
+		name := report.NameTR
+		if name == "" {
+			name = g.factionNameTR(string(report.FactionID))
+		}
+		if name == "" {
+			name = string(report.FactionID)
+		}
+
+		parts := make([]string, 0, 3)
+		if report.PreviousNameTR != "" && report.PreviousNameTR != name {
+			parts = append(parts, fmt.Sprintf("adı %s oldu", name))
+		}
+		if report.ReligionChanged {
+			parts = append(parts, fmt.Sprintf("dini %s oldu", religion.DisplayNameTR(report.Religion)))
+		}
+		if report.FlagChanged {
+			parts = append(parts, "bayrağı güncellendi")
+		}
+		if len(parts) == 0 {
+			continue
+		}
+		detail := name + ": " + strings.Join(parts, ", ") + "."
+		g.renderer.AddEventDetail("[TARİHSEL] "+name, detail)
+		if len(popupLines) < 3 {
+			popupLines = append(popupLines, detail)
+		}
+	}
+	if len(popupLines) == 0 {
+		return
+	}
+	if len(reports) > len(popupLines) {
+		popupLines = append(popupLines, fmt.Sprintf("+%d tarihsel değişiklik daha olay günlüğüne eklendi.", len(reports)-len(popupLines)))
+	}
+	g.renderer.ShowInfo(strings.Join(popupLines, "\n"))
 }
 
 // buildBuilding oyuncunun kendi bölgesine bina inşa eder.

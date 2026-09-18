@@ -853,7 +853,8 @@
       {
         "year": 1501,
         "name": "Safavid Empire",
-        "name_tr": "Safevî Devleti"
+        "name_tr": "Safevî Devleti",
+        "religion": "shia"
       }
     ],
     "religion": "sunni",
@@ -1736,7 +1737,13 @@
     "id": "golden_horde",
     "name": "Golden Horde",
     "name_tr": "Altın Orda",
-    "religion": "sunni",
+    "historical_changes": [
+      {
+        "year": 1313,
+        "religion": "sunni"
+      }
+    ],
+    "religion": "tengri",
     "color": [
       210,
       245,
@@ -1963,6 +1970,12 @@
     "id": "bohemian_kingdom",
     "name": "Kingdom of Bohemia",
     "name_tr": "Bohemya Krallığı",
+    "historical_changes": [
+      {
+        "year": 1419,
+        "religion": "utraquist"
+      }
+    ],
     "religion": "catholic",
     "color": [
       105,
@@ -2037,6 +2050,12 @@
     "id": "saxony_duchy",
     "name": "Duchy of Saxony",
     "name_tr": "Saksonya Dükalığı",
+    "historical_changes": [
+      {
+        "year": 1527,
+        "religion": "protestant"
+      }
+    ],
     "religion": "catholic",
     "color": [
       20,
@@ -2175,7 +2194,17 @@
     "id": "ilkhanate",
     "name": "Ilkhanate",
     "name_tr": "İlhanlı Devleti",
-    "religion": "sunni",
+    "historical_changes": [
+      {
+        "year": 1310,
+        "religion": "shia"
+      },
+      {
+        "year": 1316,
+        "religion": "sunni"
+      }
+    ],
+    "religion": "shia",
     "color": [
       145,
       95,
@@ -2465,7 +2494,13 @@
     "id": "lithuanian_gd",
     "name": "Grand Duchy of Lithuania",
     "name_tr": "Litvanya Büyük Prensliği",
-    "religion": "catholic",
+    "historical_changes": [
+      {
+        "year": 1387,
+        "religion": "catholic"
+      }
+    ],
+    "religion": "pagan",
     "color": [
       80,
       150,
@@ -3809,6 +3844,12 @@
     "id": "sweden_kingdom",
     "name": "Sweden Kingdom",
     "name_tr": "İsveç Krallığı",
+    "historical_changes": [
+      {
+        "year": 1527,
+        "religion": "protestant"
+      }
+    ],
     "religion": "catholic",
     "color": [
       0,

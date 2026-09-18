@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/season"
 	"mapp-game-go/internal/tech"
@@ -389,6 +390,19 @@ type GameState struct {
 	PendingNavalContact *NavalContact `json:"-"`
 	// Geçici kara temas kararı; temas çözülünce temizlenir ve save'e yazılmaz.
 	PendingLandContact *LandContact `json:"-"`
+}
+
+// HistoricalFactionChangeReport, takvimde uygulanan tek bir faction
+// değişikliğinin oyuncuya gösterilecek önceki ve sonraki değerlerini taşır.
+// Runtime raporudur; save payload'ının parçası değildir.
+type HistoricalFactionChangeReport struct {
+	FactionID        faction.FactionID
+	NameTR           string
+	PreviousNameTR   string
+	FlagChanged      bool
+	ReligionChanged  bool
+	PreviousReligion religion.Type
+	Religion         religion.Type
 }
 
 // BasePrice aktif senaryonun cache'lenmiş temel mal fiyatını döndürür.
@@ -1202,7 +1216,7 @@ func (s *GameState) CurrentTurnIncludesMonth(month int) bool {
 }
 
 // AdvanceTurn turu bir ileri alır, senaryonun takvim ayı hızına göre ay/yıl günceller.
-func (s *GameState) AdvanceTurn() {
+func (s *GameState) AdvanceTurn() []HistoricalFactionChangeReport {
 	s.Turn++
 	for remaining := s.CalendarMonthsPerTurn(); remaining > 0; remaining-- {
 		s.Month++
@@ -1211,24 +1225,105 @@ func (s *GameState) AdvanceTurn() {
 			s.Year++
 		}
 	}
-	s.ApplyHistoricalFactionChanges()
+	historicalChanges := s.ApplyHistoricalFactionChanges()
 	s.RetireExpiredCommanders()
 	s.ResetDiplomacyOfferCounts()
 	s.GrainAidUsage = nil
 	s.GrainSaleGoldUsed = nil
+	return historicalChanges
 }
 
-// ApplyHistoricalFactionChanges takvimde açılmış tarihsel isim ve bayrak
-// değişikliklerini tüm fraksiyonlara uygular.
-func (s *GameState) ApplyHistoricalFactionChanges() {
+// ApplyHistoricalFactionChanges takvimde açılmış tarihsel faction değişikliklerini
+// uygular; din değişimlerinin mevcut diplomatik puan etkilerini de çözümler.
+func (s *GameState) ApplyHistoricalFactionChanges() []HistoricalFactionChangeReport {
 	if s == nil {
-		return
+		return nil
 	}
+	type religionChange struct {
+		factionID faction.FactionID
+		old       religion.Type
+		new       religion.Type
+	}
+	changes := make([]religionChange, 0)
+	reports := make([]HistoricalFactionChangeReport, 0)
 	for _, f := range s.Factions {
 		if f != nil {
+			previousNameTR := f.NameTR
+			previousFlag := f.Flag
+			oldReligion := f.Religion
 			f.ApplyHistoricalChange(s.Year)
+			if previousNameTR != f.NameTR || previousFlag != f.Flag || oldReligion != f.Religion {
+				reports = append(reports, HistoricalFactionChangeReport{
+					FactionID:        f.ID,
+					NameTR:           f.NameTR,
+					PreviousNameTR:   previousNameTR,
+					FlagChanged:      previousFlag != f.Flag,
+					ReligionChanged:  oldReligion != f.Religion,
+					PreviousReligion: oldReligion,
+					Religion:         f.Religion,
+				})
+			}
+			if oldReligion != f.Religion {
+				changes = append(changes, religionChange{
+					factionID: f.ID,
+					old:       oldReligion,
+					new:       f.Religion,
+				})
+			}
 		}
 	}
+	for _, change := range changes {
+		s.adjustHistoricalReligionRelations(change.factionID, change.old, change.new)
+	}
+	return reports
+}
+
+// adjustHistoricalReligionRelations, din değişikliğinin gerçekleştiği turda
+// değişen devletin mevcut ilişki puanlarını bir kez günceller. İlişki
+// kayıtları tekil RelationKey ile tutulduğu için bu değişen devlet açısından
+// her çift yalnızca bir kez ayarlanır.
+func (s *GameState) adjustHistoricalReligionRelations(changedFactionID faction.FactionID, oldReligion, newReligion religion.Type) {
+	if s == nil || changedFactionID == "" || oldReligion == newReligion || len(s.Relations) == 0 {
+		return
+	}
+	for _, rel := range s.Relations {
+		if rel == nil {
+			continue
+		}
+		var otherFactionID faction.FactionID
+		switch {
+		case rel.FactionA == changedFactionID:
+			otherFactionID = rel.FactionB
+		case rel.FactionB == changedFactionID:
+			otherFactionID = rel.FactionA
+		default:
+			continue
+		}
+		other := s.Factions[otherFactionID]
+		if other == nil {
+			continue
+		}
+		delta := 0
+		switch other.Religion {
+		case newReligion:
+			delta = 30
+		case oldReligion:
+			delta = -40
+		}
+		if delta != 0 {
+			rel.Score = clampHistoricalRelationScore(rel.Score + delta)
+		}
+	}
+}
+
+func clampHistoricalRelationScore(score int) int {
+	if score < -100 {
+		return -100
+	}
+	if score > 100 {
+		return 100
+	}
+	return score
 }
 
 // GrainAidBlockReason tahıl yardımının neden uygulanamayacağını döner.

@@ -4,10 +4,14 @@ package religion
 type Type string
 
 const (
-	Catholic Type = "catholic"
-	Orthodox Type = "orthodox"
-	Sunni    Type = "sunni"
-	Shia     Type = "shia"
+	Catholic   Type = "catholic"
+	Orthodox   Type = "orthodox"
+	Sunni      Type = "sunni"
+	Shia       Type = "shia"
+	Tengri     Type = "tengri"
+	Pagan      Type = "pagan"
+	Protestant Type = "protestant"
+	Utraquist  Type = "utraquist"
 )
 
 type Def struct {
@@ -20,6 +24,10 @@ var defs = []Def{
 	{Type: Orthodox, NameTR: "Ortodoks"},
 	{Type: Sunni, NameTR: "Sünni İslam"},
 	{Type: Shia, NameTR: "Şii İslam"},
+	{Type: Tengri, NameTR: "Tengricilik"},
+	{Type: Pagan, NameTR: "Paganlık"},
+	{Type: Protestant, NameTR: "Protestanlık"},
+	{Type: Utraquist, NameTR: "Utrakvistlik"},
 }
 
 var defsByType = func() map[Type]Def {
@@ -64,6 +72,12 @@ func Relation(a, b Type) int {
 		return -40
 	}
 	if (a == Catholic && b == Orthodox) || (a == Orthodox && b == Catholic) {
+		return -20
+	}
+	if (a == Catholic && b == Protestant) || (a == Protestant && b == Catholic) {
+		return -20
+	}
+	if (a == Protestant && b == Utraquist) || (a == Utraquist && b == Protestant) {
 		return -20
 	}
 	return -30

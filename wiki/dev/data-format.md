@@ -282,7 +282,8 @@ Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, 
 }
 ```
 
-Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox`, `sunni`, `shia`.
+Din değerleri `internal/religion` sabitleriyle eşleşir: `catholic`, `orthodox`,
+`sunni`, `shia`, `tengri`, `pagan`, `protestant`, `utraquist`.
 
 `ai_expansion_targets` artık senaryo runtime uyumluluğu için türetilen alandır.
 1300 senaryosunda kaynak liste `ai_strategies.json` içindeki `expansion_targets`

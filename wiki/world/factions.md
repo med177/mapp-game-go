@@ -72,7 +72,7 @@ type Faction struct {
     NameTR       string
     Flag         string
     HistoricalChanges []HistoricalChange
-    Religion     religion.Type // catholic | orthodox | sunni | shia
+    Religion     religion.Type // catholic | orthodox | sunni | shia | tengri | pagan | protestant | utraquist
     Color        [3]uint8      // harita rengi (RGB)
     IsPlayable   bool
     IsEliminated bool
@@ -95,15 +95,16 @@ type Faction struct {
 }
 ```
 
-## Tarihsel isim ve bayrak değişimleri
+## Tarihsel fraksiyon değişimleri
 
 Senaryo `data/factions.json` içindeki isteğe bağlı `historical_changes` dizisi,
-belirli bir yıldan itibaren faction'ın görünen adını ve bayrağını değiştirir:
+belirli bir yıldan itibaren faction'ın görünen adını, bayrağını ve dinini
+değiştirir:
 
 ```json
 "historical_changes": [
   {"year": 1350, "flag": "ottoman_state.png", "name": "Ottoman State", "name_tr": "Osmanlı Devleti"},
-  {"year": 1460, "flag": "ottoman_emp.png", "name": "Ottoman Empire", "name_tr": "Osmanlı İmp.(Devlet-i Aliyye)"}
+  {"year": 1460, "flag": "ottoman_emp.png", "name": "Ottoman Empire", "name_tr": "Osmanlı İmp.(Devlet-i Aliyye)", "religion": "sunni"}
 ]
 ```
 
@@ -171,6 +172,10 @@ hedefi ise claim edilen bölgenin güncel sahibinden dinamik olarak türetilir.
 | Ortodoks | `orthodox` | Rusya |
 | Sünni İslam | `sunni` | Osmanlı, Memlük |
 | Şii İslam | `shia` | Safevi |
+| Tengricilik | `tengri` | Altın Orda (1313 öncesi) |
+| Paganlık | `pagan` | Litvanya (1387 öncesi) |
+| Protestanlık | `protestant` | Saksonya, İsveç (1527 sonrası) |
+| Utrakvistlik | `utraquist` | Bohemya (1419 sonrası) |
 
 **Başlangıç ilişki varsayılanı** — `internal/faction/loader.go`
 
@@ -182,6 +187,12 @@ hedefi ise claim edilen bölgenin güncel sahibinden dinamik olarak türetilir.
 Eksik relation kaydı `BuildInitialRelations()` tarafından bu puanlarla ve
 `peace` duruşuyla oluşturulur. Özel tarihsel puan veya duruş taşıyan çiftler
 `relations.json` içinde açıkça tutulur.
+
+Tarihsel din değişimi uygulandığında, değişen devletin mevcut ilişki puanları
+aynı turda bir kez güncellenir: yeni dinle aynı olan devletlere `+30`, önceki
+dinle aynı kalan devletlere `-40` uygulanır. Puan `-100..100` aralığında
+tutulur; sonraki tur veya save/load çözümlemesi aynı değişikliği yeniden
+uygulamaz.
 
 Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık `internal/religion/religion.go` içindeki metadata üzerinden (`DisplayNameTR`, `All`, `Next`) merkezi olarak yönetilir; render katmanı aynı mapping'i tekrar etmez.
 

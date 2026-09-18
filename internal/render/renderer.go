@@ -1357,9 +1357,14 @@ func (r *Renderer) scrollEventCodexDetail(delta int) {
 
 // ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~3 saniye gösterir.
 func (r *Renderer) ShowCombatResult(msg string) {
+	r.ShowInfo(msg)
+	audio.PlaySound("combat")
+}
+
+// ShowInfo oyun içi kısa bilgi mesajını ses efekti olmadan ekranda gösterir.
+func (r *Renderer) ShowInfo(msg string) {
 	r.combatLog = msg
 	r.combatLogTimer = 180
-	audio.PlaySound("combat")
 }
 
 // ShowHistoricalEvent büyük tarihsel olayı tam ekran popup olarak gösterir.
