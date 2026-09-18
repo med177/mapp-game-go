@@ -841,32 +841,46 @@ func diplomacyListColumnRects(rowRect gameui.Rect) (gameui.Rect, gameui.Rect) {
 	return nameRect, relationRect
 }
 
-func diplomacyListMetricColumnRects(rowRect gameui.Rect) (nameRect, relationRect, powerRect, rankRect, treasuryRect gameui.Rect) {
+func diplomacyListMetricColumnRects(rowRect gameui.Rect) (nameRect, relationRect, powerRect, treasuryRect gameui.Rect) {
 	var metricsRect gameui.Rect
 	nameRect, metricsRect = diplomacyListColumnRects(rowRect)
 	const metricGap = 10.0
-	powerW := metricsRect.W * 0.20
-	if powerW > 110 {
-		powerW = 110
+	powerW := metricsRect.W * 0.27
+	if powerW > 120 {
+		powerW = 120
 	}
-	if powerW < 78 {
-		powerW = 78
+	if powerW < 96 {
+		powerW = 96
 	}
-	rankW := metricsRect.W * 0.20
-	if rankW > 105 {
-		rankW = 105
+	treasuryW := metricsRect.W * 0.44
+	if treasuryW > 190 {
+		treasuryW = 190
 	}
-	if rankW < 78 {
-		rankW = 78
+	if treasuryW < 150 {
+		treasuryW = 150
 	}
-	treasuryW := metricsRect.W * 0.24
-	if treasuryW > 125 {
-		treasuryW = 125
+	availableMetricW := metricsRect.W - metricGap*2
+	if availableMetricW <= 0 {
+		powerW = 0
+		treasuryW = 0
+	} else if powerW+treasuryW > availableMetricW {
+		overflow := powerW + treasuryW - availableMetricW
+		if powerW > 72 {
+			reduction := powerW - 72
+			if reduction > overflow {
+				reduction = overflow
+			}
+			powerW -= reduction
+			overflow -= reduction
+		}
+		if overflow > 0 {
+			treasuryW -= overflow
+			if treasuryW < 0 {
+				treasuryW = 0
+			}
+		}
 	}
-	if treasuryW < 94 {
-		treasuryW = 94
-	}
-	relationW := metricsRect.W - powerW - rankW - treasuryW - metricGap*3
+	relationW := metricsRect.W - powerW - treasuryW - metricGap*2
 	if relationW < 0 {
 		relationW = 0
 	}
@@ -875,13 +889,18 @@ func diplomacyListMetricColumnRects(rowRect gameui.Rect) (nameRect, relationRect
 	powerRect = metricsRect
 	powerRect.X = relationRect.X + relationRect.W + metricGap
 	powerRect.W = powerW
-	rankRect = powerRect
-	rankRect.X = powerRect.X + powerRect.W + metricGap
-	rankRect.W = rankW
-	treasuryRect = rankRect
-	treasuryRect.X = rankRect.X + rankRect.W + metricGap
+	treasuryRect = powerRect
+	treasuryRect.X = powerRect.X + powerRect.W + metricGap
 	treasuryRect.W = treasuryW
-	return nameRect, relationRect, powerRect, rankRect, treasuryRect
+	return nameRect, relationRect, powerRect, treasuryRect
+}
+
+func diplomacyMilitaryPowerLabel(landPower, navalPower, rank, factionCount int) string {
+	powerText := itoa(landPower) + "/" + itoa(navalPower)
+	if factionCount > 0 {
+		powerText = itoa(rank) + ". " + powerText
+	}
+	return powerText
 }
 
 func buildDiplomacyBackButton() gameui.Button {
@@ -1088,7 +1107,7 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		drawFactionFlagBadge(screen, fid, nameInitial, rowRect.X+18, rowRect.Y+4, diplomFactionFlagSize, fc, panelBorder)
 
 		regionCount := len(gs.LandRegionsOwnedBy(fid))
-		nameRect, relationRect, powerRect, rankRect, treasuryRect := diplomacyListMetricColumnRects(rowRect)
+		nameRect, relationRect, powerRect, treasuryRect := diplomacyListMetricColumnRects(rowRect)
 		leftRow := gameui.NewTableRow(nameRect, []gameui.TableCell{
 			{Text: trimTextToWidth(f.NameTR, FaceMed, nameRect.W), Color: ColorWhite, Variant: gameui.TextMedium, Align: gameui.TextAlignStart, Weight: 1},
 		}, 0)
@@ -1139,19 +1158,13 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		drawUILabel(screen, powerRect, "Askeri güç", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		powerValueRect := powerRect
 		powerValueRect.Y = rowRect.Y + 27
-		drawUILabel(screen, powerValueRect, factionMilitaryPowerBreakdownLabel(gs, fid), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
-		drawUILabel(screen, rankRect, "Güç sırası", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-		rankValueRect := rankRect
-		rankValueRect.Y = rowRect.Y + 27
-		rankText := "-"
-		if factionCount > 0 {
-			rankText = itoa(militaryRank)
-		}
-		drawUILabel(screen, rankValueRect, rankText, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+		landPower, navalPower := diplomacy.MilitaryPowerBreakdown(gs, fid)
+		powerText := diplomacyMilitaryPowerLabel(landPower, navalPower, militaryRank, factionCount)
+		drawUILabel(screen, powerValueRect, powerText, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
 		drawUILabel(screen, treasuryRect, "Hazine", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 		treasuryValueRect := treasuryRect
 		treasuryValueRect.Y = rowRect.Y + 27
-		drawUILabel(screen, treasuryValueRect, factionTreasuryLabel(gs, fid), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+		drawUILabel(screen, treasuryValueRect, trimTextToWidth(factionTreasuryLabel(gs, fid), FaceMed, treasuryValueRect.W), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
 	}
 	drawDiplomacyListScrollbar(screen, len(factions), list.Scroll)
 	if layout.historyRect.W > 0 {

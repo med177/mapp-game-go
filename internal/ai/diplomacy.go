@@ -10,6 +10,9 @@ import (
 const (
 	aiRelationshipRepairChancePercent = 60
 	aiRelationshipRepairCooldownTurns = 4
+	// Hediye, ilişki bakımının pahalı ve seyrek kullanılan biçimidir. AI'nin
+	// küçük/orta hazinesinin tek seferde büyük bölümünü tüketmesini engeller.
+	aiGiftMaxTreasuryPercent = 25
 )
 
 // aiHandleDiplomacyWithSteps resolves AI peace, alliance and trade decisions.
@@ -247,12 +250,13 @@ func aiHandleRelationshipRepairWithBudget(gs *state.GameState, fid, otherID fact
 		return false
 	}
 	cost := aiRelationshipActionCost(gs, action)
-	if !aiCanAffordForBudget(self, cost, budget, aiBudgetEconomy) {
-		if action != diplomacy.ActionSendGift || !aiCanAffordForBudget(self, economy.ResourceCost{Gold: diplomacy.RelationImprovementGoldCostFor(gs)}, budget, aiBudgetEconomy) {
-			return false
-		}
+	if action == diplomacy.ActionSendGift && !aiGiftTreasurySafe(self, cost.Gold, budget) {
+		// Hediye güvenli değilse, aynı ilişki hedefi için daha ucuz heyeti dene.
 		action = diplomacy.ActionImproveRelations
 		cost = aiRelationshipActionCost(gs, action)
+	}
+	if !aiCanAffordForBudget(self, cost, budget, aiBudgetEconomy) {
+		return false
 	}
 	// İlişki onarımı uygun ve karşılanabilir olsa bile her tur otomatikleşmesin;
 	// aynı deterministik tur/faction/hedef zarı save ve replay akışını korur.
@@ -281,6 +285,27 @@ func aiHandleRelationshipRepairWithBudget(gs *state.GameState, fid, otherID fact
 		budget.consume(aiBudgetEconomy, cost.Gold)
 	}
 	return true
+}
+
+// aiGiftTreasurySafe, hediyenin yalnızca mevcut bütçe rezervi içinde değil,
+// hazine ölçeğine göre de makul kalmasını sağlar. Böylece başlangıçta 5.000
+// altını olan bir devlet 2.500 altınlık hediyeyi, yalnızca bu tutarı teknik
+// olarak karşılayabildiği için göndermez.
+func aiGiftTreasurySafe(self *faction.Faction, giftCost int, budget *aiBudget) bool {
+	if self == nil || giftCost <= 0 || self.Gold <= 0 {
+		return false
+	}
+	if giftCost > self.Gold*aiGiftMaxTreasuryPercent/100 {
+		return false
+	}
+
+	reserve := aiMinGoldReserve
+	if budget != nil && budget.EmergencyGold > reserve {
+		reserve = budget.EmergencyGold
+	}
+	// Hediye sonrasında bir sonraki aynı büyüklükteki diplomatik harcamayı
+	// ve acil rezervi karşılayacak alan kalsın.
+	return self.Gold-giftCost >= reserve+giftCost
 }
 
 // aiHandleRelationshipRepairsAfterBudget keeps gifts and envoys as the last

@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-19: AI hediye gönderimi yalnızca maliyet teknik olarak karşılanabiliyor
+  diye yapılmıyor. Hediye, mevcut hazinenin en fazla `%25`ini tüketebiliyor ve
+  işlem sonrasında acil rezerv ile bir hediye maliyeti daha korunuyor; bu koşullar
+  sağlanmazsa AI daha ucuz heyeti seçiyor. 1300 senaryosundaki yüksek hediye maliyeti
+  için regresyon testleri eklendi (`internal/ai/diplomacy.go`,
+  `internal/ai/diplomacy_test.go`).
+
 - 2026-09-18: Bölge memnuniyetindeki yerel ordu istikrar bonusu genişletildi.
   Sahip ve aynı realm içindeki vassal orduları tam güçte, harici müttefik orduları
   `%75` ağırlıkta sayılıyor; ekonomi çözümü ve bölge paneli ortak
