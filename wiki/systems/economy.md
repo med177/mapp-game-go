@@ -307,11 +307,14 @@ değiştiğinde otomatik olarak yeni devlete geçer. Eski `trade_centers.json`
 dosyalarında bu root alanlar yoksa loader aynı `+2/+1` ve `+4/+2` kalibrasyonunu
 geriye uyumlu varsayılan olarak uygular.
 
-1300 başlangıç grafiğinde her oynanabilir devlet en az bir kendi ticaret merkezi
-düğümüne sahiptir. Osmanlı `Bithynia → Konstantiniyye`, Aragon `Katalonya →
-Ceneviz/Portekiz`, HRE `Hollanda → Flandre/Danimarka` ve Moskova `Moskova →
-Novgorod` bağlantılarıyla ana ağa girer. Tarihsel merkez linkleri çift yönlü
-saklanır; böylece data/export denetimi ile görsel rota grafiği ayrışmaz.
+1300 başlangıç grafiğinde oynanabilir devletlerin ana ticaret düğümleri, uygun
+limanlardaki ikincil merkezlerle tamamlanır. Osmanlı `Bithynia → Konstantiniyye`,
+Aragon `Katalonya → Ceneviz`, Napoli `Campania → Venedik`, Floransa `Floransa →
+Ceneviz`, İngiltere `Essex → Flandre`, Doğu Akdeniz ve Ege limanları ise
+Konstantiniyye/İskenderiye üzerinden ağa girer. HRE `Hollanda → Flandre/Danimarka`
+ve Moskova `Moskova → Novgorod` bağlantılarını korur. Tarihsel merkez linkleri
+çift yönlü saklanır; böylece data/export denetimi ile görsel rota grafiği
+ayrışmaz.
 Norveç (Oslo bölgesi) `Danimarka` üzerinden; İsveç (Stockholm bölgesi) ise
 `Danimarka` ve `Novgorod` üzerinden Kuzey Denizi-Baltık ticaret ağına bağlanır.
 Fas `Cezayir/Portekiz`, Girit `Venedik/Konstantiniyye/Mısır` ve Rodos
@@ -335,6 +338,62 @@ gemisi başına kâra primary için `+2`, secondary için `+1` ekler. Bu bonusla
 ve merkez sahibi değiştiğinde otomatik olarak yeni devlete geçer. Efektif kapasite,
 merchant kârı ve rota paneli aynı `GameState` yardımcılarını kullanır.
 
+1300 senaryosunda `relations.json`, `trade_centers.json` içindeki farklı sahipler
+arasındaki merkez bağlantılarını başlangıç `trade` ilişkisi olarak taşır. Bu ilişki
+kayıtları yüklenirken iki yönlü rotaya dönüşür; savaş duruşundaki çiftler ticaret
+alamaz, mevcut partner kapasitesi ise aktif rota sayısını sınırlamaya devam eder.
+Böylece Venedik-Ceneviz gibi merkez sahiplerinin başlangıç merchant filoları AI
+turunda rotaya atanabilecek geçerli bir ihracat ağı bulur.
+
+Merkez bölgesinin `trade_capacity` değeri, merkez grafiğindeki her farklı dış sahip
+bağlantısı için en az `4` temel rota hacmini karşılayacak şekilde kalibre edilir;
+mevcut kapasite daha yüksekse korunur. 1300 başlangıç verisinde Ceneviz `20`,
+Venedik ve Konstantiniyye `16`, Trabzon `16` kapasiteyle başlar. Ticaret merkezi
+sahibi devletlerin partner limiti de bina kaynaklı artışın altına düşmeden, aktif
+merkez grafiğinin benzersiz dış sahip sayısını karşılayacak alt sınıra yükselir.
+Böylece merkez ağı büyüdükçe bağlantı kapasitesi yalnızca bölge hacminde değil,
+anlaşma sayısında da karşılık bulur; merkez sahibi olmayan devletlerin temel `4`
+partner limiti değişmez.
+
+1310 başlangıç filosunda tarihsel savaş seferberliği ile normal dönem ticaret
+filosu birbirine karıştırılmaz. Venedik `16` savaş gemisi, `6` ticaret gemisi ve
+`2` nakliye gemisiyle; Ceneviz `8` savaş gemisi, `6` ticaret gemisi ve `2` nakliye
+gemisiyle başlar. Bu dağılım, Venedik’in devlet konvoylarını ve Ceneviz’in özel
+gemileri silahlandırmaya dayalı deniz ticaretini temsil eder; savaş döneminde AI
+ve üretim sistemi filoları yeniden büyütebilir.
+
+Diğer deniz ticareti aktörleri daha düşük bölgesel başlangıç profilleri kullanır:
+Portekiz `2/3/1`, İngiltere `2/3/1`, Fransa `2/2/1`, Kastilya `3/2/2`, Aragon
+`4/2/1`, Doğu Roma `1/2/5`, Memlükler `1/3/6`, Merînîler `2/3/0`,
+Hafsîler `1/3/0`, Gırnata `1/2/0` ve Danimarka `1/2/0` (savaş/ticaret/nakliye).
+Bu sayılar ticaret ağını başlatacak kadar gemi verirken, bölgesel güçleri Venedik
+ve Ceneviz seviyesine taşımadan mevcut donanma kapasitesi içinde kalır.
+
+Aynı kural diğer uygun başlangıç devletlerine de uygulanır. Limanı ve ticaret
+merkezi/denizcilik odağı bulunan Napoli `2/3/1`, Flandre `1/2/0`, Trabzon `1/2/0`,
+Kıbrıs `2/2/0`, Aydın `1/1/0`, Menteşe `1/1/0` ve Candaroğulları `1/1/0`
+profiliyle başlar (sıra yine savaş/ticaret/nakliye). Floransa `0/2/0`, Novgorod
+`0/1/0`, Mekke Şerifliği `0/1/0`, Usfûrîler `0/1/0`, Saruhan `0/1/0` ve Karesi
+`2/1/0` ise ticaret gemisi ağırlıklı veya mevcut donanmayı tamamlayan profillerdir.
+Bu ayrım, limanı olmayan kara devletlerine sırf bölgeleri denize yakın diye filo
+vermez; ticaret gemisini doğrudan rota sistemine bağlarken savaş gemisini yalnız
+ölçeği ve kıyı güvenliği bunu gerektiren aktörlerde kullanır. Başlangıç gemileri
+ilgili deniz bölgelerinde hazır bulunduğu için AI ilk turdan itibaren uygun,
+savaşta olmayan ticaret merkezi bağlantılarını kullanabilir.
+
+1300 açılış altın dengesi, ticaret gemileri AI tarafından rotalara atandıktan
+sonra ve hem ordu hem bina bakımı düşüldükten sonra değerlendirilir. İki veya
+daha fazla kara bölgesi olan aktif devletler için bölgesel `base_gold_income`
+kalibrasyonunun hedefi en az `+100` net altın/tur, tek kara bölgesine sahip
+küçük devletler için ise en az `+50` net altın/tur'dur. Böylece büyük
+devletler teknoloji, ordu ve bina yatırımı için gerçek bir geliştirme payı
+bulurken, küçük beylik ve kontluklara yapay biçimde büyük devlet geliri
+verilmez. Bu eşikler `victory.GoldEconomyPreview()` ile
+`Test1300OpeningEconomyCoversUpkeepAfterMerchantAssignments` testinde aynı
+ticaret rotası ve AI atama akışı üzerinden doğrulanır; bakım maliyetleri
+genel olarak düşürülmez, yalnız senaryo bölgelerinin başlangıç gelir tabanı
+kalibre edilir.
+
 ## Üretim Reçeteleri ve Lojistik
 
 - Birim ve bina inşası `gold_cost` yanında `grain_cost`, `iron_cost`, `timber_cost`, `stone_cost`, `spice_cost` ve `cloth_cost` tüketebilir. Binalardaki tahıl maliyeti, inşaatta çalışan işçilerin iaşesini temsil eder ve emir kuyruğa alındığında peşin düşülür; emir iptal edilirse diğer kaynaklarla birlikte iade edilir. 1300/1455 ham verisinde bina tahıl maliyetleri yaklaşık `%20` artırılarak inşaatın sivil tahıl rezervi üzerindeki küçük baskısı korunmuştur. Temel kara birlikleri tahıl/demir eksenini korurken elit birlikler ve deniz birlikleri kumaş; ticaret gemileri ayrıca baharat kullanır.
@@ -348,7 +407,7 @@ merchant kârı ve rota paneli aynı `GameState` yardımcılarını kullanır.
 - Her ekonomi turunda bölgenin vergi, bina, tahıl, teknoloji, savaş, genişleme ve ordu etkileri tek bir memnuniyet deltası olarak toplanır; sonuç `0–100` aralığına sınırlandırılır. Bu bileşenler `internal/satisfaction/satisfaction.go` içindeki ortak breakdown hesabından gelir; bölge paneli aynı hesabı popup'ta gösterir. Kışla her kurulu seviye için `-2`, ibadet yeri `+5`, pazar/çiftlik/liman `+1` uygular.
 - Aralık ekonomi turunda yıl sonu yıpranması olarak tüm sahipli kara bölgelerine ek `-1` memnuniyet uygulanır. Bu etki yalnızca yılda bir kez çalışır ve diğer memnuniyet etkileriyle aynı delta içinde toplanır.
 - Bir fraksiyon savaş halindeyse, her bağımsız realm için savaş yorgunluğu cezası sınır türüne göre hesaplanır: doğrudan kara sınırı varsa `-3`, kara sınırı yok ancak ortak deniz bölgesine kıyı varsa `-2`, iki taraf da uzaktaysa `-1`. Kara sınırı deniz sınırına önceliklidir. Overlord ve vassalları tek bağımsız realm sayılır; vassal savaşları ayrıca sayılmaz. Fraksiyon 20'den fazla kara bölgesine sahipse yozlaşma nedeniyle tüm kara bölgeleri ayrıca `-1` alır.
-- Bir bölgede sahibine ait kara orduları varsa toplam `TotalStrength / 10` kadar, en fazla `+10`, memnuniyet bonusu verilir. Düşman ordusu bu bölge istikrar bonusuna dahil değildir.
+- Bir bölgede sahibine veya sahibiyle aynı realm içindeki üst devlet/vassal kara ordularına ait toplam güç `TotalStrength / 10` kadar, en fazla `+10`, memnuniyet bonusu verir. Harici müttefik kara orduları bu gücün `%75`'iyle hesaba katılır; düşman ordusu ve deniz orduları bölge istikrar bonusuna dahil değildir.
 - Tahıl arzı ordunun kalıcı moraline de bağlanır: stabil seviyede her ekonomi tick'inde `+1`, uyarı/kritik/kıtlık seviyelerinde sırasıyla `-1/-3/-6` uygulanır. Moral `1–100` arasında tutulur; 100 moral nötr, 50 moral yaklaşık `%15` toplam savaş gücü kaybı üretir. Gerçekleşen toplam değişim `GrainEconomyStatus.ArmyMoraleDelta` ile HUD/event detayına taşınır ve uygulama Army ID sırasıyla deterministiktir.
 - Depolama kapasitesi `6 × sivil talep + 3 × ordu bakımı` olarak hesaplanır; talep varsa minimum kapasite 100'dür. Kapasite üstündeki stok her ekonomi tick'inde fazlanın %2'si oranında, en az 1 tahıl olacak şekilde bozulur. `StorageCapacity` ve `Spoiled` runtime snapshot alanlarıdır; save migration gerektirmez.
 - `granary` / `Ambar` binası her kurulu seviye için +100 tahıl depolama kapasitesi verir. Bina tüm senaryolarda veri tanımı olarak bulunur; özel sprite yoksa mevcut çiftlik sprite'ı görsel fallback olarak kullanılır.

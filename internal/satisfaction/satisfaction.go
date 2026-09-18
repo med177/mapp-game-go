@@ -166,24 +166,49 @@ func minHistoricalPressure(current, candidate int) int {
 	return current
 }
 
-// ArmyStabilityBonus bölgedeki sahibine ait kara ordularının istikrar katkısını
-// hesaplar. 100 güç +10 verir ve üst sınır +10'dur.
+const (
+	armyStabilityFullWeight  = 100
+	armyStabilityAllyWeight  = 75
+	armyStabilityStrengthDiv = 10 * armyStabilityFullWeight
+)
+
+// ArmyStabilityBonus bölgedeki sahibiyle aynı realm'de bulunan veya müttefik
+// olan kara ordularının istikrar katkısını hesaplar. Kendi/vassal orduları tam
+// güçte, müttefik orduları %75 ağırlıkta sayılır; 100 güç +10 verir ve üst sınır
+// +10'dur.
 func ArmyStabilityBonus(gs *state.GameState, region *world.Region) int {
 	if gs == nil || region == nil || region.OwnerID == "" || gs.Armies == nil {
 		return 0
 	}
-	strength := 0
+	weightedStrength := 0
 	for _, currentArmy := range gs.Armies {
-		if currentArmy == nil || currentArmy.IsNaval || currentArmy.OwnerID != region.OwnerID || currentArmy.RegionID != region.ID || len(currentArmy.Units) == 0 {
+		if currentArmy == nil || currentArmy.IsNaval || currentArmy.RegionID != region.ID || len(currentArmy.Units) == 0 {
 			continue
 		}
-		strength += currentArmy.TotalStrength(gs.UnitTypes)
+		weight := armyStabilityWeight(gs, factionID(region.OwnerID), factionID(currentArmy.OwnerID))
+		if weight == 0 {
+			continue
+		}
+		weightedStrength += currentArmy.TotalStrength(gs.UnitTypes) * weight
 	}
-	bonus := strength / 10
+	bonus := weightedStrength / armyStabilityStrengthDiv
 	if bonus > 10 {
 		return 10
 	}
 	return bonus
+}
+
+func armyStabilityWeight(gs *state.GameState, regionOwner, armyOwner faction.FactionID) int {
+	if gs == nil || regionOwner == "" || armyOwner == "" {
+		return 0
+	}
+	if armyOwner == regionOwner || diplomacy.SameRealm(gs, armyOwner, regionOwner) {
+		return armyStabilityFullWeight
+	}
+	if relation := diplomacy.Relation(gs, armyOwner, regionOwner); relation != nil && relation.Stance == faction.StanceAllied {
+		return armyStabilityAllyWeight
+	}
+	return 0
 }
 
 func grainDelta(gs *state.GameState, ownerID string) int {

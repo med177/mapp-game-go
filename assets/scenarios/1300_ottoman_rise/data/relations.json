@@ -1863,7 +1863,7 @@
     "faction_a": "castile_kingdom",
     "faction_b": "portugal",
     "score": -15,
-    "stance": "peace"
+    "stance": "trade"
   },
   {
     "faction_a": "castile_kingdom",
@@ -2205,7 +2205,7 @@
     "faction_a": "denmark_kingdom",
     "faction_b": "novgorod_rep",
     "score": -20,
-    "stance": "peace"
+    "stance": "trade"
   },
   {
     "faction_a": "denmark_kingdom",
@@ -2295,7 +2295,7 @@
     "faction_a": "east_rome",
     "faction_b": "genoa",
     "score": 8,
-    "stance": "peace"
+    "stance": "trade"
   },
   {
     "faction_a": "east_rome",
@@ -2427,7 +2427,7 @@
     "faction_a": "east_rome",
     "faction_b": "venice",
     "score": 5,
-    "stance": "peace"
+    "stance": "trade"
   },
   {
     "faction_a": "epir",
@@ -2726,8 +2726,8 @@
   {
     "faction_a": "flanders_county",
     "faction_b": "france",
-    "score": -35,
-    "stance": "peace"
+    "score": 0,
+    "stance": "trade"
   },
   {
     "faction_a": "flanders_county",
@@ -3063,13 +3063,13 @@
     "faction_a": "genoa",
     "faction_b": "trebizond_emp",
     "score": -20,
-    "stance": "peace"
+    "stance": "trade"
   },
   {
     "faction_a": "genoa",
     "faction_b": "venice",
     "score": -35,
-    "stance": "peace"
+    "stance": "trade"
   },
   {
     "faction_a": "genoa",
@@ -3326,8 +3326,8 @@
   {
     "faction_a": "hormuz_sultanate",
     "faction_b": "safavid",
-    "score": -10,
-    "stance": "peace"
+    "score": 0,
+    "stance": "trade"
   },
   {
     "faction_a": "usfurid_emirate",
@@ -3447,7 +3447,7 @@
     "faction_a": "ilkhanate",
     "faction_b": "safavid",
     "score": -15,
-    "stance": "peace"
+    "stance": "trade"
   },
   {
     "faction_a": "jelayirids",
@@ -4226,8 +4226,8 @@
   {
     "faction_a": "safavid",
     "faction_b": "usfurid_emirate",
-    "score": -10,
-    "stance": "peace"
+    "score": 0,
+    "stance": "trade"
   },
   {
     "faction_a": "safavid",
@@ -4395,7 +4395,7 @@
     "faction_a": "ilkhanate",
     "faction_b": "mamluk",
     "score": -80,
-    "stance": "peace"
+    "stance": "trade"
   },
   {
     "faction_a": "hospitaller",
@@ -4497,6 +4497,210 @@
     "faction_a": "hre",
     "faction_b": "teutonic_order",
     "score": 32,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "castile_kingdom",
+    "faction_b": "granada_emirate",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "denmark_kingdom",
+    "faction_b": "flanders_county",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "denmark_kingdom",
+    "faction_b": "saxony_duchy",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "east_rome",
+    "faction_b": "mamluk",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "east_rome",
+    "faction_b": "trebizond_emp",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "genoa",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "hre",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "flanders_county",
+    "faction_b": "portugal",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "genoa",
+    "faction_b": "golden_horde",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "genoa",
+    "faction_b": "granada_emirate",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "genoa",
+    "faction_b": "hafsid_sultanate",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "genoa",
+    "faction_b": "hre",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "golden_horde",
+    "faction_b": "polish_kingdom",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "golden_horde",
+    "faction_b": "russia",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "granada_emirate",
+    "faction_b": "portugal",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hafsid_sultanate",
+    "faction_b": "mamluk",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "hafsid_sultanate",
+    "faction_b": "venice",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "ilkhanate",
+    "faction_b": "trebizond_emp",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "mamluk",
+    "faction_b": "trebizond_emp",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "mamluk",
+    "faction_b": "venice",
+    "score": -30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "novgorod_rep",
+    "faction_b": "russia",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "polish_kingdom",
+    "faction_b": "saxony_duchy",
+    "score": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "aragon",
+    "faction_b": "genoa",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "naples_kingdom",
+    "faction_b": "venice",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "florence_rep",
+    "faction_b": "genoa",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "cyprus_kingdom",
+    "faction_b": "mamluk",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "aydin_bey",
+    "faction_b": "east_rome",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "mentese_bey",
+    "faction_b": "mamluk",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "candar_bey",
+    "faction_b": "east_rome",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "saruhan_bey",
+    "faction_b": "venice",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "mecca_sharifate",
+    "faction_b": "mamluk",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "england",
+    "faction_b": "flanders_county",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "marinid_sultanate",
+    "faction_b": "granada_emirate",
+    "score": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "karesioglu_bey",
+    "faction_b": "east_rome",
+    "score": 0,
     "stance": "trade"
   }
 ]

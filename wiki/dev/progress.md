@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-18: Bölge memnuniyetindeki yerel ordu istikrar bonusu genişletildi.
+  Sahip ve aynı realm içindeki vassal orduları tam güçte, harici müttefik orduları
+  `%75` ağırlıkta sayılıyor; ekonomi çözümü ve bölge paneli ortak
+  `satisfaction.ArmyStabilityBonus()` hesabını kullanıyor. Vassal/müttefik/düşman
+  ayrımı ve ağırlıklı toplam hesabı `internal/satisfaction/satisfaction_test.go`
+  ile doğrulandı; tam Go test paketi başarılı.
+
 - 2026-09-18: Merchant filolarının ticari katkısı yeniden dengelendi. Aktif rotadaki
   merchant gemileri ek hacim yanında yalnızca gerçekten taşınan merchant kargosundan
   ayrı kâr üretiyor; primary/secondary ticaret merkezleri rota kapasitesine ve gemi
@@ -16,6 +23,55 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   kullanıyor. Kapsam: `internal/state/merchant_trade.go`, `internal/game/resolution.go`,
   `internal/victory/victory.go`, `internal/ai/merchant_trade.go`, `internal/render/`,
   `assets/scenarios/1300_ottoman_rise/data/{units,trade_centers}.json`.
+
+- 2026-09-18: 1300 senaryosunda ticaret merkezi grafiğindeki farklı sahipler
+  arasındaki bağlantılar başlangıç `trade` ilişkileriyle eşleştirildi. Böylece
+  savaşta olmayan merkez sahipleri yükleme sırasında iki yönlü ticaret rotası
+  kazanıyor ve AI’nin mevcut merchant filoları ilk AI turunda bu rotalara atanıyor.
+  Venedik/Ceneviz başlangıç rotası ve AI ataması için save senaryo regresyon testi
+  eklendi (`assets/scenarios/1300_ottoman_rise/data/relations.json`,
+  `internal/save/save_test.go`).
+
+- 2026-09-18: Ticaret merkezi bölgelerinin `trade_capacity` değerleri merkez
+  grafiğindeki dış sahip bağlantılarını taşıyacak şekilde yükseltildi; mevcut
+  yüksek değerler korunuyor. Ticaret merkezi sahibi devletlerde partner limiti,
+  bina bonusları korunarak merkez grafiğinin benzersiz dış sahip sayısından daha
+  düşük kalamıyor. Böylece büyük merkezlerin rota hacmi ile aktif bağlantı sayısı
+  aynı ölçeğe geliyor (`assets/scenarios/1300_ottoman_rise/data/regions.json`,
+  `internal/diplomacy/diplomacy.go`).
+
+- 2026-09-19: 1310 başlangıç deniz gücü, ticaret merkezi ağıyla uyumlu olacak
+  şekilde yeniden dengelendi. Venedik `16 savaş + 6 ticaret + 2 nakliye`, Ceneviz
+  `8 savaş + 6 ticaret + 2 nakliye` gemisiyle başlıyor; her iki kompozisyon da
+  devletin başlangıç donanma kapasitesini aşmıyor. Tarihsel barış dönemi filosu
+  ile savaş seferberliği ayrımı ve veri yüklemesi
+  `internal/save/save_test.go` ile doğrulanıyor (`assets/scenarios/1300_ottoman_rise/data/armies.json`).
+
+- 2026-09-19: Portekiz, İngiltere, Fransa, Kastilya, Aragon, Doğu Roma, Memlük,
+  Merînî, Hafsî, Gırnata ve Danimarka başlangıç filolarına bölgesel ölçekte
+  ticaret/koruma gemileri eklendi. Büyük devletlerde deniz kapasitesi korunurken,
+  Doğu Roma ve Memlüklerde tarihsel zayıf sürekli donanma modeli nedeniyle savaş
+  gemisi artışı sınırlı tutuldu (`assets/scenarios/1300_ottoman_rise/data/armies.json`).
+
+- 2026-09-19: Kıyı limanı ve ticaret/denizcilik rolü bulunan diğer başlangıç
+  devletleri de aynı veri kuralına alındı. Napoli, Flandre ve Trabzon küçük
+  koruma-ticaret filoları; Floransa, Novgorod, Mekke, Usfûrîler ve Saruhan
+  ticaret ağırlıklı filolar; Aydın, Menteşe ve Candaroğulları bölgesel Ege/
+  Karadeniz filoları aldı. Kıbrıs ve Karesi'nin mevcut savaş filoları ticaret
+  gemileriyle tamamlandı. Kara içi veya bu mekanikte kullanılabilir deniz ticaret
+  odağı olmayan devletler kapsam dışında bırakıldı. Tüm kompozisyonlar senaryo
+  yükleme testinde filo kapasitesi ve birim türleriyle doğrulanıyor
+  (`assets/scenarios/1300_ottoman_rise/data/armies.json`,
+  `internal/save/save_test.go`).
+
+- 2026-09-19: Merchant filosu eklenen kıyı devletlerinin rotasız kalmaması için
+  Aragon, Napoli, Floransa, Kıbrıs, İngiltere, Ege/Karadeniz beylikleri, Mekke,
+  Bahreyn, Hürmüz ve Merînî limanları `trade_centers.json` içinde ikincil merkez
+  olarak ağa bağlandı. Savaşta olmayan yakın merkez sahipleriyle başlangıç
+  `trade` ilişkileri eklendi; save regresyonu bu merchant filolarının AI tarafından
+  gerçek deniz rotasına atanabildiğini doğruluyor. Savaşta olan bağlantılar
+  doğal olarak rota alamıyor (`assets/scenarios/1300_ottoman_rise/data/{trade_centers,relations}.json`,
+  `internal/save/save_test.go`).
 
 - 2026-09-18: Diplomasi hedef listesinde Hazine kolonu net tur değişimini,
   mevcut brüt geliri ve hazine rezervini `+net/brüt (rezerv)` biçiminde birlikte
@@ -3241,3 +3297,4 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 - 2026-09-15: 1300 senaryosundaki Bapheus event'i 1313 Köse Mihal'in Osmanlı'ya katılması ve Bithynia sınırındaki genişleme event'i olarak güncellendi; Köse Mihal komutanının başlangıç yılı 1313'e taşındı.
 - 2026-09-17: AI'nin üretip vassal ilhakı sonrası oyuncuya geçen `Commander` fallback komutanları için isim/portre düzenleme modalı eklendi. Komutan atama panelindeki `Görevden Al` aksiyonu komutanı ordudan ve canonical havuzdan siliyor; şablon komutanların tekrar görünmemesi compact save'e yazılıyor. Regression: `internal/state/commanders_test.go`, `internal/save/save_test.go`, `go test ./... -count=1`.
 - 2026-09-17: Edit Mode'da `regions.json` içindeki `area::` komşularının yükleme sırası runtime arazi senkronizasyonu ve kayıt yazımı boyunca korunuyor; böylece yalnız arazi alanı sırası değiştiği için gereksiz veri farkı oluşmuyor. Regression: `TestSyncTerrainAreaRegionsPreservesLoadedAreaNeighborOrder`, `go test ./... -count=1`.
+- 2026-09-19: 1300 başlangıç ekonomisi, AI ticaret gemileri rotalara atandıktan sonra ordu ve bina bakımları düşülerek yeniden kalibre edildi. İki veya daha fazla kara bölgesi olan aktif devletler için net gelir tabanı `+100`, tek bölgeli küçük beylik/kontluklar için `+50` olarak belirlendi; bakım değerleri yapay biçimde azaltılmadı. Bölgesel `base_gold_income` düzenlemesi ve `Test1300OpeningEconomyCoversUpkeepAfterMerchantAssignments` regresyonu eklendi.

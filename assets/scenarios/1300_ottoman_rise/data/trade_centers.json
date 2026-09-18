@@ -53,6 +53,111 @@
       ]
     },
     {
+      "region_id": "catalonia",
+      "tier": "secondary",
+      "links": [
+        "genoa"
+      ]
+    },
+    {
+      "region_id": "campania",
+      "tier": "secondary",
+      "links": [
+        "venice"
+      ]
+    },
+    {
+      "region_id": "florence",
+      "tier": "secondary",
+      "links": [
+        "genoa"
+      ]
+    },
+    {
+      "region_id": "north_cyprus",
+      "tier": "secondary",
+      "links": [
+        "alexandria"
+      ]
+    },
+    {
+      "region_id": "izmir",
+      "tier": "secondary",
+      "links": [
+        "constantinople"
+      ]
+    },
+    {
+      "region_id": "mentese",
+      "tier": "secondary",
+      "links": [
+        "alexandria"
+      ]
+    },
+    {
+      "region_id": "sinop",
+      "tier": "secondary",
+      "links": [
+        "trebizond"
+      ]
+    },
+    {
+      "region_id": "saruhan",
+      "tier": "secondary",
+      "links": [
+        "venice"
+      ]
+    },
+    {
+      "region_id": "hejaz",
+      "tier": "secondary",
+      "links": [
+        "alexandria"
+      ]
+    },
+    {
+      "region_id": "bahrain",
+      "tier": "secondary",
+      "links": [
+        "southern_persia"
+      ]
+    },
+    {
+      "region_id": "essex",
+      "tier": "secondary",
+      "links": [
+        "flanders"
+      ]
+    },
+    {
+      "region_id": "normandy",
+      "tier": "secondary",
+      "links": [
+        "flanders"
+      ]
+    },
+    {
+      "region_id": "morocco",
+      "tier": "secondary",
+      "links": [
+        "granada"
+      ]
+    },
+    {
+      "region_id": "uae",
+      "tier": "secondary",
+      "links": [
+        "southern_persia"
+      ]
+    },
+    {
+      "region_id": "karesi",
+      "tier": "secondary",
+      "links": [
+        "constantinople"
+      ]
+    },
+    {
       "region_id": "granada",
       "tier": "secondary",
       "links": [

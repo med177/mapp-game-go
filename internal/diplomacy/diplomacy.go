@@ -55,6 +55,9 @@ const maxTradeRouteMarketBonus = 2
 
 // TradePartnerLimit devletin sahip olduğu, hem limanı hem pazarı bina tanımındaki
 // maksimum seviyeye ulaşmış her bölge için bir ek dış ticaret partneri verir.
+// Ticaret merkezi grafiği daha geniş bir dış ağ tanımlıyorsa merkez bağlantısı
+// bunun altına düşmeyen ek bir alt sınır sağlar; merkez sahibi olmayan devletler
+// yalnızca bina bonuslarını kullanır.
 func TradePartnerLimit(gs *state.GameState, fid faction.FactionID) int {
 	limit := MaxTradePartners
 	if gs == nil || fid == "" {
@@ -68,7 +71,42 @@ func TradePartnerLimit(gs *state.GameState, fid faction.FactionID) int {
 			limit++
 		}
 	}
+	if centerLimit := tradeCenterLinkedPartnerLimit(gs, fid); centerLimit > limit {
+		limit = centerLimit
+	}
 	return limit
+}
+
+func tradeCenterLinkedPartnerLimit(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	centersByID := make(map[world.RegionID]world.TradeCenterDef, len(gs.TradeCenters.Centers))
+	for _, center := range gs.TradeCenters.Centers {
+		centersByID[center.ID] = center
+	}
+	partners := make(map[faction.FactionID]struct{})
+	for _, center := range gs.TradeCenters.Centers {
+		if !center.ActiveInYear(gs.Year) {
+			continue
+		}
+		region := gs.Regions[center.ID]
+		if region == nil || region.OwnerID != string(fid) {
+			continue
+		}
+		for _, linkedID := range center.Links {
+			linkedCenter, ok := centersByID[linkedID]
+			if !ok || !linkedCenter.ActiveInYear(gs.Year) {
+				continue
+			}
+			linkedRegion := gs.Regions[linkedID]
+			if linkedRegion == nil || linkedRegion.OwnerID == "" || linkedRegion.OwnerID == string(fid) {
+				continue
+			}
+			partners[faction.FactionID(linkedRegion.OwnerID)] = struct{}{}
+		}
+	}
+	return len(partners)
 }
 
 // TradeRouteAmountLimit devletin her maksimum seviyedeki pazar bölgesi için

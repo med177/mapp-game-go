@@ -27,7 +27,7 @@ const (
 	diplomHistoryPanelGap = 12.0
 	diplomOfferMainW      = 430.0
 	diplomHistoryPanelH   = 324.0
-	diplomActionButtonH   = 42.0
+	diplomActionButtonH   = 50.0
 	diplomActionGap       = 8.0
 	diplomRelationRowH    = 17.0
 	diplomRelationHeaderH = 20.0
@@ -613,7 +613,10 @@ func diplomacyOfferHistorySummary(gs *state.GameState, dirFilter diplomacyHistor
 
 func offerPageRect() rectF {
 	w := minF(ScreenWidth-120, 760)
-	h := minF(ScreenHeight-80, 680)
+	// Teklif satırları büyüdükçe seçili aksiyon ve footer için ayrılan alanı da
+	// koru. Küçük ekranlarda panel kenarlara kontrollü biçimde yaklaşabilir.
+	preferredH := 680.0 + float64(len(diplomActions))*(diplomActionButtonH-42.0)
+	h := minF(ScreenHeight-24, preferredH)
 	if h < 420 {
 		h = 420
 	}
@@ -1235,7 +1238,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 			}
 		}
 		drawDiplomacyActionButton(screen, btn.Button, bg, disabledReason != "", i == actionFocus)
-		bx, by, bw, _ := diplomActionRect(i)
+		bx, by, bw, bh := diplomActionRect(i)
 		chanceText := "%" + itoa(chance)
 		if action == ActionProposePeace && status == "Eşik altında — reddedebilir" {
 			chanceText = "EŞİK ALTI"
@@ -1248,9 +1251,10 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		}
 		drawUILabel(screen, gameui.Rect{X: float64(bx), Y: float64(by) + 7, W: float64(bw - 14)}, chanceText, textCol, gameui.TextMedium, gameui.TextAlignEnd)
 		// Aktif tekliflerde kabul olasılığı, pasif tekliflerde engel nedeni gösterilir.
-		// Ayrıntı satırını alt kenardan en az 7 px içeride tut.
+		// Ayrıntı satırını buton yüksekliği değişse de alt kenardan aynı mesafede tut.
 		detailX := float64(bx) + 14
 		detailW := float64(bw - 28)
+		detailY := float64(by+bh) - 13
 		paymentNote := diplomacyActionPaymentNote(gs, target, action)
 		if paymentNote != "" {
 			paymentW := MeasureText(paymentNote, FaceSmall)
@@ -1258,10 +1262,10 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 			if statusW < 0 {
 				statusW = 0
 			}
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 29, W: statusW}, trimTextToWidth(status, FaceSmall, statusW), color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 29, W: detailW}, paymentNote, color.RGBA{210, 205, 190, 220}, gameui.TextSmall, gameui.TextAlignEnd)
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: statusW}, trimTextToWidth(status, FaceSmall, statusW), color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: detailW}, paymentNote, color.RGBA{210, 205, 190, 220}, gameui.TextSmall, gameui.TextAlignEnd)
 		} else {
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: float64(by) + 29, W: detailW}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: detailW}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
 
