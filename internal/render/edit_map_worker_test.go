@@ -102,3 +102,32 @@ func TestCancelEditMapBuildInvalidatesWorkerAndCompletion(t *testing.T) {
 		t.Fatalf("generation = %d, want 5", r.editMapBuildGeneration)
 	}
 }
+
+func TestRestoreWorldSnapshotDataOnlyDoesNotRebuildMap(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"current": {ID: "current", Name: "Güncel"},
+		},
+	}
+	worldMap := &WorldMap{}
+	r := &Renderer{
+		gs:       gs,
+		worldMap: worldMap,
+	}
+
+	r.restoreWorldSnapshotDataOnly(editWorldSnapshot{
+		Regions: map[world.RegionID]*world.Region{
+			"restored": {ID: "restored", Name: "Geri alındı"},
+		},
+	})
+
+	if _, ok := r.gs.Regions["restored"]; !ok {
+		t.Fatal("data-only snapshot did not restore region data")
+	}
+	if r.worldMap != worldMap {
+		t.Fatal("data-only snapshot replaced the existing map")
+	}
+	if r.editMapBuildPending {
+		t.Fatal("data-only snapshot started a map rebuild")
+	}
+}

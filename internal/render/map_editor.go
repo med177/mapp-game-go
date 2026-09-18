@@ -3852,15 +3852,26 @@ func (r *Renderer) pushWorldSnapshotCommand(before, after editWorldSnapshot) {
 	})
 }
 
+func (r *Renderer) pushWorldSnapshotDataCommand(before, after editWorldSnapshot) {
+	r.pushEditCommand(editCommand{
+		undo: func(rr *Renderer) { rr.restoreWorldSnapshotDataOnly(before) },
+		redo: func(rr *Renderer) { rr.restoreWorldSnapshotDataOnly(after) },
+	})
+}
+
 func (r *Renderer) restoreWorldSnapshot(snapshot editWorldSnapshot) {
-	r.restoreWorldSnapshotMode(snapshot, true)
+	r.restoreWorldSnapshotMode(snapshot, true, true)
 }
 
 func (r *Renderer) restoreWorldSnapshotSync(snapshot editWorldSnapshot) {
-	r.restoreWorldSnapshotMode(snapshot, false)
+	r.restoreWorldSnapshotMode(snapshot, false, true)
 }
 
-func (r *Renderer) restoreWorldSnapshotMode(snapshot editWorldSnapshot, asyncBuild bool) {
+func (r *Renderer) restoreWorldSnapshotDataOnly(snapshot editWorldSnapshot) {
+	r.restoreWorldSnapshotMode(snapshot, false, false)
+}
+
+func (r *Renderer) restoreWorldSnapshotMode(snapshot editWorldSnapshot, asyncBuild, rebuildMap bool) {
 	r.gs.Regions = cloneRegionMap(snapshot.Regions)
 	r.gs.RegionOrder = cloneRegionIDSlice(snapshot.RegionOrder)
 	r.gs.LandPassages = cloneLandPassages(snapshot.LandPassages)
@@ -3914,6 +3925,9 @@ func (r *Renderer) restoreWorldSnapshotMode(snapshot editWorldSnapshot, asyncBui
 	r.editShapeStrokeLandShapeIDs = nil
 	r.editShapePendingLandShapeIDs = nil
 	r.editRenaming = false
+	if !rebuildMap {
+		return
+	}
 	if asyncBuild {
 		r.requestEditWorldMapRebuild()
 	} else {
