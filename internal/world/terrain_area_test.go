@@ -18,6 +18,18 @@ func TestTerrainAreaPolygonContains(t *testing.T) {
 	}
 }
 
+func TestSortedRegionIDsReturnsAlphabeticalCopy(t *testing.T) {
+	input := []RegionID{"zulu", "alpha", "area::first"}
+	got := SortedRegionIDs(input)
+	want := []RegionID{"alpha", "area::first", "zulu"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("region IDs were not sorted: got=%#v want=%#v", got, want)
+	}
+	if !reflect.DeepEqual(input, []RegionID{"zulu", "alpha", "area::first"}) {
+		t.Fatalf("sorting changed the input slice: got=%#v", input)
+	}
+}
+
 func TestLoadTerrainAreasTreatsEmptyJSONAsNoAreas(t *testing.T) {
 	for _, content := range []string{"null", "[]"} {
 		path := filepath.Join(t.TempDir(), "terrain_areas.json")

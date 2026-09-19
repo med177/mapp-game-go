@@ -3254,6 +3254,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 		if region == nil || region.IsTerrainArea {
 			return nil
 		}
+		neighbors := world.SortedRegionIDs(region.NeighborsInSourceAreaOrder())
 		out := &regionExport{
 			ID:                 region.ID,
 			Name:               region.Name,
@@ -3261,7 +3262,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 			Terrain:            region.Terrain,
 			OwnerID:            region.OwnerID,
 			SuccessorFactionID: region.SuccessorFactionID,
-			Neighbors:          region.NeighborsInSourceAreaOrder(),
+			Neighbors:          neighbors,
 			WorldX:             region.WorldX,
 			WorldY:             region.WorldY,
 			ShapeID:            region.ShapeID,

@@ -1,7 +1,19 @@
 package world
 
+import "sort"
+
 // RegionID bölge benzersiz kimliği.
 type RegionID string
+
+// SortedRegionIDs returns a sorted copy of region IDs without changing the
+// order used by the runtime graph.
+func SortedRegionIDs(ids []RegionID) []RegionID {
+	result := append([]RegionID(nil), ids...)
+	sort.Slice(result, func(i, j int) bool {
+		return result[i] < result[j]
+	})
+	return result
+}
 
 // MaxTaxRate oyuncu ve AI için izin verilen azami bölgesel vergi oranıdır.
 const MaxTaxRate = 60
