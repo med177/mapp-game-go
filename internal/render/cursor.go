@@ -354,6 +354,9 @@ func (r *Renderer) historicalEventHovering(fx, fy float64) bool {
 		return false
 	}
 	if len(r.historicalEventChoices) == 0 {
+		if len(r.commanderArrivals) > 0 {
+			return buildCommanderArrivalModal().Panel.Rect.Hit(fx, fy)
+		}
 		return historicalEventPopupHit(fx, fy)
 	}
 	for _, btn := range buildHistoricalEventChoiceButtons(len(r.historicalEventChoices)) {

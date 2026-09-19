@@ -18,20 +18,21 @@ import (
 )
 
 const (
-	diplomRowH            = 58.0
-	diplomNameColumnW     = 340.0
-	diplomFactionFlagSize = 40.0
-	diplomFactionFlagGap  = 10.0
-	diplomColumnGap       = 24.0
-	diplomHistoryPanelW   = 286.0
-	diplomHistoryPanelGap = 12.0
-	diplomOfferMainW      = 430.0
-	diplomHistoryPanelH   = 324.0
-	diplomActionButtonH   = 50.0
-	diplomActionGap       = 8.0
-	diplomRelationRowH    = 17.0
-	diplomRelationHeaderH = 20.0
-	diplomRelationGapH    = 12.0
+	diplomRowH                      = 58.0
+	diplomNameColumnW               = 340.0
+	diplomFactionFlagSize           = 40.0
+	diplomFactionFlagGap            = 10.0
+	diplomColumnGap                 = 24.0
+	diplomHistoryPanelW             = 286.0
+	diplomHistoryPanelGap           = 12.0
+	diplomOfferMainW                = 430.0
+	diplomHistoryPanelH             = 324.0
+	diplomActionButtonH             = 50.0
+	diplomActionGap                 = 8.0
+	diplomActionDetailBottomPadding = 18.0
+	diplomRelationRowH              = 17.0
+	diplomRelationHeaderH           = 20.0
+	diplomRelationGapH              = 12.0
 )
 
 type diplomacyListSort int
@@ -690,6 +691,10 @@ func diplomActionRect(i int) (x, y, w, h float32) {
 	return x, y, btnW, btnH
 }
 
+func diplomActionDetailY(buttonY, buttonH float32) float64 {
+	return float64(buttonY+buttonH) - diplomActionDetailBottomPadding
+}
+
 func diplomSendRect() (x, y, w, h float32) {
 	r := diplomacyOfferLayoutForScreen().sendRect
 	return float32(r.X), float32(r.Y), float32(r.W), float32(r.H)
@@ -1267,7 +1272,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		// Ayrıntı satırını buton yüksekliği değişse de alt kenardan aynı mesafede tut.
 		detailX := float64(bx) + 14
 		detailW := float64(bw - 28)
-		detailY := float64(by+bh) - 13
+		detailY := diplomActionDetailY(by, bh)
 		paymentNote := diplomacyActionPaymentNote(gs, target, action)
 		if paymentNote != "" {
 			paymentW := MeasureText(paymentNote, FaceSmall)

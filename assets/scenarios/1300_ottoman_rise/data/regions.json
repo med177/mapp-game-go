@@ -256,12 +256,12 @@
       "atlantic_open_6",
       "irish_sea",
       "lancashire",
-      "area::area__21",
-      "area::area__22",
-      "area::area__23",
       "area::area__24::newcastle_region",
       "area::area__25::scotland",
-      "area::area__26::newcastle_region"
+      "area::area__26::newcastle_region",
+      "area::area__21",
+      "area::area__22",
+      "area::area__23"
     ],
     "world_x": 431,
     "world_y": 194,
@@ -339,12 +339,12 @@
       "atlantic_open_5",
       "atlantic_open_6",
       "irish_sea",
-      "area::area__21",
-      "area::area__22",
-      "area::area__23",
       "area::area__24::newcastle_region",
       "area::area__25::scotland",
       "area::area__26::scotland",
+      "area::area__21",
+      "area::area__22",
+      "area::area__23",
       "area::area__101",
       "area::area__102",
       "area::area__103"
@@ -793,14 +793,14 @@
     "owner_id": "france",
     "successor_faction_id": "france",
     "neighbors": [
+      "area::area__14",
+      "area::area__15",
+      "area::area__36",
       "burgundy",
       "languedoc",
       "paris",
       "savoy",
-      "sch_fribourg",
-      "area::area__14",
-      "area::area__15",
-      "area::area__36"
+      "sch_fribourg"
     ],
     "world_x": 584,
     "world_y": 352,
@@ -881,9 +881,9 @@
       "dijon",
       "sch_fribourg",
       "area::area__13",
+      "area::area__16::savoy",
       "area::area__14",
-      "area::area__15",
-      "area::area__16::savoy"
+      "area::area__15"
     ],
     "world_x": 607,
     "world_y": 368,
@@ -1961,10 +1961,10 @@
       "mediterranean_open_5",
       "northern_tyrrhenian_sea",
       "siena",
-      "area::area__28",
       "area::area__31::lazio",
-      "area::area__32",
       "area::area__33::lazio",
+      "area::area__28",
+      "area::area__32",
       "area::area__34"
     ],
     "world_x": 749,
@@ -2009,10 +2009,10 @@
       "adriatic_sea_dalmatia",
       "apulia",
       "marche",
-      "area::area__28",
       "area::area__31::abruzzo",
-      "area::area__32",
-      "area::area__33::abruzzo"
+      "area::area__33::abruzzo",
+      "area::area__28",
+      "area::area__32"
     ],
     "world_x": 755,
     "world_y": 433,
@@ -2055,8 +2055,8 @@
       "abruzzo",
       "adriatic_sea_dalmatia",
       "ferrara",
-      "area::area__32",
       "area::area__33::marche",
+      "area::area__32",
       "area::area__34"
     ],
     "world_x": 744,
@@ -2100,9 +2100,9 @@
       "calabria",
       "lazio",
       "mediterranean_open_5",
+      "area::area__35::campania",
       "area::area__28",
-      "area::area__29",
-      "area::area__35::campania"
+      "area::area__29"
     ],
     "world_x": 774,
     "world_y": 464,
@@ -3446,8 +3446,8 @@
       "black_sea_shore",
       "eretna",
       "georgia",
-      "area::area__37",
-      "area::area__76::trebizond"
+      "area::area__76::trebizond",
+      "area::area__37"
     ],
     "world_x": 1273,
     "world_y": 457,
@@ -3494,11 +3494,11 @@
       "bayburt",
       "erzincan",
       "karakoyunlu",
+      "area::area__75::erzurum",
       "area::area__37",
       "area::area__43",
       "area::area__44",
-      "area::area__45",
-      "area::area__75::erzurum"
+      "area::area__45"
     ],
     "world_x": 1285,
     "world_y": 485,
@@ -3534,11 +3534,11 @@
     "neighbors": [
       "erzurum",
       "sivas",
+      "area::area__75::bayburt",
+      "area::area__76::bayburt",
       "area::area__37",
       "area::area__44",
-      "area::area__45",
-      "area::area__75::bayburt",
-      "area::area__76::bayburt"
+      "area::area__45"
     ],
     "world_x": 1274,
     "world_y": 472,
@@ -3774,10 +3774,10 @@
       "luxor",
       "red_open_2",
       "upper_egypt",
-      "area::area__1",
       "area::area__3::upper_egypt",
       "area::area__3::gaza",
-      "area::area__3::lower_egypt"
+      "area::area__3::lower_egypt",
+      "area::area__1"
     ],
     "world_x": 1119,
     "world_y": 702,
@@ -4248,8 +4248,8 @@
       "kazvin",
       "southern_persia",
       "hemedan",
-      "area::area__5",
-      "area::area__6::isfahan"
+      "area::area__6::isfahan",
+      "area::area__5"
     ],
     "world_x": 1482,
     "world_y": 590,
@@ -4290,14 +4290,14 @@
       "hourmuz",
       "isfahan",
       "siraz",
-      "area::area__5",
       "area::area__6::hourmuz",
       "area::area__6::southern_persia",
       "area::area__6::meshed",
       "area::area__6::isfahan",
       "area::area__6::gurgan",
       "area::area__6::northern_persia",
-      "area::area__6::kazvin"
+      "area::area__6::kazvin",
+      "area::area__5"
     ],
     "world_x": 1588,
     "world_y": 657,
@@ -6894,8 +6894,8 @@
       "jordan",
       "tebuk",
       "red_open_2",
-      "area::area__2",
       "area::area__3::gaza",
+      "area::area__2",
       "area::area__59"
     ],
     "world_x": 1198,
@@ -8335,8 +8335,8 @@
       "antioch",
       "east_mediterranean",
       "gulf_of_iskenderun",
-      "area::area__38",
       "area::area__77::cilicia",
+      "area::area__38",
       "area::area__78",
       "area::area__79"
     ],
@@ -8387,10 +8387,10 @@
       "dulkadir",
       "dulkadirli",
       "gulf_of_iskenderun",
+      "area::area__81::antioch",
       "area::area__38",
       "area::area__43",
-      "area::area__78",
-      "area::area__81::antioch"
+      "area::area__78"
     ],
     "world_x": 1197,
     "world_y": 544,
@@ -8430,9 +8430,9 @@
     "neighbors": [
       "dulkadir",
       "raqqa",
-      "area::area__43",
       "area::area__72::akkoyunlu",
-      "area::area__74::akkoyunlu"
+      "area::area__74::akkoyunlu",
+      "area::area__43"
     ],
     "world_x": 1281,
     "world_y": 515,
@@ -8470,11 +8470,11 @@
       "erzurum",
       "georgia",
       "urmiye",
+      "area::area__73::karakoyunlu",
+      "area::area__74::karakoyunlu",
       "area::area__37",
       "area::area__43",
-      "area::area__57",
-      "area::area__73::karakoyunlu",
-      "area::area__74::karakoyunlu"
+      "area::area__57"
     ],
     "world_x": 1356,
     "world_y": 514,
@@ -8509,9 +8509,9 @@
     "successor_faction_id": "karakoyunlu_state",
     "neighbors": [
       "mosul",
-      "area::area__43",
       "area::area__73::hakkari",
-      "area::area__74::hakkari"
+      "area::area__74::hakkari",
+      "area::area__43"
     ],
     "world_x": 1352,
     "world_y": 524,
@@ -8548,8 +8548,8 @@
       "genoa",
       "northern_tyrrhenian_sea",
       "siena",
-      "area::area__27",
       "area::area__30::florence",
+      "area::area__27",
       "area::area__34"
     ],
     "world_x": 702,
@@ -8599,8 +8599,8 @@
       "northern_tyrrhenian_sea",
       "provence",
       "area::area__13",
-      "area::area__15",
       "area::area__16::savoy",
+      "area::area__15",
       "area::area__27"
     ],
     "world_x": 652,
@@ -9341,10 +9341,10 @@
       "cankiri",
       "kayseri",
       "teke",
+      "area::area__80::karaman",
       "area::area__40",
       "area::area__56",
-      "area::area__79",
-      "area::area__80::karaman"
+      "area::area__79"
     ],
     "world_x": 1137,
     "world_y": 522,
@@ -9390,9 +9390,9 @@
     "neighbors": [
       "east_mediterranean",
       "teke",
+      "area::area__80::tasucu",
       "area::area__40",
-      "area::area__79",
-      "area::area__80::tasucu"
+      "area::area__79"
     ],
     "world_x": 1133,
     "world_y": 543,
@@ -9438,8 +9438,8 @@
       "cankiri",
       "karaman",
       "konya",
-      "area::area__56",
       "area::area__77::kayseri",
+      "area::area__56",
       "area::area__78",
       "area::area__79"
     ],
@@ -9646,9 +9646,9 @@
       "erzurum",
       "malatya",
       "sivas",
+      "area::area__72::erzincan",
       "area::area__43",
-      "area::area__45",
-      "area::area__72::erzincan"
+      "area::area__45"
     ],
     "world_x": 1268,
     "world_y": 489,
@@ -9771,8 +9771,8 @@
       "styria",
       "switzerland",
       "thuringia",
-      "area::area__10",
       "area::area__20::verona",
+      "area::area__10",
       "area::area__112",
       "area::area__114"
     ],
@@ -10074,8 +10074,8 @@
       "cremona",
       "ferrara",
       "venice",
-      "area::area__10",
       "area::area__20::verona",
+      "area::area__10",
       "area::area__27",
       "area::area__113",
       "area::area__114"
@@ -10158,8 +10158,8 @@
       "marche",
       "venice",
       "verona",
-      "area::area__27",
       "area::area__30::ferrara",
+      "area::area__27",
       "area::area__34"
     ],
     "world_x": 721,
@@ -10252,9 +10252,9 @@
       "calabria",
       "campania",
       "otranto_strait",
+      "area::area__35::apulia",
       "area::area__28",
-      "area::area__29",
-      "area::area__35::apulia"
+      "area::area__29"
     ],
     "world_x": 799,
     "world_y": 453,
@@ -13009,7 +13009,8 @@
       "gulf_of_iskenderun",
       "mediterranean_open_1",
       "upper_egypt",
-      "area::area__3::upper_egypt"
+      "area::area__3::upper_egypt",
+      "area::area__3::gaza"
     ],
     "world_x": 1137,
     "world_y": 605,

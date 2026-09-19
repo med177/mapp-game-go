@@ -296,6 +296,12 @@ func buildHistoricalEventModal() gameui.Modal {
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
+func buildCommanderArrivalModal() gameui.Modal {
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 1000, 420, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
+	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
+}
+
 func buildHistoricalEventChoiceButtons(count int) []gameui.Button {
 	if count <= 0 {
 		return nil

@@ -25,6 +25,9 @@ func TestDiplomacyOfferLayoutUsesExpandedActionRows(t *testing.T) {
 		if float64(h) != diplomActionButtonH {
 			t.Fatalf("aksiyon %d yüksekliği = %v, want %v", i, h, diplomActionButtonH)
 		}
+		if got := float64(y+h) - diplomActionDetailY(y, h); got != diplomActionDetailBottomPadding {
+			t.Fatalf("aksiyon %d alt padding = %v, want %v", i, got, diplomActionDetailBottomPadding)
+		}
 		if float64(y+h) > footerY {
 			t.Fatalf("aksiyon %d footer alanına taşıyor: bottom=%v footerY=%v", i, y+h, footerY)
 		}

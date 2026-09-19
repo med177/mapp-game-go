@@ -175,7 +175,11 @@ func SetMusicEnabled(enabled bool) {
 }
 
 func ToggleMusic() bool {
-	SetMusicEnabled(!musicEnabled)
+	// HUD düğmesi gerçek oynatma durumunu gösterir. Oynatıcı, dosya yükleme
+	// hatası veya başka bir akış nedeniyle nil/bitmiş olsa bile musicEnabled
+	// true kalabilir; bu durumda düğmeye basmak müziği kapatmak yerine yeniden
+	// başlatmayı denemelidir.
+	SetMusicEnabled(!MusicStatusNow().Playing)
 	return musicEnabled
 }
 
@@ -212,6 +216,11 @@ func MusicStatusNow() MusicStatus {
 
 func NextMusic() {
 	musicUnavailable = false
+	// Sonraki düğmesi de müziği başlatan bir kullanıcı eylemidir. Müzik daha
+	// önce durdurulmuşsa playNextMusic tek başına oynatıcıyı başlatır ancak
+	// musicEnabled değerini güncellemez; bu da HUD ikonunu "Çal" durumunda
+	// bırakır.
+	musicEnabled = true
 	playNextMusic()
 }
 

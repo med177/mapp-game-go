@@ -1627,7 +1627,6 @@
     "region_id": "mediterranean_open_2",
     "docked_region_id": "sicily",
     "docked_settlement_id": "sicily_messina",
-    "docked_settlement_id": "sicily_messina",
     "is_naval": true,
     "units": [
       {
@@ -1645,7 +1644,6 @@
     "owner_id": "castile_kingdom",
     "region_id": "atlantic_open_3",
     "docked_region_id": "sevilla",
-    "docked_settlement_id": "sevilla_sevilla_port",
     "docked_settlement_id": "sevilla_sevilla_port",
     "is_naval": true,
     "units": [

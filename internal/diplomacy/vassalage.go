@@ -415,26 +415,26 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		}
 	case ActionCancelTrade:
 		if sameRealm(gs, actor, target) {
-			return "Vassal ticareti vassallık sürdüğü sürece iptal edilemez."
+			return "Ticaret vassallık sürdüğü sürece iptal edilemez."
 		}
 		if !HasTradeRouteBetween(gs, actor, target) {
-			return "Bu devletle aktif bir ticaret anlaşması yok."
+			return "Aktif bir ticaret anlaşması yok."
 		}
 	case ActionImproveRelations:
 		cost := RelationImprovementGoldCostFor(gs)
 		if actorFaction.Gold < cost {
-			return "Heyet göndermek için " + strconv.Itoa(cost) + " altın gerekiyor."
+			return strconv.Itoa(cost) + " altın gerekiyor."
 		}
 		if score >= 95 {
 			return "İlişki zaten çok yüksek."
 		}
 	case ActionSendGift:
 		if stance == faction.StanceWar {
-			return "Savaş halindeyken hediye gönderilemez."
+			return "Savaş halindesiniz."
 		}
 		cost := GiftGoldCostFor(gs)
 		if actorFaction.Gold < cost {
-			return "Hediye göndermek için " + strconv.Itoa(cost) + " altın gerekiyor."
+			return strconv.Itoa(cost) + " altın gerekiyor."
 		}
 		if score >= 98 {
 			return "İlişki zaten çok yüksek."
@@ -442,17 +442,17 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	case ActionInciteRevolt:
 		overlord := DirectOverlord(gs, target)
 		if overlord == "" {
-			return "İsyana teşvik yalnız vassal devletlere karşı yapılabilir."
+			return "Yalnız vassal devletler."
 		}
 		if overlord == actor {
 			return "Bu devlet sana bağlı"
 		}
 		cost := InciteRevoltGoldCostFor(gs)
 		if actorFaction.Gold < cost {
-			return "İsyana teşvik için " + strconv.Itoa(cost) + " altın gerekiyor."
+			return strconv.Itoa(cost) + " altın gerekiyor."
 		}
 		if score >= 100 {
-			return "Vassal ile ilişki zaten çok yüksek."
+			return "İlişki zaten yüksek."
 		}
 	case ActionOfferVassalization:
 		if sameRealm(gs, actor, target) {
@@ -468,7 +468,7 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		}
 	case ActionReleaseVassal, ActionAnnexVassal:
 		if DirectOverlord(gs, target) != actor {
-			return "Hedef doğrudan sana bağlı bir devlet değil."
+			return "Sana bağlı bir devlet değil."
 		}
 		if action == ActionAnnexVassal {
 			if remaining := AnnexationTurnsRemaining(gs, actor, target); remaining > 0 {

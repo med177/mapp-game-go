@@ -202,6 +202,14 @@ func commanderPanelRecruitButton(gs *state.GameState) gameui.Button {
 	return button
 }
 
+// commanderPanelRecruitButtonHit çizilen Yeni Komutan düğmesinin etkin
+// durumunu ve hit-test'ini tek yerde tutar. Cursor ve input aynı geometriyi
+// kullandığı için düğme yalnızca gerçekten tıklanabilirken pointer gösterir.
+func commanderPanelRecruitButtonHit(gs *state.GameState, fx, fy float64) bool {
+	button := commanderPanelRecruitButton(gs)
+	return button.Enabled && button.HitTest(fx, fy)
+}
+
 func commanderRecruitModalPanel() gameui.Panel {
 	panel := gameui.AnchorRect(
 		gameui.Rect{W: ScreenWidth, H: ScreenHeight},
@@ -485,6 +493,37 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 	r.drawCommanderDetail(screen, current)
 	if r.showCommanderRecruit {
 		r.drawCommanderRecruitModal(screen)
+	} else {
+		r.drawCommanderRecruitTooltip(screen)
+	}
+}
+
+func (r *Renderer) drawCommanderRecruitTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	button := commanderPanelRecruitButton(r.gs)
+	if !button.HitTest(float64(mx), float64(my)) {
+		return
+	}
+
+	const (
+		tooltipW     = 240.0
+		tooltipPad   = 12.0
+		tooltipLineH = 18.0
+	)
+	canAfford := button.Enabled
+	lineCount := 1
+	if !canAfford {
+		lineCount++
+	}
+	tooltipH := tooltipPad*2 + float64(lineCount)*tooltipLineH
+	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
+	drawTooltipBox(screen, x, y, w, h)
+	DrawText(screen, "Maliyet: "+state.CommanderRecruitCost.ShortTR(), x+tooltipPad, y+tooltipPad, FaceSmall, ColorGold)
+	if !canAfford {
+		DrawText(screen, "Kaynak yetersiz", x+tooltipPad, y+tooltipPad+tooltipLineH, FaceSmall, ColorRed)
 	}
 }
 
@@ -696,7 +735,7 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 		r.OpenCommanderEditModal(commanderPanelDetailCommander(current))
 		return InputAction{}
 	}
-	if commanderPanelRecruitButton(r.gs).HandleInput(gameui.InputState{MouseX: fx, MouseY: fy, LeftJustPressed: leftJustPressed}) {
+	if leftJustPressed && commanderPanelRecruitButtonHit(r.gs, fx, fy) {
 		r.OpenCommanderRecruitModal()
 		return InputAction{}
 	}
@@ -837,7 +876,7 @@ func (r *Renderer) commanderPanelHovering(fx, fy float64) bool {
 	if btn, ok := commanderPanelEditButton(r.gs, current); ok && btn.HitTest(fx, fy) {
 		return true
 	}
-	if commanderPanelRecruitButton(r.gs).Enabled && commanderPanelRecruitButton(r.gs).HitTest(fx, fy) {
+	if commanderPanelRecruitButtonHit(r.gs, fx, fy) {
 		return true
 	}
 	if btn, ok := commanderPanelDismissButton(r.gs, current.ID); ok && btn.HitTest(fx, fy) {
