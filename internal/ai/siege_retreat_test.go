@@ -140,3 +140,37 @@ func TestAIMovementIntoVassalRetreatRegionDoesNotConquerIt(t *testing.T) {
 		t.Fatalf("AI retreat incorrectly changed vassal region owner to %q", gs.Regions["safe"].OwnerID)
 	}
 }
+
+func TestSiegeDefenderIsNotSelectedForAnotherSiegeRelief(t *testing.T) {
+	gs, defender := siegeDefenderRetreatTestState("defender", "", false)
+	defender.Units = append(defender.Units, army.Unit{TypeID: "infantry", CurrentHP: army.MaxUnitHP})
+	reliefAttacker := &army.Army{
+		ID:       "relief_besieger",
+		OwnerID:  "besieger",
+		RegionID: "safe",
+		Units:    []army.Unit{{TypeID: "infantry", CurrentHP: army.MaxUnitHP}},
+	}
+	gs.Armies[reliefAttacker.ID] = reliefAttacker
+	gs.Factions["relief_besieger"] = &faction.Faction{ID: "relief_besieger"}
+	gs.Relations[faction.RelationKey("defender", "besieger")] = &faction.Relation{
+		FactionA: "defender", FactionB: "besieger", Stance: faction.StanceWar,
+	}
+	gs.Sieges["safe"] = &state.SiegeState{
+		RegionID: "safe", AttackerArmyID: reliefAttacker.ID, AttackerFactionID: reliefAttacker.OwnerID,
+	}
+
+	ctx := &StrategicContext{
+		FactionID:       "defender",
+		ArmyAssignments: make(map[army.ArmyID]AIArmyAssignment),
+		gs:              gs,
+	}
+
+	assignAIArmyRoles(ctx)
+
+	if assignment, ok := ctx.ArmyAssignments[defender.ID]; ok && assignment.Role == AIArmyRoleRelief {
+		t.Fatalf("actively besieged defender was assigned to another siege relief: %#v", assignment)
+	}
+	if group := selectReliefRallyGroup(ctx, []*army.Army{defender}, "safe"); len(group) != 0 {
+		t.Fatalf("actively besieged defender entered relief rally group: %#v", group)
+	}
+}

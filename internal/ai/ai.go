@@ -1307,6 +1307,13 @@ func moveArmyWithStrategicContext(gs *state.GameState, a *army.Army, fid faction
 		}
 
 		outcome := executeMoveWithNavalPatrol(gs, a, target, fid, aiNavalPatrolMoveIntent(gs, a, target, strategicContext))
+		if _, exists := gs.Armies[a.ID]; exists {
+			gs.MergeMerchantTradeFleetAtRoute(a.ID)
+		}
+		gs.MergeMerchantTradeFleets()
+		if _, exists := gs.Armies[a.ID]; !exists {
+			outcome.survived = false
+		}
 		if outcome.step.Message != "" {
 			addTurnStep(steps, outcome.step)
 		}

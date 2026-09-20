@@ -225,3 +225,108 @@ func TestResolveSiegesForcesSurrenderWhenDurationExpiresWithDefender(t *testing.
 		t.Fatal("devredilen ordunun komutan sahipliği de güncellenmeliydi")
 	}
 }
+
+func TestResolveSiegesClearsStaleDefenderReference(t *testing.T) {
+	attackerID := faction.FactionID("venice")
+	defenderID := faction.FactionID("epir")
+	target := &world.Region{
+		ID:        "epirus",
+		OwnerID:   string(defenderID),
+		Neighbors: []world.RegionID{"yanya"},
+	}
+	otherRegion := &world.Region{
+		ID:        "yanya",
+		OwnerID:   string(defenderID),
+		Neighbors: []world.RegionID{target.ID},
+	}
+	attacker := &army.Army{
+		ID:       "venice_army",
+		OwnerID:  string(attackerID),
+		RegionID: target.ID,
+		Units:    []army.Unit{{TypeID: "militia", CurrentHP: army.MaxUnitHP}},
+	}
+	defender := &army.Army{
+		ID:       "epirus_army",
+		OwnerID:  string(defenderID),
+		RegionID: otherRegion.ID,
+		Units:    []army.Unit{{TypeID: "militia", CurrentHP: army.MaxUnitHP}},
+	}
+	siege := &state.SiegeState{
+		RegionID:          target.ID,
+		AttackerArmyID:    attacker.ID,
+		DefenderArmyID:    defender.ID,
+		AttackerFactionID: string(attackerID),
+	}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			target.ID:      target,
+			otherRegion.ID: otherRegion,
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			attacker.ID: attacker,
+			defender.ID: defender,
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			attackerID: {ID: attackerID},
+			defenderID: {ID: defenderID},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey(attackerID, defenderID): {
+				FactionA: attackerID,
+				FactionB: defenderID,
+				Stance:   faction.StanceWar,
+			},
+		},
+		Sieges: map[world.RegionID]*state.SiegeState{target.ID: siege},
+	}
+
+	(&Game{gs: gs}).resolveSieges()
+
+	if siege.DefenderArmyID != "" {
+		t.Fatalf("bölgeden ayrılmış savunmacı bağlantısı temizlenmeli, got=%q", siege.DefenderArmyID)
+	}
+}
+
+func TestExecutePlayerNavalMissionsConvertsInvalidBlockadeToPatrol(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"enemy_port": {
+				ID:          "enemy_port",
+				OwnerID:     "enemy",
+				Neighbors:   []world.RegionID{"sea"},
+				Settlements: []world.Settlement{{ID: "enemy_harbor", Type: world.SettlementPort}},
+			},
+			"sea": {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"enemy_port"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:         "fleet",
+				OwnerID:    "player",
+				RegionID:   "sea",
+				IsNaval:    true,
+				MovePoints: 2,
+				NavalMission: &army.NavalMission{
+					Kind:           army.NavalMissionBlockade,
+					TargetRegionID: "sea",
+				},
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "enemy"): {
+				FactionA: "player",
+				FactionB: "enemy",
+				Stance:   faction.StanceWar,
+			},
+		},
+	}
+	game := &Game{gs: gs}
+
+	gs.Regions["enemy_port"].OwnerID = "player"
+	game.executePlayerNavalMissions()
+
+	mission := gs.Armies["fleet"].NavalMission
+	if mission == nil || mission.Kind != army.NavalMissionPatrol || mission.TargetRegionID != "sea" {
+		t.Fatalf("geçersiz abluka devriyeye dönüşmeli, got %#v", mission)
+	}
+}

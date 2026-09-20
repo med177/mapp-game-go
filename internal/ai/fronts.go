@@ -794,7 +794,7 @@ func nearestReliefArmy(ctx *StrategicContext, armies []*army.Army, target world.
 	var best *army.Army
 	bestDistance := int(^uint(0) >> 1)
 	for _, candidate := range armies {
-		if candidate == nil {
+		if candidate == nil || ctx.gs.IsArmyDefendingSiegedRegion(candidate) {
 			continue
 		}
 		if _, assigned := ctx.ArmyAssignments[candidate.ID]; assigned || !aiCanDefeatSiege(ctx, candidate, target) {
@@ -846,7 +846,7 @@ func selectReliefRallyGroup(ctx *StrategicContext, armies []*army.Army, target w
 	candidates := make([]*army.Army, 0, len(armies))
 	distances := make(map[army.ArmyID]int, len(armies))
 	for _, candidate := range armies {
-		if candidate == nil || candidate.IsNaval || candidate.IsGarrison || len(candidate.Units) == 0 {
+		if candidate == nil || candidate.IsNaval || candidate.IsGarrison || len(candidate.Units) == 0 || ctx.gs.IsArmyDefendingSiegedRegion(candidate) {
 			continue
 		}
 		if _, assigned := ctx.ArmyAssignments[candidate.ID]; assigned {

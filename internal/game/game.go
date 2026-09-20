@@ -325,11 +325,16 @@ func (g *Game) Update() error {
 				)
 				break
 			}
+			// Eski kayıtlarda aynı rotanın hedef denizinde ayrı kalan merchant
+			// filolarını tur ilerlemeden düzelt. Böylece autosave de birleşmiş
+			// filo durumunu taşır.
+			g.gs.MergeMerchantTradeFleets()
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
 			g.startAITurnSequence()
 		case render.ActionConfirmEndTurn:
+			g.gs.MergeMerchantTradeFleets()
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
@@ -1120,6 +1125,7 @@ func (g *Game) resolveTurn() {
 	g.sanitizeDockedFleets()
 	applySeasonEffects(g.gs)
 	g.executePlayerNavalMissions()
+	g.gs.MergeMerchantTradeFleets()
 	economyReport := applyEconomyTick(g.gs)
 	navalVoyageAlerts := applyEmbarkedVoyageAttrition(g.gs)
 	completedTechs := applyTechTicks(g.gs)
@@ -4503,11 +4509,25 @@ func (g *Game) assignMerchantTradeRoute(fleetID army.ArmyID, routeKey string) {
 		g.renderer.ShowCombatResult("Bu ticaret rotası merchant filosuna atanamaz.")
 		return
 	}
+	g.consolidateMerchantTradeFleetAfterArrival(fleetID)
 	message := "Merchant filosu " + routeKey + " ticaret rotasına atandı."
 	if !g.gs.MerchantFleetSupportsTradeRoute(fleet, route) {
 		message += " Bonus için filoyu rotanın hedef denizine taşıyın."
 	}
 	g.renderer.ShowCombatResult(message)
+}
+
+func (g *Game) consolidateMerchantTradeFleetAfterArrival(fleetID army.ArmyID) {
+	if g == nil || g.gs == nil || fleetID == "" {
+		return
+	}
+	survivorID, merged := g.gs.MergeMerchantTradeFleetAtRoute(fleetID)
+	if !merged || g.renderer == nil {
+		return
+	}
+	if _, exists := g.gs.Armies[fleetID]; !exists && survivorID != "" && g.renderer.SelectedArmy == fleetID {
+		g.renderer.SelectedArmy = survivorID
+	}
 }
 
 func (g *Game) assignNavalMission(fleetID army.ArmyID, kind army.NavalMissionKind, targetRegion world.RegionID, targetFleetID army.ArmyID) {
@@ -5669,6 +5689,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		a.DockedRegionID = ""
 		a.DockedSettlementID = ""
 		a.MovePoints--
+		g.consolidateMerchantTradeFleetAfterArrival(a.ID)
 		g.renderer.MarkMapDirty()
 		g.renderer.ShowCombatResult("Donanma limandan ayrılıp açık denize çıktı.")
 		return
@@ -5932,6 +5953,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 					a.MovePoints -= landMoveCost
 				}
 				g.gs.ApplyLandRegionEntryAttrition(a)
+				g.consolidateMerchantTradeFleetAfterArrival(a.ID)
 				if neutralTerrainArea {
 					outcomeDetail = "Düşman ordu yenildi; tarafsız arazi alanında hareket devam etti."
 				} else if isAlliedRegion {
@@ -6010,6 +6032,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		a.DockedSettlementID = ""
 		a.MovePoints -= landMoveCost
 		g.gs.ApplyLandRegionEntryAttrition(a)
+		g.consolidateMerchantTradeFleetAfterArrival(a.ID)
 		if allyJoiningSiege {
 			// Kuşatmaya katılım: bölge fethedilmez; destek ordusu ayrı kalır.
 			g.renderer.ShowCombatResult("Ordu kuşatmaya ayrı bir destek gücü olarak katıldı.")

@@ -391,6 +391,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	gs.NormalizeFactionCapitals()
 	gs.AvailableVictories = scenario.FilterVictoryOptionsForFaction(gs.ScenarioVictories, string(gs.PlayerFactionID))
 	diplomacy.NormalizeVassalage(gs)
+	gs.NormalizeSiegeDefenderReferences()
 	gs.SyncWarLedgers()
 	if gs.TradeRoutes == nil {
 		gs.TradeRoutes = []*economy.TradeRoute{}
@@ -399,6 +400,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	if len(gs.TradeRoutes) == 0 {
 		diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 	}
+	gs.MergeMerchantTradeFleets()
 	grainDemandByFaction := make(map[faction.FactionID]int, len(gs.Factions))
 	for fid := range gs.Factions {
 		grainDemandByFaction[fid] = gs.StrategicGrainDemand(fid)

@@ -791,6 +791,12 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		defender := siegeDefenderForTurn(g.gs, siege, attacker, regionID)
 		if defender != nil {
 			siege.DefenderArmyID = defender.ID
+		} else {
+			// Save'den kalan veya kuşatma bölgesinden ayrılmış savunmacı
+			// bağlantısını canlı savunma yoksa taşımaya devam etme. Aksi halde
+			// aynı ordu başka bir kuşatmaya katıldığında iki kuşatma da onu
+			// savunmacı gibi gösterebilir.
+			siege.DefenderArmyID = ""
 		}
 		force := activeSiegeForce(g.gs, siege, attacker)
 		progressGain := siegeProgressGainForForce(g.gs, attacker, targetRegion, defender, force)

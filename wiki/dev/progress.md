@@ -1,11 +1,39 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-19
+last_updated: 2026-09-20
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-20: Harita üzerindeki komutanlı ordu/filo marker'ları grup içinde ilk
+  satıra alındı. Portrelerin komşu marker'lara yapışmaması için komutanlı
+  gruplarda ikon adımı 40 px'e çıkarıldı; çizim ve hit-test ortak pozisyon
+  kaynağını kullanmaya devam ediyor (`internal/render/renderer.go`).
+
+- 2026-09-20: Harita filo/ordu marker'ları beş sütunlu çok satırlı düzene geçirildi.
+  Aynı aktif ticaret rotasının hedef denizine ulaşan merchant filoları ortak state
+  helper'ı ile mevcut filoya 20 gemiye kadar otomatik aktarılıyor; kapasiteyi aşan
+  kısım ayrı kalıyor. Oyuncu/AI hareketi, tur çözümü ve save yükleme yolları ile
+  grid ve kapasite regresyonları doğrulandı (`internal/render/renderer.go`,
+  `internal/state/merchant_trade.go`, `internal/game/game.go`).
+
+- 2026-09-20: Eski save'lerde kuşatma bölgesinden ayrılmış savunma ordusuna ait
+  `DefenderArmyID` bağlantıları yükleme ve tur çözümleme aşamasında temizleniyor.
+  Renderer da stale bağlantıyla orduyu yanlış kuşatma anchor'ına taşımıyor;
+  save/state ve render regresyon testleri eklendi.
+
+- 2026-09-20: Aktif kuşatma savunmacıları başka bir kuşatmaya `relief` veya
+  rally adayı olmaktan çıkarıldı. Böylece aynı AI ordusunun komşu kuşatmalar
+  arasında gidip gelmesi engellendi; iki aktif kuşatma regresyon testi eklendi
+  (`internal/ai/fronts.go`, `internal/ai/siege_retreat_test.go`).
+
+- 2026-09-20: Komşu kıyılarda artık abluka yapılacak düşman bölgesi kalmayan
+  abluka filoları yeni tur başında aynı denizi hedefleyen devriye görevine
+  otomatik çevriliyor. State geçişi ve oyuncu turu bağlantısı regresyon testleriyle
+  doğrulandı (`internal/state/naval_mission.go`,
+  `internal/game/player_naval_mission.go`).
 
 - 2026-09-19: Kuşatma tesliminde bölgedeki savunma orduları artık geri çekilmek
   veya silinmek yerine kuşatan devlete devrediliyor. Kazanan devlet bu kuvvetleri

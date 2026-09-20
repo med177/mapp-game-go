@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-09-17
+last_updated: 2026-09-20
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -239,6 +239,9 @@ Bu görevlerden birini taşıyan filo manuel hareket, temas geri çekilmesi veya
 liman bağlantısı nedeniyle gerçek konumunu değiştirirse
 `ClearNavalMissionAfterRelocation()` görevi otomatik temizler; böylece görev
 eski deniz bölgesinde ekonomik veya devriye etkisi üretmeye devam etmez.
+Yeni tur başında `ConvertInvalidNavalBlockadesToPatrol()` komşu kıyılarda savaş
+halindeki düşman bölgesi kalmayan abluka filolarını aynı denizdeki devriye
+görevine çevirir; görev hedefi de filonun mevcut denizine eşitlenir.
 Devriye, abluka ve escort yalnızca ilgili filolar aynı açık denizdeyken görev
 panelinden atanır; panel
 hedef haritası açmaz ve tıklanan görev doğrudan mevcut `RegionID`'yi hedefler.

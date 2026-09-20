@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [economy, gold, tax, trade, buildings]
-last_updated: 2026-09-17
+last_updated: 2026-09-20
 related: [systems/seasons, systems/events, systems/ai, systems/combat, world/regions, architecture/game-loop, architecture/state-management]
 ---
 
@@ -255,6 +255,13 @@ filolarını yeniden değerlendirir:
 - Merchant gemisi aktif yönlü rotaya `+1 AmountPerTurn` ekler; merchant bonusunun
   üst sınırı rota panelinde görünen o rotanın hacmidir. Merchant filosu bu kapasiteye
   kadar tek stack'te gemi taşıyabilir; ayrı iki gemilik filolara bölünmesi gerekmez.
+- Aynı `TradeRouteKey` ile hedef denize ulaşan merchant filoları otomatik
+  konsolide edilir. Sonraki filo önce hedefte bekleyen filoya aktarılır; hedef
+  `army.MaxArmySize` olan 20 gemiye dolduğunda kapasiteyi aşan kısım ayrı filo
+  olarak kalır. `MergeMerchantTradeFleetAtRoute()` hareket anında, toplu
+  `MergeMerchantTradeFleets()` ise tur ve save normalizasyonunda kullanılır.
+  Oyuncu `Tur Bitir` dediğinde autosave alınmadan önce de çalıştığı için eski
+  kayıtlardaki ayrı kalan filolar geriye dönük düzeltilir.
 - Merchant gemisi bu ek hacim gerçekten taşındığında ayrıca ticari aracılık kârı
   üretir. Kâr yalnızca `taşınan hacim - AmountPerTurn` kadar merchant kargosuna
   uygulanır; temel rota hacmi ikinci kez kârlandırılmaz. `UnitType.merchant_trade_income`
@@ -268,6 +275,9 @@ filolarını yeniden değerlendirir:
 - Merchant kârı hedef denizde ihracat sahibine ait savaş gemisi devriyesi veya aynı
   rotadaki escort filosu varsa `%100`, güvenlik desteği yoksa `%75` oranında uygulanır.
   Abluka yüzdesi ise bundan bağımsız olarak taşınan toplam rota hacmini keser.
+- Haritadaki altın `+` ticaret rozeti üzerine gelindiğinde popup içinde gönderen → alan
+  devlet adları, taşınan mal, rota bonusu ve gelir katkısı birlikte gösterilir; aynı
+  denizdeki farklı rotalara atanmış filolar böylece ayırt edilebilir.
 - AI merchant görevi `Army.TradeRouteKey` ile kalıcıdır; rota anahtarı `gönderen->alan`
   yönünü korur ve save/load sonrası yeniden bağlanabilir.
 - Oyuncu seçili merchant filosundaki `ROTA ATA` düğmesiyle aynı geçerli rota listesinden

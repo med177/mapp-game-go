@@ -16,6 +16,7 @@ func (g *Game) executePlayerNavalMissions() {
 	if g == nil || g.gs == nil || len(g.gs.Armies) == 0 {
 		return
 	}
+	g.gs.ConvertInvalidNavalBlockadesToPatrol()
 	ids := make([]army.ArmyID, 0, len(g.gs.Armies))
 	for id, fleet := range g.gs.Armies {
 		if fleet != nil && fleet.OwnerID == string(g.gs.PlayerFactionID) && fleet.IsNaval && fleet.NavalMission != nil {

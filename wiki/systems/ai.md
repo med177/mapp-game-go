@@ -43,6 +43,11 @@ ordu ve tek saha ordusu da bu seçimde kullanılabilir. Yardım ordusu kuşatma 
 ulaştığında mevcut kuşatma destek/savaş akışı kuşatıcıyı yenmeyi ve başarılı olursa
 `SiegeState` kaydını kaldırmayı dener.
 
+Aktif bir kuşatmada savunmacı olarak duran ordu başka bir kuşatmanın `relief`
+adayına veya `relief` rally grubuna alınmaz. Böylece aynı savunma kuvveti kendi
+kalesini bırakıp komşu kuşatma hedefleri arasında gidip gelmez; çıkış kararı
+yalnız huruç ya da güvenli savunmacı geri çekilmesi üzerinden verilir.
+
 Bir bölgeye ilk kuşatma kurulduktan sonra aynı bölge yeni bir kuşatma hedefi
 olarak kullanılamaz. Kuşatmacıyla müttefik veya aynı realm içindeki AI ordusu
 hedefe yalnız destek için katılabilir; savunmayı yense bile bölgenin sahibi
@@ -1401,6 +1406,10 @@ throughput'una bağlar:
   aktif maritime rotalarda önce en az kapsanan hattı seçer; gerekli liman seviyesini
   kurar, açık merchant slotlarını üretir ve farklı yönlü rotalara deterministik
   atama yapar.
+- Aynı aktif rotanın hedef denizine ulaşan merchant filoları state katmanında
+  otomatik birleşir. Önceden orada olan filo 20 gemiye kadar korunur; yeni gelen
+  filonun sığmayan gemileri ayrı kalır. Bu işlem AI hareketinden sonra ve ekonomi
+  çözümünden önce yenilenir; renderer yalnız sonucu gösterir.
 - Ticaret merkezine yaklaşan düşman filo tehdidi varsa merchant üretiminden önce
   aynı `%110` escort eşiğiyle `warship` açığı kapatılır. Bütçe, ilk liman yükseltmesi
   ve bir merchant gemisinin gerçek hammadde maliyetini ekonomi yatırımlarına karşı

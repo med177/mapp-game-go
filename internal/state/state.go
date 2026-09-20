@@ -2098,6 +2098,28 @@ func (s *GameState) SiegeByArmy(armyID army.ArmyID) *SiegeState {
 	return nil
 }
 
+// NormalizeSiegeDefenderReferences, kayıt yüklenirken kuşatma bölgesinden
+// ayrılmış veya artık yaşamayan savunma ordularına ait eski bağlantıları
+// temizler. DefenderArmyID canlı state için yalnızca bir kayıt ipucudur.
+func (s *GameState) NormalizeSiegeDefenderReferences() int {
+	if s == nil || len(s.Sieges) == 0 {
+		return 0
+	}
+	cleared := 0
+	for regionID, siege := range s.Sieges {
+		if siege == nil || siege.DefenderArmyID == "" {
+			continue
+		}
+		defender := s.Armies[siege.DefenderArmyID]
+		if defender != nil && defender.RegionID == regionID && s.IsArmyDefendingSiegedRegion(defender) {
+			continue
+		}
+		siege.DefenderArmyID = ""
+		cleared++
+	}
+	return cleared
+}
+
 // EffectiveArmyGrainUpkeep ordunun bu turdaki temel tahıl bakım ihtiyacını
 // hareket ve kuşatma yüküyle birlikte hesaplar. Bu değer fraksiyon ekonomisi
 // ve toplam stok güvenliği için kullanılır.

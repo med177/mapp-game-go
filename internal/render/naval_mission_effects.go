@@ -2,6 +2,7 @@ package render
 
 import (
 	"image/color"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
@@ -296,7 +297,8 @@ func merchantTradeBonusTooltipText(gs *state.GameState, fleet *army.Army) (strin
 	if route.BlockadePercent > 0 {
 		income = income * (economy.MaxTradeRouteBlockadePercent - route.BlockadePercent) / economy.MaxTradeRouteBlockadePercent
 	}
-	detail := "Rota bonusu: +" + itoa(bonus) + " mal/tur • Gelir katkısı: +" + itoa(income) + " altın/tur"
+	routeName := factionDisplayName(gs, route.FromFactionID) + " → " + factionDisplayName(gs, route.ToFactionID)
+	detail := "Rota: " + routeName + " • Mal: " + economy.GoodNameTR(route.Good) + "\nBonus: +" + itoa(bonus) + " mal/tur • Gelir: +" + itoa(income) + " altın/tur"
 	return "Ticaret rotası bonusu", detail, true
 }
 
@@ -343,12 +345,17 @@ func (r *Renderer) drawMerchantTradeBonusHoverTooltip(screen *ebiten.Image) {
 	if !ok {
 		return
 	}
-	const tooltipW = 360.0
-	const tooltipH = 82.0
+	const tooltipW = 420.0
+	const tooltipH = 100.0
 	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
 	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
-	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 2)
+	for i, line := range strings.Split(detail, "\n") {
+		if i >= 2 {
+			break
+		}
+		drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34 + float64(i)*17, W: w - 24, H: 17}, line, ColorWhite, gameui.TextSmall, 17, 1)
+	}
 }
 
 func (r *Renderer) drawNavalEmbarkedArmyHoverTooltip(screen *ebiten.Image) {

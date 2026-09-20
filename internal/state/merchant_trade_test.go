@@ -143,6 +143,70 @@ func TestMerchantTradeIncomeRequiresMerchantCargo(t *testing.T) {
 	}
 }
 
+func TestMergeMerchantTradeFleetAtRouteKeepsExistingFleetAndHonorsCapacity(t *testing.T) {
+	const routeKey = "from->to"
+	route := &economy.TradeRoute{FromFactionID: "from", ToFactionID: "to", AmountPerTurn: 3}
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"from_port": {ID: "from_port", OwnerID: "from", Neighbors: []world.RegionID{"sea_from"}, Settlements: []world.Settlement{{ID: "from_harbor", Type: world.SettlementPort}}},
+			"to_port":   {ID: "to_port", OwnerID: "to", Neighbors: []world.RegionID{"sea_to"}, Settlements: []world.Settlement{{ID: "to_harbor", Type: world.SettlementPort}}},
+			"sea_from":  {ID: "sea_from", IsSea: true, Neighbors: []world.RegionID{"from_port", "sea_to"}},
+			"sea_to":    {ID: "sea_to", IsSea: true, Neighbors: []world.RegionID{"sea_from", "to_port"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_old": merchantTestFleet("fleet_old", "from", "sea_to", routeKey, 18),
+			"fleet_new": merchantTestFleet("fleet_new", "from", "sea_to", routeKey, 5),
+		},
+		UnitTypes:   map[string]*army.UnitType{"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade}},
+		TradeRoutes: []*economy.TradeRoute{route},
+	}
+
+	survivorID, merged := gs.MergeMerchantTradeFleetAtRoute("fleet_new")
+	if !merged || survivorID != "fleet_new" {
+		t.Fatalf("kısmi birleşme = (%q, %v), want (fleet_new, true)", survivorID, merged)
+	}
+	if got := len(gs.Armies["fleet_old"].Units); got != army.MaxArmySize {
+		t.Fatalf("önceki filo gemi sayısı = %d, want %d", got, army.MaxArmySize)
+	}
+	if got := len(gs.Armies["fleet_new"].Units); got != 3 {
+		t.Fatalf("artan yeni filo gemi sayısı = %d, want 3", got)
+	}
+
+	if removed := gs.MergeMerchantTradeFleets(); removed != 0 {
+		t.Fatalf("dolu hedeften sonra silinen filo = %d, want 0", removed)
+	}
+}
+
+func TestMergeMerchantTradeFleetsConsolidatesThreeTurnEndFleets(t *testing.T) {
+	const routeKey = "from->to"
+	route := &economy.TradeRoute{FromFactionID: "from", ToFactionID: "to", AmountPerTurn: 3}
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"from_port": {ID: "from_port", OwnerID: "from", Neighbors: []world.RegionID{"sea_from"}, Settlements: []world.Settlement{{ID: "from_harbor", Type: world.SettlementPort}}},
+			"to_port":   {ID: "to_port", OwnerID: "to", Neighbors: []world.RegionID{"sea_to"}, Settlements: []world.Settlement{{ID: "to_harbor", Type: world.SettlementPort}}},
+			"sea_from":  {ID: "sea_from", IsSea: true, Neighbors: []world.RegionID{"from_port", "sea_to"}},
+			"sea_to":    {ID: "sea_to", IsSea: true, Neighbors: []world.RegionID{"sea_from", "to_port"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_1": merchantTestFleet("fleet_1", "from", "sea_to", routeKey, 2),
+			"fleet_2": merchantTestFleet("fleet_2", "from", "sea_to", routeKey, 2),
+			"fleet_3": merchantTestFleet("fleet_3", "from", "sea_to", routeKey, 2),
+		},
+		UnitTypes:   map[string]*army.UnitType{"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade}},
+		TradeRoutes: []*economy.TradeRoute{route},
+	}
+
+	if removed := gs.MergeMerchantTradeFleets(); removed != 2 {
+		t.Fatalf("tur sonu birleşmesinde silinen filo = %d, want 2", removed)
+	}
+	if got := len(gs.Armies); got != 1 {
+		t.Fatalf("tur sonu filo sayısı = %d, want 1", got)
+	}
+	if got := len(gs.Armies["fleet_1"].Units); got != 6 {
+		t.Fatalf("birleşmiş filodaki gemi sayısı = %d, want 6", got)
+	}
+}
+
 func merchantTestFleet(id army.ArmyID, owner string, region world.RegionID, routeKey string, ships int) *army.Army {
 	units := make([]army.Unit, ships)
 	for i := range units {

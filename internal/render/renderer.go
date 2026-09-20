@@ -2466,9 +2466,28 @@ type screenRect struct {
 // genişliğindedir. 30 px merkez aralığı, marker'ların yanı sıra bu üst
 // katmanların da komşu orduya taşmamasını sağlar.
 const (
-	armyIconStep  = float32(32)
-	navalIconStep = float32(32)
+	armyIconStep          = float32(32)
+	navalIconStep         = float32(32)
+	armyCommanderIconStep = float32(40)
+	armyIconGridColumns   = 5
 )
+
+// armyIconGridPosition, aynı anchor üzerindeki ordu grubunu sabit beş sütuna
+// dizer. Beşinci ikondan sonra yeni satır aşağıya açılır; son satır, grubun
+// anchor'ına göre yatayda ortalanır.
+func armyIconGridPosition(base [2]float32, index, count int, step float32) (float32, float32) {
+	if count <= 0 || index < 0 || index >= count {
+		return base[0], base[1]
+	}
+	column := index % armyIconGridColumns
+	row := index / armyIconGridColumns
+	columns := count - row*armyIconGridColumns
+	if columns > armyIconGridColumns {
+		columns = armyIconGridColumns
+	}
+	startX := base[0] - float32(columns-1)*step/2
+	return startX + float32(column)*step, base[1] + float32(row)*step
+}
 
 func (r *Renderer) regionScreenPos(region *world.Region) (float64, float64) {
 	wx, wy := r.regionWorldPos(region)
@@ -2526,7 +2545,12 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 				break
 			}
 		}
-		if allNaval {
+		if r.armyGroupHasCommander(aids) {
+			// Komutan portresi 32 px olduğundan, komutanlı ilk satırın
+			// portreleri komşu marker'lara yapışmamalı; aynı adım satır
+			// yüksekliğine de uygulandığı için alt satıra taşmaz.
+			iconStep = armyCommanderIconStep
+		} else if allNaval {
 			iconStep = navalIconStep
 		} else {
 			iconStep = r.armyIconStepForTaskStatus(aids, iconStep)
@@ -2534,6 +2558,11 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		sort.Slice(aids, func(i, j int) bool {
 			ai := r.gs.Armies[aids[i]]
 			aj := r.gs.Armies[aids[j]]
+			aiHasCommander := armyHasDisplayedCommander(ai)
+			ajHasCommander := armyHasDisplayedCommander(aj)
+			if aiHasCommander != ajHasCommander {
+				return aiHasCommander
+			}
 			aiSieging := ai != nil && r.gs.SiegeByArmy(ai.ID) != nil
 			ajSieging := aj != nil && r.gs.SiegeByArmy(aj.ID) != nil
 			// Sadece kuşatma çifti kendi içinde sabitlenir: kuşatan solda,
@@ -2554,21 +2583,12 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 			return order[aids[i]] > order[aids[j]]
 		})
 
-		attackerIndex, _, hasSiegePair := r.siegePairIndices(aids)
-		slotCount := len(aids)
-		if hasSiegePair {
-			slotCount++
-		}
-		startX := base[0] - float32(slotCount-1)*iconStep/2
 		for i, aid := range aids {
-			slot := i
-			if hasSiegePair && i > attackerIndex {
-				slot++
-			}
+			x, y := armyIconGridPosition(base, i, len(aids), iconStep)
 			r.armyIconBuf = append(r.armyIconBuf, armyIconPos{
 				ArmyID: aid,
-				X:      startX + float32(slot)*iconStep,
-				Y:      base[1],
+				X:      x,
+				Y:      y,
 			})
 		}
 	}
@@ -2631,6 +2651,23 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		return r.armyIconBuf[i].ArmyID < r.armyIconBuf[j].ArmyID
 	})
 	return r.armyIconBuf
+}
+
+func armyHasDisplayedCommander(a *army.Army) bool {
+	commander, _ := armyPanelDisplayedCommander(a)
+	return commander != nil
+}
+
+func (r *Renderer) armyGroupHasCommander(aids []army.ArmyID) bool {
+	if r == nil || r.gs == nil {
+		return false
+	}
+	for _, aid := range aids {
+		if armyHasDisplayedCommander(r.gs.Armies[aid]) {
+			return true
+		}
+	}
+	return false
 }
 
 // armyGroupOrder, bir grubun mevcut üyelerinin sırasını korur ve yeni gelen
@@ -2723,7 +2760,13 @@ func (r *Renderer) siegeForArmyDisplay(a *army.Army) *state.SiegeState {
 		if siege == nil {
 			continue
 		}
-		if siege.AttackerArmyID == a.ID || siege.DefenderArmyID == a.ID {
+		if siege.AttackerArmyID == a.ID {
+			return siege
+		}
+		// DefenderArmyID save'de kalmış bir ipucu olabilir. Savunmacı ancak
+		// gerçekten kuşatılan bölgede duruyorsa bu bağlantıyla anchor'lanır;
+		// aksi halde eski kuşatma kaydı orduyu yanlış bölgeye çeker.
+		if siege.DefenderArmyID == a.ID && siege.RegionID == a.RegionID && r.gs.IsArmyDefendingSiegedRegion(a) {
 			return siege
 		}
 	}
@@ -2846,7 +2889,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		siegeBadgeX := pos.X + armyIconInnerHalf + 8
 		if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
 			for _, candidate := range positions {
-				if candidate.ArmyID == siege.DefenderArmyID {
+				if candidate.ArmyID == siege.DefenderArmyID && candidate.Y == pos.Y {
 					siegeBadgeX = armySiegeBadgeCenterX(pos.X, candidate.X, true)
 					break
 				}

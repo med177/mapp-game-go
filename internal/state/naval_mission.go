@@ -100,6 +100,35 @@ func (s *GameState) IsValidNavalBlockadeTarget(fleet *army.Army, seaID world.Reg
 	return false
 }
 
+// ConvertInvalidNavalBlockadesToPatrol, komşu kıyılarda artık abluka yapılacak
+// düşman bölgesi kalmayan filoları aynı denizde devriyeye çevirir. Hedef deniz
+// bölgesi de düzeltilir; böylece doğrudan atanmış veya eski kayıttan gelen
+// geçersiz hedef, devriye görevinin kanonik state'ine taşınır.
+func (s *GameState) ConvertInvalidNavalBlockadesToPatrol() int {
+	if s == nil {
+		return 0
+	}
+
+	converted := 0
+	for _, fleet := range s.Armies {
+		if fleet == nil || !fleet.IsAtSea() || fleet.NavalMission == nil || fleet.NavalMission.Kind != army.NavalMissionBlockade {
+			continue
+		}
+		if s.IsValidNavalBlockadeTarget(fleet, fleet.RegionID) && fleet.NavalMission.TargetRegionID == fleet.RegionID {
+			continue
+		}
+		if !s.validSeaMissionTarget(fleet.RegionID) {
+			continue
+		}
+
+		fleet.NavalMission.Kind = army.NavalMissionPatrol
+		fleet.NavalMission.TargetRegionID = fleet.RegionID
+		fleet.NavalMission.TargetFleetID = ""
+		converted++
+	}
+	return converted
+}
+
 // AssignNavalMission doğrulanmış görevi filoya kopyalar.
 func (s *GameState) AssignNavalMission(fleetID army.ArmyID, mission army.NavalMission) (bool, string) {
 	if ok, reason := s.CanAssignNavalMission(fleetID, mission); !ok {

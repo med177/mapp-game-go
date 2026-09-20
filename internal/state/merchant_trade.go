@@ -149,6 +149,177 @@ func (s *GameState) MerchantTradeRouteTargetSeaRegion(route *economy.TradeRoute)
 	return "", false
 }
 
+// MergeMerchantTradeFleets, aynı ticaret rotasının hedef denizine ulaşmış
+// merchant filolarını mevcut en dolu stack'te toplar. Hareket anındaki yeni
+// filo aktarımı MergeMerchantTradeFleetAtRoute tarafından doğrudan daha önce
+// orada bulunan filoya yapılır. Bir filo 20 gemiye ulaştığında sonraki filo
+// ayrı kalır; böylece kapasite sınırı aşılmaz.
+func (s *GameState) MergeMerchantTradeFleets() int {
+	if s == nil || len(s.Armies) < 2 {
+		return 0
+	}
+
+	type mergeGroupKey struct {
+		routeKey string
+		seaID    world.RegionID
+	}
+	fleetIDs := make([]army.ArmyID, 0, len(s.Armies))
+	for fleetID := range s.Armies {
+		fleetIDs = append(fleetIDs, fleetID)
+	}
+	sort.Slice(fleetIDs, func(i, j int) bool { return fleetIDs[i] < fleetIDs[j] })
+
+	groups := make(map[mergeGroupKey][]army.ArmyID)
+	for _, fleetID := range fleetIDs {
+		fleet := s.Armies[fleetID]
+		route, seaID, ok := s.merchantTradeMergeRoute(fleet)
+		if !ok {
+			continue
+		}
+		key := mergeGroupKey{routeKey: route.AssignmentKey(), seaID: seaID}
+		groups[key] = append(groups[key], fleetID)
+	}
+
+	removed := 0
+	for key, group := range groups {
+		if len(group) < 2 {
+			continue
+		}
+		sort.SliceStable(group, func(i, j int) bool {
+			left := len(s.Armies[group[i]].Units)
+			right := len(s.Armies[group[j]].Units)
+			if left != right {
+				return left > right
+			}
+			return group[i] < group[j]
+		})
+		target := s.Armies[group[0]]
+		var route *economy.TradeRoute
+		for _, candidate := range s.TradeRoutes {
+			if candidate != nil && candidate.AssignmentKey() == key.routeKey {
+				route = candidate
+				break
+			}
+		}
+		if !s.merchantTradeMergeEligible(target, route, key.seaID) {
+			continue
+		}
+		for _, sourceID := range group[1:] {
+			source := s.Armies[sourceID]
+			if source == nil || !s.merchantTradeMergeEligible(source, route, key.seaID) {
+				continue
+			}
+			if s.mergeMerchantTradeFleetUnits(target, source) {
+				if _, exists := s.Armies[sourceID]; !exists {
+					removed++
+				}
+			}
+		}
+	}
+	return removed
+}
+
+// MergeMerchantTradeFleetAtRoute, yeni ulaşan merchant filosunu aynı rota ve
+// hedef denizdeki daha önce mevcut filolara aktarır. Dönen ID, kaynak filo
+// tamamen aktarıldıysa hayatta kalan hedefi; kısmi aktarımda kaynağın kendisini
+// gösterir.
+func (s *GameState) MergeMerchantTradeFleetAtRoute(fleetID army.ArmyID) (army.ArmyID, bool) {
+	if s == nil {
+		return fleetID, false
+	}
+	source := s.Armies[fleetID]
+	if source == nil {
+		return fleetID, false
+	}
+	route, seaID, ok := s.merchantTradeMergeRoute(source)
+	if !ok {
+		return fleetID, false
+	}
+
+	targetIDs := make([]army.ArmyID, 0, len(s.Armies))
+	for targetID := range s.Armies {
+		if targetID != fleetID {
+			targetIDs = append(targetIDs, targetID)
+		}
+	}
+	sort.Slice(targetIDs, func(i, j int) bool { return targetIDs[i] < targetIDs[j] })
+	for _, targetID := range targetIDs {
+		target := s.Armies[targetID]
+		if !s.merchantTradeMergeEligible(target, route, seaID) {
+			continue
+		}
+		if s.mergeMerchantTradeFleetUnits(target, source) {
+			if _, exists := s.Armies[fleetID]; !exists {
+				return targetID, true
+			}
+			if len(source.Units) == 0 {
+				return targetID, true
+			}
+			return fleetID, true
+		}
+	}
+	return fleetID, false
+}
+
+func (s *GameState) merchantTradeMergeRoute(fleet *army.Army) (*economy.TradeRoute, world.RegionID, bool) {
+	if s == nil || fleet == nil || !fleet.IsAtSea() || fleet.TradeRouteKey == "" || len(fleet.EmbarkedUnits) > 0 || fleet.NavalMission != nil {
+		return nil, "", false
+	}
+	if s.merchantShipCount(fleet) != len(fleet.Units) || len(fleet.Units) == 0 {
+		return nil, "", false
+	}
+	for _, route := range s.TradeRoutes {
+		if route == nil || route.AssignmentKey() != fleet.TradeRouteKey || route.FromFactionID != fleet.OwnerID {
+			continue
+		}
+		seaID, ok := s.MerchantTradeRouteTargetSeaRegion(route)
+		if ok && fleet.RegionID == seaID {
+			return route, seaID, true
+		}
+	}
+	return nil, "", false
+}
+
+func (s *GameState) merchantTradeMergeEligible(fleet *army.Army, route *economy.TradeRoute, seaID world.RegionID) bool {
+	if fleet == nil || route == nil || fleet.RegionID != seaID || fleet.TradeRouteKey != route.AssignmentKey() {
+		return false
+	}
+	_, _, ok := s.merchantTradeMergeRoute(fleet)
+	return ok
+}
+
+func (s *GameState) mergeMerchantTradeFleetUnits(target, source *army.Army) bool {
+	if target == nil || source == nil || target.ID == source.ID {
+		return false
+	}
+	capacity := army.MaxArmySize - len(target.Units)
+	if capacity <= 0 {
+		return false
+	}
+	transferCount := len(source.Units)
+	if transferCount > capacity {
+		transferCount = capacity
+	}
+	if transferCount <= 0 {
+		return false
+	}
+	target.Units = append(target.Units, source.Units[:transferCount]...)
+	source.Units = source.Units[transferCount:]
+	if len(source.Units) > 0 {
+		return true
+	}
+	if source.Commander != nil {
+		if target.Commander == nil {
+			target.Commander = source.Commander
+			target.Commander.AssignedArmyID = target.ID
+		} else {
+			source.Commander.AssignedArmyID = ""
+		}
+	}
+	s.RemoveArmy(source.ID)
+	return true
+}
+
 // MerchantTradeRouteSeaRegions, geriye dönük ortak API sözleşmesi olarak
 // rotanın tek hedef denizini slice içinde döner. Bonus, AI hareketi ve abluka
 // bu aynı kanonik hedefi kullanır.
