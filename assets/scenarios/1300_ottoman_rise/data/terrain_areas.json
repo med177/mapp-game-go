@@ -10755,6 +10755,7 @@
   },
   {
     "id": "area__20",
+    "name": "Brenner Geçidi",
     "terrain": "mountain",
     "move_cost": -1,
     "polygons": [
@@ -19108,6 +19109,7 @@
   },
   {
     "id": "area__51",
+    "name": "Ural Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -19270,6 +19272,7 @@
   },
   {
     "id": "area__53",
+    "name": "Kara Dağlar",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -19367,6 +19370,7 @@
   },
   {
     "id": "area__55",
+    "name": "Kırım Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -20038,6 +20042,7 @@
   },
   {
     "id": "area__66",
+    "name": "Epir Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -20223,6 +20228,7 @@
   },
   {
     "id": "area__67",
+    "name": "Bulgar Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -20340,6 +20346,7 @@
   },
   {
     "id": "area__68",
+    "name": "Makedon Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -22314,6 +22321,7 @@
   },
   {
     "id": "area__96",
+    "name": "Moritanya Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -22463,6 +22471,7 @@
   },
   {
     "id": "area__97",
+    "name": "Fas Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -24076,6 +24085,7 @@
   },
   {
     "id": "area__115",
+    "name": "Karpat Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
@@ -24341,6 +24351,7 @@
   },
   {
     "id": "area__116",
+    "name": "Teselya Dağları",
     "terrain": "mountain",
     "move_cost": 0,
     "polygons": [
