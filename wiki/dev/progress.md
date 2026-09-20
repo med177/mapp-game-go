@@ -7,7 +7,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
-- 2026-09-20: Normal haritada ticaret rotasına atanmış filo marker'ları `1.25`
+- 2026-09-20: Normal haritada ticaret rotasına atanmış filo marker'ları `1.9`
   zoom eşiğinin altında gizleniyor; çizim, seçim ve hit-test aynı ortak marker
   pozisyon listesini kullanıyor. Ticaret Haritası görünümündeki rota/filo
   overlay'i bu filtreden etkilenmiyor (`internal/render/renderer.go`,

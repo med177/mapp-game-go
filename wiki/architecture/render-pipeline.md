@@ -207,7 +207,7 @@ parlak çizgi olarak gösterilir. Ana merkez tabelası daha büyük, solda çer�
 ticaret ikonu ile; ikincil merkez tabelası ise daha küçük ve düşük kontrastlıdır.
 Ticaret rotasına atanmış filo marker'ları rota ve öncelik rozetlerini korur;
 ticaret haritasında komutan portresi çizilmez. Normal haritada bu filoların
-marker'ları `camScale >= 1.25` olduğunda gösterilir; daha uzak zoom'da ortak
+marker'ları `camScale >= 1.9` olduğunda gösterilir; daha uzak zoom'da ortak
 `armyIconPositions()` çıktısından çıkarıldıkları için çizim, seçim ve hit-test
 birlikte gizlenir (`internal/render/renderer.go`). Ticaret haritası bu filtreyi
 uygulamaz.

@@ -52,7 +52,7 @@ const (
 	maxCameraZoomScale           = 10
 	settlementMediumZoomScale    = 1.25
 	settlementCloseZoomScale     = 1.8
-	merchantFleetMarkerZoomScale = settlementMediumZoomScale
+	merchantFleetMarkerZoomScale = 1.9
 	activeEventIconSize          = float32(22)
 	activeEventIconSpacingY      = float32(24)
 	activeEventIconLiftY         = float32(48)
