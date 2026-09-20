@@ -774,11 +774,12 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 	report.PlayerLogisticsAlerts = applyRegionalLogisticsPressure(gs)
 	applyGrainFundedArmyReplenishment(gs)
-	if autoSold, autoGold := gs.ApplyAutomaticGrainExport(); autoSold > 0 {
+	if autoExports := gs.ApplyAutomaticExports(); len(autoExports) > 0 {
 		fid := gs.PlayerFactionID
 		status := gs.GrainEconomy[fid]
-		status.AutoExportSold = autoSold
-		status.AutoExportGold = autoGold
+		grainExport := autoExports[economy.GoodGrain]
+		status.AutoExportSold = grainExport.Sold
+		status.AutoExportGold = grainExport.Gold
 		if player := gs.Factions[fid]; player != nil {
 			status.Stockpile = player.Grain
 			if status.TotalDemand > 0 {

@@ -508,7 +508,7 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 
 	px, y, w := float32(layout.panelRect.X), float32(layout.marketTitleRect.Y), float32(layout.panelRect.W)
 	factions := sortedFactionsForMarket(gs, focusGood, listFilter, listSort)
-	drawTradeListControls(screen, layout, gs, listFilter, listSort)
+	drawTradeListControls(screen, layout, gs, listFilter, listSort, selectedGood)
 	drawTradeGoodFilterControls(screen, layout, focusGood)
 	if len(factions) == 0 {
 		DrawTextCentered(screen, "Açık pazarda işlem yapılabilecek devlet yok.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
@@ -577,6 +577,14 @@ func drawTradeMarketTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 		drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY}, "Seçili: "+economy.GoodNameTR(good)+" | Hedef: "+target.NameTR, color.RGBA{200, 190, 170, 220}, gameui.TextSmall, gameui.TextAlignStart)
 		drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY + 24}, "Miktar: "+itoa(amount)+" | Tutar: "+itoa(totalGold)+" altın", color.RGBA{230, 210, 155, 230}, gameui.TextMedium, gameui.TextAlignStart)
 		drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY + 48}, "Al max: "+itoa(maxBuy)+" | Sat max: "+itoa(maxSell), color.RGBA{160, 190, 210, 220}, gameui.TextSmall, gameui.TextAlignStart)
+		policy := gs.AutoExportPolicyFor(good)
+		autoState := "KAPALI"
+		if policy.Enabled {
+			autoState = "AÇIK"
+		}
+		lastExport := gs.AutoExportResults[good].Sold
+		drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY + 72}, "Oto. ihracat: "+autoState+" | %"+itoa(policy.Percent)+" | Bu tur: "+itoa(lastExport), color.RGBA{190, 210, 180, 220}, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY + 92}, "Rezerv: "+itoa(gs.AutoExportReserve(gs.PlayerFactionID, good))+" | Fazla: "+itoa(gs.AutoExportSurplus(gs.PlayerFactionID, good)), color.RGBA{175, 195, 175, 220}, gameui.TextSmall, gameui.TextAlignStart)
 	}
 }
 
@@ -874,6 +882,14 @@ func tradeSelectableGoods() []economy.GoodType {
 	return economy.TradeGoods()
 }
 
+func selectedTradeGood(focusGood int) economy.GoodType {
+	goods := tradeSelectableGoods()
+	if focusGood < 0 || focusGood >= len(goods) {
+		return goods[0]
+	}
+	return goods[focusGood]
+}
+
 func isTradeSellerForPlayer(supply int) bool {
 	return supply > 0
 }
@@ -1047,16 +1063,22 @@ func tradeCapacityForFaction(gs *state.GameState, fid faction.FactionID) int {
 	return gs.EffectiveFactionTradeCapacity(fid)
 }
 
-func buildTradeAutoExportButton(layout tradeLayout, enabled bool) gameui.Button {
+func buildTradeAutoExportButton(layout tradeLayout, gs *state.GameState, good economy.GoodType) gameui.Button {
 	r := layout.autoExportRect
-	label := "Oto. Tahıl İhracı: KAPALI"
-	if enabled {
-		label = "Oto. Tahıl İhracı: AÇIK"
+	policy := state.AutoExportPolicy{}
+	if gs != nil {
+		policy = gs.AutoExportPolicyFor(good)
+	}
+	label := "Oto. " + economy.GoodNameTR(good) + ": %" + itoa(policy.Percent)
+	if policy.Enabled {
+		label += " AÇIK"
+	} else {
+		label += " KAPALI"
 	}
 	return gameui.NewButton(r.X, r.Y, r.W, r.H, label)
 }
 
-func drawTradeListControls(screen *ebiten.Image, layout tradeLayout, gs *state.GameState, listFilter TradeListFilter, listSort TradeListSort) {
+func drawTradeListControls(screen *ebiten.Image, layout tradeLayout, gs *state.GameState, listFilter TradeListFilter, listSort TradeListSort, good economy.GoodType) {
 	drawUISectionLabel(screen, layout.filterLabelRect.X, layout.filterLabelRect.Y+12, "Filtre:")
 	for _, btn := range buildTradeFilterButtons(layout) {
 		drawTradeChoiceButton(screen, btn.Button, int(listFilter) == btn.Value, color.RGBA{70, 62, 36, 235})
@@ -1065,8 +1087,9 @@ func drawTradeListControls(screen *ebiten.Image, layout tradeLayout, gs *state.G
 	for _, btn := range buildTradeSortButtons(layout) {
 		drawTradeChoiceButton(screen, btn.Button, int(listSort) == btn.Value, color.RGBA{52, 70, 82, 235})
 	}
-	autoBtn := buildTradeAutoExportButton(layout, gs != nil && gs.AutoGrainExport)
-	drawTradeChoiceButton(screen, autoBtn, gs != nil && gs.AutoGrainExport, color.RGBA{92, 70, 34, 235})
+	policy := gs.AutoExportPolicyFor(good)
+	autoBtn := buildTradeAutoExportButton(layout, gs, good)
+	drawTradeChoiceButton(screen, autoBtn, policy.Enabled, color.RGBA{92, 70, 34, 235})
 }
 
 func drawTradeGoodFilterControls(screen *ebiten.Image, layout tradeLayout, focusGood int) {
@@ -1208,7 +1231,7 @@ func tradePanelPointerHit(mx, my float64, gs *state.GameState, tab TradeTab, foc
 			return true
 		}
 	}
-	if buildTradeAutoExportButton(layout, gs != nil && gs.AutoGrainExport).HitTest(mx, my) {
+	if buildTradeAutoExportButton(layout, gs, selectedTradeGood(focusGood)).HitTest(mx, my) {
 		return true
 	}
 	factions := sortedFactionsForMarket(gs, focusGood, listFilter, listSort)
@@ -1353,8 +1376,8 @@ func handleTradePanelInput(r *Renderer, input gameui.InputState) InputAction {
 			return InputAction{}
 		}
 	}
-	if buildTradeAutoExportButton(layout, r.gs != nil && r.gs.AutoGrainExport).HandleInput(input) {
-		return InputAction{Kind: ActionToggleAutoGrainExport}
+	if buildTradeAutoExportButton(layout, r.gs, selectedTradeGood(r.tradeGoodFocus)).HandleInput(input) {
+		return InputAction{Kind: ActionAdjustAutoExport, BuildingID: string(selectedTradeGood(r.tradeGoodFocus))}
 	}
 	factions := sortedFactionsForMarket(r.gs, r.tradeGoodFocus, r.tradeListFilter, r.tradeListSort)
 	factionItems := make([]string, 0, len(factions))

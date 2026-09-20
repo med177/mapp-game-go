@@ -156,7 +156,8 @@ type GameState struct {
     RegionLogistics    map[RegionID]RegionLogisticsStatus
     ArmyLogistics      map[ArmyID]ArmyLogisticsStatus
     GrainEconomy       map[FactionID]GrainEconomyStatus
-    AutoGrainExport    bool // oyuncunun save'lenen otomatik ihracat tercihi
+    AutoGrainExport    bool // eski save uyumluluğu için tahıl alias'ı
+    AutoExportPolicies map[GoodType]AutoExportPolicy // mal bazlı açık pazar ihracatı
     ArmyMoveUsage      map[ArmyID]bool // ekonomi tick'i öncesi runtime hareket snapshot'ı
     GrainAidUsage      map[RegionID]bool // tur içi tahıl yardımı kilidi
 
@@ -446,7 +447,7 @@ save/load ise alanı campaign state içinde korur.
 
 `EmergencyGrainSaleLimit()` / `EmergencyGrainSaleUnitPrice()` / `ApplyEmergencyGrainSale()` — pazar partneri gerektirmeyen acil tahıl satışını yönetir. Yalnızca fraksiyon depo kapasitesi üzerindeki miktar satılır; `economy.EmergencySaleUnitPrice()` güncel fiyatın %70 indirimli değerini üretir ve miktar kalan vergi bazlı satış bütçesiyle sınırlanır.
 
-`GameState.AutoGrainExport` / `ApplyAutomaticGrainExport()` — Pazar sekmesindeki tercihi ve ekonomi tick'inde kapasite üzeri tahılın aktif, savaşta olmayan ticaret ağı partnerlerine faction ID sırasıyla %60 fiyatla satışını yönetir. Alıcı altını yetersizse miktar alıcının bütçesiyle sınırlanır; tercih compact save alanında korunur, gerçekleşen miktar ve altın runtime `GrainEconomyStatus` içinde raporlanır.
+`GameState.AutoExportPolicyFor()` / `SetAutoExportPolicy()` / `ApplyAutomaticExports()` — Pazar sekmesindeki mal bazlı otomatik açık pazar satışını yönetir. `AutoExportSurplus()` mevcut gerçek stoktan tahıl ambar kapasitesini veya diğer mallar için minimum 20 ve iki tur üretim rezervini düşürür; seçilen yüzde yalnız bu fazlaya uygulanır. Satış savaşta olmayan AI alım emirlerine deterministik sırayla yapılır. Tahıl satışı `GrainSaleGoldBudget()` ile aynı vergi bazlı bütçeyi kullanır; politikalar compact save'de korunur, eski tahıl boolean'ı yüklemede `%100` tahıl politikasına göç eder.
 
 `GameState.CanArmyReplenishIn()` / `ReplenishArmyInFriendlyTerritory()` — kendi, müttefik veya aynı realm içindeki vassal bölgesinde bulunan ordunun dost ikmal uygunluğunu ve HP uygulamasını ortaklaştırır; aktif kuşatma istisnası çözümleme katmanında korunur. `ArmyReplenishmentHP()` ikmal yeterliyken `2 + 2 × (farm + granary seviyesi)` bölgesel ücretsiz hızı türetir; yalnızca ordunun `OwnerID` faction'ının kendi ulusal başkent bölgesinde bu değer `CapitalArmyReplenishmentMultiplier` ile (`×2`) çarpılır. Bu nedenle overlord ordusu vassal başkentinde, vassal ordusu ise overlord başkentinde bonus almaz. `applyGrainFundedArmyReplenishment()` yalnız ikmal aşımı olmayan dost ve kuşatma dışı kara ordularına, aynı tavan kadar kapasite üstü tahıl aktarır; 1 HP başına 1 tahıl tüketilir ve rezerv kapasitesi altına inilmez.
 

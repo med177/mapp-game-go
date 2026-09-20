@@ -253,7 +253,10 @@ type GameState struct {
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
 	AutoGrainExport bool              `json:"auto_grain_export,omitempty"`
-	Difficulty      int               `json:"difficulty"` // 1=kolay, 2=normal, 3=zor
+	// AutoExportPolicies oyuncunun mal bazlı otomatik açık pazar satış tercihidir.
+	// AutoGrainExport eski save'ler için geriye dönük uyumluluk alanıdır.
+	AutoExportPolicies map[economy.GoodType]AutoExportPolicy `json:"auto_export_policies,omitempty"`
+	Difficulty         int                                   `json:"difficulty"` // 1=kolay, 2=normal, 3=zor
 
 	// Development mode
 	DevelopmentMode bool `json:"development_mode"`
@@ -357,7 +360,8 @@ type GameState struct {
 	// MarketOrders AI devletlerinin bu tur açık pazara koyduğu arz ve talep
 	// kotalarını taşır. Piyasa işlemleri ham stok yerine bu kotaları kullanır;
 	// böylece bir devletin bütün malı tek turda satın alınamaz.
-	MarketOrders MarketOrderBook `json:"market_orders,omitempty"`
+	MarketOrders      MarketOrderBook                       `json:"market_orders,omitempty"`
+	AutoExportResults map[economy.GoodType]AutoExportResult `json:"-"`
 
 	// Tur çözümlemesinde MovePoints sıfırlanmadan önce yakalanan hareket bilgisi.
 	// Kalıcı değildir; yüklenen oyunda bir sonraki çözümleme başında yeniden üretilir.
@@ -418,6 +422,18 @@ func (s *GameState) BasePrice(good economy.GoodType) int {
 type MarketOrderBook struct {
 	SellOffers map[faction.FactionID]map[economy.GoodType]int `json:"sell_offers,omitempty"`
 	BuyOrders  map[faction.FactionID]map[economy.GoodType]int `json:"buy_orders,omitempty"`
+}
+
+// AutoExportPolicy bir malın otomatik açık pazar satış ayarını taşır.
+type AutoExportPolicy struct {
+	Enabled bool `json:"enabled"`
+	Percent int  `json:"percent"`
+}
+
+// AutoExportResult son ekonomi tick'inde bir mal için gerçekleşen otomatik satışı taşır.
+type AutoExportResult struct {
+	Sold int
+	Gold int
 }
 
 // MarketSellOffer bir devletin belirli mal için kalan satış arzını döner.
@@ -1508,83 +1524,188 @@ func (s *GameState) ApplyEmergencyGrainSale(amount int) (sold, gold int) {
 	return sold, gold
 }
 
-// ApplyAutomaticGrainExport aktif ticaret ağı partnerlerine kapasite üstü tahılı
-// düşük fiyatla satar. Partner sırası faction ID ile deterministiktir.
-func (s *GameState) ApplyAutomaticGrainExport() (sold, gold int) {
-	if s == nil || !s.AutoGrainExport || s.PlayerFactionID == "" {
-		return 0, 0
-	}
-	limit := s.grainExcessStock(s.PlayerFactionID)
-	price := economy.AutomaticExportUnitPrice(s.MarketPrices[economy.GoodGrain])
-	if price <= 0 {
-		price = economy.AutomaticExportUnitPrice(s.BasePrice(economy.GoodGrain))
-	}
-	if price <= 0 || limit <= 0 {
-		return 0, 0
-	}
-	byBudget := s.GrainSaleGoldBudget(s.PlayerFactionID) / price
-	if byBudget <= 0 {
-		return 0, 0
-	}
-	if byBudget < limit {
-		limit = byBudget
-	}
+const (
+	defaultAutoExportPercent = 100
+	autoExportMinimumReserve = 20
+	autoExportReserveTurns   = 2
+)
 
-	partnersSet := make(map[faction.FactionID]struct{})
-	for _, route := range s.TradeRoutes {
-		if route == nil || route.SuspendedTurns > 0 || route.AmountPerTurn <= 0 {
-			continue
-		}
-		var partner faction.FactionID
-		switch {
-		case faction.FactionID(route.FromFactionID) == s.PlayerFactionID:
-			partner = faction.FactionID(route.ToFactionID)
-		case faction.FactionID(route.ToFactionID) == s.PlayerFactionID:
-			partner = faction.FactionID(route.FromFactionID)
-		default:
-			continue
-		}
-		if partner == "" || partner == s.PlayerFactionID {
-			continue
-		}
-		f := s.Factions[partner]
-		if f == nil || f.IsEliminated {
-			continue
-		}
-		if relation := s.Relations[faction.RelationKey(s.PlayerFactionID, partner)]; relation != nil && relation.Stance == faction.StanceWar {
-			continue
-		}
-		partnersSet[partner] = struct{}{}
+// AutoExportPolicyFor bir malın otomatik ihracat ayarını döner. Eski save'lerde
+// bulunan AutoGrainExport alanı yalnızca tahıl için otomatik olarak taşınır.
+func (s *GameState) AutoExportPolicyFor(good economy.GoodType) AutoExportPolicy {
+	if s == nil || good == "" {
+		return AutoExportPolicy{}
 	}
-
-	partners := make([]faction.FactionID, 0, len(partnersSet))
-	for partner := range partnersSet {
-		partners = append(partners, partner)
+	if policy, ok := s.AutoExportPolicies[good]; ok {
+		policy.Percent = clampAutoExportPercent(policy.Percent)
+		return policy
 	}
-	sort.Slice(partners, func(i, j int) bool { return partners[i] < partners[j] })
+	if good == economy.GoodGrain && s.AutoGrainExport {
+		return AutoExportPolicy{Enabled: true, Percent: defaultAutoExportPercent}
+	}
+	return AutoExportPolicy{Percent: defaultAutoExportPercent}
+}
 
-	remaining := limit
-	for _, partner := range partners {
+// SetAutoExportPolicy bir malın otomatik ihracat tercihini kaydeder.
+func (s *GameState) SetAutoExportPolicy(good economy.GoodType, policy AutoExportPolicy) {
+	if s == nil || good == "" {
+		return
+	}
+	policy.Percent = clampAutoExportPercent(policy.Percent)
+	if s.AutoExportPolicies == nil {
+		s.AutoExportPolicies = make(map[economy.GoodType]AutoExportPolicy)
+	}
+	s.AutoExportPolicies[good] = policy
+	if good == economy.GoodGrain {
+		s.AutoGrainExport = policy.Enabled
+	}
+}
+
+func clampAutoExportPercent(percent int) int {
+	if percent < 0 {
+		return 0
+	}
+	if percent > 100 {
+		return 100
+	}
+	return percent
+}
+
+// AutoExportReserve otomatik satışta korunacak mal rezervini döner. Tahılın
+// rezervi mevcut ekonomi tick'indeki gerçek ambar kapasitesidir; diğer mallar
+// için en az iki tur üretim ve 20 birimlik güvenlik tabanı korunur.
+func (s *GameState) AutoExportReserve(fid faction.FactionID, good economy.GoodType) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	if good == economy.GoodGrain {
+		if status, ok := s.GrainEconomy[fid]; ok && status.StorageCapacity > 0 {
+			return status.StorageCapacity
+		}
+		return grainMinimumStorageCapacity
+	}
+	production := s.FactionProductionSummary(fid)
+	kind, ok := economy.GoodToResourceKind(good)
+	if !ok {
+		return autoExportMinimumReserve
+	}
+	produced := 0
+	switch kind {
+	case economy.ResourceIron:
+		produced = production.Iron
+	case economy.ResourceTimber:
+		produced = production.Timber
+	case economy.ResourceStone:
+		produced = production.Stone
+	case economy.ResourceSpice:
+		produced = production.Spice
+	case economy.ResourceCloth:
+		produced = production.Cloth
+	}
+	reserve := produced * autoExportReserveTurns
+	if reserve < autoExportMinimumReserve {
+		reserve = autoExportMinimumReserve
+	}
+	return reserve
+}
+
+// AutoExportSurplus otomatik satışta kullanılabilecek, rezerv üstü mevcut
+// miktarı döner. Ekonomi tick'i çağrısında üretim ve tüketim zaten stoğa işlendiği
+// için burada son gerçek stok üzerinden hesap yapılır.
+func (s *GameState) AutoExportSurplus(fid faction.FactionID, good economy.GoodType) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	f := s.Factions[fid]
+	kind, ok := economy.GoodToResourceKind(good)
+	if f == nil || !ok {
+		return 0
+	}
+	surplus := economy.FactionResourceAmount(f, kind) - s.AutoExportReserve(fid, good)
+	if surplus < 0 {
+		return 0
+	}
+	return surplus
+}
+
+// ApplyAutomaticExports seçili malların rezerv üstü yüzdesini açık pazardaki
+// AI alım emirlerine satar. Alıcı ve mal sırası deterministiktir.
+func (s *GameState) ApplyAutomaticExports() map[economy.GoodType]AutoExportResult {
+	results := make(map[economy.GoodType]AutoExportResult)
+	if s == nil || s.PlayerFactionID == "" {
+		return results
+	}
+	for _, good := range economy.TradeGoods() {
+		policy := s.AutoExportPolicyFor(good)
+		if !policy.Enabled || policy.Percent <= 0 {
+			continue
+		}
+		price := s.MarketPrices[good]
+		if price <= 0 {
+			price = s.BasePrice(good)
+		}
+		if price <= 0 {
+			continue
+		}
+		remaining := s.AutoExportSurplus(s.PlayerFactionID, good) * policy.Percent / 100
 		if remaining <= 0 {
-			break
-		}
-		buyer := s.Factions[partner]
-		amount := buyer.Gold / price
-		if amount > remaining {
-			amount = remaining
-		}
-		if amount <= 0 {
 			continue
 		}
-		if !economy.TransferGoodsAtUnitPrice(s.Factions, s.PlayerFactionID, partner, economy.GoodGrain, amount, price) {
+		if good == economy.GoodGrain {
+			budgetAmount := s.GrainSaleGoldBudget(s.PlayerFactionID) / price
+			if budgetAmount < remaining {
+				remaining = budgetAmount
+			}
+		}
+		if remaining <= 0 {
 			continue
 		}
-		sold += amount
-		gold += amount * price
-		s.RecordGrainSaleGold(s.PlayerFactionID, amount*price)
-		remaining -= amount
+
+		buyers := make([]faction.FactionID, 0, len(s.MarketOrders.BuyOrders))
+		for buyerID := range s.MarketOrders.BuyOrders {
+			if buyerID == s.PlayerFactionID || s.Factions[buyerID] == nil || s.Factions[buyerID].IsEliminated || diplomacyAtWar(s, s.PlayerFactionID, buyerID) {
+				continue
+			}
+			if s.MarketBuyOrder(buyerID, good, price) > 0 {
+				buyers = append(buyers, buyerID)
+			}
+		}
+		sort.Slice(buyers, func(i, j int) bool { return buyers[i] < buyers[j] })
+		for _, buyerID := range buyers {
+			if remaining <= 0 {
+				break
+			}
+			amount := s.MarketBuyOrder(buyerID, good, price)
+			if amount > remaining {
+				amount = remaining
+			}
+			if amount <= 0 || !economy.TransferGoodsAtUnitPrice(s.Factions, s.PlayerFactionID, buyerID, good, amount, price) {
+				continue
+			}
+			s.ConsumeMarketBuyOrder(buyerID, good, amount)
+			results[good] = AutoExportResult{Sold: results[good].Sold + amount, Gold: results[good].Gold + amount*price}
+			if good == economy.GoodGrain {
+				s.RecordGrainSaleGold(s.PlayerFactionID, amount*price)
+			}
+			remaining -= amount
+		}
 	}
-	return sold, gold
+	s.AutoExportResults = results
+	return results
+}
+
+// ApplyAutomaticGrainExport eski çağrı noktaları için tahıl sonucunu döner.
+func (s *GameState) ApplyAutomaticGrainExport() (sold, gold int) {
+	result := s.ApplyAutomaticExports()[economy.GoodGrain]
+	return result.Sold, result.Gold
+}
+
+func diplomacyAtWar(s *GameState, a, b faction.FactionID) bool {
+	if s == nil || a == "" || b == "" {
+		return false
+	}
+	relation := s.Relations[faction.RelationKey(a, b)]
+	return relation != nil && relation.Stance == faction.StanceWar
 }
 
 // ResetDiplomacyOfferCounts mevcut tur teklif sayaçlarını sıfırlar.

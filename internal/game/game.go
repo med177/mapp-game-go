@@ -496,8 +496,8 @@ func (g *Game) Update() error {
 			g.oneTimeTrade(action.TargetFaction, action.BuildingID, action.Delta)
 		case render.ActionEmergencyGrainSale:
 			g.emergencyGrainSale(action.Delta)
-		case render.ActionToggleAutoGrainExport:
-			g.toggleAutoGrainExport()
+		case render.ActionAdjustAutoExport:
+			g.toggleAutoExport(economy.GoodType(action.BuildingID))
 		case render.ActionSave:
 			g.saveToSlot("quicksave", true, "Hızlı kayıt alındı.")
 		case render.ActionLoad:
@@ -2889,16 +2889,25 @@ func (g *Game) emergencyGrainSale(amount int) {
 	g.renderer.ShowCombatResult(fmt.Sprintf("%d tahıl acil pazarda satıldı. +%d altın.", sold, gold))
 }
 
-func (g *Game) toggleAutoGrainExport() {
+func (g *Game) toggleAutoExport(good economy.GoodType) {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
-	g.gs.AutoGrainExport = !g.gs.AutoGrainExport
-	if g.gs.AutoGrainExport {
-		g.renderer.ShowCombatResult("Otomatik tahıl ihracatı açıldı.")
+	if good == "" {
+		good = economy.GoodGrain
+	}
+	policy := g.gs.AutoExportPolicyFor(good)
+	policy.Percent += 10
+	if policy.Percent > 100 {
+		policy.Percent = 0
+	}
+	policy.Enabled = policy.Percent > 0
+	g.gs.SetAutoExportPolicy(good, policy)
+	if policy.Enabled {
+		g.renderer.ShowCombatResult(fmt.Sprintf("Otomatik %s ihracatı %%%d olarak ayarlandı.", economy.GoodNameTR(good), policy.Percent))
 		return
 	}
-	g.renderer.ShowCombatResult("Otomatik tahıl ihracatı kapatıldı.")
+	g.renderer.ShowCombatResult(fmt.Sprintf("Otomatik %s ihracatı kapatıldı.", economy.GoodNameTR(good)))
 }
 
 func canPlayerOneTimeTradeWith(gs *state.GameState, targetID faction.FactionID) bool {

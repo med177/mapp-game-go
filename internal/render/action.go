@@ -113,9 +113,9 @@ const (
 	ActionCancelTradeRoute      ActionKind = "cancel_trade_route"   // BuildingID = rota indeksi
 	ActionOneTimeTrade          ActionKind = "one_time_trade"       // BuildingID = mal tipi, Delta = miktar
 	ActionEmergencyGrainSale    ActionKind = "emergency_grain_sale" // Delta = satış miktarı
-	ActionToggleAutoGrainExport ActionKind = "toggle_auto_grain_export"
-	ActionTradeScroll           ActionKind = "trade_scroll"     // Delta: +1/-1
-	ActionTradeTabSwitch        ActionKind = "trade_tab_switch" // Delta: hangi sekme
+	ActionAdjustAutoExport      ActionKind = "adjust_auto_export"   // BuildingID = mal; her tıklama satış oranını %10 artırır
+	ActionTradeScroll           ActionKind = "trade_scroll"         // Delta: +1/-1
+	ActionTradeTabSwitch        ActionKind = "trade_tab_switch"     // Delta: hangi sekme
 	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
 	ActionChooseHistoricalEvent ActionKind = "choose_historical_event"
 	ActionOpenEventCodex        ActionKind = "open_event_codex"

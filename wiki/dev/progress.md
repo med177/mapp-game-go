@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-20: Otomatik ihracat mal bazlı politikalara genişletildi. Pazar filtresindeki
+  seçili mal düğmesi `%0`–`%100` oranını döndürüyor; ekonomi tick'i tahılda ambar
+  kapasitesini, diğer mallarda minimum 20 ve iki tur üretim rezervini koruyup yalnız
+  kalan fazlanın seçilen yüzdesini savaş dışı AI alım emirlerine satıyor. Eski
+  `AutoGrainExport` save alanı tahıl `%100` politikasına göç ediyor; state regresyonu
+  eklendi (`internal/state/auto_export_test.go`).
+
 - 2026-09-20: Harita üzerindeki komutanlı ordu/filo marker'ları grup içinde ilk
   satıra alındı. Portrelerin komşu marker'lara yapışmaması için komutanlı
   gruplarda ikon adımı 40 px'e çıkarıldı; çizim ve hit-test ortak pozisyon

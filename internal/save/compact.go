@@ -105,20 +105,21 @@ type armySaveState struct {
 }
 
 type campaignSaveState struct {
-	Turn                    int                                `json:"t"`
-	Year                    int                                `json:"y"`
-	Month                   int                                `json:"m"`
-	StartYear               int                                `json:"sy,omitempty"`
-	ScenarioID              string                             `json:"sc"`
-	ScenarioPath            string                             `json:"scp,omitempty"`
-	PlayerFactionID         faction.FactionID                  `json:"pf"`
-	Difficulty              int                                `json:"d,omitempty"`
-	AutoGrainExport         bool                               `json:"age,omitempty"`
-	DevelopmentMode         bool                               `json:"dev,omitempty"`
-	EditMode                bool                               `json:"em,omitempty"`
-	Victory                 state.VictoryCondition             `json:"v"`
-	SelectedVictoryOptionID string                             `json:"sv,omitempty"`
-	Regions                 map[world.RegionID]regionSaveState `json:"rg,omitempty"`
+	Turn                    int                                         `json:"t"`
+	Year                    int                                         `json:"y"`
+	Month                   int                                         `json:"m"`
+	StartYear               int                                         `json:"sy,omitempty"`
+	ScenarioID              string                                      `json:"sc"`
+	ScenarioPath            string                                      `json:"scp,omitempty"`
+	PlayerFactionID         faction.FactionID                           `json:"pf"`
+	Difficulty              int                                         `json:"d,omitempty"`
+	AutoGrainExport         bool                                        `json:"age,omitempty"`
+	AutoExportPolicies      map[economy.GoodType]state.AutoExportPolicy `json:"aep,omitempty"`
+	DevelopmentMode         bool                                        `json:"dev,omitempty"`
+	EditMode                bool                                        `json:"em,omitempty"`
+	Victory                 state.VictoryCondition                      `json:"v"`
+	SelectedVictoryOptionID string                                      `json:"sv,omitempty"`
+	Regions                 map[world.RegionID]regionSaveState          `json:"rg,omitempty"`
 	// TerrainAreas senaryonun kaynak dosyasından bağımsız olarak kampanya
 	// sırasında düzenlenen arazi yerleşimini taşır. Tam liste tutulur; çünkü
 	// arazi poligonları ve maliyetleri bölge delta'sına indirgenemez.
@@ -204,6 +205,7 @@ type legacyCampaignSaveState struct {
 	PlayerFactionID         faction.FactionID                              `json:"player_faction_id"`
 	Difficulty              int                                            `json:"difficulty"`
 	AutoGrainExport         bool                                           `json:"auto_grain_export,omitempty"`
+	AutoExportPolicies      map[economy.GoodType]state.AutoExportPolicy    `json:"auto_export_policies,omitempty"`
 	DevelopmentMode         bool                                           `json:"development_mode"`
 	EditMode                bool                                           `json:"edit_mode"`
 	Victory                 state.VictoryCondition                         `json:"victory"`
@@ -367,6 +369,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		PlayerFactionID:         legacy.PlayerFactionID,
 		Difficulty:              legacy.Difficulty,
 		AutoGrainExport:         legacy.AutoGrainExport,
+		AutoExportPolicies:      cloneAutoExportPolicies(legacy.AutoExportPolicies),
 		DevelopmentMode:         legacy.DevelopmentMode,
 		EditMode:                legacy.EditMode,
 		Victory:                 legacy.Victory,
@@ -494,6 +497,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		PlayerFactionID:         gs.PlayerFactionID,
 		Difficulty:              gs.Difficulty,
 		AutoGrainExport:         gs.AutoGrainExport,
+		AutoExportPolicies:      cloneAutoExportPolicies(gs.AutoExportPolicies),
 		DevelopmentMode:         gs.DevelopmentMode,
 		EditMode:                gs.EditMode,
 		Victory:                 gs.Victory,
@@ -598,6 +602,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		PlayerFactionID:         gs.PlayerFactionID,
 		Difficulty:              gs.Difficulty,
 		AutoGrainExport:         gs.AutoGrainExport,
+		AutoExportPolicies:      cloneAutoExportPolicies(gs.AutoExportPolicies),
 		DevelopmentMode:         gs.DevelopmentMode,
 		EditMode:                gs.EditMode,
 		Victory:                 gs.Victory,
@@ -685,6 +690,15 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 		gs.Difficulty = 2
 	}
 	gs.AutoGrainExport = saved.AutoGrainExport
+	gs.AutoExportPolicies = cloneAutoExportPolicies(saved.AutoExportPolicies)
+	if gs.AutoGrainExport {
+		if gs.AutoExportPolicies == nil {
+			gs.AutoExportPolicies = make(map[economy.GoodType]state.AutoExportPolicy)
+		}
+		if _, exists := gs.AutoExportPolicies[economy.GoodGrain]; !exists {
+			gs.AutoExportPolicies[economy.GoodGrain] = state.AutoExportPolicy{Enabled: true, Percent: 100}
+		}
+	}
 	gs.DevelopmentMode = saved.DevelopmentMode
 	gs.EditMode = saved.EditMode
 	gs.Victory = saved.Victory
@@ -1568,6 +1582,17 @@ func cloneMarketOrders(orders *state.MarketOrderBook) *state.MarketOrderBook {
 		}
 	}
 	return clone
+}
+
+func cloneAutoExportPolicies(src map[economy.GoodType]state.AutoExportPolicy) map[economy.GoodType]state.AutoExportPolicy {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make(map[economy.GoodType]state.AutoExportPolicy, len(src))
+	for good, policy := range src {
+		dst[good] = policy
+	}
+	return dst
 }
 
 func cloneSieges(sieges map[world.RegionID]*state.SiegeState) map[world.RegionID]*state.SiegeState {
