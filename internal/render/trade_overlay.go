@@ -454,7 +454,7 @@ func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[st
 
 	for _, key := range keys {
 		route := merged[key]
-		pairs := r.gs.MerchantTradeRoutePreferredPortPairs(route.route)
+		pairs := r.gs.MerchantTradeRoutePortPairs(route.route)
 		if len(pairs) == 0 {
 			continue
 		}

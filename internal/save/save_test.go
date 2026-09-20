@@ -307,3 +307,32 @@ func TestCampaignSaveStateRestoresDismissedCommanderIDs(t *testing.T) {
 		t.Fatal("dismissed commander ID was not restored")
 	}
 }
+
+func TestCampaignSaveStateRestoresChangedCapital(t *testing.T) {
+	base := &faction.Faction{ID: "genoa", CapitalSettlementID: "capital_a"}
+	current := *base
+	current.CapitalSettlementID = "capital_b"
+	delta, ok := makeFactionSaveState(&current, base)
+	if !ok || delta.CapitalSettlementID == nil || *delta.CapitalSettlementID != "capital_b" {
+		t.Fatalf("capital değişikliği save delta'sına yazılmadı: %+v", delta)
+	}
+
+	saved := campaignSaveState{
+		ScenarioID: "1300_ottoman_rise",
+		Factions:   map[faction.FactionID]factionSaveState{"genoa": delta},
+	}
+	payload, err := json.Marshal(saved)
+	if err != nil {
+		t.Fatalf("marshal campaign save state: %v", err)
+	}
+	decoded, err := decodeCampaignSaveState(payload)
+	if err != nil {
+		t.Fatalf("decode campaign save state: %v", err)
+	}
+
+	restored := &faction.Faction{ID: "genoa", CapitalSettlementID: "capital_a"}
+	applyFactionSaveState(restored, decoded.Factions["genoa"])
+	if restored.CapitalSettlementID != "capital_b" {
+		t.Fatalf("yüklenen başkent = %q, want capital_b", restored.CapitalSettlementID)
+	}
+}

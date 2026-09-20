@@ -39,7 +39,7 @@ func TestMerchantTradePortEndpointsPreferCapitalPort(t *testing.T) {
 		},
 	}
 
-	endpoints := gs.merchantTradePreferredPortEndpoints("genoa")
+	endpoints := gs.merchantTradePortEndpoints("genoa")
 	if len(endpoints) != 1 || endpoints[0].regionID != "genoa" {
 		t.Fatalf("başkent liman endpoint'leri = %+v, want genoa", endpoints)
 	}
@@ -83,9 +83,101 @@ func TestMerchantTradePortEndpointsChooseNearestPortToCapital(t *testing.T) {
 		},
 	}
 
-	endpoints := gs.merchantTradePreferredPortEndpoints("genoa")
+	endpoints := gs.merchantTradePortEndpoints("genoa")
 	if len(endpoints) != 1 || endpoints[0].regionID != "near_port" {
 		t.Fatalf("en yakın liman endpoint'leri = %+v, want near_port", endpoints)
+	}
+}
+
+func TestMerchantTradePortEndpointsFollowCapitalChange(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"genoa": {ID: "genoa", CapitalSettlementID: "capital_a"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital_a": {
+				ID:        "capital_a",
+				OwnerID:   "genoa",
+				Neighbors: []world.RegionID{"sea_a"},
+				Settlements: []world.Settlement{
+					{ID: "capital_a", IsCenter: true},
+				},
+				Buildings: []string{"port"},
+			},
+			"capital_b": {
+				ID:        "capital_b",
+				OwnerID:   "genoa",
+				Neighbors: []world.RegionID{"sea_b"},
+				Settlements: []world.Settlement{
+					{ID: "capital_b", IsCenter: true},
+				},
+				Buildings: []string{"port"},
+			},
+			"sea_a": {ID: "sea_a", IsSea: true},
+			"sea_b": {ID: "sea_b", IsSea: true},
+		},
+	}
+
+	if got := gs.merchantTradePortEndpoints("genoa")[0].regionID; got != "capital_a" {
+		t.Fatalf("ilk başkent limanı = %s, want capital_a", got)
+	}
+	if !gs.SetFactionCapital("genoa", "capital_b") {
+		t.Fatal("başkent capital_b'ye taşınamadı")
+	}
+	if got := gs.merchantTradePortEndpoints("genoa")[0].regionID; got != "capital_b" {
+		t.Fatalf("taşınan başkent limanı = %s, want capital_b", got)
+	}
+}
+
+func TestMerchantTradeRouteUsesSelectedPortForFleetIncome(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "genoa", ToFactionID: "partner", AmountPerTurn: 3}
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"genoa":   {ID: "genoa", CapitalSettlementID: "genoa_capital"},
+			"partner": {ID: "partner", CapitalSettlementID: "partner_capital"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"genoa": {
+				ID:          "genoa",
+				OwnerID:     "genoa",
+				Neighbors:   []world.RegionID{"genoa_sea"},
+				Settlements: []world.Settlement{{ID: "genoa_capital", IsCenter: true}},
+				Buildings:   []string{"port"},
+			},
+			"midilli": {
+				ID:        "midilli",
+				OwnerID:   "genoa",
+				Neighbors: []world.RegionID{"old_trade_sea"},
+				Buildings: []string{"port"},
+			},
+			"partner_port": {
+				ID:          "partner_port",
+				OwnerID:     "partner",
+				Neighbors:   []world.RegionID{"partner_sea"},
+				Settlements: []world.Settlement{{ID: "partner_capital", IsCenter: true}},
+				Buildings:   []string{"port"},
+			},
+			"genoa_sea":     {ID: "genoa_sea", IsSea: true, Neighbors: []world.RegionID{"partner_sea"}},
+			"partner_sea":   {ID: "partner_sea", IsSea: true, Neighbors: []world.RegionID{"genoa_sea", "partner_port"}},
+			"old_trade_sea": {ID: "old_trade_sea", IsSea: true, Neighbors: []world.RegionID{"midilli"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"merchant": merchantTestFleet("merchant", "genoa", "old_trade_sea", route.AssignmentKey(), 1),
+		},
+		UnitTypes:   map[string]*army.UnitType{"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade}},
+		TradeRoutes: []*economy.TradeRoute{route},
+	}
+
+	pairs := gs.MerchantTradeRoutePortPairs(route)
+	if len(pairs) != 1 || pairs[0].FromRegionID != "genoa" || pairs[0].ToRegionID != "partner_port" {
+		t.Fatalf("canonical rota limanları = %+v, want genoa -> partner_port", pairs)
+	}
+	if gs.MerchantFleetSupportsTradeRoute(gs.Armies["merchant"], route) {
+		t.Fatal("eski Midilli denizindeki filo yeni Cenova rotasında gelir üretmemeli")
+	}
+	gs.Armies["merchant"].RegionID = pairs[0].ToSeaID
+	if !gs.MerchantFleetSupportsTradeRoute(gs.Armies["merchant"], route) {
+		t.Fatal("filo canonical hedef denize ulaştığında rotayı desteklemeli")
 	}
 }
 

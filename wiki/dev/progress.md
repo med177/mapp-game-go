@@ -7,11 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
-- 2026-09-20: Ticaret haritasındaki merchant rota liman endpoint'i artık
-  tarafların tüm limanları arasından ID sıralı seçim yapmıyor; başkent
-  bölgesindeki limanı, başkentte liman yoksa başkente en yakın denize bağlı
-  limanı seçiyor. Görsel seçim ortak state helper'ında toplandı; başkent/mesafe
-  regresyonları eklendi
+- 2026-09-20: Canonical ana ticaret portunun `port` settlement marker'ı artık
+  `harbour_main.png` ile çiziliyor; diğer port marker'ları `harbour.png` kullanıyor
+  (`internal/render/renderer.go`, `internal/state/merchant_trade.go`).
+
+- 2026-09-20: Merchant rota endpoint'i artık görsel ve lojistikte ayrı
+  seçilmiyor. Tüm tüketiciler başkent bölgesindeki limanı, başkentte liman
+  yoksa başkente en yakın denize bağlı limanı kullanıyor; başkent değişince
+  seçim güncel state'ten yeniden hesaplanıyor. Başkent/mesafe regresyonları eklendi
   (`internal/state/merchant_trade.go`, `internal/state/merchant_trade_test.go`).
 
 - 2026-09-20: Normal haritada ticaret rotasına atanmış filo marker'ları `1.9`

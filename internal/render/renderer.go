@@ -277,14 +277,15 @@ type Renderer struct {
 	terrainAreaKey              uint64
 	// armyGroupDisplayOrder, aynı anchor'a sonradan giren ordunun mevcut
 	// orduların soluna yerleşebilmesi için grup bazlı ilk görülme sırasını tutar.
-	armyGroupDisplayOrder map[armyDisplayGroupKey]map[army.ArmyID]uint64
-	nextArmyDisplayOrder  uint64
-	regionLabelBuf        []settlementDraw
-	labelRectBuf          []screenRect
-	tradeCorridors        []tradeCorridorInfo
-	tradeHoverIdx         int
-	tradeCenters          []tradeCenterVisual
-	tradeCenterIdx        int
+	armyGroupDisplayOrder    map[armyDisplayGroupKey]map[army.ArmyID]uint64
+	nextArmyDisplayOrder     uint64
+	regionLabelBuf           []settlementDraw
+	labelRectBuf             []screenRect
+	merchantTradeMainPortIDs map[string]world.RegionID
+	tradeCorridors           []tradeCorridorInfo
+	tradeHoverIdx            int
+	tradeCenters             []tradeCenterVisual
+	tradeCenterIdx           int
 
 	editSelectedRegion                world.RegionID
 	editSelectedSettlement            int
@@ -3352,6 +3353,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 	shadowCol := color.RGBA{0, 0, 0, 160}
 
 	r.regionLabelBuf = r.regionLabelBuf[:0]
+	clear(r.merchantTradeMainPortIDs)
 	tradeCenterRegion := map[world.RegionID]struct{}{}
 	if r.mapMode == MapModeTrade {
 		for _, def := range r.gs.TradeCenters.Centers {
@@ -3676,6 +3678,9 @@ func (r *Renderer) settlementMarkerSprite(region *world.Region, settlement world
 	case world.SettlementFortress:
 		return settlementMarkerCastleImage()
 	case world.SettlementPort:
+		if r.isMerchantTradeMainPort(region) {
+			return settlementMarkerHarbourMainImage()
+		}
 		return settlementMarkerHarbourImage()
 	case world.SettlementCity:
 		return settlementMarkerCityImage()
@@ -3719,6 +3724,23 @@ func (r *Renderer) isCapitalSettlement(region *world.Region, settlement world.Se
 		return false
 	}
 	return r.gs.IsFactionCapitalSettlement(faction.FactionID(region.OwnerID), settlement.ID)
+}
+
+func (r *Renderer) isMerchantTradeMainPort(region *world.Region) bool {
+	if r == nil || r.gs == nil || region == nil || region.OwnerID == "" {
+		return false
+	}
+	if r.merchantTradeMainPortIDs == nil {
+		r.merchantTradeMainPortIDs = make(map[string]world.RegionID)
+	}
+	mainPortID, ok := r.merchantTradeMainPortIDs[region.OwnerID]
+	if !ok {
+		if mainPort := r.gs.MerchantTradePortRegion(region.OwnerID); mainPort != nil {
+			mainPortID = mainPort.ID
+		}
+		r.merchantTradeMainPortIDs[region.OwnerID] = mainPortID
+	}
+	return mainPortID != "" && mainPortID == region.ID
 }
 
 func (r *Renderer) drawCapitalLabelIcon(screen *ebiten.Image, x, y float32, variant gameui.TextVariant) {
@@ -3802,14 +3824,15 @@ func (r *Renderer) drawSettlementLabelSprite(screen *ebiten.Image, img *ebiten.I
 }
 
 var (
-	settlementMarkerCastleSprite   *ebiten.Image
-	settlementMarkerHarbourSprite  *ebiten.Image
-	settlementMarkerSiegeSprite    *ebiten.Image
-	settlementMarkerSwordSprite    *ebiten.Image
-	settlementMarkerStarSprite     *ebiten.Image
-	settlementMarkerCitySprite     *ebiten.Image
-	settlementMarkerDistrictSprite *ebiten.Image
-	settlementMarkerSpritesLoaded  bool
+	settlementMarkerCastleSprite      *ebiten.Image
+	settlementMarkerHarbourSprite     *ebiten.Image
+	settlementMarkerHarbourMainSprite *ebiten.Image
+	settlementMarkerSiegeSprite       *ebiten.Image
+	settlementMarkerSwordSprite       *ebiten.Image
+	settlementMarkerStarSprite        *ebiten.Image
+	settlementMarkerCitySprite        *ebiten.Image
+	settlementMarkerDistrictSprite    *ebiten.Image
+	settlementMarkerSpritesLoaded     bool
 
 	eventIconPlague   *ebiten.Image
 	eventIconFamine   *ebiten.Image
@@ -3830,6 +3853,7 @@ func ensureSettlementMarkerSprites() {
 	}
 	settlementMarkerCastleSprite = tryLoadImage(filepath.Join(base, "castle.png"))
 	settlementMarkerHarbourSprite = tryLoadImage(filepath.Join(base, "harbour.png"))
+	settlementMarkerHarbourMainSprite = tryLoadImage(filepath.Join(base, "harbour_main.png"))
 	settlementMarkerSiegeSprite = tryLoadImage(filepath.Join(base, "siege.png"))
 	settlementMarkerSwordSprite = tryLoadImage(filepath.Join(base, "sword.png"))
 	settlementMarkerStarSprite = tryLoadImage(filepath.Join(base, "star.png"))
@@ -3845,6 +3869,11 @@ func settlementMarkerCastleImage() *ebiten.Image {
 func settlementMarkerHarbourImage() *ebiten.Image {
 	ensureSettlementMarkerSprites()
 	return settlementMarkerHarbourSprite
+}
+
+func settlementMarkerHarbourMainImage() *ebiten.Image {
+	ensureSettlementMarkerSprites()
+	return settlementMarkerHarbourMainSprite
 }
 
 func settlementMarkerSiegeImage() *ebiten.Image {

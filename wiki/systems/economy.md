@@ -288,10 +288,9 @@ filolarını yeniden değerlendirir:
   AI tarafı aynı `TradeRouteKey` modelini otomatik rota seçimi ve deniz hareketiyle kullanır.
 
 Merchant rotası olmayan tarihsel merkez bağlantılı anlaşmalar panelden gizlenmez; aktif
-limanlar arasında deniz yolu bulunuyorsa `MerchantTradeRoutePortPairs()` lojistik liman
-çiftlerini üretir. Harita görseli için her fraksiyonun önce başkent bölgesindeki
-kullanılabilir limanı, yoksa başkente
-`WorldX/WorldY` karesel mesafesi en küçük kullanılabilir liman seçilir. Haritanın `Ticaret`
+limanlar arasında deniz yolu bulunuyorsa `MerchantTradeRoutePortPairs()` canonical liman
+çiftlerini üretir. Her fraksiyonun önce başkent bölgesindeki kullanılabilir limanı, yoksa
+başkente `WorldX/WorldY` karesel mesafesi en küçük kullanılabilir limanı seçilir. Haritanın `Ticaret`
 modunda oyuncuya ait aktif anlaşmalar, seçilen liman çiftleri arasında tek turuncu renkli,
 eşit uzunlukta çizgi/boşluklardan oluşan kesikli koridor ve liman uçlarındaki işaretlerle gösterilir
 (`internal/state/merchant_trade.go`, `internal/render/trade_overlay.go`).

@@ -331,20 +331,19 @@ func (s *GameState) MerchantTradeRouteSeaRegions(route *economy.TradeRoute) []wo
 	return []world.RegionID{seaID}
 }
 
-// MerchantTradeRoutePortPairs, anlaşmanın taraflarına ait gerçek limanlar
-// arasındaki deniz bağlantılarını döner. Bu lojistik aday kümesi, mevcut
-// merchant hedef denizi ve AI üretim akışını korumak için tüm kullanılabilir
-// limanları içerir.
+// MerchantTradeRoutePortPairs, anlaşmanın taraflarının canonical limanları
+// arasındaki deniz bağlantılarını döner. Her taraf için başkent bölgesindeki
+// kullanılabilir liman, yoksa başkente en yakın kullanılabilir liman seçilir;
+// aynı sonuç görsel rota, merchant hedef denizi ve AI üretiminde kullanılır.
 func (s *GameState) MerchantTradeRoutePortPairs(route *economy.TradeRoute) []MerchantTradePortPair {
 	return s.merchantTradeRoutePortPairs(route, s.merchantTradePortEndpoints)
 }
 
-// MerchantTradeRoutePreferredPortPairs, haritadaki rota çizimi için tarafların
-// tercih edilen limanları arasındaki bağlantıları döner. Tercih sırası başkent
-// bölgesindeki kullanılabilir liman, yoksa başkente en yakın kullanılabilir
-// limandır.
-func (s *GameState) MerchantTradeRoutePreferredPortPairs(route *economy.TradeRoute) []MerchantTradePortPair {
-	return s.merchantTradeRoutePortPairs(route, s.merchantTradePreferredPortEndpoints)
+// MerchantTradePortRegion, fraksiyonun mevcut canonical ana ticaret portu
+// bölgesini döner. Görsel marker gibi state dışı tüketiciler de rota hesabıyla
+// aynı başkent/mesafe seçimini kullanır.
+func (s *GameState) MerchantTradePortRegion(ownerID string) *world.Region {
+	return s.merchantTradePortRegion(ownerID)
 }
 
 func (s *GameState) merchantTradeRoutePortPairs(route *economy.TradeRoute, endpointFn func(string) []merchantTradePortEndpoint) []MerchantTradePortPair {
@@ -371,7 +370,22 @@ func (s *GameState) merchantTradeRoutePortPairs(route *economy.TradeRoute, endpo
 			})
 		}
 	}
+	distanceCache := make(map[string]int, len(pairs))
+	pairDistance := func(pair MerchantTradePortPair) int {
+		key := string(pair.FromSeaID) + "|" + string(pair.ToSeaID)
+		if distance, ok := distanceCache[key]; ok {
+			return distance
+		}
+		distance := s.merchantTradeSeaDistance(pair.FromSeaID, pair.ToSeaID)
+		distanceCache[key] = distance
+		return distance
+	}
 	sort.Slice(pairs, func(i, j int) bool {
+		distanceI := pairDistance(pairs[i])
+		distanceJ := pairDistance(pairs[j])
+		if distanceI != distanceJ {
+			return distanceI < distanceJ
+		}
 		if pairs[i].FromRegionID != pairs[j].FromRegionID {
 			return pairs[i].FromRegionID < pairs[j].FromRegionID
 		}
@@ -392,26 +406,6 @@ type merchantTradePortEndpoint struct {
 }
 
 func (s *GameState) merchantTradePortEndpoints(ownerID string) []merchantTradePortEndpoint {
-	if s == nil || ownerID == "" {
-		return nil
-	}
-	result := make([]merchantTradePortEndpoint, 0)
-	regionIDs := make([]world.RegionID, 0, len(s.Regions))
-	for regionID := range s.Regions {
-		regionIDs = append(regionIDs, regionID)
-	}
-	sort.Slice(regionIDs, func(i, j int) bool { return regionIDs[i] < regionIDs[j] })
-	for _, regionID := range regionIDs {
-		region := s.Regions[regionID]
-		if !s.isMerchantTradePortRegion(region, ownerID) {
-			continue
-		}
-		result = append(result, s.merchantTradePortEndpointsForRegion(region)...)
-	}
-	return result
-}
-
-func (s *GameState) merchantTradePreferredPortEndpoints(ownerID string) []merchantTradePortEndpoint {
 	if s == nil || ownerID == "" {
 		return nil
 	}
@@ -442,11 +436,11 @@ func (s *GameState) merchantTradePortEndpointsForRegion(region *world.Region) []
 	return result
 }
 
-// merchantTradePortRegion, harita üzerindeki merchant rota çiziminde
-// fraksiyonu temsil edecek tek kara limanı bölgesini seçer. Başkentte
-// kullanılabilir liman varsa öncelik ondadır; aksi halde başkente
-// WorldX/WorldY karesel mesafesi en küçük liman
-// seçilir. Başkent çözümlenemeyen eski/eksik state'lerde ID sırası fallback'tir.
+// merchantTradePortRegion, tüm merchant rota tüketicilerinde kullanılacak tek
+// canonical kara limanı bölgesini seçer. Başkentte kullanılabilir liman varsa
+// öncelik ondadır; aksi halde başkente WorldX/WorldY karesel mesafesi en küçük
+// liman seçilir. Başkent çözümlenemeyen eski/eksik state'lerde ID sırası
+// fallback'tir.
 func (s *GameState) merchantTradePortRegion(ownerID string) *world.Region {
 	if s == nil || ownerID == "" {
 		return nil
@@ -499,18 +493,26 @@ func (s *GameState) isMerchantTradePortRegion(region *world.Region, ownerID stri
 }
 
 func (s *GameState) merchantTradeSeasConnected(start, target world.RegionID) bool {
+	return s.merchantTradeSeaDistance(start, target) < int(^uint(0)>>1)
+}
+
+func (s *GameState) merchantTradeSeaDistance(start, target world.RegionID) int {
 	if s == nil || start == "" || target == "" {
-		return false
+		return int(^uint(0) >> 1)
 	}
 	if start == target {
-		return true
+		return 0
 	}
 	seen := map[world.RegionID]struct{}{start: {}}
-	queue := []world.RegionID{start}
+	type seaStep struct {
+		id       world.RegionID
+		distance int
+	}
+	queue := []seaStep{{id: start}}
 	for len(queue) > 0 {
-		currentID := queue[0]
+		currentStep := queue[0]
 		queue = queue[1:]
-		current := s.Regions[currentID]
+		current := s.Regions[currentStep.id]
 		if current == nil || !current.IsSea || current.IsLocked {
 			continue
 		}
@@ -523,13 +525,13 @@ func (s *GameState) merchantTradeSeasConnected(start, target world.RegionID) boo
 				continue
 			}
 			if neighborID == target {
-				return true
+				return currentStep.distance + 1
 			}
 			seen[neighborID] = struct{}{}
-			queue = append(queue, neighborID)
+			queue = append(queue, seaStep{id: neighborID, distance: currentStep.distance + 1})
 		}
 	}
-	return false
+	return int(^uint(0) >> 1)
 }
 
 // MerchantFleetSupportsTradeRoute filonun kendi ihracat rotasının ucundaki
