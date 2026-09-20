@@ -36,11 +36,12 @@ type goldIncomePopupLine struct {
 	color color.RGBA
 }
 
-func goldIncomePopupLines(status state.GoldEconomyStatus) [17]goldIncomePopupLine {
-	return [17]goldIncomePopupLine{
+func goldIncomePopupLines(status state.GoldEconomyStatus) [18]goldIncomePopupLine {
+	return [18]goldIncomePopupLine{
 		{label: "Vergi", value: status.TaxIncome, color: ColorGold},
 		{label: "Pasif ticaret", value: status.TradeIncome, color: color.RGBA{145, 220, 155, 255}},
 		{label: "Ticaret merkezi geliri", value: status.TradeCenterIncome, color: color.RGBA{205, 180, 110, 255}},
+		{label: "Tarihsel ticaret", value: status.HistoricalTradeIncome, color: color.RGBA{228, 190, 120, 255}},
 		{label: "Ticaret rotası geliri", value: status.TradeRouteIncome, color: color.RGBA{145, 220, 155, 255}},
 		{label: "Merchant gemisi kârı", value: status.MerchantTradeIncome, color: color.RGBA{160, 220, 190, 255}},
 		{label: "Ticaret rotası ödemesi", value: -status.TradeRouteExpense, color: ColorRed},
@@ -61,7 +62,7 @@ func goldIncomePopupLines(status state.GoldEconomyStatus) [17]goldIncomePopupLin
 func goldIncomePopupRect() gameui.Rect {
 	_, _, rightCol, _, rightColW := topResourceHUDColumns()
 	const popupW = 330.0
-	const popupH = 452.0
+	const popupH = 473.0
 	x := rightCol + rightColW - popupW
 	if x < 8 {
 		x = 8

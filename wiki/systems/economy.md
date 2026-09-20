@@ -51,6 +51,25 @@ ile herhangi bir ticaret ağına uygulanabilir.
 Vasco da Gama event'i uygulandığında Portekiz hattı güçlenir, Mısır ve Basra
 üzerinden gelen eski baharat yolunun ticaret geliri ve baharat üretimi azalır.
 
+Senaryo `trade_centers.json` içindeki `historical_flows` alanı, diplomatik
+faction rotalarından bağımsız tarihsel mal akışlarını tanımlar. Akışlar
+`start_year`/`end_year` ile aktifleşir; herhangi bir event sahibi devletin
+hayatta kalmasına bağlı değildir. `amount_per_turn` harita hacmini,
+`gold_income_per_turn` ise gerçek bölge endpoint'inin o anki sahibine yazılan
+ekstra tarihsel ticaret gelirini belirtir. Off-map endpoint gelir almaz;
+off-map → gerçek merkez akışında gerçek merkez sahibi gelirin tamamını,
+iki gerçek merkez arasındaki akışta endpoint sahipleri eşit payı alır.
+Gelir `GoldEconomyPreview`, gerçek tur çözümlemesi ve gelir popup'ında
+`Tarihsel ticaret` satırı olarak aynı hesaptan gösterilir.
+
+Yeni açılan yolun eski yollar üzerindeki rekabet etkisi yeni merkezin
+`competition_impacts` alanında tutulur. Örneğin `cape_route` 1498'de açıldığında
+Baharat Yolu gelir/hacmini `%35`, İpek Yolu'nu `%15` azaltır; eski akışlarda
+1498 tarihi tekrarlanmaz. Bu yüzde hem harita akışına hem tarihsel gelire hem de
+merkez hacmi hesaplarına uygulanır. Vasco da Gama event'indeki özel Portekiz
+bonusu ve bölgesel baharat üretimi etkisi bu otomatik tarihsel rekabetten ayrı
+kalır.
+
 ---
 
 ## Vergi Sistemi

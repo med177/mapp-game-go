@@ -991,6 +991,7 @@ type GoldEconomyStatus struct {
 	TaxIncome               int
 	TradeIncome             int
 	TradeCenterIncome       int
+	HistoricalTradeIncome   int
 	CapitalIncome           int
 	TechnologyIncome        int
 	BlockadeIncome          int

@@ -109,6 +109,9 @@ func GoodToResourceKind(good GoodType) (ResourceKind, bool) {
 }
 
 func GoodNameTR(good GoodType) string {
+	if good == GoodGold {
+		return "Altın"
+	}
 	if kind, ok := GoodToResourceKind(good); ok {
 		return ResourceNameTR(kind)
 	}

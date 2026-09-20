@@ -46,21 +46,22 @@ type tradeCenterVisual struct {
 }
 
 type tradeCorridorInfo struct {
-	fromName  string
-	toName    string
-	amount    int
-	factions  int
-	goods     string
-	sx        float64
-	sy        float64
-	cx        float64
-	cy        float64
-	dx        float64
-	dy        float64
-	hitWidth  float64
-	dashed    bool
-	route     *economy.TradeRoute
-	routeKeys []string
+	fromName   string
+	toName     string
+	amount     int
+	factions   int
+	goods      string
+	sx         float64
+	sy         float64
+	cx         float64
+	cy         float64
+	dx         float64
+	dy         float64
+	hitWidth   float64
+	dashed     bool
+	historical bool
+	route      *economy.TradeRoute
+	routeKeys  []string
 }
 
 var (
@@ -362,7 +363,11 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 			DrawText(screen, "Askıda: "+itoa(c.route.SuspendedTurns)+" tur", float64(x)+10, float64(y)+118, FaceSmall, color.RGBA{230, 170, 135, 240})
 		}
 	} else {
-		DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   Devlet: "+itoa(c.factions), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
+		label := "Devlet: " + itoa(c.factions)
+		if c.historical {
+			label = "Tarihsel akış"
+		}
+		DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   "+label, float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
 		DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{197, 190, 168, 230})
 	}
 }
@@ -849,13 +854,18 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 	}
 	adj := r.buildTradeCenterAdjacency(centers)
+	centerIndexByID := make(map[world.RegionID]int, len(centers))
+	for i, center := range centers {
+		centerIndexByID[center.id] = i
+	}
 	factionHub := make(map[string]*world.Region, len(merged)*2)
 	factionCenter := make(map[string]int, len(merged)*2)
 	type linkAgg struct {
-		flow      int
-		factions  map[string]struct{}
-		goods     map[string]int
-		routeKeys []string
+		flow       int
+		factions   map[string]struct{}
+		goods      map[string]int
+		routeKeys  []string
+		historical bool
 	}
 	centerLinkFlow := map[string]*linkAgg{}
 	mergedKeys := make([]string, 0, len(merged))
@@ -909,6 +919,39 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			if route.goodName != "" {
 				agg.goods[route.goodName] += route.amount
 			}
+		}
+	}
+
+	// Senaryo tarafından tanımlanan tarihsel akışlar, diplomatik faction
+	// rotası değildir; ancak aynı merkez grafiğinde gerçek hacim olarak görünür.
+	for _, flow := range r.gs.ActiveHistoricalTradeFlows() {
+		from, fromOK := centerIndexByID[flow.FromRegionID]
+		to, toOK := centerIndexByID[flow.ToRegionID]
+		if !fromOK || !toOK || from == to {
+			continue
+		}
+		path := shortestCenterPath(adj, from, to)
+		if len(path) < 2 {
+			continue
+		}
+		for pi := 0; pi < len(path)-1; pi++ {
+			a, b := path[pi], path[pi+1]
+			if a > b {
+				a, b = b, a
+			}
+			key := itoa(a) + "|" + itoa(b)
+			agg := centerLinkFlow[key]
+			if agg == nil {
+				agg = &linkAgg{factions: make(map[string]struct{}, 1), goods: make(map[string]int, 2)}
+				centerLinkFlow[key] = agg
+			}
+			amount := r.gs.HistoricalTradeFlowAmount(flow)
+			if amount <= 0 {
+				continue
+			}
+			agg.flow += amount
+			agg.goods[economy.GoodNameTR(flow.Good)] += amount
+			agg.historical = true
 		}
 	}
 
@@ -1091,19 +1134,20 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			factionCount = len(agg.factions)
 		}
 		r.tradeCorridors = append(r.tradeCorridors, tradeCorridorInfo{
-			fromName: centers[i].nameTR,
-			toName:   centers[j].nameTR,
-			amount:   amount,
-			factions: factionCount,
-			goods:    goodsSummary,
-			sx:       sx,
-			sy:       sy,
-			cx:       cx,
-			cy:       cy,
-			dx:       dx,
-			dy:       dy,
-			hitWidth: float64(glowW) + 4,
-			dashed:   false,
+			fromName:   centers[i].nameTR,
+			toName:     centers[j].nameTR,
+			amount:     amount,
+			factions:   factionCount,
+			goods:      goodsSummary,
+			sx:         sx,
+			sy:         sy,
+			cx:         cx,
+			cy:         cy,
+			dx:         dx,
+			dy:         dy,
+			hitWidth:   float64(glowW) + 4,
+			dashed:     false,
+			historical: agg != nil && agg.historical,
 			routeKeys: func() []string {
 				if agg == nil {
 					return nil

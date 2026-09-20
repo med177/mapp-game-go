@@ -7,6 +7,96 @@
   "secondary_merchant_capacity_bonus": 1,
   "primary_merchant_income_bonus": 2,
   "secondary_merchant_income_bonus": 1,
+  "historical_flows": [
+    {
+      "from": "spice_route",
+      "to": "alexandria",
+      "good": "spice",
+      "amount_per_turn": 8,
+      "gold_income_per_turn": 18,
+      "start_year": 1300
+    },
+    {
+      "from": "spice_route",
+      "to": "basra",
+      "good": "spice",
+      "amount_per_turn": 6,
+      "gold_income_per_turn": 14,
+      "start_year": 1300
+    },
+    {
+      "from": "silk_road",
+      "to": "crimea",
+      "good": "cloth",
+      "amount_per_turn": 6,
+      "gold_income_per_turn": 12,
+      "start_year": 1300
+    },
+    {
+      "from": "silk_road",
+      "to": "azerbaijan",
+      "good": "cloth",
+      "amount_per_turn": 5,
+      "gold_income_per_turn": 10,
+      "start_year": 1300
+    },
+    {
+      "from": "trans_saharan_route",
+      "to": "tunis",
+      "good": "gold",
+      "amount_per_turn": 7,
+      "gold_income_per_turn": 16,
+      "start_year": 1300
+    },
+    {
+      "from": "atlantic_route",
+      "to": "portugal",
+      "good": "cloth",
+      "amount_per_turn": 5,
+      "gold_income_per_turn": 12,
+      "start_year": 1492
+    },
+    {
+      "from": "atlantic_route",
+      "to": "sevilla",
+      "good": "cloth",
+      "amount_per_turn": 5,
+      "gold_income_per_turn": 12,
+      "start_year": 1492
+    },
+    {
+      "from": "cape_route",
+      "to": "portugal",
+      "good": "spice",
+      "amount_per_turn": 8,
+      "gold_income_per_turn": 20,
+      "start_year": 1498
+    },
+    {
+      "from": "cape_route",
+      "to": "sevilla",
+      "good": "spice",
+      "amount_per_turn": 6,
+      "gold_income_per_turn": 15,
+      "start_year": 1498
+    },
+    {
+      "from": "atlantic_route",
+      "to": "north_america_route",
+      "good": "gold",
+      "amount_per_turn": 10,
+      "gold_income_per_turn": 25,
+      "start_year": 1500
+    },
+    {
+      "from": "atlantic_route",
+      "to": "south_america_route",
+      "good": "gold",
+      "amount_per_turn": 10,
+      "gold_income_per_turn": 25,
+      "start_year": 1500
+    }
+  ],
   "centers": [
     {
       "region_id": "venice",
@@ -428,7 +518,19 @@
       "world_x": 1200,
       "world_y": 1800,
       "off_map": true,
-      "unlock_year": 1498
+      "unlock_year": 1498,
+      "competition_impacts": [
+        {
+          "center_id": "spice_route",
+          "income_percent": -35,
+          "amount_percent": -35
+        },
+        {
+          "center_id": "silk_road",
+          "income_percent": -15,
+          "amount_percent": -15
+        }
+      ]
     },
     {
       "region_id": "trans_saharan_route",

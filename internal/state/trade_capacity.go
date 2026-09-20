@@ -62,6 +62,11 @@ func (s *GameState) TradeCenterVolume(region *world.Region) int {
 		}
 		volume += route.EffectiveAmountPerTurn()
 	}
+	for _, flow := range s.ActiveHistoricalTradeFlows() {
+		if flow.FromRegionID == region.ID || flow.ToRegionID == region.ID {
+			volume += s.HistoricalTradeFlowAmount(flow)
+		}
+	}
 	return volume
 }
 

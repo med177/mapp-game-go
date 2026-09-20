@@ -12,6 +12,7 @@ import (
 type GoodType string
 
 const (
+	GoodGold   GoodType = "gold"
 	GoodGrain  GoodType = "grain"
 	GoodIron   GoodType = "iron"
 	GoodTimber GoodType = "timber"

@@ -75,6 +75,7 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 	status.BlockadeIncome = blockadeLoot
 	status.TechnologyIncome = effects.GoldPerRegion * len(gs.RegionsOwnedBy(fid))
 	status.TradePowerIncome = gs.TradePowerCommerceIncome(fid)
+	status.HistoricalTradeIncome = gs.HistoricalTradeIncomeForFaction(fid)
 	supplyPercent := 100
 	if grainStatus, ok := gs.GrainEconomy[fid]; ok {
 		supplyPercent = goldIncomeSupplyPercent(grainStatus.SupplyLevel)
@@ -86,7 +87,8 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 	status.TechnologyIncome = status.TechnologyIncome * supplyPercent / 100
 	status.BlockadeIncome = status.BlockadeIncome * supplyPercent / 100
 	// Yağma transferi arz cezasından etkilenmez.
-	status.Income = status.TaxIncome + status.TradeIncome + status.TradeCenterIncome + status.CapitalIncome + status.TechnologyIncome + status.BlockadeIncome + status.RaidIncome
+	status.HistoricalTradeIncome = status.HistoricalTradeIncome * supplyPercent / 100
+	status.Income = status.TaxIncome + status.TradeIncome + status.TradeCenterIncome + status.HistoricalTradeIncome + status.CapitalIncome + status.TechnologyIncome + status.BlockadeIncome + status.RaidIncome
 
 	// Aktif rotaların beklenen başarılı transferlerini toplar. Bu okuma,
 	// anlaşma kurulduğu anda rotanın gelecek tur katkısını görünür kılar.
@@ -435,6 +437,7 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 	}
 	loot := gs.BlockadeLootForFaction(fid)
 	income += loot.Gold
+	income += gs.HistoricalTradeIncomeForFaction(fid)
 
 	for _, route := range gs.TradeRoutes {
 		if route != nil && route.FromFactionID == string(fid) {

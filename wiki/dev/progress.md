@@ -7,6 +7,24 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-20: Tarihsel ticaret yolları diplomatik faction rotalarından ayrıldı.
+  `trade_centers.json` içindeki `historical_flows` kayıtları 1310 Baharat,
+  İpek ve Sahra Altı Altın akışlarını; Atlantik, Ümit Burnu ve Amerika hatlarını
+  tarih bazlı aktiflik ile harita koridorlarına bağlıyor. Gerçek merkez
+  sahipleri `GoldEconomyPreview`, tur çözümlemesi ve gelir popup'ında ayrı
+  `Tarihsel ticaret` geliri alıyor; off-map düğümler gelir sahibi olmuyor
+  (`internal/world/trade_centers.go`, `internal/state/historical_trade.go`,
+  `internal/render/trade_overlay.go`,
+  `assets/scenarios/1300_ottoman_rise/data/trade_centers.json`).
+
+- 2026-09-21: Yeni tarihsel ticaret yolu açıldığında eski hatların rekabet
+  kaybı artık yeni merkezin `competition_impacts` verisinden hesaplanıyor.
+  Ümit Burnu 1498'de Baharat Yolu'nu `%35`, İpek Yolu'nu `%15` gelir ve akış
+  kapasitesi azaltıyor; tarih eski akış kayıtlarında tekrarlanmıyor. Eski
+  Vasco da Gama event'inin aynı gelir kaybı kaldırıldı, event'e özgü Portekiz
+  bonusu ve baharat üretim etkisi korundu (`internal/state/historical_trade.go`,
+  `internal/state/trade_capacity.go`, `assets/scenarios/1300_ottoman_rise/data/{trade_centers,events}.json`).
+
 - 2026-09-20: Birim üretim gereksinimleri artık birden fazla bina ve seviye
   taşıyabiliyor. `units.json` içindeki `required_buildings` listesi AND
   semantiğiyle oyuncu üretimi, recruit tooltip'i ve AI bölge seçiminde

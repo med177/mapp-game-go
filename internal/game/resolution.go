@@ -627,6 +627,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	tradeRouteCustomsByFaction := make(map[string]int)
 	merchantTradeIncomeByFaction := make(map[string]int)
 	tradePowerIncomeByFaction := make(map[string]int)
+	historicalTradeIncomeByFaction := make(map[string]int)
 	routesByKey := make(map[string]*economy.TradeRoute, len(gs.TradeRoutes))
 	for _, route := range gs.TradeRoutes {
 		if route != nil && route.AssignmentKey() != "" {
@@ -649,6 +650,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	}
 	for fid := range gs.Factions {
 		tradePowerIncomeByFaction[string(fid)] = gs.TradePowerCommerceIncome(fid)
+		historicalTradeIncomeByFaction[string(fid)] = gs.HistoricalTradeIncomeForFaction(fid)
 	}
 
 	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep/GoldUpkeep)
@@ -679,7 +681,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		civilianDemand := civilianGrainDemandByFaction[fidStr]
 		status := grainEconomyStatus(fid, f.Grain, netGrain, civilianDemand, upkeepByFaction[fidStr], storageCapacityByFaction[fidStr])
 		goldBefore := goldBeforeEconomy[fidStr]
-		goldIncome := (incomeByFaction[fidStr] + techGold + loot.Gold) * grainGoldIncomePercent(status.SupplyLevel) / 100
+		historicalTradeIncome := historicalTradeIncomeByFaction[fidStr]
+		goldIncome := (incomeByFaction[fidStr] + historicalTradeIncome + techGold + loot.Gold) * grainGoldIncomePercent(status.SupplyLevel) / 100
 		// Yağmalanan vergi transferi doğrudan yağmalayan devlete geçer; hedef
 		// devletin tahıl arz cezasından etkilenmez.
 		goldIncome += raidLoot.Gold
@@ -707,6 +710,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			TaxIncome:               taxIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			TradeIncome:             tradeIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			TradeCenterIncome:       tradeCenterIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			HistoricalTradeIncome:   historicalTradeIncome * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			CapitalIncome:           capitalIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			TechnologyIncome:        techGold * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			BlockadeIncome:          loot.Gold * grainGoldIncomePercent(status.SupplyLevel) / 100,
