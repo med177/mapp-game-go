@@ -8,6 +8,7 @@ import (
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/victory"
 	"mapp-game-go/internal/world"
@@ -253,6 +254,58 @@ func TestCampaignSaveStateRestoresTerrainAreasAndRuntimeRegions(t *testing.T) {
 	}
 	if gs.Regions[world.TerrainAreaRegionID("saved_area")] == nil {
 		t.Fatal("restored terrain runtime region was not recreated")
+	}
+}
+
+func TestCampaignSaveStateDoesNotPersistScenarioDerivedStartYear(t *testing.T) {
+	saved := campaignSaveState{
+		Turn:       7,
+		Year:       1306,
+		ScenarioID: "1300_ottoman_rise",
+	}
+
+	payload, err := json.Marshal(saved)
+	if err != nil {
+		t.Fatalf("marshal campaign save state: %v", err)
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(payload, &fields); err != nil {
+		t.Fatalf("unmarshal campaign save state: %v", err)
+	}
+	if _, ok := fields["sy"]; ok {
+		t.Fatal("scenario-derived start year compact save'e yazıldı")
+	}
+}
+
+func TestCampaignSaveStateRefreshesSelectedVictoryFromScenario(t *testing.T) {
+	option := scenario.VictoryOptionDef{
+		ID:                   "updated_goal",
+		Type:                 "economic",
+		TargetGoldIncome:     777,
+		GoldHoldTurns:        4,
+		RequiredRegions:      []string{"bursa"},
+		RequiredTradeCenters: []string{"venice"},
+	}
+	gs := &state.GameState{
+		ScenarioVictories:       []scenario.VictoryOptionDef{option},
+		Victory:                 state.VictoryCondition{Type: state.VictoryMilitary, TargetArmyStrength: 10},
+		SelectedVictoryOptionID: "updated_goal",
+	}
+	saved := campaignSaveState{
+		ScenarioID:              "1300_ottoman_rise",
+		SelectedVictoryOptionID: "updated_goal",
+		Victory:                 state.VictoryCondition{Type: state.VictoryMilitary, TargetArmyStrength: 10},
+	}
+	applyCampaignSaveState(gs, saved)
+
+	if gs.Victory.Type != state.VictoryEconomic || gs.Victory.TargetGoldIncome != 777 || gs.Victory.GoldHoldTurns != 4 {
+		t.Fatalf("güncel senaryo zaferi uygulanmadı: %+v", gs.Victory)
+	}
+	if len(gs.Victory.RequiredRegions) != 1 || gs.Victory.RequiredRegions[0] != "bursa" {
+		t.Fatalf("güncel bölge hedefleri uygulanmadı: %+v", gs.Victory.RequiredRegions)
+	}
+	if len(gs.Victory.RequiredTradeCenters) != 1 || gs.Victory.RequiredTradeCenters[0] != "venice" {
+		t.Fatalf("güncel ticaret merkezi hedefleri uygulanmadı: %+v", gs.Victory.RequiredTradeCenters)
 	}
 }
 

@@ -89,6 +89,38 @@ type VictoryCondition struct {
 	DeadlineMonth        int              `json:"deadline_month"`       // 1-12, 0 = yıl sonu
 }
 
+// VictoryConditionFromOption, senaryo tanımındaki zafer koşulunu runtime
+// biçimine çevirir. Yeni oyun ve save/load akışları aynı dönüşümü kullanır.
+func VictoryConditionFromOption(opt scenario.VictoryOptionDef) VictoryCondition {
+	requiredRegions := make([]world.RegionID, 0, len(opt.RequiredRegions))
+	for _, regionID := range opt.RequiredRegions {
+		if regionID != "" {
+			requiredRegions = append(requiredRegions, world.RegionID(regionID))
+		}
+	}
+	requiredTradeCenters := make([]world.RegionID, 0, len(opt.RequiredTradeCenters))
+	for _, centerID := range opt.RequiredTradeCenters {
+		if centerID != "" {
+			requiredTradeCenters = append(requiredTradeCenters, world.RegionID(centerID))
+		}
+	}
+	return VictoryCondition{
+		Type:                 VictoryType(opt.Type),
+		TargetRegionCount:    opt.TargetRegionCount,
+		RequiredRegions:      requiredRegions,
+		RequiredEventFlags:   append([]string(nil), opt.RequiredEventFlags...),
+		RequiredTradeCenters: requiredTradeCenters,
+		AllowVassalControl:   opt.AllowVassalControl,
+		TargetGoldIncome:     opt.TargetGoldIncome,
+		GoldHoldTurns:        opt.GoldHoldTurns,
+		TargetArmyStrength:   opt.TargetArmyStrength,
+		TargetDefeated:       opt.TargetDefeated,
+		TargetTurns:          opt.Turns,
+		DeadlineYear:         opt.DeadlineYear,
+		DeadlineMonth:        opt.DeadlineMonth,
+	}
+}
+
 // DiplomaticOffer AI/oyuncu arasında bekleyen diplomatik teklif kaydıdır.
 type DiplomaticOffer struct {
 	FromFactionID        faction.FactionID `json:"from_faction_id"`

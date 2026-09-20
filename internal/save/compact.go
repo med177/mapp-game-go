@@ -108,7 +108,6 @@ type campaignSaveState struct {
 	Turn                    int                                         `json:"t"`
 	Year                    int                                         `json:"y"`
 	Month                   int                                         `json:"m"`
-	StartYear               int                                         `json:"sy,omitempty"`
 	ScenarioID              string                                      `json:"sc"`
 	ScenarioPath            string                                      `json:"scp,omitempty"`
 	PlayerFactionID         faction.FactionID                           `json:"pf"`
@@ -199,7 +198,6 @@ type legacyCampaignSaveState struct {
 	Turn                    int                                            `json:"turn"`
 	Year                    int                                            `json:"year"`
 	Month                   int                                            `json:"month"`
-	StartYear               int                                            `json:"start_year"`
 	ScenarioID              string                                         `json:"scenario_id"`
 	ScenarioPath            string                                         `json:"scenario_path,omitempty"`
 	PlayerFactionID         faction.FactionID                              `json:"player_faction_id"`
@@ -363,7 +361,6 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Turn:                    legacy.Turn,
 		Year:                    legacy.Year,
 		Month:                   legacy.Month,
-		StartYear:               legacy.StartYear,
 		ScenarioID:              legacy.ScenarioID,
 		ScenarioPath:            legacy.ScenarioPath,
 		PlayerFactionID:         legacy.PlayerFactionID,
@@ -491,7 +488,6 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Turn:                    gs.Turn,
 		Year:                    gs.Year,
 		Month:                   gs.Month,
-		StartYear:               gs.StartYear,
 		ScenarioID:              gs.ScenarioID,
 		ScenarioPath:            saveScenarioPath(gs.ScenarioID, gs.ScenarioPath),
 		PlayerFactionID:         gs.PlayerFactionID,
@@ -595,7 +591,6 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Turn:                    gs.Turn,
 		Year:                    gs.Year,
 		Month:                   gs.Month,
-		StartYear:               gs.StartYear,
 		ScenarioID:              gs.ScenarioID,
 		ScenarioPath:            saveScenarioPath(gs.ScenarioID, gs.ScenarioPath),
 		PlayerFactionID:         gs.PlayerFactionID,
@@ -667,9 +662,6 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	if saved.Month > 0 {
 		gs.Month = saved.Month
 	}
-	if saved.StartYear > 0 {
-		gs.StartYear = saved.StartYear
-	}
 	if saved.ScenarioID != "" {
 		gs.ScenarioID = saved.ScenarioID
 	}
@@ -701,6 +693,12 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.EditMode = saved.EditMode
 	gs.Victory = saved.Victory
 	gs.SelectedVictoryOptionID = saved.SelectedVictoryOptionID
+	for _, option := range gs.ScenarioVictories {
+		if option.ID == gs.SelectedVictoryOptionID {
+			gs.Victory = state.VictoryConditionFromOption(option)
+			break
+		}
+	}
 	gs.EconomicVictoryTurns = saved.EconomicVictoryTurns
 	gs.FactionsEliminated = saved.FactionsEliminated
 	gs.ReligiousVictoryTurns = saved.ReligiousVictoryTurns
