@@ -1254,7 +1254,9 @@ shape'i paylaşan Voronoi bölgeleri raster rebuild gerektirebilir.
 Bölge boya/sil onayı mevcut raster üzerinde lokal override güncellemesi yapar.
 Ülke shape rasterı ve deniz BFS'i yalnızca boya işlemi kara shape gruplarını
 etkilediğinde yeniden çalışır; terrain alanları overlay katmanı olarak bundan
-sonra bir kez uygulanır. Shape değişiklikleri, kara shape grubunu etkileyen
+sonra bir kez uygulanır. Terrain overlay renkleri artık bölge sahibinden
+türetilmez; arazi tipinin sabit paleti ve geçilebilirlik/seçim durumuna ait
+alfa sabitleri kullanılır. Shape değişiklikleri, kara shape grubunu etkileyen
 bölge boyaları ile rasterı etkileyen merkez değişikliklerinin ağır tam harita
 üretimi, immutable map-build snapshot'ı ile goroutine'e taşınmıştır. Sonuç ana
 döngüde generation kontrolüyle kabul edilir;

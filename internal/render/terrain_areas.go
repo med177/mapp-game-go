@@ -3,7 +3,6 @@ package render
 import (
 	"image/color"
 
-	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 
@@ -31,44 +30,23 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 	}
 
 	drawArea := func(area world.TerrainArea) {
-		col := color.RGBA{120, 120, 120, 90}
-		if parent := r.gs.Regions[area.ParentRegionID]; parent != nil {
-			if owner := r.gs.Factions[faction.FactionID(parent.OwnerID)]; owner != nil {
-				col = color.RGBA{owner.Color[0], owner.Color[1], owner.Color[2], 155}
-			}
-		}
-		switch area.Terrain {
-		case world.TerrainPlain:
-			col = terrainAreaTypeColor(col, color.RGBA{224, 202, 112, 255})
-		case world.TerrainMountain:
-			col = terrainAreaTypeColor(col, color.RGBA{98, 65, 32, 255})
-		case world.TerrainDesert:
-			col = terrainAreaTypeColor(col, color.RGBA{190, 154, 40, 255})
-		case world.TerrainDenseForest:
-			col = tintTerrainAreaColor(col, 0.62)
-		case world.TerrainLake:
-			col = terrainAreaTypeColor(col, color.RGBA{120, 195, 232, 255})
-		case world.TerrainRiver:
-			col = tintTerrainAreaColor(col, 0.82)
-		case world.TerrainSwamp:
-			col = terrainAreaTypeColor(col, color.RGBA{38, 98, 48, 255})
-		}
+		col := terrainAreaColor(area.Terrain)
 		passable := world.TerrainAreaIsPassable(area)
 		if passable {
 			// Geçilebilir alan daha saydam çizilir; border ve altındaki harita
 			// görünür kalır.
-			col.A = 85
+			col.A = terrainAreaPassableAlpha
 		} else {
 			// Geçilemeyen alan parlak bir terrain rengi üretmesin; koyu
 			// grimsi-siyah bir örtü olarak kalsın.
 			col = tintTerrainAreaColor(col, 0.32)
-			col.A = 165
+			col.A = terrainAreaBlockedAlpha
 		}
 		if area.ParentRegionID == r.editSelectedRegion || area.ID == selectedAreaID {
 			if passable {
-				col.A = 200
+				col.A = terrainAreaSelectedPassableAlpha
 			} else {
-				col.A = 175
+				col.A = terrainAreaSelectedBlockedAlpha
 			}
 		}
 		if len(area.Polygons) > 0 {
@@ -156,14 +134,6 @@ func terrainAreaRenderKey(gs *state.GameState, selectedAreaID string, selectedRe
 		mixString(string(area.ParentRegionID))
 		mixInt(area.MoveCost)
 		mixInt(area.AttritionCost)
-		if parent := gs.Regions[area.ParentRegionID]; parent != nil {
-			mixString(parent.OwnerID)
-			if owner := gs.Factions[faction.FactionID(parent.OwnerID)]; owner != nil {
-				for _, channel := range owner.Color {
-					mix(uint64(channel))
-				}
-			}
-		}
 		for _, polygon := range area.Polygons {
 			for _, point := range polygon {
 				mixInt(point[0])
@@ -176,6 +146,42 @@ func terrainAreaRenderKey(gs *state.GameState, selectedAreaID string, selectedRe
 		}
 	}
 	return key
+}
+
+const (
+	// Alfa değerleri düşük tutulur; terrain overlay haritanın altında kalan
+	// dokuyu ve sınırları kapatmadan yalnızca arazi tipini belirtir.
+	terrainAreaPassableAlpha         uint8 = 55
+	terrainAreaBlockedAlpha          uint8 = 110
+	terrainAreaSelectedPassableAlpha uint8 = 125
+	terrainAreaSelectedBlockedAlpha  uint8 = 135
+)
+
+func terrainAreaColor(terrain world.TerrainType) color.RGBA {
+	switch terrain {
+	case world.TerrainPlain:
+		return color.RGBA{224, 202, 112, 255}
+	case world.TerrainForest:
+		return color.RGBA{72, 112, 62, 255}
+	case world.TerrainDenseForest:
+		return color.RGBA{42, 78, 40, 255}
+	case world.TerrainMountain:
+		return color.RGBA{98, 65, 32, 255}
+	case world.TerrainDesert:
+		return color.RGBA{190, 154, 40, 255}
+	case world.TerrainLake:
+		return color.RGBA{120, 195, 232, 255}
+	case world.TerrainRiver:
+		return color.RGBA{80, 150, 205, 255}
+	case world.TerrainSwamp:
+		return color.RGBA{38, 98, 48, 255}
+	case world.TerrainPass:
+		return color.RGBA{155, 115, 70, 255}
+	case world.TerrainCoast:
+		return color.RGBA{170, 190, 120, 255}
+	default:
+		return color.RGBA{120, 120, 120, 255}
+	}
 }
 
 func tintTerrainAreaColor(col color.RGBA, factor float64) color.RGBA {
