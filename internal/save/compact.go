@@ -120,10 +120,10 @@ type campaignSaveState struct {
 	Victory                 state.VictoryCondition                      `json:"v"`
 	SelectedVictoryOptionID string                                      `json:"sv,omitempty"`
 	Regions                 map[world.RegionID]regionSaveState          `json:"rg,omitempty"`
-	// TerrainAreas senaryonun kaynak dosyasından bağımsız olarak kampanya
-	// sırasında düzenlenen arazi yerleşimini taşır. Tam liste tutulur; çünkü
-	// arazi poligonları ve maliyetleri bölge delta'sına indirgenemez.
-	TerrainAreas            []world.TerrainArea                      `json:"ta"`
+	// TerrainAreas eski save'leri okuyabilmek için korunur. Arazi alanlarının
+	// canonical kaynağı terrain_areas.json olduğundan yeni save'lere yazılmaz
+	// ve yükleme sırasında uygulanmaz.
+	TerrainAreas            []world.TerrainArea                      `json:"ta,omitempty"`
 	Factions                map[faction.FactionID]factionSaveState   `json:"fx,omitempty"`
 	Armies                  map[army.ArmyID]armySaveState            `json:"ar,omitempty"`
 	Commanders              map[string]*army.Commander               `json:"cmd,omitempty"`
@@ -503,7 +503,6 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Victory:                 gs.Victory,
 		SelectedVictoryOptionID: gs.SelectedVictoryOptionID,
 		Regions:                 emptyMapAsNil(savedRegions),
-		TerrainAreas:            cloneTerrainAreas(gs.TerrainAreas),
 		Factions:                emptyMapAsNil(savedFactions),
 		Armies:                  convertArmiesToSaveState(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
@@ -608,7 +607,6 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Victory:                 gs.Victory,
 		SelectedVictoryOptionID: gs.SelectedVictoryOptionID,
 		Regions:                 regions,
-		TerrainAreas:            cloneTerrainAreas(gs.TerrainAreas),
 		Factions:                factions,
 		Armies:                  cloneArmies(gs.Armies),
 		Commanders:              cloneCommanders(gs.Commanders),
@@ -733,12 +731,6 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	}
 	gs.WinnerID = saved.WinnerID
 	gs.ActiveRegionEvents = append([]state.RegionEventStatus(nil), saved.ActiveRegionEvents...)
-	if saved.TerrainAreas != nil {
-		gs.TerrainAreas = cloneTerrainAreas(saved.TerrainAreas)
-		world.SyncTerrainAreaRegions(gs.Regions, gs.TerrainAreas)
-		world.UpdateTerrainAreaRegionOwners(gs.Regions)
-	}
-
 	for rid, regionState := range saved.Regions {
 		region := gs.Regions[rid]
 		if region == nil {

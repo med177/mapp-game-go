@@ -5039,54 +5039,51 @@
     "region_id": "genoa",
     "settlements": [
       {
-        "id": "genoa_corsica_admin",
-        "name_tr": "Capraia",
-        "x": 638,
-        "y": 396,
-        "type": "fortress",
-        "population": 21
-      },
-      {
-        "id": "genoa_savona",
-        "name_tr": "Savona",
-        "x": 647,
-        "y": 399,
-        "type": "port",
-        "population": 63
-      },
-      {
         "id": "genoa_main",
         "name_tr": "Cenova",
-        "x": 659,
+        "x": 657,
         "y": 392,
         "type": "city",
         "is_center": true,
         "population": 84
       },
       {
-        "id": "genoa_sanremo",
-        "name_tr": "Sanremo",
-        "x": 634,
-        "y": 401,
-        "type": "town",
-        "population": 42
-      },
-      {
         "id": "genoa_la_spezia",
         "name_tr": "La Spezia",
-        "x": 672,
-        "y": 397,
+        "x": 673,
+        "y": 399,
         "type": "port",
         "population": 74
       },
       {
-        "id": "genoa_turin",
-        "name_tr": "Turin",
-        "x": 630,
-        "y": 372,
-        "type": "fortress",
-        "population": 25
+        "id": "genoa_savona",
+        "name_tr": "Savona",
+        "x": 641,
+        "y": 399,
+        "type": "port",
+        "population": 63
       },
+      {
+        "id": "genoa_sanremo",
+        "name_tr": "Sanremo",
+        "x": 634,
+        "y": 402,
+        "type": "town",
+        "population": 42
+      },
+      {
+        "id": "genoa_corsica_admin",
+        "name_tr": "Capraia",
+        "x": 636,
+        "y": 395,
+        "type": "fortress",
+        "population": 21
+      }
+    ]
+  },
+  {
+    "region_id": "turin",
+    "settlements": [
       {
         "id": "genoa_saluzzo",
         "name_tr": "Saluzzo",
@@ -5094,6 +5091,15 @@
         "y": 385,
         "type": "city",
         "population": 35
+      },
+      {
+        "id": "genoa_turin",
+        "name_tr": "Turin",
+        "x": 630,
+        "y": 372,
+        "type": "fortress",
+        "is_center": true,
+        "population": 25
       }
     ]
   },

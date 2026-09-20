@@ -3537,6 +3537,7 @@ func (r *Renderer) setTerrainAreaName(areaID, name string) {
 				region.NameTR = name
 			}
 		}
+		r.editDirty = true
 		r.editSelectedSettlement = -1
 		return
 	}
