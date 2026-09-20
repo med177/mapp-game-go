@@ -67,6 +67,15 @@ huruç savaşı doğrudan çözülmez. `internal/ai/ai.go` bir `TurnStepSortie`
 ortak seçim modalında `Çatış` veya `Kuşatmayı Kaldır` seçeneklerini sunar.
 AI-AI huruçları otomatik çözülür.
 
+Kuşatılan AI devleti, savunma ordusunun toplam gücü kuşatanın gücünün `%80`i veya
+altındaysa ve hedef bölgeye bitişik kendi, aynı realm içindeki vassal veya
+müttefik güvenli kara bölgesi varsa orduyu geri çekilme rolüne alır. Geri çekilme
+hedefi doğrudan komşu güvenli bölgedir; kendi toprağından rota bulunamazsa
+müttefik erişim rotası kullanılır. Böylece teslim turu gelmeden önce orduyu
+korumayı deneyebilir; uygun komşu yoksa kuşatma altında kalır ve mevcut huruç/
+teslim kuralları uygulanır. Karar ve rota seçimi `internal/ai/retreat.go` içindeki
+ortak AI stratejik context'inden türetilir.
+
 ## Memnuniyet ve vergi politikası
 
 AI her tur başında bölgelerinin vergi oranını ortak ekonomi-tick memnuniyet

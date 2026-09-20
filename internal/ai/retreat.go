@@ -9,20 +9,37 @@ import (
 )
 
 const (
-	aiRetreatStrengthPercent   = 45
-	aiRetreatEnemyPowerPercent = 135
-	aiSiegeReliefPowerPercent  = 150
+	aiRetreatStrengthPercent          = 45
+	aiRetreatEnemyPowerPercent        = 135
+	aiSiegeReliefPowerPercent         = 150
+	aiSiegeDefenderRetreatPowerMargin = 125
 )
 
 // applyRetreatAssignments açık arazide ağır yıpranmış veya yerel olarak ezilen
-// orduları güvenli ikmal bölgelerine çeker. Aktif kuşatmalar yalnız ikmal aşımı
-// ve ezici yaklaşan yardım gücü birlikte varsa bu kurala girer.
+// orduları güvenli ikmal bölgelerine çeker. Savunmacı kuşatma orduları da
+// kuşatan karşısında zayıfsa bitişik dost/vassal/müttefik bölgeye yönlendirilir.
+// Aktif kuşatma saldırganları ise yalnız ikmal aşımı ve ezici yaklaşan yardım
+// gücü birlikte varsa bu kurala girer.
 func applyRetreatAssignments(ctx *StrategicContext) {
 	if ctx == nil || ctx.gs == nil || ctx.FactionID == "" {
 		return
 	}
 	for _, armyRef := range aiSortedArmies(ctx.gs) {
 		if armyRef.OwnerID != string(ctx.FactionID) || armyRef.IsNaval || armyRef.IsGarrison || len(armyRef.Units) == 0 {
+			continue
+		}
+
+		if defensiveSiege := ctx.gs.SiegeAt(armyRef.RegionID); defensiveSiege != nil &&
+			defensiveSiege.AttackerArmyID != armyRef.ID && ctx.gs.IsArmyDefendingSiegedRegion(armyRef) {
+			anchor := aiSiegeDefenderRetreatRegion(ctx.gs, armyRef, defensiveSiege)
+			if anchor == "" || !aiSiegeDefenderShouldRetreat(ctx.gs, armyRef, defensiveSiege) {
+				continue
+			}
+			ctx.ArmyAssignments[armyRef.ID] = AIArmyAssignment{
+				Role:           AIArmyRoleRetreat,
+				AnchorRegionID: anchor,
+				Reason:         "kuşatan gücü karşısında yetersiz savunma ve güvenli komşu bölge",
+			}
 			continue
 		}
 
@@ -58,6 +75,87 @@ func applyRetreatAssignments(ctx *StrategicContext) {
 			Reason:         reason,
 		}
 	}
+}
+
+func aiSiegeDefenderShouldRetreat(gs *state.GameState, defender *army.Army, siege *state.SiegeState) bool {
+	if gs == nil || defender == nil || siege == nil || siege.AttackerArmyID == "" {
+		return false
+	}
+	attacker := gs.Armies[siege.AttackerArmyID]
+	if attacker == nil || attacker.OwnerID == defender.OwnerID {
+		return false
+	}
+	defenderPower := defender.TotalStrength(gs.UnitTypes)
+	attackerPower := attacker.TotalStrength(gs.UnitTypes)
+	if attackerPower <= 0 {
+		return false
+	}
+	if defenderPower <= 0 {
+		return true
+	}
+	return attackerPower*100 >= defenderPower*aiSiegeDefenderRetreatPowerMargin
+}
+
+func aiSiegeDefenderRetreatRegion(gs *state.GameState, defender *army.Army, siege *state.SiegeState) world.RegionID {
+	if gs == nil || defender == nil || siege == nil {
+		return ""
+	}
+	target := gs.Regions[siege.RegionID]
+	if target == nil || defender.RegionID != target.ID {
+		return ""
+	}
+	bestID := world.RegionID("")
+	bestDistance := int(^uint(0) >> 1)
+	for _, neighborID := range target.Neighbors {
+		candidate := gs.Regions[neighborID]
+		if candidate == nil || candidate.IsSea || candidate.OwnerID == "" || gs.SiegeAt(candidate.ID) != nil {
+			continue
+		}
+		if !aiCanRecoverInFriendlyRegion(gs, defender.OwnerID, candidate.OwnerID) {
+			continue
+		}
+		if _, allowed := gs.LandRegionEntryCost(defender.RegionID, candidate); !allowed || aiRegionHasHostileArmy(gs, defender.OwnerID, candidate.ID) {
+			continue
+		}
+		dx := candidate.WorldX - target.WorldX
+		dy := candidate.WorldY - target.WorldY
+		distance := dx*dx + dy*dy
+		if bestID == "" || distance < bestDistance || (distance == bestDistance && candidate.ID < bestID) {
+			bestID = candidate.ID
+			bestDistance = distance
+		}
+	}
+	return bestID
+}
+
+func aiCanRecoverInFriendlyRegion(gs *state.GameState, armyOwnerID, regionOwnerID string) bool {
+	if gs == nil || armyOwnerID == "" || regionOwnerID == "" {
+		return false
+	}
+	if armyOwnerID == regionOwnerID || diplomacy.SameRealm(gs, faction.FactionID(armyOwnerID), faction.FactionID(regionOwnerID)) {
+		return true
+	}
+	relation := diplomacy.Relation(gs, faction.FactionID(armyOwnerID), faction.FactionID(regionOwnerID))
+	return relation != nil && relation.Stance == faction.StanceAllied
+}
+
+func aiRegionHasHostileArmy(gs *state.GameState, ownerID string, regionID world.RegionID) bool {
+	if gs == nil || ownerID == "" || regionID == "" {
+		return false
+	}
+	for _, candidate := range aiSortedArmies(gs) {
+		if candidate == nil || candidate.IsNaval || candidate.RegionID != regionID || candidate.OwnerID == ownerID || len(candidate.Units) == 0 {
+			continue
+		}
+		if diplomacy.SameRealm(gs, faction.FactionID(ownerID), faction.FactionID(candidate.OwnerID)) {
+			continue
+		}
+		relation := diplomacy.Relation(gs, faction.FactionID(ownerID), faction.FactionID(candidate.OwnerID))
+		if relation != nil && relation.Stance == faction.StanceWar {
+			return true
+		}
+	}
+	return false
 }
 
 // Karşılaştırma yuvarlama kaybı olmadan, birimlerin deneyim dahil tam-can
@@ -244,7 +342,14 @@ func aiRetreatNextStep(ctx *StrategicContext, armyRef *army.Army) world.RegionID
 	if !ok || assignment.Role != AIArmyRoleRetreat || assignment.AnchorRegionID == "" || armyRef.RegionID == assignment.AnchorRegionID {
 		return ""
 	}
-	return ctx.routeNextStep(armyRef, assignment.AnchorRegionID, aiRouteFriendly)
+	if next := ctx.routeNextStep(armyRef, assignment.AnchorRegionID, aiRouteFriendly); next != "" {
+		return next
+	}
+	// Vassal ve müttefik bölgeleri de güvenli geri çekilme hedefi olabilir.
+	// aiRouteFriendly yalnızca doğrudan sahip olunan bölgeleri kullanır; bu
+	// nedenle kendi bölgesine rota yoksa, genel rota erişim kurallarının
+	// tanıdığı aynı-realm/müttefik geçişini ikinci seçenek olarak kullan.
+	return ctx.routeNextStep(armyRef, assignment.AnchorRegionID, aiRouteGeneral)
 }
 
 // executeStrategicSiegeWithdrawal kuşatan ordu retreat rolü aldığında hareket

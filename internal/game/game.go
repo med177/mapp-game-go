@@ -5445,10 +5445,10 @@ func (g *Game) applySurrenderOffer(offer state.DiplomaticOffer) diplomacy.Result
 		return g.applySiegeVassalizationOffer(offer)
 	}
 
-	// Teslim olan savunma ordusu varsa, mevcut birlikleri koruyarak en yakın
-	// kendi bölgesine çekilir. Böylece teslimiyet savaşmaktan farklı, gerçek bir
-	// askerî avantaj taşır; geri çekilemeyen garnizon ise dağılır.
-	g.withdrawDefendingArmiesForSurrender(target)
+	// Teslim olan savunma ordusu kuşatanın kontrolüne geçer. Böylece kazanan
+	// devlet bu kuvveti koruma, kullanma veya daha sonra dağıtma kararını kendi
+	// verir.
+	g.transferDefendingArmiesForSurrender(target, attacker.OwnerID)
 	collapse, prompted := g.captureBesiegedRegion(attacker, target, false)
 	if prompted {
 		return diplomacy.Result{Accepted: true, Applied: true, Message: target.NameTR + " teslim oldu; savaş sonrası düzen kararı bekleniyor."}
@@ -5487,6 +5487,7 @@ func (g *Game) applySiegeVassalizationOffer(offer state.DiplomaticOffer) diploma
 	if !result.Applied {
 		return result
 	}
+	g.transferDefendingArmiesForSurrender(target, attacker.OwnerID)
 	g.clearSiege(target.ID)
 	return diplomacy.Result{Accepted: true, Applied: true, Message: fmt.Sprintf("%s son toprağını korudu; %s devletinin vassalı oldu ve kuşatma sona erdi.", g.factionNameTR(target.OwnerID), g.factionNameTR(attacker.OwnerID))}
 }
@@ -5509,23 +5510,15 @@ func siegeSettlementOfferLabelTR(action string) string {
 	return "teslimiyet"
 }
 
-func (g *Game) withdrawDefendingArmiesForSurrender(target *world.Region) {
-	if g == nil || g.gs == nil || target == nil {
+func (g *Game) transferDefendingArmiesForSurrender(target *world.Region, newOwnerID string) {
+	if g == nil || g.gs == nil || target == nil || newOwnerID == "" {
 		return
 	}
-	for id, candidate := range g.gs.Armies {
+	for _, candidate := range g.gs.Armies {
 		if candidate == nil || candidate.IsNaval || candidate.OwnerID != target.OwnerID || candidate.RegionID != target.ID || !g.gs.IsArmyDefendingSiegedRegion(candidate) {
 			continue
 		}
-		if retreatRegion := g.nearestOwnedRegionForArmy(candidate, target); retreatRegion != "" {
-			candidate.RegionID = retreatRegion
-			candidate.DockedRegionID = ""
-			candidate.DockedSettlementID = ""
-			candidate.MovePoints = 0
-			candidate.ApplyMoraleDelta(-15)
-			continue
-		}
-		g.gs.RemoveArmy(id)
+		g.gs.TransferArmyOwnership(candidate, newOwnerID)
 	}
 }
 
@@ -5559,7 +5552,7 @@ func (g *Game) surrenderSiege(defenderID army.ArmyID, regionID world.RegionID) b
 			return false
 		}
 	}
-	g.withdrawDefendingArmiesForSurrender(target)
+	g.transferDefendingArmiesForSurrender(target, attacker.OwnerID)
 	collapse, prompted := g.captureBesiegedRegion(attacker, target, false)
 	if g.renderer != nil {
 		g.renderer.SelectedArmy = ""

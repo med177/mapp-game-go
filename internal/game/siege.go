@@ -854,7 +854,18 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			})
 		}
 
-		if defender == nil && (siege.BreachLevel >= 2 || siege.TurnsElapsed >= siege.TotalSurrenderTurns()) {
+		surrenderDue := siege.TurnsElapsed >= siege.TotalSurrenderTurns()
+		// Büyük gedik, savunma ordusu çözüldüğünde erken teslimiyet sağlar;
+		// süre dolması ise savunma ordusu hâlâ ayakta olsa bile zorunlu teslim
+		// eşiğidir. Aksi halde panel 0 tur gösterdiği halde kuşatma süresiz
+		// devam eder.
+		if (defender == nil && siege.BreachLevel >= 2) || surrenderDue {
+			if surrenderDue && defender != nil {
+				// Fetih kararı oyuncuya bırakıldığında savunma ordusu aktif
+				// kuşatma hattında kalmamalı; manuel teslim akışıyla aynı
+				// şekilde güvenli bir bölgeye çekilir veya kaldırılır.
+				g.transferDefendingArmiesForSurrender(targetRegion, attacker.OwnerID)
+			}
 			collapse, prompted := g.captureBesiegedRegion(attacker, targetRegion, false)
 			if g.renderer != nil {
 				if !prompted {

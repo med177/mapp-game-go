@@ -1,11 +1,24 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-18
+last_updated: 2026-09-19
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-19: Kuşatma tesliminde bölgedeki savunma orduları artık geri çekilmek
+  veya silinmek yerine kuşatan devlete devrediliyor. Kazanan devlet bu kuvvetleri
+  kullanabilir veya dağıtabilir; komutan sahipliği de aynı canonical state
+  yardımcısıyla güncelleniyor. Albania T2 sur + T1 ambar son tur teslim regresyonu
+  bu devri de doğruluyor (`internal/game/{game.go,siege.go}`,
+  `internal/game/research_auto_test.go`).
+
+- 2026-09-19: Kuşatma altındaki AI savunma ordusu, gücü kuşatanın `%80`i veya
+  altındaysa ve kuşatmaya bitişik kendi, vassal veya müttefik güvenli bölgesi
+  varsa geri çekilme rolü alıyor. Doğrudan kendi toprağı rotası bulunamazsa aynı
+  realm/müttefik erişim rotası kullanılıyor; güvenli hedef yoksa ordu yerinde
+  kalıyor (`internal/ai/retreat.go`, `internal/ai/siege_retreat_test.go`).
 
 - 2026-09-19: AI hediye gönderimi yalnızca maliyet teknik olarak karşılanabiliyor
   diye yapılmıyor. Hediye, mevcut hazinenin en fazla `%25`ini tüketebiliyor ve

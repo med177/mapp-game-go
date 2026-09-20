@@ -2289,9 +2289,13 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	msg := actorName + " " + sourceName + " bölgesinden " + targetName + " bölgesine ilerledi."
 	isAlliedTarget := false
 	if targetRegion.OwnerID != a.OwnerID {
-		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
-		if rel, exists := gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+		if diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
 			isAlliedTarget = true
+		} else {
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+			if rel, exists := gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
+				isAlliedTarget = true
+			}
 		}
 	}
 	if targetRegion.OwnerID != a.OwnerID && !isAlliedTarget && !activeSiegeSupport {
