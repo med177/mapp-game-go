@@ -424,16 +424,22 @@ func drawDashedTradeCurve(screen *ebiten.Image, sx, sy, cx, cy, dx, dy float64, 
 	}
 }
 
-func (r *Renderer) tradePortScreenPos(region *world.Region) (float64, float64) {
+func (r *Renderer) tradePortScreenPos(region *world.Region, settlementID string) (float64, float64) {
 	if r != nil && r.worldMap != nil && region != nil {
 		for index, settlement := range region.Settlements {
 			if settlement.Type != world.SettlementPort {
+				continue
+			}
+			if settlementID != "" && settlement.ID != settlementID {
 				continue
 			}
 			if ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, index); ok {
 				return r.worldToScreen(float64(ax), float64(ay))
 			}
 		}
+	}
+	if settlementID != "" {
+		return r.tradePortScreenPos(region, "")
 	}
 	return r.regionScreenPos(region)
 }
@@ -464,8 +470,8 @@ func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[st
 		if fromRegion == nil || toRegion == nil {
 			continue
 		}
-		sx, sy := r.tradePortScreenPos(fromRegion)
-		dx, dy := r.tradePortScreenPos(toRegion)
+		sx, sy := r.tradePortScreenPos(fromRegion, pair.FromSettlementID)
+		dx, dy := r.tradePortScreenPos(toRegion, pair.ToSettlementID)
 		mx := (sx + dx) / 2
 		my := (sy + dy) / 2
 		vx := dx - sx

@@ -1,6 +1,7 @@
 package state
 
 import (
+	"math"
 	"sort"
 
 	"mapp-game-go/internal/army"
@@ -15,10 +16,12 @@ const blockadePercentPerWarship = 50
 // aktif limanları arasında deniz bağlantısı olan merchant rotasının görsel ve
 // lojistik uçlarını taşır.
 type MerchantTradePortPair struct {
-	FromRegionID world.RegionID
-	ToRegionID   world.RegionID
-	FromSeaID    world.RegionID
-	ToSeaID      world.RegionID
+	FromRegionID     world.RegionID
+	ToRegionID       world.RegionID
+	FromSettlementID string
+	ToSettlementID   string
+	FromSeaID        world.RegionID
+	ToSeaID          world.RegionID
 }
 
 // MerchantFleetTradeStatus, tek bir merchant filosunun mevcut rota konumunda
@@ -346,6 +349,25 @@ func (s *GameState) MerchantTradePortRegion(ownerID string) *world.Region {
 	return s.merchantTradePortRegion(ownerID)
 }
 
+// MerchantTradePortSettlementID, seçilen canonical ana ticaret portu
+// bölgesindeki port settlement'ının ID'sini döner. Settlement verisi olmayan
+// eski state'lerde boş dönebilir; deniz endpoint'i yine bölge merkezinden
+// deterministik olarak seçilir.
+func (s *GameState) MerchantTradePortSettlementID(ownerID string) string {
+	if s == nil || ownerID == "" {
+		return ""
+	}
+	region := s.merchantTradePortRegion(ownerID)
+	if region == nil {
+		return ""
+	}
+	endpoint := s.merchantTradePortEndpointsForRegion(region)
+	if len(endpoint) == 0 {
+		return ""
+	}
+	return endpoint[0].settlementID
+}
+
 func (s *GameState) merchantTradeRoutePortPairs(route *economy.TradeRoute, endpointFn func(string) []merchantTradePortEndpoint) []MerchantTradePortPair {
 	if s == nil || route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
 		return nil
@@ -363,10 +385,12 @@ func (s *GameState) merchantTradeRoutePortPairs(route *economy.TradeRoute, endpo
 				continue
 			}
 			pairs = append(pairs, MerchantTradePortPair{
-				FromRegionID: from.regionID,
-				ToRegionID:   to.regionID,
-				FromSeaID:    from.seaID,
-				ToSeaID:      to.seaID,
+				FromRegionID:     from.regionID,
+				ToRegionID:       to.regionID,
+				FromSettlementID: from.settlementID,
+				ToSettlementID:   to.settlementID,
+				FromSeaID:        from.seaID,
+				ToSeaID:          to.seaID,
 			})
 		}
 	}
@@ -392,6 +416,12 @@ func (s *GameState) merchantTradeRoutePortPairs(route *economy.TradeRoute, endpo
 		if pairs[i].ToRegionID != pairs[j].ToRegionID {
 			return pairs[i].ToRegionID < pairs[j].ToRegionID
 		}
+		if pairs[i].FromSettlementID != pairs[j].FromSettlementID {
+			return pairs[i].FromSettlementID < pairs[j].FromSettlementID
+		}
+		if pairs[i].ToSettlementID != pairs[j].ToSettlementID {
+			return pairs[i].ToSettlementID < pairs[j].ToSettlementID
+		}
 		if pairs[i].FromSeaID != pairs[j].FromSeaID {
 			return pairs[i].FromSeaID < pairs[j].FromSeaID
 		}
@@ -401,8 +431,9 @@ func (s *GameState) merchantTradeRoutePortPairs(route *economy.TradeRoute, endpo
 }
 
 type merchantTradePortEndpoint struct {
-	regionID world.RegionID
-	seaID    world.RegionID
+	regionID     world.RegionID
+	settlementID string
+	seaID        world.RegionID
 }
 
 func (s *GameState) merchantTradePortEndpoints(ownerID string) []merchantTradePortEndpoint {
@@ -420,6 +451,62 @@ func (s *GameState) merchantTradePortEndpointsForRegion(region *world.Region) []
 	if s == nil || region == nil {
 		return nil
 	}
+	portSettlement, hasPortSettlement := s.merchantTradePortSettlement(region)
+	portX, portY := region.WorldX, region.WorldY
+	settlementID := ""
+	if hasPortSettlement {
+		portX = portSettlement.X
+		portY = portSettlement.Y
+		settlementID = portSettlement.ID
+	}
+	seaID := s.merchantTradePortFacingSea(region, portX, portY)
+	if seaID == "" {
+		return nil
+	}
+	return []merchantTradePortEndpoint{{
+		regionID:     region.ID,
+		settlementID: settlementID,
+		seaID:        seaID,
+	}}
+}
+
+func (s *GameState) merchantTradePortSettlement(region *world.Region) (world.Settlement, bool) {
+	if s == nil || region == nil {
+		return world.Settlement{}, false
+	}
+	targetX, targetY := region.WorldX, region.WorldY
+	if capitalRegion, capitalSettlement, _, ok := s.FactionCapital(faction.FactionID(region.OwnerID)); ok && capitalRegion != nil && capitalRegion.ID == region.ID && capitalSettlement != nil {
+		targetX = capitalSettlement.X
+		targetY = capitalSettlement.Y
+	}
+
+	var best world.Settlement
+	bestDistance := int64(0)
+	found := false
+	for _, settlement := range region.Settlements {
+		if settlement.Type != world.SettlementPort {
+			continue
+		}
+		dx := int64(settlement.X - targetX)
+		dy := int64(settlement.Y - targetY)
+		distance := dx*dx + dy*dy
+		if !found || distance < bestDistance || (distance == bestDistance && settlement.ID < best.ID) {
+			best = settlement
+			bestDistance = distance
+			found = true
+		}
+	}
+	return best, found
+}
+
+func (s *GameState) merchantTradePortFacingSea(region *world.Region, portX, portY int) world.RegionID {
+	if s == nil || region == nil {
+		return ""
+	}
+	portVectorX := float64(portX - region.WorldX)
+	portVectorY := float64(portY - region.WorldY)
+	portVectorLength := math.Hypot(portVectorX, portVectorY)
+
 	seaIDs := make([]world.RegionID, 0, len(region.Neighbors))
 	for _, neighborID := range region.Neighbors {
 		neighbor := s.Regions[neighborID]
@@ -429,11 +516,30 @@ func (s *GameState) merchantTradePortEndpointsForRegion(region *world.Region) []
 		seaIDs = append(seaIDs, neighborID)
 	}
 	sort.Slice(seaIDs, func(i, j int) bool { return seaIDs[i] < seaIDs[j] })
-	result := make([]merchantTradePortEndpoint, 0, len(seaIDs))
+	var bestID world.RegionID
+	bestAlignment := -math.MaxFloat64
+	bestDistance := math.MaxFloat64
 	for _, seaID := range seaIDs {
-		result = append(result, merchantTradePortEndpoint{regionID: region.ID, seaID: seaID})
+		sea := s.Regions[seaID]
+		seaVectorX := float64(sea.WorldX - region.WorldX)
+		seaVectorY := float64(sea.WorldY - region.WorldY)
+		seaVectorLength := math.Hypot(seaVectorX, seaVectorY)
+		alignment := 0.0
+		if portVectorLength > 0 && seaVectorLength > 0 {
+			alignment = (portVectorX*seaVectorX + portVectorY*seaVectorY) / (portVectorLength * seaVectorLength)
+		}
+		distanceX := float64(sea.WorldX - portX)
+		distanceY := float64(sea.WorldY - portY)
+		distance := distanceX*distanceX + distanceY*distanceY
+		if bestID == "" || alignment > bestAlignment+1e-9 ||
+			(math.Abs(alignment-bestAlignment) <= 1e-9 && (distance < bestDistance ||
+				(math.Abs(distance-bestDistance) <= 1e-9 && seaID < bestID))) {
+			bestID = seaID
+			bestAlignment = alignment
+			bestDistance = distance
+		}
 	}
-	return result
+	return bestID
 }
 
 // merchantTradePortRegion, tüm merchant rota tüketicilerinde kullanılacak tek

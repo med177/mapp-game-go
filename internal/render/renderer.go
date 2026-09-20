@@ -281,7 +281,7 @@ type Renderer struct {
 	nextArmyDisplayOrder     uint64
 	regionLabelBuf           []settlementDraw
 	labelRectBuf             []screenRect
-	merchantTradeMainPortIDs map[string]world.RegionID
+	merchantTradeMainPortIDs map[string]merchantTradeMainPortRef
 	tradeCorridors           []tradeCorridorInfo
 	tradeHoverIdx            int
 	tradeCenters             []tradeCenterVisual
@@ -388,6 +388,11 @@ type Renderer struct {
 	editSettlementDragStart           []editRegionSettlementsSnapshot
 	editFactionForm                   editFactionFormState
 	editRegionForm                    editRegionFormState
+}
+
+type merchantTradeMainPortRef struct {
+	regionID     world.RegionID
+	settlementID string
 }
 
 type confirmDialogState struct {
@@ -3678,7 +3683,7 @@ func (r *Renderer) settlementMarkerSprite(region *world.Region, settlement world
 	case world.SettlementFortress:
 		return settlementMarkerCastleImage()
 	case world.SettlementPort:
-		if r.isMerchantTradeMainPort(region) {
+		if r.isMerchantTradeMainPort(region, settlement) {
 			return settlementMarkerHarbourMainImage()
 		}
 		return settlementMarkerHarbourImage()
@@ -3726,21 +3731,26 @@ func (r *Renderer) isCapitalSettlement(region *world.Region, settlement world.Se
 	return r.gs.IsFactionCapitalSettlement(faction.FactionID(region.OwnerID), settlement.ID)
 }
 
-func (r *Renderer) isMerchantTradeMainPort(region *world.Region) bool {
+func (r *Renderer) isMerchantTradeMainPort(region *world.Region, settlement world.Settlement) bool {
 	if r == nil || r.gs == nil || region == nil || region.OwnerID == "" {
 		return false
 	}
 	if r.merchantTradeMainPortIDs == nil {
-		r.merchantTradeMainPortIDs = make(map[string]world.RegionID)
+		r.merchantTradeMainPortIDs = make(map[string]merchantTradeMainPortRef)
 	}
-	mainPortID, ok := r.merchantTradeMainPortIDs[region.OwnerID]
+	mainPort, ok := r.merchantTradeMainPortIDs[region.OwnerID]
 	if !ok {
-		if mainPort := r.gs.MerchantTradePortRegion(region.OwnerID); mainPort != nil {
-			mainPortID = mainPort.ID
+		mainPort = merchantTradeMainPortRef{}
+		if mainPortRegion := r.gs.MerchantTradePortRegion(region.OwnerID); mainPortRegion != nil {
+			mainPort.regionID = mainPortRegion.ID
 		}
-		r.merchantTradeMainPortIDs[region.OwnerID] = mainPortID
+		mainPort.settlementID = r.gs.MerchantTradePortSettlementID(region.OwnerID)
+		r.merchantTradeMainPortIDs[region.OwnerID] = mainPort
 	}
-	return mainPortID != "" && mainPortID == region.ID
+	if mainPort.regionID != region.ID {
+		return false
+	}
+	return mainPort.settlementID == "" || mainPort.settlementID == settlement.ID
 }
 
 func (r *Renderer) drawCapitalLabelIcon(screen *ebiten.Image, x, y float32, variant gameui.TextVariant) {

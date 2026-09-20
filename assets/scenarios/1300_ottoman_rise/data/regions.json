@@ -6742,12 +6742,11 @@
     "owner_id": "east_rome",
     "successor_faction_id": "east_rome",
     "neighbors": [
-      "galata",
       "sea_of_marmara",
       "silivri"
     ],
     "world_x": 1056,
-    "world_y": 456,
+    "world_y": 457,
     "shape_id": "TRA",
     "is_sea": false,
     "is_locked": false,
@@ -6842,12 +6841,11 @@
     "successor_faction_id": "east_rome",
     "neighbors": [
       "bosphorus",
-      "constantinople",
       "sea_of_marmara",
       "silivri"
     ],
-    "world_x": 1057,
-    "world_y": 452,
+    "world_x": 1058,
+    "world_y": 451,
     "shape_id": "TRA",
     "is_sea": false,
     "is_locked": false,

@@ -181,6 +181,53 @@ func TestMerchantTradeRouteUsesSelectedPortForFleetIncome(t *testing.T) {
 	}
 }
 
+func TestMerchantTradePortEndpointFollowsPortFacingSea(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "athena_duk", ToFactionID: "partner", AmountPerTurn: 3}
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"athena_duk": {ID: "athena_duk", CapitalSettlementID: "athens"},
+			"partner":    {ID: "partner", CapitalSettlementID: "partner_capital"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"greece": {
+				ID:        "greece",
+				OwnerID:   "athena_duk",
+				WorldX:    953,
+				WorldY:    515,
+				Neighbors: []world.RegionID{"cretan_sea", "mediterranean_open_6", "otranto_strait"},
+				Settlements: []world.Settlement{
+					{ID: "athens", X: 953, Y: 514, Type: world.SettlementCity, IsCenter: true},
+					{ID: "greece_piraeus", X: 953, Y: 518, Type: world.SettlementPort},
+				},
+				Buildings: []string{"port"},
+			},
+			"partner_port": {
+				ID:          "partner_port",
+				OwnerID:     "partner",
+				Neighbors:   []world.RegionID{"partner_sea"},
+				Settlements: []world.Settlement{{ID: "partner_capital", Type: world.SettlementCity, IsCenter: true}},
+				Buildings:   []string{"port"},
+			},
+			"cretan_sea":           {ID: "cretan_sea", IsSea: true, WorldX: 971, WorldY: 547, Neighbors: []world.RegionID{"partner_sea"}},
+			"mediterranean_open_6": {ID: "mediterranean_open_6", IsSea: true, WorldX: 948, WorldY: 486},
+			"otranto_strait":       {ID: "otranto_strait", IsSea: true, WorldX: 863, WorldY: 488},
+			"partner_sea":          {ID: "partner_sea", IsSea: true, Neighbors: []world.RegionID{"cretan_sea", "partner_port"}},
+		},
+		TradeRoutes: []*economy.TradeRoute{route},
+	}
+
+	if got := gs.MerchantTradePortSettlementID("athena_duk"); got != "greece_piraeus" {
+		t.Fatalf("ana ticaret port settlement = %q, want greece_piraeus", got)
+	}
+	if got := gs.merchantTradePortEndpoints("athena_duk"); len(got) != 1 || got[0].seaID != "cretan_sea" {
+		t.Fatalf("Atina ana port deniz endpoint'i = %+v, want cretan_sea", got)
+	}
+	pairs := gs.MerchantTradeRoutePortPairs(route)
+	if len(pairs) != 1 || pairs[0].FromSeaID != "cretan_sea" {
+		t.Fatalf("Atina rota endpoint'i = %+v, want cretan_sea", pairs)
+	}
+}
+
 func TestMerchantFleetTradeStatusesMatchesIndividualEvaluation(t *testing.T) {
 	const routeKey = "from->to"
 	route := &economy.TradeRoute{

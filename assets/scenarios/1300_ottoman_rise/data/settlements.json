@@ -3791,21 +3791,29 @@
     "region_id": "constantinople",
     "settlements": [
       {
-        "id": "blachernae_constantinople",
-        "name_tr": "Blaherne",
-        "x": 1053,
-        "y": 454,
-        "type": "town",
-        "population": 120
-      },
-      {
         "id": "constantinople_main",
         "name_tr": "Konstantiniyye",
-        "x": 1057,
-        "y": 459,
+        "x": 1056,
+        "y": 458,
         "type": "fortress",
         "is_center": true,
         "population": 280
+      },
+      {
+        "id": "constantinople_kontoskalion",
+        "name_tr": "Kontoskalion",
+        "x": 1049,
+        "y": 457,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "blachernae_constantinople",
+        "name_tr": "Blaherne",
+        "x": 1052,
+        "y": 453,
+        "type": "town",
+        "population": 120
       }
     ]
   },
@@ -3837,8 +3845,8 @@
       {
         "id": "pera_constantinople",
         "name_tr": "Pera",
-        "x": 1056,
-        "y": 452,
+        "x": 1055,
+        "y": 451,
         "type": "town",
         "is_center": true,
         "population": 36
@@ -3846,7 +3854,7 @@
       {
         "id": "galata",
         "name_tr": "Galata",
-        "x": 1059,
+        "x": 1057,
         "y": 453,
         "type": "port",
         "population": 36
@@ -7113,7 +7121,7 @@
       {
         "id": "scutari",
         "name_tr": "Scutari",
-        "x": 1062,
+        "x": 1061,
         "y": 454,
         "type": "town",
         "is_center": true,

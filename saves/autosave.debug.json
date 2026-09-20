@@ -53303,8 +53303,8 @@
       "fleet_venice_402": {
         "id": "fleet_venice_402",
         "owner_id": "venice",
-        "region_id": "bay_of_biscay",
-        "previous_region_id": "atlantic_ocean_shore",
+        "region_id": "english_channel",
+        "previous_region_id": "irish_sea_shore",
         "units": [
           {
             "type_id": "merchant_ship",
@@ -53317,7 +53317,7 @@
             "experience": 0
           }
         ],
-        "move_points": 5,
+        "move_points": 3,
         "max_move_points": 5,
         "is_naval": true,
         "morale": 100,
@@ -53356,9 +53356,8 @@
       "fleet_venice_642": {
         "id": "fleet_venice_642",
         "owner_id": "venice",
-        "region_id": "adriatic_sea_venice",
-        "docked_region_id": "venice",
-        "docked_settlement_id": "venice_chioggia",
+        "region_id": "ionian_sea",
+        "previous_region_id": "otranto_strait",
         "units": [
           {
             "type_id": "merchant_ship",
@@ -53376,16 +53375,17 @@
             "experience": 0
           }
         ],
-        "move_points": 3,
+        "move_points": 0,
         "max_move_points": 5,
         "is_naval": true,
-        "in_ambush": false
+        "in_ambush": false,
+        "trade_route_key": "venice-\u003ehafsid_sultanate"
       },
       "fleet_venice_guard": {
         "id": "fleet_venice_guard",
         "owner_id": "venice",
-        "region_id": "cretan_sea",
-        "previous_region_id": "aegean_sea_shore",
+        "region_id": "mediterranean_open_6",
+        "previous_region_id": "cretan_sea",
         "units": [
           {
             "type_id": "warship",
@@ -53428,21 +53428,21 @@
             "experience": 0
           }
         ],
-        "move_points": 3,
+        "move_points": 2,
         "max_move_points": 3,
         "is_naval": true,
         "morale": 100,
         "in_ambush": false,
         "naval_mission": {
           "kind": "patrol",
-          "target_region_id": "cretan_sea"
+          "target_region_id": "mediterranean_open_6"
         }
       },
       "fleet_venice_trade": {
         "id": "fleet_venice_trade",
         "owner_id": "venice",
-        "region_id": "aegean_sea",
-        "previous_region_id": "cretan_sea",
+        "region_id": "mediterranean_open_5",
+        "previous_region_id": "ionian_sea",
         "units": [
           {
             "type_id": "merchant_ship",
@@ -53475,7 +53475,7 @@
             "experience": 0
           }
         ],
-        "move_points": 5,
+        "move_points": 0,
         "max_move_points": 5,
         "is_naval": true,
         "morale": 100,
@@ -81815,7 +81815,7 @@
           "iron": 43,
           "spice": 435,
           "stone": 461,
-          "timber": 115
+          "timber": 101
         },
         "epir": {
           "cloth": 69,
@@ -81857,10 +81857,10 @@
         "genoa": {
           "cloth": 749,
           "grain": 3460,
-          "iron": 11,
+          "iron": 7,
           "spice": 1969,
           "stone": 196,
-          "timber": 42
+          "timber": 16
         },
         "georgia_kingdom": {
           "cloth": 72,
@@ -82249,7 +82249,7 @@
         "usfurid_emirate": {
           "cloth": 12,
           "stone": 406,
-          "timber": 105
+          "timber": 119
         },
         "wallachia_prince": {
           "cloth": 130
@@ -88346,7 +88346,7 @@
         "NavalMissionKind": "overseas_relief",
         "NavalTargetRegionID": "crete",
         "NavalFleetCount": 8,
-        "NavalDockedFleetCount": 2,
+        "NavalDockedFleetCount": 1,
         "BlockReasons": [
           "deniz görevi için nakliye kapasitesi eksik",
           "donanmanın bir kısmı limanda; ilk hareket denize çıkış"

@@ -11,6 +11,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `harbour_main.png` ile çiziliyor; diğer port marker'ları `harbour.png` kullanıyor
   (`internal/render/renderer.go`, `internal/state/merchant_trade.go`).
 
+- 2026-09-20: Merchant rota deniz endpoint'i artık seçilmiş ana port bölgesinin
+  rastgele/karşı kıyı komşu denizini değil, seçilmiş `SettlementPort` yönündeki
+  komşu denizi kullanıyor. Atina-Pire için endpoint `cretan_sea` olarak doğrulandı
+  (`internal/state/merchant_trade.go`, `internal/state/merchant_trade_test.go`).
+
 - 2026-09-20: Merchant rota endpoint'i artık görsel ve lojistikte ayrı
   seçilmiyor. Tüm tüketiciler başkent bölgesindeki limanı, başkentte liman
   yoksa başkente en yakın denize bağlı limanı kullanıyor; başkent değişince
