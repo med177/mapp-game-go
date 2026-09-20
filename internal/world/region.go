@@ -262,6 +262,21 @@ func (r *Region) BuildingLevel(buildingID string) int {
 	return level
 }
 
+// BuildingLevels, bölgedeki tamamlanmış bina seviyelerini bina ID'sine göre
+// döndürür. Aynı bina ID'sinin tekrarı seviye olarak sayılır.
+func (r *Region) BuildingLevels() map[string]int {
+	levels := make(map[string]int)
+	if r == nil || r.IsSea {
+		return levels
+	}
+	for _, buildingID := range r.Buildings {
+		if buildingID != "" {
+			levels[buildingID]++
+		}
+	}
+	return levels
+}
+
 func (r *Region) HasFortressSettlement() bool {
 	if r == nil || r.IsSea {
 		return false

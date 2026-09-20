@@ -69,13 +69,13 @@ func aiScoreRecruitRegionCandidate(gs *state.GameState, fid faction.FactionID, u
 	if region == nil || region.IsSea || region.IsLocked || region.OwnerID != string(fid) {
 		return aiRecruitRegionCandidate{}, false
 	}
-	requiredBuilding := unitType.RequiredBldg
+	requiredBuilding := unitType.PrimaryBuildingID()
 	if requiredBuilding == "" {
 		requiredBuilding = "barracks"
 	}
-	requiredLevel := maxInt(1, unitType.RequiredBldgLevel)
+	requiredLevel := maxInt(1, unitType.PrimaryBuildingLevel())
 	buildingLevel := aiBuildingLevel(region, requiredBuilding)
-	if buildingLevel < requiredLevel || !aiCanQueueLandUnit(gs, fid, region.ID, unitType) {
+	if buildingLevel < requiredLevel || !aiUnitBuildingRequirementsMet(region, unitType) || !aiCanQueueLandUnit(gs, fid, region.ID, unitType) {
 		return aiRecruitRegionCandidate{}, false
 	}
 	remainingCapacity := aiLaneRemainingCapacity(gs, region.ID, fid, unitType)

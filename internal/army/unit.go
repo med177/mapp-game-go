@@ -17,6 +17,13 @@ type UnitTier int
 
 const MaxUnitHP = 100
 
+// BuildingRequirement birimin üretilebilmesi için gereken bina seviyesini
+// tanımlar. Listedeki tüm gereksinimler birlikte sağlanmalıdır.
+type BuildingRequirement struct {
+	ID    string `json:"id"`
+	Level int    `json:"level"`
+}
+
 // UnitType bir birim türünü tanımlar (JSON'dan yüklenir).
 type UnitType struct {
 	ID       string       `json:"id"`
@@ -60,13 +67,60 @@ type UnitType struct {
 	TurnsRequired       int `json:"turns_required"`
 
 	// Gereksinimler
-	RequiredTech      []string `json:"required_tech"`       // tüm listedeki teknolojiler gerekir
-	RequiredBldg      string   `json:"required_bldg"`       // gerekli bina ID
-	RequiredBldgLevel int      `json:"required_bldg_level"` // 0/1 = Lv1, 2 = Lv2 ...
+	RequiredTech      []string              `json:"required_tech"` // tüm listedeki teknolojiler gerekir
+	RequiredBuildings []BuildingRequirement `json:"required_buildings"`
 
 	// Denizde taşınabilir mi?
 	Embarkable    bool `json:"embarkable"`
 	CarryCapacity int  `json:"carry_capacity,omitempty"`
+}
+
+// BuildingRequirements, birimin tüm bina şartlarını döndürür.
+func (t *UnitType) BuildingRequirements() []BuildingRequirement {
+	if t == nil {
+		return nil
+	}
+	result := make([]BuildingRequirement, 0, len(t.RequiredBuildings))
+	for _, requirement := range t.RequiredBuildings {
+		if requirement.ID == "" {
+			continue
+		}
+		if requirement.Level <= 0 {
+			requirement.Level = 1
+		}
+		result = append(result, requirement)
+	}
+	return result
+}
+
+// PrimaryBuildingID, üretim hattını belirleyen ilk bina gereksinimini döndürür.
+func (t *UnitType) PrimaryBuildingID() string {
+	requirements := t.BuildingRequirements()
+	if len(requirements) == 0 {
+		return ""
+	}
+	return requirements[0].ID
+}
+
+// PrimaryBuildingLevel, üretim hattının ana binası için gereken seviyeyi döndürür.
+func (t *UnitType) PrimaryBuildingLevel() int {
+	requirements := t.BuildingRequirements()
+	if len(requirements) == 0 {
+		return 0
+	}
+	return requirements[0].Level
+}
+
+// HasBuildingRequirements, birimin tüm bina şartlarının sağlanıp
+// sağlanmadığını bildirir. buildingLevels bina ID'sini tamamlanmış seviyeye
+// eşler.
+func (t *UnitType) HasBuildingRequirements(buildingLevels map[string]int) bool {
+	for _, requirement := range t.BuildingRequirements() {
+		if buildingLevels[requirement.ID] < requirement.Level {
+			return false
+		}
+	}
+	return true
 }
 
 // RequiresTech birim tanımının belirli bir teknolojiyi istediğini bildirir.

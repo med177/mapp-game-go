@@ -4117,23 +4117,21 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		return
 	}
 
-	// Bina seviyesi kontrolü (aynı ID'nin tekrar sayısı = seviye)
-	requiredLevel := utype.RequiredBldgLevel
-	if utype.RequiredBldg != "" && requiredLevel <= 0 {
-		requiredLevel = 1
-	}
-	bldgLevel := 0
-	for _, bid := range region.Buildings {
-		if bid == utype.RequiredBldg {
-			bldgLevel++
+	// Bina gereksinimleri AND semantiğiyle kontrol edilir.
+	buildingLevels := region.BuildingLevels()
+	if !utype.HasBuildingRequirements(buildingLevels) {
+		missing := make([]string, 0)
+		for _, requirement := range utype.BuildingRequirements() {
+			if buildingLevels[requirement.ID] >= requirement.Level {
+				continue
+			}
+			name := requirement.ID
+			if b, ok2 := g.gs.BuildingTypes[requirement.ID]; ok2 {
+				name = b.NameTR
+			}
+			missing = append(missing, fmt.Sprintf("%s Lv%d (mevcut: Lv%d)", name, requirement.Level, buildingLevels[requirement.ID]))
 		}
-	}
-	if utype.RequiredBldg != "" && bldgLevel < requiredLevel {
-		bldgName := utype.RequiredBldg
-		if b, ok2 := g.gs.BuildingTypes[bldgName]; ok2 {
-			bldgName = b.NameTR
-		}
-		g.renderer.ShowCombatResult(fmt.Sprintf("Bu birlik için %s Lv%d gerekli! (mevcut: Lv%d)", bldgName, requiredLevel, bldgLevel))
+		g.renderer.ShowCombatResult("Bu birlik için gerekli binalar eksik: " + strings.Join(missing, ", "))
 		return
 	}
 
@@ -4159,7 +4157,7 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 	}
 
 	// Deniz birimi — tamamlandığında komşu deniz bölgesine yerleşir.
-	if utype.RequiredBldg == "port" {
+	if utype.PrimaryBuildingID() == "port" {
 		if !region.IsCoastal(g.gs.Regions) {
 			g.renderer.ShowCombatResult("Bu bölge kıyıda değil!")
 			return
@@ -4365,7 +4363,7 @@ func (g *Game) regionUnitProductionCapacity(region *world.Region, unitTypeID str
 
 func (g *Game) productionCapacityLane(unitTypeID string) string {
 	if g != nil && g.gs != nil {
-		if utype := g.gs.UnitTypes[unitTypeID]; utype != nil && utype.RequiredBldg == "port" {
+		if utype := g.gs.UnitTypes[unitTypeID]; utype != nil && utype.PrimaryBuildingID() == "port" {
 			return "port"
 		}
 	}

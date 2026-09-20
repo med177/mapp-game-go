@@ -624,30 +624,20 @@ func unitRequirementLines(gs *state.GameState, rid world.RegionID, utype *army.U
 	lines := make([]tooltipLine, 0, 2)
 	missing := false
 
-	if utype.RequiredBldg != "" {
-		requiredLevel := utype.RequiredBldgLevel
-		if requiredLevel <= 0 {
-			requiredLevel = 1
-		}
-		currentLevel := 0
-		name := utype.RequiredBldg
-		if b := gs.BuildingTypes[utype.RequiredBldg]; b != nil {
+	buildingLevels := region.BuildingLevels()
+	for _, requirement := range utype.BuildingRequirements() {
+		currentLevel := buildingLevels[requirement.ID]
+		name := requirement.ID
+		if b := gs.BuildingTypes[requirement.ID]; b != nil {
 			name = b.NameTR
 		}
-		if region != nil {
-			for _, bid := range region.Buildings {
-				if bid == utype.RequiredBldg {
-					currentLevel++
-				}
-			}
-		}
 		col := color.RGBA{170, 145, 90, 230}
-		if currentLevel < requiredLevel {
+		if currentLevel < requirement.Level {
 			col = ColorRed
 			missing = true
 		}
 		lines = append(lines, tooltipLine{
-			text: fmt.Sprintf("%s Lv%d gerekli (mevcut: Lv%d)", name, requiredLevel, currentLevel),
+			text: fmt.Sprintf("%s Lv%d gerekli (mevcut: Lv%d)", name, requirement.Level, currentLevel),
 			col:  col,
 		})
 	}

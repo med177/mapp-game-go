@@ -480,7 +480,9 @@ Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temel
   "category": "infantry",
   "tier": 1,
   "required_tech": [],
-  "required_bldg": "barracks",
+  "required_buildings": [
+    { "id": "barracks", "level": 1 }
+  ],
   "embarkable": true
 }
 ```
@@ -488,6 +490,8 @@ Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temel
 `turns_required` üretim kuyruğunda kaç tur sonra birimin ordu/filoya ekleneceğini belirler. Eksik bırakılırsa yükleyici geriye dönük uyumluluk için `1` kabul eder.
 
 `required_tech` dizisi AND semantiğine sahiptir; listedeki tüm teknoloji ID'leri tamamlanmadan birim üretilemez. Teknoloji zincirinin ara adımları da açıkça yazılır (ör. top için `gunpowder` ve `cast_bronze_cannon`).
+
+`required_buildings` dizisi de AND semantiğine sahiptir. Her kayıt bina ID'sini ve gereken seviyeyi taşır; liste boşsa bina şartı yoktur.
 
 `carry_capacity` sadece `category = "naval_trans"` birimlerinde kullanılır. Her nakliye gemisinin aynı anda taşıyabildiği kara birimi slot sayısını belirtir. Filo toplam kapasitesi, filodaki tüm nakliye gemilerinin `carry_capacity` toplamıdır; ancak mevcut oyun kuralı gereği toplam taşınan kara birimi sayısı yine `MaxArmySize` sınırını aşmaz.
 

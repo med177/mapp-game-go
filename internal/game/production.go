@@ -403,7 +403,7 @@ func (g *Game) completeUnit(region *world.Region, ownerID faction.FactionID, uni
 	if !ok {
 		return "birim tanımı bulunamadı"
 	}
-	if utype.RequiredBldg == "port" {
+	if utype.PrimaryBuildingID() == "port" {
 		return g.completeNavalUnit(region, ownerID, unitTypeID)
 	}
 	return g.completeLandUnit(region, ownerID, unitTypeID)
@@ -569,7 +569,7 @@ func (g *Game) pendingLandUnitCount(fid faction.FactionID) int {
 		if order.Kind != productionKindUnit || order.FactionID != string(fid) {
 			continue
 		}
-		if utype, ok := g.gs.UnitTypes[order.TypeID]; ok && utype.RequiredBldg != "port" {
+		if utype, ok := g.gs.UnitTypes[order.TypeID]; ok && utype.PrimaryBuildingID() != "port" {
 			count++
 		}
 	}
@@ -593,7 +593,7 @@ func (g *Game) pendingNavalUnitCount(seaRegion world.RegionID, fid faction.Facti
 			continue
 		}
 		utype, ok := g.gs.UnitTypes[order.TypeID]
-		if !ok || utype.RequiredBldg != "port" {
+		if !ok || utype.PrimaryBuildingID() != "port" {
 			continue
 		}
 		region, ok := g.gs.Regions[order.RegionID]

@@ -664,7 +664,7 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 		return
 	}
 
-	requiredPortLevel := maxInt(1, transportType.RequiredBldgLevel)
+	requiredPortLevel := maxInt(1, transportType.PrimaryBuildingLevel())
 	currentPortLevel := aiBuildingLevel(embarkRegion, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, embarkRegion.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
@@ -740,7 +740,7 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 		return
 	}
 
-	requiredPortLevel := maxInt(1, warshipType.RequiredBldgLevel)
+	requiredPortLevel := maxInt(1, warshipType.PrimaryBuildingLevel())
 	currentPortLevel := aiBuildingLevel(embarkRegion, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, embarkRegion.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
@@ -808,7 +808,7 @@ func aiProjectedMissionFleetPower(gs *state.GameState, fid faction.FactionID, em
 			continue
 		}
 		unitType := gs.UnitTypes[order.TypeID]
-		if unitType == nil || unitType.RequiredBldg != "port" {
+		if unitType == nil || unitType.PrimaryBuildingID() != "port" {
 			continue
 		}
 		sea := aiSeaNeighbor(gs, gs.Regions[order.RegionID])

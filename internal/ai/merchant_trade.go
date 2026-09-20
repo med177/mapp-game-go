@@ -83,7 +83,7 @@ func aiMerchantTradeResourceReserve(gs *state.GameState, fid faction.FactionID) 
 	if port == nil {
 		return economy.ResourceCost{}
 	}
-	if aiBuildingLevel(port, "port")+aiQueuedBuildingCount(gs, port.ID, "port", fid) < maxInt(1, merchantType.RequiredBldgLevel) {
+	if aiBuildingLevel(port, "port")+aiQueuedBuildingCount(gs, port.ID, "port", fid) < maxInt(1, merchantType.PrimaryBuildingLevel()) {
 		level := aiBuildingLevel(port, "port") + aiQueuedBuildingCount(gs, port.ID, "port", fid) + 1
 		portCost := aiBuildingResourceCostAtLevel(portType, level)
 		return economy.ResourceCost{
@@ -274,7 +274,7 @@ func aiProduceMerchantShipIfNeeded(gs *state.GameState, fid faction.FactionID, r
 	if port == nil || sea == "" {
 		return false
 	}
-	requiredPortLevel := maxInt(1, merchantType.RequiredBldgLevel)
+	requiredPortLevel := maxInt(1, merchantType.PrimaryBuildingLevel())
 	currentPortLevel := aiBuildingLevel(port, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, port.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
@@ -339,7 +339,7 @@ func aiProduceTradeEscortIfNeeded(gs *state.GameState, fid faction.FactionID, ro
 		return false
 	}
 
-	requiredPortLevel := maxInt(1, warshipType.RequiredBldgLevel)
+	requiredPortLevel := maxInt(1, warshipType.PrimaryBuildingLevel())
 	currentPortLevel := aiBuildingLevel(threatenedPort, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, threatenedPort.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {

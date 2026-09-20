@@ -342,13 +342,13 @@ func aiFactionHasUnitBuildingLevel(gs *state.GameState, fid faction.FactionID, u
 	if gs == nil || unitType == nil {
 		return false
 	}
-	requiredBuilding := unitType.RequiredBldg
+	requiredBuilding := unitType.PrimaryBuildingID()
 	if requiredBuilding == "" {
 		requiredBuilding = "barracks"
 	}
-	requiredLevel := maxInt(1, unitType.RequiredBldgLevel)
+	requiredLevel := maxInt(1, unitType.PrimaryBuildingLevel())
 	for _, region := range aiSortedRegions(gs) {
-		if region.OwnerID == string(fid) && !region.IsSea && !region.IsLocked && aiBuildingLevel(region, requiredBuilding) >= requiredLevel {
+		if region.OwnerID == string(fid) && !region.IsSea && !region.IsLocked && aiBuildingLevel(region, requiredBuilding) >= requiredLevel && aiUnitBuildingRequirementsMet(region, unitType) {
 			return true
 		}
 	}

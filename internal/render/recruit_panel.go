@@ -435,33 +435,14 @@ func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
 	if region == nil || ff == nil {
 		return false
 	}
-	barracksLevel, portLevel := 0, 0
-	for _, bid := range region.Buildings {
-		switch bid {
-		case "barracks":
-			barracksLevel++
-		case "port":
-			portLevel++
-		}
-	}
+	buildingLevels := region.BuildingLevels()
 	for _, uid := range visibleUnitIDs(gs, region) {
 		utype := gs.UnitTypes[uid]
 		if utype == nil {
 			continue
 		}
-		requiredLevel := utype.RequiredBldgLevel
-		if utype.RequiredBldg != "" && requiredLevel <= 0 {
-			requiredLevel = 1
-		}
-		switch utype.RequiredBldg {
-		case "barracks":
-			if barracksLevel < requiredLevel {
-				continue
-			}
-		case "port":
-			if portLevel < requiredLevel {
-				continue
-			}
+		if !utype.HasBuildingRequirements(buildingLevels) {
+			continue
 		}
 		if !utype.HasAllRequiredTechs(ff.Research.Completed) {
 			continue
@@ -493,33 +474,14 @@ func recruitPanelDisabledReason(gs *state.GameState, rid world.RegionID) string 
 		return "Sıra Dolu"
 	}
 
-	barracksLevel, portLevel := 0, 0
-	for _, bid := range region.Buildings {
-		switch bid {
-		case "barracks":
-			barracksLevel++
-		case "port":
-			portLevel++
-		}
-	}
+	buildingLevels := region.BuildingLevels()
 	for _, uid := range visibleUnitIDs(gs, region) {
 		utype := gs.UnitTypes[uid]
 		if utype == nil {
 			continue
 		}
-		requiredLevel := utype.RequiredBldgLevel
-		if utype.RequiredBldg != "" && requiredLevel <= 0 {
-			requiredLevel = 1
-		}
-		switch utype.RequiredBldg {
-		case "barracks":
-			if barracksLevel < requiredLevel {
-				return "Kışla Eksik"
-			}
-		case "port":
-			if portLevel < requiredLevel {
-				return "Liman Eksik"
-			}
+		if !utype.HasBuildingRequirements(buildingLevels) {
+			return "Bina Gereksinimi Eksik"
 		}
 		if !utype.HasAllRequiredTechs(ff.Research.Completed) {
 			return "Teknoloji Eksik"
@@ -654,7 +616,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		col := i % recruitCardsPerRow
 		x := px + recruitPanelPad + float32(col)*(cardW+gap)
 		y := topY + float32(row)*(cardH+gap)
-		drawRecruitCard(screen, gs, uid, barracksLevel, portLevel, x, y, cardW, cardH)
+		drawRecruitCard(screen, gs, uid, region, x, y, cardW, cardH)
 	}
 
 	queueY := topY + metrics.topSectionH + recruitSectionGap
@@ -706,22 +668,12 @@ func recruitCardMetrics(panelW float32) (cardW, cardH, gap float32) {
 	return cardW, cardH, gap
 }
 
-func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, barracksLevel, portLevel int, sx, sy, cardW, cardH float32) {
+func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, region *world.Region, sx, sy, cardW, cardH float32) {
 	utype := gs.UnitTypes[uid]
 	if utype == nil {
 		return
 	}
-	requiredLevel := utype.RequiredBldgLevel
-	if utype.RequiredBldg != "" && requiredLevel <= 0 {
-		requiredLevel = 1
-	}
-	var needsBuilding bool
-	switch utype.RequiredBldg {
-	case "barracks":
-		needsBuilding = barracksLevel < requiredLevel
-	case "port":
-		needsBuilding = portLevel < requiredLevel
-	}
+	needsBuilding := !utype.HasBuildingRequirements(region.BuildingLevels())
 	ff := gs.Factions[gs.PlayerFactionID]
 	playerOwnerID := string(gs.PlayerFactionID)
 	needsTech := ff == nil || !utype.HasAllRequiredTechs(ff.Research.Completed)
@@ -789,7 +741,7 @@ func visibleUnitIDs(gs *state.GameState, region *world.Region) []string {
 		if utype == nil {
 			continue
 		}
-		if utype.RequiredBldg == "port" && !showNaval {
+		if utype.PrimaryBuildingID() == "port" && !showNaval {
 			continue
 		}
 		ids = append(ids, uid)
@@ -830,7 +782,7 @@ func pendingLandUnitCount(gs *state.GameState, fid faction.FactionID) int {
 		if order.Kind != "unit" || order.FactionID != string(fid) {
 			continue
 		}
-		if utype := gs.UnitTypes[order.TypeID]; utype != nil && utype.RequiredBldg != "port" {
+		if utype := gs.UnitTypes[order.TypeID]; utype != nil && utype.PrimaryBuildingID() != "port" {
 			count++
 		}
 	}
@@ -887,7 +839,7 @@ func recruitQueueItems(gs *state.GameState, rid world.RegionID) []recruitQueueIt
 }
 
 func recruitQueueLane(utype *army.UnitType) string {
-	if utype != nil && utype.RequiredBldg == "port" {
+	if utype != nil && utype.PrimaryBuildingID() == "port" {
 		return "port"
 	}
 	return "barracks"

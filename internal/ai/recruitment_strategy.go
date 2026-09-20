@@ -90,11 +90,11 @@ func aiPotentialRecruitmentRegionAfterBarracks(gs *state.GameState, fid faction.
 	if gs == nil || unitType == nil || ctx == nil {
 		return false
 	}
-	requiredBuilding := unitType.RequiredBldg
+	requiredBuilding := unitType.PrimaryBuildingID()
 	if requiredBuilding != "" && requiredBuilding != "barracks" {
 		return false
 	}
-	requiredLevel := maxInt(1, unitType.RequiredBldgLevel)
+	requiredLevel := maxInt(1, unitType.PrimaryBuildingLevel())
 	btype := gs.BuildingTypes["barracks"]
 	if btype == nil {
 		return false
@@ -106,6 +106,9 @@ func aiPotentialRecruitmentRegionAfterBarracks(gs *state.GameState, fid faction.
 		queuedBuildings := aiQueuedBuildingCount(gs, region.ID, "barracks", fid)
 		level := aiBuildingLevel(region, "barracks")
 		if level+queuedBuildings >= btype.MaxPerRegion || level+1 < requiredLevel || !aiBuildingAllowed(gs, region, "barracks", btype.RequiredTerrain) {
+			continue
+		}
+		if !aiUnitBuildingRequirementsMet(region, unitType) {
 			continue
 		}
 		if aiPendingUnitCountByRegion(gs, region.ID, fid) >= aiMaxRegionQueue || !aiCanQueueLandUnit(gs, fid, region.ID, unitType) {

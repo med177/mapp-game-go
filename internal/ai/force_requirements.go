@@ -241,11 +241,11 @@ func aiFindReserveRecruitRegion(gs *state.GameState, fid faction.FactionID, unit
 	if gs == nil || unitType == nil || fid == "" {
 		return ""
 	}
-	requiredBuilding := unitType.RequiredBldg
+	requiredBuilding := unitType.PrimaryBuildingID()
 	if requiredBuilding == "" {
 		requiredBuilding = "barracks"
 	}
-	requiredLevel := maxInt(1, unitType.RequiredBldgLevel)
+	requiredLevel := maxInt(1, unitType.PrimaryBuildingLevel())
 
 	type candidate struct {
 		region    *world.Region
@@ -254,7 +254,7 @@ func aiFindReserveRecruitRegion(gs *state.GameState, fid faction.FactionID, unit
 	}
 	var candidates []candidate
 	for _, region := range aiSortedRegions(gs) {
-		if region == nil || region.IsSea || region.IsLocked || region.OwnerID != string(fid) || aiBuildingLevel(region, requiredBuilding) < requiredLevel {
+		if region == nil || region.IsSea || region.IsLocked || region.OwnerID != string(fid) || aiBuildingLevel(region, requiredBuilding) < requiredLevel || !aiUnitBuildingRequirementsMet(region, unitType) {
 			continue
 		}
 		if !aiCanQueueLandUnit(gs, fid, region.ID, unitType) || aiPendingUnitCountByRegion(gs, region.ID, fid) >= aiMaxRegionQueue {

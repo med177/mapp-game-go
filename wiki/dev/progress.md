@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-20: Birim üretim gereksinimleri artık birden fazla bina ve seviye
+  taşıyabiliyor. `units.json` içindeki `required_buildings` listesi AND
+  semantiğiyle oyuncu üretimi, recruit tooltip'i ve AI bölge seçiminde
+  doğrulanıyor; 1300
+  senaryosunda Ağır Piyade için 2. seviye Kışla ve 2. seviye Demirhane şartı
+  eklendi (`internal/army/unit.go`, `internal/game/game.go`,
+  `internal/render/{recruit_panel.go,hover_tooltip.go}`,
+  `assets/scenarios/1300_ottoman_rise/data/units.json`).
+
 - 2026-09-20: Canonical ana ticaret portunun `port` settlement marker'ı artık
   `harbour_main.png` ile çiziliyor; diğer port marker'ları `harbour.png` kullanıyor
   (`internal/render/renderer.go`, `internal/state/merchant_trade.go`).

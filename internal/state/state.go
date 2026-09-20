@@ -3131,7 +3131,7 @@ func NavalUnitProductionLimit(region *world.Region) int {
 
 // UnitProductionLimit birim tipine göre ilgili kışla/liman üretim hattının tur limitini döner.
 func UnitProductionLimit(region *world.Region, unitType *army.UnitType) int {
-	if unitType != nil && unitType.RequiredBldg == "port" {
+	if unitType != nil && unitType.PrimaryBuildingID() == "port" {
 		return NavalUnitProductionLimit(region)
 	}
 	return LandUnitProductionLimit(region)
@@ -3203,7 +3203,7 @@ func (s *GameState) PendingNavalUnits(fid faction.FactionID) int {
 			continue
 		}
 		unitType := s.UnitTypes[order.TypeID]
-		if unitType != nil && (unitType.RequiredBldg == "port" || unitType.Category == army.CategoryNavalWar || unitType.Category == army.CategoryNavalTrans || unitType.Category == army.CategoryNavalTrade) {
+		if unitType != nil && (unitType.PrimaryBuildingID() == "port" || unitType.Category == army.CategoryNavalWar || unitType.Category == army.CategoryNavalTrans || unitType.Category == army.CategoryNavalTrade) {
 			total++
 		}
 	}

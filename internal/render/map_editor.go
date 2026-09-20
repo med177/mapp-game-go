@@ -5167,7 +5167,7 @@ func (r *Renderer) unitTypeMatchesArmy(a *army.Army, typeID string) bool {
 
 func (r *Renderer) unitTypeIsNaval(typeID string) bool {
 	utype := r.gs.UnitTypes[typeID]
-	return utype != nil && utype.RequiredBldg == "port"
+	return utype != nil && utype.PrimaryBuildingID() == "port"
 }
 
 func (r *Renderer) defaultEditUnitType(isNaval bool) string {

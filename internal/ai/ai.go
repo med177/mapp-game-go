@@ -721,7 +721,7 @@ func aiPendingLandUnitCount(gs *state.GameState, fid faction.FactionID) int {
 		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) {
 			continue
 		}
-		if utype, ok := gs.UnitTypes[order.TypeID]; ok && utype.RequiredBldg != "port" {
+		if utype, ok := gs.UnitTypes[order.TypeID]; ok && utype.PrimaryBuildingID() != "port" {
 			count++
 		}
 	}
@@ -742,7 +742,7 @@ func aiProductionLane(unitType *army.UnitType) string {
 	if unitType == nil {
 		return "barracks"
 	}
-	if unitType.RequiredBldg == "port" {
+	if unitType.PrimaryBuildingID() == "port" {
 		return "port"
 	}
 	switch unitType.Category {
@@ -793,7 +793,7 @@ func aiPendingNavalUnitCount(gs *state.GameState, seaRegion world.RegionID, fid 
 			continue
 		}
 		utype, ok := gs.UnitTypes[order.TypeID]
-		if !ok || utype.RequiredBldg != "port" {
+		if !ok || utype.PrimaryBuildingID() != "port" {
 			continue
 		}
 		region := gs.Regions[order.RegionID]
@@ -874,7 +874,7 @@ func aiEscortFrontCandidates(gs *state.GameState, fid faction.FactionID, coastal
 		if r == nil || !aiRegionHasPortBuilding(r) {
 			continue
 		}
-		if aiBuildingLevel(r, "port") < warshipType.RequiredBldgLevel {
+		if aiBuildingLevel(r, "port") < warshipType.PrimaryBuildingLevel() {
 			continue
 		}
 		seaID := aiSeaNeighbor(gs, r)
@@ -962,6 +962,13 @@ func aiBuildingLevel(region *world.Region, buildingID string) int {
 	return level
 }
 
+func aiUnitBuildingRequirementsMet(region *world.Region, unitType *army.UnitType) bool {
+	if region == nil || unitType == nil {
+		return false
+	}
+	return unitType.HasBuildingRequirements(region.BuildingLevels())
+}
+
 func aiBuildingTurnsRequired(region *world.Region, buildingID string, baseTurns, queued int) int {
 	turns := baseTurns + aiBuildingLevel(region, buildingID) + queued
 	if turns < 1 {
@@ -1004,11 +1011,11 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 	if gs == nil || utype == nil {
 		return ""
 	}
-	requiredBuilding := utype.RequiredBldg
+	requiredBuilding := utype.PrimaryBuildingID()
 	if requiredBuilding == "" {
 		requiredBuilding = "barracks"
 	}
-	requiredLevel := utype.RequiredBldgLevel
+	requiredLevel := utype.PrimaryBuildingLevel()
 	if requiredLevel <= 0 {
 		requiredLevel = 1
 	}
@@ -1019,7 +1026,7 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 		if r == nil || r.OwnerID != string(fid) || r.IsSea || r.IsLocked {
 			continue
 		}
-		if aiBuildingLevel(r, requiredBuilding) < requiredLevel {
+		if aiBuildingLevel(r, requiredBuilding) < requiredLevel || !aiUnitBuildingRequirementsMet(r, utype) {
 			continue
 		}
 		if aiPendingUnitCountByRegion(gs, r.ID, fid) >= aiMaxRegionQueue {
@@ -2542,7 +2549,7 @@ func aiProduceNavalDefenseAtThreatenedPort(gs *state.GameState, fid faction.Fact
 		return
 	}
 
-	requiredPortLevel := maxInt(1, warshipType.RequiredBldgLevel)
+	requiredPortLevel := maxInt(1, warshipType.PrimaryBuildingLevel())
 	currentPortLevel := aiBuildingLevel(threatenedPort, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, threatenedPort.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {

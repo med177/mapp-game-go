@@ -27,7 +27,7 @@ func aiProduceNavalReserve(gs *state.GameState, fid faction.FactionID, budget *a
 		return // research strategy receives the same reserve shortfall signal.
 	}
 
-	requiredPortLevel := maxInt(1, warshipType.RequiredBldgLevel)
+	requiredPortLevel := maxInt(1, warshipType.PrimaryBuildingLevel())
 	if productionRegion, seaRegion := aiFindWarshipReserveProductionPort(gs, fid, warshipType); productionRegion != nil {
 		for aiWarshipReserveShortfall(gs, fid, ctx) > 0 {
 			if !aiCanQueueNavalUnit(gs, fid) || aiPendingUnitCountByRegion(gs, productionRegion.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, productionRegion.ID, fid, warshipType) <= 0 || !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
@@ -73,7 +73,7 @@ func aiFindWarshipReserveProductionPort(gs *state.GameState, fid faction.Faction
 	if gs == nil || warshipType == nil {
 		return nil, ""
 	}
-	requiredPortLevel := maxInt(1, warshipType.RequiredBldgLevel)
+	requiredPortLevel := maxInt(1, warshipType.PrimaryBuildingLevel())
 	for _, region := range aiSortedRegions(gs) {
 		if region == nil || region.IsSea || region.OwnerID != string(fid) || !region.IsCoastal(gs.Regions) || aiBuildingLevel(region, "port") < requiredPortLevel || aiPendingUnitCountByRegion(gs, region.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, region.ID, fid, warshipType) <= 0 {
 			continue
@@ -106,7 +106,7 @@ func aiNavalReserveProcurementCost(gs *state.GameState, fid faction.FactionID, c
 	if region, _ := aiFindWarshipReserveProductionPort(gs, fid, warshipType); region != nil {
 		return aiUnitResourceCost(warshipType)
 	}
-	requiredPortLevel := maxInt(1, warshipType.RequiredBldgLevel)
+	requiredPortLevel := maxInt(1, warshipType.PrimaryBuildingLevel())
 	for _, region := range aiSortedRegions(gs) {
 		if region == nil || region.IsSea || region.OwnerID != string(fid) || !region.IsCoastal(gs.Regions) {
 			continue

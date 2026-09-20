@@ -12,8 +12,7 @@
     "gold_upkeep": 5,
     "hp": 100,
     "morale": 40,
-    "required_bldg": "",
-    "required_bldg_level": 0,
+    "required_buildings": [],
     "required_tech": [ ],
     "tier": 1,
     "turns_required": 2,
@@ -38,8 +37,9 @@
     "gold_upkeep": 8,
     "hp": 100,
     "morale": 65,
-    "required_bldg": "barracks",
-    "required_bldg_level": 1,
+    "required_buildings": [
+      { "id": "barracks", "level": 1 }
+    ],
     "required_tech": [
       "iron_weapons"
     ],
@@ -66,8 +66,10 @@
     "gold_upkeep": 10,
     "hp": 100,
     "morale": 85,
-    "required_bldg": "barracks",
-    "required_bldg_level": 2,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 },
+      { "id": "forge", "level": 1 }
+    ],
     "required_tech": [
       "iron_weapons",
       "steel_blades",
@@ -96,8 +98,9 @@
     "gold_upkeep": 10,
     "hp": 100,
     "morale": 55,
-    "required_bldg": "barracks",
-    "required_bldg_level": 1,
+    "required_buildings": [
+      { "id": "barracks", "level": 1 }
+    ],
     "required_tech": [
       "horse_breeding"
     ],
@@ -124,8 +127,9 @@
     "gold_upkeep": 20,
     "hp": 100,
     "morale": 70,
-    "required_bldg": "barracks",
-    "required_bldg_level": 2,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 }
+    ],
     "required_tech": [
       "horse_breeding",
       "cavalry_tactics"
@@ -153,8 +157,9 @@
     "gold_upkeep": 25,
     "hp": 100,
     "morale": 88,
-    "required_bldg": "barracks",
-    "required_bldg_level": 3,
+    "required_buildings": [
+      { "id": "barracks", "level": 3 }
+    ],
     "required_tech": [
       "iron_weapons",
       "heavy_armor",
@@ -184,8 +189,9 @@
     "gold_upkeep": 20,
     "hp": 100,
     "morale": 30,
-    "required_bldg": "barracks",
-    "required_bldg_level": 2,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 }
+    ],
     "required_tech": [
       "iron_weapons",
       "engineering_corps"
@@ -213,8 +219,9 @@
     "gold_upkeep": 25,
     "hp": 100,
     "morale": 35,
-    "required_bldg": "barracks",
-    "required_bldg_level": 3,
+    "required_buildings": [
+      { "id": "barracks", "level": 3 }
+    ],
     "required_tech": [
       "iron_weapons",
       "steel_blades",
@@ -245,8 +252,9 @@
     "gold_upkeep": 30,
     "hp": 100,
     "morale": 40,
-    "required_bldg": "barracks",
-    "required_bldg_level": 3,
+    "required_buildings": [
+      { "id": "barracks", "level": 3 }
+    ],
     "required_tech": [
       "iron_weapons",
       "steel_blades",
@@ -280,8 +288,9 @@
     "morale": 20,
     "siege_breach_multiplier": 1.1,
     "siege_breach_max_fort_level": 6,
-    "required_bldg": "barracks",
-    "required_bldg_level": 2,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 }
+    ],
     "required_tech": [
       "engineering_corps"
     ],
@@ -309,8 +318,9 @@
     "gold_upkeep": 10,
     "hp": 100,
     "morale": 30,
-    "required_bldg": "port",
-    "required_bldg_level": 1,
+    "required_buildings": [
+      { "id": "port", "level": 1 }
+    ],
     "required_tech": [
       "navigation"
     ],
@@ -338,8 +348,9 @@
     "merchant_trade_income": 8,
     "hp": 100,
     "morale": 20,
-    "required_bldg": "port",
-    "required_bldg_level": 2,
+    "required_buildings": [
+      { "id": "port", "level": 2 }
+    ],
     "required_tech": [
       "trade_routes",
       "harbor_administration"
@@ -366,8 +377,9 @@
     "gold_upkeep": 40,
     "hp": 100,
     "morale": 60,
-    "required_bldg": "port",
-    "required_bldg_level": 3,
+    "required_buildings": [
+      { "id": "port", "level": 3 }
+    ],
     "required_tech": [
       "navigation",
       "naval_doctrine"
