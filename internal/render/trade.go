@@ -1069,7 +1069,7 @@ func buildTradeAutoExportButton(layout tradeLayout, gs *state.GameState, good ec
 	if gs != nil {
 		policy = gs.AutoExportPolicyFor(good)
 	}
-	label := "Oto. " + economy.GoodNameTR(good) + ": %" + itoa(policy.Percent)
+	label := "Oto. " + economy.GoodNameTR(good) + " İhracı: %" + itoa(policy.Percent)
 	if policy.Enabled {
 		label += " AÇIK"
 	} else {

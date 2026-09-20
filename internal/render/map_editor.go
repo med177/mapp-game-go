@@ -288,7 +288,7 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 	if region != nil && region.IsTerrainArea {
 		terrainLabel = "Bölge Tipi"
 	}
-	drawEditInspectorButton(screen, editButtonRegionTerrain, terrainLabel, canRegion && (region == nil || !region.IsTerrainArea))
+	drawEditInspectorButton(screen, editButtonRegionTerrain, terrainLabel, canRegion && !region.IsTerrainArea)
 	nameTRLabel := "Ad TR"
 	nameLabel := "Ad EN"
 	nameEnabled := canRegion
@@ -297,7 +297,7 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 		nameLabel = "Arazi Adı Yok"
 		nameEnabled = false
 	}
-	drawEditInspectorButton(screen, editButtonRegionNameTR, nameTRLabel, canRegion && (region == nil || !region.IsTerrainArea))
+	drawEditInspectorButton(screen, editButtonRegionNameTR, nameTRLabel, canRegion && !region.IsTerrainArea)
 	drawEditInspectorButton(screen, editButtonRegionName, nameLabel, nameEnabled)
 	drawEditInspectorButton(screen, editButtonRegionID, "ID", canRegion)
 	drawEditInspectorButton(screen, editButtonRegionLock, "Kilit", canRegion)

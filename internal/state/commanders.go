@@ -426,6 +426,43 @@ func (s *GameState) armyNeedsCommander(currentArmy *army.Army) bool {
 	return false
 }
 
+// CanAssignCommanderToArmy, oyuncu veya doğrudan state çağrıları için ordunun
+// filo komutanı kabul edip etmediğini bildirir. Nakliye ve tüccar gemilerinden
+// oluşan filolar savaş gücü taşımadığı için kendi filo komutanlarını almaz;
+// savaş gemisi içeren karma filolar bu kuralın dışındadır.
+func (s *GameState) CanAssignCommanderToArmy(armyID army.ArmyID) bool {
+	if s == nil || armyID == "" {
+		return false
+	}
+	currentArmy := s.Armies[armyID]
+	if currentArmy == nil {
+		return false
+	}
+	if !currentArmy.IsNaval {
+		return true
+	}
+	return s.armyNeedsCommander(currentArmy)
+}
+
+// ReleaseInvalidFleetCommanders, yeni tur çözümlemesine geçmeden önce saf
+// nakliye/tüccar filolarında kalmış eski filo komutanlarını serbest bırakır.
+// Taşınan kara komutanı EmbarkedCommander alanında tutulduğu için bu işlem
+// yalnızca filonun kendi Commander bağlantısını temizler.
+func (s *GameState) ReleaseInvalidFleetCommanders() int {
+	if s == nil {
+		return 0
+	}
+	removed := 0
+	for armyID, currentArmy := range s.Armies {
+		if currentArmy == nil || !currentArmy.IsNaval || currentArmy.Commander == nil || s.CanAssignCommanderToArmy(armyID) {
+			continue
+		}
+		currentArmy.RemoveCommander()
+		removed++
+	}
+	return removed
+}
+
 // releaseCommandersFromNonMilitaryArmies, AI'nin artık komutan gerektirmeyen
 // ticaret/nakliye filolarındaki ana komutanı havuza geri bırakır. Taşınan kara
 // ordusunun EmbarkedCommander bağlantısına dokunulmaz.
@@ -557,6 +594,9 @@ func (s *GameState) AssignCommanderToArmy(commanderID string, armyID army.ArmyID
 	currentArmy := s.Armies[armyID]
 	commander := s.Commanders[commanderID]
 	if currentArmy == nil || commander == nil || commander.OwnerID != currentArmy.OwnerID || !commander.ActiveInYear(s.Year) {
+		return false
+	}
+	if !s.CanAssignCommanderToArmy(armyID) {
 		return false
 	}
 	if commander.AssignedArmyID != "" && commander.AssignedArmyID != armyID {

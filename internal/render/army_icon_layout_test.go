@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/state"
 )
 
 func TestArmyIconGridUsesFiveColumnsAndAddsRowsBelow(t *testing.T) {
@@ -37,5 +38,49 @@ func TestCommanderMarkersUsePriorityAndWiderSpacing(t *testing.T) {
 	right, _ := armyIconGridPosition([2]float32{100, 200}, 1, 2, armyCommanderIconStep)
 	if got := right - left; got != armyCommanderIconStep {
 		t.Fatalf("komutanlı marker aralığı = %v, want %v", got, armyCommanderIconStep)
+	}
+}
+
+func TestMixedCommanderMarkersUseNarrowSpacingForNonCommanders(t *testing.T) {
+	steps := []float32{armyCommanderIconStep, armyIconStep, armyIconStep}
+	positions := make([][2]float32, len(steps))
+	for index := range steps {
+		positions[index][0], positions[index][1] = armyIconGridPositionVariable(
+			[2]float32{100, 200}, index, len(steps), func(i int) float32 { return steps[i] },
+		)
+	}
+	if got := positions[1][0] - positions[0][0]; got != armyCommanderIconStep {
+		t.Fatalf("komutanlı-komutansız marker aralığı = %v, want %v", got, armyCommanderIconStep)
+	}
+	if got := positions[2][0] - positions[1][0]; got != armyIconStep {
+		t.Fatalf("komutansız marker aralığı = %v, want %v", got, armyIconStep)
+	}
+}
+
+func TestTradeFleetMarkerZoomVisibility(t *testing.T) {
+	fleet := &army.Army{IsNaval: true, TradeRouteKey: "route"}
+	normal := &Renderer{mapMode: MapModeNormal, camScale: merchantFleetMarkerZoomScale - 0.01}
+	if normal.tradeFleetMarkerVisibleAtCurrentZoom(fleet) {
+		t.Fatal("normal haritada düşük zoom ticaret filosu marker'ını gösterdi")
+	}
+
+	normal.camScale = merchantFleetMarkerZoomScale
+	if !normal.tradeFleetMarkerVisibleAtCurrentZoom(fleet) {
+		t.Fatal("eşik zoom'da ticaret filosu marker'ı gizlendi")
+	}
+
+	tradeMap := &Renderer{mapMode: MapModeTrade, camScale: 0}
+	if !tradeMap.tradeFleetMarkerVisibleAtCurrentZoom(fleet) {
+		t.Fatal("ticaret haritasında ticaret filosu marker'ı filtrelendi")
+	}
+
+	editMode := &Renderer{mapMode: MapModeNormal, camScale: 0, gs: &state.GameState{Phase: state.PhaseEditMode}}
+	if !editMode.tradeFleetMarkerVisibleAtCurrentZoom(fleet) {
+		t.Fatal("Edit Mode'da ticaret filosu marker'ı filtrelendi")
+	}
+
+	nonTradeFleet := &army.Army{IsNaval: true}
+	if normal.tradeFleetMarkerVisibleAtCurrentZoom(nonTradeFleet) != true {
+		t.Fatal("rotasız filo marker'ı düşük zoom'da filtrelendi")
 	}
 }

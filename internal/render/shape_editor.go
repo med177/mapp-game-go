@@ -1156,13 +1156,14 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 	}
 	wx, wy := r.screenToWorld(float64(mx), float64(my))
 	var cursorWX, cursorWY float64
-	if r.editShapeTool == editShapeToolTerrainArea {
+	switch r.editShapeTool {
+	case editShapeToolTerrainArea:
 		cellX, cellY := regionPaintCellFromWorld(wx, wy)
 		cursorWX, cursorWY = regionPaintCellCenterWorld(cellX, cellY)
-	} else if r.editShapeTool == editShapeToolShape {
+	case editShapeToolShape:
 		cellX, cellY := shapePaintCellFromWorld(wx, wy)
 		cursorWX, cursorWY = shapePaintCellCenterWorld(cellX, cellY)
-	} else {
+	default:
 		cellX, cellY := regionPaintCellFromWorld(wx, wy)
 		cursorWX, cursorWY = regionPaintCellCenterWorld(cellX, cellY)
 	}
@@ -1291,11 +1292,9 @@ func (r *Renderer) finishTerrainAreaPolygon() {
 		r.syncSelectedTerrainArea(terrainRegionID)
 		r.editInspectorTab = editInspectorTerrainArea
 	}
-	if before != nil {
-		pendingBefore := *before
-		r.editShapePendingBefore = &pendingBefore
-		r.editShapePaintPending = true
-	}
+	pendingBefore := *before
+	r.editShapePendingBefore = &pendingBefore
+	r.editShapePaintPending = true
 }
 
 func (r *Renderer) terrainAreaParentsForPolygon(polygon [][2]int) map[world.RegionID]struct{} {

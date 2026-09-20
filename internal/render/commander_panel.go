@@ -443,19 +443,24 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 	drawPanelBorder(screen, float32(panel.X), float32(panel.Y), float32(panel.W), float32(panel.H))
 	vector.FillRect(screen, float32(panel.X), float32(panel.Y), float32(panel.W), 3, panelBorder, false)
 
+	canAssign := r.gs.CanAssignCommanderToArmy(current.ID)
 	title := "Komutan Atama"
 	subtitle := "Komutan seçerek seçili orduya ata."
+	if !canAssign {
+		subtitle = "Bu filo yalnız nakliye ve tüccar gemilerinden oluşuyor; filo komutanı atanamaz."
+	}
 	DrawText(screen, title, panel.X+24, panel.Y+20, FaceLarge, ColorYellow)
 	DrawText(screen, subtitle, panel.X+24, panel.Y+48, FaceSmall, ColorGray)
 	drawUIButtonWidget(screen, commanderPanelCloseButton(), tinyButtonStyle)
 	drawUIButtonWidget(screen, commanderPanelRecruitButton(r.gs), applyTinyButtonStyle)
 
 	vector.StrokeLine(screen, float32(panel.X+commanderPanelListW+48), float32(panel.Y+84), float32(panel.X+commanderPanelListW+48), float32(panel.Y+panel.H-24), 1, panelBorder, false)
-	DrawText(screen, "Boştaki Komutanlar — seçim için tıkla", panel.X+24, panel.Y+82, FaceMed, ColorGold)
 	available := r.gs.AvailableCommanders(current.OwnerID)
 	viewport := commanderPanelListViewport(r.gs, current.ID)
 	r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll, len(available), viewport)
-	if len(available) == 0 {
+	if !canAssign {
+		DrawText(screen, "Filo komutanı atanamaz.", panel.X+24, panel.Y+82, FaceMed, ColorGold)
+	} else if len(available) == 0 {
 		DrawText(screen, "Boşta komutan yok.", panel.X+24, panel.Y+122, FaceSmall, ColorGray)
 	} else {
 		left := int(viewport.X)
@@ -755,6 +760,9 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 	if btn, ok := commanderPanelUnassignEmbarkedButton(r.gs, current.ID); ok && btn.HitTest(fx, fy) && leftJustPressed {
 		return InputAction{Kind: ActionUnassignEmbarkedCommander, ArmyID: current.ID}
 	}
+	if !r.gs.CanAssignCommanderToArmy(current.ID) {
+		return InputAction{}
+	}
 	available := r.gs.AvailableCommanders(current.OwnerID)
 	viewport := commanderPanelListViewport(r.gs, current.ID)
 	if _, wheelY := ebiten.Wheel(); wheelY != 0 && viewport.Hit(fx, fy) {
@@ -884,6 +892,9 @@ func (r *Renderer) commanderPanelHovering(fx, fy float64) bool {
 	}
 	if btn, ok := commanderPanelUnassignEmbarkedButton(r.gs, current.ID); ok && btn.HitTest(fx, fy) {
 		return true
+	}
+	if !r.gs.CanAssignCommanderToArmy(current.ID) {
+		return false
 	}
 	available := r.gs.AvailableCommanders(current.OwnerID)
 	viewport := commanderPanelListViewport(r.gs, current.ID)

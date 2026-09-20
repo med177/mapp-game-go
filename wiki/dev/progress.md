@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-20: Normal haritada ticaret rotasına atanmış filo marker'ları `1.25`
+  zoom eşiğinin altında gizleniyor; çizim, seçim ve hit-test aynı ortak marker
+  pozisyon listesini kullanıyor. Ticaret Haritası görünümündeki rota/filo
+  overlay'i bu filtreden etkilenmiyor (`internal/render/renderer.go`,
+  `internal/render/army_icon_layout_test.go`).
+
 - 2026-09-20: Otomatik ihracat mal bazlı politikalara genişletildi. Pazar filtresindeki
   seçili mal düğmesi `%0`–`%100` oranını döndürüyor; ekonomi tick'i tahılda ambar
   kapasitesini, diğer mallarda minimum 20 ve iki tur üretim rezervini koruyup yalnız
@@ -16,8 +22,21 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-09-20: Harita üzerindeki komutanlı ordu/filo marker'ları grup içinde ilk
   satıra alındı. Portrelerin komşu marker'lara yapışmaması için komutanlı
-  gruplarda ikon adımı 40 px'e çıkarıldı; çizim ve hit-test ortak pozisyon
-  kaynağını kullanmaya devam ediyor (`internal/render/renderer.go`).
+  marker komşuluğunda 40 px, komutansız marker'lar arasında 32 px aralık
+  kullanılıyor; çizim ve hit-test ortak pozisyon kaynağını kullanmaya devam
+  ediyor (`internal/render/renderer.go`).
+
+- 2026-09-20: Oyuncu komutan ataması state katmanında da askerî filo kuralına
+  bağlandı. Yalnız nakliye veya tüccar gemilerinden oluşan filolar komutan
+  kabul etmiyor; savaş gemisi içeren karma filolar atama almaya devam ediyor.
+  Komutan paneli saf sivil filolarda atama listesini gizleyip nedeni gösteriyor.
+  Regression: `TestAssignCommanderToArmyRejectsNonMilitaryFleets`; doğrulama:
+  `go test ./internal/state ./internal/render -count=1`.
+
+- 2026-09-20: Tur bitişinden önce geçersiz eski filo komutanları temizleniyor.
+  Yalnız nakliye/tüccar filolarının `Commander` bağlantısı kaldırılıyor;
+  savaş gemisi içeren filolar ve taşınan kara komutanları korunuyor. Regression:
+  `TestReleaseInvalidFleetCommandersRemovesOnlyCivilianFleetCommanders`.
 
 - 2026-09-20: Harita filo/ordu marker'ları beş sütunlu çok satırlı düzene geçirildi.
   Aynı aktif ticaret rotasının hedef denizine ulaşan merchant filoları ortak state

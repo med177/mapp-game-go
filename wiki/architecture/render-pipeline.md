@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-09-17
+last_updated: 2026-09-20
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -206,8 +206,11 @@ Hacmi sıfır olan merkez bağlantıları ince sürekli gri çizgi, aktif akış
 parlak çizgi olarak gösterilir. Ana merkez tabelası daha büyük, solda çerçeveli
 ticaret ikonu ile; ikincil merkez tabelası ise daha küçük ve düşük kontrastlıdır.
 Ticaret rotasına atanmış filo marker'ları rota ve öncelik rozetlerini korur;
-ticaret haritasında komutan portresi çizilmez, normal harita görünümünde ise
-aynı filonun portresi görünmeye devam eder.
+ticaret haritasında komutan portresi çizilmez. Normal haritada bu filoların
+marker'ları `camScale >= 1.25` olduğunda gösterilir; daha uzak zoom'da ortak
+`armyIconPositions()` çıktısından çıkarıldıkları için çizim, seçim ve hit-test
+birlikte gizlenir (`internal/render/renderer.go`). Ticaret haritası bu filtreyi
+uygulamaz.
 
 `Yeni Rota` aday kartı, iki tarafın `kullanılan/toplam` rota kapasitesini ve
 aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Partner

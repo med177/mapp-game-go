@@ -52,6 +52,7 @@ const (
 	maxCameraZoomScale           = 10
 	settlementMediumZoomScale    = 1.25
 	settlementCloseZoomScale     = 1.8
+	merchantFleetMarkerZoomScale = settlementMediumZoomScale
 	activeEventIconSize          = float32(22)
 	activeEventIconSpacingY      = float32(24)
 	activeEventIconLiftY         = float32(48)
@@ -2476,17 +2477,51 @@ const (
 // dizer. Beşinci ikondan sonra yeni satır aşağıya açılır; son satır, grubun
 // anchor'ına göre yatayda ortalanır.
 func armyIconGridPosition(base [2]float32, index, count int, step float32) (float32, float32) {
+	return armyIconGridPositionVariable(base, index, count, func(int) float32 {
+		return step
+	})
+}
+
+// armyIconGridPositionVariable, aynı grid içinde marker türüne göre yatay ve
+// satırlar arası adımı değiştirir. Komutanlı marker komşuluğunda 40 px, iki
+// komutansız marker arasında normal 32 px kullanılır; son satır yine anchor'a
+// göre ortalanır.
+func armyIconGridPositionVariable(base [2]float32, index, count int, stepForIndex func(int) float32) (float32, float32) {
 	if count <= 0 || index < 0 || index >= count {
 		return base[0], base[1]
 	}
-	column := index % armyIconGridColumns
-	row := index / armyIconGridColumns
-	columns := count - row*armyIconGridColumns
-	if columns > armyIconGridColumns {
-		columns = armyIconGridColumns
+	if stepForIndex == nil {
+		stepForIndex = func(int) float32 { return armyIconStep }
 	}
-	startX := base[0] - float32(columns-1)*step/2
-	return startX + float32(column)*step, base[1] + float32(row)*step
+	row := index / armyIconGridColumns
+	rowStart := row * armyIconGridColumns
+	rowEnd := rowStart + armyIconGridColumns
+	if rowEnd > count {
+		rowEnd = count
+	}
+	rowWidth := float32(0)
+	for i := rowStart + 1; i < rowEnd; i++ {
+		rowWidth += maxFloat32(stepForIndex(i-1), stepForIndex(i))
+	}
+	startX := base[0] - rowWidth/2
+	x := startX
+	for i := rowStart + 1; i <= index; i++ {
+		x += maxFloat32(stepForIndex(i-1), stepForIndex(i))
+	}
+
+	y := base[1]
+	for currentRow := 1; currentRow <= row; currentRow++ {
+		previousLast := currentRow*armyIconGridColumns - 1
+		if previousLast >= count {
+			previousLast = count - 1
+		}
+		currentFirst := currentRow * armyIconGridColumns
+		if currentFirst >= count {
+			break
+		}
+		y += maxFloat32(stepForIndex(previousLast), stepForIndex(currentFirst))
+	}
+	return x, y
 }
 
 func (r *Renderer) regionScreenPos(region *world.Region) (float64, float64) {
@@ -2520,6 +2555,9 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 	byGroup := map[armyDisplayGroupKey][]army.ArmyID{}
 	groupBase := map[armyDisplayGroupKey][2]float32{}
 	for aid, a := range r.gs.Armies {
+		if !r.tradeFleetMarkerVisibleAtCurrentZoom(a) {
+			continue
+		}
 		if r.gs.ArmyHiddenFrom(a, r.gs.PlayerFactionID) {
 			continue
 		}
@@ -2545,12 +2583,7 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 				break
 			}
 		}
-		if r.armyGroupHasCommander(aids) {
-			// Komutan portresi 32 px olduğundan, komutanlı ilk satırın
-			// portreleri komşu marker'lara yapışmamalı; aynı adım satır
-			// yüksekliğine de uygulandığı için alt satıra taşmaz.
-			iconStep = armyCommanderIconStep
-		} else if allNaval {
+		if allNaval {
 			iconStep = navalIconStep
 		} else {
 			iconStep = r.armyIconStepForTaskStatus(aids, iconStep)
@@ -2583,8 +2616,17 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 			return order[aids[i]] > order[aids[j]]
 		})
 
+		commanderByIndex := make([]bool, len(aids))
 		for i, aid := range aids {
-			x, y := armyIconGridPosition(base, i, len(aids), iconStep)
+			commanderByIndex[i] = armyHasDisplayedCommander(r.gs.Armies[aid])
+		}
+		for i, aid := range aids {
+			x, y := armyIconGridPositionVariable(base, i, len(aids), func(index int) float32 {
+				if commanderByIndex[index] {
+					return armyCommanderIconStep
+				}
+				return iconStep
+			})
 			r.armyIconBuf = append(r.armyIconBuf, armyIconPos{
 				ArmyID: aid,
 				X:      x,
@@ -2653,21 +2695,24 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 	return r.armyIconBuf
 }
 
+// tradeFleetMarkerVisibleAtCurrentZoom, normal haritada ticaret rotasına
+// atanmış filoları orta zoom seviyesine kadar gizler. Ticaret haritası rota
+// koridorlarını ve bağlı filoları kendi overlay katmanında gösterdiği için bu
+// filtre orada uygulanmaz. Aynı karar armyIconPositions üzerinden çizim ve
+// hit-test tarafından paylaşılır.
+func (r *Renderer) tradeFleetMarkerVisibleAtCurrentZoom(a *army.Army) bool {
+	if a == nil || !a.IsNaval || a.TradeRouteKey == "" {
+		return true
+	}
+	if r == nil || r.mapMode == MapModeTrade || (r.gs != nil && r.gs.Phase == state.PhaseEditMode) {
+		return true
+	}
+	return r.camScale >= merchantFleetMarkerZoomScale
+}
+
 func armyHasDisplayedCommander(a *army.Army) bool {
 	commander, _ := armyPanelDisplayedCommander(a)
 	return commander != nil
-}
-
-func (r *Renderer) armyGroupHasCommander(aids []army.ArmyID) bool {
-	if r == nil || r.gs == nil {
-		return false
-	}
-	for _, aid := range aids {
-		if armyHasDisplayedCommander(r.gs.Armies[aid]) {
-			return true
-		}
-	}
-	return false
 }
 
 // armyGroupOrder, bir grubun mevcut üyelerinin sırasını korur ve yeni gelen

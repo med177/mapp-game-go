@@ -328,12 +328,14 @@ func (g *Game) Update() error {
 			// Eski kayıtlarda aynı rotanın hedef denizinde ayrı kalan merchant
 			// filolarını tur ilerlemeden düzelt. Böylece autosave de birleşmiş
 			// filo durumunu taşır.
+			g.gs.ReleaseInvalidFleetCommanders()
 			g.gs.MergeMerchantTradeFleets()
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
 			g.startAITurnSequence()
 		case render.ActionConfirmEndTurn:
+			g.gs.ReleaseInvalidFleetCommanders()
 			g.gs.MergeMerchantTradeFleets()
 			if !g.saveToSlot("autosave", false, "") {
 				break

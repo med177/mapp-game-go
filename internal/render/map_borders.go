@@ -642,5 +642,4 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(-marginX, -marginY)
 	screen.DrawImage(r.mapBorderCache.image, op)
-	return
 }
