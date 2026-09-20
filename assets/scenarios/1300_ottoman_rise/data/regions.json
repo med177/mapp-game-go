@@ -1909,7 +1909,7 @@
     "owner_id": "venice",
     "successor_faction_id": "venice",
     "neighbors": [
-      "adriatic_sea_dalmatia",
+      "adriatic_sea_venice",
       "area::area__10",
       "ferrara",
       "slovenia",
@@ -2005,8 +2005,8 @@
     "owner_id": "papal_states_f",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
-      "adriatic_sea",
-      "adriatic_sea_dalmatia",
+      "adriatic_sea_ragusa",
+      "adriatic_sea_venice",
       "apulia",
       "area::area__28",
       "area::area__31::abruzzo",
@@ -2053,7 +2053,7 @@
     "successor_faction_id": "papal_states_f",
     "neighbors": [
       "abruzzo",
-      "adriatic_sea_dalmatia",
+      "adriatic_sea_venice",
       "area::area__32",
       "area::area__33::marche",
       "area::area__34",
@@ -2141,7 +2141,6 @@
     "owner_id": "naples_kingdom",
     "successor_faction_id": "naples_kingdom",
     "neighbors": [
-      "adriatic_sea_shore",
       "apulia",
       "area::area__29",
       "campania",
@@ -4626,7 +4625,7 @@
     "owner_id": "carniola_margraviate",
     "successor_faction_id": "carniola_margraviate",
     "neighbors": [
-      "adriatic_sea_dalmatia",
+      "adriatic_sea_venice",
       "area::area__10",
       "austria",
       "croatia",
@@ -4768,7 +4767,7 @@
     "terrain": "mountain",
     "owner_id": "venice",
     "neighbors": [
-      "adriatic_sea",
+      "adriatic_sea_ragusa",
       "albania",
       "area::area__53",
       "dalmatia",
@@ -5405,14 +5404,14 @@
     "buildings": null
   },
   {
-    "id": "adriatic_sea",
+    "id": "adriatic_sea_ragusa",
     "name": "Adriatic Sea",
     "name_tr": "Adriyatik Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "abruzzo",
-      "adriatic_sea_dalmatia",
+      "adriatic_sea_venice",
       "apulia",
       "dalmatia",
       "herzegovina",
@@ -5448,7 +5447,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "adriatic_sea",
+      "adriatic_sea_ragusa",
       "adriatic_sea_shore",
       "aegean_sea_shore",
       "albania",
@@ -5457,6 +5456,7 @@
       "calabria",
       "epirus",
       "greece",
+      "ionian_sea",
       "kefalonia_island",
       "korfu",
       "montenegro",
@@ -5554,14 +5554,14 @@
     ]
   },
   {
-    "id": "adriatic_sea_dalmatia",
+    "id": "adriatic_sea_venice",
     "name": "Adriatic Sea (Dalmatia)",
     "name_tr": "Adriyatik Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "abruzzo",
-      "adriatic_sea",
+      "adriatic_sea_ragusa",
       "ferrara",
       "marche",
       "rijeka",
@@ -5601,6 +5601,7 @@
       "malta",
       "mediterranean_open_3",
       "mediterranean_open_5",
+      "otranto_strait",
       "sicily",
       "tyrrhenian_sea"
     ],
@@ -5670,10 +5671,10 @@
       "chios",
       "cretan_sea",
       "gallipoli",
+      "islands_sea",
       "izmir",
       "karesi",
       "mediterranean_open_6",
-      "mentese_hinterland",
       "midilli",
       "saruhan",
       "sea_of_marmara",
@@ -5701,6 +5702,43 @@
     "buildings": null
   },
   {
+    "id": "islands_sea",
+    "name": "Islands Sea",
+    "name_tr": "Adalar Denizi",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "aegean_sea",
+      "chios",
+      "cretan_sea",
+      "eastern_mediterranean_basin",
+      "izmir",
+      "mediterranean_open_1",
+      "mentese_hinterland",
+      "rhodes"
+    ],
+    "world_x": 1025,
+    "world_y": 509,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 2,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "chios",
     "name": "Chios",
     "name_tr": "Sakız",
@@ -5708,7 +5746,8 @@
     "owner_id": "genoa",
     "successor_faction_id": "genoa",
     "neighbors": [
-      "aegean_sea"
+      "aegean_sea",
+      "islands_sea"
     ],
     "world_x": 998,
     "world_y": 506,
@@ -5781,10 +5820,9 @@
       "eastern_mediterranean_basin",
       "egriboz",
       "greece",
+      "islands_sea",
       "libyan_sea",
-      "mediterranean_open_1",
       "mediterranean_open_6",
-      "mentese_hinterland",
       "morea_south"
     ],
     "world_x": 971,
@@ -7931,6 +7969,7 @@
     "owner_id": "hospitaller",
     "successor_faction_id": "hospitaller",
     "neighbors": [
+      "islands_sea",
       "mediterranean_open_1"
     ],
     "world_x": 1037,
@@ -8150,6 +8189,7 @@
     "neighbors": [
       "aegean_sea",
       "area::area__42",
+      "islands_sea",
       "kutahya",
       "mentese_hinterland",
       "saruhan"
@@ -8196,9 +8236,8 @@
     "owner_id": "mentese_bey",
     "successor_faction_id": "mentese_bey",
     "neighbors": [
-      "aegean_sea",
       "area::area__42",
-      "cretan_sea",
+      "islands_sea",
       "izmir",
       "mediterranean_open_1",
       "mentese"
@@ -10154,7 +10193,7 @@
     "owner_id": "papal_states_f",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
-      "adriatic_sea_dalmatia",
+      "adriatic_sea_venice",
       "area::area__27",
       "area::area__30::ferrara",
       "area::area__34",
@@ -10248,7 +10287,7 @@
     "successor_faction_id": "naples_kingdom",
     "neighbors": [
       "abruzzo",
-      "adriatic_sea",
+      "adriatic_sea_ragusa",
       "area::area__28",
       "area::area__29",
       "area::area__35::apulia",
@@ -10340,7 +10379,7 @@
     "terrain": "coast",
     "owner_id": "venice",
     "neighbors": [
-      "adriatic_sea_dalmatia",
+      "adriatic_sea_venice",
       "bosnia",
       "knin",
       "kvarner",
@@ -10383,7 +10422,7 @@
     "terrain": "coast",
     "owner_id": "venice",
     "neighbors": [
-      "adriatic_sea",
+      "adriatic_sea_ragusa",
       "bosnia",
       "dalmatia",
       "herzegovina",
@@ -10428,7 +10467,7 @@
     "owner_id": "venice",
     "successor_faction_id": "ragusa",
     "neighbors": [
-      "adriatic_sea",
+      "adriatic_sea_ragusa",
       "herzegovina",
       "knin",
       "montenegro"
@@ -10557,7 +10596,7 @@
     "terrain": "mountain",
     "owner_id": "croatian_kingdom",
     "neighbors": [
-      "adriatic_sea",
+      "adriatic_sea_ragusa",
       "bosnia",
       "dalmatia",
       "hum",
@@ -12421,10 +12460,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "cretan_sea",
       "east_mediterranean",
       "eastern_mediterranean",
       "eastern_mediterranean_basin",
+      "islands_sea",
       "levantine_sea",
       "mentese",
       "mentese_hinterland",
@@ -12463,6 +12502,7 @@
       "crete",
       "eastern_mediterranean",
       "eastern_mediterranean_shore",
+      "islands_sea",
       "mediterranean_open_1"
     ],
     "world_x": 1012,
@@ -12711,14 +12751,13 @@
     "owner_id": "",
     "neighbors": [
       "aegean_sea_shore",
-      "calabria",
       "gulf_of_sirte",
       "ionian_sea",
       "otranto_strait",
       "tyrrhenian_sea"
     ],
-    "world_x": 835,
-    "world_y": 559,
+    "world_x": 838,
+    "world_y": 563,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,

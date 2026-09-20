@@ -2292,7 +2292,7 @@
   {
     "id": "fleet_venice_guard",
     "owner_id": "venice",
-    "region_id": "adriatic_sea_dalmatia",
+    "region_id": "adriatic_sea_venice",
     "docked_region_id": "venice",
     "docked_settlement_id": "venice_chioggia",
     "is_naval": true,
@@ -2306,7 +2306,7 @@
   {
     "id": "fleet_venice_trade",
     "owner_id": "venice",
-    "region_id": "adriatic_sea_dalmatia",
+    "region_id": "adriatic_sea_venice",
     "docked_region_id": "venice",
     "docked_settlement_id": "venice_chioggia",
     "is_naval": true,

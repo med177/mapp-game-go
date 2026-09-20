@@ -53,7 +53,19 @@ func TestMerchantTradeBonusTooltipIncludesRouteNames(t *testing.T) {
 			t.Errorf("popup ayrıntısı %q içinde %q yok", detail, want)
 		}
 	}
-	if lines := strings.Split(detail, "\n"); len(lines) != 2 {
-		t.Fatalf("popup satır sayısı = %d, want 2", len(lines))
+	lines := strings.Split(detail, "\n")
+	if len(lines) != 4 {
+		t.Fatalf("popup satır sayısı = %d, want 4", len(lines))
+	}
+	wantLines := []string{
+		"Rota: Doğu Roma İmparatorluğu → Ceneviz",
+		"Mal: Tahıl",
+		"Bonus: +1 mal/tur",
+		"Gelir: +2 altın/tur",
+	}
+	for i, want := range wantLines {
+		if lines[i] != want {
+			t.Errorf("popup satır %d = %q, want %q", i+1, lines[i], want)
+		}
 	}
 }

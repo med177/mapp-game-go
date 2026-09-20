@@ -40799,13 +40799,13 @@
       "venice": {
         "is_eliminated": false,
         "capital_settlement_id": "venice",
-        "gold": 7170,
-        "grain": 8477,
-        "iron": 178,
-        "timber": 199,
-        "stone": 447,
-        "spice": 4252,
-        "cloth": 1772,
+        "gold": 6205,
+        "grain": 8295,
+        "iron": 66,
+        "timber": 10,
+        "stone": 33,
+        "spice": 4246,
+        "cloth": 1742,
         "research": {
           "completed": {
             "banking": true,
@@ -49924,8 +49924,6 @@
         "owner_id": "venice",
         "region_id": "adriatic_sea_dalmatia",
         "previous_region_id": "adriatic_sea_dalmatia",
-        "docked_region_id": "venice",
-        "docked_settlement_id": "venice_chioggia",
         "units": [
           {
             "type_id": "warship",
@@ -49948,7 +49946,7 @@
             "experience": 0
           }
         ],
-        "move_points": 3,
+        "move_points": 2,
         "max_move_points": 3,
         "is_naval": true,
         "morale": 100,
@@ -57159,7 +57157,7 @@
       "afshar_beyligi|ilkhanate": {
         "faction_a": "afshar_beyligi",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "afshar_beyligi|jelayirids": {
@@ -57676,7 +57674,7 @@
       "ahiler|ilkhanate": {
         "faction_a": "ahiler",
         "faction_b": "ilkhanate",
-        "score": 90,
+        "score": 100,
         "stance": "peace",
         "next_ai_relation_repair_turn": 18
       },
@@ -58188,7 +58186,7 @@
       "akkoyunlu_state|ilkhanate": {
         "faction_a": "akkoyunlu_state",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "akkoyunlu_state|jelayirids": {
@@ -59184,7 +59182,7 @@
       "artuklu|ilkhanate": {
         "faction_a": "artuklu",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "artuklu|jelayirids": {
@@ -60636,7 +60634,7 @@
       "aydin_bey|ilkhanate": {
         "faction_a": "aydin_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "aydin_bey|jelayirids": {
@@ -61106,7 +61104,7 @@
       "barqa_emirate|ilkhanate": {
         "faction_a": "barqa_emirate",
         "faction_b": "ilkhanate",
-        "score": 90,
+        "score": 100,
         "stance": "peace"
       },
       "barqa_emirate|jelayirids": {
@@ -64231,7 +64229,7 @@
       "candar_bey|ilkhanate": {
         "faction_a": "candar_bey",
         "faction_b": "ilkhanate",
-        "score": 89,
+        "score": 100,
         "stance": "peace",
         "next_ai_relation_repair_turn": 10
       },
@@ -64657,7 +64655,7 @@
       "canik_bey|ilkhanate": {
         "faction_a": "canik_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "canik_bey|jelayirids": {
@@ -65885,7 +65883,7 @@
       "crimean_khanate|ilkhanate": {
         "faction_a": "crimean_khanate",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "crimean_khanate|jelayirids": {
@@ -67442,7 +67440,7 @@
       "dulkadir_bey|ilkhanate": {
         "faction_a": "dulkadir_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "dulkadir_bey|jelayirids": {
@@ -68917,7 +68915,7 @@
       "eretna_state|ilkhanate": {
         "faction_a": "eretna_state",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "eretna_state|jelayirids": {
@@ -69267,7 +69265,7 @@
       "esrefoglu_bey|ilkhanate": {
         "faction_a": "esrefoglu_bey",
         "faction_b": "ilkhanate",
-        "score": 89,
+        "score": 100,
         "stance": "peace",
         "next_ai_relation_repair_turn": 14
       },
@@ -71257,7 +71255,7 @@
       "germiyan_bey|ilkhanate": {
         "faction_a": "germiyan_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "germiyan_bey|jelayirids": {
@@ -71639,7 +71637,7 @@
       "golden_horde|mentese_bey": {
         "faction_a": "golden_horde",
         "faction_b": "mentese_bey",
-        "score": 61,
+        "score": 100,
         "stance": "peace"
       },
       "golden_horde|milan_duchy": {
@@ -71869,7 +71867,7 @@
       "granada_emirate|ilkhanate": {
         "faction_a": "granada_emirate",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "granada_emirate|jelayirids": {
@@ -72164,7 +72162,7 @@
       "hafsid_sultanate|ilkhanate": {
         "faction_a": "hafsid_sultanate",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "hafsid_sultanate|jelayirids": {
@@ -72455,7 +72453,7 @@
       "hamid_bey|ilkhanate": {
         "faction_a": "hamid_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "hamid_bey|jelayirids": {
@@ -74072,13 +74070,13 @@
       "ilkhanate|jelayirids": {
         "faction_a": "ilkhanate",
         "faction_b": "jelayirids",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|kadi_burhaneddin": {
         "faction_a": "ilkhanate",
         "faction_b": "kadi_burhaneddin",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|kalmar_union": {
@@ -74090,19 +74088,19 @@
       "ilkhanate|karakoyunlu_state": {
         "faction_a": "ilkhanate",
         "faction_b": "karakoyunlu_state",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|karaman_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "karaman_bey",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|karesioglu_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "karesioglu_bey",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|leon_kingdom": {
@@ -74120,26 +74118,26 @@
       "ilkhanate|mamluk": {
         "faction_a": "ilkhanate",
         "faction_b": "mamluk",
-        "score": 46,
+        "score": 100,
         "stance": "trade",
         "next_ai_relation_repair_turn": 8
       },
       "ilkhanate|marinid_sultanate": {
         "faction_a": "ilkhanate",
         "faction_b": "marinid_sultanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|mecca_sharifate": {
         "faction_a": "ilkhanate",
         "faction_b": "mecca_sharifate",
-        "score": 90,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|mentese_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "mentese_bey",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|milan_duchy": {
@@ -74151,7 +74149,7 @@
       "ilkhanate|muzaffarids": {
         "faction_a": "ilkhanate",
         "faction_b": "muzaffarids",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|naples_kingdom": {
@@ -74181,7 +74179,7 @@
       "ilkhanate|ottoman": {
         "faction_a": "ilkhanate",
         "faction_b": "ottoman",
-        "score": 90,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|papal_states_f": {
@@ -74217,7 +74215,7 @@
       "ilkhanate|ramazan_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "ramazan_bey",
-        "score": 89,
+        "score": 100,
         "stance": "peace",
         "next_ai_relation_repair_turn": 5
       },
@@ -74237,7 +74235,7 @@
       "ilkhanate|saruhan_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "saruhan_bey",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|savoy_county": {
@@ -74267,7 +74265,7 @@
       "ilkhanate|shirvanshahs": {
         "faction_a": "ilkhanate",
         "faction_b": "shirvanshahs",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|sweden_kingdom": {
@@ -74291,7 +74289,7 @@
       "ilkhanate|timurid_empire": {
         "faction_a": "ilkhanate",
         "faction_b": "timurid_empire",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|trebizond_emp": {
@@ -74303,7 +74301,7 @@
       "ilkhanate|usfurid_emirate": {
         "faction_a": "ilkhanate",
         "faction_b": "usfurid_emirate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|venice": {
@@ -74321,7 +74319,7 @@
       "ilkhanate|zayyanid_tlemcen": {
         "faction_a": "ilkhanate",
         "faction_b": "zayyanid_tlemcen",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "jelayirids|kadi_burhaneddin": {
@@ -83573,9 +83571,69 @@
         "region_id": "norway",
         "type_id": "warship",
         "turns_left": 7
+      },
+      {
+        "id": "prod_1885",
+        "kind": "building",
+        "faction_id": "venice",
+        "region_id": "rijeka",
+        "type_id": "granary",
+        "turns_left": 7,
+        "building_level": 3
+      },
+      {
+        "id": "prod_1886",
+        "kind": "building",
+        "faction_id": "venice",
+        "region_id": "albania",
+        "type_id": "forge",
+        "turns_left": 6,
+        "building_level": 2
+      },
+      {
+        "id": "prod_1887",
+        "kind": "building",
+        "faction_id": "venice",
+        "region_id": "albania",
+        "type_id": "granary",
+        "turns_left": 7,
+        "building_level": 3
+      },
+      {
+        "id": "prod_1888",
+        "kind": "building",
+        "faction_id": "venice",
+        "region_id": "epirus",
+        "type_id": "forge",
+        "turns_left": 5,
+        "building_level": 1
+      },
+      {
+        "id": "prod_1889",
+        "kind": "unit",
+        "faction_id": "venice",
+        "region_id": "epirus",
+        "type_id": "infantry",
+        "turns_left": 4
+      },
+      {
+        "id": "prod_1891",
+        "kind": "unit",
+        "faction_id": "venice",
+        "region_id": "albania",
+        "type_id": "infantry",
+        "turns_left": 4
+      },
+      {
+        "id": "prod_1893",
+        "kind": "unit",
+        "faction_id": "venice",
+        "region_id": "venice",
+        "type_id": "infantry",
+        "turns_left": 4
       }
     ],
-    "next_production_seq": 1884,
+    "next_production_seq": 1894,
     "next_army_seq": 612,
     "next_commander_seq": 129,
     "phase": "player_turn",
@@ -87747,7 +87805,7 @@
         "NavalMissionKind": "overseas_relief",
         "NavalTargetRegionID": "crete",
         "NavalFleetCount": 7,
-        "NavalDockedFleetCount": 2,
+        "NavalDockedFleetCount": 1,
         "BlockReasons": [
           "deniz görevi için nakliye kapasitesi eksik",
           "donanmanın bir kısmı limanda; ilk hareket denize çıkış"

@@ -298,7 +298,7 @@ func merchantTradeBonusTooltipText(gs *state.GameState, fleet *army.Army) (strin
 		income = income * (economy.MaxTradeRouteBlockadePercent - route.BlockadePercent) / economy.MaxTradeRouteBlockadePercent
 	}
 	routeName := factionDisplayName(gs, route.FromFactionID) + " → " + factionDisplayName(gs, route.ToFactionID)
-	detail := "Rota: " + routeName + " • Mal: " + economy.GoodNameTR(route.Good) + "\nBonus: +" + itoa(bonus) + " mal/tur • Gelir: +" + itoa(income) + " altın/tur"
+	detail := "Rota: " + routeName + "\nMal: " + economy.GoodNameTR(route.Good) + "\nBonus: +" + itoa(bonus) + " mal/tur\nGelir: +" + itoa(income) + " altın/tur"
 	return "Ticaret rotası bonusu", detail, true
 }
 
@@ -346,12 +346,12 @@ func (r *Renderer) drawMerchantTradeBonusHoverTooltip(screen *ebiten.Image) {
 		return
 	}
 	const tooltipW = 420.0
-	const tooltipH = 100.0
+	const tooltipH = 120.0
 	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
 	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 	for i, line := range strings.Split(detail, "\n") {
-		if i >= 2 {
+		if i >= 4 {
 			break
 		}
 		drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34 + float64(i)*17, W: w - 24, H: 17}, line, ColorWhite, gameui.TextSmall, 17, 1)
