@@ -134,9 +134,6 @@ func aiNeedsBarracksForMilitaryProduction(gs *state.GameState, fid faction.Facti
 	if aiFactionBarracksCount(gs, fid) == 0 || spareManpower <= army.MaxArmySize {
 		return true
 	}
-	if gs.CurrentLandArmies(fid) >= gs.MaxLandArmies(fid) {
-		return false
-	}
 	self := gs.Factions[fid]
 	if self == nil {
 		return false

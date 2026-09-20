@@ -530,6 +530,9 @@ func (g *Game) completeLandUnit(region *world.Region, ownerID faction.FactionID,
 }
 
 func (g *Game) findRecruitableLandArmy(regionID world.RegionID, ownerID faction.FactionID) (*army.Army, bool) {
+	if g.gs.DeployedLandUnits(ownerID) >= g.gs.ManpowerCap(ownerID) {
+		return nil, false
+	}
 	armyIDs := make([]army.ArmyID, 0, len(g.gs.Armies))
 	for aid := range g.gs.Armies {
 		armyIDs = append(armyIDs, aid)
@@ -544,7 +547,10 @@ func (g *Game) findRecruitableLandArmy(regionID world.RegionID, ownerID faction.
 			return a, true
 		}
 	}
-	return nil, g.gs.CurrentLandArmies(ownerID) < g.gs.MaxLandArmies(ownerID)
+	// Yeni saha ordusu açılması ordu slotu sayısına değil, devletin toplam
+	// savaşçı kapasitesine bağlıdır. Böylece +1 ordu slotu veya mevcut ordu
+	// dağılımı üretimi, boş manpower varken gereksiz yere engellemez.
+	return nil, g.gs.DeployedLandUnits(ownerID) < g.gs.ManpowerCap(ownerID)
 }
 
 func (g *Game) queuedBuildingCount(rid world.RegionID, buildingID string) int {

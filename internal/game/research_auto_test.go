@@ -110,6 +110,41 @@ func TestAutoStartResearchIfIdleIgnoresPausedTechsWhenAnotherTechIsAvailable(t *
 	}
 }
 
+func TestFindRecruitableLandArmyUsesManpowerInsteadOfArmySlotLimit(t *testing.T) {
+	const fid = faction.FactionID("test")
+	regions := map[world.RegionID]*world.Region{
+		"home":  {ID: "home", OwnerID: string(fid)},
+		"front": {ID: "front", OwnerID: string(fid)},
+	}
+	makeArmy := func(id army.ArmyID, rid world.RegionID) *army.Army {
+		return &army.Army{
+			ID: id, OwnerID: string(fid), RegionID: rid,
+			Units: []army.Unit{{TypeID: "militia", CurrentHP: army.MaxUnitHP}},
+		}
+	}
+	gs := &state.GameState{
+		Regions: regions,
+		Armies: map[army.ArmyID]*army.Army{
+			"army-1": makeArmy("army-1", "home"),
+			"army-2": makeArmy("army-2", "front"),
+		},
+	}
+	g := &Game{gs: gs}
+
+	if _, canCreate := g.findRecruitableLandArmy("home", fid); !canCreate {
+		t.Fatalf("boş savaşçı kapasitesi varken ordu slotu sınırı üretimi engellememeli")
+	}
+
+	for _, a := range gs.Armies {
+		for len(a.Units) < gs.ManpowerCap(fid)/2 {
+			a.Units = append(a.Units, army.Unit{TypeID: "militia", CurrentHP: army.MaxUnitHP})
+		}
+	}
+	if _, canCreate := g.findRecruitableLandArmy("home", fid); canCreate {
+		t.Fatalf("maksimum savaşçı kapasitesi doluyken yeni ordu açılabilmemeli")
+	}
+}
+
 func TestCheckRegionUnlocksDoesNotUnlockTerrainAreas(t *testing.T) {
 	source := &world.Region{
 		ID:        "florence",

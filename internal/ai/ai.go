@@ -1043,14 +1043,13 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 }
 
 func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.RegionID, unitType *army.UnitType) bool {
-	pendingInRegion := aiPendingUnitCountByRegionInLane(gs, rid, fid, aiProductionLane(unitType))
-	for _, a := range aiSortedArmies(gs) {
-		if a == nil || a.RegionID != rid || a.OwnerID != string(fid) || a.IsNaval || a.IsGarrison {
-			continue
-		}
-		return len(a.Units)+pendingInRegion < army.MaxArmySize
+	if gs == nil || gs.DeployedLandUnits(fid)+aiPendingLandUnitCount(gs, fid) >= gs.ManpowerCap(fid) {
+		return false
 	}
-	return gs.CurrentLandArmies(fid) < gs.MaxLandArmies(fid)
+	// Yeni kara ordusu açılması artık MaxLandArmies ile sınırlanmaz. Bölge
+	// başına üretim hattı ve toplam savaşçı kapasitesi diğer kontrollerde
+	// ayrıca uygulanır.
+	return true
 }
 
 // aiSelectBestUnit altın ve teknoloji durumuna göre en uygun birim tipini seçer.
