@@ -1049,9 +1049,9 @@ func tradeCapacityForFaction(gs *state.GameState, fid faction.FactionID) int {
 
 func buildTradeAutoExportButton(layout tradeLayout, enabled bool) gameui.Button {
 	r := layout.autoExportRect
-	label := "Oto. İhracat: KAPALI"
+	label := "Oto. Tahıl İhracı: KAPALI"
 	if enabled {
-		label = "Oto. İhracat: AÇIK"
+		label = "Oto. Tahıl İhracı: AÇIK"
 	}
 	return gameui.NewButton(r.X, r.Y, r.W, r.H, label)
 }
