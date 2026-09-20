@@ -1023,6 +1023,15 @@ func sortedFactionsForMarket(gs *state.GameState, focusGood int, listFilter Trad
 		list = append(list, candidate{id: fid, stock: stock, supply: supply, demand: demand, price: price})
 	}
 	sort.Slice(list, func(i, j int) bool {
+		// Satanlar ve alanlar sekmeleri, seçilen mal için en yüksek
+		// gerçekleştirilebilir arz/talebi öne alır. Böylece oyuncu filtreyi
+		// değiştirdiğinde liste, işlem yapılabilecek en iyi devletleri gösterir.
+		if listFilter == TradeListSellers && list[i].supply != list[j].supply {
+			return list[i].supply > list[j].supply
+		}
+		if listFilter == TradeListBuyers && list[i].demand != list[j].demand {
+			return list[i].demand > list[j].demand
+		}
 		switch listSort {
 		case TradeSortPrice:
 			if list[i].price != list[j].price {

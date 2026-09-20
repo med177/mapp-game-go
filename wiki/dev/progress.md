@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-20: Ticaret haritasındaki merchant rota liman endpoint'i artık
+  tarafların tüm limanları arasından ID sıralı seçim yapmıyor; başkent
+  bölgesindeki limanı, başkentte liman yoksa başkente en yakın denize bağlı
+  limanı seçiyor. Görsel seçim ortak state helper'ında toplandı; başkent/mesafe
+  regresyonları eklendi
+  (`internal/state/merchant_trade.go`, `internal/state/merchant_trade_test.go`).
+
 - 2026-09-20: Normal haritada ticaret rotasına atanmış filo marker'ları `1.9`
   zoom eşiğinin altında gizleniyor; çizim, seçim ve hit-test aynı ortak marker
   pozisyon listesini kullanıyor. Ticaret Haritası görünümündeki rota/filo

@@ -332,14 +332,27 @@ func (s *GameState) MerchantTradeRouteSeaRegions(route *economy.TradeRoute) []wo
 }
 
 // MerchantTradeRoutePortPairs, anlaşmanın taraflarına ait gerçek limanlar
-// arasındaki deniz bağlantılarını döner. Limanlar yalnızca gerçek deniz
-// bölgeleriyle kıyı komşuluğu varsa aday kabul edilir.
+// arasındaki deniz bağlantılarını döner. Bu lojistik aday kümesi, mevcut
+// merchant hedef denizi ve AI üretim akışını korumak için tüm kullanılabilir
+// limanları içerir.
 func (s *GameState) MerchantTradeRoutePortPairs(route *economy.TradeRoute) []MerchantTradePortPair {
+	return s.merchantTradeRoutePortPairs(route, s.merchantTradePortEndpoints)
+}
+
+// MerchantTradeRoutePreferredPortPairs, haritadaki rota çizimi için tarafların
+// tercih edilen limanları arasındaki bağlantıları döner. Tercih sırası başkent
+// bölgesindeki kullanılabilir liman, yoksa başkente en yakın kullanılabilir
+// limandır.
+func (s *GameState) MerchantTradeRoutePreferredPortPairs(route *economy.TradeRoute) []MerchantTradePortPair {
+	return s.merchantTradeRoutePortPairs(route, s.merchantTradePreferredPortEndpoints)
+}
+
+func (s *GameState) merchantTradeRoutePortPairs(route *economy.TradeRoute, endpointFn func(string) []merchantTradePortEndpoint) []MerchantTradePortPair {
 	if s == nil || route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
 		return nil
 	}
-	fromPorts := s.merchantTradePortEndpoints(route.FromFactionID)
-	toPorts := s.merchantTradePortEndpoints(route.ToFactionID)
+	fromPorts := endpointFn(route.FromFactionID)
+	toPorts := endpointFn(route.ToFactionID)
 	if len(fromPorts) == 0 || len(toPorts) == 0 {
 		return nil
 	}
@@ -390,23 +403,99 @@ func (s *GameState) merchantTradePortEndpoints(ownerID string) []merchantTradePo
 	sort.Slice(regionIDs, func(i, j int) bool { return regionIDs[i] < regionIDs[j] })
 	for _, regionID := range regionIDs {
 		region := s.Regions[regionID]
-		if region == nil || region.OwnerID != ownerID || region.IsSea || region.IsLocked || !region.HasPort() {
+		if !s.isMerchantTradePortRegion(region, ownerID) {
 			continue
 		}
-		seaIDs := make([]world.RegionID, 0, len(region.Neighbors))
-		for _, neighborID := range region.Neighbors {
-			neighbor := s.Regions[neighborID]
-			if neighbor == nil || !neighbor.IsSea || neighbor.IsLocked {
-				continue
-			}
-			seaIDs = append(seaIDs, neighborID)
-		}
-		sort.Slice(seaIDs, func(i, j int) bool { return seaIDs[i] < seaIDs[j] })
-		for _, seaID := range seaIDs {
-			result = append(result, merchantTradePortEndpoint{regionID: regionID, seaID: seaID})
-		}
+		result = append(result, s.merchantTradePortEndpointsForRegion(region)...)
 	}
 	return result
+}
+
+func (s *GameState) merchantTradePreferredPortEndpoints(ownerID string) []merchantTradePortEndpoint {
+	if s == nil || ownerID == "" {
+		return nil
+	}
+	region := s.merchantTradePortRegion(ownerID)
+	if region == nil {
+		return nil
+	}
+	return s.merchantTradePortEndpointsForRegion(region)
+}
+
+func (s *GameState) merchantTradePortEndpointsForRegion(region *world.Region) []merchantTradePortEndpoint {
+	if s == nil || region == nil {
+		return nil
+	}
+	seaIDs := make([]world.RegionID, 0, len(region.Neighbors))
+	for _, neighborID := range region.Neighbors {
+		neighbor := s.Regions[neighborID]
+		if neighbor == nil || !neighbor.IsSea || neighbor.IsLocked {
+			continue
+		}
+		seaIDs = append(seaIDs, neighborID)
+	}
+	sort.Slice(seaIDs, func(i, j int) bool { return seaIDs[i] < seaIDs[j] })
+	result := make([]merchantTradePortEndpoint, 0, len(seaIDs))
+	for _, seaID := range seaIDs {
+		result = append(result, merchantTradePortEndpoint{regionID: region.ID, seaID: seaID})
+	}
+	return result
+}
+
+// merchantTradePortRegion, harita üzerindeki merchant rota çiziminde
+// fraksiyonu temsil edecek tek kara limanı bölgesini seçer. Başkentte
+// kullanılabilir liman varsa öncelik ondadır; aksi halde başkente
+// WorldX/WorldY karesel mesafesi en küçük liman
+// seçilir. Başkent çözümlenemeyen eski/eksik state'lerde ID sırası fallback'tir.
+func (s *GameState) merchantTradePortRegion(ownerID string) *world.Region {
+	if s == nil || ownerID == "" {
+		return nil
+	}
+
+	capital, _, _, _ := s.FactionCapital(faction.FactionID(ownerID))
+	if s.isMerchantTradePortRegion(capital, ownerID) {
+		return capital
+	}
+
+	regionIDs := make([]world.RegionID, 0, len(s.Regions))
+	for regionID := range s.Regions {
+		regionIDs = append(regionIDs, regionID)
+	}
+	sort.Slice(regionIDs, func(i, j int) bool { return regionIDs[i] < regionIDs[j] })
+
+	var best *world.Region
+	var bestDistance int64
+	for _, regionID := range regionIDs {
+		region := s.Regions[regionID]
+		if !s.isMerchantTradePortRegion(region, ownerID) {
+			continue
+		}
+
+		distance := int64(0)
+		if capital != nil {
+			dx := int64(region.WorldX - capital.WorldX)
+			dy := int64(region.WorldY - capital.WorldY)
+			distance = dx*dx + dy*dy
+		}
+		if best == nil || distance < bestDistance || (distance == bestDistance && region.ID < best.ID) {
+			best = region
+			bestDistance = distance
+		}
+	}
+	return best
+}
+
+func (s *GameState) isMerchantTradePortRegion(region *world.Region, ownerID string) bool {
+	if s == nil || region == nil || region.OwnerID != ownerID || region.IsSea || region.IsLocked || !region.HasPort() {
+		return false
+	}
+	for _, neighborID := range region.Neighbors {
+		neighbor := s.Regions[neighborID]
+		if neighbor != nil && neighbor.IsSea && !neighbor.IsLocked {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *GameState) merchantTradeSeasConnected(start, target world.RegionID) bool {

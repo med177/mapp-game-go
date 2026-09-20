@@ -5,8 +5,89 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
+
+func TestMerchantTradePortEndpointsPreferCapitalPort(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"genoa": {ID: "genoa", CapitalSettlementID: "genoa_capital"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"genoa": {
+				ID:        "genoa",
+				OwnerID:   "genoa",
+				WorldX:    0,
+				WorldY:    0,
+				Neighbors: []world.RegionID{"ligurian_sea"},
+				Settlements: []world.Settlement{
+					{ID: "genoa_capital", IsCenter: true},
+				},
+				Buildings: []string{"port"},
+			},
+			"midilli": {
+				ID:        "midilli",
+				OwnerID:   "genoa",
+				WorldX:    100,
+				WorldY:    100,
+				Neighbors: []world.RegionID{"aegean_sea"},
+				Buildings: []string{"port"},
+			},
+			"ligurian_sea": {ID: "ligurian_sea", IsSea: true},
+			"aegean_sea":   {ID: "aegean_sea", IsSea: true},
+		},
+	}
+
+	endpoints := gs.merchantTradePreferredPortEndpoints("genoa")
+	if len(endpoints) != 1 || endpoints[0].regionID != "genoa" {
+		t.Fatalf("başkent liman endpoint'leri = %+v, want genoa", endpoints)
+	}
+}
+
+func TestMerchantTradePortEndpointsChooseNearestPortToCapital(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"genoa": {ID: "genoa", CapitalSettlementID: "capital_city"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital": {
+				ID:        "capital",
+				OwnerID:   "genoa",
+				WorldX:    0,
+				WorldY:    0,
+				Neighbors: []world.RegionID{"inland"},
+				Settlements: []world.Settlement{
+					{ID: "capital_city", IsCenter: true},
+				},
+			},
+			"near_port": {
+				ID:        "near_port",
+				OwnerID:   "genoa",
+				WorldX:    3,
+				WorldY:    4,
+				Neighbors: []world.RegionID{"near_sea"},
+				Buildings: []string{"port"},
+			},
+			"far_port": {
+				ID:        "far_port",
+				OwnerID:   "genoa",
+				WorldX:    10,
+				WorldY:    0,
+				Neighbors: []world.RegionID{"far_sea"},
+				Buildings: []string{"port"},
+			},
+			"inland":   {ID: "inland"},
+			"near_sea": {ID: "near_sea", IsSea: true},
+			"far_sea":  {ID: "far_sea", IsSea: true},
+		},
+	}
+
+	endpoints := gs.merchantTradePreferredPortEndpoints("genoa")
+	if len(endpoints) != 1 || endpoints[0].regionID != "near_port" {
+		t.Fatalf("en yakın liman endpoint'leri = %+v, want near_port", endpoints)
+	}
+}
 
 func TestMerchantFleetTradeStatusesMatchesIndividualEvaluation(t *testing.T) {
 	const routeKey = "from->to"
