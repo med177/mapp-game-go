@@ -1368,6 +1368,44 @@ func curvedTradeSegmentPoints(start, end tradeOverlayPoint, key string) []tradeO
 	return points
 }
 
+func smoothTradePathSegmentPoints(points []tradeOverlayPoint, segment int) []tradeOverlayPoint {
+	if segment < 0 || segment+1 >= len(points) {
+		return nil
+	}
+	p0 := points[segment]
+	p1 := points[segment]
+	if segment > 0 {
+		p0 = points[segment-1]
+	}
+	p2 := points[segment+1]
+	p3 := p2
+	if segment+2 < len(points) {
+		p3 = points[segment+2]
+	}
+
+	// Catmull-Rom kontrol noktaları, segment uçlarından geçerken komşu
+	// deniz odaklarının dönüş yönünü de tangent olarak taşır.
+	c1 := tradeOverlayPoint{
+		x: p1.x + (p2.x-p0.x)/6,
+		y: p1.y + (p2.y-p0.y)/6,
+	}
+	c2 := tradeOverlayPoint{
+		x: p2.x - (p3.x-p1.x)/6,
+		y: p2.y - (p3.y-p1.y)/6,
+	}
+	const samples = 8
+	result := make([]tradeOverlayPoint, samples+1)
+	for i := 0; i <= samples; i++ {
+		t := float64(i) / samples
+		u := 1 - t
+		result[i] = tradeOverlayPoint{
+			x: u*u*u*p1.x + 3*u*u*t*c1.x + 3*u*t*t*c2.x + t*t*t*p2.x,
+			y: u*u*u*p1.y + 3*u*u*t*c1.y + 3*u*t*t*c2.y + t*t*t*p2.y,
+		}
+	}
+	return result
+}
+
 func (r *Renderer) tradeCenterLinkPath(from, to tradeCenterVisual, routeType world.TradeRouteType) ([]tradeOverlayPoint, []string) {
 	if r == nil || r.gs == nil || routeType != world.TradeRouteSea {
 		return nil, nil
@@ -1411,8 +1449,12 @@ func (r *Renderer) tradeCenterLinkPath(from, to tradeCenterVisual, routeType wor
 		nodes = append(nodes, node{id: "sea:" + string(regionID), point: tradeOverlayPoint{x: x, y: y}})
 	}
 	nodes = append(nodes, node{id: "center:" + string(to.id), point: tradeOverlayPoint{x: to.x, y: to.y}})
-	points := make([]tradeOverlayPoint, 0, len(nodes)*6)
-	segmentKeys := make([]string, 0, len(nodes)*6)
+	nodePoints := make([]tradeOverlayPoint, len(nodes))
+	for i := range nodes {
+		nodePoints[i] = nodes[i].point
+	}
+	points := make([]tradeOverlayPoint, 0, len(nodes)*8)
+	segmentKeys := make([]string, 0, len(nodes)*8)
 	for i := 0; i < len(nodes)-1; i++ {
 		physicalKey := "connector:" + nodes[i].id + "|" + nodes[i+1].id
 		if strings.HasPrefix(nodes[i].id, "sea:") && strings.HasPrefix(nodes[i+1].id, "sea:") {
@@ -1422,7 +1464,7 @@ func (r *Renderer) tradeCenterLinkPath(from, to tradeCenterVisual, routeType wor
 			}
 			physicalKey = "sea_segment:" + a + "|" + b
 		}
-		segmentPoints := curvedTradeSegmentPoints(nodes[i].point, nodes[i+1].point, physicalKey)
+		segmentPoints := smoothTradePathSegmentPoints(nodePoints, i)
 		if len(points) == 0 {
 			points = append(points, segmentPoints[0])
 		}

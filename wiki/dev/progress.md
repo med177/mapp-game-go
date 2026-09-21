@@ -27,6 +27,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   bekleyen pasif bağlantılar daha sık/kalın kesikli gri çiziliyor; aktif kaynak
   bağlantıları koyu yeşil kalıyor (`internal/render/trade_overlay.go`).
 
+- 2026-09-21: Deniz ticaret rotaları deniz bölgelerinin odak noktalarından geçecek
+  şekilde komşu odaklar arası cubic eğriyle çiziliyor. Komşu tangent'leri kullanan
+  yol üretimi, deniz odaklarında keskin köşeleri kaldırıyor
+  (`internal/render/trade_overlay.go`).
+
 - 2026-09-21: `sources` rotalarında mal akışı yalnız tanımlı çıkış yönünde ilerliyor;
   doğal veya türetilmiş mallar kaynak rotasına geri dönemiyor. Amerika → Atlantik
   → Avrupa gibi kaynaklar arası ileri zincir korunuyor (`internal/state/historical_trade.go`).

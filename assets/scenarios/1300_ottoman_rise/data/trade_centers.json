@@ -11,7 +11,6 @@
     {
       "region_id": "silk_road",
       "name_tr": "İpek Yolu",
-      "main_route": true,
       "links": [
         {
           "region_id": "azerbaijan",
@@ -24,6 +23,8 @@
       ],
       "world_x": 2900,
       "world_y": 720,
+      "off_map": true,
+      "main_route": true,
       "source_goods": [
         {
           "good": "cloth",
@@ -35,7 +36,6 @@
     {
       "region_id": "spice_route",
       "name_tr": "Baharat Yolu",
-      "main_route": true,
       "links": [
         {
           "region_id": "southern_persia",
@@ -52,6 +52,8 @@
       ],
       "world_x": 2900,
       "world_y": 1200,
+      "off_map": true,
+      "main_route": true,
       "source_goods": [
         {
           "good": "spice",
@@ -63,7 +65,6 @@
     {
       "region_id": "trans_saharan_route",
       "name_tr": "Sahra Altı Altın Yolu",
-      "main_route": true,
       "links": [
         {
           "region_id": "tunis",
@@ -72,6 +73,8 @@
       ],
       "world_x": 560,
       "world_y": 1410,
+      "off_map": true,
+      "main_route": true,
       "source_goods": [
         {
           "good": "gold",
@@ -83,7 +86,6 @@
     {
       "region_id": "cape_route",
       "name_tr": "Ümit Burnu / Hint Deniz Yolu",
-      "main_route": true,
       "links": [
         {
           "region_id": "portugal",
@@ -96,19 +98,9 @@
       ],
       "world_x": -100,
       "world_y": 1200,
+      "off_map": true,
       "unlock_year": 1498,
-      "source_goods": [
-        {
-          "good": "spice",
-          "amount_per_turn": 8,
-          "gold_income_per_turn": 20
-        },
-        {
-          "good": "cloth",
-          "amount_per_turn": 5,
-          "gold_income_per_turn": 12
-        }
-      ],
+      "main_route": true,
       "competition_impacts": [
         {
           "center_id": "spice_route",
@@ -120,12 +112,23 @@
           "income_percent": -15,
           "amount_percent": -15
         }
+      ],
+      "source_goods": [
+        {
+          "good": "spice",
+          "amount_per_turn": 8,
+          "gold_income_per_turn": 20
+        },
+        {
+          "good": "cloth",
+          "amount_per_turn": 5,
+          "gold_income_per_turn": 12
+        }
       ]
     },
     {
       "region_id": "north_america_route",
       "name_tr": "Kuzey Amerika Yolu",
-      "main_route": true,
       "links": [
         {
           "region_id": "atlantic_route",
@@ -134,7 +137,9 @@
       ],
       "world_x": -340,
       "world_y": 420,
+      "off_map": true,
       "unlock_year": 1500,
+      "main_route": true,
       "source_goods": [
         {
           "good": "gold",
@@ -146,7 +151,6 @@
     {
       "region_id": "south_america_route",
       "name_tr": "Güney Amerika Yolu",
-      "main_route": true,
       "links": [
         {
           "region_id": "atlantic_route",
@@ -155,7 +159,9 @@
       ],
       "world_x": -340,
       "world_y": 1020,
+      "off_map": true,
       "unlock_year": 1510,
+      "main_route": true,
       "source_goods": [
         {
           "good": "gold",
@@ -179,10 +185,192 @@
       ],
       "world_x": -100,
       "world_y": 720,
+      "off_map": true,
       "unlock_year": 1492
     }
   ],
   "centers": [
+    {
+      "region_id": "silk_road",
+      "name_tr": "İpek Yolu",
+      "links": [
+        {
+          "region_id": "azerbaijan",
+          "type": "land"
+        },
+        {
+          "region_id": "northern_persia",
+          "type": "land"
+        }
+      ],
+      "world_x": 2900,
+      "world_y": 720,
+      "off_map": true,
+      "main_route": true,
+      "source_goods": [
+        {
+          "good": "cloth",
+          "amount_per_turn": 6,
+          "gold_income_per_turn": 12
+        }
+      ]
+    },
+    {
+      "region_id": "spice_route",
+      "name_tr": "Baharat Yolu",
+      "links": [
+        {
+          "region_id": "basra",
+          "type": "sea"
+        },
+        {
+          "region_id": "hejaz",
+          "type": "sea"
+        },
+        {
+          "region_id": "southern_persia",
+          "type": "sea"
+        }
+      ],
+      "world_x": 2900,
+      "world_y": 1200,
+      "off_map": true,
+      "main_route": true,
+      "source_goods": [
+        {
+          "good": "spice",
+          "amount_per_turn": 8,
+          "gold_income_per_turn": 18
+        }
+      ]
+    },
+    {
+      "region_id": "trans_saharan_route",
+      "name_tr": "Sahra Altı Altın Yolu",
+      "links": [
+        {
+          "region_id": "tunis",
+          "type": "land"
+        }
+      ],
+      "world_x": 560,
+      "world_y": 1410,
+      "off_map": true,
+      "main_route": true,
+      "source_goods": [
+        {
+          "good": "gold",
+          "amount_per_turn": 7,
+          "gold_income_per_turn": 16
+        }
+      ]
+    },
+    {
+      "region_id": "cape_route",
+      "name_tr": "Ümit Burnu / Hint Deniz Yolu",
+      "links": [
+        {
+          "region_id": "portugal",
+          "type": "sea"
+        },
+        {
+          "region_id": "sevilla",
+          "type": "sea"
+        }
+      ],
+      "world_x": -100,
+      "world_y": 1200,
+      "off_map": true,
+      "unlock_year": 1498,
+      "main_route": true,
+      "competition_impacts": [
+        {
+          "center_id": "spice_route",
+          "income_percent": -35,
+          "amount_percent": -35
+        },
+        {
+          "center_id": "silk_road",
+          "income_percent": -15,
+          "amount_percent": -15
+        }
+      ],
+      "source_goods": [
+        {
+          "good": "spice",
+          "amount_per_turn": 8,
+          "gold_income_per_turn": 20
+        },
+        {
+          "good": "cloth",
+          "amount_per_turn": 5,
+          "gold_income_per_turn": 12
+        }
+      ]
+    },
+    {
+      "region_id": "north_america_route",
+      "name_tr": "Kuzey Amerika Yolu",
+      "links": [
+        {
+          "region_id": "atlantic_route",
+          "type": "sea"
+        }
+      ],
+      "world_x": -340,
+      "world_y": 420,
+      "off_map": true,
+      "unlock_year": 1500,
+      "main_route": true,
+      "source_goods": [
+        {
+          "good": "gold",
+          "amount_per_turn": 10,
+          "gold_income_per_turn": 25
+        }
+      ]
+    },
+    {
+      "region_id": "south_america_route",
+      "name_tr": "Güney Amerika Yolu",
+      "links": [
+        {
+          "region_id": "atlantic_route",
+          "type": "sea"
+        }
+      ],
+      "world_x": -340,
+      "world_y": 1020,
+      "off_map": true,
+      "unlock_year": 1510,
+      "main_route": true,
+      "source_goods": [
+        {
+          "good": "gold",
+          "amount_per_turn": 10,
+          "gold_income_per_turn": 25
+        }
+      ]
+    },
+    {
+      "region_id": "atlantic_route",
+      "name_tr": "Atlantik Yolu",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "portugal",
+          "type": "sea"
+        },
+        {
+          "region_id": "sevilla",
+          "type": "sea"
+        }
+      ],
+      "world_x": -100,
+      "world_y": 720,
+      "off_map": true,
+      "unlock_year": 1492
+    },
     {
       "region_id": "venice",
       "tier": "primary"
@@ -381,7 +569,6 @@
           "region_id": "silesia",
           "type": "land"
         }
-        
       ]
     },
     {
@@ -418,7 +605,7 @@
         },
         {
           "region_id": "kiev",
-          "type": "sea"
+          "type": "land"
         }
       ]
     },
@@ -427,11 +614,11 @@
       "tier": "secondary",
       "links": [
         {
-          "region_id": "flanders",
+          "region_id": "denmark",
           "type": "land"
         },
         {
-          "region_id": "denmark",
+          "region_id": "flanders",
           "type": "land"
         }
       ]
@@ -441,11 +628,11 @@
       "tier": "secondary",
       "links": [
         {
-          "region_id": "palatinate",
+          "region_id": "denmark",
           "type": "land"
         },
         {
-          "region_id": "denmark",
+          "region_id": "palatinate",
           "type": "land"
         }
       ]
@@ -490,15 +677,15 @@
       "tier": "secondary",
       "links": [
         {
+          "region_id": "genoa",
+          "type": "sea"
+        },
+        {
           "region_id": "silesia",
           "type": "land"
         },
         {
           "region_id": "venice",
-          "type": "sea"
-        },
-        {
-          "region_id": "genoa",
           "type": "sea"
         }
       ]
@@ -508,11 +695,11 @@
       "tier": "secondary",
       "links": [
         {
-          "region_id": "trebizond",
+          "region_id": "north_caucasus",
           "type": "land"
         },
         {
-          "region_id": "north_caucasus",
+          "region_id": "trebizond",
           "type": "land"
         }
       ]

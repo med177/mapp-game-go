@@ -1678,7 +1678,7 @@
   {
     "id": "fleet_east_rome_guard",
     "owner_id": "east_rome",
-    "region_id": "sea_of_marmara",
+    "region_id": "west_marmara_sea",
     "docked_region_id": "constantinople",
     "docked_settlement_id": "galata",
     "is_naval": true,
@@ -1900,7 +1900,7 @@
   {
     "id": "fleet_east_rome_trade",
     "owner_id": "east_rome",
-    "region_id": "sea_of_marmara",
+    "region_id": "west_marmara_sea",
     "docked_region_id": "constantinople",
     "docked_settlement_id": "galata",
     "is_naval": true,

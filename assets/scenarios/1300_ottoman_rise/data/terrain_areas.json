@@ -195,6 +195,20 @@
           1439
         ]
       ]
+    ],
+    "extra_neighbors": [
+      "central_algeria",
+      "constantine",
+      "tunis",
+      "algiers",
+      "morocco",
+      "area::area__96",
+      "tripolitania",
+      "cyrenaica",
+      "magrib",
+      "alexandria",
+      "lower_egypt",
+      "luxor"
     ]
   },
   {

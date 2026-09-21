@@ -97,6 +97,32 @@ func TestCurvedTradeSegmentPointsCreateStableArc(t *testing.T) {
 	}
 }
 
+func TestSmoothTradePathSegmentPassesThroughSeaFocusAndRoundsTurn(t *testing.T) {
+	points := []tradeOverlayPoint{
+		{x: 0, y: 0},
+		{x: 50, y: 0},
+		{x: 50, y: 50},
+		{x: 100, y: 50},
+	}
+	segment := smoothTradePathSegmentPoints(points, 1)
+	if len(segment) < 3 {
+		t.Fatalf("yumuşatılmış deniz segmenti örnek sayısı = %d, want en az 3", len(segment))
+	}
+	if segment[0] != points[1] || segment[len(segment)-1] != points[2] {
+		t.Fatalf("deniz odakları korunmadı: start=%+v end=%+v", segment[0], segment[len(segment)-1])
+	}
+	curved := false
+	for _, point := range segment[1 : len(segment)-1] {
+		if point.x != points[1].x && point.y != points[1].y && point.x != points[2].x && point.y != points[2].y {
+			curved = true
+			break
+		}
+	}
+	if !curved {
+		t.Fatalf("deniz dönüşü köşeli kaldı: %+v", segment)
+	}
+}
+
 func TestTradeRouteTypeLabel(t *testing.T) {
 	tests := []struct {
 		routeType world.TradeRouteType
