@@ -10860,10 +10860,10 @@
   {
     "id": "dalmatia",
     "name": "Dalmatia",
-    "name_tr": "Dalmaçya",
+    "name_tr": "Ragusa(Dalmaçya)",
     "terrain": "coast",
     "owner_id": "venice",
-    "successor_faction_id": "ragusa",
+    "successor_faction_id": "venice",
     "neighbors": [
       "adriatic_sea_ragusa",
       "herzegovina",
@@ -10896,7 +10896,8 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "walls"
     ]
   },
   {

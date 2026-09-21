@@ -17,7 +17,7 @@
           "type": "land"
         },
         {
-          "region_id": "northern_persia",
+          "region_id": "gurgan",
           "type": "land"
         }
       ],
@@ -199,7 +199,7 @@
           "type": "land"
         },
         {
-          "region_id": "northern_persia",
+          "region_id": "gurgan",
           "type": "land"
         }
       ],
@@ -715,12 +715,36 @@
       ]
     },
     {
-      "region_id": "northern_persia",
+      "region_id": "gurgan",
       "tier": "secondary",
       "links": [
         {
           "region_id": "azerbaijan",
           "type": "land"
+        },
+        {
+          "region_id": "astrakhan_region",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "astrakhan_region",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "azak_region",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "azak_region",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "crimea",
+          "type": "sea"
         }
       ]
     },
@@ -743,7 +767,7 @@
           "type": "land"
         },
         {
-          "region_id": "northern_persia",
+          "region_id": "gurgan",
           "type": "land"
         }
       ]

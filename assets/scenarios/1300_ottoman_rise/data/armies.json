@@ -463,6 +463,92 @@
     ]
   },
   {
+    "id": "army_edit_128",
+    "owner_id": "karesioglu_bey",
+    "region_id": "aegean_sea",
+    "docked_region_id": "karesi",
+    "docked_settlement_id": "bithynia_bursa_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_edit_129",
+    "owner_id": "east_rome",
+    "region_id": "mediterranean_open_6",
+    "docked_region_id": "chalcidice",
+    "docked_settlement_id": "thessaloniki_kavala",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_edit_154",
+    "owner_id": "teodoro_principality",
+    "region_id": "gothia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_155",
+    "owner_id": "teodoro_principality",
+    "region_id": "crimean_black_sea",
+    "docked_region_id": "gothia",
+    "docked_settlement_id": "cherson",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_edit_156",
+    "owner_id": "russia",
+    "region_id": "nizhny_novgorod",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_edit_157",
+    "owner_id": "genoa",
+    "region_id": "azak_region",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_edit_158",
+    "owner_id": "golden_horde",
+    "region_id": "kipchak_steppe",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
     "id": "army_edit_49",
     "owner_id": "venice",
     "region_id": "venice",
@@ -1610,6 +1696,19 @@
     ]
   },
   {
+    "id": "fleet_aragon_trade",
+    "owner_id": "aragon",
+    "region_id": "mediterranean_open_2",
+    "docked_region_id": "sicily",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "fleet_aragon_west",
     "owner_id": "aragon",
     "region_id": "mediterranean_open_2",
@@ -1624,6 +1723,42 @@
       {
         "type_id": "warship",
         "count": 4
+      }
+    ]
+  },
+  {
+    "id": "fleet_aydin_trade",
+    "owner_id": "aydin_bey",
+    "region_id": "aegean_sea",
+    "docked_region_id": "izmir",
+    "docked_settlement_id": "izmir",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_candar_trade",
+    "owner_id": "candar_bey",
+    "region_id": "black_open_1",
+    "docked_region_id": "candaroglu",
+    "docked_settlement_id": "sinop_samsun",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
       }
     ]
   },
@@ -1664,191 +1799,24 @@
     ]
   },
   {
-    "id": "fleet_east_rome_guard",
-    "owner_id": "east_rome",
-    "region_id": "west_marmara_sea",
-    "docked_region_id": "constantinople",
-    "docked_settlement_id": "galata",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_england_channel",
-    "owner_id": "england",
-    "region_id": "english_channel",
-    "docked_region_id": "essex",
-    "docked_settlement_id": "london_greenwich",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "fleet_france_channel",
-    "owner_id": "france",
-    "region_id": "english_channel",
-    "docked_region_id": "normandy",
-    "docked_settlement_id": "normandy_le_havre",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "fleet_genoa_guard",
-    "owner_id": "genoa",
-    "region_id": "northern_tyrrhenian_sea",
-    "docked_region_id": "genoa",
-    "docked_settlement_id": "genoa_savona",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 2
-      },
-      {
-        "type_id": "warship",
-        "count": 8
-      }
-    ]
-  },
-  {
-    "id": "fleet_genoa_trade",
-    "owner_id": "genoa",
-    "region_id": "northern_tyrrhenian_sea",
-    "docked_region_id": "genoa",
-    "docked_settlement_id": "genoa_savona",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 6
-      }
-    ]
-  },
-  {
-    "id": "fleet_hormuz_julfar",
-    "owner_id": "hormuz_sultanate",
-    "region_id": "persian_open_1",
-    "docked_region_id": "uae",
-    "docked_settlement_id": "uae_main",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_hospitaller_guard",
-    "owner_id": "hospitaller",
-    "region_id": "mediterranean_open_1",
-    "docked_region_id": "rhodes",
-    "docked_settlement_id": "rhodes_main",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 4
-      }
-    ]
-  },
-  {
-    "id": "fleet_mamluk_east_med",
-    "owner_id": "mamluk",
-    "region_id": "eastern_mediterranean",
-    "docked_region_id": "alexandria",
-    "docked_settlement_id": "alexandria",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 6
-      }
-    ]
-  },
-  {
-    "id": "fleet_portugal_atlantic",
-    "owner_id": "portugal",
-    "region_id": "atlantic_open_3",
-    "docked_region_id": "portugal",
-    "docked_settlement_id": "portugal_lisboa",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "fleet_portugal_trade",
-    "owner_id": "portugal",
-    "region_id": "atlantic_open_3",
-    "docked_region_id": "portugal",
-    "docked_settlement_id": "portugal_lisboa",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "fleet_aragon_trade",
-    "owner_id": "aragon",
-    "region_id": "mediterranean_open_2",
-    "docked_region_id": "sicily",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "fleet_castile_trade",
     "owner_id": "castile_kingdom",
     "region_id": "atlantic_open_3",
     "docked_region_id": "sevilla",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_cyprus_trade",
+    "owner_id": "cyprus_kingdom",
+    "region_id": "east_mediterranean",
+    "docked_region_id": "north_cyprus",
+    "docked_settlement_id": "north_cyprus_girne",
     "is_naval": true,
     "units": [
       {
@@ -1886,6 +1854,24 @@
     ]
   },
   {
+    "id": "fleet_east_rome_guard",
+    "owner_id": "east_rome",
+    "region_id": "west_marmara_sea",
+    "docked_region_id": "constantinople",
+    "docked_settlement_id": "galata",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
     "id": "fleet_east_rome_trade",
     "owner_id": "east_rome",
     "region_id": "west_marmara_sea",
@@ -1895,6 +1881,24 @@
     "units": [
       {
         "type_id": "merchant_ship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_england_channel",
+    "owner_id": "england",
+    "region_id": "english_channel",
+    "docked_region_id": "essex",
+    "docked_settlement_id": "london_greenwich",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
         "count": 2
       }
     ]
@@ -1914,6 +1918,66 @@
     ]
   },
   {
+    "id": "fleet_flanders_guard",
+    "owner_id": "flanders_county",
+    "region_id": "english_channel",
+    "docked_region_id": "flanders",
+    "docked_settlement_id": "flanders_brugge",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_flanders_trade",
+    "owner_id": "flanders_county",
+    "region_id": "english_channel",
+    "docked_region_id": "flanders",
+    "docked_settlement_id": "flanders_brugge",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_florence_trade",
+    "owner_id": "florence_rep",
+    "region_id": "northern_tyrrhenian_sea",
+    "docked_region_id": "florence",
+    "docked_settlement_id": "florence_livorno",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_france_channel",
+    "owner_id": "france",
+    "region_id": "english_channel",
+    "docked_region_id": "normandy",
+    "docked_settlement_id": "normandy_le_havre",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "fleet_france_trade",
     "owner_id": "france",
     "region_id": "english_channel",
@@ -1924,6 +1988,38 @@
       {
         "type_id": "merchant_ship",
         "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_genoa_guard",
+    "owner_id": "genoa",
+    "region_id": "northern_tyrrhenian_sea",
+    "docked_region_id": "genoa",
+    "docked_settlement_id": "genoa_savona",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 2
+      },
+      {
+        "type_id": "warship",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "fleet_genoa_trade",
+    "owner_id": "genoa",
+    "region_id": "northern_tyrrhenian_sea",
+    "docked_region_id": "genoa",
+    "docked_settlement_id": "genoa_savona",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 6
       }
     ]
   },
@@ -1984,6 +2080,70 @@
     ]
   },
   {
+    "id": "fleet_hormuz_julfar",
+    "owner_id": "hormuz_sultanate",
+    "region_id": "persian_open_1",
+    "docked_region_id": "uae",
+    "docked_settlement_id": "uae_main",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_hospitaller_guard",
+    "owner_id": "hospitaller",
+    "region_id": "mediterranean_open_1",
+    "docked_region_id": "rhodes",
+    "docked_settlement_id": "rhodes_main",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "fleet_karesi_trade",
+    "owner_id": "karesioglu_bey",
+    "region_id": "aegean_sea",
+    "docked_region_id": "karesi",
+    "docked_settlement_id": "bithynia_bursa_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_mamluk_east_med",
+    "owner_id": "mamluk",
+    "region_id": "eastern_mediterranean",
+    "docked_region_id": "alexandria",
+    "docked_settlement_id": "alexandria",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 6
+      }
+    ]
+  },
+  {
     "id": "fleet_mamluk_guard",
     "owner_id": "mamluk",
     "region_id": "eastern_mediterranean",
@@ -2040,16 +2200,34 @@
     ]
   },
   {
-    "id": "fleet_cyprus_trade",
-    "owner_id": "cyprus_kingdom",
-    "region_id": "east_mediterranean",
-    "docked_region_id": "north_cyprus",
-    "docked_settlement_id": "north_cyprus_girne",
+    "id": "fleet_mecca_trade",
+    "owner_id": "mecca_sharifate",
+    "region_id": "red_sea",
+    "docked_region_id": "hejaz",
+    "docked_settlement_id": "hejaz_yanbu",
     "is_naval": true,
     "units": [
       {
         "type_id": "merchant_ship",
-        "count": 2
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "fleet_mentese_trade",
+    "owner_id": "mentese_bey",
+    "region_id": "mediterranean_open_1",
+    "docked_region_id": "mentese",
+    "docked_settlement_id": "fethiye_mentese",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 1
       }
     ]
   },
@@ -2086,44 +2264,60 @@
     ]
   },
   {
-    "id": "fleet_florence_trade",
-    "owner_id": "florence_rep",
-    "region_id": "northern_tyrrhenian_sea",
-    "docked_region_id": "florence",
-    "docked_settlement_id": "florence_livorno",
+    "id": "fleet_novgorod_trade",
+    "owner_id": "novgorod_rep",
+    "region_id": "gulf_of_finland",
+    "docked_region_id": "novgorod",
     "is_naval": true,
     "units": [
       {
         "type_id": "merchant_ship",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "fleet_flanders_guard",
-    "owner_id": "flanders_county",
-    "region_id": "english_channel",
-    "docked_region_id": "flanders",
-    "docked_settlement_id": "flanders_brugge",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "warship",
         "count": 1
       }
     ]
   },
   {
-    "id": "fleet_flanders_trade",
-    "owner_id": "flanders_county",
-    "region_id": "english_channel",
-    "docked_region_id": "flanders",
-    "docked_settlement_id": "flanders_brugge",
+    "id": "fleet_portugal_atlantic",
+    "owner_id": "portugal",
+    "region_id": "atlantic_open_3",
+    "docked_region_id": "portugal",
+    "docked_settlement_id": "portugal_lisboa",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
+        "count": 1
+      },
+      {
+        "type_id": "warship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "fleet_portugal_trade",
+    "owner_id": "portugal",
+    "region_id": "atlantic_open_3",
+    "docked_region_id": "portugal",
+    "docked_settlement_id": "portugal_lisboa",
     "is_naval": true,
     "units": [
       {
         "type_id": "merchant_ship",
-        "count": 2
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "fleet_saruhan_trade",
+    "owner_id": "saruhan_bey",
+    "region_id": "aegean_sea",
+    "docked_region_id": "saruhan",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "merchant_ship",
+        "count": 1
       }
     ]
   },
@@ -2156,119 +2350,11 @@
     ]
   },
   {
-    "id": "fleet_novgorod_trade",
-    "owner_id": "novgorod_rep",
-    "region_id": "gulf_of_finland",
-    "docked_region_id": "novgorod",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_mecca_trade",
-    "owner_id": "mecca_sharifate",
-    "region_id": "red_sea",
-    "docked_region_id": "hejaz",
-    "docked_settlement_id": "hejaz_yanbu",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 1
-      }
-    ]
-  },
-  {
     "id": "fleet_usfurid_trade",
     "owner_id": "usfurid_emirate",
     "region_id": "persian_open_2",
     "docked_region_id": "bahrain",
     "docked_settlement_id": "bahrain_main",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_aydin_trade",
-    "owner_id": "aydin_bey",
-    "region_id": "aegean_sea",
-    "docked_region_id": "izmir",
-    "docked_settlement_id": "izmir",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_mentese_trade",
-    "owner_id": "mentese_bey",
-    "region_id": "mediterranean_open_1",
-    "docked_region_id": "mentese",
-    "docked_settlement_id": "fethiye_mentese",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_candar_trade",
-    "owner_id": "candar_bey",
-    "region_id": "black_open_1",
-    "docked_region_id": "candaroglu",
-    "docked_settlement_id": "sinop_samsun",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 1
-      },
-      {
-        "type_id": "warship",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_saruhan_trade",
-    "owner_id": "saruhan_bey",
-    "region_id": "aegean_sea",
-    "docked_region_id": "saruhan",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "merchant_ship",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "fleet_karesi_trade",
-    "owner_id": "karesioglu_bey",
-    "region_id": "aegean_sea",
-    "docked_region_id": "karesi",
-    "docked_settlement_id": "bithynia_bursa_port",
     "is_naval": true,
     "units": [
       {
@@ -2306,103 +2392,6 @@
       {
         "type_id": "transport",
         "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_edit_128",
-    "owner_id": "karesioglu_bey",
-    "region_id": "aegean_sea",
-    "docked_region_id": "karesi",
-    "docked_settlement_id": "bithynia_bursa_port",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "warship",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_edit_129",
-    "owner_id": "east_rome",
-    "region_id": "mediterranean_open_6",
-    "docked_region_id": "chalcidice",
-    "docked_settlement_id": "thessaloniki_kavala",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "transport",
-        "count": 4
-      }
-    ]
-  },
-  {
-    "id": "army_edit_154",
-    "owner_id": "teodoro_principality",
-    "region_id": "gothia",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 5
-      }
-    ]
-  },
-  {
-    "id": "army_edit_155",
-    "owner_id": "teodoro_principality",
-    "region_id": "crimean_black_sea",
-    "docked_region_id": "gothia",
-    "docked_settlement_id": "cherson",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "warship",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_edit_156",
-    "owner_id": "russia",
-    "region_id": "nizhny_novgorod",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 4
-      }
-    ]
-  },
-  {
-    "id": "army_edit_156",
-    "owner_id": "russia",
-    "region_id": "nizhny_novgorod",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 4
-      }
-    ]
-  },
-  {
-    "id": "army_edit_157",
-    "owner_id": "genoa",
-    "region_id": "azak_region",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_edit_158",
-    "owner_id": "golden_horde",
-    "region_id": "kipchak_steppe",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 5
       }
     ]
   }

@@ -2508,6 +2508,39 @@
           "temple"
         ]
       },
+      "astrakhan_region": {
+        "owner_id": "golden_horde",
+        "successor_faction_id": "golden_horde",
+        "settlements": [
+          {
+            "id": "north_caucasus_astrahan",
+            "name_tr": "Astrahan",
+            "x": 1439,
+            "y": 357,
+            "type": "fortress",
+            "is_center": true,
+            "population": 45
+          },
+          {
+            "id": "astrakhan_region_port",
+            "name_tr": "Hacıtarhan Limanı",
+            "x": 1438,
+            "y": 379,
+            "type": "port",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 62,
+        "tax_rate": 25,
+        "population": 148,
+        "religion": "orthodox",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
+          "port"
+        ]
+      },
       "atlantic_ocean": {
         "owner_id": "",
         "settlements": null,
@@ -2676,6 +2709,39 @@
           "port",
           "workshop",
           "port",
+          "port"
+        ]
+      },
+      "azak_region": {
+        "owner_id": "genoa",
+        "successor_faction_id": "golden_horde",
+        "settlements": [
+          {
+            "id": "north_caucasus_azak",
+            "name_tr": "Azak",
+            "x": 1265,
+            "y": 344,
+            "type": "fortress",
+            "is_center": true,
+            "population": 30
+          },
+          {
+            "id": "azak_region_port",
+            "name_tr": "Azak Limanı",
+            "x": 1262,
+            "y": 340,
+            "type": "port",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 62,
+        "tax_rate": 25,
+        "population": 133,
+        "religion": "orthodox",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
           "port"
         ]
       },
@@ -3375,6 +3441,17 @@
         "is_locked": false,
         "satisfaction": 50,
         "tax_rate": 0,
+        "population": 0,
+        "religion": "",
+        "active_event_id": "",
+        "buildings": null
+      },
+      "blacksea_inebolu": {
+        "owner_id": "",
+        "settlements": null,
+        "is_locked": false,
+        "satisfaction": 100,
+        "tax_rate": 45,
         "population": 0,
         "religion": "",
         "active_event_id": "",
@@ -4869,62 +4946,54 @@
       },
       "crimea": {
         "owner_id": "genoa",
-        "successor_faction_id": "crimean_khanate",
+        "successor_faction_id": "genoa",
         "settlements": [
           {
-            "id": "cherson",
-            "name_tr": "Hersones",
-            "x": 1151,
-            "y": 391,
-            "type": "port",
-            "population": 28
-          },
-          {
-            "id": "crimea_bakhchisarai",
-            "name_tr": "Bahçesaray",
-            "x": 1158,
-            "y": 381,
-            "type": "fortress",
-            "population": 8
-          },
-          {
-            "id": "crimea_kerch",
-            "name_tr": "Kerç",
+            "id": "crimea_vosporo",
+            "name_tr": "Vosporo",
             "x": 1204,
             "y": 374,
-            "type": "port",
+            "type": "fortress",
             "population": 24
           },
           {
-            "id": "crimea_sudak",
-            "name_tr": "Sudak",
-            "x": 1173,
-            "y": 384,
-            "type": "port",
+            "id": "crimea_soldaia",
+            "name_tr": "Soldaia",
+            "x": 1175,
+            "y": 387,
+            "type": "town",
             "population": 24
+          },
+          {
+            "id": "crimea_kaffa_port",
+            "name_tr": "Kefe Limanı",
+            "x": 1185,
+            "y": 382,
+            "type": "port",
+            "population": 0
           },
           {
             "id": "kaffa",
             "name_tr": "Kefe",
-            "x": 1181,
-            "y": 380,
-            "type": "city",
+            "x": 1182,
+            "y": 381,
+            "type": "fortress",
+            "is_center": true,
             "population": 24
           },
           {
-            "id": "solkhat",
-            "name_tr": "Sivastopol",
-            "x": 1150,
-            "y": 386,
-            "type": "city",
-            "is_center": true,
-            "population": 32
+            "id": "crimea_caulita",
+            "name_tr": "Caulita",
+            "x": 1157,
+            "y": 396,
+            "type": "port",
+            "population": 0
           }
         ],
         "is_locked": false,
         "satisfaction": 59,
         "tax_rate": 30,
-        "population": 428,
+        "population": 360,
         "religion": "catholic",
         "active_event_id": "",
         "buildings": [
@@ -4936,6 +5005,44 @@
           "farm",
           "farm",
           "temple"
+        ]
+      },
+      "crimea_solhat": {
+        "owner_id": "golden_horde",
+        "successor_faction_id": "golden_horde",
+        "settlements": [
+          {
+            "id": "solkhat",
+            "name_tr": "Solhat",
+            "x": 1173,
+            "y": 375,
+            "type": "city",
+            "population": 32
+          },
+          {
+            "id": "crimea_solhat_qirkyer",
+            "name_tr": "Qırk Yer",
+            "x": 1154,
+            "y": 382,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 60,
+        "tax_rate": 30,
+        "population": 292,
+        "religion": "sunni",
+        "active_event_id": "",
+        "buildings": [
+          "port",
+          "walls",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "farm"
         ]
       },
       "crimean_black_sea": {
@@ -5118,17 +5225,9 @@
         ]
       },
       "dagestan": {
-        "owner_id": "russia",
+        "owner_id": "golden_horde",
+        "successor_faction_id": "golden_horde",
         "settlements": [
-          {
-            "id": "dagestan_aktav",
-            "name_tr": "Aktav",
-            "x": 1535,
-            "y": 468,
-            "type": "fortress",
-            "is_center": true,
-            "population": 42
-          },
           {
             "id": "dagestan_nukus",
             "name_tr": "Nukus",
@@ -5153,6 +5252,15 @@
             "y": 473,
             "type": "port",
             "population": 0
+          },
+          {
+            "id": "mangislak",
+            "name_tr": "Mangışlak",
+            "x": 1535,
+            "y": 468,
+            "type": "fortress",
+            "is_center": true,
+            "population": 42
           }
         ],
         "is_locked": false,
@@ -6723,6 +6831,44 @@
           "temple"
         ]
       },
+      "gothia": {
+        "owner_id": "teodoro_principality",
+        "successor_faction_id": "teodoro_principality",
+        "settlements": [
+          {
+            "id": "cherson",
+            "name_tr": "Hersones",
+            "x": 1148,
+            "y": 388,
+            "type": "port",
+            "population": 28
+          },
+          {
+            "id": "mangup",
+            "name_tr": "Mangup",
+            "x": 1152,
+            "y": 386,
+            "type": "fortress",
+            "is_center": true,
+            "population": 8
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 60,
+        "tax_rate": 30,
+        "population": 296,
+        "religion": "sunni",
+        "active_event_id": "",
+        "buildings": [
+          "port",
+          "walls",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "farm"
+        ]
+      },
       "granada": {
         "owner_id": "granada_emirate",
         "successor_faction_id": "granada_emirate",
@@ -8181,6 +8327,34 @@
           "barracks"
         ]
       },
+      "kipchak_steppe": {
+        "owner_id": "golden_horde",
+        "successor_faction_id": "golden_horde",
+        "settlements": [
+          {
+            "id": "kipchak_steppe_saray",
+            "name_tr": "Saray Batu",
+            "x": 1413,
+            "y": 329,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 62,
+        "tax_rate": 25,
+        "population": 103,
+        "religion": "orthodox",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
+          "barracks",
+          "granary",
+          "temple",
+          "market"
+        ]
+      },
       "knin": {
         "owner_id": "venice",
         "settlements": [
@@ -9041,7 +9215,7 @@
             "name_tr": "Özi",
             "x": 1110,
             "y": 346,
-            "type": "port",
+            "type": "fortress",
             "population": 28
           }
         ],
@@ -10557,38 +10731,23 @@
         "buildings": null
       },
       "north_caucasus": {
-        "owner_id": "russia",
+        "owner_id": "golden_horde",
+        "successor_faction_id": "golden_horde",
         "settlements": [
-          {
-            "id": "north_caucasus_astrahan",
-            "name_tr": "Astrahan",
-            "x": 1438,
-            "y": 356,
-            "type": "city",
-            "population": 45
-          },
-          {
-            "id": "north_caucasus_azak",
-            "name_tr": "Azak",
-            "x": 1266,
-            "y": 342,
-            "type": "fortress",
-            "is_center": true,
-            "population": 30
-          },
           {
             "id": "north_caucasus_cherkezya",
             "name_tr": "Çerkezya",
             "x": 1269,
             "y": 404,
             "type": "city",
+            "is_center": true,
             "population": 30
           }
         ],
         "is_locked": false,
         "satisfaction": 65,
         "tax_rate": 45,
-        "population": 218,
+        "population": 143,
         "religion": "orthodox",
         "active_event_id": "",
         "buildings": [
@@ -11358,9 +11517,9 @@
           {
             "id": "kiev_main",
             "name_tr": "Odessa",
-            "x": 1089,
-            "y": 353,
-            "type": "city",
+            "x": 1091,
+            "y": 354,
+            "type": "port",
             "is_center": true,
             "population": 33
           },
@@ -11965,6 +12124,30 @@
         "religion": "",
         "active_event_id": "",
         "buildings": null
+      },
+      "sarkel_region": {
+        "owner_id": "golden_horde",
+        "successor_faction_id": "golden_horde",
+        "settlements": [
+          {
+            "id": "kipchak_steppe_sarkel",
+            "name_tr": "Sarkel Kalesi",
+            "x": 1320,
+            "y": 325,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 62,
+        "tax_rate": 25,
+        "population": 103,
+        "religion": "orthodox",
+        "active_event_id": "",
+        "buildings": [
+          "walls"
+        ]
       },
       "saruhan": {
         "owner_id": "saruhan_bey",
@@ -16049,7 +16232,7 @@
       },
       "golden_horde": {
         "is_eliminated": false,
-        "capital_settlement_id": "ukraine_main",
+        "capital_settlement_id": "kipchak_steppe_saray",
         "gold": 696,
         "grain": 1738,
         "iron": 218,
@@ -17051,6 +17234,22 @@
           },
           "active_id": "engineering_corps",
           "turns_left": 1
+        }
+      },
+      "teodoro_principality": {
+        "is_eliminated": false,
+        "capital_settlement_id": "mangup",
+        "gold": 500,
+        "grain": 100,
+        "iron": 50,
+        "timber": 50,
+        "stone": 0,
+        "spice": 20,
+        "cloth": 5,
+        "research": {
+          "completed": null,
+          "active_id": "",
+          "turns_left": 0
         }
       },
       "teutonic_order": {
@@ -34486,6 +34685,21 @@
         "commitment": 88,
         "reason": "alpine_confederacy profili: hold_schwyz_core"
       },
+      "teodoro_principality": {
+        "objective_id": "victory:warrior_kingdom",
+        "kind": "expand",
+        "target_faction_id": "golden_horde",
+        "target_region_ids": [
+          "crimea_solhat",
+          "kiev",
+          "north_caucasus",
+          "ukrainian_steppe"
+        ],
+        "started_turn": 47,
+        "reassess_turn": 49,
+        "commitment": 55,
+        "reason": "genel zafer hedefi: warrior_kingdom"
+      },
       "teutonic_order": {
         "objective_id": "press_lithuanian_frontier",
         "kind": "expand",
@@ -35439,6 +35653,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "achaea_principality|teodoro_principality": {
+        "faction_a": "achaea_principality",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "achaea_principality|teutonic_order": {
         "faction_a": "achaea_principality",
         "faction_b": "teutonic_order",
@@ -35947,6 +36167,12 @@
         "faction_a": "afshar_beyligi",
         "faction_b": "swiss_confederacy",
         "score": 0,
+        "stance": "peace"
+      },
+      "afshar_beyligi|teodoro_principality": {
+        "faction_a": "afshar_beyligi",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "afshar_beyligi|teutonic_order": {
@@ -36467,6 +36693,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "ahiler|teodoro_principality": {
+        "faction_a": "ahiler",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "ahiler|teutonic_order": {
         "faction_a": "ahiler",
         "faction_b": "teutonic_order",
@@ -36964,6 +37196,12 @@
         "faction_a": "akkoyunlu_state",
         "faction_b": "swiss_confederacy",
         "score": 0,
+        "stance": "peace"
+      },
+      "akkoyunlu_state|teodoro_principality": {
+        "faction_a": "akkoyunlu_state",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "akkoyunlu_state|teutonic_order": {
@@ -37464,6 +37702,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "aragon|teodoro_principality": {
+        "faction_a": "aragon",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "aragon|teutonic_order": {
         "faction_a": "aragon",
         "faction_b": "teutonic_order",
@@ -37498,6 +37742,12 @@
         "faction_a": "aragon",
         "faction_b": "wallachia_prince",
         "score": 0,
+        "stance": "peace"
+      },
+      "arnavut_des|teodoro_principality": {
+        "faction_a": "arnavut_des",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "artuklu|athena_duk": {
@@ -37948,6 +38198,12 @@
         "faction_a": "artuklu",
         "faction_b": "swiss_confederacy",
         "score": 0,
+        "stance": "peace"
+      },
+      "artuklu|teodoro_principality": {
+        "faction_a": "artuklu",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "artuklu|teutonic_order": {
@@ -38434,6 +38690,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "athena_duk|teodoro_principality": {
+        "faction_a": "athena_duk",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "athena_duk|teutonic_order": {
         "faction_a": "athena_duk",
         "faction_b": "teutonic_order",
@@ -38916,6 +39178,12 @@
         "score": -95,
         "stance": "war"
       },
+      "austria_duchy|teodoro_principality": {
+        "faction_a": "austria_duchy",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "austria_duchy|teutonic_order": {
         "faction_a": "austria_duchy",
         "faction_b": "teutonic_order",
@@ -39389,6 +39657,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "aydin_bey|teodoro_principality": {
+        "faction_a": "aydin_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "aydin_bey|teutonic_order": {
         "faction_a": "aydin_bey",
         "faction_b": "teutonic_order",
@@ -39851,6 +40125,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "barqa_emirate|teodoro_principality": {
+        "faction_a": "barqa_emirate",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "barqa_emirate|teutonic_order": {
         "faction_a": "barqa_emirate",
         "faction_b": "teutonic_order",
@@ -40310,6 +40590,12 @@
         "stance": "peace",
         "next_ai_relation_repair_turn": 41
       },
+      "bavaria_duchy|teodoro_principality": {
+        "faction_a": "bavaria_duchy",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "bavaria_duchy|teutonic_order": {
         "faction_a": "bavaria_duchy",
         "faction_b": "teutonic_order",
@@ -40763,6 +41049,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "bohemian_kingdom|teodoro_principality": {
+        "faction_a": "bohemian_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "bohemian_kingdom|teutonic_order": {
         "faction_a": "bohemian_kingdom",
         "faction_b": "teutonic_order",
@@ -41208,6 +41500,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "bosnian_banate|teodoro_principality": {
+        "faction_a": "bosnian_banate",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "bosnian_banate|teutonic_order": {
         "faction_a": "bosnian_banate",
         "faction_b": "teutonic_order",
@@ -41650,6 +41948,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "brandenburg_margraviate|teodoro_principality": {
+        "faction_a": "brandenburg_margraviate",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "brandenburg_margraviate|teutonic_order": {
         "faction_a": "brandenburg_margraviate",
         "faction_b": "teutonic_order",
@@ -42088,6 +42392,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "bulgarian_empire|teodoro_principality": {
+        "faction_a": "bulgarian_empire",
+        "faction_b": "teodoro_principality",
+        "score": 25,
+        "stance": "peace"
+      },
       "bulgarian_empire|teutonic_order": {
         "faction_a": "bulgarian_empire",
         "faction_b": "teutonic_order",
@@ -42513,6 +42823,12 @@
         "faction_a": "burgundy",
         "faction_b": "swiss_confederacy",
         "score": 5,
+        "stance": "peace"
+      },
+      "burgundy|teodoro_principality": {
+        "faction_a": "burgundy",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "burgundy|teutonic_order": {
@@ -42942,6 +43258,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "candar_bey|teodoro_principality": {
+        "faction_a": "candar_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "candar_bey|teutonic_order": {
         "faction_a": "candar_bey",
         "faction_b": "teutonic_order",
@@ -43357,6 +43679,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "canik_bey|teodoro_principality": {
+        "faction_a": "canik_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "canik_bey|teutonic_order": {
         "faction_a": "canik_bey",
         "faction_b": "teutonic_order",
@@ -43765,6 +44093,12 @@
         "score": -80,
         "stance": "war"
       },
+      "carniola_margraviate|teodoro_principality": {
+        "faction_a": "carniola_margraviate",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "carniola_margraviate|teutonic_order": {
         "faction_a": "carniola_margraviate",
         "faction_b": "teutonic_order",
@@ -44171,6 +44505,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "castile_kingdom|teodoro_principality": {
+        "faction_a": "castile_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "castile_kingdom|teutonic_order": {
         "faction_a": "castile_kingdom",
         "faction_b": "teutonic_order",
@@ -44567,6 +44907,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "crimean_khanate|teodoro_principality": {
+        "faction_a": "crimean_khanate",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "crimean_khanate|teutonic_order": {
         "faction_a": "crimean_khanate",
         "faction_b": "teutonic_order",
@@ -44957,6 +45303,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "croatian_kingdom|teodoro_principality": {
+        "faction_a": "croatian_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "croatian_kingdom|teutonic_order": {
         "faction_a": "croatian_kingdom",
         "faction_b": "teutonic_order",
@@ -45341,6 +45693,12 @@
         "faction_a": "cyprus_kingdom",
         "faction_b": "swiss_confederacy",
         "score": 25,
+        "stance": "peace"
+      },
+      "cyprus_kingdom|teodoro_principality": {
+        "faction_a": "cyprus_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "cyprus_kingdom|teutonic_order": {
@@ -45729,6 +46087,12 @@
         "stance": "peace",
         "next_ai_relation_repair_turn": 7
       },
+      "denmark_kingdom|teodoro_principality": {
+        "faction_a": "denmark_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "denmark_kingdom|teutonic_order": {
         "faction_a": "denmark_kingdom",
         "faction_b": "teutonic_order",
@@ -46099,6 +46463,12 @@
         "faction_a": "dulkadir_bey",
         "faction_b": "swiss_confederacy",
         "score": 0,
+        "stance": "peace"
+      },
+      "dulkadir_bey|teodoro_principality": {
+        "faction_a": "dulkadir_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "dulkadir_bey|teutonic_order": {
@@ -46481,6 +46851,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "east_rome|teodoro_principality": {
+        "faction_a": "teodoro_principality",
+        "faction_b": "east_rome",
+        "score": 50,
+        "stance": "allied"
+      },
       "east_rome|teutonic_order": {
         "faction_a": "east_rome",
         "faction_b": "teutonic_order",
@@ -46848,6 +47224,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "england|teodoro_principality": {
+        "faction_a": "england",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "england|teutonic_order": {
         "faction_a": "england",
         "faction_b": "teutonic_order",
@@ -47203,6 +47585,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "epir|teodoro_principality": {
+        "faction_a": "epir",
+        "faction_b": "teodoro_principality",
+        "score": 25,
+        "stance": "peace"
+      },
       "epir|teutonic_order": {
         "faction_a": "epir",
         "faction_b": "teutonic_order",
@@ -47550,6 +47938,12 @@
         "faction_a": "eretna_state",
         "faction_b": "swiss_confederacy",
         "score": 0,
+        "stance": "peace"
+      },
+      "eretna_state|teodoro_principality": {
+        "faction_a": "eretna_state",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "eretna_state|teutonic_order": {
@@ -47902,6 +48296,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "esrefoglu_bey|teodoro_principality": {
+        "faction_a": "esrefoglu_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "esrefoglu_bey|teutonic_order": {
         "faction_a": "esrefoglu_bey",
         "faction_b": "teutonic_order",
@@ -48238,6 +48638,12 @@
         "score": -80,
         "stance": "war"
       },
+      "flanders_county|teodoro_principality": {
+        "faction_a": "flanders_county",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "flanders_county|teutonic_order": {
         "faction_a": "flanders_county",
         "faction_b": "teutonic_order",
@@ -48572,6 +48978,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "florence_rep|teodoro_principality": {
+        "faction_a": "florence_rep",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "florence_rep|teutonic_order": {
         "faction_a": "florence_rep",
         "faction_b": "teutonic_order",
@@ -48904,6 +49316,12 @@
         "stance": "peace",
         "next_ai_relation_repair_turn": 5
       },
+      "france|teodoro_principality": {
+        "faction_a": "france",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "france|teutonic_order": {
         "faction_a": "france",
         "faction_b": "teutonic_order",
@@ -49228,6 +49646,12 @@
         "score": 5,
         "stance": "peace"
       },
+      "genoa|teodoro_principality": {
+        "faction_a": "genoa",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "genoa|teutonic_order": {
         "faction_a": "genoa",
         "faction_b": "teutonic_order",
@@ -49547,6 +49971,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "georgia_kingdom|teodoro_principality": {
+        "faction_a": "georgia_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": 25,
+        "stance": "peace"
+      },
       "georgia_kingdom|teutonic_order": {
         "faction_a": "georgia_kingdom",
         "faction_b": "teutonic_order",
@@ -49856,6 +50286,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "germiyan_bey|teodoro_principality": {
+        "faction_a": "germiyan_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "germiyan_bey|teutonic_order": {
         "faction_a": "germiyan_bey",
         "faction_b": "teutonic_order",
@@ -50160,6 +50596,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "golden_horde|teodoro_principality": {
+        "faction_a": "golden_horde",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "golden_horde|teutonic_order": {
         "faction_a": "golden_horde",
         "faction_b": "teutonic_order",
@@ -50455,6 +50897,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "granada_emirate|teodoro_principality": {
+        "faction_a": "granada_emirate",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "granada_emirate|teutonic_order": {
         "faction_a": "granada_emirate",
         "faction_b": "teutonic_order",
@@ -50744,6 +51192,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "hafsid_sultanate|teodoro_principality": {
+        "faction_a": "hafsid_sultanate",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "hafsid_sultanate|teutonic_order": {
         "faction_a": "hafsid_sultanate",
         "faction_b": "teutonic_order",
@@ -51030,6 +51484,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "hamid_bey|teodoro_principality": {
+        "faction_a": "hamid_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "hamid_bey|teutonic_order": {
         "faction_a": "hamid_bey",
         "faction_b": "teutonic_order",
@@ -51064,6 +51524,12 @@
         "faction_a": "hamid_bey",
         "faction_b": "wallachia_prince",
         "score": 0,
+        "stance": "peace"
+      },
+      "hormuz_sultanate|teodoro_principality": {
+        "faction_a": "hormuz_sultanate",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "hospitaller|house_lancaster": {
@@ -51304,6 +51770,12 @@
         "faction_a": "hospitaller",
         "faction_b": "swiss_confederacy",
         "score": 25,
+        "stance": "peace"
+      },
+      "hospitaller|teodoro_principality": {
+        "faction_a": "hospitaller",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "hospitaller|teutonic_order": {
@@ -51576,6 +52048,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "house_lancaster|teodoro_principality": {
+        "faction_a": "house_lancaster",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "house_lancaster|teutonic_order": {
         "faction_a": "house_lancaster",
         "faction_b": "teutonic_order",
@@ -51838,6 +52316,12 @@
         "faction_a": "house_york",
         "faction_b": "swiss_confederacy",
         "score": 25,
+        "stance": "peace"
+      },
+      "house_york|teodoro_principality": {
+        "faction_a": "house_york",
+        "faction_b": "teodoro_principality",
+        "score": -30,
         "stance": "peace"
       },
       "house_york|teutonic_order": {
@@ -52103,6 +52587,12 @@
         "stance": "war",
         "next_ai_relation_repair_turn": 6
       },
+      "hre|teodoro_principality": {
+        "faction_a": "hre",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "hre|teutonic_order": {
         "faction_a": "hre",
         "faction_b": "teutonic_order",
@@ -52356,6 +52846,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "hungarian_kingdom|teodoro_principality": {
+        "faction_a": "hungarian_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "hungarian_kingdom|teutonic_order": {
         "faction_a": "hungarian_kingdom",
         "faction_b": "teutonic_order",
@@ -52605,6 +53101,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "ilkhanate|teodoro_principality": {
+        "faction_a": "ilkhanate",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "ilkhanate|teutonic_order": {
         "faction_a": "ilkhanate",
         "faction_b": "teutonic_order",
@@ -52845,6 +53347,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "jelayirids|teodoro_principality": {
+        "faction_a": "jelayirids",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "jelayirids|teutonic_order": {
         "faction_a": "jelayirids",
         "faction_b": "teutonic_order",
@@ -53079,6 +53587,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "kadi_burhaneddin|teodoro_principality": {
+        "faction_a": "kadi_burhaneddin",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "kadi_burhaneddin|teutonic_order": {
         "faction_a": "kadi_burhaneddin",
         "faction_b": "teutonic_order",
@@ -53307,6 +53821,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "kalmar_union|teodoro_principality": {
+        "faction_a": "kalmar_union",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "kalmar_union|teutonic_order": {
         "faction_a": "kalmar_union",
         "faction_b": "teutonic_order",
@@ -53529,6 +54049,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "karakoyunlu_state|teodoro_principality": {
+        "faction_a": "karakoyunlu_state",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "karakoyunlu_state|teutonic_order": {
         "faction_a": "karakoyunlu_state",
         "faction_b": "teutonic_order",
@@ -53748,6 +54274,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "karaman_bey|teodoro_principality": {
+        "faction_a": "karaman_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "karaman_bey|teutonic_order": {
         "faction_a": "karaman_bey",
         "faction_b": "teutonic_order",
@@ -53959,6 +54491,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "karesioglu_bey|teodoro_principality": {
+        "faction_a": "karesioglu_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "karesioglu_bey|teutonic_order": {
         "faction_a": "karesioglu_bey",
         "faction_b": "teutonic_order",
@@ -54164,6 +54702,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "leon_kingdom|teodoro_principality": {
+        "faction_a": "leon_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "leon_kingdom|teutonic_order": {
         "faction_a": "leon_kingdom",
         "faction_b": "teutonic_order",
@@ -54364,6 +54908,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "lithuanian_gd|teodoro_principality": {
+        "faction_a": "lithuanian_gd",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "lithuanian_gd|teutonic_order": {
         "faction_a": "lithuanian_gd",
         "faction_b": "teutonic_order",
@@ -54560,6 +55110,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "mamluk|teodoro_principality": {
+        "faction_a": "mamluk",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "mamluk|teutonic_order": {
         "faction_a": "mamluk",
         "faction_b": "teutonic_order",
@@ -54748,6 +55304,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "marinid_sultanate|teodoro_principality": {
+        "faction_a": "marinid_sultanate",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "marinid_sultanate|teutonic_order": {
         "faction_a": "marinid_sultanate",
         "faction_b": "teutonic_order",
@@ -54928,6 +55490,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "mecca_sharifate|teodoro_principality": {
+        "faction_a": "mecca_sharifate",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "mecca_sharifate|teutonic_order": {
         "faction_a": "mecca_sharifate",
         "faction_b": "teutonic_order",
@@ -55102,6 +55670,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "mentese_bey|teodoro_principality": {
+        "faction_a": "mentese_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "mentese_bey|teutonic_order": {
         "faction_a": "mentese_bey",
         "faction_b": "teutonic_order",
@@ -55271,6 +55845,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "milan_duchy|teodoro_principality": {
+        "faction_a": "milan_duchy",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "milan_duchy|teutonic_order": {
         "faction_a": "milan_duchy",
         "faction_b": "teutonic_order",
@@ -55434,6 +56014,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "muzaffarids|teodoro_principality": {
+        "faction_a": "muzaffarids",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "muzaffarids|teutonic_order": {
         "faction_a": "muzaffarids",
         "faction_b": "teutonic_order",
@@ -55590,6 +56176,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "naples_kingdom|teodoro_principality": {
+        "faction_a": "naples_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "naples_kingdom|teutonic_order": {
         "faction_a": "naples_kingdom",
         "faction_b": "teutonic_order",
@@ -55740,6 +56332,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "navarra|teodoro_principality": {
+        "faction_a": "navarra",
+        "faction_b": "teodoro_principality",
+        "score": -20,
+        "stance": "peace"
+      },
       "navarra|teutonic_order": {
         "faction_a": "navarra",
         "faction_b": "teutonic_order",
@@ -55884,6 +56482,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "norway_kingdom|teodoro_principality": {
+        "faction_a": "norway_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "norway_kingdom|teutonic_order": {
         "faction_a": "norway_kingdom",
         "faction_b": "teutonic_order",
@@ -56023,6 +56627,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "novgorod_rep|teodoro_principality": {
+        "faction_a": "novgorod_rep",
+        "faction_b": "teodoro_principality",
+        "score": 25,
+        "stance": "peace"
+      },
       "novgorod_rep|teutonic_order": {
         "faction_a": "novgorod_rep",
         "faction_b": "teutonic_order",
@@ -56158,6 +56768,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "ottoman|teodoro_principality": {
+        "faction_a": "ottoman",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "ottoman|teutonic_order": {
         "faction_a": "ottoman",
         "faction_b": "teutonic_order",
@@ -56286,6 +56902,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "papal_states_f|teodoro_principality": {
+        "faction_a": "papal_states_f",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "papal_states_f|teutonic_order": {
         "faction_a": "papal_states_f",
         "faction_b": "teutonic_order",
@@ -56407,6 +57029,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "polish_kingdom|teodoro_principality": {
+        "faction_a": "polish_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "polish_kingdom|teutonic_order": {
         "faction_a": "polish_kingdom",
         "faction_b": "teutonic_order",
@@ -56521,6 +57149,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "polish_lithuania|teodoro_principality": {
+        "faction_a": "polish_lithuania",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "polish_lithuania|teutonic_order": {
         "faction_a": "polish_lithuania",
         "faction_b": "teutonic_order",
@@ -56629,6 +57263,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "portugal|teodoro_principality": {
+        "faction_a": "portugal",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "portugal|teutonic_order": {
         "faction_a": "portugal",
         "faction_b": "teutonic_order",
@@ -56731,6 +57371,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "ragusa|teodoro_principality": {
+        "faction_a": "ragusa",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "ragusa|teutonic_order": {
         "faction_a": "ragusa",
         "faction_b": "teutonic_order",
@@ -56827,6 +57473,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "ramazan_bey|teodoro_principality": {
+        "faction_a": "ramazan_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "ramazan_bey|teutonic_order": {
         "faction_a": "ramazan_bey",
         "faction_b": "teutonic_order",
@@ -56918,6 +57570,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "russia|teodoro_principality": {
+        "faction_a": "russia",
+        "faction_b": "teodoro_principality",
+        "score": 25,
+        "stance": "peace"
+      },
       "russia|teutonic_order": {
         "faction_a": "russia",
         "faction_b": "teutonic_order",
@@ -57005,6 +57663,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "safavid|teodoro_principality": {
+        "faction_a": "safavid",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "safavid|teutonic_order": {
         "faction_a": "safavid",
         "faction_b": "teutonic_order",
@@ -57085,6 +57749,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "saruhan_bey|teodoro_principality": {
+        "faction_a": "saruhan_bey",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "saruhan_bey|teutonic_order": {
         "faction_a": "saruhan_bey",
         "faction_b": "teutonic_order",
@@ -57158,6 +57828,12 @@
         "score": 15,
         "stance": "peace"
       },
+      "savoy_county|teodoro_principality": {
+        "faction_a": "savoy_county",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "savoy_county|teutonic_order": {
         "faction_a": "savoy_county",
         "faction_b": "teutonic_order",
@@ -57225,6 +57901,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "saxony_duchy|teodoro_principality": {
+        "faction_a": "saxony_duchy",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "saxony_duchy|teutonic_order": {
         "faction_a": "saxony_duchy",
         "faction_b": "teutonic_order",
@@ -57285,6 +57967,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "scotland_kingdom|teodoro_principality": {
+        "faction_a": "scotland_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "scotland_kingdom|teutonic_order": {
         "faction_a": "scotland_kingdom",
         "faction_b": "teutonic_order",
@@ -57339,6 +58027,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "serbian_empire|teodoro_principality": {
+        "faction_a": "serbian_empire",
+        "faction_b": "teodoro_principality",
+        "score": 25,
+        "stance": "peace"
+      },
       "serbian_empire|teutonic_order": {
         "faction_a": "serbian_empire",
         "faction_b": "teutonic_order",
@@ -57388,6 +58082,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "shirvanshahs|teodoro_principality": {
+        "faction_a": "shirvanshahs",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "shirvanshahs|teutonic_order": {
         "faction_a": "shirvanshahs",
         "faction_b": "teutonic_order",
@@ -57430,6 +58130,12 @@
         "score": 25,
         "stance": "peace"
       },
+      "sweden_kingdom|teodoro_principality": {
+        "faction_a": "sweden_kingdom",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "sweden_kingdom|teutonic_order": {
         "faction_a": "sweden_kingdom",
         "faction_b": "teutonic_order",
@@ -57466,6 +58172,12 @@
         "score": 0,
         "stance": "peace"
       },
+      "swiss_confederacy|teodoro_principality": {
+        "faction_a": "swiss_confederacy",
+        "faction_b": "teodoro_principality",
+        "score": -30,
+        "stance": "peace"
+      },
       "swiss_confederacy|teutonic_order": {
         "faction_a": "swiss_confederacy",
         "faction_b": "teutonic_order",
@@ -57500,6 +58212,48 @@
         "faction_a": "swiss_confederacy",
         "faction_b": "wallachia_prince",
         "score": 0,
+        "stance": "peace"
+      },
+      "teodoro_principality|teutonic_order": {
+        "faction_a": "teodoro_principality",
+        "faction_b": "teutonic_order",
+        "score": -30,
+        "stance": "peace"
+      },
+      "teodoro_principality|timurid_empire": {
+        "faction_a": "teodoro_principality",
+        "faction_b": "timurid_empire",
+        "score": -30,
+        "stance": "peace"
+      },
+      "teodoro_principality|trebizond_emp": {
+        "faction_a": "teodoro_principality",
+        "faction_b": "trebizond_emp",
+        "score": 50,
+        "stance": "allied"
+      },
+      "teodoro_principality|usfurid_emirate": {
+        "faction_a": "teodoro_principality",
+        "faction_b": "usfurid_emirate",
+        "score": -30,
+        "stance": "peace"
+      },
+      "teodoro_principality|venice": {
+        "faction_a": "teodoro_principality",
+        "faction_b": "venice",
+        "score": -30,
+        "stance": "peace"
+      },
+      "teodoro_principality|wallachia_prince": {
+        "faction_a": "teodoro_principality",
+        "faction_b": "wallachia_prince",
+        "score": 25,
+        "stance": "peace"
+      },
+      "teodoro_principality|zayyanid_tlemcen": {
+        "faction_a": "teodoro_principality",
+        "faction_b": "zayyanid_tlemcen",
+        "score": -30,
         "stance": "peace"
       },
       "teutonic_order|timurid_empire": {
@@ -58277,17 +59031,9 @@
       },
       {
         "from_faction_id": "georgia_kingdom",
-        "to_faction_id": "russia",
-        "good": "grain",
-        "amount_per_turn": 1,
-        "gold_per_unit": 1,
-        "suspended_turns": 0
-      },
-      {
-        "from_faction_id": "georgia_kingdom",
         "to_faction_id": "serbian_empire",
         "good": "grain",
-        "amount_per_turn": 1,
+        "amount_per_turn": 2,
         "gold_per_unit": 1,
         "suspended_turns": 0
       },
@@ -58821,14 +59567,6 @@
       },
       {
         "from_faction_id": "russia",
-        "to_faction_id": "georgia_kingdom",
-        "good": "grain",
-        "amount_per_turn": 1,
-        "gold_per_unit": 1,
-        "suspended_turns": 0
-      },
-      {
-        "from_faction_id": "russia",
         "to_faction_id": "golden_horde",
         "good": "grain",
         "amount_per_turn": 4,
@@ -58935,7 +59673,7 @@
         "from_faction_id": "serbian_empire",
         "to_faction_id": "georgia_kingdom",
         "good": "iron",
-        "amount_per_turn": 1,
+        "amount_per_turn": 2,
         "gold_per_unit": 5,
         "suspended_turns": 0
       },
@@ -59236,10 +59974,10 @@
         },
         "genoa": {
           "cloth": 1223,
-          "iron": 11,
+          "iron": 29,
           "spice": 2301,
-          "stone": 107,
-          "timber": 64
+          "stone": 257,
+          "timber": 114
         },
         "georgia_kingdom": {
           "cloth": 168,
@@ -59257,10 +59995,10 @@
         },
         "golden_horde": {
           "cloth": 13,
-          "iron": 165,
+          "iron": 183,
           "spice": 517,
-          "stone": 405,
-          "timber": 519
+          "stone": 555,
+          "timber": 569
         },
         "granada_emirate": {
           "cloth": 354,
@@ -59444,10 +60182,10 @@
           "timber": 32
         },
         "russia": {
-          "cloth": 63,
-          "grain": 1098,
+          "cloth": 6,
+          "grain": 1203,
           "iron": 390,
-          "spice": 151,
+          "spice": 141,
           "stone": 282,
           "timber": 506
         },
@@ -59506,6 +60244,9 @@
           "spice": 147,
           "stone": 217,
           "timber": 340
+        },
+        "teodoro_principality": {
+          "iron": 15
         },
         "teutonic_order": {
           "cloth": 4,
@@ -59575,7 +60316,7 @@
           "timber": 7
         },
         "genoa": {
-          "grain": 363
+          "grain": 375
         },
         "georgia_kingdom": {
           "grain": 577
@@ -59584,7 +60325,7 @@
           "grain": 160
         },
         "golden_horde": {
-          "grain": 308
+          "grain": 512
         },
         "granada_emirate": {
           "iron": 46,
@@ -59643,6 +60384,12 @@
         },
         "sweden_kingdom": {
           "grain": 85
+        },
+        "teodoro_principality": {
+          "cloth": 75,
+          "spice": 10,
+          "stone": 300,
+          "timber": 50
         },
         "trebizond_emp": {
           "iron": 28,
@@ -63132,8 +63879,28 @@
             "CriticalThreat": false
           },
           {
+            "EnemyFactionID": "russia",
+            "TargetRegionID": "moscow",
+            "FriendlyPower": 0,
+            "EnemyPower": 70,
+            "ThreatScore": 70,
+            "AtWar": false,
+            "CapitalThreat": false,
+            "CriticalThreat": false
+          },
+          {
             "EnemyFactionID": "golden_horde",
-            "TargetRegionID": "lower_ukrainian_steppe",
+            "TargetRegionID": "crimea_solhat",
+            "FriendlyPower": 49,
+            "EnemyPower": 10,
+            "ThreatScore": -39,
+            "AtWar": false,
+            "CapitalThreat": false,
+            "CriticalThreat": false
+          },
+          {
+            "EnemyFactionID": "teodoro_principality",
+            "TargetRegionID": "gothia",
             "FriendlyPower": 49,
             "EnemyPower": 0,
             "ThreatScore": -49,
@@ -63200,8 +63967,8 @@
             "CriticalThreat": false
           },
           {
-            "EnemyFactionID": "ilkhanate",
-            "TargetRegionID": "azerbaijan",
+            "EnemyFactionID": "golden_horde",
+            "TargetRegionID": "north_caucasus",
             "FriendlyPower": 308,
             "EnemyPower": 0,
             "ThreatScore": -308,
@@ -63210,8 +63977,8 @@
             "CriticalThreat": false
           },
           {
-            "EnemyFactionID": "russia",
-            "TargetRegionID": "north_caucasus",
+            "EnemyFactionID": "ilkhanate",
+            "TargetRegionID": "azerbaijan",
             "FriendlyPower": 308,
             "EnemyPower": 0,
             "ThreatScore": -308,
@@ -63354,6 +64121,16 @@
             "CriticalThreat": false
           },
           {
+            "EnemyFactionID": "georgia_kingdom",
+            "TargetRegionID": "georgia",
+            "FriendlyPower": 0,
+            "EnemyPower": 308,
+            "ThreatScore": 308,
+            "AtWar": false,
+            "CapitalThreat": false,
+            "CriticalThreat": false
+          },
+          {
             "EnemyFactionID": "wallachia_prince",
             "TargetRegionID": "wallachia",
             "FriendlyPower": 0,
@@ -63367,8 +64144,8 @@
             "EnemyFactionID": "russia",
             "TargetRegionID": "moscow",
             "FriendlyPower": 10,
-            "EnemyPower": 70,
-            "ThreatScore": 80,
+            "EnemyPower": 250,
+            "ThreatScore": 260,
             "AtWar": false,
             "CapitalThreat": false,
             "CriticalThreat": false
@@ -63376,9 +64153,29 @@
           {
             "EnemyFactionID": "genoa",
             "TargetRegionID": "crimea",
-            "FriendlyPower": 0,
+            "FriendlyPower": 10,
             "EnemyPower": 49,
-            "ThreatScore": 49,
+            "ThreatScore": 39,
+            "AtWar": false,
+            "CapitalThreat": false,
+            "CriticalThreat": false
+          },
+          {
+            "EnemyFactionID": "ilkhanate",
+            "TargetRegionID": "azerbaijan",
+            "FriendlyPower": 0,
+            "EnemyPower": 0,
+            "ThreatScore": 0,
+            "AtWar": false,
+            "CapitalThreat": false,
+            "CriticalThreat": false
+          },
+          {
+            "EnemyFactionID": "teodoro_principality",
+            "TargetRegionID": "gothia",
+            "FriendlyPower": 0,
+            "EnemyPower": 0,
+            "ThreatScore": 0,
             "AtWar": false,
             "CapitalThreat": false,
             "CriticalThreat": false
@@ -63419,13 +64216,11 @@
           "siege": 1,
           "transport": 1
         },
-        "NavalMissionKind": "overseas_assault",
-        "NavalTargetRegionID": "north_caucasus",
+        "NavalMissionKind": "patrol",
+        "NavalTargetRegionID": "",
         "NavalFleetCount": 1,
         "NavalDockedFleetCount": 0,
-        "BlockReasons": [
-          "deniz görevi için nakliye kapasitesi eksik"
-        ]
+        "BlockReasons": null
       },
       "granada_emirate": {
         "FactionID": "granada_emirate",
@@ -63911,16 +64706,6 @@
             "CriticalThreat": false
           },
           {
-            "EnemyFactionID": "russia",
-            "TargetRegionID": "north_caucasus",
-            "FriendlyPower": 0,
-            "EnemyPower": 35,
-            "ThreatScore": 35,
-            "AtWar": false,
-            "CapitalThreat": false,
-            "CriticalThreat": false
-          },
-          {
             "EnemyFactionID": "hamid_bey",
             "TargetRegionID": "hamideli",
             "FriendlyPower": 0,
@@ -63933,6 +64718,16 @@
           {
             "EnemyFactionID": "east_rome",
             "TargetRegionID": "chrysopolis",
+            "FriendlyPower": 0,
+            "EnemyPower": 0,
+            "ThreatScore": 0,
+            "AtWar": false,
+            "CapitalThreat": false,
+            "CriticalThreat": false
+          },
+          {
+            "EnemyFactionID": "golden_horde",
+            "TargetRegionID": "dagestan",
             "FriendlyPower": 0,
             "EnemyPower": 0,
             "ThreatScore": 0,
@@ -64899,16 +65694,6 @@
         "CriticalThreat": false,
         "Fronts": [
           {
-            "EnemyFactionID": "georgia_kingdom",
-            "TargetRegionID": "georgia",
-            "FriendlyPower": 0,
-            "EnemyPower": 308,
-            "ThreatScore": 308,
-            "AtWar": false,
-            "CapitalThreat": false,
-            "CriticalThreat": false
-          },
-          {
             "EnemyFactionID": "novgorod_rep",
             "TargetRegionID": "novgorod",
             "FriendlyPower": 70,
@@ -64919,21 +65704,21 @@
             "CriticalThreat": false
           },
           {
-            "EnemyFactionID": "ilkhanate",
-            "TargetRegionID": "azerbaijan",
-            "FriendlyPower": 35,
+            "EnemyFactionID": "genoa",
+            "TargetRegionID": "azak_region",
+            "FriendlyPower": 70,
             "EnemyPower": 0,
-            "ThreatScore": -35,
+            "ThreatScore": -70,
             "AtWar": false,
             "CapitalThreat": false,
             "CriticalThreat": false
           },
           {
             "EnemyFactionID": "golden_horde",
-            "TargetRegionID": "upper_ukrainian_steppe",
-            "FriendlyPower": 70,
+            "TargetRegionID": "kipchak_steppe",
+            "FriendlyPower": 250,
             "EnemyPower": 10,
-            "ThreatScore": -60,
+            "ThreatScore": -240,
             "AtWar": false,
             "CapitalThreat": false,
             "CriticalThreat": false
@@ -65348,6 +66133,50 @@
           "kritik tehdit",
           "tahıl/altın lojistik rezervi yetersiz"
         ]
+      },
+      "teodoro_principality": {
+        "FactionID": "teodoro_principality",
+        "Turn": 47,
+        "PlanKind": "expand",
+        "PlanTargetFactionID": "golden_horde",
+        "PlanTargetRegionIDs": [
+          "crimea_solhat",
+          "kiev",
+          "north_caucasus",
+          "ukrainian_steppe"
+        ],
+        "ReservePercent": 0,
+        "ReserveTargetPower": 0,
+        "ReserveAssignedPower": 0,
+        "CriticalThreat": false,
+        "Fronts": [
+          {
+            "EnemyFactionID": "genoa",
+            "TargetRegionID": "crimea",
+            "FriendlyPower": 0,
+            "EnemyPower": 49,
+            "ThreatScore": 49,
+            "AtWar": false,
+            "CapitalThreat": false,
+            "CriticalThreat": false
+          },
+          {
+            "EnemyFactionID": "golden_horde",
+            "TargetRegionID": "crimea_solhat",
+            "FriendlyPower": 0,
+            "EnemyPower": 0,
+            "ThreatScore": 20,
+            "AtWar": false,
+            "CapitalThreat": false,
+            "CriticalThreat": false
+          }
+        ],
+        "ArmyRoleCounts": {},
+        "NavalMissionKind": "",
+        "NavalTargetRegionID": "",
+        "NavalFleetCount": 0,
+        "NavalDockedFleetCount": 0,
+        "BlockReasons": null
       },
       "teutonic_order": {
         "FactionID": "teutonic_order",
