@@ -3,10 +3,12 @@ package save
 import (
 	"encoding/json"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
@@ -72,6 +74,45 @@ func Test1300TradeCenterRelationsSeedAIMerchantAssignments(t *testing.T) {
 		}
 		if !assigned {
 			t.Fatalf("%s AI merchant filosuna başlangıç ticaret rotası atamadı", fid)
+		}
+	}
+}
+
+func Test1300LandTradeCenterRouteDoesNotAcceptMerchantFleet(t *testing.T) {
+	gs, err := loadScenarioBaseState("1300_ottoman_rise", filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise"))
+	if err != nil {
+		t.Fatalf("loadScenarioBaseState() error = %v", err)
+	}
+	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
+
+	var castileGranada *economy.TradeRoute
+	for _, route := range gs.TradeRoutes {
+		if route != nil && route.FromFactionID == "castile_kingdom" && route.ToFactionID == "granada_emirate" {
+			castileGranada = route
+			break
+		}
+	}
+	if castileGranada == nil {
+		t.Fatal("Kastilya-Gırnata ticaret rotası bulunamadı")
+	}
+	if got, ok := gs.MerchantTradeRouteTargetSeaRegion(castileGranada); ok || got != "" {
+		t.Fatalf("Kastilya-Gırnata kara rotası deniz hedefi = (%q, %v), want boş", got, ok)
+	}
+
+	constantinopleAleppo := &economy.TradeRoute{FromFactionID: "east_rome", ToFactionID: "mamluk"}
+	if got, ok := gs.MerchantTradeRouteTargetSeaRegion(constantinopleAleppo); ok || got != "" {
+		t.Fatalf("Konstantiniyye-Halep doğrudan kara rotası deniz hedefi = (%q, %v), want boş", got, ok)
+	}
+
+	ai.TakeTurn(gs, faction.FactionID("castile_kingdom"))
+	for _, fleet := range gs.Armies {
+		if fleet == nil || fleet.OwnerID != "castile_kingdom" || !fleet.IsNaval || fleet.TradeRouteKey != castileGranada.AssignmentKey() {
+			continue
+		}
+		for _, unit := range fleet.Units {
+			if unit.TypeID == "merchant_ship" {
+				t.Fatalf("Kastilya merchant filosuna kara rota atandı: filo=%s rota=%s", fleet.ID, fleet.TradeRouteKey)
+			}
 		}
 	}
 }
@@ -150,13 +191,34 @@ func Test1300MaritimeMerchantFleetsHaveTradeRoutesForAI(t *testing.T) {
 	}
 	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 
-	merchantStates := []faction.FactionID{
-		"aragon", "aydin_bey", "candar_bey", "castile_kingdom", "cyprus_kingdom", "denmark_kingdom",
-		"east_rome", "england", "flanders_county", "florence_rep", "genoa",
-		"france", "granada_emirate", "hafsid_sultanate", "hormuz_sultanate", "karesioglu_bey",
-		"marinid_sultanate", "mamluk", "mecca_sharifate", "mentese_bey", "naples_kingdom",
-		"novgorod_rep", "portugal", "saruhan_bey", "trebizond_emp", "usfurid_emirate", "venice",
+	merchantStates := make([]faction.FactionID, 0)
+	for fid := range gs.Factions {
+		hasMerchantFleet := false
+		for _, fleet := range gs.Armies {
+			if fleet == nil || fleet.OwnerID != string(fid) || !fleet.IsNaval {
+				continue
+			}
+			for _, unit := range fleet.Units {
+				if unit.TypeID == "merchant_ship" {
+					hasMerchantFleet = true
+					break
+				}
+			}
+			if hasMerchantFleet {
+				break
+			}
+		}
+		if !hasMerchantFleet {
+			continue
+		}
+		for _, route := range gs.TradeRoutes {
+			if route != nil && route.FromFactionID == string(fid) && route.SuspendedTurns <= 0 && len(gs.MerchantTradeRouteSeaRegions(route)) > 0 {
+				merchantStates = append(merchantStates, fid)
+				break
+			}
+		}
 	}
+	sort.Slice(merchantStates, func(i, j int) bool { return merchantStates[i] < merchantStates[j] })
 	for _, fid := range merchantStates {
 		hasRoute := false
 		for _, route := range gs.TradeRoutes {

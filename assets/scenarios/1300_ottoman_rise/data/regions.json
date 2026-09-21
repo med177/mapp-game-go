@@ -7,11 +7,11 @@
     "owner_id": "england",
     "successor_faction_id": "england",
     "neighbors": [
-      "belgium_shore",
       "dover_strait",
       "east_anglia",
       "english_channel",
       "mercia",
+      "thames_entrance",
       "welsh_marches",
       "wessex"
     ],
@@ -98,7 +98,8 @@
       "belgium_shore",
       "east_england_shore",
       "essex",
-      "mercia"
+      "mercia",
+      "thames_entrance"
     ],
     "world_x": 502,
     "world_y": 232,
@@ -2296,6 +2297,7 @@
     "neighbors": [
       "area::area__115",
       "baltic_sea",
+      "gulf_of_finland",
       "konigsberg",
       "mazovia",
       "moravia",
@@ -2343,6 +2345,7 @@
     "successor_faction_id": "lithuanian_gd",
     "neighbors": [
       "belarus",
+      "gulf_of_finland",
       "konigsberg",
       "latvia",
       "mazovia"
@@ -3866,10 +3869,10 @@
     "terrain": "plain",
     "owner_id": "mamluk",
     "neighbors": [
-      "aleppo",
       "area::area__2",
       "jordan",
       "lebanon",
+      "levant_region",
       "palestine_acre",
       "raqqa"
     ],
@@ -5288,8 +5291,8 @@
       "sweden",
       "western_baltic_sea"
     ],
-    "world_x": 710,
-    "world_y": 179,
+    "world_x": 727,
+    "world_y": 183,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -5322,8 +5325,8 @@
       "norway",
       "sweden"
     ],
-    "world_x": 683,
-    "world_y": 126,
+    "world_x": 681,
+    "world_y": 122,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -5352,14 +5355,13 @@
     "neighbors": [
       "gulf_of_finland",
       "kattegat",
-      "konigsberg",
       "poland",
       "pomerania",
       "silesia",
       "sweden"
     ],
-    "world_x": 828,
-    "world_y": 177,
+    "world_x": 791,
+    "world_y": 190,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -5388,12 +5390,15 @@
     "neighbors": [
       "baltic_sea",
       "estonia",
+      "konigsberg",
       "latvia",
+      "lithuania",
       "novgorod",
+      "poland",
       "sweden"
     ],
-    "world_x": 887,
-    "world_y": 122,
+    "world_x": 880,
+    "world_y": 149,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -7270,9 +7275,9 @@
     "owner_id": "mamluk",
     "successor_faction_id": "mamluk",
     "neighbors": [
-      "aleppo",
       "damascus",
       "gulf_of_iskenderun",
+      "levant_region",
       "levantine_sea",
       "palestine_acre"
     ],
@@ -7684,7 +7689,7 @@
     "owner_id": "teutonic_order",
     "successor_faction_id": "teutonic_order",
     "neighbors": [
-      "baltic_sea",
+      "gulf_of_finland",
       "lithuania",
       "mazovia",
       "poland"
@@ -8645,7 +8650,8 @@
       "cilicia",
       "dulkadir",
       "dulkadirli",
-      "gulf_of_iskenderun"
+      "gulf_of_iskenderun",
+      "levant_region"
     ],
     "world_x": 1197,
     "world_y": 544,
@@ -11427,10 +11433,8 @@
     "successor_faction_id": "mamluk",
     "neighbors": [
       "antioch",
-      "damascus",
       "dulkadir",
-      "gulf_of_iskenderun",
-      "lebanon",
+      "levant_region",
       "raqqa"
     ],
     "world_x": 1217,
@@ -11449,7 +11453,7 @@
     "trade_capacity": 12,
     "satisfaction": 65,
     "tax_rate": 35,
-    "population": 480,
+    "population": 405,
     "rural_population": 312,
     "religion": "sunni",
     "active_event_id": "",
@@ -11461,6 +11465,52 @@
       "farm",
       "farm",
       "farm"
+    ]
+  },
+  {
+    "id": "levant_region",
+    "name": "Levant Region",
+    "name_tr": "Levant Bölgesi",
+    "terrain": "plain",
+    "owner_id": "mamluk",
+    "successor_faction_id": "mamluk",
+    "neighbors": [
+      "aleppo",
+      "antioch",
+      "damascus",
+      "gulf_of_iskenderun",
+      "lebanon",
+      "raqqa"
+    ],
+    "world_x": 1212,
+    "world_y": 564,
+    "shape_id": "SYR",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 161,
+    "base_grain_output": 44,
+    "base_iron_output": 2,
+    "base_timber_output": 2,
+    "base_stone_output": 0,
+    "base_spice_output": 24,
+    "base_cloth_output": 20,
+    "trade_capacity": 12,
+    "satisfaction": 65,
+    "tax_rate": 35,
+    "population": 387,
+    "rural_population": 312,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "market",
+      "walls",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "farm",
+      "port"
     ]
   },
   {
@@ -11477,6 +11527,7 @@
       "area::area__43",
       "damascus",
       "dulkadir",
+      "levant_region",
       "mosul"
     ],
     "world_x": 1252,
@@ -12749,7 +12800,8 @@
       "belgium_shore",
       "english_channel",
       "essex",
-      "normandy"
+      "normandy",
+      "thames_entrance"
     ],
     "world_x": 500,
     "world_y": 272,
@@ -12820,14 +12872,47 @@
       "dover_strait",
       "east_anglia",
       "east_england_shore",
-      "essex",
       "flanders",
       "holland",
       "normandy",
       "north_sea_shore",
-      "rhine_river"
+      "rhine_river",
+      "thames_entrance"
     ],
     "world_x": 518,
+    "world_y": 256,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 2,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "thames_entrance",
+    "name": "New Region 482",
+    "name_tr": "Yeni Bolge 482",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "belgium_shore",
+      "dover_strait",
+      "east_anglia",
+      "essex"
+    ],
+    "world_x": 498,
     "world_y": 256,
     "is_sea": true,
     "is_locked": false,
@@ -13426,13 +13511,13 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "aleppo",
       "antioch",
       "area::area__38",
       "cilicia",
       "cyprus",
       "east_mediterranean",
       "lebanon",
+      "levant_region",
       "levantine_sea",
       "north_cyprus"
     ],

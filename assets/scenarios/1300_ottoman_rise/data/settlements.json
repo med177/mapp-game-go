@@ -5,16 +5,16 @@
       {
         "id": "london_greenwich",
         "name_tr": "Greenwich",
-        "x": 490,
-        "y": 259,
+        "x": 487,
+        "y": 258,
         "type": "port",
         "population": 53
       },
       {
         "id": "london_main",
         "name_tr": "Londra",
-        "x": 482,
-        "y": 257,
+        "x": 480,
+        "y": 258,
         "type": "city",
         "is_center": true,
         "population": 70
@@ -3793,8 +3793,8 @@
       {
         "id": "constantinople_main",
         "name_tr": "Konstantiniyye",
-        "x": 1056,
-        "y": 458,
+        "x": 1055,
+        "y": 455,
         "type": "fortress",
         "is_center": true,
         "population": 280
@@ -3802,7 +3802,7 @@
       {
         "id": "constantinople_kontoskalion",
         "name_tr": "Kontoskalion",
-        "x": 1049,
+        "x": 1050,
         "y": 457,
         "type": "port",
         "population": 0
@@ -3846,7 +3846,7 @@
         "id": "pera_constantinople",
         "name_tr": "Pera",
         "x": 1055,
-        "y": 451,
+        "y": 450,
         "type": "town",
         "is_center": true,
         "population": 36
@@ -6914,18 +6914,32 @@
         "population": 12
       },
       {
-        "id": "aleppo_maarrat",
-        "name_tr": "Maarretünnu'man",
-        "x": 1209,
-        "y": 560,
-        "type": "town",
-        "population": 25
-      },
-      {
         "id": "hama",
         "name_tr": "İdlib",
         "x": 1206,
         "y": 552,
+        "type": "town",
+        "population": 25
+      }
+    ]
+  },
+  {
+    "region_id": "levant_region",
+    "settlements": [
+      {
+        "id": "levant_region_lazkiye",
+        "name_tr": "Lazkiye Limanı",
+        "x": 1191,
+        "y": 560,
+        "type": "port",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "homs_damascus",
+        "name_tr": "Humus",
+        "x": 1211,
+        "y": 579,
         "type": "town",
         "population": 25
       },
@@ -6938,10 +6952,10 @@
         "population": 25
       },
       {
-        "id": "homs_damascus",
-        "name_tr": "Humus",
-        "x": 1211,
-        "y": 579,
+        "id": "aleppo_maarrat",
+        "name_tr": "Maarretünnu'man",
+        "x": 1209,
+        "y": 560,
         "type": "town",
         "population": 25
       }

@@ -516,6 +516,7 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 	sortTradeRoutes(filtered)
 	gs.TradeRoutes = filtered
 	RebalanceTradeRouteCapacities(gs)
+	gs.NormalizeMerchantTradeAssignments()
 }
 
 func sortTradeRoutes(routes []*economy.TradeRoute) {

@@ -1973,9 +1973,9 @@ func (r *Renderer) tradeOverlayOccludesPoint(x, y float64) bool {
 			return true
 		}
 	}
-	if rect, ok := r.tradeHoverTooltipRect(); ok && rect.Hit(x, y) {
-		return true
-	}
+	// Ticaret tooltip'i harita çiziminden sonra en üst katmanda çizilir.
+	// Bu nedenle altındaki rota parçalarını gizlememeli; popup zaten onların
+	// üzerinde görünür.
 	return false
 }
 
@@ -3374,6 +3374,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 		}
 		if r.mapMode == MapModeTrade {
 			if _, isTradeCenter := tradeCenterRegion[region.ID]; isTradeCenter {
+				r.appendTradeCenterSettlementDraws(region)
 				continue
 			}
 		}
@@ -3483,6 +3484,31 @@ func (r *Renderer) appendSettlementDraws(region *world.Region) {
 		}
 		drawLabel := true
 		r.appendSettlementDraw(region, i, name, sx, sy, drawLabel, settlementLabelPriority(settlement, isPrimary, isFactionCapital), isFactionCapital)
+	}
+}
+
+func (r *Renderer) appendTradeCenterSettlementDraws(region *world.Region) {
+	if r == nil || r.worldMap == nil || region == nil || len(region.Settlements) == 0 {
+		return
+	}
+	for i, settlement := range region.Settlements {
+		if settlement.Type != world.SettlementPort && !settlement.IsCenter && i != 0 {
+			continue
+		}
+		ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i)
+		if !ok {
+			continue
+		}
+		sx, sy := r.worldToScreen(float64(ax), float64(ay))
+		name := settlement.NameTR
+		if name == "" {
+			name = settlement.Name
+		}
+		if name == "" {
+			name = region.NameTR
+		}
+		isCapital := r.isCapitalSettlement(region, settlement)
+		r.appendSettlementDraw(region, i, name, sx, sy, true, settlementLabelPriority(settlement, settlement.IsCenter || i == 0, isCapital), isCapital)
 	}
 }
 

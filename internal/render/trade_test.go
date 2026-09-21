@@ -211,6 +211,51 @@ func TestTradeCenterEndpointRegionsSelectsSingleNearestSea(t *testing.T) {
 	}
 }
 
+func TestTradeCenterHasOnlyLandRoutes(t *testing.T) {
+	landOnly := world.TradeCenterDef{Links: []world.TradeCenterLink{{RegionID: "baghdad", Type: world.TradeRouteLand}}}
+	if !tradeCenterHasOnlyLandRoutes(landOnly) {
+		t.Fatal("yalnız kara bağlantısı olan merkez kara odağı kullanmalı")
+	}
+	withSea := world.TradeCenterDef{Links: []world.TradeCenterLink{
+		{RegionID: "baghdad", Type: world.TradeRouteLand},
+		{RegionID: "alexandria", Type: world.TradeRouteSea},
+	}}
+	if tradeCenterHasOnlyLandRoutes(withSea) {
+		t.Fatal("deniz bağlantısı olan merkez kara odağı kullanmamalı")
+	}
+}
+
+func TestTradeCenterLinkPathUsesEditedSeaRegionFocus(t *testing.T) {
+	sea := &world.Region{ID: "sea_focus", IsSea: true, WorldX: 100, WorldY: 120}
+	fromRegion := &world.Region{ID: "from_port", Neighbors: []world.RegionID{sea.ID}}
+	toRegion := &world.Region{ID: "to_port", Neighbors: []world.RegionID{sea.ID}}
+	regions := map[world.RegionID]*world.Region{
+		sea.ID:        sea,
+		fromRegion.ID: fromRegion,
+		toRegion.ID:   toRegion,
+	}
+	wm := &WorldMap{regionAnchor: map[world.RegionID][2]int{sea.ID: {900, 900}}}
+	r := &Renderer{
+		gs:       &state.GameState{Regions: regions},
+		worldMap: wm,
+		camScale: 1,
+	}
+	from := tradeCenterVisual{id: "from", regionID: fromRegion.ID, x: 10, y: 20}
+	to := tradeCenterVisual{id: "to", regionID: toRegion.ID, x: 300, y: 320}
+	path, _ := r.tradeCenterLinkPath(from, to, world.TradeRouteSea)
+	expectedX, expectedY := r.worldToScreen(wcX(sea.WorldX), wcY(sea.WorldY))
+	foundEditedFocus := false
+	for _, point := range path {
+		if point.x == expectedX && point.y == expectedY {
+			foundEditedFocus = true
+			break
+		}
+	}
+	if !foundEditedFocus {
+		t.Fatalf("deniz rotası Edit Mode odağından geçmiyor: expected=(%v,%v), path=%+v", expectedX, expectedY, path)
+	}
+}
+
 func TestTradeCorridorRouteDetailsDeduplicateRoutes(t *testing.T) {
 	route := &economy.TradeRoute{FromFactionID: "a", ToFactionID: "b"}
 	details := appendTradeCorridorRouteDetail(nil, tradeCorridorRouteDetail{key: route.AssignmentKey()})
@@ -281,6 +326,24 @@ func TestSplitTradePhysicalPathKeepsSharedSegmentsTogether(t *testing.T) {
 	}
 }
 
+func TestTradeSeaFocusPointsUseRouteEndpoints(t *testing.T) {
+	points := []tradeOverlayPoint{{x: 0, y: 0}, {x: 10, y: 0}, {x: 20, y: 5}, {x: 30, y: 5}, {x: 40, y: 10}}
+	keys := []string{
+		"connector:center-a|sea:a#0",
+		"sea_segment:sea:a|sea:b#0",
+		"sea_segment:sea:a|sea:b#1",
+		"connector:center-b|sea:b#0",
+	}
+	got := tradeSeaFocusPoints(points, keys)
+	if len(got) != 2 || got[0] != points[1] || got[1] != points[3] {
+		t.Fatalf("deniz odak uçları = %+v, want [%+v %+v]", got, points[1], points[3])
+	}
+	mainPath := tradeSeaMainPath(points, keys)
+	if len(mainPath) != 3 || mainPath[0] != points[1] || mainPath[2] != points[3] {
+		t.Fatalf("deniz ana path'i connector içeriyor: %+v", mainPath)
+	}
+}
+
 func TestTradeCenterAnchorPrefersFirstPortSettlement(t *testing.T) {
 	portRegion := &world.Region{
 		ID: "port_region",
@@ -311,6 +374,27 @@ func TestTradeCenterAnchorPrefersFirstPortSettlement(t *testing.T) {
 	wantX, wantY = r.worldToScreen(700, 800)
 	if gotX != wantX || gotY != wantY {
 		t.Fatalf("ticaret merkezi merkez anchor = (%v,%v), want (%v,%v)", gotX, gotY, wantX, wantY)
+	}
+}
+
+func TestTradePortScreenPosForSeaSelectsPortNearestToSeaFocus(t *testing.T) {
+	region := &world.Region{
+		ID: "coastal",
+		Settlements: []world.Settlement{
+			{ID: "far_port", Type: world.SettlementPort},
+			{ID: "near_port", Type: world.SettlementPort},
+		},
+	}
+	sea := &world.Region{ID: "sea", IsSea: true, WorldX: 900, WorldY: 900}
+	r := &Renderer{
+		gs:       &state.GameState{Regions: map[world.RegionID]*world.Region{sea.ID: sea}},
+		worldMap: &WorldMap{settlementAnchor: map[settlementAnchorKey][2]int{{Region: region.ID, Index: 0}: {100, 100}, {Region: region.ID, Index: 1}: {900, 900}}},
+		camScale: 1,
+	}
+	gotX, gotY := r.tradePortScreenPosForSea(region, sea.ID)
+	wantX, wantY := r.worldToScreen(900, 900)
+	if gotX != wantX || gotY != wantY {
+		t.Fatalf("deniz odağına göre liman = (%v,%v), want (%v,%v)", gotX, gotY, wantX, wantY)
 	}
 }
 

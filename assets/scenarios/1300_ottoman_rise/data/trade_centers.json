@@ -22,7 +22,7 @@
         }
       ],
       "world_x": 2900,
-      "world_y": 720,
+      "world_y": 820,
       "off_map": true,
       "main_route": true,
       "source_goods": [
@@ -51,7 +51,7 @@
         }
       ],
       "world_x": 2900,
-      "world_y": 1200,
+      "world_y": 1400,
       "off_map": true,
       "main_route": true,
       "source_goods": [
@@ -204,7 +204,7 @@
         }
       ],
       "world_x": 2900,
-      "world_y": 720,
+      "world_y": 820,
       "off_map": true,
       "main_route": true,
       "source_goods": [
@@ -233,7 +233,7 @@
         }
       ],
       "world_x": 2900,
-      "world_y": 1200,
+      "world_y": 1400,
       "off_map": true,
       "main_route": true,
       "source_goods": [
@@ -417,7 +417,7 @@
       "links": [
         {
           "region_id": "alexandria",
-          "type": "sea"
+          "type": "land"
         },
         {
           "region_id": "constantinople",

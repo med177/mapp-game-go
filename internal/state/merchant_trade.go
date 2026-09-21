@@ -113,12 +113,19 @@ func (s *GameState) MerchantFleetTradeStatuses(dst map[army.ArmyID]MerchantFleet
 }
 
 // MerchantTradeRouteTargetSeaRegion rotanın tek kanonik hedef denizini döner.
-// Gerçek liman çiftleri varsa rota yönündeki hedef limanın denizi kullanılır;
-// böylece örneğin Gemlik -> Özi rotası Karadeniz Açık 4'te çalışır. Gerçek
-// liman çifti bulunamazsa aktif tarihsel ticaret merkezlerinin hedef tarafı
-// deterministik fallback olarak kullanılır.
+// Merchant rotaları yalnızca gerçek liman çiftiyle veya açıkça deniz olarak
+// tanımlanmış tarihsel merkez bağlantısıyla geçerlidir. Kara merkez
+// bağlantıları merchant filosuna deniz rotası gibi sunulmaz.
 func (s *GameState) MerchantTradeRouteTargetSeaRegion(route *economy.TradeRoute) (world.RegionID, bool) {
 	if s == nil || route == nil || route.SuspendedTurns > 0 || route.AssignmentKey() == "" {
+		return "", false
+	}
+	// A historical center connection is the authored route contract. If that
+	// contract resolves only to land, do not reinterpret the same agreement as
+	// a sea route merely because both factions also own a port.
+	if s.merchantTradeCenterDirectPathExists(route, world.TradeRouteLand) ||
+		s.merchantTradeCenterPathExists(route, world.TradeRouteLand) &&
+			!s.merchantTradeCenterPathExists(route, world.TradeRouteSea) {
 		return "", false
 	}
 	if pairs := s.MerchantTradeRoutePortPairs(route); len(pairs) > 0 {
@@ -128,28 +135,135 @@ func (s *GameState) MerchantTradeRouteTargetSeaRegion(route *economy.TradeRoute)
 	}
 
 	fromCenters, toCenters, centers, adjacency := s.merchantTradeEndpointCenters(route)
-	if len(toCenters) == 0 {
-		return "", false
-	}
 	for _, toID := range toCenters {
-		connected := len(fromCenters) == 0
-		if !connected {
-			for _, fromID := range fromCenters {
-				if tradeCentersConnected(fromID, toID, adjacency) {
-					connected = true
-					break
-				}
+		for _, fromID := range fromCenters {
+			if !tradeCentersConnected(fromID, toID, adjacency) {
+				continue
 			}
-		}
-		if !connected {
-			continue
-		}
-		seaIDs := s.tradeCenterSeaIDs(centers[toID])
-		if len(seaIDs) > 0 {
-			return seaIDs[0], true
+			seaIDs := s.tradeCenterSeaIDs(centers[toID])
+			if len(seaIDs) > 0 {
+				return seaIDs[0], true
+			}
 		}
 	}
 	return "", false
+}
+
+// merchantTradeCenterDirectPathExists, iki faction merkezinin doğrudan
+// bağlantısında yazılmış rota türünü kontrol eder. Doğrudan kara bağlantısı,
+// aynı merkezler arasında dolaylı bir deniz çevrimi bulunsa bile canonical
+// rota kabul edilir.
+func (s *GameState) merchantTradeCenterDirectPathExists(route *economy.TradeRoute, routeType world.TradeRouteType) bool {
+	if s == nil || route == nil || routeType == "" {
+		return false
+	}
+	active := make(map[world.RegionID]world.TradeCenterDef)
+	for _, def := range s.TradeCenters.Centers {
+		if def.ID == "" || !def.ActiveInYear(s.Year) {
+			continue
+		}
+		region := s.Regions[def.ID]
+		if region == nil || region.IsSea || !region.IsCoastal(s.Regions) {
+			continue
+		}
+		active[def.ID] = def
+	}
+	for id, def := range active {
+		fromRegion := s.Regions[id]
+		for _, link := range def.Links {
+			linked, ok := active[link.RegionID]
+			if !ok {
+				continue
+			}
+			linkType := link.Type
+			if linkType == "" {
+				linkType = world.TradeRouteLand
+			}
+			if linkType != routeType {
+				continue
+			}
+			toRegion := s.Regions[linked.ID]
+			if fromRegion.OwnerID == route.FromFactionID && toRegion.OwnerID == route.ToFactionID ||
+				fromRegion.OwnerID == route.ToFactionID && toRegion.OwnerID == route.FromFactionID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// merchantTradeCenterPathExists, iki faction merkezleri arasında yalnızca
+// verilen fiziksel rota türünü kullanan bir merkez bağlantısı arar. Boş link
+// türü veri sözleşmesinde kara kabul edilir; merkez bağlantıları ekonomik
+// grafikte iki yönlü olduğundan gerçek merkezler arasındaki ters kenar da
+// eklenir.
+func (s *GameState) merchantTradeCenterPathExists(route *economy.TradeRoute, routeType world.TradeRouteType) bool {
+	if s == nil || route == nil || routeType == "" {
+		return false
+	}
+	type centerEdge struct {
+		to    world.RegionID
+		type_ world.TradeRouteType
+	}
+	active := make(map[world.RegionID]world.TradeCenterDef)
+	from := make([]world.RegionID, 0)
+	targets := make(map[world.RegionID]struct{})
+	for _, def := range s.TradeCenters.Centers {
+		if def.ID == "" || !def.ActiveInYear(s.Year) {
+			continue
+		}
+		region := s.Regions[def.ID]
+		if region == nil || region.IsSea || !region.IsCoastal(s.Regions) {
+			continue
+		}
+		active[def.ID] = def
+		if region.OwnerID == route.FromFactionID {
+			from = append(from, def.ID)
+		}
+		if region.OwnerID == route.ToFactionID {
+			targets[def.ID] = struct{}{}
+		}
+	}
+	if len(from) == 0 || len(targets) == 0 {
+		return false
+	}
+	adjacency := make(map[world.RegionID][]centerEdge, len(active))
+	for id, def := range active {
+		for _, link := range def.Links {
+			if _, ok := active[link.RegionID]; !ok {
+				continue
+			}
+			linkType := link.Type
+			if linkType == "" {
+				linkType = world.TradeRouteLand
+			}
+			if linkType != routeType {
+				continue
+			}
+			adjacency[id] = append(adjacency[id], centerEdge{to: link.RegionID, type_: linkType})
+			adjacency[link.RegionID] = append(adjacency[link.RegionID], centerEdge{to: id, type_: linkType})
+		}
+	}
+	queue := append([]world.RegionID(nil), from...)
+	seen := make(map[world.RegionID]struct{}, len(queue))
+	for _, id := range queue {
+		seen[id] = struct{}{}
+	}
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		if _, ok := targets[current]; ok {
+			return true
+		}
+		for _, edge := range adjacency[current] {
+			if _, ok := seen[edge.to]; ok || edge.type_ != routeType {
+				continue
+			}
+			seen[edge.to] = struct{}{}
+			queue = append(queue, edge.to)
+		}
+	}
+	return false
 }
 
 // MergeMerchantTradeFleets, aynı ticaret rotasının hedef denizine ulaşmış
@@ -997,6 +1111,35 @@ func (s *GameState) SetMerchantTradeRoute(fleetID army.ArmyID, routeKey string) 
 	return false
 }
 
+// NormalizeMerchantTradeAssignments geçersizleşmiş merchant görevlerini
+// temizler. Özellikle eski save'lerde kara merkez rotası TradeRouteKey olarak
+// kalmış olabilir; bu atama oyuncu/AI yeni bir rota seçeneğine dokunmadan da
+// state'ten kaldırılmalıdır.
+func (s *GameState) NormalizeMerchantTradeAssignments() int {
+	if s == nil {
+		return 0
+	}
+	cleared := 0
+	for _, fleet := range s.Armies {
+		if fleet == nil || fleet.TradeRouteKey == "" {
+			continue
+		}
+		valid := false
+		for _, route := range s.MerchantTradeRoutesForFleet(fleet) {
+			if route != nil && route.AssignmentKey() == fleet.TradeRouteKey {
+				valid = true
+				break
+			}
+		}
+		if valid {
+			continue
+		}
+		fleet.TradeRouteKey = ""
+		cleared++
+	}
+	return cleared
+}
+
 // RefreshMerchantTradeBonuses runtime rota hacmini gerçek fleet assignment ve
 // konumundan yeniden türetir. Her gemi +1 hacim sağlar ve rota kapasitesi
 // dolduğunda sonraki filolar katkı vermez.
@@ -1218,14 +1361,24 @@ func (s *GameState) merchantTradeEndpointCenters(route *economy.TradeRoute) ([]w
 			toCenters = append(toCenters, def.ID)
 		}
 	}
-	tradeAdjacency := s.TradeCenters.TradeAdjacency()
 	for id := range activeDefs {
-		for _, linkedID := range tradeAdjacency[id] {
-			if _, ok := activeDefs[linkedID]; !ok {
+		for _, link := range s.TradeCenters.Centers {
+			if link.ID != id {
 				continue
 			}
-			adjacency[id] = appendUniqueRegionID(adjacency[id], linkedID)
+			for _, centerLink := range link.Links {
+				if centerLink.Type != world.TradeRouteSea {
+					continue
+				}
+				if _, ok := activeDefs[centerLink.RegionID]; !ok {
+					continue
+				}
+				adjacency[id] = appendUniqueRegionID(adjacency[id], centerLink.RegionID)
+			}
 		}
+		// TradeAdjacency is intentionally not used here: it treats all center
+		// links as economic connectivity, while merchant assignment needs the
+		// authored physical route type.
 	}
 	sort.Slice(fromCenters, func(i, j int) bool { return fromCenters[i] < fromCenters[j] })
 	sort.Slice(toCenters, func(i, j int) bool { return toCenters[i] < toCenters[j] })

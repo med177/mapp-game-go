@@ -308,8 +308,9 @@ filolarını yeniden değerlendirir:
   attrition'ından muaftır; aynı filodaki savaş ve nakliye gemileri normal kış hasarı alır.
   AI tarafı aynı `TradeRouteKey` modelini otomatik rota seçimi ve deniz hareketiyle kullanır.
 
-Merchant rotası olmayan tarihsel merkez bağlantılı anlaşmalar panelden gizlenmez; aktif
-limanlar arasında deniz yolu bulunuyorsa `MerchantTradeRoutePortPairs()` canonical liman
+Kara olarak tanımlanmış tarihsel merkez bağlantılı anlaşmalar merchant rota listesinden
+çıkarılır; yalnız aktif limanlar arasında deniz yolu bulunuyorsa
+`MerchantTradeRoutePortPairs()` canonical liman
 çiftlerini üretir. Her fraksiyonun önce başkent bölgesindeki kullanılabilir limanı, yoksa
 başkente `WorldX/WorldY` karesel mesafesi en küçük kullanılabilir limanı seçilir. Haritanın `Ticaret`
 modunda oyuncuya ait aktif anlaşmalar, seçilen liman çiftleri arasında tek turuncu renkli,

@@ -32,6 +32,40 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   yol üretimi, deniz odaklarında keskin köşeleri kaldırıyor
   (`internal/render/trade_overlay.go`).
 
+- 2026-09-21: Deniz ticaret rotası düğümleri artık raster bölge ortalamasından
+  değil, Edit Mode'da belirlenen deniz bölgesi `WorldX/WorldY` odağından geçiyor;
+  böylece rota kara parçası yönündeki ortalama anchor'a kaymıyor
+  (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: Deniz rotalarının kara merkezlerindeki son noktaları, hedef deniz
+  odağına en yakın liman anchor'ına bağlanıyor. Liman–deniz odağı connector'ı
+  liman ile lacivert odak arasında düz, mavi ve aralığı artırılmış kesikli tek
+  çizgiyle gösteriliyor; connector hit-test ve hover geometrisine dahil edilmiyor
+  (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: Deniz ticaret rotalarının liman önündeki başlangıç/bitiş deniz
+  odakları, donanma markerı ölçeğinde koyu lacivert dairelerle işaretleniyor;
+  aynı odak birden fazla rotada yalnızca bir kez çiziliyor
+  (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: Deniz rotası odağı bulunan ticaret merkezi tabelaları, lacivert
+  odak dairesinin 3 px üstüne taşınıyor; tabela daireyi kapatmıyor
+  (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: Görünmez liman–deniz odağı connector'ları ticaret koridoru hit-test,
+  hover highlight, popup ve akış oku geometrisinden çıkarıldı; imleç bu boş
+  bağlantı alanında artık yol/popup üretmiyor (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: Ticaret haritasında ticaret merkezi bölgesi atlanırken liman
+  yerleşimi artık özel olarak korunuyor; böylece İskenderiye gibi liman
+  merkezleri kendi yerleşim marker'ı ve adıyla görünür kalıyor
+  (`internal/render/renderer.go`).
+
+- 2026-09-21: Yalnız kara bağlantısı bulunan ticaret merkezlerinde rota ve tabela
+  odağı liman yerine merkez yerleşim marker'ına taşındı; merkez yerleşim marker'ı
+  ticaret haritasında görünür tutuluyor ve tabela 3 px üstüne yerleşiyor
+  (`internal/render/trade_overlay.go`, `internal/render/renderer.go`).
+
 - 2026-09-21: `sources` rotalarında mal akışı yalnız tanımlı çıkış yönünde ilerliyor;
   doğal veya türetilmiş mallar kaynak rotasına geri dönemiyor. Amerika → Atlantik
   → Avrupa gibi kaynaklar arası ileri zincir korunuyor (`internal/state/historical_trade.go`).

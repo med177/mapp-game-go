@@ -228,6 +228,95 @@ func TestMerchantTradePortEndpointFollowsPortFacingSea(t *testing.T) {
 	}
 }
 
+func TestMerchantTradeRoutesForFleetRejectsLandOnlyRoute(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "from", ToFactionID: "to", AmountPerTurn: 3}
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"from_land": {ID: "from_land", OwnerID: "from", TradeCapacity: 2, Neighbors: []world.RegionID{"to_land"}},
+			"to_land":   {ID: "to_land", OwnerID: "to", TradeCapacity: 2, Neighbors: []world.RegionID{"from_land"}},
+		},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "from_land", Links: []world.TradeCenterLink{{RegionID: "to_land", Type: world.TradeRouteLand}}},
+			{ID: "to_land", Links: []world.TradeCenterLink{{RegionID: "from_land", Type: world.TradeRouteLand}}},
+		}},
+		UnitTypes: map[string]*army.UnitType{
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade},
+		},
+		TradeRoutes: []*economy.TradeRoute{route},
+	}
+	fleet := merchantTestFleet("merchant", "from", "from_land", route.AssignmentKey(), 1)
+	gs.Armies = map[army.ArmyID]*army.Army{fleet.ID: fleet}
+
+	if got, ok := gs.MerchantTradeRouteTargetSeaRegion(route); ok || got != "" {
+		t.Fatalf("kara rotası için hedef deniz = %q, want boş", got)
+	}
+	if routes := gs.MerchantTradeRoutesForFleet(fleet); len(routes) != 0 {
+		t.Fatalf("kara rotası merchant seçeneklerinde kaldı: %+v", routes)
+	}
+	if gs.SetMerchantTradeRoute(fleet.ID, route.AssignmentKey()) {
+		t.Fatal("kara rotası merchant filosuna atanabildi")
+	}
+}
+
+func TestMerchantTradeRoutesRejectLandCenterPathEvenWhenPortsExist(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "castile", ToFactionID: "granada", AmountPerTurn: 3}
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"castile_center": {
+				ID: "castile_center", OwnerID: "castile", TradeCapacity: 2,
+				Neighbors: []world.RegionID{"castile_sea"}, Settlements: []world.Settlement{{ID: "castile_port", Type: world.SettlementPort}}, Buildings: []string{"port"},
+			},
+			"granada_center": {
+				ID: "granada_center", OwnerID: "granada", TradeCapacity: 2,
+				Neighbors: []world.RegionID{"granada_sea"}, Settlements: []world.Settlement{{ID: "granada_port", Type: world.SettlementPort}}, Buildings: []string{"port"},
+			},
+			"castile_sea": {ID: "castile_sea", IsSea: true, Neighbors: []world.RegionID{"granada_sea"}},
+			"granada_sea": {ID: "granada_sea", IsSea: true, Neighbors: []world.RegionID{"castile_sea"}},
+		},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "castile_center", Links: []world.TradeCenterLink{{RegionID: "granada_center", Type: world.TradeRouteLand}}},
+			{ID: "granada_center", Links: []world.TradeCenterLink{{RegionID: "castile_center", Type: world.TradeRouteLand}}},
+		}},
+		TradeRoutes: []*economy.TradeRoute{route},
+	}
+	fleet := merchantTestFleet("merchant", "castile", "castile_sea", route.AssignmentKey(), 1)
+	gs.Armies = map[army.ArmyID]*army.Army{fleet.ID: fleet}
+
+	if pairs := gs.MerchantTradeRoutePortPairs(route); len(pairs) == 0 {
+		t.Fatal("fixture liman çifti üretmedi; test kara bağlantısını liman fallback'inden ayıramıyor")
+	}
+	if got, ok := gs.MerchantTradeRouteTargetSeaRegion(route); ok || got != "" {
+		t.Fatalf("limanları olan kara merkezi rotası = (%q, %v), want boş hedef", got, ok)
+	}
+	if routes := gs.MerchantTradeRoutesForFleet(fleet); len(routes) != 0 {
+		t.Fatalf("kara merkezi rotası merchant seçeneklerinde kaldı: %+v", routes)
+	}
+}
+
+func TestNormalizeMerchantTradeAssignmentsClearsLegacyLandRoute(t *testing.T) {
+	route := &economy.TradeRoute{FromFactionID: "from", ToFactionID: "to", AmountPerTurn: 3}
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"from_land": {ID: "from_land", OwnerID: "from", Neighbors: []world.RegionID{"to_land"}},
+			"to_land":   {ID: "to_land", OwnerID: "to", Neighbors: []world.RegionID{"from_land"}},
+		},
+		TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
+			{ID: "from_land", Links: []world.TradeCenterLink{{RegionID: "to_land", Type: world.TradeRouteLand}}},
+			{ID: "to_land", Links: []world.TradeCenterLink{{RegionID: "from_land", Type: world.TradeRouteLand}}},
+		}},
+		TradeRoutes: []*economy.TradeRoute{route},
+	}
+	fleet := merchantTestFleet("merchant", "from", "from_land", route.AssignmentKey(), 1)
+	gs.Armies = map[army.ArmyID]*army.Army{fleet.ID: fleet}
+
+	if got := gs.NormalizeMerchantTradeAssignments(); got != 1 {
+		t.Fatalf("temizlenen geçersiz merchant ataması = %d, want 1", got)
+	}
+	if fleet.TradeRouteKey != "" {
+		t.Fatalf("kara rota ataması temizlenmedi: %q", fleet.TradeRouteKey)
+	}
+}
+
 func TestMerchantFleetTradeStatusesMatchesIndividualEvaluation(t *testing.T) {
 	const routeKey = "from->to"
 	route := &economy.TradeRoute{
