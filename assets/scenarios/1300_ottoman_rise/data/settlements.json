@@ -2373,53 +2373,89 @@
     "region_id": "crimea",
     "settlements": [
       {
-        "id": "cherson",
-        "name_tr": "Hersones",
-        "x": 1151,
-        "y": 391,
-        "type": "port",
-        "population": 28
-      },
-      {
-        "id": "crimea_bakhchisarai",
-        "name_tr": "Bahçesaray",
-        "x": 1158,
-        "y": 381,
-        "type": "fortress",
-        "population": 8
-      },
-      {
-        "id": "crimea_kerch",
-        "name_tr": "Kerç",
+        "id": "crimea_vosporo",
+        "name_tr": "Vosporo",
         "x": 1204,
         "y": 374,
-        "type": "port",
+        "type": "fortress",
         "population": 24
       },
       {
-        "id": "crimea_sudak",
-        "name_tr": "Sudak",
-        "x": 1173,
-        "y": 384,
-        "type": "port",
+        "id": "crimea_soldaia",
+        "name_tr": "Soldaia",
+        "x": 1175,
+        "y": 387,
+        "type": "town",
         "population": 24
+      },
+      {
+        "id": "crimea_kaffa_port",
+        "name_tr": "Kefe Limanı",
+        "x": 1185,
+        "y": 382,
+        "type": "port",
+        "population": 0
       },
       {
         "id": "kaffa",
         "name_tr": "Kefe",
-        "x": 1181,
-        "y": 380,
-        "type": "city",
+        "x": 1182,
+        "y": 381,
+        "type": "fortress",
+        "is_center": true,
         "population": 24
       },
       {
+        "id": "crimea_caulita",
+        "name_tr": "Caulita",
+        "x": 1157,
+        "y": 396,
+        "type": "port",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "crimea_solhat",
+    "settlements": [
+      {
         "id": "solkhat",
-        "name_tr": "Sivastopol",
-        "x": 1150,
-        "y": 386,
+        "name_tr": "Solhat",
+        "x": 1173,
+        "y": 375,
         "type": "city",
-        "is_center": true,
         "population": 32
+      },
+      {
+        "id": "crimea_solhat_qirkyer",
+        "name_tr": "Qırk Yer",
+        "x": 1154,
+        "y": 382,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "gothia",
+    "settlements": [
+      {
+        "id": "cherson",
+        "name_tr": "Hersones",
+        "x": 1148,
+        "y": 388,
+        "type": "port",
+        "population": 28
+      },
+      {
+        "id": "mangup",
+        "name_tr": "Mangup",
+        "x": 1152,
+        "y": 386,
+        "type": "fortress",
+        "is_center": true,
+        "population": 8
       }
     ]
   },
@@ -4246,7 +4282,7 @@
         "name_tr": "Özi",
         "x": 1110,
         "y": 346,
-        "type": "port",
+        "type": "fortress",
         "population": 28
       }
     ]
@@ -6861,9 +6897,9 @@
       {
         "id": "kiev_main",
         "name_tr": "Odessa",
-        "x": 1089,
-        "y": 353,
-        "type": "city",
+        "x": 1091,
+        "y": 354,
+        "type": "port",
         "is_center": true,
         "population": 33
       },
@@ -7381,29 +7417,85 @@
     "region_id": "north_caucasus",
     "settlements": [
       {
-        "id": "north_caucasus_astrahan",
-        "name_tr": "Astrahan",
-        "x": 1438,
-        "y": 356,
-        "type": "city",
-        "population": 45
-      },
-      {
-        "id": "north_caucasus_azak",
-        "name_tr": "Azak",
-        "x": 1266,
-        "y": 342,
-        "type": "fortress",
-        "is_center": true,
-        "population": 30
-      },
-      {
         "id": "north_caucasus_cherkezya",
         "name_tr": "Çerkezya",
         "x": 1269,
         "y": 404,
         "type": "city",
+        "is_center": true,
         "population": 30
+      }
+    ]
+  },
+  {
+    "region_id": "kipchak_steppe",
+    "settlements": [
+      {
+        "id": "kipchak_steppe_saray",
+        "name_tr": "Saray Batu",
+        "x": 1413,
+        "y": 329,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "azak_region",
+    "settlements": [
+      {
+        "id": "north_caucasus_azak",
+        "name_tr": "Azak",
+        "x": 1265,
+        "y": 344,
+        "type": "fortress",
+        "is_center": true,
+        "population": 30
+      },
+      {
+        "id": "azak_region_port",
+        "name_tr": "Azak Limanı",
+        "x": 1262,
+        "y": 340,
+        "type": "port",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "sarkel_region",
+    "settlements": [
+      {
+        "id": "kipchak_steppe_sarkel",
+        "name_tr": "Sarkel Kalesi",
+        "x": 1320,
+        "y": 325,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "astrakhan_region",
+    "settlements": [
+      {
+        "id": "north_caucasus_astrahan",
+        "name_tr": "Astrahan",
+        "x": 1439,
+        "y": 357,
+        "type": "fortress",
+        "is_center": true,
+        "population": 45
+      },
+      {
+        "id": "astrakhan_region_port",
+        "name_tr": "Hacıtarhan Limanı",
+        "x": 1438,
+        "y": 379,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -7411,8 +7503,8 @@
     "region_id": "dagestan",
     "settlements": [
       {
-        "id": "dagestan_aktav",
-        "name_tr": "Aktav",
+        "id": "mangislak",
+        "name_tr": "Mangışlak",
         "x": 1535,
         "y": 468,
         "type": "fortress",

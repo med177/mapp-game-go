@@ -4702,5 +4702,17 @@
     "faction_b": "east_rome",
     "score": 0,
     "stance": "trade"
+  },
+  {
+    "faction_a": "teodoro_principality",
+    "faction_b": "east_rome",
+    "score": 50,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "teodoro_principality",
+    "faction_b": "trebizond_emp",
+    "score": 50,
+    "stance": "allied"
   }
 ]

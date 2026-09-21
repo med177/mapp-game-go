@@ -883,18 +883,6 @@
     ]
   },
   {
-    "id": "army_garrison_229",
-    "owner_id": "russia",
-    "region_id": "dagestan",
-    "is_garrison": true,
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_garrison_231",
     "owner_id": "wallachia_prince",
     "region_id": "bessarabia",
@@ -2346,6 +2334,75 @@
       {
         "type_id": "transport",
         "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_edit_154",
+    "owner_id": "teodoro_principality",
+    "region_id": "gothia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_155",
+    "owner_id": "teodoro_principality",
+    "region_id": "crimean_black_sea",
+    "docked_region_id": "gothia",
+    "docked_settlement_id": "cherson",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_edit_156",
+    "owner_id": "russia",
+    "region_id": "nizhny_novgorod",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_edit_156",
+    "owner_id": "russia",
+    "region_id": "nizhny_novgorod",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_edit_157",
+    "owner_id": "genoa",
+    "region_id": "azak_region",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_edit_158",
+    "owner_id": "golden_horde",
+    "region_id": "kipchak_steppe",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
       }
     ]
   }

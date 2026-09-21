@@ -1751,7 +1751,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "ukraine_main",
+    "capital_settlement_id": "kipchak_steppe_saray",
     "gold": 5000,
     "grain": 5080,
     "iron": 80,
@@ -4569,5 +4569,31 @@
         "value": 48
       }
     ]
+  },
+  {
+    "id": "teodoro_principality",
+    "name": "Principality of Teodoro",
+    "name_tr": "Teodoro Prensliği",
+    "religion": "orthodox",
+    "color": [
+      255,
+      67,
+      110
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 50,
+    "timber": 50,
+    "stone": 0,
+    "spice": 20,
+    "cloth": 5,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
   }
 ]
