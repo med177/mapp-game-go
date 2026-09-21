@@ -7,518 +7,108 @@
   "secondary_merchant_capacity_bonus": 1,
   "primary_merchant_income_bonus": 2,
   "secondary_merchant_income_bonus": 1,
-  "historical_flows": [
-    {
-      "from": "spice_route",
-      "to": "alexandria",
-      "good": "spice",
-      "amount_per_turn": 8,
-      "gold_income_per_turn": 18,
-      "start_year": 1300
-    },
-    {
-      "from": "spice_route",
-      "to": "basra",
-      "good": "spice",
-      "amount_per_turn": 6,
-      "gold_income_per_turn": 14,
-      "start_year": 1300
-    },
-    {
-      "from": "silk_road",
-      "to": "crimea",
-      "good": "cloth",
-      "amount_per_turn": 6,
-      "gold_income_per_turn": 12,
-      "start_year": 1300
-    },
-    {
-      "from": "silk_road",
-      "to": "azerbaijan",
-      "good": "cloth",
-      "amount_per_turn": 5,
-      "gold_income_per_turn": 10,
-      "start_year": 1300
-    },
-    {
-      "from": "trans_saharan_route",
-      "to": "tunis",
-      "good": "gold",
-      "amount_per_turn": 7,
-      "gold_income_per_turn": 16,
-      "start_year": 1300
-    },
-    {
-      "from": "atlantic_route",
-      "to": "portugal",
-      "good": "cloth",
-      "amount_per_turn": 5,
-      "gold_income_per_turn": 12,
-      "start_year": 1492
-    },
-    {
-      "from": "atlantic_route",
-      "to": "sevilla",
-      "good": "cloth",
-      "amount_per_turn": 5,
-      "gold_income_per_turn": 12,
-      "start_year": 1492
-    },
-    {
-      "from": "cape_route",
-      "to": "portugal",
-      "good": "spice",
-      "amount_per_turn": 8,
-      "gold_income_per_turn": 20,
-      "start_year": 1498
-    },
-    {
-      "from": "cape_route",
-      "to": "sevilla",
-      "good": "spice",
-      "amount_per_turn": 6,
-      "gold_income_per_turn": 15,
-      "start_year": 1498
-    },
-    {
-      "from": "atlantic_route",
-      "to": "north_america_route",
-      "good": "gold",
-      "amount_per_turn": 10,
-      "gold_income_per_turn": 25,
-      "start_year": 1500
-    },
-    {
-      "from": "atlantic_route",
-      "to": "south_america_route",
-      "good": "gold",
-      "amount_per_turn": 10,
-      "gold_income_per_turn": 25,
-      "start_year": 1500
-    }
-  ],
-  "centers": [
-    {
-      "region_id": "venice",
-      "tier": "primary",
-      "links": [
-        "alexandria",
-        "constantinople",
-        "dalmatia",
-        "genoa",
-        "tunis"
-      ]
-    },
-    {
-      "region_id": "constantinople",
-      "tier": "primary",
-      "links": [
-        "aleppo",
-        "alexandria",
-        "crimea",
-        "dalmatia",
-        "trebizond",
-        "venice"
-      ]
-    },
-    {
-      "region_id": "flanders",
-      "tier": "primary",
-      "links": [
-        "denmark",
-        "palatinate",
-        "portugal"
-      ]
-    },
-    {
-      "region_id": "genoa",
-      "tier": "primary",
-      "links": [
-        "crimea",
-        "flanders",
-        "granada",
-        "palatinate",
-        "tunis",
-        "venice"
-      ]
-    },
-    {
-      "region_id": "catalonia",
-      "tier": "secondary",
-      "links": [
-        "genoa"
-      ]
-    },
-    {
-      "region_id": "campania",
-      "tier": "secondary",
-      "links": [
-        "venice"
-      ]
-    },
-    {
-      "region_id": "florence",
-      "tier": "secondary",
-      "links": [
-        "genoa"
-      ]
-    },
-    {
-      "region_id": "north_cyprus",
-      "tier": "secondary",
-      "links": [
-        "alexandria"
-      ]
-    },
-    {
-      "region_id": "izmir",
-      "tier": "secondary",
-      "links": [
-        "constantinople"
-      ]
-    },
-    {
-      "region_id": "mentese",
-      "tier": "secondary",
-      "links": [
-        "alexandria"
-      ]
-    },
-    {
-      "region_id": "sinop",
-      "tier": "secondary",
-      "links": [
-        "trebizond"
-      ]
-    },
-    {
-      "region_id": "saruhan",
-      "tier": "secondary",
-      "links": [
-        "venice"
-      ]
-    },
-    {
-      "region_id": "hejaz",
-      "tier": "secondary",
-      "links": [
-        "alexandria"
-      ]
-    },
-    {
-      "region_id": "bahrain",
-      "tier": "secondary",
-      "links": [
-        "southern_persia"
-      ]
-    },
-    {
-      "region_id": "essex",
-      "tier": "secondary",
-      "links": [
-        "flanders"
-      ]
-    },
-    {
-      "region_id": "normandy",
-      "tier": "secondary",
-      "links": [
-        "flanders"
-      ]
-    },
-    {
-      "region_id": "morocco",
-      "tier": "secondary",
-      "links": [
-        "granada"
-      ]
-    },
-    {
-      "region_id": "uae",
-      "tier": "secondary",
-      "links": [
-        "southern_persia"
-      ]
-    },
-    {
-      "region_id": "karesi",
-      "tier": "secondary",
-      "links": [
-        "constantinople"
-      ]
-    },
-    {
-      "region_id": "granada",
-      "tier": "secondary",
-      "links": [
-        "genoa",
-        "portugal",
-        "sevilla"
-      ]
-    },
-    {
-      "region_id": "sevilla",
-      "tier": "secondary",
-      "links": [
-        "atlantic_route",
-        "cape_route",
-        "granada",
-        "portugal"
-      ]
-    },
-    {
-      "region_id": "portugal",
-      "tier": "secondary",
-      "links": [
-        "atlantic_route",
-        "flanders",
-        "granada",
-        "sevilla"
-      ]
-    },
-    {
-      "region_id": "aleppo",
-      "tier": "primary",
-      "links": [
-        "alexandria",
-        "azerbaijan",
-        "baghdad",
-        "constantinople",
-        "trebizond"
-      ]
-    },
-    {
-      "region_id": "alexandria",
-      "tier": "primary",
-      "links": [
-        "aleppo",
-        "constantinople",
-        "spice_route",
-        "tunis",
-        "venice"
-      ]
-    },
-    {
-      "region_id": "basra",
-      "tier": "primary",
-      "links": [
-        "baghdad",
-        "southern_persia",
-        "spice_route"
-      ]
-    },
-    {
-      "region_id": "novgorod",
-      "tier": "secondary",
-      "links": [
-        "denmark",
-        "moscow"
-      ]
-    },
-    {
-      "region_id": "denmark",
-      "tier": "secondary",
-      "links": [
-        "flanders",
-        "novgorod",
-        "saxony"
-      ]
-    },
-    {
-      "region_id": "tunis",
-      "tier": "secondary",
-      "links": [
-        "alexandria",
-        "genoa",
-        "trans_saharan_route",
-        "venice"
-      ]
-    },
-    {
-      "region_id": "crimea",
-      "tier": "primary",
-      "links": [
-        "constantinople",
-        "genoa",
-        "kiev",
-        "silk_road",
-        "trebizond"
-      ]
-    },
-    {
-      "region_id": "palatinate",
-      "tier": "secondary",
-      "links": [
-        "flanders",
-        "genoa",
-        "saxony"
-      ]
-    },
-    {
-      "region_id": "saxony",
-      "tier": "secondary",
-      "links": [
-        "denmark",
-        "palatinate",
-        "silesia"
-      ]
-    },
-    {
-      "region_id": "silesia",
-      "tier": "secondary",
-      "links": [
-        "kiev",
-        "saxony"
-      ]
-    },
-    {
-      "region_id": "moscow",
-      "tier": "secondary",
-      "links": [
-        "kiev",
-        "novgorod"
-      ]
-    },
-    {
-      "region_id": "kiev",
-      "name_tr": "Dinyeper Havzası",
-      "tier": "secondary",
-      "links": [
-        "crimea",
-        "moscow",
-        "silesia"
-      ]
-    },
-    {
-      "region_id": "dalmatia",
-      "tier": "secondary",
-      "links": [
-        "constantinople",
-        "venice"
-      ]
-    },
-    {
-      "region_id": "azerbaijan",
-      "tier": "secondary",
-      "links": [
-        "aleppo",
-        "northern_persia",
-        "silk_road",
-        "trebizond"
-      ]
-    },
-    {
-      "region_id": "northern_persia",
-      "tier": "secondary",
-      "links": [
-        "azerbaijan",
-        "baghdad",
-        "southern_persia"
-      ]
-    },
-    {
-      "region_id": "southern_persia",
-      "tier": "primary",
-      "links": [
-        "basra",
-        "northern_persia"
-      ]
-    },
-    {
-      "region_id": "baghdad",
-      "tier": "secondary",
-      "links": [
-        "aleppo",
-        "basra",
-        "northern_persia"
-      ]
-    },
-    {
-      "region_id": "trebizond",
-      "tier": "secondary",
-      "links": [
-        "aleppo",
-        "azerbaijan",
-        "constantinople",
-        "crimea"
-      ]
-    },
+  "sources": [
     {
       "region_id": "silk_road",
       "name_tr": "İpek Yolu",
-      "tier": "secondary",
+      "main_route": true,
       "links": [
-        "azerbaijan",
-        "crimea"
+        {
+          "region_id": "azerbaijan",
+          "type": "land"
+        },
+        {
+          "region_id": "northern_persia",
+          "type": "land"
+        }
       ],
-      "world_x": 3000,
-      "world_y": 515,
-      "off_map": true
+      "world_x": 2900,
+      "world_y": 720,
+      "source_goods": [
+        {
+          "good": "cloth",
+          "amount_per_turn": 6,
+          "gold_income_per_turn": 12
+        }
+      ]
     },
     {
       "region_id": "spice_route",
       "name_tr": "Baharat Yolu",
-      "tier": "secondary",
+      "main_route": true,
       "links": [
-        "alexandria",
-        "basra",
-        "cape_route"
+        {
+          "region_id": "southern_persia",
+          "type": "sea"
+        },
+        {
+          "region_id": "basra",
+          "type": "sea"
+        },
+        {
+          "region_id": "hejaz",
+          "type": "sea"
+        }
       ],
-      "world_x": 2880,
-      "world_y": 1260,
-      "off_map": true
+      "world_x": 2900,
+      "world_y": 1200,
+      "source_goods": [
+        {
+          "good": "spice",
+          "amount_per_turn": 8,
+          "gold_income_per_turn": 18
+        }
+      ]
     },
     {
-      "region_id": "atlantic_route",
-      "name_tr": "Atlantik Yolu",
-      "tier": "secondary",
+      "region_id": "trans_saharan_route",
+      "name_tr": "Sahra Altı Altın Yolu",
+      "main_route": true,
       "links": [
-        "north_america_route",
-        "portugal",
-        "sevilla",
-        "south_america_route"
+        {
+          "region_id": "tunis",
+          "type": "land"
+        }
       ],
-      "world_x": -120,
-      "world_y": 220,
-      "off_map": true
-    },
-    {
-      "region_id": "north_america_route",
-      "name_tr": "Kuzey Amerika Yolu",
-      "tier": "secondary",
-      "links": [
-        "atlantic_route"
-      ],
-      "world_x": -340,
-      "world_y": 120,
-      "off_map": true,
-      "unlock_year": 1500
-    },
-    {
-      "region_id": "south_america_route",
-      "name_tr": "Güney Amerika Yolu",
-      "tier": "secondary",
-      "links": [
-        "atlantic_route"
-      ],
-      "world_x": -280,
-      "world_y": 520,
-      "off_map": true,
-      "unlock_year": 1500
+      "world_x": 560,
+      "world_y": 1410,
+      "source_goods": [
+        {
+          "good": "gold",
+          "amount_per_turn": 7,
+          "gold_income_per_turn": 16
+        }
+      ]
     },
     {
       "region_id": "cape_route",
       "name_tr": "Ümit Burnu / Hint Deniz Yolu",
-      "tier": "secondary",
+      "main_route": true,
       "links": [
-        "portugal",
-        "sevilla",
-        "spice_route"
+        {
+          "region_id": "portugal",
+          "type": "sea"
+        },
+        {
+          "region_id": "sevilla",
+          "type": "sea"
+        }
       ],
-      "world_x": 1200,
-      "world_y": 1800,
-      "off_map": true,
+      "world_x": -100,
+      "world_y": 1200,
       "unlock_year": 1498,
+      "source_goods": [
+        {
+          "good": "spice",
+          "amount_per_turn": 8,
+          "gold_income_per_turn": 20
+        },
+        {
+          "good": "cloth",
+          "amount_per_turn": 5,
+          "gold_income_per_turn": 12
+        }
+      ],
       "competition_impacts": [
         {
           "center_id": "spice_route",
@@ -533,15 +123,457 @@
       ]
     },
     {
-      "region_id": "trans_saharan_route",
-      "name_tr": "Sahra Altı Altın Yolu",
+      "region_id": "north_america_route",
+      "name_tr": "Kuzey Amerika Yolu",
+      "main_route": true,
+      "links": [
+        {
+          "region_id": "atlantic_route",
+          "type": "sea"
+        }
+      ],
+      "world_x": -340,
+      "world_y": 420,
+      "unlock_year": 1500,
+      "source_goods": [
+        {
+          "good": "gold",
+          "amount_per_turn": 10,
+          "gold_income_per_turn": 25
+        }
+      ]
+    },
+    {
+      "region_id": "south_america_route",
+      "name_tr": "Güney Amerika Yolu",
+      "main_route": true,
+      "links": [
+        {
+          "region_id": "atlantic_route",
+          "type": "sea"
+        }
+      ],
+      "world_x": -340,
+      "world_y": 1020,
+      "unlock_year": 1510,
+      "source_goods": [
+        {
+          "good": "gold",
+          "amount_per_turn": 10,
+          "gold_income_per_turn": 25
+        }
+      ]
+    },
+    {
+      "region_id": "atlantic_route",
+      "name_tr": "Atlantik Yolu",
+      "links": [
+        {
+          "region_id": "portugal",
+          "type": "sea"
+        },
+        {
+          "region_id": "sevilla",
+          "type": "sea"
+        }
+      ],
+      "world_x": -100,
+      "world_y": 720,
+      "unlock_year": 1492
+    }
+  ],
+  "centers": [
+    {
+      "region_id": "venice",
+      "tier": "primary"
+    },
+    {
+      "region_id": "genoa",
+      "tier": "primary"
+    },
+    {
+      "region_id": "flanders",
+      "tier": "primary"
+    },
+    {
+      "region_id": "basra",
+      "tier": "primary",
+      "links": [
+        {
+          "region_id": "baghdad",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "alexandria",
+      "tier": "primary",
+      "links": [
+        {
+          "region_id": "constantinople",
+          "type": "sea"
+        },
+        {
+          "region_id": "tunis",
+          "type": "sea"
+        },
+        {
+          "region_id": "venice",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "aleppo",
+      "tier": "primary",
+      "links": [
+        {
+          "region_id": "alexandria",
+          "type": "sea"
+        },
+        {
+          "region_id": "constantinople",
+          "type": "land"
+        },
+        {
+          "region_id": "trebizond",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "constantinople",
+      "tier": "primary",
+      "links": [
+        {
+          "region_id": "crimea",
+          "type": "sea"
+        },
+        {
+          "region_id": "dalmatia",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "catalonia",
       "tier": "secondary",
       "links": [
-        "tunis"
-      ],
-      "world_x": 560,
-      "world_y": 1410,
-      "off_map": true
+        {
+          "region_id": "granada",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "campania",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "venice",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "florence",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "genoa",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "sinop",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "crimea",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "hejaz",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "aleppo",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "essex",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "flanders",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "normandy",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "flanders",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "morocco",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "granada",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "granada",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "genoa",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "sevilla",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "granada",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "portugal",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "flanders",
+          "type": "sea"
+        },
+        {
+          "region_id": "granada",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "novgorod",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "denmark",
+          "type": "sea"
+        },
+        {
+          "region_id": "silesia",
+          "type": "land"
+        }
+        
+      ]
+    },
+    {
+      "region_id": "denmark",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "flanders",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "tunis",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "genoa",
+          "type": "sea"
+        },
+        {
+          "region_id": "venice",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "crimea",
+      "tier": "primary",
+      "links": [
+        {
+          "region_id": "constantinople",
+          "type": "sea"
+        },
+        {
+          "region_id": "kiev",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "palatinate",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "flanders",
+          "type": "land"
+        },
+        {
+          "region_id": "denmark",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "saxony",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "palatinate",
+          "type": "land"
+        },
+        {
+          "region_id": "denmark",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "silesia",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "saxony",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "moscow",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "novgorod",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "kiev",
+      "name_tr": "Dinyeper Havzası",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "moscow",
+          "type": "land"
+        },
+        {
+          "region_id": "silesia",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "dalmatia",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "silesia",
+          "type": "land"
+        },
+        {
+          "region_id": "venice",
+          "type": "sea"
+        },
+        {
+          "region_id": "genoa",
+          "type": "sea"
+        }
+      ]
+    },
+    {
+      "region_id": "azerbaijan",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "trebizond",
+          "type": "land"
+        },
+        {
+          "region_id": "north_caucasus",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "north_caucasus",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "crimea",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "northern_persia",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "azerbaijan",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "southern_persia",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "basra",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "baghdad",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "aleppo",
+          "type": "land"
+        },
+        {
+          "region_id": "northern_persia",
+          "type": "land"
+        }
+      ]
+    },
+    {
+      "region_id": "trebizond",
+      "tier": "secondary",
+      "links": [
+        {
+          "region_id": "constantinople",
+          "type": "sea"
+        },
+        {
+          "region_id": "crimea",
+          "type": "sea"
+        }
+      ]
     }
   ]
 }

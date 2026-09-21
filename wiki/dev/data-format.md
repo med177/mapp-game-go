@@ -151,24 +151,30 @@ Ticaret harita modunda kullanılacak tarihsel merkez düğümleri ve aralarında
 
 ```json
 {
+  "sources": [
+    { "region_id": "silk_road", "main_route": true, "links": [{ "region_id": "azerbaijan", "type": "land" }] }
+  ],
   "centers": [
-    { "id": "venice", "tier": "primary", "links": ["genoa", "constantinople"] },
-    { "id": "constantinople", "tier": "primary", "links": ["venice", "aleppo"] },
-    { "id": "aleppo", "tier": "secondary", "links": ["constantinople", "basra"] }
+    { "region_id": "venice", "tier": "primary", "links": [{ "region_id": "genoa", "type": "sea" }, { "region_id": "constantinople", "type": "sea" }] },
+    { "region_id": "constantinople", "tier": "primary", "links": [{ "region_id": "venice", "type": "sea" }, { "region_id": "aleppo", "type": "land" }] },
+    { "region_id": "aleppo", "tier": "secondary", "links": [{ "region_id": "constantinople", "type": "land" }, { "region_id": "basra", "type": "land" }] }
   ]
 }
 ```
 
 Alanlar:
+- `sources`: ana kaynak yollarının merkezlerden ayrı tutulduğu dizi; bu kayıtlar otomatik olarak off-map kabul edilir ve runtime yüklemesi bunları merkez grafiğine dahil eder
 - `id`: `regions.json` içindeki bölge ID'si
 - `tier`: `primary` veya `secondary` (görsel vurgu seviyesi)
-- `links`: merkezin doğrudan bağlı olduğu diğer merkez ID'leri
+- `main_route`: merkezin ana tarihsel yol olarak görsel ve akış kurallarına tabi olduğunu belirtir
+- `links`: görsel olarak merkezden çıkan oku `{ "region_id": "...", "type": "land|sea" }` nesnesiyle tutar; normal merkezlerde tek kayıt ekonomik olarak iki yönlü bağlantı kabul edilir
 
 Kurallar:
 - Sıra önemlidir; renderer merkezleri dosyadaki sırayla alır.
 - Geçersiz, deniz veya `trade_capacity <= 0` olan merkezler atlanır.
 - `links` içinde geçersiz/tekrarlı/self link girdileri temizlenir.
-- Koridor akışı doğrudan her merkez çifti arasında değil, bu link graph'ı üzerindeki kısa yol boyunca dağıtılır.
+- `sources` bağlantıları yalnız listelenen yönde mal taşır; hedef merkezden kaynağa ters akış oluşturulmaz.
+- Koridor akışı doğrudan her merkez çifti arasında değil, bu yönlü link graph'ı üzerindeki kısa yol boyunca dağıtılır.
 - Dosya yoksa merkez listesi boş kalır (trade map çizimi yapılmaz).
 
 ## land_passages.json

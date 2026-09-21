@@ -378,10 +378,13 @@ type GameState struct {
 	OfferRejectionTurns map[string]int `json:"diplomatic_offer_last_rejected_turns,omitempty"`
 
 	// Ticaret güzergahları
-	TradeRoutes           []*economy.TradeRoute          `json:"trade_routes"`
-	TradeCenters          world.TradeCenterConfig        `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
-	TradeNetworkModifiers []TradeNetworkModifier         `json:"trade_network_modifiers,omitempty"`
-	Sieges                map[world.RegionID]*SiegeState `json:"sieges,omitempty"`
+	TradeRoutes                   []*economy.TradeRoute          `json:"trade_routes"`
+	TradeCenters                  world.TradeCenterConfig        `json:"trade_centers,omitempty"` // senaryo bazlı tarihsel ticaret merkezleri + link graph
+	historicalTradeFlowCacheYear  int                            `json:"-"`
+	historicalTradeFlowCacheValid bool                           `json:"-"`
+	historicalTradeFlowCache      []world.HistoricalTradeFlow    `json:"-"`
+	TradeNetworkModifiers         []TradeNetworkModifier         `json:"trade_network_modifiers,omitempty"`
+	Sieges                        map[world.RegionID]*SiegeState `json:"sieges,omitempty"`
 	// Bu tur uygulanacak yağmalar. Ekonomi tick'inde hedef üretiminden düşülüp
 	// yağmalayan fraksiyona aktarılır; aynı bölge aynı turda yalnız bir kez
 	// yağmalanabilir.

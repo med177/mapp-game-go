@@ -86,6 +86,7 @@ func tradeCenterLinkedPartnerLimit(gs *state.GameState, fid faction.FactionID) i
 		centersByID[center.ID] = center
 	}
 	partners := make(map[faction.FactionID]struct{})
+	tradeAdjacency := gs.TradeCenters.TradeAdjacency()
 	for _, center := range gs.TradeCenters.Centers {
 		if !center.ActiveInYear(gs.Year) {
 			continue
@@ -94,7 +95,7 @@ func tradeCenterLinkedPartnerLimit(gs *state.GameState, fid faction.FactionID) i
 		if region == nil || region.OwnerID != string(fid) {
 			continue
 		}
-		for _, linkedID := range center.Links {
+		for _, linkedID := range tradeAdjacency[center.ID] {
 			linkedCenter, ok := centersByID[linkedID]
 			if !ok || !linkedCenter.ActiveInYear(gs.Year) {
 				continue

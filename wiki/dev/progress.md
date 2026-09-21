@@ -1,20 +1,78 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-20
+last_updated: 2026-09-21
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
 
+- 2026-09-21: `trade_centers.json` içinde ana kaynak yolları `sources`, oynanabilir
+  ticaret merkezleri `centers` altında ayrıştırıldı. Yükleyici iki bölümü tek
+  runtime ticaret grafiğinde birleştirir (`internal/world/trade_centers.go`,
+  `assets/scenarios/1300_ottoman_rise/data/trade_centers.json`).
+
+- 2026-09-21: Normal ticaret merkezlerinde tek bir görsel `links` kaydı iki yönlü
+  ekonomik erişim sağlıyor; kaynak rotaları ise yalnızca kaynak kaydından çıkan
+  yönde akıyor. Renderer ok yönünü veri kaydındaki tek yönden alıyor
+  (`internal/world/trade_centers.go`, `internal/state/historical_trade.go`,
+  `internal/render/trade_overlay.go`).
+
+- 2026-09-21: `links` verisi olmayan ticaret merkezi tabelaları, uç düğüm olduklarını
+  belirtmek için mevcut tabela çerçevesinin dışında ince kırmızı border ile
+  gösteriliyor (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: `sources` bağlantıları `sea` türü verilse bile ticaret haritasında
+  doğrudan kara çizgisi geometrisiyle ve ayrı yeşil paletle gösteriliyor. Unlock
+  bekleyen pasif bağlantılar daha sık/kalın kesikli gri çiziliyor; aktif kaynak
+  bağlantıları koyu yeşil kalıyor (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: `sources` rotalarında mal akışı yalnız tanımlı çıkış yönünde ilerliyor;
+  doğal veya türetilmiş mallar kaynak rotasına geri dönemiyor. Amerika → Atlantik
+  → Avrupa gibi kaynaklar arası ileri zincir korunuyor (`internal/state/historical_trade.go`).
+
 - 2026-09-20: Tarihsel ticaret yolları diplomatik faction rotalarından ayrıldı.
-  `trade_centers.json` içindeki `historical_flows` kayıtları 1310 Baharat,
-  İpek ve Sahra Altı Altın akışlarını; Atlantik, Ümit Burnu ve Amerika hatlarını
-  tarih bazlı aktiflik ile harita koridorlarına bağlıyor. Gerçek merkez
-  sahipleri `GoldEconomyPreview`, tur çözümlemesi ve gelir popup'ında ayrı
-  `Tarihsel ticaret` geliri alıyor; off-map düğümler gelir sahibi olmuyor
+  `trade_centers.json` içindeki merkez kaynakları 1310 Baharat, İpek ve Sahra
+  Altı Altın akışlarını; Atlantik, Ümit Burnu ve Amerika hatlarını tarih bazlı
+  aktiflik ile harita koridorlarına bağlıyor. Gerçek merkez sahipleri
+  `GoldEconomyPreview`, tur çözümlemesi ve gelir popup'ında ayrı `Tarihsel
+  ticaret` geliri alıyor; off-map düğümler gelir sahibi olmuyor
   (`internal/world/trade_centers.go`, `internal/state/historical_trade.go`,
   `internal/render/trade_overlay.go`,
+  `assets/scenarios/1300_ottoman_rise/data/trade_centers.json`).
+
+- 2026-09-21: Ticaret merkezi `links` alanı görsel yönlü akış oklarının tek
+  kaynağıdır; normal merkezler arasındaki tek link ekonomik olarak iki yönlü
+  kabul edilir. Ana yollar yalnızca çıkış merkezlerini listeliyor (İpek Yolu
+  -> Azerbaycan, Atlantik Yolu -> Sevilla/Portekiz); normal merkezlerde ters
+  linki tekrar yazmak gerekmez. Atlantik Yolu artık kaynak mal üretmiyor;
+  Amerika hatlarının altın akışını Atlantik üzerinden Avrupa'daki gerçek merkez
+  sahiplerine aktarıyor
+  (`internal/world/trade_centers.go`, `internal/state/historical_trade.go`,
+  `internal/render/trade_overlay.go`,
+  `assets/scenarios/1300_ottoman_rise/data/trade_centers.json`).
+
+- 2026-09-21: Ticaret merkezi bağlantılarının `links[].type` değeri harita
+  geometrisinde kullanılıyor. `sea` bağlantıları kıyı ve deniz bölgesi
+  komşuluklarından çok noktalı, hafif kıvrımlı koridor olarak çiziliyor; ortak
+  deniz segmentleri tekilleştiriliyor. `land` bağlantıları doğrudan merkezler
+  arasında çizilmeye devam ediyor. Ok, hover ve hit-test aynı fiziksel yolu
+  kullanıyor (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: Ticaret koridoru hover popup'ında bağlantı türü artık `Kara yolu`
+  veya `Deniz yolu` olarak gösteriliyor. Popup içeriklerinin çakışmaması için
+  tür satırı eklendi ve tooltip yükseklikleri ortak geometriyle güncellendi
+  (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: Ticaret merkezi bölge anchor'ı, bölgede liman varsa ilk `port`
+  yerleşiminin anchor'ına; liman yoksa merkez yerleşim anchor'ına taşındı.
+  Tabela, bağlantı uçları ve merkez hit-test'i aynı anchor'ı kullanıyor
+  (`internal/render/trade_overlay.go`).
+
+- 2026-09-21: Ticaret merkezi bağlantıları artık `{region_id, type}` nesneleri
+  olarak tutuluyor; her bağlantı `land` veya `sea` türü taşıyabiliyor. Böylece
+  rota türü merkeze değil, gerçek bağlantı kenarına ait oluyor; mevcut akış,
+  gelir ve kapasite hesapları değişmiyor (`internal/world/trade_centers.go`,
   `assets/scenarios/1300_ottoman_rise/data/trade_centers.json`).
 
 - 2026-09-21: Yeni tarihsel ticaret yolu açıldığında eski hatların rekabet
@@ -24,6 +82,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   Vasco da Gama event'inin aynı gelir kaybı kaldırıldı, event'e özgü Portekiz
   bonusu ve baharat üretim etkisi korundu (`internal/state/historical_trade.go`,
   `internal/state/trade_capacity.go`, `assets/scenarios/1300_ottoman_rise/data/{trade_centers,events}.json`).
+
+- 2026-09-21: Tarihsel ticaret akışı tekil `from/to` kayıtlarından merkez
+  kaynaklı graf yayılımına geçirildi. Merkezlerin `source_goods` malları ve
+  gerçek bölgelerin temel üretimi, bağlı merkezlerde aynı bağlantı üzerinde
+  birden çok mal olarak gösteriliyor; döngüler kaynak/mal başına ziyaret takibi
+  ile sınırlanıyor (`internal/state/historical_trade.go`,
+  `assets/scenarios/1300_ottoman_rise/data/trade_centers.json`).
 
 - 2026-09-20: Birim üretim gereksinimleri artık birden fazla bina ve seviye
   taşıyabiliyor. `units.json` içindeki `required_buildings` listesi AND
@@ -3342,7 +3407,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Edit mode shape paint editor | ✅ | Inspector `Shape` sekmesi seçili kara region'ın `shape_id` verisini sağ mouse drag ile boya/sil düzenler; stroke sırasında yeşil/kırmızı canlı preview overlay ve yardım paneli görünür; stroke bitince mask contour'ları yeniden ring'e çevrilir, `ShapeData` + `Region.Shape` güncellenir, undo/redo world snapshot'a shape verisini de alır; `Kaydet` artık `country_shapes.json` da yazar. Aynı sekmedeki `Bolge Boya/Sil` aracı kara veya deniz region'larında `region_shapes.json` override katmanına kalıcı yazar; ülke dış sınırının dışına taşan boyamalar ile deniz alanı dağılımı restart sonrası korunur ve sonraki stroke'lar eski override piksellerini yanlışlıkla düşürmez. Region tool canlı preview'i stroke başlangıcına göre ayrı overlay çizer ve shape session'ı lazy tuttuğu için yoğun boyama sonrası merkez taşıma/geçişler daha akıcıdır |
 | Ticaret yolu görsel sadeleştirme | ✅ | Harita üstü ticaret çizimi `A->B` ve `B->A` rotalarını tek koridorda birleştirir; `camScale < 0.85` iken yalnızca oyuncuya bağlı hatlar çizilir, etiketler yalnızca yakın zoom'da görünür |
 | Harita modu (Normal/Ticaret) | ✅ | EU4 benzeri harita modu anahtarı eklendi; ticaret koridorları yalnızca `Ticaret` modunda çiziliyor, normal haritada çizgi karmaşası yok |
-| Senaryo bazlı tarihsel ticaret merkezleri | ✅ | Trade map merkezleri senaryo `data/trade_centers.json` içindeki `tier` + `links` graph yapısından okunuyor; koridor akışı merkezler arasında doğrudan değil, link graph kısa yolu üzerinden dağıtılıyor; `off_map=true` ile sadece etiket ve bağlantı gösteren dış hat düğümleri (`name_tr`, `world_x`, `world_y`) de JSON’dan tanımlanabiliyor; `unlock_year` alanı sayesinde geç dönem Atlantik/Amerika hatları belirli yıldan önce tamamen gizli/pasif tutulabiliyor |
+| Senaryo bazlı tarihsel ticaret merkezleri | ✅ | Trade map merkezleri senaryo `data/trade_centers.json` içindeki yönlü `links` grafından okunuyor; ana tarihsel yollar `main_route` ile tier merkezlerinden ayrılıyor; koridor akışı merkezler arasında doğrudan değil, akış grafı kısa yolu üzerinden dağıtılıyor; `off_map=true` ile sadece etiket ve bağlantı gösteren dış hat düğümleri (`name_tr`, `world_x`, `world_y`) de JSON’dan tanımlanabiliyor; `unlock_year` alanı sayesinde geç dönem Atlantik/Amerika hatları belirli yıldan önce pasif merkez olarak haritada 0/tur ve gelecek mallarıyla gösteriliyor |
 | Ticaret paneli ayrıştırması | ✅ | `Yeni Rota` sekmesi artık gerçek ticaret anlaşması adaylarını ve engel nedenlerini gösterir; manuel al/sat akışı ayrı `Pazar` sekmesine taşındı, müttefik devletlerle ticaret rota bazında bağımsız açılabiliyor; pazar sekmesinde fraksiyon/mal listeleri click anında satır resolve ettiği ve panel tam mouse state aldığı için seçimler tekrar güvenilir çalışıyor |
 | Başkent sistemi | ✅ | Ulusal başkent artık fraksiyon üstünde `capital_settlement_id` ile tutulur; başkent bölgesi ek üretim/lojistik bonusu alır; başkent fethedilince hazine-hammadde stoğunun yarısı ve eksik teknolojilerin yaklaşık yarısı fethedene geçer; savunan için yeni başkent en yüksek getirili bölgenin merkez settlement'ına atanır; settlement panelinden 5 turluk taşıma kuyruğu başlatılabilir; tüm başkent settlement'ları haritada yıldız rozetiyle görünür |
 

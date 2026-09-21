@@ -587,12 +587,24 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if r.mapMode == MapModeTrade {
 		if idx := r.tradeCorridorAt(fx, fy); idx >= 0 && idx < len(r.tradeCorridors) {
 			c := r.tradeCorridors[idx]
-			r.ShowCombatResult("Koridor: " + c.fromName + " ↔ " + c.toName + " | " + itoa(c.amount) + "/tur | " + itoa(c.factions) + " fraksiyon")
+			directionText := c.directionText
+			if directionText == "" {
+				directionText = c.fromName + " ↔ " + c.toName
+			}
+			r.ShowCombatResult("Koridor: " + directionText + " | " + itoa(c.factions) + " fraksiyon")
 			return InputAction{}
 		}
 		if cidx := r.tradeCenterAt(fx, fy); cidx >= 0 && cidx < len(r.tradeCenters) {
 			center := r.tradeCenters[cidx]
 			centerName := center.nameTR
+			if !center.active {
+				unlock := "Pasif"
+				if center.unlockYear > 0 {
+					unlock = "Pasif - " + itoa(center.unlockYear) + " yılında açılır"
+				}
+				r.ShowCombatResult("Merkez: " + centerName + " | " + unlock + " | Akış: 0/tur | Gelecek mallar: " + historicalTradeGoodsDetail(center.sourceGoods))
+				return InputAction{}
+			}
 			connected := 0
 			total := 0
 			for _, c := range r.tradeCorridors {

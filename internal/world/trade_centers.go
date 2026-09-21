@@ -11,9 +11,21 @@ import (
 
 type TradeCenterTier string
 
+type TradeRouteType string
+
+// TradeCenterLink, haritada çizilecek görsel bağlantının hedefini ve fiziksel
+// yol türünü taşır. Normal merkezlerde tek link ekonomik olarak iki yönlüdür;
+// sources altındaki off-map bağlantılar yalnızca listelenen yönde akar.
+type TradeCenterLink struct {
+	RegionID RegionID       `json:"region_id"`
+	Type     TradeRouteType `json:"type,omitempty"`
+}
+
 const (
 	TradeCenterPrimary   TradeCenterTier = "primary"
 	TradeCenterSecondary TradeCenterTier = "secondary"
+	TradeRouteLand       TradeRouteType  = "land"
+	TradeRouteSea        TradeRouteType  = "sea"
 
 	defaultPrimaryTradeCapacityBonus      = 2
 	defaultSecondaryTradeCapacityBonus    = 1
@@ -33,12 +45,14 @@ type TradeCenterDef struct {
 	TradeIncomeBonus      int                      `json:"trade_income_bonus,omitempty"`
 	MerchantCapacityBonus int                      `json:"merchant_capacity_bonus,omitempty"`
 	MerchantIncomeBonus   int                      `json:"merchant_income_bonus,omitempty"`
-	Links                 []RegionID               `json:"links,omitempty"`
+	Links                 []TradeCenterLink        `json:"links,omitempty"`
 	WorldX                int                      `json:"world_x,omitempty"`
 	WorldY                int                      `json:"world_y,omitempty"`
 	OffMap                bool                     `json:"off_map,omitempty"`
 	UnlockYear            int                      `json:"unlock_year,omitempty"`
+	MainRoute             bool                     `json:"main_route,omitempty"`
 	CompetitionImpacts    []TradeCompetitionImpact `json:"competition_impacts,omitempty"`
+	SourceGoods           []HistoricalTradeGood    `json:"source_goods,omitempty"`
 }
 
 // TradeCompetitionImpact, yeni bir merkezin açılmasıyla eski bir merkezin
@@ -49,6 +63,15 @@ type TradeCompetitionImpact struct {
 	CenterID      RegionID `json:"center_id"`
 	IncomePercent int      `json:"income_percent,omitempty"`
 	AmountPercent int      `json:"amount_percent,omitempty"`
+}
+
+// HistoricalTradeGood, bir merkezden ticaret ağına yayılan tek malın kaynak
+// tanımıdır. Bağlantıların her biri için tekrar yazılmaz; runtime aynı malı
+// merkez grafiğinde bağlı düğümlere taşır.
+type HistoricalTradeGood struct {
+	Good              economy.GoodType `json:"good"`
+	AmountPerTurn     int              `json:"amount_per_turn"`
+	GoldIncomePerTurn int              `json:"gold_income_per_turn,omitempty"`
 }
 
 // HistoricalTradeFlow, devletler arası diplomatik rotalardan bağımsız olarak
@@ -63,6 +86,7 @@ type HistoricalTradeFlow struct {
 	GoldIncomePerTurn int              `json:"gold_income_per_turn"`
 	StartYear         int              `json:"start_year,omitempty"`
 	EndYear           int              `json:"end_year,omitempty"`
+	SourceCenterID    RegionID         `json:"-"`
 }
 
 type TradeCenterConfig struct {
@@ -74,8 +98,48 @@ type TradeCenterConfig struct {
 	SecondaryMerchantCapacityBonus int                   `json:"secondary_merchant_capacity_bonus,omitempty"`
 	PrimaryMerchantIncomeBonus     int                   `json:"primary_merchant_income_bonus,omitempty"`
 	SecondaryMerchantIncomeBonus   int                   `json:"secondary_merchant_income_bonus,omitempty"`
+	Sources                        []TradeCenterDef      `json:"sources,omitempty"`
 	Centers                        []TradeCenterDef      `json:"centers"`
 	HistoricalFlows                []HistoricalTradeFlow `json:"historical_flows,omitempty"`
+}
+
+// TradeAdjacency returns the economic connectivity of the center graph.
+// Normal center links are bidirectional for trade even when only one visual
+// link is listed; off-map source links remain one-way from the source.
+func (c TradeCenterConfig) TradeAdjacency() map[RegionID][]RegionID {
+	centersByID := make(map[RegionID]TradeCenterDef, len(c.Centers))
+	for _, center := range c.Centers {
+		centersByID[center.ID] = center
+	}
+
+	adjacency := make(map[RegionID][]RegionID, len(centersByID))
+	for _, center := range c.Centers {
+		centerIsSource := center.OffMap || len(center.SourceGoods) > 0
+		for _, link := range center.Links {
+			linked, ok := centersByID[link.RegionID]
+			if !ok || linked.ID == center.ID {
+				continue
+			}
+			adjacency[center.ID] = appendUniqueTradeCenterRegionID(adjacency[center.ID], linked.ID)
+			linkedIsSource := linked.OffMap || len(linked.SourceGoods) > 0
+			if !centerIsSource && !linkedIsSource {
+				adjacency[linked.ID] = appendUniqueTradeCenterRegionID(adjacency[linked.ID], center.ID)
+			}
+		}
+	}
+	for id := range adjacency {
+		sort.Slice(adjacency[id], func(i, j int) bool { return adjacency[id][i] < adjacency[id][j] })
+	}
+	return adjacency
+}
+
+func appendUniqueTradeCenterRegionID(ids []RegionID, id RegionID) []RegionID {
+	for _, existing := range ids {
+		if existing == id {
+			return ids
+		}
+	}
+	return append(ids, id)
 }
 
 // ApplyDefaultBonuses eski senaryo verilerinde henüz bulunmayan merkez bonus
@@ -133,14 +197,20 @@ func LoadTradeCenters(path string, regions map[RegionID]*Region) (TradeCenterCon
 	if err := json.Unmarshal(data, &payload); err != nil {
 		return out, fmt.Errorf("trade_centers JSON parse hatası: %w", err)
 	}
-	if len(payload.Centers) == 0 {
+	allDefs := make([]TradeCenterDef, 0, len(payload.Sources)+len(payload.Centers))
+	for i := range payload.Sources {
+		payload.Sources[i].OffMap = true
+	}
+	allDefs = append(allDefs, payload.Sources...)
+	allDefs = append(allDefs, payload.Centers...)
+	if len(allDefs) == 0 {
 		return out, nil
 	}
 
-	seen := make(map[RegionID]bool, len(payload.Centers))
-	validCenter := make(map[RegionID]bool, len(payload.Centers))
-	filtered := make([]TradeCenterDef, 0, len(payload.Centers))
-	for _, c := range payload.Centers {
+	seen := make(map[RegionID]bool, len(allDefs))
+	validCenter := make(map[RegionID]bool, len(allDefs))
+	filtered := make([]TradeCenterDef, 0, len(allDefs))
+	for _, c := range allDefs {
 		if c.ID == "" || seen[c.ID] {
 			continue
 		}
@@ -154,7 +224,9 @@ func LoadTradeCenters(path string, regions map[RegionID]*Region) (TradeCenterCon
 				continue
 			}
 		}
-		if c.Tier != TradeCenterPrimary && c.Tier != TradeCenterSecondary {
+		if c.MainRoute {
+			c.Tier = ""
+		} else if c.Tier != TradeCenterPrimary && c.Tier != TradeCenterSecondary {
 			c.Tier = TradeCenterSecondary
 		}
 		seen[c.ID] = true
@@ -169,15 +241,19 @@ func LoadTradeCenters(path string, regions map[RegionID]*Region) (TradeCenterCon
 	// Link temizliği: sadece geçerli center ID'leri tut.
 	for i := range filtered {
 		linkSeen := make(map[RegionID]bool, len(filtered[i].Links))
-		links := make([]RegionID, 0, len(filtered[i].Links))
-		for _, lid := range filtered[i].Links {
+		links := make([]TradeCenterLink, 0, len(filtered[i].Links))
+		for _, link := range filtered[i].Links {
+			lid := link.RegionID
 			if lid == "" || lid == filtered[i].ID || linkSeen[lid] || !validCenter[lid] {
 				continue
 			}
+			if link.Type != "" && link.Type != TradeRouteLand && link.Type != TradeRouteSea {
+				link.Type = ""
+			}
 			linkSeen[lid] = true
-			links = append(links, lid)
+			links = append(links, link)
 		}
-		sort.Slice(links, func(a, b int) bool { return links[a] < links[b] })
+		sort.Slice(links, func(a, b int) bool { return links[a].RegionID < links[b].RegionID })
 		filtered[i].Links = links
 		impacts := filtered[i].CompetitionImpacts[:0]
 		impactSeen := make(map[RegionID]bool, len(filtered[i].CompetitionImpacts))
@@ -189,6 +265,16 @@ func LoadTradeCenters(path string, regions map[RegionID]*Region) (TradeCenterCon
 			impacts = append(impacts, impact)
 		}
 		filtered[i].CompetitionImpacts = impacts
+		goods := filtered[i].SourceGoods[:0]
+		goodSeen := make(map[economy.GoodType]bool, len(filtered[i].SourceGoods))
+		for _, good := range filtered[i].SourceGoods {
+			if !isHistoricalGood(good.Good) || good.AmountPerTurn <= 0 || goodSeen[good.Good] {
+				continue
+			}
+			goodSeen[good.Good] = true
+			goods = append(goods, good)
+		}
+		filtered[i].SourceGoods = goods
 	}
 
 	validFlows := make([]HistoricalTradeFlow, 0, len(payload.HistoricalFlows))
@@ -205,7 +291,7 @@ func LoadTradeCenters(path string, regions map[RegionID]*Region) (TradeCenterCon
 		}
 		fromDef := filtered[indexOfTradeCenter(filtered, flow.FromRegionID)]
 		toDef := filtered[indexOfTradeCenter(filtered, flow.ToRegionID)]
-		if !containsRegionID(fromDef.Links, flow.ToRegionID) && !containsRegionID(toDef.Links, flow.FromRegionID) {
+		if !containsTradeCenterLink(fromDef.Links, flow.ToRegionID) && !containsTradeCenterLink(toDef.Links, flow.FromRegionID) {
 			continue
 		}
 		validFlows = append(validFlows, flow)
@@ -217,9 +303,9 @@ func LoadTradeCenters(path string, regions map[RegionID]*Region) (TradeCenterCon
 	return out, nil
 }
 
-func containsRegionID(ids []RegionID, target RegionID) bool {
-	for _, id := range ids {
-		if id == target {
+func containsTradeCenterLink(links []TradeCenterLink, target RegionID) bool {
+	for _, link := range links {
+		if link.RegionID == target {
 			return true
 		}
 	}
@@ -233,4 +319,14 @@ func indexOfTradeCenter(centers []TradeCenterDef, id RegionID) int {
 		}
 	}
 	return -1
+}
+
+func isHistoricalGood(good economy.GoodType) bool {
+	switch good {
+	case economy.GoodGold, economy.GoodGrain, economy.GoodIron, economy.GoodTimber,
+		economy.GoodStone, economy.GoodSpice, economy.GoodCloth:
+		return true
+	default:
+		return false
+	}
 }

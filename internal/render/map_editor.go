@@ -3629,11 +3629,12 @@ func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
 			center.ID = newID
 		}
 		for j := range center.Links {
-			if center.Links[j] == oldID {
-				center.Links[j] = newID
+			if center.Links[j].RegionID == oldID {
+				center.Links[j].RegionID = newID
 			}
 		}
 	}
+	r.gs.InvalidateHistoricalTradeFlowCache()
 	for pIdx, rid := range r.gs.RegionPaintOverrides {
 		if rid == oldID {
 			r.gs.RegionPaintOverrides[pIdx] = newID
@@ -3881,6 +3882,7 @@ func (r *Renderer) restoreWorldSnapshotMode(snapshot editWorldSnapshot, asyncBui
 	r.gs.AIStrategies = cloneAIStrategyMap(snapshot.AIStrategies)
 	r.gs.AIStrategyOrder = append([]string(nil), snapshot.AIStrategyOrder...)
 	r.gs.TradeCenters = cloneTradeCenterConfig(snapshot.TradeCenters)
+	r.gs.InvalidateHistoricalTradeFlowCache()
 	r.gs.Armies = cloneArmyMap(snapshot.Armies)
 	r.gs.ArmyOrder = append([]army.ArmyID(nil), snapshot.ArmyOrder...)
 	r.gs.Relations = cloneRelationMap(snapshot.Relations)
@@ -4055,19 +4057,33 @@ func cloneAIStrategyMap(src map[string]scenario.AIFactionStrategy) map[string]sc
 }
 
 func cloneTradeCenterConfig(src world.TradeCenterConfig) world.TradeCenterConfig {
-	if src.Centers == nil {
+	if src.Centers == nil && src.Sources == nil {
 		return world.TradeCenterConfig{}
 	}
 	dst := world.TradeCenterConfig{
-		PrimaryTradeCapacityBonus:   src.PrimaryTradeCapacityBonus,
-		SecondaryTradeCapacityBonus: src.SecondaryTradeCapacityBonus,
-		PrimaryTradeIncomeBonus:     src.PrimaryTradeIncomeBonus,
-		SecondaryTradeIncomeBonus:   src.SecondaryTradeIncomeBonus,
-		Centers:                     make([]world.TradeCenterDef, len(src.Centers)),
+		PrimaryTradeCapacityBonus:      src.PrimaryTradeCapacityBonus,
+		SecondaryTradeCapacityBonus:    src.SecondaryTradeCapacityBonus,
+		PrimaryTradeIncomeBonus:        src.PrimaryTradeIncomeBonus,
+		SecondaryTradeIncomeBonus:      src.SecondaryTradeIncomeBonus,
+		PrimaryMerchantCapacityBonus:   src.PrimaryMerchantCapacityBonus,
+		SecondaryMerchantCapacityBonus: src.SecondaryMerchantCapacityBonus,
+		PrimaryMerchantIncomeBonus:     src.PrimaryMerchantIncomeBonus,
+		SecondaryMerchantIncomeBonus:   src.SecondaryMerchantIncomeBonus,
+		HistoricalFlows:                append([]world.HistoricalTradeFlow(nil), src.HistoricalFlows...),
+		Sources:                        make([]world.TradeCenterDef, len(src.Sources)),
+		Centers:                        make([]world.TradeCenterDef, len(src.Centers)),
+	}
+	for i, source := range src.Sources {
+		dst.Sources[i] = source
+		dst.Sources[i].Links = append([]world.TradeCenterLink(nil), source.Links...)
+		dst.Sources[i].CompetitionImpacts = append([]world.TradeCompetitionImpact(nil), source.CompetitionImpacts...)
+		dst.Sources[i].SourceGoods = append([]world.HistoricalTradeGood(nil), source.SourceGoods...)
 	}
 	for i, center := range src.Centers {
 		dst.Centers[i] = center
-		dst.Centers[i].Links = cloneRegionIDSlice(center.Links)
+		dst.Centers[i].Links = append([]world.TradeCenterLink(nil), center.Links...)
+		dst.Centers[i].CompetitionImpacts = append([]world.TradeCompetitionImpact(nil), center.CompetitionImpacts...)
+		dst.Centers[i].SourceGoods = append([]world.HistoricalTradeGood(nil), center.SourceGoods...)
 	}
 	return dst
 }

@@ -1218,13 +1218,13 @@ func (s *GameState) merchantTradeEndpointCenters(route *economy.TradeRoute) ([]w
 			toCenters = append(toCenters, def.ID)
 		}
 	}
-	for id, def := range activeDefs {
-		for _, linkedID := range def.Links {
+	tradeAdjacency := s.TradeCenters.TradeAdjacency()
+	for id := range activeDefs {
+		for _, linkedID := range tradeAdjacency[id] {
 			if _, ok := activeDefs[linkedID]; !ok {
 				continue
 			}
 			adjacency[id] = appendUniqueRegionID(adjacency[id], linkedID)
-			adjacency[linkedID] = appendUniqueRegionID(adjacency[linkedID], id)
 		}
 	}
 	sort.Slice(fromCenters, func(i, j int) bool { return fromCenters[i] < fromCenters[j] })

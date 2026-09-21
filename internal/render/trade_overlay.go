@@ -12,6 +12,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
@@ -20,52 +21,214 @@ import (
 )
 
 type tradeRouteVisual struct {
-	factionA  string
-	factionB  string
-	goodName  string
-	amount    int
-	bestFlow  int
-	route     *economy.TradeRoute
-	routeKeys []string
+	factionA     string
+	factionB     string
+	goodName     string
+	amount       int
+	bestFlow     int
+	route        *economy.TradeRoute
+	routeKeys    []string
+	routeDetails []tradeCorridorRouteDetail
 }
 
 type tradeCenterVisual struct {
-	id       world.RegionID
-	regionID world.RegionID
-	nameTR   string
-	tier     world.TradeCenterTier
-	worldX   float64
-	worldY   float64
-	x        float64
-	y        float64
-	labelX   float64
-	labelY   float64
-	labelW   float64
-	labelH   float64
-	offMap   bool
+	id          world.RegionID
+	regionID    world.RegionID
+	nameTR      string
+	tier        world.TradeCenterTier
+	worldX      float64
+	worldY      float64
+	x           float64
+	y           float64
+	labelX      float64
+	labelY      float64
+	labelW      float64
+	labelH      float64
+	offMap      bool
+	endNode     bool
+	mainRoute   bool
+	active      bool
+	unlockYear  int
+	sourceGoods []world.HistoricalTradeGood
 }
 
 type tradeCorridorInfo struct {
-	fromName   string
-	toName     string
-	amount     int
-	factions   int
-	goods      string
-	sx         float64
-	sy         float64
-	cx         float64
-	cy         float64
-	dx         float64
-	dy         float64
-	hitWidth   float64
-	dashed     bool
-	historical bool
-	route      *economy.TradeRoute
-	routeKeys  []string
+	fromName       string
+	toName         string
+	directionText  string
+	amount         int
+	factions       int
+	goods          string
+	sx             float64
+	sy             float64
+	cx             float64
+	cy             float64
+	dx             float64
+	dy             float64
+	path           []tradeOverlayPoint
+	routeType      world.TradeRouteType
+	hitWidth       float64
+	dashed         bool
+	historical     bool
+	route          *economy.TradeRoute
+	routeKeys      []string
+	routeDetails   []tradeCorridorRouteDetail
+	centerFactions [2]string
+}
+
+type tradeCorridorRouteDetail struct {
+	key             string
+	direction       string
+	good            string
+	amount          int
+	route           *economy.TradeRoute
+	historical      bool
+	historicalGoods []tradeCorridorGoodTotal
+}
+
+type tradeCorridorGoodTotal struct {
+	good   string
+	amount int
+}
+
+func appendTradeCorridorRouteDetail(details []tradeCorridorRouteDetail, detail tradeCorridorRouteDetail) []tradeCorridorRouteDetail {
+	if detail.historical {
+		detail.key = "historical"
+		detail.historicalGoods = appendTradeCorridorGoodTotal(detail.historicalGoods, detail.good, detail.amount)
+		detail.good = ""
+		detail.amount = 0
+		for index := range details {
+			if !details[index].historical && details[index].key != "historical" {
+				continue
+			}
+			details[index].historical = true
+			details[index].key = "historical"
+			for _, total := range detail.historicalGoods {
+				details[index].historicalGoods = appendTradeCorridorGoodTotal(details[index].historicalGoods, total.good, total.amount)
+			}
+			return details
+		}
+	}
+	if detail.key == "" {
+		return details
+	}
+	for _, existing := range details {
+		if existing.key == detail.key {
+			return details
+		}
+	}
+	return append(details, detail)
+}
+
+func appendTradeCorridorGoodTotal(totals []tradeCorridorGoodTotal, good string, amount int) []tradeCorridorGoodTotal {
+	if good == "" || amount == 0 {
+		return totals
+	}
+	for index := range totals {
+		if totals[index].good == good {
+			totals[index].amount += amount
+			return totals
+		}
+	}
+	return append(totals, tradeCorridorGoodTotal{good: good, amount: amount})
+}
+
+func appendTradeCorridorRouteDetails(details []tradeCorridorRouteDetail, additions ...tradeCorridorRouteDetail) []tradeCorridorRouteDetail {
+	for _, detail := range additions {
+		details = appendTradeCorridorRouteDetail(details, detail)
+	}
+	return details
+}
+
+func sortTradeCorridorRouteDetails(details []tradeCorridorRouteDetail) {
+	sort.SliceStable(details, func(i, j int) bool {
+		return details[i].historical && !details[j].historical
+	})
+}
+
+func appendTradeRouteKeys(keys []string, additions ...string) []string {
+	for _, key := range additions {
+		if key == "" {
+			continue
+		}
+		seen := false
+		for _, existing := range keys {
+			if existing == key {
+				seen = true
+				break
+			}
+		}
+		if !seen {
+			keys = append(keys, key)
+		}
+	}
+	return keys
+}
+
+func tradeCorridorDetailsForCenter(c tradeCorridorInfo) []tradeCorridorRouteDetail {
+	if c.centerFactions[0] == "" && c.centerFactions[1] == "" {
+		return c.routeDetails
+	}
+	details := make([]tradeCorridorRouteDetail, 0, len(c.routeDetails))
+	for _, detail := range c.routeDetails {
+		if detail.historical || detail.route == nil {
+			details = append(details, detail)
+			continue
+		}
+		fromID := detail.route.FromFactionID
+		toID := detail.route.ToFactionID
+		if fromID == c.centerFactions[0] || fromID == c.centerFactions[1] || toID == c.centerFactions[0] || toID == c.centerFactions[1] {
+			details = append(details, detail)
+		}
+	}
+	return details
+}
+
+type tradeOverlayPoint struct {
+	x float64
+	y float64
+}
+
+type tradePhysicalPathSegment struct {
+	key    string
+	points []tradeOverlayPoint
+}
+
+func tradePathSegmentKey(key string) string {
+	return strings.SplitN(key, "#", 2)[0]
+}
+
+func splitTradePhysicalPath(points []tradeOverlayPoint, segmentKeys []string) []tradePhysicalPathSegment {
+	if len(points) < 2 || len(segmentKeys) == 0 {
+		return nil
+	}
+	segments := make([]tradePhysicalPathSegment, 0, len(points)-1)
+	start := 0
+	currentKey := tradePathSegmentKey(segmentKeys[0])
+	for edge := 1; edge < len(points)-1; edge++ {
+		key := ""
+		if edge < len(segmentKeys) {
+			key = tradePathSegmentKey(segmentKeys[edge])
+		}
+		if key == currentKey {
+			continue
+		}
+		segments = append(segments, tradePhysicalPathSegment{
+			key:    currentKey,
+			points: append([]tradeOverlayPoint(nil), points[start:edge+1]...),
+		})
+		start = edge
+		currentKey = key
+	}
+	segments = append(segments, tradePhysicalPathSegment{
+		key:    currentKey,
+		points: append([]tradeOverlayPoint(nil), points[start:]...),
+	})
+	return segments
 }
 
 var (
-	playerTradeRouteColor = color.RGBA{255, 145, 42, 235}
+	playerTradeRouteColor = color.RGBA{72, 177, 232, 235}
 	tradeCenterIconOnce   sync.Once
 	tradeCenterIcon       *ebiten.Image
 )
@@ -100,10 +263,61 @@ func tradeRouteDisplayAmount(route *economy.TradeRoute) int {
 }
 
 func tradeCorridorTooltipHeight(c tradeCorridorInfo) float64 {
-	if c.dashed && c.route != nil {
-		return 142
+	details := tradeCorridorDetailsForCenter(c)
+	if len(details) > 0 {
+		lines := 0
+		for _, detail := range details {
+			if detail.historical {
+				lines++
+				lines += len(detail.historicalGoods)
+				continue
+			}
+			lines += 2
+		}
+		height := 96.0 + float64(lines)*16
+		if height < 128 {
+			height = 128
+		}
+		return height
 	}
-	return 90
+	if c.dashed && c.route != nil {
+		return 160
+	}
+	return 108
+}
+
+func tradeRouteTypeLabel(routeType world.TradeRouteType) string {
+	switch routeType {
+	case world.TradeRouteLand:
+		return "Kara yolu"
+	case world.TradeRouteSea:
+		return "Deniz yolu"
+	default:
+		return "Belirtilmemiş"
+	}
+}
+
+func tradeCorridorTooltipTitle(c tradeCorridorInfo) string {
+	if c.dashed {
+		return "Ticaret Anlaşması"
+	}
+	return "Ticaret Koridoru"
+}
+
+func tradeRoutePalette(routeType world.TradeRouteType) (glow, core, arrow color.RGBA) {
+	if routeType == world.TradeRouteSea {
+		return color.RGBA{72, 177, 232, 255}, color.RGBA{164, 231, 255, 255}, color.RGBA{55, 166, 225, 255}
+	}
+	return color.RGBA{255, 196, 92, 255}, color.RGBA{247, 232, 176, 255}, color.RGBA{225, 145, 42, 255}
+}
+
+func tradeSourceRoutePalette() (glow, core, arrow color.RGBA) {
+	return color.RGBA{38, 112, 76, 255}, color.RGBA{92, 171, 116, 255}, color.RGBA{35, 126, 72, 255}
+}
+
+func passiveTradeRoutePalette() (glow, core, arrow color.RGBA) {
+	gray := color.RGBA{145, 151, 158, 255}
+	return color.RGBA{}, gray, gray
 }
 
 func tradeRoutePairKey(a, b string) string {
@@ -142,6 +356,95 @@ func quadBezierPoint(x0, y0, cx, cy, x1, y1, t float64) (float64, float64) {
 	return x, y
 }
 
+func drawTradeFlowArrow(screen *ebiten.Image, sx, sy, cx, cy, dx, dy, t float64, reverse bool, col color.RGBA) {
+	x, y := quadBezierPoint(sx, sy, cx, cy, dx, dy, t)
+	step := 0.025
+	if t+step > 1 {
+		step = -step
+	}
+	tx, ty := quadBezierPoint(sx, sy, cx, cy, dx, dy, t+step)
+	vx, vy := tx-x, ty-y
+	if reverse {
+		vx, vy = -vx, -vy
+	}
+	distance := math.Hypot(vx, vy)
+	if distance < 0.1 {
+		return
+	}
+	vx /= distance
+	vy /= distance
+	const arrowLength = 9.0
+	const arrowWidth = 4.5
+	baseX := x - vx*arrowLength
+	baseY := y - vy*arrowLength
+	leftX := baseX - vy*arrowWidth
+	leftY := baseY + vx*arrowWidth
+	rightX := baseX + vy*arrowWidth
+	rightY := baseY - vx*arrowWidth
+	vector.StrokeLine(screen, float32(leftX), float32(leftY), float32(x), float32(y), 2.4, col, false)
+	vector.StrokeLine(screen, float32(rightX), float32(rightY), float32(x), float32(y), 2.4, col, false)
+}
+
+func tradePolylinePoint(points []tradeOverlayPoint, t float64) (float64, float64) {
+	if len(points) == 0 {
+		return 0, 0
+	}
+	if len(points) == 1 {
+		return points[0].x, points[0].y
+	}
+	if t < 0 {
+		t = 0
+	} else if t > 1 {
+		t = 1
+	}
+	position := t * float64(len(points)-1)
+	index := int(position)
+	if index >= len(points)-1 {
+		last := points[len(points)-1]
+		return last.x, last.y
+	}
+	local := position - float64(index)
+	a := points[index]
+	b := points[index+1]
+	return a.x + (b.x-a.x)*local, a.y + (b.y-a.y)*local
+}
+
+func tradeCorridorPoint(c tradeCorridorInfo, t float64) (float64, float64) {
+	if len(c.path) >= 2 {
+		return tradePolylinePoint(c.path, t)
+	}
+	return quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t)
+}
+
+func drawTradeFlowArrowOnPath(screen *ebiten.Image, points []tradeOverlayPoint, t float64, reverse bool, col color.RGBA) {
+	x, y := tradePolylinePoint(points, t)
+	step := 0.025
+	if t+step > 1 {
+		step = -step
+	}
+	tx, ty := tradePolylinePoint(points, t+step)
+	vx, vy := tx-x, ty-y
+	if reverse {
+		vx, vy = -vx, -vy
+	}
+	distance := math.Hypot(vx, vy)
+	if distance < 0.1 {
+		return
+	}
+	vx /= distance
+	vy /= distance
+	const arrowLength = 9.0
+	const arrowWidth = 4.5
+	baseX := x - vx*arrowLength
+	baseY := y - vy*arrowLength
+	leftX := baseX - vy*arrowWidth
+	leftY := baseY + vx*arrowWidth
+	rightX := baseX + vy*arrowWidth
+	rightY := baseY - vx*arrowWidth
+	vector.StrokeLine(screen, float32(leftX), float32(leftY), float32(x), float32(y), 2.4, col, false)
+	vector.StrokeLine(screen, float32(rightX), float32(rightY), float32(x), float32(y), 2.4, col, false)
+}
+
 func (r *Renderer) drawTradeModeBackdrop(screen *ebiten.Image) {
 	w := float32(ScreenWidth)
 	h := float32(ScreenHeight)
@@ -159,20 +462,23 @@ func (r *Renderer) buildTradeCenters(maxCenters int) []tradeCenterVisual {
 		if len(centers) >= maxCenters {
 			break
 		}
-		if !def.ActiveInYear(r.gs.Year) {
-			continue
-		}
+		active := def.ActiveInYear(r.gs.Year)
 		if def.OffMap {
 			sx, sy := r.worldToScreen(float64(def.WorldX), float64(def.WorldY))
 			centers = append(centers, tradeCenterVisual{
-				id:     def.ID,
-				nameTR: def.NameTR,
-				tier:   def.Tier,
-				worldX: float64(def.WorldX),
-				worldY: float64(def.WorldY),
-				x:      sx,
-				y:      sy,
-				offMap: true,
+				id:          def.ID,
+				nameTR:      def.NameTR,
+				tier:        def.Tier,
+				worldX:      float64(def.WorldX),
+				worldY:      float64(def.WorldY),
+				x:           sx,
+				y:           sy,
+				offMap:      true,
+				endNode:     len(def.Links) == 0,
+				mainRoute:   def.MainRoute,
+				active:      active,
+				unlockYear:  def.UnlockYear,
+				sourceGoods: append([]world.HistoricalTradeGood(nil), def.SourceGoods...),
 			})
 			continue
 		}
@@ -180,19 +486,52 @@ func (r *Renderer) buildTradeCenters(maxCenters int) []tradeCenterVisual {
 		if reg == nil || reg.IsSea || reg.TradeCapacity <= 0 {
 			continue
 		}
-		sx, sy := r.regionScreenPos(reg)
+		// Ticaret merkezi tabelası ve tüm koridor uçları, varsa ilk liman
+		// yerleşiminin anchor'ına; liman yoksa merkez yerleşim anchor'ına bağlanır.
+		sx, sy := r.tradePortScreenPos(reg, "")
 		centers = append(centers, tradeCenterVisual{
-			id:       reg.ID,
-			regionID: reg.ID,
-			nameTR:   chooseRegionLabel(reg),
-			tier:     def.Tier,
-			worldX:   float64(reg.WorldX),
-			worldY:   float64(reg.WorldY),
-			x:        sx,
-			y:        sy,
+			id:          reg.ID,
+			regionID:    reg.ID,
+			nameTR:      chooseRegionLabel(reg),
+			tier:        def.Tier,
+			worldX:      float64(reg.WorldX),
+			worldY:      float64(reg.WorldY),
+			x:           sx,
+			y:           sy,
+			mainRoute:   def.MainRoute,
+			endNode:     len(def.Links) == 0,
+			active:      active,
+			unlockYear:  def.UnlockYear,
+			sourceGoods: append([]world.HistoricalTradeGood(nil), def.SourceGoods...),
 		})
 	}
 	return centers
+}
+
+func historicalTradeGoodsLabel(goods []world.HistoricalTradeGood) string {
+	if len(goods) == 0 {
+		return "-"
+	}
+	labels := make([]string, 0, len(goods))
+	for _, good := range goods {
+		labels = append(labels, economy.GoodNameTR(good.Good))
+	}
+	return strings.Join(labels, ", ")
+}
+
+func historicalTradeGoodsDetail(goods []world.HistoricalTradeGood) string {
+	if len(goods) == 0 {
+		return "-"
+	}
+	labels := make([]string, 0, len(goods))
+	for _, good := range goods {
+		label := economy.GoodNameTR(good.Good) + " " + itoa(good.AmountPerTurn) + "/tur"
+		if good.GoldIncomePerTurn > 0 {
+			label += " (+" + itoa(good.GoldIncomePerTurn) + " altın)"
+		}
+		labels = append(labels, label)
+	}
+	return strings.Join(labels, ", ")
 }
 
 func (r *Renderer) tradeCenterBenefits(center tradeCenterVisual) (capacityBonus, incomeBonus int) {
@@ -200,6 +539,17 @@ func (r *Renderer) tradeCenterBenefits(center tradeCenterVisual) (capacityBonus,
 		return 0, 0
 	}
 	return r.gs.TradeCenterBenefits(r.gs.Regions[center.regionID])
+}
+
+func tradeCenterOwnerFaction(gs *state.GameState, center tradeCenterVisual) string {
+	if gs == nil || center.regionID == "" {
+		return ""
+	}
+	region := gs.Regions[center.regionID]
+	if region == nil {
+		return ""
+	}
+	return region.OwnerID
 }
 
 func tradeCenterTierLabel(tier world.TradeCenterTier) string {
@@ -254,10 +604,10 @@ func (r *Renderer) tradeCorridorAt(fx, fy float64) int {
 		c := r.tradeCorridors[i]
 		segments := 24
 		threshold := c.hitWidth * c.hitWidth
-		prevX, prevY := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, 0)
+		prevX, prevY := tradeCorridorPoint(c, 0)
 		for s := 1; s <= segments; s++ {
 			t := float64(s) / float64(segments)
-			x, y := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t)
+			x, y := tradeCorridorPoint(c, t)
 			d2 := sqDistPointSegment(fx, fy, prevX, prevY, x, y)
 			if d2 <= threshold && d2 < bestD2 {
 				bestD2 = d2
@@ -277,6 +627,14 @@ func (r *Renderer) tradeCenterAt(fx, fy float64) int {
 	best := math.MaxFloat64
 	for i := range r.tradeCenters {
 		c := r.tradeCenters[i]
+		if c.labelW > 0 && (gameui.Rect{X: c.labelX, Y: c.labelY, W: c.labelW, H: c.labelH}).Hit(fx, fy) {
+			d := math.Hypot(fx-c.x, fy-c.y)
+			if d < best {
+				best = d
+				bestIdx = i
+			}
+			continue
+		}
 		d := math.Hypot(fx-c.x, fy-c.y)
 		if d <= 12 && d < best {
 			best = d
@@ -312,17 +670,20 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 		drawDashedTradeCurve(screen, c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, 4.0,
 			playerTradeRouteColor, r.tradeOverlayOccludesSegment)
 	} else {
+		hoverGlow, hoverCore, _ := tradeRoutePalette(c.routeType)
+		hoverGlow.A = 56
+		hoverCore.A = 230
 		segments := 28
 		for i := 0; i < segments; i++ {
 			t1 := float64(i) / float64(segments)
 			t2 := float64(i+1) / float64(segments)
-			x1, y1 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t1)
-			x2, y2 := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t2)
+			x1, y1 := tradeCorridorPoint(c, t1)
+			x2, y2 := tradeCorridorPoint(c, t2)
 			if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
 				continue
 			}
-			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 9.0, color.RGBA{255, 228, 144, 56}, false)
-			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 3.0, color.RGBA{255, 241, 192, 230}, false)
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 9.0, hoverGlow, false)
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 3.0, hoverCore, false)
 		}
 	}
 	if !r.tradeOverlayOccludesPoint(c.sx, c.sy) {
@@ -342,33 +703,80 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 	h := float32(rect.H)
 	vector.FillRect(screen, x, y, w, h, color.RGBA{10, 14, 20, 230}, false)
 	vector.StrokeRect(screen, x, y, w, h, 1.2, color.RGBA{145, 120, 74, 230}, false)
-	DrawText(screen, "Ticaret Koridoru", float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 255})
-	DrawText(screen, c.fromName+" ↔ "+c.toName, float64(x)+10, float64(y)+28, FaceSmall, color.RGBA{215, 225, 236, 235})
-	if c.dashed && c.route != nil && r.gs != nil {
+	DrawText(screen, tradeCorridorTooltipTitle(c), float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 255})
+	directionText := c.directionText
+	if directionText == "" {
+		directionText = c.fromName + " ↔ " + c.toName
+	}
+	DrawText(screen, directionText, float64(x)+10, float64(y)+28, FaceSmall, color.RGBA{215, 225, 236, 235})
+	DrawText(screen, "Tür: "+tradeRouteTypeLabel(c.routeType), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{197, 190, 168, 230})
+	details := tradeCorridorDetailsForCenter(c)
+	if len(details) > 0 && r.gs != nil {
+		lineY := float64(y) + 64
+		for _, detail := range details {
+			if detail.historical {
+				routeLabel := trimTextToWidth("Rota: Tarihsel akış", FaceSmall, rect.W-20)
+				DrawText(screen, routeLabel, float64(x)+10, lineY, FaceSmall, color.RGBA{225, 212, 180, 240})
+				lineY += 16
+				goods := append([]tradeCorridorGoodTotal(nil), detail.historicalGoods...)
+				if len(goods) == 0 && detail.good != "" {
+					goods = append(goods, tradeCorridorGoodTotal{good: detail.good, amount: detail.amount})
+				}
+				sort.Slice(goods, func(i, j int) bool {
+					return goods[i].good < goods[j].good
+				})
+				for _, total := range goods {
+					goodsLabel := trimTextToWidth(total.good+": "+itoa(total.amount)+"/tur", FaceSmall, rect.W-20)
+					DrawText(screen, goodsLabel, float64(x)+10, lineY, FaceSmall, color.RGBA{187, 203, 222, 230})
+					lineY += 16
+				}
+				continue
+			}
+			routeLabel := detail.direction
+			if routeLabel == "" {
+				routeLabel = c.directionText
+			}
+			routeLabel = trimTextToWidth(routeLabel, FaceSmall, rect.W-20)
+			DrawText(screen, routeLabel, float64(x)+10, lineY, FaceSmall, color.RGBA{225, 212, 180, 240})
+
+			goldLabel := "-"
+			if detail.route != nil {
+				gold := detail.amount * detail.route.GoldPerUnit
+				goldLabel = itoa(gold) + " Altın"
+			}
+			goodsLabel := detail.good
+			if goodsLabel == "" {
+				goodsLabel = "-"
+			}
+			goodsLabel = trimTextToWidth(goodsLabel+" "+itoa(detail.amount)+" | "+goldLabel, FaceSmall, rect.W-20)
+			DrawText(screen, goodsLabel, float64(x)+10, lineY+16, FaceSmall, color.RGBA{187, 203, 222, 230})
+			lineY += 32
+		}
+	} else if c.dashed && c.route != nil && r.gs != nil {
 		amount := tradeRouteDisplayAmount(c.route)
 		gold := amount * c.route.GoldPerUnit
 		goodName := economy.GoodNameTR(c.route.Good)
 		playerID := string(r.gs.PlayerFactionID)
-		DrawText(screen, "Hacim: "+itoa(amount)+"/tur   Emtia: "+goodName, float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
+		DrawText(screen, "Hacim: "+itoa(amount)+"/tur   Emtia: "+goodName, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{187, 203, 222, 230})
 		if c.route.FromFactionID == playerID {
-			DrawText(screen, "Veriyoruz: "+goodName+" "+itoa(amount)+"/tur", float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{225, 205, 170, 240})
-			DrawText(screen, "Alıyoruz: Altın +"+itoa(gold)+"/tur", float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{225, 205, 170, 240})
-			DrawText(screen, "Gelir: +"+itoa(gold)+" altın/tur", float64(x)+10, float64(y)+100, FaceSmall, color.RGBA{145, 220, 155, 245})
+			DrawText(screen, "Veriyoruz: "+goodName+" "+itoa(amount)+"/tur", float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Alıyoruz: Altın +"+itoa(gold)+"/tur", float64(x)+10, float64(y)+100, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Gelir: +"+itoa(gold)+" altın/tur", float64(x)+10, float64(y)+118, FaceSmall, color.RGBA{145, 220, 155, 245})
 		} else {
-			DrawText(screen, "Veriyoruz: Altın "+itoa(gold)+"/tur", float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{225, 205, 170, 240})
-			DrawText(screen, "Alıyoruz: "+goodName+" "+itoa(amount)+"/tur", float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{225, 205, 170, 240})
-			DrawText(screen, "Ödeme: -"+itoa(gold)+" altın/tur", float64(x)+10, float64(y)+100, FaceSmall, color.RGBA{230, 170, 135, 240})
+			DrawText(screen, "Veriyoruz: Altın "+itoa(gold)+"/tur", float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Alıyoruz: "+goodName+" "+itoa(amount)+"/tur", float64(x)+10, float64(y)+100, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Ödeme: -"+itoa(gold)+" altın/tur", float64(x)+10, float64(y)+118, FaceSmall, color.RGBA{230, 170, 135, 240})
 		}
 		if c.route.SuspendedTurns > 0 {
-			DrawText(screen, "Askıda: "+itoa(c.route.SuspendedTurns)+" tur", float64(x)+10, float64(y)+118, FaceSmall, color.RGBA{230, 170, 135, 240})
+			DrawText(screen, "Askıda: "+itoa(c.route.SuspendedTurns)+" tur", float64(x)+10, float64(y)+136, FaceSmall, color.RGBA{230, 170, 135, 240})
 		}
 	} else {
 		label := "Devlet: " + itoa(c.factions)
 		if c.historical {
 			label = "Tarihsel akış"
 		}
-		DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   "+label, float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{187, 203, 222, 230})
-		DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{197, 190, 168, 230})
+		DrawText(screen, "Hacim: "+itoa(c.amount)+"/tur   "+label, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{187, 203, 222, 230})
+		DrawText(screen, "Emtia: "+c.goods, float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{197, 190, 168, 230})
 	}
 }
 
@@ -489,6 +897,7 @@ func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[st
 		cx := mx + (-vy/dist)*curve
 		cy := my + (vx/dist)*curve
 		drawDashedTradeCurve(screen, sx, sy, cx, cy, dx, dy, 3.0, playerTradeRouteColor, r.tradeOverlayOccludesSegment)
+		drawTradeFlowArrow(screen, sx, sy, cx, cy, dx, dy, 0.5, false, playerTradeRouteColor)
 		if !r.tradeOverlayOccludesPoint(sx, sy) {
 			vector.FillCircle(screen, float32(sx), float32(sy), 5, playerTradeRouteColor, true)
 			vector.StrokeCircle(screen, float32(sx), float32(sy), 8, 1.2, color.RGBA{92, 54, 18, 220}, true)
@@ -497,29 +906,25 @@ func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[st
 			vector.FillCircle(screen, float32(dx), float32(dy), 5, playerTradeRouteColor, true)
 			vector.StrokeCircle(screen, float32(dx), float32(dy), 8, 1.2, color.RGBA{92, 54, 18, 220}, true)
 		}
-		if r.camScale >= 1.05 {
-			label := itoa(tradeRouteDisplayAmount(route.route)) + "/tur"
-			labelW := MeasureText(label, FaceSmall)
-			if !r.tradeOverlayOccludesPoint(mx, my) {
-				DrawText(screen, label, mx-labelW/2, my-8, FaceSmall, playerTradeRouteColor)
-			}
-		}
 		r.tradeCorridors = append(r.tradeCorridors, tradeCorridorInfo{
-			fromName:  chooseRegionLabel(fromRegion),
-			toName:    chooseRegionLabel(toRegion),
-			amount:    tradeRouteDisplayAmount(route.route),
-			factions:  2,
-			goods:     route.goodName,
-			sx:        sx,
-			sy:        sy,
-			cx:        cx,
-			cy:        cy,
-			dx:        dx,
-			dy:        dy,
-			hitWidth:  10,
-			dashed:    true,
-			route:     route.route,
-			routeKeys: route.routeKeys,
+			fromName:      chooseRegionLabel(fromRegion),
+			toName:        chooseRegionLabel(toRegion),
+			directionText: chooseRegionLabel(fromRegion) + " → " + chooseRegionLabel(toRegion),
+			amount:        tradeRouteDisplayAmount(route.route),
+			factions:      2,
+			goods:         route.goodName,
+			routeType:     world.TradeRouteSea,
+			sx:            sx,
+			sy:            sy,
+			cx:            cx,
+			cy:            cy,
+			dx:            dx,
+			dy:            dy,
+			hitWidth:      10,
+			dashed:        true,
+			route:         route.route,
+			routeKeys:     route.routeKeys,
+			routeDetails:  route.routeDetails,
 		})
 	}
 }
@@ -563,10 +968,10 @@ func nearestTradeCorridorPoint(c tradeCorridorInfo, px, py float64) (float64, fl
 	const segments = 28
 	bestD2 := math.MaxFloat64
 	bestX, bestY := 0.0, 0.0
-	prevX, prevY := c.sx, c.sy
+	prevX, prevY := tradeCorridorPoint(c, 0)
 	for i := 1; i <= segments; i++ {
 		t := float64(i) / float64(segments)
-		x, y := quadBezierPoint(c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, t)
+		x, y := tradeCorridorPoint(c, t)
 		candidateX, candidateY, d2 := closestPointOnTradeSegment(px, py, prevX, prevY, x, y)
 		if d2 < bestD2 {
 			bestX, bestY, bestD2 = candidateX, candidateY, d2
@@ -696,7 +1101,7 @@ func (r *Renderer) nearestTradeCenterIndex(region *world.Region, centers []trade
 	bestIdx := -1
 	bestDist := math.MaxFloat64
 	for i, c := range centers {
-		if c.offMap {
+		if c.offMap || !c.active {
 			continue
 		}
 		d := math.Hypot(rx-c.worldX, ry-c.worldY)
@@ -718,19 +1123,20 @@ func (r *Renderer) buildTradeCenterAdjacency(centers []tradeCenterVisual) map[in
 		indexByID[centers[i].id] = i
 	}
 
-	// explicit links from scenario data
-	for _, def := range r.gs.TradeCenters.Centers {
-		from, ok := indexByID[def.ID]
-		if !ok {
+	// Economic center connectivity is bidirectional for normal centers, while
+	// off-map source routes remain directed. Visual arrow direction is kept
+	// separately from this adjacency and still comes from raw Links.
+	for fromID, linkedIDs := range r.gs.TradeCenters.TradeAdjacency() {
+		from, ok := indexByID[fromID]
+		if !ok || !centers[from].active {
 			continue
 		}
-		for _, lid := range def.Links {
-			to, ok := indexByID[lid]
-			if !ok || to == from {
+		for _, linkedID := range linkedIDs {
+			to, ok := indexByID[linkedID]
+			if !ok || to == from || !centers[to].active {
 				continue
 			}
 			adj[from] = append(adj[from], to)
-			adj[to] = append(adj[to], from)
 		}
 	}
 
@@ -753,6 +1159,39 @@ func (r *Renderer) buildTradeCenterAdjacency(centers []tradeCenterVisual) map[in
 		adj[i] = uniq
 	}
 	return adj
+}
+
+func tradeCenterVisualDirections(gs *state.GameState, centers []tradeCenterVisual) map[string]map[struct{ from, to int }]struct{} {
+	directions := make(map[string]map[struct{ from, to int }]struct{})
+	if gs == nil {
+		return directions
+	}
+	indexByID := make(map[world.RegionID]int, len(centers))
+	for i, center := range centers {
+		indexByID[center.id] = i
+	}
+	for _, def := range gs.TradeCenters.Centers {
+		from, ok := indexByID[def.ID]
+		if !ok {
+			continue
+		}
+		for _, link := range def.Links {
+			to, ok := indexByID[link.RegionID]
+			if !ok || from == to {
+				continue
+			}
+			a, b := from, to
+			if a > b {
+				a, b = b, a
+			}
+			key := itoa(a) + "|" + itoa(b)
+			if directions[key] == nil {
+				directions[key] = make(map[struct{ from, to int }]struct{})
+			}
+			directions[key][struct{ from, to int }{from: from, to: to}] = struct{}{}
+		}
+	}
+	return directions
 }
 
 func shortestCenterPath(adj map[int][]int, from, to int) []int {
@@ -789,6 +1228,286 @@ func shortestCenterPath(adj map[int][]int, from, to int) []int {
 	return nil
 }
 
+// shortestTradeRegionPath, ticaret merkezi link'inin fiziksel türüne uygun
+// harita bölgeleri arasında yol arar. Böylece merkez grafındaki soyut kenar
+// doğrudan iki merkez arasında çizilmek yerine kara veya deniz düğümlerini
+// izler.
+func shortestTradeRegionPath(regions map[world.RegionID]*world.Region, from, to world.RegionID, sea bool) []world.RegionID {
+	if from == "" || to == "" {
+		return nil
+	}
+	fromRegion := regions[from]
+	toRegion := regions[to]
+	if fromRegion == nil || toRegion == nil || fromRegion.IsSea != sea || toRegion.IsSea != sea {
+		return nil
+	}
+	if from == to {
+		return []world.RegionID{from}
+	}
+	queue := []world.RegionID{from}
+	previous := map[world.RegionID]world.RegionID{from: ""}
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		currentRegion := regions[current]
+		if currentRegion == nil {
+			continue
+		}
+		neighbors := append([]world.RegionID(nil), currentRegion.Neighbors...)
+		sort.Slice(neighbors, func(i, j int) bool { return neighbors[i] < neighbors[j] })
+		for _, next := range neighbors {
+			if _, seen := previous[next]; seen {
+				continue
+			}
+			nextRegion := regions[next]
+			if nextRegion == nil || nextRegion.IsSea != sea {
+				continue
+			}
+			previous[next] = current
+			if next == to {
+				path := []world.RegionID{to}
+				for currentID := current; currentID != ""; currentID = previous[currentID] {
+					path = append(path, currentID)
+				}
+				for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
+					path[i], path[j] = path[j], path[i]
+				}
+				return path
+			}
+			queue = append(queue, next)
+		}
+	}
+	return nil
+}
+
+func nearestTradeRegionID(regions map[world.RegionID]*world.Region, x, y float64, sea bool) world.RegionID {
+	bestID := world.RegionID("")
+	bestDistance := math.MaxFloat64
+	for id, region := range regions {
+		if region == nil || region.IsSea != sea {
+			continue
+		}
+		dx := float64(region.WorldX) - x
+		dy := float64(region.WorldY) - y
+		distance := dx*dx + dy*dy
+		if distance < bestDistance || distance == bestDistance && id < bestID {
+			bestID = id
+			bestDistance = distance
+		}
+	}
+	return bestID
+}
+
+func tradeCenterEndpointRegions(center tradeCenterVisual, routeType world.TradeRouteType, regions map[world.RegionID]*world.Region) []world.RegionID {
+	sea := routeType == world.TradeRouteSea
+	if center.regionID == "" {
+		if id := nearestTradeRegionID(regions, center.worldX, center.worldY, sea); id != "" {
+			return []world.RegionID{id}
+		}
+		return nil
+	}
+	region := regions[center.regionID]
+	if region == nil {
+		return nil
+	}
+	if region.IsSea == sea {
+		return []world.RegionID{region.ID}
+	}
+	if !sea {
+		return nil
+	}
+	result := make([]world.RegionID, 0, len(region.Neighbors))
+	for _, neighborID := range region.Neighbors {
+		neighbor := regions[neighborID]
+		if neighbor != nil && neighbor.IsSea {
+			result = append(result, neighborID)
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		left := regions[result[i]]
+		right := regions[result[j]]
+		leftDX := float64(left.WorldX) - center.worldX
+		leftDY := float64(left.WorldY) - center.worldY
+		rightDX := float64(right.WorldX) - center.worldX
+		rightDY := float64(right.WorldY) - center.worldY
+		leftDistance := leftDX*leftDX + leftDY*leftDY
+		rightDistance := rightDX*rightDX + rightDY*rightDY
+		if leftDistance != rightDistance {
+			return leftDistance < rightDistance
+		}
+		return result[i] < result[j]
+	})
+	return result[:1]
+}
+
+func curvedTradeSegmentPoints(start, end tradeOverlayPoint, key string) []tradeOverlayPoint {
+	dx := end.x - start.x
+	dy := end.y - start.y
+	distance := math.Hypot(dx, dy)
+	if distance < 0.5 {
+		return []tradeOverlayPoint{start, end}
+	}
+	curve := routeCurveOffset(key, distance) * 0.18
+	if math.Abs(curve) < 4 {
+		if curve < 0 {
+			curve = -4
+		} else {
+			curve = 4
+		}
+	}
+	midX := (start.x + end.x) / 2
+	midY := (start.y + end.y) / 2
+	controlX := midX - dy/distance*curve
+	controlY := midY + dx/distance*curve
+	const samples = 6
+	points := make([]tradeOverlayPoint, samples+1)
+	for i := 0; i <= samples; i++ {
+		t := float64(i) / samples
+		points[i].x, points[i].y = quadBezierPoint(start.x, start.y, controlX, controlY, end.x, end.y, t)
+	}
+	return points
+}
+
+func (r *Renderer) tradeCenterLinkPath(from, to tradeCenterVisual, routeType world.TradeRouteType) ([]tradeOverlayPoint, []string) {
+	if r == nil || r.gs == nil || routeType != world.TradeRouteSea {
+		return nil, nil
+	}
+	fromCandidates := tradeCenterEndpointRegions(from, routeType, r.gs.Regions)
+	toCandidates := tradeCenterEndpointRegions(to, routeType, r.gs.Regions)
+	if len(fromCandidates) == 0 || len(toCandidates) == 0 {
+		return nil, nil
+	}
+	sea := routeType == world.TradeRouteSea
+	var best []world.RegionID
+	for _, fromID := range fromCandidates {
+		for _, toID := range toCandidates {
+			candidate := shortestTradeRegionPath(r.gs.Regions, fromID, toID, sea)
+			if len(candidate) == 0 || len(best) > 0 && len(candidate) >= len(best) {
+				continue
+			}
+			best = candidate
+		}
+	}
+	if len(best) == 0 {
+		return nil, nil
+	}
+	type node struct {
+		id    string
+		point tradeOverlayPoint
+	}
+	nodes := make([]node, 0, len(best)+2)
+	nodes = append(nodes, node{id: "center:" + string(from.id), point: tradeOverlayPoint{x: from.x, y: from.y}})
+	for _, regionID := range best {
+		region := r.gs.Regions[regionID]
+		if region == nil {
+			continue
+		}
+		var x, y float64
+		if region.IsSea && r.worldMap != nil {
+			x, y = r.regionScreenPos(region)
+		} else {
+			x, y = r.worldToScreen(float64(region.WorldX), float64(region.WorldY))
+		}
+		nodes = append(nodes, node{id: "sea:" + string(regionID), point: tradeOverlayPoint{x: x, y: y}})
+	}
+	nodes = append(nodes, node{id: "center:" + string(to.id), point: tradeOverlayPoint{x: to.x, y: to.y}})
+	points := make([]tradeOverlayPoint, 0, len(nodes)*6)
+	segmentKeys := make([]string, 0, len(nodes)*6)
+	for i := 0; i < len(nodes)-1; i++ {
+		physicalKey := "connector:" + nodes[i].id + "|" + nodes[i+1].id
+		if strings.HasPrefix(nodes[i].id, "sea:") && strings.HasPrefix(nodes[i+1].id, "sea:") {
+			a, b := nodes[i].id, nodes[i+1].id
+			if a > b {
+				a, b = b, a
+			}
+			physicalKey = "sea_segment:" + a + "|" + b
+		}
+		segmentPoints := curvedTradeSegmentPoints(nodes[i].point, nodes[i+1].point, physicalKey)
+		if len(points) == 0 {
+			points = append(points, segmentPoints[0])
+		}
+		for sample := 1; sample < len(segmentPoints); sample++ {
+			points = append(points, segmentPoints[sample])
+			segmentKeys = append(segmentKeys, physicalKey+"#"+itoa(sample-1))
+		}
+	}
+	if len(points) < 2 {
+		return nil, nil
+	}
+	return points, segmentKeys
+}
+
+func tradeCenterLinkTypes(gs *state.GameState, centers []tradeCenterVisual) map[string]world.TradeRouteType {
+	types := make(map[string]world.TradeRouteType)
+	if gs == nil {
+		return types
+	}
+	indexByID := make(map[world.RegionID]int, len(centers))
+	for i, center := range centers {
+		indexByID[center.id] = i
+	}
+	for _, def := range gs.TradeCenters.Centers {
+		from, ok := indexByID[def.ID]
+		if !ok {
+			continue
+		}
+		for _, link := range def.Links {
+			to, ok := indexByID[link.RegionID]
+			if !ok || from == to {
+				continue
+			}
+			linkType := link.Type
+			if linkType == "" {
+				linkType = world.TradeRouteLand
+			}
+			if def.OffMap {
+				linkType = world.TradeRouteLand
+			}
+			a, b := from, to
+			if a > b {
+				a, b = b, a
+			}
+			key := itoa(a) + "|" + itoa(b)
+			if def.OffMap || types[key] == "" {
+				types[key] = linkType
+			}
+		}
+	}
+	return types
+}
+
+func tradeCenterSourceLinks(gs *state.GameState, centers []tradeCenterVisual) map[string]bool {
+	sources := make(map[string]bool)
+	if gs == nil {
+		return sources
+	}
+	indexByID := make(map[world.RegionID]int, len(centers))
+	for i, center := range centers {
+		indexByID[center.id] = i
+	}
+	for _, def := range gs.TradeCenters.Centers {
+		if !def.OffMap {
+			continue
+		}
+		from, ok := indexByID[def.ID]
+		if !ok {
+			continue
+		}
+		for _, link := range def.Links {
+			to, ok := indexByID[link.RegionID]
+			if !ok || from == to {
+				continue
+			}
+			a, b := from, to
+			if a > b {
+				a, b = b, a
+			}
+			sources[itoa(a)+"|"+itoa(b)] = true
+		}
+	}
+	return sources
+}
+
 // drawTradeRoutes tüm aktif ticaret rotalarını harita üzerinde sade koridorlar olarak çizer.
 // Çift yönlü rotalar (A->B ve B->A) tek bir görsel hatta birleştirilir.
 // Uzak zoom'da yalnızca oyuncuyla ilgili rotalar gösterilerek çizgi karmaşası azaltılır.
@@ -799,7 +1518,6 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	}
 	playerID := string(r.gs.PlayerFactionID)
 	onlyPlayerRoutes := r.camScale < 0.85
-	showLabels := r.camScale >= 1.05
 
 	merged := make(map[string]tradeRouteVisual, len(r.gs.TradeRoutes))
 	for _, tr := range r.gs.TradeRoutes {
@@ -823,6 +1541,13 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		route.amount += tr.AmountPerTurn
 		if routeKey := tr.AssignmentKey(); routeKey != "" {
 			route.routeKeys = append(route.routeKeys, routeKey)
+			route.routeDetails = appendTradeCorridorRouteDetail(route.routeDetails, tradeCorridorRouteDetail{
+				key:       routeKey,
+				direction: factionDisplayName(r.gs, tr.FromFactionID) + " → " + factionDisplayName(r.gs, tr.ToFactionID),
+				good:      economy.GoodNameTR(tr.Good),
+				amount:    tradeRouteDisplayAmount(tr),
+				route:     tr,
+			})
 		}
 		candidateGood := economy.GoodNameTR(tr.Good)
 		if route.goodName == "" || tr.AmountPerTurn > route.bestFlow {
@@ -858,14 +1583,19 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	for i, center := range centers {
 		centerIndexByID[center.id] = i
 	}
+	linkTypes := tradeCenterLinkTypes(r.gs, centers)
+	sourceLinks := tradeCenterSourceLinks(r.gs, centers)
+	visualDirections := tradeCenterVisualDirections(r.gs, centers)
 	factionHub := make(map[string]*world.Region, len(merged)*2)
 	factionCenter := make(map[string]int, len(merged)*2)
 	type linkAgg struct {
-		flow       int
-		factions   map[string]struct{}
-		goods      map[string]int
-		routeKeys  []string
-		historical bool
+		flow         int
+		factions     map[string]struct{}
+		goods        map[string]int
+		directions   map[struct{ from, to int }]int
+		routeKeys    []string
+		routeDetails []tradeCorridorRouteDetail
+		historical   bool
 	}
 	centerLinkFlow := map[string]*linkAgg{}
 	mergedKeys := make([]string, 0, len(merged))
@@ -875,6 +1605,14 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	sort.Strings(mergedKeys)
 	for _, key := range mergedKeys {
 		route := merged[key]
+		routeAmount := tradeRouteDisplayAmount(route.route)
+		routeDetails := route.routeDetails
+		if len(routeDetails) == 0 && route.route != nil {
+			routeDetails = []tradeCorridorRouteDetail{{
+				key: key, direction: factionDisplayName(r.gs, route.factionA) + " → " + factionDisplayName(r.gs, route.factionB),
+				good: route.goodName, amount: routeAmount, route: route.route,
+			}}
+		}
 		if factionHub[route.factionA] == nil {
 			factionHub[route.factionA] = r.factionPrimaryRegion(route.factionA)
 		}
@@ -900,6 +1638,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		for pi := 0; pi < len(path)-1; pi++ {
 			ka, kb := path[pi], path[pi+1]
+			flowFrom, flowTo := ka, kb
 			if ka > kb {
 				ka, kb = kb, ka
 			}
@@ -907,15 +1646,18 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			agg := centerLinkFlow[key]
 			if agg == nil {
 				agg = &linkAgg{
-					factions: make(map[string]struct{}, 4),
-					goods:    make(map[string]int, 4),
+					factions:   make(map[string]struct{}, 4),
+					goods:      make(map[string]int, 4),
+					directions: make(map[struct{ from, to int }]int, 2),
 				}
 				centerLinkFlow[key] = agg
 			}
 			agg.flow += route.amount
+			agg.directions[struct{ from, to int }{from: flowFrom, to: flowTo}] += route.amount
 			agg.factions[route.factionA] = struct{}{}
 			agg.factions[route.factionB] = struct{}{}
 			agg.routeKeys = append(agg.routeKeys, route.routeKeys...)
+			agg.routeDetails = appendTradeCorridorRouteDetails(agg.routeDetails, routeDetails...)
 			if route.goodName != "" {
 				agg.goods[route.goodName] += route.amount
 			}
@@ -936,13 +1678,18 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		for pi := 0; pi < len(path)-1; pi++ {
 			a, b := path[pi], path[pi+1]
+			flowFrom, flowTo := a, b
 			if a > b {
 				a, b = b, a
 			}
 			key := itoa(a) + "|" + itoa(b)
 			agg := centerLinkFlow[key]
 			if agg == nil {
-				agg = &linkAgg{factions: make(map[string]struct{}, 1), goods: make(map[string]int, 2)}
+				agg = &linkAgg{
+					factions:   make(map[string]struct{}, 1),
+					goods:      make(map[string]int, 2),
+					directions: make(map[struct{ from, to int }]int, 2),
+				}
 				centerLinkFlow[key] = agg
 			}
 			amount := r.gs.HistoricalTradeFlowAmount(flow)
@@ -950,7 +1697,11 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 				continue
 			}
 			agg.flow += amount
+			agg.directions[struct{ from, to int }{from: flowFrom, to: flowTo}] += amount
 			agg.goods[economy.GoodNameTR(flow.Good)] += amount
+			agg.routeDetails = appendTradeCorridorRouteDetail(agg.routeDetails, tradeCorridorRouteDetail{
+				key: "historical", good: economy.GoodNameTR(flow.Good), amount: amount, historical: true,
+			})
 			agg.historical = true
 		}
 	}
@@ -1003,11 +1754,84 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			linkKeySet[itoa(a)+"|"+itoa(b)] = struct{}{}
 		}
 	}
+	// Pasif merkezlerin bağlantıları da haritada görünür; bunlar ağ çözümüne
+	// katılmadığı için yalnızca görsel koridor olarak eklenir.
+	indexByID := make(map[world.RegionID]int, len(centers))
+	for idx, center := range centers {
+		indexByID[center.id] = idx
+	}
+	for _, def := range r.gs.TradeCenters.Centers {
+		from, ok := indexByID[def.ID]
+		if !ok {
+			continue
+		}
+		for _, link := range def.Links {
+			linkedID := link.RegionID
+			to, ok := indexByID[linkedID]
+			if !ok || from == to {
+				continue
+			}
+			a, b := from, to
+			if a > b {
+				a, b = b, a
+			}
+			linkKeySet[itoa(a)+"|"+itoa(b)] = struct{}{}
+		}
+	}
 	linkKeys := make([]string, 0, len(linkKeySet))
 	for key := range linkKeySet {
 		linkKeys = append(linkKeys, key)
 	}
-	sort.Strings(linkKeys)
+	// Ortak bir deniz segmenti birden fazla merkez bağlantısının parçası
+	// olabilir. En güçlü/aktif bağlantıyı önce çizerek o fiziksel segmentin
+	// görünümünü belirlemesini sağlarız; aşağıda aynı segment tekrar çizilmez.
+	sort.SliceStable(linkKeys, func(a, b int) bool {
+		flowFor := func(key string) (int, bool) {
+			agg := centerLinkFlow[key]
+			amount := 0
+			if agg != nil {
+				amount = agg.flow
+			}
+			parts := strings.Split(key, "|")
+			if len(parts) != 2 {
+				return amount, false
+			}
+			i, errI := strconv.Atoi(parts[0])
+			j, errJ := strconv.Atoi(parts[1])
+			if errI != nil || errJ != nil || i < 0 || j < 0 || i >= len(centers) || j >= len(centers) {
+				return amount, false
+			}
+			return amount, centers[i].active && centers[j].active
+		}
+		amountA, activeA := flowFor(linkKeys[a])
+		amountB, activeB := flowFor(linkKeys[b])
+		if amountA != amountB {
+			return amountA > amountB
+		}
+		if activeA != activeB {
+			return activeA
+		}
+		return linkKeys[a] < linkKeys[b]
+	})
+	corridorPaths := make(map[string][]tradeOverlayPoint, len(linkKeys))
+	corridorPathKeys := make(map[string][]string, len(linkKeys))
+	for _, key := range linkKeys {
+		if linkTypes[key] != world.TradeRouteSea {
+			continue
+		}
+		parts := strings.Split(key, "|")
+		if len(parts) != 2 {
+			continue
+		}
+		i, errI := strconv.Atoi(parts[0])
+		j, errJ := strconv.Atoi(parts[1])
+		if errI != nil || errJ != nil || i < 0 || j < 0 || i >= len(centers) || j >= len(centers) || i == j {
+			continue
+		}
+		corridorPaths[key], corridorPathKeys[key] = r.tradeCenterLinkPath(centers[i], centers[j], world.TradeRouteSea)
+	}
+	drawnPathSegments := make(map[string]struct{})
+	pathCorridorIndex := make(map[string]int)
 	for _, key := range linkKeys {
 		agg := centerLinkFlow[key]
 		parts := strings.Split(key, "|")
@@ -1041,22 +1865,47 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		curve := routeCurveOffset(key, dist)
 		cx := mx + px*curve
 		cy := my + py*curve
+		corridorPath := corridorPaths[key]
+		corridorSegmentKeys := corridorPathKeys[key]
+		pathSegments := splitTradePhysicalPath(corridorPath, corridorSegmentKeys)
+		pointAt := func(t float64) (float64, float64) {
+			if len(corridorPath) >= 2 {
+				return tradePolylinePoint(corridorPath, t)
+			}
+			return quadBezierPoint(sx, sy, cx, cy, dx, dy, t)
+		}
 
 		idleLink := amount == 0
-		glow := color.RGBA{120, 108, 86, 18}
-		core := color.RGBA{165, 150, 118, 42}
+		passiveLink := !centers[i].active || !centers[j].active
+		glow, core, routeArrowColor := tradeRoutePalette(linkTypes[key])
+		if sourceLinks[key] {
+			glow, core, routeArrowColor = tradeSourceRoutePalette()
+		}
+		glow.A = 18
+		core.A = 42
 		coreW := float32(1.0)
 		glowW := float32(2.8)
 		if idleLink {
 			glow = color.RGBA{}
-			core = color.RGBA{130, 136, 145, 112}
+			if sourceLinks[key] {
+				core = color.RGBA{58, 112, 78, 150}
+			} else if linkTypes[key] == world.TradeRouteSea {
+				core = color.RGBA{86, 154, 190, 150}
+			} else {
+				core = color.RGBA{160, 139, 102, 150}
+			}
 			coreW = 0.9
 			glowW = 0
 		}
-		if amount > 0 {
+		if passiveLink {
+			glow, core, routeArrowColor = passiveTradeRoutePalette()
+			coreW = 2.0
+			glowW = 0
+		}
+		if amount > 0 && !passiveLink {
 			alphaScale := min(uint8(80+(amount*12)), 255)
-			glow = color.RGBA{255, 224, 138, alphaScale}
-			core = color.RGBA{247, 232, 176, alphaScale}
+			glow.A = alphaScale
+			core.A = alphaScale
 			coreW = 1.5
 			glowW = 5.0
 			if amount >= 14 {
@@ -1068,36 +1917,102 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			}
 		}
 
-		if preFocusCenter >= 0 && i != preFocusCenter && j != preFocusCenter {
+		if preFocusCenter >= 0 && i != preFocusCenter && j != preFocusCenter && !passiveLink {
 			if amount > 0 {
-				glow = color.RGBA{180, 170, 130, 10}
-				core = color.RGBA{170, 165, 140, 34}
+				glow = routeArrowColor
+				glow.A = 10
+				core = routeArrowColor
+				core.A = 34
 				coreW = 1.1
 				glowW = 3.4
 			} else {
-				core = color.RGBA{120, 126, 136, 46}
+				core = routeArrowColor
+				core.A = 46
 			}
 		}
-		segments := 24
-		for i := 0; i < segments; i++ {
-			t1 := float64(i) / float64(segments)
-			t2 := float64(i+1) / float64(segments)
-			x1, y1 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t1)
-			x2, y2 := quadBezierPoint(sx, sy, cx, cy, dx, dy, t2)
-			if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
-				continue
+		if len(corridorPath) >= 2 {
+			// Aynı deniz bölgesi kenarı birden fazla rota tarafından
+			// kullanılıyorsa yalnızca ilk rotanın çizgisi görünür. Her fiziksel
+			// kenarın örnek noktaları birlikte ele alındığı için kıvrım da korunur.
+			for segment := 0; segment < len(corridorPath)-1; {
+				baseKey := tradePathSegmentKey(corridorSegmentKeys[segment])
+				end := segment + 1
+				for end < len(corridorPath)-1 && end < len(corridorSegmentKeys) {
+					endKey := tradePathSegmentKey(corridorSegmentKeys[end])
+					if endKey != baseKey {
+						break
+					}
+					end++
+				}
+				if _, drawn := drawnPathSegments[baseKey]; drawn {
+					segment = end
+					continue
+				}
+				drawnPathSegments[baseKey] = struct{}{}
+				for sub := segment; sub < end; sub++ {
+					if passiveLink && sub%3 == 2 {
+						continue
+					}
+					x1, y1 := corridorPath[sub].x, corridorPath[sub].y
+					x2, y2 := corridorPath[sub+1].x, corridorPath[sub+1].y
+					if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
+						continue
+					}
+					if glowW > 0 {
+						vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
+					}
+					vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
+				}
+				segment = end
 			}
-			if glowW > 0 {
-				vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
+		} else {
+			segments := 36
+			for segment := 0; segment < segments; segment++ {
+				if passiveLink && segment%3 == 2 {
+					continue
+				}
+				t1 := float64(segment) / float64(segments)
+				t2 := float64(segment+1) / float64(segments)
+				x1, y1 := pointAt(t1)
+				x2, y2 := pointAt(t2)
+				if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
+					continue
+				}
+				if glowW > 0 {
+					vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), glowW, glow, false)
+				}
+				vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
 			}
-			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), coreW, core, false)
 		}
-		if amount > 0 && showLabels {
-			lx, ly := quadBezierPoint(sx, sy, cx, cy, dx, dy, 0.5)
-			if !r.tradeOverlayOccludesPoint(lx, ly) {
-				qtyStr := itoa(amount) + "/tur"
-				tw2 := MeasureText(qtyStr, FaceSmall)
-				DrawText(screen, qtyStr, lx-tw2/2, ly-8, FaceSmall, color.RGBA{225, 204, 144, 230})
+		if agg != nil && amount > 0 {
+			forward := struct{ from, to int }{from: i, to: j}
+			reverse := struct{ from, to int }{from: j, to: i}
+			hasReverse := agg.directions[reverse] > 0
+			for direction, directionAmount := range agg.directions {
+				if directionAmount <= 0 || (direction != forward && direction != reverse) {
+					continue
+				}
+				if directions := visualDirections[key]; len(directions) > 0 {
+					if _, ok := directions[direction]; !ok {
+						continue
+					}
+				}
+				isReverse := direction == reverse
+				arrowT := 0.5
+				if hasReverse {
+					if isReverse {
+						arrowT = 0.58
+					} else {
+						arrowT = 0.42
+					}
+				}
+				arrowColor := routeArrowColor
+				arrowColor.A = 245
+				if len(corridorPath) >= 2 {
+					drawTradeFlowArrowOnPath(screen, corridorPath, arrowT, isReverse, arrowColor)
+				} else {
+					drawTradeFlowArrow(screen, sx, sy, cx, cy, dx, dy, arrowT, isReverse, arrowColor)
+				}
 			}
 		}
 		goodsList := make([]struct {
@@ -1133,28 +2048,79 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if agg != nil {
 			factionCount = len(agg.factions)
 		}
-		r.tradeCorridors = append(r.tradeCorridors, tradeCorridorInfo{
-			fromName:   centers[i].nameTR,
-			toName:     centers[j].nameTR,
-			amount:     amount,
-			factions:   factionCount,
-			goods:      goodsSummary,
-			sx:         sx,
-			sy:         sy,
-			cx:         cx,
-			cy:         cy,
-			dx:         dx,
-			dy:         dy,
-			hitWidth:   float64(glowW) + 4,
-			dashed:     false,
-			historical: agg != nil && agg.historical,
+		directionText := centers[i].nameTR + " ↔ " + centers[j].nameTR
+		if agg != nil {
+			forward := agg.directions[struct{ from, to int }{from: i, to: j}]
+			reverse := agg.directions[struct{ from, to int }{from: j, to: i}]
+			switch {
+			case forward > 0 && reverse == 0:
+				directionText = centers[i].nameTR + " → " + centers[j].nameTR
+			case reverse > 0 && forward == 0:
+				directionText = centers[j].nameTR + " → " + centers[i].nameTR
+			case forward > 0 && reverse > 0:
+				directionText = centers[i].nameTR + " ↔ " + centers[j].nameTR
+			}
+		}
+		corridor := tradeCorridorInfo{
+			fromName:      centers[i].nameTR,
+			toName:        centers[j].nameTR,
+			directionText: directionText,
+			amount:        amount,
+			factions:      factionCount,
+			goods:         goodsSummary,
+			sx:            sx,
+			sy:            sy,
+			cx:            cx,
+			cy:            cy,
+			dx:            dx,
+			dy:            dy,
+			path:          corridorPath,
+			routeType:     linkTypes[key],
+			hitWidth:      float64(glowW) + 4,
+			dashed:        false,
+			historical:    agg != nil && agg.historical,
 			routeKeys: func() []string {
 				if agg == nil {
 					return nil
 				}
 				return agg.routeKeys
 			}(),
-		})
+			centerFactions: [2]string{
+				tradeCenterOwnerFaction(r.gs, centers[i]),
+				tradeCenterOwnerFaction(r.gs, centers[j]),
+			},
+		}
+		if agg != nil {
+			corridor.routeDetails = append(corridor.routeDetails, agg.routeDetails...)
+		}
+		if len(pathSegments) == 0 {
+			r.tradeCorridors = append(r.tradeCorridors, corridor)
+			continue
+		}
+		for _, pathSegment := range pathSegments {
+			if pathSegment.key == "" || len(pathSegment.points) < 2 {
+				continue
+			}
+			segmentCorridor := corridor
+			segmentCorridor.path = pathSegment.points
+			segmentCorridor.sx = pathSegment.points[0].x
+			segmentCorridor.sy = pathSegment.points[0].y
+			last := pathSegment.points[len(pathSegment.points)-1]
+			segmentCorridor.dx = last.x
+			segmentCorridor.dy = last.y
+			segmentCorridor.cx = (segmentCorridor.sx + segmentCorridor.dx) / 2
+			segmentCorridor.cy = (segmentCorridor.sy + segmentCorridor.dy) / 2
+			if existing, ok := pathCorridorIndex[pathSegment.key]; ok {
+				r.tradeCorridors[existing].routeDetails = appendTradeCorridorRouteDetails(r.tradeCorridors[existing].routeDetails, segmentCorridor.routeDetails...)
+				r.tradeCorridors[existing].routeKeys = appendTradeRouteKeys(r.tradeCorridors[existing].routeKeys, segmentCorridor.routeKeys...)
+				continue
+			}
+			pathCorridorIndex[pathSegment.key] = len(r.tradeCorridors)
+			r.tradeCorridors = append(r.tradeCorridors, segmentCorridor)
+		}
+	}
+	for index := range r.tradeCorridors {
+		sortTradeCorridorRouteDetails(r.tradeCorridors[index].routeDetails)
 	}
 	r.updateTradeHover()
 
@@ -1182,6 +2148,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 
 	for i := range centers {
 		primary := centers[i].tier == world.TradeCenterPrimary && !centers[i].offMap
+		mainRoute := centers[i].mainRoute
 		alphaBg := uint8(170)
 		alphaBorder := uint8(155)
 		alphaText := uint8(205)
@@ -1189,6 +2156,16 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			alphaBg = 238
 			alphaBorder = 242
 			alphaText = 255
+		}
+		if mainRoute {
+			alphaBg = 220
+			alphaBorder = 245
+			alphaText = 245
+		}
+		if !centers[i].active {
+			alphaBg = 78
+			alphaBorder = 92
+			alphaText = 135
 		}
 		if focusCenter >= 0 {
 			isFocus := false
@@ -1217,6 +2194,22 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		nameW := float32(MeasureText(centers[i].nameTR, nameFace))
 		contentW := nameW
+		inactiveStatus := ""
+		inactiveGoods := ""
+		if !centers[i].active {
+			if centers[i].unlockYear > 0 {
+				inactiveStatus = "Pasif - " + itoa(centers[i].unlockYear) + " yılında açılır"
+			} else {
+				inactiveStatus = "Pasif"
+			}
+			inactiveGoods = "Mal: " + historicalTradeGoodsLabel(centers[i].sourceGoods) + " | 0/tur"
+			for _, text := range []string{inactiveStatus, inactiveGoods} {
+				textW := float32(MeasureText(text, FaceSmall))
+				if textW > contentW {
+					contentW = textW
+				}
+			}
+		}
 		volStr := ""
 		if !centers[i].offMap {
 			capacityBonus, incomeBonus := r.tradeCenterBenefits(centers[i])
@@ -1237,10 +2230,16 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 				w = 178
 			}
 			h = 54
+		} else if !centers[i].active {
+			w = contentW + 28
+			h = 48
+		} else if mainRoute {
+			w = contentW + 34
+			h = 26
 		} else if w < 102 {
 			w = 102
 		}
-		if centers[i].offMap {
+		if centers[i].offMap && !mainRoute && centers[i].active {
 			h = 22
 		}
 		x := float32(centers[i].x) - w/2
@@ -1274,6 +2273,15 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 
 		// Border: gold for primary, bronze for secondary
 		borderColor := color.RGBA{122, 101, 75, alphaBorder}
+		if mainRoute {
+			borderColor = color.RGBA{232, 180, 70, alphaBorder}
+		}
+		if !centers[i].active {
+			borderColor = color.RGBA{120, 130, 140, alphaBorder}
+			if mainRoute {
+				borderColor = color.RGBA{170, 145, 80, alphaBorder}
+			}
+		}
 		if primary {
 			vector.StrokeRect(screen, x-1, y-1, w+2, h+2, 1.2, color.RGBA{235, 200, 110, alphaBorder}, false)
 			vector.StrokeRect(screen, x+1, y+1, w-2, h-2, 0.8, color.RGBA{150, 110, 50, alphaBorder}, false)
@@ -1283,6 +2291,9 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			}
 		}
 		vector.StrokeRect(screen, x, y, w, h, 1.0, borderColor, false)
+		if centers[i].endNode {
+			vector.StrokeRect(screen, x-2, y-2, w+4, h+4, 1.0, color.RGBA{210, 70, 70, alphaBorder}, false)
+		}
 
 		// Center Name
 		nameCol := color.RGBA{204, 196, 172, alphaText}
@@ -1291,6 +2302,9 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		if centers[i].offMap {
 			nameCol = color.RGBA{210, 228, 245, alphaText}
+		}
+		if mainRoute {
+			nameCol = color.RGBA{255, 225, 130, alphaText}
 		}
 		textX := float64(x) + 14
 		nameY := float64(y) + 4
@@ -1306,6 +2320,10 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			volumeY = float64(y) + 30
 		}
 		DrawText(screen, centers[i].nameTR, textX, nameY, nameFace, nameCol)
+		if !centers[i].active {
+			DrawText(screen, inactiveStatus, textX, float64(y)+19, FaceSmall, color.RGBA{180, 184, 190, alphaText})
+			DrawText(screen, inactiveGoods, textX, float64(y)+34, FaceSmall, color.RGBA{170, 174, 180, alphaText})
+		}
 
 		// Volume indicator
 		if !centers[i].offMap {

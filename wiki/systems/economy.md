@@ -51,11 +51,13 @@ ile herhangi bir ticaret ağına uygulanabilir.
 Vasco da Gama event'i uygulandığında Portekiz hattı güçlenir, Mısır ve Basra
 üzerinden gelen eski baharat yolunun ticaret geliri ve baharat üretimi azalır.
 
-Senaryo `trade_centers.json` içindeki `historical_flows` alanı, diplomatik
-faction rotalarından bağımsız tarihsel mal akışlarını tanımlar. Akışlar
-`start_year`/`end_year` ile aktifleşir; herhangi bir event sahibi devletin
-hayatta kalmasına bağlı değildir. `amount_per_turn` harita hacmini,
-`gold_income_per_turn` ise gerçek bölge endpoint'inin o anki sahibine yazılan
+Senaryo `trade_centers.json` içindeki merkezlerin `source_goods` alanı,
+diplomatik faction rotalarından bağımsız tarihsel mal kaynaklarını tanımlar.
+Akışlar merkez grafiğinde runtime olarak bağlı düğümlere yayılır; her
+bağlantıyı veya her malı ayrı ayrı veriyle tekrar yazmak gerekmez. Gerçek
+bölgelerin temel tahıl, demir, kereste, taş, baharat ve kumaş üretimleri de
+aynı grafiğe otomatik kaynak olarak katılır. `amount_per_turn` akış hacmini,
+`gold_income_per_turn` ise gerçek merkez endpoint'inin o anki sahibine yazılan
 ekstra tarihsel ticaret gelirini belirtir. Off-map endpoint gelir almaz;
 off-map → gerçek merkez akışında gerçek merkez sahibi gelirin tamamını,
 iki gerçek merkez arasındaki akışta endpoint sahipleri eşit payı alır.
