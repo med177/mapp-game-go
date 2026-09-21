@@ -13083,8 +13083,8 @@
   },
   {
     "id": "dover_strait",
-    "name": "New Region 473",
-    "name_tr": "Yeni Bolge 473",
+    "name": "Dover Strait",
+    "name_tr": "Dover Boğazı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -13193,8 +13193,8 @@
   },
   {
     "id": "thames_entrance",
-    "name": "New Region 482",
-    "name_tr": "Yeni Bolge 482",
+    "name": "Thames Entrance",
+    "name_tr": "Thames Girişi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
