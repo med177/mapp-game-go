@@ -707,6 +707,7 @@ func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string,
 func New(gs *state.GameState) *Renderer {
 	syncFactionHistoricalFlagNames(gs)
 	loadTradeCenterIcon()
+	loadTurnStatusBadgeAssets()
 	x, y, w, _ := editInspectorRect()
 	dropW := float32(292)
 	dropH := editOwnerDropdownHeaderH + editOwnerDropdownRowH*editOwnerDropdownVisibleRows + 10
@@ -1356,6 +1357,27 @@ func (r *Renderer) ShowInfo(msg string) {
 	r.combatLogTimer = 180
 }
 
+func (r *Renderer) infoPopupRect() gameui.Rect {
+	const popupW = float64(430)
+	if r == nil {
+		return gameui.Rect{}
+	}
+	popupH := float64(infoPopupHeight(r.combatLog))
+	popupY := ScreenHeight*0.26 - popupH/2
+	if r.gs != nil && r.gs.Phase == state.PhaseAITurn && r.aiTurnActor != "" {
+		const aiOverlayGap = float32(40)
+		const aiOverlayH = float32(180)
+		_, turnHudY, _, turnHudH := turnTechHudRect()
+		popupY = float64(turnHudY + turnHudH + aiOverlayGap + aiOverlayH + 16)
+	}
+	return gameui.Rect{
+		X: ScreenWidth/2 - popupW/2,
+		Y: popupY,
+		W: popupW,
+		H: popupH,
+	}
+}
+
 // ShowHistoricalEvent büyük tarihsel olayı tam ekran popup olarak gösterir.
 func (r *Renderer) ShowHistoricalEvent(title, desc, prompt string, choices []HistoricalEventChoice) {
 	r.commanderArrivals = r.commanderArrivals[:0]
@@ -1756,15 +1778,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.combatLogTimer < 60 {
 			alpha = uint8(r.combatLogTimer * 255 / 60)
 		}
-		popupH := infoPopupHeight(r.combatLog)
-		popupY := float32(ScreenHeight)*0.26 - popupH/2
-		if r.gs.Phase == state.PhaseAITurn && r.aiTurnActor != "" {
-			const aiOverlayGap = float32(40)
-			const aiOverlayH = float32(180)
-			_, turnHudY, _, turnHudH := turnTechHudRect()
-			popupY = turnHudY + turnHudH + aiOverlayGap + aiOverlayH + 16
-		}
-		drawInfoPopupAt(screen, r.combatLog, alpha, popupY)
+		drawInfoPopupAt(screen, r.combatLog, alpha, float32(r.infoPopupRect().Y))
 		r.combatLogTimer--
 	}
 
@@ -1909,6 +1923,8 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	flagY := float64(y) + 36
 	if r.aiTurnDetail == "Pazar emirleri hazırlanıyor..." {
 		drawTradeOrdersBadge(screen, flagX, flagY, flagSize, flagBG, nil)
+	} else if r.aiTurnDetail == "AI hamleleri hazırlanıyor..." {
+		drawAIMoveBadge(screen, flagX, flagY, flagSize, flagBG, nil)
 	} else {
 		drawFactionFlagBadge(screen, r.aiTurnFactionID, r.aiTurnInitial, flagX, flagY, flagSize, flagBG, nil)
 	}

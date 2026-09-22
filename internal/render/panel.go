@@ -149,6 +149,8 @@ var (
 
 	tradeOrdersBadgeImage       *ebiten.Image
 	tradeOrdersBadgeImageLoaded bool
+	aiMoveBadgeImage            *ebiten.Image
+	aiMoveBadgeImageLoaded      bool
 )
 
 func buildingSpritePath(id string) string {
@@ -227,6 +229,28 @@ func tradeOrdersBadgeAsset() *ebiten.Image {
 	return tradeOrdersBadgeImage
 }
 
+func aiMoveBadgeAsset() *ebiten.Image {
+	if aiMoveBadgeImageLoaded {
+		return aiMoveBadgeImage
+	}
+	aiMoveBadgeImageLoaded = true
+	for _, path := range []string{
+		"assets/ui/ai_move.png",
+		filepath.Join("..", "..", "assets", "ui", "ai_move.png"),
+	} {
+		if img := tryLoadImage(path); img != nil {
+			aiMoveBadgeImage = img
+			break
+		}
+	}
+	return aiMoveBadgeImage
+}
+
+func loadTurnStatusBadgeAssets() {
+	tradeOrdersBadgeAsset()
+	aiMoveBadgeAsset()
+}
+
 func syncFactionHistoricalFlagNames(gs *state.GameState) {
 	factionHistoricalFlagNames = make(map[faction.FactionID]string)
 	if gs == nil {
@@ -267,6 +291,28 @@ func drawFactionFlagBadge(screen *ebiten.Image, fid faction.FactionID, initial s
 func drawTradeOrdersBadge(screen *ebiten.Image, x, y, size float64, bg, border color.Color) {
 	vector.FillRect(screen, float32(x), float32(y), float32(size), float32(size), bg, false)
 	if image := tradeOrdersBadgeAsset(); image != nil {
+		bounds := image.Bounds()
+		imageW := float64(bounds.Dx())
+		imageH := float64(bounds.Dy())
+		scale := size / imageW
+		if imageH > imageW {
+			scale = size / imageH
+		}
+		drawW := imageW * scale
+		drawH := imageH * scale
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(scale, scale)
+		op.GeoM.Translate(x+(size-drawW)/2, y+(size-drawH)/2)
+		screen.DrawImage(image, op)
+	}
+	if border != nil {
+		vector.StrokeRect(screen, float32(x), float32(y), float32(size), float32(size), 2, border, false)
+	}
+}
+
+func drawAIMoveBadge(screen *ebiten.Image, x, y, size float64, bg, border color.Color) {
+	vector.FillRect(screen, float32(x), float32(y), float32(size), float32(size), bg, false)
+	if image := aiMoveBadgeAsset(); image != nil {
 		bounds := image.Bounds()
 		imageW := float64(bounds.Dx())
 		imageH := float64(bounds.Dy())
