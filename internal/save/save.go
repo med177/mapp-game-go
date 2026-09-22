@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"mapp-game-go/internal/army"
@@ -25,6 +26,37 @@ const saveDir = "saves"
 const autoSavePath = "saves/autosave.json"
 
 var scenarioBaseDir = filepath.Join("assets", "scenarios")
+
+type scenarioBaseCacheEntry struct {
+	fingerprint string
+	state       *state.GameState
+}
+
+var scenarioBaseCache = struct {
+	sync.Mutex
+	entries map[string]scenarioBaseCacheEntry
+}{entries: make(map[string]scenarioBaseCacheEntry)}
+
+var scenarioBaseCacheFiles = []string{
+	"scenario.json",
+	"data/regions.json",
+	"data/land_passages.json",
+	"data/terrain_areas.json",
+	"data/settlements.json",
+	"data/country_shapes.json",
+	"data/factions.json",
+	"data/ai_strategies.json",
+	"data/relations.json",
+	"data/units.json",
+	"data/commanders.json",
+	"data/buildings.json",
+	"data/technologies.json",
+	"data/political_transformations.json",
+	"data/armies.json",
+	"data/trade_centers.json",
+	"data/resources.json",
+	"data/imperial.json",
+}
 
 // GameVersion save dosyasına yazılan oyun sürümü bilgisidir.
 // Varsayılan değer buildinfo üzerinden gelir; testler veya özel akışlar bunu override edebilir.
@@ -234,6 +266,14 @@ func SaveToSlot(gs *state.GameState, slotName string) error {
 		log.Printf("Eski save debug sidecar temizlenemedi (%s): %v", path, err)
 	}
 	return nil
+}
+
+// WarmScenarioBaseState, ilk oyuncu turu açılmadan önce autosave delta hesabı
+// için gereken statik senaryo tabanını hazırlar. Kaynak dosyalardan biri
+// değiştiğinde fingerprint yenilenir ve taban yeniden yüklenir.
+func WarmScenarioBaseState(scenarioID, scenarioPath string) error {
+	_, err := cachedScenarioBaseState(scenarioID, scenarioPath)
+	return err
 }
 
 func writeDebugSidecar(path string, payload debugSaveEnvelope) error {
@@ -595,6 +635,53 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	gs.ApplyHistoricalFactionChanges()
 	gs.SyncWarLedgers()
 	return gs, nil
+}
+
+func cachedScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameState, error) {
+	scenarioPath := resolveScenarioPath(scenarioID, savedScenarioPath)
+	if scenarioPath == "" {
+		return nil, fmt.Errorf("senaryo yolu çözümlenemedi")
+	}
+	fingerprint, err := scenarioBaseFingerprint(scenarioPath)
+	if err != nil {
+		return nil, err
+	}
+
+	scenarioBaseCache.Lock()
+	entry, ok := scenarioBaseCache.entries[scenarioPath]
+	if ok && entry.fingerprint == fingerprint && entry.state != nil {
+		base := entry.state
+		scenarioBaseCache.Unlock()
+		return base, nil
+	}
+	scenarioBaseCache.Unlock()
+
+	base, err := loadScenarioBaseState(scenarioID, scenarioPath)
+	if err != nil {
+		return nil, err
+	}
+	scenarioBaseCache.Lock()
+	scenarioBaseCache.entries[scenarioPath] = scenarioBaseCacheEntry{fingerprint: fingerprint, state: base}
+	scenarioBaseCache.Unlock()
+	return base, nil
+}
+
+func scenarioBaseFingerprint(scenarioPath string) (string, error) {
+	var b strings.Builder
+	for _, relativePath := range scenarioBaseCacheFiles {
+		path := filepath.Join(scenarioPath, relativePath)
+		info, err := os.Stat(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				b.WriteString(relativePath)
+				b.WriteString(":missing;")
+				continue
+			}
+			return "", fmt.Errorf("senaryo tabanı doğrulanamadı (%s): %w", relativePath, err)
+		}
+		fmt.Fprintf(&b, "%s:%d:%d;", relativePath, info.Size(), info.ModTime().UnixNano())
+	}
+	return b.String(), nil
 }
 
 func resolveScenarioPath(scenarioID, savedScenarioPath string) string {

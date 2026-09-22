@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-08-28
+last_updated: 2026-09-22
 related: [state-management, render-pipeline]
 ---
 
@@ -133,9 +133,13 @@ erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir
 
 ## AI Tur Akışı
 
-`PhaseAITurn` artık tek frame'de tüm AI'yi bitirmez. `internal/game/game.go` içindeki AI sıra denetleyicisi:
+`PhaseAITurn` normal modda adımlı görünür çözümleme kullanır. Ayarlardaki
+`Hızlı Tur` açıkken aynı scheduler bir frame içinde birden çok AI step'i işler;
+oyuncu kararı isteyen pencere (barış, ticaret, ittifak veya vassallık gibi)
+oluştuğunda durur.
 
-1. Oyuncu kameranın anlık konumunu saklar.
+1. Oyuncu kameranın anlık konumunu saklar. Hızlı turda AI hamleleri kamerayı
+   hareket ettirmez.
 2. AI fraksiyonlarını `FactionOrder` tabanlı deterministik sıraya dizer.
 3. Her fraksiyon için `ai.TurnStepper` oluşturur.
 4. Prelude safhasında diplomasi uygulanır. `1300_ottoman_rise` için acil rezerv ve
@@ -160,7 +164,7 @@ erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir
    aynı fraksiyondan kalan uygun orduya devredilir veya kaldırılır; bu işlem ayrı ve
    görünür bir `TurnStep` üretir.
 7. Hareket safhasında ordular tek adım ilerler; her adım arasında kısa bekleme bırakılır.
-8. Oyuncuya bekleyen diplomasi teklifi düşerse AI sıra makinesi durur ve oyuncu cevabı gelene kadar yeni step çözmez. Bölge bağlı kuşatma tekliflerinde `RegionID` üzerinden kamera da kuşatılan bölgeye odaklanır; bu odak bekleyen teklif save'den yüklenmiş olsa da uygulanır.
+8. Oyuncuya bekleyen diplomasi teklifi düşerse AI sıra makinesi durur ve oyuncu cevabı gelene kadar yeni step çözmez. Hızlı turda yalnız oyuncu kararı isteyen teklifler korunur; heyet/hediye gibi bilgi bildirimleri kuyruğa alınmaz/gösterilmez. Bölge bağlı kuşatma tekliflerinde `RegionID` üzerinden kamera da kuşatılan bölgeye odaklanır; bu odak bekleyen teklif save'den yüklenmiş olsa da uygulanır. Hızlı tur bu otomatik odağı kapatır.
 9. Oyuncu bölgelerine veya oyuncu ordularına graph mesafesi `<= 3` olan hamlelerde kamera ilgili bölgeye odaklanır ve popup gösterilir.
 10. Uzak hamlelerde sadece AI overlay akmaya devam eder; kamera yerinde kalır.
 11. Bekleyen teklif kabul edilirse, teklif sahibi aktif AI fraksiyonunun kalan turu kapatılır; aynı tur içinde yeni saldırı veya ileri hareket yapmaz.
@@ -173,7 +177,7 @@ erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir
 
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
-| `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç |
+| `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç; senaryo tabanı ilk oyuncu turu hazırlanırken önbelleğe alınır |
 | `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Aynı modal düşman donanma varsa deniz savaşı için de açılır. Ordu o anda başka bir bölgeyi kuşatıyorsa ve farklı bir komşuya yürüyorsa eski kuşatma otomatik kaldırılır; aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için girebilir, ilgisiz üçüncü devletler yeni kuşatma hamlesi üretemez. Tahkimli ve zaten kuşatılmış bölgedeki besieger düşman orduya savaş açılabiliyorsa bu hareket kuşatmayı kaldırır ama yeni kuşatma açmaz |
 | `ActionDisembarkArmy` | Sağ tık | Nakliye filosu düşman kıyıya savaş halinde çıkarma yapabilir; savunan ordu varsa önce `Çıkarma Muharebesi` modalı açılır ve seçilen duruş `ActionDisembarkArmy.BattleStance` alanıyla oyun katmanına taşınır. Kendi kıyısında limana dock olduktan sonra aynı kara bölgesine tekrar sağ tıklanınca gemideki birlikler doğrudan karaya indirilir |
 | `ActionStartSiege` | Kuşatma modalı | Tahkimli düşman kara bölgesinde aktif kuşatma başlatır; kuşatma birimi olsun veya olmasın bu orduyla daha sonra genel hücum seçilebilir. Gedik yoksa tahkimat doğrudan düşmez. Ordu hedefe girmez, hareketi biter. Başka bir devletin devam eden kuşatmasına destek ayrı `ActionMoveArmy` akışıyla gelir; burada yeni bir kuşatma kaydı açılmaz |

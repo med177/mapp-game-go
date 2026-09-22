@@ -75,7 +75,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 	rows := []row{
 		{"Zorluk", difficultyLabelTR(s.Difficulty)},
 		{"Ekran Modu", displayModeLabelTR(s.Fullscreen)},
-		{"Hızlı AI Hamleleri", boolLabel(s.FastAITurns)},
+		{"Hızlı Tur", boolLabel(s.FastAITurns)},
 		{"Müzik", boolLabel(s.MusicOn)},
 		{"Müzik Seviyesi", itoa(s.MusicVolume) + "%"},
 		{"Ses Efektleri", boolLabel(s.SoundOn)},

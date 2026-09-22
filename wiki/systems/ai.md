@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-09-19
+last_updated: 2026-09-22
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -95,9 +95,10 @@ toplanır. Vergi değişimi yalnız AI'nin sahip olduğu kara bölgelerinde uygu
 Vergi ayarı ile ilişki iyileştirme amaçlı `Heyet`/`Hediye` hamleleri state'i
 değiştirmeye devam eder, ancak `TurnStepper` için görünür HAMLELER adımı
 üretmez; böylece düşük öncelikli ekonomi ve ilişki bakımı AI akışını
-yavaşlatmaz. Oyuncuya gönderilen heyet/hediye, mevcut diplomasi bildirim
-kuyruğunda çözülür. Ayarlardaki `Hızlı AI Hamleleri` açıkken bu bildirim
-modalı 1 saniye, kapalıyken 3 saniye sonra otomatik kapanır.
+yavaşlatmaz. Normal turda oyuncuya gönderilen heyet/hediye, mevcut diplomasi
+bildirim kuyruğunda çözülür. Ayarlardaki `Hızlı Tur` açıkken bu bilgi
+bildirimleri oyuncu kuyruğundan atlanır; barış, ticaret, ittifak ve vassallık
+gibi oyuncu kararı isteyen teklifler korunur.
 
 İlişki onarımı stratejik savaş hedeflerini desteklemez: AI'nin açık
 `AIExpansionTargets` listesinde bulunan, aktif `expand` planının hedefi olan
@@ -252,7 +253,13 @@ Her `PhaseAITurn` artık iki katmandan oluşur:
 - `ai.TakeTurn()` hâlâ tam turu tek çağrıda çözebilen saf AI entrypoint'idir.
 - `ai.TurnStepper` ise aynı mantığı adım adım açar; oyun döngüsü bunu kullanarak her AI devletini sırayla görünür işler.
 
-Oyun katmanı AI fraksiyonlarını `FactionOrder` sırasıyla dolaşır, her fraksiyon için `TurnStepper.Step()` çağırır ve her step arasında kısa bekleme ekler. Böylece harita bir anda "snap" olmaz; yakın cephedeki hareketler tek tek görünür.
+Oyun katmanı AI fraksiyonlarını `FactionOrder` sırasıyla dolaşır, her fraksiyon için `TurnStepper.Step()` çağırır ve normal modda her step arasında kısa bekleme ekler. Böylece harita bir anda "snap" olmaz; yakın cephedeki hareketler tek tek görünür. Ayarlardaki `Hızlı Tur` seçeneği bu beklemeleri ve AI adım başına UI güncellemesini kaldırır; adımlar toplu işlenir, kamera mevcut odağını korur ve yalnız oyuncu onayı gerektiren diplomasi tekliflerinde scheduler durur. Heyet/hediye bildirimleri hızlı turda oyuncu kuyruğunu kilitlemez.
+
+AI turu başında geçilmez araziye düşmüş ordular tek ortak
+`RepairArmiesInBlockedTerrain()` taramasıyla düzeltilir. Bu taramanın her
+`TurnStepper` oluşturuluşunda tekrarlanmaması ilk turdaki gereksiz beklemeyi
+azaltır. Autosave delta üretiminde statik senaryo tabanı fingerprint kontrollü
+runtime cache ile yeniden kullanılır; kaynak JSON değişirse cache geçersiz olur.
 
 AI kararlarında fraksiyon, bölge, ordu, teknoloji ve konsolidasyon adayları ID sırasıyla değerlendirilir. Eşit puanlı seçimler Go map iterasyon sırasına bağlı değildir. `TakeTurn` ve gerçek oyun akışındaki `TurnStepper`, seçilen aksiyon hareket puanı tüketmeden geri dönerse ordunun kalan hareketini sıfırlar; engellenmiş hedef veya başarısız genel hücum aynı hedefi sonsuz kez yeniden seçemez.
 

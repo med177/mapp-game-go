@@ -91,6 +91,7 @@ const (
 	aiTurnVisibleStepFrames  = 34
 	aiTurnHiddenStepFrames   = 12
 	aiTurnFactionIntroFrames = 10
+	quickTurnStepBatchLimit  = 4096
 )
 
 const maxDiplomaticOfferHistoryEntries = 10
@@ -763,6 +764,12 @@ func (g *Game) startAITurnSequence() {
 		return
 	}
 	refreshMarketOrdersAndPrices(g.gs)
+	// Bu onarım tüm AI faction'ları için ortak dünya taramasıdır. Her
+	// TurnStepper oluşturuluşunda tekrarlamak ilk turu gereksiz yere uzatır.
+	g.gs.RepairArmiesInBlockedTerrain()
+	if g.quickTurnEnabled() {
+		g.suppressQuickTurnRelationshipNotifications()
+	}
 	camera := g.renderer.CameraSnapshot()
 	if g.gs.DevelopmentMode && g.gs.AIDiagnosticCaptureTurnsRemain > 0 {
 		ai.RecordAIDiagnosticRound(g.gs)
@@ -850,8 +857,12 @@ func (g *Game) updateAITurnSequence() {
 	if g.aiTurn == nil {
 		return
 	}
+	quickTurn := g.quickTurnEnabled()
+	if quickTurn {
+		g.suppressQuickTurnRelationshipNotifications()
+	}
 	if offer, waiting := g.pendingPlayerDiplomacyOffer(); waiting {
-		if offer.RegionID != "" {
+		if !quickTurn && offer.RegionID != "" {
 			g.renderer.CenterCameraOnRegion(offer.RegionID)
 		}
 		g.renderer.SetAITurnStatus(offer.FromFactionID, turnActorName(g.gs, offer.FromFactionID), "Diplomasi cevabınız bekleniyor.")
@@ -862,7 +873,23 @@ func (g *Game) updateAITurnSequence() {
 		return
 	}
 
-	for {
+	for processed := 0; ; processed++ {
+		if quickTurn {
+			g.suppressQuickTurnRelationshipNotifications()
+			if g.renderer.WarSummaryVisible() || g.renderer.BattleReportVisible() ||
+				g.renderer.ConfirmDialogVisible() || g.renderer.BattlePlanVisible() || g.pendingSortie != nil {
+				return
+			}
+			if _, waiting := g.pendingPlayerDiplomacyOffer(); waiting {
+				return
+			}
+			if g.gs.PendingNavalContact != nil || g.gs.PendingLandContact != nil {
+				return
+			}
+			if processed >= quickTurnStepBatchLimit {
+				return
+			}
+		}
 		if g.aiTurn.index >= len(g.aiTurn.order) {
 			g.finishAITurnSequence()
 			g.renderer.MarkMapDirty()
@@ -890,7 +917,9 @@ func (g *Game) updateAITurnSequence() {
 			continue
 		}
 		g.handleAITurnStep(step)
-		return
+		if !quickTurn {
+			return
+		}
 	}
 }
 
@@ -907,7 +936,8 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 		g.presentAISortieDecision(step)
 		return
 	}
-	if step.WarDeclaration != nil && step.WarDeclaration.Applied && step.TargetFaction == g.gs.PlayerFactionID {
+	quickTurn := g.quickTurnEnabled()
+	if !quickTurn && step.WarDeclaration != nil && step.WarDeclaration.Applied && step.TargetFaction == g.gs.PlayerFactionID {
 		report := g.buildWarSummaryFor(step.FactionID, step.TargetFaction, *step.WarDeclaration)
 		g.renderer.ShowWarSummary(report)
 		g.renderer.AddEventDetail("[SAVAŞ] "+step.WarDeclaration.Message, warSummaryDetailText(report))
@@ -918,12 +948,18 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 		detail = "Hamle işleniyor."
 	}
 	nearPlayer := g.aiStepVisible(step)
-	if nearPlayer && step.FocusRegion != "" {
+	if !quickTurn && nearPlayer && step.FocusRegion != "" {
 		g.renderer.CenterCameraOnRegion(step.FocusRegion)
 	}
-	g.renderer.SetAITurnStatus(step.FactionID, actor, aiTurnOverlayDetail(step, nearPlayer))
-	if shouldLogAITurnStep(step) {
+	if !quickTurn {
+		g.renderer.SetAITurnStatus(step.FactionID, actor, aiTurnOverlayDetail(step, nearPlayer))
+	}
+	if !quickTurn && shouldLogAITurnStep(step) {
 		g.renderer.AddEvent("[AI] " + detail)
+	}
+	if quickTurn {
+		g.aiTurn.waitFrames = 0
+		return
 	}
 	if nearPlayer || step.Kind == ai.TurnStepDiplomacy {
 		g.aiTurn.waitFrames = g.aiTurnWaitFrames(aiTurnVisibleStepFrames)
@@ -960,7 +996,9 @@ func (g *Game) presentAISortieDecision(step ai.TurnStep) {
 		target:     g.gs.Regions[step.TargetRegion],
 		homeRegion: siege.AttackerHomeRegionID,
 	}
-	g.renderer.CenterCameraOnRegion(step.FromRegion)
+	if !g.quickTurnEnabled() {
+		g.renderer.CenterCameraOnRegion(step.FromRegion)
+	}
 	g.renderer.SetAITurnStatus(step.FactionID, turnActorName(g.gs, step.FactionID), "Huruç kararı bekleniyor.")
 	g.renderer.ShowSortieDecision(region.NameTR, aiArmy.ID, siegeArmy.ID, step.TargetRegion)
 }
@@ -1120,6 +1158,28 @@ func (g *Game) pendingPlayerDiplomacyOffer() (state.DiplomaticOffer, bool) {
 		return g.gs.DiplomaticOffers[offerIdx], true
 	}
 	return state.DiplomaticOffer{}, false
+}
+
+func (g *Game) quickTurnEnabled() bool {
+	return g != nil && g.renderer != nil && g.renderer.CurrentSettings.FastAITurns
+}
+
+// suppressQuickTurnRelationshipNotifications, hızlı turda AI'nin yalnızca
+// bilgi amaçlı heyet/hediye bildirimleriyle oyuncu turunu kilitlemesini önler.
+// Barış, ticaret, ittifak ve vassallık gibi oyuncu kararı isteyen teklifler
+// kuyruğun içinde kalır ve normal evet/hayır penceresi olarak gösterilir.
+func (g *Game) suppressQuickTurnRelationshipNotifications() {
+	if g == nil || g.gs == nil || !g.quickTurnEnabled() || len(g.gs.DiplomaticOffers) == 0 {
+		return
+	}
+	kept := g.gs.DiplomaticOffers[:0]
+	for _, offer := range g.gs.DiplomaticOffers {
+		if diplomacy.IsRelationshipNotification(diplomacy.Action(offer.Action)) {
+			continue
+		}
+		kept = append(kept, offer)
+	}
+	g.gs.DiplomaticOffers = kept
 }
 
 func (g *Game) resolveTurn() {
@@ -3721,6 +3781,9 @@ func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
 		worldMap := render.PrepareWorldMap(gs, "", render.MapModeNormal, func(progress int) {
 			setProgress(65 + progress*35/100)
 		})
+		if err := save.WarmScenarioBaseState(gs.ScenarioID, gs.ScenarioPath); err != nil {
+			log.Printf("Autosave senaryo tabanı önbelleği hazırlanamadı: %v", err)
+		}
 		return loadingResult{
 			gs:         gs,
 			evts:       evts,
@@ -3735,6 +3798,9 @@ func (g *Game) startPreparePlayerTurn() {
 	g.finishAITurnSequence()
 	g.startLoading(loadingWorldMap, "Harita hazırlanıyor...", func(setProgress func(int)) loadingResult {
 		worldMap := render.PrepareWorldMap(g.gs, "", render.MapModeNormal, setProgress)
+		if err := save.WarmScenarioBaseState(g.gs.ScenarioID, g.gs.ScenarioPath); err != nil {
+			log.Printf("Autosave senaryo tabanı önbelleği hazırlanamadı: %v", err)
+		}
 		return loadingResult{worldMap: worldMap}
 	})
 }

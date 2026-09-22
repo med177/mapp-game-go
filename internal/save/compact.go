@@ -427,7 +427,7 @@ func makeLegacyRelationState(relations map[string]*faction.Relation) map[string]
 }
 
 func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
-	base, err := loadScenarioBaseState(gs.ScenarioID, gs.ScenarioPath)
+	base, err := cachedScenarioBaseState(gs.ScenarioID, gs.ScenarioPath)
 	if err != nil {
 		return campaignSaveState{}, err
 	}

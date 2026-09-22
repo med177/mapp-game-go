@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-22: Ayarlardaki mevcut `FastAITurns` seçeneği arayüzde `Hızlı Tur`
+  olarak genişletildi. Açıkken AI step'leri toplu çözülür, hareket/teklif
+  kaynaklı kamera odağı korunur, heyet ve hediye bildirimleri atlanır; barış,
+  ticaret, ittifak ve vassallık gibi oyuncu kararı isteyen teklifler gösterilir.
+  AI turu başındaki arazi onarımı faction başına değil tur başına çalışır;
+  autosave senaryo tabanı da kaynak fingerprint'i değişene kadar cache'lenir
+  (`internal/game/game.go`, `internal/ai/turn_stepper.go`,
+  `internal/save/{save.go,compact.go}`).
+
 - 2026-09-22: Edit Mode'da aynı `ShapeID` içindeki bölge odağı taşındığında
   artık tüm ülke shape rasterı yeniden hesaplanmıyor. WorldMap, shape'in base
   raster piksellerini cache'liyor; worker mevcut harita kopyasında yalnızca

@@ -835,6 +835,9 @@ func (r *Renderer) updateNavalContactCamera() {
 	if r == nil || r.gs == nil {
 		return
 	}
+	if r.CurrentSettings.FastAITurns && r.gs.Phase == state.PhaseAITurn {
+		return
+	}
 	contact := r.gs.PendingNavalContact
 	sea := (*world.Region)(nil)
 	if contact != nil {

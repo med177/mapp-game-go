@@ -1216,7 +1216,7 @@ func diplomacyOfferActionLabelTR(action string) string {
 }
 
 func diplomacyOfferIsNotification(offer state.DiplomaticOffer) bool {
-	return offer.Action == string(diplomacy.ActionImproveRelations) || offer.Action == string(diplomacy.ActionSendGift)
+	return diplomacy.IsRelationshipNotification(diplomacy.Action(offer.Action))
 }
 
 func diplomacyOfferTitleTR(offer state.DiplomaticOffer) string {

@@ -11,6 +11,13 @@ const (
 	maxPendingRelationshipNotifications = 2
 )
 
+// IsRelationshipNotification, oyuncudan karar beklemeyen ve yalnızca bilgi
+// olarak gösterilen ilişki bildirimlerini ayırt eder. Hızlı tur gibi görünür
+// AI akışlarında bu bildirimler kuyruğu kilitlemeden atlanabilir.
+func IsRelationshipNotification(action Action) bool {
+	return action == ActionImproveRelations || action == ActionSendGift
+}
+
 // QueueOffer geçerli ve tekrar etmeyen diplomatik teklifi kuyruğa ekler.
 func QueueOffer(gs *state.GameState, from, to faction.FactionID, action Action) bool {
 	return QueueOfferWithPriority(gs, from, to, action, 0)
@@ -35,10 +42,10 @@ func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action 
 	if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
 		return false
 	}
-	if to == gs.PlayerFactionID && (action == ActionImproveRelations || action == ActionSendGift) {
+	if to == gs.PlayerFactionID && IsRelationshipNotification(action) {
 		pending := 0
 		for _, offer := range gs.DiplomaticOffers {
-			if offer.ToFactionID == to && (offer.Action == string(ActionImproveRelations) || offer.Action == string(ActionSendGift)) {
+			if offer.ToFactionID == to && IsRelationshipNotification(Action(offer.Action)) {
 				pending++
 			}
 		}

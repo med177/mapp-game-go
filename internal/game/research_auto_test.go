@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
@@ -53,6 +54,32 @@ func TestAutoStartResearchIfIdleStartsNextResearchableTech(t *testing.T) {
 	}
 	if player.Gold != 5 {
 		t.Fatalf("gold otomatik baslatmada dusmeliydi, got=%d", player.Gold)
+	}
+}
+
+func TestQuickTurnSuppressesOnlyRelationshipNotifications(t *testing.T) {
+	gs := &state.GameState{
+		DiplomaticOffers: []state.DiplomaticOffer{
+			{Action: string(diplomacy.ActionImproveRelations)},
+			{Action: string(diplomacy.ActionSendGift)},
+			{Action: string(diplomacy.ActionProposePeace)},
+			{Action: string(diplomacy.ActionProposeTrade)},
+			{Action: string(diplomacy.ActionOfferVassalization)},
+		},
+	}
+	r := render.New(gs)
+	r.CurrentSettings.FastAITurns = true
+	g := &Game{gs: gs, renderer: r}
+
+	g.suppressQuickTurnRelationshipNotifications()
+
+	if got, want := len(gs.DiplomaticOffers), 3; got != want {
+		t.Fatalf("hızlı turda kalan teklif sayısı: got=%d want=%d", got, want)
+	}
+	for _, offer := range gs.DiplomaticOffers {
+		if diplomacy.IsRelationshipNotification(diplomacy.Action(offer.Action)) {
+			t.Fatalf("ilişki bildirimi hızlı tur kuyruğunda kaldı: %q", offer.Action)
+		}
 	}
 }
 
