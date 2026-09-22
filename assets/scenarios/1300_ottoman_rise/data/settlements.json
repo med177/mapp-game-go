@@ -1083,7 +1083,7 @@
       },
       {
         "id": "hessen_heildelberg",
-        "name_tr": "Heildelberg",
+        "name_tr": "Heidelberg",
         "x": 650,
         "y": 293,
         "type": "city",
@@ -1096,7 +1096,7 @@
     "settlements": [
       {
         "id": "thuringia_stuttgart",
-        "name_tr": "Stutgart",
+        "name_tr": "Stuttgart",
         "x": 660,
         "y": 304,
         "type": "town",
@@ -3953,7 +3953,7 @@
       },
       {
         "id": "norway_stavanger",
-        "name_tr": "Stavaneger",
+        "name_tr": "Stavanger",
         "x": 604,
         "y": 106,
         "type": "city",
@@ -3963,7 +3963,7 @@
   },
   {
     "region_id": "rogaland",
-    "settlements": null
+    "settlements": []
   },
   {
     "region_id": "sweden",
@@ -3987,7 +3987,7 @@
       },
       {
         "id": "sweden_nykopingsherm",
-        "name_tr": "Nyköpingsherm",
+        "name_tr": "Nyköping",
         "x": 808,
         "y": 119,
         "type": "fortress",

@@ -163,7 +163,7 @@ func (s *GameState) merchantTradeCenterDirectPathExists(route *economy.TradeRout
 			continue
 		}
 		region := s.Regions[def.ID]
-		if region == nil || region.IsSea || !region.IsCoastal(s.Regions) {
+		if region == nil || region.IsSea {
 			continue
 		}
 		active[def.ID] = def
@@ -213,7 +213,8 @@ func (s *GameState) merchantTradeCenterPathExists(route *economy.TradeRoute, rou
 			continue
 		}
 		region := s.Regions[def.ID]
-		if region == nil || region.IsSea || !region.IsCoastal(s.Regions) {
+		if region == nil || region.IsSea ||
+			routeType == world.TradeRouteSea && !region.IsCoastal(s.Regions) {
 			continue
 		}
 		active[def.ID] = def

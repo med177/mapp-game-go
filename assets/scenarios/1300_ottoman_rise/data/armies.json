@@ -497,20 +497,6 @@
     "units": [
       {
         "type_id": "infantry",
-        "count": 5
-      }
-    ]
-  },
-  {
-    "id": "army_edit_155",
-    "owner_id": "teodoro_principality",
-    "region_id": "crimean_black_sea",
-    "docked_region_id": "gothia",
-    "docked_settlement_id": "cherson",
-    "is_naval": true,
-    "units": [
-      {
-        "type_id": "warship",
         "count": 3
       }
     ]
@@ -2377,13 +2363,106 @@
     ]
   },
   {
-    "id": "army_edit_159",
+    "id": "army_saxony_1",
     "owner_id": "saxony_duchy",
     "region_id": "saxony",
     "units": [
       {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
         "type_id": "infantry",
-        "count": 7
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_hre_north_1",
+    "owner_id": "hre",
+    "region_id": "saxony_lower",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_hre_south_1",
+    "owner_id": "hre",
+    "region_id": "baden_vurtemberg",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_denmark_south_1",
+    "owner_id": "denmark_kingdom",
+    "region_id": "malmo_halland",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_norway_1",
+    "owner_id": "norway_kingdom",
+    "region_id": "norway",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_norway_2",
+    "owner_id": "norway_kingdom",
+    "region_id": "bohuslan",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_sweden_1",
+    "owner_id": "sweden_kingdom",
+    "region_id": "sweden",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_sweden_2",
+    "owner_id": "sweden_kingdom",
+    "region_id": "goteborg_coast",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
       }
     ]
   }
