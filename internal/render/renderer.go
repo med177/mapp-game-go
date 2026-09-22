@@ -1907,7 +1907,11 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	}
 	flagX := float64(x) + 14
 	flagY := float64(y) + 36
-	drawFactionFlagBadge(screen, r.aiTurnFactionID, r.aiTurnInitial, flagX, flagY, flagSize, flagBG, nil)
+	if r.aiTurnDetail == "Pazar emirleri hazırlanıyor..." {
+		drawTradeOrdersBadge(screen, flagX, flagY, flagSize, flagBG, nil)
+	} else {
+		drawFactionFlagBadge(screen, r.aiTurnFactionID, r.aiTurnInitial, flagX, flagY, flagSize, flagBG, nil)
+	}
 
 	contentX := float64(x) + 160
 	DrawText(screen, r.aiTurnActor, contentX, float64(y)+48, FaceMed, ColorGold)

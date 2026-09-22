@@ -146,6 +146,9 @@ var (
 	// nil değerler de cache'lenir; böylece eksik asset her frame diskten aranmaz.
 	factionFlagCache           = map[string]*ebiten.Image{}
 	factionHistoricalFlagNames = map[faction.FactionID]string{}
+
+	tradeOrdersBadgeImage       *ebiten.Image
+	tradeOrdersBadgeImageLoaded bool
 )
 
 func buildingSpritePath(id string) string {
@@ -207,6 +210,23 @@ func resetFactionFlagCache() {
 	factionFlagCache = map[string]*ebiten.Image{}
 }
 
+func tradeOrdersBadgeAsset() *ebiten.Image {
+	if tradeOrdersBadgeImageLoaded {
+		return tradeOrdersBadgeImage
+	}
+	tradeOrdersBadgeImageLoaded = true
+	for _, path := range []string{
+		"assets/ui/trade_orders.png",
+		filepath.Join("..", "..", "assets", "ui", "trade_orders.png"),
+	} {
+		if img := tryLoadImage(path); img != nil {
+			tradeOrdersBadgeImage = img
+			break
+		}
+	}
+	return tradeOrdersBadgeImage
+}
+
 func syncFactionHistoricalFlagNames(gs *state.GameState) {
 	factionHistoricalFlagNames = make(map[faction.FactionID]string)
 	if gs == nil {
@@ -238,6 +258,28 @@ func drawFactionFlagBadge(screen *ebiten.Image, fid faction.FactionID, initial s
 		screen.DrawImage(flag, op)
 	} else if initial != "" {
 		DrawTextCentered(screen, initial, x+size/2, y+size/2-8, FaceLarge, color.RGBA{255, 255, 255, 240})
+	}
+	if border != nil {
+		vector.StrokeRect(screen, float32(x), float32(y), float32(size), float32(size), 2, border, false)
+	}
+}
+
+func drawTradeOrdersBadge(screen *ebiten.Image, x, y, size float64, bg, border color.Color) {
+	vector.FillRect(screen, float32(x), float32(y), float32(size), float32(size), bg, false)
+	if image := tradeOrdersBadgeAsset(); image != nil {
+		bounds := image.Bounds()
+		imageW := float64(bounds.Dx())
+		imageH := float64(bounds.Dy())
+		scale := size / imageW
+		if imageH > imageW {
+			scale = size / imageH
+		}
+		drawW := imageW * scale
+		drawH := imageH * scale
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Scale(scale, scale)
+		op.GeoM.Translate(x+(size-drawW)/2, y+(size-drawH)/2)
+		screen.DrawImage(image, op)
 	}
 	if border != nil {
 		vector.StrokeRect(screen, float32(x), float32(y), float32(size), float32(size), 2, border, false)
