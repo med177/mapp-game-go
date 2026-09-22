@@ -115,6 +115,7 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 		return aiBuildingCandidate{}, false
 	}
 	self := gs.Factions[fid]
+	satisfactionCalculator := satisfaction.NewCalculator(gs)
 	snapshot := aiBuildEconomySnapshot(gs, fid)
 	// Tamamlanmamış çiftlikler ekonomi fotoğrafına henüz katılmaz. İki paralel
 	// yatırım kıtlığın hızla toparlanmasını sağlar; üçüncüsü ise sonucu görmeden
@@ -123,11 +124,15 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 	var best aiBuildingCandidate
 	found := false
 	buildingIDs := aiEconomyBuildingIDsForState(gs)
+	tradePowerShare := -1
 	for _, region := range aiSortedRegions(gs) {
 		if region.IsSea || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
 			continue
 		}
 		signals := aiInvestmentSignals(gs, fid, region, ctx)
+		baseProduction := gs.RegionProductionSummary(region)
+		baseTradeCapacity := 0
+		baseTradeCapacityReady := false
 		for _, buildingID := range buildingIDs {
 			if buildingID == "farm" && queuedFarmCount >= 2 {
 				continue
@@ -160,7 +165,16 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 				continue
 			}
 			turns := aiBuildingTurnsRequired(region, buildingID, btype.TurnsRequired, queued)
-			candidate := aiScoreBuildingInvestment(gs, self, region, btype, cost, turns, level, queued, snapshot, signals)
+			if buildingID == "market" || buildingID == "port" {
+				if tradePowerShare < 0 {
+					tradePowerShare = gs.TradePowerSharePercent(fid)
+				}
+				if !baseTradeCapacityReady {
+					baseTradeCapacity = gs.EffectiveRegionTradeCapacity(region)
+					baseTradeCapacityReady = true
+				}
+			}
+			candidate := aiScoreBuildingInvestment(gs, self, region, btype, cost, turns, level, queued, snapshot, signals, satisfactionCalculator, baseProduction, tradePowerShare, baseTradeCapacity)
 			// Zayıf yatırım adayında ekonomi payını sırf harcamış olmak için tüketme;
 			// bütçe serbest bırakılarak sonraki donanma/ordu kategorisine aktarılır.
 			if candidate.Score < aiMinBuildingInvestmentScore {
@@ -198,8 +212,8 @@ func aiEconomyBuildingIDsForState(gs *state.GameState) []string {
 	return ids
 }
 
-func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, region *world.Region, btype *city.Building, cost economy.ResourceCost, turns, level, queued int, snapshot aiEconomySnapshot, signals aiRegionInvestmentSignals) aiBuildingCandidate {
-	before, after := aiBuildingMarginalProduction(gs, region, btype.ID)
+func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, region *world.Region, btype *city.Building, cost economy.ResourceCost, turns, level, queued int, snapshot aiEconomySnapshot, signals aiRegionInvestmentSignals, satisfactionCalculator *satisfaction.Calculator, before state.RegionProductionSummary, tradePowerShare, baseTradeCapacity int) aiBuildingCandidate {
+	after := aiBuildingProductionAfter(gs, region, btype.ID)
 	goldGain := maxInt(0, after.Gold-before.Gold)
 	grainGain := maxInt(0, after.Grain-before.Grain)
 	grainUtility := aiGrainUtilityPercent(snapshot)
@@ -214,11 +228,11 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 	bottleneckScore := aiBuildingBottleneckScore(self, btype.ID, cost, snapshot)
 	threatScore := aiBuildingThreatScore(btype.ID, signals)
 	objectiveScore := aiBuildingObjectiveScore(btype.ID, signals, gs.AIPlans[self.ID])
-	projectedSatisfaction := region.Satisfaction + satisfaction.Calculate(gs, region).Total
+	projectedSatisfaction := region.Satisfaction + satisfactionCalculator.ForRegion(region).Total
 	stabilityNeed := maxInt(0, 70-projectedSatisfaction)
 	stabilityScore := btype.SatBonus * stabilityNeed / 2
 	tradeScore := aiTradeBuildingScore(gs, self.ID, region, btype.ID, level, queued)
-	tradeScore += aiTradePowerBuildingScore(gs, self.ID, region, btype.ID)
+	tradeScore += aiTradePowerBuildingScore(gs, self.ID, region, btype.ID, tradePowerShare, baseTradeCapacity)
 	if btype.SatBonus > 0 && projectedSatisfaction < 30 {
 		// Kritik memnuniyet açığında istikrar binaları, yalnızca genel
 		// ROI'ye bırakılmayacak kadar önceliklidir. Sabit bir bina ID'si
@@ -341,11 +355,11 @@ func aiTradeBuildingScore(gs *state.GameState, fid faction.FactionID, region *wo
 // aiTradePowerBuildingScore, yeni pazar/liman seviyesinin mevcut ticaret gücü
 // mekanizmasına katkısını yatırım kararına taşır. Payı düşük olan AI, kendi
 // kapasitesini büyüterek merkez gelirinden daha büyük pay almayı hedefler.
-func aiTradePowerBuildingScore(gs *state.GameState, fid faction.FactionID, region *world.Region, buildingID string) int {
+func aiTradePowerBuildingScore(gs *state.GameState, fid faction.FactionID, region *world.Region, buildingID string, tradePowerShare, baseTradeCapacity int) int {
 	if gs == nil || region == nil || fid == "" || (buildingID != "market" && buildingID != "port") {
 		return 0
 	}
-	before := gs.EffectiveRegionTradeCapacity(region)
+	before := baseTradeCapacity
 	projected := *region
 	projected.Buildings = append(append([]string(nil), region.Buildings...), buildingID)
 	after := gs.EffectiveRegionTradeCapacity(&projected)
@@ -358,7 +372,7 @@ func aiTradePowerBuildingScore(gs *state.GameState, fid faction.FactionID, regio
 	// aynı sinyale bağlayıp düşük payı olan devletlere toparlanma önceliği
 	// veriyoruz; yatırım yine savaş/iaşe skorları tarafından geçilebilir.
 	score := gain * 10
-	share := gs.TradePowerSharePercent(fid)
+	share := tradePowerShare
 	if share < 20 {
 		score += gain * (20 - share) * 2
 	}
@@ -607,11 +621,10 @@ func regionIDInList(regionID world.RegionID, values []world.RegionID) bool {
 	return false
 }
 
-func aiBuildingMarginalProduction(gs *state.GameState, region *world.Region, buildingID string) (state.RegionProductionSummary, state.RegionProductionSummary) {
-	before := gs.RegionProductionSummary(region)
+func aiBuildingProductionAfter(gs *state.GameState, region *world.Region, buildingID string) state.RegionProductionSummary {
 	clone := *region
 	clone.Buildings = append(append([]string(nil), region.Buildings...), buildingID)
-	return before, gs.RegionProductionSummary(&clone)
+	return gs.RegionProductionSummary(&clone)
 }
 
 func aiGoldEquivalentCost(gs *state.GameState, cost economy.ResourceCost) int {

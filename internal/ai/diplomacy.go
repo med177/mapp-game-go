@@ -238,10 +238,14 @@ func aiHandleRelationshipRepairWithSteps(gs *state.GameState, fid, otherID facti
 }
 
 func aiHandleRelationshipRepairWithBudget(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, budget *aiBudget) bool {
+	return aiHandleRelationshipRepairWithBudgetAndThreat(gs, fid, otherID, rel, budget, false, false)
+}
+
+func aiHandleRelationshipRepairWithBudgetAndThreat(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, budget *aiBudget, sharedThreat bool, sharedThreatReady bool) bool {
 	if gs == nil || rel == nil || gs.Turn < rel.NextAIRelationRepairTurn {
 		return false
 	}
-	action, reason, ok := aiRelationshipRepairAction(gs, fid, otherID, rel)
+	action, reason, ok := aiRelationshipRepairActionWithThreat(gs, fid, otherID, rel, sharedThreat, sharedThreatReady)
 	if !ok || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
 		return false
 	}
@@ -315,6 +319,7 @@ func aiHandleRelationshipRepairsAfterBudget(gs *state.GameState, fid faction.Fac
 	if gs == nil || fid == "" || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
 		return
 	}
+	sharedThreats := diplomacy.SharedMajorThreats(gs, fid)
 	for _, otherID := range aiSortedFactionIDs(gs) {
 		if gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
 			return
@@ -327,7 +332,7 @@ func aiHandleRelationshipRepairsAfterBudget(gs *state.GameState, fid faction.Fac
 			continue
 		}
 		rel := diplomacy.EnsureRelation(gs, fid, otherID)
-		if aiHandleRelationshipRepairWithBudget(gs, fid, otherID, rel, budget) {
+		if aiHandleRelationshipRepairWithBudgetAndThreat(gs, fid, otherID, rel, budget, sharedThreats[otherID], true) {
 			return
 		}
 	}
@@ -344,6 +349,10 @@ func aiRelationshipActionCost(gs *state.GameState, action diplomacy.Action) econ
 // güvenlik çıkarı varsa seçer. Önce ucuz heyetle ticaret eşiğine ulaşır; daha
 // yüksek ilişki hedefi gerekiyorsa ve altın rezervi uygunsa hediye kullanır.
 func aiRelationshipRepairAction(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation) (diplomacy.Action, string, bool) {
+	return aiRelationshipRepairActionWithThreat(gs, fid, otherID, rel, false, false)
+}
+
+func aiRelationshipRepairActionWithThreat(gs *state.GameState, fid, otherID faction.FactionID, rel *faction.Relation, sharedThreat, sharedThreatReady bool) (diplomacy.Action, string, bool) {
 	if gs == nil || rel == nil || fid == "" || otherID == "" || fid == otherID || rel.Stance == faction.StanceWar || diplomacy.SameRealm(gs, fid, otherID) {
 		return "", "", false
 	}
@@ -354,17 +363,23 @@ func aiRelationshipRepairAction(gs *state.GameState, fid, otherID faction.Factio
 
 	strategicTarget := aiIsStrategicDiplomacyTarget(gs, fid, otherID)
 	hasActiveTrade := diplomacy.HasTradeRouteBetween(gs, fid, otherID)
-	hasAllianceInterest := aiAllianceHasMeaningfulBenefit(gs, fid, otherID)
+	hasLandBorder := diplomacy.SharesLandBorder(gs, fid, otherID)
 	commonEnemy := diplomacy.HasCommonEnemy(gs, fid, otherID)
-	sharedThreat := diplomacy.HasSharedMajorThreat(gs, fid, otherID)
-	directThreat := diplomacy.HasDirectThreat(gs, fid, otherID)
+	if !sharedThreatReady {
+		sharedThreat = diplomacy.HasSharedMajorThreat(gs, fid, otherID)
+	}
+	directThreat := false
+	if hasLandBorder {
+		directThreat = diplomacy.HasDirectThreat(gs, fid, otherID)
+	}
 	// İlişki onarımı öncelikle AI'nin yakın çevresine yönelir. Sadece uzak bir
 	// deniz ticareti ihtimali veya genel ittifak puanı, tek başına heyet/hediye
 	// göndermek için yeterli değildir; mevcut ticaret ya da gerçek güvenlik
 	// bağlantıları uzak hedefleri yine meşru kılar.
-	if !diplomacy.SharesLandBorder(gs, fid, otherID) && !hasActiveTrade && !commonEnemy && !sharedThreat && !directThreat {
+	if !hasLandBorder && !hasActiveTrade && !commonEnemy && !sharedThreat && !directThreat {
 		return "", "", false
 	}
+	hasAllianceInterest := aiAllianceHasMeaningfulBenefitWithThreats(gs, fid, otherID, commonEnemy, sharedThreat)
 	hasTradeInterest := hasActiveTrade || diplomacy.CanEstablishTradeRoute(gs, fid, otherID)
 	// AI stratejik hedefinden vazgeçmiş değildir; ancak hedef sınırında askeri
 	// olarak müşkül durumdaysa zaman kazanmak için ucuz heyet kullanabilir.

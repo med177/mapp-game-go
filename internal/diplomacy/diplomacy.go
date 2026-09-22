@@ -765,77 +765,118 @@ func adjacentSeaRegions(gs *state.GameState, regionID world.RegionID) []world.Re
 	return out
 }
 
-func HasSharedMajorThreat(gs *state.GameState, a, b faction.FactionID) bool {
-	if gs == nil || a == "" || b == "" || a == b {
-		return false
-	}
+type majorThreatSnapshot struct {
+	gs         *state.GameState
+	landCounts map[faction.FactionID]int
+	borders    map[faction.FactionID]map[faction.FactionID]struct{}
+	powers     map[faction.FactionID]int
+}
 
-	// Build the ownership adjacency and land-count snapshot once. The previous
-	// implementation called sharesBorder and landRegionCount again for every
-	// candidate threat, which made alliance scans quadratic in the region count.
-	landCounts := make(map[faction.FactionID]int, len(gs.Factions))
-	borders := make(map[faction.FactionID]map[faction.FactionID]struct{}, len(gs.Factions))
+func newMajorThreatSnapshot(gs *state.GameState) *majorThreatSnapshot {
+	if gs == nil {
+		return nil
+	}
+	snapshot := &majorThreatSnapshot{
+		gs:         gs,
+		landCounts: make(map[faction.FactionID]int, len(gs.Factions)),
+		borders:    make(map[faction.FactionID]map[faction.FactionID]struct{}, len(gs.Factions)),
+		powers:     make(map[faction.FactionID]int, len(gs.Factions)),
+	}
 	for _, region := range gs.Regions {
 		if region == nil || region.IsSea || region.OwnerID == "" {
 			continue
 		}
 		owner := faction.FactionID(region.OwnerID)
-		landCounts[owner]++
+		snapshot.landCounts[owner]++
 		for _, neighborID := range region.Neighbors {
 			neighbor := gs.Regions[neighborID]
 			if neighbor == nil || neighbor.IsSea || neighbor.OwnerID == "" {
 				continue
 			}
-			if borders[owner] == nil {
-				borders[owner] = make(map[faction.FactionID]struct{})
+			if snapshot.borders[owner] == nil {
+				snapshot.borders[owner] = make(map[faction.FactionID]struct{})
 			}
-			borders[owner][faction.FactionID(neighbor.OwnerID)] = struct{}{}
+			snapshot.borders[owner][faction.FactionID(neighbor.OwnerID)] = struct{}{}
 		}
 	}
+	return snapshot
+}
 
-	powers := make(map[faction.FactionID]int, len(gs.Factions))
-	powerOf := func(fid faction.FactionID) int {
-		if power, ok := powers[fid]; ok {
-			return power
-		}
-		power := MilitaryPower(gs, fid)
-		powers[fid] = power
+func (snapshot *majorThreatSnapshot) powerOf(fid faction.FactionID) int {
+	if snapshot == nil || snapshot.gs == nil {
+		return 0
+	}
+	if power, ok := snapshot.powers[fid]; ok {
 		return power
 	}
-	sharesBorderSnapshot := func(left, right faction.FactionID) bool {
-		_, ok := borders[left][right]
-		return ok
-	}
-	isMajorThreatSnapshot := func(threat, target faction.FactionID) bool {
-		if threat == "" || target == "" || threat == target {
-			return false
-		}
-		threatFaction := gs.Factions[threat]
-		targetFaction := gs.Factions[target]
-		if threatFaction == nil || targetFaction == nil || threatFaction.IsEliminated || targetFaction.IsEliminated {
-			return false
-		}
-		if !sharesBorderSnapshot(threat, target) && !IsWar(gs, threat, target) {
-			return false
-		}
+	power := MilitaryPower(snapshot.gs, fid)
+	snapshot.powers[fid] = power
+	return power
+}
 
-		threatPower := powerOf(threat)
-		targetPower := powerOf(target)
-		powerThreat := false
-		switch {
-		case threatPower > 0 && targetPower == 0:
-			powerThreat = true
-		case targetPower > 0 && threatPower > max(targetPower*13/10, targetPower+15):
-			powerThreat = true
-		}
-		return powerThreat || landCounts[threat] > landCounts[target]+2
+func (snapshot *majorThreatSnapshot) isMajorThreat(threat, target faction.FactionID) bool {
+	if snapshot == nil || snapshot.gs == nil || threat == "" || target == "" || threat == target {
+		return false
+	}
+	threatFaction := snapshot.gs.Factions[threat]
+	targetFaction := snapshot.gs.Factions[target]
+	if threatFaction == nil || targetFaction == nil || threatFaction.IsEliminated || targetFaction.IsEliminated {
+		return false
+	}
+	_, sharesBorder := snapshot.borders[threat][target]
+	if !sharesBorder && !IsWar(snapshot.gs, threat, target) {
+		return false
 	}
 
+	threatPower := snapshot.powerOf(threat)
+	targetPower := snapshot.powerOf(target)
+	powerThreat := false
+	switch {
+	case threatPower > 0 && targetPower == 0:
+		powerThreat = true
+	case targetPower > 0 && threatPower > max(targetPower*13/10, targetPower+15):
+		powerThreat = true
+	}
+	return powerThreat || snapshot.landCounts[threat] > snapshot.landCounts[target]+2
+}
+
+// SharedMajorThreats aynı aktör için tüm hedeflerin ortak büyük tehdit
+// sonucunu tek ownership/güç snapshot'ı üzerinden üretir. İlişki onarımı ve
+// teklif taramaları aynı turda çok sayıda hedefe baktığında tekrar taramayı
+// önler.
+func SharedMajorThreats(gs *state.GameState, actor faction.FactionID) map[faction.FactionID]bool {
+	result := make(map[faction.FactionID]bool)
+	if gs == nil || actor == "" {
+		return result
+	}
+	snapshot := newMajorThreatSnapshot(gs)
+	for targetID, target := range gs.Factions {
+		if targetID == actor || target == nil || target.IsEliminated {
+			continue
+		}
+		for threatID, threat := range gs.Factions {
+			if threatID == actor || threatID == targetID || threat == nil || threat.IsEliminated {
+				continue
+			}
+			if snapshot.isMajorThreat(threatID, actor) && snapshot.isMajorThreat(threatID, targetID) {
+				result[targetID] = true
+				break
+			}
+		}
+	}
+	return result
+}
+
+func HasSharedMajorThreat(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
+	snapshot := newMajorThreatSnapshot(gs)
 	for otherID, other := range gs.Factions {
 		if otherID == a || otherID == b || other == nil || other.IsEliminated {
 			continue
 		}
-		if isMajorThreatSnapshot(otherID, a) && isMajorThreatSnapshot(otherID, b) {
+		if snapshot.isMajorThreat(otherID, a) && snapshot.isMajorThreat(otherID, b) {
 			return true
 		}
 	}

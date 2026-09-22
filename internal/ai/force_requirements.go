@@ -159,6 +159,12 @@ func (requirement *aiForceRequirement) applyExpansionPowerTarget(gs *state.GameS
 	if selfPower >= requirement.ObjectiveLandPowerTarget {
 		return
 	}
+	// LandTarget bu aşamaya gelmeden önce ManpowerCap'e yükseltilir. Bu nedenle
+	// aşağıdaki genişleme gücü hedefi mevcut hedefi büyütemez; beklenen birim
+	// seçimi burada yalnızca pahalı ve etkisiz bir stratejik tarama olur.
+	if requirement.LandTarget >= gs.ManpowerCap(fid) {
+		return
+	}
 	unitPower := aiExpectedLandReserveUnitPower(gs, fid)
 	additionalUnits := (requirement.ObjectiveLandPowerTarget - selfPower + unitPower - 1) / unitPower
 	requirement.LandTarget = minInt(gs.ManpowerCap(fid), maxInt(requirement.LandTarget, requirement.LandPresent+requirement.LandPending+additionalUnits))

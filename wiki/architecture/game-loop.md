@@ -171,6 +171,18 @@ oluştuğunda durur.
 12. AI turu bittiğinde kamera eski konumuna geri yüklenir ve `PhaseTurnResolution` başlar.
 13. Turn resolution tamamlanıp oyuncu fazı açıldığında renderer aktif oyuncu başkent bölgesini seçer; başkent state'te geçerli değilse otomatik seçim yapılmaz.
 
+AI hazırlık hesaplarında aynı tur state'i için savaş yorgunluğu realm snapshot'ı
+ve bina adayı memnuniyet calculator'ı yeniden kullanılır. Böylece `TurnStepper`
+kararları ile pazar/ekonomi projeksiyonları aynı memnuniyet sözleşmesini korurken
+ilişki ve komşuluk haritaları her aday için yeniden taranmaz.
+Stratejik kaynak talebi kuvvet gereksinimi snapshot'ını paylaşır; ilişki onarımı
+da aktör başına ortak büyük tehdit snapshot'ını bir kez üretir.
+Pazar hazırlığındaki event-aware `StrategicContext`, state değişmeden önceki
+ilk AI prelude'unda yeniden kullanılır; sonraki AI fraksiyonları için yeniden
+oluşturularak eski kaynak/ilişki/ordu verisinin taşınması engellenir.
+Pazar hazırlığının kendisi de AI fazına geçişten sonra üç ana döngü adımına
+bölünür; böylece `ActionEndTurn` aynı çağrıda tüm market hesabını çalıştırmaz.
+
 ---
 
 ## Oyuncu Aksiyonları (PhasePlayerTurn)

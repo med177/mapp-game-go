@@ -7,6 +7,50 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-22: AI tur performansının ana sıcak noktası olan tekrar eden savaş
+  yorgunluğu ve memnuniyet hesapları optimize edildi. Tüm realm cezaları tek
+  ilişki/komşuluk taramasında üretiliyor; bina adayları aynı
+  `satisfaction.Calculator` örneğini kullanıyor. Gerçek `autosave` profilinde
+  pazar yenilemesi yaklaşık `5.1 sn → 1.05 sn`, AI kararları `10.8 sn → 3.85 sn`
+  ölçüldü. Regresyon karşılaştırması
+  `internal/diplomacy/war_fatigue_test.go` içinde; save şeması değişmedi.
+  (`internal/diplomacy/war_fatigue.go`,
+  `internal/satisfaction/satisfaction.go`,
+  `internal/ai/building_investment.go`)
+
+- 2026-09-22: AI diplomasi onarımında ilgisiz fraksiyonlar ittifak faydası
+  hesabından önce eleniyor; ortak düşman ve paylaşılan tehdit sonuçları aynı
+  çift içinde tekrar hesaplanmıyor. Genişleme hedefi zaten `ManpowerCap` ile
+  sınırlıyken etkisiz beklenen birim/rota taraması da kaldırıldı. Aynı
+  `autosave` profilinde AI kararları `3.85 sn → 2.82 sn → 1.89 sn`, pazarla
+  birlikte ölçülen bölüm yaklaşık `2.9 sn` oldu. (`internal/ai/{ai.go,
+  diplomacy.go,force_requirements.go}`)
+
+- 2026-09-22: Stratejik kaynak talebinde kara/deniz kuvvet gereksinimi aynı
+  snapshot ile hesaplanıyor; tedarik adayında aynı üretim-bölgesi taraması
+  tekrarlanmıyor ve bina adayları aynı bölgenin baz üretim özetini paylaşıyor.
+  İlişki onarımında ortak büyük tehdit snapshot'ı aktör başına bir kez
+  üretiliyor. Gerçek `autosave` profilinde AI kararları yaklaşık `1.78 sn →
+  1.48 sn` oldu; `SharedMajorThreats` ile pairwise helper eşdeğerliği testle
+  sabitlendi. (`internal/ai/{market_orders.go,naval_reserve.go,
+  unit_composition.go,building_investment.go,diplomacy.go}`,
+  `internal/diplomacy/diplomacy.go`)
+
+- 2026-09-22: Pazar hazırlığında event-aware `StrategicContext` ilk AI
+  prelude'una aktarılıyor; sonraki fraksiyonlarda önceki AI hamleleri state'i
+  değiştirdiği için context yeniden üretiliyor. Bina adaylarında faction'ın
+  ticaret gücü payı ve bölgenin baz ticaret kapasitesi salt-okunur yerel
+  snapshot olarak paylaşılıyor. Gerçek `autosave` profilinde pazar bölümü
+  yaklaşık `0.57 sn → 0.46 sn` ölçüldü; market/AI karar sözleşmesi ve save
+  şeması değişmedi. (`internal/ai/{market_orders.go,ai.go,turn_stepper.go,
+  building_investment.go}`, `internal/game/game.go`)
+
+- 2026-09-22: Tur Bitir akışındaki pazar hazırlığı AI fazına taşındı ve ana
+  döngüde fiyat hazırlığı, faction emirleri ve son fiyat yenilemesi olarak
+  aşamalandırıldı. İlk ekran artık hemen `AI` fazına geçip pazar durumunu
+  gösteriyor; state başka goroutine'de değiştirilmedi. Böylece hızlandırma planı
+  tamamlandı (`internal/ai/market_orders.go`, `internal/game/game.go`).
+
 - 2026-09-22: Ayarlardaki mevcut `FastAITurns` seçeneği arayüzde `Hızlı Tur`
   olarak genişletildi. Açıkken AI step'leri toplu çözülür, hareket/teklif
   kaynaklı kamera odağı korunur, heyet ve hediye bildirimleri atlanır; barış,

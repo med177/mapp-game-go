@@ -51,6 +51,7 @@ type TurnStepper struct {
 	armyOrder        []army.ArmyID
 	armyIdx          int
 	strategicContext *StrategicContext
+	preparedContext  *StrategicContext
 	eventDefs        []*gameevents.Event
 }
 
@@ -59,11 +60,16 @@ func NewTurnStepper(gs *state.GameState, fid faction.FactionID) *TurnStepper {
 }
 
 func NewTurnStepperWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event) *TurnStepper {
+	return NewTurnStepperWithPreparedContextAndEvents(gs, fid, eventDefs, nil)
+}
+
+func NewTurnStepperWithPreparedContextAndEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event, preparedContext *StrategicContext) *TurnStepper {
 	return &TurnStepper{
-		gs:        gs,
-		fid:       fid,
-		prelude:   make([]TurnStep, 0, 8),
-		eventDefs: eventDefs,
+		gs:              gs,
+		fid:             fid,
+		prelude:         make([]TurnStep, 0, 8),
+		preparedContext: preparedContext,
+		eventDefs:       eventDefs,
 	}
 }
 
@@ -87,7 +93,8 @@ func (s *TurnStepper) Step() (TurnStep, bool) {
 	}
 	for {
 		if !s.preludeDone {
-			s.strategicContext = runTurnPreludeWithEvents(s.gs, s.fid, s.eventDefs, &s.prelude)
+			s.strategicContext = runTurnPreludeWithPreparedContext(s.gs, s.fid, s.eventDefs, s.preparedContext, &s.prelude)
+			s.preparedContext = nil
 			s.preludeDone = true
 			if len(s.prelude) > 0 {
 				step := s.prelude[0]

@@ -96,7 +96,11 @@ func aiSelectStrategicLandUnitWithResourceCheck(gs *state.GameState, self *facti
 		if unitType == nil || !aiLandUnitCategory(unitType.Category) || !aiUnitCandidateAvailableForSelection(gs, self, unitType, budget, ctx, requireResources) {
 			continue
 		}
-		if aiFindRecruitRegionForStrategicContext(gs, self.ID, unitType, ctx) == "" {
+		// Tedarik adayında uygun bölge kontrolü yukarıdaki availability
+		// yardımcısında zaten stratejik context ile yapıldı. Gerçek üretim
+		// seçiminde ise bütçe yardımcısı farklı bir (kaynak doğrulayan) bölge
+		// kontrolü yaptığı için mevcut ikinci kontrol korunur.
+		if requireResources && aiFindRecruitRegionForStrategicContext(gs, self.ID, unitType, ctx) == "" {
 			continue
 		}
 		// Tedarik öncesi aday ararken eksik kaynak cezası uygulanmaz. Aksi halde

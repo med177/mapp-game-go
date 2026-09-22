@@ -96,11 +96,18 @@ func runTurnPrelude(gs *state.GameState, fid faction.FactionID, steps *[]TurnSte
 }
 
 func runTurnPreludeWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event, steps *[]TurnStep) *StrategicContext {
+	return runTurnPreludeWithPreparedContext(gs, fid, eventDefs, nil, steps)
+}
+
+func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event, preparedContext *StrategicContext, steps *[]TurnStep) *StrategicContext {
 	if gs == nil {
 		return nil
 	}
-	var planningContext *StrategicContext
-	if aiStrategicPlanningEnabled(gs) {
+	planningContext := preparedContext
+	if planningContext != nil && (planningContext.gs != gs || planningContext.FactionID != fid) {
+		planningContext = nil
+	}
+	if aiStrategicPlanningEnabled(gs) && planningContext == nil {
 		planningContext = prepareStrategicContextWithEvents(gs, fid, eventDefs)
 	}
 	// Difficulty 3: koalisyon mantığını çalıştır
@@ -340,10 +347,21 @@ func aiAllianceHasMeaningfulBenefit(gs *state.GameState, actor, target faction.F
 	if gs == nil || actor == "" || target == "" || actor == target {
 		return false
 	}
-	score := aiAllianceBenefitScore(gs, actor, target)
+	return aiAllianceHasMeaningfulBenefitWithThreats(
+		gs,
+		actor,
+		target,
+		diplomacy.HasCommonEnemy(gs, actor, target),
+		diplomacy.HasSharedMajorThreat(gs, actor, target),
+	)
+}
+
+func aiAllianceHasMeaningfulBenefitWithThreats(gs *state.GameState, actor, target faction.FactionID, commonEnemy, sharedThreat bool) bool {
+	if gs == nil || actor == "" || target == "" || actor == target {
+		return false
+	}
+	score := aiAllianceBenefitScoreWithThreats(gs, actor, target, commonEnemy, sharedThreat)
 	targetRegions := len(gs.LandRegionsOwnedBy(target))
-	commonEnemy := diplomacy.HasCommonEnemy(gs, actor, target)
-	sharedThreat := diplomacy.HasSharedMajorThreat(gs, actor, target)
 	threshold := 12
 	if targetRegions <= 1 {
 		threshold = 18
@@ -358,6 +376,19 @@ func aiAllianceHasMeaningfulBenefit(gs *state.GameState, actor, target faction.F
 }
 
 func aiAllianceBenefitScore(gs *state.GameState, actor, target faction.FactionID) int {
+	if gs == nil {
+		return 0
+	}
+	return aiAllianceBenefitScoreWithThreats(
+		gs,
+		actor,
+		target,
+		diplomacy.HasCommonEnemy(gs, actor, target),
+		diplomacy.HasSharedMajorThreat(gs, actor, target),
+	)
+}
+
+func aiAllianceBenefitScoreWithThreats(gs *state.GameState, actor, target faction.FactionID, commonEnemy, sharedThreat bool) int {
 	if gs == nil {
 		return 0
 	}
@@ -383,10 +414,10 @@ func aiAllianceBenefitScore(gs *state.GameState, actor, target faction.FactionID
 	if diplomacy.CanEstablishTradeRoute(gs, actor, target) {
 		score += 4
 	}
-	if diplomacy.HasCommonEnemy(gs, actor, target) {
+	if commonEnemy {
 		score += 10
 	}
-	if diplomacy.HasSharedMajorThreat(gs, actor, target) {
+	if sharedThreat {
 		score += 12
 	}
 

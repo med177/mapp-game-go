@@ -47,9 +47,7 @@ func NewCalculator(gs *state.GameState) *Calculator {
 	if gs == nil {
 		return calculator
 	}
-	for fid := range gs.Factions {
-		calculator.warFatigueByID[fid] = diplomacy.IndependentWarSatisfactionPenalty(gs, fid)
-	}
+	calculator.warFatigueByID = diplomacy.IndependentWarSatisfactionPenalties(gs)
 	for _, region := range gs.Regions {
 		if region != nil && !region.IsSea && region.OwnerID != "" {
 			calculator.landCountByID[factionID(region.OwnerID)]++

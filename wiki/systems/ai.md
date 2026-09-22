@@ -261,6 +261,46 @@ AI turu başında geçilmez araziye düşmüş ordular tek ortak
 azaltır. Autosave delta üretiminde statik senaryo tabanı fingerprint kontrollü
 runtime cache ile yeniden kullanılır; kaynak JSON değişirse cache geçersiz olur.
 
+AI bina ve kaynak adayı puanlamasında savaş yorgunluğu artık aynı state için
+realm başına tek toplu snapshot ile hesaplanır. Kara/deniz/uzak savaş sınırları
+ilişki ve komşuluk haritaları bir kez taranarak çıkarılır; aynı aday taraması
+içinde `satisfaction.Calculator` yeniden kullanılır. Bu runtime-only hesap
+save şemasını değiştirmez ve memnuniyet puanını değiştirmeden AI turu maliyetini
+azaltır (`internal/diplomacy/war_fatigue.go`,
+`internal/satisfaction/satisfaction.go`,
+`internal/ai/building_investment.go`).
+
+İlişki onarımında uzak ve ilişkisiz devletler pahalı ittifak faydası taramasına
+girmeden elenir; ortak düşman/paylaşılan tehdit snapshot'ı aynı karar içinde
+tekrar kullanılabilir. Genişleme hedefi zaten `ManpowerCap` ile sınırlıyken
+beklenen rezerv birimini seçmek için yapılan etkisiz ek tarama çalıştırılmaz
+(`internal/ai/{ai.go,diplomacy.go,force_requirements.go}`).
+
+Stratejik kaynak talebinde kara ve deniz kuvvet gereksinimi aynı salt-okunur
+snapshot'ı paylaşır. Tedarik adayları uygun üretim bölgesini aynı tur içinde
+yeniden taramaz; bina puanlaması da bölgenin baz üretim özetini bina adayları
+arasında yeniden kullanır. İlişki onarımında `SharedMajorThreats`, aktörün tüm
+hedefleri için ownership/askeri güç snapshot'ını tek kez kurar; pairwise
+`HasSharedMajorThreat` ile sonuç eşdeğerliği test edilir (`internal/ai/{market_orders.go,
+naval_reserve.go,unit_composition.go,building_investment.go,diplomacy.go}`,
+`internal/diplomacy/diplomacy.go`,
+`internal/diplomacy/war_fatigue_test.go`).
+
+Pazar hazırlığı event-aware `StrategicContext` üretir ve bunu yalnız ilk AI
+fraksiyonunun prelude'una devreder. Bu ilk context state değişmeden önce
+geçerlidir; sonraki fraksiyonlarda önceki hamlelerin kaynak, ilişki, ordu veya
+bölge değişiklikleri nedeniyle context yeniden kurulur. Bina yatırım
+puanlamasında aynı faction'ın ticaret gücü payı bir kez, her bölgenin baz
+ticaret kapasitesi ise bölge başına bir kez hesaplanır (`internal/ai/{market_orders.go,
+turn_stepper.go,building_investment.go}`, `internal/game/game.go`).
+
+Tur başlangıcındaki pazar hazırlığı artık `PhaseAITurn` sonrasında ana oyun
+döngüsünde üç aşamada ilerler: mevcut fiyatların hazırlanması, faction bazlı
+emir/context üretimi ve emir arzı sonrası son fiyat yenilemesi. Bu akış ilk
+`Update` çağrısını uzun süre bloke etmez ve goroutine kullanmadan render ile
+state arasında yarış oluşturmaz (`internal/ai/market_orders.go`,
+`internal/game/game.go`).
+
 AI kararlarında fraksiyon, bölge, ordu, teknoloji ve konsolidasyon adayları ID sırasıyla değerlendirilir. Eşit puanlı seçimler Go map iterasyon sırasına bağlı değildir. `TakeTurn` ve gerçek oyun akışındaki `TurnStepper`, seçilen aksiyon hareket puanı tüketmeden geri dönerse ordunun kalan hareketini sıfırlar; engellenmiş hedef veya başarısız genel hücum aynı hedefi sonsuz kez yeniden seçemez.
 
 Deniz temasında AI tarafı kararını temas modalı açılmadan hemen önce verir. Filo

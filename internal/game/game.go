@@ -67,12 +67,16 @@ type pendingSortieState struct {
 }
 
 type aiTurnState struct {
-	order        []faction.FactionID
-	index        int
-	stepper      *ai.TurnStepper
-	waitFrames   int
-	camera       render.CameraState
-	cameraLocked bool
+	order                  []faction.FactionID
+	index                  int
+	stepper                *ai.TurnStepper
+	waitFrames             int
+	camera                 render.CameraState
+	cameraLocked           bool
+	marketPreparations     map[faction.FactionID]*ai.StrategicContext
+	marketPreparationUsed  bool
+	marketPreparation      *ai.MarketOrderPreparation
+	marketPreparationStage int
 }
 
 type eventCodexEntry struct {
@@ -88,10 +92,13 @@ const eventCodexPlayerFilter = "player"
 const scenarioBaseDir = "assets/scenarios"
 
 const (
-	aiTurnVisibleStepFrames  = 34
-	aiTurnHiddenStepFrames   = 12
-	aiTurnFactionIntroFrames = 10
-	quickTurnStepBatchLimit  = 4096
+	aiTurnVisibleStepFrames   = 34
+	aiTurnHiddenStepFrames    = 12
+	aiTurnFactionIntroFrames  = 10
+	quickTurnStepBatchLimit   = 4096
+	aiMarketPreparationPrices = iota
+	aiMarketPreparationOrders
+	aiMarketPreparationFinalize
 )
 
 const maxDiplomaticOfferHistoryEntries = 10
@@ -763,10 +770,7 @@ func (g *Game) startAITurnSequence() {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
-	refreshMarketOrdersAndPrices(g.gs)
-	// Bu onarım tüm AI faction'ları için ortak dünya taramasıdır. Her
-	// TurnStepper oluşturuluşunda tekrarlamak ilk turu gereksiz yere uzatır.
-	g.gs.RepairArmiesInBlockedTerrain()
+	marketPreparation := ai.NewMarketOrderPreparation(g.gs, g.evts)
 	if g.quickTurnEnabled() {
 		g.suppressQuickTurnRelationshipNotifications()
 	}
@@ -776,12 +780,15 @@ func (g *Game) startAITurnSequence() {
 	}
 	g.renderer.PrepareForTurnAdvance()
 	g.aiTurn = &aiTurnState{
-		order:        g.orderedAIFactions(),
-		camera:       camera,
-		cameraLocked: true,
+		order:                  g.orderedAIFactions(),
+		camera:                 camera,
+		cameraLocked:           true,
+		marketPreparation:      marketPreparation,
+		marketPreparationStage: aiMarketPreparationPrices,
 	}
 	g.gs.Phase = state.PhaseAITurn
 	g.renderer.ClearAITurnStatus()
+	g.renderer.SetAITurnStatus("", "AI", "Pazar emirleri hazırlanıyor...")
 }
 
 // refreshMarketPrices açık pazar emirlerindeki gerçek satış arzını ve mevcut
@@ -804,13 +811,19 @@ func refreshMarketPrices(gs *state.GameState) {
 // refreshMarketOrdersAndPrices önce emirleri mevcut fiyatla üretir, ardından
 // yeni açık pazar arzını fiyatlara uygular. Böylece yeni oyun ve save yükleme
 // akışlarında emir defteri ile fiyat birbirinden kopmaz.
-func refreshMarketOrdersAndPrices(gs *state.GameState) {
+func refreshMarketOrdersAndPrices(gs *state.GameState) map[faction.FactionID]*ai.StrategicContext {
+	return refreshMarketOrdersAndPricesWithEvents(gs, nil)
+}
+
+func refreshMarketOrdersAndPricesWithEvents(gs *state.GameState, eventDefs []*events.Event) map[faction.FactionID]*ai.StrategicContext {
+	preparations := make(map[faction.FactionID]*ai.StrategicContext)
 	if gs == nil {
-		return
+		return preparations
 	}
 	refreshMarketPrices(gs)
-	ai.RefreshMarketOrders(gs)
+	preparations = ai.RefreshMarketOrdersWithEvents(gs, eventDefs)
 	refreshMarketPrices(gs)
+	return preparations
 }
 
 func (g *Game) orderedAIFactions() []faction.FactionID {
@@ -841,6 +854,41 @@ func (g *Game) orderedAIFactions() []faction.FactionID {
 	return append(order, extra...)
 }
 
+// advanceAITurnMarketPreparation pazar hazırlığını AI fazına girdikten sonra
+// küçük ana oyun döngüsü adımlarına böler. Böylece Tur Bitir aksiyonu pazar ve
+// AI hazırlığının tamamını aynı Update çağrısında bloklamaz.
+func (g *Game) advanceAITurnMarketPreparation() bool {
+	if g == nil || g.aiTurn == nil || g.aiTurn.marketPreparation == nil {
+		return true
+	}
+	switch g.aiTurn.marketPreparationStage {
+	case aiMarketPreparationPrices:
+		refreshMarketPrices(g.gs)
+		g.aiTurn.marketPreparationStage = aiMarketPreparationOrders
+		g.renderer.SetAITurnStatus("", "AI", "Pazar emirleri hazırlanıyor...")
+		return false
+	case aiMarketPreparationOrders:
+		if g.aiTurn.marketPreparation.Step() {
+			g.aiTurn.marketPreparationStage = aiMarketPreparationFinalize
+		}
+		g.renderer.SetAITurnStatus("", "AI", "Pazar emirleri hazırlanıyor...")
+		return false
+	case aiMarketPreparationFinalize:
+		refreshMarketPrices(g.gs)
+		g.aiTurn.marketPreparations = g.aiTurn.marketPreparation.Preparations()
+		g.aiTurn.marketPreparation = nil
+		g.aiTurn.marketPreparationStage = aiMarketPreparationPrices
+		// Bu onarım tüm AI faction'ları için ortak dünya taramasıdır. Her
+		// TurnStepper oluşturuluşunda tekrarlamak ilk turu gereksiz yere uzatır.
+		g.gs.RepairArmiesInBlockedTerrain()
+		g.renderer.SetAITurnStatus("", "AI", "AI hamleleri hazırlanıyor...")
+		return false
+	default:
+		g.aiTurn.marketPreparationStage = aiMarketPreparationPrices
+		return false
+	}
+}
+
 func (g *Game) updateAITurnSequence() {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
@@ -860,6 +908,11 @@ func (g *Game) updateAITurnSequence() {
 	quickTurn := g.quickTurnEnabled()
 	if quickTurn {
 		g.suppressQuickTurnRelationshipNotifications()
+	}
+	if g.aiTurn.marketPreparation != nil {
+		if !g.advanceAITurnMarketPreparation() {
+			return
+		}
 	}
 	if offer, waiting := g.pendingPlayerDiplomacyOffer(); waiting {
 		if !quickTurn && offer.RegionID != "" {
@@ -904,7 +957,12 @@ func (g *Game) updateAITurnSequence() {
 				g.aiTurn.index++
 				continue
 			}
-			g.aiTurn.stepper = ai.NewTurnStepperWithEvents(g.gs, fid, g.evts)
+			var preparedContext *ai.StrategicContext
+			if !g.aiTurn.marketPreparationUsed {
+				preparedContext = g.aiTurn.marketPreparations[fid]
+				g.aiTurn.marketPreparationUsed = true
+			}
+			g.aiTurn.stepper = ai.NewTurnStepperWithPreparedContextAndEvents(g.gs, fid, g.evts, preparedContext)
 			g.renderer.SetAITurnStatus(g.aiTurn.stepper.FactionID(), g.aiTurn.stepper.FactionNameTR(), "Hamle sırası bu devlette.")
 			g.aiTurn.waitFrames = g.aiTurnWaitFrames(aiTurnFactionIntroFrames)
 			return

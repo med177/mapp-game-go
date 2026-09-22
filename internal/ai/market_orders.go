@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
+	gameevents "mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 )
@@ -14,8 +15,30 @@ import (
 // başına hazırlanır; başarılı işlemler sonrasında state helper'ları miktarı
 // düşürür.
 func RefreshMarketOrders(gs *state.GameState) {
+	RefreshMarketOrdersWithEvents(gs, nil)
+}
+
+// MarketOrderPreparation pazar emirlerini faction bazında parçalara bölerek
+// oyun döngüsünde UI güncellemeleri arasında ilerletir. State yalnız Step
+// çağrısı sırasında ve ana oyun goroutine'inde değiştirilir.
+type MarketOrderPreparation struct {
+	gs           *state.GameState
+	eventDefs    []*gameevents.Event
+	factionIDs   []faction.FactionID
+	index        int
+	preparations map[faction.FactionID]*StrategicContext
+}
+
+// NewMarketOrderPreparation yeni tur pazar emirleri için boş emir defterini
+// kurar ve işlenecek AI faction sırasını sabitler.
+func NewMarketOrderPreparation(gs *state.GameState, eventDefs []*gameevents.Event) *MarketOrderPreparation {
+	preparation := &MarketOrderPreparation{
+		gs:           gs,
+		eventDefs:    eventDefs,
+		preparations: make(map[faction.FactionID]*StrategicContext),
+	}
 	if gs == nil {
-		return
+		return preparation
 	}
 	gs.MarketOrders = state.MarketOrderBook{
 		SellOffers: make(map[faction.FactionID]map[economy.GoodType]int),
@@ -29,19 +52,54 @@ func RefreshMarketOrders(gs *state.GameState) {
 		if f == nil || f.IsEliminated {
 			continue
 		}
-		refreshFactionMarketOrders(gs, fid)
+		preparation.factionIDs = append(preparation.factionIDs, fid)
 	}
+	return preparation
+}
+
+// Step bir AI factionının pazar hazırlığını ilerletir. true döndüğünde tüm
+// faction emirleri hazırdır.
+func (p *MarketOrderPreparation) Step() bool {
+	if p == nil || p.index >= len(p.factionIDs) {
+		return true
+	}
+	fid := p.factionIDs[p.index]
+	p.preparations[fid] = refreshFactionMarketOrdersWithEvents(p.gs, fid, p.eventDefs)
+	p.index++
+	return p.index >= len(p.factionIDs)
+}
+
+// Preparations pazar aşamasında üretilen ilk AI context'lerini döndürür.
+func (p *MarketOrderPreparation) Preparations() map[faction.FactionID]*StrategicContext {
+	if p == nil {
+		return nil
+	}
+	return p.preparations
+}
+
+// RefreshMarketOrdersWithEvents pazar emirlerini üretirken AI prelude'unda
+// kullanılacak ilk stratejik context'i de döndürür. Event sinyalleri market
+// hazırlığı ile gerçek AI prelude'u arasında aynı kalır.
+func RefreshMarketOrdersWithEvents(gs *state.GameState, eventDefs []*gameevents.Event) map[faction.FactionID]*StrategicContext {
+	preparation := NewMarketOrderPreparation(gs, eventDefs)
+	for !preparation.Step() {
+	}
+	return preparation.Preparations()
 }
 
 func refreshFactionMarketOrders(gs *state.GameState, fid faction.FactionID) {
+	refreshFactionMarketOrdersWithEvents(gs, fid, nil)
+}
+
+func refreshFactionMarketOrdersWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event) *StrategicContext {
 	if gs == nil || fid == "" {
-		return
+		return nil
 	}
 	f := gs.Factions[fid]
 	if f == nil || f.IsEliminated {
-		return
+		return nil
 	}
-	ctx := prepareStrategicContext(gs, fid)
+	ctx := prepareStrategicContextWithEvents(gs, fid, eventDefs)
 	resourceDemand := aiStrategicResourceDemand(gs, fid, ctx)
 
 	for _, good := range economy.TradeGoods() {
@@ -76,6 +134,7 @@ func refreshFactionMarketOrders(gs *state.GameState, fid faction.FactionID) {
 			}
 		}
 	}
+	return ctx
 }
 
 func marketReserveForGood(gs *state.GameState, fid faction.FactionID, good economy.GoodType, planned int) int {
@@ -109,12 +168,21 @@ func aiStrategicResourceDemand(gs *state.GameState, fid faction.FactionID, ctx *
 		ctx = prepareStrategicContext(gs, fid)
 	}
 
+	// Kara ve deniz rezerv kararları aynı kuvvet gereksinimi taramasını
+	// paylaşır. Bu fonksiyon salt-okunur olduğu için tek snapshot iki talep
+	// kararında da aynı sonucu verir.
+	requirement := aiForceRequirements(gs, fid, ctx)
 	demand := economy.ResourceCost{}
-	if unitID := aiSelectStrategicLandUnitForProcurement(gs, self, ctx); unitID != "" {
-		demand = aiMaxResourceCost(demand, aiUnitResourceCost(gs.UnitTypes[unitID]))
+	strategicLandUnitID := aiSelectStrategicLandUnitForProcurement(gs, self, ctx)
+	if strategicLandUnitID != "" {
+		demand = aiMaxResourceCost(demand, aiUnitResourceCost(gs.UnitTypes[strategicLandUnitID]))
 	}
-	if aiLandReserveShortfall(gs, fid, ctx) > 0 {
-		if unitID := aiSelectReserveLandUnitForProcurement(gs, self, ctx); unitID != "" {
+	if requirement.LandTarget-requirement.LandPresent-requirement.LandPending > 0 {
+		unitID := strategicLandUnitID
+		if unitID == "" {
+			unitID = aiSelectReserveLandUnitForProcurement(gs, self, ctx)
+		}
+		if unitID != "" {
 			demand = aiMaxResourceCost(demand, aiUnitResourceCost(gs.UnitTypes[unitID]))
 		}
 	}
@@ -132,7 +200,7 @@ func aiStrategicResourceDemand(gs *state.GameState, fid faction.FactionID, ctx *
 			demand = aiMaxResourceCost(demand, aiUnitResourceCost(transportType))
 		}
 	}
-	if navalReserveCost := aiNavalReserveProcurementCost(gs, fid, ctx); navalReserveCost != (economy.ResourceCost{}) {
+	if navalReserveCost := aiNavalReserveProcurementCostWithRequirement(gs, fid, ctx, requirement); navalReserveCost != (economy.ResourceCost{}) {
 		demand = aiMaxResourceCost(demand, navalReserveCost)
 	}
 	if reserve := aiMerchantTradeResourceReserve(gs, fid); reserve != (economy.ResourceCost{}) {
