@@ -6,6 +6,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestArmyIconGridUsesFiveColumnsAndAddsRowsBelow(t *testing.T) {
@@ -55,6 +56,27 @@ func TestMixedCommanderMarkersUseNarrowSpacingForNonCommanders(t *testing.T) {
 	}
 	if got := positions[2][0] - positions[1][0]; got != armyIconStep {
 		t.Fatalf("komutansız marker aralığı = %v, want %v", got, armyIconStep)
+	}
+}
+
+func TestNavalFleetUsesPersistedSeaRegionFocus(t *testing.T) {
+	sea := &world.Region{ID: "sea", IsSea: true, WorldX: 100, WorldY: 120}
+	r := &Renderer{
+		gs: &state.GameState{Regions: map[world.RegionID]*world.Region{sea.ID: sea}},
+		worldMap: &WorldMap{
+			regionAnchor: map[world.RegionID][2]int{sea.ID: {900, 900}},
+		},
+		camScale: 1,
+	}
+	fleet := &army.Army{ID: "fleet", IsNaval: true, RegionID: sea.ID}
+
+	_, gotX, gotY, ok := r.armyDisplayGroup(fleet)
+	if !ok {
+		t.Fatal("deniz filosu için gösterim grubu oluşturulamadı")
+	}
+	wantX, wantY := r.worldToScreen(wcX(sea.WorldX), wcY(sea.WorldY))
+	if gotX != float32(wantX) || gotY != float32(wantY) {
+		t.Fatalf("filo konumu = (%v, %v), want kayıtlı deniz odağı (%v, %v)", gotX, gotY, wantX, wantY)
 	}
 }
 

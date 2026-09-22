@@ -13,6 +13,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   hit-test ortak `armyIconPositions()` görünürlük filtresini kullanır
   (`internal/render/renderer.go`, `internal/render/army_icon_layout_test.go`).
 
+- 2026-09-22: Deniz bölgelerindeki donanma marker'ları ve deniz kamera odağı,
+  raster piksellerinden runtime üretilen anchor yerine senaryonun/Edit Mode'un
+  mevcut `WorldX/WorldY` odaklarını kullanır. Bu davranış kayıtlı odak ile
+  farklı runtime anchor'ı kullanan render testiyle sabitlendi
+  (`internal/render/renderer.go`, `internal/render/army_icon_layout_test.go`).
+
 - 2026-09-21: `trade_centers.json` içinde ana kaynak yolları `sources`, oynanabilir
   ticaret merkezleri `centers` altında ayrıştırıldı. Yükleyici iki bölümü tek
   runtime ticaret grafiğinde birleştirir (`internal/world/trade_centers.go`,

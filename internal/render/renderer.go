@@ -948,12 +948,9 @@ func (r *Renderer) CenterCameraOnRegion(rid world.RegionID) bool {
 	if region == nil {
 		return false
 	}
-	if region.IsSea && r.worldMap != nil {
-		if ax, ay, ok := r.worldMap.RegionAnchor(region.ID); ok {
-			r.camX = float64(ax)
-			r.camY = float64(ay)
-			return true
-		}
+	if region.IsSea {
+		r.camX, r.camY = r.regionWorldPos(region)
+		return true
 	}
 	r.camX = wcX(region.WorldX)
 	r.camY = wcY(region.WorldY)
@@ -2537,9 +2534,10 @@ func (r *Renderer) regionScreenPos(region *world.Region) (float64, float64) {
 
 func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
 	if region != nil && region.IsSea {
-		if ax, ay, ok := r.worldMap.RegionAnchor(region.ID); ok {
-			return float64(ax), float64(ay)
-		}
+		// Deniz bölgesinin odağı senaryo/Edit Mode verisindeki WorldX/WorldY
+		// değeridir. Raster piksellerinden runtime RegionAnchor üretmek, filo
+		// ikonunu kaydedilmiş odaktan uzaklaştırabilir.
+		return wcX(region.WorldX), wcY(region.WorldY)
 	}
 	if region != nil {
 		if ax, ay, ok := r.worldMap.PrimarySettlementAnchor(region.ID); ok {

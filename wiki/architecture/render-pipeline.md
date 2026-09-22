@@ -453,10 +453,12 @@ Oyuncu bir rota satırını seçtiğinde aynı hedef deniz `merchantRouteHighlig
 renderer state'ine yazılır ve `WorldMap.Refresh()` seçili deniz vurgusuyla
 haritada işaretler. Buna ek olarak hedefin merkezinde normal bölge seçimi
 tint'inden farklı altın/cyan reticle çizilir. Seçim sırasında açık ordu paneli
-kapatılır ve kamera hedef deniz bölgesinin gerçek `RegionAnchor` noktasına
-odaklanır; rota hedefi panel kapansa veya başka bir filo seçilse de korunur,
-oyuncu başka bir bölge seçtiğinde temizlenir (`renderer.go`,
-`renderer_input.go`).
+kapatılır ve kamera hedef deniz bölgesinin `WorldX/WorldY` odağına odaklanır;
+rota hedefi panel kapansa veya başka bir filo seçilse de korunur, oyuncu başka
+bir bölge seçtiğinde temizlenir (`renderer.go`, `renderer_input.go`). Deniz
+bölgesindeki donanma marker'ları da aynı kaydedilmiş `WorldX/WorldY` odağını
+kullanır; raster piksellerinden runtime `RegionAnchor` yeniden hesaplanmaz
+(`internal/render/renderer.go`, `internal/render/army_icon_layout_test.go`).
 
 Donanma görev modalı da aynı ortak UI yüzeyini kullanır. `IconClose` ve
 `tinyButtonStyle` kapatma düğmesini, `drawUIPanelFrame`/`drawUIOverlay` panel
