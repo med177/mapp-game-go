@@ -1,11 +1,17 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-21
+last_updated: 2026-09-22
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-22: Ordu ve donanma marker'ları `1.5` zoom seviyesinden itibaren tüm
+  devletlerde görünür. Daha uzak görünümde oyuncu/vassal realm'i, müttefik ve
+  savaş halindeki devletlerin kara ve deniz kuvvetleri korunur; çizim, seçim ve
+  hit-test ortak `armyIconPositions()` görünürlük filtresini kullanır
+  (`internal/render/renderer.go`, `internal/render/army_icon_layout_test.go`).
 
 - 2026-09-21: `trade_centers.json` içinde ana kaynak yolları `sources`, oynanabilir
   ticaret merkezleri `centers` altında ayrıştırıldı. Yükleyici iki bölümü tek

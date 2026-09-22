@@ -52,7 +52,7 @@ const (
 	maxCameraZoomScale           = 10
 	settlementMediumZoomScale    = 1.25
 	settlementCloseZoomScale     = 1.8
-	merchantFleetMarkerZoomScale = 1.9
+	armyAllFactionsZoomScale     = 1.5
 	activeEventIconSize          = float32(22)
 	activeEventIconSpacingY      = float32(24)
 	activeEventIconLiftY         = float32(48)
@@ -2561,7 +2561,7 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 	byGroup := map[armyDisplayGroupKey][]army.ArmyID{}
 	groupBase := map[armyDisplayGroupKey][2]float32{}
 	for aid, a := range r.gs.Armies {
-		if !r.tradeFleetMarkerVisibleAtCurrentZoom(a) {
+		if !r.armyVisibleAtCurrentZoom(a) {
 			continue
 		}
 		if r.gs.ArmyHiddenFrom(a, r.gs.PlayerFactionID) {
@@ -2701,19 +2701,40 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 	return r.armyIconBuf
 }
 
-// tradeFleetMarkerVisibleAtCurrentZoom, normal haritada ticaret rotasına
-// atanmış filoları orta zoom seviyesine kadar gizler. Ticaret haritası rota
-// koridorlarını ve bağlı filoları kendi overlay katmanında gösterdiği için bu
-// filtre orada uygulanmaz. Aynı karar armyIconPositions üzerinden çizim ve
-// hit-test tarafından paylaşılır.
-func (r *Renderer) tradeFleetMarkerVisibleAtCurrentZoom(a *army.Army) bool {
-	if a == nil || !a.IsNaval || a.TradeRouteKey == "" {
+// armyVisibleAtCurrentZoom, yakın görünümde tüm devletlerin marker'larını;
+// uzak görünümde ise oyuncunun realm'i ile savaşan veya müttefik olan
+// devletlerin marker'larını gösterir. Aynı liste çizim ve hit-test tarafından
+// kullanıldığı için görünürlük kararı bu ortak pozisyon kaynağında verilir.
+func (r *Renderer) armyVisibleAtCurrentZoom(a *army.Army) bool {
+	if a == nil {
+		return false
+	}
+	if r == nil || r.gs == nil || r.mapMode == MapModeTrade || r.gs.Phase == state.PhaseEditMode {
 		return true
 	}
-	if r == nil || r.mapMode == MapModeTrade || (r.gs != nil && r.gs.Phase == state.PhaseEditMode) {
+	if r.camScale >= armyAllFactionsZoomScale {
 		return true
 	}
-	return r.camScale >= merchantFleetMarkerZoomScale
+	return armyIsRelatedToPlayer(r.gs, a.OwnerID)
+}
+
+func armyIsRelatedToPlayer(gs *state.GameState, ownerID string) bool {
+	if gs == nil || gs.PlayerFactionID == "" || ownerID == "" {
+		return false
+	}
+	playerRoot := diplomacy.RealmRoot(gs, gs.PlayerFactionID)
+	ownerRoot := diplomacy.RealmRoot(gs, faction.FactionID(ownerID))
+	if playerRoot == "" {
+		playerRoot = gs.PlayerFactionID
+	}
+	if ownerRoot == "" {
+		ownerRoot = faction.FactionID(ownerID)
+	}
+	if playerRoot == ownerRoot {
+		return true
+	}
+	rel := diplomacy.Relation(gs, playerRoot, ownerRoot)
+	return rel != nil && (rel.Stance == faction.StanceAllied || rel.Stance == faction.StanceWar)
 }
 
 func armyHasDisplayedCommander(a *army.Army) bool {

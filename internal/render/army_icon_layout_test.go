@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 )
 
@@ -57,30 +58,48 @@ func TestMixedCommanderMarkersUseNarrowSpacingForNonCommanders(t *testing.T) {
 	}
 }
 
-func TestTradeFleetMarkerZoomVisibility(t *testing.T) {
-	fleet := &army.Army{IsNaval: true, TradeRouteKey: "route"}
-	normal := &Renderer{mapMode: MapModeNormal, camScale: merchantFleetMarkerZoomScale - 0.01}
-	if normal.tradeFleetMarkerVisibleAtCurrentZoom(fleet) {
-		t.Fatal("normal haritada düşük zoom ticaret filosu marker'ını gösterdi")
+func TestArmyMarkerZoomVisibilityUsesPlayerDiplomacy(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":  {ID: "player"},
+			"vassal":  {ID: "vassal", OverlordID: "player"},
+			"ally":    {ID: "ally"},
+			"enemy":   {ID: "enemy"},
+			"neutral": {ID: "neutral"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "ally"):  {FactionA: "player", FactionB: "ally", Stance: faction.StanceAllied},
+			faction.RelationKey("player", "enemy"): {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+	}
+	r := &Renderer{gs: gs, mapMode: MapModeNormal, camScale: armyAllFactionsZoomScale - 0.01}
+	for _, ownerID := range []string{"player", "vassal", "ally", "enemy"} {
+		if !r.armyVisibleAtCurrentZoom(&army.Army{OwnerID: ownerID}) {
+			t.Fatalf("uzak görünümde ilişkili %s marker'ı gizlendi", ownerID)
+		}
+	}
+	if r.armyVisibleAtCurrentZoom(&army.Army{OwnerID: "neutral"}) {
+		t.Fatal("uzak görünümde tarafsız devlet marker'ı gösterildi")
 	}
 
-	normal.camScale = merchantFleetMarkerZoomScale
-	if !normal.tradeFleetMarkerVisibleAtCurrentZoom(fleet) {
-		t.Fatal("eşik zoom'da ticaret filosu marker'ı gizlendi")
+	r.camScale = armyAllFactionsZoomScale
+	if !r.armyVisibleAtCurrentZoom(&army.Army{OwnerID: "neutral"}) {
+		t.Fatal("yakın görünümde tarafsız devlet marker'ı gizlendi")
+	}
+
+	tradeFleet := &army.Army{OwnerID: "player", IsNaval: true, TradeRouteKey: "route"}
+	if !r.armyVisibleAtCurrentZoom(tradeFleet) {
+		t.Fatal("yakın görünümde ticaret filosu marker'ı gizlendi")
 	}
 
 	tradeMap := &Renderer{mapMode: MapModeTrade, camScale: 0}
-	if !tradeMap.tradeFleetMarkerVisibleAtCurrentZoom(fleet) {
-		t.Fatal("ticaret haritasında ticaret filosu marker'ı filtrelendi")
+	if !tradeMap.armyVisibleAtCurrentZoom(tradeFleet) {
+		t.Fatal("ticaret haritasında filo marker'ı filtrelendi")
 	}
 
 	editMode := &Renderer{mapMode: MapModeNormal, camScale: 0, gs: &state.GameState{Phase: state.PhaseEditMode}}
-	if !editMode.tradeFleetMarkerVisibleAtCurrentZoom(fleet) {
-		t.Fatal("Edit Mode'da ticaret filosu marker'ı filtrelendi")
-	}
-
-	nonTradeFleet := &army.Army{IsNaval: true}
-	if normal.tradeFleetMarkerVisibleAtCurrentZoom(nonTradeFleet) != true {
-		t.Fatal("rotasız filo marker'ı düşük zoom'da filtrelendi")
+	if !editMode.armyVisibleAtCurrentZoom(&army.Army{OwnerID: "neutral"}) {
+		t.Fatal("Edit Mode'da devlet marker'ı filtrelendi")
 	}
 }

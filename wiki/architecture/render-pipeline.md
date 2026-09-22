@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-09-20
+last_updated: 2026-09-22
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -193,6 +193,14 @@ ve gümrük bonusunu da gösterir. Merkeze tıklamak, ana/ikincil tier'ı, bağl
 koridor hacmini ve fetihle devralınan bonusları aynı state helper üzerinden
 bildirir.
 
+Ordu ve donanma marker'larının görünürlüğü ortak `armyIconPositions()` kaynağında
+zoom'a göre filtrelenir. `camScale >= 1.5` olduğunda tüm devletlerin kara ve
+deniz kuvvetleri görünür; daha uzak görünümde yalnız oyuncunun realm'i
+(oyuncu/vassallar), müttefikler ve savaş halindeki devletler gösterilir.
+Bu karar çizim, seçim ve hit-test arasında paylaşılır; pusudaki orduların
+istihbarat gizliliği korunur (`internal/render/renderer.go`,
+`internal/render/army_icon_layout_test.go`).
+
 Alt aksiyon HUD'ı artık `Ordu → Pazar → Diplomasi → Teknoloji → Tur Bitir`
 sırasındaki beş ortak butondan oluşur. `Pazar`, Ticaret Haritası HUD'ından
 bağımsız olarak aynı alt HUD dikdörtgeni, çizim ve hit-test sözleşmesiyle ticaret
@@ -206,11 +214,9 @@ Hacmi sıfır olan merkez bağlantıları ince sürekli gri çizgi, aktif akış
 parlak çizgi olarak gösterilir. Ana merkez tabelası daha büyük, solda çerçeveli
 ticaret ikonu ile; ikincil merkez tabelası ise daha küçük ve düşük kontrastlıdır.
 Ticaret rotasına atanmış filo marker'ları rota ve öncelik rozetlerini korur;
-ticaret haritasında komutan portresi çizilmez. Normal haritada bu filoların
-marker'ları `camScale >= 1.9` olduğunda gösterilir; daha uzak zoom'da ortak
-`armyIconPositions()` çıktısından çıkarıldıkları için çizim, seçim ve hit-test
-birlikte gizlenir (`internal/render/renderer.go`). Ticaret haritası bu filtreyi
-uygulamaz.
+ticaret haritasında komutan portresi çizilmez. Normal haritadaki görünürlük,
+genel ordu/donanma zoom ve diplomasi filtresini izler; ticaret haritası ise
+marker katmanını kendi overlay'i üzerinden yönetir.
 
 `Yeni Rota` aday kartı, iki tarafın `kullanılan/toplam` rota kapasitesini ve
 aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Partner
