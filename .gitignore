@@ -45,6 +45,9 @@ logs/
 _BUG/
 _PLANS/
 
+# Save files
+saves/
+
 # AI Rules
 .claude/
 .codex/
