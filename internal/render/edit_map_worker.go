@@ -71,7 +71,40 @@ func cloneSieges(src map[world.RegionID]*state.SiegeState) map[world.RegionID]*s
 	return dst
 }
 
-func buildEditMapSnapshot(done <-chan struct{}, gs *state.GameState, overrides map[int]world.RegionID) (*WorldMap, editMapBuildTiming, error) {
+func cloneWorldMapForEdit(src *WorldMap) *WorldMap {
+	if src == nil {
+		return nil
+	}
+	dst := *src
+	dst.img = nil
+	dst.basePixels = append([]byte(nil), src.basePixels...)
+	dst.dispPixels = make([]byte, len(src.dispPixels))
+	dst.baseRegionAt = append([]uint16(nil), src.baseRegionAt...)
+	dst.regionAt = append([]uint16(nil), src.regionAt...)
+	dst.regionIDs = append([]world.RegionID(nil), src.regionIDs...)
+	dst.regionIdx = make(map[world.RegionID]uint16, len(src.regionIdx))
+	for rid, idx := range src.regionIdx {
+		dst.regionIdx[rid] = idx
+	}
+	dst.regionPx = nil
+	dst.shapeRasterPixels = make(map[string][]int, len(src.shapeRasterPixels))
+	for shapeID, pixels := range src.shapeRasterPixels {
+		dst.shapeRasterPixels[shapeID] = append([]int(nil), pixels...)
+	}
+	dst.regionAnchor = make(map[world.RegionID][2]int)
+	dst.settlementAnchor = make(map[settlementAnchorKey][2]int)
+	dst.primarySettlement = make(map[world.RegionID][2]int)
+	dst.borderSegments = nil
+	dst.borderStyles = nil
+	dst.blockadeFractions = nil
+	dst.seaIdx = make(map[uint16]bool, len(src.seaIdx))
+	for idx, isSea := range src.seaIdx {
+		dst.seaIdx[idx] = isSea
+	}
+	return &dst
+}
+
+func buildEditMapSnapshot(done <-chan struct{}, gs *state.GameState, overrides map[int]world.RegionID, baseMap *WorldMap, targetShapeID string) (*WorldMap, editMapBuildTiming, error) {
 	var timing editMapBuildTiming
 	if gs == nil {
 		return nil, timing, fmt.Errorf("harita snapshot state'i nil")
@@ -81,7 +114,18 @@ func buildEditMapSnapshot(done <-chan struct{}, gs *state.GameState, overrides m
 	}
 
 	rasterStarted := time.Now()
-	wm := prepareWorldMapData(gs, "", MapModeNormal, nil, false, true)
+	var wm *WorldMap
+	if targetShapeID != "" && baseMap != nil {
+		// baseMap request aşamasında ayrılmış, worker'a özel snapshot'tır.
+		// Burada ikinci kez büyük raster dizilerini kopyalamaya gerek yok.
+		wm = baseMap
+		if wm == nil || !wm.rebuildShapeRegionAssignments(gs, targetShapeID) {
+			wm = nil
+		}
+	}
+	if wm == nil {
+		wm = prepareWorldMapData(gs, "", MapModeNormal, nil, false, true)
+	}
 	timing.raster = time.Since(rasterStarted)
 	if wm == nil {
 		return nil, timing, fmt.Errorf("harita verisi hazırlanamadı")
@@ -134,10 +178,18 @@ func (r *Renderer) cancelEditMapBuild() {
 // thread'ini bloke etmeden hesaplar. Worker sonucu yalnızca aynı generation
 // hâlâ geçerliyse ana döngüde kabul edilir.
 func (r *Renderer) requestEditWorldMapRebuild() {
-	_ = r.requestEditWorldMapRebuildWithCompletion(nil)
+	_ = r.requestEditWorldMapRebuildForShapeWithCompletion("", nil)
 }
 
 func (r *Renderer) requestEditWorldMapRebuildWithCompletion(completion func()) bool {
+	return r.requestEditWorldMapRebuildForShapeWithCompletion("", completion)
+}
+
+func (r *Renderer) requestEditWorldMapRebuildForShape(shapeID string) {
+	_ = r.requestEditWorldMapRebuildForShapeWithCompletion(shapeID, nil)
+}
+
+func (r *Renderer) requestEditWorldMapRebuildForShapeWithCompletion(shapeID string, completion func()) bool {
 	if r == nil || r.gs == nil || r.editMapBuildPending {
 		return false
 	}
@@ -146,6 +198,10 @@ func (r *Renderer) requestEditWorldMapRebuildWithCompletion(completion func()) b
 	generation := r.editMapBuildGeneration
 	snapshot := cloneEditMapBuildState(r.gs)
 	overrides := cloneRegionPaintOverrides(r.editRegionPaintOverrides)
+	baseMap := (*WorldMap)(nil)
+	if shapeID != "" {
+		baseMap = cloneWorldMapForEdit(r.worldMap)
+	}
 	resultCh := make(chan editMapBuildResult, 1)
 	cancelCh := make(chan struct{})
 	r.editMapBuildPending = true
@@ -166,7 +222,7 @@ func (r *Renderer) requestEditWorldMapRebuildWithCompletion(completion func()) b
 					err = fmt.Errorf("harita worker panic: %v", recovered)
 				}
 			}()
-			worldMap, timing, err = buildEditMapSnapshot(cancelCh, snapshot, overrides)
+			worldMap, timing, err = buildEditMapSnapshot(cancelCh, snapshot, overrides, baseMap, shapeID)
 		}()
 		resultCh <- editMapBuildResult{
 			generation: generation,

@@ -2839,6 +2839,74 @@
           "temple"
         ]
       },
+      "baden_vurtemberg": {
+        "owner_id": "hre",
+        "successor_faction_id": "hre",
+        "settlements": [
+          {
+            "id": "thuringia_stuttgart",
+            "name_tr": "Stutgart",
+            "x": 660,
+            "y": 304,
+            "type": "town",
+            "is_center": true,
+            "population": 45
+          },
+          {
+            "id": "baden_vurtemberg_settlement_2",
+            "name_tr": "Cannstatt",
+            "x": 662,
+            "y": 300,
+            "type": "fortress",
+            "population": 0
+          },
+          {
+            "id": "baden_vurtemberg_asperg",
+            "name_tr": "Asperg",
+            "x": 657,
+            "y": 296,
+            "type": "town",
+            "population": 0
+          },
+          {
+            "id": "baden_vurtemberg_ulm",
+            "name_tr": "Ulm",
+            "x": 676,
+            "y": 312,
+            "type": "city",
+            "population": 0
+          },
+          {
+            "id": "baden_vurtemberg_tubingen",
+            "name_tr": "Tübingen",
+            "x": 655,
+            "y": 309,
+            "type": "city",
+            "population": 0
+          },
+          {
+            "id": "baden_vurtemberg_hohenzollern",
+            "name_tr": "Hohenzollern Kalesi",
+            "x": 661,
+            "y": 317,
+            "type": "fortress",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 35,
+        "population": 318,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
+          "barracks",
+          "granary",
+          "temple",
+          "market"
+        ]
+      },
       "baghdad": {
         "owner_id": "ilkhanate",
         "successor_faction_id": "jelayirids",
@@ -3029,35 +3097,43 @@
         "successor_faction_id": "bavaria_duchy",
         "settlements": [
           {
-            "id": "bavaria_augsburg",
-            "name_tr": "Augsburg",
-            "x": 713,
-            "y": 316,
-            "type": "town",
-            "population": 35
-          },
-          {
             "id": "bavaria_munich",
             "name_tr": "Münih",
-            "x": 722,
-            "y": 322,
+            "x": 716,
+            "y": 318,
             "type": "fortress",
             "is_center": true,
             "population": 70
           },
           {
+            "id": "bavaria_regensburg",
+            "name_tr": "Regensburg",
+            "x": 720,
+            "y": 304,
+            "type": "town",
+            "population": 35
+          },
+          {
             "id": "bavaria_nuremberg",
             "name_tr": "Nürnberg",
-            "x": 712,
-            "y": 292,
+            "x": 709,
+            "y": 295,
             "type": "city",
             "population": 70
           },
           {
-            "id": "bavaria_regensburg",
-            "name_tr": "Regensburg",
-            "x": 730,
-            "y": 308,
+            "id": "thuringia_wurzburg",
+            "name_tr": "Würzburg",
+            "x": 678,
+            "y": 293,
+            "type": "fortress",
+            "population": 44
+          },
+          {
+            "id": "bavaria_augsburg",
+            "name_tr": "Augsburg",
+            "x": 694,
+            "y": 315,
             "type": "town",
             "population": 35
           }
@@ -3065,7 +3141,7 @@
         "is_locked": false,
         "satisfaction": 65,
         "tax_rate": 48,
-        "population": 672,
+        "population": 716,
         "religion": "catholic",
         "active_event_id": "",
         "buildings": [
@@ -3544,6 +3620,35 @@
           "workshop"
         ]
       },
+      "bohuslan": {
+        "owner_id": "norway_kingdom",
+        "successor_faction_id": "norway_kingdom",
+        "settlements": [
+          {
+            "id": "bohuslan_castle",
+            "name_tr": "Bohuslan Kalesi",
+            "x": 714,
+            "y": 132,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 30,
+        "population": 455,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "walls",
+          "port"
+        ]
+      },
       "bosnia": {
         "owner_id": "bosnian_banate",
         "successor_faction_id": "bosnian_banate",
@@ -3631,9 +3736,9 @@
           {
             "id": "brandenburg_main",
             "name_tr": "Brandenburg",
-            "x": 749,
-            "y": 244,
-            "type": "city",
+            "x": 753,
+            "y": 242,
+            "type": "fortress",
             "is_center": true,
             "population": 47
           },
@@ -3646,26 +3751,10 @@
             "population": 22
           },
           {
-            "id": "saxony_dresden",
-            "name_tr": "Dresden",
-            "x": 754,
-            "y": 266,
-            "type": "fortress",
-            "population": 22
-          },
-          {
-            "id": "saxony_leipzig",
-            "name_tr": "Leipzig",
-            "x": 737,
-            "y": 257,
-            "type": "city",
-            "population": 44
-          },
-          {
             "id": "saxony_halle",
             "name_tr": "Halle",
-            "x": 729,
-            "y": 253,
+            "x": 735,
+            "y": 246,
             "type": "town",
             "population": 22
           }
@@ -3673,7 +3762,7 @@
         "is_locked": false,
         "satisfaction": 60,
         "tax_rate": 45,
-        "population": 498,
+        "population": 432,
         "religion": "catholic",
         "active_event_id": "",
         "buildings": [
@@ -6395,6 +6484,14 @@
             "y": 411,
             "type": "port",
             "population": 40
+          },
+          {
+            "id": "florence_elba_island",
+            "name_tr": "Elba",
+            "x": 682,
+            "y": 423,
+            "type": "town",
+            "population": 0
           }
         ],
         "is_locked": false,
@@ -6829,6 +6926,17 @@
           "walls"
         ]
       },
+      "german_bight": {
+        "owner_id": "",
+        "settlements": null,
+        "is_locked": false,
+        "satisfaction": 100,
+        "tax_rate": 45,
+        "population": 0,
+        "religion": "",
+        "active_event_id": "",
+        "buildings": null
+      },
       "germiyan": {
         "owner_id": "germiyan_bey",
         "successor_faction_id": "germiyan_bey",
@@ -6861,6 +6969,51 @@
           "farm",
           "workshop",
           "temple"
+        ]
+      },
+      "goteborg_coast": {
+        "owner_id": "sweden_kingdom",
+        "successor_faction_id": "sweden_kingdom",
+        "settlements": [
+          {
+            "id": "lodose_castle",
+            "name_tr": "Alvsborg Kalesi",
+            "x": 715,
+            "y": 137,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          },
+          {
+            "id": "lodose_port",
+            "name_tr": "Lödöse Limanı",
+            "x": 719,
+            "y": 128,
+            "type": "port",
+            "population": 0
+          },
+          {
+            "id": "goteborg_coast_lacko",
+            "name_tr": "Lackö Kalesi",
+            "x": 736,
+            "y": 121,
+            "type": "fortress",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 30,
+        "population": 455,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "walls",
+          "port"
         ]
       },
       "gothia": {
@@ -6900,6 +7053,39 @@
           "farm",
           "farm",
           "farm"
+        ]
+      },
+      "gotland_island": {
+        "owner_id": "sweden_kingdom",
+        "successor_faction_id": "sweden_kingdom",
+        "settlements": [
+          {
+            "id": "gotland_island_visborf",
+            "name_tr": "Visborg Kalesi",
+            "x": 841,
+            "y": 143,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          },
+          {
+            "id": "gotland_island_visby",
+            "name_tr": "Visby",
+            "x": 839,
+            "y": 146,
+            "type": "port",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 70,
+        "tax_rate": 45,
+        "population": 0,
+        "religion": "",
+        "active_event_id": "",
+        "buildings": [
+          "port",
+          "walls"
         ]
       },
       "granada": {
@@ -7407,6 +7593,43 @@
           "barracks"
         ]
       },
+      "hessen": {
+        "owner_id": "hre",
+        "successor_faction_id": "hre",
+        "settlements": [
+          {
+            "id": "thuringia_frankfurt",
+            "name_tr": "Frankfurt",
+            "x": 653,
+            "y": 279,
+            "type": "fortress",
+            "is_center": true,
+            "population": 44
+          },
+          {
+            "id": "hessen_heildelberg",
+            "name_tr": "Heildelberg",
+            "x": 650,
+            "y": 293,
+            "type": "city",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 35,
+        "population": 317,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "port"
+        ]
+      },
       "holland": {
         "owner_id": "hre",
         "settlements": [
@@ -7450,6 +7673,56 @@
           "barracks",
           "barracks",
           "temple"
+        ]
+      },
+      "holstein": {
+        "owner_id": "hre",
+        "successor_faction_id": "hre",
+        "settlements": [
+          {
+            "id": "holstein_siegesburg",
+            "name_tr": "Siegesburg",
+            "x": 684,
+            "y": 214,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          },
+          {
+            "id": "holstein_settlement_2",
+            "name_tr": "Burg Travemünde",
+            "x": 693,
+            "y": 210,
+            "type": "fortress",
+            "population": 0
+          },
+          {
+            "id": "holstein_harburg",
+            "name_tr": "Harburg Kalesi",
+            "x": 672,
+            "y": 222,
+            "type": "fortress",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 68,
+        "tax_rate": 35,
+        "population": 358,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "port"
         ]
       },
       "hourmuz": {
@@ -8739,6 +9012,50 @@
           "workshop"
         ]
       },
+      "lakes_region": {
+        "owner_id": "sweden_kingdom",
+        "successor_faction_id": "sweden_kingdom",
+        "settlements": [
+          {
+            "id": "lakes_region_orebro",
+            "name_tr": "Örebro Kalesi",
+            "x": 779,
+            "y": 111,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          },
+          {
+            "id": "lakes_region_settlement_2",
+            "name_tr": "Vintrosa",
+            "x": 771,
+            "y": 111,
+            "type": "town",
+            "population": 0
+          },
+          {
+            "id": "lakes_region_koping",
+            "name_tr": "Köping",
+            "x": 783,
+            "y": 107,
+            "type": "city",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 30,
+        "population": 455,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "walls"
+        ]
+      },
       "lancashire": {
         "owner_id": "england",
         "successor_faction_id": "england",
@@ -9471,6 +9788,51 @@
         "active_event_id": "",
         "buildings": null
       },
+      "malmo_halland": {
+        "owner_id": "denmark_kingdom",
+        "successor_faction_id": "denmark_kingdom",
+        "settlements": [
+          {
+            "id": "malmo_halland_castle",
+            "name_tr": "Malmö Kalesi",
+            "x": 734,
+            "y": 179,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          },
+          {
+            "id": "malmo_halland_lund",
+            "name_tr": "Lund",
+            "x": 740,
+            "y": 173,
+            "type": "city",
+            "population": 0
+          },
+          {
+            "id": "malmo_halland_falsterbo",
+            "name_tr": "Falsterbo Limanı",
+            "x": 733,
+            "y": 183,
+            "type": "port",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 30,
+        "population": 455,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "port",
+          "walls"
+        ]
+      },
       "malta": {
         "owner_id": "aragon",
         "successor_faction_id": "hospitaller",
@@ -9631,6 +9993,47 @@
         "religion": "",
         "active_event_id": "",
         "buildings": null
+      },
+      "meissen_margraviate": {
+        "owner_id": "hre",
+        "successor_faction_id": "hre",
+        "settlements": [
+          {
+            "id": "saxony_dresden",
+            "name_tr": "Dresden",
+            "x": 745,
+            "y": 265,
+            "type": "fortress",
+            "is_center": true,
+            "population": 22
+          },
+          {
+            "id": "saxony_leipzig",
+            "name_tr": "Leipzig",
+            "x": 716,
+            "y": 269,
+            "type": "city",
+            "population": 44
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 35,
+        "population": 359,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "farm"
+        ]
       },
       "mentese": {
         "owner_id": "mentese_bey",
@@ -11000,7 +11403,7 @@
             "name_tr": "Oslo",
             "x": 691,
             "y": 95,
-            "type": "city",
+            "type": "fortress",
             "is_center": true,
             "population": 122
           },
@@ -11010,6 +11413,22 @@
             "name_tr": "Liman",
             "x": 666,
             "y": 115,
+            "type": "port",
+            "population": 0
+          },
+          {
+            "id": "norway_stavanger",
+            "name_tr": "Stavaneger",
+            "x": 604,
+            "y": 106,
+            "type": "city",
+            "population": 0
+          },
+          {
+            "id": "oslo_port",
+            "name_tr": "Oslo Limanı",
+            "x": 686,
+            "y": 105,
             "type": "port",
             "population": 0
           }
@@ -11225,27 +11644,12 @@
         "successor_faction_id": "hre",
         "settlements": [
           {
-            "id": "palatinate_main",
-            "name_tr": "Dortmund",
-            "x": 624,
-            "y": 259,
-            "type": "city",
-            "population": 66
-          },
-          {
-            "id": "palatinate_cologne",
-            "name_tr": "Köln",
-            "x": 618,
-            "y": 269,
-            "type": "city",
-            "population": 65
-          },
-          {
             "id": "palatinate_koblenz",
             "name_tr": "Koblenz",
             "x": 624,
             "y": 288,
-            "type": "fortress",
+            "type": "city",
+            "is_center": true,
             "population": 16
           },
           {
@@ -11254,7 +11658,6 @@
             "x": 596,
             "y": 271,
             "type": "fortress",
-            "is_center": true,
             "population": 0
           },
           {
@@ -11265,12 +11668,36 @@
             "y": 255,
             "type": "port",
             "population": 0
+          },
+          {
+            "id": "palatinate_kaiserburg",
+            "name_tr": "Kaiserburg",
+            "x": 638,
+            "y": 299,
+            "type": "fortress",
+            "population": 0
+          },
+          {
+            "id": "palatinate_trier",
+            "name_tr": "Trier",
+            "x": 608,
+            "y": 286,
+            "type": "fortress",
+            "population": 0
+          },
+          {
+            "id": "palatine_mainz",
+            "name_tr": "Mainz",
+            "x": 638,
+            "y": 287,
+            "type": "city",
+            "population": 0
           }
         ],
         "is_locked": false,
         "satisfaction": 65,
         "tax_rate": 40,
-        "population": 440,
+        "population": 309,
         "religion": "catholic",
         "active_event_id": "",
         "buildings": [
@@ -11629,8 +12056,8 @@
           {
             "id": "poland_gdansk",
             "name_tr": "Gdansk",
-            "x": 849,
-            "y": 204,
+            "x": 847,
+            "y": 205,
             "type": "port",
             "population": 198
           },
@@ -11676,6 +12103,7 @@
       },
       "pomerania": {
         "owner_id": "hre",
+        "successor_faction_id": "hre",
         "settlements": [
           {
             "id": "pomerania_main",
@@ -11687,18 +12115,10 @@
             "population": 91
           },
           {
-            "id": "pomerania_stettin",
-            "name_tr": "Stettin",
-            "x": 748,
-            "y": 222,
-            "type": "port",
-            "population": 66
-          },
-          {
             "id": "pomerania_stralsund",
             "name_tr": "Stralsund",
             "x": 741,
-            "y": 207,
+            "y": 206,
             "type": "port",
             "population": 66
           },
@@ -11709,6 +12129,14 @@
             "y": 210,
             "type": "fortress",
             "population": 22
+          },
+          {
+            "id": "pomerania_stettin",
+            "name_tr": "Stettin",
+            "x": 763,
+            "y": 227,
+            "type": "port",
+            "population": 66
           }
         ],
         "is_locked": false,
@@ -12129,6 +12557,25 @@
           "temple"
         ]
       },
+      "rogaland": {
+        "owner_id": "norway_kingdom",
+        "successor_faction_id": "norway_kingdom",
+        "settlements": null,
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 30,
+        "population": 228,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "port",
+          "walls"
+        ]
+      },
       "sardinia": {
         "owner_id": "aragon",
         "successor_faction_id": "aragon",
@@ -12338,35 +12785,11 @@
           {
             "id": "saxony_magdeburg",
             "name_tr": "Magdeburg",
-            "x": 691,
-            "y": 246,
+            "x": 702,
+            "y": 244,
             "type": "fortress",
-            "population": 15
-          },
-          {
-            "id": "saxony_main",
-            "name_tr": "Saksonya",
-            "x": 685,
-            "y": 227,
-            "type": "city",
             "is_center": true,
-            "population": 59
-          },
-          {
-            "id": "saxony_hamburg",
-            "name_tr": "Hamburg",
-            "x": 674,
-            "y": 216,
-            "type": "city",
-            "population": 59
-          },
-          {
-            "id": "saxony_lubeck",
-            "name_tr": "Lübeck",
-            "x": 690,
-            "y": 209,
-            "type": "city",
-            "population": 59
+            "population": 15
           },
           {
             "id": "saxony_port",
@@ -12376,12 +12799,20 @@
             "y": 223,
             "type": "port",
             "population": 0
+          },
+          {
+            "id": "saxony_wittenberg",
+            "name_tr": "Wittenberg",
+            "x": 726,
+            "y": 252,
+            "type": "city",
+            "population": 59
           }
         ],
         "is_locked": false,
         "satisfaction": 67,
         "tax_rate": 55,
-        "population": 585,
+        "population": 467,
         "religion": "catholic",
         "active_event_id": "",
         "buildings": [
@@ -12410,6 +12841,56 @@
           "granary",
           "granary",
           "barracks"
+        ]
+      },
+      "saxony_lower": {
+        "owner_id": "hre",
+        "successor_faction_id": "hre",
+        "settlements": [
+          {
+            "id": "saxony_hamburg",
+            "name_tr": "Hamburg",
+            "x": 672,
+            "y": 218,
+            "type": "port",
+            "is_center": true,
+            "population": 59
+          },
+          {
+            "id": "saxony_lubeck",
+            "name_tr": "Lübeck",
+            "x": 692,
+            "y": 216,
+            "type": "port",
+            "population": 59
+          },
+          {
+            "id": "westphalia_hannover",
+            "name_tr": "Hannover",
+            "x": 666,
+            "y": 238,
+            "type": "fortress",
+            "population": 33
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 68,
+        "tax_rate": 35,
+        "population": 509,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "port"
         ]
       },
       "scania": {
@@ -12464,8 +12945,8 @@
           {
             "id": "switzerland_basel",
             "name_tr": "Basel",
-            "x": 628,
-            "y": 333,
+            "x": 626,
+            "y": 334,
             "type": "fortress",
             "is_center": true,
             "population": 0
@@ -12562,6 +13043,40 @@
         "buildings": [
           "walls",
           "granary"
+        ]
+      },
+      "schleswig": {
+        "owner_id": "denmark_kingdom",
+        "successor_faction_id": "denmark_kingdom",
+        "settlements": [
+          {
+            "id": "schleswig_castle",
+            "name_tr": "Schleswig",
+            "x": 670,
+            "y": 200,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 68,
+        "tax_rate": 35,
+        "population": 358,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "walls",
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "farm",
+          "port"
         ]
       },
       "scotland": {
@@ -12957,6 +13472,7 @@
       },
       "silesia": {
         "owner_id": "polish_kingdom",
+        "successor_faction_id": "polish_kingdom",
         "settlements": [
           {
             "id": "silesia_main",
@@ -13438,6 +13954,17 @@
           "temple"
         ]
       },
+      "stettin_lagoon": {
+        "owner_id": "",
+        "settlements": null,
+        "is_locked": false,
+        "satisfaction": 100,
+        "tax_rate": 45,
+        "population": 0,
+        "religion": "",
+        "active_event_id": "",
+        "buildings": null
+      },
       "styria": {
         "owner_id": "hre",
         "successor_faction_id": "hre",
@@ -13481,7 +14008,7 @@
             "id": "sweden_main",
             "name_tr": "Stokholm",
             "x": 835,
-            "y": 106,
+            "y": 103,
             "type": "city",
             "is_center": true,
             "population": 245
@@ -13492,6 +14019,22 @@
             "name_tr": "Liman",
             "x": 841,
             "y": 139,
+            "type": "port",
+            "population": 0
+          },
+          {
+            "id": "sweden_nykopingsherm",
+            "name_tr": "Nyköpingsherm",
+            "x": 808,
+            "y": 119,
+            "type": "fortress",
+            "population": 0
+          },
+          {
+            "id": "sweden_stokholm_port",
+            "name_tr": "Stokholm Limanı",
+            "x": 833,
+            "y": 108,
             "type": "port",
             "population": 0
           }
@@ -13526,6 +14069,50 @@
           "barracks",
           "temple",
           "port"
+        ]
+      },
+      "sweden_kalmar": {
+        "owner_id": "sweden_kingdom",
+        "successor_faction_id": "sweden_kingdom",
+        "settlements": [
+          {
+            "id": "sweden_kalmar_borgholm",
+            "name_tr": "Borgholm Kalesi",
+            "x": 809,
+            "y": 155,
+            "type": "fortress",
+            "is_center": true,
+            "population": 0
+          },
+          {
+            "id": "sweden_kalmar_port",
+            "name_tr": "Kalmar Limanı",
+            "x": 807,
+            "y": 152,
+            "type": "city",
+            "population": 0
+          },
+          {
+            "id": "sweden_kalmar",
+            "name_tr": "Kalmar",
+            "x": 800,
+            "y": 149,
+            "type": "fortress",
+            "population": 0
+          }
+        ],
+        "is_locked": false,
+        "satisfaction": 65,
+        "tax_rate": 30,
+        "population": 455,
+        "religion": "catholic",
+        "active_event_id": "",
+        "buildings": [
+          "barracks",
+          "granary",
+          "temple",
+          "market",
+          "walls"
         ]
       },
       "switzerland": {
@@ -14011,37 +14598,38 @@
       },
       "thuringia": {
         "owner_id": "hre",
+        "successor_faction_id": "hre",
         "settlements": [
           {
-            "id": "thuringia_stuttgart",
-            "name_tr": "Stutgart",
-            "x": 657,
-            "y": 311,
-            "type": "city",
-            "is_center": true,
-            "population": 45
-          },
-          {
-            "id": "thuringia_frankfurt",
-            "name_tr": "Frankfurt",
-            "x": 652,
-            "y": 291,
-            "type": "city",
-            "population": 44
-          },
-          {
-            "id": "thuringia_wurzburg",
-            "name_tr": "Würzburg",
-            "x": 675,
-            "y": 285,
+            "id": "turingia_erfurt",
+            "name_tr": "Erfurt",
+            "x": 691,
+            "y": 262,
             "type": "fortress",
-            "population": 44
+            "is_center": true,
+            "population": 0
+          },
+          {
+            "id": "thuringia_weimar",
+            "name_tr": "Weimar",
+            "x": 698,
+            "y": 262,
+            "type": "city",
+            "population": 0
+          },
+          {
+            "id": "saxony_settlement_2",
+            "name_tr": "Eisenach",
+            "x": 675,
+            "y": 263,
+            "type": "city",
+            "population": 0
           }
         ],
         "is_locked": false,
         "satisfaction": 70,
         "tax_rate": 33,
-        "population": 395,
+        "population": 262,
         "religion": "catholic",
         "active_event_id": "",
         "buildings": [
@@ -15049,6 +15637,17 @@
           "workshop"
         ]
       },
+      "vistula_river": {
+        "owner_id": "",
+        "settlements": null,
+        "is_locked": false,
+        "satisfaction": 100,
+        "tax_rate": 45,
+        "population": 0,
+        "religion": "",
+        "active_event_id": "",
+        "buildings": null
+      },
       "wales": {
         "owner_id": "england",
         "settlements": [
@@ -15281,6 +15880,17 @@
           "granary"
         ]
       },
+      "weser_river": {
+        "owner_id": "",
+        "settlements": null,
+        "is_locked": false,
+        "satisfaction": 100,
+        "tax_rate": 45,
+        "population": 0,
+        "religion": "",
+        "active_event_id": "",
+        "buildings": null
+      },
       "wessex": {
         "owner_id": "england",
         "settlements": [
@@ -15395,27 +16005,59 @@
         "successor_faction_id": "hre",
         "settlements": [
           {
-            "id": "westphalia_main",
-            "name_tr": "Vestfalya",
-            "x": 645,
-            "y": 233,
+            "id": "westphalia_bremen",
+            "name_tr": "Bremen",
+            "x": 650,
+            "y": 226,
+            "type": "port",
+            "population": 0
+          },
+          {
+            "id": "westphalia_munster",
+            "name_tr": "Münster",
+            "x": 628,
+            "y": 244,
             "type": "city",
-            "is_center": true,
             "population": 135
           },
           {
-            "id": "westphalia_hannover",
-            "name_tr": "Hannover",
-            "x": 648,
-            "y": 247,
+            "id": "palatinate_port",
+            "name_tr": "Köln Limanı",
+            "x": 621,
+            "y": 274,
+            "type": "port",
+            "population": 0
+          },
+          {
+            "id": "palatinate_cologne",
+            "name_tr": "Köln",
+            "x": 618,
+            "y": 269,
+            "type": "city",
+            "population": 65
+          },
+          {
+            "id": "palatinate_main",
+            "name_tr": "Dortmund",
+            "x": 623,
+            "y": 256,
+            "type": "city",
+            "population": 66
+          },
+          {
+            "id": "westphalia_burg_altena",
+            "name_tr": "Burg Altena",
+            "x": 633,
+            "y": 264,
             "type": "fortress",
-            "population": 33
+            "is_center": true,
+            "population": 0
           }
         ],
         "is_locked": false,
         "satisfaction": 59,
         "tax_rate": 32,
-        "population": 500,
+        "population": 598,
         "religion": "catholic",
         "active_event_id": "",
         "buildings": [
@@ -17238,7 +17880,7 @@
       },
       "saxony_duchy": {
         "is_eliminated": false,
-        "capital_settlement_id": "saxony_main",
+        "capital_settlement_id": "saxony_wittenberg",
         "gold": 2587,
         "grain": 2735,
         "iron": 64,
@@ -35413,16 +36055,15 @@
         "reason": "alpine_pass_survival profili: hold_alpine_passes"
       },
       "saxony_duchy": {
-        "objective_id": "hold_saxon_core",
-        "kind": "defend",
-        "target_faction_id": "denmark_kingdom",
+        "objective_id": "consolidate:saxony_duchy",
+        "kind": "consolidate",
         "target_region_ids": [
           "saxony"
         ],
-        "started_turn": 51,
-        "reassess_turn": 53,
-        "commitment": 68,
-        "reason": "saxon_electorate_frontier profili: hold_saxon_core"
+        "started_turn": 52,
+        "reassess_turn": 54,
+        "commitment": 40,
+        "reason": "senaryo objective'i tamamlandı veya zaman/event bekliyor"
       },
       "scotland_kingdom": {
         "objective_id": "recover_northern_english_marches",
@@ -35742,7 +36383,7 @@
         "regions_captured_b": 7,
         "last_battle_turn": 41,
         "last_peace_offer_turn": 51,
-        "target_region_id": "brittany",
+        "target_region_id": "aquitaine",
         "target_locked_turn": 52
       },
       "england|navarra": {
@@ -35756,7 +36397,7 @@
         "casualties_a": 3,
         "regions_captured_b": 3,
         "last_battle_turn": 51,
-        "target_region_id": "aquitaine",
+        "target_region_id": "navarra",
         "target_locked_turn": 52
       },
       "flanders_county|swiss_confederacy": {
@@ -50724,7 +51365,7 @@
       "germiyan_bey|golden_horde": {
         "faction_a": "germiyan_bey",
         "faction_b": "golden_horde",
-        "score": -27,
+        "score": 3,
         "stance": "peace"
       },
       "germiyan_bey|granada_emirate": {
@@ -59317,17 +59958,9 @@
       },
       {
         "from_faction_id": "bavaria_duchy",
-        "to_faction_id": "brandenburg_margraviate",
-        "good": "grain",
-        "amount_per_turn": 2,
-        "gold_per_unit": 1,
-        "suspended_turns": 0
-      },
-      {
-        "from_faction_id": "bavaria_duchy",
         "to_faction_id": "hre",
         "good": "grain",
-        "amount_per_turn": 3,
+        "amount_per_turn": 6,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -59349,17 +59982,9 @@
       },
       {
         "from_faction_id": "brandenburg_margraviate",
-        "to_faction_id": "bavaria_duchy",
-        "good": "grain",
-        "amount_per_turn": 2,
-        "gold_per_unit": 1,
-        "suspended_turns": 0
-      },
-      {
-        "from_faction_id": "brandenburg_margraviate",
         "to_faction_id": "hre",
         "good": "grain",
-        "amount_per_turn": 2,
+        "amount_per_turn": 3,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -59367,7 +59992,7 @@
         "from_faction_id": "brandenburg_margraviate",
         "to_faction_id": "saxony_duchy",
         "good": "grain",
-        "amount_per_turn": 2,
+        "amount_per_turn": 3,
         "gold_per_unit": 1,
         "suspended_turns": 0
       },
@@ -59511,7 +60136,7 @@
         "from_faction_id": "denmark_kingdom",
         "to_faction_id": "saxony_duchy",
         "good": "grain",
-        "amount_per_turn": 6,
+        "amount_per_turn": 4,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -59919,7 +60544,7 @@
         "from_faction_id": "hre",
         "to_faction_id": "bavaria_duchy",
         "good": "grain",
-        "amount_per_turn": 3,
+        "amount_per_turn": 6,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -59935,7 +60560,7 @@
         "from_faction_id": "hre",
         "to_faction_id": "brandenburg_margraviate",
         "good": "grain",
-        "amount_per_turn": 2,
+        "amount_per_turn": 3,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -60191,7 +60816,7 @@
         "from_faction_id": "norway_kingdom",
         "to_faction_id": "sweden_kingdom",
         "good": "iron",
-        "amount_per_turn": 5,
+        "amount_per_turn": 6,
         "gold_per_unit": 5,
         "suspended_turns": 0
       },
@@ -60359,7 +60984,7 @@
         "from_faction_id": "saxony_duchy",
         "to_faction_id": "brandenburg_margraviate",
         "good": "grain",
-        "amount_per_turn": 2,
+        "amount_per_turn": 3,
         "gold_per_unit": 1,
         "suspended_turns": 0
       },
@@ -60367,7 +60992,7 @@
         "from_faction_id": "saxony_duchy",
         "to_faction_id": "denmark_kingdom",
         "good": "grain",
-        "amount_per_turn": 6,
+        "amount_per_turn": 4,
         "gold_per_unit": 2,
         "suspended_turns": 0
       },
@@ -60431,7 +61056,7 @@
         "from_faction_id": "sweden_kingdom",
         "to_faction_id": "norway_kingdom",
         "good": "iron",
-        "amount_per_turn": 5,
+        "amount_per_turn": 6,
         "gold_per_unit": 5,
         "suspended_turns": 0
       },
@@ -60581,9 +61206,9 @@
           "timber": 98
         },
         "aragon": {
-          "cloth": 80,
+          "cloth": 3,
           "iron": 164,
-          "spice": 1052,
+          "spice": 1034,
           "stone": 187,
           "timber": 296
         },
@@ -60620,7 +61245,7 @@
         },
         "bavaria_duchy": {
           "cloth": 178,
-          "grain": 2158,
+          "grain": 2152,
           "iron": 293,
           "spice": 306,
           "stone": 46,
@@ -60644,7 +61269,7 @@
         },
         "brandenburg_margraviate": {
           "cloth": 212,
-          "grain": 1669,
+          "grain": 1681,
           "iron": 278,
           "spice": 224,
           "stone": 51,
@@ -60655,6 +61280,7 @@
           "grain": 2157,
           "iron": 50,
           "spice": 232,
+          "stone": 73,
           "timber": 98
         },
         "candar_bey": {
@@ -60692,7 +61318,7 @@
         },
         "denmark_kingdom": {
           "cloth": 53,
-          "grain": 444,
+          "grain": 306,
           "spice": 124,
           "timber": 265
         },
@@ -60802,11 +61428,11 @@
           "timber": 210
         },
         "hre": {
-          "cloth": 1743,
-          "grain": 383,
-          "iron": 839,
+          "cloth": 1746,
+          "grain": 92,
+          "iron": 865,
           "spice": 373,
-          "timber": 565
+          "timber": 640
         },
         "hungarian_kingdom": {
           "cloth": 81,
@@ -60829,13 +61455,13 @@
           "grain": 1489,
           "iron": 459,
           "spice": 171,
-          "stone": 237,
+          "stone": 62,
           "timber": 18
         },
         "karesioglu_bey": {
-          "cloth": 146,
+          "cloth": 66,
           "iron": 172,
-          "spice": 99,
+          "spice": 81,
           "stone": 31,
           "timber": 51
         },
@@ -60858,7 +61484,7 @@
           "grain": 2652,
           "iron": 762,
           "spice": 7340,
-          "stone": 732
+          "stone": 782
         },
         "marinid_sultanate": {
           "grain": 2261,
@@ -60877,7 +61503,7 @@
           "cloth": 15,
           "iron": 45,
           "spice": 67,
-          "stone": 48,
+          "stone": 98,
           "timber": 65
         },
         "milan_duchy": {
@@ -60904,10 +61530,9 @@
         },
         "norway_kingdom": {
           "cloth": 154,
-          "iron": 73,
+          "iron": 59,
           "spice": 31,
-          "stone": 76,
-          "timber": 497
+          "timber": 415
         },
         "novgorod_rep": {
           "cloth": 122,
@@ -60983,7 +61608,7 @@
         },
         "saxony_duchy": {
           "cloth": 499,
-          "grain": 1892,
+          "grain": 1913,
           "iron": 44,
           "spice": 128,
           "stone": 61
@@ -61003,9 +61628,9 @@
         },
         "sweden_kingdom": {
           "cloth": 151,
-          "iron": 270,
+          "iron": 242,
           "spice": 71,
-          "timber": 495
+          "timber": 389
         },
         "swiss_confederacy": {
           "cloth": 176,
@@ -61057,17 +61682,14 @@
           "grain": 251
         },
         "athena_duk": {
-          "stone": 112
-        },
-        "bulgarian_empire": {
-          "stone": 210
+          "stone": 472
         },
         "candar_bey": {
           "iron": 30,
           "stone": 5
         },
         "carniola_margraviate": {
-          "stone": 92
+          "stone": 973
         },
         "castile_kingdom": {
           "iron": 1,
@@ -61075,24 +61697,24 @@
           "timber": 280
         },
         "cyprus_kingdom": {
-          "stone": 60
+          "stone": 501
         },
         "denmark_kingdom": {
           "iron": 32,
-          "stone": 138
+          "stone": 977
         },
         "east_rome": {
           "grain": 157
         },
         "england": {
-          "stone": 83
+          "stone": 860
         },
         "esrefoglu_bey": {
           "grain": 215,
-          "stone": 163
+          "stone": 764
         },
         "france": {
-          "stone": 121
+          "stone": 339
         },
         "genoa": {
           "grain": 502
@@ -61109,7 +61731,7 @@
           "timber": 122
         },
         "hamid_bey": {
-          "stone": 87
+          "stone": 522
         },
         "hospitaller": {
           "grain": 139
@@ -61139,19 +61761,20 @@
           "timber": 65
         },
         "navarra": {
-          "stone": 214
+          "stone": 2528
         },
         "norway_kingdom": {
-          "grain": 955
+          "grain": 989,
+          "stone": 228
         },
         "polish_kingdom": {
-          "stone": 100
+          "stone": 640
         },
         "portugal": {
-          "stone": 51
+          "stone": 465
         },
         "russia": {
-          "stone": 62
+          "stone": 442
         },
         "safavid": {
           "cloth": 2,
@@ -61166,27 +61789,27 @@
           "timber": 33
         },
         "scotland_kingdom": {
-          "stone": 215
+          "stone": 2582
         },
         "serbian_empire": {
-          "stone": 148,
+          "stone": 1351,
           "timber": 69
         },
         "sweden_kingdom": {
-          "grain": 118,
-          "stone": 13
+          "grain": 352,
+          "stone": 369
         },
         "swiss_confederacy": {
-          "stone": 39
+          "stone": 476
         },
         "teutonic_order": {
-          "stone": 33
+          "stone": 207
         },
         "trebizond_emp": {
           "grain": 26
         },
         "usfurid_emirate": {
-          "stone": 85,
+          "stone": 106,
           "timber": 50
         },
         "wallachia_prince": {
@@ -64543,18 +65166,8 @@
             "CriticalThreat": false
           },
           {
-            "EnemyFactionID": "brandenburg_margraviate",
-            "TargetRegionID": "brandenburg",
-            "FriendlyPower": 370,
-            "EnemyPower": 363,
-            "ThreatScore": -7,
-            "AtWar": false,
-            "CapitalThreat": false,
-            "CriticalThreat": false
-          },
-          {
             "EnemyFactionID": "hre",
-            "TargetRegionID": "styria",
+            "TargetRegionID": "meissen_margraviate",
             "FriendlyPower": 370,
             "EnemyPower": 0,
             "ThreatScore": -370,
@@ -64596,16 +65209,6 @@
             "CriticalThreat": false
           },
           {
-            "EnemyFactionID": "brandenburg_margraviate",
-            "TargetRegionID": "brandenburg",
-            "FriendlyPower": 362,
-            "EnemyPower": 363,
-            "ThreatScore": 1,
-            "AtWar": false,
-            "CapitalThreat": false,
-            "CriticalThreat": false
-          },
-          {
             "EnemyFactionID": "polish_kingdom",
             "TargetRegionID": "silesia",
             "FriendlyPower": 362,
@@ -64617,7 +65220,7 @@
           },
           {
             "EnemyFactionID": "hre",
-            "TargetRegionID": "moravia",
+            "TargetRegionID": "meissen_margraviate",
             "FriendlyPower": 362,
             "EnemyPower": 0,
             "ThreatScore": -362,
@@ -64682,26 +65285,6 @@
         "CriticalThreat": false,
         "Fronts": [
           {
-            "EnemyFactionID": "bavaria_duchy",
-            "TargetRegionID": "bavaria",
-            "FriendlyPower": 363,
-            "EnemyPower": 370,
-            "ThreatScore": 7,
-            "AtWar": false,
-            "CapitalThreat": false,
-            "CriticalThreat": false
-          },
-          {
-            "EnemyFactionID": "bohemian_kingdom",
-            "TargetRegionID": "bohemia",
-            "FriendlyPower": 363,
-            "EnemyPower": 362,
-            "ThreatScore": -1,
-            "AtWar": false,
-            "CapitalThreat": false,
-            "CriticalThreat": false
-          },
-          {
             "EnemyFactionID": "saxony_duchy",
             "TargetRegionID": "saxony",
             "FriendlyPower": 363,
@@ -64723,7 +65306,7 @@
           },
           {
             "EnemyFactionID": "hre",
-            "TargetRegionID": "pomerania",
+            "TargetRegionID": "meissen_margraviate",
             "FriendlyPower": 363,
             "EnemyPower": 0,
             "ThreatScore": -363,
@@ -65093,28 +65676,18 @@
         "CriticalThreat": false,
         "Fronts": [
           {
-            "EnemyFactionID": "saxony_duchy",
-            "TargetRegionID": "saxony",
-            "FriendlyPower": 0,
-            "EnemyPower": 305,
-            "ThreatScore": 305,
-            "AtWar": false,
-            "CapitalThreat": false,
-            "CriticalThreat": false
-          },
-          {
             "EnemyFactionID": "sweden_kingdom",
-            "TargetRegionID": "sweden",
-            "FriendlyPower": 157,
-            "EnemyPower": 239,
-            "ThreatScore": 102,
+            "TargetRegionID": "goteborg_coast",
+            "FriendlyPower": 0,
+            "EnemyPower": 0,
+            "ThreatScore": 20,
             "AtWar": false,
             "CapitalThreat": false,
             "CriticalThreat": false
           },
           {
             "EnemyFactionID": "hre",
-            "TargetRegionID": "westphalia",
+            "TargetRegionID": "holstein",
             "FriendlyPower": 0,
             "EnemyPower": 0,
             "ThreatScore": 0,
@@ -66268,7 +66841,7 @@
           },
           {
             "EnemyFactionID": "denmark_kingdom",
-            "TargetRegionID": "denmark",
+            "TargetRegionID": "schleswig",
             "FriendlyPower": 0,
             "EnemyPower": 0,
             "ThreatScore": 0,
@@ -67037,10 +67610,10 @@
         "Fronts": [
           {
             "EnemyFactionID": "sweden_kingdom",
-            "TargetRegionID": "sweden",
-            "FriendlyPower": 289,
-            "EnemyPower": 239,
-            "ThreatScore": -30,
+            "TargetRegionID": "goteborg_coast",
+            "FriendlyPower": 0,
+            "EnemyPower": 0,
+            "ThreatScore": 20,
             "AtWar": false,
             "CapitalThreat": false,
             "CriticalThreat": false
@@ -67325,7 +67898,7 @@
           },
           {
             "EnemyFactionID": "hre",
-            "TargetRegionID": "moravia",
+            "TargetRegionID": "meissen_margraviate",
             "FriendlyPower": 244,
             "EnemyPower": 0,
             "ThreatScore": -244,
@@ -67615,8 +68188,8 @@
       "saxony_duchy": {
         "FactionID": "saxony_duchy",
         "Turn": 52,
-        "PlanKind": "defend",
-        "PlanTargetFactionID": "denmark_kingdom",
+        "PlanKind": "consolidate",
+        "PlanTargetFactionID": "",
         "PlanTargetRegionIDs": [
           "saxony"
         ],
@@ -67636,18 +68209,8 @@
             "CriticalThreat": false
           },
           {
-            "EnemyFactionID": "denmark_kingdom",
-            "TargetRegionID": "denmark",
-            "FriendlyPower": 305,
-            "EnemyPower": 0,
-            "ThreatScore": -285,
-            "AtWar": false,
-            "CapitalThreat": false,
-            "CriticalThreat": false
-          },
-          {
             "EnemyFactionID": "hre",
-            "TargetRegionID": "pomerania",
+            "TargetRegionID": "holstein",
             "FriendlyPower": 305,
             "EnemyPower": 0,
             "ThreatScore": -305,
@@ -67792,21 +68355,21 @@
         "CriticalThreat": false,
         "Fronts": [
           {
-            "EnemyFactionID": "norway_kingdom",
-            "TargetRegionID": "norway",
-            "FriendlyPower": 239,
-            "EnemyPower": 289,
-            "ThreatScore": 50,
+            "EnemyFactionID": "denmark_kingdom",
+            "TargetRegionID": "malmo_halland",
+            "FriendlyPower": 0,
+            "EnemyPower": 0,
+            "ThreatScore": 0,
             "AtWar": false,
             "CapitalThreat": false,
             "CriticalThreat": false
           },
           {
-            "EnemyFactionID": "denmark_kingdom",
-            "TargetRegionID": "scania",
-            "FriendlyPower": 239,
-            "EnemyPower": 157,
-            "ThreatScore": -82,
+            "EnemyFactionID": "norway_kingdom",
+            "TargetRegionID": "bohuslan",
+            "FriendlyPower": 0,
+            "EnemyPower": 0,
+            "ThreatScore": 0,
             "AtWar": false,
             "CapitalThreat": false,
             "CriticalThreat": false

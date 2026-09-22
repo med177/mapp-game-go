@@ -1515,25 +1515,6 @@
     ]
   },
   {
-    "id": "army_saxony_1",
-    "owner_id": "saxony_duchy",
-    "region_id": "saxony",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "militia",
-        "count": 4
-      }
-    ]
-  },
-  {
     "id": "army_scotland_1",
     "owner_id": "scotland_kingdom",
     "region_id": "scotland",
@@ -2392,6 +2373,17 @@
       {
         "type_id": "transport",
         "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_edit_159",
+    "owner_id": "saxony_duchy",
+    "region_id": "saxony",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 7
       }
     ]
   }

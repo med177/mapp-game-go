@@ -23121,6 +23121,7 @@
   },
   {
     "id": "area__104",
+    "name": "Vanern Gölü",
     "terrain": "lake",
     "move_cost": 0,
     "polygons": [
@@ -23234,6 +23235,7 @@
   },
   {
     "id": "area__105",
+    "name": "Vattern Gölü",
     "terrain": "lake",
     "move_cost": 0,
     "polygons": [
@@ -23307,6 +23309,7 @@
   },
   {
     "id": "area__106",
+    "name": "Hijalmaren Gölü",
     "terrain": "lake",
     "move_cost": 0,
     "polygons": [
@@ -23356,6 +23359,7 @@
   },
   {
     "id": "area__107",
+    "name": "Malaren Gölü",
     "terrain": "lake",
     "move_cost": 0,
     "polygons": [

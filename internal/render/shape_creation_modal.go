@@ -105,7 +105,7 @@ func (r *Renderer) handleEditNewShapeModalInput() InputAction {
 		r.editTextRunes = r.editTextRunes[:len(r.editTextRunes)-1]
 	}
 	if (r.editTextTarget == editTextShapeID || r.editTextTarget == editTextShapeName) &&
-		r.keyJustPressed(ebiten.KeyA) && editUndoPressed() {
+		r.keyJustPressed(ebiten.KeyA) && editCtrlPressed() {
 		r.editTextRunes = r.editTextRunes[:0]
 		return InputAction{}
 	}

@@ -15,7 +15,6 @@ func (r *Renderer) toggleEditNeighborAddMode() {
 	r.editLandPassageStartSet = false
 	r.editLandPassageSelected = -1
 	r.editLandPassageDragEndpoint = -1
-	r.editLandPassageDragBefore = nil
 	r.editLandPassageDragChanged = false
 	if !r.editNeighborAddMode {
 		r.editNeighborAddFrom = ""
@@ -74,7 +73,6 @@ func (r *Renderer) applyEditNeighborAddMode() {
 		r.editNeighborAddMessage = "komşuluk seçimi iptal edildi"
 		return
 	}
-	before := r.worldSnapshot()
 	changed := false
 	for _, targetID := range r.editNeighborAddTargets {
 		target := r.gs.Regions[targetID]
@@ -98,8 +96,6 @@ func (r *Renderer) applyEditNeighborAddMode() {
 	}
 	if changed {
 		r.requestEditWorldMapRebuild()
-		after := r.worldSnapshot()
-		r.pushWorldSnapshotCommand(before, after)
 		r.editDirty = true
 		r.editNeighborAddMessage = "komşuluklar uygulandı"
 	} else {
@@ -125,29 +121,9 @@ func (r *Renderer) addNeighborBetween(from, to world.RegionID) {
 		r.addTerrainAreaNeighbor(source, target)
 		return
 	}
-	before := r.neighborSnapshot(from, []world.RegionID{to})
 	addNeighborID(source, to)
 	addNeighborID(target, from)
-	after := r.neighborSnapshot(from, []world.RegionID{to})
-	if neighborSnapshotsEqual(before, after) {
-		return
-	}
-	beforeCopy := cloneNeighborSnapshots(before)
-	afterCopy := cloneNeighborSnapshots(after)
-	r.pushEditCommand(editCommand{
-		undo: func(rr *Renderer) {
-			rr.restoreNeighborSnapshots(beforeCopy)
-			rr.editSelectedRegion = from
-			rr.editSelectedSettlement = -1
-			rr.editNeighborAddMessage = "komşuluk geri alındı"
-		},
-		redo: func(rr *Renderer) {
-			rr.restoreNeighborSnapshots(afterCopy)
-			rr.editSelectedRegion = from
-			rr.editSelectedSettlement = -1
-			rr.editNeighborAddMessage = "komşuluk eklendi"
-		},
-	})
+	r.editDirty = true
 	r.editNeighborAddMessage = "komşuluk eklendi"
 }
 
@@ -155,7 +131,6 @@ func (r *Renderer) addNeighborBetween(from, to world.RegionID) {
 // Arazi alanı komşu listesi her senkronizasyonda yeniden üretildiği için
 // manuel eklemeler TerrainArea.ExtraNeighbors üzerinden saklanır.
 func (r *Renderer) addTerrainAreaNeighbor(source, target *world.Region) {
-	before := r.worldSnapshot()
 	changed := false
 	if source.IsTerrainArea {
 		if r.appendTerrainAreaExtraNeighbor(source.TerrainAreaID, target.ID) {
@@ -177,8 +152,6 @@ func (r *Renderer) addTerrainAreaNeighbor(source, target *world.Region) {
 		return
 	}
 	r.requestEditWorldMapRebuild()
-	after := r.worldSnapshot()
-	r.pushWorldSnapshotCommand(before, after)
 	r.editSelectedRegion = source.ID
 	r.editSelectedSettlement = -1
 	r.editNeighborAddMessage = "komşuluk eklendi"

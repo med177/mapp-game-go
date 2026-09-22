@@ -7,6 +7,28 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-22: Edit Mode'da aynı `ShapeID` içindeki bölge odağı taşındığında
+  artık tüm ülke shape rasterı yeniden hesaplanmıyor. WorldMap, shape'in base
+  raster piksellerini cache'liyor; worker mevcut harita kopyasında yalnızca
+  hedef shape'in Voronoi sahipliğini güncelleyip terrain/border/anchor
+  katmanlarını yeniden kuruyor. Gerçek 1300 senaryosunda örnek hedef shape
+  rebuild'i yaklaşık `1.25 s` sürdü; tam map hazırlığı yaklaşık `10 s`.
+  Regression: `TestRebuildShapeRegionAssignmentsOnlyTouchesTargetShape` ve
+  `TestScenarioTerrainAreasSplitPassablePolygonsByBaseRegion`
+  (`internal/render/{mapgen.go,edit_map_worker.go,map_editor.go}`).
+
+- 2026-09-22: Edit Mode bölge ve yerleşim ID değişiklikleri history üretmeden
+  uygulanıyor. Yerleşim ID'si yalnız runtime referanslarını güncelliyor; bölge
+  ID'si ise raster geometrisini yeniden oluşturmadan WorldMap'in ID/index,
+  piksel ve anchor cache'lerini taşıyor. Böylece bu metadata değişikliklerinde
+  Voronoi/shape hesabı çalışmıyor (`internal/render/{map_editor.go,mapgen.go}`).
+
+- 2026-09-22: Edit Mode undo/redo sistemi tamamen kaldırıldı. Kalıcı düzenlemeler
+  doğrudan runtime state'e uygulanıyor; `editDirty`, kaydetme ve çıkış uyarısı
+  korunuyor. Yalnız boya/poligon `İptal` akışı için geçici taslak snapshot'ı
+  tutulabiliyor. Böylece komut stack'i ve kalıcı dünya snapshot kopyaları edit
+  işlemlerini yavaşlatmıyor (`internal/render/{map_editor.go,shape_editor.go}`).
+
 - 2026-09-22: Ordu ve donanma marker'ları `1.5` zoom seviyesinden itibaren tüm
   devletlerde görünür. Daha uzak görünümde oyuncu/vassal realm'i, müttefik ve
   savaş halindeki devletlerin kara ve deniz kuvvetleri korunur; çizim, seçim ve
@@ -3450,12 +3472,12 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Edit mode Voronoi debug overlay | ✅ | Edit mode'da `V` ile aç/kapatılır; seçili/hover bölgenin raster/Voronoi sınırını ve görsel komşularını JSON `neighbors` ile karşılaştırır, merkezler arası çizgiler ve hover koordinat paneli gösterir |
 | Edit mode dirty exit uyarısı | ✅ | `editDirty` true iken ESC ile çıkışta ortak modal açılır; `Kaydet`, `Kaydetmeden Cik`, `Iptal` seçenekleriyle kayıp veri engellenir |
 | Edit mode cleanup | ✅ | `Tip`, `Arazi`, `Sahip` butonları dropdown davranışına göre adlandırıldı; eski cycle helper'ları kaldırıldı |
-| Edit mode undo/redo | ✅ | `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo; settlement ekle/sil/taşı/bölge arası taşı, region center, owner/terrain/type/capital/name değişiklikleri küçük snapshot command'leriyle geri alınır |
+| Edit mode undo/redo | ⛔ | Kullanılmadığı için kaldırıldı; kalıcı edit değişiklikleri doğrudan runtime state'e yazılır, `editDirty` ve kaydetme/çıkış uyarısı korunur |
 | Zaman kilitli bölge açılışı | ✅ | `is_locked=true` ve `unlock_turn>0` olan region aktif tur eşik değerine gelince otomatik açılır; unlock bildirimi gösterilir; load/save sonrası geçmiş unlock'lar senkronlanır |
 | Edit mode bölge metadata editörü | ✅ | Inspector `Harita` sekmesinde region `name_tr`, `name`, `is_locked`, `unlock_turn` ve görsel Voronoi komşularından iki yönlü `neighbors` sync düzenlenir; deniz region seçiminde inspector `Deniz Bolgesi`, yerleşim olmadığını ve pasif `Denizde Yok` buton etiketini açıkça gösterir; settlement odaklı pasif butonlar da bağlama göre `Tip Yok` / `Isim Yok` / `Silinmez` ya da `Tip Sec` / `Isim Sec` / `Sil Sec` etiketine döner; kara/deniz odak noktası renkleri edit modda ayrıdır |
-| Edit mode bölge ekleme/silme | ✅ | `Ctrl+Alt+sol` veya `Bolge Ekle` mevcut shape içinde yeni Voronoi seed region oluşturur; kara ve deniz region'ları seçilip merkezleri taşınabilir, çoğaltılabilir ve silinebilir; `Bolge Sil` seçili region'ı, komşu referanslarını ve o region'daki başlangıç ordularını kaldırır; undo/redo destekli |
+| Edit mode bölge ekleme/silme | ✅ | `Ctrl+Alt+sol` veya `Bolge Ekle` mevcut shape içinde yeni Voronoi seed region oluşturur; kara ve deniz region'ları seçilip merkezleri taşınabilir, çoğaltılabilir ve silinebilir; `Bolge Sil` seçili region'ı, komşu referanslarını ve o region'daki başlangıç ordularını kaldırır |
 | Edit mode geniş veri editörü | ✅ | Inspector `Veri` sekmesinde faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç diplomasi `stance/score`, başlangıç kara ordusu/donanma ekleme-silme ve seçili ordu/donanma birim sayıları düzenlenir; `Birim Tipi` dropdown'ı veri sekmesinde görünür; harita üstünde tüm ordu/donanma sayıları edit mode'da gizlenmeden görünür ve açık fraksiyon renklerinde kontrastlı metinle okunur; limanda demirli filolar liman anchor'ında, denize açılanlar deniz bölgesi anchor'ında çizilir; form `Kaydet` ve Ctrl+S `regions.json`, `factions.json`, `relations.json`, `armies.json` yazar |
-| Edit mode shape paint editor | ✅ | Inspector `Shape` sekmesi seçili kara region'ın `shape_id` verisini sağ mouse drag ile boya/sil düzenler; stroke sırasında yeşil/kırmızı canlı preview overlay ve yardım paneli görünür; stroke bitince mask contour'ları yeniden ring'e çevrilir, `ShapeData` + `Region.Shape` güncellenir, undo/redo world snapshot'a shape verisini de alır; `Kaydet` artık `country_shapes.json` da yazar. Aynı sekmedeki `Bolge Boya/Sil` aracı kara veya deniz region'larında `region_shapes.json` override katmanına kalıcı yazar; ülke dış sınırının dışına taşan boyamalar ile deniz alanı dağılımı restart sonrası korunur ve sonraki stroke'lar eski override piksellerini yanlışlıkla düşürmez. Region tool canlı preview'i stroke başlangıcına göre ayrı overlay çizer ve shape session'ı lazy tuttuğu için yoğun boyama sonrası merkez taşıma/geçişler daha akıcıdır |
+| Edit mode shape paint editor | ✅ | Inspector `Shape` sekmesi seçili kara region'ın `shape_id` verisini sağ mouse drag ile boya/sil düzenler; stroke sırasında yeşil/kırmızı canlı preview overlay ve yardım paneli görünür; stroke bitince mask contour'ları yeniden ring'e çevrilir, `ShapeData` + `Region.Shape` güncellenir; `Kaydet` artık `country_shapes.json` da yazar. Aynı sekmedeki `Bolge Boya/Sil` aracı kara veya deniz region'larında `region_shapes.json` override katmanına kalıcı yazar; ülke dış sınırının dışına taşan boyamalar ile deniz alanı dağılımı restart sonrası korunur ve sonraki stroke'lar eski override piksellerini yanlışlıkla düşürmez. Region tool canlı preview'i stroke başlangıcına göre ayrı overlay çizer ve shape session'ı lazy tuttuğu için yoğun boyama sonrası merkez taşıma/geçişler daha akıcıdır |
 | Ticaret yolu görsel sadeleştirme | ✅ | Harita üstü ticaret çizimi `A->B` ve `B->A` rotalarını tek koridorda birleştirir; `camScale < 0.85` iken yalnızca oyuncuya bağlı hatlar çizilir, etiketler yalnızca yakın zoom'da görünür |
 | Harita modu (Normal/Ticaret) | ✅ | EU4 benzeri harita modu anahtarı eklendi; ticaret koridorları yalnızca `Ticaret` modunda çiziliyor, normal haritada çizgi karmaşası yok |
 | Senaryo bazlı tarihsel ticaret merkezleri | ✅ | Trade map merkezleri senaryo `data/trade_centers.json` içindeki yönlü `links` grafından okunuyor; ana tarihsel yollar `main_route` ile tier merkezlerinden ayrılıyor; koridor akışı merkezler arasında doğrudan değil, akış grafı kısa yolu üzerinden dağıtılıyor; `off_map=true` ile sadece etiket ve bağlantı gösteren dış hat düğümleri (`name_tr`, `world_x`, `world_y`) de JSON’dan tanımlanabiliyor; `unlock_year` alanı sayesinde geç dönem Atlantik/Amerika hatları belirli yıldan önce pasif merkez olarak haritada 0/tur ve gelecek mallarıyla gösteriliyor |

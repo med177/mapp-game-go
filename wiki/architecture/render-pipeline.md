@@ -76,8 +76,8 @@ Edit Mode, yerleşim tipi ve başkent değişikliklerinden sonra
 `world.EnsureRequiredSettlementBuildings` ile minimum altyapıyı otomatik
 senkronize eder: kale yerleşimi `walls`, liman yerleşimi `port`, ulusal başkent
 bölgesi ise `barracks`, `granary`, `temple` ve `market` ister. Yardımcı yalnız
-eksik binaları ekler; Edit Mode snapshot'ları bu otomatik eklemeleri de undo/redo
-ile birlikte taşır (`internal/world/infrastructure.go`,
+eksik binaları ekler; değişiklik doğrudan runtime state'e yazılır ve
+`editDirty` ile kaydetme akışına girer (`internal/world/infrastructure.go`,
 `internal/render/map_editor.go`).
 
 DEV_MODE etkinse seçili AI devletinin bilgi panelinin en altında `AI Stratejisi
@@ -136,6 +136,12 @@ Oyun haritasında tek başına `S` kamera hareketi için aşağı yönü taşır
 hızlı kayıt aksiyonu yalnızca `Ctrl+S` ile üretilir. Böylece klavye kısayolu
 ile sürekli kamera kaydırma ve tek-seferlik kayıt input'u çakışmaz
 (`internal/render/renderer_input.go`).
+
+Edit Mode'da bölge veya yerleşim ID'si değiştirildiğinde harita geometrisi
+yeniden hesaplanmaz ve işlem undo/redo snapshot'ı üretmez. Yerleşim ID'si
+runtime referanslarına uygulanır; bölge ID'si rasterdaki sayısal indeksleri
+koruyarak yalnız ID/index, piksel ve anchor cache anahtarlarını taşır
+(`internal/render/map_editor.go`, `internal/render/mapgen.go`).
 
 Tarih aralığına yeni giren oyuncu komutanları, mevcut tarihsel modal katmanını
 ve aynı Enter/Escape/tıkla kapanış input'unu paylaşan komutan geliş popup'ında
@@ -604,11 +610,12 @@ runtime komutanlarda aynı detay alanı `Düzenle` düğmesiyle isim/portre moda
 açar; modal mevcut kariyer XP'sini ve trait'lerini koruyarak
 `ActionEditCommander` üretir.
 
-Edit Mode Harita sekmesindeki `Başkent Yap` butonu, seçili settlement'ın sahibi olan fraksiyonun `capital_settlement_id` alanını anında günceller ve bekleyen başkent taşımasını temizler. Bu aksiyon, bölgesel ana yerleşimi belirleyen `Ana Yap` (`is_capital`) davranışından ayrıdır; undo/redo world snapshot'ı üzerinden çalışır ve `Kaydet` ile `factions.json` dosyasına yazılır.
+Edit Mode Harita sekmesindeki `Başkent Yap` butonu, seçili settlement'ın sahibi olan fraksiyonun `capital_settlement_id` alanını anında günceller ve bekleyen başkent taşımasını temizler. Bu aksiyon, bölgesel ana yerleşimi belirleyen `Ana Yap` (`is_capital`) davranışından ayrıdır ve `Kaydet` ile `factions.json` dosyasına yazılır.
 
 Edit Mode Harita sekmesindeki `Ardıl Devlet` düğmesi seçili kara bölgesinin
 `successor_faction_id` alanını aynı dropdown sözleşmesiyle değiştirir; atama
-undo/redo ve `regions.json` senaryo kaydıyla korunur. Kampanya bölge paneli, bu
+doğrudan runtime state'e yazılır ve `regions.json` senaryo kaydıyla korunur.
+Kampanya bölge paneli, bu
 metadata'nın işaret ettiği devlet elenmişse `Özgürleştir` düğmesini çizer ve hit-test
 de aynı action-bar geometrisini kullanır. Aksiyon `internal/game/game.go` içinde
 devleti beş milis ve düşük kaynaklarla yeniden etkinleştirir. Savaş sonrası ardıl
@@ -623,9 +630,9 @@ Yerleşim Birimi sekmesindeki `Ana Yap` aksiyonu bir settlement'ı bölgesel mer
 `Başkent Yap` aksiyonu da ulusal başkent olarak işaretlediğinde, kara bölgesinin
 sahibi boş değilse aynı owner kimliği `successor_faction_id` alanına otomatik
 yazılır. Bu eşleme settlement ekleme, silme veya bölgeler arası taşıma sonucunda
-yeni merkez oluştuğunda da uygulanır. Settlement snapshot'ı ardıl devlet alanını
-içerdiği için işlem undo/redo ile birlikte geri alınır
-(`internal/render/map_editor.go`, `internal/render/renderer.go`).
+yeni merkez oluştuğunda da uygulanır. Ardıl devlet alanı doğrudan runtime state'e
+yazılır ve `editDirty` üzerinden senaryo kaydına dahil edilir
+(`internal/render/map_editor.go`).
 
 Savaş raporu sonrasında ardıl metadata'sı için kullanılan üçlü karar paneli,
 `QueueThreeChoiceDialogAfterBattleReport()` ile rapor kapanana kadar kuyruğa alınır.
@@ -644,7 +651,7 @@ Edit Mode input sözleşmesinde settlement konumu sağ tık sürüklemeyle taş�
 Shape ve Bölge boya/sil fırçaları sol tık sürüklemeyle çalışır. Sol tık harita
 seçimi ve diğer editor aksiyonları için korunur. Boya/sil bırakıldığında yalnız
 geçici önizleme ve bekleyen değişiklik tutulur; ilgili araç `Uygula` ile
-kesinleştirilince hesaplama, harita yenileme ve tek undo snapshot'ı üretilir.
+kesinleştirilince hesaplama ve harita yenileme yapılır.
 
 Edit Mode bölge merkezleri `WorldX/WorldY` konumunda artı işaretiyle çizilir.
 Merkez marker'ı raster bölge hit-test'inden önce ortak bir ekran yarıçapıyla
@@ -656,12 +663,12 @@ Edit Mode'da `Bölge Verileri` formu seçili region'ın `regions.json` alanları
 düzenler: adlar, kaynak gelirleri, ticaret kapasitesi, memnuniyet, vergi,
 nüfus, din (ortak combobox), aktif olay ve açılış turu aynı kaydetme işleminde
 güncellenir. Merkez koordinatları bu formda yer almaz; harita üzerindeki merkez
-işareti cursor ile taşınır. Form kaydı tek world snapshot'ı üretir; geçersiz sayısal
-değerler kaydedilmez (`internal/render/region_form.go`).
+işareti cursor ile taşınır. Form değerleri doğrudan runtime state'e yazılır;
+geçersiz sayısal değerler kaydedilmez (`internal/render/region_form.go`).
 
 Edit Mode'da seçili ordu veya filonun `Birim Tipi` dropdown'ı seçildiğinde,
 ordudaki mevcut `Unit.TypeID` değerleri seçilen kara/deniz tipine uygulanır ve
-değişiklik tek bir undo snapshot'ı olarak tutulur.
+değişiklik doğrudan runtime state'e yazılır.
 
 Ana menü ilk açıldığında devam edilebilir autosave/quicksave varsa başlangıç
 focus'u `Devam et` satırına alınır; kayıt yoksa `Yeni Oyun` seçili kalır.
@@ -714,8 +721,8 @@ kesikli çizgi ve iki uç noktasıyla gösterilir (`internal/render/land_passage
 şimdilik yalnız görseldir; `move_cost` ve `defense_bonus` hareket/savaş
 çözümüne bağlanmamıştır. Edit mode `Shape` sekmesindeki `Geçiş Ekle` veya `P`
 iki tıklamalı ekleme modunu açar; `Geçiş Düzenle` mevcut çizginin uç noktalarını
-sürükletir, `Geçiş Sil`/`Delete` seçili geçişi kaldırır. Bu işlemler undo/redo
-world history içinde tutulur. Aynı sekmedeki `Komşu Ekle`, seçili kara bölgeyi
+sürükletir, `Geçiş Sil`/`Delete` seçili geçişi kaldırır. Bu işlemler doğrudan
+runtime state'e uygulanır. Aynı sekmedeki `Komşu Ekle`, seçili kara bölgeyi
 kaynak alıp haritadan seçilen ikinci kara bölgeye karşılıklı `neighbors` kaydı
 ekler; böylece arada deniz olsa bile kara hareket grafiğinde doğrudan bağlantı
 oluşur.
@@ -1097,6 +1104,15 @@ Yerleşim marker sprite'ları beyaz daire arka planıyla aynı `(sx, sy)` merkez
 
 Edit mode'da `world_x/world_y` merkezleri ayrı işaretlerle çizilir. Kara ve deniz bölgesi odak noktaları farklı renktedir; deniz seçiliyken odak işareti kara seçiminden farklı mavi/camgöbeği tona döner. Shift + sol sürükleme bu koordinatları değiştirir; Voronoi debug overlay'i ayrıntılı piksel teşhisi için raster `BoundaryPixels` kullanmaya devam ederken normal sınır görünümü vektör kontur cache'inden çizilir ve fare bırakıldığında cache bir kez yeniden oluşturulur.
 
+Aynı `ShapeID` içindeki bir bölge odağı değiştiğinde Edit Mode worker'ı mevcut
+`WorldMap` kopyasını kullanır. `shapeRasterPixels` cache'i sayesinde yalnızca
+hedef shape'in base raster pikselleri yeni merkezlere göre yeniden dağıtılır;
+diğer shape'lerin polygon containment testi ve deniz BFS'i tekrarlanmaz. Shape
+geometrisi, bölge ekleme/silme veya shape boya işlemi değiştiğinde güvenli tam
+rebuild yolu korunur. Worker sonucu generation kontrolüyle ana döngüde kabul
+edilir ve Ebiten image upload'ı yine ana thread'de yapılır
+(`internal/render/edit_map_worker.go`, `internal/render/mapgen.go`).
+
 ---
 
 ## Input Yönetimi
@@ -1105,7 +1121,7 @@ Edit Mode yerleşim inspector'ındaki `Yerleşim ID` düğmesi mevcut metin giri
 açar. Edit Mode'da elle girilen ID'ler boşlukları kırpıp lowercase'e çevrilir;
 yeni settlement değeri ayrıca global olarak benzersiz ve boşluksuz olmalıdır; değişiklik
 faction başkent/pending başkent ve dock edilmiş filo referanslarıyla birlikte
-uygulanır ve dünya snapshot'ı üzerinden undo/redo yapılabilir.
+uygulanır ve `editDirty` üzerinden senaryo kaydına girer.
 
 `HandleInput()` döner: `InputAction{Kind, ArmyID, TargetArmyID, TargetRegion, TargetFaction, BuildingID, Delta}`
 
@@ -1133,7 +1149,11 @@ Voronoi debug overlay `V` ile açılıp kapanır. Overlay `WorldMap.BoundaryPixe
 
 Edit mode'da `editDirty` true iken ESC doğrudan çıkmaz; genel onay modalı üç seçenekle açılır: `Kaydet` önce `ActionSaveScenarioAndGoMainMenu` üretir, kayıt başarılıysa ana menüye döner; `Kaydetmeden Cik` doğrudan `ActionGoMainMenu` üretir; `Iptal` modalı kapatır.
 
-Undo/redo edit mode içinde `editUndoStack` / `editRedoStack` ile tutulur. Settlement işlemleri yalnızca etkilenen region'ların `settlements[]` snapshot'ını alır; region center değişiklikleri sadece eski/yeni `world_x/world_y`, owner/terrain/type/name/lock/unlock değişiklikleri ilgili alan snapshot'ını tutar. Neighbor sync etkilenen tüm region `neighbors[]` listelerini snapshot'lar; region ekleme/silme, shape paint commit'i ve ordu/donanma ekleme-silme/birim sayısı değişiklikleri region map, order, başlangıç orduları ve `ShapeData` için dünya snapshot'ı kullanır; geniş veri editörü faction/army alanları için küçük alan command'leri üretir. `Ctrl+Z` undo, `Ctrl+Y` veya `Ctrl+Shift+Z` redo üretir; drag işlemleri command'i frame frame değil mouse bırakıldığında tek kez push eder.
+Edit Mode'da kalıcı değişiklikler doğrudan runtime state'e uygulanır; history stack,
+undo/redo command'leri ve `Ctrl+Z`/`Ctrl+Y` kısayolları yoktur. `editDirty` yalnız
+değişikliklerin kaydetme ve çıkış uyarısı için tutulur. Boya ve poligon araçlarının
+`İptal` akışı ise devam eden taslağı geri almak için geçici snapshot kullanabilir;
+bu snapshot kalıcı undo/redo geçmişi değildir.
 
 Menü ve üst paneller fareyle tamamlanabilir: senaryo/fraksiyon/zafer ve kayıt ekranlarında `Geri` düğmesi vardır; diplomasi ve teknoloji panelleri X düğmesiyle kapanır; kayıt silme onayı kart içi `Sil`/`İptal` düğmeleriyle yapılır. Save/load kartında silme onayı açıkken slot adı üst bantta daha küçük çizilir ve onay sorusu ayrı satıra alınır; böylece başlık ile `Silinecek! Emin misiniz?` metni üst üste binmez. Ayarlar ekranında `Ekran Modu` satırı `Tam Ekran`/`Pencereli` seçimini anında uygular ve `saves/settings.json` içine kaydeder; F11 kısayolu da aynı state'i günceller. Müzik/ses efektleri aç-kapat ve her ikisi için `0-100` arası ayrı seviye bulunur. Paylaşılan efektler `assets/sounds/` altından yüklenir; senaryo müziği `scenario.json` içindeki `music.default_playlist` ile başlar ve dosyaları senaryo `musics/` klasöründen okur. Oyun içi müzik HUD'u aktif parçayı gösterir ve `Dur/Cal` ile `Sonr` kontrollerini sunar; ESC menüsünde müzik aç/kapat ve müzik seviyesi hızlıca değiştirilebilir. Pause menüsünde ses seviyesi satırının sol yarısı azaltma (`-10`), sağ yarısı artırma (`+10`) olarak aynı hit-test üzerinden ayrıştırılır.
 
@@ -1229,7 +1249,7 @@ Minimap yalnızca dünya haritasını ve kameranın ekrandaki alanını göstere
 | `renderer.go` | Renderer state'i, yaşam döngüsü, kamera, draw orkestrasyonu ve dünya ikonları |
 | `renderer_input.go` | `HandleInput`, ana input yönlendirme, dünya seçimleri ve kamera kontrolü |
 | `renderer_dialogs.go` | Kuşatma/savaş planı, savaş ilanı, diplomasi teklifi, tarihsel olay ve confirm modal akışları |
-| `map_editor.go` | Edit mode HUD/input, undo-redo, region/settlement/faction/army düzenleme ve snapshot yardımcıları |
+| `map_editor.go` | Edit mode HUD/input, region/settlement/faction/army düzenleme ve geçici taslak snapshot yardımcıları |
 | `trade_overlay.go` | Ticaret merkezi/koridor modeli, rota çizimi, hover ve hit-test akışı |
 | `mapgen.go` | WorldMap cache, poligon doldurma |
 | `map_borders.go` | Raster regionAt kenarlarını sıkıştırılmış kontur geometrisine çevirme, diplomasi/map-mode stil sınıflandırması ve screen-space mesh çizimi |
@@ -1256,8 +1276,9 @@ Minimap yalnızca dünya haritasını ve kameranın ekrandaki alanını göstere
 Edit Mode bölge merkez marker'ları draw, hit-test ve cursor akışlarında ortak
 ekran-geometri cache'ini kullanır; kamera, merkez verisi veya GameState
 değişmediği sürece region map'i tekrar taranmaz. Tekil kara shape merkezlerinde
-marker değişimi raster haritayı yeniden kurmaz; deniz merkezleri veya aynı
-shape'i paylaşan Voronoi bölgeleri raster rebuild gerektirebilir.
+marker değişimi raster haritayı yeniden kurmaz; deniz merkezleri tam deniz BFS'i
+gerektirirken aynı shape'i paylaşan Voronoi bölgeleri yalnız cache'lenmiş shape
+alanında kısmi rebuild yapar.
 
 Bölge boya/sil onayı mevcut raster üzerinde lokal override güncellemesi yapar.
 Ülke shape rasterı ve deniz BFS'i yalnızca boya işlemi kara shape gruplarını
@@ -1275,11 +1296,12 @@ hazırlanıyor...” durumu gösterilir.
 Worker toplam süresini sonuçla birlikte taşır ve son süre HUD'da gösterilir.
 Yeni bir state değişikliği veya yükleme eski generation'ı iptal eder; worker
 hatası canlı haritayı değiştirmeden kullanıcıya bildirilir. Yeni bölge oluşturma
-akışı da worker tamamlandıktan sonra ana döngüde görsel komşulukları ve undo
-snapshot'ını tamamlayacak iki aşamalı yapıya geçirilmiştir.
+akışı da worker tamamlandıktan sonra ana döngüde görsel komşulukları tamamlayacak
+iki aşamalı yapıya geçirilmiştir.
 
-Undo/redo harita snapshot'ları da worker rebuild yolunu kullanır. Terrain edit
-iptalinde gereken anlık geri dönüş için ayrı senkron yol korunur. Region paint
+Kalıcı Edit Mode değişikliklerinde undo/redo history yoktur. Terrain edit
+iptalinde gereken anlık geri dönüş için ayrı senkron geçici snapshot yolu korunur.
+Region paint
 lokal yenilemesi stroke dirty-pixel kümesini kullanır; her onayda tüm override
 haritası veya tüm terrain fragment pikselleri yeniden taranmaz. HUD son build
 süresini raster ve post-process bileşenleriyle birlikte gösterir.

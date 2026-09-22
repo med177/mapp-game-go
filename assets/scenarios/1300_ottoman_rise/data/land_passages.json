@@ -76,7 +76,7 @@
   },
   {
     "from": "scania",
-    "to": "sweden",
+    "to": "malmo_halland",
     "type": "strait",
     "move_cost": 1,
     "defense_bonus": 15,

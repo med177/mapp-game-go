@@ -297,7 +297,6 @@ type Renderer struct {
 	editLandPassageStartSet           bool
 	editLandPassageSelected           int
 	editLandPassageDragEndpoint       int
-	editLandPassageDragBefore         []world.LandPassage
 	editLandPassageDragChanged        bool
 	editLandPassageMessage            string
 	editNeighborAddMode               bool
@@ -367,8 +366,6 @@ type Renderer struct {
 	editShapePendingRegionPaintPixels map[int]struct{}
 	editRegionPaintOverrides          map[int]world.RegionID
 	editRegionPaintBaseline           []uint16
-	editUndoStack                     []editCommand
-	editRedoStack                     []editCommand
 	editRegionDragStart               *editRegionCenterSnapshot
 	editCenterMarkers                 []editRegionCenterMarker
 	editCenterMarkersCamX             float64
@@ -385,7 +382,6 @@ type Renderer struct {
 	editMapLastBuildDuration          time.Duration
 	editMapLastRasterDuration         time.Duration
 	editMapLastPostProcessDuration    time.Duration
-	editSettlementDragStart           []editRegionSettlementsSnapshot
 	editFactionForm                   editFactionFormState
 	editRegionForm                    editRegionFormState
 }
@@ -434,11 +430,6 @@ type CameraState struct {
 	Scale float64
 }
 
-type editCommand struct {
-	undo func(*Renderer)
-	redo func(*Renderer)
-}
-
 type editRegionCenterSnapshot struct {
 	Region world.RegionID
 	X      int
@@ -453,13 +444,6 @@ const (
 	editShapeToolRegion
 	editShapeToolTerrainArea
 )
-
-type editRegionSettlementsSnapshot struct {
-	Region             world.RegionID
-	Settlements        []world.Settlement
-	Buildings          []string
-	SuccessorFactionID string
-}
 
 type editWorldSnapshot struct {
 	Regions              map[world.RegionID]*world.Region
@@ -740,8 +724,6 @@ func New(gs *state.GameState) *Renderer {
 		editBoundaryPixelBuf:        make([]int, 0, 4096),
 		editShapeBrushMode:          editShapeBrushPaint,
 		editShapeBrushRadius:        6,
-		editUndoStack:               make([]editCommand, 0, 64),
-		editRedoStack:               make([]editCommand, 0, 64),
 		editRegionPaintOverrides:    make(map[int]world.RegionID),
 		editOwnerDropdown:           gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Sahip Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editSuccessorDropdown:       gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Ardil Devlet Sec", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),

@@ -610,12 +610,9 @@ func (r *Renderer) deleteSelectedTerrainArea() {
 	if idx < 0 || idx >= len(r.gs.TerrainAreas) {
 		return
 	}
-	before := r.worldSnapshot()
 	r.gs.TerrainAreas = append(r.gs.TerrainAreas[:idx], r.gs.TerrainAreas[idx+1:]...)
 	r.editTerrainAreaSelected = -1
 	r.requestEditWorldMapRebuild()
-	after := r.worldSnapshot()
-	r.pushWorldSnapshotCommand(before, after)
 	r.editDirty = true
 }
 
@@ -686,26 +683,11 @@ func (r *Renderer) cycleEditTerrainAreaCost() {
 	if old == next {
 		return
 	}
-	oldAttrition := r.editTerrainAreaAttritionCost
 	r.setTerrainAreaCostValue(areaID, next)
 	r.editTerrainAreaMoveCost = next
 	if next == 0 {
 		r.editTerrainAreaAttritionCost = 0
 	}
-	r.pushEditCommand(editCommand{
-		undo: func(rr *Renderer) {
-			rr.setTerrainAreaCostValue(areaID, old)
-			rr.editTerrainAreaMoveCost = old
-			rr.editTerrainAreaAttritionCost = oldAttrition
-		},
-		redo: func(rr *Renderer) {
-			rr.setTerrainAreaCostValue(areaID, next)
-			rr.editTerrainAreaMoveCost = next
-			if next == 0 {
-				rr.editTerrainAreaAttritionCost = 0
-			}
-		},
-	})
 	// Passable terrain alanları haritaya child fragment olarak dağıtıldığı için
 	// yalnız blokludan geçilebilire geçişte bu pahalı yeniden üretim gerekir.
 	if old == 0 && next != 0 {
@@ -759,55 +741,23 @@ func (r *Renderer) cycleEditTerrainAreaAttrition() {
 			r.editTerrainAreaAttritionCost = next
 			return
 		}
-		changes := make([]terrainAreaAttritionChange, 0)
+		changed := false
 		for i := range r.gs.TerrainAreas {
 			if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
 				if r.gs.TerrainAreas[i].AttritionCost == next {
 					continue
 				}
-				changes = append(changes, terrainAreaAttritionChange{
-					ID: r.gs.TerrainAreas[i].ID, Old: r.gs.TerrainAreas[i].AttritionCost, New: next,
-				})
 				r.gs.TerrainAreas[i].AttritionCost = next
+				changed = true
 			}
 		}
-		if len(changes) > 0 {
+		if changed {
 			r.editTerrainAreaAttritionCost = next
-			r.pushEditCommand(editCommand{
-				undo: func(rr *Renderer) { rr.applyTerrainAreaAttritionChanges(changes, false) },
-				redo: func(rr *Renderer) { rr.applyTerrainAreaAttritionChanges(changes, true) },
-			})
 			r.editDirty = true
 			return
 		}
 	}
 	r.editTerrainAreaAttritionCost = next
-}
-
-type terrainAreaAttritionChange struct {
-	ID  string
-	Old int
-	New int
-}
-
-func (r *Renderer) applyTerrainAreaAttritionChanges(changes []terrainAreaAttritionChange, redo bool) {
-	if r == nil || r.gs == nil {
-		return
-	}
-	for i := range r.gs.TerrainAreas {
-		for _, change := range changes {
-			if r.gs.TerrainAreas[i].ID != change.ID {
-				continue
-			}
-			if redo {
-				r.gs.TerrainAreas[i].AttritionCost = change.New
-			} else {
-				r.gs.TerrainAreas[i].AttritionCost = change.Old
-			}
-			break
-		}
-	}
-	r.syncSelectedTerrainArea(r.editSelectedRegion)
 }
 
 // cycleEditTerrainAreaType, arazi alanı tipini açılır liste açmadan maliyet ve
@@ -848,10 +798,6 @@ func (r *Renderer) cycleEditTerrainAreaType() {
 	}
 	areaID := r.gs.TerrainAreas[areaIndex].ID
 	r.setTerrainAreaTypeValue(areaID, next)
-	r.pushEditCommand(editCommand{
-		undo: func(rr *Renderer) { rr.setTerrainAreaTypeValue(areaID, old) },
-		redo: func(rr *Renderer) { rr.setTerrainAreaTypeValue(areaID, next) },
-	})
 	r.editTerrainAreaMoveCost = r.gs.TerrainAreas[areaIndex].MoveCost
 	r.editTerrainAreaAttritionCost = r.gs.TerrainAreas[areaIndex].AttritionCost
 	r.editDirty = true
@@ -1056,8 +1002,6 @@ func (r *Renderer) applyPendingShapePaint() {
 		rings := shapeMaskToFloatRings(session)
 		applyShapeRingsToState(r.gs, session.ShapeID, rings)
 		r.requestEditWorldMapRebuild()
-		after := r.worldSnapshot()
-		r.pushWorldSnapshotCommand(*before, after)
 		r.editDirty = true
 		if len(rings) == 0 {
 			r.ShowCombatResult("Shape tamamen silindi.")
@@ -1072,13 +1016,9 @@ func (r *Renderer) applyPendingShapePaint() {
 			syncLandShapesFromWorldMapForIDs(r.gs, r.worldMap, pendingLandShapeIDs)
 			r.requestEditWorldMapRebuild()
 		}
-		after := r.worldSnapshot()
-		r.pushWorldSnapshotCommand(*before, after)
 		r.editDirty = true
 	} else if tool == editShapeToolTerrainArea && (r.editShapeStrokeDirty || r.editShapePaintPending) {
 		r.refreshTerrainAreasInEditMap()
-		after := r.worldSnapshot()
-		r.pushWorldSnapshotCommand(*before, after)
 		r.editDirty = true
 	}
 

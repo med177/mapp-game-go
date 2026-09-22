@@ -22,7 +22,7 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 - sağ mouse ile boya/sil fırçası uygulanır
 - mouse bırakılınca yalnız geçici önizleme tutulur; `Uygula` ile mask → ring dönüşümü yapılır
 - `Ctrl+S` / `Kaydet` akışı `country_shapes.json` dosyasını da yazar
-- undo/redo world snapshot içine shape verisini de alır
+- shape değişiklikleri doğrudan runtime state'e yazılır ve `editDirty` ile kayda girer
 
 ## Veri akışı
 
@@ -41,8 +41,8 @@ vazgeçilebilir. ID boşluk içeremez ve mevcut bir
 shape ile çakışamaz. Onaylandığında son tıklanan deniz hücresinde küçük bir
 başlangıç halkasıyla yeni bir `IsSea=false` kara bölgesi ve ona bağlı shape
 oluşturulur. Yeni bölge hemen `Sınır Boya/Sil` araçlarıyla genişletilebilir;
-shape, bölge ve bölge sırası değişikliği tek undo/redo snapshot'ı olarak
-tutulur ve `Kaydet` ile `country_shapes.json` içine yazılır.
+shape, bölge ve bölge sırası değişiklikleri doğrudan runtime state'e yazılır ve
+`Kaydet` ile `country_shapes.json` içine yazılır.
 
 `Bolge Boya/Sil` performans notu:
 - Stroke sırasında `regionAt` canlı olarak güncellenir ama ağır `regionPx` dilim bakımı mouse hareketi başına yapılmaz; bu toplu indeks yenilemesi rebuild aşamasına bırakılır.
@@ -73,8 +73,7 @@ tutulur ve `Kaydet` ile `country_shapes.json` içine yazılır.
 - Stroke sırasında eklenen alanlar yeşil, silinen alanlar kırmızı preview overlay ile gösterilir.
 - Sağ üstte kısa yardım paneli seçili `shape_id`, mod ve kontrol şemasını gösterir.
 - Stroke bırakıldığında yalnız önizleme ve bekleyen mask değişikliği tutulur; aktif
-  aracın `Uygula` düğmesi commit, harita yenileme ve undo snapshot'ını tek seferde
-  üretir.
+  aracın `Uygula` düğmesi commit ve harita yenilemesini tek seferde üretir.
 - Dört boya/sil aracından biri seçildiğinde yalnız seçili araç `Uygula` olarak
   kalır; diğer üçü disabled görünür ve input tüketmez. `Uygula` düğmesi yeşil
   çizilir. Uygulama sonrası aktif araç kapanır ve dört araç yeniden erişilebilir
@@ -88,7 +87,7 @@ tutulur ve `Kaydet` ile `country_shapes.json` içine yazılır.
   doldurur; Ctrl+A ile yeni kimlik girilebilir. Boş veya mevcut bir region ile
   çakışan ID reddedilir. Kabul edilen değişiklik region map anahtarını,
   komşuları, geçişleri, ordu/donanma konumlarını, paint override'larını ve
-  editor seçim state'ini birlikte taşır; undo/redo world snapshot ile korunur.
+  editor seçim state'i ile birlikte runtime state'te tutulur.
 - Deniz region'larında `Yeni Kara Sınırı` düğmesi aktif olur; yeni `shape_id` ve ad girildiğinde seçilen deniz pikselinde küçük bir başlangıç halkası oluşturulur. Yeni shape'e bağlanan deniz bölgesi `Sınır Boya` ile genişletilebilir. Deniz alanı dağılımı için `Bölge Boya/Sil` aracı da aynı `region_shapes.json` override katmanına yazmaya devam eder; kara region'larda ise `Yeni Kara Sınırı` pasiftir.
 
 ## Sınırlamalar

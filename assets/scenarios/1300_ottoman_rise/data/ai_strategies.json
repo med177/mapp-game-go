@@ -2961,14 +2961,14 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "saxony",
+              "region_id": "saxony_lower",
               "value": 96
             }
           ],
           "priority": 96,
           "commitment": 68,
           "readiness_regions": [
-            "saxony"
+            "saxony_lower"
           ]
         }
       ]

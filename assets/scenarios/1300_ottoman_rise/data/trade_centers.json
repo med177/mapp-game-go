@@ -624,7 +624,7 @@
       ]
     },
     {
-      "region_id": "saxony",
+      "region_id": "saxony_lower",
       "tier": "secondary",
       "links": [
         {
@@ -642,7 +642,7 @@
       "tier": "secondary",
       "links": [
         {
-          "region_id": "saxony",
+          "region_id": "saxony_lower",
           "type": "land"
         }
       ]
@@ -719,12 +719,12 @@
       "tier": "secondary",
       "links": [
         {
-          "region_id": "azerbaijan",
-          "type": "land"
-        },
-        {
           "region_id": "astrakhan_region",
           "type": "sea"
+        },
+        {
+          "region_id": "azerbaijan",
+          "type": "land"
         }
       ]
     },

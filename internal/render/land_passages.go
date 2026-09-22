@@ -157,7 +157,6 @@ func (r *Renderer) toggleEditLandPassageMode() {
 	r.editLandPassageStartSet = false
 	r.editLandPassageSelected = -1
 	r.editLandPassageDragEndpoint = -1
-	r.editLandPassageDragBefore = nil
 	r.editLandPassageDragChanged = false
 	r.editLandPassageMessage = ""
 	if r.editLandPassageMode {
@@ -179,7 +178,6 @@ func (r *Renderer) toggleEditLandPassageAdjustMode() {
 	r.editLandPassageStartSet = false
 	r.editLandPassageSelected = -1
 	r.editLandPassageDragEndpoint = -1
-	r.editLandPassageDragBefore = nil
 	r.editLandPassageDragChanged = false
 	if r.editLandPassageAdjustMode {
 		r.editLandPassageMessage = "çizgiye veya uç noktasına tıkla"
@@ -202,7 +200,6 @@ func (r *Renderer) handleEditLandPassageAdjustClick(fx, fy float64) {
 		r.editLandPassageMessage = "seçildi; uç noktasını sürükle"
 		return
 	}
-	r.editLandPassageDragBefore = cloneLandPassages(r.gs.LandPassages)
 	r.editLandPassageDragChanged = false
 	r.editLandPassageMessage = "uç noktası taşınıyor"
 }
@@ -245,30 +242,16 @@ func (r *Renderer) finishEditLandPassageDrag() {
 	if r.editLandPassageDragEndpoint < 0 {
 		return
 	}
-	before := r.editLandPassageDragBefore
-	after := cloneLandPassages(r.gs.LandPassages)
 	index := r.editLandPassageSelected
 	changed := r.editLandPassageDragChanged
 	r.editLandPassageDragEndpoint = -1
-	r.editLandPassageDragBefore = nil
 	r.editLandPassageDragChanged = false
 	if !changed {
-		r.gs.LandPassages = cloneLandPassages(before)
 		r.editLandPassageMessage = ""
 		return
 	}
-	r.pushEditCommand(editCommand{
-		undo: func(rr *Renderer) {
-			rr.gs.LandPassages = cloneLandPassages(before)
-			rr.editLandPassageSelected = index
-			rr.editLandPassageMessage = "uç noktası geri alındı"
-		},
-		redo: func(rr *Renderer) {
-			rr.gs.LandPassages = cloneLandPassages(after)
-			rr.editLandPassageSelected = index
-			rr.editLandPassageMessage = "uç noktası taşındı"
-		},
-	})
+	r.editDirty = true
+	r.editLandPassageSelected = index
 	r.editLandPassageMessage = "uç noktası taşındı"
 }
 
@@ -278,27 +261,11 @@ func (r *Renderer) deleteSelectedLandPassage() {
 		r.editLandPassageMessage = "önce bir geçiş seç"
 		return
 	}
-	before := cloneLandPassages(r.gs.LandPassages)
-	after := make([]world.LandPassage, 0, len(r.gs.LandPassages)-1)
-	after = append(after, r.gs.LandPassages[:index]...)
-	after = append(after, r.gs.LandPassages[index+1:]...)
-	r.gs.LandPassages = after
+	r.gs.LandPassages = append(r.gs.LandPassages[:index], r.gs.LandPassages[index+1:]...)
 	r.editLandPassageSelected = -1
 	r.editLandPassageDragEndpoint = -1
-	r.editLandPassageDragBefore = nil
 	r.editLandPassageDragChanged = false
-	r.pushEditCommand(editCommand{
-		undo: func(rr *Renderer) {
-			rr.gs.LandPassages = cloneLandPassages(before)
-			rr.editLandPassageSelected = index
-			rr.editLandPassageMessage = "geçiş geri alındı"
-		},
-		redo: func(rr *Renderer) {
-			rr.gs.LandPassages = cloneLandPassages(after)
-			rr.editLandPassageSelected = -1
-			rr.editLandPassageMessage = "geçiş silindi"
-		},
-	})
+	r.editDirty = true
 	r.editLandPassageMessage = "geçiş silindi"
 }
 
@@ -386,7 +353,6 @@ func (r *Renderer) handleEditLandPassageClick(fx, fy float64) {
 
 	wx, wy := r.screenToWorld(fx, fy)
 	endX, endY := scenarioCoordsFromWorld(wx, wy)
-	before := cloneLandPassages(r.gs.LandPassages)
 	r.gs.LandPassages = append(r.gs.LandPassages, world.LandPassage{
 		From:         from,
 		To:           rid,
@@ -396,17 +362,7 @@ func (r *Renderer) handleEditLandPassageClick(fx, fy float64) {
 		Start:        &start,
 		End:          &[2]int{endX, endY},
 	})
-	after := cloneLandPassages(r.gs.LandPassages)
-	r.pushEditCommand(editCommand{
-		undo: func(rr *Renderer) {
-			rr.gs.LandPassages = cloneLandPassages(before)
-			rr.editLandPassageMessage = "geçiş geri alındı"
-		},
-		redo: func(rr *Renderer) {
-			rr.gs.LandPassages = cloneLandPassages(after)
-			rr.editLandPassageMessage = "geçiş eklendi"
-		},
-	})
+	r.editDirty = true
 	r.editLandPassageMessage = "geçiş eklendi"
 }
 

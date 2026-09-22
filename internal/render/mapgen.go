@@ -79,6 +79,7 @@ type WorldMap struct {
 	regionIDs          []world.RegionID // regionIDs[0] = "" (boş)
 	regionIdx          map[world.RegionID]uint16
 	regionPx           map[world.RegionID][]int
+	shapeRasterPixels  map[string][]int // shape icindeki base raster pikselleri
 	regionAnchor       map[world.RegionID][2]int
 	settlementAnchor   map[settlementAnchorKey][2]int
 	primarySettlement  map[world.RegionID][2]int
@@ -125,6 +126,7 @@ func newWorldMapBase(gs *state.GameState, withImage bool) *WorldMap {
 		regionIDs:         []world.RegionID{""}, // indeks 0 = boş
 		regionIdx:         make(map[world.RegionID]uint16),
 		regionPx:          make(map[world.RegionID][]int),
+		shapeRasterPixels: make(map[string][]int),
 		regionAnchor:      make(map[world.RegionID][2]int),
 		settlementAnchor:  make(map[settlementAnchorKey][2]int),
 		primarySettlement: make(map[world.RegionID][2]int),
@@ -183,14 +185,17 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 		setProgress(55)
 	}
 	wm.buildSeaRegions(gs)
+	wm.rebuildShapeRasterCache(gs)
 	if setProgress != nil {
 		setProgress(72)
 	}
 	// region_shapes.json paint overrides'larını kalıcı olarak uygula
-	if includeRegionPaintOverrides && len(gs.RegionPaintOverrides) > 0 {
+	if includeRegionPaintOverrides {
 		wm.baseRegionAt = make([]uint16, len(wm.regionAt))
 		copy(wm.baseRegionAt, wm.regionAt)
-		wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
+		if len(gs.RegionPaintOverrides) > 0 {
+			wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
+		}
 	}
 	// Arazi alanları her zaman son katman olarak boyanır; bu sayede altındaki
 	// bölge/deniz boya override'ları alan seçimini ve boyasını ezemez.
@@ -364,6 +369,62 @@ func (wm *WorldMap) MarkDirty() {
 	wm.ownerDirty = true
 	wm.signatureValid = false
 }
+
+// renameRegionID, raster geometrisine dokunmadan WorldMap'in ID tabanlı
+// cache'lerini yeni bölge ID'sine taşır. Piksel sahipliği ve border segmentleri
+// sayısal region index kullandığı için bunların yeniden hesaplanması gerekmez.
+func (wm *WorldMap) renameRegionID(oldID, newID world.RegionID) {
+	if wm == nil || oldID == "" || newID == "" || oldID == newID {
+		return
+	}
+	if _, exists := wm.regionIdx[newID]; exists {
+		return
+	}
+	if wm.selected == oldID {
+		wm.selected = newID
+	}
+
+	if idx, ok := wm.regionIdx[oldID]; ok {
+		delete(wm.regionIdx, oldID)
+		wm.regionIdx[newID] = idx
+		if int(idx) < len(wm.regionIDs) {
+			wm.regionIDs[idx] = newID
+		}
+	} else {
+		for idx, rid := range wm.regionIDs {
+			if rid == oldID {
+				wm.regionIDs[idx] = newID
+				if wm.regionIdx == nil {
+					wm.regionIdx = make(map[world.RegionID]uint16)
+				}
+				wm.regionIdx[newID] = uint16(idx)
+				break
+			}
+		}
+	}
+
+	if pixels, ok := wm.regionPx[oldID]; ok {
+		delete(wm.regionPx, oldID)
+		wm.regionPx[newID] = pixels
+	}
+	if anchor, ok := wm.regionAnchor[oldID]; ok {
+		delete(wm.regionAnchor, oldID)
+		wm.regionAnchor[newID] = anchor
+	}
+	if anchor, ok := wm.primarySettlement[oldID]; ok {
+		delete(wm.primarySettlement, oldID)
+		wm.primarySettlement[newID] = anchor
+	}
+	for key, anchor := range wm.settlementAnchor {
+		if key.Region != oldID {
+			continue
+		}
+		delete(wm.settlementAnchor, key)
+		key.Region = newID
+		wm.settlementAnchor[key] = anchor
+	}
+}
+
 func (wm *WorldMap) RegionPixels(rid world.RegionID) []int { return wm.regionPx[rid] }
 func (wm *WorldMap) Image() *ebiten.Image                  { return wm.img }
 
@@ -935,6 +996,81 @@ func (wm *WorldMap) buildCountryShapes(gs *state.GameState, shapes map[string]co
 			wm.rasterizeRegionRing(gs, regions, ring)
 		}
 	}
+	return true
+}
+
+// rebuildShapeRasterCache stores the pixels that belong to each land shape
+// before region-paint overrides and terrain areas are applied. Region centers
+// can then be moved without rasterizing every shape again.
+func (wm *WorldMap) rebuildShapeRasterCache(gs *state.GameState) {
+	if wm == nil || gs == nil {
+		return
+	}
+	cache := make(map[string][]int)
+	for rid, pixels := range wm.regionPx {
+		region := gs.Regions[rid]
+		if region == nil || region.IsSea || region.IsTerrainArea || region.ShapeID == "" {
+			continue
+		}
+		cache[region.ShapeID] = append(cache[region.ShapeID], pixels...)
+	}
+	for shapeID := range cache {
+		sort.Ints(cache[shapeID])
+	}
+	wm.shapeRasterPixels = cache
+}
+
+// rebuildShapeRegionAssignments, static shape geometrisini yeniden taramadan
+// yalnızca verilen shape'in Voronoi sahipliğini yeni merkezlere göre günceller.
+// Cache, region-paint ve terrain katmanlarından önceki base rastera aittir.
+func (wm *WorldMap) rebuildShapeRegionAssignments(gs *state.GameState, shapeID string) bool {
+	if wm == nil || gs == nil || shapeID == "" || len(wm.baseRegionAt) != len(wm.regionAt) {
+		return false
+	}
+	pixels := wm.shapeRasterPixels[shapeID]
+	if len(pixels) == 0 {
+		return false
+	}
+
+	regions := make([]*world.Region, 0)
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.ShapeID != shapeID {
+			continue
+		}
+		regions = append(regions, region)
+	}
+	if len(regions) == 0 {
+		return false
+	}
+	sort.Slice(regions, func(i, j int) bool { return regions[i].ID < regions[j].ID })
+
+	// Önce eski shape sahipliklerini base rasterdan çıkar. Shape geometrisi
+	// değişmediği için cache'teki aynı pikseller yeni merkezlerden birine atanır.
+	for _, pIdx := range pixels {
+		if pIdx >= 0 && pIdx < len(wm.baseRegionAt) {
+			wm.baseRegionAt[pIdx] = 0
+		}
+	}
+	copy(wm.regionAt, wm.baseRegionAt)
+	wm.rebuildRegionPixelsFromAssignments()
+
+	for _, pIdx := range pixels {
+		if pIdx < 0 || pIdx >= len(wm.regionAt) {
+			continue
+		}
+		region := nearestShapeRegion(regions, pIdx%WorldW, pIdx/WorldW)
+		idx := wm.ensureRegionIndex(region.ID)
+		wm.regionAt[pIdx] = idx
+		wm.baseRegionAt[pIdx] = idx
+		if !wm.hasBgImage {
+			col := terrainBaseColor(region.Terrain, pIdx%WorldW, pIdx/WorldW, string(region.ID))
+			wm.basePixels[pIdx*4] = col.R
+			wm.basePixels[pIdx*4+1] = col.G
+			wm.basePixels[pIdx*4+2] = col.B
+			wm.basePixels[pIdx*4+3] = 255
+		}
+	}
+	wm.rebuildRegionPixelsFromAssignments()
 	return true
 }
 

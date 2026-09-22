@@ -751,9 +751,9 @@
       {
         "id": "brandenburg_main",
         "name_tr": "Brandenburg",
-        "x": 749,
-        "y": 244,
-        "type": "city",
+        "x": 753,
+        "y": 242,
+        "type": "fortress",
         "is_center": true,
         "population": 47
       },
@@ -766,26 +766,10 @@
         "population": 22
       },
       {
-        "id": "saxony_dresden",
-        "name_tr": "Dresden",
-        "x": 754,
-        "y": 266,
-        "type": "fortress",
-        "population": 22
-      },
-      {
-        "id": "saxony_leipzig",
-        "name_tr": "Leipzig",
-        "x": 737,
-        "y": 257,
-        "type": "city",
-        "population": 44
-      },
-      {
         "id": "saxony_halle",
         "name_tr": "Halle",
-        "x": 729,
-        "y": 253,
+        "x": 735,
+        "y": 246,
         "type": "town",
         "population": 22
       }
@@ -795,37 +779,117 @@
     "region_id": "saxony",
     "settlements": [
       {
-        "id": "saxony_magdeburg",
-        "name_tr": "Magdeburg",
-        "x": 691,
-        "y": 246,
-        "type": "fortress",
-        "population": 15
-      },
-      {
-        "id": "saxony_main",
-        "name_tr": "Saksonya",
-        "x": 685,
-        "y": 227,
+        "id": "saxony_wittenberg",
+        "name_tr": "Wittenberg",
+        "x": 726,
+        "y": 252,
         "type": "city",
-        "is_center": true,
         "population": 59
       },
       {
+        "id": "saxony_magdeburg",
+        "name_tr": "Magdeburg",
+        "x": 702,
+        "y": 244,
+        "type": "fortress",
+        "is_center": true,
+        "population": 15
+      }
+    ]
+  },
+  {
+    "region_id": "meissen_margraviate",
+    "settlements": [
+      {
+        "id": "saxony_dresden",
+        "name_tr": "Dresden",
+        "x": 745,
+        "y": 265,
+        "type": "fortress",
+        "is_center": true,
+        "population": 22
+      },
+      {
+        "id": "saxony_leipzig",
+        "name_tr": "Leipzig",
+        "x": 716,
+        "y": 269,
+        "type": "city",
+        "population": 44
+      }
+    ]
+  },
+  {
+    "region_id": "saxony_lower",
+    "settlements": [
+      {
         "id": "saxony_hamburg",
         "name_tr": "Hamburg",
-        "x": 674,
-        "y": 216,
-        "type": "city",
+        "x": 672,
+        "y": 218,
+        "type": "port",
+        "is_center": true,
         "population": 59
       },
       {
         "id": "saxony_lubeck",
         "name_tr": "Lübeck",
-        "x": 690,
-        "y": 209,
-        "type": "city",
+        "x": 692,
+        "y": 216,
+        "type": "port",
         "population": 59
+      },
+      {
+        "id": "westphalia_hannover",
+        "name_tr": "Hannover",
+        "x": 666,
+        "y": 238,
+        "type": "fortress",
+        "population": 33
+      }
+    ]
+  },
+  {
+    "region_id": "schleswig",
+    "settlements": [
+      {
+        "id": "schleswig_castle",
+        "name_tr": "Schleswig",
+        "x": 670,
+        "y": 200,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "holstein",
+    "settlements": [
+      {
+        "id": "holstein_siegesburg",
+        "name_tr": "Siegesburg",
+        "x": 684,
+        "y": 214,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "holstein_settlement_2",
+        "name_tr": "Burg Travemünde",
+        "x": 693,
+        "y": 210,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "holstein_harburg",
+        "name_tr": "Harburg Kalesi",
+        "x": 672,
+        "y": 222,
+        "type": "fortress",
+        "population": 0
       }
     ]
   },
@@ -833,35 +897,43 @@
     "region_id": "bavaria",
     "settlements": [
       {
-        "id": "bavaria_augsburg",
-        "name_tr": "Augsburg",
-        "x": 713,
-        "y": 316,
-        "type": "town",
-        "population": 35
-      },
-      {
         "id": "bavaria_munich",
         "name_tr": "Münih",
-        "x": 722,
-        "y": 322,
+        "x": 716,
+        "y": 318,
         "type": "fortress",
         "is_center": true,
         "population": 70
       },
       {
+        "id": "bavaria_regensburg",
+        "name_tr": "Regensburg",
+        "x": 720,
+        "y": 304,
+        "type": "town",
+        "population": 35
+      },
+      {
         "id": "bavaria_nuremberg",
         "name_tr": "Nürnberg",
-        "x": 712,
-        "y": 292,
+        "x": 709,
+        "y": 295,
         "type": "city",
         "population": 70
       },
       {
-        "id": "bavaria_regensburg",
-        "name_tr": "Regensburg",
-        "x": 730,
-        "y": 308,
+        "id": "thuringia_wurzburg",
+        "name_tr": "Würzburg",
+        "x": 678,
+        "y": 293,
+        "type": "fortress",
+        "population": 44
+      },
+      {
+        "id": "bavaria_augsburg",
+        "name_tr": "Augsburg",
+        "x": 694,
+        "y": 315,
         "type": "town",
         "population": 35
       }
@@ -871,64 +943,28 @@
     "region_id": "westphalia",
     "settlements": [
       {
-        "id": "westphalia_main",
-        "name_tr": "Vestfalya",
-        "x": 645,
-        "y": 233,
+        "id": "westphalia_bremen",
+        "name_tr": "Bremen",
+        "x": 650,
+        "y": 226,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "westphalia_munster",
+        "name_tr": "Münster",
+        "x": 628,
+        "y": 244,
         "type": "city",
-        "is_center": true,
         "population": 135
       },
       {
-        "id": "westphalia_hannover",
-        "name_tr": "Hannover",
-        "x": 648,
-        "y": 247,
-        "type": "fortress",
-        "population": 33
-      }
-    ]
-  },
-  {
-    "region_id": "thuringia",
-    "settlements": [
-      {
-        "id": "thuringia_stuttgart",
-        "name_tr": "Stutgart",
-        "x": 657,
-        "y": 311,
-        "type": "city",
-        "is_center": true,
-        "population": 45
-      },
-      {
-        "id": "thuringia_frankfurt",
-        "name_tr": "Frankfurt",
-        "x": 652,
-        "y": 291,
-        "type": "city",
-        "population": 44
-      },
-      {
-        "id": "thuringia_wurzburg",
-        "name_tr": "Würzburg",
-        "x": 675,
-        "y": 285,
-        "type": "fortress",
-        "population": 44
-      }
-    ]
-  },
-  {
-    "region_id": "palatinate",
-    "settlements": [
-      {
-        "id": "palatinate_main",
-        "name_tr": "Dortmund",
-        "x": 624,
-        "y": 259,
-        "type": "city",
-        "population": 66
+        "id": "palatinate_port",
+        "name_tr": "Köln Limanı",
+        "x": 621,
+        "y": 274,
+        "type": "port",
+        "population": 0
       },
       {
         "id": "palatinate_cologne",
@@ -939,11 +975,64 @@
         "population": 65
       },
       {
+        "id": "palatinate_main",
+        "name_tr": "Dortmund",
+        "x": 623,
+        "y": 256,
+        "type": "city",
+        "population": 66
+      },
+      {
+        "id": "westphalia_burg_altena",
+        "name_tr": "Burg Altena",
+        "x": 633,
+        "y": 264,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "thuringia",
+    "settlements": [
+      {
+        "id": "turingia_erfurt",
+        "name_tr": "Erfurt",
+        "x": 691,
+        "y": 262,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "thuringia_weimar",
+        "name_tr": "Weimar",
+        "x": 698,
+        "y": 262,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "saxony_settlement_2",
+        "name_tr": "Eisenach",
+        "x": 675,
+        "y": 263,
+        "type": "city",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "palatinate",
+    "settlements": [
+      {
         "id": "palatinate_koblenz",
         "name_tr": "Koblenz",
         "x": 624,
         "y": 288,
-        "type": "fortress",
+        "type": "city",
+        "is_center": true,
         "population": 16
       },
       {
@@ -952,7 +1041,106 @@
         "x": 596,
         "y": 271,
         "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "palatinate_trier",
+        "name_tr": "Trier",
+        "x": 608,
+        "y": 286,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "palatinate_kaiserburg",
+        "name_tr": "Kaiserburg",
+        "x": 638,
+        "y": 299,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "palatine_mainz",
+        "name_tr": "Mainz",
+        "x": 638,
+        "y": 287,
+        "type": "city",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "hessen",
+    "settlements": [
+      {
+        "id": "thuringia_frankfurt",
+        "name_tr": "Frankfurt",
+        "x": 653,
+        "y": 279,
+        "type": "fortress",
         "is_center": true,
+        "population": 44
+      },
+      {
+        "id": "hessen_heildelberg",
+        "name_tr": "Heildelberg",
+        "x": 650,
+        "y": 293,
+        "type": "city",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "baden_vurtemberg",
+    "settlements": [
+      {
+        "id": "thuringia_stuttgart",
+        "name_tr": "Stutgart",
+        "x": 660,
+        "y": 304,
+        "type": "town",
+        "is_center": true,
+        "population": 45
+      },
+      {
+        "id": "baden_vurtemberg_settlement_2",
+        "name_tr": "Cannstatt",
+        "x": 662,
+        "y": 300,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "baden_vurtemberg_asperg",
+        "name_tr": "Asperg",
+        "x": 657,
+        "y": 296,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "baden_vurtemberg_ulm",
+        "name_tr": "Ulm",
+        "x": 676,
+        "y": 312,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "baden_vurtemberg_tubingen",
+        "name_tr": "Tübingen",
+        "x": 655,
+        "y": 309,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "baden_vurtemberg_hohenzollern",
+        "name_tr": "Hohenzollern Kalesi",
+        "x": 661,
+        "y": 317,
+        "type": "fortress",
         "population": 0
       }
     ]
@@ -1071,8 +1259,8 @@
       {
         "id": "switzerland_basel",
         "name_tr": "Basel",
-        "x": 628,
-        "y": 333,
+        "x": 626,
+        "y": 334,
         "type": "fortress",
         "is_center": true,
         "population": 0
@@ -1565,8 +1753,8 @@
       {
         "id": "poland_gdansk",
         "name_tr": "Gdansk",
-        "x": 849,
-        "y": 204,
+        "x": 847,
+        "y": 205,
         "type": "port",
         "population": 198
       },
@@ -3530,6 +3718,28 @@
     ]
   },
   {
+    "region_id": "gotland_island",
+    "settlements": [
+      {
+        "id": "gotland_island_visborf",
+        "name_tr": "Visborg Kalesi",
+        "x": 841,
+        "y": 143,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "gotland_island_visby",
+        "name_tr": "Visby",
+        "x": 839,
+        "y": 146,
+        "type": "port",
+        "population": 0
+      }
+    ]
+  },
+  {
     "region_id": "kefalonia_island",
     "settlements": [
       {
@@ -3729,11 +3939,31 @@
         "name_tr": "Oslo",
         "x": 691,
         "y": 95,
-        "type": "city",
+        "type": "fortress",
         "is_center": true,
         "population": 122
+      },
+      {
+        "id": "oslo_port",
+        "name_tr": "Oslo Limanı",
+        "x": 686,
+        "y": 105,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "norway_stavanger",
+        "name_tr": "Stavaneger",
+        "x": 604,
+        "y": 106,
+        "type": "city",
+        "population": 0
       }
     ]
+  },
+  {
+    "region_id": "rogaland",
+    "settlements": null
   },
   {
     "region_id": "sweden",
@@ -3746,6 +3976,156 @@
         "type": "city",
         "is_center": true,
         "population": 245
+      },
+      {
+        "id": "sweden_stokholm_port",
+        "name_tr": "Stokholm Limanı",
+        "x": 835,
+        "y": 109,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "sweden_nykopingsherm",
+        "name_tr": "Nyköpingsherm",
+        "x": 808,
+        "y": 119,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "lakes_region",
+    "settlements": [
+      {
+        "id": "lakes_region_orebro",
+        "name_tr": "Örebro Kalesi",
+        "x": 779,
+        "y": 111,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "lakes_region_settlement_2",
+        "name_tr": "Vintrosa",
+        "x": 771,
+        "y": 111,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "lakes_region_koping",
+        "name_tr": "Köping",
+        "x": 783,
+        "y": 107,
+        "type": "city",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "sweden_kalmar",
+    "settlements": [
+      {
+        "id": "sweden_kalmar_borgholm",
+        "name_tr": "Borgholm Kalesi",
+        "x": 809,
+        "y": 155,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "sweden_kalmar_port",
+        "name_tr": "Kalmar Limanı",
+        "x": 807,
+        "y": 152,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "sweden_kalmar",
+        "name_tr": "Kalmar",
+        "x": 800,
+        "y": 149,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "goteborg_coast",
+    "settlements": [
+      {
+        "id": "lodose_castle",
+        "name_tr": "Alvsborg Kalesi",
+        "x": 715,
+        "y": 137,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "lodose_port",
+        "name_tr": "Lödöse Limanı",
+        "x": 719,
+        "y": 128,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "goteborg_coast_lacko",
+        "name_tr": "Lackö Kalesi",
+        "x": 736,
+        "y": 121,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "bohuslan",
+    "settlements": [
+      {
+        "id": "bohuslan_castle",
+        "name_tr": "Bohuslan Kalesi",
+        "x": 714,
+        "y": 132,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "malmo_halland",
+    "settlements": [
+      {
+        "id": "malmo_halland_castle",
+        "name_tr": "Malmö Kalesi",
+        "x": 734,
+        "y": 179,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "malmo_halland_lund",
+        "name_tr": "Lund",
+        "x": 740,
+        "y": 173,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "malmo_halland_falsterbo",
+        "name_tr": "Falsterbo Limanı",
+        "x": 733,
+        "y": 183,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -5068,6 +5448,14 @@
         "y": 411,
         "type": "port",
         "population": 40
+      },
+      {
+        "id": "florence_elba_island",
+        "name_tr": "Elba",
+        "x": 682,
+        "y": 423,
+        "type": "town",
+        "population": 0
       }
     ]
   },
@@ -5348,18 +5736,10 @@
         "population": 91
       },
       {
-        "id": "pomerania_stettin",
-        "name_tr": "Stettin",
-        "x": 748,
-        "y": 222,
-        "type": "port",
-        "population": 66
-      },
-      {
         "id": "pomerania_stralsund",
         "name_tr": "Stralsund",
         "x": 741,
-        "y": 207,
+        "y": 206,
         "type": "port",
         "population": 66
       },
@@ -5370,6 +5750,14 @@
         "y": 210,
         "type": "fortress",
         "population": 22
+      },
+      {
+        "id": "pomerania_stettin",
+        "name_tr": "Stettin",
+        "x": 763,
+        "y": 227,
+        "type": "port",
+        "population": 66
       }
     ]
   },

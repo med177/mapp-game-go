@@ -297,7 +297,6 @@ func (r *Renderer) saveEditRegionForm() {
 		return
 	}
 
-	before := r.worldSnapshot()
 	region.NameTR = form.values[editRegionFieldNameTR]
 	region.Name = form.values[editRegionFieldName]
 	region.BaseGoldIncome = ints[editRegionFieldGold]
@@ -315,8 +314,6 @@ func (r *Renderer) saveEditRegionForm() {
 	region.Religion = strings.TrimSpace(form.values[editRegionFieldReligion])
 	region.ActiveEventID = normalizeEditID(form.values[editRegionFieldActiveEvent])
 	region.UnlockTurn = ints[editRegionFieldUnlockTurn]
-	after := r.worldSnapshot()
-	r.pushWorldSnapshotDataCommand(before, after)
 	r.editDirty = true
 	form.show = false
 	r.editRegionReligionDropdown.Close()
