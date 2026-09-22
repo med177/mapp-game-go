@@ -27,6 +27,10 @@ const (
 	fastAINotificationAutoCloseFrames    = 60
 )
 
+func infoPopupClickDismisses(timer int, popup gameui.Rect, mx, my float64, leftPressed, leftWasPressed bool) bool {
+	return timer > 0 && leftPressed && !leftWasPressed && popup.Hit(mx, my)
+}
+
 func (r *Renderer) diplomacyNotificationAutoCloseFrameLimit() int {
 	if r != nil && r.CurrentSettings.FastAITurns {
 		return fastAINotificationAutoCloseFrames
@@ -151,13 +155,17 @@ func (r *Renderer) HandleInput() InputAction {
 		return InputAction{}
 	}
 
-	if r.combatLogTimer > 0 && r.mouseJustPressed(ebiten.MouseButtonLeft) {
-		mx, my := ebiten.CursorPosition()
-		if r.infoPopupRect().Hit(float64(mx), float64(my)) {
-			r.combatLog = ""
-			r.combatLogTimer = 0
-			return InputAction{}
-		}
+	// Popup dışındaki tıklama harita inputuna ulaşmalıdır. Burada
+	// mouseJustPressed çağrılırsa, popup dışındaki tıklama da prevMouse'a yazılır
+	// ve aşağıdaki handleLeftClick aynı tıklamayı göremez.
+	leftPressed := ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft)
+	leftWasPressed := r.prevMouse[ebiten.MouseButtonLeft]
+	mx, my := ebiten.CursorPosition()
+	if infoPopupClickDismisses(r.combatLogTimer, r.infoPopupRect(), float64(mx), float64(my), leftPressed, leftWasPressed) {
+		r.prevMouse[ebiten.MouseButtonLeft] = true
+		r.combatLog = ""
+		r.combatLogTimer = 0
+		return InputAction{}
 	}
 
 	// Ana menü inputu
