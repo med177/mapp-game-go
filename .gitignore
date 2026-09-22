@@ -46,7 +46,12 @@ _BUG/
 _PLANS/
 
 # Save files
-saves/
+saves/*
+saves/autosave.json
+saves/quicksave.json
+saves/slot1.json
+saves/slot2.json
+saves/slot3.json
 
 # AI Rules
 .claude/
