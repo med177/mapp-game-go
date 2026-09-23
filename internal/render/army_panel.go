@@ -96,9 +96,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	canDisband := canCommand && selectedCount > 0
 
 	// ── Arka plan ve çerçeve ──────────────────────────────────────────
-	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
-	drawPanelBorder(screen, px, py, panelW, panelH)
-	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+	drawArmyDetailPanelFrame(screen, layout)
 	drawArmyPanelCloseButton(screen)
 
 	// ── Başlık satırı ─────────────────────────────────────────────────
@@ -194,10 +192,10 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	canCommand = a.OwnerID == string(gs.PlayerFactionID)
 	if canCommand && canDisband {
 		bx, by, bw, bh := disbandButtonRect(px, py, panelW, len(mergeTargets), hasSplitButton)
-		drawArmyPanelButton(screen, bx, by, bw, bh, "Sil", true)
+		drawArmyPanelButtonWithStyle(screen, bx, by, bw, bh, "Sil", true, dangerTinyButtonStyle)
 	}
 	if canCommand && (canSplit || hasMerge) {
-		drawArmyActionButton(screen, px, py, panelW, "✂ BÖL", canSplit, hasMerge, true)
+		drawArmyActionButton(screen, px, py, panelW, "BÖL", canSplit, hasMerge, true)
 	}
 	if canCommand && hasMerge {
 		for index, targetID := range mergeTargets {
@@ -418,9 +416,7 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 	displayArmy.Commander = fleet.EmbarkedCommander
 	displayArmy.EmbarkedCommander = nil
 
-	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
-	drawPanelBorder(screen, px, py, panelW, panelH)
-	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+	drawArmyDetailPanelFrame(screen, layout)
 	drawArmyPanelCloseButton(screen)
 
 	factionName := "Bilinmeyen Devlet"
@@ -546,9 +542,7 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 	layout := armyPanelGeometry()
 	px, py, panelW, panelH := layout.panelX, layout.panelY, layout.panelW, layout.panelH
 
-	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
-	drawPanelBorder(screen, px, py, panelW, panelH)
-	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+	drawArmyDetailPanelFrame(screen, layout)
 	drawArmyPanelCloseButton(screen)
 
 	factionName := "Bilinmeyen Devlet"
@@ -902,9 +896,8 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	layout := armyPanelGeometry()
 	px, py, panelW, panelH := layout.panelX, layout.panelY, layout.panelW, layout.panelH
 
-	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
-	drawPanelBorder(screen, px, py, panelW, panelH)
-	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+	drawArmyDetailPanelFrame(screen, layout)
+	drawArmyPanelCloseButton(screen)
 
 	factionName := "Bilinmeyen Devlet"
 	factionCol := ColorGold
@@ -1258,19 +1251,40 @@ func drawArmyActionButton(screen *ebiten.Image, px, py, panelW float32, label st
 }
 
 func drawArmyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string, active bool) {
-	bg := color.RGBA{50, 35, 12, 220}
-	border := color.RGBA{160, 120, 40, 200}
-	txt := color.RGBA{220, 185, 70, 255}
-	if !active {
-		bg = color.RGBA{30, 25, 18, 140}
-		border = color.RGBA{55, 45, 28, 120}
-		txt = color.RGBA{90, 80, 55, 160}
+	drawArmyPanelButtonWithStyle(screen, x, y, w, h, label, active, armyPanelActionButtonStyle())
+}
+
+func drawArmyPanelButtonWithStyle(screen *ebiten.Image, x, y, w, h float32, label string, active bool, style gameui.ButtonStyle) {
+	button := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), label)
+	button.Enabled = active
+	gameui.DrawButton(screen, button, style, sharedTextRenderer{})
+}
+
+func armyPanelActionButtonStyle() gameui.ButtonStyle {
+	return gameui.ButtonStyle{
+		BG:             color.RGBA{50, 35, 12, 220},
+		Border:         color.RGBA{160, 120, 40, 200},
+		Text:           color.RGBA{220, 185, 70, 255},
+		DisabledBG:     color.RGBA{30, 25, 18, 140},
+		DisabledBorder: color.RGBA{55, 45, 28, 120},
+		DisabledText:   color.RGBA{90, 80, 55, 160},
+		BorderWidth:    1,
 	}
-	vector.FillRect(screen, x, y, w, h, bg, false)
-	vector.FillRect(screen, x, y, w, 2, color.RGBA{208, 170, 72, 230}, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
-	tw := float32(MeasureText(label, FaceSmall))
-	DrawText(screen, label, float64(x)+float64(w)/2-float64(tw)/2, float64(y)+3, FaceSmall, txt)
+}
+
+func drawArmyDetailPanelFrame(screen *ebiten.Image, layout armyPanelLayout) {
+	panel := gameui.NewPanel(
+		float64(layout.panelX),
+		float64(layout.panelY),
+		float64(layout.panelW),
+		float64(layout.panelH),
+	)
+	gameui.DrawPanel(screen, panel, gameui.PanelStyle{
+		BG:          panelBg,
+		Border:      panelBorder,
+		BorderWidth: 1,
+	})
+	vector.FillRect(screen, layout.panelX, layout.panelY, layout.panelW, 3, panelBorder, false)
 }
 
 func hasArmyMergeActions(gs *state.GameState, aid army.ArmyID) bool {

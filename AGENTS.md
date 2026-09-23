@@ -10,6 +10,9 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 - Dosyaları UTF-8 olarak oku ve yaz; Türkçe karakterleri ASCII'ye dönüştürme.
 - Codex bu çalışma alanında WSL/Ubuntu içinde çalışır. Linux yollarını kullan;
   Windows'a özel kod veya yol gerekiyorsa platform ayrımı kullan.
+- Görsel/UI doğrulamalarında WSL ortamında `xvfb-run`, `xdotool`, ImageMagick
+  `import` ve `wmctrl` araçları kurulu kabul edilir; gerçek pencereyi
+  otomatik açıp ekran görüntüsü alarak incele.
 - Önce ilgili kaynakları, testleri, veri şemasını ve mevcut değişiklikleri
   incele. Varsayım yerine gerçek repo içeriğine dayan.
 - Kapsamı değiştiren daha iyi bir yaklaşım çıkarsa önce gerekçeyi ve etkisini
@@ -57,6 +60,11 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
    CRLF/LF veya satır sonu farkı varsa bunu anlamlı kullanıcı değişikliği
    olarak yorumlama; ilgili dosyalarda `git diff --ignore-space-at-eol` ve
    `git diff --cached --ignore-space-at-eol` ile içerik farkını doğrula.
+   `git status` çıktısında değişiklik görülmesi tek başına kullanıcının
+   çalışma ağacının kirli olduğu anlamına gelmez; değişikliklerin sahipliğini
+   ve görevle ilgisini kanıtlamadan kullanıcıya "kirli çalışma ağacı" deme.
+   Raporlarda yalnızca bu görevde yapılan değişiklikleri ve görev kapsamını
+   etkileyen mevcut değişiklikleri açıkça ayır.
    Yalnızca satır sonu farkı varsa kullanıcıya bunu dosya değişikliği uyarısı olarak üretme.
 2. Arama için `rg`/`rg --files`, JSON/YAML için `jq`/`yq` kullan. Düzenlemeleri
    `apply_patch` ile yap.

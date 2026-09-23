@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-23: Ordu detay panelinin ortak UI geçişi tamamlandı. Oyuncu,
+  taşınan kara ordusu, düşman ve kısmi istihbarat görünümlerinin panel
+  çerçevesi artık `gameui.Panel` üzerinden çiziliyor; `BÖL`, `BİRLEŞTİR` ve
+  `Sil` aksiyonları `gameui.Button` stiline taşındı. Mevcut rect builder'ları
+  korunarak çizim, hit-test ve cursor geometrisi aynı kaldı. Doğrulama:
+  `go test ./internal/render ./internal/ui -count=1` ve `go test ./... -count=1`.
+
 - 2026-09-23: Aktif Savaşlar paneli, aynı koalisyonun devlet-devlet savaş
   ilişkilerini tek savaş satırında birleştiriyor. Satır artık ilan eden ve
   savunan taraf için iki sütun içeriyor; her devlette bayrak, güç, ordu/birim ve

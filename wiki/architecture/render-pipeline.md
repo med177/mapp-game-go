@@ -1020,6 +1020,10 @@ Tam widget ağacı henüz tüm render katmanına uygulanmış değil; ancak ana 
 - panel açıkken arka harita etkileşimi ilgili overlay hit-test'i ile tüketilir.
 - oyuncu turu dışına (`PhaseAITurn`, `PhaseTurnResolution`) geçerken `Renderer.PrepareForTurnAdvance()` seçili bölge/ordu, recruit-diplomasi-teknoloji-ticaret panelleri, event/victory detail popup'ları ve trade map modunu temizler; böylece AI overlay veya modal event/teklif akışında eski oyuncu panelleri ekranda kalmaz. Turn resolution tamamlanıp `PhasePlayerTurn` yeniden açıldığında `SelectPlayerCapitalRegion()` aktif oyuncu başkentinin region'ını aynı seçim akışıyla seçer; geçerli başkent bulunamazsa seçim boş bırakılır.
 - ortak button/dropdown/modal/shape yardım paneli stilleri `internal/render/ui_theme.go` altında tutulur.
+- ordu detay panelinin oyuncu, taşınan kara ordusu, düşman ve kısmi istihbarat
+  varyantları `gameui.Panel` çerçevesini paylaşır; `BÖL`, `BİRLEŞTİR` ve `Sil`
+  düğmeleri `gameui.Button` üzerinden çizilir ve mevcut rect builder'ları
+  input/cursor ile ortak kalır (`internal/render/army_panel.go`).
 - `internal/ui.Button` primitive'i artık cache'li ikon (`IconID`) taşıyabilir; ikon bitmap'leri `assets/ui/icons/*.png` altından yüklenir ve aynı draw path içinde label ile birlikte hizalanır. Böylece close/back/menu/codex ile birlikte modal onayları, trade aksiyonları ve save/delete mini aksiyonlarında da ayrı manuel ikon çizim yolu açılmaz.
 - Aynı primitive'de `ButtonStyle.TextOffsetY` fiilen draw hattında uygulanır; bu sayede farklı yükseklikte footer/modal butonlarında icon ve label baseline'ı ekran bazlı sabitlerle yeniden ayrı ayrı ayarlanmaz.
 - `internal/ui.Manager`, focus edilebilir widget'lar için ileri/geri tab-order davranışını test edilebilir şekilde merkezileştirir.
