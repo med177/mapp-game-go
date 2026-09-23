@@ -99,6 +99,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
 	drawPanelBorder(screen, px, py, panelW, panelH)
 	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+	drawArmyPanelCloseButton(screen)
 
 	// ── Başlık satırı ─────────────────────────────────────────────────
 	var factionName string
@@ -420,6 +421,7 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
 	drawPanelBorder(screen, px, py, panelW, panelH)
 	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+	drawArmyPanelCloseButton(screen)
 
 	factionName := "Bilinmeyen Devlet"
 	factionCol := ColorGold
@@ -547,6 +549,7 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 	vector.FillRect(screen, px, py, panelW, panelH, panelBg, false)
 	drawPanelBorder(screen, px, py, panelW, panelH)
 	vector.FillRect(screen, px, py, panelW, 3, panelBorder, false)
+	drawArmyPanelCloseButton(screen)
 
 	factionName := "Bilinmeyen Devlet"
 	factionCol := ColorGold
@@ -1091,6 +1094,10 @@ func buildArmyPanelCloseButton() gameui.Button {
 	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
 	btn.IconSize = 12
 	return btn
+}
+
+func drawArmyPanelCloseButton(screen *ebiten.Image) {
+	drawUIButtonWidget(screen, buildArmyPanelCloseButton(), tinyButtonStyle)
 }
 
 func buildArmyPanelCommanderUnassignButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {

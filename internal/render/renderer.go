@@ -92,10 +92,11 @@ type Renderer struct {
 	isDragging     bool
 
 	// Seçim
-	SelectedRegion         world.RegionID
-	merchantRouteHighlight world.RegionID
-	SelectedArmy           army.ArmyID
-	showArmyDetailPanel    bool
+	SelectedRegion            world.RegionID
+	merchantRouteHighlight    world.RegionID
+	SelectedArmy              army.ArmyID
+	showArmyDetailPanel       bool
+	armyDetailPanelPreference bool
 	// SelectedEmbarkedArmyFleet, seçili filonun üzerindeki kara ordusunun
 	// bilgi panelini gösterdiğini belirtir. Mekanik seçim ve hareket akışı
 	// yine SelectedArmy üzerinden filoyu kullanmaya devam eder.
@@ -1227,6 +1228,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.merchantRouteHighlight = ""
 	r.SelectedArmy = ""
 	r.showArmyDetailPanel = false
+	r.armyDetailPanelPreference = false
 	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
@@ -1343,6 +1345,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.merchantRouteHighlight = ""
 	r.SelectedArmy = ""
 	r.showArmyDetailPanel = false
+	r.armyDetailPanelPreference = false
 	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
@@ -1925,7 +1928,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	} else if r.warConfirm.show {
 		r.drawWarConfirmDialog(screen)
 	} else if r.warSummary.show {
-		drawWarSummaryDialog(screen, r.warSummary)
+		drawWarSummaryDialog(screen, r.gs, r.warSummary)
 	} else if r.battlePlan.show {
 		r.drawBattlePlanDialog(screen)
 	} else if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
@@ -2038,6 +2041,13 @@ func (r *Renderer) selectedArmyIsPlayerOwned() bool {
 	return ok && a.OwnerID == string(r.gs.PlayerFactionID)
 }
 
+func (r *Renderer) armyDetailPanelStateForSelection() bool {
+	if r.selectedArmyIsPlayerOwned() {
+		return r.armyDetailPanelPreference
+	}
+	return r.SelectedArmy != ""
+}
+
 // playerCanSeeArmyDetails, oyuncunun kendi orduları ile oyuncuya bağlı vassal
 // ordularını tam istihbarat kapsamında tutar. Vassal orduları oyuncu adına
 // hareket ettirilemez; bu yardımcı yalnızca görünürlük/inceleme sözleşmesini
@@ -2143,11 +2153,12 @@ func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	}
 	flagX := float64(x) + 14
 	flagY := float64(y) + 36
-	if r.aiTurnDetail == "Pazar emirleri hazırlanıyor..." {
+	switch r.aiTurnDetail {
+	case "Pazar emirleri hazırlanıyor...":
 		drawTradeOrdersBadge(screen, flagX, flagY, flagSize, flagBG, nil)
-	} else if r.aiTurnDetail == "AI hamleleri hazırlanıyor..." {
+	case "AI hamleleri hazırlanıyor...":
 		drawAIMoveBadge(screen, flagX, flagY, flagSize, flagBG, nil)
-	} else {
+	default:
 		drawFactionFlagBadge(screen, r.aiTurnFactionID, r.aiTurnInitial, flagX, flagY, flagSize, flagBG, nil)
 	}
 
@@ -2169,7 +2180,7 @@ func (r *Renderer) tradeOverlayOccludesPoint(x, y float64) bool {
 	if topStatusPanelHit(x, y) || topDateHudHit(x, y) || musicHudHit(x, y) || bottomActionHudHit(x, y) {
 		return true
 	}
-	if r.SelectedArmy != "" {
+	if r.SelectedArmy != "" && r.selectedArmyIsPlayerOwned() {
 		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(x, y, selected.IsNaval) {
 			return true
 		}
@@ -2222,7 +2233,7 @@ func (r *Renderer) movementPreviewCursorOverPanel(x, y float64) bool {
 	if r.tradeOverlayOccludesPoint(x, y) {
 		return true
 	}
-	if r.SelectedArmy != "" {
+	if r.SelectedArmy != "" && r.selectedArmyIsPlayerOwned() {
 		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(x, y, selected.IsNaval) {
 			return true
 		}

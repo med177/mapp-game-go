@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-09-22
+last_updated: 2026-09-23
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -122,9 +122,24 @@ satırı `Oyuncu / Kendi devletin` olarak işaretlenir. Bu satıra çift tıklam
 genel diplomasi hedefi açma kapısı teklif sayfasını açmaz (`internal/render/diplom.go`).
 
 Aktif Savaşlar paneli `WarLedger.DeclarerFactionID` ve `DefenderFactionID` yönünü
-kullanır: savaşı ilk açan devlet soldaki bayrak, ad, kayıp, güç ve ordu sütunudur;
-savunan bunların sağ karşılığıdır. Bu yön eski save'de bulunmuyorsa panel, korunan
-`Relation.FactionA`/`FactionB` sırasını kullanır (`internal/render/active_wars.go`).
+kullanır: savaşı ilk açan taraf solda, savunan taraf sağda görünür. Aynı savaşın
+müttefikleri, devlet-devlet `StanceWar` ilişkilerinin ayrı kombinasyonları olarak
+çoğaltılmaz; ortak `StanceAllied`/realm üyeliği üzerinden tek satırda iki sütun
+olarak gruplanır. Her sütun devlet adı, bayrak, güç, ordu/birim ve
+`Kayıp (Ordu/Filo): X/Y` bilgisini
+taşır. Her tarafta ilk savaş ilanındaki ana devlet ilk sırada, müttefikler ise
+askerî güçleri yüksekten düşüğe sıralanır; eşit güçte faction ID'si deterministik
+bağlayıcıdır. Satır yüksekliği taraflardaki devlet sayısına göre büyür ve çizim, scroll
+ile hit-test aynı dinamik rect hesabını kullanır. Liste viewport'u scrollbar için
+sağ boşluk bırakır ve `SubImage` clipping ile viewport'a sığmayan son satırın
+görünen kısmını korur. Yön eski save'de bulunmuyorsa korunan
+`Relation.FactionA`/`FactionB` sırası kullanılır
+(`internal/render/active_wars.go`).
+
+Aktif savaş devlet satırları geniş panel içinde 44×44 px bayrak rozeti taşır;
+devlet adı altında güç/kayıp, kara ordu ve donanma bilgileri ayrı satırlarda
+gösterilir. Kara ve deniz ordu/birim sayıları mevcut `Army.IsNaval` state'inden
+ayrıştırılır; iki taraf ayırıcısı ortak sütun geometrisinden 4 px sola kaydırılır.
 
 Edit Mode harita fırçasında aktif `Sınır Boya/Sil` veya `Bölge Boya/Sil`
 aracının işlemi `Shift+sol tık` ve `Shift+drag` ile tersine çevrilebilir.
@@ -790,7 +805,7 @@ Bölge bilgi paneli ilk açıldığında komşu listesi varsayılan olarak `Tüm
 
 Üst-sol durum HUD'u oyuncu devletinin bayrağı ve adıyla birlikte mevcut askeri gücünü (`diplomacy.MilitaryPower`) ve aktif, elenmemiş devletler arasındaki güç sırasını gösterir. Aynı standing bilgisi seçilen devlet bilgi panelindeki `Durum` bölümünde de gösterilir; sıra hesabı ortak `factionMilitaryPowerStanding` helper'ından gelir. Sıralama eşit güçte faction ID'siyle deterministik olarak çözülür (`internal/render/panel.go`). Kaynak HUD'unda tahıl miktarının altında ayrıca `Ambar` satırı bulunur; kapasite ekonomi tick'i status'undan, status henüz oluşmamışsa `GameState.GrainStorageCapacityForFaction()` hesaplamasından alınır.
 
-Üst müzik HUD'unun sağındaki ayrılmış yardımcı düğme şeridinde 36×36 px yuvarlak ortak kılıç ikonu aktif savaş sayısını rozet olarak gösterir; ikon üstten 5 px boşlukla yerleşir ve üzerine gelindiğinde parmak imleci kullanır. Şerit ileride benzer durum düğmelerinin sıralanmasına açıktır. İkon açıldığında `Relations` içindeki `StanceWar` çiftleri `WarLedger` başlangıç turu/kayıpları ve güncel `diplomacy.MilitaryPower`/ordu-birim sayılarıyla `Aktif Savaşlar` paneline dönüştürülür (`internal/render/active_wars.go`). Genişletilmiş savaş satırlarının iki ucunda 50×50 px kare faction bayrak alanı bulunur; mevcut savaş adı, süre, kayıp, güç ve ordu metinleri iki bayrağın arasındaki merkez kolonda hizalanır. Bayrak asset'i yoksa ortak baş harf fallback'i kullanılır. Satıra tıklamak kamerayı iki tarafın başkentleri arasındaki harita noktasına taşır; başkent bulunamazsa deterministic faction bölgesi fallback'i kullanılır. Panel kapalıyken kendi eski rect'i harita hit-test'ini engellemez. Panel, sağdaki olay logunun soluna 12 px boşlukla yerleşir; böylece olay logunu kapatmaz. Bu panel modal değildir: yalnız kendi yüzeyindeki kapatma/tekerlek/input'u tüketir; panel dışındaki harita tıklaması ve orta tuş sürüklemesi devam eder.
+Üst müzik HUD'unun sağındaki ayrılmış yardımcı düğme şeridinde 36×36 px yuvarlak ortak kılıç ikonu aktif savaş sayısını rozet olarak gösterir; ikon üstten 5 px boşlukla yerleşir ve üzerine gelindiğinde parmak imleci kullanır. Şerit ileride benzer durum düğmelerinin sıralanmasına açıktır. İkon açıldığında `Relations` içindeki `StanceWar` çiftleri `WarLedger` başlangıç turu/kayıpları ve güncel `diplomacy.MilitaryPower`/ordu-birim sayılarıyla `Aktif Savaşlar` paneline dönüştürülür (`internal/render/active_wars.go`). Taraf özetinde kara ordu ve donanma sayıları ile `Kayıp (Ordu/Filo): X/Y` toplamı ayrı gösterilir; eski save'lerde tür ayrımı olmayan toplam kayıplar kara ordusu hanesine alınır. Genişletilmiş savaş satırlarının iki ucunda 50×50 px kare faction bayrak alanı bulunur; mevcut savaş adı, süre, kayıp, güç ve ordu metinleri iki bayrağın arasındaki merkez kolonda hizalanır. Bayrak asset'i yoksa ortak baş harf fallback'i kullanılır. Satıra tıklamak kamerayı iki tarafın başkentleri arasındaki harita noktasına taşır; başkent bulunamazsa deterministic faction bölgesi fallback'i kullanılır. Panel kapalıyken kendi eski rect'i harita hit-test'ini engellemez. Panel, sağdaki olay logunun soluna 12 px boşlukla yerleşir; böylece olay logunu kapatmaz. Bu panel modal değildir: yalnız kendi yüzeyindeki kapatma/tekerlek/input'u tüketir; panel dışındaki harita tıklaması ve orta tuş sürüklemesi devam eder.
 
 Devlet bilgi paneli açıkken yeni bir bölge seçilirse panel açık tutulur ve `SelectedRegion` bölgesinin `OwnerID` değerindeki devlete senkronlanır. Aynı devletin bölgeleri arasında geçiş panel scroll'unu korur; farklı devlete geçiş panel içeriğini baştan başlatır (`internal/render/renderer_input.go`).
 

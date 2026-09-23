@@ -29,6 +29,12 @@ func (g *Game) shouldOfferPostWarVassalization(attackerID, defenderID faction.Fa
 	if g == nil || g.gs == nil || targetRegion == nil || attackerID == "" || defenderID == "" || attackerID == defenderID {
 		return false
 	}
+	// Deniz savaşı bir kara bölgesinin fethi değildir. Deniz bölgelerinde
+	// OwnerID kalıntısı bulunsa bile savaş sonrası ilhak/vassallık paneli
+	// açılmamalıdır.
+	if targetRegion.IsSea {
+		return false
+	}
 	if g.gs.PlayerFactionID != attackerID {
 		return false
 	}
@@ -45,7 +51,16 @@ func (g *Game) queueConquestDecision(attackerID faction.FactionID, targetRegion 
 	if g == nil || g.gs == nil || g.renderer == nil || targetRegion == nil {
 		return false
 	}
+	if targetRegion.IsSea {
+		return false
+	}
 	defenderID := faction.FactionID(targetRegion.OwnerID)
+	// Kendi kuşatılmış bölgemizi kurtarmak bir fetih değildir. Özellikle
+	// bölgede elenmiş bir ardıl devlet tanımı kalmışsa, aşağıdaki ardıl karar
+	// dalı aksi halde yanlışlıkla ilhak/vassallık paneli açabilir.
+	if defenderID == "" || defenderID == attackerID {
+		return false
+	}
 	successorID := faction.FactionID(targetRegion.SuccessorFactionID)
 	if successorID != "" && !g.gs.CanRestoreSuccessorAtRegion(targetRegion) {
 		// Ardıl devlet hâlâ oyundaysa veya geçersiz bir state taşıyorsa,

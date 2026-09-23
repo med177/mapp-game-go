@@ -54,11 +54,27 @@ func (g *Game) buildWarSummarySide(label string, primaryRoot faction.FactionID, 
 				role = rootRole
 			}
 			strength := diplomacy.MilitaryPower(g.gs, memberID)
+			metrics := g.warSummaryFactionMetrics(memberID)
 			side.TotalStrength += strength
+			side.TotalArmies += metrics.armies
+			side.TotalLandUnits += metrics.landUnits
+			side.TotalNavalUnits += metrics.navalUnits
+			side.TotalRegions += metrics.regions
+			side.TotalGold += metrics.gold
+			side.TotalGrain += metrics.grain
+			side.TotalGoldIncome += metrics.goldIncome
+			side.TotalGoldNet += metrics.goldNet
 			side.Participants = append(side.Participants, render.WarSummaryParticipant{
-				NameTR:   g.factionNameTR(string(memberID)),
-				RoleTR:   role,
-				Strength: strength,
+				FactionID:   memberID,
+				NameTR:      g.factionNameTR(string(memberID)),
+				RoleTR:      role,
+				Strength:    strength,
+				ArmyCount:   metrics.armies,
+				LandUnits:   metrics.landUnits,
+				NavalUnits:  metrics.navalUnits,
+				RegionCount: metrics.regions,
+				Gold:        metrics.gold,
+				Grain:       metrics.grain,
 			})
 		}
 	}
@@ -72,6 +88,45 @@ func (g *Game) buildWarSummarySide(label string, primaryRoot faction.FactionID, 
 		side.Refused = append(side.Refused, outcome.NameTR)
 	}
 	return side
+}
+
+type warSummaryFactionMetrics struct {
+	armies     int
+	landUnits  int
+	navalUnits int
+	regions    int
+	gold       int
+	grain      int
+	goldIncome int
+	goldNet    int
+}
+
+func (g *Game) warSummaryFactionMetrics(fid faction.FactionID) warSummaryFactionMetrics {
+	metrics := warSummaryFactionMetrics{}
+	if g == nil || g.gs == nil || fid == "" {
+		return metrics
+	}
+	metrics.regions = len(g.gs.LandRegionsOwnedBy(fid))
+	if f := g.gs.Factions[fid]; f != nil {
+		metrics.gold = f.Gold
+		metrics.grain = f.Grain
+	}
+	if status, ok := g.gs.GoldEconomy[fid]; ok {
+		metrics.goldIncome = status.Income
+		metrics.goldNet = status.NetChange
+	}
+	for _, candidate := range g.gs.Armies {
+		if candidate == nil || candidate.OwnerID != string(fid) {
+			continue
+		}
+		metrics.armies++
+		if candidate.IsNaval {
+			metrics.navalUnits += len(candidate.Units)
+			continue
+		}
+		metrics.landUnits += len(candidate.Units) + len(candidate.EmbarkedUnits)
+	}
+	return metrics
 }
 
 func warBalanceLabelTR(attackerStrength, defenderStrength int) string {

@@ -549,6 +549,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if r.showArmyDetailPanel && r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
 		r.SelectedArmy = ""
 		r.showArmyDetailPanel = false
+		r.armyDetailPanelPreference = false
 		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()
 		return InputAction{}
@@ -677,9 +678,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{Kind: ActionOpenImperialPanel}
 	}
-	if r.SelectedArmy != "" {
+	if r.SelectedArmy != "" && r.selectedArmyIsPlayerOwned() {
 		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(fx, fy, selected.IsNaval) {
 			r.showArmyDetailPanel = !r.showArmyDetailPanel
+			r.armyDetailPanelPreference = r.showArmyDetailPanel
 			return InputAction{}
 		}
 	}
@@ -909,9 +911,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
-	// Ordu ve yerleşim ikonları harita bölgesi tıklamasını normalde erken
-	// yakalar. Çift tıklama zamanlamasını ikon hit-testlerinden önce kaydetmek,
-	// rakip ordusu/yerleşimi üzerinde de diplomasi panelinin açılmasını sağlar.
+	// Ordu ve yerleşim ikonları harita bölgesi tıklamasını normalde erken yakalar.
+	// Bölge çift tıklaması ikon seçiminden önce değerlendirilerek mevcut diplomasi
+	// kısayolu korunur; seçili marker üzerinde detay açma sağ tık akışındadır.
 	mapWX, mapWY := r.screenToWorld(fx, fy)
 	mapRID := r.worldMap.RegionAt(int(mapWX), int(mapWY))
 	mapDoubleClick := r.mapRegionDoubleClicked(mapRID)
@@ -929,7 +931,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		r.clearArmySplitSelection()
 		r.SelectedArmy = aid
-		r.showArmyDetailPanel = false
+		r.showArmyDetailPanel = r.armyDetailPanelStateForSelection()
 		r.SelectedEmbarkedArmyFleet = ""
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
@@ -944,7 +946,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		r.clearArmySplitSelection()
 		r.SelectedArmy = aid
-		r.showArmyDetailPanel = false
+		r.showArmyDetailPanel = r.armyDetailPanelStateForSelection()
 		r.SelectedEmbarkedArmyFleet = aid
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
@@ -963,7 +965,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		r.clearArmySplitSelection()
 		r.SelectedArmy = aid
-		r.showArmyDetailPanel = false
+		r.showArmyDetailPanel = r.armyDetailPanelStateForSelection()
 		r.SelectedEmbarkedArmyFleet = ""
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
@@ -1436,8 +1438,26 @@ func (r *Renderer) handleRightClick() InputAction {
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
+	if r.selectedArmyIsPlayerOwned() {
+		if aid, hit := r.navalMissionPendingHitAt(fx, fy); hit && aid == r.SelectedArmy {
+			r.showArmyDetailPanel = true
+			r.armyDetailPanelPreference = true
+			return InputAction{}
+		}
+		if aid, hit := r.embarkedArmyHitAt(fx, fy); hit && aid == r.SelectedArmy {
+			r.showArmyDetailPanel = true
+			r.armyDetailPanelPreference = true
+			return InputAction{}
+		}
+		if aid, hit := r.armyHitAt(fx, fy); hit && aid == r.SelectedArmy {
+			r.showArmyDetailPanel = true
+			r.armyDetailPanelPreference = true
+			return InputAction{}
+		}
+	}
 	armyDetailHUDHit := false
-	if selected := r.gs.Armies[r.SelectedArmy]; selected != nil {
+	if r.selectedArmyIsPlayerOwned() {
+		selected := r.gs.Armies[r.SelectedArmy]
 		armyDetailHUDHit = armyDetailHUDButtonHit(fx, fy, selected.IsNaval)
 	}
 	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || armyDetailHUDHit || musicHudHit(fx, fy) ||

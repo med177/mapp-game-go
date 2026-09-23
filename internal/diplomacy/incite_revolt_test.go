@@ -122,3 +122,34 @@ func TestInciteRevoltRequiresExternalActorAndVassalTarget(t *testing.T) {
 		t.Fatal("kendi vassalı için teşvik engellenmedi")
 	}
 }
+
+func TestInciteRevoltRemainsAvailableWhenVassalRelationIsMaxed(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "venice",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"venice":   {ID: "venice", Gold: 1000},
+			"flanders": {ID: "flanders", OverlordID: "hre"},
+			"hre":      {ID: "hre"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("venice", "flanders"): {
+				FactionA: "flanders", FactionB: "venice", Score: 100, Stance: faction.StanceTrade,
+			},
+		},
+		DiplomacyConfig: scenario.DiplomacyConfig{
+			InciteRevoltGoldCost:        600,
+			InciteRevoltRelationBonus:   10,
+			InciteRevoltOverlordPenalty: 10,
+			InciteRevoltVassalThreshold: 150,
+			InciteRevoltOwnerThreshold:  -100,
+		},
+	}
+
+	if reason := ActionBlockReason(gs, "venice", "flanders", ActionInciteRevolt); reason != "" {
+		t.Fatalf("maksimum ilişkide dış vassala teşvik engellendi: %s", reason)
+	}
+	result := Execute(gs, "venice", "flanders", ActionInciteRevolt)
+	if !result.Applied {
+		t.Fatalf("maksimum ilişkide dış vassala teşvik uygulanmadı: %s", result.Message)
+	}
+}

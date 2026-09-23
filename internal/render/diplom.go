@@ -951,13 +951,15 @@ func diplomacyActionForTarget(gs *state.GameState, target faction.FactionID, ind
 		return ActionNone
 	}
 	base := diplomActions[index].action
-	if gs == nil || target == "" || diplomacy.SameRealm(gs, gs.PlayerFactionID, target) {
+	if gs == nil || target == "" {
 		return base
 	}
 	switch base {
 	case ActionProposeAlliance:
-		if rel := diplomacy.Relation(gs, gs.PlayerFactionID, target); rel != nil && rel.Stance == faction.StanceAllied {
-			return ActionCancelAlliance
+		if !diplomacy.SameRealm(gs, gs.PlayerFactionID, target) {
+			if rel := diplomacy.Relation(gs, gs.PlayerFactionID, target); rel != nil && rel.Stance == faction.StanceAllied {
+				return ActionCancelAlliance
+			}
 		}
 	case ActionProposeTrade:
 		if diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, target) {

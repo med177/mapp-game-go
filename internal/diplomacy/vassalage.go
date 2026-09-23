@@ -337,13 +337,13 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		// değildir. Dış devletler doğrudan vassalla ticaret anlaşması
 		// yapabilir; diğer diplomasi aksiyonları üst devlete yönlendirilir.
 		switch action {
-		case ActionProposeTrade, ActionImproveRelations, ActionSendGift, ActionInciteRevolt:
+		case ActionProposeTrade, ActionCancelTrade, ActionImproveRelations, ActionSendGift, ActionInciteRevolt:
 		default:
 			return factionLabel(gs, targetOverlord) + " ile görüş."
 		}
 	case actorOverlord == target || targetOverlord == actor:
 		switch action {
-		case ActionImproveRelations, ActionSendGift, ActionProposeTrade:
+		case ActionImproveRelations, ActionSendGift, ActionProposeTrade, ActionCancelTrade:
 		case ActionReleaseVassal, ActionAnnexVassal:
 			if targetOverlord != actor {
 				return "Yalnız doğrudan bağlı devlet yönetilebilir."
@@ -414,9 +414,6 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 			return assessment.BlockReason
 		}
 	case ActionCancelTrade:
-		if sameRealm(gs, actor, target) {
-			return "Ticaret vassallık sürdüğü sürece iptal edilemez."
-		}
 		if !HasTradeRouteBetween(gs, actor, target) {
 			return "Aktif bir ticaret anlaşması yok."
 		}
@@ -450,9 +447,6 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		cost := InciteRevoltGoldCostFor(gs)
 		if actorFaction.Gold < cost {
 			return strconv.Itoa(cost) + " altın gerekiyor."
-		}
-		if score >= 100 {
-			return "İlişki zaten yüksek."
 		}
 	case ActionOfferVassalization:
 		if sameRealm(gs, actor, target) {
@@ -844,6 +838,13 @@ func sanitizeVassalExternalDiplomacy(gs *state.GameState, vassal, root faction.F
 		if rootRel != nil && rootRel.Stance == faction.StanceWar {
 			rel.Stance = faction.StanceWar
 			rel.Score = -80
+			removeTradeRoutesBetween(gs, vassal, other)
+			continue
+		}
+		// Dış devletler vassalla doğrudan ticaret yapabilir. Bu ilişki,
+		// vassallık normalizasyonunda sahibine taşınmamalı veya silinmemeli;
+		// aksi halde save/load sonrasında rota ve ticaret ilişkisi kaybolur.
+		if rel.Stance == faction.StanceTrade {
 			continue
 		}
 		rel.Stance = faction.StancePeace

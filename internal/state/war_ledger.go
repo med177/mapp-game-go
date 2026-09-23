@@ -46,6 +46,10 @@ type WarLedger struct {
 	InitialRegionsB    int               `json:"initial_regions_b"`
 	CasualtiesA        int               `json:"casualties_a,omitempty"`
 	CasualtiesB        int               `json:"casualties_b,omitempty"`
+	CasualtiesArmyA    int               `json:"casualties_army_a,omitempty"`
+	CasualtiesArmyB    int               `json:"casualties_army_b,omitempty"`
+	CasualtiesFleetA   int               `json:"casualties_fleet_a,omitempty"`
+	CasualtiesFleetB   int               `json:"casualties_fleet_b,omitempty"`
 	RegionsCapturedA   int               `json:"regions_captured_a,omitempty"`
 	RegionsCapturedB   int               `json:"regions_captured_b,omitempty"`
 	LastBattleTurn     int               `json:"last_battle_turn,omitempty"`
@@ -135,16 +139,22 @@ func (s *GameState) WarLedgerFor(a, b faction.FactionID) *WarLedger {
 // RecordWarCasualties muharebedeki tamamen kaybedilen birlik sayılarını iki
 // savaşan tarafa yazar. Aktif savaş ilişkisi yoksa kayıt üretmez.
 func (s *GameState) RecordWarCasualties(attacker, defender faction.FactionID, attackerLost, defenderLost int) {
-	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, true)
+	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, false, false, true)
+}
+
+// RecordWarCasualtiesByType muharebe kayıplarını toplam sayaçların yanında
+// ordunun kara kuvveti mi yoksa filo mu olduğuna göre ayrı sayaçlara yazar.
+func (s *GameState) RecordWarCasualtiesByType(attacker, defender faction.FactionID, attackerLost, defenderLost int, attackerNaval, defenderNaval bool) {
+	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, attackerNaval, defenderNaval, true)
 }
 
 // RecordWarAttritionCasualties kuşatma baskısı gibi muharebe dışı kayıpları
 // LastBattleTurn değerini değiştirmeden yazar.
 func (s *GameState) RecordWarAttritionCasualties(attacker, defender faction.FactionID, attackerLost, defenderLost int) {
-	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, false)
+	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, false, false, false)
 }
 
-func (s *GameState) recordWarCasualties(attacker, defender faction.FactionID, attackerLost, defenderLost int, markBattle bool) {
+func (s *GameState) recordWarCasualties(attacker, defender faction.FactionID, attackerLost, defenderLost int, attackerNaval, defenderNaval, markBattle bool) {
 	if s == nil || attacker == "" || defender == "" || attacker == defender {
 		return
 	}
@@ -165,9 +175,29 @@ func (s *GameState) recordWarCasualties(attacker, defender faction.FactionID, at
 	if attacker == ledger.FactionA {
 		ledger.CasualtiesA += attackerLost
 		ledger.CasualtiesB += defenderLost
+		if attackerNaval {
+			ledger.CasualtiesFleetA += attackerLost
+		} else {
+			ledger.CasualtiesArmyA += attackerLost
+		}
+		if defenderNaval {
+			ledger.CasualtiesFleetB += defenderLost
+		} else {
+			ledger.CasualtiesArmyB += defenderLost
+		}
 	} else {
 		ledger.CasualtiesB += attackerLost
 		ledger.CasualtiesA += defenderLost
+		if attackerNaval {
+			ledger.CasualtiesFleetB += attackerLost
+		} else {
+			ledger.CasualtiesArmyB += attackerLost
+		}
+		if defenderNaval {
+			ledger.CasualtiesFleetA += defenderLost
+		} else {
+			ledger.CasualtiesArmyA += defenderLost
+		}
 	}
 	if markBattle {
 		ledger.LastBattleTurn = s.Turn

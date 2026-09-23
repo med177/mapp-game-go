@@ -466,7 +466,7 @@ const armyDetailHUDButtonW = float32(116)
 
 func armyDetailHUDButtonRect() [4]float32 {
 	armyRect := BottomButtonRects()[0]
-	x := armyRect[0] - 8 - armyDetailHUDButtonW
+	x := armyRect[0] - 16 - armyDetailHUDButtonW
 	if x < 8 {
 		x = 8
 	}
@@ -803,9 +803,9 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 		status = trimTextToWidth(status, FaceSmall, float64(btn.W)-10)
 		drawUILabel(screen, gameui.Rect{X: btn.X + 5, Y: btn.Y + 32, W: btn.W - 10}, status, color.RGBA{232, 210, 162, 235}, gameui.TextSmall, gameui.TextAlignCenter)
 	}
-	if selectedArmyID != "" {
+	if selectedArmyID != "" && gs != nil {
 		selectedArmy := gs.Armies[selectedArmyID]
-		if selectedArmy != nil {
+		if selectedArmy != nil && selectedArmy.OwnerID == string(gs.PlayerFactionID) {
 			btn := buildArmyDetailHUDButton(selectedArmy.IsNaval)
 			landNormal := color.RGBA{88, 62, 30, 235}
 			landActive := color.RGBA{156, 108, 44, 250}

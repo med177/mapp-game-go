@@ -22,6 +22,7 @@
   - Bazı teknolojilerin gelişmesi için bazı bölgelerin ele geçirilmezi gereksin.
   - müttefike bölge verebilme, müttefike bölge satabilme, müttefikden asker isteme.
   - Vassal bölgelerden gelen haracı görüp artırma eksiltme ile sadakati etkileyebilme. isyan çıkması durumları.
+  - kıyı şeridinden ordu ilerlerken donanmayla ikmal yapılabilmesi. Nakliye gemlerine kaynak malzemesi yüklenmesi ve orduya aktarımı mekaniği.
 
   - Kuşatma sırasında müttefiklerin kendi aralarındaki koordinasyon eksikliği nedeniyle bazı avantajlar veya dezavantajlar oluşabilir.
 

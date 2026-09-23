@@ -119,7 +119,7 @@ func buildEditMapSnapshot(done <-chan struct{}, gs *state.GameState, overrides m
 		// baseMap request aşamasında ayrılmış, worker'a özel snapshot'tır.
 		// Burada ikinci kez büyük raster dizilerini kopyalamaya gerek yok.
 		wm = baseMap
-		if wm == nil || !wm.rebuildShapeRegionAssignments(gs, targetShapeID) {
+		if !wm.rebuildShapeRegionAssignments(gs, targetShapeID) {
 			wm = nil
 		}
 	}

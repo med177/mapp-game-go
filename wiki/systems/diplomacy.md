@@ -234,7 +234,7 @@ Savaş ilanı artık `ExecuteWarDeclaration()` üstünden ayrı bir koalisyon ak
 - Seçilip de çağrıya gelmeyen müttefiğin ittifakı bozulur; ilişki puanı `-10` düşer.
 - Aynı deterministik helper savunan tarafın müttefikleri için de kullanılır; bu yüzden modalda görülen olasılık savaş resolve anındaki gerçek çağrı sonucuyla aynı kaynaktan beslenir.
 - Barıştan sonraki beş turluk `PostPeaceTruceTurns` ateşkesi, doğrudan savaş ilanının yanı sıra müttefik veya imparatorluk savaş çağrılarında da uygulanır; devlet barış yaptığı düşmana karşı başka bir müttefikinin savaşına katılamaz (`AssessWarCall()`, `AssessImperialWarCall()`).
-- Savaş ilanı uygulandığı anda render tarafında ayrı bir `Savaş Özeti` modalı açılır; burada gerçekten katılan coalition üyeleri, katılmayan müttefikler ve iki tarafın toplam askeri gücü gösterilir. Özet kapanmadan hareket, temas ve diğer savaş devam akışları çalıştırılmaz; özet kapandıktan sonra bekleyen normal aksiyon sürdürülür.
+- Savaş ilanı uygulandığı anda render tarafında ayrı bir `Savaş Özeti` modalı açılır; burada gerçekten katılan coalition üyeleri, katılmayan müttefikler ve iki tarafın toplam askeri gücü, ordu/birim, bölge ve ekonomi snapshot'ı gösterilir. AI'nin oyuncuya ilanı `Hızlı Tur` sırasında da modalı açar. Özet yalnız `Tamam` tıklanınca kapanır; kapanmadan hareket, temas ve diğer savaş devam akışları çalıştırılmaz, kapandıktan sonra bekleyen normal aksiyon sürdürülür.
 
 AI savaş ilanı öncesinde iki tarafın koalisyon gücünü projekte eder. Hedefin
 vassalları, hedefin dış müttefikleri ve bu müttefiklerin vassalları savunma

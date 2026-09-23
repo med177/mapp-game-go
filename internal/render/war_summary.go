@@ -4,23 +4,40 @@ import (
 	"image/color"
 	"strings"
 
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type WarSummaryParticipant struct {
-	NameTR   string
-	RoleTR   string
-	Strength int
+	FactionID   faction.FactionID
+	NameTR      string
+	RoleTR      string
+	Strength    int
+	ArmyCount   int
+	LandUnits   int
+	NavalUnits  int
+	RegionCount int
+	Gold        int
+	Grain       int
 }
 
 type WarSummarySide struct {
-	Label         string
-	LeaderNameTR  string
-	TotalStrength int
-	Participants  []WarSummaryParticipant
-	Refused       []string
+	Label           string
+	LeaderNameTR    string
+	TotalStrength   int
+	TotalArmies     int
+	TotalLandUnits  int
+	TotalNavalUnits int
+	TotalRegions    int
+	TotalGold       int
+	TotalGrain      int
+	TotalGoldIncome int
+	TotalGoldNet    int
+	Participants    []WarSummaryParticipant
+	Refused         []string
 }
 
 type WarSummaryReport struct {
@@ -76,7 +93,15 @@ func (r *Renderer) HideWarSummary() {
 }
 
 func buildWarSummaryModal() gameui.Modal {
-	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 980, 560, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panelW := ScreenWidth - 24
+	if panelW <= 0 || panelW > 1100 {
+		panelW = 1100
+	}
+	panelH := ScreenHeight - 24
+	if panelH <= 0 || panelH > 640 {
+		panelH = 640
+	}
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, panelW, panelH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
@@ -105,7 +130,7 @@ func buildWarSummaryLayout() warSummaryLayout {
 }
 
 func warSummaryListRect(sideRect gameui.Rect) gameui.Rect {
-	top := sideRect.Y + 96
+	top := sideRect.Y + 116
 	bottom := sideRect.Y + sideRect.H - 16
 	if bottom < top {
 		bottom = top
@@ -126,7 +151,7 @@ func buildWarSummaryCloseButton() gameui.Button {
 	modal := buildWarSummaryModal()
 	x := modal.Panel.Rect.X + (modal.Panel.Rect.W-btnW)/2
 	y := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 18
-	return gameui.NewButton(x, y, btnW, btnH, "Devam Et").WithIcon(gameui.IconCheck)
+	return gameui.NewButton(x, y, btnW, btnH, "Tamam").WithIcon(gameui.IconCheck)
 }
 
 func warSummaryPopupHit(fx, fy float64) bool {
@@ -138,7 +163,7 @@ func warSummaryCloseHit(fx, fy float64) bool {
 }
 
 func warSummaryVisibleRows(viewport gameui.Rect) int {
-	rows := int(viewport.H / 52)
+	rows := int(viewport.H / 68)
 	if rows < 1 {
 		return 1
 	}
@@ -167,9 +192,9 @@ func clampWarSummaryScroll(entryCount int, viewport gameui.Rect, scroll int) int
 func warSummaryRowRect(viewport gameui.Rect, visibleIndex int) gameui.Rect {
 	return gameui.Rect{
 		X: viewport.X,
-		Y: viewport.Y + float64(visibleIndex*52),
+		Y: viewport.Y + float64(visibleIndex*68),
 		W: viewport.W,
-		H: 44,
+		H: 60,
 	}
 }
 
@@ -197,16 +222,17 @@ func drawWarSummaryScrollbar(screen *ebiten.Image, viewport gameui.Rect, entryCo
 	drawUICardRect(screen, gameui.Rect{X: track.X, Y: thumbY, W: track.W, H: thumbH}, color.RGBA{176, 144, 78, 230}, color.RGBA{214, 190, 120, 210}, 1)
 }
 
-func drawWarSummarySide(screen *ebiten.Image, sideRect, listRect gameui.Rect, side WarSummarySide, scroll int) {
+func drawWarSummarySide(screen *ebiten.Image, gs *state.GameState, sideRect, listRect gameui.Rect, side WarSummarySide, scroll int) {
 	drawUICardRect(screen, sideRect, color.RGBA{20, 14, 10, 234}, color.RGBA{94, 74, 42, 210}, 1)
 	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 14, W: sideRect.W - 28}, side.Label, color.RGBA{255, 220, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 38, W: sideRect.W - 28}, "Lider: "+side.LeaderNameTR, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 58, W: sideRect.W - 28}, "Toplam Güç: "+itoa(side.TotalStrength), color.RGBA{212, 202, 176, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 58, W: sideRect.W - 28}, trimTextToWidth("Güç "+itoa(side.TotalStrength)+"  •  "+itoa(side.TotalArmies)+" ordu  •  "+itoa(side.TotalLandUnits)+" kara / "+itoa(side.TotalNavalUnits)+" deniz birimi", FaceSmall, sideRect.W-28), color.RGBA{212, 202, 176, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 76, W: sideRect.W - 28}, trimTextToWidth("Toplam "+itoa(side.TotalRegions)+" bölge  •  "+itoa(side.TotalGold)+" altın  •  "+itoa(side.TotalGrain)+" tahıl  •  Gelir "+formatSignedAmount(side.TotalGoldIncome)+" / Net "+formatSignedAmount(side.TotalGoldNet)+" altın/tur", FaceSmall, sideRect.W-28), color.RGBA{190, 178, 154, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	refusedText := "Katılmayan yok."
 	if len(side.Refused) > 0 {
 		refusedText = "Katılmayan: " + strings.Join(side.Refused, ", ")
 	}
-	drawUIWrappedLabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 76, W: sideRect.W - 28}, refusedText, color.RGBA{174, 146, 118, 255}, gameui.TextSmall, 17, 2)
+	drawUIWrappedLabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 94, W: sideRect.W - 28}, refusedText, color.RGBA{174, 146, 118, 255}, gameui.TextSmall, 17, 1)
 
 	if len(side.Participants) == 0 {
 		drawUILabel(screen, gameui.Rect{X: listRect.X, Y: listRect.Y + 8, W: listRect.W}, "Aktif katılımcı yok.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
@@ -222,14 +248,25 @@ func drawWarSummarySide(screen *ebiten.Image, sideRect, listRect gameui.Rect, si
 		entry := side.Participants[i]
 		rowRect := warSummaryRowRect(listRect, i-scroll)
 		drawUICardRect(screen, rowRect, color.RGBA{28, 22, 16, 224}, color.RGBA{78, 64, 40, 190}, 1)
-		drawUILabel(screen, gameui.Rect{X: rowRect.X + 12, Y: rowRect.Y + 8, W: rowRect.W - 120}, entry.NameTR, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
-		drawUILabel(screen, gameui.Rect{X: rowRect.X + rowRect.W - 108, Y: rowRect.Y + 8, W: 96}, "Güç "+itoa(entry.Strength), color.RGBA{204, 190, 146, 255}, gameui.TextSmall, gameui.TextAlignEnd)
-		drawUILabel(screen, gameui.Rect{X: rowRect.X + 12, Y: rowRect.Y + 24, W: rowRect.W - 24}, entry.RoleTR, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		flagSize := 42.0
+		flagBG := color.RGBA{62, 52, 38, 255}
+		if gs != nil && entry.FactionID != "" {
+			if f := gs.Factions[entry.FactionID]; f != nil {
+				flagBG = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+			}
+		}
+		drawFactionFlagBadge(screen, entry.FactionID, factionInitial(entry.NameTR), rowRect.X+8, rowRect.Y+9, flagSize, flagBG, color.RGBA{142, 116, 72, 255})
+		textX := rowRect.X + 58
+		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 6, W: rowRect.W - 70}, trimTextToWidth(entry.NameTR, FaceMed, rowRect.W-70), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
+		roleText := entry.RoleTR + "  •  Güç " + itoa(entry.Strength)
+		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 25, W: rowRect.W - 70}, trimTextToWidth(roleText, FaceSmall, rowRect.W-70), color.RGBA{204, 190, 146, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		metricsText := itoa(entry.ArmyCount) + " ordu  •  " + itoa(entry.LandUnits) + " kara / " + itoa(entry.NavalUnits) + " deniz  •  " + itoa(entry.RegionCount) + " bölge  •  " + itoa(entry.Gold) + " altın / " + itoa(entry.Grain) + " tahıl"
+		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 42, W: rowRect.W - 70}, trimTextToWidth(metricsText, FaceSmall, rowRect.W-70), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	}
 	drawWarSummaryScrollbar(screen, listRect, len(side.Participants), scroll)
 }
 
-func drawWarSummaryDialog(screen *ebiten.Image, state warSummaryState) {
+func drawWarSummaryDialog(screen *ebiten.Image, gs *state.GameState, state warSummaryState) {
 	modal := buildWarSummaryModal()
 	layout := buildWarSummaryLayout()
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
@@ -237,8 +274,8 @@ func drawWarSummaryDialog(screen *ebiten.Image, state warSummaryState) {
 	drawUICardRect(screen, layout.balanceRect, color.RGBA{24, 18, 12, 228}, color.RGBA{102, 78, 42, 210}, 1)
 	drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 14, W: layout.balanceRect.W - 36}, state.data.BalanceLabel, ColorWhite, gameui.TextMedium, gameui.TextAlignCenter)
 	drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 40, W: layout.balanceRect.W - 36}, state.data.PowerText, color.RGBA{208, 200, 182, 255}, gameui.TextSmall, gameui.TextAlignCenter)
-	drawWarSummarySide(screen, layout.attackerRect, layout.attackerListRect, state.data.Attacker, state.attackerScroll)
-	drawWarSummarySide(screen, layout.defenderRect, layout.defenderListRect, state.data.Defender, state.defenderScroll)
+	drawWarSummarySide(screen, gs, layout.attackerRect, layout.attackerListRect, state.data.Attacker, state.attackerScroll)
+	drawWarSummarySide(screen, gs, layout.defenderRect, layout.defenderListRect, state.data.Defender, state.defenderScroll)
 	drawUIButtonWidget(screen, buildWarSummaryCloseButton(), solidButtonStyle(color.RGBA{70, 98, 62, 235}, color.RGBA{122, 160, 112, 255}, ColorWhite, 10))
 }
 
@@ -264,12 +301,12 @@ func (r *Renderer) handleWarSummaryInput() InputAction {
 			return InputAction{}
 		}
 	}
-	if r.mouseJustPressed(ebiten.MouseButtonLeft) && (warSummaryCloseHit(mx, my) || !warSummaryPopupHit(mx, my)) {
+	// Savaş ilanı özeti, hızlı turda da oyuncunun incelemesini bekler.
+	// Panel dışına tıklamak veya klavye kısayolu modalı kapatmaz; kapanışın tek
+	// yolu açıkça Tamam düğmesine tıklamaktır.
+	if r.mouseJustPressed(ebiten.MouseButtonLeft) && warSummaryCloseHit(mx, my) {
 		r.HideWarSummary()
 		return InputAction{}
-	}
-	if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
-		r.HideWarSummary()
 	}
 	return InputAction{}
 }

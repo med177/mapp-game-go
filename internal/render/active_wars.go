@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image"
 	"image/color"
 	"sort"
 
@@ -15,20 +16,29 @@ import (
 )
 
 const (
-	activeWarsPanelW        = 570.0
-	activeWarsPanelMaxH     = 600.0
-	activeWarsPanelPad      = 12.0
-	activeWarsPanelHeaderH  = 42.0
-	activeWarRowH           = 82.0
-	activeWarRowGap         = 7.0
-	activeWarFlagSize       = 50.0
-	activeWarFlagSidePad    = 10.0
-	activeWarFlagTextGap    = 10.0
-	activeWarsHudButtonGap  = 20.0
-	activeWarsHudButtonSize = 36.0
-	activeWarsHudButtonStep = 46.0
-	activeWarsHudButtonTop  = 5.0
-	activeWarsPanelGap      = 12.0
+	activeWarsPanelW         = 600.0
+	activeWarsPanelMaxH      = 760.0
+	activeWarsPanelPad       = 8.0
+	activeWarsPanelHeaderH   = 38.0
+	activeWarRowH            = 82.0
+	activeWarRowGap          = 8.0
+	activeWarFlagSize        = 46.0
+	activeWarFlagSidePad     = 8.0
+	activeWarFlagTextGap     = 8.0
+	activeWarSidePad         = 8.0
+	activeWarSideGap         = 4.0
+	activeWarSideHeaderH     = 38.0
+	activeWarParticipantH    = 50.0
+	activeWarRowBottomPad    = 4.0
+	activeWarParticipantFlag = 46.0
+	activeWarRowRightInset   = 1.0
+	activeWarsScrollbarGap   = 10.0
+	activeWarDividerShift    = 4.0
+	activeWarsHudButtonGap   = 8.0
+	activeWarsHudButtonSize  = 36.0
+	activeWarsHudButtonStep  = 46.0
+	activeWarsHudButtonTop   = 8.0
+	activeWarsPanelGap       = 12.0
 )
 
 // ActiveWarSummary, panelin harita state'inden bağımsız çizilebilir snapshot'ıdır.
@@ -38,15 +48,48 @@ type ActiveWarSummary struct {
 	FactionBNameTR string
 	FactionA       faction.FactionID
 	FactionB       faction.FactionID
+	SideA          ActiveWarSide
+	SideB          ActiveWarSide
 	Turns          int
-	PowerA         int
-	PowerB         int
-	ArmiesA        int
-	ArmiesB        int
-	UnitsA         int
-	UnitsB         int
-	CasualtiesA    int
-	CasualtiesB    int
+	// These aggregate fields remain available to callers that only need the
+	// compact totals. The panel renders the richer SideA/SideB snapshots.
+	PowerA      int
+	PowerB      int
+	ArmiesA     int
+	ArmiesB     int
+	UnitsA      int
+	UnitsB      int
+	CasualtiesA int
+	CasualtiesB int
+}
+
+type ActiveWarParticipant struct {
+	FactionID       faction.FactionID
+	NameTR          string
+	Power           int
+	Armies          int
+	Units           int
+	LandArmies      int
+	NavalArmies     int
+	LandUnits       int
+	NavalUnits      int
+	Casualties      int
+	ArmyCasualties  int
+	FleetCasualties int
+}
+
+type ActiveWarSide struct {
+	Participants    []ActiveWarParticipant
+	Power           int
+	Armies          int
+	Units           int
+	LandArmies      int
+	NavalArmies     int
+	LandUnits       int
+	NavalUnits      int
+	Casualties      int
+	ArmyCasualties  int
+	FleetCasualties int
 }
 
 // topHudUtilityButtonRect, müzik kartının sağındaki ortak küçük düğme
@@ -118,8 +161,17 @@ func activeWarsPanelViewport() gameui.Rect {
 	return gameui.Rect{
 		X: panel.X + activeWarsPanelPad,
 		Y: panel.Y + activeWarsPanelHeaderH,
-		W: panel.W - activeWarsPanelPad*2,
+		W: panel.W - activeWarsPanelPad*2 - activeWarsScrollbarGap,
 		H: panel.H - activeWarsPanelHeaderH - activeWarsPanelPad,
+	}
+}
+
+func activeWarsScrollbarRect(viewport gameui.Rect) gameui.Rect {
+	return gameui.Rect{
+		X: viewport.X + viewport.W + activeWarsScrollbarGap/2 - 1.5,
+		Y: viewport.Y,
+		W: 3,
+		H: viewport.H,
 	}
 }
 
@@ -175,18 +227,107 @@ func activeWarRowRect(viewport gameui.Rect, visibleIndex int) gameui.Rect {
 	}
 }
 
+func activeWarRowHeight(war ActiveWarSummary) float64 {
+	participantCount := len(war.SideA.Participants)
+	if len(war.SideB.Participants) > participantCount {
+		participantCount = len(war.SideB.Participants)
+	}
+	height := activeWarSideHeaderH + float64(participantCount)*activeWarParticipantH + activeWarRowBottomPad
+	if height < activeWarRowH {
+		return activeWarRowH
+	}
+	return height
+}
+
+func activeWarRowsHeight(wars []ActiveWarSummary, start, end int) float64 {
+	if start < 0 {
+		start = 0
+	}
+	if end > len(wars) {
+		end = len(wars)
+	}
+	if start >= end {
+		return 0
+	}
+	height := 0.0
+	for index := start; index < end; index++ {
+		if index > start {
+			height += activeWarRowGap
+		}
+		height += activeWarRowHeight(wars[index])
+	}
+	return height
+}
+
+func activeWarMaxScrollForWars(wars []ActiveWarSummary, viewport gameui.Rect) int {
+	for start := 0; start < len(wars); start++ {
+		if activeWarRowsHeight(wars, start, len(wars)) <= viewport.H {
+			return start
+		}
+	}
+	if len(wars) == 0 {
+		return 0
+	}
+	return len(wars) - 1
+}
+
+func clampActiveWarScrollForWars(wars []ActiveWarSummary, viewport gameui.Rect, scroll int) int {
+	if scroll < 0 {
+		return 0
+	}
+	if maxScroll := activeWarMaxScrollForWars(wars, viewport); scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func activeWarRowRectForWars(viewport gameui.Rect, wars []ActiveWarSummary, index, scroll int) gameui.Rect {
+	y := viewport.Y
+	for current := scroll; current < index; current++ {
+		y += activeWarRowHeight(wars[current]) + activeWarRowGap
+	}
+	return gameui.Rect{
+		X: viewport.X,
+		Y: y,
+		// StrokeRect merkezini rect sınırına çizer. Viewport'un sağ sınırında
+		// bırakılırsa border'ın dış yarısı SubImage tarafından kırpılır.
+		W: viewport.W - activeWarRowRightInset,
+		H: activeWarRowHeight(wars[index]),
+	}
+}
+
+func activeWarVisibleRowsForWars(viewport gameui.Rect, wars []ActiveWarSummary, scroll int) int {
+	visible := 0
+	used := 0.0
+	for index := scroll; index < len(wars); index++ {
+		height := activeWarRowHeight(wars[index])
+		if visible > 0 {
+			height += activeWarRowGap
+		}
+		if used >= viewport.H {
+			break
+		}
+		used += height
+		visible++
+	}
+	if visible < 1 && len(wars) > 0 {
+		return 1
+	}
+	return visible
+}
+
 func activeWarRowAt(mx, my float64, wars []ActiveWarSummary, scroll int) int {
 	viewport := activeWarsPanelViewport()
 	if !viewport.Hit(mx, my) {
 		return -1
 	}
-	visibleRows := activeWarVisibleRows(viewport)
-	end := scroll + visibleRows
+	scroll = clampActiveWarScrollForWars(wars, viewport, scroll)
+	end := scroll + activeWarVisibleRowsForWars(viewport, wars, scroll)
 	if end > len(wars) {
 		end = len(wars)
 	}
 	for index := scroll; index < end; index++ {
-		if activeWarRowRect(viewport, index-scroll).Hit(mx, my) {
+		if activeWarRowRectForWars(viewport, wars, index, scroll).Hit(mx, my) {
 			return index
 		}
 	}
@@ -208,17 +349,27 @@ func activeWarFactionName(gs *state.GameState, id faction.FactionID) string {
 }
 
 func activeWarArmyStats(gs *state.GameState, owner faction.FactionID) (armies, units int) {
+	landArmies, navalArmies, landUnits, navalUnits := activeWarArmyBreakdown(gs, owner)
+	return landArmies + navalArmies, landUnits + navalUnits
+}
+
+func activeWarArmyBreakdown(gs *state.GameState, owner faction.FactionID) (landArmies, navalArmies, landUnits, navalUnits int) {
 	if gs == nil {
-		return 0, 0
+		return 0, 0, 0, 0
 	}
 	for _, a := range gs.Armies {
 		if a == nil || a.OwnerID != string(owner) {
 			continue
 		}
-		armies++
-		units += len(a.Units) + len(a.EmbarkedUnits)
+		if a.IsNaval {
+			navalArmies++
+			navalUnits += len(a.Units)
+			continue
+		}
+		landArmies++
+		landUnits += len(a.Units) + len(a.EmbarkedUnits)
 	}
-	return armies, units
+	return landArmies, navalArmies, landUnits, navalUnits
 }
 
 func activeWarFactionIsVassal(gs *state.GameState, id faction.FactionID) bool {
@@ -229,93 +380,271 @@ func activeWarFactionIsVassal(gs *state.GameState, id faction.FactionID) bool {
 	return f != nil && !f.IsEliminated && f.OverlordID != ""
 }
 
-// collectActiveWarSummaries yalnızca savaş stance'ındaki ilişkileri okur.
-// dst Renderer tarafından yeniden kullanıldığı için normal Draw akışında yeni
-// özet slice'ı oluşturmaz.
-func collectActiveWarSummaries(gs *state.GameState, dst []ActiveWarSummary) []ActiveWarSummary {
-	dst = dst[:0]
+type activeWarRelation struct {
+	a                faction.FactionID
+	b                faction.FactionID
+	startedTurn      int
+	casualtiesA      int
+	casualtiesB      int
+	armyCasualtiesA  int
+	armyCasualtiesB  int
+	fleetCasualtiesA int
+	fleetCasualtiesB int
+}
+
+func collectActiveWarRelations(gs *state.GameState) []activeWarRelation {
 	if gs == nil {
-		return dst
+		return nil
 	}
+	capacity := len(gs.Relations)
+	if capacity > 16 {
+		capacity = 16
+	}
+	relations := make([]activeWarRelation, 0, capacity)
 	for _, rel := range gs.Relations {
 		if rel == nil || rel.Stance != faction.StanceWar || rel.FactionA == "" || rel.FactionB == "" || rel.FactionA == rel.FactionB {
 			continue
 		}
-		if factionA := gs.Factions[faction.FactionID(rel.FactionA)]; factionA == nil || factionA.IsEliminated {
+		a, b := faction.FactionID(rel.FactionA), faction.FactionID(rel.FactionB)
+		if factionA := gs.Factions[a]; factionA == nil || factionA.IsEliminated {
 			continue
 		}
-		if factionB := gs.Factions[faction.FactionID(rel.FactionB)]; factionB == nil || factionB.IsEliminated {
+		if factionB := gs.Factions[b]; factionB == nil || factionB.IsEliminated {
 			continue
 		}
-		if activeWarFactionIsVassal(gs, faction.FactionID(rel.FactionA)) || activeWarFactionIsVassal(gs, faction.FactionID(rel.FactionB)) {
+		if activeWarFactionIsVassal(gs, a) || activeWarFactionIsVassal(gs, b) {
 			continue
 		}
-		ledger := gs.WarLedgerFor(rel.FactionA, rel.FactionB)
-		a, b := rel.FactionA, rel.FactionB
-		if ledger != nil && ledger.DeclarerFactionID != "" && ledger.DefenderFactionID != "" && ledger.DeclarerFactionID != ledger.DefenderFactionID {
-			a, b = ledger.DeclarerFactionID, ledger.DefenderFactionID
-		}
+
 		startedTurn := gs.Turn
 		casualtiesA, casualtiesB := 0, 0
+		armyCasualtiesA, armyCasualtiesB := 0, 0
+		fleetCasualtiesA, fleetCasualtiesB := 0, 0
+		ledger := gs.WarLedgerFor(a, b)
 		if ledger != nil {
 			startedTurn = ledger.StartedTurn
 			casualtiesA = ledger.CasualtiesA
 			casualtiesB = ledger.CasualtiesB
+			armyCasualtiesA = ledger.CasualtiesArmyA
+			armyCasualtiesB = ledger.CasualtiesArmyB
+			fleetCasualtiesA = ledger.CasualtiesFleetA
+			fleetCasualtiesB = ledger.CasualtiesFleetB
+			// Eski kayıtlarda yalnız toplam kayıp alanı vardır. Bu kayıpları
+			// görünürlük kaybı yaşamaması için kara ordusu kaybı kabul et.
+			if casualtiesA > 0 && armyCasualtiesA+fleetCasualtiesA == 0 {
+				armyCasualtiesA = casualtiesA
+			}
+			if casualtiesB > 0 && armyCasualtiesB+fleetCasualtiesB == 0 {
+				armyCasualtiesB = casualtiesB
+			}
+			if ledger.DeclarerFactionID != "" && ledger.DefenderFactionID != "" &&
+				ledger.DeclarerFactionID != ledger.DefenderFactionID &&
+				((ledger.DeclarerFactionID == a && ledger.DefenderFactionID == b) ||
+					(ledger.DeclarerFactionID == b && ledger.DefenderFactionID == a)) {
+				a, b = ledger.DeclarerFactionID, ledger.DefenderFactionID
+			}
 			if a != ledger.FactionA {
 				casualtiesA, casualtiesB = casualtiesB, casualtiesA
+				armyCasualtiesA, armyCasualtiesB = armyCasualtiesB, armyCasualtiesA
+				fleetCasualtiesA, fleetCasualtiesB = fleetCasualtiesB, fleetCasualtiesA
 			}
 		}
-		turns := gs.Turn - startedTurn
-		if turns < 0 {
-			turns = 0
-		}
-		armiesA, unitsA := activeWarArmyStats(gs, a)
-		armiesB, unitsB := activeWarArmyStats(gs, b)
-		dst = append(dst, ActiveWarSummary{
-			FactionA:       a,
-			FactionB:       b,
-			FactionANameTR: activeWarFactionName(gs, a),
-			FactionBNameTR: activeWarFactionName(gs, b),
-			Turns:          turns,
-			PowerA:         diplomacy.MilitaryPower(gs, a),
-			PowerB:         diplomacy.MilitaryPower(gs, b),
-			ArmiesA:        armiesA,
-			ArmiesB:        armiesB,
-			UnitsA:         unitsA,
-			UnitsB:         unitsB,
-			CasualtiesA:    casualtiesA,
-			CasualtiesB:    casualtiesB,
+		relations = append(relations, activeWarRelation{
+			a:                a,
+			b:                b,
+			startedTurn:      startedTurn,
+			casualtiesA:      casualtiesA,
+			casualtiesB:      casualtiesB,
+			armyCasualtiesA:  armyCasualtiesA,
+			armyCasualtiesB:  armyCasualtiesB,
+			fleetCasualtiesA: fleetCasualtiesA,
+			fleetCasualtiesB: fleetCasualtiesB,
 		})
 	}
-	sort.SliceStable(dst, func(i, j int) bool {
-		if dst[i].FactionA != dst[j].FactionA {
-			return dst[i].FactionA < dst[j].FactionA
+	sort.SliceStable(relations, func(i, j int) bool {
+		if relations[i].a != relations[j].a {
+			return relations[i].a < relations[j].a
 		}
-		return dst[i].FactionB < dst[j].FactionB
+		return relations[i].b < relations[j].b
 	})
+	return relations
+}
+
+func activeWarSameSide(gs *state.GameState, a, b faction.FactionID) bool {
+	if a == b || diplomacy.SameRealm(gs, a, b) {
+		return true
+	}
+	rel := diplomacy.Relation(gs, a, b)
+	return rel != nil && rel.Stance == faction.StanceAllied
+}
+
+func activeWarRelationsSameGroup(gs *state.GameState, first, second activeWarRelation) bool {
+	return activeWarSameSide(gs, first.a, second.a) && activeWarSameSide(gs, first.b, second.b)
+}
+
+func groupActiveWarRelations(gs *state.GameState, relations []activeWarRelation) [][]activeWarRelation {
+	if len(relations) == 0 {
+		return nil
+	}
+	parent := make([]int, len(relations))
+	for index := range parent {
+		parent[index] = index
+	}
+	var find func(int) int
+	find = func(index int) int {
+		if parent[index] != index {
+			parent[index] = find(parent[index])
+		}
+		return parent[index]
+	}
+	union := func(left, right int) {
+		leftRoot, rightRoot := find(left), find(right)
+		if leftRoot != rightRoot {
+			parent[rightRoot] = leftRoot
+		}
+	}
+	for left := 0; left < len(relations); left++ {
+		for right := left + 1; right < len(relations); right++ {
+			if activeWarRelationsSameGroup(gs, relations[left], relations[right]) {
+				union(left, right)
+			}
+		}
+	}
+
+	groupsByRoot := make(map[int][]activeWarRelation, len(relations))
+	for index, relation := range relations {
+		root := find(index)
+		groupsByRoot[root] = append(groupsByRoot[root], relation)
+	}
+	groups := make([][]activeWarRelation, 0, len(groupsByRoot))
+	for _, group := range groupsByRoot {
+		sort.SliceStable(group, func(i, j int) bool {
+			if group[i].startedTurn != group[j].startedTurn {
+				return group[i].startedTurn < group[j].startedTurn
+			}
+			if group[i].a != group[j].a {
+				return group[i].a < group[j].a
+			}
+			return group[i].b < group[j].b
+		})
+		groups = append(groups, group)
+	}
+	sort.SliceStable(groups, func(i, j int) bool {
+		if groups[i][0].startedTurn != groups[j][0].startedTurn {
+			return groups[i][0].startedTurn < groups[j][0].startedTurn
+		}
+		if groups[i][0].a != groups[j][0].a {
+			return groups[i][0].a < groups[j][0].a
+		}
+		return groups[i][0].b < groups[j][0].b
+	})
+	return groups
+}
+
+func addActiveWarParticipant(gs *state.GameState, side *ActiveWarSide, seen map[faction.FactionID]int, id faction.FactionID, casualties, armyCasualties, fleetCasualties int) {
+	if index, exists := seen[id]; exists {
+		side.Participants[index].Casualties += casualties
+		side.Participants[index].ArmyCasualties += armyCasualties
+		side.Participants[index].FleetCasualties += fleetCasualties
+		side.Casualties += casualties
+		side.ArmyCasualties += armyCasualties
+		side.FleetCasualties += fleetCasualties
+		return
+	}
+	landArmies, navalArmies, landUnits, navalUnits := activeWarArmyBreakdown(gs, id)
+	participant := ActiveWarParticipant{
+		FactionID:       id,
+		NameTR:          activeWarFactionName(gs, id),
+		Power:           diplomacy.MilitaryPower(gs, id),
+		Armies:          landArmies + navalArmies,
+		Units:           landUnits + navalUnits,
+		LandArmies:      landArmies,
+		NavalArmies:     navalArmies,
+		LandUnits:       landUnits,
+		NavalUnits:      navalUnits,
+		Casualties:      casualties,
+		ArmyCasualties:  armyCasualties,
+		FleetCasualties: fleetCasualties,
+	}
+	seen[id] = len(side.Participants)
+	side.Participants = append(side.Participants, participant)
+	side.Power += participant.Power
+	side.Armies += participant.Armies
+	side.Units += participant.Units
+	side.LandArmies += participant.LandArmies
+	side.NavalArmies += participant.NavalArmies
+	side.LandUnits += participant.LandUnits
+	side.NavalUnits += participant.NavalUnits
+	side.Casualties += participant.Casualties
+	side.ArmyCasualties += participant.ArmyCasualties
+	side.FleetCasualties += participant.FleetCasualties
+}
+
+func sortActiveWarParticipants(participants []ActiveWarParticipant, primary faction.FactionID) {
+	sort.SliceStable(participants, func(i, j int) bool {
+		iPrimary := participants[i].FactionID == primary
+		jPrimary := participants[j].FactionID == primary
+		if iPrimary != jPrimary {
+			return iPrimary
+		}
+		if participants[i].Power != participants[j].Power {
+			return participants[i].Power > participants[j].Power
+		}
+		if participants[i].FactionID != participants[j].FactionID {
+			return participants[i].FactionID < participants[j].FactionID
+		}
+		return participants[i].NameTR < participants[j].NameTR
+	})
+}
+
+func buildActiveWarSummary(gs *state.GameState, relations []activeWarRelation) ActiveWarSummary {
+	first := relations[0]
+	summary := ActiveWarSummary{
+		FactionA:       first.a,
+		FactionB:       first.b,
+		FactionANameTR: activeWarFactionName(gs, first.a),
+		FactionBNameTR: activeWarFactionName(gs, first.b),
+	}
+	if gs != nil {
+		summary.Turns = gs.Turn - first.startedTurn
+		if summary.Turns < 0 {
+			summary.Turns = 0
+		}
+	}
+	seenA := make(map[faction.FactionID]int, len(relations))
+	seenB := make(map[faction.FactionID]int, len(relations))
+	for _, relation := range relations {
+		addActiveWarParticipant(gs, &summary.SideA, seenA, relation.a, relation.casualtiesA, relation.armyCasualtiesA, relation.fleetCasualtiesA)
+		addActiveWarParticipant(gs, &summary.SideB, seenB, relation.b, relation.casualtiesB, relation.armyCasualtiesB, relation.fleetCasualtiesB)
+	}
+	sortActiveWarParticipants(summary.SideA.Participants, summary.FactionA)
+	sortActiveWarParticipants(summary.SideB.Participants, summary.FactionB)
+	summary.PowerA = summary.SideA.Power
+	summary.PowerB = summary.SideB.Power
+	summary.ArmiesA = summary.SideA.Armies
+	summary.ArmiesB = summary.SideB.Armies
+	summary.UnitsA = summary.SideA.Units
+	summary.UnitsB = summary.SideB.Units
+	summary.CasualtiesA = summary.SideA.Casualties
+	summary.CasualtiesB = summary.SideB.Casualties
+	return summary
+}
+
+// collectActiveWarSummaries ilişkileri önce ortak cephe üyeliğine göre
+// gruplar; böylece bir koalisyonun devlet-devlet kombinasyonları tek satırda
+// görünür. dst Renderer tarafından yeniden kullanıldığı için normal Draw
+// akışında özet slice'ı yeniden ayrıştırılmaz.
+func collectActiveWarSummaries(gs *state.GameState, dst []ActiveWarSummary) []ActiveWarSummary {
+	dst = dst[:0]
+	groups := groupActiveWarRelations(gs, collectActiveWarRelations(gs))
+	for _, group := range groups {
+		dst = append(dst, buildActiveWarSummary(gs, group))
+	}
 	return dst
 }
 
 func countActiveWars(gs *state.GameState) int {
-	count := 0
-	if gs == nil {
-		return count
-	}
-	for _, rel := range gs.Relations {
-		if rel != nil && rel.Stance == faction.StanceWar && rel.FactionA != "" && rel.FactionB != "" && rel.FactionA != rel.FactionB {
-			if a := gs.Factions[faction.FactionID(rel.FactionA)]; a == nil || a.IsEliminated {
-				continue
-			}
-			if b := gs.Factions[faction.FactionID(rel.FactionB)]; b == nil || b.IsEliminated {
-				continue
-			}
-			if activeWarFactionIsVassal(gs, faction.FactionID(rel.FactionA)) || activeWarFactionIsVassal(gs, faction.FactionID(rel.FactionB)) {
-				continue
-			}
-			count++
-		}
-	}
-	return count
+	return len(groupActiveWarRelations(gs, collectActiveWarRelations(gs)))
 }
 
 func activeWarRepresentativeRegion(gs *state.GameState, fid faction.FactionID) *world.Region {
@@ -393,13 +722,33 @@ func drawActiveWarsScrollbar(screen *ebiten.Image, viewport gameui.Rect, entryCo
 	if maxScroll <= 0 {
 		return
 	}
-	track := gameui.Rect{X: viewport.X + viewport.W - 5, Y: viewport.Y, W: 3, H: viewport.H}
+	track := activeWarsScrollbarRect(viewport)
 	drawUICardRect(screen, track, color.RGBA{42, 35, 25, 210}, color.RGBA{90, 72, 44, 180}, 1)
 	thumbH := track.H * float64(activeWarVisibleRows(viewport)) / float64(entryCount)
 	if thumbH < 24 {
 		thumbH = 24
 	}
 	scroll = clampActiveWarScroll(entryCount, viewport, scroll)
+	thumbY := track.Y
+	if track.H > thumbH {
+		thumbY += (track.H - thumbH) * float64(scroll) / float64(maxScroll)
+	}
+	drawUICardRect(screen, gameui.Rect{X: track.X, Y: thumbY, W: track.W, H: thumbH}, color.RGBA{190, 148, 74, 235}, color.RGBA{238, 206, 130, 220}, 1)
+}
+
+func drawActiveWarsScrollbarForWars(screen *ebiten.Image, viewport gameui.Rect, wars []ActiveWarSummary, scroll int) {
+	maxScroll := activeWarMaxScrollForWars(wars, viewport)
+	if maxScroll <= 0 {
+		return
+	}
+	scroll = clampActiveWarScrollForWars(wars, viewport, scroll)
+	visibleRows := activeWarVisibleRowsForWars(viewport, wars, scroll)
+	track := activeWarsScrollbarRect(viewport)
+	drawUICardRect(screen, track, color.RGBA{42, 35, 25, 210}, color.RGBA{90, 72, 44, 180}, 1)
+	thumbH := track.H * float64(visibleRows) / float64(len(wars))
+	if thumbH < 24 {
+		thumbH = 24
+	}
 	thumbY := track.Y
 	if track.H > thumbH {
 		thumbY += (track.H - thumbH) * float64(scroll) / float64(maxScroll)
@@ -438,16 +787,43 @@ func activeWarRowContentRects(row gameui.Rect) (leftFlag, center, rightFlag game
 	return leftFlag, center, rightFlag
 }
 
+func activeWarSideRect(row gameui.Rect, sideIndex int) gameui.Rect {
+	width := (row.W - activeWarSidePad*2 - activeWarSideGap) / 2
+	return gameui.Rect{
+		X: row.X + activeWarSidePad + float64(sideIndex)*(width+activeWarSideGap),
+		Y: row.Y,
+		W: width,
+		H: row.H,
+	}
+}
+
+func drawActiveWarSide(screen *ebiten.Image, gs *state.GameState, rect gameui.Rect, label string, side ActiveWarSide) {
+	drawUILabel(screen, gameui.Rect{X: rect.X, Y: rect.Y + 5, W: rect.W}, label, color.RGBA{255, 220, 118, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	summary := "Güç " + itoa(side.Power) + " • " + itoa(side.LandArmies) + " Ordu • " + itoa(side.NavalArmies) + " Filo • " + itoa(side.ArmyCasualties) + "/" + itoa(side.FleetCasualties) + " Kayıp"
+	drawUILabel(screen, gameui.Rect{X: rect.X, Y: rect.Y + 20, W: rect.W}, trimTextToWidth(summary, FaceSmall, rect.W), color.RGBA{210, 194, 160, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	for index, participant := range side.Participants {
+		y := rect.Y + activeWarSideHeaderH + float64(index)*activeWarParticipantH
+		flag := gameui.Rect{X: rect.X, Y: y + 3, W: activeWarParticipantFlag, H: activeWarParticipantFlag}
+		drawFactionFlagBadge(screen, participant.FactionID, factionInitial(participant.NameTR), flag.X, flag.Y, flag.W, activeWarFactionFlagColor(gs, participant.FactionID), panelBorder)
+		textX := flag.X + flag.W + 6
+		textW := rect.W - (textX - rect.X)
+		power := "Güç " + itoa(participant.Power)
+		drawUILabel(screen, gameui.Rect{X: textX, Y: y + 1, W: textW}, trimTextToWidth(power+" • "+participant.NameTR, FaceSmall, textW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+		army := itoa(participant.LandArmies) + " Ordu • " + itoa(participant.LandUnits) + " birim • " + itoa(participant.ArmyCasualties) + " Kayıp"
+		navy := itoa(participant.NavalArmies) + " Filo • " + itoa(participant.NavalUnits) + " birim • " + itoa(participant.FleetCasualties) + " Kayıp"
+		drawUILabel(screen, gameui.Rect{X: textX, Y: y + 15, W: textW}, trimTextToWidth(army, FaceSmall, textW), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(screen, gameui.Rect{X: textX, Y: y + 30, W: textW}, trimTextToWidth(navy, FaceSmall, textW), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	}
+}
+
 func drawActiveWarRow(screen *ebiten.Image, gs *state.GameState, row gameui.Rect, war ActiveWarSummary) {
 	drawUICardRect(screen, row, color.RGBA{28, 22, 16, 235}, color.RGBA{92, 68, 38, 215}, 1)
-	leftFlag, center, rightFlag := activeWarRowContentRects(row)
-	drawFactionFlagBadge(screen, war.FactionA, factionInitial(war.FactionANameTR), leftFlag.X, leftFlag.Y, leftFlag.W, activeWarFactionFlagColor(gs, war.FactionA), panelBorder)
-	drawFactionFlagBadge(screen, war.FactionB, factionInitial(war.FactionBNameTR), rightFlag.X, rightFlag.Y, rightFlag.W, activeWarFactionFlagColor(gs, war.FactionB), panelBorder)
-
-	drawUILabel(screen, gameui.Rect{X: center.X, Y: row.Y + 7, W: center.W, H: 18}, trimTextToWidth(war.FactionANameTR+"  ↔  "+war.FactionBNameTR, FaceMed, center.W), color.RGBA{255, 220, 118, 255}, gameui.TextMedium, gameui.TextAlignCenter)
-	drawUILabel(screen, gameui.Rect{X: center.X, Y: row.Y + 28, W: center.W, H: 16}, trimTextToWidth(itoa(war.Turns)+" turdur savaşta • Kayıp "+itoa(war.CasualtiesA)+" / "+itoa(war.CasualtiesB), FaceSmall, center.W), ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
-	drawUILabel(screen, gameui.Rect{X: center.X, Y: row.Y + 47, W: center.W, H: 16}, trimTextToWidth("Güç "+itoa(war.PowerA)+"  ↔  "+itoa(war.PowerB), FaceSmall, center.W), color.RGBA{220, 202, 164, 255}, gameui.TextSmall, gameui.TextAlignCenter)
-	drawUILabel(screen, gameui.Rect{X: center.X, Y: row.Y + 64, W: center.W, H: 16}, trimTextToWidth("Ordu "+itoa(war.ArmiesA)+" ("+itoa(war.UnitsA)+" birim)  ↔  "+itoa(war.ArmiesB)+" ("+itoa(war.UnitsB)+" birim)", FaceSmall, center.W), color.RGBA{176, 168, 148, 245}, gameui.TextSmall, gameui.TextAlignCenter)
+	left := activeWarSideRect(row, 0)
+	right := activeWarSideRect(row, 1)
+	dividerX := float32(row.X + row.W/2 - activeWarDividerShift)
+	vector.StrokeLine(screen, dividerX, float32(row.Y+8), dividerX, float32(row.Y+row.H-8), 1, color.RGBA{92, 68, 38, 180}, true)
+	drawActiveWarSide(screen, gs, left, "Saldıran taraf • "+itoa(war.Turns)+" tur", war.SideA)
+	drawActiveWarSide(screen, gs, right, "Savunan taraf", war.SideB)
 }
 
 func drawActiveWarsPanel(screen *ebiten.Image, gs *state.GameState, wars []ActiveWarSummary, scroll int) {
@@ -461,16 +837,26 @@ func drawActiveWarsPanel(screen *ebiten.Image, gs *state.GameState, wars []Activ
 		drawUILabel(screen, viewport, "Aktif savaş bulunmuyor.", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 		return
 	}
-	scroll = clampActiveWarScroll(len(wars), viewport, scroll)
-	visibleRows := activeWarVisibleRows(viewport)
+	scroll = clampActiveWarScrollForWars(wars, viewport, scroll)
+	visibleRows := activeWarVisibleRowsForWars(viewport, wars, scroll)
 	end := scroll + visibleRows
 	if end > len(wars) {
 		end = len(wars)
 	}
-	for i := scroll; i < end; i++ {
-		drawActiveWarRow(screen, gs, activeWarRowRect(viewport, i-scroll), wars[i])
+	left, top := int(viewport.X), int(viewport.Y)
+	right, bottom := int(viewport.X+viewport.W), int(viewport.Y+viewport.H)
+	if right <= left || bottom <= top {
+		return
 	}
-	drawActiveWarsScrollbar(screen, viewport, len(wars), scroll)
+	body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
+	for i := scroll; i < end; i++ {
+		row := activeWarRowRectForWars(viewport, wars, i, scroll)
+		if row.Y >= viewport.Y+viewport.H {
+			break
+		}
+		drawActiveWarRow(body, gs, row, wars[i])
+	}
+	drawActiveWarsScrollbarForWars(screen, viewport, wars, scroll)
 }
 
 // handleActiveWarsOverlayInput yalnız panelin kendi yüzeyindeki input'u tüketir.
@@ -490,7 +876,7 @@ func (r *Renderer) handleActiveWarsOverlayInput() bool {
 	}
 	if _, wheelY := ebiten.Wheel(); wheelY != 0 {
 		viewport := activeWarsPanelViewport()
-		r.activeWarsScroll = clampActiveWarScroll(len(r.activeWarsBuf), viewport, r.activeWarsScroll-int(wheelY))
+		r.activeWarsScroll = clampActiveWarScrollForWars(r.activeWarsBuf, viewport, r.activeWarsScroll-int(wheelY))
 		return true
 	}
 	if activeWarsPanelCloseButton().HitTest(float64(mx), float64(my)) && r.mouseJustPressed(ebiten.MouseButtonLeft) {

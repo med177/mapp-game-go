@@ -3,6 +3,7 @@ package game
 import (
 	"testing"
 
+	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
@@ -54,6 +55,25 @@ func TestAutoStartResearchIfIdleStartsNextResearchableTech(t *testing.T) {
 	}
 	if player.Gold != 5 {
 		t.Fatalf("gold otomatik baslatmada dusmeliydi, got=%d", player.Gold)
+	}
+}
+
+func TestShouldOfferPostWarVassalizationRejectsSeaRegion(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "venice",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"venice":      {ID: "venice"},
+			"hospitaller": {ID: "hospitaller"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"rhodes": {ID: "rhodes", OwnerID: "hospitaller"},
+		},
+	}
+	game := &Game{gs: gs}
+
+	sea := &world.Region{ID: "dardanelles_strait", IsSea: true, OwnerID: "hospitaller"}
+	if game.shouldOfferPostWarVassalization("venice", "hospitaller", sea) {
+		t.Fatal("deniz bölgesi için savaş sonrası kara fetih kararı üretildi")
 	}
 }
 
@@ -390,5 +410,109 @@ func TestExecutePlayerNavalMissionsConvertsInvalidBlockadeToPatrol(t *testing.T)
 	mission := gs.Armies["fleet"].NavalMission
 	if mission == nil || mission.Kind != army.NavalMissionPatrol || mission.TargetRegionID != "sea" {
 		t.Fatalf("geçersiz abluka devriyeye dönüşmeli, got %#v", mission)
+	}
+}
+
+func TestBuildWarSummaryIncludesCoalitionMetrics(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"attacker":      {ID: "attacker", NameTR: "Saldıran", Gold: 120, Grain: 80},
+			"attacker_ally": {ID: "attacker_ally", NameTR: "Saldıran Müttefiki", Gold: 60, Grain: 40},
+			"player":        {ID: "player", NameTR: "Oyuncu", Gold: 200, Grain: 100},
+			"player_ally":   {ID: "player_ally", NameTR: "Oyuncu Müttefiki", Gold: 90, Grain: 50},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"attacker_home":      {ID: "attacker_home", OwnerID: "attacker"},
+			"attacker_ally_home": {ID: "attacker_ally_home", OwnerID: "attacker_ally"},
+			"player_home":        {ID: "player_home", OwnerID: "player"},
+			"player_ally_home":   {ID: "player_ally_home", OwnerID: "player_ally"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"attacker_army":      {ID: "attacker_army", OwnerID: "attacker", Units: []army.Unit{{}, {}}},
+			"attacker_fleet":     {ID: "attacker_fleet", OwnerID: "attacker", IsNaval: true, Units: []army.Unit{{}}},
+			"attacker_ally_army": {ID: "attacker_ally_army", OwnerID: "attacker_ally", Units: []army.Unit{{}, {}, {}}},
+			"player_army":        {ID: "player_army", OwnerID: "player", Units: []army.Unit{{}, {}}},
+			"player_ally_army":   {ID: "player_ally_army", OwnerID: "player_ally", Units: []army.Unit{{}, {}, {}}},
+		},
+	}
+	game := &Game{gs: gs}
+	report := game.buildWarSummaryFor("attacker", "player", diplomacy.WarDeclarationResult{
+		PlayerCalls: []diplomacy.WarCallOutcome{{FactionID: "attacker_ally", NameTR: "Saldıran Müttefiki", Joined: true}},
+		EnemyCalls:  []diplomacy.WarCallOutcome{{FactionID: "player_ally", NameTR: "Oyuncu Müttefiki", Joined: true}},
+	})
+
+	if got, want := len(report.Attacker.Participants), 2; got != want {
+		t.Fatalf("saldıran katılımcı sayısı: got=%d want=%d", got, want)
+	}
+	if got, want := report.Attacker.TotalLandUnits, 5; got != want {
+		t.Fatalf("saldıran kara birimleri: got=%d want=%d", got, want)
+	}
+	if got, want := report.Attacker.TotalNavalUnits, 1; got != want {
+		t.Fatalf("saldıran deniz birimleri: got=%d want=%d", got, want)
+	}
+	if got, want := report.Attacker.TotalRegions, 2; got != want {
+		t.Fatalf("saldıran bölge toplamı: got=%d want=%d", got, want)
+	}
+	if got, want := report.Attacker.TotalGold, 180; got != want {
+		t.Fatalf("saldıran altın toplamı: got=%d want=%d", got, want)
+	}
+	if got, want := report.Defender.TotalLandUnits, 5; got != want {
+		t.Fatalf("savunan kara birimleri: got=%d want=%d", got, want)
+	}
+	if report.Attacker.Participants[0].FactionID == "" || report.Defender.Participants[0].FactionID == "" {
+		t.Fatal("bayrak çizimi için faction ID snapshot'a taşınmadı")
+	}
+}
+
+func TestAITurnWarDeclarationShowsSummaryDuringQuickTurn(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"attacker": {ID: "attacker", NameTR: "Saldıran"},
+			"player":   {ID: "player", NameTR: "Oyuncu"},
+		},
+	}
+	renderer := render.New(gs)
+	renderer.CurrentSettings.FastAITurns = true
+	game := &Game{gs: gs, renderer: renderer, aiTurn: &aiTurnState{}}
+	game.handleAITurnStep(ai.TurnStep{
+		FactionID:     "attacker",
+		Kind:          ai.TurnStepDiplomacy,
+		TargetFaction: "player",
+		WarDeclaration: &diplomacy.WarDeclarationResult{
+			Result: diplomacy.Result{Applied: true, Message: "Savaş başladı."},
+		},
+	})
+
+	if !renderer.WarSummaryVisible() {
+		t.Fatal("hızlı turda oyuncuya savaş ilanı özeti açılmadı")
+	}
+}
+
+func TestQueueConquestDecisionRejectsOwnRegionEvenWithRestorableSuccessor(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player":    {ID: "player"},
+			"successor": {ID: "successor", IsEliminated: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {
+				ID:                 "home",
+				OwnerID:            "player",
+				SuccessorFactionID: "successor",
+			},
+		},
+	}
+
+	// Renderer yalnızca gerçek kuyruklama akışını çalıştırabilmek için
+	// gereklidir; kararın açılıp açılmayacağı state koşuluyla belirlenir.
+	g := &Game{gs: gs, renderer: render.New(gs)}
+	if g.queueConquestDecision("player", gs.Regions["home"], false) {
+		t.Fatal("kendi bölgesini kurtaran ordu için fetih kararı kuyruğa alındı")
+	}
+	if len(g.pendingConquestDecisions) != 0 {
+		t.Fatalf("kendi bölgesi için bekleyen fetih kararı: %#v", g.pendingConquestDecisions)
 	}
 }

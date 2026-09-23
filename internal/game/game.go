@@ -1009,7 +1009,7 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 		return
 	}
 	quickTurn := g.quickTurnEnabled()
-	if !quickTurn && step.WarDeclaration != nil && step.WarDeclaration.Applied && step.TargetFaction == g.gs.PlayerFactionID {
+	if step.WarDeclaration != nil && step.WarDeclaration.Applied && diplomacy.SameRealm(g.gs, step.TargetFaction, g.gs.PlayerFactionID) {
 		report := g.buildWarSummaryFor(step.FactionID, step.TargetFaction, *step.WarDeclaration)
 		g.renderer.ShowWarSummary(report)
 		g.renderer.AddEventDetail("[SAVAŞ] "+step.WarDeclaration.Message, warSummaryDetailText(report))
@@ -6205,6 +6205,10 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 					} else {
 						outcomeDetail = "Savunma yarıldı; kuşatma kaldırıldı."
 					}
+				} else if navalSeaMove {
+					// Deniz zaferi yalnızca düşman filosunu temizler; deniz
+					// bölgesi kara fetih/ilhak akışına sokulamaz.
+					outcomeDetail = navalBattleOutcomeDetail("Düşman filosu battı ve deniz hattı açıldı.", defenderCargoLost)
 				} else {
 					prompted := g.queueConquestDecision(faction.FactionID(a.OwnerID), targetRegion, true)
 					if !prompted {

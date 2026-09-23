@@ -7,11 +7,66 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
-- 2026-09-23: Ordu/donanma seçimi artık bilgi panelini otomatik açmıyor. Seçim
-  varken alt HUD'da Ordu düğmesinin 8 px solunda türüne göre renklenen `Ordu
-  Detay` veya `Donanma Detay` düğmesi görünür; düğme paneli açıp kapatır.
-  Panelin çizim, hit-test, cursor ve tooltip görünürlüğü aynı geçici renderer
-  durumuna bağlandı (`internal/render/panel.go`, `internal/render/renderer.go`,
+- 2026-09-23: Aktif Savaşlar paneli, aynı koalisyonun devlet-devlet savaş
+  ilişkilerini tek savaş satırında birleştiriyor. Satır artık ilan eden ve
+  savunan taraf için iki sütun içeriyor; her devlette bayrak, güç, ordu/birim ve
+  kayıp bilgisi gösteriliyor. Savaş sayacı da aynı gruplamayı kullanıyor; taraf
+  sayısına göre büyüyen satırların çizim, scroll ve hit-test geometrisi ortaktır.
+  Regression: `TestCollectActiveWarSummariesGroupsCoalitionRelations`,
+  `TestActiveWarVariableRowsShareDrawAndHitGeometry`; doğrulama:
+  `go test ./internal/render` (`internal/render/active_wars.go`).
+
+- 2026-09-23: Aktif Savaşlar panelinin taraf toplamı ve devlet satırları artık
+  `Kayıp (Ordu/Filo): X/Y` biçiminde ayrı kayıp türlerini gösteriyor. `WarLedger`
+  toplam kayıpları korurken yeni muharebe kayıtları kara ordusu ve filo sayaçlarını
+  da dolduruyor; eski save'lerde tür ayrımı olmayan kayıplar Ordu hanesine göçüyor.
+  Regression: `TestRecordWarCasualtiesByTypeKeepsSortedSideAndTypeTotals`,
+  `TestRecordWarCasualtiesLegacyDefaultsToArmyLosses` ve aktif savaş koalisyon
+  görünümü testi.
+
+- 2026-09-23: Aktif Savaşlar panelindeki koalisyon devletleri alfabetik yerine
+  savaşın ilk ilan edildiği ana devlet önce, müttefikler askerî güç sırasına göre
+  görünecek şekilde sıralanıyor. Eşit güçte faction ID'si deterministik bağlayıcı
+  olarak kullanılıyor; `TestActiveWarParticipantsKeepOriginalSidesFirstThenSortByPower`
+  ile doğrulanıyor.
+
+- 2026-09-23: Aktif Savaşlar panelinde scrollbar için satır sağ boşluğu ayrıldı;
+  panel yüksekliği artırıldı, başlık/listeler arası boşluk açıldı ve devlet
+  bayrakları 44 px kareye büyütüldü. Liste viewport clipping'i, tamamen
+  sığmayan alt satırın görünen kısmını koruyarak scroll hareketinde satırın
+  kademeli görünmesini sağlıyor (`internal/render/active_wars.go`).
+
+- 2026-09-23: Aktif Savaşlar paneli 620 px genişliğe çıkarıldı ve scrollbar
+  rezervi 30 px'e yükseltildi. İki taraf ayırıcısı 4 px sola alındı; devlet
+  satırlarında 44×44 px bayrak, güç/kayıp, ayrı kara ordu ve donanma satırları
+  ile ilgili birim sayıları gösteriliyor (`internal/render/active_wars.go`).
+
+- 2026-09-23: Tur Bitir akışında AI'nin oyuncuya savaş ilanı, `Hızlı Tur` açık
+  olsa bile ayrı Savaş Özeti modalıyla durduruluyor. Panelde ilan eden taraf ve
+  oyuncu tarafının gerçek katılan müttefikleri bayrak/ad ile; cephe toplamları
+  ordu, kara/deniz birimi, bölge, hazine, tahıl ve mevcut altın ekonomi
+  snapshot'ı ile gösteriliyor. Panel yalnız `Tamam` düğmesine tıklanınca
+  kapanıyor (`internal/game/game.go`, `internal/game/war_summary.go`,
+  `internal/render/war_summary.go`).
+
+- 2026-09-23: Venedik–Flandre gibi dış devlet-vassal ticaret anlaşmaları,
+  `NormalizeVassalage` sırasında artık sahip devletin diplomasi kuralıyla
+  silinmiyor; `StanceTrade` ilişkisi ve iki yönlü rota save/load sonrasında
+  korunuyor (`internal/diplomacy/vassalage.go`).
+
+- 2026-09-23: Dış devletler vassallarla doğrudan kurabildiği ticaret
+  anlaşmasını artık doğrudan `Ticareti Bitir` aksiyonuyla da kapatabiliyor;
+  aktif vassal rotalarında diplomasi hedefi gereksiz yere sahip devlete
+  yönlendirilmiyor. (`internal/diplomacy/vassalage.go`,
+  `internal/render/diplom.go`)
+
+- 2026-09-23: Oyuncunun kendi ordu/donanma seçimi bilgi panelini otomatik
+  açmıyor; alt HUD'da Ordu düğmesinin 16 px solunda türüne göre renklenen
+  `Ordu Detay` veya `Donanma Detay` düğmesi görünür. Rakip ordu/donanma
+  seçildiğinde bilgi paneli açık kalıyor ve detay düğmesi gizleniyor. Panelin
+  çizim, hit-test, cursor ve tooltip görünürlüğü aynı geçici renderer durumuna
+  bağlandı; seçili ordu/donanma markerına sağ tıklama bilgi panelini açıyor
+  (`internal/render/panel.go`, `internal/render/renderer.go`,
   `internal/render/renderer_input.go`).
 
 - 2026-09-23: Oyuncu ordu ve filo hareketinde hareket puanına göre deterministik

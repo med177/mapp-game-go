@@ -212,8 +212,10 @@ AI kontrollü HRE'de pending state oluşturulmaz; otomatik siyasi çözüm korun
 
 `WarLedger`, `RelationKey` ile aynı sıralı taraf anahtarında yalnız aktif savaşın kalıcı
 sonuç state'ini tutar: başlangıç turu, iki tarafın başlangıç kara bölgesi sayısı, tamamen
-kaybedilen birlikler, ele geçirilen bölge sayıları, son muharebe turu ve son barış teklifi
-turu. `FactionA`/`FactionB` sayaçların relation anahtarıyla uyumlu alfabetik taraflarını
+kaybedilen birliklerin toplamı ile kara ordusu ve filo ayrımı, ele geçirilen bölge sayıları,
+son muharebe turu ve son barış teklifi turu. `CasualtiesA/B` toplam alanları barış
+değerlendirmeleriyle geriye dönük uyumluluk için korunur; `CasualtiesArmyA/B` ve
+`CasualtiesFleetA/B` yeni muharebelerde ordunun türüne göre doldurulur. `FactionA`/`FactionB` sayaçların relation anahtarıyla uyumlu alfabetik taraflarını
 korurken, `DeclarerFactionID`/`DefenderFactionID` ilk savaş ilanının yönünü ayrıca save'e
 yazar; bu sayede görünümde ilan eden taraf solda, savunan sağda kalır. Eski save'lerde bu
 yeni yön alanları olmadığında korunan `Relation.FactionA`/`FactionB` sırası kullanılır.
