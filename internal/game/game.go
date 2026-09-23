@@ -49,6 +49,7 @@ type Game struct {
 	aiDiagnosticReportSaved           bool
 	escortFollowDepth                 int
 	pendingWarFollowUp                *render.InputAction
+	pendingPlayerMovement             *pendingPlayerMovement
 	warDeclarationContinuationPending bool
 	loadSelectReturnPhase             state.Phase
 	lastLandUnitID                    string
@@ -64,6 +65,12 @@ type pendingSortieState struct {
 	waitFrames     int
 	showBattlePlan bool
 	focus          int
+}
+
+type pendingPlayerMovement struct {
+	armyID             army.ArmyID
+	steps              []world.RegionID
+	targetSettlementID string
 }
 
 type aiTurnState struct {
@@ -166,6 +173,7 @@ func (g *Game) Update() error {
 		return nil
 	}
 	audio.UpdateMusic()
+	g.advancePendingPlayerMovement()
 
 	// Pencerenin X düğmesine basılması varsayılan olarak oyunu doğrudan
 	// kapatmasın; mevcut iki seçenekli onay modalını kullan.
@@ -350,7 +358,7 @@ func (g *Game) Update() error {
 			}
 			g.startAITurnSequence()
 		case render.ActionMoveArmy:
-			g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed, action.ContactAttackerHolding, action.ContactDefenderHolding)
+			g.startPlayerMovement(action)
 		case render.ActionEngageNavalFleet:
 			g.engageNavalFleet(action.ArmyID, action.TargetArmyID)
 		case render.ActionResolveNavalContact:
@@ -457,7 +465,9 @@ func (g *Game) Update() error {
 					followUp.Kind = render.ActionMoveArmy
 					g.pendingWarFollowUp = &followUp
 				} else {
-					g.moveArmyToSettlementWithStance(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance)
+					followUp := action
+					followUp.Kind = render.ActionMoveArmy
+					g.startPlayerMovement(followUp)
 				}
 			}
 		case render.ActionProposePeace:
@@ -701,6 +711,8 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.gs = res.gs
 		refreshMarketOrdersAndPrices(g.gs)
 		g.pendingWarFollowUp = nil
+		g.pendingPlayerMovement = nil
+		g.renderer.CancelArmyMovementAnimation()
 		g.warDeclarationContinuationPending = false
 		g.gs.AIDiagnosticHistory = nil
 		g.gs.AIDiagnosticCaptureTurnsRemain = 0
@@ -721,6 +733,8 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.gs = res.gs
 		refreshMarketOrdersAndPrices(g.gs)
 		g.pendingWarFollowUp = nil
+		g.pendingPlayerMovement = nil
+		g.renderer.CancelArmyMovementAnimation()
 		g.warDeclarationContinuationPending = false
 		if g.gs.DevelopmentMode {
 			g.gs.AIDiagnosticHistory = nil
@@ -2793,7 +2807,7 @@ func (g *Game) resumeWarDeclarationFlow() {
 		case render.ActionDeclareWar:
 			g.renderer.ShowSiegeDecision(action.ArmyID, action.TargetRegion)
 		case render.ActionMoveArmy:
-			g.moveArmyToSettlementWithStance(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance)
+			g.startPlayerMovement(action)
 		}
 	}
 	g.warDeclarationContinuationPending = false
@@ -3885,6 +3899,8 @@ func (g *Game) resetToScenarioSelect(editMode bool) {
 	g.editModeRequested = editMode && g.renderer.EditModeEnabled
 	g.pendingConquestDecisions = nil
 	g.pendingWarFollowUp = nil
+	g.pendingPlayerMovement = nil
+	g.renderer.CancelArmyMovementAnimation()
 	g.warDeclarationContinuationPending = false
 	g.renderer.ReloadGameState(gs)
 	g.renderer.SetEventCodexEntries([6][]render.EventCodexEntry{})
@@ -5457,6 +5473,100 @@ func (g *Game) sanitizeOccupiedNeutralRegions() {
 			continue
 		}
 		region.ApplyConquest(ownerID, ownerReligion(g.gs, ownerID))
+	}
+}
+
+func (g *Game) startPlayerMovement(action render.InputAction) {
+	if g == nil || g.gs == nil {
+		return
+	}
+	// Savaş/temas modalından dönen hareket, daha önce onaylanmış tek bir
+	// adımdır. Bu akışı rota kuyruğuna yeniden sokmak aynı savaşı tekrarlatır.
+	if action.ContactResolved || action.NavalAttack {
+		if a := g.gs.Armies[action.ArmyID]; a != nil {
+			if route := g.gs.MovementRouteForArmy(a, action.TargetRegion); len(route) >= 2 {
+				g.renderer.StartArmyMovementAnimation(a.ID, action.TargetRegion, action.TargetSettlementID)
+			}
+		}
+		g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed, action.ContactAttackerHolding, action.ContactDefenderHolding)
+		return
+	}
+	a := g.gs.Armies[action.ArmyID]
+	if a == nil || action.TargetRegion == "" {
+		return
+	}
+	route := g.gs.MovementRouteForArmy(a, action.TargetRegion)
+	if len(route) < 2 {
+		g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed, action.ContactAttackerHolding, action.ContactDefenderHolding)
+		return
+	}
+	g.pendingPlayerMovement = &pendingPlayerMovement{
+		armyID:             action.ArmyID,
+		steps:              append([]world.RegionID(nil), route[1:]...),
+		targetSettlementID: action.TargetSettlementID,
+	}
+	g.advancePendingPlayerMovement()
+}
+
+// advancePendingPlayerMovement, kullanıcı tarafından seçilen çok adımlı yolu
+// mevcut tek-bölge hareket çözümlemesini tekrar kullanarak yürütür. Her adım
+// arasında renderer animasyonu beklenir; savaş, temas veya karar penceresi
+// açılırsa kuyruk bırakılır ve mevcut modal akışı devralır.
+func (g *Game) advancePendingPlayerMovement() {
+	if g == nil || g.gs == nil || g.pendingPlayerMovement == nil || g.renderer == nil {
+		return
+	}
+	if g.renderer.IsArmyMovementAnimating() || g.renderer.PlayerMovementBlocked() {
+		return
+	}
+	if g.gs.PendingNavalContact != nil || g.gs.PendingLandContact != nil {
+		return
+	}
+	pending := g.pendingPlayerMovement
+	if len(pending.steps) == 0 {
+		g.pendingPlayerMovement = nil
+		return
+	}
+	a := g.gs.Armies[pending.armyID]
+	if a == nil || a.OwnerID != string(g.gs.PlayerFactionID) {
+		g.pendingPlayerMovement = nil
+		return
+	}
+	next := pending.steps[0]
+	settlementID := ""
+	if len(pending.steps) == 1 {
+		settlementID = pending.targetSettlementID
+	}
+	if target := g.gs.Regions[next]; target != nil && g.renderer.OpenQueuedWarConfirm(a, target) {
+		g.pendingPlayerMovement = nil
+		g.renderer.CancelArmyMovementAnimation()
+		return
+	}
+	fromRegion := a.RegionID
+	g.renderer.StartArmyMovementAnimation(a.ID, next, settlementID)
+	g.moveArmyToSettlementWithStance(a.ID, next, settlementID, combat.BattleStanceBalanced)
+
+	updated := g.gs.Armies[pending.armyID]
+	if updated == nil {
+		g.pendingPlayerMovement = nil
+		g.renderer.CancelArmyMovementAnimation()
+		return
+	}
+	if updated.RegionID != next {
+		// Hedef adım bir savaş/karar modalı açtı veya geçerliliğini kaybetti.
+		// Modal, mevcut tek-adımlı hareket sözleşmesiyle devam eder.
+		g.pendingPlayerMovement = nil
+		g.renderer.CancelArmyMovementAnimation()
+		return
+	}
+	if fromRegion == updated.RegionID {
+		g.pendingPlayerMovement = nil
+		g.renderer.CancelArmyMovementAnimation()
+		return
+	}
+	pending.steps = pending.steps[1:]
+	if len(pending.steps) == 0 {
+		g.pendingPlayerMovement = nil
 	}
 }
 

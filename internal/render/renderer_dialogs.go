@@ -1855,6 +1855,11 @@ func (r *Renderer) handleEventCodexInput() InputAction {
 }
 
 func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel string, action InputAction, declineHook func()) {
+	if action.Kind == ActionEmbarkArmy {
+		r.freezeMovementPreviewAtCursor()
+	} else {
+		r.clearMovementPreviewFreeze()
+	}
 	r.confirmDialog = confirmDialogState{
 		show:          true,
 		title:         title,
@@ -2220,23 +2225,27 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {
 		if acceptBtn.HitTest(mx, my) {
 			action := r.confirmDialog.pendingAction
+			r.clearMovementPreviewFreeze()
 			r.confirmDialog = confirmDialogState{}
 			return action
 		}
 		if hasThird && thirdBtn.Enabled && thirdBtn.HitTest(mx, my) {
 			action := r.confirmDialog.thirdAction
+			r.clearMovementPreviewFreeze()
 			r.confirmDialog = confirmDialogState{}
 			return action
 		}
 		if declineBtn.HitTest(mx, my) {
 			if r.confirmDialog.declineActs {
 				action := r.confirmDialog.declineAction
+				r.clearMovementPreviewFreeze()
 				r.confirmDialog = confirmDialogState{}
 				return action
 			}
 			if r.confirmDialog.declineHook != nil {
 				r.confirmDialog.declineHook()
 			}
+			r.clearMovementPreviewFreeze()
 			r.confirmDialog = confirmDialogState{}
 			return InputAction{}
 		}
@@ -2248,10 +2257,12 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 		if r.confirmDialog.declineHook != nil {
 			r.confirmDialog.declineHook()
 		}
+		r.clearMovementPreviewFreeze()
 		r.confirmDialog = confirmDialogState{}
 	}
 	if r.keyJustPressed(ebiten.KeyY) || r.keyJustPressed(ebiten.KeyEnter) {
 		action := r.confirmDialog.pendingAction
+		r.clearMovementPreviewFreeze()
 		r.confirmDialog = confirmDialogState{}
 		return action
 	}

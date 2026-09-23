@@ -206,6 +206,14 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhasePlayerTurn:
+		if r.navalMovementTargetHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		if r.armyMovementTargetHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 		if r.currentRegionArmyTaskHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
@@ -471,7 +479,13 @@ func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
-	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || (imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy)) || musicHudInteractiveHit(fx, fy) || activeWarsHudButtonHit(fx, fy) || turnTechHudTechHit(fx, fy) {
+	armyDetailHover := false
+	if r.SelectedArmy != "" {
+		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil {
+			armyDetailHover = armyDetailHUDButtonHit(fx, fy, selected.IsNaval)
+		}
+	}
+	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || armyDetailHover || (imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy)) || musicHudInteractiveHit(fx, fy) || activeWarsHudButtonHit(fx, fy) || turnTechHudTechHit(fx, fy) {
 		return true
 	}
 	if victoryProgressHit(fx, fy) {
@@ -487,7 +501,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 			return true
 		}
 	}
-	if r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
+	if r.showArmyDetailPanel && r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
 		if r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
 			return buildArmyPanelCloseButton().HitTest(fx, fy)
 		}

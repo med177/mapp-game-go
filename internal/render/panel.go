@@ -462,6 +462,29 @@ func buildImperialHUDButton() gameui.Button {
 	return buttonFromRectF32(imperialHUDButtonRect(), "İmparatorluk")
 }
 
+const armyDetailHUDButtonW = float32(116)
+
+func armyDetailHUDButtonRect() [4]float32 {
+	armyRect := BottomButtonRects()[0]
+	x := armyRect[0] - 8 - armyDetailHUDButtonW
+	if x < 8 {
+		x = 8
+	}
+	return [4]float32{x, armyRect[1], armyDetailHUDButtonW, armyRect[3]}
+}
+
+func buildArmyDetailHUDButton(isNaval bool) gameui.Button {
+	label := "Ordu Detay"
+	if isNaval {
+		label = "Donanma Detay"
+	}
+	return buttonFromRectF32(armyDetailHUDButtonRect(), label)
+}
+
+func armyDetailHUDButtonHit(fx, fy float64, isNaval bool) bool {
+	return buildArmyDetailHUDButton(isNaval).HitTest(fx, fy)
+}
+
 func imperialHUDStatusText(gs *state.GameState) string {
 	if gs == nil || gs.Imperial == nil {
 		return ""
@@ -639,7 +662,7 @@ func turnTechHudTechHit(fx, fy float64) bool {
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
-func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, recruitEnabled bool, recruitReason string, showTrade, showDiplomacy, showTech, showActiveWars bool, mapMode MapMode) {
+func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID army.ArmyID, showArmyDetail, showRecruit, recruitEnabled bool, recruitReason string, showTrade, showDiplomacy, showTech, showActiveWars bool, mapMode MapMode) {
 	by := float32(0)
 	bw := topStatusW
 	if bw > float32(ScreenWidth) {
@@ -779,6 +802,29 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, showRecruit, rec
 		status := imperialHUDStatusText(gs)
 		status = trimTextToWidth(status, FaceSmall, float64(btn.W)-10)
 		drawUILabel(screen, gameui.Rect{X: btn.X + 5, Y: btn.Y + 32, W: btn.W - 10}, status, color.RGBA{232, 210, 162, 235}, gameui.TextSmall, gameui.TextAlignCenter)
+	}
+	if selectedArmyID != "" {
+		selectedArmy := gs.Armies[selectedArmyID]
+		if selectedArmy != nil {
+			btn := buildArmyDetailHUDButton(selectedArmy.IsNaval)
+			landNormal := color.RGBA{88, 62, 30, 235}
+			landActive := color.RGBA{156, 108, 44, 250}
+			navalNormal := color.RGBA{35, 72, 125, 235}
+			navalActive := color.RGBA{52, 128, 198, 250}
+			bg := landNormal
+			activeBG := landActive
+			if selectedArmy.IsNaval {
+				bg = navalNormal
+				activeBG = navalActive
+			}
+			style := solidButtonStyle(bg, panelBorder, ColorWhite, 6)
+			if showArmyDetail {
+				style.BG = activeBG
+			}
+			style.BorderWidth = 1.5
+			style.TextVariant = gameui.TextMedium
+			drawUIButtonWidget(screen, btn, style)
+		}
 	}
 
 	drawDateMenuHud(screen, gs, mapMode)

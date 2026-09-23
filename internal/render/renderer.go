@@ -71,6 +71,8 @@ var terrainAreaMoveTargetColor = color.RGBA{255, 165, 40, 225}
 
 var terrainAreaMoveTargetHoverColor = color.RGBA{70, 220, 100, 190}
 
+var movementTargetHoverColor = color.RGBA{95, 255, 175, 245}
+
 // Renderer kamerayı ve dünya haritasını yönetir.
 type Renderer struct {
 	gs       *state.GameState
@@ -93,6 +95,7 @@ type Renderer struct {
 	SelectedRegion         world.RegionID
 	merchantRouteHighlight world.RegionID
 	SelectedArmy           army.ArmyID
+	showArmyDetailPanel    bool
 	// SelectedEmbarkedArmyFleet, seçili filonun üzerindeki kara ordusunun
 	// bilgi panelini gösterdiğini belirtir. Mekanik seçim ve hareket akışı
 	// yine SelectedArmy üzerinden filoyu kullanmaya devam eder.
@@ -271,6 +274,16 @@ type Renderer struct {
 
 	armyIconBuf                 []armyIconPos
 	armyIconCacheValid          bool
+	armyMovementAnimation       armyMovementAnimation
+	movementReachability        state.MovementReachability
+	movementReachabilityArmy    army.ArmyID
+	movementReachabilityRegion  world.RegionID
+	movementReachabilityPoints  int
+	movementReachabilityValid   bool
+	movementRegionBuf           []world.RegionID
+	movementPreviewFrozen       bool
+	movementPreviewFrozenX      float64
+	movementPreviewFrozenY      float64
 	merchantTradeStatusCache    map[army.ArmyID]state.MerchantFleetTradeStatus
 	merchantTradeStatusCacheSet bool
 	terrainAreaImage            *ebiten.Image
@@ -389,6 +402,17 @@ type Renderer struct {
 type merchantTradeMainPortRef struct {
 	regionID     world.RegionID
 	settlementID string
+}
+
+type armyMovementAnimation struct {
+	armyID    army.ArmyID
+	fromX     float64
+	fromY     float64
+	toX       float64
+	toY       float64
+	startedAt time.Time
+	duration  time.Duration
+	active    bool
 }
 
 type confirmDialogState struct {
@@ -893,6 +917,165 @@ func (r *Renderer) MarkMapDirty() {
 	r.worldMap.MarkDirty()
 }
 
+// StartArmyMovementAnimation, oyun katmanının çözdüğü tek bir bölge geçişini
+// renderer tarafında ortak dünya koordinatlarıyla canlandırır. State anında
+// yeni bölgeye geçirilse de marker kısa süre boyunca iki anchor arasında akar.
+func (r *Renderer) StartArmyMovementAnimation(aid army.ArmyID, target world.RegionID, targetSettlementID string) {
+	if r == nil || r.gs == nil || r.worldMap == nil || aid == "" || target == "" {
+		return
+	}
+	a := r.gs.Armies[aid]
+	if a == nil {
+		return
+	}
+	_, fromSX, fromSY, ok := r.armyDisplayGroup(a)
+	if !ok {
+		return
+	}
+	fromX, fromY := r.screenToWorld(float64(fromSX), float64(fromSY))
+	toX, toY, ok := r.movementWorldAnchor(target, targetSettlementID)
+	if !ok {
+		return
+	}
+	if math.Abs(fromX-toX)+math.Abs(fromY-toY) < 0.01 {
+		r.armyMovementAnimation = armyMovementAnimation{}
+		return
+	}
+	r.armyMovementAnimation = armyMovementAnimation{
+		armyID:    aid,
+		fromX:     fromX,
+		fromY:     fromY,
+		toX:       toX,
+		toY:       toY,
+		startedAt: time.Now(),
+		duration:  220 * time.Millisecond,
+		active:    true,
+	}
+	r.armyIconCacheValid = false
+}
+
+func (r *Renderer) IsArmyMovementAnimating() bool {
+	if r == nil || !r.armyMovementAnimation.active {
+		return false
+	}
+	if time.Since(r.armyMovementAnimation.startedAt) >= r.armyMovementAnimation.duration {
+		r.armyMovementAnimation.active = false
+		return false
+	}
+	return true
+}
+
+func (r *Renderer) CancelArmyMovementAnimation() {
+	if r == nil {
+		return
+	}
+	r.armyMovementAnimation = armyMovementAnimation{}
+	r.armyIconCacheValid = false
+}
+
+func (r *Renderer) invalidateMovementReachability() {
+	if r == nil {
+		return
+	}
+	r.movementReachabilityValid = false
+}
+
+func (r *Renderer) freezeMovementPreviewAtCursor() {
+	if r == nil {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	r.movementPreviewFrozen = true
+	r.movementPreviewFrozenX = float64(mx)
+	r.movementPreviewFrozenY = float64(my)
+}
+
+func (r *Renderer) clearMovementPreviewFreeze() {
+	if r == nil {
+		return
+	}
+	r.movementPreviewFrozen = false
+	r.movementPreviewFrozenX = 0
+	r.movementPreviewFrozenY = 0
+}
+
+func (r *Renderer) movementPreviewCursor() (float64, float64) {
+	if r != nil && r.movementPreviewFrozen {
+		return r.movementPreviewFrozenX, r.movementPreviewFrozenY
+	}
+	mx, my := ebiten.CursorPosition()
+	return float64(mx), float64(my)
+}
+
+func (r *Renderer) movementReachabilityForArmy(a *army.Army) state.MovementReachability {
+	if r == nil || r.gs == nil || a == nil {
+		return state.MovementReachability{}
+	}
+	if r.movementReachabilityValid && r.movementReachabilityArmy == a.ID &&
+		r.movementReachabilityRegion == a.RegionID && r.movementReachabilityPoints == a.MovePoints {
+		return r.movementReachability
+	}
+	r.movementReachability = r.gs.MovementReachableForArmy(a)
+	r.movementReachabilityArmy = a.ID
+	r.movementReachabilityRegion = a.RegionID
+	r.movementReachabilityPoints = a.MovePoints
+	r.movementReachabilityValid = true
+	return r.movementReachability
+}
+
+func (r *Renderer) movementWorldAnchor(regionID world.RegionID, settlementID string) (float64, float64, bool) {
+	if r == nil || r.gs == nil || r.worldMap == nil {
+		return 0, 0, false
+	}
+	region := r.gs.Regions[regionID]
+	if region == nil {
+		return 0, 0, false
+	}
+	if settlementID != "" {
+		for index, settlement := range region.Settlements {
+			if settlement.ID != settlementID {
+				continue
+			}
+			if x, y, ok := r.worldMap.SettlementAnchor(region.ID, index); ok {
+				return float64(x), float64(y), true
+			}
+		}
+	}
+	if !region.IsSea {
+		if x, y, ok := r.landArmyAnchor(region); ok {
+			return float64(x), float64(y), true
+		}
+	}
+	x, y := r.regionWorldPos(region)
+	return x, y, true
+}
+
+func (r *Renderer) animatedArmyScreenPos(aid army.ArmyID) (float32, float32, bool) {
+	if r == nil || !r.armyMovementAnimation.active || r.armyMovementAnimation.armyID != aid {
+		return 0, 0, false
+	}
+	animation := &r.armyMovementAnimation
+	elapsed := time.Since(animation.startedAt)
+	if elapsed >= animation.duration {
+		animation.active = false
+		return 0, 0, false
+	}
+	progress := float64(elapsed) / float64(animation.duration)
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > 1 {
+		progress = 1
+	}
+	// Smoothstep, bölge geçişinin başında ve sonunda yumuşak hızlanma/
+	// yavaşlama sağlar.
+	progress = progress * progress * (3 - 2*progress)
+	worldX := animation.fromX + (animation.toX-animation.fromX)*progress
+	worldY := animation.fromY + (animation.toY-animation.fromY)*progress
+	sx, sy := r.worldToScreen(worldX, worldY)
+	return float32(sx), float32(sy), true
+}
+
 func (r *Renderer) RebuildSettlementAnchors() {
 	if r == nil || r.worldMap == nil || r.gs == nil {
 		return
@@ -1010,6 +1193,8 @@ func RefreshFactionHistoricalVisuals(gs *state.GameState) {
 func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
 	r.cancelEditMapBuild()
 	r.gs = gs
+	r.invalidateMovementReachability()
+	r.armyIconCacheValid = false
 	r.invalidateEditRegionCenterMarkers()
 	syncFactionHistoricalFlagNames(gs)
 	r.editSuccessorDropdown.Close()
@@ -1037,9 +1222,11 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	}
 	r.invalidateShapeEditSession()
 	r.resetCamera()
+	r.clearMovementPreviewFreeze()
 	r.SelectedRegion = ""
 	r.merchantRouteHighlight = ""
 	r.SelectedArmy = ""
+	r.showArmyDetailPanel = false
 	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
@@ -1155,6 +1342,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.SelectedRegion = ""
 	r.merchantRouteHighlight = ""
 	r.SelectedArmy = ""
+	r.showArmyDetailPanel = false
 	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
@@ -1214,7 +1402,7 @@ func (r *Renderer) worldInputLockedByPhase() bool {
 // kaldığında, fare koordinatı eski kart alanına denk gelse bile popup
 // gösterilmemelidir.
 func (r *Renderer) armyPanelTooltipActive() bool {
-	if r == nil || r.gs == nil || r.SelectedArmy == "" || r.worldInputLockedByPhase() || r.navalMissionTargeting {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" || !r.showArmyDetailPanel || r.worldInputLockedByPhase() || r.navalMissionTargeting {
 		return false
 	}
 	if r.showHistoricalEvent || r.showCommanderPanel || r.showImperialPanel || r.showAIDiagnostic ||
@@ -1675,7 +1863,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 				recruitReason = recruitPanelDisabledReason(r.gs, r.SelectedRegion)
 			}
 		}
-		DrawBottomPanel(screen, r.gs, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showActiveWars, r.mapMode)
+		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showActiveWars, r.mapMode)
 		r.drawGrainEconomyPopup(screen)
 		r.drawGoldIncomePopup(screen)
 		DrawRegionPanelExpandedScrolledWithTab(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelTab, r.regionPanelScroll)
@@ -1686,9 +1874,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.mapMode != MapModeTrade && r.showRecruitPanel {
 			DrawRecruitPanel(screen, r.gs, r.SelectedRegion, r.recruitUnitID, r.recruitQty)
 		}
-		if r.SelectedEmbarkedArmyFleet != "" && r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
+		if r.showArmyDetailPanel && r.SelectedEmbarkedArmyFleet != "" && r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
 			DrawEmbarkedArmyDetailPanel(screen, r.gs, r.SelectedEmbarkedArmyFleet)
-		} else {
+		} else if r.showArmyDetailPanel {
 			DrawArmyDetailPanel(screen, r.gs, r.SelectedArmy, r.splitSelectedUnits)
 		}
 		DrawMinimap(screen, r.gs, r.camX, r.camY, r.camScale)
@@ -1899,6 +2087,40 @@ func (r *Renderer) ConfirmDialogVisible() bool {
 	return r != nil && r.confirmDialog.show
 }
 
+// PlayerMovementBlocked, rota kuyruğunun mevcut karar pencerelerinin üzerine
+// yeni bir adım bindirmesini engeller.
+func (r *Renderer) PlayerMovementBlocked() bool {
+	if r == nil {
+		return true
+	}
+	return r.regionTaskDialog.show || r.confirmDialog.show || r.warConfirm.show ||
+		r.warSummary.show || r.battlePlan.show || r.battleReport.show ||
+		r.showHistoricalEvent || r.eventDetail != "" || r.showVictoryDetail
+}
+
+// OpenQueuedWarConfirm, rota kuyruğu bir sonraki adımda diplomatik savaş
+// ilanı gerektiren yabancı bölgeye geldiğinde, normal sağ tık akışındaki aynı
+// savaş onayını açar. Kuyruk bu modalı doğrudan aşmaz.
+func (r *Renderer) OpenQueuedWarConfirm(attacker *army.Army, target *world.Region) bool {
+	if r == nil || r.gs == nil || attacker == nil || target == nil || target.OwnerID == "" ||
+		target.OwnerID == attacker.OwnerID || target.IsSea || !shouldPromptWarConfirmForMove(r.gs, attacker, target) {
+		return false
+	}
+	name := target.OwnerID
+	if owner := r.gs.Factions[faction.FactionID(target.OwnerID)]; owner != nil && owner.NameTR != "" {
+		name = owner.NameTR
+	}
+	enemyArmy := r.gs.SelectBattleDefender(attacker, target.ID, attacker.IsNaval && target.CanNavalEnter())
+	battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(attacker, target, enemyArmy)
+	r.openWarConfirm(faction.FactionID(target.OwnerID), name, attacker.ID, target.ID, func() army.ArmyID {
+		if enemyArmy == nil {
+			return ""
+		}
+		return enemyArmy.ID
+	}(), opensBattlePlan, battleAction, battleContext)
+	return true
+}
+
 func (r *Renderer) drawAITurnOverlay(screen *ebiten.Image) {
 	if r.aiTurnActor == "" {
 		return
@@ -1947,6 +2169,11 @@ func (r *Renderer) tradeOverlayOccludesPoint(x, y float64) bool {
 	if topStatusPanelHit(x, y) || topDateHudHit(x, y) || musicHudHit(x, y) || bottomActionHudHit(x, y) {
 		return true
 	}
+	if r.SelectedArmy != "" {
+		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(x, y, selected.IsNaval) {
+			return true
+		}
+	}
 	tx, ty, tw, th := turnTechHudRect()
 	if x >= float64(tx) && x <= float64(tx+tw) && y >= float64(ty) && y <= float64(ty+th) {
 		return true
@@ -1963,8 +2190,10 @@ func (r *Renderer) tradeOverlayOccludesPoint(x, y float64) bool {
 	if r.selectedFactionPanel != "" && factionPanelHit(x, y) {
 		return true
 	}
-	if rect, ok := armyDetailPanelRect(r.gs, r.SelectedArmy); ok && rect.Hit(x, y) {
-		return true
+	if r.showArmyDetailPanel {
+		if rect, ok := armyDetailPanelRect(r.gs, r.SelectedArmy); ok && rect.Hit(x, y) {
+			return true
+		}
 	}
 	for i := range r.tradeCenters {
 		c := r.tradeCenters[i]
@@ -1978,6 +2207,127 @@ func (r *Renderer) tradeOverlayOccludesPoint(x, y float64) bool {
 	// Ticaret tooltip'i harita çiziminden sonra en üst katmanda çizilir.
 	// Bu nedenle altındaki rota parçalarını gizlememeli; popup zaten onların
 	// üzerinde görünür.
+	return false
+}
+
+// movementPreviewCursorOverPanel, hareket önizlemesinin yalnızca harita
+// yüzeyindeyken hesaplanmasını sağlar. Harita marker'ları panelin altında
+// çizildiği için bu kontrol çizimden önce yapılır; böylece panel üstünde
+// görünmeyen rota/halkalar için gereksiz reachability ve hit-test hesabı da
+// yapılmaz.
+func (r *Renderer) movementPreviewCursorOverPanel(x, y float64) bool {
+	if r == nil || r.gs == nil {
+		return true
+	}
+	if r.tradeOverlayOccludesPoint(x, y) {
+		return true
+	}
+	if r.SelectedArmy != "" {
+		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(x, y, selected.IsNaval) {
+			return true
+		}
+	}
+
+	if r.showDiplomacy {
+		if r.diplomacyTargetFaction == "" {
+			layout := diplomacyListLayoutForScreen()
+			if layout.panelRect.Hit(x, y) || layout.historyRect.Hit(x, y) {
+				return true
+			}
+		} else {
+			layout := diplomacyOfferLayoutForScreen()
+			if layout.panelRect.Hit(x, y) || layout.historyRect.Hit(x, y) {
+				return true
+			}
+			if target := r.gs.Factions[r.diplomacyTargetFaction]; target != nil && target.OverlordID == r.gs.PlayerFactionID {
+				if buildDiplomacyVassalManagementLayout(r.gs, r.diplomacyTargetFaction).panelRect.Hit(x, y) {
+					return true
+				}
+			}
+		}
+	}
+	if r.showTech && techPanelLayoutForScreen().panelRect.Hit(x, y) {
+		return true
+	}
+	if r.showTrade {
+		tx, ty, tw, th := tradePanelRect()
+		if x >= float64(tx) && x <= float64(tx+tw) && y >= float64(ty) && y <= float64(ty+th) {
+			return true
+		}
+	}
+	if r.showImperialPanel && imperialPanelRect().Hit(x, y) {
+		return true
+	}
+	if r.showActiveWars && activeWarsPanelHit(x, y) {
+		return true
+	}
+	if r.showMerchantRoutePanel && merchantRoutePanelRect(r).Hit(x, y) {
+		return true
+	}
+	if r.showNavalMissionPanel && r.navalMissionPanelRect().Hit(x, y) {
+		return true
+	}
+	if r.showRecruitPanel && RecruitPanelBoundsHit(x, y, r.gs, r.SelectedRegion) {
+		return true
+	}
+	if r.showAIDiagnostic && aiDiagnosticPanelRect().Hit(x, y) {
+		return true
+	}
+	if r.showCommanderPanel && commanderPanelRect().Hit(x, y) {
+		return true
+	}
+	if r.showShortcuts && shortcutsPanelRect().Hit(x, y) {
+		return true
+	}
+	if _, _, _, ok := r.selectedSiegePanelState(); ok && r.selectedSiegePanelHit(x, y) {
+		return true
+	}
+	if _, _, _, _, _, ok := r.selectedDefensiveSiegePanelState(); ok && r.selectedSiegePanelHit(x, y) {
+		return true
+	}
+
+	if r.regionTaskDialog.show && buildRegionTaskDialogModal().Panel.Rect.Hit(x, y) {
+		return true
+	}
+	if r.confirmDialog.show && buildConfirmDialogModalFor(r.confirmDialog).Panel.Rect.Hit(x, y) {
+		return true
+	}
+	if r.warConfirm.show && buildWarConfirmModal().Panel.Rect.Hit(x, y) {
+		return true
+	}
+	if r.warSummary.show && warSummaryPopupHit(x, y) {
+		return true
+	}
+	if r.battlePlan.show && buildBattlePlanModal().Panel.Rect.Hit(x, y) {
+		return true
+	}
+	if _, ok := r.playerDiplomacyOfferIndex(); ok && buildDiplomacyOfferModal().Panel.Rect.Hit(x, y) {
+		return true
+	}
+	if r.battleReport.show && battleReportPopupHit(x, y) {
+		return true
+	}
+	if r.showEventCodex && eventCodexPopupHit(x, y) {
+		return true
+	}
+	if r.eventDetail != "" && eventDetailPopupHit(x, y) {
+		return true
+	}
+	if r.showVictoryDetail && victoryDetailPopupHit(x, y) {
+		return true
+	}
+	if r.showHistoricalEvent {
+		if len(r.commanderArrivals) > 0 {
+			if buildCommanderArrivalModal().Panel.Rect.Hit(x, y) {
+				return true
+			}
+		} else if historicalEventPopupHit(x, y) {
+			return true
+		}
+	}
+	if r.combatLogTimer > 0 && r.infoPopupRect().Hit(x, y) {
+		return true
+	}
 	return false
 }
 
@@ -2191,38 +2541,67 @@ func enemyArmyInPlayerMoveRange(gs *state.GameState, targetArmy *army.Army) bool
 	return false
 }
 
-// drawMoveTargets seçili ordunun gidebileceği komşu bölgeleri vurgular.
+// drawMoveTargets seçili ordunun bu tur ulaşabildiği hareket alanını ve
+// cursor'ın işaret ettiği hedefe giden rota zincirini vurgular.
 func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 	a, ok := r.gs.Armies[r.SelectedArmy]
 	if !ok || a.OwnerID != string(r.gs.PlayerFactionID) || a.MovePoints <= 0 {
 		return
 	}
-	src, ok := r.gs.Regions[a.RegionID]
-	if !ok {
+	mx, my := r.movementPreviewCursor()
+	if r.movementPreviewCursorOverPanel(mx, my) {
 		return
 	}
-	mx, my := ebiten.CursorPosition()
+	reachability := r.movementReachabilityForArmy(a)
+	if len(reachability.Nodes) == 0 {
+		return
+	}
+	hoverRegionID, hoverSettlementID, movementTargetHovered := r.navalMovementTargetAt(float64(mx), float64(my), a, reachability)
+	if !a.IsNaval {
+		hoverRegionID, movementTargetHovered = r.armyMovementTargetAt(float64(mx), float64(my), a, reachability)
+		hoverSettlementID = ""
+	}
 
-	for _, nid := range src.Neighbors {
+	// Önce rota çizilir; halkalar ve yerleşim marker'ları çizginin uçlarını
+	// kapatır. Böylece cursor hareket ettikçe aynı fiziksel zincir güncellenir.
+	if !a.IsNaval {
+		if _, fleetX, fleetY, ok := r.embarkFleetTargetAt(float64(mx), float64(my), a); ok {
+			startX, startY := r.selectedArmyMovementScreenPos(a)
+			vector.StrokeLine(screen, startX, startY, fleetX, fleetY, 7, color.RGBA{30, 70, 105, 85}, true)
+			vector.StrokeLine(screen, startX, startY, fleetX, fleetY, 2.5, color.RGBA{100, 220, 255, 215}, true)
+		}
+	}
+	if route := r.movementRouteForCursor(a, reachability, float64(mx), float64(my)); len(route) > 1 {
+		previousX, previousY := r.selectedArmyMovementScreenPos(a)
+		for index := 1; index < len(route); index++ {
+			settlementID := ""
+			if index == len(route)-1 && a.IsNaval {
+				_, settlementID, _ = r.navalLandMoveTargetAt(float64(mx), float64(my), a)
+			}
+			x, y := r.movementRegionScreenPos(route[index], settlementID)
+			vector.StrokeLine(screen, previousX, previousY, x, y, 7, color.RGBA{30, 70, 105, 85}, true)
+			vector.StrokeLine(screen, previousX, previousY, x, y, 2.5, color.RGBA{100, 220, 255, 215}, true)
+			previousX, previousY = x, y
+		}
+	}
+
+	r.movementRegionBuf = r.movementRegionBuf[:0]
+	for regionID := range reachability.Nodes {
+		if regionID != a.RegionID || (a.IsNaval && a.IsDocked()) {
+			r.movementRegionBuf = append(r.movementRegionBuf, regionID)
+		}
+	}
+	sort.Slice(r.movementRegionBuf, func(i, j int) bool {
+		left := reachability.Nodes[r.movementRegionBuf[i]]
+		right := reachability.Nodes[r.movementRegionBuf[j]]
+		if left.Cost != right.Cost {
+			return left.Cost < right.Cost
+		}
+		return r.movementRegionBuf[i] < r.movementRegionBuf[j]
+	})
+	for _, nid := range r.movementRegionBuf {
 		nRegion, ok := r.gs.Regions[nid]
 		if !ok || nRegion.IsLocked {
-			continue
-		}
-		// Bir normal bölgenin içindeki move_cost: 0 arazi alanı bölgenin
-		// kendisini kilitlemez; hareket hedefi marker'ı da bu alanı geçilebilir
-		// sanmamalıdır. Kara bölgeleri için gerçek movement maliyeti kontrolünü
-		// kullan, deniz hedeflerinde bu kara maliyeti hesabını uygulama.
-		if !nRegion.IsSea {
-			if _, blocked := r.gs.LandRegionMoveCost(nRegion); blocked {
-				continue
-			}
-		}
-		canPreviewWarLanding := a.IsNaval &&
-			len(a.EmbarkedUnits) > 0 &&
-			nRegion.CanLandEnter() &&
-			nRegion.OwnerID != "" &&
-			nRegion.OwnerID != a.OwnerID
-		if !armyCanEnterRegion(r.gs, a, nRegion) && !canPreviewWarLanding {
 			continue
 		}
 
@@ -2232,7 +2611,11 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		// yalnızca hedef göstergesinin ankrajını değiştirir.
 		if a.IsNaval && nRegion.CanLandEnter() {
 			col := navalLandMoveTargetStyle(r.gs, a, nRegion)
-			if r.drawNavalLandMoveTargets(screen, nRegion, len(a.EmbarkedUnits) > 0, col) {
+			settlementID := ""
+			if movementTargetHovered && hoverRegionID == nRegion.ID {
+				settlementID = hoverSettlementID
+			}
+			if r.drawNavalLandMoveTargets(screen, nRegion, len(a.EmbarkedUnits) > 0, col, settlementID, a) {
 				continue
 			}
 			// Geçerli bir liman settlement ankrajı yoksa kara bölgesinin
@@ -2250,7 +2633,11 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			if dx*dx+dy*dy <= float64(terrainAreaMoveTargetRadius*terrainAreaMoveTargetRadius) {
 				vector.FillCircle(screen, float32(sx), float32(sy), terrainAreaMoveTargetFillRad, terrainAreaMoveTargetHoverColor, true)
 			}
-			vector.StrokeCircle(screen, float32(sx), float32(sy), terrainAreaMoveTargetRadius, 2, terrainAreaMoveTargetColor, true)
+			terrainColor := terrainAreaMoveTargetColor
+			if movementTargetHovered && hoverRegionID == nRegion.ID {
+				terrainColor = movementTargetHoverColor
+			}
+			vector.StrokeCircle(screen, float32(sx), float32(sy), terrainAreaMoveTargetRadius, 2, terrainColor, true)
 			continue
 		}
 
@@ -2258,9 +2645,15 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		if a.IsNaval {
 			// Deniz bölgeleri için sabit açık mavi — tarafsız su
 			col = color.RGBA{100, 200, 255, 220}
+			if movementTargetHovered && hoverRegionID == nRegion.ID && hoverSettlementID == "" {
+				col = movementTargetHoverColor
+			}
 		} else {
 			if nRegion.IsSea {
 				col = color.RGBA{120, 230, 240, 220}
+				if movementTargetHovered && hoverRegionID == nRegion.ID {
+					col = movementTargetHoverColor
+				}
 				vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
 				DrawTextCentered(screen, "⛴", sx, sy-8, FaceSmall, color.RGBA{200, 240, 255, 220})
 				continue
@@ -2287,10 +2680,278 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 					DrawTextCentered(screen, "WAR", sx, sy-8, FaceSmall, color.RGBA{255, 200, 80, 230})
 				}
 			}
+			if movementTargetHovered && hoverRegionID == nRegion.ID {
+				col = movementTargetHoverColor
+			}
 		}
 
 		vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
 	}
+
+	// Kara ordusunun deniz bölgesine tıklaması embark akışıdır; bu, kara
+	// rotasının devamı olmadığı için ayrı ve doğrudan hedef olarak kalır.
+	if !a.IsNaval {
+		src := r.gs.Regions[a.RegionID]
+		if src == nil {
+			return
+		}
+		for _, nid := range world.SortedRegionIDs(src.Neighbors) {
+			nRegion := r.gs.Regions[nid]
+			if nRegion == nil || !nRegion.IsSea || nRegion.IsLocked || !armyCanEnterRegion(r.gs, a, nRegion) {
+				continue
+			}
+			sx, sy := r.regionScreenPos(nRegion)
+			col := color.RGBA{120, 230, 240, 220}
+			if movementTargetHovered && hoverRegionID == nRegion.ID {
+				col = movementTargetHoverColor
+			}
+			vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
+			DrawTextCentered(screen, "⛴", sx, sy-8, FaceSmall, color.RGBA{200, 240, 255, 220})
+		}
+	}
+}
+
+func (r *Renderer) movementRouteForCursor(a *army.Army, reachability state.MovementReachability, mx, my float64) []world.RegionID {
+	if a != nil && !a.IsNaval {
+		if _, _, _, ok := r.embarkFleetTargetAt(mx, my, a); ok {
+			// Deniz bölgesi kara hareket grafiğinde yoktur. Cursor doğrudan
+			// "BIN" marker'ına bakıyorsa kara fallback'i, komşu bölgenin
+			// merkez yerleşimine yanlış bir çizgi üretmemelidir.
+			return nil
+		}
+	}
+	targetID, _, ok := r.movementCursorTarget(a, reachability, mx, my)
+	if !ok {
+		return nil
+	}
+	if a != nil && a.IsNaval && a.IsDocked() && targetID == a.RegionID {
+		// Docked filonun deniz RegionID'si grafikte başlangıç düğümüdür;
+		// fakat oyun akışında aynı deniz hücresine tıklamak limandan ayrılma
+		// hareketidir. Çizgi için kaynak/hedef anchor'ını iki nokta olarak
+		// koruyoruz.
+		return []world.RegionID{a.RegionID, a.RegionID}
+	}
+	return reachability.PathTo(targetID)
+}
+
+// navalMovementTargetAt, deniz halkası veya donanmanın kara settlement hedefi
+// üzerindeki gerçek hover hedefini döndürür. Cursor boş harita alanına
+// geldiğinde hareket rotasının fallback düğümünü hedef olarak saymaz.
+func (r *Renderer) navalMovementTargetAt(mx, my float64, fleet *army.Army, reachability state.MovementReachability) (world.RegionID, string, bool) {
+	if r == nil || r.gs == nil || fleet == nil || !fleet.IsNaval {
+		return "", "", false
+	}
+	if regionID, settlementID, ok := r.navalLandMoveTargetAtWithReachability(mx, my, fleet, reachability); ok {
+		return regionID, settlementID, true
+	}
+
+	bestDistance := math.MaxFloat64
+	var bestRegion world.RegionID
+	for regionID := range reachability.Nodes {
+		if regionID == fleet.RegionID && !fleet.IsDocked() {
+			continue
+		}
+		region := r.gs.Regions[regionID]
+		if region == nil || !region.IsSea || region.IsLocked {
+			continue
+		}
+		sx, sy := r.regionScreenPos(region)
+		dx := mx - sx
+		dy := my - sy
+		distance := dx*dx + dy*dy
+		if distance > 22*22 || distance >= bestDistance {
+			continue
+		}
+		bestDistance = distance
+		bestRegion = regionID
+	}
+	return bestRegion, "", bestRegion != ""
+}
+
+func (r *Renderer) navalMovementTargetHovering(fx, fy float64) bool {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" {
+		return false
+	}
+	if r.movementPreviewCursorOverPanel(fx, fy) {
+		return false
+	}
+	fleet := r.gs.Armies[r.SelectedArmy]
+	if fleet == nil || fleet.OwnerID != string(r.gs.PlayerFactionID) || !fleet.IsNaval || fleet.MovePoints <= 0 {
+		return false
+	}
+	reachability := r.movementReachabilityForArmy(fleet)
+	_, _, ok := r.navalMovementTargetAt(fx, fy, fleet, reachability)
+	return ok
+}
+
+func (r *Renderer) armyMovementTargetAt(mx, my float64, armyUnit *army.Army, reachability state.MovementReachability) (world.RegionID, bool) {
+	if r == nil || r.gs == nil || r.worldMap == nil || armyUnit == nil || armyUnit.IsNaval {
+		return "", false
+	}
+
+	bestDistance := math.MaxFloat64
+	var bestRegion world.RegionID
+	for regionID := range reachability.Nodes {
+		if regionID == armyUnit.RegionID {
+			continue
+		}
+		region := r.gs.Regions[regionID]
+		if region == nil || region.IsLocked {
+			continue
+		}
+		sx, sy := r.movementRegionScreenPos(regionID, "")
+		dx := mx - float64(sx)
+		dy := my - float64(sy)
+		distance := dx*dx + dy*dy
+		if distance > 22*22 || distance >= bestDistance {
+			continue
+		}
+		bestDistance = distance
+		bestRegion = regionID
+	}
+
+	// Embark halkaları reachability grafiğine dahil değildir; yine de çizilen
+	// deniz hedefi, diğer hareket halkalarıyla aynı hover davranışını kullanır.
+	source := r.gs.Regions[armyUnit.RegionID]
+	if source != nil {
+		for _, regionID := range world.SortedRegionIDs(source.Neighbors) {
+			region := r.gs.Regions[regionID]
+			if region == nil || !region.IsSea || region.IsLocked || !armyCanEnterRegion(r.gs, armyUnit, region) {
+				continue
+			}
+			sx, sy := r.regionScreenPos(region)
+			dx := mx - sx
+			dy := my - sy
+			distance := dx*dx + dy*dy
+			if distance > 22*22 || distance >= bestDistance {
+				continue
+			}
+			bestDistance = distance
+			bestRegion = regionID
+		}
+	}
+	return bestRegion, bestRegion != ""
+}
+
+func (r *Renderer) armyMovementTargetHovering(fx, fy float64) bool {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" {
+		return false
+	}
+	if r.movementPreviewCursorOverPanel(fx, fy) {
+		return false
+	}
+	armyUnit := r.gs.Armies[r.SelectedArmy]
+	if armyUnit == nil || armyUnit.OwnerID != string(r.gs.PlayerFactionID) || armyUnit.IsNaval || armyUnit.MovePoints <= 0 {
+		return false
+	}
+	_, ok := r.armyMovementTargetAt(fx, fy, armyUnit, r.movementReachabilityForArmy(armyUnit))
+	return ok
+}
+
+// embarkFleetTargetAt, seçili kara ordusunun gerçekten binebileceği filo
+// marker'ını ortak ikon pozisyonlarından bulur. BIN rozeti de aynı marker'a
+// çizildiği için çizgi, ikon ve sağ tık hit-test'i aynı hedefi kullanır.
+func (r *Renderer) embarkFleetTargetAt(mx, my float64, selected *army.Army) (*army.Army, float32, float32, bool) {
+	if r == nil || r.gs == nil || selected == nil || selected.IsNaval {
+		return nil, 0, 0, false
+	}
+	bestDistance := math.MaxFloat64
+	var bestFleet *army.Army
+	var bestX, bestY float32
+	for _, position := range r.armyIconPositions() {
+		fleet := r.gs.Armies[position.ArmyID]
+		if !embarkableFleetForSelectedArmy(r.gs, selected, fleet) {
+			continue
+		}
+		dx := mx - float64(position.X)
+		dy := my - float64(position.Y)
+		distance := dx*dx + dy*dy
+		if distance > 24*24 || distance >= bestDistance {
+			continue
+		}
+		bestDistance = distance
+		bestFleet = fleet
+		bestX, bestY = position.X, position.Y
+	}
+	return bestFleet, bestX, bestY, bestFleet != nil
+}
+
+func (r *Renderer) movementCursorTarget(a *army.Army, reachability state.MovementReachability, mx, my float64) (world.RegionID, string, bool) {
+	if r == nil || r.worldMap == nil || a == nil {
+		return "", "", false
+	}
+	if a.IsNaval {
+		if rid, settlementID, ok := r.navalLandMoveTargetAtWithReachability(mx, my, a, reachability); ok {
+			return rid, settlementID, true
+		}
+	}
+	wx, wy := r.screenToWorld(mx, my)
+	targetID := r.worldMap.RegionAt(int(wx), int(wy))
+	if targetID != "" {
+		isDockedUndock := a.IsNaval && a.IsDocked() && targetID == a.RegionID
+		if _, ok := reachability.Nodes[targetID]; ok && (targetID != a.RegionID || isDockedUndock) {
+			return targetID, "", true
+		}
+	}
+	// Cursor hareket puanını aşan bir hedefte, ekranda cursor'a en yakın son
+	// erişilebilir bölgeyi göster. Böylece rota hareket hakkının bittiği yerde
+	// görsel olarak doğal biçimde kesilir.
+	var best world.RegionID
+	bestDistance := math.MaxFloat64
+	for regionID := range reachability.Nodes {
+		if regionID == a.RegionID {
+			continue
+		}
+		sx, sy := r.movementRegionScreenPos(regionID, "")
+		dx := mx - float64(sx)
+		dy := my - float64(sy)
+		distance := dx*dx + dy*dy
+		if distance < bestDistance || (distance == bestDistance && regionID < best) {
+			bestDistance = distance
+			best = regionID
+		}
+	}
+	if best == "" {
+		return "", "", false
+	}
+	return best, "", true
+}
+
+func (r *Renderer) selectedArmyMovementScreenPos(a *army.Army) (float32, float32) {
+	if r != nil {
+		for _, position := range r.armyIconPositions() {
+			if a != nil && position.ArmyID == a.ID {
+				return position.X, position.Y
+			}
+		}
+	}
+	if a != nil {
+		if region := r.gs.Regions[a.RegionID]; region != nil {
+			sx, sy := r.regionScreenPos(region)
+			return float32(sx), float32(sy)
+		}
+	}
+	return 0, 0
+}
+
+func (r *Renderer) movementRegionScreenPos(regionID world.RegionID, settlementID string) (float32, float32) {
+	region := r.gs.Regions[regionID]
+	if region == nil {
+		return 0, 0
+	}
+	if settlementID != "" {
+		for index, settlement := range region.Settlements {
+			if settlement.ID != settlementID {
+				continue
+			}
+			if x, y, ok := r.worldMap.SettlementAnchor(region.ID, index); ok {
+				sx, sy := r.worldToScreen(float64(x), float64(y))
+				return float32(sx), float32(sy)
+			}
+		}
+	}
+	sx, sy := r.regionScreenPos(region)
+	return float32(sx), float32(sy)
 }
 
 // drawCurrentRegionArmyTaskTarget, düşman toprağında bekleyen seçili ordunun
@@ -2342,7 +3003,8 @@ func navalLandMoveTargetStyle(gs *state.GameState, fleet *army.Army, target *wor
 	}
 
 	col := color.RGBA{80, 160, 255, 160}
-	if target.OwnerID != "" && target.OwnerID != fleet.OwnerID {
+	friendly := target.OwnerID == fleet.OwnerID || armyRegionIsFriendly(gs, fleet, target)
+	if target.OwnerID != "" && !friendly {
 		key := faction.RelationKey(faction.FactionID(fleet.OwnerID), faction.FactionID(target.OwnerID))
 		var rel *faction.Relation
 		var exists bool
@@ -2362,8 +3024,8 @@ func navalLandMoveTargetStyle(gs *state.GameState, fleet *army.Army, target *wor
 
 // drawNavalLandMoveTargets, geçerli kara hedefindeki liman veya çıkarma
 // merkezlerini bölge merkezinden bağımsız olarak işaretler.
-func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.Region, landing bool, col color.RGBA) bool {
-	if r == nil || r.worldMap == nil || region == nil || region.IsSea {
+func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.Region, landing bool, col color.RGBA, hoveredSettlementID string, fleet *army.Army) bool {
+	if r == nil || r.worldMap == nil || region == nil || region.IsSea || fleet == nil {
 		return false
 	}
 
@@ -2377,11 +3039,23 @@ func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.
 			continue
 		}
 		sx, sy := r.worldToScreen(float64(ax), float64(ay))
+		hovered := settlement.ID == hoveredSettlementID
 		if settlement.Type == world.SettlementPort {
-			// Liman hedefi, filonun dock olacağını anlatan sabit koyu mavi
-			// daireyle gösterilir; liman docking'i çıkarma hedefi gibi görünmez.
-			vector.StrokeCircle(screen, float32(sx), float32(sy), navalDockTargetRadius, 3, navalDockTargetColor, true)
+			// Kendi realm'ımızdaki veya müttefik limanlar docking hedefi olarak
+			// mevcut koyu mavi renkte kalır. Yabancı limanlar ise yerleşim
+			// hedefleriyle aynı ilişki rengini kullanır.
+			portColor := col
+			if region.OwnerID == fleet.OwnerID || armyRegionIsFriendly(r.gs, fleet, region) {
+				portColor = navalDockTargetColor
+			}
+			if hovered {
+				portColor = movementTargetHoverColor
+			}
+			vector.StrokeCircle(screen, float32(sx), float32(sy), navalDockTargetRadius, 3, portColor, true)
 		} else {
+			if hovered {
+				col = movementTargetHoverColor
+			}
 			vector.StrokeRect(screen, float32(sx)-16, float32(sy)-14, 32, 28, 3, col, true)
 		}
 		drawn = true
@@ -2396,21 +3070,20 @@ func (r *Renderer) navalLandMoveTargetAt(mx, my float64, fleet *army.Army) (worl
 	if r == nil || r.gs == nil || r.worldMap == nil || fleet == nil || !fleet.IsNaval {
 		return "", "", false
 	}
-	source := r.gs.Regions[fleet.RegionID]
-	if source == nil {
+	return r.navalLandMoveTargetAtWithReachability(mx, my, fleet, r.movementReachabilityForArmy(fleet))
+}
+
+func (r *Renderer) navalLandMoveTargetAtWithReachability(mx, my float64, fleet *army.Army, reachability state.MovementReachability) (world.RegionID, string, bool) {
+	if r == nil || r.gs == nil || r.worldMap == nil || fleet == nil || !fleet.IsNaval {
 		return "", "", false
 	}
 	landing := len(fleet.EmbarkedUnits) > 0
 	bestDistance := math.MaxFloat64
 	var bestRegion world.RegionID
 	var bestSettlementID string
-	for _, neighborID := range source.Neighbors {
-		region := r.gs.Regions[neighborID]
+	for regionID := range reachability.Nodes {
+		region := r.gs.Regions[regionID]
 		if region == nil || region.IsLocked || !region.CanLandEnter() {
-			continue
-		}
-		canPreviewWarLanding := landing && region.OwnerID != "" && region.OwnerID != fleet.OwnerID
-		if !armyCanEnterRegion(r.gs, fleet, region) && !canPreviewWarLanding {
 			continue
 		}
 		for index, settlement := range region.Settlements {
@@ -2556,7 +3229,7 @@ func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
 // Kara orduları region/yerleşim anchor'ında, sadece demirli donanmalar bağlı
 // liman yerleşimi anchor'ında, diğer donanmalar ise deniz bölgesi anchor'ında çizilir.
 func (r *Renderer) armyIconPositions() []armyIconPos {
-	if r.armyIconCacheValid {
+	if r.armyIconCacheValid && !r.armyMovementAnimation.active {
 		return r.armyIconBuf
 	}
 	r.armyIconCacheValid = true
@@ -2689,6 +3362,12 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		startX := baseX - (n-1)*coordStep/2
 		for j, idx := range idxs {
 			r.armyIconBuf[idx].X = startX + float32(j)*coordStep
+		}
+	}
+	for index := range r.armyIconBuf {
+		if x, y, ok := r.animatedArmyScreenPos(r.armyIconBuf[index].ArmyID); ok {
+			r.armyIconBuf[index].X = x
+			r.armyIconBuf[index].Y = y
 		}
 	}
 

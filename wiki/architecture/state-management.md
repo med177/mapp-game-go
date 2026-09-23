@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-09-20
+last_updated: 2026-09-23
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -58,6 +58,15 @@ temas state'leridir ve `json:"-"` ile kayda girmez. AI-AI deniz temasları
 oyuncu modalı olmadan scheduler'ı kilitlemesine izin verilmez. Temas kararı iki
 taraf için de tamamlandığında state temizlenir; kara temasında ordular karar
 verilene kadar hedef bölgeye taşınmaz.
+
+Oyuncu hareket önizlemesi ve çok adımlı hareket aynı `MovementReachability`
+grafını kullanır (`internal/state/movement_route.go`). Dijkstra tabanlı bu
+hesaplama `LandRegionEntryCost`, deniz bölgesi maliyeti, hareket puanı ve transit
+izinlerini birleştirir; yabancı ordu veya güvenli transit olmayan yabancı bölge
+rota içinde son durak olabilir ancak ara geçiş noktası olamaz. Bu yapı save'e
+ek alan yazmaz; rota tamamen mevcut runtime state'ten yeniden türetilir. Deniz
+rotalarında savaş dışı filolar transit engeli değildir; savaş halindeki filo
+bulunan deniz bölgesi temasın son durağı olarak bırakılır.
 
 Temas sonrası `Pozisyonu Koru` seçen oyuncu ordusu düşman bölgesinde kalabilir.
 Hareket puanı bitmiş olsa bile aynı bölge görevleri için input kilidi kaldırılır:

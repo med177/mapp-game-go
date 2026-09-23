@@ -43,6 +43,9 @@ func (r *Renderer) HandleInput() InputAction {
 	// tekrar kullanabilir. Game.Update aksiyonu işledikten sonra Draw yeni
 	// durumu hesaplasın diye cache çağrı sınırında temizlenir.
 	r.armyIconCacheValid = false
+	if !r.movementPreviewFrozen {
+		r.invalidateMovementReachability()
+	}
 	r.merchantTradeStatusCacheSet = false
 	defer func() {
 		r.armyIconCacheValid = false
@@ -271,6 +274,9 @@ func (r *Renderer) HandleInput() InputAction {
 		}
 		return InputAction{}
 	}
+	if r.IsArmyMovementAnimating() {
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyQ) || r.keyJustPressed(ebiten.KeyF1) {
 		r.showShortcuts = true
 		return InputAction{}
@@ -377,6 +383,7 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		if r.SelectedArmy != "" || r.SelectedRegion != "" || r.showDiplomacy || r.showTech {
 			r.SelectedArmy = ""
+			r.showArmyDetailPanel = false
 			r.SelectedEmbarkedArmyFleet = ""
 			r.clearArmySplitSelection()
 			r.SelectedRegion = ""
@@ -539,8 +546,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 
-	if r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
+	if r.showArmyDetailPanel && r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
 		r.SelectedArmy = ""
+		r.showArmyDetailPanel = false
 		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()
 		return InputAction{}
@@ -668,6 +676,12 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.ShowImperialPanel()
 		}
 		return InputAction{Kind: ActionOpenImperialPanel}
+	}
+	if r.SelectedArmy != "" {
+		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(fx, fy, selected.IsNaval) {
+			r.showArmyDetailPanel = !r.showArmyDetailPanel
+			return InputAction{}
+		}
 	}
 
 	// --- Alt panel butonları ---
@@ -848,7 +862,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
-	if r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
+	if r.showArmyDetailPanel && r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
 		if r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
 			return InputAction{}
 		}
@@ -915,6 +929,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		r.clearArmySplitSelection()
 		r.SelectedArmy = aid
+		r.showArmyDetailPanel = false
 		r.SelectedEmbarkedArmyFleet = ""
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
@@ -929,6 +944,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		r.clearArmySplitSelection()
 		r.SelectedArmy = aid
+		r.showArmyDetailPanel = false
 		r.SelectedEmbarkedArmyFleet = aid
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
@@ -940,12 +956,14 @@ func (r *Renderer) handleLeftClick() InputAction {
 	if aid, ok := r.armyHitAt(fx, fy); ok {
 		if r.SelectedArmy == aid {
 			r.SelectedArmy = ""
+			r.showArmyDetailPanel = false
 			r.SelectedEmbarkedArmyFleet = ""
 			r.clearArmySplitSelection()
 			return InputAction{}
 		}
 		r.clearArmySplitSelection()
 		r.SelectedArmy = aid
+		r.showArmyDetailPanel = false
 		r.SelectedEmbarkedArmyFleet = ""
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
@@ -1191,6 +1209,7 @@ func (r *Renderer) selectMapRegion(rid world.RegionID) {
 		r.merchantRouteHighlight = ""
 	}
 	r.SelectedArmy = ""
+	r.showArmyDetailPanel = false
 	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	if r.SelectedRegion != rid {
@@ -1417,7 +1436,11 @@ func (r *Renderer) handleRightClick() InputAction {
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
-	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || musicHudHit(fx, fy) ||
+	armyDetailHUDHit := false
+	if selected := r.gs.Armies[r.SelectedArmy]; selected != nil {
+		armyDetailHUDHit = armyDetailHUDButtonHit(fx, fy, selected.IsNaval)
+	}
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || armyDetailHUDHit || musicHudHit(fx, fy) ||
 		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return InputAction{}
 	}
@@ -1462,6 +1485,12 @@ func (r *Renderer) handleRightClick() InputAction {
 			}
 		}
 	}
+	if a.IsNaval {
+		reachability := r.movementReachabilityForArmy(a)
+		if targetID, _, targetHit := r.navalMovementTargetAt(fx, fy, a, reachability); targetHit {
+			rid = targetID
+		}
+	}
 	if rid == "" {
 		return InputAction{}
 	}
@@ -1498,9 +1527,21 @@ func (r *Renderer) handleRightClick() InputAction {
 	// bölgenin deniz merkezine geçiş (undock) emri verebilir.
 	if a.IsNaval && a.DockedRegionID != "" && rid == a.RegionID {
 		r.SelectedArmy = ""
+		r.showArmyDetailPanel = false
 		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()
 		return InputAction{Kind: ActionMoveArmy, ArmyID: a.ID, TargetRegion: rid}
+	}
+	// Hedef doğrudan komşu değilse renderer yalnızca son hedefi taşır; oyun
+	// katmanı aynı ortak route hesabıyla ara adımları sırayla çözer. Böylece
+	// cursor önizlemesi ile gerçek hareket arasında farklı bir yol oluşmaz.
+	if route := r.movementReachabilityForArmy(a).PathTo(rid); len(route) > 2 {
+		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID}
+		r.SelectedArmy = ""
+		r.showArmyDetailPanel = false
+		r.SelectedEmbarkedArmyFleet = ""
+		r.clearArmySplitSelection()
+		return act
 	}
 	for _, n := range src.Neighbors {
 		if n != rid {
@@ -1599,6 +1640,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		}
 		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID}
 		r.SelectedArmy = ""
+		r.showArmyDetailPanel = false
 		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()
 		return act

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-09-22
+last_updated: 2026-09-23
 related: [state-management, render-pipeline]
 ---
 
@@ -34,6 +34,13 @@ savaşta değilse kaynak/altın transferi mevcut piyasa fiyatıyla doğrudan yap
 Piyasa fiyatı; save/yeni oyun hazırlığında, AI turu başlangıcında ve ekonomi
 tick'i sonunda `OpenMarketSupplyByGood()` ile gerçek açık satış arzından yeniden
 hesaplanır.
+
+Oyuncunun hareket emri birden fazla bölge içeriyorsa `Game`,
+`pendingPlayerMovement` kuyruğunda yalnızca rota üzerindeki sonraki adımı tutar.
+Her adım mevcut tek-bölge hareket çözümlemesinden geçer; savaş, temas veya karar
+modalı açılırsa kuyruk bırakılır. Renderer adımın başlangıç ve hedef anchor'ı
+arasında smoothstep animasyonu yürütür ve animasyon bitmeden yeni harita inputu
+almayı durdurur (`internal/game/game.go`, `internal/render/renderer.go`).
 
 ---
 

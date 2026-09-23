@@ -1,11 +1,46 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-22
+last_updated: 2026-09-23
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-23: Ordu/donanma seçimi artık bilgi panelini otomatik açmıyor. Seçim
+  varken alt HUD'da Ordu düğmesinin 8 px solunda türüne göre renklenen `Ordu
+  Detay` veya `Donanma Detay` düğmesi görünür; düğme paneli açıp kapatır.
+  Panelin çizim, hit-test, cursor ve tooltip görünürlüğü aynı geçici renderer
+  durumuna bağlandı (`internal/render/panel.go`, `internal/render/renderer.go`,
+  `internal/render/renderer_input.go`).
+
+- 2026-09-23: Oyuncu ordu ve filo hareketinde hareket puanına göre deterministik
+  çok adımlı rota önizlemesi eklendi. Seçili kuvvetin ulaşabildiği bölgeler halka
+  olarak, cursor hedefi ise halkaları bağlayan rota çizgisiyle gösteriliyor;
+  sağ tıkla seçilen son hedefe kadar güvenli ara adımlar otomatik yürütülüyor.
+  Düşman temasları, savaş/kuşatma kararları ve filo liman/çıkarma kuralları
+  mevcut tek-bölge çözümlemesine bırakılıyor. Her adım marker üzerinde
+  smoothstep animasyonuyla gösteriliyor (`internal/state/movement_route.go`,
+  `internal/game/game.go`, `internal/render/renderer.go`).
+
+- 2026-09-23: Donanma hareket halkaları gerçek erişilebilir deniz/liman hedefi
+  hit-test'iyle pointer cursor ve hover rengi kullanıyor; sağ tık halka üzerinde
+  doğrudan o deniz bölgesine veya settlement hedefine hareket emri üretiyor.
+  (`internal/render/renderer.go`, `internal/render/cursor.go`)
+
+- 2026-09-23: Donanma liman hedefleri kendi realm'i, vassal ve müttefik
+  limanlarında mevcut docking mavisini koruyor; yabancı ve savaş dışı limanlar
+  kara yerleşim hedefleriyle aynı turuncu ilişki rengini kullanıyor. Savaş
+  hedeflerinin kırmızı uyarısı korunuyor (`internal/render/renderer.go`).
+
+- 2026-09-23: Ordu hareket hedef halkaları da cursor üzerindeyken donanma
+  halkalarıyla aynı yeşil hover rengini ve pointer cursor davranışını kullanıyor
+  (`internal/render/renderer.go`, `internal/render/cursor.go`).
+
+- 2026-09-23: Ordu/donanma hareket rotası ve halka önizlemesi yalnızca cursor
+  harita yüzeyindeyken hesaplanıyor; HUD, paneller, overlay ve modal yüzeylerinde
+  gereksiz movement reachability/hit-test çalıştırılmıyor. Donmuş gemiye-bin
+  önizlemesi bu kuralın dışında mevcut hedefini koruyor (`internal/render/renderer.go`).
 
 - 2026-09-22: AI tur performansının ana sıcak noktası olan tekrar eden savaş
   yorgunluğu ve memnuniyet hesapları optimize edildi. Tüm realm cezaları tek
