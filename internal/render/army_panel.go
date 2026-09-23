@@ -157,7 +157,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		mpCol = ColorRed
 	}
 	DrawText(screen, mpStr,
-		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW,
+		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW-20,
 		float64(py)+float64(armyPanelTopY), FaceSmall, mpCol)
 	rightStatusY := float64(py + armyPanelInfoY)
 	if armyCanRenderReplenishment(gs, a) {

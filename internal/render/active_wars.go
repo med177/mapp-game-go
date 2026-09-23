@@ -22,11 +22,11 @@ const (
 	activeWarsPanelHeaderH   = 38.0
 	activeWarRowH            = 82.0
 	activeWarRowGap          = 8.0
-	activeWarFlagSize        = 46.0
+	activeWarFlagSize        = 44.0
 	activeWarFlagSidePad     = 8.0
 	activeWarFlagTextGap     = 8.0
 	activeWarSidePad         = 8.0
-	activeWarSideGap         = 4.0
+	activeWarSideGap         = 8.0
 	activeWarSideHeaderH     = 38.0
 	activeWarParticipantH    = 50.0
 	activeWarRowBottomPad    = 4.0

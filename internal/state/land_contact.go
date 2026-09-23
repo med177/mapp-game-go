@@ -83,6 +83,11 @@ func (s *GameState) LandContactDecisionForPlayer(contact *LandContact, decision 
 	if s == nil || contact == nil || contact.PlayerArmyID == "" || decision == LandContactUndecided {
 		return false
 	}
+	// Pusuya giren hareketli taraf temas kararını reddedemez. Bu kuralı
+	// oyuncu kararını işlerken de yeniden uygula; AI karar yolu dışında kalan
+	// temaslarda veya eski/ara state'lerde saldıran tarafın geri çekilmesiyle
+	// pusunun sessizce boşa çıkmasını engeller.
+	s.normalizeLandContactAmbushDecision(contact)
 	if decision == LandContactWithdraw {
 		if contact.AmbushArmyID != "" && contact.PlayerArmyID == contact.AttackerArmyID {
 			return false
@@ -120,17 +125,36 @@ func (s *GameState) ClearLandContact() {
 }
 
 func (s *GameState) LandContactBothClash(contact *LandContact) bool {
-	return contact != nil && contact.AttackerDecision == LandContactClash && contact.DefenderDecision == LandContactClash
+	if contact == nil {
+		return false
+	}
+	s.normalizeLandContactAmbushDecision(contact)
+	return contact.AttackerDecision == LandContactClash && contact.DefenderDecision == LandContactClash
 }
 
 // LandContactWillClash, taraflardan hiçbiri geri çekilmeyi seçmediğinde
 // muharebenin başlayacağını belirtir. Pozisyonu koru çatışmadan kaçış değil,
 // savaş planında savunma bonusu sağlayan savunma hazırlığıdır.
 func (s *GameState) LandContactWillClash(contact *LandContact) bool {
-	if contact == nil || contact.AttackerDecision == LandContactWithdraw || contact.DefenderDecision == LandContactWithdraw {
+	if contact == nil {
+		return false
+	}
+	s.normalizeLandContactAmbushDecision(contact)
+	if contact.AttackerDecision == LandContactWithdraw || contact.DefenderDecision == LandContactWithdraw {
 		return false
 	}
 	return true
+}
+
+// normalizeLandContactAmbushDecision, pusu ordusu savunmacı konumundaysa
+// bölgeye giren saldıranın geri çekilme kararını geçersiz kılar. Pusuya düşen
+// tarafın temas çatışmasını reddetme hakkı yoktur; pusu sahibi ise yine geri
+// çekilmeyi seçebilir.
+func (s *GameState) normalizeLandContactAmbushDecision(contact *LandContact) {
+	if contact == nil || contact.AmbushArmyID == "" || contact.AttackerArmyID == contact.AmbushArmyID {
+		return
+	}
+	contact.AttackerDecision = LandContactClash
 }
 
 // LandContactRetreatRegion, savunan kara ordusunun düşman olmayan komşu kara
