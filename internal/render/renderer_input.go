@@ -50,6 +50,8 @@ func (r *Renderer) HandleInput() InputAction {
 	defer func() {
 		r.armyIconCacheValid = false
 		r.merchantTradeStatusCacheSet = false
+		r.stopInactiveArmyFightSound()
+		r.flushPendingArmyMovementSound()
 	}()
 
 	r.pollEditMapBuild()
@@ -680,8 +682,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if r.SelectedArmy != "" && r.selectedArmyIsPlayerOwned() {
 		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(fx, fy, selected.IsNaval) {
-			r.showArmyDetailPanel = !r.showArmyDetailPanel
-			r.armyDetailPanelPreference = r.showArmyDetailPanel
+			r.toggleArmyDetailPanel()
 			return InputAction{}
 		}
 	}
@@ -938,6 +939,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
+		r.playArmySelectionSound(aid)
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
 	}
 	if aid, ok := r.embarkedArmyHitAt(fx, fy); ok {
@@ -953,6 +955,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
+		r.playArmySelectionSound(aid)
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
 	}
 	if aid, ok := r.armyHitAt(fx, fy); ok {
@@ -972,6 +975,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
 		r.resetRecruitSelection()
+		r.playArmySelectionSound(aid)
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
 	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
@@ -1393,6 +1397,11 @@ func (r *Renderer) clearArmySplitSelection() {
 	r.splitSelectedUnits = nil
 }
 
+func (r *Renderer) toggleArmyDetailPanel() {
+	r.showArmyDetailPanel = !r.showArmyDetailPanel
+	r.armyDetailPanelPreference = r.showArmyDetailPanel
+}
+
 // ClearArmyUnitSelection, oyun aksiyonu sonrası birim kartı seçimini temizler.
 func (r *Renderer) ClearArmyUnitSelection() {
 	r.clearArmySplitSelection()
@@ -1440,18 +1449,15 @@ func (r *Renderer) handleRightClick() InputAction {
 	fx, fy := float64(mx), float64(my)
 	if r.selectedArmyIsPlayerOwned() {
 		if aid, hit := r.navalMissionPendingHitAt(fx, fy); hit && aid == r.SelectedArmy {
-			r.showArmyDetailPanel = true
-			r.armyDetailPanelPreference = true
+			r.toggleArmyDetailPanel()
 			return InputAction{}
 		}
 		if aid, hit := r.embarkedArmyHitAt(fx, fy); hit && aid == r.SelectedArmy {
-			r.showArmyDetailPanel = true
-			r.armyDetailPanelPreference = true
+			r.toggleArmyDetailPanel()
 			return InputAction{}
 		}
 		if aid, hit := r.armyHitAt(fx, fy); hit && aid == r.SelectedArmy {
-			r.showArmyDetailPanel = true
-			r.armyDetailPanelPreference = true
+			r.toggleArmyDetailPanel()
 			return InputAction{}
 		}
 	}

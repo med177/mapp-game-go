@@ -19,11 +19,13 @@ import (
 const sampleRate = 44100
 
 var (
-	audioContext *audio.Context
-	soundCache   map[string][]byte
-	soundEnabled = true
-	soundVolume  = 0.35
-	soundGains   = map[string]float64{
+	audioContext         *audio.Context
+	soundCache           map[string][]byte
+	scenarioSoundCache   map[string][]byte
+	scenarioSoundPlayers map[string]*audio.Player
+	soundEnabled         = true
+	soundVolume          = 0.35
+	soundGains           = map[string]float64{
 		"combat":            0.1,
 		"battle_land":       0.1,
 		"battle_naval":      0.1,
@@ -57,6 +59,8 @@ type MusicStatus struct {
 
 func init() {
 	soundCache = make(map[string][]byte)
+	scenarioSoundCache = make(map[string][]byte)
+	scenarioSoundPlayers = make(map[string]*audio.Player)
 	audioContext = audio.NewContext(sampleRate)
 }
 
@@ -126,6 +130,88 @@ func PlaySound(name string) {
 func HasSound(name string) bool {
 	_, ok := soundCache[name]
 	return ok
+}
+
+// PlayScenarioSound, aktif senaryonun audio klasöründeki kısa MP3 efektlerini
+// cache'leyip çalar. Senaryo sesleri global WAV efektlerinden ayrı tutulur.
+func PlayScenarioSound(audioDir, name string) {
+	if !soundEnabled || soundVolume <= 0 || audioDir == "" || name == "" {
+		return
+	}
+	pcmData, ok := loadScenarioSound(audioDir, name)
+	if !ok {
+		return
+	}
+	path := filepath.Join(audioDir, name+".mp3")
+	if previous := scenarioSoundPlayers[path]; previous != nil {
+		_ = previous.Close()
+	}
+	player := audioContext.NewPlayerFromBytes(pcmData)
+	player.SetVolume(soundVolume * soundGain(name))
+	scenarioSoundPlayers[path] = player
+	player.Play()
+}
+
+// EnsureScenarioSoundPlaying, aynı ses zaten oynuyorsa onu yeniden başlatmaz.
+// Çok segmentli hareket animasyonlarında sesin ara noktalarda kesilmemesini
+// sağlar; ses doğal olarak bittiyse yeni oynatıcı oluşturur.
+func EnsureScenarioSoundPlaying(audioDir, name string) {
+	if !soundEnabled || soundVolume <= 0 || audioDir == "" || name == "" {
+		return
+	}
+	path := filepath.Join(audioDir, name+".mp3")
+	if player := scenarioSoundPlayers[path]; player != nil && player.IsPlaying() {
+		return
+	}
+	PlayScenarioSound(audioDir, name)
+}
+
+// PreloadScenarioSounds, senaryo yüklenirken kullanılan kısa ses efektlerini
+// okuyup MP3'ten PCM'e decode ederek cache'ler. Bulunmayan dosyalar sessizce
+// atlanır; böylece eski senaryolar etkilenmez.
+func PreloadScenarioSounds(audioDir string, names []string) {
+	if audioDir == "" {
+		return
+	}
+	for _, name := range names {
+		_, _ = loadScenarioSound(audioDir, name)
+	}
+}
+
+func loadScenarioSound(audioDir, name string) ([]byte, bool) {
+	if audioDir == "" || name == "" {
+		return nil, false
+	}
+	path := filepath.Join(audioDir, name+".mp3")
+	if pcmData, ok := scenarioSoundCache[path]; ok {
+		return pcmData, true
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, false
+	}
+	stream, err := mp3.DecodeWithSampleRate(sampleRate, bytes.NewReader(data))
+	if err != nil {
+		return nil, false
+	}
+	pcmData, err := io.ReadAll(stream)
+	if err != nil {
+		return nil, false
+	}
+	scenarioSoundCache[path] = pcmData
+	return pcmData, true
+}
+
+// StopScenarioSound, senaryo ses efektinin aktif oynatıcısını durdurur.
+func StopScenarioSound(audioDir, name string) {
+	if audioDir == "" || name == "" {
+		return
+	}
+	path := filepath.Join(audioDir, name+".mp3")
+	if player := scenarioSoundPlayers[path]; player != nil {
+		_ = player.Close()
+		delete(scenarioSoundPlayers, path)
+	}
 }
 
 func soundGain(name string) float64 {

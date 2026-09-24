@@ -54,3 +54,17 @@ func TestMapRegionDoubleClickUsesTerrainParentIdentity(t *testing.T) {
 		t.Fatal("terrain fragment and its parent were not treated as the same map click target")
 	}
 }
+
+func TestToggleArmyDetailPanel(t *testing.T) {
+	r := &Renderer{}
+
+	r.toggleArmyDetailPanel()
+	if !r.showArmyDetailPanel || !r.armyDetailPanelPreference {
+		t.Fatal("marker sağ tıklaması ordu detay panelini açmadı")
+	}
+
+	r.toggleArmyDetailPanel()
+	if r.showArmyDetailPanel || r.armyDetailPanelPreference {
+		t.Fatal("aynı marker'a ikinci sağ tıklama açık ordu detay panelini kapatmadı")
+	}
+}

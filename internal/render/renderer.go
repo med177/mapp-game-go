@@ -408,15 +408,29 @@ type merchantTradeMainPortRef struct {
 }
 
 type armyMovementAnimation struct {
-	armyID    army.ArmyID
-	fromX     float64
-	fromY     float64
-	toX       float64
-	toY       float64
-	startedAt time.Time
-	duration  time.Duration
-	active    bool
+	armyID       army.ArmyID
+	soundName    string
+	fromX        float64
+	fromY        float64
+	toX          float64
+	toY          float64
+	startedAt    time.Time
+	duration     time.Duration
+	active       bool
+	soundPending bool
 }
+
+type armyMarkerSpriteSet uint8
+
+const (
+	armyMarkerSpriteEastern armyMarkerSpriteSet = iota
+	armyMarkerSpriteWestern
+)
+
+var (
+	armyMarkerSprites      map[armyMarkerSpriteSet]*ebiten.Image
+	armyMarkerSpritesTried map[armyMarkerSpriteSet]bool
+)
 
 type confirmDialogState struct {
 	show            bool
@@ -921,6 +935,48 @@ func (r *Renderer) MarkMapDirty() {
 	r.worldMap.MarkDirty()
 }
 
+func (r *Renderer) playArmySelectionSound(aid army.ArmyID) {
+	if r == nil || r.gs == nil || r.gs.ScenarioPath == "" {
+		return
+	}
+	a := r.gs.Armies[aid]
+	isSiegeArmy := a != nil && !a.IsNaval && r.gs.SiegeByArmy(a.ID) != nil
+	isBlockadeFleet := a != nil && a.IsNaval && a.NavalMission != nil && a.NavalMission.Kind == army.NavalMissionBlockade
+	if a == nil || a.OwnerID != string(r.gs.PlayerFactionID) || (!isSiegeArmy && !isBlockadeFleet && a.MovePoints <= 0) {
+		return
+	}
+	name := "army_select"
+	if a.IsNaval {
+		name = "marine_select"
+		if isBlockadeFleet {
+			name = "marine_fight"
+		}
+	} else if isSiegeArmy {
+		name = "army_fight"
+	}
+	audio.PlayScenarioSound(filepath.Join(r.gs.ScenarioPath, "audio"), name)
+}
+
+func (r *Renderer) stopInactiveArmyFightSound() {
+	if r == nil || r.gs == nil || r.gs.ScenarioPath == "" {
+		return
+	}
+	a := r.gs.Armies[r.SelectedArmy]
+	isSiegeArmy := a != nil && a.OwnerID == string(r.gs.PlayerFactionID) && !a.IsNaval && r.gs.SiegeByArmy(a.ID) != nil
+	isBlockadeFleet := a != nil && a.OwnerID == string(r.gs.PlayerFactionID) && a.IsNaval && a.NavalMission != nil && a.NavalMission.Kind == army.NavalMissionBlockade
+	if isSiegeArmy {
+		audio.StopScenarioSound(filepath.Join(r.gs.ScenarioPath, "audio"), "marine_fight")
+		return
+	}
+	if isBlockadeFleet {
+		audio.StopScenarioSound(filepath.Join(r.gs.ScenarioPath, "audio"), "army_fight")
+		return
+	}
+	audioDir := filepath.Join(r.gs.ScenarioPath, "audio")
+	audio.StopScenarioSound(audioDir, "army_fight")
+	audio.StopScenarioSound(audioDir, "marine_fight")
+}
+
 // StartArmyMovementAnimation, oyun katmanının çözdüğü tek bir bölge geçişini
 // renderer tarafında ortak dünya koordinatlarıyla canlandırır. State anında
 // yeni bölgeye geçirilse de marker kısa süre boyunca iki anchor arasında akar.
@@ -942,19 +998,29 @@ func (r *Renderer) StartArmyMovementAnimation(aid army.ArmyID, target world.Regi
 		return
 	}
 	if math.Abs(fromX-toX)+math.Abs(fromY-toY) < 0.01 {
+		r.stopArmyMovementSound()
 		r.armyMovementAnimation = armyMovementAnimation{}
 		return
 	}
+	moveSound := "army_move"
+	if a.IsNaval {
+		moveSound = "marine_move"
+	}
+	if r.armyMovementAnimation.soundName != "" && r.armyMovementAnimation.soundName != moveSound {
+		r.stopArmyMovementSound()
+	}
 	r.armyMovementAnimation = armyMovementAnimation{
 		armyID:    aid,
+		soundName: moveSound,
 		fromX:     fromX,
 		fromY:     fromY,
 		toX:       toX,
 		toY:       toY,
 		startedAt: time.Now(),
-		duration:  220 * time.Millisecond,
+		duration:  500 * time.Millisecond,
 		active:    true,
 	}
+	audio.EnsureScenarioSoundPlaying(filepath.Join(r.gs.ScenarioPath, "audio"), moveSound)
 	r.armyIconCacheValid = false
 }
 
@@ -964,6 +1030,7 @@ func (r *Renderer) IsArmyMovementAnimating() bool {
 	}
 	if time.Since(r.armyMovementAnimation.startedAt) >= r.armyMovementAnimation.duration {
 		r.armyMovementAnimation.active = false
+		r.armyMovementAnimation.soundPending = true
 		return false
 	}
 	return true
@@ -973,8 +1040,28 @@ func (r *Renderer) CancelArmyMovementAnimation() {
 	if r == nil {
 		return
 	}
+	r.stopArmyMovementSound()
 	r.armyMovementAnimation = armyMovementAnimation{}
 	r.armyIconCacheValid = false
+}
+
+func (r *Renderer) stopArmyMovementSound() {
+	if r == nil || r.gs == nil || r.armyMovementAnimation.soundName == "" {
+		return
+	}
+	audio.StopScenarioSound(
+		filepath.Join(r.gs.ScenarioPath, "audio"),
+		r.armyMovementAnimation.soundName,
+	)
+	r.armyMovementAnimation.soundName = ""
+	r.armyMovementAnimation.soundPending = false
+}
+
+func (r *Renderer) flushPendingArmyMovementSound() {
+	if r == nil || r.armyMovementAnimation.active || !r.armyMovementAnimation.soundPending {
+		return
+	}
+	r.stopArmyMovementSound()
 }
 
 func (r *Renderer) invalidateMovementReachability() {
@@ -1212,6 +1299,18 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		unitSprites = nil
 		legacyUnitSprites = nil
 		legacyArmySheet = nil
+		armyMarkerSprites = nil
+		armyMarkerSpritesTried = nil
+		preloadArmyMarkerSprites()
+		audio.PreloadScenarioSounds(filepath.Join(gs.ScenarioPath, "audio"), []string{
+			"army_select",
+			"marine_select",
+			"army_move",
+			"marine_move",
+			"army_fight",
+			"marine_fight",
+			"victory_success",
+		})
 		settlementImageCache = map[string]*ebiten.Image{}
 		settlementImageLoaded = map[string]bool{}
 		resetFactionFlagCache()
@@ -3663,10 +3762,38 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 				}
 			}
 		}
-		r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, false, siegeBadgeX)
+		playerOwned := r.gs.PlayerFactionID != "" && a.OwnerID == string(r.gs.PlayerFactionID)
+		selectedSprite := playerOwned && isSelected && a.MovePoints > 0
+		animatingSprite := playerOwned && r.armyMovementAnimation.armyID == a.ID && r.armyMovementAnimation.active
+		var movementSprite *ebiten.Image
+		if selectedSprite || animatingSprite {
+			movementSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
+		}
+		if movementSprite != nil && (selectedSprite || animatingSprite) {
+			r.drawArmyMarkerSprite(screen, movementSprite, pos.X, pos.Y)
+		} else {
+			r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, false, siegeBadgeX)
+		}
 		if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
 			vector.StrokeCircle(screen, pos.X, pos.Y, 17, 3, color.RGBA{120, 230, 240, 220}, true)
 			DrawTextCentered(screen, "BIN", float64(pos.X), float64(pos.Y)+15, FaceSmall, color.RGBA{210, 248, 255, 230})
+		}
+	}
+	// Sprite kullanan oyuncu markerlarının yerleşik rozetleri sprite'tan sonra
+	// çizilir. Böylece büyük görsel komşu markerın rozetini kapatamaz.
+	for _, pos := range positions {
+		a, ok := r.gs.Armies[pos.ArmyID]
+		if !ok || a == nil || r.gs.PlayerFactionID == "" || a.OwnerID != string(r.gs.PlayerFactionID) {
+			continue
+		}
+		selectedSprite := pos.ArmyID == r.SelectedArmy && a.MovePoints > 0
+		animatingSprite := r.armyMovementAnimation.armyID == a.ID && r.armyMovementAnimation.active
+		var movementSprite *ebiten.Image
+		if selectedSprite || animatingSprite {
+			movementSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
+		}
+		if movementSprite != nil && (selectedSprite || animatingSprite) {
+			r.drawArmySpriteBadges(screen, a, pos, positions)
 		}
 	}
 	// Bonus rozetleri tüm donanma marker'larından sonra çizilir. Böylece bir
@@ -3676,8 +3803,112 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		if !ok || a == nil || !a.IsNaval {
 			continue
 		}
+		if r.gs.PlayerFactionID != "" && a.OwnerID == string(r.gs.PlayerFactionID) {
+			selectedSprite := pos.ArmyID == r.SelectedArmy && a.MovePoints > 0
+			animatingSprite := r.armyMovementAnimation.armyID == a.ID && r.armyMovementAnimation.active
+			if selectedSprite || animatingSprite {
+				if r.armyMovementSpriteFor(a.ID, a.OwnerID, true) != nil {
+					continue
+				}
+			}
+		}
 		r.drawNavalPriorityBadges(screen, a, pos.X, pos.Y)
 	}
+}
+
+func (r *Renderer) drawArmySpriteBadges(screen *ebiten.Image, a *army.Army, pos armyIconPos, positions []armyIconPos) {
+	if r == nil || r.gs == nil || a == nil {
+		return
+	}
+	siegeBadgeX := pos.X + armyIconInnerHalf + 8
+	if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
+		for _, candidate := range positions {
+			if candidate.ArmyID == siege.DefenderArmyID && candidate.Y == pos.Y {
+				siegeBadgeX = armySiegeBadgeCenterX(pos.X, candidate.X, true)
+				break
+			}
+		}
+		badgeSize := float32(15)
+		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), siegeBadgeX, pos.Y, badgeSize-2)
+	}
+	if status, ok := r.gs.ArmyLogistics[a.ID]; ok && status.TotalHPDamage > 0 {
+		badgeX, badgeY := armyDamageBadgeCenter(pos.X, pos.Y)
+		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
+		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
+	}
+}
+
+func armyMarkerSpritePath(set armyMarkerSpriteSet, naval bool) string {
+	dir := "western_army"
+	if set == armyMarkerSpriteEastern {
+		dir = "eastern_army"
+	}
+	name := "army.png"
+	if naval {
+		name = "marine.png"
+	}
+	return filepath.Join(ActiveScenarioPath, "sprites", dir, name)
+}
+
+func (r *Renderer) armyMovementSpriteFor(aid army.ArmyID, ownerID string, naval bool) *ebiten.Image {
+	if r == nil || r.gs == nil || aid == "" || ownerID == "" || ActiveScenarioPath == "" {
+		return nil
+	}
+	set := armyMarkerSpriteWestern
+	if armySpriteSetForFaction(r.gs, ownerID) == armySpriteSetEastern {
+		set = armyMarkerSpriteEastern
+	}
+	return loadArmyMarkerSprite(set, naval)
+}
+
+func loadArmyMarkerSprite(set armyMarkerSpriteSet, naval bool) *ebiten.Image {
+	if armyMarkerSprites == nil {
+		armyMarkerSprites = make(map[armyMarkerSpriteSet]*ebiten.Image)
+	}
+	if armyMarkerSpritesTried == nil {
+		armyMarkerSpritesTried = make(map[armyMarkerSpriteSet]bool)
+	}
+	// Kara ve deniz sprite'larını aynı devlet tipinde ayrı cache'lemek için
+	// dosya türünü anahtara dahil eden küçük bir yerel seçim yapıyoruz.
+	cacheKey := set
+	if naval {
+		cacheKey += 2
+	}
+	if img := armyMarkerSprites[cacheKey]; img != nil {
+		return img
+	}
+	if armyMarkerSpritesTried[cacheKey] {
+		return nil
+	}
+	armyMarkerSpritesTried[cacheKey] = true
+	img := tryLoadImage(armyMarkerSpritePath(set, naval))
+	if img != nil {
+		armyMarkerSprites[cacheKey] = img
+	}
+	return img
+}
+
+func preloadArmyMarkerSprites() {
+	for _, set := range []armyMarkerSpriteSet{armyMarkerSpriteEastern, armyMarkerSpriteWestern} {
+		loadArmyMarkerSprite(set, false)
+		loadArmyMarkerSprite(set, true)
+	}
+}
+
+// drawArmyMarkerSprite sprite'ın ayaklarını mevcut marker anchor'ında tutar.
+// Böylece sprite hem seçili marker üzerinde hem de hareket animasyonunda aynı
+// dünya noktasını kullanır; animasyon bitince normal marker'a geçiş sıçramaz.
+func (r *Renderer) drawArmyMarkerSprite(screen, sprite *ebiten.Image, cx, cy float32) {
+	if screen == nil || sprite == nil {
+		return
+	}
+	bounds := sprite.Bounds()
+	if bounds.Dx() <= 0 || bounds.Dy() <= 0 {
+		return
+	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(cx)-float64(bounds.Dx())/2, float64(cy)-float64(bounds.Dy()))
+	screen.DrawImage(sprite, op)
 }
 
 // drawSelectedArmyIndicator seçili kara ordusunu veya donanmayı, varsa
@@ -3697,7 +3928,11 @@ func (r *Renderer) drawSelectedArmyIndicator(screen *ebiten.Image, positions []a
 			continue
 		}
 		commander, _ := armyPanelDisplayedCommander(a)
-		rect := armySelectionIndicatorRect(pos.X, pos.Y, a.IsNaval, commander != nil)
+		var markerSprite *ebiten.Image
+		if a.MovePoints > 0 && a.OwnerID == string(r.gs.PlayerFactionID) {
+			markerSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
+		}
+		rect := armySelectionIndicatorRect(pos.X, pos.Y, a.IsNaval, commander != nil, markerSprite)
 		drawDashedRoundedRect(screen, rect, 8, 6, 4, 2, color.RGBA{255, 215, 0, 250})
 		return
 	}
@@ -3949,9 +4184,10 @@ func armyCommanderBadgeRect(cx, cy float32, isNaval, _ bool) (x, y, size float32
 }
 
 // armySelectionIndicatorRect, komutan portresi ve ana ordu/donanma marker'ını
-// tek bir seçim yüzeyinde birleştirir. Aynı rect yalnızca görsel çerçeve için
-// kullanılır; click alanını bilinçli olarak büyütmez.
-func armySelectionIndicatorRect(cx, cy float32, isNaval, hasCommander bool) gameui.Rect {
+// tek bir seçim yüzeyinde birleştirir. Sprite verilirse sprite'ın ayaklarını
+// marker anchor'ında tutan görsel alanı kapsar. Aynı rect yalnızca görsel
+// çerçeve için kullanılır; click alanını bilinçli olarak büyütmez.
+func armySelectionIndicatorRect(cx, cy float32, isNaval, hasCommander bool, markerSprite *ebiten.Image) gameui.Rect {
 	iconHalf := armyIconInnerHalf + armyIconBorderWidth
 	if isNaval {
 		iconHalf = 13
@@ -3960,6 +4196,15 @@ func armySelectionIndicatorRect(cx, cy float32, isNaval, hasCommander bool) game
 	top := cy - iconHalf
 	right := cx + iconHalf
 	bottom := cy + iconHalf
+	if markerSprite != nil {
+		bounds := markerSprite.Bounds()
+		if bounds.Dx() > 0 && bounds.Dy() > 0 {
+			left = cx - float32(bounds.Dx())/2
+			top = cy - float32(bounds.Dy())
+			right = cx + float32(bounds.Dx())/2
+			bottom = cy
+		}
+	}
 	if hasCommander {
 		portraitX, portraitY, portraitSize := armyCommanderBadgeRect(cx, cy, isNaval, false)
 		left = min(left, portraitX)

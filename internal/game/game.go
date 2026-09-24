@@ -1275,6 +1275,7 @@ func (g *Game) resolveTurn() {
 	victory.Check(g.gs)
 	if !prevVictoryAchieved && g.gs.VictoryAchieved && g.gs.WinnerID == g.gs.PlayerFactionID {
 		msg := "Zafer hedefi tamamlandı: " + victoryLabel(g.gs.Victory.Type) + ". Oyun devam ediyor."
+		audio.PlayScenarioSound(filepath.Join(g.gs.ScenarioPath, "audio"), "victory_success")
 		g.renderer.ShowCombatResult(msg)
 		g.renderer.AddEvent("[ZAFER] " + msg)
 	}

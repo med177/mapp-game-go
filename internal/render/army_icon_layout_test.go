@@ -1,13 +1,49 @@
 package render
 
 import (
+	"path/filepath"
 	"testing"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
+
+func TestArmyMarkerSpritePathUsesArmyTypeAndNavalKind(t *testing.T) {
+	previous := ActiveScenarioPath
+	ActiveScenarioPath = filepath.Join("assets", "scenarios", "1300_ottoman_rise")
+	t.Cleanup(func() { ActiveScenarioPath = previous })
+
+	tests := []struct {
+		name  string
+		set   armyMarkerSpriteSet
+		naval bool
+		want  string
+	}{
+		{"batı kara", armyMarkerSpriteWestern, false, filepath.Join(ActiveScenarioPath, "sprites", "western_army", "army.png")},
+		{"batı deniz", armyMarkerSpriteWestern, true, filepath.Join(ActiveScenarioPath, "sprites", "western_army", "marine.png")},
+		{"doğu kara", armyMarkerSpriteEastern, false, filepath.Join(ActiveScenarioPath, "sprites", "eastern_army", "army.png")},
+		{"doğu deniz", armyMarkerSpriteEastern, true, filepath.Join(ActiveScenarioPath, "sprites", "eastern_army", "marine.png")},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := armyMarkerSpritePath(test.set, test.naval); got != test.want {
+				t.Fatalf("sprite yolu = %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
+func TestArmySelectionIndicatorRectIncludesMovementSprite(t *testing.T) {
+	markerSprite := ebiten.NewImage(54, 88)
+	rect := armySelectionIndicatorRect(100, 200, false, false, markerSprite)
+	if rect.X != 65 || rect.Y != 104 || rect.W != 70 || rect.H != 104 {
+		t.Fatalf("sprite seçim çerçevesi = %+v, want x=65 y=104 w=70 h=104", rect)
+	}
+}
 
 func TestArmyIconGridUsesFiveColumnsAndAddsRowsBelow(t *testing.T) {
 	base := [2]float32{100, 200}
