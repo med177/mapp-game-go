@@ -68,6 +68,14 @@ const (
 	btnW = float32(90)
 	btnH = float32(52)
 
+	imperialHUDW          = float32(220)
+	imperialHUDRadius     = float32(10)
+	imperialHUDPad        = float32(6)
+	imperialHUDButtonRad  = float32(8)
+	imperialHUDFlagSize   = float32(42)
+	bottomActionHUDRadius = float32(10)
+	bottomActionButtonRad = float32(8)
+
 	panelPad = float64(12)
 
 	regionPanelStatRowGap      = 22.0
@@ -109,6 +117,11 @@ var (
 	bottomSelectedArmyActiveColor = color.RGBA{156, 108, 44, 250}
 	bottomSelectedNavyButtonColor = color.RGBA{35, 72, 125, 235}
 	bottomSelectedNavyActiveColor = color.RGBA{52, 128, 198, 240}
+	imperialHUDPanelColor         = color.RGBA{30, 24, 16, 240}
+	imperialHUDPanelBorder        = color.RGBA{184, 148, 70, 255}
+	imperialHUDButtonColor        = color.RGBA{48, 38, 23, 235}
+	imperialHUDButtonActiveColor  = color.RGBA{86, 64, 30, 250}
+	imperialHUDFlagColor          = color.RGBA{88, 68, 34, 255}
 )
 
 // regionPanelTab seçili bölge panelindeki ortak içerik alanının görünümünü
@@ -463,22 +476,31 @@ func imperialPanelAvailable(gs *state.GameState) bool {
 	return gs != nil && gs.Imperial != nil && gs.Imperial.EmpireID != "" && gs.PlayerFactionID == gs.Imperial.EmpireID
 }
 
-func imperialHUDButtonRect() [4]float32 {
-	ax, ay, aw, _ := bottomActionHudRect()
-	const buttonW = float32(116)
+func imperialHUDRect() [4]float32 {
+	ax, ay, aw, ah := bottomActionHudRect()
 	x := ax + aw + actionHudGap
-	y := ay + actionHudPad
-	if x+buttonW > float32(ScreenWidth)-8 {
-		x = float32(ScreenWidth) - buttonW - 8
+	y := ay
+	if x+imperialHUDW > float32(ScreenWidth)-8 {
+		x = float32(ScreenWidth) - imperialHUDW - 8
 	}
 	if x < 8 {
 		x = 8
 	}
-	return [4]float32{x, y, buttonW, btnH}
+	return [4]float32{x, y, imperialHUDW, ah}
+}
+
+func imperialHUDButtonRect() [4]float32 {
+	hud := imperialHUDRect()
+	return [4]float32{
+		hud[0] + imperialHUDPad,
+		hud[1] + imperialHUDPad,
+		hud[2] - imperialHUDPad*2,
+		hud[3] - imperialHUDPad*2,
+	}
 }
 
 func buildImperialHUDButton() gameui.Button {
-	return buttonFromRectF32(imperialHUDButtonRect(), "İmparatorluk")
+	return buttonFromRectF32(imperialHUDButtonRect(), "")
 }
 
 func imperialHUDStatusText(gs *state.GameState) string {
@@ -493,6 +515,50 @@ func imperialHUDStatusText(gs *state.GameState) string {
 
 func imperialHUDButtonHit(fx, fy float64) bool {
 	return buildImperialHUDButton().HitTest(fx, fy)
+}
+
+func drawRoundedHUDFrame(screen *ebiten.Image, rect [4]float32, radius, borderWidth float32, fill, border color.RGBA) {
+	drawRoundedRect(screen, rect[0], rect[1], rect[2], rect[3], radius, border)
+	inset := borderWidth
+	innerRadius := radius - inset
+	if innerRadius < 0 {
+		innerRadius = 0
+	}
+	drawRoundedRect(screen, rect[0]+inset, rect[1]+inset, rect[2]-inset*2, rect[3]-inset*2, innerRadius, fill)
+}
+
+func drawImperialHUD(screen *ebiten.Image, gs *state.GameState, active bool) {
+	hud := imperialHUDRect()
+	drawRoundedHUDFrame(screen, hud, imperialHUDRadius, 1.5, imperialHUDPanelColor, imperialHUDPanelBorder)
+
+	button := buildImperialHUDButton()
+	buttonStyle := solidButtonStyle(imperialHUDButtonColor, imperialHUDPanelBorder, ColorWhite, 6)
+	buttonStyle.CornerRadius = imperialHUDButtonRad
+	if active {
+		buttonStyle.BG = imperialHUDButtonActiveColor
+	}
+	drawUIButtonWidget(screen, button, buttonStyle)
+
+	empireID := gs.Imperial.EmpireID
+	flagBG := imperialHUDFlagColor
+	name := "İmparatorluk"
+	initial := factionInitial(name)
+	if f := gs.Factions[empireID]; f != nil {
+		flagBG = color.RGBA{f.Color[0], f.Color[1], f.Color[2], 255}
+		name = f.NameTR
+		if name == "" {
+			name = f.Name
+		}
+		initial = factionInitial(name)
+	}
+	flagX := button.X + 7
+	flagY := button.Y + (button.H-float64(imperialHUDFlagSize))/2
+	drawFactionFlagBadge(screen, empireID, initial, flagX, flagY, float64(imperialHUDFlagSize), flagBG, imperialHUDPanelBorder)
+	textX := flagX + float64(imperialHUDFlagSize) + 9
+	textW := button.X + button.W - textX - 7
+	drawUILabel(screen, gameui.Rect{X: textX, Y: button.Y + 7, W: textW}, trimTextToWidth(name, FaceSmall, textW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	status := trimTextToWidth(imperialHUDStatusText(gs), FaceTiny, textW)
+	drawUILabel(screen, gameui.Rect{X: textX, Y: button.Y + 29, W: textW}, status, color.RGBA{232, 210, 162, 235}, gameui.TextSmall, gameui.TextAlignStart)
 }
 
 // BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
@@ -675,7 +741,7 @@ func turnTechHudTechHit(fx, fy float64) bool {
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
-func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID army.ArmyID, showArmyDetail, showRecruit, recruitEnabled bool, recruitReason string, showTrade, showDiplomacy, showTech, showActiveWars bool, mapMode MapMode) {
+func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID army.ArmyID, showArmyDetail, showRecruit, recruitEnabled bool, recruitReason string, showTrade, showDiplomacy, showTech, showImperialPanel, showActiveWars bool, mapMode MapMode) {
 	by := float32(0)
 	bw := topStatusW
 	if bw > float32(ScreenWidth) {
@@ -698,7 +764,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 		drawFactionFlagBadge(screen, f.ID, initial, flagX, flagY, factionHUDFlagSize, fc, panelBorder)
 
 		textX := flagX + factionHUDFlagSize + 13
-		DrawText(screen, f.NameTR, textX, float64(by)+10, FaceLarge, fc)
+		DrawText(screen, f.NameTR, textX, float64(by)+10, FaceLarge, ColorWhite)
 		militaryPower, militaryRank, factionCount := playerMilitaryPowerStanding(gs)
 		DrawText(screen, "Askeri güç: "+formatNumberTR(militaryPower), textX, float64(by)+34, FaceSmall, ColorGray)
 		DrawText(screen, "Güç sırası: "+formatNumberTR(militaryRank)+"/"+formatNumberTR(factionCount), textX, float64(by)+53, FaceSmall, ColorGray)
@@ -768,7 +834,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 
 	// Alt-orta: aksiyon HUD'u
 	hudX, hudY, hudW, hudH := bottomActionHudRect()
-	drawUIPanelFrame(screen, gameui.Rect{X: float64(hudX), Y: float64(hudY), W: float64(hudW), H: float64(hudH)}, panelBg, panelBorder, 1.5, 3)
+	drawRoundedHUDFrame(screen, [4]float32{hudX, hudY, hudW, hudH}, bottomActionHUDRadius, 1.5, panelBg, panelBorder)
 
 	rects := BottomButtonRects()
 	armyLabel, armyEnabled, armyActive, armyIsNaval, armySelected := bottomArmyAction(gs, selectedArmyID, showArmyDetail, showRecruit, recruitEnabled)
@@ -791,6 +857,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 	}
 	for i, r := range rects {
 		style := solidButtonStyle(bgNorm[i], panelBorder, ColorWhite, 15)
+		style.CornerRadius = bottomActionButtonRad
 		if i == 0 && armySelected {
 			style.BG = bottomSelectedArmyButtonColor
 			if armyIsNaval {
@@ -822,12 +889,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 	}
 	drawMapModeHud(screen, mapMode)
 	if imperialPanelAvailable(gs) {
-		btn := buildImperialHUDButton()
-		style := solidButtonStyle(color.RGBA{48, 38, 23, 235}, color.RGBA{184, 148, 70, 255}, ColorWhite, 6)
-		drawUIButtonWidget(screen, btn, style)
-		status := imperialHUDStatusText(gs)
-		status = trimTextToWidth(status, FaceSmall, float64(btn.W)-10)
-		drawUILabel(screen, gameui.Rect{X: btn.X + 5, Y: btn.Y + 32, W: btn.W - 10}, status, color.RGBA{232, 210, 162, 235}, gameui.TextSmall, gameui.TextAlignCenter)
+		drawImperialHUD(screen, gs, showImperialPanel)
 	}
 
 	drawDateMenuHud(screen, gs, mapMode)

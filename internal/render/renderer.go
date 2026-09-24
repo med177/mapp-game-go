@@ -1030,11 +1030,22 @@ func (r *Renderer) IsArmyMovementAnimating() bool {
 		return false
 	}
 	if time.Since(r.armyMovementAnimation.startedAt) >= r.armyMovementAnimation.duration {
-		r.armyMovementAnimation.active = false
-		r.armyMovementAnimation.soundPending = true
+		r.completeArmyMovementAnimation()
 		return false
 	}
 	return true
+}
+
+// completeArmyMovementAnimation, markerın animasyon sprite'ından normal
+// marker'a döndüğü geçişi tamamlar. Bu geçiş Draw sırasında gerçekleşebildiği
+// için hareket sesini de aynı anda keser; sesi sonraki input frame'ine bırakmak
+// marker yeniden görünürken sesin kısa süre daha çalmasına neden olur.
+func (r *Renderer) completeArmyMovementAnimation() {
+	if r == nil {
+		return
+	}
+	r.armyMovementAnimation.active = false
+	r.stopArmyMovementSound()
 }
 
 func (r *Renderer) CancelArmyMovementAnimation() {
@@ -1149,7 +1160,7 @@ func (r *Renderer) animatedArmyScreenPos(aid army.ArmyID) (float32, float32, boo
 	animation := &r.armyMovementAnimation
 	elapsed := time.Since(animation.startedAt)
 	if elapsed >= animation.duration {
-		animation.active = false
+		r.completeArmyMovementAnimation()
 		return 0, 0, false
 	}
 	progress := float64(elapsed) / float64(animation.duration)
@@ -1970,7 +1981,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 				recruitReason = recruitPanelDisabledReason(r.gs, r.SelectedRegion)
 			}
 		}
-		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showActiveWars, r.mapMode)
+		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showImperialPanel, r.showActiveWars, r.mapMode)
 		r.drawGrainEconomyPopup(screen)
 		r.drawGoldIncomePopup(screen)
 		DrawRegionPanelExpandedScrolledWithTab(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelTab, r.regionPanelScroll)

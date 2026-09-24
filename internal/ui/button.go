@@ -16,6 +16,7 @@ type ButtonStyle struct {
 	DisabledText   color.RGBA
 	TextVariant    TextVariant
 	BorderWidth    float32
+	CornerRadius   float32
 }
 
 type Button struct {
@@ -70,8 +71,7 @@ func DrawButton(screen *ebiten.Image, b Button, style ButtonStyle, text TextRend
 		border = style.DisabledBorder
 		txt = style.DisabledText
 	}
-	vector.FillRect(screen, float32(b.X), float32(b.Y), float32(b.W), float32(b.H), bg, false)
-	vector.StrokeRect(screen, float32(b.X), float32(b.Y), float32(b.W), float32(b.H), style.BorderWidth, border, false)
+	drawButtonBackground(screen, b, style.CornerRadius, bg, border, style.BorderWidth)
 	if b.Focused && b.Enabled {
 		vector.StrokeRect(screen, float32(b.X+2), float32(b.Y+2), float32(b.W-4), float32(b.H-4), 1, txt, false)
 	}
@@ -94,6 +94,49 @@ func DrawButton(screen *ebiten.Image, b Button, style ButtonStyle, text TextRend
 	if b.Label != "" {
 		text.Draw(screen, b.Label, contentX, buttonTextY(b, style), txt, style.TextVariant)
 	}
+}
+
+func drawButtonBackground(screen *ebiten.Image, b Button, radius float32, bg, border color.RGBA, borderWidth float32) {
+	if radius <= 0 {
+		vector.FillRect(screen, float32(b.X), float32(b.Y), float32(b.W), float32(b.H), bg, false)
+		drawButtonBorder(screen, b.X, b.Y, b.W, b.H, 0, float64(borderWidth), border, bg)
+		return
+	}
+	drawButtonRoundedRect(screen, float32(b.X), float32(b.Y), float32(b.W), float32(b.H), radius, bg)
+	drawButtonBorder(screen, b.X, b.Y, b.W, b.H, float64(radius), float64(borderWidth), border, bg)
+}
+
+func drawButtonBorder(screen *ebiten.Image, x, y, w, h, radius, width float64, border, fill color.RGBA) {
+	if radius <= 0 {
+		vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), float32(width), border, false)
+		return
+	}
+	drawButtonRoundedRect(screen, float32(x), float32(y), float32(w), float32(h), float32(radius), border)
+	inset := width
+	innerRadius := radius - inset
+	if innerRadius < 0 {
+		innerRadius = 0
+	}
+	drawButtonRoundedRect(screen, float32(x+inset), float32(y+inset), float32(w-inset*2), float32(h-inset*2), float32(innerRadius), fill)
+}
+
+func drawButtonRoundedRect(screen *ebiten.Image, x, y, w, h, radius float32, col color.RGBA) {
+	if radius <= 0 {
+		vector.FillRect(screen, x, y, w, h, col, false)
+		return
+	}
+	if radius*2 > w {
+		radius = w / 2
+	}
+	if radius*2 > h {
+		radius = h / 2
+	}
+	vector.FillRect(screen, x+radius, y, w-radius*2, h, col, false)
+	vector.FillRect(screen, x, y+radius, w, h-radius*2, col, false)
+	vector.FillCircle(screen, x+radius, y+radius, radius, col, false)
+	vector.FillCircle(screen, x+w-radius, y+radius, radius, col, false)
+	vector.FillCircle(screen, x+radius, y+h-radius, radius, col, false)
+	vector.FillCircle(screen, x+w-radius, y+h-radius, radius, col, false)
 }
 
 func buttonIconGap(b Button) float64 {
