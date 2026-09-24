@@ -101,6 +101,39 @@ func TestActiveWarParticipantsKeepOriginalSidesFirstThenSortByPower(t *testing.T
 	}
 }
 
+func TestCollectActiveWarSummariesIncludesVassalsOnTheirRealmSide(t *testing.T) {
+	gs := &state.GameState{
+		Turn: 12,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"attacker":        {ID: "attacker", NameTR: "Saldıran"},
+			"attacker_vassal": {ID: "attacker_vassal", NameTR: "Saldıran Vassalı", OverlordID: "attacker"},
+			"nested_vassal":   {ID: "nested_vassal", NameTR: "Alt Vassal", OverlordID: "attacker_vassal"},
+			"defender":        {ID: "defender", NameTR: "Savunan"},
+			"defender_vassal": {ID: "defender_vassal", NameTR: "Savunan Vassalı", OverlordID: "defender"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("attacker", "defender"): {
+				FactionA: "attacker", FactionB: "defender", Stance: faction.StanceWar,
+			},
+		},
+	}
+
+	wars := collectActiveWarSummaries(gs, nil)
+	if got, want := len(wars), 1; got != want {
+		t.Fatalf("vassallar savaşı çoğalttı: got %d want %d", got, want)
+	}
+	war := wars[0]
+	if got, want := len(war.SideA.Participants), 3; got != want {
+		t.Fatalf("saldıran realm katılımcıları = %d, want %d", got, want)
+	}
+	if got, want := len(war.SideB.Participants), 2; got != want {
+		t.Fatalf("savunan realm katılımcıları = %d, want %d", got, want)
+	}
+	if war.SideA.Participants[0].FactionID != "attacker" || war.SideA.Participants[1].FactionID != "attacker_vassal" {
+		t.Fatalf("saldıran taraf sırası = %v", war.SideA.Participants)
+	}
+}
+
 func TestActiveWarVariableRowsShareDrawAndHitGeometry(t *testing.T) {
 	wars := []ActiveWarSummary{
 		{SideA: ActiveWarSide{Participants: []ActiveWarParticipant{{NameTR: "A"}, {NameTR: "B"}}}, SideB: ActiveWarSide{Participants: []ActiveWarParticipant{{NameTR: "C"}}}},

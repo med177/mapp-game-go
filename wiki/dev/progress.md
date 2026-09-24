@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-25: Aktif Savaşlar panelinde savaş taraflarının ana devletlerine bağlı
+  doğrudan ve alt vassallar ayrı katılımcı satırları olarak gösteriliyor; bu
+  vassallar yeni savaş sayılmıyor, ilgili realm tarafının güç/ordu toplamlarına
+  dahil ediliyor. Regression: `TestCollectActiveWarSummariesIncludesVassalsOnTheirRealmSide`;
+  kapsam: `internal/render/active_wars.go`.
+
 - 2026-09-23: Ordu detay panelinin ortak UI geçişi tamamlandı. Oyuncu,
   taşınan kara ordusu, düşman ve kısmi istihbarat görünümlerinin panel
   çerçevesi artık `gameui.Panel` üzerinden çiziliyor; `BÖL`, `BİRLEŞTİR` ve

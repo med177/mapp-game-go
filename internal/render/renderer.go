@@ -419,6 +419,8 @@ type armyMovementAnimation struct {
 	duration     time.Duration
 	active       bool
 	soundPending bool
+	finalStep    bool
+	visualActive bool
 }
 
 type armyMarkerSpriteSet uint8
@@ -981,7 +983,7 @@ func (r *Renderer) stopInactiveArmyFightSound() {
 // StartArmyMovementAnimation, oyun katmanının çözdüğü tek bir bölge geçişini
 // renderer tarafında ortak dünya koordinatlarıyla canlandırır. State anında
 // yeni bölgeye geçirilse de marker kısa süre boyunca iki anchor arasında akar.
-func (r *Renderer) StartArmyMovementAnimation(aid army.ArmyID, target world.RegionID, targetSettlementID string) {
+func (r *Renderer) StartArmyMovementAnimation(aid army.ArmyID, target world.RegionID, targetSettlementID string, finalStep bool) {
 	if r == nil || r.gs == nil || r.worldMap == nil || aid == "" || target == "" {
 		return
 	}
@@ -999,8 +1001,13 @@ func (r *Renderer) StartArmyMovementAnimation(aid army.ArmyID, target world.Regi
 		return
 	}
 	if math.Abs(fromX-toX)+math.Abs(fromY-toY) < 0.01 {
-		r.stopArmyMovementSound()
-		r.armyMovementAnimation = armyMovementAnimation{}
+		if finalStep {
+			r.stopArmyMovementSound()
+			r.armyMovementAnimation = armyMovementAnimation{}
+		} else {
+			r.armyMovementAnimation.active = false
+		}
+		r.armyIconCacheValid = false
 		return
 	}
 	moveSound := "army_move"
@@ -1011,15 +1018,17 @@ func (r *Renderer) StartArmyMovementAnimation(aid army.ArmyID, target world.Regi
 		r.stopArmyMovementSound()
 	}
 	r.armyMovementAnimation = armyMovementAnimation{
-		armyID:    aid,
-		soundName: moveSound,
-		fromX:     fromX,
-		fromY:     fromY,
-		toX:       toX,
-		toY:       toY,
-		startedAt: time.Now(),
-		duration:  500 * time.Millisecond,
-		active:    true,
+		armyID:       aid,
+		soundName:    moveSound,
+		fromX:        fromX,
+		fromY:        fromY,
+		toX:          toX,
+		toY:          toY,
+		startedAt:    time.Now(),
+		duration:     500 * time.Millisecond,
+		active:       true,
+		finalStep:    finalStep,
+		visualActive: true,
 	}
 	audio.EnsureScenarioSoundPlaying(filepath.Join(r.gs.ScenarioPath, "audio"), moveSound)
 	r.armyIconCacheValid = false
@@ -1045,7 +1054,10 @@ func (r *Renderer) completeArmyMovementAnimation() {
 		return
 	}
 	r.armyMovementAnimation.active = false
-	r.stopArmyMovementSound()
+	if r.armyMovementAnimation.finalStep {
+		r.stopArmyMovementSound()
+		r.armyMovementAnimation.visualActive = false
+	}
 }
 
 func (r *Renderer) CancelArmyMovementAnimation() {
@@ -1074,6 +1086,23 @@ func (r *Renderer) flushPendingArmyMovementSound() {
 		return
 	}
 	r.stopArmyMovementSound()
+}
+
+func (r *Renderer) armyMovementVisualActiveFor(aid army.ArmyID) bool {
+	return r != nil && r.armyMovementAnimation.visualActive && r.armyMovementAnimation.armyID == aid
+}
+
+func (r *Renderer) armyMovementSpriteVisibleFor(a *army.Army) bool {
+	if r == nil || r.gs == nil || a == nil {
+		return false
+	}
+	if r.armyMovementVisualActiveFor(a.ID) {
+		return true
+	}
+	if a.ID != r.SelectedArmy || a.OwnerID != string(r.gs.PlayerFactionID) || a.MovePoints <= 0 {
+		return false
+	}
+	return r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval) != nil
 }
 
 func (r *Renderer) invalidateMovementReachability() {
@@ -3348,7 +3377,7 @@ func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
 // Kara orduları region/yerleşim anchor'ında, sadece demirli donanmalar bağlı
 // liman yerleşimi anchor'ında, diğer donanmalar ise deniz bölgesi anchor'ında çizilir.
 func (r *Renderer) armyIconPositions() []armyIconPos {
-	if r.armyIconCacheValid && !r.armyMovementAnimation.active {
+	if r.armyIconCacheValid && !r.armyMovementAnimation.active && !r.armyMovementAnimation.visualActive {
 		return r.armyIconBuf
 	}
 	r.armyIconCacheValid = true
@@ -3745,6 +3774,9 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		if !ok || a == nil {
 			continue
 		}
+		if r.armyMovementSpriteVisibleFor(a) {
+			continue
+		}
 		r.drawArmyCommanderPortrait(screen, a, pos.X, pos.Y, a.IsNaval)
 	}
 
@@ -3770,7 +3802,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		}
 		playerOwned := r.gs.PlayerFactionID != "" && a.OwnerID == string(r.gs.PlayerFactionID)
 		selectedSprite := playerOwned && isSelected && a.MovePoints > 0
-		animatingSprite := playerOwned && r.armyMovementAnimation.armyID == a.ID && r.armyMovementAnimation.active
+		animatingSprite := playerOwned && r.armyMovementVisualActiveFor(a.ID)
 		var movementSprite *ebiten.Image
 		if selectedSprite || animatingSprite {
 			movementSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
@@ -3793,12 +3825,12 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			continue
 		}
 		selectedSprite := pos.ArmyID == r.SelectedArmy && a.MovePoints > 0
-		animatingSprite := r.armyMovementAnimation.armyID == a.ID && r.armyMovementAnimation.active
+		animatingSprite := r.armyMovementSpriteVisibleFor(a)
 		var movementSprite *ebiten.Image
 		if selectedSprite || animatingSprite {
 			movementSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
 		}
-		if movementSprite != nil && (selectedSprite || animatingSprite) {
+		if movementSprite != nil && selectedSprite && !animatingSprite {
 			r.drawArmySpriteBadges(screen, a, pos, positions)
 		}
 	}
@@ -3811,7 +3843,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		}
 		if r.gs.PlayerFactionID != "" && a.OwnerID == string(r.gs.PlayerFactionID) {
 			selectedSprite := pos.ArmyID == r.SelectedArmy && a.MovePoints > 0
-			animatingSprite := r.armyMovementAnimation.armyID == a.ID && r.armyMovementAnimation.active
+			animatingSprite := r.armyMovementSpriteVisibleFor(a)
 			if selectedSprite || animatingSprite {
 				if r.armyMovementSpriteFor(a.ID, a.OwnerID, true) != nil {
 					continue
@@ -3933,7 +3965,10 @@ func (r *Renderer) drawSelectedArmyIndicator(screen *ebiten.Image, positions []a
 		if pos.ArmyID != r.SelectedArmy {
 			continue
 		}
-		commander, _ := armyPanelDisplayedCommander(a)
+		var commander *army.Commander
+		if !r.armyMovementSpriteVisibleFor(a) {
+			commander, _ = armyPanelDisplayedCommander(a)
+		}
 		var markerSprite *ebiten.Image
 		if a.MovePoints > 0 && a.OwnerID == string(r.gs.PlayerFactionID) {
 			markerSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)

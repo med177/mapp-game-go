@@ -1321,20 +1321,29 @@ func (r *Renderer) armyHitAt(mx, my float64) (army.ArmyID, bool) {
 	armyPositions := r.armyIconPositions()
 	for i := len(armyPositions) - 1; i >= 0; i-- {
 		pos := armyPositions[i]
+		a := r.gs.Armies[pos.ArmyID]
+		if r.armyMovementSpriteVisibleFor(a) {
+			markerSprite := r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
+			if armySelectionIndicatorRect(pos.X, pos.Y, a.IsNaval, false, markerSprite).Hit(mx, my) {
+				return pos.ArmyID, true
+			}
+		}
 		dx := mx - float64(pos.X)
 		dy := my - float64(pos.Y)
 		if math.Sqrt(dx*dx+dy*dy) < 14 {
 			return pos.ArmyID, true
 		}
-		if armyTaskStatusVisible(r.gs, r.gs.Armies[pos.ArmyID]) && armyTaskStatusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+		if !r.armyMovementSpriteVisibleFor(r.gs.Armies[pos.ArmyID]) && armyTaskStatusVisible(r.gs, r.gs.Armies[pos.ArmyID]) && armyTaskStatusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
 			return pos.ArmyID, true
 		}
 		if fleet := r.gs.Armies[pos.ArmyID]; fleet != nil {
-			if _, _, ok := navalMissionBonusBadge(r.gs, fleet); ok && navalMissionBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
-				return pos.ArmyID, true
-			}
-			if r.merchantTradeBonusForArmy(fleet) > 0 && merchantTradeBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
-				return pos.ArmyID, true
+			if !r.armyMovementSpriteVisibleFor(fleet) {
+				if _, _, ok := navalMissionBonusBadge(r.gs, fleet); ok && navalMissionBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+					return pos.ArmyID, true
+				}
+				if r.merchantTradeBonusForArmy(fleet) > 0 && merchantTradeBonusBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+					return pos.ArmyID, true
+				}
 			}
 		}
 	}

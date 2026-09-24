@@ -580,6 +580,22 @@ func addActiveWarParticipant(gs *state.GameState, side *ActiveWarSide, seen map[
 	side.FleetCasualties += participant.FleetCasualties
 }
 
+func addActiveWarVassalParticipants(gs *state.GameState, side *ActiveWarSide, seen map[faction.FactionID]int) {
+	if gs == nil || side == nil {
+		return
+	}
+	// Vassallar ayrı bir savaş ilişkisi olarak tutulmayabilir; overlord'un
+	// savaşa girmesiyle aynı cepheye kesin katılırlar. Bu nedenle onları
+	// relation listesinden değil, mevcut taraf katılımcılarının realm'inden
+	// genişletiyoruz.
+	baseParticipants := append([]ActiveWarParticipant(nil), side.Participants...)
+	for _, participant := range baseParticipants {
+		for _, vassal := range diplomacy.VassalsOf(gs, participant.FactionID) {
+			addActiveWarParticipant(gs, side, seen, vassal, 0, 0, 0)
+		}
+	}
+}
+
 func sortActiveWarParticipants(participants []ActiveWarParticipant, primary faction.FactionID) {
 	sort.SliceStable(participants, func(i, j int) bool {
 		iPrimary := participants[i].FactionID == primary
@@ -617,6 +633,8 @@ func buildActiveWarSummary(gs *state.GameState, relations []activeWarRelation) A
 		addActiveWarParticipant(gs, &summary.SideA, seenA, relation.a, relation.casualtiesA, relation.armyCasualtiesA, relation.fleetCasualtiesA)
 		addActiveWarParticipant(gs, &summary.SideB, seenB, relation.b, relation.casualtiesB, relation.armyCasualtiesB, relation.fleetCasualtiesB)
 	}
+	addActiveWarVassalParticipants(gs, &summary.SideA, seenA)
+	addActiveWarVassalParticipants(gs, &summary.SideB, seenB)
 	sortActiveWarParticipants(summary.SideA.Participants, summary.FactionA)
 	sortActiveWarParticipants(summary.SideB.Participants, summary.FactionB)
 	summary.PowerA = summary.SideA.Power

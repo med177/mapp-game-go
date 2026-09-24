@@ -5486,7 +5486,7 @@ func (g *Game) startPlayerMovement(action render.InputAction) {
 	if action.ContactResolved || action.NavalAttack {
 		if a := g.gs.Armies[action.ArmyID]; a != nil {
 			if route := g.gs.MovementRouteForArmy(a, action.TargetRegion); len(route) >= 2 {
-				g.renderer.StartArmyMovementAnimation(a.ID, action.TargetRegion, action.TargetSettlementID)
+				g.renderer.StartArmyMovementAnimation(a.ID, action.TargetRegion, action.TargetSettlementID, true)
 			}
 		}
 		g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed, action.ContactAttackerHolding, action.ContactDefenderHolding)
@@ -5535,7 +5535,8 @@ func (g *Game) advancePendingPlayerMovement() {
 	}
 	next := pending.steps[0]
 	settlementID := ""
-	if len(pending.steps) == 1 {
+	finalStep := len(pending.steps) == 1
+	if finalStep {
 		settlementID = pending.targetSettlementID
 	}
 	if target := g.gs.Regions[next]; target != nil && g.renderer.OpenQueuedWarConfirm(a, target) {
@@ -5544,7 +5545,7 @@ func (g *Game) advancePendingPlayerMovement() {
 		return
 	}
 	fromRegion := a.RegionID
-	g.renderer.StartArmyMovementAnimation(a.ID, next, settlementID)
+	g.renderer.StartArmyMovementAnimation(a.ID, next, settlementID, finalStep)
 	g.moveArmyToSettlementWithStance(a.ID, next, settlementID, combat.BattleStanceBalanced)
 
 	updated := g.gs.Armies[pending.armyID]

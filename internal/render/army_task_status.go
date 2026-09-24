@@ -20,6 +20,9 @@ func (r *Renderer) armyIconStepForTaskStatus(aids []army.ArmyID, fallback float3
 		return fallback
 	}
 	for _, aid := range aids {
+		if r.armyMovementSpriteVisibleFor(r.gs.Armies[aid]) {
+			continue
+		}
 		if armyTaskStatusVisible(r.gs, r.gs.Armies[aid]) {
 			return armyTaskStatusIconStep
 		}
@@ -78,6 +81,9 @@ func (r *Renderer) drawArmyTaskStatusBadges(screen *ebiten.Image, positions []ar
 	}
 	for _, pos := range positions {
 		a := r.gs.Armies[pos.ArmyID]
+		if r.armyMovementSpriteVisibleFor(a) {
+			continue
+		}
 		drawArmyTaskStatusBadge(screen, r.gs, a, pos.X, pos.Y)
 	}
 }
@@ -89,6 +95,9 @@ func (r *Renderer) armyTaskStatusBadgeHitAt(mx, my float64) (army.ArmyID, bool) 
 	positions := r.armyIconPositions()
 	for i := len(positions) - 1; i >= 0; i-- {
 		pos := positions[i]
+		if r.armyMovementSpriteVisibleFor(r.gs.Armies[pos.ArmyID]) {
+			continue
+		}
 		if !armyTaskStatusVisible(r.gs, r.gs.Armies[pos.ArmyID]) {
 			continue
 		}
