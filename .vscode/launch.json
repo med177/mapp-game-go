@@ -9,17 +9,17 @@
       "program": "${workspaceFolder}/cmd/game",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "output": "${workspaceFolder}/bin/mapp-debug.exe"
+      "output": "${workspaceFolder}/bin/mapp-debug"
     },
     {
-      "name": "Build Game",
+      "name": "Run Game",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/game",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "output": "${workspaceFolder}/bin/game/mapp.exe"
+      "output": "${workspaceFolder}/bin/game/mapp-linux"
     },
     {
       "name": "Run All Go Tests",
@@ -27,6 +27,6 @@
       "request": "launch",
       "command": "go test ./... -count=1",
       "cwd": "${workspaceFolder}"
-    },
+    }
   ]
 }

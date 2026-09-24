@@ -54,27 +54,28 @@ type tradeCenterVisual struct {
 }
 
 type tradeCorridorInfo struct {
-	fromName       string
-	toName         string
-	directionText  string
-	amount         int
-	factions       int
-	goods          string
-	sx             float64
-	sy             float64
-	cx             float64
-	cy             float64
-	dx             float64
-	dy             float64
-	path           []tradeOverlayPoint
-	routeType      world.TradeRouteType
-	hitWidth       float64
-	dashed         bool
-	historical     bool
-	route          *economy.TradeRoute
-	routeKeys      []string
-	routeDetails   []tradeCorridorRouteDetail
-	centerFactions [2]string
+	fromName            string
+	toName              string
+	directionText       string
+	amount              int
+	factions            int
+	goods               string
+	sx                  float64
+	sy                  float64
+	cx                  float64
+	cy                  float64
+	dx                  float64
+	dy                  float64
+	path                []tradeOverlayPoint
+	routeType           world.TradeRouteType
+	hitWidth            float64
+	dashed              bool
+	historical          bool
+	route               *economy.TradeRoute
+	routeKeys           []string
+	routeDetails        []tradeCorridorRouteDetail
+	centerFactions      [2]string
+	showAllRouteDetails bool
 }
 
 type tradeCorridorRouteDetail struct {
@@ -86,6 +87,10 @@ type tradeCorridorRouteDetail struct {
 	historical      bool
 	historicalGoods []tradeCorridorGoodTotal
 }
+
+const tradeCenterLabelGap = 20.0
+
+const tradeSeaCenterLabelExtraGap = 20.0
 
 type tradeCorridorGoodTotal struct {
 	good   string
@@ -167,6 +172,9 @@ func appendTradeRouteKeys(keys []string, additions ...string) []string {
 }
 
 func tradeCorridorDetailsForCenter(c tradeCorridorInfo) []tradeCorridorRouteDetail {
+	if c.showAllRouteDetails {
+		return c.routeDetails
+	}
 	if c.centerFactions[0] == "" && c.centerFactions[1] == "" {
 		return c.routeDetails
 	}
@@ -1193,7 +1201,28 @@ func (r *Renderer) tradeBonusFleetAtPosition(position armyIconPos) (*army.Army, 
 		return nil, false
 	}
 	fleet := r.gs.Armies[position.ArmyID]
-	return fleet, fleet != nil && (r.merchantTradeBonusForArmy(fleet) > 0 || r.merchantTradeAssignmentPendingForArmy(fleet))
+	if fleet == nil {
+		return nil, false
+	}
+	status, ok := r.merchantTradeStatusForArmy(fleet.ID)
+	if !ok || !tradeMapMerchantFleetVisible(r.gs, fleet, status) {
+		return nil, false
+	}
+	return fleet, true
+}
+
+// tradeMapMerchantFleetVisible, ticaret haritasında oyuncu dışı merchant
+// filolarının yalnızca gerçekten bonus üreten rotaları göstermesini sağlar.
+// Oyuncunun bekleyen filosu ise rotaya giderken durumunu takip edebilmesi için
+// görünür kalır.
+func tradeMapMerchantFleetVisible(gs *state.GameState, fleet *army.Army, status state.MerchantFleetTradeStatus) bool {
+	if gs == nil || fleet == nil {
+		return false
+	}
+	if fleet.OwnerID == string(gs.PlayerFactionID) {
+		return status.Bonus > 0 || status.Pending
+	}
+	return status.Bonus > 0
 }
 
 func (r *Renderer) tradeBonusFleetVisuals() []tradeBonusFleetVisual {
@@ -1410,6 +1439,54 @@ func shortestCenterPath(adj map[int][]int, from, to int) []int {
 		}
 	}
 	return nil
+}
+
+// shortestCenterPathForTradeRoute, vassal hedefi için aynı realm içindeki
+// ticaret merkezlerini transit aday olarak tercih eder. Böylece örneğin
+// Flandre-HRE ilişkisindeki rota, eşit uzunluktaki rastgele bir batı yoluna
+// sapmak yerine HRE'nin Palatine merkezi üzerinden görünür.
+func shortestCenterPathForTradeRoute(gs *state.GameState, adj map[int][]int, centers []tradeCenterVisual, from, to int, factionIDs ...string) []int {
+	basePath := shortestCenterPath(adj, from, to)
+	if gs == nil || len(basePath) < 2 || len(factionIDs) == 0 {
+		return basePath
+	}
+
+	preferredOwners := make(map[string]struct{}, len(factionIDs))
+	for _, factionID := range factionIDs {
+		if factionID == "" {
+			continue
+		}
+		current := gs.Factions[faction.FactionID(factionID)]
+		if current == nil || current.OverlordID == "" {
+			continue
+		}
+		preferredOwners[string(current.OverlordID)] = struct{}{}
+	}
+	if len(preferredOwners) == 0 {
+		return basePath
+	}
+
+	bestPath := basePath
+	bestTransitID := ""
+	for transitIndex, center := range centers {
+		if transitIndex == from || transitIndex == to || center.regionID == "" {
+			continue
+		}
+		if _, ok := preferredOwners[tradeCenterOwnerFaction(gs, center)]; !ok {
+			continue
+		}
+		left := shortestCenterPath(adj, from, transitIndex)
+		right := shortestCenterPath(adj, transitIndex, to)
+		if len(left) < 2 || len(right) < 2 {
+			continue
+		}
+		candidate := append(append([]int(nil), left...), right[1:]...)
+		if len(candidate) < len(bestPath) || len(candidate) == len(bestPath) && (bestTransitID == "" || center.id < world.RegionID(bestTransitID)) {
+			bestPath = candidate
+			bestTransitID = string(center.id)
+		}
+	}
+	return bestPath
 }
 
 // shortestTradeRegionPath, ticaret merkezi link'inin fiziksel türüne uygun
@@ -1872,7 +1949,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if ca < 0 || cb < 0 || ca == cb {
 			continue
 		}
-		path := shortestCenterPath(adj, ca, cb)
+		path := shortestCenterPathForTradeRoute(r.gs, adj, centers, ca, cb, route.factionA, route.factionB)
 		if len(path) < 2 {
 			continue
 		}
@@ -2377,6 +2454,10 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 				continue
 			}
 			segmentCorridor := corridor
+			// Bu fiziksel segment, rotanın gerçek yolunun parçasıdır. Uç
+			// merkezlerden biri üçüncü bir faction'a ait olsa bile segmenti
+			// kullanan rota ayrıntıları tooltip'te görünmelidir.
+			segmentCorridor.showAllRouteDetails = true
 			segmentCorridor.path = pathSegment.points
 			segmentCorridor.sx = pathSegment.points[0].x
 			segmentCorridor.sy = pathSegment.points[0].y
@@ -2386,6 +2467,10 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			segmentCorridor.cx = (segmentCorridor.sx + segmentCorridor.dx) / 2
 			segmentCorridor.cy = (segmentCorridor.sy + segmentCorridor.dy) / 2
 			if existing, ok := pathCorridorIndex[pathSegment.key]; ok {
+				// Ortak fiziksel segment daha önce başka bir merkez rotası
+				// tarafından oluşturulmuş olabilir. Transit rota ayrıntıları
+				// için segmentin ortak-koridor davranışını koru.
+				r.tradeCorridors[existing].showAllRouteDetails = true
 				r.tradeCorridors[existing].routeDetails = appendTradeCorridorRouteDetails(r.tradeCorridors[existing].routeDetails, segmentCorridor.routeDetails...)
 				r.tradeCorridors[existing].routeKeys = appendTradeRouteKeys(r.tradeCorridors[existing].routeKeys, segmentCorridor.routeKeys...)
 				continue
@@ -2519,15 +2604,15 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			h = 22
 		}
 		x := float32(centers[i].x) - w/2
-		y := float32(centers[i].y) - h/2
+		y := float32(centers[i].y) - tradeCenterLabelGap - h
 		if focus, ok := seaFocusByCenter[i]; ok {
 			// Deniz odağı marker'ı donanma marker'ı yarıçapı olan 13 px'tir;
-			// tabela alt kenarı marker'ın 3 px üstünde kalır.
+			// liman tabelası odak noktasının 36 px üstünde kalır.
 			x = float32(focus.x) - w/2
-			y = float32(focus.y) - 13 - 3 - h
+			y = float32(focus.y) - tradeCenterLabelGap - tradeSeaCenterLabelExtraGap - h
 		} else if centers[i].landFocus {
 			// Kara rotasında odak, liman değil merkez yerleşim marker'ıdır.
-			y = float32(centers[i].y) - 13 - 3 - h
+			y = float32(centers[i].y) - tradeCenterLabelGap - h
 		}
 		labelRect := gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}
 		centers[i].labelX = labelRect.X

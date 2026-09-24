@@ -52,12 +52,3 @@ saves/quicksave.json
 saves/slot1.json
 saves/slot2.json
 saves/slot3.json
-
-# AI Rules
-.claude/
-.codex/
-.github/
-.blackboxrules
-AGENTS.md
-CLAUDE.md
-GEMINI.md

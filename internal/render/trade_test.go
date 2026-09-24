@@ -3,11 +3,29 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func TestTradeMapMerchantFleetVisibilityHidesPendingNonPlayerFleet(t *testing.T) {
+	gs := &state.GameState{PlayerFactionID: "player"}
+	playerFleet := &army.Army{ID: "player_fleet", OwnerID: "player"}
+	aiFleet := &army.Army{ID: "ai_fleet", OwnerID: "ai"}
+	pending := state.MerchantFleetTradeStatus{Pending: true}
+
+	if !tradeMapMerchantFleetVisible(gs, playerFleet, pending) {
+		t.Fatal("oyuncunun bekleyen merchant filosu ticaret haritasında gizlendi")
+	}
+	if tradeMapMerchantFleetVisible(gs, aiFleet, pending) {
+		t.Fatal("oyuncu dışı bekleyen merchant filosu ticaret haritasında görünür kaldı")
+	}
+	if !tradeMapMerchantFleetVisible(gs, aiFleet, state.MerchantFleetTradeStatus{Bonus: 1}) {
+		t.Fatal("gelir üreten oyuncu dışı merchant filosu gizlendi")
+	}
+}
 
 func TestSortedFactionsForMarketSortsSellersBySupply(t *testing.T) {
 	gs := marketSortingTestState()
@@ -198,6 +216,61 @@ func TestTradeCorridorDetailsFilterToCenterFactions(t *testing.T) {
 	}
 }
 
+func TestTradeCorridorDetailsForPhysicalSegmentShowsTransitRoute(t *testing.T) {
+	veniceFlanders := &economy.TradeRoute{FromFactionID: "venice", ToFactionID: "flanders_county"}
+	corridor := tradeCorridorInfo{
+		centerFactions:      [2]string{"hre", "denmark"},
+		showAllRouteDetails: true,
+		routeDetails: []tradeCorridorRouteDetail{{
+			key:   veniceFlanders.AssignmentKey(),
+			route: veniceFlanders,
+		}},
+	}
+	details := tradeCorridorDetailsForCenter(corridor)
+	if len(details) != 1 || details[0].route != veniceFlanders {
+		t.Fatalf("transit rotası tooltip'ten filtrelendi: %+v", details)
+	}
+}
+
+func TestShortestCenterPathForTradeRoutePrefersVassalOverlordCenter(t *testing.T) {
+	gs := &state.GameState{Factions: map[faction.FactionID]*faction.Faction{
+		"flanders_county": {ID: "flanders_county", OverlordID: "hre"},
+		"venice":          {ID: "venice"},
+		"hre":             {ID: "hre"},
+	}}
+	centers := []tradeCenterVisual{
+		{id: "venice", regionID: "venice"},
+		{id: "other_a", regionID: "other_a"},
+		{id: "other_b", regionID: "other_b"},
+		{id: "other_c", regionID: "other_c"},
+		{id: "palatinate", regionID: "palatinate"},
+		{id: "flanders", regionID: "flanders"},
+	}
+	regions := map[world.RegionID]*world.Region{
+		"venice":     {ID: "venice", OwnerID: "venice"},
+		"palatinate": {ID: "palatinate", OwnerID: "hre"},
+		"flanders":   {ID: "flanders", OwnerID: "flanders_county"},
+	}
+	gs.Regions = regions
+	adj := map[int][]int{
+		0: {1, 4},
+		1: {0, 2},
+		2: {1, 5},
+		4: {0, 5},
+		5: {2, 4},
+	}
+	path := shortestCenterPathForTradeRoute(gs, adj, centers, 0, 5, "venice", "flanders_county")
+	want := []int{0, 4, 5}
+	if len(path) != len(want) {
+		t.Fatalf("transit merkezi yolu = %v, want %v", path, want)
+	}
+	for i := range want {
+		if path[i] != want[i] {
+			t.Fatalf("transit merkezi yolu = %v, want %v", path, want)
+		}
+	}
+}
+
 func TestTradeCenterEndpointRegionsSelectsSingleNearestSea(t *testing.T) {
 	regions := map[world.RegionID]*world.Region{
 		"center":   {ID: "center", WorldX: 100, WorldY: 100, Neighbors: []world.RegionID{"far_sea", "near_sea"}},
@@ -222,6 +295,21 @@ func TestTradeCenterHasOnlyLandRoutes(t *testing.T) {
 	}}
 	if tradeCenterHasOnlyLandRoutes(withSea) {
 		t.Fatal("deniz bağlantısı olan merkez kara odağı kullanmamalı")
+	}
+}
+
+func TestTradeCenterLabelSits20PixelsAboveFocus(t *testing.T) {
+	focusY := 300.0
+	labelHeight := 54.0
+	labelY := focusY - tradeCenterLabelGap - labelHeight
+	if got := focusY - (labelY + labelHeight); got != tradeCenterLabelGap {
+		t.Fatalf("ticaret merkezi tabelası odak aralığı = %v, want %v", got, tradeCenterLabelGap)
+	}
+}
+
+func TestSeaTradeCenterLabelSits20PixelsHigher(t *testing.T) {
+	if got, want := tradeCenterLabelGap+tradeSeaCenterLabelExtraGap, 40.0; got != want {
+		t.Fatalf("deniz rotası liman tabelası odak aralığı = %v, want %v", got, want)
 	}
 }
 

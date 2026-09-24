@@ -4,6 +4,14 @@ Bu dosya, `/mnt/d/mapp-game-go` üzerinde çalışan kod ajanları için çalı�
 sözleşmesidir. Proje durumu ve oyun tasarımı için `README.md` ile `wiki/`
 dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 
+## Kaynak belgeler
+
+- Genel kurulum, çalıştırma ve proje özeti: [`README.md`](README.md)
+- Wiki dizini ve hızlı oyun akışı: [`wiki/HOME.md`](wiki/HOME.md)
+- WSL/Windows build ve doğrulama: [`wiki/dev/build-setup.md`](wiki/dev/build-setup.md)
+- Tur state machine ve çözümleme sırası: [`wiki/architecture/game-loop.md`](wiki/architecture/game-loop.md)
+- Yeni UI ekranları için ortak geometri/hit-test kuralları: [`wiki/architecture/ui-screen-guide.md`](wiki/architecture/ui-screen-guide.md)
+
 ## Dil ve çalışma ortamı
 
 - Kodlama görevlerinde kullanıcıyla Türkçe iletişim kur.
@@ -71,7 +79,8 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 3. Go kodunda `gofmt` çalıştır. Davranış, state, save/load, input, routing veya
    ortak helper değiştiyse ilgili regresyon testini ekle/güncelle.
 4. Önce hedefli testleri, sonra kapsam uygunsa `go test ./... -count=1` çalıştır;
-   iki sonucu ayrı raporla.
+  iki sonucu ayrı raporla. Merkezi lint yapılandırması yoksa yeni bir lint
+  aracını varsayma; en azından `gofmt` ve ilgili testleri doğrula.
 5. Gerekli olduğunda `go generate ./internal/buildinfo` ve
    `GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game` ile build'i
    doğrula. Veri değişikliklerinde ilgili lint ve yükleme testini de çalıştır.

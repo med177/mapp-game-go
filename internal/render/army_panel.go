@@ -57,6 +57,25 @@ type armyPanelLayout struct {
 	commanderW, commanderH         float32
 }
 
+const armyPanelHeaderCloseGap = float64(8)
+
+// armyPanelHeaderRight, başlık satırındaki metinlerin kullanılabilir sağ
+// sınırını kapatma düğmesinin başlangıcından türetir. Böylece sağa hizalı
+// durum metinleri düğmenin altına çizilmez ve sol başlıklar aynı sınıra göre
+// kısaltılır.
+func armyPanelHeaderRight(layout armyPanelLayout) float64 {
+	closeX, _, _, _ := panelCloseRect(layout.panelX, layout.panelY, layout.panelW)
+	return float64(closeX) - armyPanelHeaderCloseGap
+}
+
+func armyPanelHeaderLeftWidth(layout armyPanelLayout, rightTextWidth float64) float64 {
+	width := armyPanelHeaderRight(layout) - float64(layout.panelX+armyPanelPadX) - rightTextWidth - 12
+	if width < 0 {
+		return 0
+	}
+	return width
+}
+
 // DrawArmyDetailPanel seçili ordunun birimlerini Total War stilinde ekranın alt
 // orta kısmında birim kart ızgarası olarak gösterir.
 // Her zaman 20 slot gösterilir; dolu slotlar normal, boş slotlar silik çerçeve ile.
@@ -132,6 +151,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 	mpStr := "Hareket: " + itoa(a.MovePoints) + "/" + itoa(a.MaxMovePoints)
 	mpW := MeasureText(mpStr, FaceSmall)
+	headerRight := armyPanelHeaderRight(layout)
 	mergeTargets := FindMergeTargets(gs, aid)
 	canSplit := len(a.Units) >= 2 && (selectedCount == 0 || selectedCount < len(a.Units))
 	hasMerge := len(mergeTargets) > 0
@@ -141,7 +161,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		actionStartX -= actionBtnGap + actionBtnW
 	}
 	headerMaxW := float64(actionStartX - px - armyPanelPadX - 10)
-	if rightLimited := float64(panelW) - float64(armyPanelPadX*2) - mpW - 12; rightLimited < headerMaxW {
+	if rightLimited := headerRight - float64(px+armyPanelPadX) - mpW - 12; rightLimited < headerMaxW {
 		headerMaxW = rightLimited
 	}
 	if headerMaxW < 0 {
@@ -155,7 +175,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 		mpCol = ColorRed
 	}
 	DrawText(screen, mpStr,
-		float64(px)+float64(panelW)-float64(armyPanelPadX)-mpW-20,
+		headerRight-mpW,
 		float64(py)+float64(armyPanelTopY), FaceSmall, mpCol)
 	rightStatusY := float64(py + armyPanelInfoY)
 	if armyCanRenderReplenishment(gs, a) {
@@ -443,13 +463,11 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 	headerLeft += "  |  Taşınan Kara Ordusu"
 	countText := "Birim: " + itoa(len(displayArmy.Units))
 	countW := MeasureText(countText, FaceSmall)
-	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - countW - 12
-	if headerMaxW < 0 {
-		headerMaxW = 0
-	}
+	headerRight := armyPanelHeaderRight(layout)
+	headerMaxW := armyPanelHeaderLeftWidth(layout, countW)
 	DrawText(screen, trimTextToWidth(headerLeft, FaceSmall, headerMaxW), float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelTopY), FaceSmall, factionCol)
 	DrawText(screen, countText,
-		float64(px)+float64(panelW)-float64(armyPanelPadX)-countW,
+		headerRight-countW,
 		float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
 	drawArmyUpkeepSummary(screen, gs, &displayArmy, float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelInfoY+armyPanelInfoGapY))
 
@@ -565,12 +583,10 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 	}
 	headerRight := "Birim sayısı bilinmiyor"
 	rightW := MeasureText(headerRight, FaceSmall)
-	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - rightW - 12
-	if headerMaxW < 0 {
-		headerMaxW = 0
-	}
+	headerRightX := armyPanelHeaderRight(layout)
+	headerMaxW := armyPanelHeaderLeftWidth(layout, rightW)
 	DrawText(screen, trimTextToWidth(headerLeft, FaceSmall, headerMaxW), float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelTopY), FaceSmall, factionCol)
-	DrawText(screen, headerRight, float64(px)+float64(panelW)-float64(armyPanelPadX)-rightW, float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
+	DrawText(screen, headerRight, headerRightX-rightW, float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
 
 	sepY := layout.headerY
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
@@ -921,13 +937,11 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 		countStr = "Birim: " + itoa(len(a.Units)) + "  |  Tam istihbarat"
 	}
 	countW := MeasureText(countStr, FaceSmall)
-	headerMaxW := float64(panelW) - float64(armyPanelPadX*2) - countW - 12
-	if headerMaxW < 0 {
-		headerMaxW = 0
-	}
+	headerRight := armyPanelHeaderRight(layout)
+	headerMaxW := armyPanelHeaderLeftWidth(layout, countW)
 	DrawText(screen, trimTextToWidth(headerLeft, FaceSmall, headerMaxW), float64(px)+float64(armyPanelPadX), float64(py)+float64(armyPanelTopY), FaceSmall, factionCol)
 	DrawText(screen, countStr,
-		float64(px)+float64(panelW)-float64(armyPanelPadX)-countW,
+		headerRight-countW,
 		float64(py)+float64(armyPanelTopY), FaceSmall, color.RGBA{190, 160, 90, 230})
 
 	sepY := layout.headerY

@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Game (Linux)",
+      "type": "shell",
+      "command": "go",
+      "args": [
+        "build",
+        "-o",
+        "${workspaceFolder}/bin/game/mapp-linux",
+        "./cmd/game"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "Build Game (Windows)",
+      "type": "shell",
+      "command": "go",
+      "args": [
+        "build",
+        "-o",
+        "${workspaceFolder}/bin/game/mapp.exe",
+        "./cmd/game"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "GOOS": "windows",
+          "GOARCH": "amd64"
+        }
+      },
+      "problemMatcher": ["$go"]
+    }
+  ]
+}
