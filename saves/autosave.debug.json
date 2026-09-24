@@ -37299,7 +37299,9 @@
         "defender_faction_id": "serbian_empire",
         "started_turn": 54,
         "initial_regions_a": 4,
-        "initial_regions_b": 10
+        "initial_regions_b": 10,
+        "target_region_id": "albania",
+        "target_locked_turn": 54
       }
     },
     "recent_truces": {
@@ -52205,7 +52207,7 @@
       "germiyan_bey|golden_horde": {
         "faction_a": "germiyan_bey",
         "faction_b": "golden_horde",
-        "score": 63,
+        "score": 93,
         "stance": "peace"
       },
       "germiyan_bey|granada_emirate": {
@@ -62047,9 +62049,9 @@
           "timber": 112
         },
         "aragon": {
-          "cloth": 84,
+          "cloth": 7,
           "iron": 192,
-          "spice": 1064,
+          "spice": 1046,
           "stone": 187,
           "timber": 352
         },
@@ -62296,10 +62298,10 @@
           "timber": 19
         },
         "karesioglu_bey": {
-          "cloth": 150,
+          "cloth": 70,
           "grain": 33,
           "iron": 180,
-          "spice": 103,
+          "spice": 85,
           "stone": 31,
           "timber": 59
         },
@@ -62338,6 +62340,7 @@
           "cloth": 23,
           "iron": 63,
           "spice": 75,
+          "stone": 48,
           "timber": 91
         },
         "milan_duchy": {
@@ -62524,13 +62527,13 @@
           "timber": 48
         },
         "bohemian_kingdom": {
-          "stone": 156
+          "stone": 1754
         },
         "bulgarian_empire": {
           "stone": 44
         },
         "candar_bey": {
-          "stone": 104
+          "stone": 525
         },
         "carniola_margraviate": {
           "grain": 102
@@ -62543,18 +62546,18 @@
           "grain": 234
         },
         "cyprus_kingdom": {
-          "stone": 75
+          "stone": 375
         },
         "denmark_kingdom": {
           "iron": 19,
-          "stone": 179
+          "stone": 770
         },
         "east_rome": {
           "grain": 377,
-          "stone": 214
+          "stone": 234
         },
         "england": {
-          "stone": 73
+          "stone": 858
         },
         "esrefoglu_bey": {
           "grain": 162
@@ -62563,7 +62566,7 @@
           "stone": 39
         },
         "france": {
-          "stone": 61
+          "stone": 407
         },
         "genoa": {
           "grain": 475
@@ -62573,28 +62576,28 @@
         },
         "germiyan_bey": {
           "grain": 44,
-          "stone": 44
+          "stone": 470
         },
         "hafsid_sultanate": {
           "cloth": 78,
           "iron": 28,
-          "stone": 176,
+          "stone": 625,
           "timber": 170
         },
         "hospitaller": {
           "grain": 113,
-          "stone": 9
+          "stone": 24
         },
         "hungarian_kingdom": {
-          "stone": 123
+          "stone": 406
         },
         "leon_kingdom": {
-          "stone": 1486,
+          "stone": 1686,
           "timber": 104
         },
         "lithuanian_gd": {
           "iron": 46,
-          "stone": 184,
+          "stone": 557,
           "timber": 20
         },
         "marinid_sultanate": {
@@ -62605,11 +62608,10 @@
           "grain": 110
         },
         "mentese_bey": {
-          "grain": 81,
-          "stone": 2
+          "grain": 81
         },
         "navarra": {
-          "stone": 149
+          "stone": 1790
         },
         "norway_kingdom": {
           "grain": 871,
@@ -62619,7 +62621,7 @@
           "grain": 149
         },
         "portugal": {
-          "stone": 54
+          "stone": 465
         },
         "safavid": {
           "cloth": 16,
@@ -62627,7 +62629,7 @@
           "timber": 26
         },
         "saxony_duchy": {
-          "stone": 137,
+          "stone": 1151,
           "timber": 110
         },
         "scotland_kingdom": {
@@ -62639,10 +62641,10 @@
         },
         "sweden_kingdom": {
           "grain": 364,
-          "stone": 86
+          "stone": 241
         },
         "swiss_confederacy": {
-          "stone": 44
+          "stone": 534
         },
         "teutonic_order": {
           "stone": 5
@@ -62650,7 +62652,7 @@
         "trebizond_emp": {
           "grain": 175,
           "iron": 15,
-          "stone": 87
+          "stone": 1054
         },
         "usfurid_emirate": {
           "timber": 64

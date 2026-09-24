@@ -479,13 +479,7 @@ func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
-	armyDetailHover := false
-	if r.SelectedArmy != "" && r.selectedArmyIsPlayerOwned() {
-		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil {
-			armyDetailHover = armyDetailHUDButtonHit(fx, fy, selected.IsNaval)
-		}
-	}
-	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || armyDetailHover || (imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy)) || musicHudInteractiveHit(fx, fy) || activeWarsHudButtonHit(fx, fy) || turnTechHudTechHit(fx, fy) {
+	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || (imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy)) || musicHudInteractiveHit(fx, fy) || activeWarsHudButtonHit(fx, fy) || turnTechHudTechHit(fx, fy) {
 		return true
 	}
 	if victoryProgressHit(fx, fy) {

@@ -111,6 +111,7 @@ type Renderer struct {
 	regionPanelTab            regionPanelTab
 	regionPanelScroll         float64
 	showRecruitPanel          bool
+	recruitPanelPreference    bool
 	recruitUnitID             string
 	recruitQty                int
 
@@ -1457,6 +1458,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.regionPanelScroll = 0
 	r.clearSelectedSettlement()
 	r.showRecruitPanel = false
+	r.recruitPanelPreference = false
 	r.resetRecruitSelection()
 	r.showDiplomacy = false
 	r.diplomacyFocus = 0
@@ -2150,6 +2152,10 @@ func (r *Renderer) armyDetailPanelStateForSelection() bool {
 	return r.SelectedArmy != ""
 }
 
+func (r *Renderer) recruitPanelStateForRegion(rid world.RegionID) bool {
+	return r != nil && r.recruitPanelPreference && r.gs != nil && RecruitPanelVisible(r.gs, rid)
+}
+
 // playerCanSeeArmyDetails, oyuncunun kendi orduları ile oyuncuya bağlı vassal
 // ordularını tam istihbarat kapsamında tutar. Vassal orduları oyuncu adına
 // hareket ettirilemez; bu yardımcı yalnızca görünürlük/inceleme sözleşmesini
@@ -2282,11 +2288,6 @@ func (r *Renderer) tradeOverlayOccludesPoint(x, y float64) bool {
 	if topStatusPanelHit(x, y) || topDateHudHit(x, y) || musicHudHit(x, y) || bottomActionHudHit(x, y) {
 		return true
 	}
-	if r.SelectedArmy != "" && r.selectedArmyIsPlayerOwned() {
-		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(x, y, selected.IsNaval) {
-			return true
-		}
-	}
 	tx, ty, tw, th := turnTechHudRect()
 	if x >= float64(tx) && x <= float64(tx+tw) && y >= float64(ty) && y <= float64(ty+th) {
 		return true
@@ -2335,12 +2336,6 @@ func (r *Renderer) movementPreviewCursorOverPanel(x, y float64) bool {
 	if r.tradeOverlayOccludesPoint(x, y) {
 		return true
 	}
-	if r.SelectedArmy != "" && r.selectedArmyIsPlayerOwned() {
-		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(x, y, selected.IsNaval) {
-			return true
-		}
-	}
-
 	if r.showDiplomacy {
 		if r.diplomacyTargetFaction == "" {
 			layout := diplomacyListLayoutForScreen()

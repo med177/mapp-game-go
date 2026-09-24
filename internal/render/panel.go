@@ -92,6 +92,25 @@ const (
 
 var factionNameColor = color.RGBA{0, 152, 204, 255}
 
+// Alt HUD düğme renkleri. Renkleri buradan değiştirerek alt HUD görünümünü
+// çizim koduna girmeden özelleştirebilirsin.
+var (
+	bottomBarracksButtonColor     = color.RGBA{104, 112, 64, 235}
+	bottomBarracksActiveColor     = color.RGBA{154, 164, 82, 250}
+	bottomMarketButtonColor       = color.RGBA{35, 125, 125, 235}
+	bottomMarketActiveColor       = color.RGBA{55, 170, 165, 245}
+	bottomDiplomacyButtonColor    = color.RGBA{40, 65, 110, 215}
+	bottomDiplomacyActiveColor    = color.RGBA{80, 130, 200, 240}
+	bottomTechnologyButtonColor   = color.RGBA{60, 40, 95, 215}
+	bottomTechnologyActiveColor   = color.RGBA{110, 70, 170, 240}
+	bottomEndTurnButtonColor      = color.RGBA{105, 28, 28, 230}
+	bottomEndTurnActiveColor      = color.RGBA{165, 48, 48, 255}
+	bottomSelectedArmyButtonColor = color.RGBA{88, 62, 30, 235}
+	bottomSelectedArmyActiveColor = color.RGBA{156, 108, 44, 250}
+	bottomSelectedNavyButtonColor = color.RGBA{35, 72, 125, 235}
+	bottomSelectedNavyActiveColor = color.RGBA{52, 128, 198, 240}
+)
+
 // regionPanelTab seçili bölge panelindeki ortak içerik alanının görünümünü
 // belirler. Sıfır değer bilinçli olarak Binalar görünümüdür.
 type regionPanelTab int
@@ -418,14 +437,14 @@ func buttonFromRectF32(r [4]float32, label string) gameui.Button {
 	return gameui.NewButton(float64(r[0]), float64(r[1]), float64(r[2]), float64(r[3]), label)
 }
 
-func buildBottomActionButtons(recruitEnabled bool) [5]gameui.Button {
+func buildBottomActionButtons(armyLabel string, armyEnabled bool) [5]gameui.Button {
 	rects := BottomButtonRects()
-	labels := [5]string{"Ordu", "Pazar", "Diplomasi", "Teknoloji", "Tur Bitir ►"}
+	labels := [5]string{armyLabel, "Teknoloji", "Pazar", "Diplomasi", "Tur Bitir ►"}
 	var buttons [5]gameui.Button
 	for i, rect := range rects {
 		btn := buttonFromRectF32(rect, labels[i])
 		if i == 0 {
-			btn.Enabled = recruitEnabled
+			btn.Enabled = armyEnabled
 		}
 		buttons[i] = btn
 	}
@@ -462,29 +481,6 @@ func buildImperialHUDButton() gameui.Button {
 	return buttonFromRectF32(imperialHUDButtonRect(), "İmparatorluk")
 }
 
-const armyDetailHUDButtonW = float32(116)
-
-func armyDetailHUDButtonRect() [4]float32 {
-	armyRect := BottomButtonRects()[0]
-	x := armyRect[0] - 16 - armyDetailHUDButtonW
-	if x < 8 {
-		x = 8
-	}
-	return [4]float32{x, armyRect[1], armyDetailHUDButtonW, armyRect[3]}
-}
-
-func buildArmyDetailHUDButton(isNaval bool) gameui.Button {
-	label := "Ordu Detay"
-	if isNaval {
-		label = "Donanma Detay"
-	}
-	return buttonFromRectF32(armyDetailHUDButtonRect(), label)
-}
-
-func armyDetailHUDButtonHit(fx, fy float64, isNaval bool) bool {
-	return buildArmyDetailHUDButton(isNaval).HitTest(fx, fy)
-}
-
 func imperialHUDStatusText(gs *state.GameState) string {
 	if gs == nil || gs.Imperial == nil {
 		return ""
@@ -500,7 +496,7 @@ func imperialHUDButtonHit(fx, fy float64) bool {
 }
 
 // BottomButtonRects alt-orta aksiyon HUD'undaki buton dikdörtgenlerini döner.
-// [0]=Ordu [1]=Pazar [2]=Diplomasi [3]=Teknoloji [4]=Tur Bitir
+// [0]=Kışla/Ordu [1]=Teknoloji [2]=Pazar [3]=Diplomasi [4]=Tur Bitir
 func BottomButtonRects() [5][4]float32 {
 	hudX, hudY, _, _ := bottomActionHudRect()
 	by := hudY + actionHudPad
@@ -531,7 +527,7 @@ func bottomActionHudHit(fx, fy float64) bool {
 }
 
 func bottomActionButtonHit(fx, fy float64) bool {
-	for _, btn := range buildBottomActionButtons(true) {
+	for _, btn := range buildBottomActionButtons("Ordu", true) {
 		if btn.HitTest(fx, fy) {
 			return true
 		}
@@ -542,6 +538,23 @@ func bottomActionButtonHit(fx, fy float64) bool {
 		}
 	}
 	return false
+}
+
+// bottomArmyAction seçili oyuncu ordusu ile bölge asker yetiştirme aksiyonunu
+// aynı alt HUD düğmesinde birleştirir.
+func bottomArmyAction(gs *state.GameState, selectedArmyID army.ArmyID, showArmyDetail, showRecruit, recruitEnabled bool) (label string, enabled, active bool, naval, armySelected bool) {
+	if gs != nil && selectedArmyID != "" {
+		if selected := gs.Armies[selectedArmyID]; selected != nil && selected.OwnerID == string(gs.PlayerFactionID) {
+			armySelected = true
+			label = "Ordu"
+			if selected.IsNaval {
+				label = "Donanma"
+				naval = true
+			}
+			return label, true, showArmyDetail, naval, armySelected
+		}
+	}
+	return "Kışla", recruitEnabled, showRecruit, false, armySelected
 }
 
 func topStatusPanelHit(fx, fy float64) bool {
@@ -758,27 +771,40 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 	drawUIPanelFrame(screen, gameui.Rect{X: float64(hudX), Y: float64(hudY), W: float64(hudW), H: float64(hudH)}, panelBg, panelBorder, 1.5, 3)
 
 	rects := BottomButtonRects()
-	active := [5]bool{showRecruit, showTrade, showDiplomacy, showTech, false}
-	enabled := [5]bool{recruitEnabled, true, true, true, true}
-	buttons := buildBottomActionButtons(recruitEnabled)
+	armyLabel, armyEnabled, armyActive, armyIsNaval, armySelected := bottomArmyAction(gs, selectedArmyID, showArmyDetail, showRecruit, recruitEnabled)
+	active := [5]bool{armyActive, showTech, showTrade, showDiplomacy, false}
+	enabled := [5]bool{armyEnabled, true, true, true, true}
+	buttons := buildBottomActionButtons(armyLabel, armyEnabled)
 	bgNorm := [5]color.RGBA{
-		{88, 62, 30, 220},
-		{64, 82, 46, 235},
-		{40, 65, 110, 215},
-		{60, 40, 95, 215},
-		{105, 28, 28, 230},
+		bottomBarracksButtonColor,
+		bottomTechnologyButtonColor,
+		bottomMarketButtonColor,
+		bottomDiplomacyButtonColor,
+		bottomEndTurnButtonColor,
 	}
 	bgAct := [5]color.RGBA{
-		{150, 106, 48, 245},
-		{92, 128, 62, 245},
-		{80, 130, 200, 240},
-		{110, 70, 170, 240},
-		{165, 48, 48, 255},
+		bottomBarracksActiveColor,
+		bottomTechnologyActiveColor,
+		bottomMarketActiveColor,
+		bottomDiplomacyActiveColor,
+		bottomEndTurnActiveColor,
 	}
 	for i, r := range rects {
 		style := solidButtonStyle(bgNorm[i], panelBorder, ColorWhite, 15)
+		if i == 0 && armySelected {
+			style.BG = bottomSelectedArmyButtonColor
+			if armyIsNaval {
+				style.BG = bottomSelectedNavyButtonColor
+			}
+		}
 		if active[i] {
 			style.BG = bgAct[i]
+			if i == 0 && armySelected {
+				style.BG = bottomSelectedArmyActiveColor
+				if armyIsNaval {
+					style.BG = bottomSelectedNavyActiveColor
+				}
+			}
 		}
 		if !enabled[i] {
 			style.DisabledBG = color.RGBA{34, 30, 24, 180}
@@ -802,29 +828,6 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 		status := imperialHUDStatusText(gs)
 		status = trimTextToWidth(status, FaceSmall, float64(btn.W)-10)
 		drawUILabel(screen, gameui.Rect{X: btn.X + 5, Y: btn.Y + 32, W: btn.W - 10}, status, color.RGBA{232, 210, 162, 235}, gameui.TextSmall, gameui.TextAlignCenter)
-	}
-	if selectedArmyID != "" && gs != nil {
-		selectedArmy := gs.Armies[selectedArmyID]
-		if selectedArmy != nil && selectedArmy.OwnerID == string(gs.PlayerFactionID) {
-			btn := buildArmyDetailHUDButton(selectedArmy.IsNaval)
-			landNormal := color.RGBA{88, 62, 30, 235}
-			landActive := color.RGBA{156, 108, 44, 250}
-			navalNormal := color.RGBA{35, 72, 125, 235}
-			navalActive := color.RGBA{52, 128, 198, 250}
-			bg := landNormal
-			activeBG := landActive
-			if selectedArmy.IsNaval {
-				bg = navalNormal
-				activeBG = navalActive
-			}
-			style := solidButtonStyle(bg, panelBorder, ColorWhite, 6)
-			if showArmyDetail {
-				style.BG = activeBG
-			}
-			style.BorderWidth = 1.5
-			style.TextVariant = gameui.TextMedium
-			drawUIButtonWidget(screen, btn, style)
-		}
 	}
 
 	drawDateMenuHud(screen, gs, mapMode)

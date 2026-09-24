@@ -391,6 +391,7 @@ func (r *Renderer) HandleInput() InputAction {
 			r.SelectedRegion = ""
 			r.clearSelectedSettlement()
 			r.showRecruitPanel = false
+			r.recruitPanelPreference = false
 			r.resetRecruitSelection()
 			r.showDiplomacy = false
 			r.diplomacyTargetFaction = ""
@@ -572,6 +573,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.regionPanelScroll = 0
 		r.clearSelectedSettlement()
 		r.showRecruitPanel = false
+		r.recruitPanelPreference = false
 		r.resetRecruitSelection()
 		return InputAction{}
 	}
@@ -680,24 +682,30 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{Kind: ActionOpenImperialPanel}
 	}
-	if r.SelectedArmy != "" && r.selectedArmyIsPlayerOwned() {
-		if selected := r.gs.Armies[r.SelectedArmy]; selected != nil && armyDetailHUDButtonHit(fx, fy, selected.IsNaval) {
-			r.toggleArmyDetailPanel()
-			return InputAction{}
-		}
-	}
-
 	// --- Alt panel butonları ---
-	bottomButtons := buildBottomActionButtons(RecruitPanelButtonEnabled(r.gs, r.SelectedRegion))
+	recruitEnabled := RecruitPanelButtonEnabled(r.gs, r.SelectedRegion)
+	armyLabel, armyEnabled, _, _, _ := bottomArmyAction(r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled)
+	bottomButtons := buildBottomActionButtons(armyLabel, armyEnabled)
 	if bottomButtons[0].HitTest(fx, fy) {
-		r.toggleRecruitPanelFromBottomAction()
+		if r.selectedArmyIsPlayerOwned() {
+			r.toggleArmyDetailPanel()
+		} else {
+			r.toggleRecruitPanelFromBottomAction()
+		}
 		return InputAction{}
 	}
 	if bottomButtons[1].HitTest(fx, fy) {
-		r.toggleTradePanel()
+		r.showTech = !r.showTech
+		r.showRecruitPanel = false
+		r.showDiplomacy = false
+		r.techCursor = 0
 		return InputAction{}
 	}
 	if bottomButtons[2].HitTest(fx, fy) {
+		r.toggleTradePanel()
+		return InputAction{}
+	}
+	if bottomButtons[3].HitTest(fx, fy) {
 		r.showDiplomacy = !r.showDiplomacy
 		r.showRecruitPanel = false
 		r.showTech = false
@@ -707,13 +715,6 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.diplomacyActionFocus = 0
 		r.diplomacyTargetFaction = ""
 		r.diplomacyHistoryVisible = false
-		return InputAction{}
-	}
-	if bottomButtons[3].HitTest(fx, fy) {
-		r.showTech = !r.showTech
-		r.showRecruitPanel = false
-		r.showDiplomacy = false
-		r.techCursor = 0
 		return InputAction{}
 	}
 	if bottomButtons[4].HitTest(fx, fy) {
@@ -823,6 +824,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 				return InputAction{Kind: ActionCancelRecruitOrder, TargetRegion: r.SelectedRegion, BuildingID: act.OrderID}
 			case RecruitPanelActionClose:
 				r.showRecruitPanel = false
+				r.recruitPanelPreference = false
 				return InputAction{}
 			}
 		}
@@ -1127,6 +1129,7 @@ func (r *Renderer) openRecruitPanelFromMapDoubleClick(rid world.RegionID) bool {
 		return false
 	}
 	r.showRecruitPanel = true
+	r.recruitPanelPreference = true
 	r.clearSelectedSettlement()
 	r.showDiplomacy = false
 	r.showTech = false
@@ -1160,6 +1163,7 @@ func (r *Renderer) toggleRecruitPanelFromBottomAction() bool {
 		return false
 	}
 	r.showRecruitPanel = !r.showRecruitPanel
+	r.recruitPanelPreference = r.showRecruitPanel
 	if r.showRecruitPanel {
 		r.clearSelectedSettlement()
 	}
@@ -1228,7 +1232,7 @@ func (r *Renderer) selectMapRegion(rid world.RegionID) {
 	r.clearSelectedSettlement()
 	// Birim oluşturma paneli alt paneldeki Ordu butonuyla veya kendi bölgesine
 	// çift tıklama kısayoluyla açılabilir.
-	r.showRecruitPanel = false
+	r.showRecruitPanel = r.recruitPanelStateForRegion(rid)
 	r.resetRecruitSelection()
 }
 
@@ -1461,12 +1465,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			return InputAction{}
 		}
 	}
-	armyDetailHUDHit := false
-	if r.selectedArmyIsPlayerOwned() {
-		selected := r.gs.Armies[r.SelectedArmy]
-		armyDetailHUDHit = armyDetailHUDButtonHit(fx, fy, selected.IsNaval)
-	}
-	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || armyDetailHUDHit || musicHudHit(fx, fy) ||
+	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || musicHudHit(fx, fy) ||
 		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {
 		return InputAction{}
 	}

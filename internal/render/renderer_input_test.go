@@ -3,6 +3,7 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -66,5 +67,75 @@ func TestToggleArmyDetailPanel(t *testing.T) {
 	r.toggleArmyDetailPanel()
 	if r.showArmyDetailPanel || r.armyDetailPanelPreference {
 		t.Fatal("aynı marker'a ikinci sağ tıklama açık ordu detay panelini kapatmadı")
+	}
+}
+
+func TestBottomArmyActionUsesContextualSelection(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Armies: map[army.ArmyID]*army.Army{
+			"land":  {ID: "land", OwnerID: "player"},
+			"naval": {ID: "naval", OwnerID: "player", IsNaval: true},
+		},
+	}
+
+	tests := []struct {
+		name                               string
+		selectedArmy                       army.ArmyID
+		showArmyDetail                     bool
+		showRecruit                        bool
+		recruitEnabled                     bool
+		wantLabel                          string
+		wantEnabled, wantActive, wantNaval bool
+	}{
+		{name: "bölge", showRecruit: true, recruitEnabled: true, wantLabel: "Kışla", wantEnabled: true, wantActive: true},
+		{name: "kara ordusu", selectedArmy: "land", wantLabel: "Ordu", wantEnabled: true},
+		{name: "donanma", selectedArmy: "naval", showArmyDetail: true, wantLabel: "Donanma", wantEnabled: true, wantActive: true, wantNaval: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			label, enabled, active, naval, _ := bottomArmyAction(gs, tt.selectedArmy, tt.showArmyDetail, tt.showRecruit, tt.recruitEnabled)
+			if label != tt.wantLabel || enabled != tt.wantEnabled || active != tt.wantActive || naval != tt.wantNaval {
+				t.Fatalf("alt HUD aksiyonu = (%q, %v, %v, %v), want (%q, %v, %v, %v)", label, enabled, active, naval, tt.wantLabel, tt.wantEnabled, tt.wantActive, tt.wantNaval)
+			}
+			buttons := buildBottomActionButtons(label, enabled)
+			if buttons[0].Label != tt.wantLabel || buttons[0].Enabled != tt.wantEnabled {
+				t.Fatalf("alt HUD düğmesi = (%q, %v), want (%q, %v)", buttons[0].Label, buttons[0].Enabled, tt.wantLabel, tt.wantEnabled)
+			}
+			wantLabels := []string{tt.wantLabel, "Teknoloji", "Pazar", "Diplomasi", "Tur Bitir ►"}
+			for i, want := range wantLabels {
+				if buttons[i].Label != want {
+					t.Fatalf("alt HUD sıra[%d] = %q, want %q", i, buttons[i].Label, want)
+				}
+			}
+		})
+	}
+}
+
+func TestRecruitPanelStateForRegionFollowsPreference(t *testing.T) {
+	ownedRegion := world.RegionID("owned")
+	enemyRegion := world.RegionID("enemy")
+	r := &Renderer{
+		gs: &state.GameState{
+			PlayerFactionID: "player",
+			Regions: map[world.RegionID]*world.Region{
+				ownedRegion: {ID: ownedRegion, OwnerID: "player"},
+				enemyRegion: {ID: enemyRegion, OwnerID: "enemy"},
+			},
+		},
+		recruitPanelPreference: true,
+	}
+
+	if !r.recruitPanelStateForRegion(ownedRegion) {
+		t.Fatal("açık Kışla tercihi oyuncunun uygun bölgesine taşınmadı")
+	}
+	if r.recruitPanelStateForRegion(enemyRegion) {
+		t.Fatal("Kışla paneli düşman bölgesinde açık kabul edildi")
+	}
+
+	r.recruitPanelPreference = false
+	if r.recruitPanelStateForRegion(ownedRegion) {
+		t.Fatal("Kışla tercihi kapatıldıktan sonra panel açık kaldı")
 	}
 }
