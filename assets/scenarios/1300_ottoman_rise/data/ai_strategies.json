@@ -1126,7 +1126,7 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "kayseri",
+              "region_id": "nigde",
               "value": 100
             }
           ],
@@ -1967,11 +1967,11 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "karaman",
+              "region_id": "larende",
               "value": 84
             },
             {
-              "region_id": "kayseri",
+              "region_id": "nigde",
               "value": 78
             },
             {

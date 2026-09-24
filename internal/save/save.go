@@ -38,7 +38,7 @@ var scenarioBaseCache = struct {
 }{entries: make(map[string]scenarioBaseCacheEntry)}
 
 var scenarioBaseCacheFiles = []string{
-	"scenario.json",
+	"data/scenario.json",
 	"data/regions.json",
 	"data/land_passages.json",
 	"data/terrain_areas.json",
@@ -686,7 +686,7 @@ func scenarioBaseFingerprint(scenarioPath string) (string, error) {
 
 func resolveScenarioPath(scenarioID, savedScenarioPath string) string {
 	if savedScenarioPath != "" {
-		if _, err := os.Stat(filepath.Join(savedScenarioPath, "scenario.json")); err == nil {
+		if _, err := os.Stat(filepath.Join(savedScenarioPath, "data", "scenario.json")); err == nil {
 			return savedScenarioPath
 		}
 	}
@@ -694,14 +694,14 @@ func resolveScenarioPath(scenarioID, savedScenarioPath string) string {
 		return ""
 	}
 	candidate := filepath.Join(scenarioBaseDir, scenarioID)
-	if _, err := os.Stat(filepath.Join(candidate, "scenario.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(candidate, "data", "scenario.json")); err == nil {
 		return candidate
 	}
 	return ""
 }
 
 func loadScenarioDefinition(scenarioPath string) (*scenario.Scenario, error) {
-	data, err := os.ReadFile(filepath.Join(scenarioPath, "scenario.json"))
+	data, err := os.ReadFile(filepath.Join(scenarioPath, "data", "scenario.json"))
 	if err != nil {
 		return nil, err
 	}

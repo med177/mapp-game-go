@@ -58,7 +58,7 @@ Harita temalı sıra tabanlı strateji oyunu. Total War sefer haritası tarzı �
 
 `internal/scenario/scenario.go` — `assets/scenarios/` altındaki senaryo klasörlerini yükler.
 
-Her senaryo: `scenario.json` (meta + zorunlu `period` profili + zafer koşulları + müzik playlistleri) + `data/` (regions, factions, armies, events, units, buildings, technologies, country_shapes) + `maps/` + `sprites/` + `musics/`
+Her senaryo: `data/scenario.json` (meta + zorunlu `period` profili + zafer koşulları + müzik playlistleri) + `data/` (regions, factions, armies, events, units, buildings, technologies, country_shapes) + `maps/` + `sprites/` + `musics/`
 
 `period` için geçerli değerler: `prehistoric`, `ancient`, `classical`, `late_antiquity`, `medieval`, `early_modern`, `industrial`, `modern`, `contemporary`. Eksik veya geçersiz `period` alanı olan senaryolar yüklenmez.
 

@@ -16,7 +16,7 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
 ["1300_ottoman_rise", "1444_ottoman_empire", "1648_westphalia_peace", "1800_napoleon_rise"]
 ```
 
-`assets/scenarios/<id>/scenario.json` — senaryo meta verisi:
+`assets/scenarios/<id>/data/scenario.json` — senaryo meta verisi:
 ```json
 {
   "id": "1300_ottoman_rise",

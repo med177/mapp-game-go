@@ -641,7 +641,7 @@
       "type": "economic",
       "target_gold_income": 20000,
       "gold_hold_turns": 8,
-      "deadline_year": 1453,
+      "deadline_year": 1380,
       "deadline_month": 5,
       "allowed_factions": [
         "venice"
@@ -655,7 +655,7 @@
       "type": "economic",
       "target_gold_income": 12000,
       "gold_hold_turns": 10,
-      "deadline_year": 1453,
+      "deadline_year": 1350,
       "deadline_month": 5,
       "allowed_factions": [
         "venice"
@@ -829,17 +829,17 @@
       "type": "economic",
       "target_gold_income": 1500,
       "gold_hold_turns": 12,
-      "deadline_year": 1500,
+      "deadline_year": 1300,
       "deadline_month": 12
     },
     {
       "id": "warrior_kingdom",
       "title": "Savaşçı Krallık",
       "description": "Uzun seferleri kaldırabilecek bir ordu kur ve rakip devletleri yenerek kıtanın askerî dengesini değiştir.",
-      "detail": "900 ordu gücü ve 6 elenmiş devlet",
+      "detail": "3000 ordu gücü ve 10 elenmiş devlet",
       "type": "military",
-      "target_army_strength": 900,
-      "target_defeated": 6,
+      "target_army_strength": 3000,
+      "target_defeated": 10,
       "deadline_year": 1500,
       "deadline_month": 12
     },
@@ -847,11 +847,21 @@
       "id": "military_supremacy",
       "title": "Askerî Üstünlük",
       "description": "Daimî bir savaş makinesi kur; rakip devletleri sahneden silerken ordunun gücünü koru.",
-      "detail": "650 ordu gücü ve 4 elenmiş devlet",
+      "detail": "2000 ordu gücü ve 8 elenmiş devlet",
       "type": "military",
-      "target_army_strength": 650,
-      "target_defeated": 4,
-      "deadline_year": 1492,
+      "target_army_strength": 2000,
+      "target_defeated": 8,
+      "deadline_year": 1420,
+      "deadline_month": 12
+    },
+    {
+      "id": "dynastic_survival",
+      "title": "Beka ve İstikrar",
+      "description": "İlk kuşağın savaşları, kıtlıkları ve hanedan krizleri boyunca devletini ayakta tut.",
+      "detail": "80 tur hayatta kal (20 yıl)",
+      "type": "survive_turns",
+      "turns": 80,
+      "deadline_year": 1330,
       "deadline_month": 12
     },
     {
@@ -861,9 +871,10 @@
       "detail": "Filistin, Hicaz ve Konstantinopolis; 12 tur koru",
       "type": "religious",
       "required_regions": [
+        "constantinople",
         "palestine_jerusalem",
         "hejaz",
-        "constantinople"
+        "haram"
       ],
       "deadline_year": 1517,
       "deadline_month": 12,
@@ -871,16 +882,6 @@
         "ottoman",
         "mamluk"
       ]
-    },
-    {
-      "id": "dynastic_survival",
-      "title": "Beka ve İstikrar",
-      "description": "İlk kuşağın savaşları, kıtlıkları ve hanedan krizleri boyunca devletini ayakta tut.",
-      "detail": "80 tur hayatta kal (20 yıl)",
-      "type": "survive_turns",
-      "turns": 80,
-      "deadline_year": 1320,
-      "deadline_month": 12
     }
   ]
 }

@@ -801,7 +801,7 @@
   {
     "id": "army_garrison_206",
     "owner_id": "karaman_bey",
-    "region_id": "karaman",
+    "region_id": "larende",
     "is_garrison": true,
     "units": [
       {
@@ -1186,7 +1186,7 @@
   {
     "id": "army_karaman_1",
     "owner_id": "karaman_bey",
-    "region_id": "konya",
+    "region_id": "yozgat",
     "units": [
       {
         "type_id": "infantry",

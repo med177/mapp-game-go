@@ -160,7 +160,7 @@ type GameState struct {
     UnitTypes          map[string]*UnitType
     BuildingTypes      map[string]*Building
     TechTypes          map[string]*Technology
-    ScenarioVictories  []VictoryOptionDef  // scenario.json'daki tam zafer listesi
+    ScenarioVictories  []VictoryOptionDef  // data/scenario.json'daki tam zafer listesi
     AvailableVictories []VictoryOptionDef  // oyuncu fraksiyonuna filtrelenmiş görünür liste
     RegionLogistics    map[RegionID]RegionLogisticsStatus
     ArmyLogistics      map[ArmyID]ArmyLogisticsStatus
@@ -377,7 +377,7 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 | `BuildingTypes` | `assets/scenarios/<id>/data/buildings.json` |
 | `TechTypes` | `assets/scenarios/<id>/data/technologies.json` |
 | `ShapeData` | `assets/scenarios/<id>/data/country_shapes.json` |
-| `ScenarioVictories` | `assets/scenarios/<id>/scenario.json` içindeki tam zafer listesi |
+| `ScenarioVictories` | `assets/scenarios/<id>/data/scenario.json` içindeki tam zafer listesi |
 | `AvailableVictories` | `ScenarioVictories` listesinin oyuncu fraksiyonuna göre filtrelenmiş kopyası |
 | `RegionLogistics`, `ArmyLogistics` | tur çözümlemesinde üretilen geçici ikmal baskısı UI özeti |
 
@@ -519,7 +519,7 @@ kapasite üstü filolar silinmez, yeni üretim kapasite artana kadar bekler.
 Tüm yollar `gs.ScenarioPath` üzerinden senaryo klasörüne yönelir:
 
 ```
-scenario.LoadAll("assets/scenarios")  → senaryo listesi
+scenario.LoadAll("assets/scenarios")  → senaryo listesi (`<id>/data/scenario.json`)
     ↓ senaryo seçilince
 world.LoadRegions(scenario.DataPath("regions.json"))
 world.LoadCountryShapes(scenario.DataPath("country_shapes.json"))

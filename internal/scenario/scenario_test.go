@@ -20,8 +20,12 @@ func TestLoadRequiresValidPeriod(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			dir := t.TempDir()
+			dataDir := filepath.Join(dir, "data")
+			if err := os.Mkdir(dataDir, 0o700); err != nil {
+				t.Fatalf("data klasörü oluşturulamadı: %v", err)
+			}
 			content := []byte(`{"id":"test","name":"Test","period":"` + tt.period + `"}`)
-			if err := os.WriteFile(filepath.Join(dir, "scenario.json"), content, 0o600); err != nil {
+			if err := os.WriteFile(filepath.Join(dataDir, "scenario.json"), content, 0o600); err != nil {
 				t.Fatalf("scenario.json yazılamadı: %v", err)
 			}
 

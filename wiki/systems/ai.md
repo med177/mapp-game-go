@@ -154,7 +154,7 @@ düşman ordu bölgeye girdiğinde `SelectAmbushDefender` ile özel temas tetikl
 AI pusu tarafının çatışma bonusu da oyuncu ile aynı arazi `AmbushBonus`
 değerinden gelir.
 
-`scenario.json` içindeki `victory_conditions` de AI için stratejik girdidir.
+`data/scenario.json` içindeki `victory_conditions` de AI için stratejik girdidir.
 Bir fraksiyona `allowed_factions` ile özel tanımlanmış tarihsel hedef varsa,
 1300 dışı senaryolarda AI önce bu hedefin eksik ve kara sınırından erişilebilir
 bölgelerinin sahibini genişleme planı yapar. Böyle bir hedefi olmayan devletler,

@@ -2462,14 +2462,6 @@
         "type": "port",
         "is_center": true,
         "population": 57
-      },
-      {
-        "id": "thebes",
-        "name_tr": "Naksos",
-        "x": 975,
-        "y": 517,
-        "type": "town",
-        "population": 38
       }
     ]
   },
@@ -2487,7 +2479,7 @@
       {
         "id": "mudanya_bursa",
         "name_tr": "Mudanya",
-        "x": 1049,
+        "x": 1050,
         "y": 468,
         "type": "port",
         "population": 52
@@ -2520,7 +2512,7 @@
     ]
   },
   {
-    "region_id": "konya",
+    "region_id": "yozgat",
     "settlements": [
       {
         "id": "konya_ortakoy",
@@ -2528,22 +2520,13 @@
         "x": 1189,
         "y": 476,
         "type": "town",
-        "is_center": true,
-        "population": 63
-      },
-      {
-        "id": "konya_kaman",
-        "name_tr": "Kaman",
-        "x": 1175,
-        "y": 492,
-        "type": "town",
         "population": 63
       },
       {
         "id": "eretna_yozgat",
         "name_tr": "Yozgat",
-        "x": 1183,
-        "y": 479,
+        "x": 1181,
+        "y": 480,
         "type": "town",
         "population": 63
       },
@@ -2551,9 +2534,18 @@
         "id": "develi_kayseri",
         "name_tr": "Develi",
         "x": 1186,
-        "y": 509,
+        "y": 508,
         "type": "town",
         "population": 13
+      },
+      {
+        "id": "kayseri",
+        "name_tr": "Kayseri",
+        "x": 1187,
+        "y": 499,
+        "type": "city",
+        "is_center": true,
+        "population": 0
       }
     ]
   },
@@ -3784,6 +3776,66 @@
     ]
   },
   {
+    "region_id": "gokceada",
+    "settlements": [
+      {
+        "id": "new_region_511_settlement_1",
+        "name_tr": "Kastro",
+        "x": 996,
+        "y": 473,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "imros_port",
+        "name_tr": "Kaleköy",
+        "x": 995,
+        "y": 470,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "gokceada_settlement_3",
+        "name_tr": "İskinit Kalesi",
+        "x": 991,
+        "y": 473,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "lemnos",
+    "settlements": [
+      {
+        "id": "limnos_settlement_1",
+        "name_tr": "Limnos Limanı",
+        "x": 983,
+        "y": 479,
+        "type": "port",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "limnos_settlement_2",
+        "name_tr": "Kotsinos",
+        "x": 984,
+        "y": 475,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "limnos_myrina",
+        "name_tr": "Myrina",
+        "x": 980,
+        "y": 477,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
     "region_id": "chios",
     "settlements": [
       {
@@ -3811,8 +3863,8 @@
       {
         "id": "midilli_midilli",
         "name_tr": "Midilli",
-        "x": 1007,
-        "y": 492,
+        "x": 1008,
+        "y": 491,
         "type": "city",
         "is_center": true,
         "population": 0
@@ -3820,9 +3872,45 @@
       {
         "id": "midilli_settlement_2",
         "name_tr": "Midilli Limanı",
-        "x": 996,
-        "y": 495,
+        "x": 998,
+        "y": 492,
         "type": "port",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "new_region_509",
+    "settlements": [
+      {
+        "id": "thebes",
+        "name_tr": "Naksos",
+        "x": 986,
+        "y": 530,
+        "type": "city",
+        "is_center": true,
+        "population": 38
+      },
+      {
+        "id": "new_region_509_settlement_2",
+        "name_tr": "Andros",
+        "x": 973,
+        "y": 516,
+        "type": "town",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "marmara_island",
+    "settlements": [
+      {
+        "id": "marmara_island_town",
+        "name_tr": "Marmara Adası",
+        "x": 1029,
+        "y": 462,
+        "type": "town",
+        "is_center": true,
         "population": 0
       }
     ]
@@ -3963,7 +4051,7 @@
   },
   {
     "region_id": "rogaland",
-    "settlements": []
+    "settlements": null
   },
   {
     "region_id": "sweden",
@@ -4852,6 +4940,22 @@
         "y": 563,
         "type": "port",
         "population": 35
+      },
+      {
+        "id": "karpathos",
+        "name_tr": "Kerpe",
+        "x": 1021,
+        "y": 560,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "crete_yerapetra",
+        "name_tr": "Yerapetra",
+        "x": 984,
+        "y": 572,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -5078,6 +5182,14 @@
         "y": 469,
         "type": "port",
         "population": 52
+      },
+      {
+        "id": "bozcaada",
+        "name_tr": "Bozcaada",
+        "x": 998,
+        "y": 479,
+        "type": "town",
+        "population": 0
       }
     ]
   },
@@ -5376,8 +5488,8 @@
       {
         "id": "karakoyunlu_dogubayazit",
         "name_tr": "Doğubeyazıt",
-        "x": 1364,
-        "y": 484,
+        "x": 1359,
+        "y": 485,
         "type": "town",
         "population": 15
       },
@@ -5478,12 +5590,26 @@
         "y": 399,
         "type": "port",
         "population": 74
+      }
+    ]
+  },
+  {
+    "region_id": "sanremo",
+    "settlements": [
+      {
+        "id": "genoa_corsica_admin",
+        "name_tr": "Capraia",
+        "x": 637,
+        "y": 394,
+        "type": "fortress",
+        "is_center": true,
+        "population": 21
       },
       {
         "id": "genoa_savona",
         "name_tr": "Savona",
-        "x": 641,
-        "y": 399,
+        "x": 640,
+        "y": 398,
         "type": "port",
         "population": 63
       },
@@ -5494,14 +5620,6 @@
         "y": 402,
         "type": "town",
         "population": 42
-      },
-      {
-        "id": "genoa_corsica_admin",
-        "name_tr": "Capraia",
-        "x": 636,
-        "y": 395,
-        "type": "fortress",
-        "population": 21
       }
     ]
   },
@@ -6010,7 +6128,7 @@
     ]
   },
   {
-    "region_id": "karaman",
+    "region_id": "larende",
     "settlements": [
       {
         "id": "karaman_aksehir",
@@ -6078,7 +6196,7 @@
     ]
   },
   {
-    "region_id": "kayseri",
+    "region_id": "nigde",
     "settlements": [
       {
         "id": "konya_aksaray",
@@ -6126,6 +6244,14 @@
         "name_tr": "Avanos",
         "x": 1169,
         "y": 496,
+        "type": "town",
+        "population": 63
+      },
+      {
+        "id": "konya_kaman",
+        "name_tr": "Kaman",
+        "x": 1153,
+        "y": 484,
         "type": "town",
         "population": 63
       }

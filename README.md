@@ -112,10 +112,9 @@ mapp-game-go/
 │   └── scenarios/            # Senaryo veri paketleri
 │       ├── scenarios.json
 │       ├── 1300_ottoman_rise/
-│       │   ├── scenario.json
-│       │   ├── data/         # regions, factions, armies, events …
+│       │   ├── data/         # scenario.json, regions, factions, armies, events …
 │       │   ├── maps/         # Harita PNG dosyaları
-│       │   └── musics/       # scenario.json playlist müzikleri
+│       │   └── musics/       # data/scenario.json playlist müzikleri
 │       └── 1444_ottoman_empire/
 └── internal/
     ├── game/                 # Oyun döngüsü, tur yönetimi

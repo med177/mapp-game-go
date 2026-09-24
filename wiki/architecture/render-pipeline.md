@@ -1082,7 +1082,7 @@ type Dropdown struct {
 
 **Koordinat sistemi:** Dünya uzayı `(WorldW × WorldH)` px, ekran uzayına dönüşüm:
 
-`WorldW`, `WorldH`, `shape_offset_*` ve `shape_scale_*` aktif senaryonun `scenario.json` içindeki `map` alanından okunur. Alan eksikse renderer eski varsayılanları kullanır (`2892×1440`, offset `-530/-180`, scale `2.025/2.025`).
+`WorldW`, `WorldH`, `shape_offset_*` ve `shape_scale_*` aktif senaryonun `data/scenario.json` içindeki `map` alanından okunur. Alan eksikse renderer eski varsayılanları kullanır (`2892×1440`, offset `-530/-180`, scale `2.025/2.025`).
 
 ```
 screenX = (worldX - camX + worldY * mapShearX) * camScale + ScreenWidth/2

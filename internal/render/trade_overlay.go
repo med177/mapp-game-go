@@ -679,6 +679,21 @@ func tradeCenterTierLabel(tier world.TradeCenterTier) string {
 	return "İkincil merkez"
 }
 
+// tradeCenterLabelDrawOrder, üstte görünmesi gereken ana merkezleri en sona
+// alır. Böylece ikincil merkez tabelaları ana merkez tabelasını örtemez.
+func tradeCenterLabelDrawOrder(centers []tradeCenterVisual, order []int) []int {
+	order = order[:0]
+	for i := range centers {
+		order = append(order, i)
+	}
+	sort.SliceStable(order, func(i, j int) bool {
+		leftPrimary := centers[order[i]].tier == world.TradeCenterPrimary
+		rightPrimary := centers[order[j]].tier == world.TradeCenterPrimary
+		return !leftPrimary && rightPrimary
+	})
+	return order
+}
+
 func chooseRegionLabel(region *world.Region) string {
 	if region == nil {
 		return ""
@@ -2507,7 +2522,8 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		centerVolume[idx] = vol
 	}
 
-	for i := range centers {
+	r.tradeCenterDrawOrder = tradeCenterLabelDrawOrder(centers, r.tradeCenterDrawOrder)
+	for _, i := range r.tradeCenterDrawOrder {
 		primary := centers[i].tier == world.TradeCenterPrimary && !centers[i].offMap
 		mainRoute := centers[i].mainRoute
 		alphaBg := uint8(170)
@@ -2662,7 +2678,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		vector.StrokeRect(screen, x, y, w, h, 1.0, borderColor, false)
 		if centers[i].endNode {
-			vector.StrokeRect(screen, x-2, y-2, w+4, h+4, 1.0, color.RGBA{210, 70, 70, alphaBorder}, false)
+			vector.StrokeRect(screen, x-3, y-3, w+6, h+6, 2.4, color.RGBA{255, 48, 48, 245}, false)
 		}
 
 		// Center Name

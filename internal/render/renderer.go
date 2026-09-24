@@ -58,6 +58,7 @@ const (
 	activeEventIconLiftY         = float32(48)
 	settlementMarkerSpriteSize   = float32(26)
 	settlementPortMarkerSize     = float32(22)
+	tradeSettlementMarkerScale   = float32(0.5)
 	capitalLabelIconSmallSize    = float32(18)
 	capitalLabelIconMediumSize   = float32(20)
 	navalDockTargetRadius        = float32(18)
@@ -299,6 +300,7 @@ type Renderer struct {
 	tradeCorridors           []tradeCorridorInfo
 	tradeHoverIdx            int
 	tradeCenters             []tradeCenterVisual
+	tradeCenterDrawOrder     []int
 	tradeCenterIdx           int
 
 	editSelectedRegion                world.RegionID
@@ -762,6 +764,7 @@ func New(gs *state.GameState) *Renderer {
 		activeWarsDirty:             true,
 		tradeHoverIdx:               -1,
 		tradeCenters:                make([]tradeCenterVisual, 0, 12),
+		tradeCenterDrawOrder:        make([]int, 0, 12),
 		tradeCenterIdx:              -1,
 		tradeAmount:                 5,
 		selectedSettlementIndex:     -1,
@@ -4347,14 +4350,15 @@ func rectIntersects(a, b screenRect) bool {
 }
 
 // drawCityDot bölge merkezine küçük iyon çizer.
-func (r *Renderer) drawCityDot(screen *ebiten.Image, region *world.Region, sx, sy float32) {
-	outerR := float32(5.5)
-	innerR := float32(3.5)
+func (r *Renderer) drawCityDot(screen *ebiten.Image, region *world.Region, sx, sy, size float32) {
+	scale := size / settlementMarkerSpriteSize
+	outerR := float32(5.5) * scale
+	innerR := float32(3.5) * scale
 
 	outerCol := r.settlementOwnerColor(region)
 
-	vector.FillCircle(screen, sx, sy+4, outerR, outerCol, true)
-	vector.FillCircle(screen, sx, sy+4, innerR, color.RGBA{240, 230, 200, 255}, true)
+	vector.FillCircle(screen, sx, sy+4*scale, outerR, outerCol, true)
+	vector.FillCircle(screen, sx, sy+4*scale, innerR, color.RGBA{240, 230, 200, 255}, true)
 }
 
 func (r *Renderer) settlementOwnerColor(region *world.Region) color.RGBA {
@@ -4384,15 +4388,15 @@ func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Regi
 	if !drawn {
 		switch settlement.Type {
 		case world.SettlementFortress:
-			if !r.drawFortressMarkerSprite(screen, sx, sy) {
+			if !r.drawFortressMarkerSprite(screen, sx, sy, markerSize) {
 				r.drawFortressMarker(screen, region, sx, sy)
 			}
 		case world.SettlementPort:
-			if !r.drawPortMarkerSprite(screen, sx, sy) {
+			if !r.drawPortMarkerSprite(screen, sx, sy, markerSize) {
 				r.drawPortMarker(screen, region, sx, sy)
 			}
 		default:
-			r.drawCityDot(screen, region, sx, sy)
+			r.drawCityDot(screen, region, sx, sy, markerSize)
 		}
 	}
 	if isPrimary && r.isSettlementBreachOpen(region) {
@@ -4406,10 +4410,14 @@ func (r *Renderer) drawSettlementMarker(screen *ebiten.Image, region *world.Regi
 }
 
 func (r *Renderer) settlementMarkerSize(region *world.Region, settlement world.Settlement, isPrimary bool) float32 {
+	markerSize := settlementMarkerSpriteSize
 	if settlement.Type == world.SettlementPort && !(isPrimary && r.isSettlementUnderSiege(region)) {
-		return settlementPortMarkerSize
+		markerSize = settlementPortMarkerSize
 	}
-	return settlementMarkerSpriteSize
+	if r != nil && r.mapMode == MapModeTrade && settlement.Type != world.SettlementPort {
+		markerSize *= tradeSettlementMarkerScale
+	}
+	return markerSize
 }
 
 func (r *Renderer) settlementMarkerSprite(region *world.Region, settlement world.Settlement, isPrimary bool) *ebiten.Image {
@@ -4456,12 +4464,12 @@ func (r *Renderer) isSettlementBreachOpen(region *world.Region) bool {
 	return siege != nil && siege.BreachLevel >= 1
 }
 
-func (r *Renderer) drawFortressMarkerSprite(screen *ebiten.Image, sx, sy float32) bool {
-	return r.drawSettlementMarkerSprite(screen, settlementMarkerCastleImage(), sx, sy, settlementMarkerSpriteSize)
+func (r *Renderer) drawFortressMarkerSprite(screen *ebiten.Image, sx, sy, size float32) bool {
+	return r.drawSettlementMarkerSprite(screen, settlementMarkerCastleImage(), sx, sy, size)
 }
 
-func (r *Renderer) drawPortMarkerSprite(screen *ebiten.Image, sx, sy float32) bool {
-	return r.drawSettlementMarkerSprite(screen, settlementMarkerHarbourImage(), sx, sy, settlementPortMarkerSize)
+func (r *Renderer) drawPortMarkerSprite(screen *ebiten.Image, sx, sy, size float32) bool {
+	return r.drawSettlementMarkerSprite(screen, settlementMarkerHarbourImage(), sx, sy, size)
 }
 
 func (r *Renderer) isCapitalSettlement(region *world.Region, settlement world.Settlement) bool {

@@ -257,7 +257,7 @@ func (s Scenario) CalendarMonthsPerTurn() int {
 
 // Load bir senaryo dizinindeki tanımı okur ve runtime path bilgisini doldurur.
 func Load(path string) (*Scenario, error) {
-	data, err := os.ReadFile(filepath.Join(path, "scenario.json"))
+	data, err := os.ReadFile(filepath.Join(path, "data", "scenario.json"))
 	if err != nil {
 		return nil, fmt.Errorf("senaryo tanımı okunamadı: %w", err)
 	}

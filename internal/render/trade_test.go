@@ -10,6 +10,42 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestTradeMapSettlementMarkerScaleKeepsPortsFullSize(t *testing.T) {
+	normal := &Renderer{mapMode: MapModeNormal}
+	trade := &Renderer{mapMode: MapModeTrade}
+	city := world.Settlement{Type: world.SettlementCity}
+	port := world.Settlement{Type: world.SettlementPort}
+
+	if got, want := normal.settlementMarkerSize(nil, city, false), settlementMarkerSpriteSize; got != want {
+		t.Fatalf("normal harita yerleşim marker boyutu = %v, want %v", got, want)
+	}
+	if got, want := trade.settlementMarkerSize(nil, city, false), settlementMarkerSpriteSize*tradeSettlementMarkerScale; got != want {
+		t.Fatalf("ticaret haritası yerleşim marker boyutu = %v, want %v", got, want)
+	}
+	if got, want := trade.settlementMarkerSize(nil, port, false), settlementPortMarkerSize; got != want {
+		t.Fatalf("ticaret haritası liman marker boyutu = %v, want %v", got, want)
+	}
+}
+
+func TestTradeCenterLabelDrawOrderPutsPrimaryCentersLast(t *testing.T) {
+	centers := []tradeCenterVisual{
+		{tier: world.TradeCenterPrimary},
+		{tier: world.TradeCenterSecondary},
+		{tier: world.TradeCenterSecondary},
+		{tier: world.TradeCenterPrimary},
+	}
+	got := tradeCenterLabelDrawOrder(centers, nil)
+	want := []int{1, 2, 0, 3}
+	if len(got) != len(want) {
+		t.Fatalf("ticaret merkezi çizim sırası uzunluğu = %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("ticaret merkezi çizim sırası = %v, want %v", got, want)
+		}
+	}
+}
+
 func TestTradeMapMerchantFleetVisibilityHidesPendingNonPlayerFleet(t *testing.T) {
 	gs := &state.GameState{PlayerFactionID: "player"}
 	playerFleet := &army.Army{ID: "player_fleet", OwnerID: "player"}

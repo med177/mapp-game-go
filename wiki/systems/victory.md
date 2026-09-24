@@ -103,7 +103,7 @@ Senaryo `victory_conditions` kayıtları opsiyonel `allowed_factions` alanı ta�
 - Alan boşsa: hedef tüm oynanabilir fraksiyonlara gösterilir.
 - Alan doluysa: yalnız listelenen fraksiyonlar `PhaseVictorySelect` ekranında bu kartı görür.
 
-Tam senaryo listesi `GameState.ScenarioVictories` içinde saklanır; seçim ekranına gösterilen filtrelenmiş kopya `GameState.AvailableVictories` alanına yazılır. Save/load sırasında `scenario.json` tekrar okunup filtre yeniden uygulanır.
+Tam senaryo listesi `GameState.ScenarioVictories` içinde saklanır; seçim ekranına gösterilen filtrelenmiş kopya `GameState.AvailableVictories` alanına yazılır. Save/load sırasında `data/scenario.json` tekrar okunup filtre yeniden uygulanır.
 
 AI bu listeyi yalnız UI seçimi için kullanmaz. Fraksiyona özel tarihsel
 zaferin eksik, erişilebilir bölgeleri AI'nin genişleme yönünü; özel hedefi
