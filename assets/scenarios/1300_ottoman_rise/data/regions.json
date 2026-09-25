@@ -2242,7 +2242,7 @@
     "name": "Lazio",
     "name_tr": "Lazio",
     "terrain": "plain",
-    "owner_id": "papal_states_f",
+    "owner_id": "papal_states",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
       "area::area__28",
@@ -2290,7 +2290,7 @@
     "name": "Abruzzo",
     "name_tr": "Abruzzo",
     "terrain": "plain",
-    "owner_id": "papal_states_f",
+    "owner_id": "papal_states",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
       "adriatic_sea_ragusa",
@@ -2337,7 +2337,7 @@
     "name": "Marche",
     "name_tr": "Marche",
     "terrain": "plain",
-    "owner_id": "papal_states_f",
+    "owner_id": "papal_states",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
       "abruzzo",
@@ -2384,7 +2384,6 @@
     "terrain": "coast",
     "owner_id": "naples_kingdom",
     "neighbors": [
-      "apulia",
       "area::area__28",
       "area::area__29",
       "area::area__35::campania",
@@ -2434,6 +2433,7 @@
       "campania",
       "ionian_sea",
       "otranto_strait",
+      "sicily",
       "tyrrhenian_sea"
     ],
     "world_x": 792,
@@ -2474,6 +2474,7 @@
     "successor_faction_id": "austria_duchy",
     "neighbors": [
       "area::area__10",
+      "area::area__125",
       "bohemia",
       "danube_hungary",
       "hungary",
@@ -2672,6 +2673,7 @@
     "successor_faction_id": "hungarian_kingdom",
     "neighbors": [
       "alfold",
+      "area::area__124",
       "austria",
       "croatia",
       "danube_hungary",
@@ -8673,6 +8675,7 @@
     "owner_id": "aragon",
     "successor_faction_id": "aragon",
     "neighbors": [
+      "calabria",
       "ionian_sea",
       "mediterranean_open_3",
       "tyrrhenian_sea",
@@ -11459,7 +11462,7 @@
     "name": "Ferrara",
     "name_tr": "Ferrara",
     "terrain": "plain",
-    "owner_id": "papal_states_f",
+    "owner_id": "papal_states",
     "successor_faction_id": "papal_states_f",
     "neighbors": [
       "adriatic_sea_venice",
@@ -11561,7 +11564,6 @@
       "area::area__29",
       "area::area__35::apulia",
       "calabria",
-      "campania",
       "otranto_strait"
     ],
     "world_x": 799,

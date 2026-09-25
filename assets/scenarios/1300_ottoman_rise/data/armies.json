@@ -1389,7 +1389,7 @@
   },
   {
     "id": "army_papal_states_1",
-    "owner_id": "papal_states_f",
+    "owner_id": "papal_states",
     "region_id": "lazio",
     "units": [
       {

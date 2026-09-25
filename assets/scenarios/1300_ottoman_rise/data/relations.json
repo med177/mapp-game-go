@@ -751,12 +751,6 @@
   },
   {
     "faction_a": "barqa_emirate",
-    "faction_b": "papal_states_f",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
     "faction_b": "polish_kingdom",
     "score": -20,
     "stance": "peace"
@@ -1382,12 +1376,6 @@
   {
     "faction_a": "norway_kingdom",
     "faction_b": "bulgarian_empire",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "papal_states_f",
     "score": -20,
     "stance": "peace"
   },
@@ -2359,12 +2347,6 @@
   },
   {
     "faction_a": "east_rome",
-    "faction_b": "papal_states_f",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
     "faction_b": "polish_kingdom",
     "score": -20,
     "stance": "peace"
@@ -2595,12 +2577,6 @@
     "faction_a": "epir",
     "faction_b": "novgorod_rep",
     "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "papal_states_f",
-    "score": 25,
     "stance": "peace"
   },
   {
@@ -3133,12 +3109,6 @@
   },
   {
     "faction_a": "georgia_kingdom",
-    "faction_b": "papal_states_f",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
     "faction_b": "polish_kingdom",
     "score": -20,
     "stance": "peace"
@@ -3655,12 +3625,6 @@
   },
   {
     "faction_a": "mecca_sharifate",
-    "faction_b": "papal_states_f",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
     "faction_b": "polish_kingdom",
     "score": -20,
     "stance": "peace"
@@ -3919,12 +3883,6 @@
   },
   {
     "faction_a": "novgorod_rep",
-    "faction_b": "papal_states_f",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "novgorod_rep",
     "faction_b": "polish_kingdom",
     "score": -20,
     "stance": "peace"
@@ -3993,36 +3951,6 @@
     "faction_a": "ottoman",
     "faction_b": "safavid",
     "score": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "papal_states_f",
-    "faction_b": "ramazan_bey",
-    "score": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "papal_states_f",
-    "faction_b": "russia",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "papal_states_f",
-    "faction_b": "serbian_empire",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "papal_states_f",
-    "faction_b": "trebizond_emp",
-    "score": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "papal_states_f",
-    "faction_b": "wallachia_prince",
-    "score": -20,
     "stance": "peace"
   },
   {
@@ -4386,12 +4314,6 @@
     "stance": "peace"
   },
   {
-    "faction_a": "hospitaller",
-    "faction_b": "papal_states_f",
-    "score": 80,
-    "stance": "allied"
-  },
-  {
     "faction_a": "ilkhanate",
     "faction_b": "mamluk",
     "score": -80,
@@ -4735,6 +4657,12 @@
   },
   {
     "faction_a": "athena_duk",
+    "faction_b": "achaea_principality",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "papal_states",
     "faction_b": "achaea_principality",
     "score": 25,
     "stance": "peace"

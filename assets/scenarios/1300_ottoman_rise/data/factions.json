@@ -2685,78 +2685,6 @@
     ]
   },
   {
-    "id": "papal_states_f",
-    "name": "Papal States",
-    "name_tr": "Papalık Devletleri",
-    "religion": "catholic",
-    "color": [
-      230,
-      230,
-      230
-    ],
-    "is_playable": true,
-    "is_eliminated": false,
-    "capital_settlement_id": "rome",
-    "other_income_periods": [
-      {
-        "start_year": 1310,
-        "end_year": 1517,
-        "end_month": 9,
-        "amount": 153,
-        "description": "Kilise vergileri, bağışlar ve endüljans gelirleri"
-      },
-      {
-        "start_year": 1517,
-        "start_month": 10,
-        "amount": 30,
-        "description": "Reform sonrası azalan kilise gelirleri"
-      }
-    ],
-    "gold": 5000,
-    "grain": 2480,
-    "iron": 60,
-    "timber": 50,
-    "stone": 1000,
-    "spice": 220,
-    "cloth": 80,
-    "research": {
-      "completed": null,
-      "active_id": "",
-      "turns_left": 0
-    },
-    "ai_aggressiveness": 20,
-    "territorial_claims": [
-      {
-        "region_id": "ferrara",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "florence",
-        "value": 66
-      },
-      {
-        "region_id": "abruzzo",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "lazio",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "marche",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "siena",
-        "value": 66
-      }
-    ]
-  },
-  {
     "id": "polish_kingdom",
     "name": "Kingdom of Poland",
     "name_tr": "Polonya Krallığı",
@@ -4565,5 +4493,77 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 50
+  },
+  {
+    "id": "papal_states",
+    "name": "Papal States",
+    "name_tr": "Papalık Devleti",
+    "religion": "catholic",
+    "color": [
+      230,
+      230,
+      230
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "rome",
+    "other_income_periods": [
+      {
+        "start_year": 1310,
+        "end_year": 1517,
+        "end_month": 9,
+        "amount": 153,
+        "description": "Kilise vergileri, bağışlar ve endüljans gelirleri"
+      },
+      {
+        "start_year": 1517,
+        "start_month": 10,
+        "amount": 30,
+        "description": "Reform sonrası azalan kilise gelirleri"
+      }
+    ],
+    "gold": 5000,
+    "grain": 2480,
+    "iron": 60,
+    "timber": 50,
+    "stone": 1000,
+    "spice": 220,
+    "cloth": 80,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 20,
+    "territorial_claims": [
+      {
+        "region_id": "ferrara",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "florence",
+        "value": 66
+      },
+      {
+        "region_id": "abruzzo",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lazio",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "marche",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "siena",
+        "value": 66
+      }
+    ]
   }
 ]
