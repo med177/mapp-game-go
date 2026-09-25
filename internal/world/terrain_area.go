@@ -352,6 +352,18 @@ func (a TerrainArea) Contains(x, y int) bool {
 	return false
 }
 
+// TerrainAreasContainPoint reports whether a world-map cell belongs to any
+// painted terrain area. Edit Mode uses the same rule when validating
+// settlement coordinates.
+func TerrainAreasContainPoint(areas []TerrainArea, x, y int) bool {
+	for _, area := range areas {
+		if area.Contains(x, y) {
+			return true
+		}
+	}
+	return false
+}
+
 func PointInPolygon(x, y float64, polygon [][2]int) bool {
 	if len(polygon) < 3 {
 		return false

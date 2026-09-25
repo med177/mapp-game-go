@@ -2299,11 +2299,10 @@
       "area::area__28",
       "area::area__31::abruzzo",
       "area::area__32",
-      "area::area__33::abruzzo",
       "marche"
     ],
-    "world_x": 755,
-    "world_y": 433,
+    "world_x": 758,
+    "world_y": 432,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -2338,7 +2337,7 @@
     "name_tr": "Marche",
     "terrain": "plain",
     "owner_id": "papal_states",
-    "successor_faction_id": "papal_states_f",
+    "successor_faction_id": "papal_states",
     "neighbors": [
       "abruzzo",
       "adriatic_sea_venice",
@@ -4060,11 +4059,9 @@
     "successor_faction_id": "mamluk",
     "neighbors": [
       "alexandria",
-      "area::area__3::gaza",
       "area::area__3::lower_egypt",
       "area::area__3::upper_egypt",
       "eastern_mediterranean",
-      "gaza",
       "levantine_sea",
       "lower_egypt"
     ],
@@ -4112,9 +4109,7 @@
     "neighbors": [
       "alexandria",
       "area::area__1",
-      "area::area__3::gaza",
       "area::area__3::lower_egypt",
-      "area::area__3::upper_egypt",
       "luxor",
       "red_open_2",
       "upper_egypt"
@@ -4630,12 +4625,8 @@
     "successor_faction_id": "safavid",
     "neighbors": [
       "area::area__5",
-      "area::area__6::gurgan",
       "area::area__6::hourmuz",
       "area::area__6::isfahan",
-      "area::area__6::kazvin",
-      "area::area__6::meshed",
-      "area::area__6::northern_persia",
       "area::area__6::southern_persia",
       "hourmuz",
       "isfahan",
@@ -4735,13 +4726,7 @@
     "owner_id": "safavid",
     "successor_faction_id": "safavid",
     "neighbors": [
-      "area::area__6::gurgan",
       "area::area__6::hourmuz",
-      "area::area__6::isfahan",
-      "area::area__6::kazvin",
-      "area::area__6::meshed",
-      "area::area__6::northern_persia",
-      "area::area__6::southern_persia",
       "persian_gulf_shore",
       "persian_open_1",
       "siraz",
@@ -8044,7 +8029,6 @@
       "area::area__2",
       "area::area__59",
       "damascus",
-      "gaza",
       "kerek",
       "palestine_acre",
       "palestine_jerusalem"
@@ -8917,14 +8901,11 @@
     "neighbors": [
       "area::area__3::gaza",
       "area::area__3::lower_egypt",
-      "area::area__3::upper_egypt",
       "area::area__59",
-      "jordan",
       "kerek",
       "levantine_sea",
       "palestine_acre",
-      "palestine_jerusalem",
-      "upper_egypt"
+      "palestine_jerusalem"
     ],
     "world_x": 1174,
     "world_y": 642,
@@ -9717,7 +9698,6 @@
     "neighbors": [
       "area::area__43",
       "area::area__73::hakkari",
-      "area::area__74::hakkari",
       "mosul"
     ],
     "world_x": 1352,
@@ -11697,7 +11677,6 @@
       "bosnia",
       "dalmatia",
       "herzegovina",
-      "kvarner",
       "rijeka"
     ],
     "world_x": 810,
@@ -11783,7 +11762,6 @@
     "neighbors": [
       "bosnia",
       "croatia",
-      "knin",
       "rijeka",
       "slovenia"
     ],

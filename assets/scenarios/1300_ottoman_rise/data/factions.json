@@ -4507,6 +4507,7 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "rome",
+    "gold": 5000,
     "other_income_periods": [
       {
         "start_year": 1310,
@@ -4522,7 +4523,6 @@
         "description": "Reform sonrası azalan kilise gelirleri"
       }
     ],
-    "gold": 5000,
     "grain": 2480,
     "iron": 60,
     "timber": 50,

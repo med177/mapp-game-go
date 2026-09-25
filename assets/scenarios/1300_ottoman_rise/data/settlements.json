@@ -1590,16 +1590,32 @@
         "x": 747,
         "y": 408,
         "type": "port",
-        "is_center": true,
         "population": 33
       },
       {
         "id": "perugia",
         "name_tr": "Perugia",
-        "x": 742,
-        "y": 421,
-        "type": "fortress",
+        "x": 741,
+        "y": 420,
+        "type": "city",
         "population": 49
+      },
+      {
+        "id": "marche_arcevia",
+        "name_tr": "Archevia",
+        "x": 741,
+        "y": 411,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "marche_pesaro",
+        "name_tr": "Pesaro",
+        "x": 736,
+        "y": 401,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -6778,7 +6794,7 @@
         "name_tr": "Ravenna",
         "x": 723,
         "y": 394,
-        "type": "port",
+        "type": "city",
         "population": 33
       },
       {
@@ -7263,19 +7279,19 @@
     "region_id": "korint_region",
     "settlements": [
       {
-        "id": "morea_kenchrai",
-        "name_tr": "Kenchrai",
-        "x": 940,
-        "y": 515,
+        "id": "morea_lechaion",
+        "name_tr": "Lechaion",
+        "x": 937,
+        "y": 512,
         "type": "port",
         "is_center": true,
         "population": 0
       },
       {
-        "id": "morea_lechaion",
-        "name_tr": "Lechaion",
-        "x": 936,
-        "y": 511,
+        "id": "morea_kenchrai",
+        "name_tr": "Kenchrai",
+        "x": 939,
+        "y": 515,
         "type": "port",
         "population": 0
       }

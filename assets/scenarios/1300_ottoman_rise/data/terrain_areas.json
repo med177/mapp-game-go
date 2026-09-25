@@ -11608,7 +11608,13 @@
         ]
       ]
     ],
-    "attrition_cost": 5
+    "attrition_cost": 5,
+    "extra_neighbors": [
+      "area::area__34",
+      "area::area__33::marche",
+      "area::area__32",
+      "area::area__33::lazio"
+    ]
   },
   {
     "id": "area__34",

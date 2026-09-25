@@ -2786,6 +2786,9 @@ func (r *Renderer) moveSelectedSettlementTo(fx, fy float64) {
 		return
 	}
 	wx, wy := r.screenToWorld(fx, fy)
+	if r.settlementPointBlockedByTerrain(wx, wy) {
+		return
+	}
 	newX, newY := scenarioCoordsFromWorld(wx, wy)
 	targetRegionID := r.worldMap.RegionAt(int(wx), int(wy))
 	if targetRegion, ok := r.gs.Regions[targetRegionID]; ok && targetRegion != nil &&
@@ -2817,6 +2820,9 @@ func (r *Renderer) moveSelectedRegionCenterTo(fx, fy float64) {
 
 func (r *Renderer) addSettlementAt(fx, fy float64) {
 	wx, wy := r.screenToWorld(fx, fy)
+	if r.settlementPointBlockedByTerrain(wx, wy) {
+		return
+	}
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
 	x, y := scenarioCoordsFromWorld(wx, wy)
 	r.addSettlement(rid, x, y)
@@ -2827,12 +2833,18 @@ func (r *Renderer) addSettlementToSelectedRegion() {
 	if !ok || !canAddSettlementToRegion(region) {
 		return
 	}
+	if r.settlementPointBlockedByTerrain(wcX(region.WorldX), wcY(region.WorldY)) {
+		return
+	}
 	r.addSettlement(region.ID, region.WorldX, region.WorldY)
 }
 
 func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 	region, ok := r.gs.Regions[rid]
 	if !ok || !canAddSettlementToRegion(region) {
+		return
+	}
+	if r.settlementPointBlockedByTerrain(wcX(x), wcY(y)) {
 		return
 	}
 	name := region.NameTR
@@ -5074,6 +5086,9 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 		r.editSelectedSettlement >= len(source.Settlements) {
 		return
 	}
+	if r.settlementPointBlockedByTerrain(wcX(x), wcY(y)) {
+		return
+	}
 	settlement := source.Settlements[r.editSelectedSettlement]
 	settlement.X = x
 	settlement.Y = y
@@ -5102,6 +5117,13 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 
 func canAddSettlementToRegion(region *world.Region) bool {
 	return region != nil && !region.IsSea
+}
+
+func (r *Renderer) settlementPointBlockedByTerrain(wx, wy float64) bool {
+	if r == nil || r.gs == nil {
+		return false
+	}
+	return world.TerrainAreasContainPoint(r.gs.TerrainAreas, int(math.Floor(wx)), int(math.Floor(wy)))
 }
 
 func hasCapitalSettlement(region *world.Region) bool {

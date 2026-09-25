@@ -18,6 +18,18 @@ func TestTerrainAreaPolygonContains(t *testing.T) {
 	}
 }
 
+func TestTerrainAreasContainPoint(t *testing.T) {
+	areas := []TerrainArea{{Polygons: [][][2]int{{
+		{10, 10}, {20, 10}, {20, 20}, {10, 20},
+	}}}}
+	if !TerrainAreasContainPoint(areas, 15, 15) {
+		t.Fatal("painted terrain area point was not detected")
+	}
+	if TerrainAreasContainPoint(areas, 25, 15) {
+		t.Fatal("point outside painted terrain area was detected")
+	}
+}
+
 func TestSortedRegionIDsReturnsAlphabeticalCopy(t *testing.T) {
 	input := []RegionID{"zulu", "alpha", "area::first"}
 	got := SortedRegionIDs(input)

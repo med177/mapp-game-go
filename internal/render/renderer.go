@@ -4580,6 +4580,9 @@ func settlementLabelPriority(settlement world.Settlement, isPrimary bool, isFact
 }
 
 func (r *Renderer) shouldDrawSettlementAtZoom(settlement world.Settlement, isFactionCapital bool) bool {
+	if r.gs != nil && r.gs.Phase == state.PhaseEditMode {
+		return true
+	}
 	// Uzak görünümde harita gürültüsünü başkentler ve kaleler oluşturmaz.
 	if r.camScale < settlementMediumZoomScale {
 		return isFactionCapital || settlement.IsCenter || settlement.Type == world.SettlementFortress
