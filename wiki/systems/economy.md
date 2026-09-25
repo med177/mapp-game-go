@@ -76,6 +76,16 @@ kalır.
 
 ## Vergi Sistemi
 
+Devlet seviyesinde tanımlanan `other_income_periods` alanı, vergi ve ticaret
+dışındaki düzenli altın gelirlerini tarih aralıklarıyla temsil eder. Her
+aralık isteğe bağlı `description` alanıyla gelirin kaynağını belirtir; bu metin
+ gelir popup'ındaki satır adı olarak kullanılır. Açıklama verilmezse `Diğer
+ gelirler` gösterilir. Kilise gelirleri, bağışlar veya özel devlet mülkleri gibi
+ kaynaklar bu kalemde toplanabilir. `start_month` ve `end_month` verilmezse
+ Ocak (`1`) kabul edilir.
+Değer `GoldEconomyPreview`, gerçek ekonomi turu ve gelir popup'ında aynı
+tarih aralığından hesaplanır.
+
 Her bölgede `TaxRate` (0–60) ayarlanabilir. `world.ClampTaxRate` oyuncu, AI,
 senaryo ve kayıt yükleme akışlarında değeri bu aralıkta tutar; eski kayıtlardaki
 %60 üzeri oranlar yüklenirken %60'a indirilir.

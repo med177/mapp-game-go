@@ -20,7 +20,7 @@
   {
     "faction_a": "epir",
     "faction_b": "achaea_principality",
-    "score": 25,
+    "score": -15,
     "stance": "peace"
   },
   {
@@ -4714,5 +4714,29 @@
     "faction_b": "trebizond_emp",
     "score": 50,
     "stance": "allied"
+  },
+  {
+    "faction_a": "naples_kingdom",
+    "faction_b": "achaea_principality",
+    "score": 25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "achaea_principality",
+    "faction_b": "afshar_beyligi",
+    "score": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "naples_kingdom",
+    "faction_b": "france",
+    "score": 55,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "athena_duk",
+    "faction_b": "achaea_principality",
+    "score": 25,
+    "stance": "peace"
   }
 ]

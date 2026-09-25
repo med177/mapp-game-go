@@ -15,6 +15,7 @@ import (
 
 const factionGroupGap = 34.0
 const factionGroupLabelH = 20.0
+const factionGroupLabelPad = 6.0
 
 const (
 	factionCardFlagSize     = 94.0
@@ -259,7 +260,7 @@ func factionGroupLayout(total, historicalCount, cols int, cardW, cardH, padX, pa
 	currentY := baseY
 
 	if historicalRows > 0 {
-		layout.historicalLabel = gameui.Rect{X: baseX, Y: currentY, W: 320, H: factionGroupLabelH}
+		layout.historicalLabel = gameui.Rect{X: baseX, Y: currentY, W: gridW, H: factionGroupLabelH}
 		currentY += factionGroupLabelH + 6
 		layout.historicalGrid = gameui.Rect{
 			X: baseX,
@@ -274,7 +275,7 @@ func factionGroupLayout(total, historicalCount, cols int, cardW, cardH, padX, pa
 		if historicalRows > 0 {
 			currentY += factionGroupGap
 		}
-		layout.generalLabel = gameui.Rect{X: baseX, Y: currentY, W: 320, H: factionGroupLabelH}
+		layout.generalLabel = gameui.Rect{X: baseX, Y: currentY, W: gridW, H: factionGroupLabelH}
 		currentY += factionGroupLabelH + 6
 		layout.generalGrid = gameui.Rect{
 			X: baseX,
@@ -293,9 +294,20 @@ func drawFactionGroupLabels(screen *ebiten.Image, total, historicalCount, cols i
 	}
 	layout := factionGroupLayout(total, historicalCount, cols, cardW, cardH, padX, padY, headerH)
 	if historicalCount > 0 && layout.historicalLabel.W > 0 {
-		drawUILabel(screen, layout.historicalLabel, "Tarihsel Hedefi Olan Devletler", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+		drawFactionGroupLabelBackdrop(screen, layout.historicalLabel)
+		drawUIOutlinedLabel(screen, layout.historicalLabel, "Tarihsel Hedefi Olan Devletler", ColorGold, ownerLabelOutlineColor(ColorGold), gameui.TextMedium, gameui.TextAlignCenter)
 	}
 	if historicalCount < total && layout.generalLabel.W > 0 {
-		drawUILabel(screen, layout.generalLabel, "Genel Hedefi Olan Devletler", ColorGray, gameui.TextMedium, gameui.TextAlignStart)
+		drawFactionGroupLabelBackdrop(screen, layout.generalLabel)
+		drawUIOutlinedLabel(screen, layout.generalLabel, "Genel Hedefi Olan Devletler", ColorGold, ownerLabelOutlineColor(ColorGold), gameui.TextMedium, gameui.TextAlignCenter)
 	}
+}
+
+func drawFactionGroupLabelBackdrop(screen *ebiten.Image, label gameui.Rect) {
+	drawUIPanelRect(screen, gameui.Rect{
+		X: label.X - factionGroupLabelPad,
+		Y: label.Y - factionGroupLabelPad/2,
+		W: label.W + factionGroupLabelPad*2,
+		H: label.H + factionGroupLabelPad,
+	}, color.RGBA{0, 0, 0, 125}, color.RGBA{}, 0)
 }

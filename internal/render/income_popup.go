@@ -36,9 +36,14 @@ type goldIncomePopupLine struct {
 	color color.RGBA
 }
 
-func goldIncomePopupLines(status state.GoldEconomyStatus) [18]goldIncomePopupLine {
-	return [18]goldIncomePopupLine{
+func goldIncomePopupLines(status state.GoldEconomyStatus) [19]goldIncomePopupLine {
+	otherIncomeLabel := status.OtherIncomeDescription
+	if otherIncomeLabel == "" {
+		otherIncomeLabel = "Diğer gelirler"
+	}
+	return [19]goldIncomePopupLine{
 		{label: "Vergi", value: status.TaxIncome, color: ColorGold},
+		{label: otherIncomeLabel, value: status.OtherIncome, color: color.RGBA{220, 190, 130, 255}},
 		{label: "Pasif ticaret", value: status.TradeIncome, color: color.RGBA{145, 220, 155, 255}},
 		{label: "Ticaret merkezi geliri", value: status.TradeCenterIncome, color: color.RGBA{205, 180, 110, 255}},
 		{label: "Tarihsel ticaret", value: status.HistoricalTradeIncome, color: color.RGBA{228, 190, 120, 255}},

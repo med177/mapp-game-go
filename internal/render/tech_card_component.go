@@ -175,7 +175,7 @@ func (c techCardComponent) drawContent(screen *ebiten.Image) {
 }
 
 func (c techCardComponent) drawProgress(screen *ebiten.Image) {
-	progressBarY := c.Rect.Y + c.Rect.H - 22
+	progressBarY := c.Rect.Y + c.Rect.H - 20
 	progressBarH := 6.0
 	barX := c.Rect.X + 12
 	barW := c.Rect.W - 24

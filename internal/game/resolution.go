@@ -682,7 +682,14 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		status := grainEconomyStatus(fid, f.Grain, netGrain, civilianDemand, upkeepByFaction[fidStr], storageCapacityByFaction[fidStr])
 		goldBefore := goldBeforeEconomy[fidStr]
 		historicalTradeIncome := historicalTradeIncomeByFaction[fidStr]
-		goldIncome := (incomeByFaction[fidStr] + historicalTradeIncome + techGold + loot.Gold) * grainGoldIncomePercent(status.SupplyLevel) / 100
+		supplyGoldPercent := grainGoldIncomePercent(status.SupplyLevel)
+		otherIncomePeriod, hasOtherIncome := f.OtherIncomePeriodAt(gs.Year, gs.Month)
+		otherIncome := 0
+		if hasOtherIncome {
+			otherIncome = otherIncomePeriod.Amount * supplyGoldPercent / 100
+		}
+		goldIncome := (incomeByFaction[fidStr] + historicalTradeIncome + techGold + loot.Gold) * supplyGoldPercent / 100
+		goldIncome += otherIncome
 		// Yağmalanan vergi transferi doğrudan yağmalayan devlete geçer; hedef
 		// devletin tahıl arz cezasından etkilenmez.
 		goldIncome += raidLoot.Gold
@@ -708,6 +715,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			FactionID:               fid,
 			Income:                  goldIncome,
 			TaxIncome:               taxIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			OtherIncome:             otherIncome,
+			OtherIncomeDescription:  otherIncomePeriod.Description,
 			TradeIncome:             tradeIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			TradeCenterIncome:       tradeCenterIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			HistoricalTradeIncome:   historicalTradeIncome * grainGoldIncomePercent(status.SupplyLevel) / 100,

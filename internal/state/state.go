@@ -992,6 +992,8 @@ type GoldEconomyStatus struct {
 	FactionID               faction.FactionID
 	Income                  int
 	TaxIncome               int
+	OtherIncome             int
+	OtherIncomeDescription  string
 	TradeIncome             int
 	TradeCenterIncome       int
 	HistoricalTradeIncome   int

@@ -34,6 +34,17 @@ type HistoricalChange struct {
 	Religion religion.Type `json:"religion,omitempty"`
 }
 
+// OtherIncomePeriod, vergi ve ticaret dışındaki devlet gelirinin geçerli
+// olduğu tarih aralığını taşır. Ay alanları verilmezse Ocak (1) kabul edilir.
+type OtherIncomePeriod struct {
+	StartYear   int    `json:"start_year"`
+	StartMonth  int    `json:"start_month,omitempty"`
+	EndYear     int    `json:"end_year,omitempty"`
+	EndMonth    int    `json:"end_month,omitempty"`
+	Amount      int    `json:"amount"`
+	Description string `json:"description,omitempty"`
+}
+
 // Faction oyundaki bir fraksiyonu temsil eder.
 type Faction struct {
 	ID                FactionID          `json:"id"`
@@ -68,13 +79,14 @@ type Faction struct {
 	// PendingCapitalTurns kalan başkent taşıma turudur.
 	PendingCapitalTurns int `json:"pending_capital_turns,omitempty"`
 
-	Gold   int `json:"gold"`
-	Grain  int `json:"grain"`
-	Iron   int `json:"iron"`
-	Timber int `json:"timber"`
-	Stone  int `json:"stone"`
-	Spice  int `json:"spice"`
-	Cloth  int `json:"cloth"`
+	Gold               int                 `json:"gold"`
+	OtherIncomePeriods []OtherIncomePeriod `json:"other_income_periods,omitempty"`
+	Grain              int                 `json:"grain"`
+	Iron               int                 `json:"iron"`
+	Timber             int                 `json:"timber"`
+	Stone              int                 `json:"stone"`
+	Spice              int                 `json:"spice"`
+	Cloth              int                 `json:"cloth"`
 
 	// Teknoloji araştırma durumu
 	Research ResearchState `json:"research"`
@@ -82,6 +94,58 @@ type Faction struct {
 	AIAggressiveness   int                `json:"ai_aggressiveness"`
 	AIExpansionTargets []FactionID        `json:"ai_expansion_targets,omitempty"`
 	TerritorialClaims  []TerritorialClaim `json:"territorial_claims,omitempty"`
+}
+
+// OtherIncomePeriodAt, verilen tarihte geçerli olan gelir aralığını döner.
+// Birden fazla aralık eşleşirse en geç başlayan aralık kazanır.
+func (f *Faction) OtherIncomePeriodAt(year, month int) (OtherIncomePeriod, bool) {
+	if f == nil {
+		return OtherIncomePeriod{}, false
+	}
+	if month < 1 || month > 12 {
+		month = 1
+	}
+	current := year*12 + month
+	selectedStart := 0
+	var selected OtherIncomePeriod
+	found := false
+	for _, period := range f.OtherIncomePeriods {
+		startMonth := period.StartMonth
+		if startMonth < 1 || startMonth > 12 {
+			startMonth = 1
+		}
+		if period.StartYear <= 0 {
+			continue
+		}
+		start := period.StartYear*12 + startMonth
+		if current < start {
+			continue
+		}
+		if period.EndYear > 0 {
+			endMonth := period.EndMonth
+			if endMonth < 1 || endMonth > 12 {
+				endMonth = 1
+			}
+			if current > period.EndYear*12+endMonth {
+				continue
+			}
+		}
+		if start >= selectedStart {
+			selectedStart = start
+			selected = period
+			found = true
+		}
+	}
+	return selected, found
+}
+
+// OtherIncomeAt, verilen tarihte geçerli olan diğer gelir tutarını döner.
+func (f *Faction) OtherIncomeAt(year, month int) int {
+	period, ok := f.OtherIncomePeriodAt(year, month)
+	if !ok {
+		return 0
+	}
+	return period.Amount
 }
 
 // ApplyHistoricalChange yıl için geçerli son tarihsel değişikliği uygular.

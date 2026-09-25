@@ -133,5 +133,20 @@
       947,
       400
     ]
+  },
+  {
+    "from": "egriboz_island",
+    "to": "greece",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      950,
+      504
+    ],
+    "end": [
+      948,
+      506
+    ]
   }
 ]

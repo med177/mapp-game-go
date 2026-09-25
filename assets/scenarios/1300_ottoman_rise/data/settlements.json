@@ -2427,10 +2427,9 @@
       {
         "id": "athens",
         "name_tr": "Atina",
-        "x": 953,
-        "y": 514,
+        "x": 952,
+        "y": 515,
         "type": "city",
-        "is_center": true,
         "population": 20
       },
       {
@@ -2444,24 +2443,35 @@
       {
         "id": "greece_piraeus",
         "name_tr": "Pire",
-        "x": 953,
-        "y": 518,
+        "x": 954,
+        "y": 519,
         "type": "port",
         "population": 57
-      }
-    ]
-  },
-  {
-    "region_id": "egriboz",
-    "settlements": [
+      },
       {
-        "id": "chalkis",
-        "name_tr": "Halkis",
-        "x": 952,
-        "y": 504,
-        "type": "port",
+        "id": "greece_thebes",
+        "name_tr": "Thebes Kalesi",
+        "x": 944,
+        "y": 508,
+        "type": "fortress",
         "is_center": true,
-        "population": 57
+        "population": 0
+      },
+      {
+        "id": "greece_livadia",
+        "name_tr": "Livadya",
+        "x": 935,
+        "y": 507,
+        "type": "fortress",
+        "population": 4
+      },
+      {
+        "id": "greece_bodonista",
+        "name_tr": "Bodonista Markisliği",
+        "x": 933,
+        "y": 500,
+        "type": "fortress",
+        "population": 0
       }
     ]
   },
@@ -3769,7 +3779,7 @@
         "id": "korfu_settlement_2",
         "name_tr": "Korfu Limanı",
         "x": 878,
-        "y": 486,
+        "y": 487,
         "type": "port",
         "population": 0
       }
@@ -7134,18 +7144,10 @@
         "population": 19
       },
       {
-        "id": "greece_livadia",
-        "name_tr": "Livadya",
-        "x": 933,
-        "y": 505,
-        "type": "fortress",
-        "population": 4
-      },
-      {
         "id": "thessaly_trikala",
         "name_tr": "Tırhala",
         "x": 910,
-        "y": 484,
+        "y": 483,
         "type": "town",
         "population": 9
       }
@@ -7159,7 +7161,8 @@
         "name_tr": "Arta",
         "x": 893,
         "y": 493,
-        "type": "town",
+        "type": "fortress",
+        "is_center": true,
         "population": 9
       },
       {
@@ -7175,9 +7178,16 @@
         "name_tr": "Yanya",
         "x": 889,
         "y": 480,
-        "type": "city",
-        "is_center": true,
+        "type": "fortress",
         "population": 19
+      },
+      {
+        "id": "yanya_inebahti",
+        "name_tr": "İnebahtı",
+        "x": 914,
+        "y": 507,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -7207,10 +7217,10 @@
     "region_id": "morea",
     "settlements": [
       {
-        "id": "morea_main",
-        "name_tr": "Mora",
-        "x": 921,
-        "y": 518,
+        "id": "morea_clermont",
+        "name_tr": "Clermont Kalesi",
+        "x": 900,
+        "y": 516,
         "type": "fortress",
         "is_center": true,
         "population": 12
@@ -7224,12 +7234,50 @@
         "population": 30
       },
       {
+        "id": "morea_clerance_port",
+        "name_tr": "Clerance Limanı",
+        "x": 902,
+        "y": 520,
+        "type": "port",
+        "population": 0
+      },
+      {
         "id": "morea_corinth",
         "name_tr": "Korint",
-        "x": 932,
-        "y": 514,
+        "x": 934,
+        "y": 516,
         "type": "fortress",
         "population": 10
+      },
+      {
+        "id": "morea_nauplion",
+        "name_tr": "Eski Navarin",
+        "x": 909,
+        "y": 527,
+        "type": "fortress",
+        "population": 30
+      }
+    ]
+  },
+  {
+    "region_id": "korint_region",
+    "settlements": [
+      {
+        "id": "morea_kenchrai",
+        "name_tr": "Kenchrai",
+        "x": 940,
+        "y": 515,
+        "type": "port",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "morea_lechaion",
+        "name_tr": "Lechaion",
+        "x": 936,
+        "y": 511,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -7237,21 +7285,43 @@
     "region_id": "morea_south",
     "settlements": [
       {
-        "id": "morea_nauplion",
-        "name_tr": "Anabolu",
-        "x": 909,
-        "y": 529,
-        "type": "port",
-        "population": 30
-      },
-      {
         "id": "morea_mistra",
         "name_tr": "Mistra",
-        "x": 920,
-        "y": 531,
-        "type": "city",
+        "x": 923,
+        "y": 529,
+        "type": "fortress",
         "is_center": true,
         "population": 40
+      },
+      {
+        "id": "morea_south_malvasia",
+        "name_tr": "Malvasia Limanı",
+        "x": 939,
+        "y": 538,
+        "type": "port",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "mora_modon",
+    "settlements": [
+      {
+        "id": "mora_modon_port",
+        "name_tr": "Koron",
+        "x": 915,
+        "y": 538,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "mora_modon_castle",
+        "name_tr": "Modon Kalesi",
+        "x": 910,
+        "y": 537,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
       }
     ]
   },
@@ -8104,11 +8174,65 @@
     ]
   },
   {
+    "region_id": "egriboz_island",
+    "settlements": [
+      {
+        "id": "chalkis",
+        "name_tr": "Halkis",
+        "x": 950,
+        "y": 504,
+        "type": "fortress",
+        "is_center": true,
+        "population": 57
+      },
+      {
+        "id": "egriboz_island_karystos",
+        "name_tr": "Kızıl Kale",
+        "x": 967,
+        "y": 511,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "egriboz_island_orei",
+        "name_tr": "Orei Kalesi",
+        "x": 939,
+        "y": 496,
+        "type": "city",
+        "population": 0
+      },
+      {
+        "id": "egriboz_island_orei_port",
+        "name_tr": "Orei Limanı",
+        "x": 943,
+        "y": 495,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "egriboz_island_settlement_5",
+        "name_tr": "Karystos Limanı",
+        "x": 965,
+        "y": 516,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "egriboz_island_port",
+        "name_tr": "Negroponte",
+        "x": 952,
+        "y": 506,
+        "type": "port",
+        "population": 0
+      }
+    ]
+  },
+  {
     "region_id": "sporades_islands",
     "settlements": [
       {
         "id": "sporades_islands_settlement_1",
-        "name_tr": "sporades_main",
+        "name_tr": "Spores Adaları",
         "x": 951,
         "y": 492,
         "type": "city",

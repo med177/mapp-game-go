@@ -73,6 +73,10 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 
 	blockadeLoot := gs.BlockadeLootForFaction(fid).Gold
 	status.BlockadeIncome = blockadeLoot
+	if period, ok := gs.Factions[fid].OtherIncomePeriodAt(gs.Year, gs.Month); ok {
+		status.OtherIncome = period.Amount
+		status.OtherIncomeDescription = period.Description
+	}
 	status.TechnologyIncome = effects.GoldPerRegion * len(gs.RegionsOwnedBy(fid))
 	status.TradePowerIncome = gs.TradePowerCommerceIncome(fid)
 	status.HistoricalTradeIncome = gs.HistoricalTradeIncomeForFaction(fid)
@@ -86,9 +90,10 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 	status.CapitalIncome = status.CapitalIncome * supplyPercent / 100
 	status.TechnologyIncome = status.TechnologyIncome * supplyPercent / 100
 	status.BlockadeIncome = status.BlockadeIncome * supplyPercent / 100
+	status.OtherIncome = status.OtherIncome * supplyPercent / 100
 	// Yağma transferi arz cezasından etkilenmez.
 	status.HistoricalTradeIncome = status.HistoricalTradeIncome * supplyPercent / 100
-	status.Income = status.TaxIncome + status.TradeIncome + status.TradeCenterIncome + status.HistoricalTradeIncome + status.CapitalIncome + status.TechnologyIncome + status.BlockadeIncome + status.RaidIncome
+	status.Income = status.TaxIncome + status.OtherIncome + status.TradeIncome + status.TradeCenterIncome + status.HistoricalTradeIncome + status.CapitalIncome + status.TechnologyIncome + status.BlockadeIncome + status.RaidIncome
 
 	// Aktif rotaların beklenen başarılı transferlerini toplar. Bu okuma,
 	// anlaşma kurulduğu anda rotanın gelecek tur katkısını görünür kılar.
@@ -407,7 +412,7 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 		return 0
 	}
 
-	income := 0
+	income := gs.Factions[fid].OtherIncomeAt(gs.Year, gs.Month)
 	season := gs.CurrentSeason()
 	seasonMod := season.TradeMod()
 	harvestMod := season.HarvestMod()

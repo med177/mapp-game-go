@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-25: Fraksiyonlara tarih aralığı tanımlı `other_income_periods` alanı
+  eklendi. Her dönem isteğe bağlı `description` ile gelir kaynağını UI'a taşır.
+  Vergi ve ticaret dışındaki düzenli devlet gelirleri ekonomi
+  preview'sında, gerçek tur çözümlemesinde ve gelir popup'ında `Diğer gelirler`
+  satırı olarak gösteriliyor. Papalık Devletleri Reform öncesinde `153`,
+  Ekim 1517'den sonra `30` altın/tur alıyor; ay verilmezse Ocak kabul ediliyor.
+  Brüt gelir hedefleri de bu kalemi hesaba katıyor. Regression:
+  `TestOtherIncomeChangesAtHistoricalPeriodBoundary`.
+
 - 2026-09-25: Aktif Savaşlar panelinde savaş taraflarının ana devletlerine bağlı
   doğrudan ve alt vassallar ayrı katılımcı satırları olarak gösteriliyor; bu
   vassallar yeni savaş sayılmıyor, ilgili realm tarafının güç/ordu toplamlarına

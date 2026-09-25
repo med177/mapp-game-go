@@ -188,7 +188,7 @@
       185,
       85
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "genoa_main",
     "gold": 5000,
@@ -241,7 +241,7 @@
       40,
       180
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "constantinople_main",
     "gold": 5000,
@@ -899,7 +899,7 @@
       0,
       0
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "aragon_zaragoza",
     "gold": 5000,
@@ -1084,6 +1084,11 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "overlord_id": "naples_kingdom",
+    "tribute_rate": 20,
+    "tribute_rate_configured": true,
+    "vassalized_turn": 1,
+    "capital_settlement_id": "morea_clermont",
     "gold": 5000,
     "grain": 900,
     "iron": 50,
@@ -1182,7 +1187,11 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "athens",
+    "overlord_id": "aragon",
+    "tribute_rate": 20,
+    "tribute_rate_configured": true,
+    "vassalized_turn": 1,
+    "capital_settlement_id": "greece_thebes",
     "gold": 5000,
     "grain": 1540,
     "iron": 45,
@@ -1195,14 +1204,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50,
-    "territorial_claims": [
-      {
-        "region_id": "greece",
-        "value": 100,
-        "core": true
-      }
-    ]
+    "ai_aggressiveness": 50
   },
   {
     "id": "aydin_bey",
@@ -1476,12 +1478,11 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "epirus_main",
     "gold": 5000,
     "grain": 1260,
     "iron": 45,
     "timber": 40,
-    "stone": 1000,
+    "stone": 0,
     "spice": 120,
     "cloth": 25,
     "research": {
@@ -1489,28 +1490,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50,
-    "territorial_claims": [
-      {
-        "region_id": "epirus",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "greece",
-        "value": 78
-      },
-      {
-        "region_id": "thessaly",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "yanya",
-        "value": 100,
-        "core": true
-      }
-    ]
+    "ai_aggressiveness": 50
   },
   {
     "id": "esrefoglu_bey",
@@ -1749,7 +1729,7 @@
       245,
       45
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "kipchak_steppe_saray",
     "gold": 5000,
@@ -1819,7 +1799,7 @@
       50,
       180
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "granada_main",
     "gold": 5000,
@@ -2210,7 +2190,7 @@
       95,
       45
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "persia_west_main",
     "gold": 5000,
@@ -2648,17 +2628,13 @@
       75,
       200
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
-    "overlord_id": "papal_states_f",
-    "tribute_rate": 20,
-    "tribute_rate_configured": true,
-    "capital_settlement_id": "naples_main",
     "gold": 5000,
     "grain": 2780,
     "iron": 80,
     "timber": 60,
-    "stone": 1000,
+    "stone": 0,
     "spice": 300,
     "cloth": 70,
     "research": {
@@ -2672,28 +2648,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55,
-    "territorial_claims": [
-      {
-        "region_id": "apulia",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "calabria",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "campania",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "sicily",
-        "value": 68
-      }
-    ]
+    "ai_aggressiveness": 55
   },
   {
     "id": "novgorod_rep",
@@ -2739,9 +2694,24 @@
       230,
       230
     ],
-    "is_playable": false,
+    "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "rome",
+    "other_income_periods": [
+      {
+        "start_year": 1310,
+        "end_year": 1517,
+        "end_month": 9,
+        "amount": 153,
+        "description": "Kilise vergileri, bağışlar ve endüljans gelirleri"
+      },
+      {
+        "start_year": 1517,
+        "start_month": 10,
+        "amount": 30,
+        "description": "Reform sonrası azalan kilise gelirleri"
+      }
+    ],
     "gold": 5000,
     "grain": 2480,
     "iron": 60,

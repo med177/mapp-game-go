@@ -33,6 +33,7 @@ const (
 	unitCardFooterH           = float32(36)
 	unitCardNameOffset        = float32(29)
 	unitCardSingleLabelOffset = float32(15)
+	recruitCardRadius         = float32(6)
 )
 
 func unitSpriteHeight(width float32) float32 {
@@ -150,6 +151,75 @@ func drawUnitSpriteCard(screen *ebiten.Image, sprite *ebiten.Image, x, y, width 
 	op.GeoM.Translate(float64(x), float64(y))
 	op.ColorScale.Scale(tint[0], tint[1], tint[2], 1.0)
 	screen.DrawImage(sprite, op)
+	return true
+}
+
+func drawRoundedUnitSpriteCard(screen, sprite *ebiten.Image, x, y, width, height, radius float32, tint [3]float32) bool {
+	if screen == nil || sprite == nil || width <= 0 || height <= 0 {
+		return false
+	}
+	source := sprite.Bounds()
+	if source.Dx() <= 0 || source.Dy() <= 0 {
+		return false
+	}
+	if radius*2 > width {
+		radius = width / 2
+	}
+	if radius*2 > height {
+		radius = height / 2
+	}
+
+	const cornerSegments = 4
+	var points [cornerSegments * 4][2]float32
+	pointCount := 0
+	corners := [4]struct {
+		cx, cy, start, end float32
+	}{
+		{x + radius, y + radius, math.Pi, math.Pi * 1.5},
+		{x + width - radius, y + radius, math.Pi * 1.5, math.Pi * 2},
+		{x + width - radius, y + height - radius, 0, math.Pi * 0.5},
+		{x + radius, y + height - radius, math.Pi * 0.5, math.Pi},
+	}
+	for _, corner := range corners {
+		for i := 0; i < cornerSegments; i++ {
+			t := float32(i) / float32(cornerSegments-1)
+			angle := corner.start + (corner.end-corner.start)*t
+			points[pointCount] = [2]float32{
+				corner.cx + float32(math.Cos(float64(angle)))*radius,
+				corner.cy + float32(math.Sin(float64(angle)))*radius,
+			}
+			pointCount++
+		}
+	}
+
+	var vertices [cornerSegments*4 + 1]ebiten.Vertex
+	setVertex := func(dstX, dstY float32, vertex *ebiten.Vertex) {
+		vertex.DstX = dstX
+		vertex.DstY = dstY
+		vertex.SrcX = float32(source.Min.X) + (dstX-x)/width*float32(source.Dx())
+		vertex.SrcY = float32(source.Min.Y) + (dstY-y)/height*float32(source.Dy())
+		vertex.ColorR = tint[0]
+		vertex.ColorG = tint[1]
+		vertex.ColorB = tint[2]
+		vertex.ColorA = 1
+	}
+	setVertex(x+width/2, y+height/2, &vertices[0])
+	for i := 0; i < pointCount; i++ {
+		point := points[i]
+		setVertex(point[0], point[1], &vertices[i+1])
+	}
+
+	var indices [cornerSegments * 4 * 3]uint16
+	for i := 0; i < pointCount; i++ {
+		next := (i + 1) % pointCount
+		indices[i*3] = 0
+		indices[i*3+1] = uint16(i + 1)
+		indices[i*3+2] = uint16(next + 1)
+	}
+	screen.DrawTriangles(vertices[:], indices[:], sprite, &ebiten.DrawTrianglesOptions{
+		Filter:    ebiten.FilterLinear,
+		AntiAlias: true,
+	})
 	return true
 }
 
@@ -314,6 +384,15 @@ func recruitPanelX(slots int) float32 {
 func recruitPanelY(gs *state.GameState, rid world.RegionID) float32 {
 	return recruitPanelYForMetrics(recruitPanelMetricsFor(gs, rid))
 }
+
+func recruitQueueYForMetrics(py float32) float32 {
+	return py + recruitHeaderH + 4
+}
+
+func recruitCardsYForMetrics(py float32, metrics recruitPanelMetrics) float32 {
+	return recruitQueueYForMetrics(py) + metrics.queueSectionH + recruitSectionGap
+}
+
 func recruitPanelW(slots int) float32 {
 	slots = recruitCardsPerRow
 	w := recruitPanelPad*2 + recruitCardW*float32(slots) + recruitCardGap*float32(slots-1)
@@ -369,7 +448,7 @@ func buildRecruitUnitCardButtons(gs *state.GameState, rid world.RegionID) []game
 	py := recruitPanelYForMetrics(metrics)
 	slots := recruitPanelSlots()
 	px := recruitPanelX(slots)
-	topY := py + recruitHeaderH + 4
+	topY := recruitCardsYForMetrics(py, metrics)
 	pw := recruitPanelW(slots)
 	cardW, cardH, gap := recruitCardMetrics(pw)
 	maxTop := len(display)
@@ -397,7 +476,7 @@ func buildRecruitQueueCancelButtons(gs *state.GameState, rid world.RegionID) map
 	slots := recruitPanelSlots()
 	px := recruitPanelX(slots)
 	pw := recruitPanelW(slots)
-	queueY := py + recruitHeaderH + 4 + metrics.topSectionH + recruitSectionGap
+	queueY := recruitQueueYForMetrics(py)
 	items := recruitQueueItems(gs, rid)
 	cardW, cardH, gap := recruitCardMetrics(pw)
 	maxItems := len(items)
@@ -604,7 +683,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 	}
 
 	display := visibleUnitIDs(gs, region)
-	topY := py + recruitHeaderH + 4
+	topY := recruitCardsYForMetrics(py, metrics)
 	cardW, cardH, gap := recruitCardMetrics(pw)
 	maxTop := len(display)
 	if maxTop > recruitMaxCards {
@@ -619,7 +698,7 @@ func DrawRecruitPanel(screen *ebiten.Image, gs *state.GameState, rid world.Regio
 		drawRecruitCard(screen, gs, uid, region, x, y, cardW, cardH)
 	}
 
-	queueY := topY + metrics.topSectionH + recruitSectionGap
+	queueY := recruitQueueYForMetrics(py)
 	drawRecruitQueueSection(screen, gs, rid, px, queueY, pw, metrics.queueSectionH)
 }
 
@@ -686,7 +765,8 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, regi
 		slotBg = color.RGBA{255, 255, 255, 245}
 		borderCol = color.RGBA{145, 145, 145, 225}
 	}
-	drawUICardRect(screen, gameui.Rect{X: float64(sx), Y: float64(sy), W: float64(cardW), H: float64(cardH)}, slotBg, borderCol, 1)
+	drawRoundedRectF64(screen, float64(sx), float64(sy), float64(cardW), float64(cardH), float64(recruitCardRadius), slotBg)
+	drawRoundedRectStrokeF64(screen, float64(sx), float64(sy), float64(cardW), float64(cardH), float64(recruitCardRadius), 1, borderCol, slotBg)
 
 	if sprite := unitSpriteForFaction(gs, playerOwnerID, uid); sprite != nil {
 		tint := [3]float32{1, 1, 1}
@@ -698,13 +778,20 @@ func drawRecruitCard(screen *ebiten.Image, gs *state.GameState, uid string, regi
 		case !canAfford:
 			tint = [3]float32{0.65, 0.45, 0.45}
 		}
-		drawUnitSpriteCard(screen, sprite, sx, sy, cardW, tint)
+		drawRoundedUnitSpriteCard(screen, sprite, sx, sy, cardW, cardH, recruitCardRadius, tint)
 	}
-	drawUnitCardFooterColor(screen, sx, sy, cardW, cardH, unitCardFooterH, recruitCardFooterColor(availability))
+	drawRecruitCardFooter(screen, sx, sy, cardW, cardH, unitCardFooterH, recruitCardFooterColor(availability))
 
 	labelColor := color.RGBA{0, 0, 0, 255}
 	DrawTextCentered(screen, shortUnitName(utype.NameTR, 14), float64(sx)+float64(cardW)/2, float64(sy)+float64(cardH)-float64(unitCardNameOffset), FaceSmall, labelColor)
 	DrawTextCentered(screen, itoa(utype.TurnsRequired)+"T", float64(sx)+float64(cardW)/2, float64(sy)+float64(cardH)-float64(unitCardSingleLabelOffset), FaceSmall, labelColor)
+}
+
+func drawRecruitCardFooter(screen *ebiten.Image, x, y, width, height, footerH float32, fill color.RGBA) {
+	footerY := y + height - footerH
+	drawRoundedRect(screen, x, footerY, width, footerH, recruitCardRadius, fill)
+	// Footer'ın üst köşeleri içerik alanıyla birleşsin; alt köşeler yuvarlak kalsın.
+	vector.FillRect(screen, x, footerY, width, recruitCardRadius, fill, false)
 }
 
 func unitCost(utype *army.UnitType) economy.ResourceCost {
