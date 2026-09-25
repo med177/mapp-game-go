@@ -2397,6 +2397,9 @@ func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) strin
 	if eff.GoldDelta != 0 {
 		parts = append(parts, fmt.Sprintf("Altın %+d", eff.GoldDelta))
 	}
+	if eff.OtherIncomeDelta != 0 {
+		parts = append(parts, fmt.Sprintf("Kalıcı gelir %+d/tur", eff.OtherIncomeDelta))
+	}
 	if eff.GrainDelta != 0 {
 		parts = append(parts, fmt.Sprintf("Tahıl %+d", eff.GrainDelta))
 	}

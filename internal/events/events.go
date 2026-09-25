@@ -98,6 +98,7 @@ type Effect struct {
 	Target                    string                       `json:"target,omitempty"` // boşsa event target'ı kullanılır
 	SatDelta                  int                          `json:"sat_delta,omitempty"`
 	GoldDelta                 int                          `json:"gold_delta,omitempty"`
+	OtherIncomeDelta          int                          `json:"other_income_delta,omitempty"` // kalıcı devlet düzeyi gelir değişimi
 	GrainDelta                int                          `json:"grain_delta,omitempty"`
 	ArmyHPMod                 float64                      `json:"army_hp_mod,omitempty"`                // 1.0 = değişmez
 	GrainProductionPercent    int                          `json:"grain_production_percent,omitempty"`   // aktif olay süresince üretim etkisi
@@ -149,6 +150,7 @@ type Event struct {
 	Target                    string                       `json:"target"`      // "player_faction"|"random_region"|"all_armies"|"all_factions"
 	SatDelta                  int                          `json:"sat_delta"`
 	GoldDelta                 int                          `json:"gold_delta"`
+	OtherIncomeDelta          int                          `json:"other_income_delta,omitempty"`
 	GrainDelta                int                          `json:"grain_delta"`
 	ArmyHPMod                 float64                      `json:"army_hp_mod"` // 1.0 = değişmez
 	GrainProductionPercent    int                          `json:"grain_production_percent,omitempty"`
@@ -366,6 +368,7 @@ func (e *Event) BaseEffect() Effect {
 		Target:                    e.Target,
 		SatDelta:                  e.SatDelta,
 		GoldDelta:                 e.GoldDelta,
+		OtherIncomeDelta:          e.OtherIncomeDelta,
 		GrainDelta:                e.GrainDelta,
 		ArmyHPMod:                 e.ArmyHPMod,
 		GrainProductionPercent:    e.GrainProductionPercent,
@@ -997,6 +1000,7 @@ func applyToFaction(gs *state.GameState, fid string, eff Effect) {
 	}
 	if f, ok := gs.Factions[faction.FactionID(fid)]; ok {
 		f.Gold = max0(f.Gold + eff.GoldDelta)
+		f.OtherIncomeDelta += eff.OtherIncomeDelta
 		f.Grain = max0(f.Grain + eff.GrainDelta)
 	}
 	if eff.ArmyHPMod > 0 && eff.ArmyHPMod < 1.0 {

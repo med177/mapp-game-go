@@ -191,6 +191,32 @@ func TestApplyChoiceAppliesChoiceReinforcement(t *testing.T) {
 	}
 }
 
+func TestApplyOtherIncomeDeltaPersistsOnFaction(t *testing.T) {
+	const ownerID = faction.FactionID("portugal")
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			ownerID: {ID: ownerID},
+		},
+	}
+
+	Apply(gs, &Event{
+		Target:           "specific_faction",
+		AffectedFaction:  string(ownerID),
+		OtherIncomeDelta: 25,
+	})
+	ApplyChoice(gs, &Event{
+		Target:          "specific_faction",
+		AffectedFaction: string(ownerID),
+		Choices: []Choice{{Effect: Effect{
+			OtherIncomeDelta: -5,
+		}}},
+	}, 0)
+
+	if got := gs.Factions[ownerID].OtherIncomeDelta; got != 20 {
+		t.Fatalf("kalıcı diğer gelir deltası = %d, 20 bekleniyordu", got)
+	}
+}
+
 func TestApplyBaseEventReinforcement(t *testing.T) {
 	const ownerID = faction.FactionID("ottoman")
 	capital := &world.Region{

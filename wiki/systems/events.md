@@ -140,6 +140,7 @@ Choice sonuçları artık doğrudan follow-up event açabilir.
 
 - `Effect.set_flags[]` seçilen kararın state flag'ini yazar
 - `Effect.clear_flags[]` eski veya rakip branch flag'ini temizler
+- `Effect.other_income_delta` hedef fraksiyonun kalıcı devlet düzeyi gelirini değiştirir
 - `Effect.complete_techs[]` ilgili fraksiyon için teknoloji tamamlar
 - `Effect.start_research_tech` aktif araştırma boşsa ücretsiz yönlendirilmiş araştırma başlatır
 - `Effect.relations[]` belirli fraksiyonlarla doğrudan `score_delta` ve opsiyonel `stance` uygular

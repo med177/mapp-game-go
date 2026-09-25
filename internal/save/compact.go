@@ -57,6 +57,7 @@ type factionSaveState struct {
 	PendingCapitalSettlementID *string                `json:"pcap,omitempty"`
 	PendingCapitalTurns        *int                   `json:"pct,omitempty"`
 	Gold                       *int                   `json:"g,omitempty"`
+	OtherIncomeDelta           *int                   `json:"oid,omitempty"`
 	Grain                      *int                   `json:"gr,omitempty"`
 	Iron                       *int                   `json:"ir,omitempty"`
 	Timber                     *int                   `json:"tm,omitempty"`
@@ -185,6 +186,7 @@ type legacyFactionSaveState struct {
 	PendingCapitalSettlementID string                `json:"pending_capital_settlement_id,omitempty"`
 	PendingCapitalTurns        int                   `json:"pending_capital_turns,omitempty"`
 	Gold                       int                   `json:"gold"`
+	OtherIncomeDelta           int                   `json:"other_income_delta,omitempty"`
 	Grain                      int                   `json:"grain"`
 	Iron                       int                   `json:"iron"`
 	Timber                     int                   `json:"timber"`
@@ -347,6 +349,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 			PendingCapitalSettlementID: cloneStringPtr(factionCopy.PendingCapitalSettlementID),
 			PendingCapitalTurns:        cloneIntPtr(factionCopy.PendingCapitalTurns),
 			Gold:                       cloneIntPtr(factionCopy.Gold),
+			OtherIncomeDelta:           cloneIntPtr(factionCopy.OtherIncomeDelta),
 			Grain:                      cloneIntPtr(factionCopy.Grain),
 			Iron:                       cloneIntPtr(factionCopy.Iron),
 			Timber:                     cloneIntPtr(factionCopy.Timber),
@@ -927,6 +930,9 @@ func makeFactionSaveState(current, base *faction.Faction) (factionSaveState, boo
 	if base == nil || current.Gold != base.Gold {
 		out.Gold = cloneIntPtr(current.Gold)
 	}
+	if base == nil || current.OtherIncomeDelta != base.OtherIncomeDelta {
+		out.OtherIncomeDelta = cloneIntPtr(current.OtherIncomeDelta)
+	}
 	if base == nil || current.Grain != base.Grain {
 		out.Grain = cloneIntPtr(current.Grain)
 	}
@@ -984,6 +990,9 @@ func applyFactionSaveState(fx *faction.Faction, saved factionSaveState) {
 	}
 	if saved.Gold != nil {
 		fx.Gold = *saved.Gold
+	}
+	if saved.OtherIncomeDelta != nil {
+		fx.OtherIncomeDelta = *saved.OtherIncomeDelta
 	}
 	if saved.Grain != nil {
 		fx.Grain = *saved.Grain
@@ -1817,6 +1826,7 @@ func isZeroFactionSaveState(saved factionSaveState) bool {
 		saved.PendingCapitalSettlementID == nil &&
 		saved.PendingCapitalTurns == nil &&
 		saved.Gold == nil &&
+		saved.OtherIncomeDelta == nil &&
 		saved.Grain == nil &&
 		saved.Iron == nil &&
 		saved.Timber == nil &&

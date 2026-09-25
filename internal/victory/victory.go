@@ -77,6 +77,7 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 		status.OtherIncome = period.Amount
 		status.OtherIncomeDescription = period.Description
 	}
+	status.OtherIncome += gs.Factions[fid].OtherIncomeDelta
 	status.TechnologyIncome = effects.GoldPerRegion * len(gs.RegionsOwnedBy(fid))
 	status.TradePowerIncome = gs.TradePowerCommerceIncome(fid)
 	status.HistoricalTradeIncome = gs.HistoricalTradeIncomeForFaction(fid)

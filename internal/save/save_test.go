@@ -304,6 +304,23 @@ func TestCampaignSaveStateDoesNotPersistScenarioDerivedStartYear(t *testing.T) {
 	}
 }
 
+func TestCampaignSaveStateRestoresOtherIncomeDelta(t *testing.T) {
+	const fid = faction.FactionID("portugal")
+	base := &faction.Faction{ID: fid}
+	current := &faction.Faction{ID: fid, OtherIncomeDelta: 25}
+
+	savedFaction, ok := makeFactionSaveState(current, base)
+	if !ok || savedFaction.OtherIncomeDelta == nil || *savedFaction.OtherIncomeDelta != 25 {
+		t.Fatalf("other income delta compact save'e yazılmadı: %+v", savedFaction.OtherIncomeDelta)
+	}
+
+	restored := &faction.Faction{ID: fid}
+	applyFactionSaveState(restored, savedFaction)
+	if restored.OtherIncomeDelta != 25 {
+		t.Fatalf("other income delta save'den yüklenmedi: %d", restored.OtherIncomeDelta)
+	}
+}
+
 func TestCampaignSaveStateRefreshesSelectedVictoryFromScenario(t *testing.T) {
 	option := scenario.VictoryOptionDef{
 		ID:                   "updated_goal",

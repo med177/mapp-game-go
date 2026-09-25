@@ -86,6 +86,12 @@ aralık isteğe bağlı `description` alanıyla gelirin kaynağını belirtir; b
 Değer `GoldEconomyPreview`, gerçek ekonomi turu ve gelir popup'ında aynı
 tarih aralığından hesaplanır.
 
+Event veya event seçimiyle kalıcı olarak açılan devlet düzeyi gelirler,
+fraksiyon state'indeki `other_income_delta` alanında tutulur. Bu değer aktif
+`other_income_periods` gelirinin üzerine eklenir; negatif delta ile kalıcı
+gelir kaybı da tanımlanabilir. Böylece event zinciriyle açılan sömürge payı,
+devlet tekeli veya benzeri gelirler vergi ve ticaret hesaplarına karıştırılmaz.
+
 Her bölgede `TaxRate` (0–60) ayarlanabilir. `world.ClampTaxRate` oyuncu, AI,
 senaryo ve kayıt yükleme akışlarında değeri bu aralıkta tutar; eski kayıtlardaki
 %60 üzeri oranlar yüklenirken %60'a indirilir.

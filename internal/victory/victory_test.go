@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestOtherIncomeIsIncludedInGoldIncomeCalculations(t *testing.T) {
@@ -27,6 +28,27 @@ func TestOtherIncomeIsIncludedInGoldIncomeCalculations(t *testing.T) {
 	}
 	if got := GoldIncomeForFaction(gs, fid); got != 35 {
 		t.Fatalf("gross gold income = %d, want 35", got)
+	}
+}
+
+func TestEventOtherIncomeDeltaIsIncludedWithHistoricalPeriod(t *testing.T) {
+	const fid = faction.FactionID("papal_states")
+	gs := &state.GameState{
+		Year:  1400,
+		Month: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			fid: {
+				ID:                 fid,
+				OtherIncomePeriods: []faction.OtherIncomePeriod{{StartYear: 1300, Amount: 35}},
+				OtherIncomeDelta:   20,
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{},
+	}
+
+	preview := GoldEconomyPreview(gs, fid)
+	if preview.OtherIncome != 55 || preview.Income != 55 {
+		t.Fatalf("period ve event geliri = (%d, toplam %d), (55, 55) bekleniyordu", preview.OtherIncome, preview.Income)
 	}
 }
 

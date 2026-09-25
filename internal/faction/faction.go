@@ -81,12 +81,15 @@ type Faction struct {
 
 	Gold               int                 `json:"gold"`
 	OtherIncomePeriods []OtherIncomePeriod `json:"other_income_periods,omitempty"`
-	Grain              int                 `json:"grain"`
-	Iron               int                 `json:"iron"`
-	Timber             int                 `json:"timber"`
-	Stone              int                 `json:"stone"`
-	Spice              int                 `json:"spice"`
-	Cloth              int                 `json:"cloth"`
+	// OtherIncomeDelta, event veya event seçimiyle kalıcı olarak açılan,
+	// tarih aralığı gelirlerine eklenen devlet düzeyi gelirdir.
+	OtherIncomeDelta int `json:"other_income_delta,omitempty"`
+	Grain            int `json:"grain"`
+	Iron             int `json:"iron"`
+	Timber           int `json:"timber"`
+	Stone            int `json:"stone"`
+	Spice            int `json:"spice"`
+	Cloth            int `json:"cloth"`
 
 	// Teknoloji araştırma durumu
 	Research ResearchState `json:"research"`
