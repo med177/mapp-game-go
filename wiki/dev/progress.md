@@ -7,6 +7,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-25: Edit Mode devlet düzenleme formu iki kolonlu, çakışmasız bir
+  düzene taşındı. Form paneli, metin alanları ve aksiyon düğmeleri artık ortak
+  `gameui.Panel`, `gameui.TextBox` ve `gameui.Button` bileşenlerini kullanıyor;
+  form geometri testi etkileşimli alanların üst üste binmesini doğruluyor.
+
 - 2026-09-25: Fraksiyonlara tarih aralığı tanımlı `other_income_periods` alanı
   eklendi. Her dönem isteğe bağlı `description` ile gelir kaynağını UI'a taşır.
   Vergi ve ticaret dışındaki düzenli devlet gelirleri ekonomi

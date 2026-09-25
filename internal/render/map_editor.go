@@ -408,13 +408,14 @@ func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
 		return
 	}
 	x, y, w, h := editFactionFormRect()
-	drawRoundedRect(screen, x, y, w, h, 8, color.RGBA{14, 18, 22, 244})
-	drawPanelBorder(screen, x, y, w, h)
-	title := "FACTION EKLE"
+	formRect := gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}
+	drawUIPanelRect(screen, formRect, color.RGBA{14, 18, 22, 248}, panelBorder, 1)
+	title := "DEVLET EKLE"
 	if !r.editFactionForm.create {
-		title = "FACTION DUZENLE"
+		title = "DEVLET DÜZENLE"
 	}
-	DrawText(screen, title, float64(x)+18, float64(y)+14, FaceLarge, ColorGold)
+	drawUILabel(screen, gameui.Rect{X: float64(x) + 24, Y: float64(y) + 16, W: float64(w) - 48}, title, ColorGold, gameui.TextLarge, gameui.TextAlignStart)
+	drawUISectionLabel(screen, float64(x)+24, float64(y)+52, "KİMLİK VE KAYNAKLAR")
 
 	r.drawFactionFormField(screen, editFactionFieldID, "ID", r.editFactionForm.id)
 	r.drawFactionFormField(screen, editFactionFieldNameTR, "Ad TR", r.editFactionForm.nameTR)
@@ -427,6 +428,8 @@ func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
 	r.drawFactionFormField(screen, editFactionFieldCloth, economy.ResourceNameTR(economy.ResourceCloth), r.editFactionForm.cloth)
 	r.drawFactionFormField(screen, editFactionFieldAI, "AI", r.editFactionForm.ai)
 
+	drawUISectionLabel(screen, float64(x)+24, float64(y)+326, "DİPLOMASİ")
+	drawUISectionLabel(screen, float64(x)+396, float64(y)+326, "AYARLAR VE RENK")
 	drawEditFactionFormButton(screen, editFactionFormReligion, "Din: "+religion.DisplayNameTR(r.editFactionForm.religion))
 	drawEditFactionFormButton(screen, editFactionFormPlayable, "Playable: "+editBoolLabel(r.editFactionForm.playable))
 	relationTitle := "Iliski: yok"
@@ -437,7 +440,7 @@ func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
 	drawEditFactionFormButton(screen, editFactionFormRelationStance, "Durum: "+faction.DiplomaticStanceLabelTR(r.editFactionForm.relationStance))
 	drawEditFactionFormButton(screen, editFactionFormRelationScoreMinus, "Skor -10")
 	drawEditFactionFormButton(screen, editFactionFormRelationScorePlus, "Skor +10")
-	DrawText(screen, "Skor: "+r.editFactionForm.relationScore, float64(x)+18, float64(y)+304, FaceSmall, ColorGray)
+	drawUILabel(screen, gameui.Rect{X: float64(x) + 24, Y: float64(y) + 436, W: 340}, "İlişki skoru: "+r.editFactionForm.relationScore, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	overlordLabel := "Vassal üst devleti: yok"
 	if r.editFactionForm.overlordID != "" {
 		overlordLabel = "Vassal üst devleti: " + string(r.editFactionForm.overlordID)
@@ -448,7 +451,7 @@ func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
 	preview := editFactionFormColorPreviewRect()
 	vector.FillRect(screen, float32(preview[0]), float32(preview[1]), float32(preview[2]), float32(preview[3]), color.RGBA{col[0], col[1], col[2], 255}, false)
 	vector.StrokeRect(screen, float32(preview[0]), float32(preview[1]), float32(preview[2]), float32(preview[3]), 1, ColorGold, false)
-	DrawText(screen, "Renk "+itoa(int(col[0]))+","+itoa(int(col[1]))+","+itoa(int(col[2])), float64(x)+338, float64(y)+332, FaceSmall, ColorGray)
+	drawUILabel(screen, gameui.Rect{X: float64(x) + 396, Y: float64(y) + 446, W: 348}, "Renk: "+itoa(int(col[0]))+", "+itoa(int(col[1]))+", "+itoa(int(col[2])), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	drawEditFactionFormButton(screen, editFactionFormRedMinus, "R-")
 	drawEditFactionFormButton(screen, editFactionFormRedPlus, "R+")
 	drawEditFactionFormButton(screen, editFactionFormGreenMinus, "G-")
@@ -457,15 +460,15 @@ func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
 	drawEditFactionFormButton(screen, editFactionFormBluePlus, "B+")
 
 	if r.editFactionForm.errorText != "" {
-		DrawText(screen, r.editFactionForm.errorText, float64(x)+18, float64(y)+float64(h)-74, FaceSmall, ColorRed)
+		drawUILabel(screen, gameui.Rect{X: float64(x) + 24, Y: float64(y) + float64(h) - 82, W: float64(w) - 48}, r.editFactionForm.errorText, ColorRed, gameui.TextSmall, gameui.TextAlignStart)
 	}
 	drawEditFactionFormButton(screen, editFactionFormSave, "Kaydet")
 	drawEditFactionFormButton(screen, editFactionFormCancel, "Iptal")
 }
 
 func drawEditFactionFormButton(screen *ebiten.Image, kind editFactionFormButton, label string) {
-	x, y, w, h := rectXYWH(editFactionFormButtonRect(kind))
-	drawTinyPanelButton(screen, x, y, w, h, label, true)
+	button := buildEditFactionFormButton(kind, label)
+	drawUIButtonWidget(screen, button, tinyButtonStyle)
 }
 
 func editRectButton(r uiRect, label string) gameui.Button {
@@ -474,14 +477,25 @@ func editRectButton(r uiRect, label string) gameui.Button {
 
 func (r *Renderer) drawFactionFormField(screen *ebiten.Image, field editFactionFormField, label, value string) {
 	rect := editFactionFieldRect(field)
-	col := color.RGBA{28, 32, 38, 235}
-	if r.editFactionForm.active == field {
-		col = color.RGBA{44, 48, 54, 245}
+	box := gameui.NewTextBox(rect[0], rect[1], rect[2], rect[3], "")
+	box.Value = value
+	box.Focused = r.editFactionForm.active == field
+	gameui.DrawTextBox(screen, box, editFactionFormTextBoxStyle(), renderText)
+	drawUILabel(screen, gameui.Rect{X: rect[0], Y: rect[1] - 16, W: rect[2]}, label, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+}
+
+func editFactionFormTextBoxStyle() gameui.TextBoxStyle {
+	return gameui.TextBoxStyle{
+		BG:          color.RGBA{28, 32, 38, 235},
+		Border:      color.RGBA{120, 105, 60, 210},
+		Focused:     ColorGold,
+		Text:        ColorWhite,
+		Placeholder: ColorGray,
+		BorderWidth: 1,
+		TextOffsetX: 8,
+		TextOffsetY: 8,
+		TextVariant: gameui.TextSmall,
 	}
-	vector.FillRect(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), col, false)
-	vector.StrokeRect(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), 1, color.RGBA{120, 105, 60, 210}, false)
-	DrawText(screen, label, rect[0], rect[1]-16, FaceSmall, ColorGray)
-	DrawText(screen, value, rect[0]+8, rect[1]+7, FaceSmall, ColorWhite)
 }
 
 func rectXYWH(rect uiRect) (float32, float32, float32, float32) {
@@ -489,7 +503,7 @@ func rectXYWH(rect uiRect) (float32, float32, float32, float32) {
 }
 
 func editFactionFormRect() (float32, float32, float32, float32) {
-	const w, h = float32(640), float32(520)
+	const w, h = float32(760), float32(620)
 	return float32(ScreenWidth)/2 - w/2, float32(ScreenHeight)/2 - h/2, w, h
 }
 
@@ -500,10 +514,10 @@ func editFactionFormHit(mx, my float64) bool {
 
 func editFactionFieldRect(field editFactionFormField) uiRect {
 	x, y, _, _ := editFactionFormRect()
-	left := float64(x) + 18
-	right := float64(x) + 338
+	left := float64(x) + 24
+	right := float64(x) + 396
 	top := float64(y) + 78
-	const fw, fh, gap = float64(284), float64(30), float64(24)
+	const fw, fh, gap = float64(348), float64(32), float64(16)
 	row := func(n int) float64 { return top + float64(n)*(fh+gap) }
 	switch field {
 	case editFactionFieldID:
@@ -511,21 +525,21 @@ func editFactionFieldRect(field editFactionFormField) uiRect {
 	case editFactionFieldNameTR:
 		return uiRect{right, row(0), fw, fh}
 	case editFactionFieldName:
-		return uiRect{left, row(1), fw, fh}
+		return uiRect{right, row(1), fw, fh}
 	case editFactionFieldGold:
-		return uiRect{right, row(1), fw/2 - 6, fh}
-	case editFactionFieldGrain:
-		return uiRect{right + fw/2 + 6, row(1), fw/2 - 6, fh}
-	case editFactionFieldIron:
-		return uiRect{left, row(2), fw/2 - 6, fh}
-	case editFactionFieldTimber:
-		return uiRect{left + fw/2 + 6, row(2), fw/2 - 6, fh}
-	case editFactionFieldSpice:
 		return uiRect{right, row(2), fw/2 - 6, fh}
-	case editFactionFieldCloth:
+	case editFactionFieldGrain:
 		return uiRect{right + fw/2 + 6, row(2), fw/2 - 6, fh}
-	case editFactionFieldAI:
+	case editFactionFieldIron:
 		return uiRect{left, row(3), fw/2 - 6, fh}
+	case editFactionFieldTimber:
+		return uiRect{left + fw/2 + 6, row(3), fw/2 - 6, fh}
+	case editFactionFieldSpice:
+		return uiRect{right, row(4), fw/2 - 6, fh}
+	case editFactionFieldCloth:
+		return uiRect{right + fw/2 + 6, row(4), fw/2 - 6, fh}
+	case editFactionFieldAI:
+		return uiRect{left, row(1), fw/2 - 6, fh}
 	default:
 		return uiRect{}
 	}
@@ -557,38 +571,39 @@ const (
 
 func editFactionFormButtonRect(kind editFactionFormButton) uiRect {
 	x, y, w, h := editFactionFormRect()
-	right := float64(x) + 338
+	left := float64(x) + 24
+	right := float64(x) + 396
 	switch kind {
 	case editFactionFormReligion:
-		return uiRect{right, float64(y) + 240, 136, 28}
+		return uiRect{right, float64(y) + 354, 166, 32}
 	case editFactionFormPlayable:
-		return uiRect{right + 148, float64(y) + 240, 136, 28}
+		return uiRect{right + 182, float64(y) + 354, 166, 32}
 	case editFactionFormRelationTarget:
-		return uiRect{float64(x) + 18, float64(y) + 240, 284, 28}
+		return uiRect{left, float64(y) + 354, 348, 32}
 	case editFactionFormRelationStance:
-		return uiRect{float64(x) + 18, float64(y) + 272, 136, 28}
+		return uiRect{left, float64(y) + 394, 160, 32}
 	case editFactionFormRelationScoreMinus:
-		return uiRect{float64(x) + 166, float64(y) + 272, 64, 28}
+		return uiRect{left + 172, float64(y) + 394, 78, 32}
 	case editFactionFormRelationScorePlus:
-		return uiRect{float64(x) + 238, float64(y) + 272, 64, 28}
+		return uiRect{left + 258, float64(y) + 394, 78, 32}
 	case editFactionFormOverlordTarget:
-		return uiRect{float64(x) + 338, float64(y) + 312, 284, 28}
+		return uiRect{left, float64(y) + 474, 348, 32}
 	case editFactionFormRedMinus:
-		return uiRect{right, float64(y) + 382, 42, 26}
+		return uiRect{right, float64(y) + 474, 52, 28}
 	case editFactionFormRedPlus:
-		return uiRect{right + 48, float64(y) + 382, 42, 26}
+		return uiRect{right + 58, float64(y) + 474, 52, 28}
 	case editFactionFormGreenMinus:
-		return uiRect{right + 100, float64(y) + 382, 42, 26}
+		return uiRect{right + 112, float64(y) + 474, 52, 28}
 	case editFactionFormGreenPlus:
-		return uiRect{right + 148, float64(y) + 382, 42, 26}
+		return uiRect{right + 170, float64(y) + 474, 52, 28}
 	case editFactionFormBlueMinus:
-		return uiRect{right + 200, float64(y) + 382, 42, 26}
+		return uiRect{right + 224, float64(y) + 474, 52, 28}
 	case editFactionFormBluePlus:
-		return uiRect{right + 248, float64(y) + 382, 42, 26}
+		return uiRect{right + 282, float64(y) + 474, 52, 28}
 	case editFactionFormSave:
-		return uiRect{float64(x) + float64(w) - 264, float64(y) + float64(h) - 52, 116, 32}
+		return uiRect{float64(x) + 24, float64(y) + float64(h) - 48, 140, 32}
 	case editFactionFormCancel:
-		return uiRect{float64(x) + float64(w) - 136, float64(y) + float64(h) - 52, 116, 32}
+		return uiRect{float64(x) + float64(w) - 164, float64(y) + float64(h) - 48, 140, 32}
 	default:
 		return uiRect{}
 	}
@@ -600,7 +615,7 @@ func buildEditFactionFormButton(kind editFactionFormButton, label string) gameui
 
 func editFactionFormColorPreviewRect() uiRect {
 	x, y, _, _ := editFactionFormRect()
-	return uiRect{float64(x) + 338, float64(y) + 352, 284, 22}
+	return uiRect{float64(x) + 396, float64(y) + 410, 348, 28}
 }
 
 func drawEditInspectorButton(screen *ebiten.Image, kind editInspectorButton, label string, active bool) {
@@ -4031,25 +4046,26 @@ func (r *Renderer) saveFactionForm() bool {
 			r.gs.PlayerFactionID = fid
 		}
 	}
-	next := &faction.Faction{
-		ID:               fid,
-		Name:             name,
-		NameTR:           nameTR,
-		Religion:         form.religion,
-		Color:            form.color,
-		IsPlayable:       form.playable,
-		Gold:             gold,
-		Grain:            grain,
-		Iron:             iron,
-		Timber:           timber,
-		Spice:            spice,
-		Cloth:            cloth,
-		AIAggressiveness: aiValue,
-	}
+	next := &faction.Faction{}
 	if existingFaction != nil {
-		next.IsEliminated = existingFaction.IsEliminated
-		next.Research = existingFaction.Research
+		// Düzenlemede formun göstermediği alanlar (ör. tarihsel değişimler,
+		// gelir dönemleri, bayrak ve stratejik hedefler) aynen korunmalıdır.
+		preserved := *existingFaction
+		next = &preserved
 	}
+	next.ID = fid
+	next.Name = name
+	next.NameTR = nameTR
+	next.Religion = form.religion
+	next.Color = form.color
+	next.IsPlayable = form.playable
+	next.Gold = gold
+	next.Grain = grain
+	next.Iron = iron
+	next.Timber = timber
+	next.Spice = spice
+	next.Cloth = cloth
+	next.AIAggressiveness = aiValue
 	if !r.validEditFactionOverlord(fid, form.overlordID) {
 		form.errorText = "Geçersiz vassal üst devleti seçimi."
 		return false
