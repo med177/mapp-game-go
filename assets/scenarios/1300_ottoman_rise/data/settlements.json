@@ -8104,6 +8104,20 @@
     ]
   },
   {
+    "region_id": "sporades_islands",
+    "settlements": [
+      {
+        "id": "sporades_islands_settlement_1",
+        "name_tr": "sporades_main",
+        "x": 951,
+        "y": 492,
+        "type": "city",
+        "is_center": true,
+        "population": 0
+      }
+    ]
+  },
+  {
     "region_id": "umman_hourmuz",
     "settlements": null
   }
