@@ -5968,6 +5968,12 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	if !ok {
 		return
 	}
+	// Aynı limana verilen eski veya doğrudan üretilmiş emir no-op olmalıdır.
+	// Renderer bu emri üretmese bile oyun kuralı yeniden docking için hareket
+	// puanı tüketmemelidir.
+	if a.IsNaval && a.DockedRegionID != "" && target == a.DockedRegionID {
+		return
+	}
 
 	// Limana bağlı donanma, bulunduğu deniz bölgesinin merkezine çıkabilir (undock).
 	if a.IsNaval && a.DockedRegionID != "" && target == a.RegionID && src.IsSea {

@@ -102,6 +102,7 @@ type armySaveState struct {
 	OverCapacityTurns  int                    `json:"oc,omitempty"`
 	TurnsWithoutPort   int                    `json:"tp,omitempty"`
 	TradeRouteKey      string                 `json:"trk,omitempty"`
+	SupplyCargo        economy.ResourceCost   `json:"sc,omitempty"`
 	NavalMission       *army.NavalMission     `json:"nm,omitempty"`
 }
 
@@ -1374,6 +1375,7 @@ func convertArmiesToSaveState(armies map[army.ArmyID]*army.Army) map[army.ArmyID
 			OverCapacityTurns:  current.OverCapacityTurns,
 			TurnsWithoutPort:   current.TurnsWithoutPort,
 			TradeRouteKey:      current.TradeRouteKey,
+			SupplyCargo:        current.SupplyCargo,
 			NavalMission:       cloneNavalMission(current.NavalMission),
 		}
 	}
@@ -1408,6 +1410,7 @@ func restoreArmiesFromSaveState(saved map[army.ArmyID]armySaveState) map[army.Ar
 			OverCapacityTurns:  current.OverCapacityTurns,
 			TurnsWithoutPort:   current.TurnsWithoutPort,
 			TradeRouteKey:      current.TradeRouteKey,
+			SupplyCargo:        current.SupplyCargo,
 			NavalMission:       cloneNavalMission(current.NavalMission),
 		}
 	}

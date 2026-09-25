@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
@@ -55,6 +56,43 @@ func TestAutoStartResearchIfIdleStartsNextResearchableTech(t *testing.T) {
 	}
 	if player.Gold != 5 {
 		t.Fatalf("gold otomatik baslatmada dusmeliydi, got=%d", player.Gold)
+	}
+}
+
+func TestMoveDockedFleetToSamePortDoesNotConsumeMovement(t *testing.T) {
+	const (
+		sea  = world.RegionID("sea")
+		port = world.RegionID("port")
+	)
+
+	fleet := &army.Army{
+		ID:             "fleet",
+		OwnerID:        "player",
+		IsNaval:        true,
+		RegionID:       sea,
+		DockedRegionID: port,
+		MovePoints:     2,
+		MaxMovePoints:  2,
+	}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			sea:  {ID: sea, IsSea: true, Neighbors: []world.RegionID{port}},
+			port: {ID: port, OwnerID: "player", Neighbors: []world.RegionID{sea}},
+		},
+		Armies: map[army.ArmyID]*army.Army{fleet.ID: fleet},
+	}
+
+	(&Game{gs: gs}).moveArmyToSettlementWithStance(fleet.ID, port, "", combat.BattleStanceBalanced)
+
+	if fleet.MovePoints != 2 {
+		t.Fatalf("aynı limana hareket emri hareket puanını değiştirdi: got=%d want=2", fleet.MovePoints)
+	}
+	if fleet.DockedRegionID != port {
+		t.Fatalf("filo aynı limandan ayrıldı: got=%q want=%q", fleet.DockedRegionID, port)
 	}
 }
 

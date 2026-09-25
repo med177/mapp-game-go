@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/ai"
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
@@ -301,6 +302,36 @@ func TestCampaignSaveStateDoesNotPersistScenarioDerivedStartYear(t *testing.T) {
 	}
 	if _, ok := fields["sy"]; ok {
 		t.Fatal("scenario-derived start year compact save'e yazıldı")
+	}
+}
+
+func TestCompactSavePreservesNavalSupplyCargo(t *testing.T) {
+	armies := map[army.ArmyID]*army.Army{
+		"fleet": {
+			ID:      "fleet",
+			OwnerID: "player",
+			IsNaval: true,
+			SupplyCargo: economy.ResourceCost{
+				Grain: 240,
+				Iron:  12,
+			},
+			NavalMission: &army.NavalMission{
+				Kind:         army.NavalMissionSupplyArmy,
+				TargetArmyID: "army",
+			},
+		},
+	}
+
+	saved := convertArmiesToSaveState(armies)
+	restored := restoreArmiesFromSaveState(saved)["fleet"]
+	if restored == nil {
+		t.Fatal("ikmal filosu save'den geri yüklenmedi")
+	}
+	if restored.SupplyCargo.Grain != 240 || restored.SupplyCargo.Iron != 12 {
+		t.Fatalf("ikmal kargosu korunmadı: %+v", restored.SupplyCargo)
+	}
+	if restored.NavalMission == nil || restored.NavalMission.TargetArmyID != "army" {
+		t.Fatalf("ikmal görevi korunmadı: %+v", restored.NavalMission)
 	}
 }
 

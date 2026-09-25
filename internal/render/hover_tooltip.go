@@ -107,6 +107,10 @@ func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 		drawSatisfactionTooltip(screen, gs, rid, fx, fy)
 		return
 	}
+	if logisticsRect, ok := regionPanelLogisticsRect(gs, rid); ok && logisticsRect.Hit(fx, fy) {
+		drawRegionLogisticsTooltip(screen, gs, rid, fx, fy)
+		return
+	}
 
 	if regionDiplomacyButtonHitForTab(fx, fy, gs, rid, activeTab) {
 		drawSmallHoverHint(screen, "Diplomasi ekranını aç", fx, fy)
@@ -788,6 +792,54 @@ func drawRegionGoldTooltip(screen *ebiten.Image, gs *state.GameState, rid world.
 	}
 	drawUISeparator(screen, float32(x+10), float32(y+h-25), float32(x+w-10), 1, panelBorder)
 	drawUIKeyValueRowWithGap(screen, x+10, y+h-19, w-20, "Toplam", formatSignedAmount(total), ColorGray, ColorGold, 8)
+}
+
+func drawRegionLogisticsTooltip(screen *ebiten.Image, gs *state.GameState, rid world.RegionID, mx, my float64) {
+	region := gs.Regions[rid]
+	if region == nil {
+		return
+	}
+	status, ok := regionPanelLogisticsStatus(gs, region)
+	if !ok {
+		return
+	}
+	type logisticsLine struct {
+		label string
+		value string
+		col   color.RGBA
+	}
+	lines := []logisticsLine{
+		{"Yerel üretim sonrası", "+" + itoa(status.LocalProduction), color.RGBA{145, 220, 155, 255}},
+		{"Yerleşim/ticaret tamponu", "+" + itoa(status.SettlementBuffer), ColorGray},
+		{"Ambar desteği", "+" + itoa(status.GranarySupport), ColorGray},
+		{"Merkez rezerv desteği", "+" + itoa(status.ReserveSupport), ColorGray},
+		{"Filo ikmali", "+" + itoa(status.NavalSupplyGrainSpent), color.RGBA{125, 190, 230, 255}},
+		{"Toplam kapasite", itoa(status.Capacity), ColorGold},
+		{"Ordu talebi", itoa(status.Demand), ColorWhite},
+	}
+	shortageLabel := "İkmal açığı"
+	shortageValue := itoa(status.Overload)
+	shortageColor := ColorRed
+	if status.Overload <= 0 {
+		shortageLabel = "Fazla kapasite"
+		shortageValue = "+" + itoa(status.Capacity-status.Demand)
+		shortageColor = color.RGBA{145, 220, 155, 255}
+	}
+	lines = append(lines, logisticsLine{shortageLabel, shortageValue, shortageColor})
+
+	const tooltipWidth = 360.0
+	tooltipHeight := 60.0 + float64(len(lines))*20
+	x, y, w, h := tooltipRect(mx, my, tooltipWidth, tooltipHeight)
+	drawTooltipBox(screen, x, y, w, h)
+	DrawText(screen, "Bölgesel ikmal hesabı", x+10, y+10, FaceSmall, ColorGold)
+	drawUISeparator(screen, float32(x+10), float32(y+30), float32(x+w-10), 1, panelBorder)
+	rowY := y + 38
+	for _, line := range lines {
+		drawUIKeyValueRowWithGap(screen, x+10, rowY, w-20, line.label, line.value, ColorGray, line.col, 8)
+		rowY += 20
+	}
+	drawUISeparator(screen, float32(x+10), float32(y+h-25), float32(x+w-10), 1, panelBorder)
+	drawUIKeyValueRowWithGap(screen, x+10, y+h-19, w-20, "Son çözüm zayiatı", itoa(status.TotalHPDamage)+" HP", ColorGray, color.RGBA{225, 135, 100, 255}, 8)
 }
 
 func drawSmallHoverHint(screen *ebiten.Image, message string, mx, my float64) {

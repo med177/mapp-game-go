@@ -915,6 +915,7 @@ type RegionLogisticsStatus struct {
 	PeakOverloadTurns        int
 	FriendlySupplyArmies     int
 	FriendlySupplyGrainSpent int
+	NavalSupplyGrainSpent    int
 }
 
 type ArmyLogisticsStatus struct {
@@ -2393,9 +2394,9 @@ func (s *GameState) armyGrainUpkeep(a *army.Army, includeRegionalSupply, externa
 			percent = grainUpkeepMovingPercent
 		}
 	}
-	if includeRegionalSupply {
-		percent += s.capitalSupplyPenaltyPercent(a, externalSupplyActive)
-	}
+	// Bölgesel ikmal açığı, ordunun gerçek tahıl ihtiyacı ile bölgenin
+	// kapasitesi arasındaki farktır. Başkent uzaklığı artık talebi şişirmez;
+	// aksi halde aynı eksik kapasite iki kez ceza olarak uygulanır.
 	percent += s.RegionArmyUpkeepModifier(a.RegionID)
 	if percent < 0 {
 		percent = 0
@@ -2828,6 +2829,14 @@ func (s *GameState) ClearArmyLogisticsAfterRelocation(a *army.Army, previousLoca
 		if _, ok := s.ArmyLogistics[a.ID]; ok {
 			delete(s.ArmyLogistics, a.ID)
 			cleared = true
+		}
+	}
+	if s.RegionLogistics != nil {
+		for _, regionID := range []world.RegionID{world.RegionID(previousLocation), a.RegionID} {
+			if _, ok := s.RegionLogistics[regionID]; ok {
+				delete(s.RegionLogistics, regionID)
+				cleared = true
+			}
 		}
 	}
 	if !a.IsNaval && a.OverCapacityTurns != 0 {

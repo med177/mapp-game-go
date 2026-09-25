@@ -2511,12 +2511,12 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 	}
 	ly += regionPanelStatRowGap
 
-	if logistics, ok := gs.RegionLogistics[rid]; ok && logistics.Demand > 0 {
-		meter := float64(logistics.Demand) / float64(maxInt(1, logistics.Capacity))
+	if logistics, ok := regionPanelLogisticsStatus(gs, region); ok {
+		meter := float64(logistics.Capacity) / float64(maxInt(1, logistics.Demand))
 		if meter > 1 {
 			meter = 1
 		}
-		drawRegionMeterRow(screen, lx, ly, sepW, fmt.Sprintf("İkmal (%d)", logistics.Capacity), itoa(logistics.Demand), meter, logisticsPressureColor(logistics))
+		drawRegionMeterRow(screen, lx, ly, sepW, "İkmal", fmt.Sprintf("%d/%d", logistics.Capacity, logistics.Demand), meter, logisticsPressureColor(logistics))
 		ly += regionPanelStatRowGap
 		if logistics.FriendlySupplyGrainSpent > 0 {
 			drawUILabel(
@@ -2542,31 +2542,21 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		}
 	}
 
-	// Din dönüşüm ilerlemesi
-	if region.ConversionTurns > 0 {
-		ownerRel := ""
-		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
-			ownerRel = string(f.Religion)
-		} else {
-			for fid, f := range gs.Factions {
-				if string(fid) == region.OwnerID {
-					ownerRel = string(f.Religion)
-					break
-				}
-			}
+	// İkmalin hemen altında isyan ve din dönüşümünü aynı durum satırında
+	// göster. Böylece iki uyarı birlikte aktifken panelin altındaki içerik
+	// gereksiz yere aşağı itilmez.
+	if statusHeight := regionStatusSummaryHeight(gs, region); statusHeight > 0 {
+		leftW := (float64(sepW) - 10) / 2
+		if region.IsRebellionRisk() {
+			DrawText(screen, "⚠  İSYAN RİSKİ!", lx, ly, FaceMed, ColorRed)
 		}
-		if ownerRel != "" && ownerRel != region.Religion {
+		if ownerRel, ok := regionConversionReligion(gs, region); ok {
+			rightX := lx + leftW + 10
+			drawUILabel(screen, gameui.Rect{X: rightX, Y: ly, W: float64(leftW)}, "☩ Dönüşüm: "+religion.DisplayNameTR(religion.Type(ownerRel)), color.RGBA{180, 140, 240, 200}, gameui.TextSmall, gameui.TextAlignEnd)
 			convPct := float64(region.ConversionTurns) / 24.0
-			drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "☩ Dönüşüm: "+religion.DisplayNameTR(religion.Type(ownerRel)), color.RGBA{180, 140, 240, 200}, gameui.TextSmall, gameui.TextAlignStart)
-			ly += 14
-			drawBar(screen, float32(lx), float32(ly), sepW, 7, convPct, color.RGBA{150, 100, 220, 220})
-			ly += 12
+			drawBar(screen, float32(rightX), float32(ly+14), float32(leftW), 7, convPct, color.RGBA{150, 100, 220, 220})
 		}
-	}
-
-	if region.IsRebellionRisk() {
-		DrawText(screen, "⚠  İSYAN RİSKİ!", lx, ly, FaceMed, ColorRed)
-		ly += 18
+		ly += statusHeight
 	}
 
 	// ── Binalar / olaylar sekmeli ortak içerik alanı ──────────────────
@@ -5195,6 +5185,29 @@ func regionGoldProductionRect(gs *state.GameState, rid world.RegionID) (gameui.R
 	return gameui.Rect{X: px, Y: y, W: colW, H: regionPanelStatRowGap}, true
 }
 
+func regionPanelLogisticsRect(gs *state.GameState, rid world.RegionID) (gameui.Rect, bool) {
+	if gs == nil || rid == "" {
+		return gameui.Rect{}, false
+	}
+	region := gs.Regions[rid]
+	if region == nil || region.IsSea || region.IsTerrainArea {
+		return gameui.Rect{}, false
+	}
+	if _, ok := regionPanelLogisticsStatus(gs, region); !ok {
+		return gameui.Rect{}, false
+	}
+	y := regionPanelStatRowsStartY(gs, region.OwnerID) + regionPanelStatRowGap*2
+	if gs.RegionBlockadeEconomicEffect(region).BlockadePercent > 0 {
+		y += 16
+	}
+	return gameui.Rect{
+		X: float64(infoPanelX()) + panelPad,
+		Y: y,
+		W: float64(infoPanelW) - panelPad*2,
+		H: regionPanelStatRowGap,
+	}, true
+}
+
 func regionGrainProductionDisplayValue(gs *state.GameState, region *world.Region, production state.RegionProductionSummary) string {
 	if gs == nil || region == nil {
 		return itoa(production.Grain)
@@ -5291,7 +5304,7 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, _ bool) float
 	ly += 16 + 16 + 8 // arazi/din ve nüfus satırları
 	ly += regionPanelStatRowGap * 4
 	ly += regionPanelStatRowGap * 2
-	if logistics, ok := gs.RegionLogistics[region.ID]; ok && logistics.Demand > 0 {
+	if logistics, ok := regionPanelLogisticsStatus(gs, region); ok {
 		ly += regionPanelStatRowGap
 		if logistics.FriendlySupplyGrainSpent > 0 {
 			ly += 14
@@ -5300,27 +5313,131 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, _ bool) float
 			ly += 14
 		}
 	}
-	if region.ConversionTurns > 0 {
-		ownerRel := ""
-		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
-			ownerRel = string(f.Religion)
-		} else {
-			for fid, f := range gs.Factions {
-				if string(fid) == region.OwnerID {
-					ownerRel = string(f.Religion)
-					break
-				}
-			}
-		}
-		if ownerRel != "" && ownerRel != region.Religion {
-			ly += 14 + 12
-		}
-	}
-	if region.IsRebellionRisk() {
-		ly += 18
-	}
+	ly += regionStatusSummaryHeight(gs, region)
 	ly += 4 + 6 + float64(regionPanelTabH) + 6
 	return float32(ly)
+}
+
+const regionStatusSummaryRowHeight = 30.0
+
+func regionConversionReligion(gs *state.GameState, region *world.Region) (string, bool) {
+	if gs == nil || region == nil || region.ConversionTurns <= 0 {
+		return "", false
+	}
+	ownerRel := ""
+	if f, ok := gs.Factions[gs.PlayerFactionID]; ok && region.OwnerID == string(gs.PlayerFactionID) {
+		ownerRel = string(f.Religion)
+	} else {
+		for fid, f := range gs.Factions {
+			if string(fid) == region.OwnerID {
+				ownerRel = string(f.Religion)
+				break
+			}
+		}
+	}
+	return ownerRel, ownerRel != "" && ownerRel != region.Religion
+}
+
+func regionStatusSummaryHeight(gs *state.GameState, region *world.Region) float64 {
+	if region == nil {
+		return 0
+	}
+	_, hasConversion := regionConversionReligion(gs, region)
+	if !region.IsRebellionRisk() && !hasConversion {
+		return 0
+	}
+	return regionStatusSummaryRowHeight
+}
+
+// regionPanelLogisticsStatus, güncel ordu talebini geçmiş tur snapshot'ındaki
+// kapasiteyle birleştirir. Hareket sonrası talep yeniden hesaplanır; hareket
+// yoksa çözümlemenin yerleşim, rezerv ve filo katkıları korunur.
+func regionPanelLogisticsStatus(gs *state.GameState, region *world.Region) (state.RegionLogisticsStatus, bool) {
+	if gs == nil || region == nil {
+		return state.RegionLogisticsStatus{}, false
+	}
+	if status, ok := gs.RegionLogistics[region.ID]; ok {
+		status.Demand = regionPanelCurrentArmyDemand(gs, region)
+		status.LocalProduction = regionPanelCurrentLocalProduction(gs, region)
+		status.Capacity = status.LocalProduction + status.SettlementBuffer + status.GranarySupport + status.ReserveSupport + status.NavalSupplyGrainSpent
+		status.Overload = status.Demand - status.Capacity
+		if status.Overload < 0 {
+			status.Overload = 0
+		}
+		return status, status.Demand > 0
+	}
+	status := state.RegionLogisticsStatus{RegionID: region.ID}
+	status.Demand = regionPanelCurrentArmyDemand(gs, region)
+	for _, currentArmy := range gs.Armies {
+		if currentArmy != nil && !currentArmy.IsNaval && currentArmy.RegionID == region.ID && len(currentArmy.Units) > 0 {
+			status.ArmyCount++
+		}
+	}
+	if status.ArmyCount == 0 {
+		return state.RegionLogisticsStatus{}, false
+	}
+	status.LocalProduction = regionPanelCurrentLocalProduction(gs, region)
+	status.Capacity = status.LocalProduction
+	status.NavalSupplyGrainSpent = regionPanelActiveNavalSupply(gs, region, status.Demand-status.Capacity)
+	status.Capacity += status.NavalSupplyGrainSpent
+	status.Overload = status.Demand - status.Capacity
+	if status.Overload < 0 {
+		status.Overload = 0
+	}
+	return status, true
+}
+
+func regionPanelActiveNavalSupply(gs *state.GameState, region *world.Region, shortage int) int {
+	if gs == nil || region == nil || shortage <= 0 {
+		return 0
+	}
+	supplied := 0
+	for _, fleet := range gs.Armies {
+		if supplied >= shortage || fleet == nil || !fleet.IsNaval || fleet.NavalMission == nil || fleet.NavalMission.Kind != army.NavalMissionSupplyArmy || fleet.SupplyCargo.Grain <= 0 {
+			continue
+		}
+		target := gs.Armies[fleet.NavalMission.TargetArmyID]
+		if target == nil || target.RegionID != region.ID || !navalSupplyTargetArmy(gs, fleet, target) {
+			continue
+		}
+		amount := fleet.SupplyCargo.Grain
+		remaining := shortage - supplied
+		if amount > remaining {
+			amount = remaining
+		}
+		supplied += amount
+	}
+	return supplied
+}
+
+func regionPanelCurrentArmyDemand(gs *state.GameState, region *world.Region) int {
+	if gs == nil || region == nil {
+		return 0
+	}
+	demand := 0
+	for _, currentArmy := range gs.Armies {
+		if currentArmy == nil || currentArmy.IsNaval || currentArmy.RegionID != region.ID || len(currentArmy.Units) == 0 {
+			continue
+		}
+		demand += gs.EffectiveArmyGrainUpkeep(currentArmy)
+	}
+	return demand
+}
+
+func regionPanelCurrentLocalProduction(gs *state.GameState, region *world.Region) int {
+	if gs == nil || region == nil {
+		return 0
+	}
+	for _, currentArmy := range gs.Armies {
+		if currentArmy == nil || currentArmy.IsNaval || currentArmy.RegionID != region.ID || len(currentArmy.Units) == 0 {
+			continue
+		}
+		if region.OwnerID != currentArmy.OwnerID {
+			return 0
+		}
+		return gs.RegionMilitaryGrainProduction(region)
+	}
+	return 0
 }
 
 func drawPanelBorder(screen *ebiten.Image, x, y, w, h float32) {
@@ -5807,7 +5924,7 @@ func neighborBlockStartY(gs *state.GameState, region *world.Region) float64 {
 	ly += 8
 	ly += regionPanelStatRowGap * 4
 	ly += regionPanelStatRowGap * 2
-	if logistics, ok := gs.RegionLogistics[region.ID]; ok && logistics.Demand > 0 {
+	if logistics, ok := regionPanelLogisticsStatus(gs, region); ok {
 		ly += regionPanelStatRowGap
 		if logistics.FriendlySupplyGrainSpent > 0 {
 			ly += 14
@@ -5816,24 +5933,6 @@ func neighborBlockStartY(gs *state.GameState, region *world.Region) float64 {
 			ly += 14
 		}
 	}
-	if region.ConversionTurns > 0 {
-		ownerRel := ""
-		if f, ok2 := gs.Factions[gs.PlayerFactionID]; ok2 && region.OwnerID == string(gs.PlayerFactionID) {
-			ownerRel = string(f.Religion)
-		} else {
-			for fid, f := range gs.Factions {
-				if string(fid) == region.OwnerID {
-					ownerRel = string(f.Religion)
-					break
-				}
-			}
-		}
-		if ownerRel != "" && ownerRel != region.Religion {
-			ly += 14 + 12
-		}
-	}
-	if region.IsRebellionRisk() {
-		ly += 18
-	}
+	ly += regionStatusSummaryHeight(gs, region)
 	return ly
 }

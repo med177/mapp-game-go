@@ -914,12 +914,20 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
+	// Panel içindeki kontroller yukarıda işlendi. Panel dikdörtgeni dışındaki
+	// harita ise normal tıklama akışını korumalıdır.
+	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
+		return InputAction{}
+	}
+
+	var mapRID world.RegionID
+	var mapDoubleClick bool
 	// Ordu ve yerleşim ikonları harita bölgesi tıklamasını normalde erken yakalar.
 	// Bölge çift tıklaması ikon seçiminden önce değerlendirilerek mevcut diplomasi
 	// kısayolu korunur; seçili marker üzerinde detay açma sağ tık akışındadır.
 	mapWX, mapWY := r.screenToWorld(fx, fy)
-	mapRID := r.worldMap.RegionAt(int(mapWX), int(mapWY))
-	mapDoubleClick := r.mapRegionDoubleClicked(mapRID)
+	mapRID = r.worldMap.RegionAt(int(mapWX), int(mapWY))
+	mapDoubleClick = r.mapRegionDoubleClicked(mapRID)
 	if mapDoubleClick {
 		ownerID := diplomacyOwnerForMapRegion(r.gs, mapRID)
 		if ownerID != "" && ownerID != string(r.gs.PlayerFactionID) {
@@ -1460,6 +1468,9 @@ func (r *Renderer) handleRightClick() InputAction {
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
+	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
+		return InputAction{}
+	}
 	if r.selectedArmyIsPlayerOwned() {
 		if aid, hit := r.navalMissionPendingHitAt(fx, fy); hit && aid == r.SelectedArmy {
 			r.toggleArmyDetailPanel()
@@ -1556,6 +1567,12 @@ func (r *Renderer) handleRightClick() InputAction {
 				}
 			}
 		}
+	}
+	// Zaten bağlı olunan limanın marker'ına sağ tıklamak yeni bir docking
+	// emri değildir. Aynı kara bölgesine tekrar emir üretmek, oyun katmanında
+	// limana yeniden konuşlanma olarak yorumlanıp hareket puanı tüketebilir.
+	if a.IsNaval && a.DockedRegionID != "" && rid == a.DockedRegionID {
+		return InputAction{}
 	}
 	// Limana bağlı donanma aynı deniz bölgesine sağ tıklarsa limandan ayrılıp
 	// bölgenin deniz merkezine geçiş (undock) emri verebilir.

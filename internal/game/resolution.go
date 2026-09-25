@@ -1377,6 +1377,9 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 			ArmyCount:        len(armiesInRegion),
 		}
 		for _, a := range armiesInRegion {
+			regionStatus.NavalSupplyGrainSpent += navalSupplies[a.ID]
+		}
+		for _, a := range armiesInRegion {
 			if supply, ok := friendlySupplies[a.ID]; ok {
 				regionStatus.FriendlySupplyArmies++
 				regionStatus.FriendlySupplyGrainSpent += supply.GrainSpent

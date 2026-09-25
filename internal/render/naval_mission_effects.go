@@ -433,6 +433,26 @@ func navalSupplyCargoTooltipText(gs *state.GameState, fleet *army.Army) (string,
 			if region := gs.Regions[linked.RegionID]; region != nil && region.NameTR != "" {
 				target += "\nBölge: " + region.NameTR
 			}
+			nextSupply := "Gelecek tur filo ikmali: hesaplanıyor"
+			if status, ok := gs.RegionLogistics[linked.RegionID]; ok {
+				localCapacity := status.Capacity - status.NavalSupplyGrainSpent
+				if localCapacity < 0 {
+					localCapacity = 0
+				}
+				shortage := status.Demand - localCapacity
+				if shortage < 0 {
+					shortage = 0
+				}
+				targetDemand := gs.RegionalArmyGrainDemand(linked)
+				if shortage > targetDemand {
+					shortage = targetDemand
+				}
+				if shortage > fleet.SupplyCargo.Grain {
+					shortage = fleet.SupplyCargo.Grain
+				}
+				nextSupply = "Gelecek tur filo ikmali: " + itoa(shortage) + " tahıl eksilecek"
+			}
+			target += "\n" + nextSupply
 		}
 	}
 	return "İkmal Yükü", detail + "\n" + target, true
@@ -467,9 +487,9 @@ func (r *Renderer) drawNavalSupplyCargoHoverTooltip(screen *ebiten.Image) {
 		return
 	}
 	const tooltipW = 430.0
-	const tooltipH = 112.0
+	const tooltipH = 130.0
 	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
 	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
-	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 3)
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 4)
 }
