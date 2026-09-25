@@ -25,6 +25,8 @@ const (
 	ActionClearMerchantRoute       ActionKind = "clear_merchant_route"
 	ActionAssignNavalMission       ActionKind = "assign_naval_mission"
 	ActionClearNavalMission        ActionKind = "clear_naval_mission"
+	ActionLoadSupplyCargo          ActionKind = "load_supply_cargo"
+	ActionUnloadSupplyCargo        ActionKind = "unload_supply_cargo"
 	ActionStartSiege               ActionKind = "start_siege"
 	ActionAssaultSiege             ActionKind = "assault_siege"
 	ActionLiftSiege                ActionKind = "lift_siege"

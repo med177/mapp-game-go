@@ -48,6 +48,7 @@ type Game struct {
 	aiTurn                            *aiTurnState
 	aiDiagnosticReportSaved           bool
 	escortFollowDepth                 int
+	supplyFollowDepth                 int
 	pendingWarFollowUp                *render.InputAction
 	pendingPlayerMovement             *pendingPlayerMovement
 	warDeclarationContinuationPending bool
@@ -377,6 +378,10 @@ func (g *Game) Update() error {
 			g.assignNavalMission(action.ArmyID, army.NavalMissionKind(action.BuildingID), action.TargetRegion, action.TargetArmyID)
 		case render.ActionClearNavalMission:
 			g.clearNavalMission(action.ArmyID)
+		case render.ActionLoadSupplyCargo:
+			g.loadSupplyCargo(action.ArmyID, action.Quantity)
+		case render.ActionUnloadSupplyCargo:
+			g.unloadSupplyCargo(action.ArmyID)
 		case render.ActionStartSiege:
 			g.startSiege(action.ArmyID, action.TargetRegion)
 		case render.ActionAssaultSiege:
@@ -4692,7 +4697,12 @@ func (g *Game) assignNavalMission(fleetID army.ArmyID, kind army.NavalMissionKin
 		g.renderer.ShowCombatResult("Bu filo için görev atanamaz.")
 		return
 	}
-	mission := army.NavalMission{Kind: kind, TargetRegionID: targetRegion, TargetFleetID: targetFleetID}
+	mission := army.NavalMission{Kind: kind, TargetRegionID: targetRegion}
+	if kind == army.NavalMissionEscort {
+		mission.TargetFleetID = targetFleetID
+	} else if kind == army.NavalMissionSupplyArmy {
+		mission.TargetArmyID = targetFleetID
+	}
 	previousMission := fleet.NavalMission
 	missionChanged := previousMission == nil || previousMission.Kind != mission.Kind || previousMission.TargetRegionID != mission.TargetRegionID || previousMission.TargetFleetID != mission.TargetFleetID
 	if ok, reason := g.gs.AssignNavalMission(fleetID, mission); !ok {
@@ -4723,6 +4733,30 @@ func (g *Game) clearNavalMission(fleetID army.ArmyID) {
 		return
 	}
 	g.renderer.ShowCombatResult("Filo görevi kaldırıldı.")
+}
+
+func (g *Game) loadSupplyCargo(fleetID army.ArmyID, turns int) {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	cargo, ok, reason := g.gs.LoadSupplyCargoForTurns(fleetID, turns)
+	if !ok {
+		g.renderer.ShowCombatResult(reason)
+		return
+	}
+	g.renderer.ShowCombatResult(fmt.Sprintf("İkmal yükü yüklendi: %d tahıl.", cargo.Grain))
+}
+
+func (g *Game) unloadSupplyCargo(fleetID army.ArmyID) {
+	if g == nil || g.gs == nil || g.renderer == nil {
+		return
+	}
+	cargo, ok, reason := g.gs.UnloadSupplyCargoAtCapital(fleetID)
+	if !ok {
+		g.renderer.ShowCombatResult(reason)
+		return
+	}
+	g.renderer.ShowCombatResult(fmt.Sprintf("İkmal yükü boşaltıldı: %d tahıl iade edildi.", cargo.Grain))
 }
 
 func navalMissionLabelTR(kind army.NavalMissionKind) string {
@@ -5923,6 +5957,9 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		g.gs.ClearNavalMissionAfterRelocation(a, previousLocation)
 		if g.escortFollowDepth == 0 {
 			g.followEscortingFleets(a.ID, previousLocation)
+		}
+		if g.supplyFollowDepth == 0 {
+			g.followSupplyFleets(a.ID, previousLocation)
 		}
 	}()
 

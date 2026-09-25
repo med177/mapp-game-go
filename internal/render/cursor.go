@@ -206,6 +206,10 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhasePlayerTurn:
+		if _, ok := r.navalSupplyCargoHitAt(fx, fy); ok {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
 		if r.navalMovementTargetHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return

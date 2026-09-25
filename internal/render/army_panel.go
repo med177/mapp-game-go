@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"sort"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
@@ -112,7 +113,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	}
 	selectedCount := splitSelectedUnitCount(a, selectedUnits)
 	canCommand := a.OwnerID == string(gs.PlayerFactionID)
-	canDisband := canCommand && selectedCount > 0
+	disbandButton, hasDisbandButton := buildDisbandArmyButton(gs, aid, selectedUnits)
 
 	// ── Arka plan ve çerçeve ──────────────────────────────────────────
 	drawArmyDetailPanelFrame(screen, layout)
@@ -157,7 +158,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	hasMerge := len(mergeTargets) > 0
 	hasSplitButton := canSplit || hasMerge
 	actionStartX := splitButtonBlockLeft(px, panelW, len(mergeTargets), hasSplitButton)
-	if canDisband {
+	if hasDisbandButton {
 		actionStartX -= actionBtnGap + actionBtnW
 	}
 	headerMaxW := float64(actionStartX - px - armyPanelPadX - 10)
@@ -210,9 +211,8 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	// Aksiyon butonları — BÖL ve BİRLEŞTİR
 	// canCommand yukarıda hesaplanır; panel ve hit-test aynı sahiplik kuralını kullanır.
 	canCommand = a.OwnerID == string(gs.PlayerFactionID)
-	if canCommand && canDisband {
-		bx, by, bw, bh := disbandButtonRect(px, py, panelW, len(mergeTargets), hasSplitButton)
-		drawArmyPanelButtonWithStyle(screen, bx, by, bw, bh, "Sil", true, dangerTinyButtonStyle)
+	if hasDisbandButton {
+		drawUIButtonWidget(screen, disbandButton, dangerTinyButtonStyle)
 	}
 	if canCommand && (canSplit || hasMerge) {
 		drawArmyActionButton(screen, px, py, panelW, "BÖL", canSplit, hasMerge, true)
@@ -703,7 +703,40 @@ func armyTransportFooterText(gs *state.GameState, a *army.Army) string {
 	if capacity <= 0 {
 		return ""
 	}
-	return "Taşıma: " + itoa(a.EmbarkedCount()) + "/" + itoa(capacity)
+	text := "Taşıma: " + itoa(a.EmbarkedCount()) + "/" + itoa(capacity)
+	if cargo := supplyCargoFooterText(a); cargo != "" {
+		text += "  |  " + cargo
+	}
+	return text
+}
+
+func supplyCargoFooterText(a *army.Army) string {
+	if a == nil {
+		return ""
+	}
+	parts := make([]string, 0, 6)
+	if a.SupplyCargo.Grain > 0 {
+		parts = append(parts, itoa(a.SupplyCargo.Grain)+" tahıl")
+	}
+	if a.SupplyCargo.Iron > 0 {
+		parts = append(parts, itoa(a.SupplyCargo.Iron)+" demir")
+	}
+	if a.SupplyCargo.Timber > 0 {
+		parts = append(parts, itoa(a.SupplyCargo.Timber)+" kereste")
+	}
+	if a.SupplyCargo.Stone > 0 {
+		parts = append(parts, itoa(a.SupplyCargo.Stone)+" taş")
+	}
+	if a.SupplyCargo.Spice > 0 {
+		parts = append(parts, itoa(a.SupplyCargo.Spice)+" baharat")
+	}
+	if a.SupplyCargo.Cloth > 0 {
+		parts = append(parts, itoa(a.SupplyCargo.Cloth)+" kumaş")
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return "İkmal: " + strings.Join(parts, ", ")
 }
 
 func drawArmyPowerFooter(screen *ebiten.Image, gs *state.GameState, a *army.Army, layout armyPanelLayout, attack, defense int, label, transportText string) {

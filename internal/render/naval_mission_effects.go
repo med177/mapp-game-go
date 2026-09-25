@@ -112,6 +112,7 @@ func navalMissionBonusBadgeRect(cx, cy float32) gameui.Rect {
 func navalMissionPendingBadge(gs *state.GameState, fleet *army.Army) bool {
 	return gs != nil && fleet != nil && fleet.IsNaval &&
 		fleet.OwnerID == string(gs.PlayerFactionID) && fleet.NavalMission != nil &&
+		fleet.NavalMission.Kind != army.NavalMissionSupplyArmy &&
 		navalMissionReachedRegion(gs, fleet) == nil
 }
 
@@ -124,6 +125,26 @@ func navalMissionPendingBadgeRect(cx, cy float32) gameui.Rect {
 // geometry'yi birlikte kullanır.
 func merchantTradeBonusBadgeRect(cx, cy float32) gameui.Rect {
 	return navalMissionBonusBadgeRect(cx, cy)
+}
+
+// navalSupplyCargoBadgeRect, ikmal yükü taşıyan filonun bilgi rozetinin
+// geometry'sidir. Taşınan ordu rozetiyle çakışmaması için marker'ın sağ-altında
+// görünür; hover ve cursor hit-test'i aynı rect'i kullanır.
+func navalSupplyCargoBadgeRect(cx, cy float32) gameui.Rect {
+	const badgeSize = 20.0
+	return gameui.Rect{X: float64(cx + 14 - badgeSize/2), Y: float64(cy + 14 - badgeSize/2), W: badgeSize, H: badgeSize}
+}
+
+func navalSupplyCargoAvailable(fleet *army.Army) bool {
+	return fleet != nil && fleet.IsNaval &&
+		fleet.SupplyCargo.Grain+fleet.SupplyCargo.Iron+fleet.SupplyCargo.Timber+
+			fleet.SupplyCargo.Stone+fleet.SupplyCargo.Spice+fleet.SupplyCargo.Cloth > 0
+}
+
+func navalSupplyCargoAssigned(gs *state.GameState, fleet *army.Army) bool {
+	return gs != nil && navalSupplyCargoAvailable(fleet) && fleet.NavalMission != nil &&
+		fleet.NavalMission.Kind == army.NavalMissionSupplyArmy &&
+		navalSupplyTargetArmy(gs, fleet, gs.Armies[fleet.NavalMission.TargetArmyID])
 }
 
 func appendEscortShieldPath(path *vector.Path, cx, cy, halfWidth, sideBottom, bottom float32) {
@@ -381,4 +402,74 @@ func (r *Renderer) drawNavalEmbarkedArmyHoverTooltip(screen *ebiten.Image) {
 	drawTooltipBox(screen, x, y, w, h)
 	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 2)
+}
+
+func navalSupplyCargoTooltipText(gs *state.GameState, fleet *army.Army) (string, string, bool) {
+	if gs == nil || !navalSupplyCargoAvailable(fleet) || fleet.OwnerID != string(gs.PlayerFactionID) {
+		return "", "", false
+	}
+	parts := make([]string, 0, 6)
+	for _, item := range []struct {
+		name  string
+		value int
+	}{
+		{"Tahıl", fleet.SupplyCargo.Grain},
+		{"Demir", fleet.SupplyCargo.Iron},
+		{"Kereste", fleet.SupplyCargo.Timber},
+		{"Taş", fleet.SupplyCargo.Stone},
+		{"Baharat", fleet.SupplyCargo.Spice},
+		{"Kumaş", fleet.SupplyCargo.Cloth},
+	} {
+		if item.value > 0 {
+			parts = append(parts, item.name+": "+itoa(item.value))
+		}
+	}
+	capacity := gs.SupplyCargoCapacityForTurns(fleet.ID, 5)
+	detail := "Toplam yük: " + itoa(gs.SupplyCargoLoadedAmount(fleet.ID)) + " / " + itoa(capacity) + " mal (5 tur azami)\nTaşınan mallar: " + strings.Join(parts, "  •  ")
+	target := "Bağlı ordu: Yok"
+	if fleet.NavalMission != nil && fleet.NavalMission.Kind == army.NavalMissionSupplyArmy {
+		if linked := gs.Armies[fleet.NavalMission.TargetArmyID]; linked != nil {
+			target = "Bağlı ordu: " + string(linked.ID) + " (" + itoa(len(linked.Units)) + " birim)"
+			if region := gs.Regions[linked.RegionID]; region != nil && region.NameTR != "" {
+				target += "\nBölge: " + region.NameTR
+			}
+		}
+	}
+	return "İkmal Yükü", detail + "\n" + target, true
+}
+
+func (r *Renderer) navalSupplyCargoHitAt(mx, my float64) (army.ArmyID, bool) {
+	if r == nil || r.gs == nil || r.mapMode == MapModeTrade {
+		return "", false
+	}
+	positions := r.armyIconPositions()
+	for i := len(positions) - 1; i >= 0; i-- {
+		pos := positions[i]
+		fleet := r.gs.Armies[pos.ArmyID]
+		if navalSupplyCargoAvailable(fleet) && fleet.OwnerID == string(r.gs.PlayerFactionID) && navalSupplyCargoBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+			return pos.ArmyID, true
+		}
+	}
+	return "", false
+}
+
+func (r *Renderer) drawNavalSupplyCargoHoverTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.gs.PlayerFactionID == "" {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	aid, ok := r.navalSupplyCargoHitAt(float64(mx), float64(my))
+	if !ok {
+		return
+	}
+	title, detail, ok := navalSupplyCargoTooltipText(r.gs, r.gs.Armies[aid])
+	if !ok {
+		return
+	}
+	const tooltipW = 430.0
+	const tooltipH = 112.0
+	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
+	drawTooltipBox(screen, x, y, w, h)
+	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 3)
 }

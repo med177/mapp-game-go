@@ -27,6 +27,19 @@ Kaynak adları ve fraksiyon alan eşlemeleri `internal/economy/resources.go` iç
 
 Devletin tur başı efektif üretimi `GameState.FactionProductionSummary()` ile bölge bazlı üretimlerden toplanır; kuşatma altındaki bölgeler üretime katkı vermez. Tahıl HUD değeri ayrıca `FactionGrainNetChange()` ile sivil talep ve ordu bakımını düşerek net stok değişimini gösterir.
 
+### Nakliye filosu ile ileri ikmal
+
+Nakliye filosu merkez limanında 1, 3 veya 5 turluk tahıl yükünü devlet
+stokundan alabilir. Yük `Army.SupplyCargo` içinde save/load ile korunur ve
+merkez limanında boşaltıldığında iade edilir; asker taşımaya ayrılmış filo
+ikmal yükleyemez. Yüklü filo `Orduyu İkmal Et` göreviyle aynı devlete ait kıyı
+ordusuna bağlanır. Ordu kıyıdan kıyıya hareket ettikçe filo komşu denizden
+takip eder; ordu kıyı olmayan bölgeye geçerse görev bağı kopar ve filo son
+konumunda kalır. Tur çözümlemesinde yükün tahıl kısmı bağlı ordunun bölgesel
+ikmal kapasitesine eklenerek tüketilir. Bu akış `internal/state/naval_mission.go`,
+`internal/game/player_naval_mission.go` ve `internal/game/resolution.go` içinde
+uygulanır; diğer kaynak alanları taşınabilir yük modeli olarak korunur.
+
 Düşman toprağında bekleyen ordu `Yağmala` görevini verdiğinde `GameState.Raids`
 aynı bölgeyi o tur için tek kez işaretler. Ekonomi tick'i hedefin efektif vergi
 gelirinin `%80`'ini ve üretimlerinin `%50`'sini hedef devletten düşüp yağmalayan

@@ -70,6 +70,29 @@ func TestToggleArmyDetailPanel(t *testing.T) {
 	}
 }
 
+func TestDisbandButtonUsesTheSameGeometryForDrawAndHitTest(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", Units: []army.Unit{{TypeID: "infantry"}}},
+		},
+	}
+	selected := map[int]bool{0: true}
+
+	button, ok := buildDisbandArmyButton(gs, "army", selected)
+	if !ok {
+		t.Fatal("seçili birim varken Sil düğmesi oluşturulamadı")
+	}
+	mx := button.X + button.W/2
+	my := button.Y + button.H/2
+	if !DisbandButtonHitTest(mx, my, gs, "army", selected) {
+		t.Fatal("Sil düğmesinin merkezi hit-test tarafından yakalanmadı")
+	}
+	if !ArmyPanelInteractiveHit(mx, my, gs, "army", selected) {
+		t.Fatal("Sil düğmesinin merkezi panel cursor/input hit-test'i tarafından yakalanmadı")
+	}
+}
+
 func TestBottomArmyActionUsesContextualSelection(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

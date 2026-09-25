@@ -117,6 +117,76 @@ func (g *Game) followEscortingFleets(targetFleetID army.ArmyID, previousLocation
 	}
 }
 
+// followSupplyFleets, ikmal görevi verilmiş filoları hedef ordunun yeni
+// kıyısına taşır. Hedef iç bölgedeyse görev korunur; yalnızca geçici olarak
+// bağlantı pasifleşir. Ordu yeniden kıyıya çıktığında filo aynı görevle takip
+// etmeye devam eder.
+func (g *Game) followSupplyFleets(targetArmyID army.ArmyID, previousLocation string) {
+	if g == nil || g.gs == nil || targetArmyID == "" || previousLocation == "" || g.gs.PendingNavalContact != nil {
+		return
+	}
+	target := g.gs.Armies[targetArmyID]
+	if target == nil || target.IsNaval || target.LocationID() == previousLocation {
+		return
+	}
+	land := g.gs.Regions[target.RegionID]
+	if land == nil || land.IsSea || !land.IsCoastal(g.gs.Regions) {
+		return
+	}
+
+	fleetIDs := make([]army.ArmyID, 0)
+	for fleetID, fleet := range g.gs.Armies {
+		if fleet == nil || fleet.OwnerID != target.OwnerID || !fleet.IsNaval || fleet.MovePoints <= 0 || fleet.NavalMission == nil || fleet.NavalMission.Kind != army.NavalMissionSupplyArmy || fleet.NavalMission.TargetArmyID != targetArmyID || !fleet.IsAtSea() {
+			continue
+		}
+		fleetIDs = append(fleetIDs, fleetID)
+	}
+	sort.Slice(fleetIDs, func(i, j int) bool { return fleetIDs[i] < fleetIDs[j] })
+	for _, fleetID := range fleetIDs {
+		fleet := g.gs.Armies[fleetID]
+		if fleet == nil || fleet.MovePoints <= 0 {
+			continue
+		}
+		if seaNeighborOfLand(g.gs, land, fleet.RegionID) {
+			continue
+		}
+		next := nextSeaStepToLand(g.gs, fleet.RegionID, land)
+		if next == "" {
+			fleet.NavalMission = nil
+			continue
+		}
+		g.supplyFollowDepth++
+		g.moveArmyWithStance(fleetID, next, combat.BattleStanceBalanced)
+		g.supplyFollowDepth--
+	}
+}
+
+func seaNeighborOfLand(gs *state.GameState, land *world.Region, seaID world.RegionID) bool {
+	if gs == nil || land == nil {
+		return false
+	}
+	for _, id := range land.Neighbors {
+		if id == seaID && gs.Regions[id] != nil && gs.Regions[id].IsSea {
+			return true
+		}
+	}
+	return false
+}
+
+func nextSeaStepToLand(gs *state.GameState, start world.RegionID, land *world.Region) world.RegionID {
+	if gs == nil || land == nil || start == "" {
+		return ""
+	}
+	for _, id := range sortedRegionNeighbors(land) {
+		if sea := gs.Regions[id]; sea != nil && sea.IsSea {
+			if next, ok := playerSeaRouteNext(gs, start, id); ok {
+				return next
+			}
+		}
+	}
+	return ""
+}
+
 // playerNavalMissionNextTarget, yalnız hareket edebilen görevler için bir
 // sonraki komşu deniz/kıyı adımını döndürür. Devriye ve abluka mevcut denizde
 // sabittir; escort hedef filosunu, nakliye ise hedef kıyının deniz komşusunu

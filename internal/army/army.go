@@ -1,6 +1,7 @@
 package army
 
 import (
+	"mapp-game-go/internal/economy"
 	"strings"
 
 	"mapp-game-go/internal/world"
@@ -16,10 +17,11 @@ const DefaultArmyMovePoints = 2
 type NavalMissionKind string
 
 const (
-	NavalMissionPatrol    NavalMissionKind = "patrol"
-	NavalMissionBlockade  NavalMissionKind = "blockade"
-	NavalMissionEscort    NavalMissionKind = "escort"
-	NavalMissionTransport NavalMissionKind = "transport"
+	NavalMissionPatrol     NavalMissionKind = "patrol"
+	NavalMissionBlockade   NavalMissionKind = "blockade"
+	NavalMissionEscort     NavalMissionKind = "escort"
+	NavalMissionTransport  NavalMissionKind = "transport"
+	NavalMissionSupplyArmy NavalMissionKind = "supply_army"
 )
 
 // NavalMission oyuncu filosunun açık deniz görevidir. TargetRegionID devriye,
@@ -29,6 +31,7 @@ type NavalMission struct {
 	Kind           NavalMissionKind `json:"kind"`
 	TargetRegionID world.RegionID   `json:"target_region_id,omitempty"`
 	TargetFleetID  ArmyID           `json:"target_fleet_id,omitempty"`
+	TargetArmyID   ArmyID           `json:"target_army_id,omitempty"`
 }
 
 // ArmyID ordu benzersiz kimliği.
@@ -76,6 +79,10 @@ type Army struct {
 	// Anahtar ekonomi rotasının gönderen->alan kimliğidir; rota yeniden
 	// oluşturulsa bile görev save/load boyunca korunur.
 	TradeRouteKey string `json:"trade_route_key,omitempty"`
+	// SupplyCargo, merkez limanında yüklenen ve henüz cephede tüketilmemiş
+	// stratejik ikmal mallarını taşır. Ayrı tutulduğu için filo asker taşıma
+	// kapasitesini bu yükle karıştırmaz.
+	SupplyCargo economy.ResourceCost `json:"supply_cargo,omitempty"`
 	// NavalMission, merchant rotasından bağımsız savaş/nakliye görevidir.
 	NavalMission *NavalMission `json:"naval_mission,omitempty"`
 }

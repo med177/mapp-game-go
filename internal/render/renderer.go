@@ -1956,7 +1956,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	// 4. Ordu hareket hedefleri (ticaret modunda gizlenir)
-	if r.mapMode != MapModeTrade && r.selectedArmyIsPlayerOwned() {
+	if r.mapMode != MapModeTrade && r.selectedArmyIsPlayerOwned() && !r.navalMissionTargeting {
 		r.drawMoveTargets(screen)
 	}
 	if r.navalMissionTargeting {
@@ -2036,6 +2036,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawNavalMissionBonusHoverTooltip(screen)
 		r.drawMerchantTradeBonusHoverTooltip(screen)
 		r.drawNavalEmbarkedArmyHoverTooltip(screen)
+		r.drawNavalSupplyCargoHoverTooltip(screen)
 	} else {
 		r.drawEditModeHud(screen)
 		// Shape yardım paneli harita işaretlerinden sonra çizilir; böylece ordu
@@ -2771,7 +2772,8 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			continue
 		}
 
-		sx, sy := r.regionScreenPos(nRegion)
+		sx32, sy32 := r.movementRegionScreenPos(nRegion.ID, "")
+		sx, sy := float64(sx32), float64(sy32)
 		if nRegion.IsTerrainArea {
 			// Arazi alanı hedefleri, normal bölge hedefinden daha küçük ve
 			// turuncu halka ile çizilir; böylece hedefin bir bölge değil,
@@ -3096,6 +3098,12 @@ func (r *Renderer) movementRegionScreenPos(regionID world.RegionID, settlementID
 				sx, sy := r.worldToScreen(float64(x), float64(y))
 				return float32(sx), float32(sy)
 			}
+		}
+	}
+	if !region.IsSea {
+		if ax, ay, ok := r.landArmyAnchor(region); ok {
+			sx, sy := r.worldToScreen(float64(ax), float64(ay))
+			return float32(sx), float32(sy)
 		}
 	}
 	sx, sy := r.regionScreenPos(region)
@@ -3766,6 +3774,7 @@ func (r *Renderer) dockedSettlementAnchor(region *world.Region, settlementID str
 // drawArmies tüm orduları harita üzerinde çizer.
 func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 	selectedArmy := r.gs.Armies[r.SelectedArmy]
+	r.drawNavalSupplyLinks(screen, positions)
 	// Tüm portreleri marker katmanından önce çiz. Portreleri her ordunun kendi
 	// marker'ıyla aynı döngüde çizmek, yakın bir sonraki ordunun portresinin
 	// önceki ordunun rozetini kapatmasına izin veriyordu.
@@ -3851,6 +3860,48 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			}
 		}
 		r.drawNavalPriorityBadges(screen, a, pos.X, pos.Y)
+	}
+}
+
+// drawNavalSupplyLinks, aktif ikmal görevi ile bağlı filo ve kara ordusu
+// arasındaki ilişkiyi marker'ların arkasında ince kesikli çizgiyle gösterir.
+func (r *Renderer) drawNavalSupplyLinks(screen *ebiten.Image, positions []armyIconPos) {
+	if r == nil || r.gs == nil || len(positions) == 0 {
+		return
+	}
+	positionByArmy := make(map[army.ArmyID]armyIconPos, len(positions))
+	for _, pos := range positions {
+		positionByArmy[pos.ArmyID] = pos
+	}
+	for _, pos := range positions {
+		fleet := r.gs.Armies[pos.ArmyID]
+		if fleet == nil || !fleet.IsNaval || fleet.NavalMission == nil || fleet.NavalMission.Kind != army.NavalMissionSupplyArmy {
+			continue
+		}
+		targetPos, ok := positionByArmy[fleet.NavalMission.TargetArmyID]
+		if !ok || !navalSupplyTargetArmy(r.gs, fleet, r.gs.Armies[fleet.NavalMission.TargetArmyID]) {
+			continue
+		}
+		drawDashedSupplyLink(screen, pos.X, pos.Y, targetPos.X, targetPos.Y)
+	}
+}
+
+func drawDashedSupplyLink(screen *ebiten.Image, fromX, fromY, toX, toY float32) {
+	dx := toX - fromX
+	dy := toY - fromY
+	distance := float32(math.Hypot(float64(dx), float64(dy)))
+	if distance <= 1 {
+		return
+	}
+	ux, uy := dx/distance, dy/distance
+	const dashLength float32 = 7
+	const gapLength float32 = 5
+	for offset := float32(0); offset < distance; offset += dashLength + gapLength {
+		end := offset + dashLength
+		if end > distance {
+			end = distance
+		}
+		vector.StrokeLine(screen, fromX+ux*offset, fromY+uy*offset, fromX+ux*end, fromY+uy*end, 1.2, color.RGBA{92, 205, 118, 220}, true)
 	}
 }
 
@@ -4171,6 +4222,21 @@ func (r *Renderer) drawNavalPriorityBadges(screen *ebiten.Image, a *army.Army, c
 		drawGoldPlusBadge(screen, cx, cy, "+"+itoa(bonus))
 	} else if r.merchantTradeAssignmentPendingForArmy(a) {
 		drawMerchantTradePendingBadge(screen, cx, cy)
+	}
+	if navalSupplyCargoAvailable(a) {
+		badge := navalSupplyCargoBadgeRect(cx, cy)
+		badgeCX := float32(badge.X + badge.W/2)
+		badgeCY := float32(badge.Y + badge.H/2)
+		badgeColor := color.RGBA{76, 170, 218, 250}
+		if a.NavalMission != nil && a.NavalMission.Kind == army.NavalMissionSupplyArmy {
+			badgeColor = color.RGBA{145, 150, 160, 245}
+			if navalSupplyCargoAssigned(r.gs, a) {
+				badgeColor = color.RGBA{82, 190, 112, 250}
+			}
+		}
+		vector.FillCircle(screen, badgeCX, badgeCY, 10, color.RGBA{8, 18, 28, 245}, false)
+		vector.FillCircle(screen, badgeCX, badgeCY, 8.5, badgeColor, true)
+		drawMarkerBadgeText(screen, "i", float64(badgeCX), float64(badgeCY), badge.W, color.RGBA{240, 252, 255, 255})
 	}
 }
 

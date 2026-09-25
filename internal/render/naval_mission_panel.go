@@ -1,10 +1,12 @@
 package render
 
 import (
+	"fmt"
 	"image/color"
 	"sort"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -31,11 +33,13 @@ type navalMissionPanelLayout struct {
 }
 
 type navalMissionOption struct {
-	kind        army.NavalMissionKind
-	targetFleet army.ArmyID
-	label       string
-	description string
-	effect      string
+	kind            army.NavalMissionKind
+	targetFleet     army.ArmyID
+	loadSupplyTurns int
+	unloadSupply    bool
+	label           string
+	description     string
+	effect          string
 }
 
 func navalMissionPanelLayoutFor(rowCount int) navalMissionPanelLayout {
@@ -81,7 +85,7 @@ func playerNavalMissionEligible(gs *state.GameState, fleet *army.Army) bool {
 	if gs == nil || fleet == nil || fleet.OwnerID != string(gs.PlayerFactionID) || !fleet.IsNaval {
 		return false
 	}
-	return fleetHasWarshipUI(gs, fleet)
+	return fleetHasWarshipUI(gs, fleet) || fleet.TransportCapacity(gs.UnitTypes) > 0
 }
 
 func fleetHasWarshipUI(gs *state.GameState, fleet *army.Army) bool {
@@ -146,6 +150,20 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 		return nil
 	}
 	options := make([]navalMissionOption, 0, 6)
+	if fleet.IsDocked() {
+		capital, _, _, ok := gs.FactionCapital(faction.FactionID(fleet.OwnerID))
+		if ok && capital != nil && fleet.DockedRegionID == capital.ID && len(fleet.EmbarkedUnits) == 0 {
+			loaded := gs.SupplyCargoLoadedAmount(fleet.ID)
+			options = append(options,
+				navalSupplyLoadOption(gs, fleet, loaded, 1),
+				navalSupplyLoadOption(gs, fleet, loaded, 3),
+				navalSupplyLoadOption(gs, fleet, loaded, 5),
+			)
+			if fleet.SupplyCargo.Grain > 0 {
+				options = append(options, navalMissionOption{kind: "unload_supply", unloadSupply: true, label: "İkmal yükünü boşalt", description: "Merkez limanında kalan yükü devlet stokuna iade et.", effect: "Etki: filodaki tahıl geri alınır."})
+			}
+		}
+	}
 	if fleetHasWarshipUI(gs, fleet) {
 		if fleet.IsAtSea() {
 			options = append(options, navalMissionOption{
@@ -164,7 +182,30 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 			})
 		}
 	}
+	if fleet.IsAtSea() && fleet.TransportCapacity(gs.UnitTypes) > 0 && fleet.SupplyCargo.Grain > 0 {
+		options = append(options, navalMissionOption{
+			kind:        army.NavalMissionSupplyArmy,
+			label:       "Orduyu İkmal Et",
+			description: "Kıyıdaki kendi orduna filodaki ikmal tahılını ulaştır.",
+			effect:      "Etki: filo kıyıdan kıyıya orduyu takip eder; kıyı bağı koparsa görev sona erer.",
+		})
+	}
 	return options
+}
+
+func navalSupplyLoadOption(gs *state.GameState, fleet *army.Army, loaded, turns int) navalMissionOption {
+	capacity := gs.SupplyCargoCapacityForTurns(fleet.ID, turns)
+	remaining := capacity - loaded
+	if remaining < 0 {
+		remaining = 0
+	}
+	return navalMissionOption{
+		kind:            army.NavalMissionKind(fmt.Sprintf("load_supply_%d", turns)),
+		loadSupplyTurns: turns,
+		label:           fmt.Sprintf("İkmal mallarını yükle · %d tur", turns),
+		description:     fmt.Sprintf("Kapasite: %d mal · mevcut yük: %d", capacity, loaded),
+		effect:          fmt.Sprintf("Bu işlem en fazla %d mal yükler; en yüksek tüketimli kara birimi ölçü alınır.", remaining),
+	}
 }
 
 func playerTransportFleets(gs *state.GameState, escorter *army.Army) []*army.Army {
@@ -351,6 +392,19 @@ func (r *Renderer) drawNavalMissionTargetingOverlay(screen *ebiten.Image) {
 		return
 	}
 	fleet := r.gs.Armies[r.navalMissionArmy]
+	if r.navalMissionKind == army.NavalMissionSupplyArmy {
+		for _, pos := range r.armyIconPositions() {
+			target := r.gs.Armies[pos.ArmyID]
+			if !navalSupplyTargetArmy(r.gs, fleet, target) {
+				continue
+			}
+			vector.FillCircle(screen, pos.X, pos.Y, 19, color.RGBA{70, 170, 220, 90}, false)
+			vector.StrokeCircle(screen, pos.X, pos.Y, 19, 2, color.RGBA{145, 225, 255, 235}, false)
+		}
+		vector.FillRect(screen, 0, 0, float32(ScreenWidth), 42, color.RGBA{24, 18, 8, 235}, false)
+		DrawTextCentered(screen, "ORDU İKMAL HEDEFİ: uygun orduya sol tıkla • ESC: iptal", float64(ScreenWidth)/2, 14, FaceSmall, ColorGold)
+		return
+	}
 	for _, region := range r.gs.Regions {
 		if !navalMissionTargetCandidate(r.gs, r.navalMissionKind, fleet, region) {
 			continue
@@ -381,9 +435,44 @@ func navalMissionTargetCandidate(gs *state.GameState, kind army.NavalMissionKind
 		return fleet != nil && fleet.IsAtSea() && region.ID == fleet.RegionID && gs.IsValidNavalBlockadeTarget(fleet, region.ID)
 	case army.NavalMissionTransport:
 		return !region.IsSea && region.CanLandEnter() && region.IsCoastal(gs.Regions)
+	case army.NavalMissionSupplyArmy:
+		if fleet == nil || !fleet.IsAtSea() || region.IsSea || !region.CanLandEnter() || !region.IsCoastal(gs.Regions) {
+			return false
+		}
+		for _, candidate := range gs.Armies {
+			if candidate != nil && candidate.OwnerID == fleet.OwnerID && !candidate.IsNaval && candidate.RegionID == region.ID && len(candidate.Units) > 0 && regionHasSeaNeighbor(region, fleet.RegionID, gs) {
+				return true
+			}
+		}
+		return false
 	default:
 		return false
 	}
+}
+
+func navalSupplyTargetArmy(gs *state.GameState, fleet, target *army.Army) bool {
+	if gs == nil || fleet == nil || target == nil || !fleet.IsAtSea() || !fleet.IsNaval ||
+		target.IsNaval || target.OwnerID != fleet.OwnerID || len(target.Units) == 0 {
+		return false
+	}
+	region := gs.Regions[target.RegionID]
+	return region != nil && !region.IsSea && region.CanLandEnter() && region.IsCoastal(gs.Regions) && regionHasSeaNeighbor(region, fleet.RegionID, gs)
+}
+
+func (r *Renderer) navalSupplyTargetArmyAt(mx, my float64) (army.ArmyID, bool) {
+	if r == nil || r.gs == nil {
+		return "", false
+	}
+	fleet := r.gs.Armies[r.navalMissionArmy]
+	positions := r.armyIconPositions()
+	for i := len(positions) - 1; i >= 0; i-- {
+		pos := positions[i]
+		target := r.gs.Armies[pos.ArmyID]
+		if navalSupplyTargetArmy(r.gs, fleet, target) && navalMissionTargetCircleHit(float64(pos.X), float64(pos.Y), mx, my) {
+			return target.ID, true
+		}
+	}
+	return "", false
 }
 
 func navalMissionTargetCircleHit(cx, cy, mx, my float64) bool {
@@ -397,6 +486,10 @@ func (r *Renderer) navalMissionTargetHovering(fx, fy float64) bool {
 		return false
 	}
 	fleet := r.gs.Armies[r.navalMissionArmy]
+	if r.navalMissionKind == army.NavalMissionSupplyArmy {
+		_, ok := r.navalSupplyTargetArmyAt(fx, fy)
+		return ok
+	}
 	for _, region := range r.gs.Regions {
 		if !navalMissionTargetCandidate(r.gs, r.navalMissionKind, fleet, region) {
 			continue
@@ -473,6 +566,16 @@ func (r *Renderer) handleNavalMissionPanelInput() InputAction {
 		return InputAction{}
 	}
 	option := options[row]
+	if option.loadSupplyTurns > 0 {
+		aid := r.navalMissionArmy
+		r.closeNavalMissionPanel()
+		return InputAction{Kind: ActionLoadSupplyCargo, ArmyID: aid, Quantity: option.loadSupplyTurns}
+	}
+	if option.unloadSupply {
+		aid := r.navalMissionArmy
+		r.closeNavalMissionPanel()
+		return InputAction{Kind: ActionUnloadSupplyCargo, ArmyID: aid}
+	}
 	if option.kind == army.NavalMissionEscort {
 		aid := r.navalMissionArmy
 		r.closeNavalMissionPanel()
@@ -505,6 +608,20 @@ func (r *Renderer) handleNavalMissionTargetInput() InputAction {
 	if topStatusPanelHit(float64(mx), float64(my)) || topDateHudHit(float64(mx), float64(my)) || bottomActionHudHit(float64(mx), float64(my)) || minimapHit(float64(mx), float64(my)) {
 		return InputAction{}
 	}
+	if r.navalMissionKind == army.NavalMissionSupplyArmy {
+		targetID, ok := r.navalSupplyTargetArmyAt(float64(mx), float64(my))
+		if !ok {
+			return InputAction{}
+		}
+		mission := army.NavalMission{Kind: army.NavalMissionSupplyArmy, TargetArmyID: targetID}
+		if ok, reason := r.gs.CanAssignNavalMission(r.navalMissionArmy, mission); !ok {
+			r.ShowCombatResult(reason)
+			return InputAction{}
+		}
+		aid := r.navalMissionArmy
+		r.closeNavalMissionPanel()
+		return InputAction{Kind: ActionAssignNavalMission, ArmyID: aid, BuildingID: string(mission.Kind), TargetArmyID: targetID}
+	}
 	wx, wy := r.screenToWorld(float64(mx), float64(my))
 	if r.worldMap == nil {
 		return InputAction{}
@@ -514,6 +631,14 @@ func (r *Renderer) handleNavalMissionTargetInput() InputAction {
 		return InputAction{}
 	}
 	mission := army.NavalMission{Kind: r.navalMissionKind, TargetRegionID: regionID}
+	if r.navalMissionKind == army.NavalMissionSupplyArmy {
+		for _, candidate := range r.gs.Armies {
+			if candidate != nil && candidate.OwnerID == r.gs.Armies[r.navalMissionArmy].OwnerID && !candidate.IsNaval && candidate.RegionID == regionID && len(candidate.Units) > 0 {
+				mission.TargetArmyID = candidate.ID
+				break
+			}
+		}
+	}
 	if ok, reason := r.gs.CanAssignNavalMission(r.navalMissionArmy, mission); !ok {
 		r.ShowCombatResult(reason)
 		return InputAction{}
@@ -533,7 +658,21 @@ func navalMissionLabelTR(kind army.NavalMissionKind) string {
 		return "Escort"
 	case army.NavalMissionTransport:
 		return "Nakliye"
+	case army.NavalMissionSupplyArmy:
+		return "Orduyu İkmal Et"
 	default:
 		return "Görev yok"
 	}
+}
+
+func regionHasSeaNeighbor(region *world.Region, seaID world.RegionID, gs *state.GameState) bool {
+	if region == nil || gs == nil {
+		return false
+	}
+	for _, neighborID := range region.Neighbors {
+		if neighborID == seaID && gs.Regions[neighborID] != nil && gs.Regions[neighborID].IsSea {
+			return true
+		}
+	}
+	return false
 }

@@ -1255,6 +1255,7 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 	gs.RegionLogistics = make(map[world.RegionID]state.RegionLogisticsStatus)
 	gs.ArmyLogistics = make(map[army.ArmyID]state.ArmyLogisticsStatus)
 	friendlySupplies := allocateFriendlyFrontlineSupply(gs)
+	navalSupplies := make(map[army.ArmyID]int)
 
 	armiesByRegion := make(map[world.RegionID][]*army.Army)
 	for _, a := range gs.Armies {
@@ -1347,6 +1348,16 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		reserveSupport := regionReserveSupport(availableReserve, militaryProduction, settlementBuffer)
 		availableReserveByFaction[ownerID] = availableReserve - reserveSupport
 		capacity := militaryProduction + settlementBuffer + granarySupport + reserveSupport
+		// Deniz ikmali, bölgenin kendi kapasitesi tükendikten sonra devreye
+		// girer; filo yalnızca kalan açığı karşılar.
+		if shortage := totalDemand - capacity; shortage > 0 {
+			for aid, amount := range allocateNavalSupplyForRegion(gs, armiesInRegion, shortage) {
+				navalSupplies[aid] += amount
+			}
+		}
+		for _, a := range armiesInRegion {
+			capacity += navalSupplies[a.ID]
+		}
 		if capacity < 4 {
 			capacity = 4
 		}
@@ -1449,6 +1460,62 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 	}
 
 	return alerts
+}
+
+// allocateNavalSupplyForRegion, bölgenin yerel kapasitesinden sonra kalan
+// tahıl açığını bağlı ikmal filolarından karşılar. Yerel kapasite yeterliyse
+// filodan hiçbir mal tüketilmez.
+func allocateNavalSupplyForRegion(gs *state.GameState, armies []*army.Army, shortage int) map[army.ArmyID]int {
+	supplied := make(map[army.ArmyID]int)
+	if gs == nil || shortage <= 0 {
+		return supplied
+	}
+	for _, target := range armies {
+		if shortage <= 0 || target == nil || target.IsNaval || len(target.Units) == 0 {
+			continue
+		}
+		demand := gs.RegionalArmyGrainDemand(target)
+		if demand <= 0 {
+			continue
+		}
+		for _, fleet := range gs.Armies {
+			if fleet == nil || !fleet.IsNaval || fleet.NavalMission == nil || fleet.NavalMission.Kind != army.NavalMissionSupplyArmy || fleet.NavalMission.TargetArmyID != target.ID || fleet.SupplyCargo.Grain <= 0 || !fleet.IsAtSea() || fleet.OwnerID != target.OwnerID {
+				continue
+			}
+			land := gs.Regions[target.RegionID]
+			if land == nil || land.IsSea || !land.IsCoastal(gs.Regions) || !seaNeighbor(land, fleet.RegionID, gs.Regions) {
+				continue
+			}
+			amount := fleet.SupplyCargo.Grain
+			if amount > shortage {
+				amount = shortage
+			}
+			if amount > demand {
+				amount = demand
+			}
+			fleet.SupplyCargo.Grain -= amount
+			supplied[target.ID] += amount
+			shortage -= amount
+			if fleet.SupplyCargo.Grain <= 0 {
+				fleet.SupplyCargo.Grain = 0
+				fleet.NavalMission = nil
+			}
+			break
+		}
+	}
+	return supplied
+}
+
+func seaNeighbor(land *world.Region, seaID world.RegionID, regions map[world.RegionID]*world.Region) bool {
+	if land == nil {
+		return false
+	}
+	for _, neighborID := range land.Neighbors {
+		if neighborID == seaID && regions[neighborID] != nil && regions[neighborID].IsSea {
+			return true
+		}
+	}
+	return false
 }
 
 // allocateFriendlyFrontlineSupply ikmal alan orduları ArmyID sırasıyla ele alır;

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
@@ -28,6 +29,57 @@ func TestConvertInvalidNavalBlockadesToPatrol(t *testing.T) {
 	}
 	if blockade.NavalMission.TargetRegionID != "sea" {
 		t.Fatalf("devriye hedefi mevcut deniz olmalı, got %q", blockade.NavalMission.TargetRegionID)
+	}
+}
+
+func TestSupplyCargoLoadsAssignsAndUnloadsAtCapital(t *testing.T) {
+	gs := &GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_port", Grain: 100},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 5},
+			"soldier":   {ID: "soldier", Category: army.CategoryInfantry, GrainUpkeep: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital": {ID: "capital", OwnerID: "player", Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{{ID: "capital_port", Type: world.SettlementPort}}},
+			"sea":     {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"capital", "coast"}},
+			"coast":   {ID: "coast", OwnerID: "player", Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{{ID: "coast_port", Type: world.SettlementPort}}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {ID: "fleet", OwnerID: "player", IsNaval: true, DockedRegionID: "capital", RegionID: "sea", Units: []army.Unit{{TypeID: "transport"}}},
+			"army":  {ID: "army", OwnerID: "player", RegionID: "coast", Units: []army.Unit{{TypeID: "soldier", CurrentHP: 100}}},
+		},
+	}
+	if got := gs.SupplyCargoCapacityForTurns("fleet", 5); got != 250 {
+		t.Fatalf("5 turluk ikmal kapasitesi = %d, want 250", got)
+	}
+
+	ok, reason := gs.LoadSupplyCargoAtCapital("fleet", economy.ResourceCost{Grain: 20})
+	if !ok || reason != "" {
+		t.Fatalf("yükleme sonucu = (%v, %q)", ok, reason)
+	}
+	if got := gs.Factions["player"].Grain; got != 80 {
+		t.Fatalf("yükleme sonrası tahıl = %d, want 80", got)
+	}
+
+	fleet := gs.Armies["fleet"]
+	fleet.DockedRegionID = ""
+	fleet.NavalMission = &army.NavalMission{Kind: army.NavalMissionSupplyArmy, TargetArmyID: "army"}
+	if ok, reason := gs.CanAssignNavalMission("fleet", *fleet.NavalMission); !ok {
+		t.Fatalf("ikmal görevi reddedildi: %s", reason)
+	}
+
+	fleet.DockedRegionID = "capital"
+	if cargo, ok, reason := gs.UnloadSupplyCargoAtCapital("fleet"); !ok || cargo.Grain != 20 || reason != "" {
+		t.Fatalf("boşaltma sonucu = (%+v, %v, %q)", cargo, ok, reason)
+	}
+	if fleet.NavalMission != nil {
+		t.Fatal("ikmal yükü boşaltılınca ordu bağı temizlenmeli")
+	}
+	if got := gs.Factions["player"].Grain; got != 100 {
+		t.Fatalf("boşaltma sonrası tahıl = %d, want 100", got)
 	}
 }
 
