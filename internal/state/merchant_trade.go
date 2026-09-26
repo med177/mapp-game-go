@@ -434,6 +434,7 @@ func (s *GameState) mergeMerchantTradeFleetUnits(target, source *army.Army) bool
 			source.Commander.AssignedArmyID = ""
 		}
 	}
+	target.SupplyCargo = AddSupplyCargo(target.SupplyCargo, source.SupplyCargo)
 	s.RemoveArmy(source.ID)
 	return true
 }

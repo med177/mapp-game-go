@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -50,5 +51,46 @@ func TestAIConsolidatesOverLimitArmiesDespiteRegionalSupplyPressure(t *testing.T
 	aiConsolidateArmies(gs, "ai")
 	if got := gs.CurrentLandArmies("ai"); got != 5 {
 		t.Fatalf("konsolidasyon sonrası AI ordu sayısı = %d, want 5", got)
+	}
+}
+
+func TestAIConsolidatesNavalSupplyCargo(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"sea": {ID: "sea", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet_a": {
+				ID:       "fleet_a",
+				OwnerID:  "ai",
+				RegionID: "sea",
+				IsNaval:  true,
+				Units:    []army.Unit{{TypeID: "transport"}},
+				SupplyCargo: economy.ResourceCost{
+					Grain: 5,
+					Iron:  1,
+				},
+			},
+			"fleet_b": {
+				ID:       "fleet_b",
+				OwnerID:  "ai",
+				RegionID: "sea",
+				IsNaval:  true,
+				Units:    []army.Unit{{TypeID: "transport"}},
+				SupplyCargo: economy.ResourceCost{
+					Grain: 7,
+					Stone: 2,
+				},
+			},
+		},
+	}
+
+	aiConsolidateArmies(gs, "ai")
+
+	if len(gs.Armies) != 1 {
+		t.Fatalf("AI filo konsolidasyonu sonrası filo sayısı = %d, want 1", len(gs.Armies))
+	}
+	if got, want := gs.Armies["fleet_a"].SupplyCargo, (economy.ResourceCost{Grain: 12, Iron: 1, Stone: 2}); got != want {
+		t.Fatalf("AI birleşmiş filo ikmal kargosu = %+v, want %+v", got, want)
 	}
 }

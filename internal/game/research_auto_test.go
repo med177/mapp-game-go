@@ -597,3 +597,48 @@ func TestEconomyTickConsumesAIStyleNavalSupplyCargo(t *testing.T) {
 		t.Fatal("kargo bitince ikmal görevi temizlenmedi")
 	}
 }
+
+func TestMergeArmiesManualCombinesNavalSupplyCargo(t *testing.T) {
+	target := &army.Army{
+		ID:       "target",
+		OwnerID:  "player",
+		RegionID: "sea",
+		IsNaval:  true,
+		Units:    []army.Unit{{TypeID: "transport"}},
+		SupplyCargo: economy.ResourceCost{
+			Grain: 10,
+			Iron:  2,
+		},
+	}
+	source := &army.Army{
+		ID:       "source",
+		OwnerID:  "player",
+		RegionID: "sea",
+		IsNaval:  true,
+		Units:    []army.Unit{{TypeID: "transport"}},
+		SupplyCargo: economy.ResourceCost{
+			Grain: 7,
+			Stone: 4,
+			Cloth: 3,
+		},
+	}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions:         map[world.RegionID]*world.Region{"sea": {ID: "sea", IsSea: true}},
+		Armies: map[army.ArmyID]*army.Army{
+			target.ID: target,
+			source.ID: source,
+		},
+	}
+
+	(&Game{gs: gs, renderer: &render.Renderer{}}).mergeArmiesManual(source.ID, target.ID)
+
+	if _, ok := gs.Armies[source.ID]; ok {
+		t.Fatal("tamamen birleşen kaynak filo state'ten kaldırılmalı")
+	}
+	got := gs.Armies[target.ID].SupplyCargo
+	want := economy.ResourceCost{Grain: 17, Iron: 2, Stone: 4, Cloth: 3}
+	if got != want {
+		t.Fatalf("birleşmiş filo ikmal kargosu = %+v, want %+v", got, want)
+	}
+}

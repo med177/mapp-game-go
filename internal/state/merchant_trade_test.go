@@ -504,6 +504,9 @@ func TestMergeMerchantTradeFleetsConsolidatesThreeTurnEndFleets(t *testing.T) {
 		UnitTypes:   map[string]*army.UnitType{"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade}},
 		TradeRoutes: []*economy.TradeRoute{route},
 	}
+	gs.Armies["fleet_1"].SupplyCargo = economy.ResourceCost{Grain: 4, Iron: 1}
+	gs.Armies["fleet_2"].SupplyCargo = economy.ResourceCost{Grain: 6, Stone: 2}
+	gs.Armies["fleet_3"].SupplyCargo = economy.ResourceCost{Grain: 8, Cloth: 3}
 
 	if removed := gs.MergeMerchantTradeFleets(); removed != 2 {
 		t.Fatalf("tur sonu birleşmesinde silinen filo = %d, want 2", removed)
@@ -513,6 +516,9 @@ func TestMergeMerchantTradeFleetsConsolidatesThreeTurnEndFleets(t *testing.T) {
 	}
 	if got := len(gs.Armies["fleet_1"].Units); got != 6 {
 		t.Fatalf("birleşmiş filodaki gemi sayısı = %d, want 6", got)
+	}
+	if got, want := gs.Armies["fleet_1"].SupplyCargo, (economy.ResourceCost{Grain: 18, Iron: 1, Stone: 2, Cloth: 3}); got != want {
+		t.Fatalf("birleşmiş merchant filosu ikmal kargosu = %+v, want %+v", got, want)
 	}
 }
 

@@ -149,7 +149,7 @@ func (s *GameState) LoadSupplyCargoAtCapital(fleetID army.ArmyID, cargo economy.
 	fleet := s.Armies[fleetID]
 	faction := s.Factions[factionID(fleet.OwnerID)]
 	cargo.Apply(faction)
-	fleet.SupplyCargo = addSupplyCargo(fleet.SupplyCargo, cargo)
+	fleet.SupplyCargo = AddSupplyCargo(fleet.SupplyCargo, cargo)
 	return true, ""
 }
 
@@ -234,7 +234,9 @@ func (s *GameState) UnloadSupplyCargoAtCapital(fleetID army.ArmyID) (economy.Res
 	return cargo, true, ""
 }
 
-func addSupplyCargo(left, right economy.ResourceCost) economy.ResourceCost {
+// AddSupplyCargo iki filonun ikmal kargosunu mal türlerini koruyarak toplar.
+// Filo birleşmelerinde kaynak filo silinmeden önce bu helper kullanılmalıdır.
+func AddSupplyCargo(left, right economy.ResourceCost) economy.ResourceCost {
 	return economy.ResourceCost{Grain: left.Grain + right.Grain, Iron: left.Iron + right.Iron, Timber: left.Timber + right.Timber, Stone: left.Stone + right.Stone, Spice: left.Spice + right.Spice, Cloth: left.Cloth + right.Cloth}
 }
 

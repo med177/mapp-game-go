@@ -6569,6 +6569,7 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID, requestedTargets ...army.ArmyI
 	g.gs.RefreshArmyMovePointsAfterCompositionChange(target, targetMovementUsed || selectedMovementUsed)
 
 	if len(a.Units) == 0 {
+		target.SupplyCargo = state.AddSupplyCargo(target.SupplyCargo, a.SupplyCargo)
 		if a.Commander != nil && target.Commander == nil {
 			target.Commander = a.Commander
 			target.Commander.AssignedArmyID = target.ID

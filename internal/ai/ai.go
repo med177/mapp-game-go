@@ -2945,6 +2945,7 @@ func aiConsolidateArmies(gs *state.GameState, fid faction.FactionID) {
 				}
 				if len(a1.Units)+len(a2.Units) <= army.MaxArmySize {
 					a1.Units = append(a1.Units, a2.Units...)
+					a1.SupplyCargo = state.AddSupplyCargo(a1.SupplyCargo, a2.SupplyCargo)
 					gs.RemoveArmy(a2.ID)
 				} else {
 					transfer := army.MaxArmySize - len(a1.Units)
@@ -2975,6 +2976,7 @@ func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
 		}
 		if len(a.Units)+len(other.Units) <= army.MaxArmySize {
 			other.Units = append(other.Units, a.Units...)
+			other.SupplyCargo = state.AddSupplyCargo(other.SupplyCargo, a.SupplyCargo)
 			gs.RemoveArmy(a.ID)
 			return true
 		} else {
