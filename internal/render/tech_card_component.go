@@ -53,7 +53,7 @@ func newTechCardComponent(node techNode, rect gameui.Rect, activeResearchID stri
 		CanResearch:     node.unlocked && !node.done,
 	}
 	if model.IsDone {
-		model.Summary = "✓ Tamamlandı"
+		model.Summary = "[OK] Tamamlandı"
 	} else if !node.unlocked && model.RequirementText != "" {
 		model.Summary = model.RequirementText
 	}

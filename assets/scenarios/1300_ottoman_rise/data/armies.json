@@ -216,44 +216,13 @@
     ]
   },
   {
-    "id": "army_croatian_kingdom_hum",
-    "owner_id": "croatian_kingdom",
-    "region_id": "hum",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 1
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_croatian_kingdom_zagreb",
     "owner_id": "croatian_kingdom",
     "region_id": "croatia",
     "units": [
       {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
         "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
+        "count": 8
       }
     ]
   },
@@ -357,17 +326,6 @@
       {
         "type_id": "militia",
         "count": 5
-      }
-    ]
-  },
-  {
-    "id": "army_edit_119",
-    "owner_id": "arnavut_des",
-    "region_id": "albania",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 8
       }
     ]
   },
@@ -926,7 +884,7 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 10
+        "count": 6
       }
     ]
   },
@@ -1541,7 +1499,7 @@
       },
       {
         "type_id": "infantry",
-        "count": 2
+        "count": 6
       },
       {
         "type_id": "light_cavalry",

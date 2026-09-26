@@ -1031,7 +1031,7 @@ func DrawDiplomacyPanelWithSort(screen *ebiten.Image, gs *state.GameState, focus
 func drawDiplomacyPanelWithSortAndRelationScroll(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind, sortMode diplomacyListSort, relationScroll int) {
 	drawUIOverlay(screen, color.RGBA{8, 6, 4, 220})
 
-	drawUIPanelTitle(screen, gameui.Rect{X: 0, Y: 24, W: ScreenWidth, H: 24}, "── Diplomasi ──")
+	drawUIPanelTitle(screen, gameui.Rect{X: 0, Y: 24, W: ScreenWidth, H: 24}, "-- Diplomasi --")
 	drawDiplomacyCloseButton(screen)
 
 	factions := sortedDiplomacyFactions(gs, sortMode)

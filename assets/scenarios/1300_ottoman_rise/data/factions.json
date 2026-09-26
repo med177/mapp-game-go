@@ -1148,7 +1148,7 @@
       0
     ],
     "is_playable": false,
-    "is_eliminated": false,
+    "is_eliminated": true,
     "capital_settlement_id": "albania_shkoder",
     "gold": 5000,
     "grain": 1360,

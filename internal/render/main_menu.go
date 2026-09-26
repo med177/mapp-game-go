@@ -91,7 +91,7 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 		col := menuItemColor(isSelected, item.disabled)
 		prefix := "  "
 		if isSelected && !item.disabled {
-			prefix = "► "
+			prefix = "> "
 		}
 		drawUILabel(screen, gameui.Rect{X: 0, Y: y + 8, W: ScreenWidth}, prefix+item.label, col, gameui.TextLarge, gameui.TextAlignCenter)
 	}

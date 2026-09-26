@@ -133,7 +133,7 @@ func drawNavalMissionFooter(screen *ebiten.Image, gs *state.GameState, fleet *ar
 		status = "Görev: " + navalMissionLabelTR(fleet.NavalMission.Kind)
 		if fleet.NavalMission.TargetRegionID != "" {
 			if region := gs.Regions[fleet.NavalMission.TargetRegionID]; region != nil && region.NameTR != "" {
-				status += " → " + region.NameTR
+				status += " -> " + region.NameTR
 			}
 		}
 		statusColor = color.RGBA{160, 230, 175, 235}

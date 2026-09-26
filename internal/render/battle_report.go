@@ -316,7 +316,7 @@ func battleReportCommanderOperationalText(side BattleReportSide) string {
 func battleReportCommanderProgressText(progress BattleReportCommanderProgress) string {
 	level := fmt.Sprintf("Lv%d", progress.CurrentLevel)
 	if progress.PreviousLevel != progress.CurrentLevel {
-		level = fmt.Sprintf("Lv%d → Lv%d", progress.PreviousLevel, progress.CurrentLevel)
+		level = fmt.Sprintf("Lv%d -> Lv%d", progress.PreviousLevel, progress.CurrentLevel)
 	}
 	text := fmt.Sprintf("%s (%s): +%d XP | %s", progress.Name, progress.SideLabel, progress.XPGained, level)
 	if len(progress.NewTraits) > 0 {

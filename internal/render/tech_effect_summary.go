@@ -33,9 +33,9 @@ func techRequirementSummary(t *tech.Technology, currentYear int, ownedRegions ma
 			if name == "" {
 				name = regionID
 			}
-			mark := "✕"
+			mark := "[X] "
 			if ownedRegions[regionID] {
-				mark = "✓"
+				mark = "[OK] "
 			}
 			regions = append(regions, mark+name)
 		}
@@ -46,7 +46,7 @@ func techRequirementSummary(t *tech.Technology, currentYear int, ownedRegions ma
 	if t.MinYear > 0 {
 		yearText := "En erken yıl: " + itoa(t.MinYear)
 		if currentYear >= t.MinYear {
-			yearText = "Yıl: ✓" + itoa(t.MinYear)
+			yearText = "Yıl: [OK] " + itoa(t.MinYear)
 		}
 		parts = append(parts, yearText)
 	}

@@ -58,7 +58,7 @@ func TestMerchantTradeBonusTooltipIncludesRouteNames(t *testing.T) {
 		t.Fatalf("popup satır sayısı = %d, want 4", len(lines))
 	}
 	wantLines := []string{
-		"Rota: Doğu Roma İmparatorluğu → Ceneviz",
+		"Rota: Doğu Roma İmparatorluğu -> Ceneviz",
 		"Mal: Tahıl",
 		"Bonus: +1 mal/tur",
 		"Gelir: +2 altın/tur",

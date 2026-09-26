@@ -6951,8 +6951,8 @@
       {
         "id": "dalmatia_zadar",
         "name_tr": "Zadar",
-        "x": 781,
-        "y": 397,
+        "x": 784,
+        "y": 398,
         "type": "port",
         "population": 23
       },
@@ -7020,7 +7020,7 @@
       {
         "id": "ragusa_main",
         "name_tr": "Ragusa",
-        "x": 837,
+        "x": 838,
         "y": 425,
         "type": "port",
         "population": 100

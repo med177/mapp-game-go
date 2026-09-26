@@ -208,7 +208,7 @@ func DrawTradePanel(screen *ebiten.Image, gs *state.GameState, tab TradeTab, foc
 	vector.FillRect(screen, px, py, pw, 3, panelBorder, false)
 
 	// Başlık
-	drawUIPanelTitle(screen, gameui.Rect{X: layout.titleRect.X, Y: layout.titleRect.Y + 2, W: layout.titleRect.W, H: layout.titleRect.H}, "── Ticaret ──")
+	drawUIPanelTitle(screen, gameui.Rect{X: layout.titleRect.X, Y: layout.titleRect.Y + 2, W: layout.titleRect.W, H: layout.titleRect.H}, "-- Ticaret --")
 
 	// Kapatma butonu
 	closeBtn := buildTradeCloseButton()
@@ -246,7 +246,7 @@ func drawTradeRoutesTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 	routeCount := filteredTradeRouteCount(gs, routeFilter)
 	if routeCount == 0 {
 		DrawTextCentered(screen, "Aktif ticaret rotası yok.", float64(px)+float64(w)/2, float64(y)+40, FaceMed, ColorGray)
-		DrawTextCentered(screen, "Diplomasi → Ticaret anlaşması yaparak rota oluşturun.", float64(px)+float64(w)/2, float64(y)+62, FaceSmall, ColorGray)
+		DrawTextCentered(screen, "Diplomasi -> Ticaret anlaşması yaparak rota oluşturun.", float64(px)+float64(w)/2, float64(y)+62, FaceSmall, ColorGray)
 		return
 	}
 

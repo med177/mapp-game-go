@@ -273,7 +273,7 @@ func imperialReportMessage(gs *state.GameState, report ImperialDietReport) strin
 	if gs == nil || gs.Imperial == nil {
 		return ""
 	}
-	message := "İmparatorluk Diyeti toplandı. Otorite " + itoa(report.AuthorityBefore) + " → " + itoa(report.AuthorityAfter) + "."
+	message := "İmparatorluk Diyeti toplandı. Otorite " + itoa(report.AuthorityBefore) + " -> " + itoa(report.AuthorityAfter) + "."
 	if report.ElectionHeld {
 		message += " Yeni imparator: " + factionLabel(gs, report.WinnerID) + "."
 	}

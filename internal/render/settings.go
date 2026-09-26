@@ -81,7 +81,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		{"Ses Efektleri", boolLabel(s.SoundOn)},
 		{"Ses Seviyesi", itoa(s.SoundVolume) + "%"},
 		{"Kısayollar", ""},
-		{"← Geri Dön", ""},
+		{"< Geri Dön", ""},
 	}
 
 	for i, r := range rows {
@@ -100,7 +100,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		}
 		drawUILabel(screen, gameui.Rect{X: rect.X + 30, Y: y + 6}, r.label, col, gameui.TextLarge, gameui.TextAlignStart)
 		if r.value != "" {
-			drawUILabel(screen, gameui.Rect{X: rect.X + 310, Y: y + 6}, "◄  "+r.value+"  ►", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: rect.X + 310, Y: y + 6}, "<  "+r.value+"  >", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
 		}
 	}
 	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Sol tık: değiştir  •  ESC: kaydet ve çık", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)

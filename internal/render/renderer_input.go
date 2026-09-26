@@ -626,7 +626,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			c := r.tradeCorridors[idx]
 			directionText := c.directionText
 			if directionText == "" {
-				directionText = c.fromName + " ↔ " + c.toName
+				directionText = c.fromName + " <-> " + c.toName
 			}
 			r.ShowCombatResult("Koridor: " + directionText + " | " + itoa(c.factions) + " fraksiyon")
 			return InputAction{}
@@ -1595,10 +1595,9 @@ func (r *Renderer) handleRightClick() InputAction {
 	// filo merkez settlement'ını çıkarma, liman settlement'ını docking hedefi;
 	// boş filo yalnız geçerli liman marker'ını tıklanabilir kabul eder. Bölge
 	// içindeki boş bir noktaya tıklama hareket emri üretmez.
-	// Zaten bağlı olunan limanın marker'ına sağ tıklamak yeni bir docking
-	// emri değildir. Aynı kara bölgesine tekrar emir üretmek, oyun katmanında
-	// limana yeniden konuşlanma olarak yorumlanıp hareket puanı tüketebilir.
-	if a.IsNaval && a.DockedRegionID != "" && rid == a.DockedRegionID {
+	// Boş filonun zaten bağlı olduğu limanın marker'ına sağ tıklamak yeni bir
+	// docking emri değildir. Yüklü filoda aynı marker çıkarma niyetidir.
+	if dockedFleetSamePortIsNoOp(a, rid) {
 		return InputAction{}
 	}
 	// Limana bağlı donanma aynı deniz bölgesine sağ tıklarsa limandan ayrılıp
@@ -1742,6 +1741,15 @@ func (r *Renderer) handleRightClick() InputAction {
 		return act
 	}
 	return InputAction{}
+}
+
+// dockedFleetSamePortIsNoOp, boş docked filonun kendi limanına yeniden
+// konuşlanma emrini engeller. Filoda kara birlikleri varsa aynı marker,
+// birliği karaya indirme hedefi olarak kullanılabilir ve input akışı devam
+// etmelidir.
+func dockedFleetSamePortIsNoOp(fleet *army.Army, target world.RegionID) bool {
+	return fleet != nil && fleet.IsNaval && fleet.DockedRegionID != "" &&
+		target == fleet.DockedRegionID && len(fleet.EmbarkedUnits) == 0
 }
 
 // openCurrentRegionArmyTask, hareket puanı kalmayan ordunun düşman bölgesinde

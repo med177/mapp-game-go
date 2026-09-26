@@ -318,7 +318,7 @@ func merchantTradeBonusTooltipText(gs *state.GameState, fleet *army.Army) (strin
 	if route.BlockadePercent > 0 {
 		income = income * (economy.MaxTradeRouteBlockadePercent - route.BlockadePercent) / economy.MaxTradeRouteBlockadePercent
 	}
-	routeName := factionDisplayName(gs, route.FromFactionID) + " → " + factionDisplayName(gs, route.ToFactionID)
+	routeName := factionDisplayName(gs, route.FromFactionID) + " -> " + factionDisplayName(gs, route.ToFactionID)
 	detail := "Rota: " + routeName + "\nMal: " + economy.GoodNameTR(route.Good) + "\nBonus: +" + itoa(bonus) + " mal/tur\nGelir: +" + itoa(income) + " altın/tur"
 	return "Ticaret rotası bonusu", detail, true
 }

@@ -208,7 +208,7 @@ func (r *Renderer) aiDiagnosticLines() []string {
 		lines = append(lines, history...)
 	}
 	for _, front := range snapshot.Fronts {
-		lines = append(lines, "CEPHE "+diagnosticFactionName(r.gs, front.EnemyFactionID)+" → "+diagnosticRegionName(r.gs, front.TargetRegionID)+" | dost "+strconv.Itoa(front.FriendlyPower)+" / düşman "+strconv.Itoa(front.EnemyPower)+" | tehdit "+strconv.Itoa(front.ThreatScore))
+		lines = append(lines, "CEPHE "+diagnosticFactionName(r.gs, front.EnemyFactionID)+" -> "+diagnosticRegionName(r.gs, front.TargetRegionID)+" | dost "+strconv.Itoa(front.FriendlyPower)+" / düşman "+strconv.Itoa(front.EnemyPower)+" | tehdit "+strconv.Itoa(front.ThreatScore))
 	}
 	if len(snapshot.Fronts) == 0 {
 		lines = append(lines, "CEPHE yok")

@@ -167,7 +167,7 @@ func merchantRouteDisplayName(gs *state.GameState, route *economy.TradeRoute) st
 	if route == nil {
 		return "Rota atanmadı"
 	}
-	return factionDisplayName(gs, route.FromFactionID) + " → " + factionDisplayName(gs, route.ToFactionID)
+	return factionDisplayName(gs, route.FromFactionID) + " -> " + factionDisplayName(gs, route.ToFactionID)
 }
 
 func merchantRouteSeaDisplayName(gs *state.GameState, route *economy.TradeRoute) string {

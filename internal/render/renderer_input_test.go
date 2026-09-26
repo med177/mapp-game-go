@@ -126,6 +126,9 @@ func TestDisbandButtonUsesTheSameGeometryForDrawAndHitTest(t *testing.T) {
 	if !ok {
 		t.Fatal("seçili birim varken Sil düğmesi oluşturulamadı")
 	}
+	if button.Icon != gameui.IconTrash {
+		t.Fatalf("Sil düğmesi ikonu = %q, want %q", button.Icon, gameui.IconTrash)
+	}
 	mx := button.X + button.W/2
 	my := button.Y + button.H/2
 	if !DisbandButtonHitTest(mx, my, gs, "army", selected) {
@@ -192,7 +195,7 @@ func TestBottomArmyActionUsesContextualSelection(t *testing.T) {
 			if buttons[0].Label != tt.wantLabel || buttons[0].Enabled != tt.wantEnabled {
 				t.Fatalf("alt HUD düğmesi = (%q, %v), want (%q, %v)", buttons[0].Label, buttons[0].Enabled, tt.wantLabel, tt.wantEnabled)
 			}
-			wantLabels := []string{tt.wantLabel, "Teknoloji", "Pazar", "Diplomasi", "Tur Bitir ►"}
+			wantLabels := []string{tt.wantLabel, "Teknoloji", "Pazar", "Diplomasi", "Tur Bitir >"}
 			for i, want := range wantLabels {
 				if buttons[i].Label != want {
 					t.Fatalf("alt HUD sıra[%d] = %q, want %q", i, buttons[i].Label, want)

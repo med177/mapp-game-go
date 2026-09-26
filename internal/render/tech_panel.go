@@ -743,13 +743,13 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	drawTechCloseButton(screen)
 
 	// Başlık
-	drawUIPanelTitle(screen, layout.titleRect, "── Teknoloji Ağacı ──")
+	drawUIPanelTitle(screen, layout.titleRect, "-- Teknoloji Ağacı --")
 
 	// Aktif araştırma durumu
 	activeY := layout.statusRect.Y
 	if f.Research.ActiveID != "" {
 		if t, ok := r.gs.TechTypes[f.Research.ActiveID]; ok {
-			msg := fmt.Sprintf("▶ Araştırılıyor: %s  (%d tur kaldı)", t.NameTR, f.Research.TurnsLeft)
+			msg := fmt.Sprintf("> Araştırılıyor: %s  (%d tur kaldı)", t.NameTR, f.Research.TurnsLeft)
 			DrawText(screen, msg, layout.statusRect.X, activeY+2, FaceMed, color.RGBA{110, 230, 110, 255})
 		}
 	} else {

@@ -138,6 +138,24 @@ func TestNavalLandingTargetTooltipText(t *testing.T) {
 	}
 }
 
+func TestDockedFleetSamePortIsNoOpOnlyWhenEmpty(t *testing.T) {
+	fleet := &army.Army{
+		IsNaval:        true,
+		DockedRegionID: "port",
+	}
+	if !dockedFleetSamePortIsNoOp(fleet, "port") {
+		t.Fatal("boş docked filo kendi limanına yeniden konuşlanma no-op'u olmalı")
+	}
+
+	fleet.EmbarkedUnits = []army.Unit{{TypeID: "infantry"}}
+	if dockedFleetSamePortIsNoOp(fleet, "port") {
+		t.Fatal("kara birimi taşıyan filo kendi limanında çıkarma akışını engellememeli")
+	}
+	if dockedFleetSamePortIsNoOp(fleet, "başka_liman") {
+		t.Fatal("başka liman no-op kabul edilmemeli")
+	}
+}
+
 func TestEmbarkTargetRequiresMovementPoints(t *testing.T) {
 	gs := &state.GameState{
 		UnitTypes: map[string]*army.UnitType{

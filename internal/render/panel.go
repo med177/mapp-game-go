@@ -452,7 +452,7 @@ func buttonFromRectF32(r [4]float32, label string) gameui.Button {
 
 func buildBottomActionButtons(armyLabel string, armyEnabled bool) [5]gameui.Button {
 	rects := BottomButtonRects()
-	labels := [5]string{armyLabel, "Teknoloji", "Pazar", "Diplomasi", "Tur Bitir ►"}
+	labels := [5]string{armyLabel, "Teknoloji", "Pazar", "Diplomasi", "Tur Bitir >"}
 	var buttons [5]gameui.Button
 	for i, rect := range rects {
 		btn := buttonFromRectF32(rect, labels[i])
@@ -510,7 +510,7 @@ func imperialHUDStatusText(gs *state.GameState) string {
 	if gs.Imperial.PendingDecision != nil {
 		return "Karar bekliyor"
 	}
-	return "Otorite " + itoa(gs.Imperial.Authority) + " • Diyet " + itoa(gs.Imperial.NextDietTurn)
+	return "Otorite " + itoa(gs.Imperial.Authority) + " - Diyet " + itoa(gs.Imperial.NextDietTurn)
 }
 
 func imperialHUDButtonHit(fx, fy float64) bool {
@@ -2017,7 +2017,7 @@ func drawEventCodexScrollbar(screen *ebiten.Image, count int, visibleCount int, 
 
 func eventCodexLineColor(line string) color.RGBA {
 	switch {
-	case strings.HasPrefix(line, "[✓]"):
+	case strings.HasPrefix(line, "[OK]"):
 		return color.RGBA{132, 190, 214, 240}
 	case strings.HasPrefix(line, "[+]"):
 		return color.RGBA{132, 214, 132, 240}
@@ -2047,7 +2047,7 @@ func eventCodexLineColor(line string) color.RGBA {
 func codexStatusIcon(status string) string {
 	switch status {
 	case "Gerçekleşti":
-		return "[✓]"
+		return "[OK]"
 	case "Hazir":
 		return "[+]"
 	case "Takvim":
@@ -2978,7 +2978,7 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 		}
 	}
 
-	hint := "Sağ tık → hareket / saldırı"
+	hint := "Sağ tık -> hareket / saldırı"
 	hintCol := color.RGBA{120, 200, 120, 200}
 	if a.MovePoints == 0 {
 		hint = "Bu tur hareket puanı tükendi"
@@ -3554,10 +3554,10 @@ func victoryChecklistEntries(gs *state.GameState) ([]string, []color.Color) {
 		return " (" + region.OwnerID + ")"
 	}
 	addItem := func(ok bool, text string) {
-		prefix := "✗ "
+		prefix := "[X] "
 		col := color.Color(color.RGBA{214, 112, 92, 235})
 		if ok {
-			prefix = "✓ "
+			prefix = "[OK] "
 			col = color.RGBA{132, 198, 124, 235}
 		}
 		lines = append(lines, prefix+text)
@@ -4170,7 +4170,7 @@ func factionPanelSubtitle(gs *state.GameState, fid faction.FactionID, f *faction
 	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
 		parts = append(parts, "İlişki: "+faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(rel.Score)+")")
 	}
-	return strings.Join(parts, "  •  ")
+	return strings.Join(parts, "  |  ")
 }
 
 func factionRelationToPlayer(gs *state.GameState, fid faction.FactionID) *faction.Relation {
@@ -4750,7 +4750,7 @@ func factionAIDebugClaimLabel(gs *state.GameState, claim scenario.AITerritorialC
 			}
 		}
 	}
-	return "• " + regionName + " → " + ownerName + " (" + itoa(claim.Value) + ")"
+	return "- " + regionName + " -> " + ownerName + " (" + itoa(claim.Value) + ")"
 }
 
 func factionAIDebugContentHeight(gs *state.GameState, fid faction.FactionID, _ float64) float64 {

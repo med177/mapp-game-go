@@ -841,7 +841,7 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 	DrawText(screen, tradeCorridorTooltipTitle(c), float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 255})
 	directionText := c.directionText
 	if directionText == "" {
-		directionText = c.fromName + " ↔ " + c.toName
+		directionText = c.fromName + " <-> " + c.toName
 	}
 	DrawText(screen, directionText, float64(x)+10, float64(y)+28, FaceSmall, color.RGBA{215, 225, 236, 235})
 	DrawText(screen, "Tür: "+tradeRouteTypeLabel(c.routeType), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{197, 190, 168, 230})
@@ -1064,7 +1064,7 @@ func (r *Renderer) merchantTradePortCorridor(route *economy.TradeRoute, visualKe
 	return tradeCorridorInfo{
 		fromName:      chooseRegionLabel(fromRegion),
 		toName:        chooseRegionLabel(toRegion),
-		directionText: chooseRegionLabel(fromRegion) + " → " + chooseRegionLabel(toRegion),
+		directionText: chooseRegionLabel(fromRegion) + " -> " + chooseRegionLabel(toRegion),
 		amount:        tradeRouteDisplayAmount(route),
 		factions:      2,
 		goods:         economy.GoodNameTR(route.Good),
@@ -1875,7 +1875,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 			route.routeKeys = append(route.routeKeys, routeKey)
 			route.routeDetails = appendTradeCorridorRouteDetail(route.routeDetails, tradeCorridorRouteDetail{
 				key:       routeKey,
-				direction: factionDisplayName(r.gs, tr.FromFactionID) + " → " + factionDisplayName(r.gs, tr.ToFactionID),
+				direction: factionDisplayName(r.gs, tr.FromFactionID) + " -> " + factionDisplayName(r.gs, tr.ToFactionID),
 				good:      economy.GoodNameTR(tr.Good),
 				amount:    tradeRouteDisplayAmount(tr),
 				route:     tr,
@@ -1941,7 +1941,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		routeDetails := route.routeDetails
 		if len(routeDetails) == 0 && route.route != nil {
 			routeDetails = []tradeCorridorRouteDetail{{
-				key: key, direction: factionDisplayName(r.gs, route.factionA) + " → " + factionDisplayName(r.gs, route.factionB),
+				key: key, direction: factionDisplayName(r.gs, route.factionA) + " -> " + factionDisplayName(r.gs, route.factionB),
 				good: route.goodName, amount: routeAmount, route: route.route,
 			}}
 		}
@@ -2412,17 +2412,17 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if agg != nil {
 			factionCount = len(agg.factions)
 		}
-		directionText := centers[i].nameTR + " ↔ " + centers[j].nameTR
+		directionText := centers[i].nameTR + " <-> " + centers[j].nameTR
 		if agg != nil {
 			forward := agg.directions[struct{ from, to int }{from: i, to: j}]
 			reverse := agg.directions[struct{ from, to int }{from: j, to: i}]
 			switch {
 			case forward > 0 && reverse == 0:
-				directionText = centers[i].nameTR + " → " + centers[j].nameTR
+				directionText = centers[i].nameTR + " -> " + centers[j].nameTR
 			case reverse > 0 && forward == 0:
-				directionText = centers[j].nameTR + " → " + centers[i].nameTR
+				directionText = centers[j].nameTR + " -> " + centers[i].nameTR
 			case forward > 0 && reverse > 0:
-				directionText = centers[i].nameTR + " ↔ " + centers[j].nameTR
+				directionText = centers[i].nameTR + " <-> " + centers[j].nameTR
 			}
 		}
 		corridor := tradeCorridorInfo{

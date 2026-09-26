@@ -454,7 +454,7 @@ func buildingNavalCapacityEffectLines(gs *state.GameState, region *world.Region,
 	nextCap := currentCap + state.NavalCapacityPerPortLevel
 	return []string{
 		fmt.Sprintf("Donanma kapasitesi: +%d gemi", state.NavalCapacityPerPortLevel),
-		fmt.Sprintf("Donanma sınırı: %d → %d", currentCap, nextCap),
+		fmt.Sprintf("Donanma sınırı: %d -> %d", currentCap, nextCap),
 	}
 }
 
@@ -487,7 +487,7 @@ func buildingLandCapacityEffectLines(gs *state.GameState, region *world.Region, 
 			return []string{
 				fmt.Sprintf("Savaşçı sınırı: %d", landCap),
 				fmt.Sprintf("Temel ordu: %d × %d", baseArmyCap, army.MaxArmySize),
-				fmt.Sprintf("Kışla üretim limiti: %d → %d birim/tur", productionLimit, nextProductionLimit),
+				fmt.Sprintf("Kışla üretim limiti: %d -> %d birim/tur", productionLimit, nextProductionLimit),
 			}
 		}
 	}

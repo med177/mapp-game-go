@@ -1255,7 +1255,7 @@ func buildDisbandArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMa
 	hasSplit := len(a.Units) >= 2 && splitSelectionCanBeApplied(a, selectedUnitMaps[0])
 	layout := armyPanelGeometry()
 	bx, by, bw, bh := disbandButtonRect(layout.panelX, layout.panelY, layout.panelW, mergeCount, hasSplit)
-	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "Sil"), true
+	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "Sil").WithIcon(gameui.IconTrash), true
 }
 
 func DisbandButtonHitTest(fx, fy float64, gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) bool {

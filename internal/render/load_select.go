@@ -129,7 +129,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 		}
 		prefix := "  "
 		if isSelected && !disabled && !isPendingDelete {
-			prefix = "► "
+			prefix = "> "
 		}
 
 		if slot.Exists {

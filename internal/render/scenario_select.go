@@ -68,7 +68,7 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 		// Seçim oku
 		prefix := "  "
 		if isSelected {
-			prefix = "► "
+			prefix = "> "
 		}
 		nameCol := color.RGBA{200, 185, 140, 220}
 		if isSelected {

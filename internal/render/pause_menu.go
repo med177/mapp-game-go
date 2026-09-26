@@ -59,7 +59,7 @@ func buildPauseMenuButtons(hasSave bool, settings Settings) []gameui.Button {
 		case ActionToggleMusic:
 			label = "Müzik: " + boolLabel(settings.MusicOn)
 		case ActionAdjustMusic:
-			label = "Müzik Seviyesi: ◄ " + itoa(settings.MusicVolume) + "% ►"
+			label = "Müzik Seviyesi: < " + itoa(settings.MusicVolume) + "% >"
 		}
 		btn := gameui.NewButton(layout.itemsRect.X, y, layout.itemsRect.W, itemH-10, label)
 		btn.Enabled = !item.disabled
@@ -132,7 +132,7 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 		col := menuItemColor(isSelected, item.disabled)
 		prefix := "  "
 		if isSelected && !item.disabled {
-			prefix = "► "
+			prefix = "> "
 		}
 		label := buttons[i].Label
 		drawUILabel(screen, gameui.Rect{X: layout.itemsRect.X, Y: y + 8, W: layout.itemsRect.W}, prefix+label, col, gameui.TextLarge, gameui.TextAlignCenter)
