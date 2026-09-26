@@ -58,9 +58,9 @@ func aiWarCoalitionAssessment(gs *state.GameState, actor, target faction.Faction
 		actorRoot = actor
 	}
 	battlefield := aiWarBattlefieldRegions(gs, targetRoot)
-	assessment.AttackerPower = aiFactionMilitaryPower(gs, actorRoot)
+	assessment.AttackerPower = aiFactionMilitaryPowerAsSeenBy(gs, actorRoot, actorRoot)
 	for _, vassalID := range diplomacy.VassalsOf(gs, actorRoot) {
-		assessment.AttackerVassalPower += aiWarWeightedFactionPower(gs, vassalID, battlefield)
+		assessment.AttackerVassalPower += aiWarWeightedFactionPowerAsSeenBy(gs, actorRoot, vassalID, battlefield)
 	}
 	assessment.AttackerPower += assessment.AttackerVassalPower
 
@@ -72,10 +72,10 @@ func aiWarCoalitionAssessment(gs *state.GameState, actor, target faction.Faction
 		if !call.AutoJoin && call.Chance < aiReliableAllyCallPercent {
 			continue
 		}
-		allyPower, nearest := aiWarWeightedFactionPowerWithDistance(gs, allyRoot, battlefield)
+		allyPower, nearest := aiWarWeightedFactionPowerWithDistanceAsSeenBy(gs, actorRoot, allyRoot, battlefield)
 		vassalPower := 0
 		for _, vassalID := range diplomacy.VassalsOf(gs, allyRoot) {
-			vassalPower += aiWarWeightedFactionPower(gs, vassalID, battlefield)
+			vassalPower += aiWarWeightedFactionPowerAsSeenBy(gs, actorRoot, vassalID, battlefield)
 		}
 		if call.AutoJoin {
 			assessment.CertainAttackerAllyPower += allyPower
@@ -92,17 +92,17 @@ func aiWarCoalitionAssessment(gs *state.GameState, actor, target faction.Faction
 		}
 	}
 
-	assessment.TargetPower = aiFactionMilitaryPower(gs, targetRoot)
+	assessment.TargetPower = aiFactionMilitaryPowerAsSeenBy(gs, actorRoot, targetRoot)
 	for _, vassalID := range diplomacy.VassalsOf(gs, targetRoot) {
-		assessment.TargetVassalPower += aiWarWeightedFactionPower(gs, vassalID, battlefield)
+		assessment.TargetVassalPower += aiWarWeightedFactionPowerAsSeenBy(gs, actorRoot, vassalID, battlefield)
 	}
 	assessment.DefenderPower = assessment.TargetPower + assessment.TargetVassalPower
 
 	for _, allyRoot := range aiWarExternalAllies(gs, targetRoot, actorRoot) {
-		allyPower, nearest := aiWarWeightedFactionPowerWithDistance(gs, allyRoot, battlefield)
+		allyPower, nearest := aiWarWeightedFactionPowerWithDistanceAsSeenBy(gs, actorRoot, allyRoot, battlefield)
 		vassalPower := 0
 		for _, vassalID := range diplomacy.VassalsOf(gs, allyRoot) {
-			vassalPower += aiWarWeightedFactionPower(gs, vassalID, battlefield)
+			vassalPower += aiWarWeightedFactionPowerAsSeenBy(gs, actorRoot, vassalID, battlefield)
 		}
 		assessment.AllyPower += allyPower
 		assessment.AllyVassalPower += vassalPower
@@ -175,6 +175,30 @@ func aiWarBattlefieldRegions(gs *state.GameState, target faction.FactionID) []wo
 func aiWarWeightedFactionPower(gs *state.GameState, fid faction.FactionID, battlefield []world.RegionID) int {
 	power, _ := aiWarWeightedFactionPowerWithDistance(gs, fid, battlefield)
 	return power
+}
+
+func aiWarWeightedFactionPowerAsSeenBy(gs *state.GameState, observer, fid faction.FactionID, battlefield []world.RegionID) int {
+	weighted := aiWarWeightedFactionPower(gs, fid, battlefield)
+	if gs == nil || observer == fid || weighted <= 0 {
+		return weighted
+	}
+	exact := aiFactionMilitaryPower(gs, fid)
+	if exact <= 0 {
+		return weighted
+	}
+	return weighted * aiFactionMilitaryPowerAsSeenBy(gs, observer, fid) / exact
+}
+
+func aiWarWeightedFactionPowerWithDistanceAsSeenBy(gs *state.GameState, observer, fid faction.FactionID, battlefield []world.RegionID) (int, int) {
+	weighted, nearest := aiWarWeightedFactionPowerWithDistance(gs, fid, battlefield)
+	if gs == nil || observer == fid || weighted <= 0 {
+		return weighted, nearest
+	}
+	exact := aiFactionMilitaryPower(gs, fid)
+	if exact <= 0 {
+		return weighted, nearest
+	}
+	return weighted * aiFactionMilitaryPowerAsSeenBy(gs, observer, fid) / exact, nearest
 }
 
 func aiWarWeightedFactionPowerWithDistance(gs *state.GameState, fid faction.FactionID, battlefield []world.RegionID) (int, int) {
@@ -322,6 +346,9 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 	}
 	bestScore := aiWarThresholdForDifficulty(gs)
 	bestTarget := faction.FactionID("")
+	recklessScore := -1
+	recklessTarget := faction.FactionID("")
+	recklessSelected := false
 	for _, otherID := range aiSortedFactionIDs(gs) {
 		other := gs.Factions[otherID]
 		if otherID == fid || other == nil || other.IsEliminated {
@@ -339,16 +366,75 @@ func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.Factio
 			bestScore = score
 			bestTarget = otherID
 		}
+		if score < 0 {
+			if nearMiss := aiRecklessWarCandidateScore(gs, fid, otherID, rel, strategicContext); nearMiss > recklessScore {
+				recklessScore = nearMiss
+				recklessTarget = otherID
+			}
+		}
 	}
 
 	if bestTarget == "" {
-		return
+		if recklessTarget == "" || !aiRecklessWarRoll(gs, fid, self) {
+			return
+		}
+		bestTarget = recklessTarget
+		recklessSelected = true
 	}
 	result := diplomacy.ExecuteWarDeclaration(gs, fid, bestTarget, nil)
 	if result.Applied {
+		if recklessSelected {
+			if ledger := gs.WarLedgerFor(fid, bestTarget); ledger != nil {
+				ledger.RecklessDeclaration = true
+			}
+		}
 		gs.QueueNavalContactForWar(fid, bestTarget)
 		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: bestTarget, Message: turnFactionName(gs, fid) + ": " + result.Message, WarDeclaration: &result})
 	}
+}
+
+// aiRecklessWarCandidateScore, normal savaş hazırlığına takılan ama siyasi ve
+// coğrafi olarak makul bir hedefi seçer. Bu yol yalnızca nadir bir zarla açılır;
+// diplomasi ActionBlockReason yine bütün hukuki kuralları korur.
+func aiRecklessWarCandidateScore(gs *state.GameState, actor, target faction.FactionID, rel *faction.Relation, ctx *StrategicContext) int {
+	if gs == nil || rel == nil || rel.Stance != faction.StancePeace || actor == target {
+		return -1
+	}
+	if !aiSharesLandBorder(gs, actor, target) || diplomacy.SameRealm(gs, actor, target) || diplomacy.DirectOverlord(gs, target) != "" {
+		return -1
+	}
+	if ctx != nil && ctx.CriticalThreat {
+		return -1
+	}
+	if rel.Score > 35 || aiFrontierPower(gs, actor, target) <= 0 {
+		return -1
+	}
+	actorPower := aiFactionMilitaryPowerAsSeenBy(gs, actor, actor)
+	targetPower := aiFactionMilitaryPowerAsSeenBy(gs, actor, target)
+	if actorPower <= 0 || targetPower <= 0 || actorPower*100 >= targetPower*110 {
+		return -1
+	}
+	score := 50 - rel.Score
+	score += minInt(24, aiBestBorderTargetValue(gs, actor, target)/12)
+	score += minInt(15, gs.Factions[actor].AIAggressiveness/5)
+	if targetPower > actorPower*2 {
+		score -= 20
+	}
+	return score
+}
+
+func aiRecklessWarRoll(gs *state.GameState, fid faction.FactionID, self *faction.Faction) bool {
+	if gs == nil || self == nil {
+		return false
+	}
+	chance := 1
+	if self.AIAggressiveness >= 60 {
+		chance++
+	}
+	if self.AIAggressiveness >= 80 {
+		chance++
+	}
+	return aiDecisionRoll(gs, fid, "", "reckless_war") < chance
 }
 
 // aiEvaluateHistoricalWarOpportunity gives an active expansion plan a direct
@@ -422,11 +508,11 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 	if coalition.AttackerPower <= 0 || (coalition.DefenderPower > 0 && coalition.AttackerPower*100 < coalition.DefenderPower*requiredPowerPercent) || !aiStrategicWarReady(strategicContext, target) {
 		return -1
 	}
-	frontierPower := aiFrontierPower(gs, actor, target)
+	frontierPower := aiFrontierPowerAsSeenBy(gs, actor, actor, target)
 	if frontierPower <= 0 && sharesLandBorder {
 		return -1
 	}
-	targetFrontierPower := aiFrontierPower(gs, target, actor)
+	targetFrontierPower := aiFrontierPowerAsSeenBy(gs, actor, target, actor)
 
 	score := 20
 	if coalition.DefenderPower == 0 {
@@ -523,8 +609,8 @@ func aiRapidConquestOpportunity(gs *state.GameState, actor, target faction.Facti
 	if plan == nil || plan.Kind != state.AIObjectiveExpand || plan.TargetFactionID != target {
 		return false
 	}
-	frontierPower := aiFrontierPower(gs, actor, target)
-	targetFrontierPower := aiFrontierPower(gs, target, actor)
+	frontierPower := aiFrontierPowerAsSeenBy(gs, actor, actor, target)
+	targetFrontierPower := aiFrontierPowerAsSeenBy(gs, actor, target, actor)
 	if frontierPower <= 0 || (targetFrontierPower > 0 && frontierPower*100 < targetFrontierPower*125) {
 		return false
 	}

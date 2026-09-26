@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
+	"mapp-game-go/internal/state"
 )
 
 func (g *Game) buildWarSummary(targetID faction.FactionID, result diplomacy.WarDeclarationResult) render.WarSummaryReport {
@@ -25,10 +26,18 @@ func (g *Game) buildWarSummaryFor(attackerID, targetID faction.FactionID, result
 
 	attacker := g.buildWarSummarySide("Saldıran Cephe", attackerRoot, result.PlayerCalls)
 	defender := g.buildWarSummarySide("Savunan Cephe", defenderRoot, result.EnemyCalls)
+	attackerPower := fmt.Sprintf("%d", attacker.TotalStrength)
+	defenderPower := fmt.Sprintf("%d", defender.TotalStrength)
+	if attacker.PowerApproximate {
+		attackerPower = "~" + attackerPower
+	}
+	if defender.PowerApproximate {
+		defenderPower = "~" + defenderPower
+	}
 	return render.WarSummaryReport{
 		Title:        g.factionNameTR(string(defenderRoot)) + " Savaşı Özeti",
 		BalanceLabel: warBalanceLabelTR(attacker.TotalStrength, defender.TotalStrength),
-		PowerText:    fmt.Sprintf("%s %d güç • %s %d güç", attacker.LeaderNameTR, attacker.TotalStrength, defender.LeaderNameTR, defender.TotalStrength),
+		PowerText:    fmt.Sprintf("%s %s güç • %s %s güç", attacker.LeaderNameTR, attackerPower, defender.LeaderNameTR, defenderPower),
 		Attacker:     attacker,
 		Defender:     defender,
 	}
@@ -53,9 +62,15 @@ func (g *Game) buildWarSummarySide(label string, primaryRoot faction.FactionID, 
 			if memberID == root {
 				role = rootRole
 			}
-			strength := diplomacy.MilitaryPower(g.gs, memberID)
+			observer := g.gs.PlayerFactionID
+			if observer == "" {
+				observer = memberID
+			}
+			strength := state.MilitaryPowerEstimate(g.gs, observer, memberID)
+			_, _, powerExact := state.MilitaryPowerEstimateBreakdown(g.gs, observer, memberID)
 			metrics := g.warSummaryFactionMetrics(memberID)
 			side.TotalStrength += strength
+			side.PowerApproximate = side.PowerApproximate || !powerExact
 			side.TotalArmies += metrics.armies
 			side.TotalLandUnits += metrics.landUnits
 			side.TotalNavalUnits += metrics.navalUnits
@@ -65,16 +80,17 @@ func (g *Game) buildWarSummarySide(label string, primaryRoot faction.FactionID, 
 			side.TotalGoldIncome += metrics.goldIncome
 			side.TotalGoldNet += metrics.goldNet
 			side.Participants = append(side.Participants, render.WarSummaryParticipant{
-				FactionID:   memberID,
-				NameTR:      g.factionNameTR(string(memberID)),
-				RoleTR:      role,
-				Strength:    strength,
-				ArmyCount:   metrics.armies,
-				LandUnits:   metrics.landUnits,
-				NavalUnits:  metrics.navalUnits,
-				RegionCount: metrics.regions,
-				Gold:        metrics.gold,
-				Grain:       metrics.grain,
+				FactionID:        memberID,
+				NameTR:           g.factionNameTR(string(memberID)),
+				RoleTR:           role,
+				Strength:         strength,
+				PowerApproximate: !powerExact,
+				ArmyCount:        metrics.armies,
+				LandUnits:        metrics.landUnits,
+				NavalUnits:       metrics.navalUnits,
+				RegionCount:      metrics.regions,
+				Gold:             metrics.gold,
+				Grain:            metrics.grain,
 			})
 		}
 	}

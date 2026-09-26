@@ -208,7 +208,7 @@ func aiPursueHistoricalWarAlliance(gs *state.GameState, fid faction.FactionID, s
 		if assessment.BlockReason != "" || assessment.Chance < 45 {
 			continue
 		}
-		power := aiWarWeightedFactionPower(gs, candidateID, battlefield)
+		power := aiWarWeightedFactionPowerAsSeenBy(gs, fid, candidateID, battlefield)
 		if power > bestPower || (power == bestPower && power > 0 && (best == "" || candidateID < best)) {
 			best, bestPower = candidateID, power
 		}

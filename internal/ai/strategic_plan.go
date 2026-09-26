@@ -129,7 +129,7 @@ func (ctx *StrategicContext) militaryPower(fid faction.FactionID) int {
 	if value, ok := ctx.factionPower[fid]; ok {
 		return value
 	}
-	value := aiFactionMilitaryPower(ctx.gs, fid)
+	value := aiFactionMilitaryPowerAsSeenBy(ctx.gs, ctx.FactionID, fid)
 	ctx.factionPower[fid] = value
 	return value
 }
@@ -141,7 +141,7 @@ func (ctx *StrategicContext) powerAtFrontier(target faction.FactionID) int {
 	if value, ok := ctx.frontierPower[target]; ok {
 		return value
 	}
-	value := aiFrontierPower(ctx.gs, ctx.FactionID, target)
+	value := aiFrontierPowerAsSeenBy(ctx.gs, ctx.FactionID, target, ctx.FactionID)
 	ctx.frontierPower[target] = value
 	return value
 }
@@ -251,6 +251,9 @@ func chooseStrategicPlan(gs *state.GameState, fid faction.FactionID, ctx *Strate
 	if targetID := aiBestExpansionPlanTarget(gs, self, ctx); targetID != "" {
 		return newStrategicPlan(gs, self, ctx, state.AIObjectiveExpand, targetID, "senaryo genişleme hedefi")
 	}
+	if targetID := aiBestOpportunisticExpansionTarget(gs, self, ctx); targetID != "" {
+		return newStrategicPlan(gs, self, ctx, state.AIObjectiveExpand, targetID, "barış dönemindeki sınır fırsatı")
+	}
 	if len(ctx.WarEnemies) > 0 {
 		targetID := ctx.WarEnemies[0]
 		return newStrategicPlan(gs, self, ctx, state.AIObjectiveDefend, targetID, "aktif savaş cephesi")
@@ -352,6 +355,11 @@ func chooseScenarioObjectivePlan(gs *state.GameState, self *faction.Faction, ctx
 			// bonus yalnızca barış döneminde gerçek bir saldırı niyeti üretir.
 			if kind == state.AIObjectiveExpand && gs.Turn >= aiWarLogisticsActivationTurn && !ctx.CriticalThreat && len(ctx.WarEnemies) == 0 {
 				score += 55
+			}
+			if kind == state.AIObjectiveDefend && !ctx.CriticalThreat && len(ctx.WarEnemies) == 0 {
+				// Savunma profili barış zamanında genişleme niyetini sürekli
+				// gölgelememeli; gerçek tehdit geldiğinde bu kesinti uygulanmaz.
+				score -= 100
 			}
 			if rel := diplomacy.Relation(gs, self.ID, targetID); rel != nil && rel.Stance == faction.StanceWar {
 				score += 50
@@ -775,6 +783,52 @@ func aiBestExpansionPlanTarget(gs *state.GameState, self *faction.Faction, ctx *
 			score += maxInt(-40, powerAdvantage/10)
 		}
 		score += minInt(20, ctx.powerAtFrontier(targetID)/20)
+		if score > bestScore || (score == bestScore && (bestID == "" || targetID < bestID)) {
+			bestScore = score
+			bestID = targetID
+		}
+	}
+	return bestID
+}
+
+func aiBestOpportunisticExpansionTarget(gs *state.GameState, self *faction.Faction, ctx *StrategicContext) faction.FactionID {
+	if gs == nil || self == nil || ctx == nil || gs.Turn < aiWarLogisticsActivationTurn || ctx.CriticalThreat || len(ctx.WarEnemies) > 0 || self.AIAggressiveness < 35 {
+		return ""
+	}
+	selfRegions := len(gs.LandRegionsOwnedBy(self.ID))
+	if selfRegions == 0 {
+		return ""
+	}
+	bestID := faction.FactionID("")
+	bestScore := -1
+	for _, targetID := range aiSortedFactionIDs(gs) {
+		if targetID == self.ID || diplomacy.SameRealm(gs, self.ID, targetID) || !aiSharesLandBorder(gs, self.ID, targetID) {
+			continue
+		}
+		target := gs.Factions[targetID]
+		if target == nil || target.IsEliminated || diplomacy.DirectOverlord(gs, targetID) != "" {
+			continue
+		}
+		rel := diplomacy.Relation(gs, self.ID, targetID)
+		if rel == nil || rel.Stance != faction.StancePeace || rel.Score > 30 {
+			continue
+		}
+		targetRegions := len(gs.LandRegionsOwnedBy(targetID))
+		if targetRegions == 0 || targetRegions > selfRegions+4 {
+			continue
+		}
+		selfPower := ctx.militaryPower(self.ID)
+		targetPower := ctx.militaryPower(targetID)
+		if selfPower <= 0 || (targetPower > 0 && selfPower*100 < targetPower*85) {
+			continue
+		}
+		score := 40 - rel.Score
+		score += minInt(25, aiBestBorderTargetValue(gs, self.ID, targetID)/10)
+		score += minInt(20, maxInt(0, selfPower-targetPower)/12)
+		score += minInt(12, self.AIAggressiveness/6)
+		if targetRegions <= 2 {
+			score += 8
+		}
 		if score > bestScore || (score == bestScore && (bestID == "" || targetID < bestID)) {
 			bestScore = score
 			bestID = targetID

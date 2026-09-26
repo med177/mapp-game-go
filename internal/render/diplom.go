@@ -1174,10 +1174,15 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		}
 
 		_, militaryRank, factionCount := factionMilitaryPowerStanding(gs, fid)
-		drawUILabel(screen, powerRect, "Askeri güç", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		_, _, exact := displayedFactionPowerBreakdown(gs, fid)
+		powerTitle := "Askeri güç"
+		if !exact {
+			powerTitle = "Tahmini güç"
+		}
+		drawUILabel(screen, powerRect, powerTitle, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		powerValueRect := powerRect
 		powerValueRect.Y = rowRect.Y + 27
-		landPower, navalPower := diplomacy.MilitaryPowerBreakdown(gs, fid)
+		landPower, navalPower, _ := displayedFactionPowerBreakdown(gs, fid)
 		powerText := diplomacyMilitaryPowerLabel(landPower, navalPower, militaryRank, factionCount)
 		drawUILabel(screen, powerValueRect, powerText, ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
 		drawUILabel(screen, treasuryRect, "Hazine", ColorGold, gameui.TextSmall, gameui.TextAlignStart)

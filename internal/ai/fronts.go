@@ -1068,7 +1068,7 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 		return false
 	}
 	if target != "" {
-		targetFrontierPower := aiFrontierPower(ctx.gs, target, ctx.FactionID)
+		targetFrontierPower := aiFrontierPowerAsSeenBy(ctx.gs, ctx.FactionID, target, ctx.FactionID)
 		if targetFrontierPower > 0 && attackPower*100 < targetFrontierPower*aiMinAttackPowerPercent(ctx.gs) {
 			return false
 		}

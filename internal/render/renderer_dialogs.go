@@ -448,7 +448,8 @@ func (r *Renderer) drawDefensiveSiegePanel(screen *ebiten.Image, defender, attac
 	defenderValue := "GARNİZON YOK"
 	defenderColor := color.RGBA{214, 130, 112, 255}
 	if defender != nil {
-		defenderValue = itoa(defender.TotalStrength(r.gs.UnitTypes))
+		power, exact := state.ArmyPowerEstimate(r.gs, r.gs.PlayerFactionID, defender)
+		defenderValue = perceivedPowerText(power, exact)
 		defenderColor = color.RGBA{202, 222, 190, 255}
 	}
 	drawSelectedSiegeMetric(screen, gameui.Rect{X: panel.Rect.X + 28 + metricW, Y: metricY + 50, W: metricW, H: 44}, "SAVUNMA GÜCÜ", defenderValue, defenderColor)
@@ -464,7 +465,8 @@ func (r *Renderer) drawDefensiveSiegePanel(screen *ebiten.Image, defender, attac
 		if defenderName == "" {
 			defenderName = defender.OwnerID
 		}
-		defenderPower = itoa(defender.TotalStrength(r.gs.UnitTypes))
+		power, exact := state.ArmyPowerEstimate(r.gs, r.gs.PlayerFactionID, defender)
+		defenderPower = perceivedPowerText(power, exact)
 	}
 	attackerLine := fmt.Sprintf("Kuşatan: %s | Güç: %d", attackerName, attacker.TotalStrength(r.gs.UnitTypes))
 	defenderLine := fmt.Sprintf("Savunan: %s | Güç: %s", defenderName, defenderPower)
@@ -1581,7 +1583,12 @@ func drawDiplomacyOfferSummaryPanel(screen *ebiten.Image, gs *state.GameState, p
 	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Yönetim", governanceLabel, ColorGray, governanceColor)
 	y += 22
 
-	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Askeri güç", itoa(diplomacy.MilitaryPower(gs, subject)), ColorGray, ColorWhite)
+	power, powerExact := displayedFactionPower(gs, subject)
+	powerLabel := "Askeri güç"
+	if !powerExact {
+		powerLabel = "Tahmini güç"
+	}
+	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, powerLabel, perceivedPowerText(power, powerExact), ColorGray, ColorWhite)
 	y += 22
 	drawUIKeyValueRow(screen, panelRect.X+14, y, panelRect.W-28, "Kara bölge", itoa(diplomacyFactionLandRegionCount(gs, subject)), ColorGray, ColorWhite)
 	y += 22
@@ -2125,10 +2132,12 @@ func (r *Renderer) drawNavalContactFleetCard(screen *ebiten.Image, rect gameui.R
 	if fleet.Commander != nil && fleet.Commander.Name != "" {
 		commander = fleet.Commander.Name
 	}
+	attackPower, attackExact := state.ArmyPowerEstimate(r.gs, r.gs.PlayerFactionID, fleet)
+	defensePower, defenseExact := state.ArmyDefenseEstimate(r.gs, r.gs.PlayerFactionID, fleet)
 	metrics := [][2]string{
 		{"Devlet", factionName},
 		{"Birim", itoa(len(fleet.Units))},
-		{"Saldırı / Savunma", itoa(fleet.TotalStrength(r.gs.UnitTypes)) + " / " + itoa(fleet.TotalDefense(r.gs.UnitTypes))},
+		{"Saldırı / Savunma", perceivedPowerText(attackPower, attackExact) + " / " + perceivedPowerText(defensePower, defenseExact)},
 		{"Moral", itoa(fleet.CurrentMorale())},
 		{"Hareket", itoa(fleet.MovePoints) + " / " + itoa(fleet.MaxMovePoints)},
 		{"Görev / Komutan", mission + " / " + commander},
@@ -2139,11 +2148,15 @@ func (r *Renderer) drawNavalContactFleetCard(screen *ebiten.Image, rect gameui.R
 		rowY += 23
 	}
 
-	power := fleet.TotalStrength(r.gs.UnitTypes)
+	power := attackPower
 	powerY := rect.Y + rect.H - 54
 	drawUISeparator(screen, float32(rect.X+12), float32(powerY-9), float32(rect.X+rect.W-12), 1, color.RGBA{112, 88, 48, 220})
-	drawUILabel(screen, gameui.Rect{X: rect.X + 12, Y: powerY, W: rect.W - 24}, "GÜÇ", accent, gameui.TextSmall, gameui.TextAlignCenter)
-	drawUILabel(screen, gameui.Rect{X: rect.X + 12, Y: powerY + 17, W: rect.W - 24}, itoa(power), ColorWhite, gameui.TextLarge, gameui.TextAlignCenter)
+	powerLabel := "GÜÇ"
+	if !attackExact {
+		powerLabel = "TAHMİNİ GÜÇ"
+	}
+	drawUILabel(screen, gameui.Rect{X: rect.X + 12, Y: powerY, W: rect.W - 24}, powerLabel, accent, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 12, Y: powerY + 17, W: rect.W - 24}, perceivedPowerText(power, attackExact), ColorWhite, gameui.TextLarge, gameui.TextAlignCenter)
 }
 
 func navalContactDecisionLabelTR(decision state.NavalContactDecision) string {

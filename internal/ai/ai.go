@@ -200,6 +200,16 @@ func aiFactionMilitaryPower(gs *state.GameState, fid faction.FactionID) int {
 	return total
 }
 
+// aiFactionMilitaryPowerAsSeenBy, AI'nin rakip gücünü tam sayı yerine kendi
+// istihbarat tahminiyle değerlendirmesini sağlar. Aktörün kendi gücü her zaman
+// gerçektir; tahmin state katmanındaki ortak seed ve teknoloji kuralını kullanır.
+func aiFactionMilitaryPowerAsSeenBy(gs *state.GameState, observer, target faction.FactionID) int {
+	if gs == nil || target == "" || observer == target {
+		return aiFactionMilitaryPower(gs, target)
+	}
+	return state.MilitaryPowerEstimate(gs, observer, target)
+}
+
 func turnFactionName(gs *state.GameState, fid faction.FactionID) string {
 	if gs == nil {
 		return string(fid)
@@ -266,8 +276,8 @@ func aiDiplomacyOfferPriorityDetails(gs *state.GameState, from, to faction.Facti
 		score += minInt(6, (fromTech-toTech)*2)
 	}
 
-	fromPower := aiFactionMilitaryPower(gs, from)
-	toPower := aiFactionMilitaryPower(gs, to)
+	fromPower := aiFactionMilitaryPowerAsSeenBy(gs, from, from)
+	toPower := aiFactionMilitaryPowerAsSeenBy(gs, from, to)
 	if toPower > fromPower {
 		powerScore := minInt(24, (toPower-fromPower)/10)
 		score += powerScore
@@ -412,8 +422,8 @@ func aiAllianceBenefitScoreWithThreats(gs *state.GameState, actor, target factio
 	if gs == nil {
 		return 0
 	}
-	actorPower := aiFactionMilitaryPower(gs, actor)
-	targetPower := aiFactionMilitaryPower(gs, target)
+	actorPower := aiFactionMilitaryPowerAsSeenBy(gs, actor, actor)
+	targetPower := aiFactionMilitaryPowerAsSeenBy(gs, actor, target)
 	actorRegions := len(gs.LandRegionsOwnedBy(actor))
 	targetRegions := len(gs.LandRegionsOwnedBy(target))
 	score := 0
@@ -426,7 +436,7 @@ func aiAllianceBenefitScoreWithThreats(gs *state.GameState, actor, target factio
 	}
 	if aiSharesLandBorder(gs, actor, target) {
 		score += 4
-		frontierSupport := aiFrontierPower(gs, target, actor)
+		frontierSupport := aiFrontierPowerAsSeenBy(gs, actor, target, actor)
 		if frontierSupport > 0 {
 			score += minInt(12, frontierSupport/10+4)
 		}
@@ -495,8 +505,15 @@ func strategicAllianceRetentionFloor(gs *state.GameState, fid faction.FactionID)
 }
 
 func aiDiplomacyOfferRoll(gs *state.GameState, from, to faction.FactionID, action diplomacy.Action) int {
+	return aiDecisionRoll(gs, from, to, string(action))
+}
+
+func aiDecisionRoll(gs *state.GameState, from, to faction.FactionID, action string) int {
+	if gs == nil {
+		return 0
+	}
 	hasher := fnv.New32a()
-	_, _ = fmt.Fprintf(hasher, "%d|%s|%s|%s", gs.Turn, from, to, action)
+	_, _ = fmt.Fprintf(hasher, "%d|%d|%s|%s|%s", gs.DecisionSeed, gs.Turn, from, to, action)
 	return int(hasher.Sum32() % 100)
 }
 
@@ -695,6 +712,19 @@ func aiFrontierPower(gs *state.GameState, owner, against faction.FactionID) int 
 		}
 	}
 	return total
+}
+
+func aiFrontierPowerAsSeenBy(gs *state.GameState, observer, owner, against faction.FactionID) int {
+	frontier := aiFrontierPower(gs, owner, against)
+	if gs == nil || observer == owner || frontier <= 0 {
+		return frontier
+	}
+	exactTotal := aiFactionMilitaryPower(gs, owner)
+	if exactTotal <= 0 {
+		return frontier
+	}
+	estimatedTotal := aiFactionMilitaryPowerAsSeenBy(gs, observer, owner)
+	return frontier * estimatedTotal / exactTotal
 }
 
 func aiBestBorderTargetValue(gs *state.GameState, actor, target faction.FactionID) int {

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-09-18
+last_updated: 2026-09-26
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -13,6 +13,15 @@ related: [world/factions, systems/ai, architecture/state-management, dev/data-fo
 hesaplar; `MilitaryPower()` bu iki değerin toplamıdır. Etkin güç, birimin saldırı
 değeri ile can yüzdesi ve ordu morali etkisini içerir. Diplomatik güç kıyasları
 ve devlet güç sıralaması bu toplamı kullanır.
+
+Oyuncu ve AI rakip devletlerin bu kesin toplamını doğrudan bilmez. Diplomasi,
+savaş özeti ve aktif savaş ekranları `state.MilitaryPowerEstimate()` üzerinden
+aynı gözlemciye özel `%20` aralıkta tahmini güç gösterir; tahmin tur boyunca
+değişmez ve `GameState.DecisionSeed` ile save/load sonrasında korunur. Devletin
+kendi gücü ve `reveal_enemy_strength` etkisine sahip gözlemci için değer kesindir.
+Gerçek savaş çözümlemesi bu sis perdesinden etkilenmez. AI'nin nadir riskli savaş
+ilanları `WarLedger.RecklessDeclaration` ile işaretlenir ve barış değerlendirmesine
+ek baskı verir.
 
 ## İmparatorluk Sistemi
 

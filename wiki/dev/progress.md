@@ -7,6 +7,21 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-26: AI savaş davranışı canlandırıldı. Barış döneminde uygun kara
+  komşularına fırsat genişleme planı veriliyor; savunma objective'i gerçek tehdit
+  yokken genişlemeyi gölgelemiyor. AI ve oyuncu rakip askerî gücü artık aynı tur
+  içinde sabit, save-backed seed ile üretilen `%20` belirsizlikle görür; kendi güç
+  ve `reveal_enemy_strength` teknolojisi tam bilgidir. AI karar zarları nadir
+  riskli savaş ilanlarına izin veriyor; bu savaşlar WarLedger'da işaretlenip
+  erken barış baskısı alıyor. Gerçek muharebe/hasar çözümlemesi kesin güçle
+  devam ediyor. Kaynaklar: `internal/state/military_intel.go`,
+  `internal/ai/strategic_plan.go`, `internal/ai/war_strategy.go`.
+
+- 2026-09-26: `DEV_MODE=true` geliştirme akışına `F10` ile gerçek/tahmini
+  askerî güç görünümü eklendi. Toggle yalnız geliştirme modunda çalışıyor, kısa
+  bildirim veriyor ve debug save/load durumunu koruyor; normal kampanyada güç
+  belirsizliği değişmiyor.
+
 - 2026-09-26: Kara ordusu slotu aşıldığında parçalı komuta organizasyon cezası
   savaş önizlemesi ve gerçek muharebelerde uygulanıyor. Ceza, `CurrentLandArmies /
   MaxLandArmies` aşımının yarısı olarak hesaplanıyor ve %30 ile sınırlanıyor;

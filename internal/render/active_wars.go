@@ -64,32 +64,34 @@ type ActiveWarSummary struct {
 }
 
 type ActiveWarParticipant struct {
-	FactionID       faction.FactionID
-	NameTR          string
-	Power           int
-	Armies          int
-	Units           int
-	LandArmies      int
-	NavalArmies     int
-	LandUnits       int
-	NavalUnits      int
-	Casualties      int
-	ArmyCasualties  int
-	FleetCasualties int
+	FactionID        faction.FactionID
+	NameTR           string
+	Power            int
+	PowerApproximate bool
+	Armies           int
+	Units            int
+	LandArmies       int
+	NavalArmies      int
+	LandUnits        int
+	NavalUnits       int
+	Casualties       int
+	ArmyCasualties   int
+	FleetCasualties  int
 }
 
 type ActiveWarSide struct {
-	Participants    []ActiveWarParticipant
-	Power           int
-	Armies          int
-	Units           int
-	LandArmies      int
-	NavalArmies     int
-	LandUnits       int
-	NavalUnits      int
-	Casualties      int
-	ArmyCasualties  int
-	FleetCasualties int
+	Participants     []ActiveWarParticipant
+	Power            int
+	PowerApproximate bool
+	Armies           int
+	Units            int
+	LandArmies       int
+	NavalArmies      int
+	LandUnits        int
+	NavalUnits       int
+	Casualties       int
+	ArmyCasualties   int
+	FleetCasualties  int
 }
 
 // topHudUtilityButtonRect, müzik kartının sağındaki ortak küçük düğme
@@ -550,23 +552,26 @@ func addActiveWarParticipant(gs *state.GameState, side *ActiveWarSide, seen map[
 		return
 	}
 	landArmies, navalArmies, landUnits, navalUnits := activeWarArmyBreakdown(gs, id)
+	power, powerExact := displayedFactionPower(gs, id)
 	participant := ActiveWarParticipant{
-		FactionID:       id,
-		NameTR:          activeWarFactionName(gs, id),
-		Power:           diplomacy.MilitaryPower(gs, id),
-		Armies:          landArmies + navalArmies,
-		Units:           landUnits + navalUnits,
-		LandArmies:      landArmies,
-		NavalArmies:     navalArmies,
-		LandUnits:       landUnits,
-		NavalUnits:      navalUnits,
-		Casualties:      casualties,
-		ArmyCasualties:  armyCasualties,
-		FleetCasualties: fleetCasualties,
+		FactionID:        id,
+		NameTR:           activeWarFactionName(gs, id),
+		Power:            power,
+		PowerApproximate: !powerExact,
+		Armies:           landArmies + navalArmies,
+		Units:            landUnits + navalUnits,
+		LandArmies:       landArmies,
+		NavalArmies:      navalArmies,
+		LandUnits:        landUnits,
+		NavalUnits:       navalUnits,
+		Casualties:       casualties,
+		ArmyCasualties:   armyCasualties,
+		FleetCasualties:  fleetCasualties,
 	}
 	seen[id] = len(side.Participants)
 	side.Participants = append(side.Participants, participant)
 	side.Power += participant.Power
+	side.PowerApproximate = side.PowerApproximate || participant.PowerApproximate
 	side.Armies += participant.Armies
 	side.Units += participant.Units
 	side.LandArmies += participant.LandArmies
@@ -815,7 +820,11 @@ func activeWarSideRect(row gameui.Rect, sideIndex int) gameui.Rect {
 
 func drawActiveWarSide(screen *ebiten.Image, gs *state.GameState, rect gameui.Rect, label string, side ActiveWarSide) {
 	drawUILabel(screen, gameui.Rect{X: rect.X, Y: rect.Y + 5, W: rect.W}, label, color.RGBA{255, 220, 118, 255}, gameui.TextSmall, gameui.TextAlignStart)
-	summary := "Güç " + itoa(side.Power) + " • " + itoa(side.LandArmies) + " Ordu • " + itoa(side.NavalArmies) + " Filo • " + itoa(side.ArmyCasualties) + "/" + itoa(side.FleetCasualties) + " Kayıp"
+	powerLabel := "Güç "
+	if side.PowerApproximate {
+		powerLabel = "Tahmini güç ~"
+	}
+	summary := powerLabel + itoa(side.Power) + " • " + itoa(side.LandArmies) + " Ordu • " + itoa(side.NavalArmies) + " Filo • " + itoa(side.ArmyCasualties) + "/" + itoa(side.FleetCasualties) + " Kayıp"
 	drawUILabel(screen, gameui.Rect{X: rect.X, Y: rect.Y + 20, W: rect.W}, trimTextToWidth(summary, FaceSmall, rect.W), color.RGBA{210, 194, 160, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	for index, participant := range side.Participants {
 		y := rect.Y + activeWarSideHeaderH + float64(index)*activeWarParticipantH
@@ -823,7 +832,7 @@ func drawActiveWarSide(screen *ebiten.Image, gs *state.GameState, rect gameui.Re
 		drawFactionFlagBadge(screen, participant.FactionID, factionInitial(participant.NameTR), flag.X, flag.Y, flag.W, activeWarFactionFlagColor(gs, participant.FactionID), panelBorder)
 		textX := flag.X + flag.W + 6
 		textW := rect.W - (textX - rect.X)
-		power := "Güç " + itoa(participant.Power)
+		power := "Güç " + perceivedPowerText(participant.Power, !participant.PowerApproximate)
 		drawUILabel(screen, gameui.Rect{X: textX, Y: y + 1, W: textW}, trimTextToWidth(power+" • "+participant.NameTR, FaceSmall, textW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 		army := itoa(participant.LandArmies) + " Ordu • " + itoa(participant.LandUnits) + " birim • " + itoa(participant.ArmyCasualties) + " Kayıp"
 		navy := itoa(participant.NavalArmies) + " Filo • " + itoa(participant.NavalUnits) + " birim • " + itoa(participant.FleetCasualties) + " Kayıp"

@@ -56,6 +56,9 @@ type WarLedger struct {
 	LastPeaceOfferTurn int               `json:"last_peace_offer_turn,omitempty"`
 	TargetRegionID     world.RegionID    `json:"target_region_id,omitempty"`
 	TargetLockedTurn   int               `json:"target_locked_turn,omitempty"`
+	// RecklessDeclaration, AI'nin nadir riskli savaş zarını kullandığını taşır.
+	// Bu savaşlarda erken barış baskısı bilinçli olarak biraz daha yüksektir.
+	RecklessDeclaration bool `json:"reckless_declaration,omitempty"`
 }
 
 // BeginWarLedger savaş başlangıcını yalnızca ilk geçişte kaydeder.

@@ -124,6 +124,11 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 		return assessment
 	}
 	assessment.WarTurns = max(0, gs.Turn-ledger.StartedTurn)
+	if ledger.RecklessDeclaration && assessment.WarTurns >= 2 {
+		// Riskli savaş kararı sonradan da aynı devletin “yanlış hesap yaptım”
+		// davranışını üretir; bu yalnızca barış baskısıdır, zorunlu barış değildir.
+		assessment.Score += 8
+	}
 	assessment.OwnLosses, assessment.EnemyLosses = warCasualtiesFor(ledger, actor)
 	actorCaptured, opponentCaptured := warCapturesFor(ledger, actor)
 	assessment.RegionsGained = actorCaptured
@@ -148,7 +153,9 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 		assessment.Score -= min(14, (assessment.EnemyLosses-assessment.OwnLosses)*2)
 	}
 	actorPower := MilitaryPower(gs, actor)
-	opponentPower := MilitaryPower(gs, opponent)
+	// Barış baskısı, savaşan devletin bildiği rakip gücüne dayanır. Gerçek
+	// savaş sonucu ve kayıp kayıtları ise her zaman kesin state değerlerini kullanır.
+	opponentPower := state.MilitaryPowerEstimate(gs, actor, opponent)
 	switch {
 	case actorPower == 0 && opponentPower > 0:
 		assessment.Score += 45
@@ -364,7 +371,7 @@ func futureLossPressureFor(gs *state.GameState, actor, opponent faction.FactionI
 		return 0
 	}
 	actorPower := MilitaryPower(gs, actor)
-	opponentPower := MilitaryPower(gs, opponent)
+	opponentPower := state.MilitaryPowerEstimate(gs, actor, opponent)
 	if opponentPower <= 0 {
 		return 0
 	}

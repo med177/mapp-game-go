@@ -335,6 +335,29 @@ func TestCompactSavePreservesNavalSupplyCargo(t *testing.T) {
 	}
 }
 
+func TestCompactSavePreservesDecisionSeedAndRecklessWarLedger(t *testing.T) {
+	const key = "alpha|beta"
+	saved := campaignSaveState{
+		DecisionSeed:             987654321,
+		DevelopmentMode:          true,
+		DebugRevealMilitaryPower: true,
+		WarLedgers: map[string]*state.WarLedger{
+			key: {FactionA: "alpha", FactionB: "beta", RecklessDeclaration: true},
+		},
+	}
+	gs := &state.GameState{}
+	applyCampaignSaveState(gs, saved)
+	if gs.DecisionSeed != saved.DecisionSeed {
+		t.Fatalf("karar seed'i korunmadı: got=%d want=%d", gs.DecisionSeed, saved.DecisionSeed)
+	}
+	if !gs.DebugRevealMilitaryPower {
+		t.Fatal("geliştirme güç görünümü save'den dönmedi")
+	}
+	if ledger := gs.WarLedgers[key]; ledger == nil || !ledger.RecklessDeclaration {
+		t.Fatalf("riskli savaş işareti save'den dönmedi: %+v", ledger)
+	}
+}
+
 func TestCampaignSaveStateRestoresOtherIncomeDelta(t *testing.T) {
 	const fid = faction.FactionID("portugal")
 	base := &faction.Faction{ID: fid}

@@ -35,6 +35,7 @@ var shortcutEntries = []shortcutEntry{
 	{key: "F9", label: "Kayıttan yükleme menüsü"},
 	{key: "+ / -", label: "Vergiyi artırır / azaltır"},
 	{key: "F11", label: "Tam ekranı açar / kapatır"},
+	{key: "F10", label: "Gerçek / tahmini askerî güç (geliştirme modu)"},
 	{key: "F12", label: "AI teşhis paneli (geliştirme modu)"},
 }
 

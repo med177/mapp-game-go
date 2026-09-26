@@ -433,6 +433,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	diplomacy.NormalizeVassalage(gs)
 	gs.NormalizeSiegeDefenderReferences()
 	gs.SyncWarLedgers()
+	gs.EnsureDecisionSeed()
 	if gs.TradeRoutes == nil {
 		gs.TradeRoutes = []*economy.TradeRoute{}
 	}

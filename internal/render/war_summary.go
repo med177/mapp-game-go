@@ -12,32 +12,34 @@ import (
 )
 
 type WarSummaryParticipant struct {
-	FactionID   faction.FactionID
-	NameTR      string
-	RoleTR      string
-	Strength    int
-	ArmyCount   int
-	LandUnits   int
-	NavalUnits  int
-	RegionCount int
-	Gold        int
-	Grain       int
+	FactionID        faction.FactionID
+	NameTR           string
+	RoleTR           string
+	Strength         int
+	PowerApproximate bool
+	ArmyCount        int
+	LandUnits        int
+	NavalUnits       int
+	RegionCount      int
+	Gold             int
+	Grain            int
 }
 
 type WarSummarySide struct {
-	Label           string
-	LeaderNameTR    string
-	TotalStrength   int
-	TotalArmies     int
-	TotalLandUnits  int
-	TotalNavalUnits int
-	TotalRegions    int
-	TotalGold       int
-	TotalGrain      int
-	TotalGoldIncome int
-	TotalGoldNet    int
-	Participants    []WarSummaryParticipant
-	Refused         []string
+	Label            string
+	LeaderNameTR     string
+	TotalStrength    int
+	PowerApproximate bool
+	TotalArmies      int
+	TotalLandUnits   int
+	TotalNavalUnits  int
+	TotalRegions     int
+	TotalGold        int
+	TotalGrain       int
+	TotalGoldIncome  int
+	TotalGoldNet     int
+	Participants     []WarSummaryParticipant
+	Refused          []string
 }
 
 type WarSummaryReport struct {
@@ -226,7 +228,11 @@ func drawWarSummarySide(screen *ebiten.Image, gs *state.GameState, sideRect, lis
 	drawUICardRect(screen, sideRect, color.RGBA{20, 14, 10, 234}, color.RGBA{94, 74, 42, 210}, 1)
 	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 14, W: sideRect.W - 28}, side.Label, color.RGBA{255, 220, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 38, W: sideRect.W - 28}, "Lider: "+side.LeaderNameTR, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 58, W: sideRect.W - 28}, trimTextToWidth("Güç "+itoa(side.TotalStrength)+"  |  "+itoa(side.TotalArmies)+" ordu  |  "+itoa(side.TotalLandUnits)+" kara / "+itoa(side.TotalNavalUnits)+" deniz birimi", FaceSmall, sideRect.W-28), color.RGBA{212, 202, 176, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	powerLabel := "Güç " + perceivedPowerText(side.TotalStrength, !side.PowerApproximate)
+	if side.PowerApproximate {
+		powerLabel = "Tahmini güç " + perceivedPowerText(side.TotalStrength, false)
+	}
+	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 58, W: sideRect.W - 28}, trimTextToWidth(powerLabel+"  |  "+itoa(side.TotalArmies)+" ordu  |  "+itoa(side.TotalLandUnits)+" kara / "+itoa(side.TotalNavalUnits)+" deniz birimi", FaceSmall, sideRect.W-28), color.RGBA{212, 202, 176, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: sideRect.X + 14, Y: sideRect.Y + 76, W: sideRect.W - 28}, trimTextToWidth("Toplam "+itoa(side.TotalRegions)+" bölge  |  "+itoa(side.TotalGold)+" altın  |  "+itoa(side.TotalGrain)+" tahıl  |  Gelir "+formatSignedAmount(side.TotalGoldIncome)+" / Net "+formatSignedAmount(side.TotalGoldNet)+" altın/tur", FaceSmall, sideRect.W-28), color.RGBA{190, 178, 154, 255}, gameui.TextSmall, gameui.TextAlignStart)
 	refusedText := "Katılmayan yok."
 	if len(side.Refused) > 0 {
@@ -258,7 +264,7 @@ func drawWarSummarySide(screen *ebiten.Image, gs *state.GameState, sideRect, lis
 		drawFactionFlagBadge(screen, entry.FactionID, factionInitial(entry.NameTR), rowRect.X+8, rowRect.Y+9, flagSize, flagBG, color.RGBA{142, 116, 72, 255})
 		textX := rowRect.X + 58
 		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 6, W: rowRect.W - 70}, trimTextToWidth(entry.NameTR, FaceMed, rowRect.W-70), ColorWhite, gameui.TextMedium, gameui.TextAlignStart)
-		roleText := entry.RoleTR + "  |  Güç " + itoa(entry.Strength)
+		roleText := entry.RoleTR + "  |  Güç " + perceivedPowerText(entry.Strength, !entry.PowerApproximate)
 		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 25, W: rowRect.W - 70}, trimTextToWidth(roleText, FaceSmall, rowRect.W-70), color.RGBA{204, 190, 146, 255}, gameui.TextSmall, gameui.TextAlignStart)
 		metricsText := itoa(entry.ArmyCount) + " ordu  |  " + itoa(entry.LandUnits) + " kara / " + itoa(entry.NavalUnits) + " deniz  |  " + itoa(entry.RegionCount) + " bölge  |  " + itoa(entry.Gold) + " altın / " + itoa(entry.Grain) + " tahıl"
 		drawUILabel(screen, gameui.Rect{X: textX, Y: rowRect.Y + 42, W: rowRect.W - 70}, trimTextToWidth(metricsText, FaceSmall, rowRect.W-70), ColorGray, gameui.TextSmall, gameui.TextAlignStart)

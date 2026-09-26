@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 	"sync/atomic"
+	"time"
 
 	"mapp-game-go/internal/ai"
 	"mapp-game-go/internal/army"
@@ -4118,6 +4119,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 
 	gs := &state.GameState{
 		Turn:                     1,
+		DecisionSeed:             uint64(time.Now().UnixNano()),
 		Year:                     year,
 		Month:                    month,
 		MonthsPerTurn:            monthsPerTurn,

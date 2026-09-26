@@ -199,7 +199,7 @@ func applyRallyAssignments(ctx *StrategicContext) {
 			break
 		}
 	}
-	targetFrontierPower := aiFrontierPower(ctx.gs, rallyTarget, ctx.FactionID)
+	targetFrontierPower := aiFrontierPowerAsSeenBy(ctx.gs, ctx.FactionID, rallyTarget, ctx.FactionID)
 	requiredPower := maxInt(
 		percentageCeil(totalPower, aiRallyForceSharePercent),
 		percentageCeil(targetFrontierPower, aiMinAttackPowerPercent(ctx.gs)),

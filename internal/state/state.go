@@ -274,6 +274,10 @@ type GameState struct {
 	Month         int `json:"month"` // 1-12
 	MonthsPerTurn int `json:"months_per_turn,omitempty"`
 	StartYear     int `json:"start_year"`
+	// DecisionSeed aynı kampanyada AI karar zarlarını ve askerî istihbarat
+	// sapmasını sabit tutar. Böylece aynı tur içinde bilgi değişmez ve save/load
+	// sonrasında kararlar farklı bir devlete dönüşmez.
+	DecisionSeed uint64 `json:"decision_seed,omitempty"`
 
 	// Senaryo
 	ScenarioID      string                   `json:"scenario_id"`   // aktif senaryo ID'si
@@ -291,8 +295,9 @@ type GameState struct {
 	Difficulty         int                                   `json:"difficulty"` // 1=kolay, 2=normal, 3=zor
 
 	// Development mode
-	DevelopmentMode bool `json:"development_mode"`
-	EditMode        bool `json:"edit_mode"`
+	DevelopmentMode          bool `json:"development_mode"`
+	EditMode                 bool `json:"edit_mode"`
+	DebugRevealMilitaryPower bool `json:"-"`
 
 	// Zafer koşulu
 	Victory                 VictoryCondition `json:"victory"`

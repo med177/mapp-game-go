@@ -269,6 +269,16 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.showAIDiagnostic {
 		return r.handleAIDiagnosticInput()
 	}
+	if r.gs.DevelopmentMode && r.keyJustPressed(ebiten.KeyF10) {
+		r.gs.DebugRevealMilitaryPower = !r.gs.DebugRevealMilitaryPower
+		if r.gs.DebugRevealMilitaryPower {
+			r.combatLog = "Geliştirme: gerçek askerî güçler gösteriliyor"
+		} else {
+			r.combatLog = "Geliştirme: askerî güç belirsizliği geri açıldı"
+		}
+		r.combatLogTimer = 180
+		return InputAction{}
+	}
 	if r.gs.DevelopmentMode && r.keyJustPressed(ebiten.KeyF12) {
 		r.toggleAIDiagnostic()
 		return InputAction{}

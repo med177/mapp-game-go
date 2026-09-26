@@ -107,20 +107,22 @@ type armySaveState struct {
 }
 
 type campaignSaveState struct {
-	Turn                    int                                         `json:"t"`
-	Year                    int                                         `json:"y"`
-	Month                   int                                         `json:"m"`
-	ScenarioID              string                                      `json:"sc"`
-	ScenarioPath            string                                      `json:"scp,omitempty"`
-	PlayerFactionID         faction.FactionID                           `json:"pf"`
-	Difficulty              int                                         `json:"d,omitempty"`
-	AutoGrainExport         bool                                        `json:"age,omitempty"`
-	AutoExportPolicies      map[economy.GoodType]state.AutoExportPolicy `json:"aep,omitempty"`
-	DevelopmentMode         bool                                        `json:"dev,omitempty"`
-	EditMode                bool                                        `json:"em,omitempty"`
-	Victory                 state.VictoryCondition                      `json:"v"`
-	SelectedVictoryOptionID string                                      `json:"sv,omitempty"`
-	Regions                 map[world.RegionID]regionSaveState          `json:"rg,omitempty"`
+	Turn                     int                                         `json:"t"`
+	Year                     int                                         `json:"y"`
+	Month                    int                                         `json:"m"`
+	DecisionSeed             uint64                                      `json:"ds,omitempty"`
+	ScenarioID               string                                      `json:"sc"`
+	ScenarioPath             string                                      `json:"scp,omitempty"`
+	PlayerFactionID          faction.FactionID                           `json:"pf"`
+	Difficulty               int                                         `json:"d,omitempty"`
+	AutoGrainExport          bool                                        `json:"age,omitempty"`
+	AutoExportPolicies       map[economy.GoodType]state.AutoExportPolicy `json:"aep,omitempty"`
+	DevelopmentMode          bool                                        `json:"dev,omitempty"`
+	DebugRevealMilitaryPower bool                                        `json:"drp,omitempty"`
+	EditMode                 bool                                        `json:"em,omitempty"`
+	Victory                  state.VictoryCondition                      `json:"v"`
+	SelectedVictoryOptionID  string                                      `json:"sv,omitempty"`
+	Regions                  map[world.RegionID]regionSaveState          `json:"rg,omitempty"`
 	// TerrainAreas eski save'leri okuyabilmek için korunur. Arazi alanlarının
 	// canonical kaynağı terrain_areas.json olduğundan yeni save'lere yazılmaz
 	// ve yükleme sırasında uygulanmaz.
@@ -198,54 +200,56 @@ type legacyFactionSaveState struct {
 }
 
 type legacyCampaignSaveState struct {
-	Turn                    int                                            `json:"turn"`
-	Year                    int                                            `json:"year"`
-	Month                   int                                            `json:"month"`
-	ScenarioID              string                                         `json:"scenario_id"`
-	ScenarioPath            string                                         `json:"scenario_path,omitempty"`
-	PlayerFactionID         faction.FactionID                              `json:"player_faction_id"`
-	Difficulty              int                                            `json:"difficulty"`
-	AutoGrainExport         bool                                           `json:"auto_grain_export,omitempty"`
-	AutoExportPolicies      map[economy.GoodType]state.AutoExportPolicy    `json:"auto_export_policies,omitempty"`
-	DevelopmentMode         bool                                           `json:"development_mode"`
-	EditMode                bool                                           `json:"edit_mode"`
-	Victory                 state.VictoryCondition                         `json:"victory"`
-	SelectedVictoryOptionID string                                         `json:"selected_victory_option_id"`
-	Regions                 map[world.RegionID]legacyRegionSaveState       `json:"regions"`
-	TerrainAreas            []world.TerrainArea                            `json:"terrain_areas,omitempty"`
-	Factions                map[faction.FactionID]legacyFactionSaveState   `json:"factions"`
-	Armies                  map[army.ArmyID]*army.Army                     `json:"armies"`
-	Commanders              map[string]*army.Commander                     `json:"commanders,omitempty"`
-	DismissedCommanderIDs   map[string]bool                                `json:"dismissed_commander_ids,omitempty"`
-	AIPlans                 map[faction.FactionID]*state.AIPlanState       `json:"ai_plans,omitempty"`
-	AICompletedObjectives   map[faction.FactionID]map[string]bool          `json:"ai_completed_objectives,omitempty"`
-	Imperial                *state.ImperialState                           `json:"imperial,omitempty"`
-	WarLedgers              map[string]*state.WarLedger                    `json:"war_ledgers,omitempty"`
-	RecentTruces            map[string]int                                 `json:"recent_truces,omitempty"`
-	EconomicVictoryTurns    int                                            `json:"economic_victory_turns"`
-	FactionsEliminated      int                                            `json:"factions_eliminated"`
-	ReligiousVictoryTurns   int                                            `json:"religious_victory_turns"`
-	VictoryAchieved         bool                                           `json:"victory_achieved"`
-	VictoryAchievedTurn     int                                            `json:"victory_achieved_turn"`
-	FiredEventIDs           map[string]bool                                `json:"fired_event_ids"`
-	Relations               map[string]*faction.Relation                   `json:"relations"`
-	DiplomaticOffers        []state.DiplomaticOffer                        `json:"diplomatic_offers,omitempty"`
-	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry            `json:"diplomatic_offer_history,omitempty"`
-	DiplomacyOfferCounts    map[faction.FactionID]int                      `json:"diplomacy_offer_counts,omitempty"`
-	OfferRejectionTurns     map[string]int                                 `json:"diplomatic_offer_last_rejected_turns,omitempty"`
-	TradeRoutes             []*economy.TradeRoute                          `json:"trade_routes"`
-	MarketOrders            *state.MarketOrderBook                         `json:"market_orders,omitempty"`
-	Sieges                  map[world.RegionID]*state.SiegeState           `json:"sieges,omitempty"`
-	Raids                   map[world.RegionID]*state.RaidState            `json:"raids,omitempty"`
-	ProductionQueue         []state.ProductionOrder                        `json:"production_queue"`
-	NextProductionSeq       int                                            `json:"next_production_seq"`
-	NextArmySeq             int                                            `json:"next_army_seq"`
-	NextCommanderSeq        int                                            `json:"next_commander_seq,omitempty"`
-	Phase                   state.Phase                                    `json:"phase"`
-	WinnerID                faction.FactionID                              `json:"winner_id"`
-	ActiveRegionEvents      []state.RegionEventStatus                      `json:"active_region_events,omitempty"`
-	AIDiagnostics           map[faction.FactionID]*ai.AIDiagnosticSnapshot `json:"ai_diagnostics,omitempty"`
-	AIDiagnosticHistory     []state.AIDiagnosticHistoryEntry               `json:"ai_diagnostic_history,omitempty"`
+	Turn                     int                                            `json:"turn"`
+	Year                     int                                            `json:"year"`
+	Month                    int                                            `json:"month"`
+	DecisionSeed             uint64                                         `json:"decision_seed,omitempty"`
+	ScenarioID               string                                         `json:"scenario_id"`
+	ScenarioPath             string                                         `json:"scenario_path,omitempty"`
+	PlayerFactionID          faction.FactionID                              `json:"player_faction_id"`
+	Difficulty               int                                            `json:"difficulty"`
+	AutoGrainExport          bool                                           `json:"auto_grain_export,omitempty"`
+	AutoExportPolicies       map[economy.GoodType]state.AutoExportPolicy    `json:"auto_export_policies,omitempty"`
+	DevelopmentMode          bool                                           `json:"development_mode"`
+	DebugRevealMilitaryPower bool                                           `json:"debug_reveal_military_power,omitempty"`
+	EditMode                 bool                                           `json:"edit_mode"`
+	Victory                  state.VictoryCondition                         `json:"victory"`
+	SelectedVictoryOptionID  string                                         `json:"selected_victory_option_id"`
+	Regions                  map[world.RegionID]legacyRegionSaveState       `json:"regions"`
+	TerrainAreas             []world.TerrainArea                            `json:"terrain_areas,omitempty"`
+	Factions                 map[faction.FactionID]legacyFactionSaveState   `json:"factions"`
+	Armies                   map[army.ArmyID]*army.Army                     `json:"armies"`
+	Commanders               map[string]*army.Commander                     `json:"commanders,omitempty"`
+	DismissedCommanderIDs    map[string]bool                                `json:"dismissed_commander_ids,omitempty"`
+	AIPlans                  map[faction.FactionID]*state.AIPlanState       `json:"ai_plans,omitempty"`
+	AICompletedObjectives    map[faction.FactionID]map[string]bool          `json:"ai_completed_objectives,omitempty"`
+	Imperial                 *state.ImperialState                           `json:"imperial,omitempty"`
+	WarLedgers               map[string]*state.WarLedger                    `json:"war_ledgers,omitempty"`
+	RecentTruces             map[string]int                                 `json:"recent_truces,omitempty"`
+	EconomicVictoryTurns     int                                            `json:"economic_victory_turns"`
+	FactionsEliminated       int                                            `json:"factions_eliminated"`
+	ReligiousVictoryTurns    int                                            `json:"religious_victory_turns"`
+	VictoryAchieved          bool                                           `json:"victory_achieved"`
+	VictoryAchievedTurn      int                                            `json:"victory_achieved_turn"`
+	FiredEventIDs            map[string]bool                                `json:"fired_event_ids"`
+	Relations                map[string]*faction.Relation                   `json:"relations"`
+	DiplomaticOffers         []state.DiplomaticOffer                        `json:"diplomatic_offers,omitempty"`
+	DiplomaticOfferHistory   []state.DiplomaticOfferHistoryEntry            `json:"diplomatic_offer_history,omitempty"`
+	DiplomacyOfferCounts     map[faction.FactionID]int                      `json:"diplomacy_offer_counts,omitempty"`
+	OfferRejectionTurns      map[string]int                                 `json:"diplomatic_offer_last_rejected_turns,omitempty"`
+	TradeRoutes              []*economy.TradeRoute                          `json:"trade_routes"`
+	MarketOrders             *state.MarketOrderBook                         `json:"market_orders,omitempty"`
+	Sieges                   map[world.RegionID]*state.SiegeState           `json:"sieges,omitempty"`
+	Raids                    map[world.RegionID]*state.RaidState            `json:"raids,omitempty"`
+	ProductionQueue          []state.ProductionOrder                        `json:"production_queue"`
+	NextProductionSeq        int                                            `json:"next_production_seq"`
+	NextArmySeq              int                                            `json:"next_army_seq"`
+	NextCommanderSeq         int                                            `json:"next_commander_seq,omitempty"`
+	Phase                    state.Phase                                    `json:"phase"`
+	WinnerID                 faction.FactionID                              `json:"winner_id"`
+	ActiveRegionEvents       []state.RegionEventStatus                      `json:"active_region_events,omitempty"`
+	AIDiagnostics            map[faction.FactionID]*ai.AIDiagnosticSnapshot `json:"ai_diagnostics,omitempty"`
+	AIDiagnosticHistory      []state.AIDiagnosticHistoryEntry               `json:"ai_diagnostic_history,omitempty"`
 }
 
 func encodeCompressedStatePayload(saved campaignSaveState) (string, string, error) {
@@ -362,52 +366,54 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 	}
 
 	return campaignSaveState{
-		Turn:                    legacy.Turn,
-		Year:                    legacy.Year,
-		Month:                   legacy.Month,
-		ScenarioID:              legacy.ScenarioID,
-		ScenarioPath:            legacy.ScenarioPath,
-		PlayerFactionID:         legacy.PlayerFactionID,
-		Difficulty:              legacy.Difficulty,
-		AutoGrainExport:         legacy.AutoGrainExport,
-		AutoExportPolicies:      cloneAutoExportPolicies(legacy.AutoExportPolicies),
-		DevelopmentMode:         legacy.DevelopmentMode,
-		EditMode:                legacy.EditMode,
-		Victory:                 legacy.Victory,
-		SelectedVictoryOptionID: legacy.SelectedVictoryOptionID,
-		Regions:                 savedRegions,
-		TerrainAreas:            cloneTerrainAreas(legacy.TerrainAreas),
-		Factions:                savedFactions,
-		Armies:                  convertArmiesToSaveState(legacy.Armies),
-		Commanders:              cloneCommanders(legacy.Commanders),
-		DismissedCommanderIDs:   cloneStringBoolMap(legacy.DismissedCommanderIDs),
-		AIPlans:                 cloneAIPlans(legacy.AIPlans),
-		AICompletedObjectives:   cloneAICompletedObjectives(legacy.AICompletedObjectives),
-		Imperial:                legacy.Imperial.Clone(),
-		WarLedgers:              cloneWarLedgers(legacy.WarLedgers),
-		RecentTruces:            cloneStringIntMap(legacy.RecentTruces),
-		EconomicVictoryTurns:    legacy.EconomicVictoryTurns,
-		FactionsEliminated:      legacy.FactionsEliminated,
-		ReligiousVictoryTurns:   legacy.ReligiousVictoryTurns,
-		VictoryAchieved:         legacy.VictoryAchieved,
-		VictoryAchievedTurn:     legacy.VictoryAchievedTurn,
-		FiredEventIDs:           firedEventIDsToSlice(legacy.FiredEventIDs),
-		Relations:               makeLegacyRelationState(legacy.Relations),
-		DiplomaticOffers:        append([]state.DiplomaticOffer(nil), legacy.DiplomaticOffers...),
-		DiplomaticOfferHistory:  append([]state.DiplomaticOfferHistoryEntry(nil), legacy.DiplomaticOfferHistory...),
-		DiplomacyOfferCounts:    cloneFactionIntMap(legacy.DiplomacyOfferCounts),
-		OfferRejectionTurns:     cloneStringIntMap(legacy.OfferRejectionTurns),
-		TradeRoutes:             cloneTradeRoutes(legacy.TradeRoutes),
-		MarketOrders:            cloneMarketOrders(legacy.MarketOrders),
-		Sieges:                  cloneSieges(legacy.Sieges),
-		Raids:                   cloneRaids(legacy.Raids),
-		ProductionQueue:         append([]state.ProductionOrder(nil), legacy.ProductionQueue...),
-		NextProductionSeq:       legacy.NextProductionSeq,
-		NextArmySeq:             legacy.NextArmySeq,
-		NextCommanderSeq:        legacy.NextCommanderSeq,
-		Phase:                   legacy.Phase,
-		WinnerID:                legacy.WinnerID,
-		ActiveRegionEvents:      append([]state.RegionEventStatus(nil), legacy.ActiveRegionEvents...),
+		Turn:                     legacy.Turn,
+		Year:                     legacy.Year,
+		Month:                    legacy.Month,
+		DecisionSeed:             legacy.DecisionSeed,
+		ScenarioID:               legacy.ScenarioID,
+		ScenarioPath:             legacy.ScenarioPath,
+		PlayerFactionID:          legacy.PlayerFactionID,
+		Difficulty:               legacy.Difficulty,
+		AutoGrainExport:          legacy.AutoGrainExport,
+		AutoExportPolicies:       cloneAutoExportPolicies(legacy.AutoExportPolicies),
+		DevelopmentMode:          legacy.DevelopmentMode,
+		DebugRevealMilitaryPower: legacy.DebugRevealMilitaryPower,
+		EditMode:                 legacy.EditMode,
+		Victory:                  legacy.Victory,
+		SelectedVictoryOptionID:  legacy.SelectedVictoryOptionID,
+		Regions:                  savedRegions,
+		TerrainAreas:             cloneTerrainAreas(legacy.TerrainAreas),
+		Factions:                 savedFactions,
+		Armies:                   convertArmiesToSaveState(legacy.Armies),
+		Commanders:               cloneCommanders(legacy.Commanders),
+		DismissedCommanderIDs:    cloneStringBoolMap(legacy.DismissedCommanderIDs),
+		AIPlans:                  cloneAIPlans(legacy.AIPlans),
+		AICompletedObjectives:    cloneAICompletedObjectives(legacy.AICompletedObjectives),
+		Imperial:                 legacy.Imperial.Clone(),
+		WarLedgers:               cloneWarLedgers(legacy.WarLedgers),
+		RecentTruces:             cloneStringIntMap(legacy.RecentTruces),
+		EconomicVictoryTurns:     legacy.EconomicVictoryTurns,
+		FactionsEliminated:       legacy.FactionsEliminated,
+		ReligiousVictoryTurns:    legacy.ReligiousVictoryTurns,
+		VictoryAchieved:          legacy.VictoryAchieved,
+		VictoryAchievedTurn:      legacy.VictoryAchievedTurn,
+		FiredEventIDs:            firedEventIDsToSlice(legacy.FiredEventIDs),
+		Relations:                makeLegacyRelationState(legacy.Relations),
+		DiplomaticOffers:         append([]state.DiplomaticOffer(nil), legacy.DiplomaticOffers...),
+		DiplomaticOfferHistory:   append([]state.DiplomaticOfferHistoryEntry(nil), legacy.DiplomaticOfferHistory...),
+		DiplomacyOfferCounts:     cloneFactionIntMap(legacy.DiplomacyOfferCounts),
+		OfferRejectionTurns:      cloneStringIntMap(legacy.OfferRejectionTurns),
+		TradeRoutes:              cloneTradeRoutes(legacy.TradeRoutes),
+		MarketOrders:             cloneMarketOrders(legacy.MarketOrders),
+		Sieges:                   cloneSieges(legacy.Sieges),
+		Raids:                    cloneRaids(legacy.Raids),
+		ProductionQueue:          append([]state.ProductionOrder(nil), legacy.ProductionQueue...),
+		NextProductionSeq:        legacy.NextProductionSeq,
+		NextArmySeq:              legacy.NextArmySeq,
+		NextCommanderSeq:         legacy.NextCommanderSeq,
+		Phase:                    legacy.Phase,
+		WinnerID:                 legacy.WinnerID,
+		ActiveRegionEvents:       append([]state.RegionEventStatus(nil), legacy.ActiveRegionEvents...),
 	}
 }
 
@@ -489,54 +495,56 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 	}
 
 	return campaignSaveState{
-		Turn:                    gs.Turn,
-		Year:                    gs.Year,
-		Month:                   gs.Month,
-		ScenarioID:              gs.ScenarioID,
-		ScenarioPath:            saveScenarioPath(gs.ScenarioID, gs.ScenarioPath),
-		PlayerFactionID:         gs.PlayerFactionID,
-		Difficulty:              gs.Difficulty,
-		AutoGrainExport:         gs.AutoGrainExport,
-		AutoExportPolicies:      cloneAutoExportPolicies(gs.AutoExportPolicies),
-		DevelopmentMode:         gs.DevelopmentMode,
-		EditMode:                gs.EditMode,
-		Victory:                 gs.Victory,
-		SelectedVictoryOptionID: gs.SelectedVictoryOptionID,
-		Regions:                 emptyMapAsNil(savedRegions),
-		Factions:                emptyMapAsNil(savedFactions),
-		Armies:                  convertArmiesToSaveState(gs.Armies),
-		Commanders:              cloneCommanders(gs.Commanders),
-		DismissedCommanderIDs:   cloneStringBoolMap(gs.DismissedCommanderIDs),
-		AIPlans:                 cloneAIPlans(gs.AIPlans),
-		AICompletedObjectives:   cloneAICompletedObjectives(gs.AICompletedObjectives),
-		Imperial:                gs.Imperial.Clone(),
-		WarLedgers:              cloneWarLedgers(gs.WarLedgers),
-		RecentTruces:            cloneStringIntMap(gs.RecentTruces),
-		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
-		FactionsEliminated:      gs.FactionsEliminated,
-		ReligiousVictoryTurns:   gs.ReligiousVictoryTurns,
-		VictoryAchieved:         gs.VictoryAchieved,
-		VictoryAchievedTurn:     gs.VictoryAchievedTurn,
-		FiredEventIDs:           firedEventIDsToSlice(gs.FiredEventIDs),
-		TradeNetworkModifiers:   append([]state.TradeNetworkModifier(nil), gs.TradeNetworkModifiers...),
-		LastSubjugationActorID:  gs.LastSubjugationActorID,
-		LastSubjugatedFactionID: gs.LastSubjugatedFactionID,
-		Relations:               makeRelationDelta(gs.Relations, base.Relations),
-		DiplomaticOffers:        append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
-		DiplomaticOfferHistory:  append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
-		DiplomacyOfferCounts:    cloneFactionIntMap(gs.DiplomacyOfferCounts),
-		OfferRejectionTurns:     cloneStringIntMap(gs.OfferRejectionTurns),
-		TradeRoutes:             cloneTradeRoutes(gs.TradeRoutes),
-		MarketOrders:            gs.CloneMarketOrders(),
-		Sieges:                  cloneSieges(gs.Sieges),
-		Raids:                   cloneRaids(gs.Raids),
-		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
-		NextProductionSeq:       gs.NextProductionSeq,
-		NextArmySeq:             gs.NextArmySeq,
-		NextCommanderSeq:        gs.NextCommanderSeq,
-		Phase:                   gs.Phase,
-		WinnerID:                gs.WinnerID,
-		ActiveRegionEvents:      append([]state.RegionEventStatus(nil), gs.ActiveRegionEvents...),
+		Turn:                     gs.Turn,
+		Year:                     gs.Year,
+		Month:                    gs.Month,
+		DecisionSeed:             gs.DecisionSeed,
+		ScenarioID:               gs.ScenarioID,
+		ScenarioPath:             saveScenarioPath(gs.ScenarioID, gs.ScenarioPath),
+		PlayerFactionID:          gs.PlayerFactionID,
+		Difficulty:               gs.Difficulty,
+		AutoGrainExport:          gs.AutoGrainExport,
+		AutoExportPolicies:       cloneAutoExportPolicies(gs.AutoExportPolicies),
+		DevelopmentMode:          gs.DevelopmentMode,
+		DebugRevealMilitaryPower: gs.DebugRevealMilitaryPower,
+		EditMode:                 gs.EditMode,
+		Victory:                  gs.Victory,
+		SelectedVictoryOptionID:  gs.SelectedVictoryOptionID,
+		Regions:                  emptyMapAsNil(savedRegions),
+		Factions:                 emptyMapAsNil(savedFactions),
+		Armies:                   convertArmiesToSaveState(gs.Armies),
+		Commanders:               cloneCommanders(gs.Commanders),
+		DismissedCommanderIDs:    cloneStringBoolMap(gs.DismissedCommanderIDs),
+		AIPlans:                  cloneAIPlans(gs.AIPlans),
+		AICompletedObjectives:    cloneAICompletedObjectives(gs.AICompletedObjectives),
+		Imperial:                 gs.Imperial.Clone(),
+		WarLedgers:               cloneWarLedgers(gs.WarLedgers),
+		RecentTruces:             cloneStringIntMap(gs.RecentTruces),
+		EconomicVictoryTurns:     gs.EconomicVictoryTurns,
+		FactionsEliminated:       gs.FactionsEliminated,
+		ReligiousVictoryTurns:    gs.ReligiousVictoryTurns,
+		VictoryAchieved:          gs.VictoryAchieved,
+		VictoryAchievedTurn:      gs.VictoryAchievedTurn,
+		FiredEventIDs:            firedEventIDsToSlice(gs.FiredEventIDs),
+		TradeNetworkModifiers:    append([]state.TradeNetworkModifier(nil), gs.TradeNetworkModifiers...),
+		LastSubjugationActorID:   gs.LastSubjugationActorID,
+		LastSubjugatedFactionID:  gs.LastSubjugatedFactionID,
+		Relations:                makeRelationDelta(gs.Relations, base.Relations),
+		DiplomaticOffers:         append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
+		DiplomaticOfferHistory:   append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
+		DiplomacyOfferCounts:     cloneFactionIntMap(gs.DiplomacyOfferCounts),
+		OfferRejectionTurns:      cloneStringIntMap(gs.OfferRejectionTurns),
+		TradeRoutes:              cloneTradeRoutes(gs.TradeRoutes),
+		MarketOrders:             gs.CloneMarketOrders(),
+		Sieges:                   cloneSieges(gs.Sieges),
+		Raids:                    cloneRaids(gs.Raids),
+		ProductionQueue:          append([]state.ProductionOrder(nil), gs.ProductionQueue...),
+		NextProductionSeq:        gs.NextProductionSeq,
+		NextArmySeq:              gs.NextArmySeq,
+		NextCommanderSeq:         gs.NextCommanderSeq,
+		Phase:                    gs.Phase,
+		WinnerID:                 gs.WinnerID,
+		ActiveRegionEvents:       append([]state.RegionEventStatus(nil), gs.ActiveRegionEvents...),
 	}, nil
 }
 
@@ -592,53 +600,55 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 	}
 
 	return legacyCampaignSaveState{
-		Turn:                    gs.Turn,
-		Year:                    gs.Year,
-		Month:                   gs.Month,
-		ScenarioID:              gs.ScenarioID,
-		ScenarioPath:            saveScenarioPath(gs.ScenarioID, gs.ScenarioPath),
-		PlayerFactionID:         gs.PlayerFactionID,
-		Difficulty:              gs.Difficulty,
-		AutoGrainExport:         gs.AutoGrainExport,
-		AutoExportPolicies:      cloneAutoExportPolicies(gs.AutoExportPolicies),
-		DevelopmentMode:         gs.DevelopmentMode,
-		EditMode:                gs.EditMode,
-		Victory:                 gs.Victory,
-		SelectedVictoryOptionID: gs.SelectedVictoryOptionID,
-		Regions:                 regions,
-		Factions:                factions,
-		Armies:                  cloneArmies(gs.Armies),
-		Commanders:              cloneCommanders(gs.Commanders),
-		DismissedCommanderIDs:   cloneStringBoolMap(gs.DismissedCommanderIDs),
-		AIPlans:                 cloneAIPlans(gs.AIPlans),
-		AICompletedObjectives:   cloneAICompletedObjectives(gs.AICompletedObjectives),
-		Imperial:                gs.Imperial.Clone(),
-		WarLedgers:              cloneWarLedgers(gs.WarLedgers),
-		RecentTruces:            cloneStringIntMap(gs.RecentTruces),
-		EconomicVictoryTurns:    gs.EconomicVictoryTurns,
-		FactionsEliminated:      gs.FactionsEliminated,
-		ReligiousVictoryTurns:   gs.ReligiousVictoryTurns,
-		VictoryAchieved:         gs.VictoryAchieved,
-		VictoryAchievedTurn:     gs.VictoryAchievedTurn,
-		FiredEventIDs:           firedEventIDsFromSlice(firedEventIDsToSlice(gs.FiredEventIDs)),
-		Relations:               cloneRelations(gs.Relations),
-		DiplomaticOffers:        append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
-		DiplomaticOfferHistory:  append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
-		DiplomacyOfferCounts:    cloneFactionIntMap(gs.DiplomacyOfferCounts),
-		OfferRejectionTurns:     cloneStringIntMap(gs.OfferRejectionTurns),
-		TradeRoutes:             cloneTradeRoutes(gs.TradeRoutes),
-		MarketOrders:            gs.CloneMarketOrders(),
-		Sieges:                  cloneSieges(gs.Sieges),
-		Raids:                   cloneRaids(gs.Raids),
-		ProductionQueue:         append([]state.ProductionOrder(nil), gs.ProductionQueue...),
-		NextProductionSeq:       gs.NextProductionSeq,
-		NextArmySeq:             gs.NextArmySeq,
-		NextCommanderSeq:        gs.NextCommanderSeq,
-		Phase:                   gs.Phase,
-		WinnerID:                gs.WinnerID,
-		ActiveRegionEvents:      append([]state.RegionEventStatus(nil), gs.ActiveRegionEvents...),
-		AIDiagnostics:           makeDebugAIDiagnostics(gs),
-		AIDiagnosticHistory:     append([]state.AIDiagnosticHistoryEntry(nil), gs.AIDiagnosticHistory...),
+		Turn:                     gs.Turn,
+		Year:                     gs.Year,
+		Month:                    gs.Month,
+		DecisionSeed:             gs.DecisionSeed,
+		ScenarioID:               gs.ScenarioID,
+		ScenarioPath:             saveScenarioPath(gs.ScenarioID, gs.ScenarioPath),
+		PlayerFactionID:          gs.PlayerFactionID,
+		Difficulty:               gs.Difficulty,
+		AutoGrainExport:          gs.AutoGrainExport,
+		AutoExportPolicies:       cloneAutoExportPolicies(gs.AutoExportPolicies),
+		DevelopmentMode:          gs.DevelopmentMode,
+		DebugRevealMilitaryPower: gs.DebugRevealMilitaryPower,
+		EditMode:                 gs.EditMode,
+		Victory:                  gs.Victory,
+		SelectedVictoryOptionID:  gs.SelectedVictoryOptionID,
+		Regions:                  regions,
+		Factions:                 factions,
+		Armies:                   cloneArmies(gs.Armies),
+		Commanders:               cloneCommanders(gs.Commanders),
+		DismissedCommanderIDs:    cloneStringBoolMap(gs.DismissedCommanderIDs),
+		AIPlans:                  cloneAIPlans(gs.AIPlans),
+		AICompletedObjectives:    cloneAICompletedObjectives(gs.AICompletedObjectives),
+		Imperial:                 gs.Imperial.Clone(),
+		WarLedgers:               cloneWarLedgers(gs.WarLedgers),
+		RecentTruces:             cloneStringIntMap(gs.RecentTruces),
+		EconomicVictoryTurns:     gs.EconomicVictoryTurns,
+		FactionsEliminated:       gs.FactionsEliminated,
+		ReligiousVictoryTurns:    gs.ReligiousVictoryTurns,
+		VictoryAchieved:          gs.VictoryAchieved,
+		VictoryAchievedTurn:      gs.VictoryAchievedTurn,
+		FiredEventIDs:            firedEventIDsFromSlice(firedEventIDsToSlice(gs.FiredEventIDs)),
+		Relations:                cloneRelations(gs.Relations),
+		DiplomaticOffers:         append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
+		DiplomaticOfferHistory:   append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
+		DiplomacyOfferCounts:     cloneFactionIntMap(gs.DiplomacyOfferCounts),
+		OfferRejectionTurns:      cloneStringIntMap(gs.OfferRejectionTurns),
+		TradeRoutes:              cloneTradeRoutes(gs.TradeRoutes),
+		MarketOrders:             gs.CloneMarketOrders(),
+		Sieges:                   cloneSieges(gs.Sieges),
+		Raids:                    cloneRaids(gs.Raids),
+		ProductionQueue:          append([]state.ProductionOrder(nil), gs.ProductionQueue...),
+		NextProductionSeq:        gs.NextProductionSeq,
+		NextArmySeq:              gs.NextArmySeq,
+		NextCommanderSeq:         gs.NextCommanderSeq,
+		Phase:                    gs.Phase,
+		WinnerID:                 gs.WinnerID,
+		ActiveRegionEvents:       append([]state.RegionEventStatus(nil), gs.ActiveRegionEvents...),
+		AIDiagnostics:            makeDebugAIDiagnostics(gs),
+		AIDiagnosticHistory:      append([]state.AIDiagnosticHistoryEntry(nil), gs.AIDiagnosticHistory...),
 	}
 }
 
@@ -657,6 +667,7 @@ func makeDebugAIDiagnostics(gs *state.GameState) map[faction.FactionID]*ai.AIDia
 }
 
 func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
+	gs.DecisionSeed = saved.DecisionSeed
 	if saved.Turn > 0 {
 		gs.Turn = saved.Turn
 	}
@@ -694,6 +705,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 		}
 	}
 	gs.DevelopmentMode = saved.DevelopmentMode
+	gs.DebugRevealMilitaryPower = saved.DebugRevealMilitaryPower && gs.DevelopmentMode
 	gs.EditMode = saved.EditMode
 	gs.Victory = saved.Victory
 	gs.SelectedVictoryOptionID = saved.SelectedVictoryOptionID
@@ -771,6 +783,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 		gs.Imperial = saved.Imperial.Clone()
 	}
 	gs.WarLedgers = cloneWarLedgers(saved.WarLedgers)
+	gs.EnsureDecisionSeed()
 	gs.RecentTruces = cloneStringIntMap(saved.RecentTruces)
 	gs.NextCommanderSeq = saved.NextCommanderSeq
 	gs.SyncCommanderLinks()

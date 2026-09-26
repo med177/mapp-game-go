@@ -969,7 +969,7 @@ func factionMilitaryPowerStanding(gs *state.GameState, fid faction.FactionID) (p
 		return 0, 0, 0
 	}
 
-	power = diplomacy.MilitaryPower(gs, fid)
+	power, _ = displayedFactionPower(gs, fid)
 	rank = 1
 	for candidateID, candidate := range gs.Factions {
 		if candidate == nil || candidate.IsEliminated {
@@ -980,7 +980,7 @@ func factionMilitaryPowerStanding(gs *state.GameState, fid faction.FactionID) (p
 			continue
 		}
 
-		candidatePower := diplomacy.MilitaryPower(gs, candidateID)
+		candidatePower, _ := displayedFactionPower(gs, candidateID)
 		if candidatePower > power || (candidatePower == power && candidateID < fid) {
 			rank++
 		}
@@ -4240,8 +4240,12 @@ func factionRelationToPlayer(gs *state.GameState, fid faction.FactionID) *factio
 }
 
 func factionMilitaryPowerBreakdownLabel(gs *state.GameState, fid faction.FactionID) string {
-	land, naval := diplomacy.MilitaryPowerBreakdown(gs, fid)
-	return itoa(land) + " / " + itoa(naval)
+	land, naval, exact := displayedFactionPowerBreakdown(gs, fid)
+	prefix := ""
+	if !exact {
+		prefix = "~"
+	}
+	return prefix + itoa(land) + " / " + itoa(naval)
 }
 
 func factionActiveResearchLabel(gs *state.GameState, f *faction.Faction) string {

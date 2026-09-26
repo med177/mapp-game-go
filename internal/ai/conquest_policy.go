@@ -1,9 +1,6 @@
 package ai
 
 import (
-	"fmt"
-	"hash/fnv"
-
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -14,9 +11,7 @@ const aiVassalResistanceAggressiveness = 65
 const aiVassalizationChancePercent = 50
 
 func aiVassalizationRoll(gs *state.GameState, attackerID, defenderID faction.FactionID, regionID world.RegionID) int {
-	hasher := fnv.New32a()
-	_, _ = fmt.Fprintf(hasher, "%d|%s|%s|%s|vassalization", gs.Turn, attackerID, defenderID, regionID)
-	return int(hasher.Sum32() % 100)
+	return aiDecisionRoll(gs, attackerID, defenderID, "vassalization|"+string(regionID))
 }
 
 func aiApplyConquest(gs *state.GameState, region *world.Region, newOwnerID string) {
@@ -74,8 +69,8 @@ func TryResolvePostWarVassalization(gs *state.GameState, attackerID faction.Fact
 		return diplomacy.Result{}
 	}
 
-	attackerPower := aiFactionMilitaryPower(gs, attackerID)
-	defenderPower := aiFactionMilitaryPower(gs, defenderID)
+	attackerPower := aiFactionMilitaryPowerAsSeenBy(gs, attackerID, attackerID)
+	defenderPower := aiFactionMilitaryPowerAsSeenBy(gs, attackerID, defenderID)
 	if attackerPower <= 0 || (defenderPower > 0 && attackerPower*100 < defenderPower*160) {
 		return diplomacy.Result{}
 	}
