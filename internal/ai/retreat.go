@@ -53,7 +53,7 @@ func applyRetreatAssignments(ctx *StrategicContext) {
 		} else {
 			weak := aiArmyStrengthBelowPercent(armyRef, ctx.gs.UnitTypes, aiRetreatStrengthPercent)
 			enemyPower := aiLocalHostilePower(ctx.gs, armyRef)
-			ownPower := armyRef.TotalStrength(ctx.gs.UnitTypes)
+			ownPower := aiArmyStrength(ctx.gs, armyRef)
 			outmatched := enemyPower*100 >= ownPower*aiRetreatEnemyPowerPercent
 			if !weak && !outmatched {
 				continue
@@ -85,8 +85,8 @@ func aiSiegeDefenderShouldRetreat(gs *state.GameState, defender *army.Army, sieg
 	if attacker == nil || attacker.OwnerID == defender.OwnerID {
 		return false
 	}
-	defenderPower := defender.TotalStrength(gs.UnitTypes)
-	attackerPower := attacker.TotalStrength(gs.UnitTypes)
+	defenderPower := aiArmyStrength(gs, defender)
+	attackerPower := aiArmyStrength(gs, attacker)
 	if attackerPower <= 0 {
 		return false
 	}
@@ -227,7 +227,7 @@ func aiHostilePowerInRegions(gs *state.GameState, owner faction.FactionID, regio
 		if relation == nil || relation.Stance != faction.StanceWar {
 			continue
 		}
-		total += candidate.TotalStrength(gs.UnitTypes)
+		total += aiArmyStrength(gs, candidate)
 	}
 	return total
 }
@@ -250,7 +250,7 @@ func aiShouldWithdrawFromSiege(ctx *StrategicContext, armyRef *army.Army, siege 
 		adjacent[neighborID] = struct{}{}
 	}
 	reliefPower := aiHostilePowerInRegions(ctx.gs, faction.FactionID(armyRef.OwnerID), adjacent)
-	return reliefPower*100 > armyRef.TotalStrength(ctx.gs.UnitTypes)*aiSiegeReliefPowerPercent
+	return reliefPower*100 > aiArmyStrength(ctx.gs, armyRef)*aiSiegeReliefPowerPercent
 }
 
 func selectSafeRecoveryRegion(ctx *StrategicContext, armyRef *army.Army) world.RegionID {
@@ -322,7 +322,7 @@ func aiRecoveryRegionScore(ctx *StrategicContext, armyRef *army.Army, region *wo
 	score += ctx.gs.RegionArmyReplenishmentHPForFaction(faction.FactionID(armyRef.OwnerID), region) * 24
 	for _, candidate := range aiSortedArmies(ctx.gs) {
 		if candidate.ID != armyRef.ID && !candidate.IsNaval && candidate.OwnerID == armyRef.OwnerID && candidate.RegionID == region.ID {
-			score += candidate.TotalStrength(ctx.gs.UnitTypes)
+			score += aiArmyStrength(ctx.gs, candidate)
 		}
 	}
 	if region.IsFortified() {

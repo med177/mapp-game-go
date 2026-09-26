@@ -11,16 +11,18 @@ func TechModsFor(gs *state.GameState, ownerID string) TechMods {
 	if gs == nil {
 		return TechMods{}
 	}
+	mods := TechMods{
+		LandOrganizationMod: -float64(gs.ArmyOrganizationPenaltyPercent(faction.FactionID(ownerID))) / 100.0,
+	}
 	f, ok := gs.Factions[faction.FactionID(ownerID)]
 	if !ok || f == nil || gs.TechTypes == nil {
-		return TechMods{}
+		return mods
 	}
 	fx := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
 	eventAttack, eventDefense := gs.FactionEventCombatModifiers(faction.FactionID(ownerID))
-	return TechMods{
-		AttackMod:       fx.InfantryAttackMod + fx.CavalryAttackMod + fx.SiegeAttackMod + eventAttack,
-		DefenseMod:      fx.LandDefenseMod + eventDefense,
-		NavalAttackMod:  fx.NavalAttackMod,
-		NavalDefenseMod: fx.NavalDefenseMod,
-	}
+	mods.AttackMod = fx.InfantryAttackMod + fx.CavalryAttackMod + fx.SiegeAttackMod + eventAttack
+	mods.DefenseMod = fx.LandDefenseMod + eventDefense
+	mods.NavalAttackMod = fx.NavalAttackMod
+	mods.NavalDefenseMod = fx.NavalDefenseMod
+	return mods
 }

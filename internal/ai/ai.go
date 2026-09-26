@@ -180,6 +180,26 @@ func addTurnStep(steps *[]TurnStep, step TurnStep) {
 	*steps = append(*steps, step)
 }
 
+func aiArmyStrength(gs *state.GameState, a *army.Army) int {
+	if gs == nil || a == nil {
+		return 0
+	}
+	return gs.EffectiveArmyStrength(a)
+}
+
+func aiFactionMilitaryPower(gs *state.GameState, fid faction.FactionID) int {
+	if gs == nil || fid == "" {
+		return 0
+	}
+	total := 0
+	for _, armyRef := range aiSortedArmies(gs) {
+		if armyRef.OwnerID == string(fid) {
+			total += aiArmyStrength(gs, armyRef)
+		}
+	}
+	return total
+}
+
 func turnFactionName(gs *state.GameState, fid faction.FactionID) string {
 	if gs == nil {
 		return string(fid)
@@ -246,8 +266,8 @@ func aiDiplomacyOfferPriorityDetails(gs *state.GameState, from, to faction.Facti
 		score += minInt(6, (fromTech-toTech)*2)
 	}
 
-	fromPower := diplomacy.MilitaryPower(gs, from)
-	toPower := diplomacy.MilitaryPower(gs, to)
+	fromPower := aiFactionMilitaryPower(gs, from)
+	toPower := aiFactionMilitaryPower(gs, to)
 	if toPower > fromPower {
 		powerScore := minInt(24, (toPower-fromPower)/10)
 		score += powerScore
@@ -392,8 +412,8 @@ func aiAllianceBenefitScoreWithThreats(gs *state.GameState, actor, target factio
 	if gs == nil {
 		return 0
 	}
-	actorPower := diplomacy.MilitaryPower(gs, actor)
-	targetPower := diplomacy.MilitaryPower(gs, target)
+	actorPower := aiFactionMilitaryPower(gs, actor)
+	targetPower := aiFactionMilitaryPower(gs, target)
 	actorRegions := len(gs.LandRegionsOwnedBy(actor))
 	targetRegions := len(gs.LandRegionsOwnedBy(target))
 	score := 0
@@ -669,7 +689,7 @@ func aiFrontierPower(gs *state.GameState, owner, against faction.FactionID) int 
 		for _, neighborID := range region.Neighbors {
 			neighbor := gs.Regions[neighborID]
 			if neighbor != nil && !neighbor.IsSea && neighbor.OwnerID == string(against) {
-				total += armyRef.TotalStrength(gs.UnitTypes)
+				total += aiArmyStrength(gs, armyRef)
 				break
 			}
 		}
@@ -1600,7 +1620,7 @@ func aiLandingStrength(gs *state.GameState, fleet *army.Army) int {
 		return 0
 	}
 	tmp := &army.Army{OwnerID: fleet.OwnerID, Units: fleet.EmbarkedUnits}
-	return tmp.TotalStrength(gs.UnitTypes)
+	return aiArmyStrength(gs, tmp)
 }
 
 func aiEnemyArmyInRegion(gs *state.GameState, ownerID string, rid world.RegionID) *army.Army {
@@ -2941,6 +2961,9 @@ func tryMergeAIArmies(gs *state.GameState, a *army.Army) bool {
 
 func aiShouldConsolidateInRegion(gs *state.GameState, region *world.Region, ownerID string, isNaval bool) bool {
 	if isNaval || region == nil {
+		return true
+	}
+	if gs != nil && gs.ArmyOrganizationPenaltyPercent(faction.FactionID(ownerID)) > 0 {
 		return true
 	}
 	_, _, overload := aiRegionLogistics(gs, region, ownerID)

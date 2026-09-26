@@ -129,7 +129,7 @@ func (ctx *StrategicContext) militaryPower(fid faction.FactionID) int {
 	if value, ok := ctx.factionPower[fid]; ok {
 		return value
 	}
-	value := diplomacy.MilitaryPower(ctx.gs, fid)
+	value := aiFactionMilitaryPower(ctx.gs, fid)
 	ctx.factionPower[fid] = value
 	return value
 }

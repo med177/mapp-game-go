@@ -3280,6 +3280,56 @@ func (s *GameState) MaxLandArmies(fid faction.FactionID) int {
 	return s.baseLandArmyLimit(fid) + 1
 }
 
+// ArmyOrganizationPenaltyPercent, bağımsız kara ordusu slotu aşıldığında
+// parçalı komuta yapısının savaş gücüne uyguladığı yüzde cezasını döner.
+// Ceza, slot aşımının yarısıdır ve en fazla %30'a kadar çıkar.
+func (s *GameState) ArmyOrganizationPenaltyPercent(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	current := s.CurrentLandArmies(fid)
+	maximum := s.MaxLandArmies(fid)
+	if maximum <= 0 || current <= maximum {
+		return 0
+	}
+
+	penalty := ((current - maximum) * 50) / maximum
+	if penalty > 30 {
+		penalty = 30
+	}
+	return penalty
+}
+
+// ArmyOrganizationMultiplier, bağımsız kara ordusu slotu aşımının savaş
+// gücüne uygulanacak çarpanını döner.
+func (s *GameState) ArmyOrganizationMultiplier(fid faction.FactionID) float64 {
+	return 1.0 - float64(s.ArmyOrganizationPenaltyPercent(fid))/100.0
+}
+
+// EffectiveArmyStrength, AI ve stratejik değerlendirmeler için bir ordunun
+// mevcut organizasyon cezası uygulanmış savaş gücünü döner. Donanmalar bu
+// kara ordusu organizasyon cezasından etkilenmez.
+func (s *GameState) EffectiveArmyStrength(a *army.Army) int {
+	if s == nil || a == nil {
+		return 0
+	}
+	power := 0
+	if s.UnitTypes != nil {
+		power = a.TotalStrength(s.UnitTypes)
+	} else {
+		power = len(a.Units) * 10
+	}
+	if power <= 0 || a.IsNaval {
+		return power
+	}
+	penalty := s.ArmyOrganizationPenaltyPercent(faction.FactionID(a.OwnerID))
+	power = power * (100 - penalty) / 100
+	if power < 1 {
+		return 1
+	}
+	return power
+}
+
 func (s *GameState) baseLandArmyLimit(fid faction.FactionID) int {
 	if s == nil || fid == "" {
 		return 0

@@ -179,7 +179,7 @@ func aiFactionProjectedLandPower(gs *state.GameState, fid faction.FactionID) int
 	power := 0
 	for _, armyRef := range aiSortedArmies(gs) {
 		if armyRef != nil && armyRef.OwnerID == string(fid) && !armyRef.IsNaval {
-			power += armyRef.TotalStrength(gs.UnitTypes)
+			power += aiArmyStrength(gs, armyRef)
 		}
 	}
 	for _, order := range gs.ProductionQueue {

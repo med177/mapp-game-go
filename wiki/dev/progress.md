@@ -7,6 +7,19 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-26: Kara ordusu slotu aşıldığında parçalı komuta organizasyon cezası
+  savaş önizlemesi ve gerçek muharebelerde uygulanıyor. Ceza, `CurrentLandArmies /
+  MaxLandArmies` aşımının yarısı olarak hesaplanıyor ve %30 ile sınırlanıyor;
+  `6/5` durumunda kara saldırı/savunma gücü %10 azalıyor. Üst HUD'daki Ordu
+  kapasite değeri hover edildiğinde aynı geometriyle pointer cursor ve
+  `Ordu organizasyonu` popup'ı gösteriliyor; limit içindeyken popup
+  `Organizasyon Cezası yok` diyor. AI cephe, rally, temas ve geri çekilme
+  güçlerini aynı efektif değerle değerlendiriyor; slot aşımı varken aynı bölgedeki
+  uygun orduları ikmal baskısı olsa bile birleştirerek yeniden limite inmeye
+  çalışıyor. Regression: `TestArmyOrganizationPenaltyPercent`,
+  `TestArmyOrganizationHUDValueRectMatchesDisplayedValue` ve
+  `TestAIConsolidatesOverLimitArmiesDespiteRegionalSupplyPressure`.
+
 - 2026-09-26: AI kıyı ordularındaki yerel lojistik açığı deniz ikmali adayı
   olarak seçiyor. Mevcut veya yeni üretilen transport filosu başkent limanında
   tahıl yüklüyor, hedef kıyı denizine ilerleyip `supply_army` görevine bağlanıyor;

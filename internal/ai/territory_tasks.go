@@ -82,7 +82,7 @@ func aiTerritoryTaskPowerBalance(gs *state.GameState, a *army.Army, region *worl
 	if gs == nil || a == nil || region == nil {
 		return 0, 0
 	}
-	ownPower = a.TotalStrength(gs.UnitTypes)
+	ownPower = aiArmyStrength(gs, a)
 	if ownPower <= 0 {
 		ownPower = len(a.Units)
 	}
@@ -94,7 +94,7 @@ func aiTerritoryTaskPowerBalance(gs *state.GameState, a *army.Army, region *worl
 			if !diplomacy.IsWar(gs, faction.FactionID(a.OwnerID), faction.FactionID(candidate.OwnerID)) {
 				continue
 			}
-			power := candidate.TotalStrength(gs.UnitTypes)
+			power := aiArmyStrength(gs, candidate)
 			if power <= 0 {
 				power = len(candidate.Units)
 			}

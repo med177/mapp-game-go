@@ -27,6 +27,33 @@ func TestTurnTechHudMetricHitRectsMatchDisplayedTexts(t *testing.T) {
 	}
 }
 
+func TestArmyOrganizationHUDValueRectMatchesDisplayedValue(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions:         map[world.RegionID]*world.Region{},
+		Armies:          map[army.ArmyID]*army.Army{},
+	}
+	for i := 0; i < 8; i++ {
+		id := world.RegionID("region_" + string(rune('a'+i)))
+		gs.Regions[id] = &world.Region{ID: id, OwnerID: "player"}
+	}
+	for i := 0; i < 6; i++ {
+		id := army.ArmyID("army_" + string(rune('a'+i)))
+		gs.Armies[id] = &army.Army{ID: id, OwnerID: "player", Units: []army.Unit{{TypeID: "infantry"}}}
+	}
+
+	rect := armyOrganizationHUDValueRect(gs)
+	if rect.W <= 0 || rect.H <= 0 {
+		t.Fatalf("ordu organizasyonu değer recti geçersiz: %+v", rect)
+	}
+	if !rect.Hit(rect.X+rect.W/2, rect.Y+rect.H/2) {
+		t.Fatal("ordu organizasyonu değerinin merkezi hover alanında değil")
+	}
+	if armyOrganizationHUDValueRect(gs).Hit(rect.X-4, rect.Y+rect.H/2) {
+		t.Fatal("ordu organizasyonu değer rectinin dışı hover alanı kabul edildi")
+	}
+}
+
 func TestCoastalTargetDialogButtonPresentation(t *testing.T) {
 	embark := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "Gemiye Bin"), "Gemiye Bin", "accept")
 	if embark.Icon != gameui.IconLoad {

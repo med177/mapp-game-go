@@ -634,6 +634,22 @@ func topStatusPanelHit(fx, fy float64) bool {
 	return fx >= 0 && fx <= w && fy >= 0 && fy <= float64(topStatusH)
 }
 
+// armyOrganizationHUDValueRect, çizim ve cursor/popup hit-test'inin aynı
+// ordu kapasitesi değeri geometrisini kullanmasını sağlar.
+func armyOrganizationHUDValueRect(gs *state.GameState) gameui.Rect {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return gameui.Rect{}
+	}
+	const (
+		cardX = 908.0
+		cardW = 130.0
+	)
+	value := itoa(gs.CurrentLandArmies(gs.PlayerFactionID)) + "/" + itoa(gs.MaxLandArmies(gs.PlayerFactionID))
+	valueW := MeasureText(value, FaceMed)
+	valueRight := cardX + 12 + cardW - 24
+	return gameui.Rect{X: valueRight - valueW, Y: 12 + 22 - 5, W: valueW, H: 20}
+}
+
 func topDateHudRect() (x, y, w, h float32) {
 	w = topDateHudW
 	h = topDateHudH
@@ -2603,7 +2619,7 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 			gameui.DrawIcon(screen, gameui.IconChange, textX-changeIconGap-changeIconSize, ly, changeIconSize, ColorWhite)
 			DrawText(screen, conversionText, textX, ly, FaceSmall, conversionColor)
 			convPct := float64(region.ConversionTurns) / 24.0
-			drawBar(screen, float32(rightX), float32(ly+14), float32(leftW), 7, convPct, color.RGBA{150, 100, 220, 220})
+			drawBar(screen, float32(rightX), float32(ly+18), float32(leftW), 7, convPct, color.RGBA{150, 100, 220, 220})
 		}
 		ly += statusHeight
 	}

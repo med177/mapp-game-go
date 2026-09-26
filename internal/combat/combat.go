@@ -55,10 +55,11 @@ type Preview struct {
 
 // TechMods savaşa etki eden teknoloji çarpanları.
 type TechMods struct {
-	AttackMod       float64 // kara saldırı çarpanı (ör. 0.10 = +10%)
-	DefenseMod      float64 // kara savunma çarpanı
-	NavalAttackMod  float64 // deniz saldırı çarpanı
-	NavalDefenseMod float64 // deniz savunma çarpanı
+	AttackMod           float64 // kara saldırı çarpanı (ör. 0.10 = +10%)
+	DefenseMod          float64 // kara savunma çarpanı
+	NavalAttackMod      float64 // deniz saldırı çarpanı
+	NavalDefenseMod     float64 // deniz savunma çarpanı
+	LandOrganizationMod float64 // kara ordusu slot aşımı çarpanı (ör. -0.10 = -10%)
 }
 
 // Result savaşın sonucunu özetler.
@@ -382,6 +383,11 @@ func battleStrengthsWithContactDefense(atk, def *army.Army, terrain world.Terrai
 	if atk.IsNaval {
 		atkAttackMod = atkMods.NavalAttackMod
 		defDefenseMod = defMods.NavalDefenseMod
+	} else {
+		atkAttackMod += atkMods.LandOrganizationMod
+	}
+	if !def.IsNaval {
+		defDefenseMod += defMods.LandOrganizationMod
 	}
 	cfg := battleStanceSpec(context, stance)
 	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod + commanderAttackMod + attackerMoraleMod)

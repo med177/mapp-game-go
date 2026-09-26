@@ -111,7 +111,7 @@ func aiEffectiveNavalPower(gs *state.GameState, fleet *army.Army, attacking bool
 	if multiplier < 0.1 {
 		multiplier = 0.1
 	}
-	return maxInt(1, int(math.Round(float64(fleet.TotalStrength(gs.UnitTypes))*multiplier)))
+	return maxInt(1, int(math.Round(float64(aiArmyStrength(gs, fleet))*multiplier)))
 }
 
 func aiHostileNavalPowerAtSea(gs *state.GameState, owner faction.FactionID, seaRegionID world.RegionID) int {

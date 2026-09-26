@@ -264,19 +264,19 @@ func buildAIFronts(ctx *StrategicContext) {
 			}
 			if armyRef.OwnerID == string(ctx.FactionID) {
 				if _, ok := builder.friendlyRegion[armyRef.RegionID]; ok {
-					builder.front.FriendlyPower += armyRef.TotalStrength(gs.UnitTypes)
+					builder.front.FriendlyPower += aiArmyStrength(gs, armyRef)
 				}
 				continue
 			}
 			if armyRef.OwnerID == string(enemyID) {
 				if _, ok := builder.enemyRegion[armyRef.RegionID]; ok {
-					builder.front.EnemyPower += armyRef.TotalStrength(gs.UnitTypes)
+					builder.front.EnemyPower += aiArmyStrength(gs, armyRef)
 				}
 				continue
 			}
 			if aiCoordinatedWarParticipant(gs, ctx.FactionID, faction.FactionID(armyRef.OwnerID), enemyID) {
 				if _, ok := builder.friendlyRegion[armyRef.RegionID]; ok {
-					builder.front.FriendlyPower += armyRef.TotalStrength(gs.UnitTypes)
+					builder.front.FriendlyPower += aiArmyStrength(gs, armyRef)
 				}
 			}
 		}
@@ -407,7 +407,7 @@ func selectAIFrontTarget(ctx *StrategicContext, front AIFront) world.RegionID {
 		}
 		for _, armyRef := range aiSortedArmies(ctx.gs) {
 			if armyRef != nil && !armyRef.IsNaval && armyRef.OwnerID == string(front.EnemyFactionID) && armyRef.RegionID == region.ID {
-				defenderPower += armyRef.TotalStrength(ctx.gs.UnitTypes)
+				defenderPower += aiArmyStrength(ctx.gs, armyRef)
 			}
 		}
 		score += friendlyAccess * 15
@@ -503,10 +503,10 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 			ctx.ArmyAssignments[armyRef.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: armyRef.RegionID, Reason: "sabit garnizon"}
 			continue
 		}
-		power := armyRef.TotalStrength(gs.UnitTypes)
+		power := aiArmyStrength(gs, armyRef)
 		ctx.TotalMobilePower += power
 		mobile = append(mobile, armyRef)
-		if strongest == nil || power > strongest.TotalStrength(gs.UnitTypes) || (power == strongest.TotalStrength(gs.UnitTypes) && armyRef.ID < strongest.ID) {
+		if strongest == nil || power > aiArmyStrength(gs, strongest) || (power == aiArmyStrength(gs, strongest) && armyRef.ID < strongest.ID) {
 			strongest = armyRef
 		}
 	}
@@ -547,7 +547,7 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 	if len(mobile) <= 1 {
 		ctx.ReserveTargetPower = 0
 	} else if strongest != nil {
-		maxReservable := ctx.TotalMobilePower - strongest.TotalStrength(gs.UnitTypes)
+		maxReservable := ctx.TotalMobilePower - aiArmyStrength(gs, strongest)
 		ctx.ReserveTargetPower = minInt(ctx.ReserveTargetPower, maxInt(0, maxReservable))
 	}
 	if reserveAnchor != "" && ctx.ReserveTargetPower > 0 {
@@ -558,8 +558,8 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 			if di != dj {
 				return normalizedDistance(di) < normalizedDistance(dj)
 			}
-			pi := candidates[i].TotalStrength(gs.UnitTypes)
-			pj := candidates[j].TotalStrength(gs.UnitTypes)
+			pi := aiArmyStrength(gs, candidates[i])
+			pj := aiArmyStrength(gs, candidates[j])
 			if pi != pj {
 				return pi < pj
 			}
@@ -573,7 +573,7 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 				continue
 			}
 			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleReserve, AnchorRegionID: reserveAnchor, Reason: "dinamik stratejik rezerv"}
-			ctx.ReserveAssignedPower += candidate.TotalStrength(gs.UnitTypes)
+			ctx.ReserveAssignedPower += aiArmyStrength(gs, candidate)
 		}
 	}
 
@@ -825,7 +825,7 @@ func aiCanDefeatSiege(ctx *StrategicContext, candidate *army.Army, target world.
 	if siegeArmy == nil || len(candidate.Units) == 0 || len(siegeArmy.Units) == 0 {
 		return false
 	}
-	return candidate.TotalStrength(ctx.gs.UnitTypes)*100 >= siegeArmy.TotalStrength(ctx.gs.UnitTypes)*aiReliefPowerMarginPercent
+	return aiArmyStrength(ctx.gs, candidate)*100 >= aiArmyStrength(ctx.gs, siegeArmy)*aiReliefPowerMarginPercent
 }
 
 // selectReliefRallyGroup, tek ordunun yetmediği durumda kuşatıcıyı yenebilecek
@@ -871,8 +871,8 @@ func selectReliefRallyGroup(ctx *StrategicContext, armies []*army.Army, target w
 	groupPower := 0
 	for _, candidate := range candidates {
 		group = append(group, candidate)
-		groupPower += candidate.TotalStrength(ctx.gs.UnitTypes)
-		if groupPower*100 >= siegeArmy.TotalStrength(ctx.gs.UnitTypes)*aiReliefPowerMarginPercent {
+		groupPower += aiArmyStrength(ctx.gs, candidate)
+		if groupPower*100 >= aiArmyStrength(ctx.gs, siegeArmy)*aiReliefPowerMarginPercent {
 			return group
 		}
 	}
@@ -1044,7 +1044,7 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 		if armyRef == nil || armyRef.IsNaval || armyRef.IsGarrison {
 			continue
 		}
-		attackPower += armyRef.TotalStrength(ctx.gs.UnitTypes)
+		attackPower += aiArmyStrength(ctx.gs, armyRef)
 	}
 	if attackPower <= 0 && !navalMissionReady {
 		// Savunma/konsolidasyon planı düşük tehditli bir cephede saldırı rolü
@@ -1060,7 +1060,7 @@ func aiStrategicWarReady(ctx *StrategicContext, target faction.FactionID) bool {
 	}
 	if attackPower <= 0 && navalMissionReady {
 		if embarkArmy := ctx.gs.Armies[ctx.navalMission.EmbarkArmyID]; embarkArmy != nil {
-			attackPower = embarkArmy.TotalStrength(ctx.gs.UnitTypes)
+			attackPower = aiArmyStrength(ctx.gs, embarkArmy)
 		}
 	}
 	availablePower := maxInt(1, ctx.TotalMobilePower-ctx.ReserveAssignedPower)

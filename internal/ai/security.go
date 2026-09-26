@@ -50,7 +50,7 @@ func applySecurityAssignments(ctx *StrategicContext) {
 		}
 		previous := ctx.ArmyAssignments[candidate.ID]
 		if previous.Role == AIArmyRoleReserve {
-			ctx.ReserveAssignedPower = maxInt(0, ctx.ReserveAssignedPower-candidate.TotalStrength(ctx.gs.UnitTypes))
+			ctx.ReserveAssignedPower = maxInt(0, ctx.ReserveAssignedPower-aiArmyStrength(ctx.gs, candidate))
 		}
 		ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{
 			Role:           AIArmyRoleSecurity,
@@ -165,7 +165,7 @@ func selectSecurityArmy(ctx *StrategicContext, target aiSecurityTarget) *army.Ar
 		}
 		candidates = append(candidates, candidateScore{
 			armyRef:  armyRef,
-			power:    armyRef.TotalStrength(ctx.gs.UnitTypes),
+			power:    aiArmyStrength(ctx.gs, armyRef),
 			distance: distance,
 		})
 	}

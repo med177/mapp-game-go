@@ -121,7 +121,7 @@ func aiRallyRegionSafetyScore(ctx *StrategicContext, regionID world.RegionID, ta
 			continue
 		}
 		if armyRef.OwnerID == string(ctx.FactionID) && armyRef.RegionID == regionID {
-			friendlyPower += armyRef.TotalStrength(ctx.gs.UnitTypes)
+			friendlyPower += aiArmyStrength(ctx.gs, armyRef)
 			continue
 		}
 		if armyRef.OwnerID != string(target) {
@@ -129,7 +129,7 @@ func aiRallyRegionSafetyScore(ctx *StrategicContext, regionID world.RegionID, ta
 		}
 		for _, neighborID := range region.Neighbors {
 			if armyRef.RegionID == neighborID {
-				enemyPower += armyRef.TotalStrength(ctx.gs.UnitTypes)
+				enemyPower += aiArmyStrength(ctx.gs, armyRef)
 				break
 			}
 		}
@@ -185,7 +185,7 @@ func applyRallyAssignments(ctx *StrategicContext) {
 	gatheredPower := 0
 	gatheredArmies := 0
 	for _, candidate := range offensive {
-		power := candidate.armyRef.TotalStrength(ctx.gs.UnitTypes)
+		power := aiArmyStrength(ctx.gs, candidate.armyRef)
 		totalPower += power
 		if candidate.armyRef.RegionID == plan.RallyRegionID {
 			gatheredPower += power

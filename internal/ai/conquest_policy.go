@@ -74,8 +74,8 @@ func TryResolvePostWarVassalization(gs *state.GameState, attackerID faction.Fact
 		return diplomacy.Result{}
 	}
 
-	attackerPower := diplomacy.MilitaryPower(gs, attackerID)
-	defenderPower := diplomacy.MilitaryPower(gs, defenderID)
+	attackerPower := aiFactionMilitaryPower(gs, attackerID)
+	defenderPower := aiFactionMilitaryPower(gs, defenderID)
 	if attackerPower <= 0 || (defenderPower > 0 && attackerPower*100 < defenderPower*160) {
 		return diplomacy.Result{}
 	}

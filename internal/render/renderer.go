@@ -2028,6 +2028,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showImperialPanel, r.showActiveWars, r.mapMode)
 		r.drawGrainEconomyPopup(screen)
 		r.drawGoldIncomePopup(screen)
+		r.drawArmyOrganizationPopup(screen)
 		DrawRegionPanelExpandedScrolledWithTab(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelTab, r.regionPanelScroll)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)

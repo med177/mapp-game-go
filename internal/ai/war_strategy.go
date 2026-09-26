@@ -58,7 +58,7 @@ func aiWarCoalitionAssessment(gs *state.GameState, actor, target faction.Faction
 		actorRoot = actor
 	}
 	battlefield := aiWarBattlefieldRegions(gs, targetRoot)
-	assessment.AttackerPower = diplomacy.MilitaryPower(gs, actorRoot)
+	assessment.AttackerPower = aiFactionMilitaryPower(gs, actorRoot)
 	for _, vassalID := range diplomacy.VassalsOf(gs, actorRoot) {
 		assessment.AttackerVassalPower += aiWarWeightedFactionPower(gs, vassalID, battlefield)
 	}
@@ -92,7 +92,7 @@ func aiWarCoalitionAssessment(gs *state.GameState, actor, target faction.Faction
 		}
 	}
 
-	assessment.TargetPower = diplomacy.MilitaryPower(gs, targetRoot)
+	assessment.TargetPower = aiFactionMilitaryPower(gs, targetRoot)
 	for _, vassalID := range diplomacy.VassalsOf(gs, targetRoot) {
 		assessment.TargetVassalPower += aiWarWeightedFactionPower(gs, vassalID, battlefield)
 	}
@@ -187,7 +187,7 @@ func aiWarWeightedFactionPowerWithDistance(gs *state.GameState, fid faction.Fact
 		if armyRef == nil || armyRef.OwnerID != string(fid) {
 			continue
 		}
-		strength := armyRef.TotalStrength(gs.UnitTypes)
+		strength := aiArmyStrength(gs, armyRef)
 		if strength <= 0 && gs.UnitTypes == nil {
 			strength = len(armyRef.Units) * 10
 		}

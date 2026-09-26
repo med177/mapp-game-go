@@ -107,7 +107,7 @@ func newAIRouteSnapshot(gs *state.GameState, armyRef *army.Army, mode aiRouteMod
 			continue
 		}
 		snapshot.hostileArmyPresent[candidate.RegionID] = true
-		power := candidate.TotalStrength(gs.UnitTypes)
+		power := aiArmyStrength(gs, candidate)
 		snapshot.hostilePower[candidate.RegionID] += power
 		region := gs.Regions[candidate.RegionID]
 		if region == nil {
@@ -204,7 +204,7 @@ func (snapshot *aiRouteSnapshot) entryCost(region *world.Region) (int, bool) {
 		cost += attrition * aiRouteAttritionCostScale
 	}
 
-	armyPower := maxInt(1, snapshot.armyRef.TotalStrength(snapshot.gs.UnitTypes))
+	armyPower := maxInt(1, aiArmyStrength(snapshot.gs, snapshot.armyRef))
 	threatCost := (snapshot.hostilePower[region.ID]*aiRouteThreatCostAtParity + armyPower - 1) / armyPower
 	cost += minInt(aiRouteThreatCostLimit, threatCost)
 
