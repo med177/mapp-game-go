@@ -1892,7 +1892,7 @@ func (s *GameState) RegionsOwnedBy(fid faction.FactionID) []*world.Region {
 func (s *GameState) LandRegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	var result []*world.Region
 	for _, r := range s.Regions {
-		if r.OwnerID == string(fid) && !r.IsSea {
+		if r != nil && r.OwnerID == string(fid) && !r.IsSea && !r.IsTerrainArea {
 			result = append(result, r)
 		}
 	}
