@@ -11886,6 +11886,7 @@
     "name_tr": "Hersek",
     "terrain": "mountain",
     "owner_id": "serbian_empire",
+    "successor_faction_id": "serbian_empire",
     "neighbors": [
       "adriatic_sea_ragusa",
       "bosnia",

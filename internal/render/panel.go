@@ -2453,14 +2453,9 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 
 	var stypeStr string
 	if len(region.Settlements) > 0 {
-		capital := region.Settlements[0]
-		for _, s := range region.Settlements {
-			if s.IsCenter {
-				capital = s
-				break
-			}
+		if idx := region.PrimarySettlementIndex(); idx >= 0 {
+			stypeStr = "  |  " + region.Settlements[idx].Type.LabelTR()
 		}
-		stypeStr = "  |  " + capital.Type.LabelTR()
 	}
 
 	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, region.Terrain.LabelTR()+"  |  "+religion.DisplayNameTR(religion.Type(region.Religion))+stypeStr, ColorGray, gameui.TextSmall, gameui.TextAlignStart)

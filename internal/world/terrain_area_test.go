@@ -42,6 +42,25 @@ func TestSortedRegionIDsReturnsAlphabeticalCopy(t *testing.T) {
 	}
 }
 
+func TestPrimarySettlementUsesExplicitCenterAndFallbackPriority(t *testing.T) {
+	region := &Region{Settlements: []Settlement{
+		{ID: "port", Type: SettlementPort},
+		{ID: "town", Type: SettlementTown},
+		{ID: "city", Type: SettlementCity},
+		{ID: "fortress", Type: SettlementFortress},
+	}}
+	if got := region.PrimarySettlementIndex(); got != 3 {
+		t.Fatalf("fallback center index = %d, want 3", got)
+	}
+	if !region.EnsurePrimarySettlement() || !region.Settlements[3].IsCenter {
+		t.Fatal("fallback center was not persisted")
+	}
+	region.Settlements[1].IsCenter = true
+	if got := region.PrimarySettlementIndex(); got != 1 {
+		t.Fatalf("explicit center index = %d, want 1", got)
+	}
+}
+
 func TestLoadTerrainAreasTreatsEmptyJSONAsNoAreas(t *testing.T) {
 	for _, content := range []string{"null", "[]"} {
 		path := filepath.Join(t.TempDir(), "terrain_areas.json")

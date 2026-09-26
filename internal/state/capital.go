@@ -301,15 +301,7 @@ func (s *GameState) CapitalRegionBonus(region *world.Region) RegionProductionSum
 }
 
 func primarySettlementIndex(region *world.Region) int {
-	if region == nil || len(region.Settlements) == 0 {
-		return -1
-	}
-	for i, settlement := range region.Settlements {
-		if settlement.IsCenter {
-			return i
-		}
-	}
-	return 0
+	return region.PrimarySettlementIndex()
 }
 
 func pendingCapitalSettlementName(region *world.Region, settlement *world.Settlement, fallback string) string {

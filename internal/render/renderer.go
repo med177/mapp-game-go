@@ -4523,7 +4523,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			shadowColor = color.RGBA{34, 22, 8, 210}
 		}
 		if !item.DrawLabel && !forceLabel {
-			isPrimary := settlement.IsCenter || item.Index == 0
+			isPrimary := item.Region != nil && item.Index == item.Region.PrimarySettlementIndex()
 			r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
 			r.drawSettlementSelectionOverlay(screen, settlement, item.Region, item.Index, float32(item.SX), float32(item.SY))
 			continue
@@ -4563,7 +4563,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			r.labelRectBuf = append(r.labelRectBuf, rect)
 		}
 
-		isPrimary := settlement.IsCenter || item.Index == 0
+		isPrimary := item.Region != nil && item.Index == item.Region.PrimarySettlementIndex()
 		r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
 		r.drawSettlementSelectionOverlay(screen, settlement, item.Region, item.Index, float32(item.SX), float32(item.SY))
 	}
@@ -4575,7 +4575,7 @@ func (r *Renderer) appendSettlementDraws(region *world.Region) {
 	}
 
 	for i, settlement := range region.Settlements {
-		isPrimary := settlement.IsCenter || i == 0
+		isPrimary := i == region.PrimarySettlementIndex()
 		isFactionCapital := r.isCapitalSettlement(region, settlement)
 
 		ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i)
@@ -4603,7 +4603,7 @@ func (r *Renderer) appendTradeCenterSettlementDraws(region *world.Region) {
 		return
 	}
 	for i, settlement := range region.Settlements {
-		if settlement.Type != world.SettlementPort && !settlement.IsCenter && i != 0 {
+		if settlement.Type != world.SettlementPort && i != region.PrimarySettlementIndex() {
 			continue
 		}
 		ax, ay, ok := r.worldMap.SettlementAnchor(region.ID, i)
@@ -4619,7 +4619,7 @@ func (r *Renderer) appendTradeCenterSettlementDraws(region *world.Region) {
 			name = region.NameTR
 		}
 		isCapital := r.isCapitalSettlement(region, settlement)
-		r.appendSettlementDraw(region, i, name, sx, sy, true, settlementLabelPriority(settlement, settlement.IsCenter || i == 0, isCapital), isCapital)
+		r.appendSettlementDraw(region, i, name, sx, sy, true, settlementLabelPriority(settlement, i == region.PrimarySettlementIndex(), isCapital), isCapital)
 	}
 }
 

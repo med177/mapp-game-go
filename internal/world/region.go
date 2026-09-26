@@ -161,6 +161,53 @@ type Settlement struct {
 	Population int            `json:"population"`
 }
 
+// PrimarySettlementIndex returns the center settlement index. Explicitly
+// marked centers win; otherwise the fallback order is fortress, city, town,
+// then port. Ties retain the source order.
+func (r *Region) PrimarySettlementIndex() int {
+	if r == nil || len(r.Settlements) == 0 {
+		return -1
+	}
+	for i, settlement := range r.Settlements {
+		if settlement.IsCenter {
+			return i
+		}
+	}
+	best := 0
+	for i := 1; i < len(r.Settlements); i++ {
+		if settlementPriority(r.Settlements[i].Type) > settlementPriority(r.Settlements[best].Type) {
+			best = i
+		}
+	}
+	return best
+}
+
+func settlementPriority(settlementType SettlementType) int {
+	switch settlementType {
+	case SettlementFortress:
+		return 4
+	case SettlementCity:
+		return 3
+	case SettlementTown:
+		return 2
+	case SettlementPort:
+		return 1
+	default:
+		return 0
+	}
+}
+
+// EnsurePrimarySettlement persists the fallback center on a region that has
+// no explicit center. Existing center definitions are preserved.
+func (r *Region) EnsurePrimarySettlement() bool {
+	idx := r.PrimarySettlementIndex()
+	if idx < 0 || r.Settlements[idx].IsCenter {
+		return false
+	}
+	r.Settlements[idx].IsCenter = true
+	return true
+}
+
 // SettlementPopulation bölgedeki yerleşimlerin toplam nüfusunu döner.
 func (r *Region) SettlementPopulation() int {
 	if r == nil || r.IsTerrainArea {

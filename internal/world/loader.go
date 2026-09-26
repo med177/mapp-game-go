@@ -33,6 +33,7 @@ func LoadRegionsWithOrder(path string) (map[RegionID]*Region, []RegionID, error)
 	for _, r := range list {
 		if r != nil {
 			r.TaxRate = ClampTaxRate(r.TaxRate)
+			r.EnsurePrimarySettlement()
 			for _, neighborID := range r.Neighbors {
 				if IsTerrainAreaRegionID(neighborID) {
 					r.AreaNeighborOrder = append(r.AreaNeighborOrder, neighborID)
@@ -78,6 +79,7 @@ func LoadRegionSettlements(path string, regions map[RegionID]*Region) error {
 	}
 	for _, region := range regions {
 		if region != nil {
+			region.EnsurePrimarySettlement()
 			region.RecalculatePopulation()
 		}
 	}

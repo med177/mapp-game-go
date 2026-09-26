@@ -7024,6 +7024,14 @@
         "y": 425,
         "type": "port",
         "population": 100
+      },
+      {
+        "id": "dalmatia_ston",
+        "name_tr": "Ston",
+        "x": 831,
+        "y": 423,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -7091,8 +7099,8 @@
         "population": 24
       },
       {
-        "id": "hum_main",
-        "name_tr": "Hum",
+        "id": "hum_rysan",
+        "name_tr": "Rysan",
         "x": 839,
         "y": 422,
         "type": "city",
@@ -7106,6 +7114,14 @@
         "type": "town",
         "is_center": true,
         "population": 22
+      },
+      {
+        "id": "herzegovina_neum",
+        "name_tr": "Neum",
+        "x": 831,
+        "y": 420,
+        "type": "town",
+        "population": 0
       }
     ]
   },

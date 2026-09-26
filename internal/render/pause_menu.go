@@ -132,7 +132,7 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 		col := menuItemColor(isSelected, item.disabled)
 		prefix := "  "
 		if isSelected && !item.disabled {
-			prefix = "> "
+			prefix = "► "
 		}
 		label := buttons[i].Label
 		drawUILabel(screen, gameui.Rect{X: layout.itemsRect.X, Y: y + 8, W: layout.itemsRect.W}, prefix+label, col, gameui.TextLarge, gameui.TextAlignCenter)

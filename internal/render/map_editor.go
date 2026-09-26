@@ -5151,8 +5151,7 @@ func setRegionSuccessorToOwner(region *world.Region) bool {
 }
 
 func ensurePrimarySettlement(region *world.Region) {
-	if region == nil || len(region.Settlements) == 0 || hasCapitalSettlement(region) {
-		return
+	if region != nil {
+		region.EnsurePrimarySettlement()
 	}
-	region.Settlements[0].IsCenter = true
 }

@@ -55,7 +55,7 @@ fraksiyon hâlâ oyundaysa panel açılmadan bölge doğrudan ilhak edilir. Elen
 ardıl, iki bölgesel kurulum seçeneğinde düşük kaynak ve beş milisle yeniden
 etkinleştirilir.
 
-`WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_capital` ile seçilir. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
+`WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_center` ile seçilir. Bu alan hiçbir yerleşimde yoksa runtime merkezi sırasıyla kale, şehir, kasaba ve liman tiplerinden seçer ve seçimi `is_center` olarak tamamlar. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
 
 ```go
 type Settlement struct {

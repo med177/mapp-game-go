@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-26: Merkez yerleşimi eksik bölgeler için ortak fallback eklendi;
+  merkez sırası kale, şehir, kasaba ve liman olarak uygulanıyor. Yükleme,
+  harita anchor'ı, bölge paneli, başkent seçimi ve Edit Mode aynı
+  `PrimarySettlementIndex` helper'ını kullanıyor. Regression:
+  `TestPrimarySettlementUsesExplicitCenterAndFallbackPriority`.
+
 - 2026-09-26: Oyun içi UI input z-order altyapısı ortaklaştırıldı. `gameui.LayerStack`, görünür panel/modal/popup/HUD/menü yüzeylerini çizim sırasıyla topluyor; üst katman boş olsa bile altındaki UI veya haritaya tıklama geçmiyor. Cursor, kamera pan/zoom ve hareket önizlemesi de aynı katman sınırını kullanıyor. Regression: `internal/ui/layer_stack_test.go`, `go test ./... -count=1`.
 
 - 2026-09-26: Panel ve modal kapatma düğmeleri tekilleştirildi. `gameui.NewCloseButton` geometri ve `IconClose` kullanımını, `drawCloseButton` ise ortak renk/hover çizimini sağlıyor; layout'a göre kutu ölçüsü değişebilse de sağ üst X davranışı aynı kaldı. İptal ve kart içi kuyruk silme düğmeleri ayrı aksiyon olarak korundu.
