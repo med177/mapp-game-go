@@ -6505,6 +6505,11 @@ func (g *Game) createSplitArmy(a *army.Army, newUnits []army.Unit) {
 		IsNaval:            a.IsNaval,
 		TurnsWithoutPort:   a.TurnsWithoutPort,
 	}
+	a.SupplyCargo, newArmy.SupplyCargo = state.SplitSupplyCargoByCapacity(
+		a.SupplyCargo,
+		a.TransportCapacity(g.gs.UnitTypes),
+		newArmy.TransportCapacity(g.gs.UnitTypes),
+	)
 	g.gs.Armies[newID] = newArmy
 	g.gs.RefreshArmyMovePointsAfterCompositionChange(a, movementUsed)
 	g.gs.RefreshArmyMovePointsAfterCompositionChange(newArmy, movementUsed)

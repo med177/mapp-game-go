@@ -240,6 +240,43 @@ func AddSupplyCargo(left, right economy.ResourceCost) economy.ResourceCost {
 	return economy.ResourceCost{Grain: left.Grain + right.Grain, Iron: left.Iron + right.Iron, Timber: left.Timber + right.Timber, Stone: left.Stone + right.Stone, Spice: left.Spice + right.Spice, Cloth: left.Cloth + right.Cloth}
 }
 
+// SplitSupplyCargoByCapacity, ikmal kargosunu iki filonun nakliye kapasitesi
+// oranında böler. Bölünemeyen tekil mal birimleri kaynak filoda bırakılır;
+// böylece iki sonucun toplamı her zaman giriş kargosuna eşit kalır.
+func SplitSupplyCargoByCapacity(cargo economy.ResourceCost, leftCapacity, rightCapacity int) (economy.ResourceCost, economy.ResourceCost) {
+	if leftCapacity < 0 {
+		leftCapacity = 0
+	}
+	if rightCapacity < 0 {
+		rightCapacity = 0
+	}
+	totalCapacity := leftCapacity + rightCapacity
+	if totalCapacity <= 0 {
+		return cargo, economy.ResourceCost{}
+	}
+	partForRight := func(amount int) int {
+		return amount * rightCapacity / totalCapacity
+	}
+	// Mal miktarı sağ filoya nakliye kapasitesi oranında ayrılır.
+	right := economy.ResourceCost{
+		Grain:  partForRight(cargo.Grain),
+		Iron:   partForRight(cargo.Iron),
+		Timber: partForRight(cargo.Timber),
+		Stone:  partForRight(cargo.Stone),
+		Spice:  partForRight(cargo.Spice),
+		Cloth:  partForRight(cargo.Cloth),
+	}
+	left := economy.ResourceCost{
+		Grain:  cargo.Grain - right.Grain,
+		Iron:   cargo.Iron - right.Iron,
+		Timber: cargo.Timber - right.Timber,
+		Stone:  cargo.Stone - right.Stone,
+		Spice:  cargo.Spice - right.Spice,
+		Cloth:  cargo.Cloth - right.Cloth,
+	}
+	return left, right
+}
+
 func factionID(owner string) faction.FactionID { return faction.FactionID(owner) }
 
 func (s *GameState) validSeaMissionTarget(regionID world.RegionID) bool {

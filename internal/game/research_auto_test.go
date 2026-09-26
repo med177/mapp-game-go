@@ -642,3 +642,44 @@ func TestMergeArmiesManualCombinesNavalSupplyCargo(t *testing.T) {
 		t.Fatalf("birleşmiş filo ikmal kargosu = %+v, want %+v", got, want)
 	}
 }
+
+func TestSplitFleetDividesSupplyCargoByTransportCapacity(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 2},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:       "fleet",
+				OwnerID:  "player",
+				RegionID: "sea",
+				IsNaval:  true,
+				Units: []army.Unit{
+					{TypeID: "transport"},
+					{TypeID: "transport"},
+					{TypeID: "transport"},
+				},
+				SupplyCargo: economy.ResourceCost{
+					Grain:  90,
+					Iron:   7,
+					Timber: 5,
+				},
+			},
+		},
+	}
+
+	(&Game{gs: gs, renderer: &render.Renderer{}}).splitArmy("fleet")
+
+	mainFleet := gs.Armies["fleet"]
+	newFleet := gs.Armies["army_player_1"]
+	if newFleet == nil {
+		t.Fatal("bölme sonrası yeni filo oluşturulmadı")
+	}
+	if got, want := mainFleet.SupplyCargo, (economy.ResourceCost{Grain: 60, Iron: 5, Timber: 4}); got != want {
+		t.Fatalf("ana filonun bölme sonrası kargosu = %+v, want %+v", got, want)
+	}
+	if got, want := newFleet.SupplyCargo, (economy.ResourceCost{Grain: 30, Iron: 2, Timber: 1}); got != want {
+		t.Fatalf("yeni filonun bölme sonrası kargosu = %+v, want %+v", got, want)
+	}
+}
