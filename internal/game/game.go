@@ -6378,7 +6378,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 func (g *Game) splitArmy(aid army.ArmyID, selectedIndices ...int) {
 	aid = g.deployGarrisonArmy(aid)
 	a, ok := g.gs.Armies[aid]
-	if !ok || len(a.Units) < 2 {
+	if !ok || !a.CanSplit() {
 		return
 	}
 	selected := make(map[int]bool, len(selectedIndices))
@@ -6575,6 +6575,7 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID, requestedTargets ...army.ArmyI
 
 	if len(a.Units) == 0 {
 		target.SupplyCargo = state.AddSupplyCargo(target.SupplyCargo, a.SupplyCargo)
+		g.gs.TransferEmbarkedArmy(target, a)
 		if a.Commander != nil && target.Commander == nil {
 			target.Commander = a.Commander
 			target.Commander.AssignedArmyID = target.ID

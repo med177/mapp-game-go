@@ -154,7 +154,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	mpW := MeasureText(mpStr, FaceSmall)
 	headerRight := armyPanelHeaderRight(layout)
 	mergeTargets := FindMergeTargets(gs, aid)
-	canSplit := len(a.Units) >= 2 && (selectedCount == 0 || selectedCount < len(a.Units))
+	canSplit := a.CanSplit() && (selectedCount == 0 || selectedCount < len(a.Units))
 	hasMerge := len(mergeTargets) > 0
 	hasSplitButton := canSplit || hasMerge
 	actionStartX := splitButtonBlockLeft(px, panelW, len(mergeTargets), hasSplitButton)
@@ -1231,7 +1231,7 @@ func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMaps
 		return gameui.Button{}, false
 	}
 	a, ok := gs.Armies[aid]
-	if !ok || len(a.Units) < 2 {
+	if !ok || !a.CanSplit() {
 		return gameui.Button{}, false
 	}
 	if len(selectedUnitMaps) > 0 && !splitSelectionCanBeApplied(a, selectedUnitMaps[0]) {
@@ -1252,7 +1252,7 @@ func buildDisbandArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMa
 		return gameui.Button{}, false
 	}
 	mergeCount := len(FindMergeTargets(gs, aid))
-	hasSplit := len(a.Units) >= 2 && splitSelectionCanBeApplied(a, selectedUnitMaps[0])
+	hasSplit := a.CanSplit() && splitSelectionCanBeApplied(a, selectedUnitMaps[0])
 	layout := armyPanelGeometry()
 	bx, by, bw, bh := disbandButtonRect(layout.panelX, layout.panelY, layout.panelW, mergeCount, hasSplit)
 	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "Sil").WithIcon(gameui.IconTrash), true
@@ -1278,7 +1278,7 @@ func buildMergeArmyButtonForTarget(gs *state.GameState, aid, targetID army.ArmyI
 		return gameui.Button{}, false
 	}
 	layout := armyPanelGeometry()
-	bx, by, bw, bh := mergeButtonRectAt(layout.panelX, layout.panelY, layout.panelW, index, mergeCount, len(a.Units) >= 2)
+	bx, by, bw, bh := mergeButtonRectAt(layout.panelX, layout.panelY, layout.panelW, index, mergeCount, a.CanSplit())
 	label := itoa(len(target.Units))
 	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), label).WithIcon(gameui.IconForward), true
 }
@@ -1348,7 +1348,7 @@ func hasArmyMergeActions(gs *state.GameState, aid army.ArmyID) bool {
 }
 
 func splitSelectionCanBeApplied(a *army.Army, selected map[int]bool) bool {
-	if a == nil || len(a.Units) < 2 {
+	if a == nil || !a.CanSplit() {
 		return false
 	}
 	selectedCount := splitSelectedUnitCount(a, selected)

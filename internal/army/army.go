@@ -314,6 +314,12 @@ func (a *Army) EmbarkedCount() int {
 	return len(a.EmbarkedUnits)
 }
 
+// CanSplit, taşınan kara ordusu olmayan ve en az iki gemi/birim içeren
+// ordunun güvenli biçimde bölünüp bölünemeyeceğini bildirir.
+func (a *Army) CanSplit() bool {
+	return a != nil && len(a.Units) >= 2 && len(a.EmbarkedUnits) == 0
+}
+
 // TransportCapacity filodaki nakliye gemilerinin toplam kapasitesini döner.
 func (a *Army) TransportCapacity(types map[string]*UnitType) int {
 	if a == nil || !a.IsNaval {

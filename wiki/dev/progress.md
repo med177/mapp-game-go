@@ -1,11 +1,19 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-26
+last_updated: 2026-09-27
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-27: Filo birleşmesinde kaynak filonun taşıdığı kara ordusu ve varsa
+  taşınan komutan hedef filoya aktarılıyor; böylece kaynak filo silinirken
+  embarked birlikler kaybolmuyor. Taşınan kara ordusu bulunan filo artık
+  bölünemiyor; BÖL düğmesi ve doğrudan state aksiyonu aynı `CanSplit` kuralını
+  kullanıyor. Regression: `TestMergeFleetPreservesEmbarkedArmy`,
+  `TestSplitFleetWithEmbarkedArmyIsBlocked` ve
+  `TestSplitArmyButtonHiddenForFleetWithEmbarkedArmy`.
 
 - 2026-09-26: Dış devletlerin vassal hedeflere doğrudan savaş ilan etmesi
   mümkün hale getirildi; diplomasi paneli artık bu hedefleri yanlışlıkla üst

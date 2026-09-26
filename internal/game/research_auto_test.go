@@ -683,3 +683,71 @@ func TestSplitFleetDividesSupplyCargoByTransportCapacity(t *testing.T) {
 		t.Fatalf("yeni filonun bölme sonrası kargosu = %+v, want %+v", got, want)
 	}
 }
+
+func TestMergeFleetPreservesEmbarkedArmy(t *testing.T) {
+	target := &army.Army{
+		ID:       "target",
+		OwnerID:  "player",
+		RegionID: "sea",
+		IsNaval:  true,
+		Units:    []army.Unit{{TypeID: "transport"}},
+	}
+	source := &army.Army{
+		ID:       "source",
+		OwnerID:  "player",
+		RegionID: "sea",
+		IsNaval:  true,
+		Units:    []army.Unit{{TypeID: "transport"}},
+		EmbarkedUnits: []army.Unit{
+			{TypeID: "infantry", CurrentHP: army.MaxUnitHP},
+			{TypeID: "archer", CurrentHP: army.MaxUnitHP},
+		},
+	}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Armies: map[army.ArmyID]*army.Army{
+			target.ID: target,
+			source.ID: source,
+		},
+	}
+
+	(&Game{gs: gs, renderer: &render.Renderer{}}).mergeArmiesManual(source.ID, target.ID)
+
+	if _, ok := gs.Armies[source.ID]; ok {
+		t.Fatal("birleşen kaynak filo state'ten kaldırılmalı")
+	}
+	if got := len(gs.Armies[target.ID].EmbarkedUnits); got != 2 {
+		t.Fatalf("birleşmiş filodaki taşınan birlik sayısı = %d, want 2", got)
+	}
+	if got := gs.Armies[target.ID].EmbarkedUnits[0].TypeID; got != "infantry" {
+		t.Fatalf("ilk taşınan birliğin tipi = %q, want infantry", got)
+	}
+}
+
+func TestSplitFleetWithEmbarkedArmyIsBlocked(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:       "fleet",
+				OwnerID:  "player",
+				RegionID: "sea",
+				IsNaval:  true,
+				Units: []army.Unit{
+					{TypeID: "transport"},
+					{TypeID: "transport"},
+				},
+				EmbarkedUnits: []army.Unit{{TypeID: "infantry", CurrentHP: army.MaxUnitHP}},
+			},
+		},
+	}
+
+	(&Game{gs: gs, renderer: &render.Renderer{}}).splitArmy("fleet")
+
+	if len(gs.Armies) != 1 {
+		t.Fatalf("ordu taşıyan filo bölünmemeli, filo sayısı = %d", len(gs.Armies))
+	}
+	if got := len(gs.Armies["fleet"].Units); got != 2 {
+		t.Fatalf("bölme engellenmesine rağmen gemi sayısı = %d, want 2", got)
+	}
+}

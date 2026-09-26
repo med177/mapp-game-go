@@ -206,6 +206,29 @@ func TestMergeArmyButtonUsesForwardIconAndTargetCount(t *testing.T) {
 	}
 }
 
+func TestSplitArmyButtonHiddenForFleetWithEmbarkedArmy(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID:       "fleet",
+				OwnerID:  "player",
+				RegionID: "sea",
+				IsNaval:  true,
+				Units: []army.Unit{
+					{TypeID: "transport"},
+					{TypeID: "transport"},
+				},
+				EmbarkedUnits: []army.Unit{{TypeID: "infantry"}},
+			},
+		},
+	}
+
+	if _, ok := buildSplitArmyButton(gs, "fleet"); ok {
+		t.Fatal("ordu taşıyan filoda BÖL butonu gösterilmemeli")
+	}
+}
+
 func TestBottomArmyActionUsesContextualSelection(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

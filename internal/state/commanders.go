@@ -107,6 +107,32 @@ func (s *GameState) RemoveArmy(armyID army.ArmyID) *army.Army {
 	return current
 }
 
+// TransferEmbarkedArmy, birleşme sırasında kaynak filonun taşıdığı kara
+// birliklerini hedef filoya aktarır. Kaynak filo silinmeden önce çağrılmalıdır;
+// böylece RemoveArmy taşınan orduyu da temizlemez.
+func (s *GameState) TransferEmbarkedArmy(target, source *army.Army) {
+	if s == nil || target == nil || source == nil || !target.IsNaval || !source.IsNaval {
+		return
+	}
+	if len(source.EmbarkedUnits) > 0 {
+		target.EmbarkedUnits = append(target.EmbarkedUnits, source.EmbarkedUnits...)
+		source.EmbarkedUnits = nil
+	}
+	if source.EmbarkedCommander == nil {
+		return
+	}
+	commander := source.EmbarkedCommander
+	source.EmbarkedCommander = nil
+	if target.EmbarkedCommander == nil {
+		target.EmbarkedCommander = commander
+		commander.AssignedArmyID = target.ID
+		return
+	}
+	if commander.AssignedArmyID == source.ID {
+		commander.AssignedArmyID = ""
+	}
+}
+
 // NormalizeEmptyArmies, birim ve taşınmış birlik taşımayan artık ordu
 // kayıtlarını state'ten kaldırır. Savaş/lojistik sırasında boşalan eski save
 // kayıtları askeri gücü zaten artırmaz; map'te kalmaları ise AI'nin kapasite,
