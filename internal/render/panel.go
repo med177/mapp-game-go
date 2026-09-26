@@ -4273,8 +4273,8 @@ func drawFactionResourceGrid(screen *ebiten.Image, gs *state.GameState, fid fact
 		{label: "Demir", value: itoa(f.Iron), col: color.RGBA{200, 205, 215, 255}},
 		{label: "Kereste", value: itoa(f.Timber), col: color.RGBA{145, 205, 145, 255}},
 		{label: "Taş", value: itoa(f.Stone), col: color.RGBA{185, 185, 185, 255}},
-		{label: "Kumaş", value: itoa(f.Cloth), col: color.RGBA{175, 150, 220, 255}},
 		{label: "Baharat", value: itoa(f.Spice), col: color.RGBA{230, 165, 90, 255}},
+		{label: "Kumaş", value: itoa(f.Cloth), col: color.RGBA{175, 150, 220, 255}},
 		{label: "Gelir", value: formatSignedAmount(victory.GoldEconomyPreview(gs, fid).NetChange) + "/tur", col: ColorGold},
 	}
 
@@ -5213,8 +5213,8 @@ func drawRegionProductionGrid(screen *ebiten.Image, gs *state.GameState, region 
 		{kind: economy.ResourceIron, value: itoa(production.Iron), col: color.RGBA{200, 205, 215, 255}},
 		{kind: economy.ResourceTimber, value: itoa(production.Timber), col: color.RGBA{145, 205, 145, 255}},
 		{kind: economy.ResourceStone, value: itoa(production.Stone), col: color.RGBA{185, 185, 185, 255}},
-		{kind: economy.ResourceSpice, value: itoa(production.Spice), col: color.RGBA{230, 165, 90, 255}},
 		{kind: economy.ResourceCloth, value: itoa(production.Cloth), col: color.RGBA{175, 150, 220, 255}},
+		{kind: economy.ResourceSpice, value: itoa(production.Spice), col: color.RGBA{230, 165, 90, 255}},
 	}
 
 	colGap := 14.0

@@ -36,9 +36,12 @@ func TestMovementRouteUsesMoveBudgetAndDeterministicTieBreak(t *testing.T) {
 
 func TestAdvanceTurnClearsArmyMoveUsageSnapshot(t *testing.T) {
 	gs := &GameState{
-		Turn:          4,
-		Year:          1300,
-		Month:         1,
+		Turn:  4,
+		Year:  1300,
+		Month: 1,
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", MovePoints: 1, MaxMovePoints: 3},
+		},
 		ArmyMoveUsage: map[army.ArmyID]bool{"army": true},
 	}
 
@@ -46,6 +49,9 @@ func TestAdvanceTurnClearsArmyMoveUsageSnapshot(t *testing.T) {
 
 	if gs.ArmyMoveUsage != nil {
 		t.Fatalf("ArmyMoveUsage tur geçişinden sonra temizlenmedi: %#v", gs.ArmyMoveUsage)
+	}
+	if got := gs.Armies["army"].MovePoints; got != gs.Armies["army"].MaxMovePoints {
+		t.Fatalf("yeni tur hareket puanı = %d, max = %d olmalı", got, gs.Armies["army"].MaxMovePoints)
 	}
 }
 

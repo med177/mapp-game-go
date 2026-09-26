@@ -38137,7 +38137,7 @@
       "afshar_beyligi|ilkhanate": {
         "faction_a": "afshar_beyligi",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "afshar_beyligi|jelayirids": {
@@ -38662,7 +38662,7 @@
       "ahiler|ilkhanate": {
         "faction_a": "ahiler",
         "faction_b": "ilkhanate",
-        "score": 89,
+        "score": 100,
         "stance": "peace",
         "next_ai_relation_repair_turn": 9
       },
@@ -39187,7 +39187,7 @@
       "akkoyunlu_state|ilkhanate": {
         "faction_a": "akkoyunlu_state",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "akkoyunlu_state|jelayirids": {
@@ -40706,7 +40706,7 @@
       "artuklu|ilkhanate": {
         "faction_a": "artuklu",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "artuklu|jelayirids": {
@@ -42170,7 +42170,7 @@
       "aydin_bey|ilkhanate": {
         "faction_a": "aydin_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "aydin_bey|jelayirids": {
@@ -42646,7 +42646,7 @@
       "barqa_emirate|ilkhanate": {
         "faction_a": "barqa_emirate",
         "faction_b": "ilkhanate",
-        "score": 90,
+        "score": 100,
         "stance": "peace"
       },
       "barqa_emirate|jelayirids": {
@@ -45817,7 +45817,7 @@
       "candar_bey|ilkhanate": {
         "faction_a": "candar_bey",
         "faction_b": "ilkhanate",
-        "score": 89,
+        "score": 100,
         "stance": "peace",
         "next_ai_relation_repair_turn": 5
       },
@@ -46251,7 +46251,7 @@
       "canik_bey|ilkhanate": {
         "faction_a": "canik_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "canik_bey|jelayirids": {
@@ -47498,7 +47498,7 @@
       "crimean_khanate|ilkhanate": {
         "faction_a": "crimean_khanate",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "crimean_khanate|jelayirids": {
@@ -49079,7 +49079,7 @@
       "dulkadir_bey|ilkhanate": {
         "faction_a": "dulkadir_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "dulkadir_bey|jelayirids": {
@@ -50577,7 +50577,7 @@
       "eretna_state|ilkhanate": {
         "faction_a": "eretna_state",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "eretna_state|jelayirids": {
@@ -50932,7 +50932,7 @@
       "esrefoglu_bey|ilkhanate": {
         "faction_a": "esrefoglu_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "esrefoglu_bey|jelayirids": {
@@ -52962,7 +52962,7 @@
       "germiyan_bey|ilkhanate": {
         "faction_a": "germiyan_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "germiyan_bey|jelayirids": {
@@ -53429,7 +53429,7 @@
       "golden_horde|ramazan_bey": {
         "faction_a": "golden_horde",
         "faction_b": "ramazan_bey",
-        "score": 4,
+        "score": 34,
         "stance": "peace"
       },
       "golden_horde|russia": {
@@ -53587,7 +53587,7 @@
       "granada_emirate|ilkhanate": {
         "faction_a": "granada_emirate",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "granada_emirate|jelayirids": {
@@ -53889,7 +53889,7 @@
       "hafsid_sultanate|ilkhanate": {
         "faction_a": "hafsid_sultanate",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "hafsid_sultanate|jelayirids": {
@@ -54186,7 +54186,7 @@
       "hamid_bey|ilkhanate": {
         "faction_a": "hamid_bey",
         "faction_b": "ilkhanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "hamid_bey|jelayirids": {
@@ -54477,7 +54477,7 @@
       "hormuz_sultanate|ilkhanate": {
         "faction_a": "hormuz_sultanate",
         "faction_b": "ilkhanate",
-        "score": 90,
+        "score": 100,
         "stance": "peace"
       },
       "hormuz_sultanate|jelayirids": {
@@ -56091,13 +56091,13 @@
       "ilkhanate|jelayirids": {
         "faction_a": "ilkhanate",
         "faction_b": "jelayirids",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|kadi_burhaneddin": {
         "faction_a": "ilkhanate",
         "faction_b": "kadi_burhaneddin",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|kalmar_union": {
@@ -56109,19 +56109,19 @@
       "ilkhanate|karakoyunlu_state": {
         "faction_a": "ilkhanate",
         "faction_b": "karakoyunlu_state",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|karaman_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "karaman_bey",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|karesioglu_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "karesioglu_bey",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|leon_kingdom": {
@@ -56139,25 +56139,25 @@
       "ilkhanate|mamluk": {
         "faction_a": "ilkhanate",
         "faction_b": "mamluk",
-        "score": 42,
+        "score": 72,
         "stance": "trade"
       },
       "ilkhanate|marinid_sultanate": {
         "faction_a": "ilkhanate",
         "faction_b": "marinid_sultanate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|mecca_sharifate": {
         "faction_a": "ilkhanate",
         "faction_b": "mecca_sharifate",
-        "score": 90,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|mentese_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "mentese_bey",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|milan_duchy": {
@@ -56169,7 +56169,7 @@
       "ilkhanate|muzaffarids": {
         "faction_a": "ilkhanate",
         "faction_b": "muzaffarids",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|naples_kingdom": {
@@ -56199,7 +56199,7 @@
       "ilkhanate|ottoman": {
         "faction_a": "ilkhanate",
         "faction_b": "ottoman",
-        "score": 90,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|papal_states": {
@@ -56235,7 +56235,7 @@
       "ilkhanate|ramazan_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "ramazan_bey",
-        "score": 89,
+        "score": 100,
         "stance": "peace",
         "next_ai_relation_repair_turn": 5
       },
@@ -56255,7 +56255,7 @@
       "ilkhanate|saruhan_bey": {
         "faction_a": "ilkhanate",
         "faction_b": "saruhan_bey",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|savoy_county": {
@@ -56285,7 +56285,7 @@
       "ilkhanate|shirvanshahs": {
         "faction_a": "ilkhanate",
         "faction_b": "shirvanshahs",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|sweden_kingdom": {
@@ -56309,7 +56309,7 @@
       "ilkhanate|timurid_empire": {
         "faction_a": "ilkhanate",
         "faction_b": "timurid_empire",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|trebizond_emp": {
@@ -56321,7 +56321,7 @@
       "ilkhanate|usfurid_emirate": {
         "faction_a": "ilkhanate",
         "faction_b": "usfurid_emirate",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "ilkhanate|venice": {
@@ -56339,7 +56339,7 @@
       "ilkhanate|zayyanid_tlemcen": {
         "faction_a": "ilkhanate",
         "faction_b": "zayyanid_tlemcen",
-        "score": 84,
+        "score": 100,
         "stance": "peace"
       },
       "jelayirids|kadi_burhaneddin": {

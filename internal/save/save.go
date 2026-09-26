@@ -426,7 +426,9 @@ func loadFromPath(path string) (*state.GameState, error) {
 	gs.NormalizeEliminatedFactionRelations()
 	army.NormalizeLegacyGarrisons(gs.Armies)
 	gs.NormalizeEmptyArmies()
-	gs.RefreshArmyMovePoints(false)
+	// Save, oyuncu fazında açılır. Önceki turun çözümlemesinden kalan hareket
+	// puanları yeni turun tahıl önizlemesine taşınmamalıdır.
+	gs.RefreshArmyMovePoints(true)
 	gs.SyncTimedRegionUnlocks()
 	gs.NormalizeFactionCapitals()
 	gs.AvailableVictories = scenario.FilterVictoryOptionsForFaction(gs.ScenarioVictories, string(gs.PlayerFactionID))

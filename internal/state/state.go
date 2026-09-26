@@ -1295,6 +1295,10 @@ func (s *GameState) AdvanceTurn() []HistoricalFactionChangeReport {
 	// snapshot'tır. Yeni oyuncu turunda EffectiveArmyGrainUpkeep, sıfırlanmış
 	// MovePoints üzerinden yeni hareket kullanımını hesaplamalıdır.
 	s.ArmyMoveUsage = nil
+	// Ekonomi ve AI çözümlemesi önceki turun hareket puanlarını tüketmiş olabilir.
+	// Bunlar yeni oyuncu turuna taşınırsa save yükleme sonrası ilk tahıl önizlemesi
+	// orduları yanlışlıkla hareket etmiş kabul eder.
+	s.RefreshArmyMovePoints(true)
 	return historicalChanges
 }
 
