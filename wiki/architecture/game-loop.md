@@ -135,6 +135,10 @@ Kamera kontrolleri normal harita ile aynıdır.
 14. `EvacuateArmiesWithoutLandAccess()` — eski/hatalı save veya ilişki değişiminden kalmış, savaş/ittifak/aynı-realm erişimi olmayan yabancı kara ordularını en yakın güvenli toprağa çeker
 15. `gs.AdvanceTurn()` — ay/yıl ilerlet
 
+`AdvanceTurn()` ayrıca ekonomi/lojistikte kullanılan tur içi `ArmyMoveUsage`
+snapshot'ını temizler; sonraki oyuncu turunda ordu tahıl bakımı önceki turun
+hareket bilgisini taşımaz.
+
 Askerî geçiş izni için ayrı diplomasi state'i henüz yoktur. Eklendiğinde tur sonu
 erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir.
 

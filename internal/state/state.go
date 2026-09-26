@@ -1291,6 +1291,10 @@ func (s *GameState) AdvanceTurn() []HistoricalFactionChangeReport {
 	s.ResetDiplomacyOfferCounts()
 	s.GrainAidUsage = nil
 	s.GrainSaleGoldUsed = nil
+	// ArmyMoveUsage yalnızca tamamlanan turun ekonomi/lojistik hesabına ait
+	// snapshot'tır. Yeni oyuncu turunda EffectiveArmyGrainUpkeep, sıfırlanmış
+	// MovePoints üzerinden yeni hareket kullanımını hesaplamalıdır.
+	s.ArmyMoveUsage = nil
 	return historicalChanges
 }
 

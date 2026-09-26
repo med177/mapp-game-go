@@ -34,6 +34,21 @@ func TestMovementRouteUsesMoveBudgetAndDeterministicTieBreak(t *testing.T) {
 	}
 }
 
+func TestAdvanceTurnClearsArmyMoveUsageSnapshot(t *testing.T) {
+	gs := &GameState{
+		Turn:          4,
+		Year:          1300,
+		Month:         1,
+		ArmyMoveUsage: map[army.ArmyID]bool{"army": true},
+	}
+
+	gs.AdvanceTurn()
+
+	if gs.ArmyMoveUsage != nil {
+		t.Fatalf("ArmyMoveUsage tur geçişinden sonra temizlenmedi: %#v", gs.ArmyMoveUsage)
+	}
+}
+
 func TestMovementRouteStopsTransitAtForeignRegion(t *testing.T) {
 	regions := map[world.RegionID]*world.Region{
 		"start":    {ID: "start", OwnerID: "player", Neighbors: []world.RegionID{"friendly"}},
