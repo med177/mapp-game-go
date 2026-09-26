@@ -77,6 +77,28 @@ func TestCancelTradeWithVassalDoesNotRequireOverlordDiplomacy(t *testing.T) {
 	}
 }
 
+func TestDeclareWarOnVassalDoesNotRequireOverlordDiplomacy(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "outside",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"outside":  {ID: "outside", NameTR: "Dış Devlet"},
+			"overlord": {ID: "overlord", NameTR: "Sahip Devlet"},
+			"vassal":   {ID: "vassal", NameTR: "Vassal", OverlordID: "overlord"},
+		},
+	}
+
+	if reason := ActionBlockReason(gs, "outside", "vassal", ActionDeclareWar); reason != "" {
+		t.Fatalf("vassala savaş ilanı üst devlete yönlendirildi: %s", reason)
+	}
+	result := ExecuteWarDeclaration(gs, "outside", "vassal", nil)
+	if !result.Applied {
+		t.Fatalf("vassala savaş ilanı uygulanmadı: %s", result.Message)
+	}
+	if !IsWar(gs, "outside", "overlord") {
+		t.Fatal("vassala savaş ilanı realm üst devletiyle savaş ilişkisi oluşturmadı")
+	}
+}
+
 func TestNormalizeVassalagePreservesExternalVassalTrade(t *testing.T) {
 	gs := &state.GameState{
 		Turn:            6,

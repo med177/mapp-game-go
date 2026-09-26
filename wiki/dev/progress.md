@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-26: Dış devletlerin vassal hedeflere doğrudan savaş ilan etmesi
+  mümkün hale getirildi; diplomasi paneli artık bu hedefleri yanlışlıkla üst
+  devlete yönlendirmiyor. Savaş çözümlemesi vassal hedefin realm kökünü
+  kullanıyor ve yeni regresyon testi bu akışı doğruluyor (`internal/diplomacy/vassalage.go`,
+  `internal/diplomacy/vassalage_test.go`).
+
 - 2026-09-26: AI savaş davranışı canlandırıldı. Barış döneminde uygun kara
   komşularına fırsat genişleme planı veriliyor; savunma objective'i gerçek tehdit
   yokken genişlemeyi gölgelemiyor. AI ve oyuncu rakip askerî gücü artık aynı tur
