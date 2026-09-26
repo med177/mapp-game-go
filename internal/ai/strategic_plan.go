@@ -44,6 +44,7 @@ type StrategicContext struct {
 	NavalThreats         []AINavalThreat
 	ThreatenedPortIDs    []world.RegionID
 	navalMission         *aiNavalMission
+	navalSupplyMission   *aiNavalSupplyMission
 
 	gs               *state.GameState
 	factionPower     map[faction.FactionID]int

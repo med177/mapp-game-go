@@ -1859,6 +1859,27 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	}
 
 	if a.IsNaval && targetRegion.CanLandEnter() {
+		// AI ikmal filosu asker taşımadan merkez limanına dönerken çıkarma
+		// yapmaz; filoyu limana bağlar.
+		if len(a.EmbarkedUnits) == 0 && targetRegion.OwnerID == a.OwnerID && targetRegion.HasPort() {
+			a.DockedRegionID = targetRegion.ID
+			a.DockedSettlementID = aiPreferredDockSettlementID(targetRegion)
+			if a.MovePoints > 0 {
+				a.MovePoints--
+			}
+			return moveOutcome{
+				survived: true,
+				step: TurnStep{
+					FactionID:    fid,
+					Kind:         TurnStepMove,
+					ArmyID:       a.ID,
+					FromRegion:   fromRegion,
+					TargetRegion: target,
+					FocusRegion:  target,
+					Message:      actorName + " " + targetName + " limanına yanaştı.",
+				},
+			}
+		}
 		if _, blocked := gs.LandRegionMoveCost(targetRegion); blocked {
 			return moveOutcome{survived: true}
 		}
@@ -2390,6 +2411,10 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 
 func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) {
 	if gs != nil {
+		if strategicContext == nil {
+			strategicContext = prepareStrategicContext(gs, fid)
+		}
+		aiPrepareNavalSupplyMission(gs, fid, budget, strategicContext, steps)
 		aiExecuteNavalMissionProduction(gs, fid, budget, strategicContext, steps)
 		aiProduceNavalDefenseAtThreatenedPort(gs, fid, budget, strategicContext, steps)
 		aiExecuteMerchantTradeStrategy(gs, fid, budget, strategicContext, steps)

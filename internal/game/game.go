@@ -4739,6 +4739,11 @@ func (g *Game) loadSupplyCargo(fleetID army.ArmyID, turns int) {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
+	fleet := g.gs.Armies[fleetID]
+	if fleet == nil || fleet.OwnerID != string(g.gs.PlayerFactionID) {
+		g.renderer.ShowCombatResult("Yalnız oyuncu filosuna ikmal yüklenebilir.")
+		return
+	}
 	cargo, ok, reason := g.gs.LoadSupplyCargoForTurns(fleetID, turns)
 	if !ok {
 		g.renderer.ShowCombatResult(reason)

@@ -54,3 +54,23 @@ func TestDiplomacyListMetricsGiveTreasurySpaceAndEmbedMilitaryRank(t *testing.T)
 		t.Fatalf("askeri güç etiketi = %q, want %q", got, "1. 253/35")
 	}
 }
+
+func TestDiplomacyHistoryResultsStartBelowFilterButtons(t *testing.T) {
+	panel := gameui.Rect{X: 100, Y: 200, W: 430, H: diplomHistoryPanelH}
+	buttons := buildDiplomacyHistoryFilterButtons(panel, diplomacyHistoryDirectionAll, ActionNone)
+	resultsY := diplomacyHistoryResultsY(panel)
+	for _, filter := range buttons {
+		if resultsY < filter.Button.Y+filter.Button.H {
+			t.Fatalf("geçmiş içeriği filtre düğmesine taşıyor: sonuçY=%v düğme=%+v", resultsY, filter.Button)
+		}
+	}
+	for i := 0; i < 3; i++ {
+		if buttons[i+3].Button.Y < buttons[i].Button.Y+buttons[i].Button.H {
+			t.Fatalf("filtre satırları çakışıyor: üst=%+v alt=%+v", buttons[i].Button, buttons[i+3].Button)
+		}
+	}
+	card := diplomacyOfferHistoryCardRect(panel, 0)
+	if card.Y != resultsY {
+		t.Fatalf("ilk geçmiş kartı filtre grubunun altından başlamıyor: kartY=%v sonuçY=%v", card.Y, resultsY)
+	}
+}

@@ -452,6 +452,9 @@ func aiNavalMissionMove(gs *state.GameState, fleet *army.Army, ctx *StrategicCon
 	if gs == nil || fleet == nil || !fleet.IsNaval {
 		return "", false
 	}
+	if target, handled := aiNavalSupplyMissionMove(gs, fleet, ctx); handled {
+		return target, true
+	}
 	// Docked filoların RegionID'si zaten komşu deniz ankrajıdır. Bu yüzden
 	// merchant rota kontrolü bu ankrajı "hedefe ulaştı" sanıp hiçbir hareket
 	// üretmeden önce filonun gerçek liman bağını bırakmasını sağlamalıdır.

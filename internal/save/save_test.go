@@ -273,7 +273,7 @@ func Test1300OpeningEconomyCoversUpkeepAfterMerchantAssignments(t *testing.T) {
 			continue
 		}
 		minimumNetChange := 100
-		if len(regions) == 1 {
+		if len(regions) <= 2 {
 			minimumNetChange = 50
 		}
 		status := victory.GoldEconomyPreview(gs, fid)

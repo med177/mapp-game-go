@@ -3,6 +3,7 @@ package ui
 import (
 	"image"
 	"image/color"
+	"image/draw"
 	_ "image/png"
 	"os"
 	"path/filepath"
@@ -101,12 +102,23 @@ func DrawIcon(screen *ebiten.Image, id IconID, x, y, size float64, tint color.Co
 	if sw == 0 || sh == 0 {
 		return false
 	}
+	drawW, drawH := iconFitDimensions(sw, sh, size)
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(size/float64(sw), size/float64(sh))
-	op.GeoM.Translate(x, y)
+	op.GeoM.Scale(drawW/float64(sw), drawH/float64(sh))
+	op.GeoM.Translate(x+(size-drawW)/2, y+(size-drawH)/2)
 	op.ColorScale.ScaleWithColor(tint)
 	screen.DrawImage(src, op)
 	return true
+}
+
+func iconFitDimensions(sw, sh int, size float64) (float64, float64) {
+	if sw <= 0 || sh <= 0 || size <= 0 {
+		return 0, 0
+	}
+	if sw >= sh {
+		return size, size * float64(sh) / float64(sw)
+	}
+	return size * float64(sw) / float64(sh), size
 }
 
 func loadIconAsset(id IconID) *ebiten.Image {
@@ -117,7 +129,14 @@ func loadIconAsset(id IconID) *ebiten.Image {
 	if base == "" {
 		return nil
 	}
-	path := filepath.Join(base, string(id)+".png")
+	assetID := id
+	// IconX is used by compact destructive controls. Reuse the canonical
+	// close asset so every X control has a visible icon without duplicating
+	// the bitmap in the assets directory.
+	if id == IconX {
+		assetID = IconClose
+	}
+	path := filepath.Join(base, string(assetID)+".png")
 	f, err := os.Open(path)
 	if err != nil {
 		return nil
@@ -127,7 +146,39 @@ func loadIconAsset(id IconID) *ebiten.Image {
 	if err != nil {
 		return nil
 	}
-	return ebiten.NewImageFromImage(img)
+	return ebiten.NewImageFromImage(cropTransparentBorder(img))
+}
+
+func cropTransparentBorder(src image.Image) image.Image {
+	bounds := src.Bounds()
+	minX, minY := bounds.Max.X, bounds.Max.Y
+	maxX, maxY := bounds.Min.X, bounds.Min.Y
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			_, _, _, alpha := src.At(x, y).RGBA()
+			if alpha == 0 {
+				continue
+			}
+			if x < minX {
+				minX = x
+			}
+			if y < minY {
+				minY = y
+			}
+			if x+1 > maxX {
+				maxX = x + 1
+			}
+			if y+1 > maxY {
+				maxY = y + 1
+			}
+		}
+	}
+	if minX >= maxX || minY >= maxY {
+		return src
+	}
+	cropped := image.NewRGBA(image.Rect(0, 0, maxX-minX, maxY-minY))
+	draw.Draw(cropped, cropped.Bounds(), src, image.Point{X: minX, Y: minY}, draw.Src)
+	return cropped
 }
 
 func resolveIconAssetDir() string {

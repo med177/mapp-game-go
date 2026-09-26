@@ -67,6 +67,7 @@ func prepareStrategicContext(gs *state.GameState, fid faction.FactionID) *Strate
 func prepareStrategicContextWithEvents(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event) *StrategicContext {
 	ctx := buildStrategicContext(gs, fid)
 	ctx.UpcomingEvents = aiUpcomingEventSignals(gs, fid, eventDefs)
+	ctx.navalSupplyMission = buildAINavalSupplyMission(ctx)
 	if !aiStrategicPlanningEnabled(gs) {
 		return ctx
 	}

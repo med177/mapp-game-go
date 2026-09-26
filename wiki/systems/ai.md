@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-09-22
+last_updated: 2026-09-26
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -1525,6 +1525,25 @@ AI kara ordularını nakliye filosuna bindirip indirebilir:
 - Tahkimatsız düşman kıyısındaki çıkarma savaşı `combat.ResolveBattleWithMods()` ile çözülür; kazanırsa çıkarma ordusu karaya iner ve bölge el değiştirir. Çıkarma savaşında kullanılan komutan, filoda taşınan kara ordusunun komutanıdır; filo komutanı bu savaşa dahil edilmez.
 - Legacy boş deniz hareketinde `aiSeaPressure()` düşman kıyı yoğunluğu, boş/sahipsiz
   kıyı fırsatı, mevcut dost filo yoğunluğu ve taşıma yükünü birlikte skorlar.
+
+### AI kıyı ordusu deniz ikmali
+
+AI, sahibi olduğu kıyı bölgesindeki yerel lojistik kapasiteyi aşan kara ordularını
+ikmal adayı olarak değerlendirir. Uygun transport filosu varsa veya başkent
+limanında yeni bir transport üretilebiliyorsa, filoyu devlet başkentindeki limana
+bağlar, tahıl kargosunu beş turluk taşıma kapasitesine ve stratejik tahıl rezervine
+göre yükler. Filo deniz rotasıyla hedef kıyının komşu denizine ilerlediğinde ortak
+`CanAssignNavalMission` state kapısından `supply_army` görevi alır. Sonraki ekonomi
+tick'inde yerel kapasite tükendikten sonra aynı `allocateNavalSupplyForRegion()`
+çözümlemesi kargoyu tüketir; hedef ordu veya kıyı değişirse AI her tur görevi
+yeniden yönlendirir. Limana dönüş için kullanılan docking akışı da AI hareket
+katmanında aynı `DockedRegionID` sözleşmesini korur.
+
+Kaynak kodu: `internal/ai/naval_supply.go`, `internal/ai/naval_mission.go`,
+`internal/state/naval_mission.go`, `internal/game/resolution.go`.
+
+Testler: `internal/ai/naval_supply_test.go`,
+`internal/game/research_auto_test.go` içindeki deniz ikmali ekonomi regression'ı.
 
 Kaynak kod:
 - `internal/ai/naval_mission.go`

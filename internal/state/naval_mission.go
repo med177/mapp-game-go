@@ -116,8 +116,8 @@ func (s *GameState) CanLoadSupplyCargoAtCapital(fleetID army.ArmyID, cargo econo
 		return false, "Geçersiz filo."
 	}
 	fleet := s.Armies[fleetID]
-	if fleet == nil || !fleet.IsNaval || fleet.OwnerID != string(s.PlayerFactionID) {
-		return false, "Yalnız oyuncu filosu yüklenebilir."
+	if fleet == nil || !fleet.IsNaval || fleet.OwnerID == "" {
+		return false, "Yalnız geçerli bir devlet filosu yüklenebilir."
 	}
 	capital, _, _, ok := s.FactionCapital(factionID(fleet.OwnerID))
 	if !ok || capital == nil || !capital.HasPort() || fleet.DockedRegionID != capital.ID {

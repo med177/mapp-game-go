@@ -10,6 +10,23 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestTurnTechHudMetricHitRectsMatchDisplayedTexts(t *testing.T) {
+	gs := &state.GameState{PlayerFactionID: "player"}
+	fatigueRect, routeRect := turnTechHudMetricRects(gs)
+	if fatigueRect.W <= 0 || routeRect.W <= 0 {
+		t.Fatalf("HUD metin rectleri oluşturulmadı: fatigue=%+v route=%+v", fatigueRect, routeRect)
+	}
+	if !turnTechHudWarFatigueHit(gs, fatigueRect.X+fatigueRect.W/2, fatigueRect.Y+fatigueRect.H/2) {
+		t.Fatal("savaş yorgunluğu metin rectinin merkezi tıklanabilir değil")
+	}
+	if !turnTechHudTradeRouteHit(gs, routeRect.X+routeRect.W/2, routeRect.Y+routeRect.H/2) {
+		t.Fatal("ticaret rotası metin rectinin merkezi tıklanabilir değil")
+	}
+	if turnTechHudTradeRouteHit(gs, routeRect.X-4, routeRect.Y+routeRect.H/2) {
+		t.Fatal("ticaret rotası rectinin dışı tıklanabilir kabul edildi")
+	}
+}
+
 func TestCoastalTargetDialogButtonPresentation(t *testing.T) {
 	embark := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "Gemiye Bin"), "Gemiye Bin", "accept")
 	if embark.Icon != gameui.IconLoad {

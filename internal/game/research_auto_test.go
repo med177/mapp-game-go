@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
@@ -552,5 +553,47 @@ func TestQueueConquestDecisionRejectsOwnRegionEvenWithRestorableSuccessor(t *tes
 	}
 	if len(g.pendingConquestDecisions) != 0 {
 		t.Fatalf("kendi bölgesi için bekleyen fetih kararı: %#v", g.pendingConquestDecisions)
+	}
+}
+
+func TestEconomyTickConsumesAIStyleNavalSupplyCargo(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai": {ID: "ai", Grain: 100},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 2},
+			"soldier":   {ID: "soldier", Category: army.CategoryInfantry, GrainUpkeep: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"coast": {ID: "coast", OwnerID: "ai", Neighbors: []world.RegionID{"sea"}},
+			"sea":   {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"coast"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {
+				ID: "army", OwnerID: "ai", RegionID: "coast",
+				Units: []army.Unit{{TypeID: "soldier", CurrentHP: army.MaxUnitHP}, {TypeID: "soldier", CurrentHP: army.MaxUnitHP}},
+			},
+			"fleet": {
+				ID: "fleet", OwnerID: "ai", RegionID: "sea", IsNaval: true,
+				Units:        []army.Unit{{TypeID: "transport", CurrentHP: army.MaxUnitHP}},
+				SupplyCargo:  economy.ResourceCost{Grain: 20},
+				NavalMission: &army.NavalMission{Kind: army.NavalMissionSupplyArmy, TargetArmyID: "army"},
+			},
+		},
+	}
+
+	applyRegionalLogisticsPressure(gs)
+
+	if got := gs.Armies["fleet"].SupplyCargo.Grain; got != 4 {
+		t.Fatalf("yerel kapasite sonrası ikmal kargosu yanlış tüketildi: %d", got)
+	}
+	status := gs.RegionLogistics["coast"]
+	if status.NavalSupplyGrainSpent != 16 || status.Overload != 0 {
+		t.Fatalf("deniz ikmali lojistik durumuna yansımadı: %+v", status)
+	}
+	applyRegionalLogisticsPressure(gs)
+	if gs.Armies["fleet"].NavalMission != nil {
+		t.Fatal("kargo bitince ikmal görevi temizlenmedi")
 	}
 }

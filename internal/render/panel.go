@@ -45,8 +45,11 @@ const (
 	evLogW             = float32(255)
 	evLogH             = float32(520)
 	evLogMinH          = float32(36)
-	eventCardH         = float32(52)
-	eventCardGap       = float32(7)
+	eventCardH         = float32(64)
+	eventCardGap       = float32(9)
+	eventLogHeaderH    = float64(28)
+	eventLogHeaderGap  = float64(10)
+	eventLogPanelPad   = float64(8)
 	maxEventLogEntries = 16
 
 	infoPanelW                  = float32(315)
@@ -738,6 +741,45 @@ func turnTechHudTechHit(fx, fy float64) bool {
 	return fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h)
 }
 
+// turnTechHudMetricRects, üst satırdaki durum metinlerinin çizim ve input
+// geometrisini birlikte üretir. Metin genişlikleri değişebildiği için sabit
+// koordinat kullanmak, özellikle Elçi göstergesi göründüğünde yanlış alanın
+// tıklanmasına neden olur.
+func turnTechHudMetricRects(gs *state.GameState) (fatigueRect, tradeRouteRect gameui.Rect) {
+	x, y, w, _ := turnTechHudRect()
+	routeText, _ := tradeRouteHUDText(gs)
+	fatigueText, _ := warFatigueHUDText(gs)
+	quotaText, _ := diplomacyOfferQuotaHUDText(gs)
+
+	right := float64(x+w) - 10
+	if quotaText != "" {
+		right -= MeasureText(quotaText, FaceSmall) + 12
+	}
+	if routeText != "" {
+		routeW := MeasureText(routeText, FaceSmall)
+		routeRight := right
+		tradeRouteRect = gameui.Rect{X: routeRight - routeW, Y: float64(y) + 2, W: routeW, H: 20}
+		if fatigueText != "" {
+			fatigueW := MeasureText(fatigueText, FaceSmall)
+			fatigueRect = gameui.Rect{X: routeRight - routeW - 12 - fatigueW, Y: float64(y) + 2, W: fatigueW, H: 20}
+		}
+	} else if fatigueText != "" {
+		fatigueW := MeasureText(fatigueText, FaceSmall)
+		fatigueRect = gameui.Rect{X: right - fatigueW, Y: float64(y) + 2, W: fatigueW, H: 20}
+	}
+	return fatigueRect, tradeRouteRect
+}
+
+func turnTechHudTradeRouteHit(gs *state.GameState, fx, fy float64) bool {
+	_, routeRect := turnTechHudMetricRects(gs)
+	return routeRect.W > 0 && routeRect.H > 0 && routeRect.Hit(fx, fy)
+}
+
+func turnTechHudWarFatigueHit(gs *state.GameState, fx, fy float64) bool {
+	fatigueRect, _ := turnTechHudMetricRects(gs)
+	return fatigueRect.W > 0 && fatigueRect.H > 0 && fatigueRect.Hit(fx, fy)
+}
+
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
@@ -990,24 +1032,14 @@ func drawTurnTechHud(screen *ebiten.Image, gs *state.GameState) {
 	if quotaText != "" {
 		quotaW = MeasureText(quotaText, FaceSmall)
 	}
+	fatigueRect, tradeRouteRect := turnTechHudMetricRects(gs)
 	if routeText, routeColor := tradeRouteHUDText(gs); routeText != "" {
-		routeW := MeasureText(routeText, FaceSmall)
-		routeRight := float64(x+w) - 10
-		if quotaW > 0 {
-			routeRight -= quotaW + 12
-		}
-		DrawText(screen, routeText, routeRight-routeW, float64(y)+8, FaceSmall, routeColor)
+		DrawText(screen, routeText, tradeRouteRect.X, float64(y)+8, FaceSmall, routeColor)
 		if fatigueText, fatigueColor := warFatigueHUDText(gs); fatigueText != "" {
-			fatigueW := MeasureText(fatigueText, FaceSmall)
-			DrawText(screen, fatigueText, routeRight-routeW-12-fatigueW, float64(y)+8, FaceSmall, fatigueColor)
+			DrawText(screen, fatigueText, fatigueRect.X, float64(y)+8, FaceSmall, fatigueColor)
 		}
 	} else if fatigueText, fatigueColor := warFatigueHUDText(gs); fatigueText != "" {
-		fatigueW := MeasureText(fatigueText, FaceSmall)
-		fatigueRight := float64(x+w) - 10
-		if quotaW > 0 {
-			fatigueRight -= quotaW + 12
-		}
-		DrawText(screen, fatigueText, fatigueRight-fatigueW, float64(y)+8, FaceSmall, fatigueColor)
+		DrawText(screen, fatigueText, fatigueRect.X, float64(y)+8, FaceSmall, fatigueColor)
 	}
 	if quotaText != "" {
 		DrawText(screen, quotaText, float64(x+w)-10-quotaW, float64(y)+8, FaceSmall, quotaColor)
@@ -1106,20 +1138,42 @@ func strategicTurnDateTR(gs *state.GameState) string {
 
 // ── Olay Logu (sağ üst) ──────────────────────────────────────────────
 
+type eventLogLayout struct {
+	panel   gameui.Panel
+	title   gameui.Rect
+	codex   gameui.Rect
+	toggle  gameui.Rect
+	content gameui.Rect
+}
+
+func buildEventLogLayout(collapsed bool) eventLogLayout {
+	panel := gameui.NewPanel(float64(evLogX()), float64(evLogY()), float64(evLogW), float64(eventLogPanelH(collapsed)))
+	inner := gameui.BoxFromRect(panel.Rect).Inset(eventLogPanelPad)
+	header, rest := inner.CutTop(eventLogHeaderH, eventLogHeaderGap)
+
+	toggle := gameui.Rect{X: header.X + header.W - 26, Y: header.Y + 1, W: 26, H: 26}
+	codex := gameui.Rect{X: toggle.X - 6 - 62, Y: header.Y + 1, W: 62, H: 26}
+	title := gameui.Rect{X: header.X, Y: header.Y + 4, W: codex.X - header.X - 8, H: 20}
+
+	return eventLogLayout{
+		panel:   panel,
+		title:   title,
+		codex:   codex,
+		toggle:  toggle,
+		content: rest.Rect,
+	}
+}
+
 // DrawEventLog sağ üst köşede son olayları kartlar halinde listeler.
 func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll int, hasCodex bool) {
-	ex := evLogX()
-	ey := evLogY()
-	eh := eventLogPanelH(collapsed)
+	layout := buildEventLogLayout(collapsed)
+	drawUIPanelFrame(screen, layout.panel.Rect, panelBg, panelBorder, 1.5, 3)
 
-	drawUIPanelFrame(screen, gameui.Rect{X: float64(ex), Y: float64(ey), W: float64(evLogW), H: float64(eh)}, panelBg, panelBorder, 1.5, 3)
-
-	titleW := MeasureText("Olay Mesajları", FaceMed)
-	DrawText(screen, "Olay Mesajları", float64(ex)+12, float64(ey)+8, FaceMed,
-		color.RGBA{220, 190, 100, 255})
+	drawUILabel(screen, layout.title, "Olay Mesajları", color.RGBA{220, 190, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
 	if len(events) > 0 {
 		count := "(" + itoa(len(events)) + ")"
-		DrawText(screen, count, float64(ex)+18+titleW, float64(ey)+9, FaceSmall, ColorGray)
+		titleW := MeasureText("Olay Mesajları", FaceMed)
+		drawUILabel(screen, gameui.Rect{X: layout.title.X + titleW + 6, Y: layout.title.Y + 2, W: 24, H: 18}, count, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	}
 
 	toggleBtn := buildEventLogToggleButton(collapsed)
@@ -1141,8 +1195,8 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 	}
 
 	if len(events) == 0 {
-		drawUILabel(screen, gameui.Rect{X: float64(ex), Y: float64(ey) + 58, W: float64(evLogW)}, "Henüz olay yok", color.RGBA{150, 140, 120, 190}, gameui.TextSmall, gameui.TextAlignCenter)
-		drawUILabel(screen, gameui.Rect{X: float64(ex), Y: float64(ey) + 76, W: float64(evLogW)}, "Oyun olayları burada listelenir", color.RGBA{110, 105, 95, 170}, gameui.TextSmall, gameui.TextAlignCenter)
+		drawUILabel(screen, gameui.Rect{X: layout.content.X, Y: layout.content.Y + 8, W: layout.content.W}, "Henüz olay yok", color.RGBA{150, 140, 120, 190}, gameui.TextSmall, gameui.TextAlignCenter)
+		drawUILabel(screen, gameui.Rect{X: layout.content.X, Y: layout.content.Y + 28, W: layout.content.W}, "Oyun olayları burada listelenir", color.RGBA{110, 105, 95, 170}, gameui.TextSmall, gameui.TextAlignCenter)
 		return
 	}
 
@@ -1161,13 +1215,12 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 		}
 		ev := events[eventIndex]
 		cardX, cardY, cardW, cardH := eventLogCardRect(visibleIndex)
-		drawRoundedRect(screen, cardX, cardY, cardW, cardH, 6, color.RGBA{24, 20, 14, 225})
-		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, color.RGBA{90, 72, 38, 210}, false)
+		drawUIPanelRect(screen, gameui.Rect{X: float64(cardX), Y: float64(cardY), W: float64(cardW), H: float64(cardH)}, color.RGBA{24, 20, 14, 225}, color.RGBA{90, 72, 38, 210}, 1)
 
 		closeBtn := buildEventLogCloseButton(visibleIndex)
 		drawCloseButton(screen, closeBtn)
 
-		drawUIWrappedLabel(screen, gameui.Rect{X: float64(cardX) + 10, Y: float64(cardY) + 8, W: float64(cardW - 34)}, ev, color.RGBA{220, 210, 185, 235}, gameui.TextSmall, 15, 2)
+		drawUIWrappedLabel(screen, gameui.Rect{X: float64(cardX) + 12, Y: float64(cardY) + 13, W: float64(cardW - 50)}, ev, color.RGBA{220, 210, 185, 235}, gameui.TextSmall, 18, 2)
 	}
 	drawEventLogScrollbar(screen, len(events), scroll)
 }
@@ -1187,25 +1240,18 @@ func eventLogPanelH(collapsed bool) float32 {
 }
 
 func eventLogPanelHit(mx, my float64, collapsed bool) bool {
-	x, y := evLogX(), evLogY()
-	h := eventLogPanelH(collapsed)
-	return mx >= float64(x) && mx <= float64(x+evLogW) && my >= float64(y) && my <= float64(y+h)
+	return buildEventLogLayout(collapsed).panel.HitTest(mx, my)
 }
 
 func eventLogToggleRect() (x, y, w, h float32) {
-	w, h = 24, 22
-	x = evLogX() + evLogW - w - 8
-	y = evLogY() + 7
+	rect := buildEventLogLayout(false).toggle
+	x, y, w, h = float32(rect.X), float32(rect.Y), float32(rect.W), float32(rect.H)
 	return x, y, w, h
 }
 
 func eventLogCodexRect() (x, y, w, h float32) {
-	w, h = 54, 22
-	tx, y, tw, _ := eventLogToggleRect()
-	x = tx - w - 6
-	if tw == 0 {
-		x = evLogX() + evLogW - w - 38
-	}
+	rect := buildEventLogLayout(false).codex
+	x, y, w, h = float32(rect.X), float32(rect.Y), float32(rect.W), float32(rect.H)
 	return x, y, w, h
 }
 
@@ -1232,9 +1278,10 @@ func buildEventLogCodexButton() gameui.Button {
 }
 
 func eventLogCardRect(index int) (x, y, w, h float32) {
-	x = evLogX() + 8
-	y = evLogY() + 31 + float32(index)*(eventCardH+eventCardGap)
-	w = evLogW - 16
+	content := buildEventLogLayout(false).content
+	x = float32(content.X)
+	y = float32(content.Y) + float32(index)*(eventCardH+eventCardGap)
+	w = float32(content.W)
 	h = eventCardH
 	return x, y, w, h
 }
@@ -1301,7 +1348,7 @@ func eventLogInteractiveHit(mx, my float64, eventCount int, collapsed bool, scro
 }
 
 func eventLogVisibleCount() int {
-	available := eventLogPanelH(false) - 31 - 8
+	available := float32(buildEventLogLayout(false).content.H)
 	if available <= 0 {
 		return 0
 	}
@@ -1324,9 +1371,10 @@ func drawEventLogScrollbar(screen *ebiten.Image, eventCount int, scroll int) {
 	if eventCount <= visibleCount || visibleCount <= 0 {
 		return
 	}
-	trackX := evLogX() + evLogW - 5
-	trackY := evLogY() + 34
-	trackH := eventLogPanelH(false) - 44
+	content := buildEventLogLayout(false).content
+	trackX := float32(content.X + content.W - 3)
+	trackY := float32(content.Y)
+	trackH := float32(content.H)
 	vector.FillRect(screen, trackX, trackY, 2, trackH, color.RGBA{70, 58, 38, 160}, false)
 
 	thumbH := trackH * float32(visibleCount) / float32(eventCount)

@@ -97,12 +97,16 @@ func DrawButton(screen *ebiten.Image, b Button, style ButtonStyle, text TextRend
 	}
 	contentW := tw
 	if hasIcon {
-		contentW += iconSize + iconGap
+		sw, sh := srcDimensions(b.Icon)
+		iconW, _ := iconFitDimensions(sw, sh, iconSize)
+		contentW += iconW + iconGap
 	}
 	contentX := b.X + (b.W-contentW)/2
 	if hasIcon {
+		sw, sh := srcDimensions(b.Icon)
+		iconW, _ := iconFitDimensions(sw, sh, iconSize)
 		drawButtonIcon(screen, b.Icon, contentX, b.Y+(b.H-iconSize)/2, iconSize, txt)
-		contentX += iconSize + iconGap
+		contentX += iconW + iconGap
 	}
 	if b.Label != "" {
 		text.Draw(screen, b.Label, contentX, buttonTextY(b, style), txt, style.TextVariant)
@@ -202,17 +206,14 @@ func buttonTextHeight(variant TextVariant) float64 {
 }
 
 func drawButtonIcon(screen *ebiten.Image, icon IconID, x, y, size float64, tint color.Color) {
-	src := iconImage(icon)
+	DrawIcon(screen, icon, x, y, size, tint)
+}
+
+func srcDimensions(id IconID) (int, int) {
+	src := iconImage(id)
 	if src == nil {
-		return
+		return 0, 0
 	}
-	sw, sh := src.Bounds().Dx(), src.Bounds().Dy()
-	if sw == 0 || sh == 0 {
-		return
-	}
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(size/float64(sw), size/float64(sh))
-	op.GeoM.Translate(x, y)
-	op.ColorScale.ScaleWithColor(tint)
-	screen.DrawImage(src, op)
+	bounds := src.Bounds()
+	return bounds.Dx(), bounds.Dy()
 }

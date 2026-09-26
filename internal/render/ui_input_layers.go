@@ -113,13 +113,13 @@ func (r *Renderer) uiLayerPointerAt(mx, my float64) bool {
 	switch layer.ID {
 	case uiLayerTopStatus:
 		modeButtons := buildMapModeButtons()
-		return topStatusPanelHit(mx, my) && (r.grainEconomyPopupHovering(mx, my) || r.goldIncomePopupHovering(mx, my) ||
+		return activeWarsHudButtonHit(mx, my) || (topStatusPanelHit(mx, my) && (r.grainEconomyPopupHovering(mx, my) || r.goldIncomePopupHovering(mx, my) ||
 			victoryProgressHit(mx, my) || modeButtons[0].HitTest(mx, my) || modeButtons[1].HitTest(mx, my) ||
-			(imperialPanelAvailable(r.gs) && imperialHUDButtonHit(mx, my)) || activeWarsHudButtonHit(mx, my))
+			(imperialPanelAvailable(r.gs) && imperialHUDButtonHit(mx, my))))
 	case uiLayerTopDate:
 		return topDateHudMenuButtonHit(mx, my)
 	case uiLayerTurnTech:
-		return turnTechHudTechHit(mx, my)
+		return turnTechHudTechHit(mx, my) || turnTechHudTradeRouteHit(r.gs, mx, my) || turnTechHudWarFatigueHit(r.gs, mx, my)
 	case uiLayerMusic:
 		return musicHudInteractiveHit(mx, my)
 	case uiLayerBottom:
@@ -236,6 +236,17 @@ func (r *Renderer) rebuildUILayers() {
 	r.addUILayer(uiLayerMusic, floatRect(x, y, w, h))
 	x, y, w, h = bottomActionHudRect()
 	r.addUILayer(uiLayerBottom, floatRect(x, y, w, h))
+	// Aktif savaş düğmesi müzik HUD'ının sağındaki ortak yardımcı düğme
+	// şeridinde çizilir; tarih HUD'ı ile yatayda örtüşebildiği için kendi
+	// çizim/hit-test geometrisiyle tüm üst HUD katmanlarından sonra eklenir.
+	// Böylece düğme üzerindeyken tarih katmanı cursor kararını gölgelemez.
+	activeWarsButton := buildActiveWarsHUDButton()
+	r.addUILayer(uiLayerTopStatus, gameui.Rect{
+		X: activeWarsButton.X,
+		Y: activeWarsButton.Y,
+		W: activeWarsButton.W,
+		H: activeWarsButton.H,
+	})
 	r.addUILayer(uiLayerEventLog, uiLayerRect(float64(evLogX()), float64(evLogY()), float64(evLogW), float64(eventLogPanelH(r.eventLogCollapsed))))
 	r.addUILayer(uiLayerMinimap, uiLayerRect(float64(minimapX()), float64(minimapY()), float64(minimapW), float64(minimapH)))
 	if r.grainEconomyPopupHoveringAtCursor() {

@@ -8,6 +8,34 @@ import (
 	gameui "mapp-game-go/internal/ui"
 )
 
+func TestActiveWarsHudButtonHitUsesRenderedRoundButton(t *testing.T) {
+	button := buildActiveWarsHUDButton()
+	if !activeWarsHudButtonHit(button.X+button.W/2, button.Y+button.H/2) {
+		t.Fatal("aktif savaş HUD butonunun merkezi tıklanabilir değil")
+	}
+	if activeWarsHudButtonHit(button.X-1, button.Y+button.H/2) {
+		t.Fatal("aktif savaş HUD butonunun dışı tıklanabilir kabul edildi")
+	}
+}
+
+func TestActiveWarsHudButtonRemainsTopPointerLayerWhenDateHudOverlaps(t *testing.T) {
+	originalWidth := ScreenWidth
+	defer func() { ScreenWidth = originalWidth }()
+	ScreenWidth = 1680
+
+	r := &Renderer{gs: &state.GameState{Phase: state.PhasePlayerTurn}}
+	r.rebuildUILayers()
+	button := buildActiveWarsHUDButton()
+	mx, my := button.X+button.W/2, button.Y+button.H/2
+	layer, ok := r.uiLayers.TopAt(mx, my)
+	if !ok || layer.ID != uiLayerTopStatus {
+		t.Fatalf("aktif savaş düğmesinin üst katmanı = %+v, want %q", layer, uiLayerTopStatus)
+	}
+	if !r.uiLayerPointerAt(mx, my) {
+		t.Fatal("tarih HUD'ı ile örtüşen aktif savaş düğmesi pointer üretmiyor")
+	}
+}
+
 func TestCollectActiveWarSummariesGroupsCoalitionRelations(t *testing.T) {
 	gs := &state.GameState{
 		Turn: 20,

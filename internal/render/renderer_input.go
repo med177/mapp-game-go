@@ -664,6 +664,14 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{Kind: ActionNextMusic}
 		}
 	}
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTurnTech) && turnTechHudTradeRouteHit(r.gs, fx, fy) {
+		r.openTradeMarketPanel()
+		return InputAction{}
+	}
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTurnTech) && turnTechHudWarFatigueHit(r.gs, fx, fy) {
+		r.openDiplomacyPanel()
+		return InputAction{}
+	}
 	if r.uiLayerAllowsAt(fx, fy, uiLayerTopStatus) && activeWarsHudButtonHit(fx, fy) {
 		r.showActiveWars = !r.showActiveWars
 		r.activeWarsDirty = true
@@ -1102,6 +1110,14 @@ func (r *Renderer) toggleTradePanel() {
 		r.showTrade = false
 		return
 	}
+	r.openTradeMarketPanel()
+}
+
+func (r *Renderer) openTradeMarketPanel() {
+	if r == nil {
+		return
+	}
+	r.showDiplomacy = false
 	r.showTrade = true
 	// Ticaret paneli her yeni açılışta doğrudan işlem yapılabilen Pazar'ı gösterir.
 	r.tradeTab = TradeTabMarket
@@ -1112,6 +1128,21 @@ func (r *Renderer) toggleTradePanel() {
 	r.tradeRouteFilter = TradeRouteFilterOwned
 	r.tradeListFilter = TradeListAll
 	r.tradeListSort = TradeSortDistance
+}
+
+func (r *Renderer) openDiplomacyPanel() {
+	if r == nil {
+		return
+	}
+	r.showDiplomacy = true
+	r.showTrade = false
+	r.showTech = false
+	r.diplomacyFocus = 0
+	r.diplomacyScroll = 0
+	r.diplomacyListSort = diplomacyListSortAlphabetical
+	r.diplomacyActionFocus = 0
+	r.diplomacyTargetFaction = ""
+	r.diplomacyHistoryVisible = false
 }
 
 func (r *Renderer) selectMapRegionFromMapClick(rid world.RegionID) bool {

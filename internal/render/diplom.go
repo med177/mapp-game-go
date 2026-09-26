@@ -469,9 +469,9 @@ func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, _ diplomacyHistor
 	const (
 		padX  = 10.0
 		gap   = 6.0
-		rowH  = 22.0
-		row1Y = 80.0
-		row2Y = 106.0
+		rowH  = 28.0
+		row1Y = 88.0
+		row2Y = 120.0
 	)
 	dirBtnW := (panelRect.W - padX*2 - gap*2) / 3
 	actionBtnW := (panelRect.W - padX*2 - gap*3) / 4
@@ -494,7 +494,7 @@ func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, _ diplomacyHistor
 	for i, meta := range diplomacyHistoryActions {
 		x := panelRect.X + padX + float64(i)*(actionBtnW+gap)
 		btn := gameui.NewButton(x, panelRect.Y+row2Y, actionBtnW, rowH, meta.Label).WithIcon(meta.Icon)
-		btn.IconSize = 11
+		btn.IconSize = 15
 		btn.IconGap = 4
 		buttons[3+i] = diplomacyHistoryFilterButton{
 			Button:   btn,
@@ -517,6 +517,20 @@ func diplomacyHistoryFilterHit(panelRect gameui.Rect, dirFilter diplomacyHistory
 		return btn.Direction, actionFilter, true
 	}
 	return diplomacyHistoryDirectionAll, ActionNone, false
+}
+
+// diplomacyHistoryResultsY, filtre düğmelerinin altını geçmiş kartlarının ve
+// boş durum mesajının başlangıç noktası olarak kullanır. Filtre satırlarının
+// yüksekliği değiştiğinde bu içeriklerin düğmelerin üzerine binmesini önler.
+func diplomacyHistoryResultsY(panelRect gameui.Rect) float64 {
+	buttons := buildDiplomacyHistoryFilterButtons(panelRect, diplomacyHistoryDirectionAll, ActionNone)
+	bottom := panelRect.Y
+	for _, btn := range buttons {
+		if y := btn.Button.Y + btn.Button.H; y > bottom {
+			bottom = y
+		}
+	}
+	return bottom
 }
 
 func (r *Renderer) applyDiplomacyHistoryFilterHit(panelRect gameui.Rect, mx, my float64) bool {
@@ -542,7 +556,7 @@ func diplomacyOfferHistoryOtherFaction(entry state.DiplomaticOfferHistoryEntry, 
 func diplomacyOfferHistoryCardRect(panelRect gameui.Rect, drawn int) gameui.Rect {
 	return gameui.Rect{
 		X: panelRect.X + 10,
-		Y: panelRect.Y + 134 + float64(drawn)*44,
+		Y: diplomacyHistoryResultsY(panelRect) + float64(drawn)*44,
 		W: panelRect.W - 20,
 		H: 38,
 	}

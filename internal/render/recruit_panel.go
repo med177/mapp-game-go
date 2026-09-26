@@ -493,7 +493,7 @@ func buildRecruitQueueCancelButtons(gs *state.GameState, rid world.RegionID) map
 		y := queueY + 26 + float32(row)*(cardH+gap)
 		bx, by, bw, bh := x+cardW-19, y+2, float32(17), float32(17)
 		btn := gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "").WithIcon(gameui.IconClose)
-		btn.IconSize = 11
+		btn.IconSize = 13
 		buttons[it.orderID] = btn
 	}
 	return buttons

@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-26: AI kıyı ordularındaki yerel lojistik açığı deniz ikmali adayı
+  olarak seçiyor. Mevcut veya yeni üretilen transport filosu başkent limanında
+  tahıl yüklüyor, hedef kıyı denizine ilerleyip `supply_army` görevine bağlanıyor;
+  ekonomi tick'i yerel kapasiteden sonra kargoyu tüketiyor. AI docking, rota
+  güncelleme ve kargo bitince görev temizleme regresyonları eklendi.
+
+
 - 2026-09-26: Merkez yerleşimi eksik bölgeler için ortak fallback eklendi;
   merkez sırası kale, şehir, kasaba ve liman olarak uygulanıyor. Yükleme,
   harita anchor'ı, bölge paneli, başkent seçimi ve Edit Mode aynı

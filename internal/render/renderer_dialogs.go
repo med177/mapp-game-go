@@ -1440,7 +1440,7 @@ func drawDiplomacyOfferHistoryPanelRect(screen *ebiten.Image, gs *state.GameStat
 	}
 
 	if drawn == 0 {
-		drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 126, W: panelRect.W - 28}, "Bu filtreyle eşleşen çözüm yok.", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
+		drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: diplomacyHistoryResultsY(panelRect) + 12, W: panelRect.W - 28}, "Bu filtreyle eşleşen çözüm yok.", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 	}
 }
 
