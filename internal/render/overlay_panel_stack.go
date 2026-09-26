@@ -75,9 +75,15 @@ func (r *Renderer) handleOverlayPanelInput() (InputAction, bool) {
 		return InputAction{}, false
 	}
 	r.ensureOverlayPanelOrder()
+	mx, my := ebiten.CursorPosition()
+	top, hasTop := r.uiLayers.TopAt(float64(mx), float64(my))
 	for i := r.overlayPanelOrderLen - 1; i >= 0; i-- {
 		panel := r.overlayPanelOrder[i]
 		if !r.overlayPanelVisible(panel) {
+			continue
+		}
+		layerID := overlayPanelLayerID(panel)
+		if hasTop && top.ID != layerID {
 			continue
 		}
 		switch panel {
@@ -89,9 +95,25 @@ func (r *Renderer) handleOverlayPanelInput() (InputAction, bool) {
 			if r.handleActiveWarsOverlayInput() {
 				return InputAction{}, true
 			}
+			if hasTop && top.ID == layerID {
+				return InputAction{}, true
+			}
 		}
 	}
 	return InputAction{}, false
+}
+
+func overlayPanelLayerID(panel overlayPanelID) string {
+	switch panel {
+	case overlayPanelMerchantRoute:
+		return uiLayerMerchantRoute
+	case overlayPanelNavalMission:
+		return uiLayerNavalMission
+	case overlayPanelActiveWars:
+		return uiLayerActiveWars
+	default:
+		return ""
+	}
 }
 
 func (r *Renderer) drawOverlayPanels(screen *ebiten.Image) {

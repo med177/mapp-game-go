@@ -2166,7 +2166,7 @@ func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
 		thirdBtn = decorateConfirmDialogButton(thirdBtn, r.confirmDialog.thirdLabel, "third")
 		declineBtn = decorateConfirmDialogButton(declineBtn, r.confirmDialog.declineLabel, "decline")
 		drawUIButtonWidget(screen, thirdBtn,
-			solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10))
+			confirmDialogThirdButtonStyle(r.confirmDialog.thirdLabel))
 		drawUIButtonWidget(screen, declineBtn,
 			solidButtonStyle(color.RGBA{70, 70, 70, 220}, color.RGBA{120, 120, 120, 255}, ColorWhite, 10))
 		return
@@ -2186,7 +2186,13 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 	switch role {
 	case "accept":
 		if strings.Contains(label, "İlhak") {
-			return btn.WithIcon(gameui.IconSword)
+			return btn.WithIcon(gameui.IconLogin)
+		}
+		if label == "Gemiye Bin" {
+			return btn.WithIcon(gameui.IconLoad)
+		}
+		if label == "Sevk Et" {
+			return btn.WithIcon(gameui.IconExport)
 		}
 		if label == "Kaydet" {
 			return btn.WithIcon(gameui.IconSave)
@@ -2199,13 +2205,23 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 		if label == "Serbest Bırak" {
 			return btn.WithIcon(gameui.IconExit)
 		}
+		if label == "Limana Gir" {
+			return btn.WithIcon(gameui.IconDock)
+		}
 		return btn.WithIcon(gameui.IconSave)
 	default:
 		if label == "Vassal Yap" {
-			return btn.WithIcon(gameui.IconCheck)
+			return btn.WithIcon(gameui.IconExit)
 		}
 		return btn.WithIcon(gameui.IconClose)
 	}
+}
+
+func confirmDialogThirdButtonStyle(label string) gameui.ButtonStyle {
+	if label == "Limana Gir" {
+		return solidButtonStyle(color.RGBA{55, 92, 142, 240}, color.RGBA{112, 164, 202, 255}, ColorWhite, 10)
+	}
+	return solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10)
 }
 
 func confirmDialogThreeButtonXs(cx float32) (float32, float32, float32) {

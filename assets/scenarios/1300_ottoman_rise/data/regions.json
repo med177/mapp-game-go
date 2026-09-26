@@ -56,6 +56,7 @@
     "name_tr": "Wessex",
     "terrain": "plain",
     "owner_id": "england",
+    "successor_faction_id": "england",
     "neighbors": [
       "english_channel",
       "essex",
@@ -94,6 +95,7 @@
     "name_tr": "Doğu Anglia",
     "terrain": "plain",
     "owner_id": "england",
+    "successor_faction_id": "england",
     "neighbors": [
       "belgium_shore",
       "east_england_shore",
@@ -177,6 +179,7 @@
     "name_tr": "Yorkshire",
     "terrain": "plain",
     "owner_id": "england",
+    "successor_faction_id": "england",
     "neighbors": [
       "atlantic_open_6",
       "east_england_shore",
@@ -296,6 +299,7 @@
     "name_tr": "Galler Sınırları",
     "terrain": "mountain",
     "owner_id": "england",
+    "successor_faction_id": "england",
     "neighbors": [
       "area::area__100",
       "essex",
@@ -394,6 +398,7 @@
     "name_tr": "Galler",
     "terrain": "mountain",
     "owner_id": "england",
+    "successor_faction_id": "england",
     "neighbors": [
       "area::area__100",
       "area::area__98",
@@ -433,6 +438,7 @@
     "name_tr": "Kuzey İrlanda",
     "terrain": "plain",
     "owner_id": "england",
+    "successor_faction_id": "england",
     "neighbors": [
       "irish_sea",
       "scotland_sea",
@@ -591,6 +597,7 @@
     "name_tr": "Bretonya",
     "terrain": "coast",
     "owner_id": "france",
+    "successor_faction_id": "france",
     "neighbors": [
       "anjou",
       "aquitaine",
@@ -932,6 +939,7 @@
     "name_tr": "Languedoc",
     "terrain": "coast",
     "owner_id": "france",
+    "successor_faction_id": "france",
     "neighbors": [
       "area::area__15",
       "area::area__36",
@@ -1558,7 +1566,7 @@
     "trade_capacity": 12,
     "satisfaction": 68,
     "tax_rate": 38,
-    "population": 600,
+    "population": 432,
     "rural_population": 390,
     "religion": "catholic",
     "active_event_id": "",
@@ -1582,6 +1590,7 @@
     "name_tr": "Skåne",
     "terrain": "coast",
     "owner_id": "denmark_kingdom",
+    "successor_faction_id": "denmark_kingdom",
     "neighbors": [
       "denmark",
       "kattegat"
@@ -1602,7 +1611,7 @@
     "trade_capacity": 4,
     "satisfaction": 68,
     "tax_rate": 38,
-    "population": 580,
+    "population": 748,
     "rural_population": 410,
     "religion": "catholic",
     "active_event_id": "",
@@ -1612,7 +1621,11 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -2243,7 +2256,7 @@
     "name_tr": "Lazio",
     "terrain": "plain",
     "owner_id": "papal_states",
-    "successor_faction_id": "papal_states_f",
+    "successor_faction_id": "papal_states",
     "neighbors": [
       "area::area__28",
       "area::area__31::lazio",
@@ -2291,7 +2304,7 @@
     "name_tr": "Abruzzo",
     "terrain": "plain",
     "owner_id": "papal_states",
-    "successor_faction_id": "papal_states_f",
+    "successor_faction_id": "papal_states",
     "neighbors": [
       "adriatic_sea_ragusa",
       "adriatic_sea_venice",
@@ -2382,6 +2395,7 @@
     "name_tr": "Kampania",
     "terrain": "coast",
     "owner_id": "naples_kingdom",
+    "successor_faction_id": "naples_kingdom",
     "neighbors": [
       "area::area__28",
       "area::area__29",
@@ -3369,6 +3383,7 @@
     "name_tr": "Trablusgarp",
     "terrain": "plain",
     "owner_id": "hafsid_sultanate",
+    "successor_faction_id": "hafsid_sultanate",
     "neighbors": [
       "area::area__1",
       "cyrenaica",
@@ -4059,6 +4074,7 @@
     "successor_faction_id": "mamluk",
     "neighbors": [
       "alexandria",
+      "area::area__3::gaza",
       "area::area__3::lower_egypt",
       "area::area__3::upper_egypt",
       "eastern_mediterranean",
@@ -4109,7 +4125,9 @@
     "neighbors": [
       "alexandria",
       "area::area__1",
+      "area::area__3::gaza",
       "area::area__3::lower_egypt",
+      "area::area__3::upper_egypt",
       "luxor",
       "red_open_2",
       "upper_egypt"
@@ -4625,8 +4643,12 @@
     "successor_faction_id": "safavid",
     "neighbors": [
       "area::area__5",
+      "area::area__6::gurgan",
       "area::area__6::hourmuz",
       "area::area__6::isfahan",
+      "area::area__6::kazvin",
+      "area::area__6::meshed",
+      "area::area__6::northern_persia",
       "area::area__6::southern_persia",
       "hourmuz",
       "isfahan",
@@ -4726,7 +4748,13 @@
     "owner_id": "safavid",
     "successor_faction_id": "safavid",
     "neighbors": [
+      "area::area__6::gurgan",
       "area::area__6::hourmuz",
+      "area::area__6::isfahan",
+      "area::area__6::kazvin",
+      "area::area__6::meshed",
+      "area::area__6::northern_persia",
+      "area::area__6::southern_persia",
       "persian_gulf_shore",
       "persian_open_1",
       "siraz",
@@ -5094,6 +5122,7 @@
     "name_tr": "Karadağ",
     "terrain": "mountain",
     "owner_id": "venice",
+    "successor_faction_id": "venice",
     "neighbors": [
       "adriatic_sea_ragusa",
       "albania",
@@ -7304,6 +7333,7 @@
     "name_tr": "Estonya",
     "terrain": "plain",
     "owner_id": "teutonic_order",
+    "successor_faction_id": "teutonic_order",
     "neighbors": [
       "area::area__108",
       "gulf_of_finland",
@@ -7338,6 +7368,7 @@
     "name_tr": "Letonya",
     "terrain": "plain",
     "owner_id": "teutonic_order",
+    "successor_faction_id": "teutonic_order",
     "neighbors": [
       "belarus",
       "estonia",
@@ -8109,7 +8140,7 @@
     "name_tr": "Azerbaycan",
     "terrain": "plain",
     "owner_id": "ilkhanate",
-    "successor_faction_id": "shirvanshahs",
+    "successor_faction_id": "ilkhanate",
     "neighbors": [
       "area::area__122",
       "area::area__46::armenia",
@@ -8901,6 +8932,7 @@
     "neighbors": [
       "area::area__3::gaza",
       "area::area__3::lower_egypt",
+      "area::area__3::upper_egypt",
       "area::area__59",
       "kerek",
       "levantine_sea",
@@ -9160,6 +9192,7 @@
     "name_tr": "Mallorca",
     "terrain": "coast",
     "owner_id": "aragon",
+    "successor_faction_id": "aragon",
     "neighbors": [
       "balearic_sea"
     ],
@@ -9183,7 +9216,9 @@
     "rural_population": 195,
     "religion": "catholic",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "germiyan",
@@ -9698,6 +9733,7 @@
     "neighbors": [
       "area::area__43",
       "area::area__73::hakkari",
+      "area::area__74::hakkari",
       "mosul"
     ],
     "world_x": 1352,
@@ -11443,7 +11479,7 @@
     "name_tr": "Ferrara",
     "terrain": "plain",
     "owner_id": "papal_states",
-    "successor_faction_id": "papal_states_f",
+    "successor_faction_id": "papal_states",
     "neighbors": [
       "adriatic_sea_venice",
       "area::area__27",
@@ -11629,6 +11665,7 @@
     "name_tr": "Rijeka",
     "terrain": "coast",
     "owner_id": "venice",
+    "successor_faction_id": "venice",
     "neighbors": [
       "adriatic_sea_venice",
       "bosnia",
@@ -11672,6 +11709,7 @@
     "name_tr": "Knin",
     "terrain": "coast",
     "owner_id": "venice",
+    "successor_faction_id": "venice",
     "neighbors": [
       "adriatic_sea_ragusa",
       "bosnia",
@@ -12410,6 +12448,7 @@
     "name_tr": "Kiev",
     "terrain": "plain",
     "owner_id": "golden_horde",
+    "successor_faction_id": "golden_horde",
     "neighbors": [
       "belarus",
       "galicia_volhynia",
@@ -12454,6 +12493,7 @@
     "name_tr": "Podolya",
     "terrain": "plain",
     "owner_id": "golden_horde",
+    "successor_faction_id": "golden_horde",
     "neighbors": [
       "black_open_4",
       "danube_romania",
@@ -13059,6 +13099,7 @@
     "name_tr": "Nizhny Novgorod",
     "terrain": "forest",
     "owner_id": "russia",
+    "successor_faction_id": "russia",
     "neighbors": [
       "area::area__51",
       "astrakhan_region",

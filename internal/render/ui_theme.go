@@ -26,6 +26,18 @@ var tinyButtonStyle = gameui.ButtonStyle{
 	BorderWidth:    1,
 }
 
+var closeButtonStyle = tinyButtonStyle
+
+var closeButtonHoverStyle = gameui.ButtonStyle{
+	BG:             color.RGBA{70, 48, 22, 245},
+	Border:         color.RGBA{214, 169, 76, 255},
+	Text:           color.RGBA{255, 232, 160, 255},
+	DisabledBG:     color.RGBA{18, 16, 12, 180},
+	DisabledBorder: color.RGBA{45, 38, 25, 160},
+	DisabledText:   color.RGBA{85, 78, 62, 190},
+	BorderWidth:    1,
+}
+
 var dangerTinyButtonStyle = gameui.ButtonStyle{
 	BG:             color.RGBA{145, 38, 32, 240},
 	Border:         color.RGBA{235, 105, 92, 255},

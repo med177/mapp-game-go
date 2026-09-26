@@ -56,9 +56,7 @@ func imperialPanelRect() gameui.Rect {
 
 func imperialPanelCloseButton() gameui.Button {
 	r := imperialPanelRect()
-	btn := gameui.NewButton(r.X+r.W-42, r.Y+12, 28, 28, "").WithIcon(gameui.IconClose)
-	btn.IconSize = 14
-	return btn
+	return gameui.NewCloseButton(r.X+r.W-42, r.Y+12, 28, 28)
 }
 
 func imperialPanelAvailableCandidates(gs *state.GameState) []faction.FactionID {
@@ -219,7 +217,7 @@ func (r *Renderer) DrawImperialPanel(screen *ebiten.Image) {
 	drawUIPanelFrame(screen, panel, color.RGBA{18, 14, 9, 248}, color.RGBA{170, 132, 58, 255}, 2, 6)
 	vector.FillRect(screen, float32(panel.X), float32(panel.Y), float32(panel.W), 4, color.RGBA{208, 169, 74, 255}, false)
 	drawUILabel(screen, gameui.Rect{X: panel.X + 20, Y: panel.Y + 12, W: panel.W - 80}, "Kutsal Roma İmparatorluğu", color.RGBA{255, 220, 116, 255}, gameui.TextLarge, gameui.TextAlignStart)
-	drawUIButtonWidget(screen, imperialPanelCloseButton(), tinyButtonStyle)
+	drawCloseButton(screen, imperialPanelCloseButton())
 
 	imperial := r.gs.Imperial
 	emperorName := factionLabelForRender(r.gs, imperial.EmperorID)
@@ -448,4 +446,45 @@ func (r *Renderer) handleImperialPanelInput() InputAction {
 		}
 	}
 	return InputAction{}
+}
+
+// imperialPanelPointerHit yalnızca imparatorluk panelindeki gerçek
+// kontrolleri pointer cursor ile işaretler; bilgi satırları ve boş alanlar
+// panel input'unu tüketmeye devam eder ama pointer üretmez.
+func (r *Renderer) imperialPanelPointerHit(fx, fy float64) bool {
+	if r == nil || r.gs == nil || r.gs.Imperial == nil || !imperialPanelRect().Hit(fx, fy) {
+		return false
+	}
+	if imperialPanelCloseButton().HitTest(fx, fy) {
+		return true
+	}
+	panel := imperialPanelRect()
+	if pending := r.gs.Imperial.PendingDecision; pending != nil {
+		box := imperialDecisionBoxRect(panel)
+		if pending.Kind == state.ImperialDecisionDiet {
+			for _, rect := range imperialDecisionButtonRects(box) {
+				if rect.Hit(fx, fy) {
+					return true
+				}
+			}
+		} else {
+			candidates := imperialPanelAvailableCandidates(r.gs)
+			for i, rect := range imperialElectionButtonRects(box, len(candidates)) {
+				if i < len(candidates) && rect.Hit(fx, fy) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	members := diplomacy.ImperialMembersOf(r.gs, r.gs.Imperial.EmpireID)
+	_, viewport, _, visible := imperialMemberListLayout(panel)
+	for row := 0; row < visible; row++ {
+		idx := r.imperialScroll + row
+		if idx >= 0 && idx < len(members) && imperialMemberRowRect(viewport, row).Hit(fx, fy) {
+			return true
+		}
+	}
+	return false
 }

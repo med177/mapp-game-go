@@ -11,6 +11,10 @@ func (r *Renderer) updateCursorShape() {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) && r.uiLayers.BlocksAt(fx, fy) {
+		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+		return
+	}
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) {
 		ebiten.SetCursorShape(ebiten.CursorShapeMove)
 		return
@@ -124,7 +128,7 @@ func (r *Renderer) updateCursorShape() {
 		return
 	}
 	if r.showImperialPanel {
-		if imperialPanelRect().Hit(fx, fy) || imperialPanelCloseButton().HitTest(fx, fy) {
+		if r.imperialPanelPointerHit(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -206,11 +210,23 @@ func (r *Renderer) updateCursorShape() {
 			return
 		}
 	case state.PhasePlayerTurn:
+		if r.uiLayers.BlocksAt(fx, fy) {
+			if r.uiLayerPointerAt(fx, fy) {
+				ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			} else {
+				ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+			}
+			return
+		}
 		if _, ok := r.navalSupplyCargoHitAt(fx, fy); ok {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
 		if r.navalMovementTargetHovering(fx, fy) {
+			ebiten.SetCursorShape(ebiten.CursorShapePointer)
+			return
+		}
+		if r.embarkFleetTargetHovering(fx, fy) {
 			ebiten.SetCursorShape(ebiten.CursorShapePointer)
 			return
 		}
@@ -342,9 +358,13 @@ func (r *Renderer) overlayPanelCursorHit(fx, fy float64) (pointer, handled bool)
 		return false, false
 	}
 	r.ensureOverlayPanelOrder()
+	top, hasTop := r.uiLayers.TopAt(fx, fy)
 	for i := r.overlayPanelOrderLen - 1; i >= 0; i-- {
 		panel := r.overlayPanelOrder[i]
 		if !r.overlayPanelVisible(panel) {
+			continue
+		}
+		if hasTop && top.ID != overlayPanelLayerID(panel) {
 			continue
 		}
 		switch panel {

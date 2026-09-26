@@ -90,3 +90,84 @@ func TestNavalLandMoveTargetStyleUsesDiplomaticOwnership(t *testing.T) {
 		})
 	}
 }
+
+func TestNavalLandMoveTargetSettlementDistinguishesLandingCenter(t *testing.T) {
+	port := world.Settlement{Type: world.SettlementPort}
+	center := world.Settlement{Type: world.SettlementCity, IsCenter: true}
+	nonCenter := world.Settlement{Type: world.SettlementCity}
+
+	if !navalLandMoveTargetSettlement(port, false) || !navalLandMoveTargetSettlement(port, true) {
+		t.Fatal("liman marker'ı taşıma durumundan bağımsız görünür olmalı")
+	}
+	if !navalLandMoveTargetSettlement(center, true) {
+		t.Fatal("gemide ordu varken merkez settlement çıkarma hedefi olmalı")
+	}
+	if navalLandMoveTargetSettlement(center, false) || navalLandMoveTargetSettlement(nonCenter, true) {
+		t.Fatal("çıkarma olmayan veya merkez olmayan settlement hedef olarak işaretlenmemeli")
+	}
+}
+
+func TestNavalLandingTargetTooltipText(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ally":   {ID: "ally"},
+			"enemy":  {ID: "enemy"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "ally"): {FactionA: "player", FactionB: "ally", Stance: faction.StanceAllied},
+		},
+	}
+	fleet := &army.Army{OwnerID: "player", IsNaval: true, EmbarkedUnits: []army.Unit{{TypeID: "infantry"}}}
+	if _, _, ok := navalLandingTargetTooltipText(gs, fleet, nil); ok {
+		t.Fatal("hedef bölge yokken sevk/çıkarma tooltip'i gösterilmemeli")
+	}
+	for _, test := range []struct {
+		name, owner, title string
+	}{
+		{name: "kendi bölgesi", owner: "player", title: "Ordu sevk noktası"},
+		{name: "müttefik bölgesi", owner: "ally", title: "Ordu sevk noktası"},
+		{name: "düşman bölgesi", owner: "enemy", title: "Çıkarma noktası"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			title, detail, ok := navalLandingTargetTooltipText(gs, fleet, &world.Region{OwnerID: test.owner})
+			if !ok || title != test.title || detail == "" {
+				t.Fatalf("tooltip = (%q, %q, %v), beklenen başlık %q", title, detail, ok, test.title)
+			}
+		})
+	}
+}
+
+func TestEmbarkTargetRequiresMovementPoints(t *testing.T) {
+	gs := &state.GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"infantry":  {ID: "infantry", Embarkable: true},
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 1},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"coast": {ID: "coast", Neighbors: []world.RegionID{"sea"}},
+			"sea":   {ID: "sea", IsSea: true},
+		},
+	}
+	fleet := &army.Army{
+		OwnerID:  "player",
+		IsNaval:  true,
+		RegionID: "sea",
+		Units:    []army.Unit{{TypeID: "transport"}},
+	}
+	selected := &army.Army{
+		OwnerID:  "player",
+		RegionID: "coast",
+		Units:    []army.Unit{{TypeID: "infantry"}},
+	}
+
+	selected.MovePoints = 0
+	if embarkableFleetForSelectedArmy(gs, selected, fleet) {
+		t.Fatal("hareket hakkı olmayan ordu için nakliye hedefi uygun kabul edildi")
+	}
+
+	selected.MovePoints = 1
+	if !embarkableFleetForSelectedArmy(gs, selected, fleet) {
+		t.Fatal("hareket hakkı olan ordu için geçerli nakliye hedefi reddedildi")
+	}
+}

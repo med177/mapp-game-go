@@ -44,6 +44,15 @@ func drawUIButtonWidget(screen *ebiten.Image, btn gameui.Button, style gameui.Bu
 	gameui.DrawButton(screen, btn, style, renderText)
 }
 
+func drawCloseButton(screen *ebiten.Image, btn gameui.Button) {
+	style := closeButtonStyle
+	mx, my := ebiten.CursorPosition()
+	if btn.Enabled && btn.HitTest(float64(mx), float64(my)) {
+		style = closeButtonHoverStyle
+	}
+	gameui.DrawButton(screen, btn, style, renderText)
+}
+
 func drawUIDropdown(screen *ebiten.Image, d *gameui.Dropdown) {
 	gameui.DrawDropdown(screen, d, dropdownStyle, renderText)
 }

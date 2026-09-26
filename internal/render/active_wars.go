@@ -151,9 +151,7 @@ func activeWarsPanelRect() gameui.Rect {
 
 func activeWarsPanelCloseButton() gameui.Button {
 	panel := activeWarsPanelRect()
-	btn := gameui.NewButton(panel.X+panel.W-38, panel.Y+9, 26, 24, "").WithIcon(gameui.IconClose)
-	btn.IconSize = 13
-	return btn
+	return gameui.NewCloseButton(panel.X+panel.W-38, panel.Y+9, 26, 24)
 }
 
 func activeWarsPanelViewport() gameui.Rect {
@@ -848,7 +846,7 @@ func drawActiveWarsPanel(screen *ebiten.Image, gs *state.GameState, wars []Activ
 	panel := activeWarsPanelRect()
 	drawUIPanelFrame(screen, panel, color.RGBA{12, 10, 8, 244}, color.RGBA{154, 112, 54, 255}, 1.5, 5)
 	drawUILabel(screen, gameui.Rect{X: panel.X + activeWarsPanelPad, Y: panel.Y + 9, W: panel.W - 60}, "Aktif Savaşlar ("+itoa(len(wars))+")", color.RGBA{255, 220, 118, 255}, gameui.TextMedium, gameui.TextAlignStart)
-	drawUIButtonWidget(screen, activeWarsPanelCloseButton(), eventLogButtonStyle(ColorGray))
+	drawCloseButton(screen, activeWarsPanelCloseButton())
 
 	viewport := activeWarsPanelViewport()
 	if len(wars) == 0 {

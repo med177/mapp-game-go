@@ -70,6 +70,14 @@ func (d *Dropdown) Close() {
 
 func (d *Dropdown) IsOpen() bool { return d.open }
 
+// Bounds, dropdown'ın çizilen ve input tüketen ortak dikdörtgenini verir.
+func (d *Dropdown) Bounds() Rect {
+	if d == nil {
+		return Rect{}
+	}
+	return Rect{X: d.x, Y: d.y, W: d.w, H: d.h}
+}
+
 func (d *Dropdown) HitTest(mx, my float64) bool {
 	return mx >= d.x && mx <= d.x+d.w && my >= d.y && my <= d.y+d.h
 }

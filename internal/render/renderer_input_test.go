@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image/color"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -8,6 +9,48 @@ import (
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 )
+
+func TestCoastalTargetDialogButtonPresentation(t *testing.T) {
+	embark := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "Gemiye Bin"), "Gemiye Bin", "accept")
+	if embark.Icon != gameui.IconLoad {
+		t.Fatalf("gemiye bin butonu ikonu = %q, want %q", embark.Icon, gameui.IconLoad)
+	}
+
+	send := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "Sevk Et"), "Sevk Et", "accept")
+	if send.Icon != gameui.IconExport {
+		t.Fatalf("sevk butonu ikonu = %q, want %q", send.Icon, gameui.IconExport)
+	}
+
+	dock := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "Limana Gir"), "Limana Gir", "third")
+	if dock.Icon != gameui.IconDock {
+		t.Fatalf("limana gir butonu ikonu = %q, want %q", dock.Icon, gameui.IconDock)
+	}
+
+	style := confirmDialogThirdButtonStyle("Limana Gir")
+	wantBG := color.RGBA{55, 92, 142, 240}
+	if style.BG != wantBG {
+		t.Fatalf("limana gir buton arka planı = %#v, want %#v", style.BG, wantBG)
+	}
+}
+
+func TestPostWarConquestChoiceUsesRequestedIcons(t *testing.T) {
+	annex := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "İlhak Et"), "İlhak Et", "accept")
+	if annex.Icon != gameui.IconLogin {
+		t.Fatalf("ilhak butonu ikonu = %q, want %q", annex.Icon, gameui.IconLogin)
+	}
+
+	vassalize := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "Vassal Yap"), "Vassal Yap", "decline")
+	if vassalize.Icon != gameui.IconExit {
+		t.Fatalf("vassal butonu ikonu = %q, want %q", vassalize.Icon, gameui.IconExit)
+	}
+}
+
+func TestEventLogCodexButtonUsesBookIcon(t *testing.T) {
+	button := buildEventLogCodexButton()
+	if button.Icon != gameui.IconBook {
+		t.Fatalf("kodex butonu ikonu = %q, want %q", button.Icon, gameui.IconBook)
+	}
+}
 
 func TestInfoPopupClickDismissesOnlyInsidePopup(t *testing.T) {
 	popup := gameui.Rect{X: 100, Y: 100, W: 200, H: 80}
@@ -90,6 +133,29 @@ func TestDisbandButtonUsesTheSameGeometryForDrawAndHitTest(t *testing.T) {
 	}
 	if !ArmyPanelInteractiveHit(mx, my, gs, "army", selected) {
 		t.Fatal("Sil düğmesinin merkezi panel cursor/input hit-test'i tarafından yakalanmadı")
+	}
+}
+
+func TestMergeArmyButtonUsesForwardIconAndTargetCount(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Armies: map[army.ArmyID]*army.Army{
+			"source": {ID: "source", OwnerID: "player", RegionID: "region", Units: []army.Unit{{TypeID: "infantry"}}},
+			"target": {ID: "target", OwnerID: "player", RegionID: "region", Units: []army.Unit{
+				{TypeID: "infantry"}, {TypeID: "infantry"}, {TypeID: "infantry"}, {TypeID: "infantry"},
+			}},
+		},
+	}
+
+	button, ok := buildMergeArmyButton(gs, "source")
+	if !ok {
+		t.Fatal("birleştirme butonu oluşturulamadı")
+	}
+	if button.Label != "4" {
+		t.Fatalf("birleştirme buton etiketi = %q, want %q", button.Label, "4")
+	}
+	if button.Icon != gameui.IconForward {
+		t.Fatalf("birleştirme butonu ikonu = %q, want %q", button.Icon, gameui.IconForward)
 	}
 }
 

@@ -21,6 +21,9 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 - Görsel/UI doğrulamalarında WSL ortamında `xvfb-run`, `xdotool`, ImageMagick
   `import` ve `wmctrl` araçları kurulu kabul edilir; gerçek pencereyi
   otomatik açıp ekran görüntüsü alarak incele.
+- Kullanıcı açıkça görsel doğrulama talimatı vermedikçe oyunu otomatik çalıştırma,
+  gerçek pencere açma, ekran görüntüsü alma veya görsel doğrulama yapma; bu
+  doğrulamayı kullanıcı kendisi yapar.
 - Önce ilgili kaynakları, testleri, veri şemasını ve mevcut değişiklikleri
   incele. Varsayım yerine gerçek repo içeriğine dayan.
 - Kapsamı değiştiren daha iyi bir yaklaşım çıkarsa önce gerekçeyi ve etkisini

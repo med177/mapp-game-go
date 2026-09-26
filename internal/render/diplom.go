@@ -712,9 +712,7 @@ type diplomacyActionButton struct {
 
 func buildDiplomacyCloseButton() gameui.Button {
 	x, y, w, h := diplomacyCloseRect()
-	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
-	btn.IconSize = 13
-	return btn
+	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h))
 }
 
 func buildDiplomacySideViewButton(panelRect gameui.Rect, historyVisible bool) gameui.Button {
@@ -1309,7 +1307,7 @@ func diplomacyCloseRect() (x, y, w, h float32) {
 }
 
 func drawDiplomacyCloseButton(screen *ebiten.Image) {
-	drawDiplomacyButton(screen, buildDiplomacyCloseButton(), color.RGBA{45, 34, 25, 230}, panelBorder, FaceSmall, 6)
+	drawCloseButton(screen, buildDiplomacyCloseButton())
 }
 
 func drawDiplomacyButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, border color.Color, face *text.GoTextFace, _ float64) {

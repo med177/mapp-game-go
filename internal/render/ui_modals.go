@@ -253,23 +253,17 @@ func buildEventCodexLayout() eventCodexLayout {
 
 func buildEventDetailCloseButton() gameui.Button {
 	_, _, closeRect, _ := eventDetailHeaderRects()
-	btn := gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "").WithIcon(gameui.IconClose)
-	btn.IconSize = 13
-	return btn
+	return gameui.NewCloseButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H)
 }
 
 func buildEventCodexCloseButton() gameui.Button {
 	_, _, closeRect, _ := eventCodexHeaderRects()
-	btn := gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "").WithIcon(gameui.IconClose)
-	btn.IconSize = 13
-	return btn
+	return gameui.NewCloseButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H)
 }
 
 func buildVictoryDetailCloseButton() gameui.Button {
 	_, _, closeRect, _ := victoryDetailHeaderRects()
-	btn := gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "").WithIcon(gameui.IconClose)
-	btn.IconSize = 13
-	return btn
+	return gameui.NewCloseButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H)
 }
 
 func buildEventCodexFilterButtons() []gameui.Button {

@@ -64,13 +64,13 @@ func techCategoryIcon(cat tech.Category) gameui.IconID {
 	case tech.CategoryMilitary:
 		return gameui.IconSword
 	case tech.CategoryNaval:
-		return gameui.IconSend // Denizcilik için gönder/yelken metaforu
+		return gameui.IconNaval
 	case tech.CategoryDiplomacy:
-		return gameui.IconBook
+		return gameui.IconDiplomacy
 	case tech.CategoryEconomy:
-		return gameui.IconBuy
+		return gameui.IconGold
 	case tech.CategoryReligion:
-		return gameui.IconMenu // placeholder
+		return gameui.IconReligion
 	default:
 		return gameui.IconNone
 	}
@@ -166,9 +166,7 @@ func techPanelLayoutForScreen() techPanelLayout {
 
 func buildTechCloseButton() gameui.Button {
 	x, y, w, h := techCloseRect()
-	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
-	btn.IconSize = 14
-	return btn
+	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h))
 }
 
 func techNodeRect(node techNode) gameui.Rect {
@@ -846,18 +844,7 @@ func techCloseRect() (x, y, w, h float32) {
 }
 
 func drawTechCloseButton(screen *ebiten.Image) {
-	btn := buildTechCloseButton()
-	style := gameui.ButtonStyle{
-		BG:             color.RGBA{30, 28, 42, 220},
-		Border:         color.RGBA{160, 140, 80, 200},
-		Text:           ColorGold,
-		DisabledBG:     color.RGBA{20, 18, 30, 180},
-		DisabledBorder: color.RGBA{60, 50, 30, 140},
-		DisabledText:   color.RGBA{100, 90, 70, 180},
-		TextVariant:    gameui.TextSmall,
-		BorderWidth:    1.5,
-	}
-	drawUIButtonWidget(screen, btn, style)
+	drawCloseButton(screen, buildTechCloseButton())
 }
 
 func drawTechButton(screen *ebiten.Image, btn gameui.Button, bg color.RGBA, textColor color.Color, _ float64) {

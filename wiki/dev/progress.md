@@ -1,11 +1,34 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-23
+last_updated: 2026-09-26
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-26: Oyun içi UI input z-order altyapısı ortaklaştırıldı. `gameui.LayerStack`, görünür panel/modal/popup/HUD/menü yüzeylerini çizim sırasıyla topluyor; üst katman boş olsa bile altındaki UI veya haritaya tıklama geçmiyor. Cursor, kamera pan/zoom ve hareket önizlemesi de aynı katman sınırını kullanıyor. Regression: `internal/ui/layer_stack_test.go`, `go test ./... -count=1`.
+
+- 2026-09-26: Panel ve modal kapatma düğmeleri tekilleştirildi. `gameui.NewCloseButton` geometri ve `IconClose` kullanımını, `drawCloseButton` ise ortak renk/hover çizimini sağlıyor; layout'a göre kutu ölçüsü değişebilse de sağ üst X davranışı aynı kaldı. İptal ve kart içi kuyruk silme düğmeleri ayrı aksiyon olarak korundu.
+
+- 2026-09-26: Nakliye filosundaki ordunun çıkarma hedefi daha görünür hale
+  getirildi. Gemide birlik varken merkez settlement marker'ı `İN` etiketiyle
+  çiziliyor; marker üzerine gelindiğinde sağ tıkla karaya indirme açıklaması
+  gösteriliyor. Liman ve çıkarma hedefleri aynı geometri/hit-test hattını
+  koruyor. Ordu taşımayan filo kara bölgesinde liman dışı settlement'a
+  tıklanırsa deniz hedefi fallback'i de engelleniyor; docking dairesi mavi,
+  çıkarma dairesi altın/turuncu renkte ayrıştırılıyor. Kara ordusunun nakliye
+  filosuna binme marker'ındaki gereksiz `BIN` metni kaldırıldı ve çevre dairesi
+  ikonun tamamını saracak şekilde büyütüldü. Yüklü filo dost/müttefik limanına
+  sağ tıklanınca `Limana Gir` veya `Orduyu İndir` niyetini seçtiren küçük menü
+  açılıyor. Kara ordusu hareket önizlemesinde deniz bölgesi merkez halkası hiç
+  çizilmiyor; embark hedefi yalnız filo marker'ı olarak gösteriliyor, cursor
+  üstünde yeşile dönüyor ve boş filo liman dışı kara yerleşimine rota çizgisi
+  üretmiyor; embark filo marker'ı hover edildiğinde cursor pointer oluyor.
+  Kıyı hedefi seçim menüsü açıkken arka plan hareket hedefleri ve hover
+  hesapları durduruluyor. Regression:
+  `TestNavalLandMoveTargetSettlementDistinguishesLandingCenter`,
+  `TestNavalLandingTargetTooltipText`.
 
 - 2026-09-25: Edit Mode devlet düzenleme formu iki kolonlu, çakışmasız bir
   düzene taşındı. Form paneli, metin alanları ve aksiyon düğmeleri artık ortak

@@ -224,9 +224,9 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 				continue
 			}
 			canMerge := len(other.Units) < army.MaxArmySize
-			label := "->" + itoa(len(other.Units))
+			label := itoa(len(other.Units))
 			bx, by, bw, bh := mergeButtonRectAt(px, py, panelW, index, len(mergeTargets), canSplit)
-			drawArmyPanelButton(screen, bx, by, bw, bh, label, canMerge)
+			drawArmyPanelButtonWithIcon(screen, bx, by, bw, bh, label, canMerge, gameui.IconForward)
 		}
 	}
 
@@ -1131,13 +1131,11 @@ func armyPanelUnitPosition(layout armyPanelLayout, displayIndex int) (float32, f
 func buildArmyPanelCloseButton() gameui.Button {
 	layout := armyPanelGeometry()
 	x, y, w, h := panelCloseRect(layout.panelX, layout.panelY, layout.panelW)
-	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
-	btn.IconSize = 12
-	return btn
+	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h))
 }
 
 func drawArmyPanelCloseButton(screen *ebiten.Image) {
-	drawUIButtonWidget(screen, buildArmyPanelCloseButton(), tinyButtonStyle)
+	drawCloseButton(screen, buildArmyPanelCloseButton())
 }
 
 func buildArmyPanelCommanderUnassignButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
@@ -1242,7 +1240,7 @@ func buildSplitArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMaps
 	layout := armyPanelGeometry()
 	hasMerge := FindMergeTarget(gs, aid) != ""
 	bx, by, bw, bh := splitButtonRect(layout.panelX, layout.panelY, layout.panelW, hasMerge)
-	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "<-Böl->"), true
+	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), "<-Böl->").WithIcon(gameui.IconSplit), true
 }
 
 func buildDisbandArmyButton(gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) (gameui.Button, bool) {
@@ -1281,8 +1279,8 @@ func buildMergeArmyButtonForTarget(gs *state.GameState, aid, targetID army.ArmyI
 	}
 	layout := armyPanelGeometry()
 	bx, by, bw, bh := mergeButtonRectAt(layout.panelX, layout.panelY, layout.panelW, index, mergeCount, len(a.Units) >= 2)
-	label := "->" + itoa(len(target.Units))
-	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), label), true
+	label := itoa(len(target.Units))
+	return gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), label).WithIcon(gameui.IconForward), true
 }
 
 // drawArmyActionButton tek bir aksiyon butonunu çizer.
@@ -1294,11 +1292,22 @@ func drawArmyActionButton(screen *ebiten.Image, px, py, panelW float32, label st
 	} else {
 		bx, by, bw, bh = mergeButtonRect(px, py, panelW, hasOtherAction)
 	}
-	drawArmyPanelButton(screen, bx, by, bw, bh, label, active)
+	button := gameui.NewButton(float64(bx), float64(by), float64(bw), float64(bh), label)
+	if isSplit {
+		button = button.WithIcon(gameui.IconSplit)
+	}
+	button.Enabled = active
+	gameui.DrawButton(screen, button, armyPanelActionButtonStyle(), sharedTextRenderer{})
 }
 
 func drawArmyPanelButton(screen *ebiten.Image, x, y, w, h float32, label string, active bool) {
-	drawArmyPanelButtonWithStyle(screen, x, y, w, h, label, active, armyPanelActionButtonStyle())
+	drawArmyPanelButtonWithIcon(screen, x, y, w, h, label, active, gameui.IconNone)
+}
+
+func drawArmyPanelButtonWithIcon(screen *ebiten.Image, x, y, w, h float32, label string, active bool, icon gameui.IconID) {
+	button := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), label).WithIcon(icon)
+	button.Enabled = active
+	gameui.DrawButton(screen, button, armyPanelActionButtonStyle(), sharedTextRenderer{})
 }
 
 func drawArmyPanelButtonWithStyle(screen *ebiten.Image, x, y, w, h float32, label string, active bool, style gameui.ButtonStyle) {

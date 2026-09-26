@@ -404,6 +404,43 @@ func (r *Renderer) drawNavalEmbarkedArmyHoverTooltip(screen *ebiten.Image) {
 	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 2)
 }
 
+func navalLandingTargetTooltipText(gs *state.GameState, fleet *army.Army, target *world.Region) (string, string, bool) {
+	if gs == nil || fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 || target == nil {
+		return "", "", false
+	}
+	if target.OwnerID == "" || target.OwnerID == fleet.OwnerID || armyRegionIsFriendly(gs, fleet, target) {
+		return "Ordu sevk noktası", "Buraya sağ tıklayarak gemideki orduyu dost bölgeye sevk edebilirsin.", true
+	}
+	return "Çıkarma noktası", "Buraya sağ tıklayarak gemideki orduyla düşman bölgesine çıkarma yapabilirsin.", true
+}
+
+// drawNavalLandingTargetHoverTooltip, haritadaki "İN" marker'ının ne yaptığını
+// doğrudan cursor altında açıklar. Liman marker'ı için bu tooltip gösterilmez.
+func (r *Renderer) drawNavalLandingTargetHoverTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" || r.mapMode == MapModeTrade || r.confirmDialog.show {
+		return
+	}
+	fleet := r.gs.Armies[r.SelectedArmy]
+	if fleet == nil || fleet.OwnerID != string(r.gs.PlayerFactionID) || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	regionID, settlementID, ok := r.navalLandMoveTargetAt(float64(mx), float64(my), fleet)
+	if !ok || settlementID == "" {
+		return
+	}
+	title, detail, ok := navalLandingTargetTooltipText(r.gs, fleet, r.gs.Regions[regionID])
+	if !ok {
+		return
+	}
+	const tooltipW = 360.0
+	const tooltipH = 82.0
+	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
+	drawTooltipBox(screen, x, y, w, h)
+	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 42}, detail, ColorWhite, gameui.TextSmall, 17, 2)
+}
+
 func navalSupplyCargoTooltipText(gs *state.GameState, fleet *army.Army) (string, string, bool) {
 	if gs == nil || !navalSupplyCargoAvailable(fleet) || fleet.OwnerID != string(gs.PlayerFactionID) {
 		return "", "", false

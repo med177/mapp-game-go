@@ -430,9 +430,7 @@ func buildRecruitPanelCloseButton(gs *state.GameState, rid world.RegionID) (game
 	py := recruitPanelYForMetrics(metrics)
 	pw := recruitPanelW(slots)
 	x, y, w, h := recruitPanelCloseRect(px, py, pw)
-	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
-	btn.IconSize = 12
-	return btn, true
+	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h)), true
 }
 
 func buildRecruitUnitCardButtons(gs *state.GameState, rid world.RegionID) []gameui.Button {
@@ -712,19 +710,7 @@ func recruitPanelCloseRect(px, py, pw float32) (x, y, w, h float32) {
 
 func drawRecruitPanelCloseButton(screen *ebiten.Image, px, py, pw float32) {
 	x, y, w, h := recruitPanelCloseRect(px, py, pw)
-	mx, my := ebiten.CursorPosition()
-	hovered := float64(mx) >= float64(x) && float64(mx) <= float64(x+w) && float64(my) >= float64(y) && float64(my) <= float64(y+h)
-	bg := color.RGBA{70, 26, 22, 235}
-	border := color.RGBA{170, 88, 76, 235}
-	txt := color.RGBA{255, 220, 210, 240}
-	if hovered {
-		bg = color.RGBA{128, 40, 30, 245}
-		border = color.RGBA{240, 140, 120, 245}
-		txt = color.RGBA{255, 245, 235, 255}
-	}
-	vector.FillRect(screen, x, y, w, h, bg, false)
-	vector.StrokeRect(screen, x, y, w, h, 1, border, false)
-	DrawTextCentered(screen, "X", float64(x)+float64(w)/2, float64(y)+2, FaceSmall, txt)
+	drawCloseButton(screen, gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h)))
 }
 
 func recruitPanelCloseHitTest(mx, my float64, gs *state.GameState, rid world.RegionID) bool {

@@ -14,26 +14,37 @@ import (
 type IconID string
 
 const (
-	IconNone  IconID = ""
-	IconBack  IconID = "back"
-	IconClose IconID = "close"
-	IconX     IconID = "x"
-	IconMenu  IconID = "menu"
-	IconBook  IconID = "book"
-	IconMinus IconID = "minus"
-	IconPlus  IconID = "plus"
-	IconPlay  IconID = "play"
-	IconPause IconID = "pause"
-	IconNext  IconID = "next"
-	IconSend  IconID = "send"
-	IconTrash IconID = "trash"
-	IconCheck IconID = "check"
-	IconSword IconID = "sword"
-	IconSave  IconID = "save"
-	IconLoad  IconID = "load"
-	IconBuy   IconID = "buy"
-	IconSell  IconID = "sell"
-	IconExit  IconID = "exit"
+	IconNone      IconID = ""
+	IconBack      IconID = "back"
+	IconClose     IconID = "close"
+	IconX         IconID = "x"
+	IconMenu      IconID = "menu"
+	IconBook      IconID = "book"
+	IconMinus     IconID = "minus"
+	IconPlus      IconID = "plus"
+	IconPlay      IconID = "play"
+	IconPause     IconID = "pause"
+	IconNext      IconID = "next"
+	IconSend      IconID = "send"
+	IconTrash     IconID = "trash"
+	IconCheck     IconID = "check"
+	IconSword     IconID = "sword"
+	IconSave      IconID = "save"
+	IconLoad      IconID = "load"
+	IconBuy       IconID = "buy"
+	IconGold      IconID = "gold"
+	IconSell      IconID = "sell"
+	IconDiplomacy IconID = "diplomacy"
+	IconNaval     IconID = "naval"
+	IconReligion  IconID = "religion"
+	IconExit      IconID = "exit"
+	IconLogin     IconID = "login"
+	IconDock      IconID = "dock"
+	IconExport    IconID = "export"
+	IconChange    IconID = "change"
+	IconSplit     IconID = "split"
+	IconForward   IconID = "forward"
+	IconRevolt    IconID = "revolt"
 )
 
 const iconAssetDir = "assets/ui/icons"
@@ -59,8 +70,19 @@ func init() {
 		IconSave,
 		IconLoad,
 		IconBuy,
+		IconGold,
 		IconSell,
+		IconDiplomacy,
+		IconNaval,
+		IconReligion,
 		IconExit,
+		IconLogin,
+		IconDock,
+		IconExport,
+		IconChange,
+		IconSplit,
+		IconForward,
+		IconRevolt,
 	} {
 		uiIconCache[id] = loadIconAsset(id)
 	}

@@ -36,6 +36,19 @@ func NewButton(x, y, w, h float64, label string) Button {
 	return Button{X: x, Y: y, W: w, H: h, Label: label, Enabled: true}
 }
 
+// NewCloseButton panel ve modal başlıklarında kullanılan ortak sağ üst kapatma
+// kontrolünü oluşturur. Kutu ölçüsü layout'a göre değişebilir; ikonun oranı ve
+// etkileşim davranışı ortak kalır.
+func NewCloseButton(x, y, w, h float64) Button {
+	button := NewButton(x, y, w, h, "").WithIcon(IconClose)
+	size := w
+	if h < size {
+		size = h
+	}
+	button.IconSize = size * 0.5
+	return button
+}
+
 func (b Button) WithIcon(icon IconID) Button {
 	b.Icon = icon
 	return b

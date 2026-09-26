@@ -55,6 +55,9 @@ func (r *Renderer) HandleInput() InputAction {
 	}()
 
 	r.pollEditMapBuild()
+	// Tüm UI yüzeylerinin ortak z-order sınırını input ve cursor kararlarından
+	// önce yenile. Böylece üst panelin boş alanı bile alttaki haritaya geçmez.
+	r.rebuildUILayers()
 	r.updateCursorShape()
 	r.updateEditDropdownPositions()
 
@@ -66,10 +69,10 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.showHistoricalEvent {
 		return r.handleHistoricalEventInput()
 	}
-	if r.showCommanderPanel {
+	if r.showCommanderPanel && r.uiLayerAllowsCurrentInput(uiLayerCommander) {
 		return r.handleCommanderPanelInput()
 	}
-	if r.showImperialPanel {
+	if r.showImperialPanel && r.uiLayerAllowsCurrentInput(uiLayerImperial) {
 		return r.handleImperialPanelInput()
 	}
 	if r.navalMissionTargeting {
@@ -549,7 +552,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
 
-	if r.showArmyDetailPanel && r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerArmy) && r.showArmyDetailPanel && r.SelectedArmy != "" && armyPanelCloseHit(fx, fy) {
 		r.SelectedArmy = ""
 		r.showArmyDetailPanel = false
 		r.armyDetailPanelPreference = false
@@ -557,15 +560,15 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.clearArmySplitSelection()
 		return InputAction{}
 	}
-	if r.selectedFactionPanel != "" && factionPanelCloseHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerFaction) && r.selectedFactionPanel != "" && factionPanelCloseHit(fx, fy) {
 		r.closeFactionPanel()
 		return InputAction{}
 	}
-	if r.settlementPanelCloseHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerSettlement) && r.settlementPanelCloseHit(fx, fy) {
 		r.clearSelectedSettlement()
 		return InputAction{}
 	}
-	if r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerRegion) && r.SelectedRegion != "" && regionPanelCloseHit(fx, fy) {
 		r.SelectedRegion = ""
 		r.closeFactionPanel()
 		r.devNeighborListExpanded = false
@@ -578,43 +581,47 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
-	if eventLogToggleHit(fx, fy, r.eventLogCollapsed) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerEventLog) && eventLogToggleHit(fx, fy, r.eventLogCollapsed) {
 		r.eventLogCollapsed = !r.eventLogCollapsed
 		return InputAction{}
 	}
-	if r.HasEventCodex() && eventLogCodexHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerEventLog) && r.HasEventCodex() && eventLogCodexHit(fx, fy) {
 		r.OpenEventCodex()
 		return InputAction{Kind: ActionOpenEventCodex}
 	}
-	if idx := eventLogCloseHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
-		r.RemoveEventAt(idx)
-		return InputAction{}
+	if r.uiLayerAllowsAt(fx, fy, uiLayerEventLog) {
+		if idx := eventLogCloseHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
+			r.RemoveEventAt(idx)
+			return InputAction{}
+		}
 	}
-	if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
-		r.eventDetailTitle = r.EventTitleAt(idx)
-		r.eventDetail = r.EventDetailAt(idx)
-		r.eventDetailScroll = 0
-		return InputAction{}
+	if r.uiLayerAllowsAt(fx, fy, uiLayerEventLog) {
+		if idx := eventLogCardHit(fx, fy, len(r.eventLog), r.eventLogCollapsed, r.eventLogScroll); idx >= 0 {
+			r.eventDetailTitle = r.EventTitleAt(idx)
+			r.eventDetail = r.EventDetailAt(idx)
+			r.eventDetailScroll = 0
+			return InputAction{}
+		}
 	}
-	if topDateHudMenuButtonHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTopDate) && topDateHudMenuButtonHit(fx, fy) {
 		r.pauseCursor = 0
 		return InputAction{Kind: ActionOpenPauseMenu}
 	}
-	if victoryProgressHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTopStatus) && victoryProgressHit(fx, fy) {
 		r.showVictoryDetail = true
 		r.victoryDetailScroll = 0
 		return InputAction{}
 	}
 	modeButtons := buildMapModeButtons()
-	if modeButtons[0].HitTest(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTopStatus) && modeButtons[0].HitTest(fx, fy) {
 		r.mapMode = MapModeNormal
 		return InputAction{}
 	}
-	if modeButtons[1].HitTest(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTopStatus) && modeButtons[1].HitTest(fx, fy) {
 		r.mapMode = MapModeTrade
 		return InputAction{}
 	}
-	if r.mapMode == MapModeTrade {
+	if !r.uiLayers.BlocksAt(fx, fy) && r.mapMode == MapModeTrade {
 		if idx := r.tradeCorridorAt(fx, fy); idx >= 0 && idx < len(r.tradeCorridors) {
 			c := r.tradeCorridors[idx]
 			directionText := c.directionText
@@ -648,7 +655,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
-	if musicHudInteractiveHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerMusic) && musicHudInteractiveHit(fx, fy) {
 		toggleBtn, nextBtn := buildMusicHudButtons(audio.MusicStatusNow().Playing)
 		if toggleBtn.HitTest(fx, fy) {
 			return InputAction{Kind: ActionToggleMusic}
@@ -657,7 +664,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{Kind: ActionNextMusic}
 		}
 	}
-	if activeWarsHudButtonHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTopStatus) && activeWarsHudButtonHit(fx, fy) {
 		r.showActiveWars = !r.showActiveWars
 		r.activeWarsDirty = true
 		if !r.showActiveWars {
@@ -667,14 +674,14 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{}
 	}
-	if turnTechHudTechHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTurnTech) && turnTechHudTechHit(fx, fy) {
 		r.showTech = true
 		r.showRecruitPanel = false
 		r.showDiplomacy = false
 		r.techCursor = 0
 		return InputAction{}
 	}
-	if imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTopStatus) && imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy) {
 		if r.showImperialPanel {
 			r.CloseImperialPanel()
 		} else {
@@ -686,7 +693,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 	recruitEnabled := RecruitPanelButtonEnabled(r.gs, r.SelectedRegion)
 	armyLabel, armyEnabled, _, _, _ := bottomArmyAction(r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled)
 	bottomButtons := buildBottomActionButtons(armyLabel, armyEnabled)
-	if bottomButtons[0].HitTest(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerBottom) && bottomButtons[0].HitTest(fx, fy) {
 		if r.selectedArmyIsPlayerOwned() {
 			r.toggleArmyDetailPanel()
 		} else {
@@ -694,18 +701,18 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{}
 	}
-	if bottomButtons[1].HitTest(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerBottom) && bottomButtons[1].HitTest(fx, fy) {
 		r.showTech = !r.showTech
 		r.showRecruitPanel = false
 		r.showDiplomacy = false
 		r.techCursor = 0
 		return InputAction{}
 	}
-	if bottomButtons[2].HitTest(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerBottom) && bottomButtons[2].HitTest(fx, fy) {
 		r.toggleTradePanel()
 		return InputAction{}
 	}
-	if bottomButtons[3].HitTest(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerBottom) && bottomButtons[3].HitTest(fx, fy) {
 		r.showDiplomacy = !r.showDiplomacy
 		r.showRecruitPanel = false
 		r.showTech = false
@@ -717,7 +724,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.diplomacyHistoryVisible = false
 		return InputAction{}
 	}
-	if bottomButtons[4].HitTest(fx, fy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerBottom) && bottomButtons[4].HitTest(fx, fy) {
 		return InputAction{Kind: ActionEndTurn}
 	}
 
@@ -728,7 +735,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
-	if r.SelectedRegion != "" {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerRegion) && r.SelectedRegion != "" {
 		if tab, ok := regionPanelTabHit(fx, fy, r.gs, r.SelectedRegion); ok {
 			if tab == regionPanelTabEvents && r.regionPanelTab != regionPanelTabEvents {
 				// Olaylar sekmesi mevcut davranışta komşuları açık gösterir;
@@ -801,7 +808,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 	}
 
-	if r.mapMode != MapModeTrade && r.showRecruitPanel {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerRecruit) && r.mapMode != MapModeTrade && r.showRecruitPanel {
 		// Birim oluştur paneli tıklaması — bölge seçiminden önce kontrol edilmeli
 		if act := RecruitPanelActionHitTest(fx, fy, r.gs, r.SelectedRegion); act.Kind != RecruitPanelActionNone {
 			switch act.Kind {
@@ -832,42 +839,44 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
-	if _, siege, _, ok := r.selectedSiegePanelState(); ok {
-		assaultBtn, liftBtn, surrenderBtn := buildSelectedSiegeButtons()
-		attacker := r.gs.Armies[r.SelectedArmy]
-		if attacker != nil && assaultBtn.HitTest(fx, fy) {
-			return InputAction{Kind: ActionAssaultSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
-		}
-		if liftBtn.HitTest(fx, fy) {
-			return InputAction{Kind: ActionLiftSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID}
-		}
-		if attacker != nil {
-			_, canSend := r.attackerSiegeSurrenderState(attacker, r.gs.Regions[siege.RegionID])
-			if canSend && surrenderBtn.HitTest(fx, fy) {
-				return InputAction{Kind: ActionProposeSiegeSurrender, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID}
+	if r.uiLayerAllowsAt(fx, fy, uiLayerSiege) {
+		if _, siege, _, ok := r.selectedSiegePanelState(); ok {
+			assaultBtn, liftBtn, surrenderBtn := buildSelectedSiegeButtons()
+			attacker := r.gs.Armies[r.SelectedArmy]
+			if attacker != nil && assaultBtn.HitTest(fx, fy) {
+				return InputAction{Kind: ActionAssaultSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
+			}
+			if liftBtn.HitTest(fx, fy) {
+				return InputAction{Kind: ActionLiftSiege, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID}
+			}
+			if attacker != nil {
+				_, canSend := r.attackerSiegeSurrenderState(attacker, r.gs.Regions[siege.RegionID])
+				if canSend && surrenderBtn.HitTest(fx, fy) {
+					return InputAction{Kind: ActionProposeSiegeSurrender, ArmyID: r.SelectedArmy, TargetRegion: siege.RegionID}
+				}
+			}
+			if r.selectedSiegePanelHit(fx, fy) {
+				return InputAction{}
 			}
 		}
-		if r.selectedSiegePanelHit(fx, fy) {
-			return InputAction{}
-		}
-	}
-	if defender, _, siege, target, surrenderOffered, ok := r.selectedDefensiveSiegePanelState(); ok {
-		sortieBtn, surrenderBtn := buildDefensiveSiegeButtons(defensiveSiegeSettlementButtonLabel(r.gs, target))
-		if defender != nil && sortieBtn.HitTest(fx, fy) {
-			return InputAction{Kind: ActionSortieSiege, ArmyID: defender.ID, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
-		}
-		if surrenderOffered && surrenderBtn.HitTest(fx, fy) {
-			armyID := army.ArmyID("")
-			if defender != nil {
-				armyID = defender.ID
+		if defender, _, siege, target, surrenderOffered, ok := r.selectedDefensiveSiegePanelState(); ok {
+			sortieBtn, surrenderBtn := buildDefensiveSiegeButtons(defensiveSiegeSettlementButtonLabel(r.gs, target))
+			if defender != nil && sortieBtn.HitTest(fx, fy) {
+				return InputAction{Kind: ActionSortieSiege, ArmyID: defender.ID, TargetRegion: siege.RegionID, BattleStance: combat.BattleStanceBalanced}
 			}
-			return InputAction{Kind: ActionSurrenderSiege, ArmyID: armyID, TargetRegion: siege.RegionID}
-		}
-		if r.selectedSiegePanelHit(fx, fy) {
-			return InputAction{}
+			if surrenderOffered && surrenderBtn.HitTest(fx, fy) {
+				armyID := army.ArmyID("")
+				if defender != nil {
+					armyID = defender.ID
+				}
+				return InputAction{Kind: ActionSurrenderSiege, ArmyID: armyID, TargetRegion: siege.RegionID}
+			}
+			if r.selectedSiegePanelHit(fx, fy) {
+				return InputAction{}
+			}
 		}
 	}
-	if r.showArmyDetailPanel && r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
+	if r.uiLayerAllowsAt(fx, fy, uiLayerArmy) && r.showArmyDetailPanel && r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
 		if r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
 			return InputAction{}
 		}
@@ -917,6 +926,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 	// Panel içindeki kontroller yukarıda işlendi. Panel dikdörtgeni dışındaki
 	// harita ise normal tıklama akışını korumalıdır.
 	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
+		return InputAction{}
+	}
+	if r.uiLayers.BlocksAt(fx, fy) {
 		return InputAction{}
 	}
 
@@ -1468,6 +1480,9 @@ func (r *Renderer) handleRightClick() InputAction {
 
 	mx, my := ebiten.CursorPosition()
 	fx, fy := float64(mx), float64(my)
+	if r.uiLayers.BlocksAt(fx, fy) {
+		return InputAction{}
+	}
 	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
 		return InputAction{}
 	}
@@ -1501,6 +1516,7 @@ func (r *Renderer) handleRightClick() InputAction {
 	}
 	wx, wy := r.screenToWorld(float64(mx), float64(my))
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
+	clickedRegionID := rid
 	if clickedID, hit := r.armyHitAt(fx, fy); hit {
 		if a.IsNaval && clickedID != a.ID {
 			if fleet := r.gs.Armies[clickedID]; fleet != nil && fleet.IsAtSea() &&
@@ -1510,6 +1526,9 @@ func (r *Renderer) handleRightClick() InputAction {
 		}
 		if fleet := r.gs.Armies[clickedID]; fleet != nil && !a.IsNaval && fleet.OwnerID == a.OwnerID && fleet.IsNaval {
 			if fleetCanEmbarkFromRegion(r.gs, fleet, a.RegionID) {
+				if !armyHasMovementForEmbark(a) {
+					return InputAction{}
+				}
 				if !armyCanEmbark(r.gs, a) {
 					r.ShowCombatResult(embarkBlockedMessage(r.gs, a))
 					return InputAction{}
@@ -1530,10 +1549,36 @@ func (r *Renderer) handleRightClick() InputAction {
 			}
 		}
 	}
+	navalTargetSettlementID := ""
+	navalTargetIsCenter := false
+	navalTargetIsPort := false
 	if a.IsNaval {
-		reachability := r.movementReachabilityForArmy(a)
-		if targetID, _, targetHit := r.navalMovementTargetAt(fx, fy, a, reachability); targetHit {
-			rid = targetID
+		clickedRegion := r.gs.Regions[clickedRegionID]
+		if clickedRegion != nil && clickedRegion.CanLandEnter() {
+			// Kara bölgesine tıklanmışsa deniz merkezine fallback yapmak,
+			// liman dışı settlement'ı yanlışlıkla hareket hedefi seçilebilir
+			// hale getiriyordu. Kara hedefi yalnız çizilmiş/geçerli settlement
+			// marker'ı üzerinden seçilebilir.
+			settlementRegion, settlementID, ok := r.navalLandMoveTargetAt(fx, fy, a)
+			if !ok {
+				return InputAction{}
+			}
+			rid = settlementRegion
+			navalTargetSettlementID = settlementID
+			if target := r.gs.Regions[settlementRegion]; target != nil {
+				for _, settlement := range target.Settlements {
+					if settlement.ID == settlementID {
+						navalTargetIsCenter = settlement.IsCenter
+						navalTargetIsPort = settlement.Type == world.SettlementPort
+						break
+					}
+				}
+			}
+		} else {
+			reachability := r.movementReachabilityForArmy(a)
+			if targetID, _, targetHit := r.navalMovementTargetAt(fx, fy, a, reachability); targetHit {
+				rid = targetID
+			}
 		}
 	}
 	if rid == "" {
@@ -1550,24 +1595,6 @@ func (r *Renderer) handleRightClick() InputAction {
 	// filo merkez settlement'ını çıkarma, liman settlement'ını docking hedefi;
 	// boş filo yalnız geçerli liman marker'ını tıklanabilir kabul eder. Bölge
 	// içindeki boş bir noktaya tıklama hareket emri üretmez.
-	navalTargetSettlementID := ""
-	navalTargetIsCenter := false
-	if a.IsNaval {
-		if target := r.gs.Regions[rid]; target != nil && target.CanLandEnter() {
-			settlementRegion, settlementID, ok := r.navalLandMoveTargetAt(fx, fy, a)
-			if !ok {
-				return InputAction{}
-			}
-			rid = settlementRegion
-			navalTargetSettlementID = settlementID
-			for _, settlement := range target.Settlements {
-				if settlement.ID == settlementID {
-					navalTargetIsCenter = settlement.IsCenter
-					break
-				}
-			}
-		}
-	}
 	// Zaten bağlı olunan limanın marker'ına sağ tıklamak yeni bir docking
 	// emri değildir. Aynı kara bölgesine tekrar emir üretmek, oyun katmanında
 	// limana yeniden konuşlanma olarak yorumlanıp hareket puanı tüketebilir.
@@ -1629,14 +1656,14 @@ func (r *Renderer) handleRightClick() InputAction {
 		landContact := !a.IsNaval && target.CanLandEnter() && (enemyArmy != nil || hasLandContactOpponent(r.gs, a, target)) && !allySieging
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
-		// Müttefik bölgesine çıkarma için "Karaya In" göster.
+		// Dost bölgeye çıkarma değil, ordu sevki için indirme onayı göster.
 		if !target.IsTerrainArea && !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
 			if armyRegionIsFriendly(r.gs, a, target) && len(a.EmbarkedUnits) > 0 {
-				// Müttefik kıyısına çıkarma — savaş popup'ı değil, karaya inme onayı
+				// Dost kıyısına çıkarma değil, ordu sevk etme onayı.
 				r.ShowConfirmDialog(
-					"Karaya In",
-					"Gemideki birlikler dost bölgeye insin mi?",
-					"Karaya In",
+					"Orduyu Sevk Et",
+					"Gemideki birlikler dost bölgeye sevk edilsin mi?",
+					"Sevk Et",
 					"İptal",
 					InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
 					nil,
@@ -1656,12 +1683,30 @@ func (r *Renderer) handleRightClick() InputAction {
 				return InputAction{}
 			}
 		}
+		if a.IsNaval && len(a.EmbarkedUnits) > 0 && navalTargetIsPort &&
+			navalCanDockAtRegion(r.gs, a, target) && navalShowsFriendlyDisembark(r.gs, a, target) {
+			// Yüklü filonun dost liman marker'ı iki farklı niyete sahiptir:
+			// filo limana yanaşabilir veya taşıdığı orduyu dost kıyıya sevk edebilir.
+			// Sağ tıkta seçimi açıkça oyuncuya bırak; iki aksiyon da hedef
+			// settlement/bölge bilgisini kaybetmeden oyun katmanına aktarılır.
+			r.ShowThreeChoiceDialog(
+				"Kıyı hedefi",
+				"Bu filo ordu taşıyor. Limana girmek mi, yoksa orduyu dost bölgeye sevk etmek mi istiyorsun?",
+				"Sevk Et",
+				"Limana Gir",
+				"İptal",
+				InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
+				InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID},
+				InputAction{},
+			)
+			return InputAction{}
+		}
 		if a.IsNaval && navalTargetIsCenter && navalShowsFriendlyDisembark(r.gs, a, target) {
 			r.ShowConfirmDialog(
-				"Karaya In",
-				"Gemideki birlikler bu bölgeye insin mi?",
-				"Karaya In",
-				"Iptal",
+				"Orduyu Sevk Et",
+				"Gemideki birlikler bu dost bölgeye sevk edilsin mi?",
+				"Sevk Et",
+				"İptal",
 				InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
 				nil,
 			)
@@ -1768,6 +1813,8 @@ func (r *Renderer) currentRegionArmyTaskIndicatorVisible(attacker *army.Army, ta
 
 func (r *Renderer) handleCamera() {
 	speed := 6.0 / r.camScale
+	mx, my := ebiten.CursorPosition()
+	mouseOverUI := r.uiLayers.BlocksAt(float64(mx), float64(my))
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) || ebiten.IsKeyPressed(ebiten.KeyA) {
 		r.camX -= speed
@@ -1783,8 +1830,7 @@ func (r *Renderer) handleCamera() {
 		r.camY += speed
 	}
 
-	mx, my := ebiten.CursorPosition()
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) {
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) && !mouseOverUI {
 		if r.isDragging {
 			prevWX, prevWY := r.screenToWorld(float64(r.lastMX), float64(r.lastMY))
 			curWX, curWY := r.screenToWorld(float64(mx), float64(my))
@@ -1813,6 +1859,9 @@ func (r *Renderer) handleCamera() {
 		}
 		if eventLogPanelHit(float64(mx), float64(my), r.eventLogCollapsed) && !r.eventLogCollapsed {
 			r.scrollEventLog(dy)
+			return
+		}
+		if mouseOverUI {
 			return
 		}
 		mouseWX, mouseWY := r.screenToWorld(float64(mx), float64(my))

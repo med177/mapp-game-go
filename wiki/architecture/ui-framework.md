@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [ui, render, input, widgets]
-last_updated: 2026-06-05
+last_updated: 2026-09-26
 related: [architecture/render-pipeline, architecture/game-loop, architecture/state-management, architecture/ui-screen-guide, dev/progress]
 ---
 
@@ -23,6 +23,8 @@ Ebitengine üzerinde tüm ekranlarda ortak bir `internal/ui` katmanına geçerek
 6. Tam ekran menü/seçim aileleri için ortak screen chrome ve kart compose helper'ları (`internal/render/ui_compose.go`) kullanılmaya başlandı.
 7. Ana menü ve kayıt/yükleme slot ekranlarında `Tab` focus geçişi `internal/ui.Manager` üzerinden çalışır.
 8. `internal/render/ui_bridge.go` artık tek bir ortak `TextRenderer` sağlar; widget ailesi font varyantını UI katmanından ister, render katmanı yalnız face eşlemesini yapar.
+9. `internal/ui.LayerStack`, panel/modal/popup/HUD/menü yüzeylerinin ortak z-order ve input tüketim sınırını sağlar. Katmanlar çizim sırasıyla eklenir; koordinattaki en üst katman altındaki UI ve harita input'unu tüketebilir. Renderer cursor, kamera pan/zoom ve harita hareket önizlemesini aynı stack üzerinden sınırlar.
+10. Panel ve modal başlıklarındaki sağ üst kapatma kontrolü `gameui.NewCloseButton` ve `drawCloseButton` üzerinden ortak ikon, renk, hover ve hit-test davranışını kullanır. Kutu ölçüsü layout'a göre değişebilir; iptal veya kart içi silme aksiyonları bu başlık kapatma primitive'inden ayrı kalır.
 
 ## Hedef Mimari
 1. `internal/ui` altında ortak UI framework

@@ -373,9 +373,10 @@ yuvarlatılmış köşeli kesik altın çerçeveyle en üst marker katmanında b
 rect'te birleştirir; çerçeve yalnızca görseldir, mevcut marker/badge hit-test
 alanlarını genişletmez (`internal/render/renderer.go`).
 
-Panel satırları ve ortak `IconClose` düğmeleri `gameui.Button` hit-test'lerinden
-türetilir; `Button` içinde ayrı cursor alanı tutulmaz, OS pointer merkezi
-renderer cursor akışından güncellenir.
+Panel satırları ve ortak `gameui.NewCloseButton` düğmeleri `gameui.Button`
+hit-test'lerinden türetilir; kapatma düğmeleri `drawCloseButton` üzerinden aynı
+ikon, renk ve hover davranışını paylaşır. `Button` içinde ayrı cursor alanı
+tutulmaz, OS pointer merkezi renderer cursor akışından güncellenir.
 
 Alt harita modu HUD'ı (`Normal`/`Ticaret`) artık ekran altına değil minimap'in
 hemen üstüne hizalanır. Ticaret modunda açılan `Pazar` düğmesi de aynı kümenin
@@ -460,9 +461,9 @@ taşınan kara birliklerini yanlışlıkla boşaltmaz (`internal/render/renderer
 
 Merchant rota atama modalı `internal/render/merchant_route_panel.go` içinde
 ortak UI compose/widget yüzeylerini kullanır: panel frame ve overlay için
-`drawUIPanelFrame`/`drawUIOverlay`, kapatma için `IconClose` taşıyan ortak
-`Button` ve `tinyButtonStyle`, rota satırları için de aynı `Button` bileşeni
-ile `Label` primitive'leri kullanılır. İki satırlı rota metinlerinin iç kutusu
+`drawUIPanelFrame`/`drawUIOverlay`, kapatma için `NewCloseButton` ve
+`drawCloseButton`, rota satırları için de aynı `Button` bileşeni ile `Label`
+primitive'leri kullanılır. İki satırlı rota metinlerinin iç kutusu
 58 px satır yüksekliğine göre hesaplanır ve metin genişliği satırın gerçek
 alanına kırpılır; satır çizimi ve görünür satır hit-test'i ortak
 `merchantRoutePanelRowRect()` geometrisini izler.
@@ -481,8 +482,8 @@ bölgesindeki donanma marker'ları da aynı kaydedilmiş `WorldX/WorldY` odağı
 kullanır; raster piksellerinden runtime `RegionAnchor` yeniden hesaplanmaz
 (`internal/render/renderer.go`, `internal/render/army_icon_layout_test.go`).
 
-Donanma görev modalı da aynı ortak UI yüzeyini kullanır. `IconClose` ve
-`tinyButtonStyle` kapatma düğmesini, `drawUIPanelFrame`/`drawUIOverlay` panel
+Donanma görev modalı da aynı ortak UI yüzeyini kullanır. `NewCloseButton` ve
+`drawCloseButton` kapatma düğmesini, `drawUIPanelFrame`/`drawUIOverlay` panel
 çerçevesini ve overlay'i, `Button` + `Label` primitive'leri ise görev satırlarını
 oluşturur. Görev satırları 80 px yüksekliğindedir; görev adı, açıklama ve gerçek
 bonus satırı satır genişliğine kırpılır ve çizim ile görünür satır hit-test'i

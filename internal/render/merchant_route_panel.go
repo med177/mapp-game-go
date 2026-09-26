@@ -39,8 +39,7 @@ func merchantRoutePanelLayoutFor(rowCount int) merchantRoutePanelLayout {
 	panelH := merchantRoutePanelHeaderH + float32(visibleRows)*merchantRoutePanelRowH + merchantRoutePanelFooterH
 	panelX := float32(ScreenWidth)/2 - merchantRoutePanelW/2
 	panelY := float32(ScreenHeight)/2 - panelH/2
-	close := gameui.NewButton(float64(panelX+merchantRoutePanelW-42), float64(panelY+10), 28, 28, "").WithIcon(gameui.IconClose)
-	close.IconSize = 13
+	close := gameui.NewCloseButton(float64(panelX+merchantRoutePanelW-42), float64(panelY+10), 28, 28)
 	return merchantRoutePanelLayout{
 		panelX: panelX, panelY: panelY, panelW: merchantRoutePanelW, panelH: panelH,
 		rowX: panelX + 18, rowY: panelY + merchantRoutePanelHeaderH,
@@ -301,7 +300,7 @@ func (r *Renderer) drawMerchantRoutePanel(screen *ebiten.Image) {
 
 	drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 20), Y: float64(layout.panelY + 22), W: float64(layout.panelW - 80)}, "Merchant Ticaret Rotası", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 20), Y: float64(layout.panelY + 47), W: float64(layout.panelW - 80)}, "Seçili filonun görev rotasını belirleyin.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawUIButtonWidget(screen, layout.close, tinyButtonStyle)
+	drawCloseButton(screen, layout.close)
 
 	rowCount := merchantRoutePanelRowCount(r)
 	maxScroll := rowCount - merchantRoutePanelVisibleRows

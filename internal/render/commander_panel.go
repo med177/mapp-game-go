@@ -149,7 +149,7 @@ func commanderPanelRect() gameui.Rect {
 
 func commanderPanelCloseButton() gameui.Button {
 	panel := commanderPanelRect()
-	return gameui.NewButton(panel.X+panel.W-44, panel.Y+12, 30, 30, "").WithIcon(gameui.IconClose)
+	return gameui.NewCloseButton(panel.X+panel.W-44, panel.Y+12, 30, 30)
 }
 
 func commanderPanelDismissButton(gs *state.GameState, aid army.ArmyID) (gameui.Button, bool) {
@@ -225,7 +225,7 @@ func commanderRecruitModalPanel() gameui.Panel {
 
 func commanderRecruitModalCloseButton() gameui.Button {
 	panel := commanderRecruitModalPanel().Rect
-	return gameui.NewButton(panel.X+panel.W-42, panel.Y+12, 28, 28, "").WithIcon(gameui.IconClose)
+	return gameui.NewCloseButton(panel.X+panel.W-42, panel.Y+12, 28, 28)
 }
 
 func commanderRecruitModalNameBox() gameui.TextBox {
@@ -451,7 +451,7 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 	}
 	DrawText(screen, title, panel.X+24, panel.Y+20, FaceLarge, ColorYellow)
 	DrawText(screen, subtitle, panel.X+24, panel.Y+48, FaceSmall, ColorGray)
-	drawUIButtonWidget(screen, commanderPanelCloseButton(), tinyButtonStyle)
+	drawCloseButton(screen, commanderPanelCloseButton())
 	drawUIButtonWidget(screen, commanderPanelRecruitButton(r.gs), applyTinyButtonStyle)
 
 	vector.StrokeLine(screen, float32(panel.X+commanderPanelListW+48), float32(panel.Y+84), float32(panel.X+commanderPanelListW+48), float32(panel.Y+panel.H-24), 1, panelBorder, false)
@@ -559,7 +559,7 @@ func (r *Renderer) drawCommanderRecruitModal(screen *ebiten.Image) {
 		if r.commanderRecruitError != "" {
 			drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 252, W: panel.W - 48}, r.commanderRecruitError, ColorRed, gameui.TextSmall, gameui.TextAlignStart)
 		}
-		drawUIButtonWidget(screen, commanderRecruitModalCloseButton(), tinyButtonStyle)
+		drawCloseButton(screen, commanderRecruitModalCloseButton())
 		drawUIButtonWidget(screen, commanderRecruitModalCancelButton(), tinyButtonStyle)
 		drawUIButtonWidget(screen, commanderRecruitModalCreateButton(r.commanderEditID != ""), applyTinyButtonStyle)
 	})

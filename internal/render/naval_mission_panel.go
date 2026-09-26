@@ -53,8 +53,7 @@ func navalMissionPanelLayoutFor(rowCount int) navalMissionPanelLayout {
 	panelH := navalMissionPanelHeaderH + float32(visibleRows)*navalMissionPanelRowH + navalMissionPanelFooterH
 	panelX := float32(ScreenWidth)/2 - navalMissionPanelW/2
 	panelY := float32(ScreenHeight)/2 - panelH/2
-	close := gameui.NewButton(float64(panelX+navalMissionPanelW-42), float64(panelY+10), 28, 28, "").WithIcon(gameui.IconClose)
-	close.IconSize = 13
+	close := gameui.NewCloseButton(float64(panelX+navalMissionPanelW-42), float64(panelY+10), 28, 28)
 	clear := gameui.NewButton(
 		float64(panelX+18),
 		float64(panelY+panelH-navalMissionPanelFooterH+11),
@@ -325,7 +324,7 @@ func (r *Renderer) drawNavalMissionPanel(screen *ebiten.Image) {
 		W: float64(layout.panelW), H: float64(layout.panelH),
 	}, panelBg, panelBorder, 1.5, 3)
 	drawUILabel(screen, gameui.Rect{X: float64(layout.panelX + 20), Y: float64(layout.panelY + 23), W: float64(layout.panelW - 80)}, "Donanma Görevi", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
-	drawUIButtonWidget(screen, layout.close, tinyButtonStyle)
+	drawCloseButton(screen, layout.close)
 
 	fleet := r.gs.Armies[r.navalMissionArmy]
 	options := navalMissionOptions(r.gs, fleet)

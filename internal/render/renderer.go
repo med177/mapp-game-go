@@ -62,11 +62,17 @@ const (
 	capitalLabelIconSmallSize    = float32(18)
 	capitalLabelIconMediumSize   = float32(20)
 	navalDockTargetRadius        = float32(18)
+	embarkTargetMarkerRadius     = float32(24)
 	terrainAreaMoveTargetRadius  = float32(11)
 	terrainAreaMoveTargetFillRad = float32(8)
 )
 
 var navalDockTargetColor = color.RGBA{24, 72, 145, 235}
+
+// navalLandingTargetColor, liman/docking hedefinin mavisinden ayrılan
+// çıkarma rengidir. Böylece geminin ordu indireceği yer ile limana yanaşacağı
+// yer aynı harita üzerinde doğrudan ayırt edilir.
+var navalLandingTargetColor = color.RGBA{232, 157, 42, 245}
 
 var terrainAreaMoveTargetColor = color.RGBA{255, 165, 40, 225}
 
@@ -178,6 +184,11 @@ type Renderer struct {
 	// çizilir ve input/cursor taramasında ilk ele alınır.
 	overlayPanelOrder    [overlayPanelCount]overlayPanelID
 	overlayPanelOrderLen int
+
+	// uiLayers, çizilen tüm UI yüzeylerinin ortak z-order/input sınırıdır.
+	// Harita ve cursor hesapları bu stack'te sahiplenilmiş koordinatlara
+	// ulaşamaz; son eklenen görünür katman en üsttedir.
+	uiLayers gameui.LayerStack
 
 	// Ana menü
 	menuTick        int
@@ -1815,6 +1826,10 @@ func (r *Renderer) applyMapGeoM(op *ebiten.DrawImageOptions, sourceW, sourceH fl
 // Draw her frame çağrılır.
 func (r *Renderer) Draw(screen *ebiten.Image) {
 	r.renderFrame++
+	// HandleInput sırasında açılıp kapanan panellerin aynı frame'deki Draw,
+	// hareket önizlemesi ve tooltip kararlarıyla aynı z-order sözleşmesini
+	// kullanmasını sağla.
+	r.rebuildUILayers()
 	// Aynı Draw frame'inde harita, tooltip ve ordu efektleri ikon
 	// koordinatlarını tekrar tekrar kullanır. Input cache'i çağrı sonunda
 	// temizlendiği için yeni oyun durumuyla başlayan Draw kendi cache'ini
@@ -1956,7 +1971,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	// 4. Ordu hareket hedefleri (ticaret modunda gizlenir)
-	if r.mapMode != MapModeTrade && r.selectedArmyIsPlayerOwned() && !r.navalMissionTargeting {
+	if r.mapMode != MapModeTrade && r.selectedArmyIsPlayerOwned() && !r.navalMissionTargeting && !r.confirmDialog.show {
 		r.drawMoveTargets(screen)
 	}
 	if r.navalMissionTargeting {
@@ -2036,6 +2051,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawNavalMissionBonusHoverTooltip(screen)
 		r.drawMerchantTradeBonusHoverTooltip(screen)
 		r.drawNavalEmbarkedArmyHoverTooltip(screen)
+		r.drawNavalLandingTargetHoverTooltip(screen)
 		r.drawNavalSupplyCargoHoverTooltip(screen)
 	} else {
 		r.drawEditModeHud(screen)
@@ -2374,6 +2390,9 @@ func (r *Renderer) movementPreviewCursorOverPanel(x, y float64) bool {
 	if r == nil || r.gs == nil {
 		return true
 	}
+	if r.uiLayers.BlocksAt(x, y) {
+		return true
+	}
 	if r.tradeOverlayOccludesPoint(x, y) {
 		return true
 	}
@@ -2519,6 +2538,13 @@ func armyCanEmbark(gs *state.GameState, a *army.Army) bool {
 	return a.CanEmbark(gs.UnitTypes)
 }
 
+// armyHasMovementForEmbark, bu tur gemiye binme emrinin oluşturulabilmesi
+// için kara ordusunun hâlâ hareket hakkı olup olmadığını bildirir. Aynı
+// koşul, hedef marker'ı ile sağ tık onay penceresinin açılmasını eşitler.
+func armyHasMovementForEmbark(a *army.Army) bool {
+	return a != nil && !a.IsNaval && a.MovePoints > 0
+}
+
 func findFriendlyEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID, unitCount int) *army.Army {
 	return findFriendlyEmbarkFleetFromRegion(gs, ownerID, "", seaRegionID, unitCount)
 }
@@ -2565,7 +2591,7 @@ func findFriendlyEmbarkFleetFromRegion(gs *state.GameState, ownerID string, sour
 }
 
 func embarkableFleetForSelectedArmy(gs *state.GameState, selected *army.Army, fleet *army.Army) bool {
-	if gs == nil || selected == nil || fleet == nil || selected.IsNaval || selected.MovePoints <= 0 || fleet.OwnerID != selected.OwnerID || !fleet.IsNaval {
+	if gs == nil || !armyHasMovementForEmbark(selected) || fleet == nil || fleet.OwnerID != selected.OwnerID || !fleet.IsNaval {
 		return false
 	}
 	return fleetCanEmbarkFromRegion(gs, fleet, selected.RegionID) &&
@@ -2790,6 +2816,13 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			vector.StrokeCircle(screen, float32(sx), float32(sy), terrainAreaMoveTargetRadius, 2, terrainColor, true)
 			continue
 		}
+		if !a.IsNaval && nRegion.IsSea {
+			// Kara ordusu için deniz bölgesinin merkezini hareket hedefi
+			// olarak gösterme. Nakliye varsa gerçek hedef, aşağıdaki filo
+			// marker'ıdır; deniz merkez halkası bu hedefi anlamsız biçimde
+			// çoğaltır.
+			continue
+		}
 
 		var col color.RGBA
 		if a.IsNaval {
@@ -2799,15 +2832,6 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 				col = movementTargetHoverColor
 			}
 		} else {
-			if nRegion.IsSea {
-				col = color.RGBA{120, 230, 240, 220}
-				if movementTargetHovered && hoverRegionID == nRegion.ID {
-					col = movementTargetHoverColor
-				}
-				vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
-				DrawTextCentered(screen, "⛴", sx, sy-8, FaceSmall, color.RGBA{200, 240, 255, 220})
-				continue
-			}
 			switch {
 			case nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID:
 				key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
@@ -2838,34 +2862,13 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 		vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
 	}
 
-	// Kara ordusunun deniz bölgesine tıklaması embark akışıdır; bu, kara
-	// rotasının devamı olmadığı için ayrı ve doğrudan hedef olarak kalır.
-	if !a.IsNaval {
-		src := r.gs.Regions[a.RegionID]
-		if src == nil {
-			return
-		}
-		for _, nid := range world.SortedRegionIDs(src.Neighbors) {
-			nRegion := r.gs.Regions[nid]
-			if nRegion == nil || !nRegion.IsSea || nRegion.IsLocked || !armyCanEnterRegion(r.gs, a, nRegion) {
-				continue
-			}
-			sx, sy := r.regionScreenPos(nRegion)
-			col := color.RGBA{120, 230, 240, 220}
-			if movementTargetHovered && hoverRegionID == nRegion.ID {
-				col = movementTargetHoverColor
-			}
-			vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
-			DrawTextCentered(screen, "⛴", sx, sy-8, FaceSmall, color.RGBA{200, 240, 255, 220})
-		}
-	}
 }
 
 func (r *Renderer) movementRouteForCursor(a *army.Army, reachability state.MovementReachability, mx, my float64) []world.RegionID {
 	if a != nil && !a.IsNaval {
 		if _, _, _, ok := r.embarkFleetTargetAt(mx, my, a); ok {
 			// Deniz bölgesi kara hareket grafiğinde yoktur. Cursor doğrudan
-			// "BIN" marker'ına bakıyorsa kara fallback'i, komşu bölgenin
+			// embark marker'ına bakıyorsa kara fallback'i, komşu bölgenin
 			// merkez yerleşimine yanlış bir çizgi üretmemelidir.
 			return nil
 		}
@@ -2998,9 +3001,21 @@ func (r *Renderer) armyMovementTargetHovering(fx, fy float64) bool {
 	return ok
 }
 
+func (r *Renderer) embarkFleetTargetHovering(fx, fy float64) bool {
+	if r == nil || r.gs == nil || r.SelectedArmy == "" {
+		return false
+	}
+	selected := r.gs.Armies[r.SelectedArmy]
+	if selected == nil || selected.OwnerID != string(r.gs.PlayerFactionID) || selected.IsNaval || selected.MovePoints <= 0 {
+		return false
+	}
+	_, _, _, ok := r.embarkFleetTargetAt(fx, fy, selected)
+	return ok
+}
+
 // embarkFleetTargetAt, seçili kara ordusunun gerçekten binebileceği filo
-// marker'ını ortak ikon pozisyonlarından bulur. BIN rozeti de aynı marker'a
-// çizildiği için çizgi, ikon ve sağ tık hit-test'i aynı hedefi kullanır.
+// marker'ını ortak ikon pozisyonlarından bulur. Çember, ikon ve sağ tık
+// hit-test'i aynı filo hedefini kullanır.
 func (r *Renderer) embarkFleetTargetAt(mx, my float64, selected *army.Army) (*army.Army, float32, float32, bool) {
 	if r == nil || r.gs == nil || selected == nil || selected.IsNaval {
 		return nil, 0, 0, false
@@ -3038,6 +3053,15 @@ func (r *Renderer) movementCursorTarget(a *army.Army, reachability state.Movemen
 	wx, wy := r.screenToWorld(mx, my)
 	targetID := r.worldMap.RegionAt(int(wx), int(wy))
 	if targetID != "" {
+		if a.IsNaval {
+			// Donanmanın kara hedefi yalnız navalLandMoveTargetAt ile
+			// seçilmiş geçerli settlement marker'ı olabilir. Liman dışı
+			// kara bölgesinin kendisine düşen cursor, rota çizgisi için de
+			// deniz ordusunun hedefi sayılmamalıdır.
+			if targetRegion := r.gs.Regions[targetID]; targetRegion != nil && targetRegion.CanLandEnter() {
+				return "", "", false
+			}
+		}
 		isDockedUndock := a.IsNaval && a.IsDocked() && targetID == a.RegionID
 		if _, ok := reachability.Nodes[targetID]; ok && (targetID != a.RegionID || isDockedUndock) {
 			return targetID, "", true
@@ -3051,6 +3075,12 @@ func (r *Renderer) movementCursorTarget(a *army.Army, reachability state.Movemen
 	for regionID := range reachability.Nodes {
 		if regionID == a.RegionID {
 			continue
+		}
+		if a.IsNaval {
+			region := r.gs.Regions[regionID]
+			if region != nil && region.CanLandEnter() {
+				continue
+			}
 		}
 		sx, sy := r.movementRegionScreenPos(regionID, "")
 		dx := mx - float64(sx)
@@ -3209,10 +3239,15 @@ func (r *Renderer) drawNavalLandMoveTargets(screen *ebiten.Image, region *world.
 			}
 			vector.StrokeCircle(screen, float32(sx), float32(sy), navalDockTargetRadius, 3, portColor, true)
 		} else {
+			landingColor := navalLandingTargetColor
 			if hovered {
-				col = movementTargetHoverColor
+				landingColor = movementTargetHoverColor
 			}
-			vector.StrokeRect(screen, float32(sx)-16, float32(sy)-14, 32, 28, 3, col, true)
+			vector.StrokeCircle(screen, float32(sx), float32(sy), navalDockTargetRadius, 3, landingColor, true)
+			// Çıkarma hedefi liman işaretinden görsel olarak ayrılmalı. Oyuncu
+			// sağ tıklaması gereken merkezi settlement'ı doğrudan "İN" etiketiyle
+			// görür; hedef seçimi yine aynı marker geometrisini kullanır.
+			DrawTextCentered(screen, "İN", sx, sy-6, FaceSmall, ColorWhite)
 		}
 		drawn = true
 	}
@@ -3822,8 +3857,15 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, false, siegeBadgeX)
 		}
 		if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
-			vector.StrokeCircle(screen, pos.X, pos.Y, 17, 3, color.RGBA{120, 230, 240, 220}, true)
-			DrawTextCentered(screen, "BIN", float64(pos.X), float64(pos.Y)+15, FaceSmall, color.RGBA{210, 248, 255, 230})
+			embarkTargetColor := color.RGBA{120, 230, 240, 220}
+			if selectedArmy != nil && !r.confirmDialog.show {
+				mx, my := r.movementPreviewCursor()
+				hoveredFleet, _, _, hovered := r.embarkFleetTargetAt(mx, my, selectedArmy)
+				if hovered && hoveredFleet != nil && hoveredFleet.ID == a.ID {
+					embarkTargetColor = movementTargetHoverColor
+				}
+			}
+			vector.StrokeCircle(screen, pos.X, pos.Y, embarkTargetMarkerRadius, 3, embarkTargetColor, true)
 		}
 	}
 	// Sprite kullanan oyuncu markerlarının yerleşik rozetleri sprite'tan sonra

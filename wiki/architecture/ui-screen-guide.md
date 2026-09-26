@@ -40,6 +40,7 @@ Yeni ekran veya panel eklerken manuel hitbox, ayrı cursor hesabı ve kopya geom
 4. Click/input akışını aynı builder `.HitTest()` ile çöz.
 5. Arka plan etkileşimi kapanması gerekiyorsa `Panel` veya `Modal` hit-test’ini erken tüket.
 6. Klavye focus gerekiyorsa `internal/ui.Manager` ve `Focusable` sırasını kullan.
+7. Panel, popup, HUD ve modal yüzeylerini renderer içinde ayrı `map input` bayraklarıyla değil, `gameui.LayerStack` içine çizim sırasıyla kaydet. `TopAt` sonucu en üst katmanı belirler; üst katman koordinatı tükettiğinde altındaki yüzey veya harita input alamaz.
 
 ## Örnek Desen
 ```go

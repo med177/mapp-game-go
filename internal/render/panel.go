@@ -1165,7 +1165,7 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 		vector.StrokeRect(screen, cardX, cardY, cardW, cardH, 1, color.RGBA{90, 72, 38, 210}, false)
 
 		closeBtn := buildEventLogCloseButton(visibleIndex)
-		drawUIButtonWidget(screen, closeBtn, eventLogButtonStyle(ColorGray))
+		drawCloseButton(screen, closeBtn)
 
 		drawUIWrappedLabel(screen, gameui.Rect{X: float64(cardX) + 10, Y: float64(cardY) + 8, W: float64(cardW - 34)}, ev, color.RGBA{220, 210, 185, 235}, gameui.TextSmall, 15, 2)
 	}
@@ -1284,9 +1284,7 @@ func eventLogCloseHit(mx, my float64, eventCount int, collapsed bool, scroll int
 
 func buildEventLogCloseButton(index int) gameui.Button {
 	x, y, w, h := eventLogCloseRect(index)
-	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
-	btn.IconSize = 12
-	return btn
+	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h))
 }
 
 func eventLogInteractiveHit(mx, my float64, eventCount int, collapsed bool, scroll int, hasCodex bool) bool {
@@ -1580,7 +1578,7 @@ func drawEventDetailPopup(screen *ebiten.Image, titleMessage, detailMessage stri
 	drawUIWrappedLabel(screen, layout.filtersRect, subtitle, color.RGBA{220, 210, 185, 240}, gameui.TextMedium, 18, 2)
 
 	closeBtn := buildEventDetailCloseButton()
-	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
+	drawCloseButton(screen, closeBtn)
 
 	bodyLines := eventDetailLines(detailMessage, layout.bodyRect.W)
 	if len(bodyLines) == 0 {
@@ -1728,7 +1726,7 @@ func drawEventCodexPopup(screen *ebiten.Image, filter EventCodexFilter, entries 
 	DrawText(screen, "Event Kodex", layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
 
 	closeBtn := buildEventCodexCloseButton()
-	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
+	drawCloseButton(screen, closeBtn)
 
 	filterButtons := buildEventCodexFilterButtons()
 	for i, btn := range filterButtons {
@@ -1908,7 +1906,7 @@ func drawVictoryDetailPopup(screen *ebiten.Image, gs *state.GameState, scroll fl
 	DrawText(screen, title, layout.titleRect.X, layout.titleRect.Y+6, FaceLarge, ColorGold)
 
 	closeBtn := buildVictoryDetailCloseButton()
-	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
+	drawCloseButton(screen, closeBtn)
 
 	content := buildVictoryDetailContentLines(gs)
 	scroll = clampVictoryDetailScroll(gs, scroll)
@@ -2548,11 +2546,19 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 	if statusHeight := regionStatusSummaryHeight(gs, region); statusHeight > 0 {
 		leftW := (float64(sepW) - 10) / 2
 		if region.IsRebellionRisk() {
-			DrawText(screen, "⚠  İSYAN RİSKİ!", lx, ly, FaceMed, ColorRed)
+			const revoltIconSize = 18.0
+			gameui.DrawIcon(screen, gameui.IconRevolt, lx, ly, revoltIconSize, ColorWhite)
+			DrawText(screen, "İSYAN RİSKİ!", lx+revoltIconSize+4, ly, FaceMed, ColorRed)
 		}
 		if ownerRel, ok := regionConversionReligion(gs, region); ok {
 			rightX := lx + leftW + 10
-			drawUILabel(screen, gameui.Rect{X: rightX, Y: ly, W: float64(leftW)}, "☩ Dönüşüm: "+religion.DisplayNameTR(religion.Type(ownerRel)), color.RGBA{180, 140, 240, 200}, gameui.TextSmall, gameui.TextAlignEnd)
+			conversionColor := color.RGBA{180, 140, 240, 200}
+			conversionText := "Dönüşüm: " + religion.DisplayNameTR(religion.Type(ownerRel))
+			const changeIconSize = 18.0
+			const changeIconGap = 4.0
+			textX := rightX + leftW - MeasureText(conversionText, FaceSmall)
+			gameui.DrawIcon(screen, gameui.IconChange, textX-changeIconGap-changeIconSize, ly, changeIconSize, ColorWhite)
+			DrawText(screen, conversionText, textX, ly, FaceSmall, conversionColor)
 			convPct := float64(region.ConversionTurns) / 24.0
 			drawBar(screen, float32(rightX), float32(ly+14), float32(leftW), 7, convPct, color.RGBA{150, 100, 220, 220})
 		}
@@ -3789,7 +3795,7 @@ func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
 
 func drawPanelCloseButton(screen *ebiten.Image, px, py, pw float32) {
 	btn := buildPanelCloseButton(px, py, pw)
-	drawTinyPanelButtonWidget(screen, btn, true)
+	drawCloseButton(screen, btn)
 }
 
 func panelCloseRect(px, py, pw float32) (x, y, w, h float32) {
@@ -3811,9 +3817,7 @@ func panelCloseHit(mx, my float64, px, py, pw float32) bool {
 
 func buildPanelCloseButton(px, py, pw float32) gameui.Button {
 	x, y, w, h := panelCloseRect(px, py, pw)
-	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
-	btn.IconSize = 12
-	return btn
+	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h))
 }
 
 func regionPanelHit(mx, my float64) bool {

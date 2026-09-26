@@ -212,7 +212,7 @@ func DrawTradePanel(screen *ebiten.Image, gs *state.GameState, tab TradeTab, foc
 
 	// Kapatma butonu
 	closeBtn := buildTradeCloseButton()
-	drawTradeButton(screen, closeBtn, false)
+	drawCloseButton(screen, closeBtn)
 
 	// Sekmeler
 	for _, btn := range buildTradeTabButtons() {
@@ -600,9 +600,7 @@ type tradeChoiceButton struct {
 
 func buildTradeCloseButton() gameui.Button {
 	x, y, w, h := tradeCloseRect()
-	btn := gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "").WithIcon(gameui.IconClose)
-	btn.IconSize = 13
-	return btn
+	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h))
 }
 
 func buildTradeTabButtons() []tradeTabButton {

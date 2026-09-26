@@ -240,9 +240,7 @@ func buildBattleReportLayout() battleReportLayout {
 
 func buildBattleReportCloseButton() gameui.Button {
 	_, _, closeRect, _ := battleReportHeaderRects()
-	btn := gameui.NewButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H, "").WithIcon(gameui.IconClose)
-	btn.IconSize = 13
-	return btn
+	return gameui.NewCloseButton(closeRect.X, closeRect.Y, closeRect.W, closeRect.H)
 }
 
 func buildBattleReportContinueButton() gameui.Button {
@@ -416,7 +414,7 @@ func drawBattleReportPopup(screen *ebiten.Image, report BattleReport) {
 	drawUILabel(screen, gameui.Rect{X: layout.titleRect.X, Y: layout.titleRect.Y + 30, W: layout.headerRect.W - 48}, strings.Join(metaParts, " | "), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 	closeBtn := buildBattleReportCloseButton()
-	drawUIButtonWidget(screen, closeBtn, tinyButtonStyle)
+	drawCloseButton(screen, closeBtn)
 
 	drawBattleReportArt(screen, layout.artRect, report)
 
