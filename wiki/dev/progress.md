@@ -7,6 +7,16 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-27: AI strateji ve claim referansları senaryo yüklemesinde güncel
+  faction/bölge kimliklerine karşı doğrulanıyor. 1300 senaryosunda Papalık
+  strateji kimliği düzeltildi; Karaman’ın artık kara bağlantısı olmayan
+  Ramazan/Cilicia hedefi yerine komşu Teke hedefi kullanılıyor. Kışla seviyeleri
+  kara kapasitesini büyütüyor, üstün kritik cephedeki AI karşı taarruz yapabiliyor
+  ve erişilemeyen uzun savaşlar claim kilidine rağmen barış önerebiliyor.
+  Regresyonlar: `internal/scenario/ai_strategy_test.go`,
+  `internal/diplomacy/peace_assessment_test.go`,
+  `internal/state/manpower_test.go`.
+
 - 2026-09-27: Ordu taşıyan filonun iki veya daha fazla düğümlü rota üzerindeki
   liman/merkez settlement hedefleri artık rota emri verilmeden önce kıyı niyet
   modalını açıyor. `Limana Gir` seçimi `TargetSettlementID` ile docking'i,

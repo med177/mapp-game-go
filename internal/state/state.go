@@ -35,6 +35,10 @@ const (
 	grainCivilianStorageMonths  = 6
 	grainArmyStorageMonths      = 3
 	grainMinimumStorageCapacity = 100
+	// Her kışla seviyesi, bölge sayısından gelen temel ordu yuvalarına ek
+	// profesyonel asker kapasitesi sağlar. Böylece AI'nin kışla yatırımı yalnız
+	// üretim hızını değil, gerçekten sahaya çıkarabileceği kuvveti de büyütür.
+	landArmyCapacityPerBarracksLevel = 5
 )
 
 // GrainAidCost bir bölgeye tek seferlik sivil tahıl yardımı için gereken stoktur.
@@ -3201,7 +3205,17 @@ func UnitProductionLimit(region *world.Region, unitType *army.UnitType) int {
 // Savaşçı kapasitesi temel bölge ölçeğindeki ordu yuvalarına göre hesaplanır;
 // MaxLandArmies'in verdiği +1 bağımsız ordu slotu bu kapasiteyi büyütmez.
 func (s *GameState) ManpowerCap(fid faction.FactionID) int {
-	return s.baseLandArmyLimit(fid) * army.MaxArmySize
+	if s == nil || fid == "" {
+		return 0
+	}
+	barracksLevels := 0
+	for _, region := range s.Regions {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
+			continue
+		}
+		barracksLevels += buildingLevel(region, "barracks")
+	}
+	return s.baseLandArmyLimit(fid)*army.MaxArmySize + barracksLevels*landArmyCapacityPerBarracksLevel
 }
 
 // NavalCap bir fraksiyonun sahip olabileceği toplam deniz birimi kapasitesini

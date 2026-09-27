@@ -742,6 +742,11 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		res.gs.Phase = state.PhasePlayerTurn
 		res.gs.InitializePlayerCommanders()
 		g.gs = res.gs
+		// Kayıt içindeki zorluk seviyesi aktif oyunun kaynağıdır. Aksi halde
+		// settings.json'daki yeni oyun tercihi, yüklenen save'in AI kararlarıyla
+		// farklı seviyeyi gösterir ve kullanıcı hangi politikanın çalıştığını
+		// anlayamaz.
+		g.renderer.CurrentSettings.Difficulty = g.gs.Difficulty
 		refreshMarketOrdersAndPrices(g.gs)
 		g.pendingWarFollowUp = nil
 		g.pendingPlayerMovement = nil

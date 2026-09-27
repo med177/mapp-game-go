@@ -1576,11 +1576,11 @@
     "one_shot": true,
     "target": "specific_faction",
     "affected_faction": "bohemian_kingdom",
-    "requires_active_factions": ["bohemian_kingdom", "hre", "papal_states_f"],
+    "requires_active_factions": ["bohemian_kingdom", "hre", "papal_states"],
     "requires_owned_regions": ["bohemia"],
     "relations": [
       {"faction_id": "hre", "score_delta": -35, "stance": "war"},
-      {"faction_id": "papal_states_f", "score_delta": -25, "stance": "war"}
+      {"faction_id": "papal_states", "score_delta": -25, "stance": "war"}
     ],
     "sat_delta": -8,
     "set_flags": ["jan_hus_executed_1415"]
@@ -1632,9 +1632,9 @@
     "one_shot": true,
     "target": "all_factions",
     "requires_flags": ["jan_hus_executed_1415"],
-    "requires_active_factions": ["hre", "papal_states_f"],
+    "requires_active_factions": ["hre", "papal_states"],
     "relations": [
-      {"faction_id": "papal_states_f", "score_delta": 20, "stance": "peace"}
+      {"faction_id": "papal_states", "score_delta": 20, "stance": "peace"}
     ],
     "sat_delta": 4,
     "set_flags": ["western_schism_ended_1417"]
@@ -2340,7 +2340,7 @@
     "relations": [
       {"faction_id": "bosnian_banate", "score_delta": -80, "stance": "war"},
       {"faction_id": "hungarian_kingdom", "score_delta": -35, "stance": "war"},
-      {"faction_id": "papal_states_f", "score_delta": -25, "stance": "war"}
+      {"faction_id": "papal_states", "score_delta": -25, "stance": "war"}
     ],
     "gold_delta": 200,
     "sat_delta": 8,
@@ -2827,10 +2827,10 @@
     "one_shot": true,
     "target": "specific_faction",
     "affected_faction": "france",
-    "requires_active_factions": ["france", "naples_kingdom", "milan_duchy", "venice", "papal_states_f"],
+    "requires_active_factions": ["france", "naples_kingdom", "milan_duchy", "venice", "papal_states"],
     "relations": [
       {"faction_id": "naples_kingdom", "score_delta": -70, "stance": "war"},
-      {"faction_id": "papal_states_f", "score_delta": -35, "stance": "war"},
+      {"faction_id": "papal_states", "score_delta": -35, "stance": "war"},
       {"faction_id": "milan_duchy", "score_delta": -20, "stance": "war"}
     ],
     "gold_delta": -100,
@@ -3746,9 +3746,9 @@
     "probability": 0,
     "one_shot": true,
     "target": "specific_faction",
-    "affected_faction": "papal_states_f",
+    "affected_faction": "papal_states",
     "requires_flags": ["pavia_won_1525"],
-    "requires_active_factions": ["papal_states_f", "austria_duchy", "france"],
+    "requires_active_factions": ["papal_states", "austria_duchy", "france"],
     "relations": [
       {"faction_id": "austria_duchy", "score_delta": -35, "stance": "war"},
       {"faction_id": "france", "score_delta": -20, "stance": "war"}

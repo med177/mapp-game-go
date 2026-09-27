@@ -546,6 +546,12 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		return nil, err
 	}
+	if err := scenario.ValidateAIReferences(aiConfig, regions, factions); err != nil {
+		return nil, fmt.Errorf("AI strateji referansları geçersiz: %w", err)
+	}
+	if err := scenario.ValidateFactionTerritorialClaims(regions, factions); err != nil {
+		return nil, fmt.Errorf("territorial claim referansları geçersiz: %w", err)
+	}
 	scenario.ApplyInitialTerritorialClaims(regions, factions, aiConfig.Strategies)
 	relations, relationOrder, err := faction.LoadRelationsWithOrder(dp("relations.json"), factions)
 	if err != nil {

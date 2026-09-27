@@ -588,11 +588,23 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 		// yürütülür. Buradaki özel rol yalnız savunma/konsolidasyon planının
 		// aktif savaşı tamamen kilitlemesini önlemek içindir.
 		if plan != nil && plan.Kind == state.AIObjectiveExpand {
-			if front.ThreatScore <= 0 || ((front.ObjectiveRelated || front.EnemyFactionID == offensiveTarget) && !front.CriticalThreat) {
+			criticalFront := front.CriticalThreat || front.CapitalThreat
+			if (!criticalFront && front.ThreatScore <= 0) ||
+				((front.ObjectiveRelated || front.EnemyFactionID == offensiveTarget) && !criticalFront) {
 				continue
 			}
 			candidate := nearestUnassignedArmy(ctx, mobile, front.AnchorRegionID, strongest, true)
 			if candidate == nil {
+				continue
+			}
+			if criticalFront && aiFrontCanCounterattack(front) && front.TargetRegionID != "" {
+				role := AIArmyRoleAssault
+				reason := "üstün kritik cephede karşı taarruz"
+				if candidate.HasSiegeUnits(gs.UnitTypes) {
+					role = AIArmyRoleSiege
+					reason = "üstün kritik cephede kuşatma"
+				}
+				ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: role, AnchorRegionID: front.TargetRegionID, FrontFactionID: front.EnemyFactionID, Reason: reason}
 				continue
 			}
 			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "tehdit altındaki cephe"}
@@ -610,7 +622,7 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "lojistik rezerv toparlanması"}
 			continue
 		}
-		if front.CriticalThreat || front.CapitalThreat {
+		if (front.CriticalThreat || front.CapitalThreat) && !aiFrontCanCounterattack(front) {
 			ctx.ArmyAssignments[candidate.ID] = AIArmyAssignment{Role: AIArmyRoleDefense, AnchorRegionID: front.AnchorRegionID, FrontFactionID: front.EnemyFactionID, Reason: "tehdit altındaki cephe"}
 			continue
 		}
@@ -668,6 +680,13 @@ func assignAIArmyRoles(ctx *StrategicContext) {
 	}
 }
 
+// aiFrontCanCounterattack, üstünlüğü olan devletin kritik cephede de sınırlı
+// karşı taarruz yapmasına izin verir. Kritik tehdit hâlâ zayıf tarafı savunmada
+// tutar; ancak güçlü tarafın bütün ordularını savunmaya kilitlemez.
+func aiFrontCanCounterattack(front AIFront) bool {
+	return front.FriendlyPower > front.EnemyPower || (!front.CriticalThreat && !front.CapitalThreat)
+}
+
 func aiReservePercentForFrontRisk(ctx *StrategicContext) int {
 	if ctx == nil {
 		return 15
@@ -699,7 +718,7 @@ func primaryOffensiveFrontEnemy(ctx *StrategicContext, plan *state.AIPlanState) 
 	bestEnemy := faction.FactionID("")
 	bestScore := -1
 	for _, front := range ctx.Fronts {
-		if !front.AtWar || front.AnchorRegionID == "" || front.CriticalThreat || front.CapitalThreat || front.TargetRegionID == "" {
+		if !front.AtWar || front.AnchorRegionID == "" || front.TargetRegionID == "" || !aiFrontCanCounterattack(front) {
 			continue
 		}
 		if !aiActiveWarMatureForOffense(ctx.gs, ctx.FactionID, front.EnemyFactionID) {

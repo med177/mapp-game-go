@@ -1,6 +1,7 @@
 package scenario
 
 import (
+	"fmt"
 	"sort"
 
 	"mapp-game-go/internal/faction"
@@ -11,6 +12,30 @@ const (
 	defaultCoreClaimValue   = 100
 	defaultTargetClaimValue = 50
 )
+
+// ValidateFactionTerritorialClaims, factions.json içindeki kalıcı claim'lerin
+// güncel haritada hâlâ var olan kara bölgelerine işaret ettiğini doğrular.
+// Böylece harita bölge kimliği değiştiğinde claim sessizce atlanmaz.
+func ValidateFactionTerritorialClaims(
+	regions map[world.RegionID]*world.Region,
+	factions map[faction.FactionID]*faction.Faction,
+) error {
+	for factionID, fx := range factions {
+		if fx == nil {
+			continue
+		}
+		for _, claim := range fx.TerritorialClaims {
+			region := regions[world.RegionID(claim.RegionID)]
+			if region == nil {
+				return fmt.Errorf("faction claim bölgesi mevcut değil: faction=%s region=%s", factionID, claim.RegionID)
+			}
+			if region.IsSea {
+				return fmt.Errorf("faction claim bölgesi kara olmalı: faction=%s region=%s", factionID, claim.RegionID)
+			}
+		}
+	}
+	return nil
+}
 
 // ApplyInitialTerritorialClaims senaryo base state'i kurulurken başlangıç
 // sahipliğini core'a, AI stratejisindeki bölge hedeflerini de claim'e çevirir.

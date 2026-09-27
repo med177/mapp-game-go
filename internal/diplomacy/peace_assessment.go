@@ -1,6 +1,7 @@
 package diplomacy
 
 import (
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -90,6 +91,7 @@ type PeaceAssessment struct {
 	MilitaryCollapse     bool
 	ObjectiveDone        bool
 	Stalemate            bool
+	Inaccessible         bool
 	OwnLosses            int
 	EnemyLosses          int
 	OwnRegionsLost       int
@@ -108,7 +110,7 @@ func (a PeaceAssessment) ShouldPropose() bool {
 	// Durgunluk, çözümsüz bir çekirdek/toprak talebini tek başına ortadan
 	// kaldırmaz. Aksi halde AI dört tur hareketsiz kaldığında hedef bölgesini
 	// almadan otomatik beyaz barışa döner.
-	return a.Score >= a.Threshold || (a.Stalemate && a.UnresolvedClaimValue == 0)
+	return a.Score >= a.Threshold || (a.Stalemate && (a.UnresolvedClaimValue == 0 || a.Inaccessible))
 }
 
 // AssessPeaceDesire aktif savaşı actor perspektifinden değerlendirir. Tüm
@@ -225,6 +227,7 @@ func AssessPeaceDesire(gs *state.GameState, actor, opponent faction.FactionID) P
 		assessment.Eligible = false
 	}
 	assessment.Stalemate = isWarStalemate(gs, actor, opponent, ledger)
+	assessment.Inaccessible = isWarInaccessible(gs, actor, opponent)
 	return assessment
 }
 
@@ -433,6 +436,80 @@ func isWarStalemate(gs *state.GameState, actor, opponent faction.FactionID, ledg
 		}
 	}
 	return true
+}
+
+// isWarInaccessible, doğrudan kara cephesi veya çalışan bir deniz harekâtı
+// olmayan eski savaş kayıtlarını ayıklar. Özellikle harita yeniden çizildikten
+// sonra artık birbirine ulaşamayan iki devletin claim yüzünden sonsuza kadar
+// savaşta kalmasını engeller.
+func isWarInaccessible(gs *state.GameState, actor, opponent faction.FactionID) bool {
+	if gs == nil || actor == "" || opponent == "" {
+		return false
+	}
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || (region.OwnerID != string(actor) && region.OwnerID != string(opponent)) {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			neighbor := gs.Regions[neighborID]
+			if neighbor == nil || neighbor.IsSea {
+				continue
+			}
+			if (region.OwnerID == string(actor) && neighbor.OwnerID == string(opponent)) ||
+				(region.OwnerID == string(opponent) && neighbor.OwnerID == string(actor)) {
+				return false
+			}
+		}
+	}
+	for _, passage := range gs.LandPassages {
+		from := gs.Regions[passage.From]
+		to := gs.Regions[passage.To]
+		if from == nil || to == nil {
+			continue
+		}
+		if (from.OwnerID == string(actor) && to.OwnerID == string(opponent)) ||
+			(from.OwnerID == string(opponent) && to.OwnerID == string(actor)) {
+			return false
+		}
+	}
+	for _, armyRef := range gs.Armies {
+		if armyRef == nil || !armyRef.IsNaval || armyRef.NavalMission == nil {
+			continue
+		}
+		if armyRef.OwnerID != string(actor) && armyRef.OwnerID != string(opponent) {
+			continue
+		}
+		mission := armyRef.NavalMission
+		if mission.Kind == army.NavalMissionTransport {
+			target := gs.Regions[mission.TargetRegionID]
+			if target != nil && ((armyRef.OwnerID == string(actor) && target.OwnerID == string(opponent)) ||
+				(armyRef.OwnerID == string(opponent) && target.OwnerID == string(actor))) {
+				return false
+			}
+		}
+		if mission.Kind == army.NavalMissionBlockade && navalMissionTargetsFactionCoast(gs, mission.TargetRegionID, armyRef.OwnerID, actor, opponent) {
+			return false
+		}
+	}
+	return true
+}
+
+func navalMissionTargetsFactionCoast(gs *state.GameState, seaID world.RegionID, fleetOwner string, actor, opponent faction.FactionID) bool {
+	sea := gs.Regions[seaID]
+	if sea == nil || !sea.IsSea {
+		return false
+	}
+	for _, neighborID := range sea.Neighbors {
+		neighbor := gs.Regions[neighborID]
+		if neighbor == nil || neighbor.IsSea {
+			continue
+		}
+		if (fleetOwner == string(actor) && neighbor.OwnerID == string(opponent)) ||
+			(fleetOwner == string(opponent) && neighbor.OwnerID == string(actor)) {
+			return true
+		}
+	}
+	return false
 }
 
 func warCasualtiesFor(ledger *state.WarLedger, actor faction.FactionID) (int, int) {

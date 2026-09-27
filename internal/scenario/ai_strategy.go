@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/world"
 )
 
 // AIStrategyConfig bir senaryonun statik AI profillerini taşır. Bu veri
@@ -176,6 +179,80 @@ func LoadAIConfig(path string) (LoadedAIConfig, error) {
 		strategyOrder = append(strategyOrder, strategy.FactionID)
 	}
 	return LoadedAIConfig{Strategies: strategies, StrategyOrder: strategyOrder, DifficultyPolicy: config.DifficultyPolicy}, nil
+}
+
+// ValidateAIReferences, parse edilen stratejilerin bu senaryonun güncel
+// faction/bölge kimliklerine bağlı olduğunu doğrular. ApplyInitialTerritorialClaims
+// eski veride bulunmayan bölgeyi sessizce atabildiği için bu kontrol yükleme
+// sınırında yapılır; harita değiştiğinde AI'nin hedefi görünmeden kaybolmaz.
+func ValidateAIReferences(
+	config LoadedAIConfig,
+	regions map[world.RegionID]*world.Region,
+	factions map[faction.FactionID]*faction.Faction,
+) error {
+	for strategyID, strategy := range config.Strategies {
+		ownerID := faction.FactionID(strategyID)
+		if factions[ownerID] == nil {
+			return fmt.Errorf("AI stratejisi mevcut olmayan faction_id kullanıyor: %s", strategyID)
+		}
+		for _, targetID := range strategy.ExpansionTargets {
+			if targetID == "" {
+				continue
+			}
+			target := faction.FactionID(targetID)
+			if factions[target] == nil {
+				return fmt.Errorf("AI genişleme hedefi mevcut değil: faction=%s target=%s", strategyID, targetID)
+			}
+			if target == ownerID {
+				return fmt.Errorf("AI genişleme hedefi kendi faction'ı: faction=%s", strategyID)
+			}
+		}
+		for _, claim := range strategy.TerritorialClaims {
+			if err := validateAIRegionReference(regions, strategyID, "territorial_claim", claim.RegionID); err != nil {
+				return err
+			}
+		}
+		for _, objective := range strategy.Objectives {
+			for _, targetID := range objective.TargetFactions {
+				if targetID == "" {
+					continue
+				}
+				if factions[faction.FactionID(targetID)] == nil {
+					return fmt.Errorf("AI objective hedef faction'ı mevcut değil: faction=%s objective=%s target=%s", strategyID, objective.ID, targetID)
+				}
+			}
+			for _, regionID := range objective.TargetRegions {
+				if err := validateAIRegionReference(regions, strategyID, "objective_target_region", regionID); err != nil {
+					return fmt.Errorf("objective=%s: %w", objective.ID, err)
+				}
+			}
+			for _, regionID := range objective.ReadinessRegions {
+				if err := validateAIRegionReference(regions, strategyID, "readiness_region", regionID); err != nil {
+					return fmt.Errorf("objective=%s: %w", objective.ID, err)
+				}
+			}
+			for _, claim := range objective.TerritorialClaims {
+				if err := validateAIRegionReference(regions, strategyID, "objective_claim", claim.RegionID); err != nil {
+					return fmt.Errorf("objective=%s: %w", objective.ID, err)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func validateAIRegionReference(
+	regions map[world.RegionID]*world.Region,
+	factionID, kind, regionID string,
+) error {
+	region := regions[world.RegionID(regionID)]
+	if region == nil {
+		return fmt.Errorf("AI bölge referansı mevcut değil: faction=%s kind=%s region=%s", factionID, kind, regionID)
+	}
+	if region.IsSea {
+		return fmt.Errorf("AI bölge referansı kara bölgesi olmalı: faction=%s kind=%s region=%s", factionID, kind, regionID)
+	}
+	return nil
 }
 
 // LoadAIStrategies yalnız profil index'ine ihtiyaç duyan doğrulama ve araçlar

@@ -1950,11 +1950,11 @@
       "profile": "central_anatolian_expansion",
       "objectives": [
         {
-          "id": "press_cilician_frontier",
+          "id": "press_taurus_frontier",
           "kind": "expand",
           "territorial_claims": [
             {
-              "region_id": "cilicia",
+              "region_id": "teke",
               "value": 92
             }
           ],
@@ -2576,7 +2576,7 @@
       ]
     },
     {
-      "faction_id": "papal_states_f",
+      "faction_id": "papal_states",
       "profile": "papal_central_italy",
       "objectives": [
         {

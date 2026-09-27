@@ -51,7 +51,7 @@
     ],
     "territorial_claims": [
       {
-        "region_id": "aydinoglu",
+        "region_id": "izmir",
         "value": 50
       },
       {
@@ -138,7 +138,7 @@
         "core": true
       },
       {
-        "region_id": "egriboz",
+        "region_id": "egriboz_island",
         "value": 100,
         "core": true
       },
@@ -2282,12 +2282,12 @@
         "core": true
       },
       {
-        "region_id": "kayseri",
+        "region_id": "nigde",
         "value": 100,
         "core": true
       },
       {
-        "region_id": "konya",
+        "region_id": "yozgat",
         "value": 100,
         "core": true
       },
@@ -2371,16 +2371,16 @@
     "ai_aggressiveness": 65,
     "territorial_claims": [
       {
-        "region_id": "cilicia",
+        "region_id": "teke",
         "value": 92
       },
       {
-        "region_id": "karaman",
+        "region_id": "larende",
         "value": 100,
         "core": true
       },
       {
-        "region_id": "kayseri",
+        "region_id": "nigde",
         "value": 78
       },
       {
@@ -2417,7 +2417,7 @@
     "ai_aggressiveness": 50,
     "territorial_claims": [
       {
-        "region_id": "aydinoglu",
+        "region_id": "izmir",
         "value": 100,
         "core": true
       },
@@ -3851,7 +3851,7 @@
     "ai_aggressiveness": 50,
     "territorial_claims": [
       {
-        "region_id": "kayseri",
+        "region_id": "nigde",
         "value": 100,
         "core": true
       }
