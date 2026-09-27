@@ -39,8 +39,9 @@ func aiResearchWithStrategicContextAndSteps(gs *state.GameState, fid faction.Fac
 	}
 }
 
-// aiEconomyBuild delegates the single-building-per-turn investment decision to
-// the building investment strategy while keeping the legacy wrapper contract.
+// aiEconomyBuild, bütçe ve kaynaklar elverdiği sürece her uygun bina türü için
+// tek bir kademe yatırım emri verir. Aynı bina türünde bekleyen emir varsa
+// strateji o türü atlar; farklı bina türleri aynı bölgede paralel ilerleyebilir.
 func aiEconomyBuild(gs *state.GameState, fid faction.FactionID) {
 	aiEconomyBuildWithSteps(gs, fid, nil)
 }

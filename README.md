@@ -1,8 +1,14 @@
 # Mapp — Harita Strateji Oyunu
 
-![Mapp Game Screenshot](Mapp_Game_Screenshot.png)
+![Mapp Game Genel](screenshots/genel.png)
+![Mapp Game Diplomasi](screenshots/diplomasi.png)
+![Mapp Game Pazar](screenshots/pazar.png)
+![Mapp Game Ordu](screenshots/ordu.png)
+![Mapp Game Teknoloji](screenshots/teknoloji.png)
+![Mapp Game Ticaret](screenshots/ticaret.png)
+![Mapp Game Olaylar & Kodex](screenshots/event_kodex.png)
 
-Mapp, **1300–1600 yılları** arasını kapsayan, sıra tabanlı bir harita strateji oyunudur. Total War serisinin sefer haritası ve EU4'ten ilham alarak geliştirilmiştir — taktik savaş sahnesi yoktur; tüm çarpışmalar harita üzerinde otomatik hesaplanır.
+Mapp Game, sıra tabanlı bir harita strateji oyunudur. Total War serisinin sefer haritası ve EU4'ten ilham alarak geliştirilmiştir — taktik savaş sahnesi yoktur; tüm çarpışmalar harita üzerinde otomatik hesaplanır.
 
 ---
 
@@ -181,4 +187,4 @@ Henüz lisanslanmamıştır. Proje tamamlandığında uygun bir açık kaynak li
 - LLM tarafından üretilen kodun doğruluğu ve güvenilirliği için kapsamlı testler yapılmıştır. Ancak, bazı hatalar veya tutarsızlıklar olabilir; bu nedenle kullanıcı geri bildirimi önemlidir.
 - Çok az yerde AI tarafından yapılamayan ya da insan müdahalesi gerektiren bölümler olabilir. Bu durumlarda, kodun geri kalanıyla uyumlu olacak şekilde manuel olarak müdahale edilmiştir.
 - Proje Genelinde Vscode üzerinde Copilot, Codex, Claude, Augment gibi araçlar kullanılmıştır. Bu araçlar kod tamamlama, hata düzeltme, veri formatlama ve dokümantasyon oluşturma gibi görevlerde yardımcı olmuştur.
-- Codex aracı ile GPT-5.5 modeli bu projede çok daha başarılı bulunmuştur; özellikle karmaşık veri yapıları ve oyun mekaniği kodlarında daha tutarlı sonuçlar vermiştir. Diğer modeller bazen stil veya yapısal tutarsızlıklara neden olabilir. Ancak, tüm modellerin çıktıları kapsamlı testler ve incelemelerle doğrulanmıştır.
+- Codex aracı ile GPT-5.6 Sol ve GPT-5.5 modeli bu projede çok daha başarılı bulunmuştur; özellikle karmaşık veri yapıları ve oyun mekaniği kodlarında daha tutarlı sonuçlar vermiştir. Diğer modeller bazen stil veya yapısal tutarsızlıklara neden olabilir. Ancak, tüm modellerin çıktıları kapsamlı testler ve incelemelerle doğrulanmıştır.

@@ -81,23 +81,25 @@ func aiEconomyBuildWithStrategicContextAndSteps(gs *state.GameState, fid faction
 		ctx = prepareStrategicContext(gs, fid)
 	}
 
-	candidate, ok := aiBestBuildingInvestment(gs, fid, budget, ctx)
-	if !ok || !aiApplyBudgetedCost(self, candidate.Cost, budget, aiBudgetEconomy) {
-		return
+	for {
+		candidate, ok := aiBestBuildingInvestment(gs, fid, budget, ctx)
+		if !ok || !aiApplyBudgetedCost(self, candidate.Cost, budget, aiBudgetEconomy) {
+			return
+		}
+		btype := gs.BuildingTypes[candidate.BuildingID]
+		aiEnqueueProduction(gs, fid, aiProductionKindBuilding, candidate.RegionID, candidate.BuildingID, candidate.Turns)
+		name := candidate.BuildingID
+		if btype != nil && btype.NameTR != "" {
+			name = btype.NameTR
+		}
+		addTurnStep(steps, TurnStep{
+			FactionID:    fid,
+			Kind:         TurnStepBuild,
+			TargetRegion: candidate.RegionID,
+			FocusRegion:  candidate.RegionID,
+			Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, candidate.RegionID) + " bölgesinde " + name + " inşasını başlattı.",
+		})
 	}
-	btype := gs.BuildingTypes[candidate.BuildingID]
-	aiEnqueueProduction(gs, fid, aiProductionKindBuilding, candidate.RegionID, candidate.BuildingID, candidate.Turns)
-	name := candidate.BuildingID
-	if btype != nil && btype.NameTR != "" {
-		name = btype.NameTR
-	}
-	addTurnStep(steps, TurnStep{
-		FactionID:    fid,
-		Kind:         TurnStepBuild,
-		TargetRegion: candidate.RegionID,
-		FocusRegion:  candidate.RegionID,
-		Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, candidate.RegionID) + " bölgesinde " + name + " inşasını başlattı.",
-	})
 }
 
 func aiBestBuildingInvestment(gs *state.GameState, fid faction.FactionID, budget *aiBudget, ctx *StrategicContext) (aiBuildingCandidate, bool) {
@@ -147,6 +149,13 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 			queued := aiQueuedBuildingCount(gs, region.ID, buildingID, fid)
 			level := aiBuildingLevel(region, buildingID)
 			if btype.MaxPerRegion <= 0 || level+queued >= btype.MaxPerRegion {
+				continue
+			}
+			// Aynı bölge ve bina türü için aktif bir emir varken ikinci
+			// yükseltmeyi kuyruğa alma. Farklı bina türleri aynı bölgede
+			// paralel olarak geliştirilebilir; yalnız aynı yapı üst üste
+			// iki kez planlanmamalıdır.
+			if queued > 0 {
 				continue
 			}
 			if buildingID == "walls" && !signals.Border && !signals.Capital && !signals.ObjectiveOwned && !signals.Rally {
@@ -216,9 +225,9 @@ func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, regio
 	after := aiBuildingProductionAfter(gs, region, btype.ID)
 	goldGain := maxInt(0, after.Gold-before.Gold)
 	grainGain := maxInt(0, after.Grain-before.Grain)
-	grainUtility := aiGrainUtilityPercent(snapshot)
+	resourceGainValue := aiBuildingResourceGainValue(gs, before, after, snapshot)
 	projectedValue := goldGain * aiBuildingProjectionTurns
-	projectedValue += grainGain * aiResourcePrice(gs, economy.GoodGrain) * aiBuildingProjectionTurns * grainUtility / 100
+	projectedValue += resourceGainValue * aiBuildingProjectionTurns
 	effectiveCost := aiGoldEquivalentCost(gs, cost)
 	roiScore := projectedValue * 100 / maxInt(1, effectiveCost)
 	if roiScore > 400 {
@@ -625,6 +634,53 @@ func aiBuildingProductionAfter(gs *state.GameState, region *world.Region, buildi
 	clone := *region
 	clone.Buildings = append(append([]string(nil), region.Buildings...), buildingID)
 	return gs.RegionProductionSummary(&clone)
+}
+
+// aiBuildingResourceGainValue, binanın bölgenin gerçek kaynak profiline
+// sağlayacağı üretim artışını altın eşdeğerine çevirir. Bölgenin mevcut üretim
+// payı yükseldikçe ilgili kaynak artışı biraz daha değerli sayılır; böylece
+// demir ağırlıklı bölgede demirhane, kereste ağırlıklı bölgede atölye gibi
+// yerel kaynakla uyumlu yatırımlar öne çıkar. Tahılın stratejik baskısı da
+// mevcut tahıl fayda katsayısıyla korunur.
+func aiBuildingResourceGainValue(gs *state.GameState, before, after state.RegionProductionSummary, snapshot aiEconomySnapshot) int {
+	if gs == nil {
+		return 0
+	}
+	type productionResource struct {
+		good   economy.GoodType
+		before int
+		after  int
+	}
+	resources := []productionResource{
+		{good: economy.GoodGrain, before: before.Grain, after: after.Grain},
+		{good: economy.GoodIron, before: before.Iron, after: after.Iron},
+		{good: economy.GoodTimber, before: before.Timber, after: after.Timber},
+		{good: economy.GoodStone, before: before.Stone, after: after.Stone},
+		{good: economy.GoodSpice, before: before.Spice, after: after.Spice},
+		{good: economy.GoodCloth, before: before.Cloth, after: after.Cloth},
+	}
+	totalBaseOutput := 0
+	for _, resource := range resources {
+		totalBaseOutput += maxInt(0, resource.before)
+	}
+	if totalBaseOutput <= 0 {
+		totalBaseOutput = 1
+	}
+
+	value := 0
+	for _, resource := range resources {
+		gain := maxInt(0, resource.after-resource.before)
+		if gain == 0 {
+			continue
+		}
+		utility := 100
+		if resource.good == economy.GoodGrain {
+			utility = aiGrainUtilityPercent(snapshot)
+		}
+		localSourceWeight := 100 + maxInt(0, resource.before)*100/totalBaseOutput
+		value += gain * aiResourcePrice(gs, resource.good) * utility / 100 * localSourceWeight / 100
+	}
+	return value
 }
 
 func aiGoldEquivalentCost(gs *state.GameState, cost economy.ResourceCost) int {

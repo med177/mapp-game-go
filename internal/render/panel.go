@@ -46,15 +46,16 @@ const (
 	minimapW = float32(240)
 	minimapH = float32(165)
 
-	evLogW             = float32(255)
-	evLogH             = float32(520)
-	evLogMinH          = float32(36)
-	eventCardH         = float32(64)
-	eventCardGap       = float32(9)
-	eventLogHeaderH    = float64(28)
-	eventLogHeaderGap  = float64(10)
-	eventLogPanelPad   = float64(8)
-	maxEventLogEntries = 16
+	evLogW               = float32(255)
+	evLogH               = float32(520)
+	evLogMinH            = float32(36)
+	eventCardH           = float32(64)
+	eventCardGap         = float32(9)
+	eventLogCardRightGap = float32(8)
+	eventLogHeaderH      = float64(28)
+	eventLogHeaderGap    = float64(10)
+	eventLogPanelPad     = float64(8)
+	maxEventLogEntries   = 16
 
 	infoPanelW                  = float32(315)
 	infoPanelH                  = float32(780)
@@ -1390,7 +1391,7 @@ func eventLogCardRect(index int) (x, y, w, h float32) {
 	content := buildEventLogLayout(false).content
 	x = float32(content.X)
 	y = float32(content.Y) + float32(index)*(eventCardH+eventCardGap)
-	w = float32(content.W)
+	w = float32(content.W) - eventLogCardRightGap
 	h = eventCardH
 	return x, y, w, h
 }

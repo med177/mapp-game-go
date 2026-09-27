@@ -140,6 +140,7 @@ type Renderer struct {
 	diplomacyHistoryVisible          bool
 	diplomacyHistoryDirectionFilter  diplomacyHistoryDirectionFilter
 	diplomacyHistoryActionFilter     ActionKind
+	diplomacyCache                   diplomacyRenderCache
 	diplomacyNotificationOffer       state.DiplomaticOffer
 	diplomacyNotificationFrames      int
 	diplomacyNotificationTimerActive bool
@@ -1344,6 +1345,7 @@ func RefreshFactionHistoricalVisuals(gs *state.GameState) {
 func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
 	r.cancelEditMapBuild()
 	r.gs = gs
+	r.invalidateDiplomacyCache()
 	r.invalidateMovementReachability()
 	r.armyIconCacheValid = false
 	r.invalidateEditRegionCenterMarkers()
@@ -2070,7 +2072,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
-		drawDiplomacyPanelWithSortAndRelationScroll(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryVisible, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter, r.diplomacyListSort, r.diplomacyRelationScroll)
+		r.drawDiplomacyPanelWithSortAndRelationScroll(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryVisible, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter, r.diplomacyListSort, r.diplomacyRelationScroll)
 	}
 
 	// 8. Teknoloji paneli (üst katman)

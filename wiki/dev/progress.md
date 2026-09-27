@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-27: AI bina yatırımı artık ekonomi bütçesi ve kaynakları elverdiği
+  sürece uygun farklı bina türlerini aynı turda kuyruğa alıyor; aynı bölge ve
+  bina türünde bekleyen ikinci emir vermiyor. Bina puanlaması artık bölgenin
+  mevcut kaynak uzmanlaşmasına göre efektif üretim artışını da önceliklendiriyor.
+  Regresyonlar: `TestAIEconomyQueuesDifferentBuildingTypesButNotDuplicateType`,
+  `TestAIEconomyDoesNotQueueSameBuildingBehindExistingOrder`,
+  `TestAIEconomyPrefersBuildingMatchingRegionalResourceProfile`.
 - 2026-09-27: Alt HUD'daki `Tur Bitir` düğmesinin yanına iki satırlı kalıcı AI
   kontrolü eklendi. `Komple AI Yönetsin` oyuncu devletinin tüm kararlarını,
   `Geliştirme ve Pazar AI` yalnız bina/teknoloji ile pazar kararlarını devrediyor;

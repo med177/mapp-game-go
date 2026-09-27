@@ -123,7 +123,7 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 		return ebiten.CursorShapePointer
 	}
 	if r.showDiplomacy {
-		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
+		if r.diplomacyPanelPointerHit(fx, fy, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 			return ebiten.CursorShapePointer
 		}
 		return ebiten.CursorShapeDefault

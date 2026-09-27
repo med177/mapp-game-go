@@ -28,6 +28,10 @@ func TestEventLogLayoutKeepsHeaderAndCardsSeparated(t *testing.T) {
 			float64(card.y+card.h) > layout.content.Y+layout.content.H {
 			t.Fatalf("kart içerik alanı dışına taşıyor: index=%d card=%+v content=%+v", i, card, layout.content)
 		}
+		scrollbarTrackX := layout.content.X + layout.content.W - 3
+		if float64(card.x+card.w) > scrollbarTrackX-1 {
+			t.Fatalf("kart scrollbar boşluğuna taşıyor: index=%d card=%+v content=%+v", i, card, layout.content)
+		}
 		close := buildEventLogCloseButton(i)
 		if !layout.panel.Rect.Hit(close.X, close.Y) || !layout.panel.Rect.Hit(close.X+close.W, close.Y+close.H) {
 			t.Fatalf("kapatma düğmesi panel dışına taşıyor: index=%d button=%+v", i, close)

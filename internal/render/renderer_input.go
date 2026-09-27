@@ -443,13 +443,7 @@ func (r *Renderer) HandleInput() InputAction {
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyTab) {
-		r.showDiplomacy = true
-		r.diplomacyFocus = 0
-		r.diplomacyScroll = 0
-		r.diplomacyListSort = diplomacyListSortAlphabetical
-		r.diplomacyActionFocus = 0
-		r.diplomacyTargetFaction = ""
-		r.diplomacyHistoryVisible = false
+		r.openDiplomacyPanel()
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyM) {
@@ -1190,6 +1184,7 @@ func (r *Renderer) openDiplomacyPanel() {
 	if r == nil {
 		return
 	}
+	r.invalidateDiplomacyCache()
 	r.showDiplomacy = true
 	r.showTrade = false
 	r.showTech = false

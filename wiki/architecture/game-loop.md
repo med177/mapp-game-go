@@ -171,7 +171,10 @@ kararıyla çözülür.
    ordu hazırlıkları soft kategori paylarıyla çözülür. Araştırma adımı plan profili,
    gerçek teknoloji efekti, birim açılımı, üretim/stok darboğazı, istikrar, kıyı erişimi,
    maliyet ve süreyi puanlar; aktif araştırmayı değiştirmez. Ekonomi adımı bina adaylarını
-   marjinal ROI, kaynak darboğazı, cephe/objective, istikrar, süre ve kuyrukla puanlar;
+   marjinal ROI, bölgenin kaynak profiline göre bina sonrası üretim artışı, kaynak
+   darboğazı, cephe/objective, istikrar, süre ve kuyrukla puanlar; aynı bölge ve
+   bina türünde bekleyen emri olan adayı atlar, farklı bina türlerini bütçe yettiği
+   sürece aynı turda kuyruğa alır;
    zayıf adayda harcamayı pas geçer. Ordu adımı planın piyade/süvari/kuşatma bileşim
    açığını; gerçek düşman profili, hedef arazisi, kuşatma desteği, maliyet, bakım ve
    üretim süresiyle birlikte puanlar. Seçilen birimin üretim bölgesi kalan throughput,
