@@ -919,6 +919,8 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 		militaryPower, militaryRank, factionCount := playerMilitaryPowerStanding(gs)
 		DrawText(screen, "Askeri güç: "+formatNumberTR(militaryPower), textX, float64(by)+34, FaceSmall, ColorGray)
 		DrawText(screen, "Güç sırası: "+formatNumberTR(militaryRank)+"/"+formatNumberTR(factionCount), textX, float64(by)+53, FaceSmall, ColorGray)
+		overextensionText, overextensionColor := overextensionHUDText(gs)
+		DrawText(screen, overextensionText, textX, float64(by)+69, FaceTiny, overextensionColor)
 	}
 
 	// Kaynaklar: solda 2x2 mal ızgarası, sağda Gelir/Altın
@@ -1190,6 +1192,24 @@ func warFatigueHUDText(gs *state.GameState) (string, color.RGBA) {
 		return label, color.RGBA{100, 220, 100, 255}
 	}
 	return label, color.RGBA{220, 90, 90, 255}
+}
+
+func overextensionHUDText(gs *state.GameState) (string, color.RGBA) {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return "", ColorGray
+	}
+	score := gs.OverextensionScore(gs.PlayerFactionID)
+	label := "Aşırı Genişleme: %" + itoa(score)
+	switch {
+	case score >= 75:
+		return label, color.RGBA{220, 90, 90, 255}
+	case score >= 50:
+		return label, color.RGBA{235, 155, 60, 255}
+	case score >= 25:
+		return label, ColorYellow
+	default:
+		return label, color.RGBA{100, 220, 100, 255}
+	}
 }
 
 func diplomacyOfferQuotaHUDText(gs *state.GameState) (string, color.RGBA) {

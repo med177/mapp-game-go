@@ -126,41 +126,42 @@ type campaignSaveState struct {
 	// TerrainAreas eski save'leri okuyabilmek için korunur. Arazi alanlarının
 	// canonical kaynağı terrain_areas.json olduğundan yeni save'lere yazılmaz
 	// ve yükleme sırasında uygulanmaz.
-	TerrainAreas            []world.TerrainArea                      `json:"ta,omitempty"`
-	Factions                map[faction.FactionID]factionSaveState   `json:"fx,omitempty"`
-	Armies                  map[army.ArmyID]armySaveState            `json:"ar,omitempty"`
-	Commanders              map[string]*army.Commander               `json:"cmd,omitempty"`
-	DismissedCommanderIDs   map[string]bool                          `json:"dcm,omitempty"`
-	AIPlans                 map[faction.FactionID]*state.AIPlanState `json:"ap,omitempty"`
-	AICompletedObjectives   map[faction.FactionID]map[string]bool    `json:"aco,omitempty"`
-	Imperial                *state.ImperialState                     `json:"im,omitempty"`
-	WarLedgers              map[string]*state.WarLedger              `json:"wl,omitempty"`
-	RecentTruces            map[string]int                           `json:"rt,omitempty"`
-	EconomicVictoryTurns    int                                      `json:"evt,omitempty"`
-	FactionsEliminated      int                                      `json:"fel,omitempty"`
-	ReligiousVictoryTurns   int                                      `json:"rvt,omitempty"`
-	VictoryAchieved         bool                                     `json:"va,omitempty"`
-	VictoryAchievedTurn     int                                      `json:"vat,omitempty"`
-	FiredEventIDs           []string                                 `json:"fe,omitempty"`
-	TradeNetworkModifiers   []state.TradeNetworkModifier             `json:"tnm,omitempty"`
-	LastSubjugationActorID  faction.FactionID                        `json:"lsa,omitempty"`
-	LastSubjugatedFactionID faction.FactionID                        `json:"lst,omitempty"`
-	Relations               map[string]relationSaveState             `json:"rl,omitempty"`
-	DiplomaticOffers        []state.DiplomaticOffer                  `json:"do,omitempty"`
-	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry      `json:"dh,omitempty"`
-	DiplomacyOfferCounts    map[faction.FactionID]int                `json:"dq,omitempty"`
-	OfferRejectionTurns     map[string]int                           `json:"dr,omitempty"`
-	TradeRoutes             []*economy.TradeRoute                    `json:"tr,omitempty"`
-	MarketOrders            *state.MarketOrderBook                   `json:"mo,omitempty"`
-	Sieges                  map[world.RegionID]*state.SiegeState     `json:"sg,omitempty"`
-	Raids                   map[world.RegionID]*state.RaidState      `json:"rd,omitempty"`
-	ProductionQueue         []state.ProductionOrder                  `json:"pq,omitempty"`
-	NextProductionSeq       int                                      `json:"np,omitempty"`
-	NextArmySeq             int                                      `json:"na,omitempty"`
-	NextCommanderSeq        int                                      `json:"nc,omitempty"`
-	Phase                   state.Phase                              `json:"ph,omitempty"`
-	WinnerID                faction.FactionID                        `json:"w,omitempty"`
-	ActiveRegionEvents      []state.RegionEventStatus                `json:"ae,omitempty"`
+	TerrainAreas            []world.TerrainArea                                `json:"ta,omitempty"`
+	Factions                map[faction.FactionID]factionSaveState             `json:"fx,omitempty"`
+	Armies                  map[army.ArmyID]armySaveState                      `json:"ar,omitempty"`
+	Commanders              map[string]*army.Commander                         `json:"cmd,omitempty"`
+	DismissedCommanderIDs   map[string]bool                                    `json:"dcm,omitempty"`
+	AIPlans                 map[faction.FactionID]*state.AIPlanState           `json:"ap,omitempty"`
+	AICompletedObjectives   map[faction.FactionID]map[string]bool              `json:"aco,omitempty"`
+	Imperial                *state.ImperialState                               `json:"im,omitempty"`
+	WarLedgers              map[string]*state.WarLedger                        `json:"wl,omitempty"`
+	RecentTruces            map[string]int                                     `json:"rt,omitempty"`
+	RecentFactionExpansion  map[faction.FactionID]state.FactionExpansionRecord `json:"rx,omitempty"`
+	EconomicVictoryTurns    int                                                `json:"evt,omitempty"`
+	FactionsEliminated      int                                                `json:"fel,omitempty"`
+	ReligiousVictoryTurns   int                                                `json:"rvt,omitempty"`
+	VictoryAchieved         bool                                               `json:"va,omitempty"`
+	VictoryAchievedTurn     int                                                `json:"vat,omitempty"`
+	FiredEventIDs           []string                                           `json:"fe,omitempty"`
+	TradeNetworkModifiers   []state.TradeNetworkModifier                       `json:"tnm,omitempty"`
+	LastSubjugationActorID  faction.FactionID                                  `json:"lsa,omitempty"`
+	LastSubjugatedFactionID faction.FactionID                                  `json:"lst,omitempty"`
+	Relations               map[string]relationSaveState                       `json:"rl,omitempty"`
+	DiplomaticOffers        []state.DiplomaticOffer                            `json:"do,omitempty"`
+	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry                `json:"dh,omitempty"`
+	DiplomacyOfferCounts    map[faction.FactionID]int                          `json:"dq,omitempty"`
+	OfferRejectionTurns     map[string]int                                     `json:"dr,omitempty"`
+	TradeRoutes             []*economy.TradeRoute                              `json:"tr,omitempty"`
+	MarketOrders            *state.MarketOrderBook                             `json:"mo,omitempty"`
+	Sieges                  map[world.RegionID]*state.SiegeState               `json:"sg,omitempty"`
+	Raids                   map[world.RegionID]*state.RaidState                `json:"rd,omitempty"`
+	ProductionQueue         []state.ProductionOrder                            `json:"pq,omitempty"`
+	NextProductionSeq       int                                                `json:"np,omitempty"`
+	NextArmySeq             int                                                `json:"na,omitempty"`
+	NextCommanderSeq        int                                                `json:"nc,omitempty"`
+	Phase                   state.Phase                                        `json:"ph,omitempty"`
+	WinnerID                faction.FactionID                                  `json:"w,omitempty"`
+	ActiveRegionEvents      []state.RegionEventStatus                          `json:"ae,omitempty"`
 }
 
 type legacyRegionSaveState struct {
@@ -200,56 +201,57 @@ type legacyFactionSaveState struct {
 }
 
 type legacyCampaignSaveState struct {
-	Turn                     int                                            `json:"turn"`
-	Year                     int                                            `json:"year"`
-	Month                    int                                            `json:"month"`
-	DecisionSeed             uint64                                         `json:"decision_seed,omitempty"`
-	ScenarioID               string                                         `json:"scenario_id"`
-	ScenarioPath             string                                         `json:"scenario_path,omitempty"`
-	PlayerFactionID          faction.FactionID                              `json:"player_faction_id"`
-	Difficulty               int                                            `json:"difficulty"`
-	AutoGrainExport          bool                                           `json:"auto_grain_export,omitempty"`
-	AutoExportPolicies       map[economy.GoodType]state.AutoExportPolicy    `json:"auto_export_policies,omitempty"`
-	DevelopmentMode          bool                                           `json:"development_mode"`
-	DebugRevealMilitaryPower bool                                           `json:"debug_reveal_military_power,omitempty"`
-	EditMode                 bool                                           `json:"edit_mode"`
-	Victory                  state.VictoryCondition                         `json:"victory"`
-	SelectedVictoryOptionID  string                                         `json:"selected_victory_option_id"`
-	Regions                  map[world.RegionID]legacyRegionSaveState       `json:"regions"`
-	TerrainAreas             []world.TerrainArea                            `json:"terrain_areas,omitempty"`
-	Factions                 map[faction.FactionID]legacyFactionSaveState   `json:"factions"`
-	Armies                   map[army.ArmyID]*army.Army                     `json:"armies"`
-	Commanders               map[string]*army.Commander                     `json:"commanders,omitempty"`
-	DismissedCommanderIDs    map[string]bool                                `json:"dismissed_commander_ids,omitempty"`
-	AIPlans                  map[faction.FactionID]*state.AIPlanState       `json:"ai_plans,omitempty"`
-	AICompletedObjectives    map[faction.FactionID]map[string]bool          `json:"ai_completed_objectives,omitempty"`
-	Imperial                 *state.ImperialState                           `json:"imperial,omitempty"`
-	WarLedgers               map[string]*state.WarLedger                    `json:"war_ledgers,omitempty"`
-	RecentTruces             map[string]int                                 `json:"recent_truces,omitempty"`
-	EconomicVictoryTurns     int                                            `json:"economic_victory_turns"`
-	FactionsEliminated       int                                            `json:"factions_eliminated"`
-	ReligiousVictoryTurns    int                                            `json:"religious_victory_turns"`
-	VictoryAchieved          bool                                           `json:"victory_achieved"`
-	VictoryAchievedTurn      int                                            `json:"victory_achieved_turn"`
-	FiredEventIDs            map[string]bool                                `json:"fired_event_ids"`
-	Relations                map[string]*faction.Relation                   `json:"relations"`
-	DiplomaticOffers         []state.DiplomaticOffer                        `json:"diplomatic_offers,omitempty"`
-	DiplomaticOfferHistory   []state.DiplomaticOfferHistoryEntry            `json:"diplomatic_offer_history,omitempty"`
-	DiplomacyOfferCounts     map[faction.FactionID]int                      `json:"diplomacy_offer_counts,omitempty"`
-	OfferRejectionTurns      map[string]int                                 `json:"diplomatic_offer_last_rejected_turns,omitempty"`
-	TradeRoutes              []*economy.TradeRoute                          `json:"trade_routes"`
-	MarketOrders             *state.MarketOrderBook                         `json:"market_orders,omitempty"`
-	Sieges                   map[world.RegionID]*state.SiegeState           `json:"sieges,omitempty"`
-	Raids                    map[world.RegionID]*state.RaidState            `json:"raids,omitempty"`
-	ProductionQueue          []state.ProductionOrder                        `json:"production_queue"`
-	NextProductionSeq        int                                            `json:"next_production_seq"`
-	NextArmySeq              int                                            `json:"next_army_seq"`
-	NextCommanderSeq         int                                            `json:"next_commander_seq,omitempty"`
-	Phase                    state.Phase                                    `json:"phase"`
-	WinnerID                 faction.FactionID                              `json:"winner_id"`
-	ActiveRegionEvents       []state.RegionEventStatus                      `json:"active_region_events,omitempty"`
-	AIDiagnostics            map[faction.FactionID]*ai.AIDiagnosticSnapshot `json:"ai_diagnostics,omitempty"`
-	AIDiagnosticHistory      []state.AIDiagnosticHistoryEntry               `json:"ai_diagnostic_history,omitempty"`
+	Turn                     int                                                `json:"turn"`
+	Year                     int                                                `json:"year"`
+	Month                    int                                                `json:"month"`
+	DecisionSeed             uint64                                             `json:"decision_seed,omitempty"`
+	ScenarioID               string                                             `json:"scenario_id"`
+	ScenarioPath             string                                             `json:"scenario_path,omitempty"`
+	PlayerFactionID          faction.FactionID                                  `json:"player_faction_id"`
+	Difficulty               int                                                `json:"difficulty"`
+	AutoGrainExport          bool                                               `json:"auto_grain_export,omitempty"`
+	AutoExportPolicies       map[economy.GoodType]state.AutoExportPolicy        `json:"auto_export_policies,omitempty"`
+	DevelopmentMode          bool                                               `json:"development_mode"`
+	DebugRevealMilitaryPower bool                                               `json:"debug_reveal_military_power,omitempty"`
+	EditMode                 bool                                               `json:"edit_mode"`
+	Victory                  state.VictoryCondition                             `json:"victory"`
+	SelectedVictoryOptionID  string                                             `json:"selected_victory_option_id"`
+	Regions                  map[world.RegionID]legacyRegionSaveState           `json:"regions"`
+	TerrainAreas             []world.TerrainArea                                `json:"terrain_areas,omitempty"`
+	Factions                 map[faction.FactionID]legacyFactionSaveState       `json:"factions"`
+	Armies                   map[army.ArmyID]*army.Army                         `json:"armies"`
+	Commanders               map[string]*army.Commander                         `json:"commanders,omitempty"`
+	DismissedCommanderIDs    map[string]bool                                    `json:"dismissed_commander_ids,omitempty"`
+	AIPlans                  map[faction.FactionID]*state.AIPlanState           `json:"ai_plans,omitempty"`
+	AICompletedObjectives    map[faction.FactionID]map[string]bool              `json:"ai_completed_objectives,omitempty"`
+	Imperial                 *state.ImperialState                               `json:"imperial,omitempty"`
+	WarLedgers               map[string]*state.WarLedger                        `json:"war_ledgers,omitempty"`
+	RecentTruces             map[string]int                                     `json:"recent_truces,omitempty"`
+	RecentFactionExpansion   map[faction.FactionID]state.FactionExpansionRecord `json:"recent_faction_expansion,omitempty"`
+	EconomicVictoryTurns     int                                                `json:"economic_victory_turns"`
+	FactionsEliminated       int                                                `json:"factions_eliminated"`
+	ReligiousVictoryTurns    int                                                `json:"religious_victory_turns"`
+	VictoryAchieved          bool                                               `json:"victory_achieved"`
+	VictoryAchievedTurn      int                                                `json:"victory_achieved_turn"`
+	FiredEventIDs            map[string]bool                                    `json:"fired_event_ids"`
+	Relations                map[string]*faction.Relation                       `json:"relations"`
+	DiplomaticOffers         []state.DiplomaticOffer                            `json:"diplomatic_offers,omitempty"`
+	DiplomaticOfferHistory   []state.DiplomaticOfferHistoryEntry                `json:"diplomatic_offer_history,omitempty"`
+	DiplomacyOfferCounts     map[faction.FactionID]int                          `json:"diplomacy_offer_counts,omitempty"`
+	OfferRejectionTurns      map[string]int                                     `json:"diplomatic_offer_last_rejected_turns,omitempty"`
+	TradeRoutes              []*economy.TradeRoute                              `json:"trade_routes"`
+	MarketOrders             *state.MarketOrderBook                             `json:"market_orders,omitempty"`
+	Sieges                   map[world.RegionID]*state.SiegeState               `json:"sieges,omitempty"`
+	Raids                    map[world.RegionID]*state.RaidState                `json:"raids,omitempty"`
+	ProductionQueue          []state.ProductionOrder                            `json:"production_queue"`
+	NextProductionSeq        int                                                `json:"next_production_seq"`
+	NextArmySeq              int                                                `json:"next_army_seq"`
+	NextCommanderSeq         int                                                `json:"next_commander_seq,omitempty"`
+	Phase                    state.Phase                                        `json:"phase"`
+	WinnerID                 faction.FactionID                                  `json:"winner_id"`
+	ActiveRegionEvents       []state.RegionEventStatus                          `json:"active_region_events,omitempty"`
+	AIDiagnostics            map[faction.FactionID]*ai.AIDiagnosticSnapshot     `json:"ai_diagnostics,omitempty"`
+	AIDiagnosticHistory      []state.AIDiagnosticHistoryEntry                   `json:"ai_diagnostic_history,omitempty"`
 }
 
 func encodeCompressedStatePayload(saved campaignSaveState) (string, string, error) {
@@ -392,6 +394,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Imperial:                 legacy.Imperial.Clone(),
 		WarLedgers:               cloneWarLedgers(legacy.WarLedgers),
 		RecentTruces:             cloneStringIntMap(legacy.RecentTruces),
+		RecentFactionExpansion:   cloneFactionExpansion(legacy.RecentFactionExpansion),
 		EconomicVictoryTurns:     legacy.EconomicVictoryTurns,
 		FactionsEliminated:       legacy.FactionsEliminated,
 		ReligiousVictoryTurns:    legacy.ReligiousVictoryTurns,
@@ -520,6 +523,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Imperial:                 gs.Imperial.Clone(),
 		WarLedgers:               cloneWarLedgers(gs.WarLedgers),
 		RecentTruces:             cloneStringIntMap(gs.RecentTruces),
+		RecentFactionExpansion:   cloneFactionExpansion(gs.RecentFactionExpansion),
 		EconomicVictoryTurns:     gs.EconomicVictoryTurns,
 		FactionsEliminated:       gs.FactionsEliminated,
 		ReligiousVictoryTurns:    gs.ReligiousVictoryTurns,
@@ -625,6 +629,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Imperial:                 gs.Imperial.Clone(),
 		WarLedgers:               cloneWarLedgers(gs.WarLedgers),
 		RecentTruces:             cloneStringIntMap(gs.RecentTruces),
+		RecentFactionExpansion:   cloneFactionExpansion(gs.RecentFactionExpansion),
 		EconomicVictoryTurns:     gs.EconomicVictoryTurns,
 		FactionsEliminated:       gs.FactionsEliminated,
 		ReligiousVictoryTurns:    gs.ReligiousVictoryTurns,
@@ -785,6 +790,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.WarLedgers = cloneWarLedgers(saved.WarLedgers)
 	gs.EnsureDecisionSeed()
 	gs.RecentTruces = cloneStringIntMap(saved.RecentTruces)
+	gs.RecentFactionExpansion = cloneFactionExpansion(saved.RecentFactionExpansion)
 	gs.NextCommanderSeq = saved.NextCommanderSeq
 	gs.SyncCommanderLinks()
 
@@ -1712,6 +1718,17 @@ func cloneFactionIntMap(src map[faction.FactionID]int) map[faction.FactionID]int
 		return nil
 	}
 	out := make(map[faction.FactionID]int, len(src))
+	for key, value := range src {
+		out[key] = value
+	}
+	return out
+}
+
+func cloneFactionExpansion(src map[faction.FactionID]state.FactionExpansionRecord) map[faction.FactionID]state.FactionExpansionRecord {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[faction.FactionID]state.FactionExpansionRecord, len(src))
 	for key, value := range src {
 		out[key] = value
 	}

@@ -30,6 +30,67 @@ func (s *GameState) TruceRemaining(a, b faction.FactionID) int {
 	return max(0, s.RecentTruces[faction.RelationKey(a, b)]-s.Turn)
 }
 
+// RecordRegionAcquisition kısa vadeli genişleme takibine bir bölge kazanımı
+// ekler. Savaş dışı barış devri de bu kaydı kullanabilir; böylece koalisyon
+// mantığı yalnızca savaş ledger'larına bağlı kalmaz.
+func (s *GameState) RecordRegionAcquisition(conqueror, previousOwner faction.FactionID) {
+	if s == nil || conqueror == "" || conqueror == previousOwner {
+		return
+	}
+	if s.RecentFactionExpansion == nil {
+		s.RecentFactionExpansion = make(map[faction.FactionID]FactionExpansionRecord)
+	}
+	record := s.RecentFactionExpansion[conqueror]
+	if record.WindowStartTurn <= 0 || s.Turn-record.WindowStartTurn >= RecentFactionExpansionWindowTurns {
+		record = FactionExpansionRecord{WindowStartTurn: s.Turn}
+	}
+	record.RegionsGained++
+	s.RecentFactionExpansion[conqueror] = record
+}
+
+// RecentRegionGain kısa genişleme penceresi hâlâ aktifse kazanılan bölge
+// sayısını döner. Eski veya süresi dolmuş kayıtlar AI tarafından etkisiz kabul
+// edilir; fiziksel temizlik save yükünü artırmamak için gerekli değildir.
+func (s *GameState) RecentRegionGain(fid faction.FactionID) int {
+	if s == nil || fid == "" || s.RecentFactionExpansion == nil {
+		return 0
+	}
+	record := s.RecentFactionExpansion[fid]
+	if record.WindowStartTurn <= 0 || record.RegionsGained <= 0 || s.Turn-record.WindowStartTurn >= RecentFactionExpansionWindowTurns {
+		return 0
+	}
+	return record.RegionsGained
+}
+
+// OverextensionScore son kısa genişleme penceresini oyuncuya ve AI'ye ortak
+// bir 0-100 risk değeri olarak sunar. Mutlak kazanım ve mevcut devlete göre
+// büyüme oranından yüksek olanı kullanır; böylece dört bölge kazanan büyük bir
+// devlet ile iki bölge kazanarak iki katına çıkan küçük devlet aynı baskı
+// sinyalini paylaşabilir. Bu değer türetilmiştir, ayrıca save alanı gerektirmez.
+func (s *GameState) OverextensionScore(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	gained := s.RecentRegionGain(fid)
+	if gained <= 0 {
+		return 0
+	}
+	owned := len(s.LandRegionsOwnedBy(fid))
+	if owned <= 0 {
+		return 0
+	}
+	absScore := gained * 20
+	relativeScore := (gained * 100 / owned) * 2
+	score := absScore
+	if relativeScore > score {
+		score = relativeScore
+	}
+	if score > 100 {
+		return 100
+	}
+	return score
+}
+
 // WarLedger aktif bir savaşın barış değerlendirmesinde kullanılan kalıcı
 // başlangıç durumunu ve iki taraflı sonuçlarını tutar. FactionA/FactionB,
 // RelationKey ile aynı alfabetik sıradadır.
@@ -213,6 +274,7 @@ func (s *GameState) RecordWarRegionCapture(conqueror, previousOwner faction.Fact
 	if s == nil || conqueror == "" || previousOwner == "" || conqueror == previousOwner {
 		return
 	}
+	s.RecordRegionAcquisition(conqueror, previousOwner)
 	rel := s.Relations[faction.RelationKey(conqueror, previousOwner)]
 	if rel == nil || rel.Stance != faction.StanceWar {
 		return

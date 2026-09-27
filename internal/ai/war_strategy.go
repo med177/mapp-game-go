@@ -323,6 +323,99 @@ func aiNavalWarPortReady(gs *state.GameState, fid faction.FactionID, regionID wo
 	return region != nil && region.OwnerID == string(fid) && !region.IsSea && aiNavalEmbarkPortViable(gs, fid, region)
 }
 
+const (
+	aiRapidExpansionAbsoluteGain = 4
+	aiRapidExpansionRelativeGain = 3
+	aiRapidExpansionRelativeRate = 30
+)
+
+// aiFactionRapidExpansion bir fraksiyonun toplam büyüklüğünü değil, son kısa
+// penceredeki ani toprak kazanımını tehdit kabul eder. Üç bölge küçük bir
+// devlet için çok büyük bir sıçramaysa veya dört bölge mutlak olarak
+// kazanılmışsa koalisyon baskısı açılabilir.
+func aiFactionRapidExpansion(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || fid == "" || gs.Factions[fid] == nil || gs.Factions[fid].IsEliminated {
+		return false
+	}
+	gained := gs.RecentRegionGain(fid)
+	if gained >= aiRapidExpansionAbsoluteGain {
+		return true
+	}
+	if gained < aiRapidExpansionRelativeGain {
+		return false
+	}
+	current := len(gs.LandRegionsOwnedBy(fid))
+	return current > 0 && gained*100 >= current*aiRapidExpansionRelativeRate
+}
+
+// aiOverextensionWarScoreAdjustment, AI'nin kendi aşırı genişlemesini yeni
+// saldırı kararına yansıtır. Agresif devletler daha yüksek riski göze alır;
+// temkinli devletler aynı toprak baskısında savaş puanını düşürüp önce
+// toparlanmayı seçer. Bu yalnız karar puanını etkiler, hukuki savaş kurallarını
+// veya gerçek muharebe gücünü değiştirmez.
+func aiOverextensionWarScoreAdjustment(gs *state.GameState, actor faction.FactionID) int {
+	if gs == nil || actor == "" {
+		return 0
+	}
+	self := gs.Factions[actor]
+	if self == nil || self.IsEliminated {
+		return 0
+	}
+	score := gs.OverextensionScore(actor)
+	if score <= 0 {
+		return 0
+	}
+	tolerance := 45 + self.AIAggressiveness/2
+	if tolerance > 90 {
+		tolerance = 90
+	}
+	if score <= tolerance {
+		return 0
+	}
+	divisor := 2
+	if self.AIAggressiveness >= 70 {
+		divisor = 3
+	}
+	penalty := maxInt(1, (score-tolerance)/divisor)
+	return -minInt(20, penalty)
+}
+
+// aiCoalitionWarCandidate, eski koalisyon yolunun herkesi hedefe yöneltmesi
+// yerine normal savaş kararının bütün siyasi ve operasyonel kapılarını uygular.
+// Böylece hızlı büyüyen hedefle müttefik veya ticaret ilişkisi güçlü bir devlet,
+// uzak ve hazırlıksız bir devlet ya da kapasitesini doldurmuş bir devlet
+// otomatik olarak koalisyona çekilmez.
+func aiCoalitionWarCandidate(gs *state.GameState, actor, target faction.FactionID, ctx *StrategicContext) bool {
+	if gs == nil || actor == "" || target == "" || actor == target {
+		return false
+	}
+	self := gs.Factions[actor]
+	other := gs.Factions[target]
+	if self == nil || other == nil || self.IsEliminated || other.IsEliminated {
+		return false
+	}
+	if diplomacy.DirectOverlord(gs, actor) != "" || diplomacy.SameRealm(gs, actor, target) {
+		return false
+	}
+	if aiActiveWarCount(gs, actor) >= aiMaxConcurrentWars(gs, actor) || !aiWarCadenceAllows(gs, actor) {
+		return false
+	}
+	rel := diplomacy.Relation(gs, actor, target)
+	if rel == nil || rel.Stance == faction.StanceWar || rel.Stance == faction.StanceAllied {
+		return false
+	}
+	if rel.Stance == faction.StanceTrade && rel.Score >= 15 {
+		return false
+	}
+	if gs.TruceRemaining(actor, target) > 0 {
+		return false
+	}
+	if ctx == nil {
+		ctx = prepareStrategicContext(gs, actor)
+	}
+	return aiWarOpportunityScoreWithContext(gs, actor, target, rel, ctx) >= aiWarThresholdForDifficulty(gs)
+}
+
 // aiEvaluateWarOpportunitiesWithSteps selects at most one opportunistic war
 // target after diplomacy has resolved peace/alliance/trade actions.
 func aiEvaluateWarOpportunitiesWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
@@ -590,6 +683,7 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 		// gerçek bir deniz görevi hazırsa kontrollü bir hazırlık bonusu alır.
 		score += 12
 	}
+	score += aiOverextensionWarScoreAdjustment(gs, actor)
 	if target == gs.PlayerFactionID {
 		score -= 18
 		score += aiPlayerTargetScoreBonus(gs)

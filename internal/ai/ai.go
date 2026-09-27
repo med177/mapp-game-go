@@ -37,9 +37,6 @@ const (
 	aiMaxRegionQueue         = 20
 )
 
-// coalitionThreshold oyuncunun bu kadar bölgeyi geçmesi koalisyon tetikler.
-const coalitionThreshold = 8
-
 // TakeTurn belirtilen fraksiyon için tüm AI kararlarını verir ve uygular.
 func aiTechMods(gs *state.GameState, ownerID string) combat.TechMods {
 	f, ok := gs.Factions[faction.FactionID(ownerID)]
@@ -113,9 +110,10 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 	if aiStrategicPlanningEnabled(gs) && planningContext == nil {
 		planningContext = prepareStrategicContextWithEvents(gs, fid, eventDefs)
 	}
-	// Difficulty 3: koalisyon mantığını çalıştır
+	// Difficulty 3: herhangi bir fraksiyonun sabit büyüklüğünü değil, kısa
+	// süredeki hızlı genişlemesini tehdit olarak değerlendir.
 	if gs.Difficulty >= 3 {
-		formCoalitionAgainstPlayer(gs, fid, steps)
+		formCoalitionAgainstRapidExpansion(gs, fid, planningContext, steps)
 	}
 
 	// Barış/ittifak/ticaret teklifleri diplomasi akışında değerlendirilir;
@@ -1350,56 +1348,56 @@ func aiUnitBudgetThresholdMet(f *faction.Faction, budget *aiBudget, gold int) bo
 	return aiCanAffordForBudget(f, economy.ResourceCost{Gold: gold}, budget, aiBudgetArmy)
 }
 
-// FormCoalitionAgainstPlayer oyuncu tehdit eşiğini geçmişse diğer AI fraksiyonlarla ittifak kurar.
-func FormCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID) {
-	formCoalitionAgainstPlayer(gs, fid, nil)
+// FormCoalitionAgainstRapidExpansion kısa sürede hızla büyüyen her rakip için
+// uygun AI aktörünün normal savaş filtresinden koalisyon adayı seçer.
+func FormCoalitionAgainstRapidExpansion(gs *state.GameState, fid faction.FactionID) {
+	formCoalitionAgainstRapidExpansion(gs, fid, nil, nil)
 }
 
-func formCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+// FormCoalitionAgainstPlayer geriye dönük API adını korur; davranış artık
+// yalnızca oyuncuya değil, kısa sürede hızla büyüyen her rakibe bakar.
+func FormCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID) {
+	FormCoalitionAgainstRapidExpansion(gs, fid)
+}
+
+func formCoalitionAgainstRapidExpansion(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext, steps *[]TurnStep) {
 	if gs == nil || fid == "" || fid == gs.PlayerFactionID {
 		return
 	}
-	playerRegions := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
-	if playerRegions < coalitionThreshold {
+	if ctx == nil {
+		ctx = prepareStrategicContext(gs, fid)
+	}
+
+	bestTarget := faction.FactionID("")
+	bestScore := -1
+	for _, target := range aiSortedFactionIDs(gs) {
+		if target == fid || !aiFactionRapidExpansion(gs, target) {
+			continue
+		}
+		if !aiCoalitionWarCandidate(gs, fid, target, ctx) {
+			continue
+		}
+		rel := diplomacy.Relation(gs, fid, target)
+		score := aiWarOpportunityScoreWithContext(gs, fid, target, rel, ctx)
+		if score > bestScore {
+			bestTarget = target
+			bestScore = score
+		}
+	}
+	if bestTarget == "" {
 		return
 	}
 
-	result := diplomacy.ExecuteWarDeclaration(gs, fid, gs.PlayerFactionID, nil)
+	result := diplomacy.ExecuteWarDeclaration(gs, fid, bestTarget, nil)
 	if result.Applied {
-		gs.QueueNavalContactForWar(fid, gs.PlayerFactionID)
+		gs.QueueNavalContactForWar(fid, bestTarget)
 		addTurnStep(steps, TurnStep{
 			FactionID:      fid,
 			Kind:           TurnStepDiplomacy,
-			TargetFaction:  gs.PlayerFactionID,
+			TargetFaction:  bestTarget,
 			Message:        turnFactionName(gs, fid) + ": " + result.Message,
 			WarDeclaration: &result,
 		})
-	}
-
-	// Diğer AI fraksiyonlarla ittifak kur (düşman değillerse)
-	for _, otherFID := range aiSortedFactionIDs(gs) {
-		if otherFID == fid || otherFID == gs.PlayerFactionID {
-			continue
-		}
-		if gs.Factions[otherFID].IsEliminated {
-			continue
-		}
-		rel := diplomacy.EnsureRelation(gs, fid, otherFID)
-		if rel.Stance == faction.StanceWar {
-			continue
-		}
-		if rel.Score < 20 {
-			rel.Score = 20
-		}
-		result := diplomacy.Execute(gs, fid, otherFID, diplomacy.ActionProposeAlliance)
-		if result.Applied || result.Accepted {
-			addTurnStep(steps, TurnStep{
-				FactionID:     fid,
-				Kind:          TurnStepDiplomacy,
-				TargetFaction: otherFID,
-				Message:       turnFactionName(gs, fid) + ": " + result.Message,
-			})
-		}
 	}
 }
 

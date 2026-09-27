@@ -7,6 +7,24 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-27: Üst HUD'a son genişleme hızından türetilen `Aşırı Genişleme`
+  yüzdesi eklendi. Oyuncu değeri 0-100 arasında renkli olarak görür; AI aynı
+  değeri savaş puanında kullanarak saldırganlığı yüksek devletlerin riski daha
+  fazla göze almasına, temkinli devletlerin ise yeni genişlemeyi yavaşlatmasına
+  izin verir. Regresyonlar: `TestOverextensionScoreUsesRecentAndRelativeExpansion`,
+  `TestAIOverextensionAdjustmentRespectsAggressiveness`,
+  `TestOverextensionHUDTextShowsPlayerValue`.
+
+- 2026-09-27: AI koalisyon baskısı sabit bölge sayısı eşiğinden çıkarıldı.
+  Oyuncu veya AI tarafından yönetilen bir devletin son 6 turdaki hızlı kara
+  kazanımı tehdit kabul ediliyor; savaş kararı hedefle ilişki/ittifak, realm,
+  ateşkes, sınır veya hazır denizaşırı erişim, güç ve lojistik filtrelerinden
+  geçiyor. Genişleme geçmişi compact save/load ile korunuyor ve eski save'ler
+  geçmişsiz açılıyor. Regresyonlar: `TestRecentRegionGainTracksShortExpansionWindow`,
+  `TestAIFactionRapidExpansionIncludesAIControlledFaction`,
+  `TestAICoalitionWarCandidateRejectsAlliedRapidExpansionTarget`,
+  `TestCompactSavePreservesRecentFactionExpansion`.
+
 - 2026-09-27: AI bina yatırımı artık ekonomi bütçesi ve kaynakları elverdiği
   sürece uygun farklı bina türlerini aynı turda kuyruğa alıyor; aynı bölge ve
   bina türünde bekleyen ikinci emir vermiyor. Bina puanlaması artık bölgenin
@@ -3731,7 +3749,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Zafer koşulları | ✅ | `domination`, `economic`, `military`, `religious`, `conquer_city`, `survive_turns` kontrol ediliyor; senaryo hedefleri `allowed_factions` ile oyuncu fraksiyonuna göre filtreleniyor, tam liste `ScenarioVictories` içinde tutuluyor; `allow_vassal_control` doğrudan vassal bölgelerini fetih/domination hedeflerine dahil ediyor; 1300 Osmanlı rotaları Balkan-Viyana, Kırım, Güney İtalya, Memlük, Tebriz, Mağrip ve Aachen hedefleriyle genişletildi; zafer kartları `deadline_year/month` ile oyuncuya süre veriyor ve AI hedef tamamladığı için otomatik kazanamıyor |
 | AI turu | ✅ | Teknoloji, ekonomi, deniz, asker alma, konsolidasyon, diplomasi taraması, fırsatçı savaş ilanı ve hedefe hareket; AI bina/birim/transport üretimini anlık state mutasyonu yerine `ProductionQueue` üzerinden açar ve pending emirleri manpower/filo/region queue sınırlarında hesaba katar; kara recruit artık kışla throughput'u dolu bölgeye kör yazılmayıp serbest hatta dağıtılır, deniz üretimi de liman throughput'u dolu kıyıyı atlayıp mümkünse başka serbest limana yönelir; transport hattı olan savaşçı AI aynı tur escort warship de kuyruklayabilir ve escort üretimi artık tek deniz hattına kilitlenmek yerine çoklu cephe/baskı koşullarına göre birkaç fronta yayılabilir; bekleyen barış, ittifak ve ticaret teklifleri teknoloji farkı ve uzun vadeli tehdit baskısına göre önceliklenir ve prompt içinde tür ile kısa sebep bilgisi görünür; 1300'de Normal/Zor sınır komşusu zayıf hedeflere karşı güç/cephe üstünlüğü varsa proaktif savaş değerlendirebilir, Zor en fazla iki eşzamanlı savaşı taşıyabilir; `ai_expansion_targets` tanımlı tarihsel hedefler ise daha erken ve yüksek öncelikle değerlendirilir. Deniz hedefleri `aiSeaPressure()` ile savaş baskısına göre seçilir, filo limiti kıyı/savaş durumuna göre 1-3 arası dinamikleşir. AI fazı artık `TurnStepper` ile devlet devlet ve adım adım çözülür; oyuncuya yakın hamlelerde kamera odaklanır, uzak hamlelerde üst-orta AI overlay'i akışı korur ve tur sonunda kamera eski konuma döner |
 | AI uzun menzilli hareket | ✅ | BFS ile uzaktaki hedefe doğru ilerleme |
-| AI koalisyon | ✅ | Zorluk 3'te oyuncu 8+ bölgeyi geçince devreye girer |
+| AI koalisyon | ✅ | Zorluk 3'te oyuncu veya AI devleti son 6 turda hızlı kara genişlemesi yaptığında; ilişki, sınır/denizaşırı erişim, güç ve lojistik filtreleriyle tek hedefli çalışır |
 | Kayıt/yükleme | ✅ | Autosave + QuickSave + slot1-3, metadata önizleme, silme; save dosyaları `kind` (`auto`/`quick`/`slot`), `game_version` ve düz `meta` wrapper'ı taşıyor. Gövde artık tam senaryo snapshot'ı değil, senaryo üstüne uygulanan campaign delta state'i saklıyor; relation'lar delta, region'lar delta, settlement'lar patch, army unit'leri stack formatında encode ediliyor ve payload `state_zstd` alanında `zstd+base64` sıkıştırmasıyla tutuluyor. `DEV_MODE=true` iken ek olarak aynı slot için okunabilir `*.debug.json` sidecar'ı yazılıyor; normal modda yazılmıyor ve eski sidecar temizleniyor. Yüklemede baz senaryo tekrar kuruluyor. Tur bitirde autosave, oyun içi kaydetmede quicksave; ana menüde Devam Et en yeni autosave/quicksave kaydını açıyor; save/load kartında silme onayı başlıkla çakışmayacak ayrı satır düzeni kullanır |
 | Yükleme ekranı | ✅ | Senaryo ve kayıt yükleme sırasında gerçek zaman tabanlı hareketli spinner gösteriliyor; iş yükü ilk loading frame çizildikten sonra başlatıldığı ve yükleme adımları scheduler'a yield verdiği için loader animasyonu senaryo okunurken donmuyor; yükleme ekranı artık step-bazlı yüzde ve progress bar da gösteriyor; senaryo yüklemesi `faction_select`/`victory_select`e gidiyorsa ağır `WorldMap` cache'i loader bitiminde değil, harita ilk gerçekten gerektiğinde kuruluyor; zafer koşulu sonrası oyuncu turuna geçerken ve save load akışında `WorldMap` hazırlığı arka planda yapılıp loading ekranı altında tamamlanıyor |
 | Ana menü / ayarlar | ✅ | Yeni oyun, en yeni autosave/quicksave ile devam et, kayıt yükleme, ayarlar, çıkış |

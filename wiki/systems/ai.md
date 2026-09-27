@@ -1084,7 +1084,7 @@ bölgede ardıl fraksiyon hâlâ aktifse `CanRestoreSuccessorAtRegion()` false o
 AI vassallık kararı uygulanmadan doğrudan ilhak akışı korunur.
 
 `TakeTurn` sırasıyla şu adımları yapar:
-1. Zorluk 3 ise → `FormCoalitionAgainstPlayer()`
+1. Zorluk 3 ise → `FormCoalitionAgainstRapidExpansion()`
 2. Diplomasi taraması ve fırsatçı savaş değerlendirmesi → `aiHandleDiplomacy()`
 3. Teknoloji araştırma → `aiResearch()`
 4. Ekonomik bina inşası → `aiEconomyBuild()`
@@ -1170,11 +1170,29 @@ Bu sayede hareket state'i gerçek zamanda akarken aynı anda UI mesajı ve yakı
 
 ## Koalisyon Mantığı
 
-`FormCoalitionAgainstPlayer()` — zorluk 3'te her AI turunun başında çalışır.
+`FormCoalitionAgainstRapidExpansion()` — zorluk 3'te her AI turunun başında
+çalışır. Eski `FormCoalitionAgainstPlayer()` adı geriye dönük API uyumluluğu
+için korunur.
 
-**Tetikleme koşulu:** Oyuncunun bölge sayısı `coalitionThreshold = 8`'i geçmesi.
+**Tetikleme koşulu:** Oyuncu veya AI tarafından yönetilen herhangi bir fraksiyonun
+son 6 turda en az 4 kara bölgesi kazanması ya da en az 3 bölge kazanarak mevcut
+kara varlığının en az `%30`'una eşdeğer bir sıçrama yapması. Sabit bölge toplamı
+tek başına koalisyon başlatmaz; eski save'lerdeki eksik geçmiş de otomatik tehdit
+üretmez.
 
-**Etki:** AI fraksiyon oyuncuya savaş açar ve aynı diplomasi motoru üzerinden diğer AI'larla ittifak kurmaya çalışır.
+**Etki:** Her AI aktörü hızlı büyüyen rakipler arasından en yüksek normal savaş
+fırsatı puanına sahip tek hedefi seçebilir. Hedefle müttefiklik veya güçlü ticaret
+ilişkisi, aynı realm/vassallık, ateşkes, savaş kapasitesi, kara sınırı ya da hazır
+denizaşırı erişim, güç, lojistik ve stratejik hazırlık filtreleri geçilmeden savaş
+açılmaz. Bu yol diğer AI devletlerini de hedefleyebilir; herkesi oyuncuya karşı
+toplayan ayrı bir zorunlu savaş/ittifak akışı yoktur.
+
+Oyuncunun üst HUD'ında görünen **Aşırı Genişleme** değeri `0-100` arasında
+hesaplanır. Son kısa penceredeki mutlak bölge kazanımı ile kazanımın mevcut kara
+varlığına oranından yüksek olan baskıyı gösterir; `75+` kırmızı, `50-74` turuncu,
+`25-49` sarı, daha düşük değerler yeşildir. AI kendi değerini yeni savaş puanına
+da taşır: yüksek saldırganlık daha fazla riski tolere eder, temkinli AI aynı
+değerde yeni genişleme savaşını erteleyip toparlanmaya yönelir.
 
 → İttifak mekanizması: [[systems/diplomacy]]
 
@@ -1308,8 +1326,9 @@ kalitesi ve risk iştahıyla ayrışır:
 | 2 (Normal) | 6 tur | 4 | 8 derinlik | `%100` | Eşik 70; en az `%115` güç; 10 tur taban kadans; en fazla 1 savaş |
 | 3 (Zor) | 9 tur | 5 | 12 derinlik | `%125` | Eşik 65; denk güç yeterli; 7 tur taban kadans; en fazla 2 savaş |
 
-Zor seviye koalisyon mantığını korur ve oyuncuya karşı hedef skoruna yalnız `+4`
-ekler. Büyük ekonomi/hareket hilesi yoktur: tüm seviyelerde AI ve oyuncu aynı hareket
+Zor seviye hızlı genişleme koalisyon mantığını korur; oyuncu hedef skorundaki
+özel küçük bonus normal savaş puanlamasının içindedir, tek başına savaş açtırmaz.
+Büyük ekonomi/hareket hilesi yoktur: tüm seviyelerde AI ve oyuncu aynı hareket
 hesabını kullanır. Zor AI yalnız yeni oyun başlangıcında küçük `+80 altın/+30 tahıl`
 tamponı alır; Normal ve Kolay kaynak bonusu almaz. Bu politika yalnız 1300 senaryosuna
 aittir. `difficulty_policy` bulunmayan eski senaryoların mevcut `+1` zor AI hareketi ve

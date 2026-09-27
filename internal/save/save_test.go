@@ -358,6 +358,31 @@ func TestCompactSavePreservesDecisionSeedAndRecklessWarLedger(t *testing.T) {
 	}
 }
 
+func TestCompactSavePreservesRecentFactionExpansion(t *testing.T) {
+	saved := campaignSaveState{
+		Turn:       9,
+		ScenarioID: "1300_ottoman_rise",
+		RecentFactionExpansion: map[faction.FactionID]state.FactionExpansionRecord{
+			"ai_rival": {WindowStartTurn: 7, RegionsGained: 4},
+		},
+	}
+	payload, err := json.Marshal(saved)
+	if err != nil {
+		t.Fatalf("genişleme kaydı marshal edilemedi: %v", err)
+	}
+	decoded, err := decodeCampaignSaveState(payload)
+	if err != nil {
+		t.Fatalf("genişleme kaydı save'den çözülemedi: %v", err)
+	}
+
+	gs := &state.GameState{}
+	applyCampaignSaveState(gs, decoded)
+	got := gs.RecentFactionExpansion["ai_rival"]
+	if got.WindowStartTurn != 7 || got.RegionsGained != 4 {
+		t.Fatalf("yakın dönem genişleme kaydı korunmadı: %+v", got)
+	}
+}
+
 func TestCampaignSaveStateRestoresOtherIncomeDelta(t *testing.T) {
 	const fid = faction.FactionID("portugal")
 	base := &faction.Faction{ID: fid}

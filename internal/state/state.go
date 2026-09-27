@@ -21,6 +21,11 @@ const MaxDiplomacyOffersPerTurn = 3
 // aksiyon üçlüsü için zorunlu bekleme süresidir.
 const DiplomaticOfferRetryCooldownTurns = 3
 
+// RecentFactionExpansionWindowTurns, hızlı genişleme baskısının ölçüldüğü
+// kısa kampanya penceresidir. Bu alan save'e yazılır; eski kayıtlar boş
+// başlayıp yeni fetihlerle doğal olarak dolar.
+const RecentFactionExpansionWindowTurns = 6
+
 // civilianGrainPopulationUnit nüfusun aylık temel tahıl tüketim oranını taşır.
 // 18 nüfus bir tahıl birimi tüketir; 1300 senaryosundaki üretim ve stoklar
 // birlikte değerlendirildiğinde bu oran barışta küçük rezerv, savaşta açık
@@ -62,6 +67,14 @@ type AIDiagnosticHistoryEntry struct {
 	ReserveTargetPower   int               `json:"reserve_target_power"`
 	ReserveAssignedPower int               `json:"reserve_assigned_power"`
 	BlockReasons         []string          `json:"block_reasons,omitempty"`
+}
+
+// FactionExpansionRecord bir fraksiyonun kısa zaman aralığındaki bölge
+// kazanımlarını tutar. Sabit toplam bölge sayısından farklı olarak, ani
+// genişleme ile yavaş ve normal büyümeyi birbirinden ayırır.
+type FactionExpansionRecord struct {
+	WindowStartTurn int `json:"window_start_turn,omitempty"`
+	RegionsGained   int `json:"regions_gained,omitempty"`
 }
 
 // VictoryType zafer koşulu türü.
@@ -372,6 +385,9 @@ type GameState struct {
 	WarLedgers map[string]*WarLedger `json:"war_ledgers,omitempty"`
 	// Barış sonrası geçici ateşkes bitiş turları (relation key -> expiry turn).
 	RecentTruces map[string]int `json:"recent_truces,omitempty"`
+	// RecentFactionExpansion, son kısa zaman penceresinde kazanılan kara
+	// bölgelerini faction bazında taşır. AI koalisyon baskısı bu veriyi kullanır.
+	RecentFactionExpansion map[faction.FactionID]FactionExpansionRecord `json:"recent_faction_expansion,omitempty"`
 	// Geliştirme modunda save yükleme sonrası ilk AI turlarını karşılaştırmak
 	// için tutulan geçici telemetri. Normal campaign payload'ına yazılmaz;
 	// yalnız debug sidecar'a aktarılır.

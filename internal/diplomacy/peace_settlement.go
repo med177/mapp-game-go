@@ -237,6 +237,7 @@ func applyPeaceSettlement(gs *state.GameState, settlement PeaceSettlement) bool 
 		if region == nil || region.IsSea || region.OwnerID != string(settlement.Loser) || isCapitalRegion(gs, settlement.Loser, region.ID) {
 			return false
 		}
+		gs.RecordRegionAcquisition(settlement.Winner, settlement.Loser)
 		region.ApplyConquest(string(settlement.Winner), string(winner.Religion))
 		gs.ClearProductionOrdersForRegion(region.ID)
 		return true

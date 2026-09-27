@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/world"
 )
 
 func newWarLedgerTestState() *GameState {
@@ -60,5 +61,48 @@ func TestRecordWarCasualtiesLegacyDefaultsToArmyLosses(t *testing.T) {
 	}
 	if ledger.CasualtiesArmyA != 2 || ledger.CasualtiesArmyB != 1 || ledger.CasualtiesFleetA != 0 || ledger.CasualtiesFleetB != 0 {
 		t.Fatalf("legacy kayıp dağılımı = ordu %d/%d filo %d/%d", ledger.CasualtiesArmyA, ledger.CasualtiesArmyB, ledger.CasualtiesFleetA, ledger.CasualtiesFleetB)
+	}
+}
+
+func TestRecentRegionGainTracksShortExpansionWindow(t *testing.T) {
+	gs := &GameState{Turn: 1}
+	gs.RecordRegionAcquisition("fast", "old_a")
+	gs.RecordRegionAcquisition("fast", "old_b")
+
+	if got := gs.RecentRegionGain("fast"); got != 2 {
+		t.Fatalf("yakın dönem bölge kazanımı = %d, want 2", got)
+	}
+
+	gs.Turn = 1 + RecentFactionExpansionWindowTurns
+	if got := gs.RecentRegionGain("fast"); got != 0 {
+		t.Fatalf("süresi dolmuş genişleme kaydı = %d, want 0", got)
+	}
+
+	gs.RecordRegionAcquisition("fast", "old_c")
+	if got := gs.RecentRegionGain("fast"); got != 1 {
+		t.Fatalf("yeni genişleme penceresi kazanımı = %d, want 1", got)
+	}
+}
+
+func TestOverextensionScoreUsesRecentAndRelativeExpansion(t *testing.T) {
+	gs := &GameState{
+		Turn:    1,
+		Regions: make(map[world.RegionID]*world.Region),
+	}
+	for i := 0; i < 10; i++ {
+		id := world.RegionID("owned_" + string(rune('a'+i)))
+		gs.Regions[id] = &world.Region{ID: id, OwnerID: "fast"}
+	}
+	for i := 0; i < 3; i++ {
+		gs.RecordRegionAcquisition("fast", faction.FactionID("old_"+string(rune('a'+i))))
+	}
+
+	if got, want := gs.OverextensionScore("fast"), 60; got != want {
+		t.Fatalf("aşırı genişleme değeri = %d, want %d", got, want)
+	}
+
+	gs.Turn = 1 + RecentFactionExpansionWindowTurns
+	if got := gs.OverextensionScore("fast"); got != 0 {
+		t.Fatalf("süresi dolan genişleme sonrası aşırı genişleme = %d, want 0", got)
 	}
 }

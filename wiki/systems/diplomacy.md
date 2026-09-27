@@ -365,7 +365,9 @@ akışında uygulanır.
 
 ## AI Diplomasi Davranışı
 
-`aiHandleDiplomacy()` ve `FormCoalitionAgainstPlayer()` — zorluk 3 koalisyon dahil aynı motoru kullanır
+`aiHandleDiplomacy()` ve `FormCoalitionAgainstRapidExpansion()` — zorluk 3 hızlı
+genişleme koalisyonu dahil aynı motoru kullanır. Eski
+`FormCoalitionAgainstPlayer()` adı geriye dönük çağrılar için korunur.
 
 AI:
 
@@ -413,7 +415,9 @@ AI:
   savaş ilanı yeniden açılır. Koalisyon barışı taraf çiftlerinin her biri için aynı
   kaydı üretir
 - dış ittifakın ortak tehdit/ticaret/sınır dayanağı kalmazsa relation skoru otomatik şişmez; AI yeterince zayıflayan veya artık anlamlı fayda üretmeyen ittifakı bozabilir
-- koalisyon anında oyuncuya savaş açıp diğer AI'larla ittifak kurmaya çalışır
+- hızlı genişleyen herhangi bir oyuncu veya AI devletine karşı, mevcut ilişki ve
+  savaş fırsatı filtrelerini geçerse tek hedefli koalisyon savaşı açabilir; bu
+  akış diğer AI'lara otomatik ittifak spam'i yapmaz
 
 → Detaylar: [[systems/ai]]
 
