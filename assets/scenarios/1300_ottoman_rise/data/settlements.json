@@ -3,7 +3,7 @@
     "region_id": "essex",
     "settlements": [
       {
-        "id": "london_greenwich",
+        "id": "essex_greenwich",
         "name_tr": "Greenwich",
         "x": 487,
         "y": 258,
@@ -11,7 +11,7 @@
         "population": 53
       },
       {
-        "id": "london_main",
+        "id": "essex_main",
         "name_tr": "Londra",
         "x": 480,
         "y": 258,
@@ -19,7 +19,7 @@
         "population": 70
       },
       {
-        "id": "london_westminster",
+        "id": "essex_westminster",
         "name_tr": "Westminster",
         "x": 480,
         "y": 262,
@@ -167,7 +167,7 @@
     "region_id": "newcastle_region",
     "settlements": [
       {
-        "id": "yorkshire_main",
+        "id": "newcastle_region_main",
         "name_tr": "Newcastle",
         "x": 442,
         "y": 188,
@@ -175,7 +175,7 @@
         "population": 11
       },
       {
-        "id": "newcastle_carlisle",
+        "id": "newcastle_region_carlisle",
         "name_tr": "Carlisle",
         "x": 417,
         "y": 192,
@@ -189,7 +189,7 @@
     "region_id": "welsh_marches",
     "settlements": [
       {
-        "id": "lancashire_liverpool",
+        "id": "welsh_marches_liverpool",
         "name_tr": "Liverpool",
         "x": 417,
         "y": 221,
@@ -197,7 +197,7 @@
         "population": 17
       },
       {
-        "id": "lancashire_manchester",
+        "id": "welsh_marches_manchester",
         "name_tr": "Manchester",
         "x": 429,
         "y": 220,
@@ -205,7 +205,7 @@
         "population": 11
       },
       {
-        "id": "mercia_birmingham",
+        "id": "welsh_marches_birmingham",
         "name_tr": "Birmingham",
         "x": 435,
         "y": 236,
@@ -213,7 +213,7 @@
         "population": 11
       },
       {
-        "id": "mercia_coventry",
+        "id": "welsh_marches_coventry",
         "name_tr": "Coventry",
         "x": 439,
         "y": 237,
@@ -221,7 +221,7 @@
         "population": 5
       },
       {
-        "id": "mercia_main",
+        "id": "welsh_marches_main",
         "name_tr": "Mercia",
         "x": 425,
         "y": 232,
@@ -230,7 +230,7 @@
         "population": 22
       },
       {
-        "id": "yorkshire_leeds",
+        "id": "welsh_marches_leeds",
         "name_tr": "Leeds",
         "x": 443,
         "y": 218,
@@ -343,7 +343,7 @@
     "region_id": "ulster",
     "settlements": [
       {
-        "id": "carrickfergus",
+        "id": "ulster_carrickfergus",
         "name_tr": "Carrickfergus",
         "x": 359,
         "y": 195,
@@ -352,7 +352,7 @@
         "population": 59
       },
       {
-        "id": "downpatrick_ulster",
+        "id": "ulster_downpatrick",
         "name_tr": "Downpatrick",
         "x": 358,
         "y": 201,
@@ -360,7 +360,7 @@
         "population": 58
       },
       {
-        "id": "derry_ulster",
+        "id": "ulster_derry",
         "name_tr": "Derry",
         "x": 337,
         "y": 187,
@@ -373,7 +373,7 @@
     "region_id": "the_pale",
     "settlements": [
       {
-        "id": "dublin_pale",
+        "id": "the_pale_dublin",
         "name_tr": "Dublin",
         "x": 350,
         "y": 221,
@@ -420,7 +420,7 @@
         "population": 80
       },
       {
-        "id": "champagne_troyes",
+        "id": "paris_troyes",
         "name_tr": "Troyes",
         "x": 550,
         "y": 327,
@@ -428,7 +428,7 @@
         "population": 25
       },
       {
-        "id": "burgundy_auxerre",
+        "id": "paris_auxerre",
         "name_tr": "Auxerre",
         "x": 549,
         "y": 342,
@@ -528,7 +528,7 @@
         "population": 10
       },
       {
-        "id": "normandy_cherbourg",
+        "id": "brittany_cherbourg",
         "name_tr": "Cherbourg",
         "x": 445,
         "y": 291,
@@ -555,7 +555,7 @@
     "region_id": "toulouse",
     "settlements": [
       {
-        "id": "aquitaine_toulouse",
+        "id": "toulouse_aquitaine",
         "name_tr": "Toulouse",
         "x": 502,
         "y": 404,
@@ -602,7 +602,7 @@
         "population": 11
       },
       {
-        "id": "flanders_lille",
+        "id": "champagne_lille",
         "name_tr": "Lille",
         "x": 547,
         "y": 278,
@@ -645,7 +645,7 @@
         "population": 54
       },
       {
-        "id": "burgundy_beaune",
+        "id": "dijon_beaune",
         "name_tr": "Beaune",
         "x": 573,
         "y": 350,
@@ -653,7 +653,7 @@
         "population": 28
       },
       {
-        "id": "burgundy_nevers",
+        "id": "dijon_nevers",
         "name_tr": "Nevers",
         "x": 555,
         "y": 348,
@@ -727,7 +727,7 @@
         "population": 28
       },
       {
-        "id": "provence_avignon",
+        "id": "languedoc_avignon",
         "name_tr": "Avignon",
         "x": 572,
         "y": 398,
@@ -736,7 +736,7 @@
         "population": 28
       },
       {
-        "id": "provence_arles",
+        "id": "languedoc_arles",
         "name_tr": "Arles",
         "x": 568,
         "y": 408,
@@ -758,7 +758,7 @@
         "population": 47
       },
       {
-        "id": "pomerania_kolberg",
+        "id": "brandenburg_kolberg",
         "name_tr": "Kolberg",
         "x": 756,
         "y": 251,
@@ -766,7 +766,7 @@
         "population": 22
       },
       {
-        "id": "saxony_halle",
+        "id": "brandenburg_halle",
         "name_tr": "Halle",
         "x": 735,
         "y": 246,
@@ -801,7 +801,7 @@
     "region_id": "meissen_margraviate",
     "settlements": [
       {
-        "id": "saxony_dresden",
+        "id": "meissen_margraviate_dresden",
         "name_tr": "Dresden",
         "x": 745,
         "y": 265,
@@ -810,7 +810,7 @@
         "population": 22
       },
       {
-        "id": "saxony_leipzig",
+        "id": "meissen_margraviate_leipzig",
         "name_tr": "Leipzig",
         "x": 716,
         "y": 269,
@@ -823,7 +823,7 @@
     "region_id": "saxony_lower",
     "settlements": [
       {
-        "id": "saxony_hamburg",
+        "id": "saxony_lower_hamburg",
         "name_tr": "Hamburg",
         "x": 672,
         "y": 218,
@@ -832,7 +832,7 @@
         "population": 59
       },
       {
-        "id": "saxony_lubeck",
+        "id": "saxony_lower_lubeck",
         "name_tr": "Lübeck",
         "x": 692,
         "y": 216,
@@ -840,7 +840,7 @@
         "population": 59
       },
       {
-        "id": "westphalia_hannover",
+        "id": "saxony_lower_hannover",
         "name_tr": "Hannover",
         "x": 666,
         "y": 238,
@@ -922,7 +922,7 @@
         "population": 70
       },
       {
-        "id": "thuringia_wurzburg",
+        "id": "bavaria_wurzburg",
         "name_tr": "Würzburg",
         "x": 678,
         "y": 293,
@@ -959,7 +959,7 @@
         "population": 135
       },
       {
-        "id": "palatinate_port",
+        "id": "westphalia_port",
         "name_tr": "Köln Limanı",
         "x": 621,
         "y": 274,
@@ -967,7 +967,7 @@
         "population": 0
       },
       {
-        "id": "palatinate_cologne",
+        "id": "westphalia_cologne",
         "name_tr": "Köln",
         "x": 618,
         "y": 269,
@@ -975,7 +975,7 @@
         "population": 65
       },
       {
-        "id": "palatinate_main",
+        "id": "westphalia_main",
         "name_tr": "Dortmund",
         "x": 623,
         "y": 256,
@@ -997,7 +997,7 @@
     "region_id": "thuringia",
     "settlements": [
       {
-        "id": "turingia_erfurt",
+        "id": "thuringia_erfurt",
         "name_tr": "Erfurt",
         "x": 691,
         "y": 262,
@@ -1014,7 +1014,7 @@
         "population": 0
       },
       {
-        "id": "saxony_settlement_2",
+        "id": "thuringia_settlement_2",
         "name_tr": "Eisenach",
         "x": 675,
         "y": 263,
@@ -1060,7 +1060,7 @@
         "population": 0
       },
       {
-        "id": "palatine_mainz",
+        "id": "palatinate_mainz",
         "name_tr": "Mainz",
         "x": 638,
         "y": 287,
@@ -1073,7 +1073,7 @@
     "region_id": "hessen",
     "settlements": [
       {
-        "id": "thuringia_frankfurt",
+        "id": "hessen_frankfurt",
         "name_tr": "Frankfurt",
         "x": 653,
         "y": 279,
@@ -1095,7 +1095,7 @@
     "region_id": "baden_vurtemberg",
     "settlements": [
       {
-        "id": "thuringia_stuttgart",
+        "id": "baden_vurtemberg_stuttgart",
         "name_tr": "Stuttgart",
         "x": 660,
         "y": 304,
@@ -1179,7 +1179,7 @@
         "population": 70
       },
       {
-        "id": "denmark_main",
+        "id": "scania_main",
         "name_tr": "Kopenhag",
         "x": 720,
         "y": 182,
@@ -1207,7 +1207,7 @@
     "region_id": "sch_fribourg",
     "settlements": [
       {
-        "id": "switzerland_fribourg",
+        "id": "sch_fribourg_switzerland",
         "name_tr": "Fribourg",
         "x": 612,
         "y": 348,
@@ -1221,7 +1221,7 @@
     "region_id": "sch_bern",
     "settlements": [
       {
-        "id": "switzerland_bern",
+        "id": "sch_bern_switzerland",
         "name_tr": "Bern",
         "x": 626,
         "y": 346,
@@ -1235,7 +1235,7 @@
     "region_id": "sch_zurich",
     "settlements": [
       {
-        "id": "switzerland_zurich",
+        "id": "sch_zurich_switzerland",
         "name_tr": "Zurich",
         "x": 650,
         "y": 336,
@@ -1257,7 +1257,7 @@
     "region_id": "sch_basel",
     "settlements": [
       {
-        "id": "switzerland_basel",
+        "id": "sch_basel_switzerland",
         "name_tr": "Basel",
         "x": 626,
         "y": 334,
@@ -1331,7 +1331,7 @@
     "region_id": "algarve",
     "settlements": [
       {
-        "id": "portugal_main",
+        "id": "algarve_main",
         "name_tr": "Lagos",
         "x": 299,
         "y": 531,
@@ -1369,7 +1369,7 @@
         "population": 0
       },
       {
-        "id": "portugal_evora",
+        "id": "alentejo_evora",
         "name_tr": "Evora",
         "x": 317,
         "y": 502,
@@ -1487,7 +1487,7 @@
     "region_id": "venice",
     "settlements": [
       {
-        "id": "padua",
+        "id": "venice_padua",
         "name_tr": "Padova",
         "x": 717,
         "y": 368,
@@ -1495,7 +1495,7 @@
         "population": 48
       },
       {
-        "id": "treviso",
+        "id": "venice_treviso",
         "name_tr": "Treviso",
         "x": 727,
         "y": 362,
@@ -1520,7 +1520,7 @@
         "population": 46
       },
       {
-        "id": "venice",
+        "id": "venice_venice",
         "name_tr": "Venedik",
         "x": 725,
         "y": 373,
@@ -1533,7 +1533,7 @@
     "region_id": "lazio",
     "settlements": [
       {
-        "id": "papal_states_ostia",
+        "id": "lazio_states_ostia",
         "name_tr": "Ostia",
         "x": 737,
         "y": 451,
@@ -1541,7 +1541,7 @@
         "population": 74
       },
       {
-        "id": "rome",
+        "id": "lazio_rome",
         "name_tr": "Roma",
         "x": 733,
         "y": 446,
@@ -1550,7 +1550,7 @@
         "population": 98
       },
       {
-        "id": "naples_capua",
+        "id": "lazio_capua",
         "name_tr": "Capua",
         "x": 756,
         "y": 452,
@@ -1563,7 +1563,7 @@
     "region_id": "abruzzo",
     "settlements": [
       {
-        "id": "papal_states_fermo",
+        "id": "abruzzo_states_fermo",
         "name_tr": "Fermo",
         "x": 753,
         "y": 423,
@@ -1572,7 +1572,7 @@
         "population": 12
       },
       {
-        "id": "papal_states_lanciano",
+        "id": "abruzzo_states_lanciano",
         "name_tr": "Lanciano",
         "x": 768,
         "y": 436,
@@ -1585,7 +1585,7 @@
     "region_id": "marche",
     "settlements": [
       {
-        "id": "ancona",
+        "id": "marche_ancona",
         "name_tr": "Ancona",
         "x": 747,
         "y": 408,
@@ -1593,7 +1593,7 @@
         "population": 33
       },
       {
-        "id": "perugia",
+        "id": "marche_perugia",
         "name_tr": "Perugia",
         "x": 741,
         "y": 420,
@@ -1623,7 +1623,7 @@
     "region_id": "campania",
     "settlements": [
       {
-        "id": "naples_main",
+        "id": "campania_main",
         "name_tr": "Napoli",
         "x": 763,
         "y": 457,
@@ -1632,7 +1632,7 @@
         "population": 140
       },
       {
-        "id": "naples_salerno",
+        "id": "campania_salerno",
         "name_tr": "Salerno",
         "x": 773,
         "y": 463,
@@ -1640,7 +1640,7 @@
         "population": 70
       },
       {
-        "id": "naples_amalfi",
+        "id": "campania_amalfi",
         "name_tr": "Amalfi",
         "x": 769,
         "y": 465,
@@ -1648,7 +1648,7 @@
         "population": 25
       },
       {
-        "id": "naples_capri",
+        "id": "campania_capri",
         "name_tr": "Capri",
         "x": 760,
         "y": 467,
@@ -1661,7 +1661,7 @@
     "region_id": "calabria",
     "settlements": [
       {
-        "id": "naples_cotrona",
+        "id": "calabria_cotrona",
         "name_tr": "Cotrona",
         "x": 818,
         "y": 488,
@@ -1670,7 +1670,7 @@
         "population": 12
       },
       {
-        "id": "naples_reggio",
+        "id": "calabria_reggio",
         "name_tr": "Reggio",
         "x": 791,
         "y": 513,
@@ -1692,7 +1692,7 @@
         "population": 93
       },
       {
-        "id": "styria_main",
+        "id": "austria_main",
         "name_tr": "Steiermark",
         "x": 782,
         "y": 339,
@@ -1708,7 +1708,7 @@
         "population": 46
       },
       {
-        "id": "styria_klagenfurt",
+        "id": "austria_klagenfurt",
         "name_tr": "Klagenfurt",
         "x": 762,
         "y": 349,
@@ -1746,7 +1746,7 @@
         "population": 75
       },
       {
-        "id": "moravia_znojmo",
+        "id": "bohemia_znojmo",
         "name_tr": "Znojmo",
         "x": 791,
         "y": 304,
@@ -1754,7 +1754,7 @@
         "population": 37
       },
       {
-        "id": "moravia_jihlava",
+        "id": "bohemia_jihlava",
         "name_tr": "Jihlava",
         "x": 781,
         "y": 293,
@@ -1892,7 +1892,7 @@
         "population": 14
       },
       {
-        "id": "alfold_kecskemet",
+        "id": "hungary_kecskemet",
         "name_tr": "Kecskemet",
         "x": 871,
         "y": 347,
@@ -1900,7 +1900,7 @@
         "population": 29
       },
       {
-        "id": "alfold_szekes",
+        "id": "hungary_szekes",
         "name_tr": "Cegled",
         "x": 871,
         "y": 338,
@@ -1913,7 +1913,7 @@
     "region_id": "serbia",
     "settlements": [
       {
-        "id": "skopje",
+        "id": "serbia_skopje",
         "name_tr": "Kruševac",
         "x": 873,
         "y": 370,
@@ -1943,7 +1943,7 @@
     "region_id": "nis",
     "settlements": [
       {
-        "id": "nis",
+        "id": "nis_nis",
         "name_tr": "Niş",
         "x": 912,
         "y": 409,
@@ -1952,7 +1952,7 @@
         "population": 48
       },
       {
-        "id": "vidin_negotin",
+        "id": "nis_negotin",
         "name_tr": "Negotin",
         "x": 926,
         "y": 395,
@@ -1968,7 +1968,7 @@
         "population": 22
       },
       {
-        "id": "serbia_kragujevac",
+        "id": "nis_kragujevac",
         "name_tr": "Kragujevac",
         "x": 891,
         "y": 396,
@@ -2011,7 +2011,7 @@
     "region_id": "oltenia",
     "settlements": [
       {
-        "id": "craiova",
+        "id": "oltenia_craiova",
         "name_tr": "Krayova",
         "x": 954,
         "y": 392,
@@ -2019,7 +2019,7 @@
         "population": 46
       },
       {
-        "id": "wallachia_main",
+        "id": "oltenia_main",
         "name_tr": "Piteşti",
         "x": 973,
         "y": 382,
@@ -2027,7 +2027,7 @@
         "population": 92
       },
       {
-        "id": "wallachia_targoviste",
+        "id": "oltenia_targoviste",
         "name_tr": "Targovişte",
         "x": 994,
         "y": 379,
@@ -2072,7 +2072,7 @@
         "population": 15
       },
       {
-        "id": "varna",
+        "id": "bulgaria_varna",
         "name_tr": "Varna",
         "x": 1035,
         "y": 412,
@@ -2080,7 +2080,7 @@
         "population": 45
       },
       {
-        "id": "tarnovo",
+        "id": "bulgaria_tarnovo",
         "name_tr": "Tırnova",
         "x": 986,
         "y": 414,
@@ -2088,7 +2088,7 @@
         "population": 61
       },
       {
-        "id": "dobruja_silistra",
+        "id": "bulgaria_silistra",
         "name_tr": "Silistre",
         "x": 1017,
         "y": 397,
@@ -2096,7 +2096,7 @@
         "population": 15
       },
       {
-        "id": "dobruja_main",
+        "id": "bulgaria_main",
         "name_tr": "Dobrica",
         "x": 1035,
         "y": 403,
@@ -2161,7 +2161,7 @@
     "region_id": "tanca_region",
     "settlements": [
       {
-        "id": "morocco_tangier",
+        "id": "tanca_region_tangier",
         "name_tr": "Tanca",
         "x": 359,
         "y": 555,
@@ -2170,7 +2170,7 @@
         "population": 10
       },
       {
-        "id": "morocco_sale",
+        "id": "tanca_region_sale",
         "name_tr": "Sale",
         "x": 345,
         "y": 581,
@@ -2183,7 +2183,7 @@
     "region_id": "magrib",
     "settlements": [
       {
-        "id": "morocco_casablanca",
+        "id": "magrib_casablanca",
         "name_tr": "Kazablanka",
         "x": 327,
         "y": 596,
@@ -2192,7 +2192,7 @@
         "population": 31
       },
       {
-        "id": "morocco_marrakesh",
+        "id": "magrib_marrakesh",
         "name_tr": "Marakeş",
         "x": 326,
         "y": 627,
@@ -2200,7 +2200,7 @@
         "population": 42
       },
       {
-        "id": "morocco_agadir",
+        "id": "magrib_agadir",
         "name_tr": "Agadir",
         "x": 284,
         "y": 656,
@@ -2221,7 +2221,7 @@
         "population": 75
       },
       {
-        "id": "tlemcen_main",
+        "id": "algiers_main",
         "name_tr": "Tlemsen",
         "x": 449,
         "y": 578,
@@ -2243,7 +2243,7 @@
     "region_id": "central_algeria",
     "settlements": [
       {
-        "id": "algiers_main",
+        "id": "central_algeria_main",
         "name_tr": "Cezayir",
         "x": 535,
         "y": 538,
@@ -2441,7 +2441,7 @@
     "region_id": "greece",
     "settlements": [
       {
-        "id": "athens",
+        "id": "greece_athens",
         "name_tr": "Atina",
         "x": 952,
         "y": 515,
@@ -2495,7 +2495,7 @@
     "region_id": "bursa",
     "settlements": [
       {
-        "id": "gemlik_bursa",
+        "id": "bursa_gemlik",
         "name_tr": "Gemlik",
         "x": 1055,
         "y": 467,
@@ -2503,7 +2503,7 @@
         "population": 54
       },
       {
-        "id": "mudanya_bursa",
+        "id": "bursa_mudanya",
         "name_tr": "Mudanya",
         "x": 1050,
         "y": 468,
@@ -2520,7 +2520,7 @@
         "population": 70
       },
       {
-        "id": "nicaea",
+        "id": "bursa_nicaea",
         "name_tr": "Neapolis",
         "x": 1060,
         "y": 477,
@@ -2528,7 +2528,7 @@
         "population": 47
       },
       {
-        "id": "bithynia_iznik",
+        "id": "bursa_iznik",
         "name_tr": "Nicaea",
         "x": 1060,
         "y": 467,
@@ -2541,7 +2541,7 @@
     "region_id": "yozgat",
     "settlements": [
       {
-        "id": "konya_ortakoy",
+        "id": "yozgat_ortakoy",
         "name_tr": "Ortaköy",
         "x": 1189,
         "y": 476,
@@ -2549,7 +2549,7 @@
         "population": 63
       },
       {
-        "id": "eretna_yozgat",
+        "id": "yozgat_eretna",
         "name_tr": "Yozgat",
         "x": 1181,
         "y": 480,
@@ -2557,7 +2557,7 @@
         "population": 63
       },
       {
-        "id": "develi_kayseri",
+        "id": "yozgat_develi_kayseri",
         "name_tr": "Develi",
         "x": 1186,
         "y": 508,
@@ -2565,7 +2565,7 @@
         "population": 13
       },
       {
-        "id": "kayseri",
+        "id": "yozgat_kayseri",
         "name_tr": "Kayseri",
         "x": 1187,
         "y": 499,
@@ -2603,7 +2603,7 @@
         "population": 0
       },
       {
-        "id": "kaffa",
+        "id": "crimea_kaffa",
         "name_tr": "Kefe",
         "x": 1182,
         "y": 381,
@@ -2625,7 +2625,7 @@
     "region_id": "crimea_solhat",
     "settlements": [
       {
-        "id": "solkhat",
+        "id": "crimea_solhat_solkhat",
         "name_tr": "Solhat",
         "x": 1173,
         "y": 375,
@@ -2647,7 +2647,7 @@
     "region_id": "gothia",
     "settlements": [
       {
-        "id": "cherson",
+        "id": "gothia_cherson",
         "name_tr": "Hersones",
         "x": 1148,
         "y": 388,
@@ -2655,7 +2655,7 @@
         "population": 28
       },
       {
-        "id": "mangup",
+        "id": "gothia_mangup",
         "name_tr": "Mangup",
         "x": 1152,
         "y": 386,
@@ -2718,7 +2718,7 @@
         "population": 53
       },
       {
-        "id": "nizhny_novgorod_balakhna",
+        "id": "moscow_balakhna",
         "name_tr": "Balakhna",
         "x": 1367,
         "y": 171,
@@ -2726,7 +2726,7 @@
         "population": 53
       },
       {
-        "id": "nizhny_novgorod_murom",
+        "id": "moscow_murom",
         "name_tr": "Murom",
         "x": 1377,
         "y": 202,
@@ -2739,7 +2739,7 @@
     "region_id": "trebizond",
     "settlements": [
       {
-        "id": "rize",
+        "id": "trebizond_rize",
         "name_tr": "Rize",
         "x": 1284,
         "y": 457,
@@ -2747,7 +2747,7 @@
         "population": 36
       },
       {
-        "id": "trebizond",
+        "id": "trebizond_trebizond",
         "name_tr": "Trabzon",
         "x": 1269,
         "y": 456,
@@ -2764,7 +2764,7 @@
         "population": 35
       },
       {
-        "id": "bayburt_erzurum",
+        "id": "trebizond_erzurum",
         "name_tr": "Bayburt",
         "x": 1281,
         "y": 471,
@@ -2777,7 +2777,7 @@
     "region_id": "erzurum",
     "settlements": [
       {
-        "id": "erzurum",
+        "id": "erzurum_erzurum",
         "name_tr": "Erzurum",
         "x": 1295,
         "y": 480,
@@ -2802,7 +2802,7 @@
         "population": 38
       },
       {
-        "id": "pasinler_erzurum",
+        "id": "erzurum_pasinler",
         "name_tr": "Horasan",
         "x": 1309,
         "y": 476,
@@ -2810,7 +2810,7 @@
         "population": 38
       },
       {
-        "id": "tercan_erzincan",
+        "id": "erzurum_erzincan",
         "name_tr": "Tercan",
         "x": 1286,
         "y": 484,
@@ -2818,7 +2818,7 @@
         "population": 31
       },
       {
-        "id": "akkoyunlu_mus",
+        "id": "erzurum_mus",
         "name_tr": "Muş",
         "x": 1316,
         "y": 500,
@@ -2905,7 +2905,7 @@
     "region_id": "alexandria",
     "settlements": [
       {
-        "id": "alexandria",
+        "id": "alexandria_alexandria",
         "name_tr": "İskenderiye",
         "x": 1078,
         "y": 639,
@@ -2927,7 +2927,7 @@
     "region_id": "luxor",
     "settlements": [
       {
-        "id": "egypt_aswan",
+        "id": "luxor_aswan",
         "name_tr": "Asvan",
         "x": 1136,
         "y": 772,
@@ -2936,7 +2936,7 @@
         "population": 70
       },
       {
-        "id": "egypt_fustat",
+        "id": "luxor_fustat",
         "name_tr": "Luksor",
         "x": 1129,
         "y": 750,
@@ -2949,7 +2949,7 @@
     "region_id": "upper_egypt",
     "settlements": [
       {
-        "id": "cairo",
+        "id": "upper_egypt_cairo",
         "name_tr": "Kahire",
         "x": 1099,
         "y": 664,
@@ -2958,7 +2958,7 @@
         "population": 28
       },
       {
-        "id": "egypt_giza",
+        "id": "upper_egypt_giza",
         "name_tr": "Gize",
         "x": 1100,
         "y": 672,
@@ -2966,7 +2966,7 @@
         "population": 57
       },
       {
-        "id": "egypt_rosetta",
+        "id": "upper_egypt_rosetta",
         "name_tr": "Reşid",
         "x": 1086,
         "y": 637,
@@ -2974,7 +2974,7 @@
         "population": 86
       },
       {
-        "id": "damietta",
+        "id": "upper_egypt_damietta",
         "name_tr": "Dimyat",
         "x": 1101,
         "y": 636,
@@ -2987,7 +2987,7 @@
     "region_id": "lower_egypt",
     "settlements": [
       {
-        "id": "egypt_suez",
+        "id": "lower_egypt_suez",
         "name_tr": "Süveyş",
         "x": 1127,
         "y": 667,
@@ -2995,7 +2995,7 @@
         "population": 86
       },
       {
-        "id": "egypt_faiyum",
+        "id": "lower_egypt_faiyum",
         "name_tr": "Fayyum",
         "x": 1095,
         "y": 685,
@@ -3004,7 +3004,7 @@
         "population": 57
       },
       {
-        "id": "egypt_qena",
+        "id": "lower_egypt_qena",
         "name_tr": "Kına",
         "x": 1132,
         "y": 739,
@@ -3017,7 +3017,7 @@
     "region_id": "palestine_jerusalem",
     "settlements": [
       {
-        "id": "palestine_nablus",
+        "id": "palestine_jerusalem_nablus",
         "name_tr": "Nablus",
         "x": 1184,
         "y": 620,
@@ -3025,7 +3025,7 @@
         "population": 70
       },
       {
-        "id": "palestine_hebron",
+        "id": "palestine_jerusalem_hebron",
         "name_tr": "El-Halil",
         "x": 1179,
         "y": 636,
@@ -3033,7 +3033,7 @@
         "population": 70
       },
       {
-        "id": "jerusalem",
+        "id": "palestine_jerusalem_jerusalem",
         "name_tr": "Kudüs",
         "x": 1181,
         "y": 630,
@@ -3047,7 +3047,7 @@
     "region_id": "damascus",
     "settlements": [
       {
-        "id": "damascus",
+        "id": "damascus_damascus",
         "name_tr": "Şam",
         "x": 1201,
         "y": 601,
@@ -3077,7 +3077,7 @@
     "region_id": "baghdad",
     "settlements": [
       {
-        "id": "baghdad",
+        "id": "baghdad_baghdad",
         "name_tr": "Bağdat",
         "x": 1360,
         "y": 592,
@@ -3102,7 +3102,7 @@
         "population": 29
       },
       {
-        "id": "kufa",
+        "id": "baghdad_kufa",
         "name_tr": "Kufe",
         "x": 1360,
         "y": 620,
@@ -3110,7 +3110,7 @@
         "population": 29
       },
       {
-        "id": "wasit",
+        "id": "baghdad_wasit",
         "name_tr": "Wasit",
         "x": 1390,
         "y": 612,
@@ -3118,7 +3118,7 @@
         "population": 29
       },
       {
-        "id": "basra_nasiriyah",
+        "id": "baghdad_nasiriyah",
         "name_tr": "Nasıriye",
         "x": 1381,
         "y": 639,
@@ -3131,7 +3131,7 @@
     "region_id": "northern_persia",
     "settlements": [
       {
-        "id": "persia_north_sabzevar",
+        "id": "northern_persia_north_sabzevar",
         "name_tr": "Sebzevar",
         "x": 1626,
         "y": 545,
@@ -3139,7 +3139,7 @@
         "population": 28
       },
       {
-        "id": "persia_north_tus",
+        "id": "northern_persia_north_tus",
         "name_tr": "Tus",
         "x": 1623,
         "y": 569,
@@ -3153,7 +3153,7 @@
     "region_id": "gurgan",
     "settlements": [
       {
-        "id": "persia_north_gorgan",
+        "id": "gurgan_north_gorgan",
         "name_tr": "Gürgan",
         "x": 1568,
         "y": 533,
@@ -3162,7 +3162,7 @@
         "population": 28
       },
       {
-        "id": "northern_persia_turkmen_port",
+        "id": "gurgan_turkmen_port",
         "name_tr": "Türkmen Limanı",
         "x": 1553,
         "y": 535,
@@ -3170,7 +3170,7 @@
         "population": 20
       },
       {
-        "id": "northern_persia_semnan",
+        "id": "gurgan_semnan",
         "name_tr": "Semnan",
         "x": 1546,
         "y": 559,
@@ -3183,7 +3183,7 @@
     "region_id": "meshed",
     "settlements": [
       {
-        "id": "persia_north_main",
+        "id": "meshed_north_main",
         "name_tr": "Meşhed",
         "x": 1669,
         "y": 543,
@@ -3192,7 +3192,7 @@
         "population": 56
       },
       {
-        "id": "persia_north_nishapur",
+        "id": "meshed_north_nishapur",
         "name_tr": "Nişabur",
         "x": 1648,
         "y": 545,
@@ -3205,7 +3205,7 @@
     "region_id": "hemedan",
     "settlements": [
       {
-        "id": "persia_west_hamadan",
+        "id": "hemedan_west_hamadan",
         "name_tr": "Hemedan",
         "x": 1439,
         "y": 569,
@@ -3214,7 +3214,7 @@
         "population": 20
       },
       {
-        "id": "persia_west_kermanshah",
+        "id": "hemedan_west_kermanshah",
         "name_tr": "Kirmanşah",
         "x": 1414,
         "y": 580,
@@ -3227,7 +3227,7 @@
     "region_id": "persian_basra",
     "settlements": [
       {
-        "id": "persia_south_main",
+        "id": "persian_basra_south_main",
         "name_tr": "Hürremşehr",
         "x": 1446,
         "y": 657,
@@ -3241,7 +3241,7 @@
     "region_id": "urmiye",
     "settlements": [
       {
-        "id": "persia_west_maragheh",
+        "id": "urmiye_west_maragheh",
         "name_tr": "Merağa",
         "x": 1402,
         "y": 526,
@@ -3250,7 +3250,7 @@
         "population": 18
       },
       {
-        "id": "persia_west_main",
+        "id": "urmiye_west_main",
         "name_tr": "Tebriz",
         "x": 1405,
         "y": 514,
@@ -3258,7 +3258,7 @@
         "population": 9
       },
       {
-        "id": "azerbaijan_khoy",
+        "id": "urmiye_khoy",
         "name_tr": "Hoy",
         "x": 1377,
         "y": 505,
@@ -3266,7 +3266,7 @@
         "population": 18
       },
       {
-        "id": "persia_west_urmia",
+        "id": "urmiye_west_urmia",
         "name_tr": "Urmiye",
         "x": 1376,
         "y": 523,
@@ -3279,7 +3279,7 @@
     "region_id": "kazvin",
     "settlements": [
       {
-        "id": "persia_north_rey",
+        "id": "kazvin_north_rey",
         "name_tr": "Rey",
         "x": 1517,
         "y": 563,
@@ -3288,7 +3288,7 @@
         "population": 18
       },
       {
-        "id": "persia_west_qazvin",
+        "id": "kazvin_west_qazvin",
         "name_tr": "Kazvin",
         "x": 1477,
         "y": 546,
@@ -3301,7 +3301,7 @@
     "region_id": "isfahan",
     "settlements": [
       {
-        "id": "persia_south_isfahan",
+        "id": "isfahan_persia_south",
         "name_tr": "İsfahan",
         "x": 1514,
         "y": 610,
@@ -3310,7 +3310,7 @@
         "population": 18
       },
       {
-        "id": "persia_west_soltaniyeh",
+        "id": "isfahan_west_soltaniyeh",
         "name_tr": "Sultaniye",
         "x": 1476,
         "y": 583,
@@ -3323,7 +3323,7 @@
     "region_id": "southern_persia",
     "settlements": [
       {
-        "id": "persia_south_kerman",
+        "id": "southern_persia_south_kerman",
         "name_tr": "Kirman",
         "x": 1607,
         "y": 666,
@@ -3332,7 +3332,7 @@
         "population": 96
       },
       {
-        "id": "persia_south_yazd",
+        "id": "southern_persia_south_yazd",
         "name_tr": "Yezd",
         "x": 1544,
         "y": 628,
@@ -3345,7 +3345,7 @@
     "region_id": "siraz",
     "settlements": [
       {
-        "id": "persia_south_shiraz",
+        "id": "siraz_south_shiraz",
         "name_tr": "Şiraz",
         "x": 1538,
         "y": 677,
@@ -3354,7 +3354,7 @@
         "population": 96
       },
       {
-        "id": "persia_south_shushtar",
+        "id": "siraz_south_shushtar",
         "name_tr": "Şuşter",
         "x": 1578,
         "y": 705,
@@ -3367,7 +3367,7 @@
     "region_id": "hourmuz",
     "settlements": [
       {
-        "id": "persia_south_bam",
+        "id": "hourmuz_south_bam",
         "name_tr": "Bam",
         "x": 1634,
         "y": 699,
@@ -3376,7 +3376,7 @@
         "population": 27
       },
       {
-        "id": "persia_south_bandar_hormuz",
+        "id": "hourmuz_south_bandar_hormuz",
         "name_tr": "Hürmüz Limanı",
         "x": 1616,
         "y": 720,
@@ -3439,7 +3439,7 @@
     "region_id": "tebuk",
     "settlements": [
       {
-        "id": "hejaz_tabuk",
+        "id": "tebuk_tabuk",
         "name_tr": "Tebük",
         "x": 1201,
         "y": 693,
@@ -3606,7 +3606,7 @@
         "population": 87
       },
       {
-        "id": "ragusa_cattaro",
+        "id": "montenegro_cattaro",
         "name_tr": "Kotor",
         "x": 851,
         "y": 429,
@@ -3628,7 +3628,7 @@
         "population": 58
       },
       {
-        "id": "prizren",
+        "id": "kosovo_prizren",
         "name_tr": "Prizren",
         "x": 891,
         "y": 432,
@@ -3671,7 +3671,7 @@
     "region_id": "north_macedonia",
     "settlements": [
       {
-        "id": "macedonia_ohrid",
+        "id": "north_macedonia_ohrid",
         "name_tr": "Ohri",
         "x": 893,
         "y": 452,
@@ -3679,7 +3679,7 @@
         "population": 23
       },
       {
-        "id": "macedonia_skopje",
+        "id": "north_macedonia_skopje",
         "name_tr": "Üsküp",
         "x": 903,
         "y": 438,
@@ -3687,7 +3687,7 @@
         "population": 44
       },
       {
-        "id": "macedonia_strumica",
+        "id": "north_macedonia_strumica",
         "name_tr": "Ustrumca",
         "x": 925,
         "y": 450,
@@ -3696,7 +3696,7 @@
         "population": 11
       },
       {
-        "id": "thessaloniki_serres",
+        "id": "north_macedonia_serres",
         "name_tr": "Yenice-i Vardar",
         "x": 916,
         "y": 445,
@@ -3704,7 +3704,7 @@
         "population": 22
       },
       {
-        "id": "macedonia_bitola",
+        "id": "north_macedonia_bitola",
         "name_tr": "Manastır",
         "x": 901,
         "y": 455,
@@ -3726,7 +3726,7 @@
         "population": 71
       },
       {
-        "id": "bessarabia_bender",
+        "id": "moldova_bender",
         "name_tr": "Bender",
         "x": 1063,
         "y": 346,
@@ -3734,7 +3734,7 @@
         "population": 17
       },
       {
-        "id": "bessarabia_orhei",
+        "id": "moldova_orhei",
         "name_tr": "Orhei",
         "x": 1051,
         "y": 333,
@@ -3813,7 +3813,7 @@
     "region_id": "gokceada",
     "settlements": [
       {
-        "id": "new_region_511_settlement_1",
+        "id": "gokceada_region_511_settlement_1",
         "name_tr": "Kastro",
         "x": 996,
         "y": 473,
@@ -3822,7 +3822,7 @@
         "population": 0
       },
       {
-        "id": "imros_port",
+        "id": "gokceada_port",
         "name_tr": "Kaleköy",
         "x": 995,
         "y": 470,
@@ -3843,7 +3843,7 @@
     "region_id": "lemnos",
     "settlements": [
       {
-        "id": "limnos_settlement_1",
+        "id": "lemnos_settlement_1",
         "name_tr": "Limnos Limanı",
         "x": 983,
         "y": 479,
@@ -3852,7 +3852,7 @@
         "population": 0
       },
       {
-        "id": "limnos_settlement_2",
+        "id": "lemnos_settlement_2",
         "name_tr": "Kotsinos",
         "x": 984,
         "y": 475,
@@ -3860,7 +3860,7 @@
         "population": 0
       },
       {
-        "id": "limnos_myrina",
+        "id": "lemnos_myrina",
         "name_tr": "Myrina",
         "x": 980,
         "y": 477,
@@ -3917,7 +3917,7 @@
     "region_id": "new_region_509",
     "settlements": [
       {
-        "id": "thebes",
+        "id": "new_region_509_thebes",
         "name_tr": "Naksos",
         "x": 986,
         "y": 530,
@@ -4066,7 +4066,7 @@
         "population": 122
       },
       {
-        "id": "oslo_port",
+        "id": "norway_port",
         "name_tr": "Oslo Limanı",
         "x": 686,
         "y": 105,
@@ -4167,7 +4167,7 @@
         "population": 0
       },
       {
-        "id": "sweden_kalmar",
+        "id": "sweden_kalmar_sweden",
         "name_tr": "Kalmar",
         "x": 800,
         "y": 149,
@@ -4181,7 +4181,7 @@
     "region_id": "goteborg_coast",
     "settlements": [
       {
-        "id": "lodose_castle",
+        "id": "goteborg_coast_castle",
         "name_tr": "Alvsborg Kalesi",
         "x": 715,
         "y": 137,
@@ -4190,7 +4190,7 @@
         "population": 0
       },
       {
-        "id": "lodose_port",
+        "id": "goteborg_coast_port",
         "name_tr": "Lödöse Limanı",
         "x": 719,
         "y": 128,
@@ -4255,7 +4255,7 @@
     "region_id": "thrace",
     "settlements": [
       {
-        "id": "edirne",
+        "id": "thrace_edirne",
         "name_tr": "Adrianapolis",
         "x": 1012,
         "y": 443,
@@ -4264,7 +4264,7 @@
         "population": 47
       },
       {
-        "id": "vize_thrace",
+        "id": "thrace_vize",
         "name_tr": "Vize",
         "x": 1029,
         "y": 444,
@@ -4277,7 +4277,7 @@
     "region_id": "tekfurdagi",
     "settlements": [
       {
-        "id": "tekirdag",
+        "id": "tekfurdagi_tekirdag",
         "name_tr": "Tekfurdağı",
         "x": 1025,
         "y": 456,
@@ -4286,7 +4286,7 @@
         "population": 28
       },
       {
-        "id": "rodosto_thrace",
+        "id": "tekfurdagi_thrace",
         "name_tr": "Rodosto",
         "x": 1022,
         "y": 459,
@@ -4294,7 +4294,7 @@
         "population": 28
       },
       {
-        "id": "gelibolu",
+        "id": "tekfurdagi_gelibolu",
         "name_tr": "Herakleia",
         "x": 1030,
         "y": 455,
@@ -4307,7 +4307,7 @@
     "region_id": "gallipoli",
     "settlements": [
       {
-        "id": "kallipolis_south",
+        "id": "gallipoli_south",
         "name_tr": "Çimpe Kalesi",
         "x": 1012,
         "y": 466,
@@ -4316,7 +4316,7 @@
         "population": 18
       },
       {
-        "id": "gallipoli",
+        "id": "gallipoli_gallipoli",
         "name_tr": "Kallipolis",
         "x": 1007,
         "y": 467,
@@ -4346,7 +4346,7 @@
         "population": 0
       },
       {
-        "id": "blachernae_constantinople",
+        "id": "constantinople_blachernae",
         "name_tr": "Blaherne",
         "x": 1052,
         "y": 453,
@@ -4359,7 +4359,7 @@
     "region_id": "silivri",
     "settlements": [
       {
-        "id": "selymbria",
+        "id": "silivri_selymbria",
         "name_tr": "Selymbria",
         "x": 1041,
         "y": 453,
@@ -4368,7 +4368,7 @@
         "population": 24
       },
       {
-        "id": "bursa",
+        "id": "silivri_bursa",
         "name_tr": "Metrae",
         "x": 1041,
         "y": 450,
@@ -4381,7 +4381,7 @@
     "region_id": "galata",
     "settlements": [
       {
-        "id": "pera_constantinople",
+        "id": "galata_constantinople",
         "name_tr": "Pera",
         "x": 1055,
         "y": 450,
@@ -4390,7 +4390,7 @@
         "population": 36
       },
       {
-        "id": "galata",
+        "id": "galata_galata",
         "name_tr": "Galata",
         "x": 1057,
         "y": 453,
@@ -4403,7 +4403,7 @@
     "region_id": "jordan",
     "settlements": [
       {
-        "id": "amman_jordan",
+        "id": "jordan_amman",
         "name_tr": "Amman",
         "x": 1195,
         "y": 632,
@@ -4441,7 +4441,7 @@
     "region_id": "kerek",
     "settlements": [
       {
-        "id": "karak_jordan",
+        "id": "kerek_jordan",
         "name_tr": "Kerek",
         "x": 1190,
         "y": 643,
@@ -4450,7 +4450,7 @@
         "population": 10
       },
       {
-        "id": "jordan_tafila",
+        "id": "kerek_tafila",
         "name_tr": "Tafile",
         "x": 1189,
         "y": 655,
@@ -4534,7 +4534,7 @@
         "population": 105
       },
       {
-        "id": "azerbaijan_dvin",
+        "id": "armenia_dvin",
         "name_tr": "Dvin",
         "x": 1365,
         "y": 473,
@@ -4571,7 +4571,7 @@
         "population": 24
       },
       {
-        "id": "tripoli_lebanon",
+        "id": "lebanon_tripoli",
         "name_tr": "Trablusşam",
         "x": 1190,
         "y": 584,
@@ -4579,7 +4579,7 @@
         "population": 24
       },
       {
-        "id": "sidon_lebanon",
+        "id": "lebanon_sidon",
         "name_tr": "Sayda",
         "x": 1182,
         "y": 601,
@@ -4587,7 +4587,7 @@
         "population": 24
       },
       {
-        "id": "damascus_baalbek",
+        "id": "lebanon_baalbek",
         "name_tr": "Baalbek",
         "x": 1199,
         "y": 589,
@@ -4749,7 +4749,7 @@
     "region_id": "ukrainian_steppe",
     "settlements": [
       {
-        "id": "kiev_pereyaslav",
+        "id": "ukrainian_steppe_pereyaslav",
         "name_tr": "Pereyaslav",
         "x": 1112,
         "y": 285,
@@ -4758,7 +4758,7 @@
         "population": 13
       },
       {
-        "id": "kiev_chernihiv",
+        "id": "ukrainian_steppe_chernihiv",
         "name_tr": "Çernihiv",
         "x": 1104,
         "y": 258,
@@ -4771,7 +4771,7 @@
     "region_id": "lower_ukrainian_steppe",
     "settlements": [
       {
-        "id": "ukrainian_steppe_kherson",
+        "id": "lower_ukrainian_steppe_kherson",
         "name_tr": "Herson",
         "x": 1132,
         "y": 345,
@@ -4779,7 +4779,7 @@
         "population": 16
       },
       {
-        "id": "ukrainian_steppe_ochakiv",
+        "id": "lower_ukrainian_steppe_ochakiv",
         "name_tr": "Özi",
         "x": 1110,
         "y": 346,
@@ -4793,7 +4793,7 @@
     "region_id": "upper_ukrainian_steppe",
     "settlements": [
       {
-        "id": "ukrainian_steppe_poltava",
+        "id": "upper_ukrainian_steppe_poltava",
         "name_tr": "Poltava",
         "x": 1165,
         "y": 295,
@@ -4801,7 +4801,7 @@
         "population": 60
       },
       {
-        "id": "ukrainian_steppe_bakhmut",
+        "id": "upper_ukrainian_steppe_bakhmut",
         "name_tr": "Bahmut",
         "x": 1245,
         "y": 307,
@@ -4809,7 +4809,7 @@
         "population": 30
       },
       {
-        "id": "ukraine_main",
+        "id": "upper_ukrainian_steppe_main",
         "name_tr": "Ukrayna Bozkırı",
         "x": 1202,
         "y": 326,
@@ -4976,7 +4976,7 @@
         "population": 35
       },
       {
-        "id": "karpathos",
+        "id": "crete_karpathos",
         "name_tr": "Kerpe",
         "x": 1021,
         "y": 560,
@@ -5011,7 +5011,7 @@
     "region_id": "palestine_acre",
     "settlements": [
       {
-        "id": "acre",
+        "id": "palestine_acre_acre",
         "name_tr": "Akka",
         "x": 1178,
         "y": 610,
@@ -5020,7 +5020,7 @@
         "population": 7
       },
       {
-        "id": "palestine_jaffa",
+        "id": "palestine_acre_jaffa",
         "name_tr": "Yafa",
         "x": 1174,
         "y": 621,
@@ -5033,7 +5033,7 @@
     "region_id": "gaza",
     "settlements": [
       {
-        "id": "israel_ashkelon",
+        "id": "gaza_ashkelon",
         "name_tr": "Aşkelon",
         "x": 1170,
         "y": 630,
@@ -5041,7 +5041,7 @@
         "population": 21
       },
       {
-        "id": "israel_main",
+        "id": "gaza_main",
         "name_tr": "Han Yunus",
         "x": 1165,
         "y": 637,
@@ -5049,7 +5049,7 @@
         "population": 28
       },
       {
-        "id": "gaza",
+        "id": "gaza_gaza",
         "name_tr": "Gazze",
         "x": 1162,
         "y": 639,
@@ -5058,7 +5058,7 @@
         "population": 14
       },
       {
-        "id": "israel_beersheba",
+        "id": "gaza_beersheba",
         "name_tr": "Birüssebi",
         "x": 1175,
         "y": 645,
@@ -5179,7 +5179,7 @@
     "region_id": "germiyan",
     "settlements": [
       {
-        "id": "kutahya",
+        "id": "germiyan_kutahya",
         "name_tr": "Kütahya",
         "x": 1070,
         "y": 490,
@@ -5193,7 +5193,7 @@
     "region_id": "karesi",
     "settlements": [
       {
-        "id": "lapseki_gallipoli",
+        "id": "karesi_gallipoli",
         "name_tr": "Lapseki",
         "x": 1013,
         "y": 469,
@@ -5201,7 +5201,7 @@
         "population": 32
       },
       {
-        "id": "aydinoglu_biga",
+        "id": "karesi_biga",
         "name_tr": "Biga",
         "x": 1017,
         "y": 473,
@@ -5209,7 +5209,7 @@
         "population": 64
       },
       {
-        "id": "aydinoglu_atikhisar",
+        "id": "karesi_atikhisar",
         "name_tr": "Atikhisar",
         "x": 1021,
         "y": 479,
@@ -5218,7 +5218,7 @@
         "population": 16
       },
       {
-        "id": "bithynia_bursa_port",
+        "id": "karesi_bursa_port",
         "name_tr": "Bandırma",
         "x": 1034,
         "y": 469,
@@ -5226,7 +5226,7 @@
         "population": 52
       },
       {
-        "id": "bozcaada",
+        "id": "karesi_bozcaada",
         "name_tr": "Bozcaada",
         "x": 998,
         "y": 479,
@@ -5239,7 +5239,7 @@
     "region_id": "saruhan",
     "settlements": [
       {
-        "id": "manisa",
+        "id": "saruhan_manisa",
         "name_tr": "Manisa",
         "x": 1022,
         "y": 498,
@@ -5247,7 +5247,7 @@
         "population": 51
       },
       {
-        "id": "turgutlu_saruhan",
+        "id": "saruhan_turgutlu",
         "name_tr": "Turgutlu",
         "x": 1032,
         "y": 495,
@@ -5255,7 +5255,7 @@
         "population": 50
       },
       {
-        "id": "akhisar_saruhan",
+        "id": "saruhan_akhisar",
         "name_tr": "Akhisar",
         "x": 1034,
         "y": 488,
@@ -5269,7 +5269,7 @@
     "region_id": "izmir",
     "settlements": [
       {
-        "id": "izmir",
+        "id": "izmir_izmir",
         "name_tr": "İzmir Limanı",
         "x": 1015,
         "y": 504,
@@ -5277,7 +5277,7 @@
         "population": 126
       },
       {
-        "id": "aydin",
+        "id": "izmir_aydin",
         "name_tr": "Aydın / Tralles",
         "x": 1031,
         "y": 514,
@@ -5315,7 +5315,7 @@
         "population": 27
       },
       {
-        "id": "bodrum_mentese",
+        "id": "mentese_hinterland_mentese",
         "name_tr": "Bodrum",
         "x": 1025,
         "y": 533,
@@ -5323,7 +5323,7 @@
         "population": 27
       },
       {
-        "id": "milas",
+        "id": "mentese_hinterland_milas",
         "name_tr": "Menteşe",
         "x": 1031,
         "y": 526,
@@ -5337,7 +5337,7 @@
     "region_id": "candaroglu",
     "settlements": [
       {
-        "id": "sinop_samsun",
+        "id": "candaroglu_samsun",
         "name_tr": "Samsun",
         "x": 1206,
         "y": 452,
@@ -5345,7 +5345,7 @@
         "population": 36
       },
       {
-        "id": "amasya_sivas",
+        "id": "candaroglu_sivas",
         "name_tr": "Amasya",
         "x": 1192,
         "y": 464,
@@ -5354,7 +5354,7 @@
         "population": 24
       },
       {
-        "id": "sinop_bafra",
+        "id": "candaroglu_bafra",
         "name_tr": "Bafra",
         "x": 1194,
         "y": 445,
@@ -5367,7 +5367,7 @@
     "region_id": "sivas",
     "settlements": [
       {
-        "id": "sivas",
+        "id": "sivas_sivas",
         "name_tr": "Sivas",
         "x": 1216,
         "y": 483,
@@ -5384,7 +5384,7 @@
         "population": 11
       },
       {
-        "id": "tokat_sivas",
+        "id": "sivas_tokat_sivas",
         "name_tr": "Tokat",
         "x": 1203,
         "y": 476,
@@ -5392,7 +5392,7 @@
         "population": 22
       },
       {
-        "id": "eretna_tokat",
+        "id": "sivas_eretna_tokat",
         "name_tr": "Zile",
         "x": 1196,
         "y": 474,
@@ -5400,7 +5400,7 @@
         "population": 43
       },
       {
-        "id": "eretna_amasya",
+        "id": "sivas_amasya",
         "name_tr": "Niksar",
         "x": 1220,
         "y": 470,
@@ -5421,7 +5421,7 @@
     "region_id": "cilicia",
     "settlements": [
       {
-        "id": "adana_cilicia",
+        "id": "cilicia_adana",
         "name_tr": "Adana",
         "x": 1182,
         "y": 533,
@@ -5430,7 +5430,7 @@
         "population": 30
       },
       {
-        "id": "ceyhan_cilicia",
+        "id": "cilicia_ceyhan",
         "name_tr": "Ceyhan",
         "x": 1191,
         "y": 533,
@@ -5438,7 +5438,7 @@
         "population": 13
       },
       {
-        "id": "sis",
+        "id": "cilicia_sis",
         "name_tr": "Sis",
         "x": 1165,
         "y": 535,
@@ -5446,7 +5446,7 @@
         "population": 26
       },
       {
-        "id": "tarsus",
+        "id": "cilicia_tarsus",
         "name_tr": "Tarsus",
         "x": 1171,
         "y": 535,
@@ -5454,7 +5454,7 @@
         "population": 13
       },
       {
-        "id": "aleppo_antioch",
+        "id": "cilicia_antioch",
         "name_tr": "İskenderun",
         "x": 1200,
         "y": 540,
@@ -5467,7 +5467,7 @@
     "region_id": "antioch",
     "settlements": [
       {
-        "id": "antioch",
+        "id": "antioch_antioch",
         "name_tr": "Antakya",
         "x": 1198,
         "y": 546,
@@ -5476,7 +5476,7 @@
         "population": 13
       },
       {
-        "id": "nisibis",
+        "id": "antioch_nisibis",
         "name_tr": "Kilis",
         "x": 1218,
         "y": 536,
@@ -5489,7 +5489,7 @@
     "region_id": "akkoyunlu",
     "settlements": [
       {
-        "id": "mosul_nisibis",
+        "id": "akkoyunlu_nisibis",
         "name_tr": "Nusaybin",
         "x": 1302,
         "y": 530,
@@ -5511,7 +5511,7 @@
     "region_id": "karakoyunlu",
     "settlements": [
       {
-        "id": "akkoyunlu_main",
+        "id": "karakoyunlu_main",
         "name_tr": "Van",
         "x": 1343,
         "y": 500,
@@ -5549,7 +5549,7 @@
     "region_id": "hakkari",
     "settlements": [
       {
-        "id": "karakoyunlu_hakkari",
+        "id": "hakkari_karakoyunlu",
         "name_tr": "Hakkari",
         "x": 1353,
         "y": 526,
@@ -5639,7 +5639,7 @@
     "region_id": "sanremo",
     "settlements": [
       {
-        "id": "genoa_corsica_admin",
+        "id": "sanremo_corsica_admin",
         "name_tr": "Capraia",
         "x": 637,
         "y": 394,
@@ -5648,7 +5648,7 @@
         "population": 21
       },
       {
-        "id": "genoa_savona",
+        "id": "sanremo_savona",
         "name_tr": "Savona",
         "x": 640,
         "y": 398,
@@ -5656,7 +5656,7 @@
         "population": 63
       },
       {
-        "id": "genoa_sanremo",
+        "id": "sanremo_genoa",
         "name_tr": "Sanremo",
         "x": 634,
         "y": 402,
@@ -5669,7 +5669,7 @@
     "region_id": "turin",
     "settlements": [
       {
-        "id": "genoa_saluzzo",
+        "id": "turin_saluzzo",
         "name_tr": "Saluzzo",
         "x": 623,
         "y": 385,
@@ -5677,7 +5677,7 @@
         "population": 35
       },
       {
-        "id": "genoa_turin",
+        "id": "turin_genoa",
         "name_tr": "Turin",
         "x": 630,
         "y": 372,
@@ -5813,7 +5813,7 @@
     "region_id": "navarra",
     "settlements": [
       {
-        "id": "navarre_estella",
+        "id": "navarra_estella",
         "name_tr": "Estella",
         "x": 436,
         "y": 427,
@@ -5821,7 +5821,7 @@
         "population": 11
       },
       {
-        "id": "navarre_olite",
+        "id": "navarra_olite",
         "name_tr": "Olite",
         "x": 442,
         "y": 427,
@@ -5829,7 +5829,7 @@
         "population": 4
       },
       {
-        "id": "navarre_pamplona",
+        "id": "navarra_pamplona",
         "name_tr": "Pamplona",
         "x": 444,
         "y": 422,
@@ -5851,7 +5851,7 @@
     "region_id": "catalonia",
     "settlements": [
       {
-        "id": "aragon_barcelona",
+        "id": "catalonia_barcelona",
         "name_tr": "Barselona",
         "x": 512,
         "y": 451,
@@ -5860,7 +5860,7 @@
         "population": 12
       },
       {
-        "id": "aragon_tarragona",
+        "id": "catalonia_tarragona",
         "name_tr": "Tarragona",
         "x": 490,
         "y": 459,
@@ -5925,7 +5925,7 @@
     "region_id": "transylvania",
     "settlements": [
       {
-        "id": "alfold_main",
+        "id": "transylvania_alfold_main",
         "name_tr": "Kaloşvar",
         "x": 952,
         "y": 344,
@@ -5934,7 +5934,7 @@
         "population": 45
       },
       {
-        "id": "transylvania_main",
+        "id": "transylvania_transylvania_main",
         "name_tr": "Tamışvar",
         "x": 900,
         "y": 365,
@@ -5947,7 +5947,7 @@
     "region_id": "mentese",
     "settlements": [
       {
-        "id": "fethiye_mentese",
+        "id": "mentese_fethiye",
         "name_tr": "Fethiye",
         "x": 1058,
         "y": 542,
@@ -5955,7 +5955,7 @@
         "population": 24
       },
       {
-        "id": "elmali",
+        "id": "mentese_elmali",
         "name_tr": "Elmalı",
         "x": 1074,
         "y": 530,
@@ -5993,7 +5993,7 @@
     "region_id": "teke",
     "settlements": [
       {
-        "id": "antalya",
+        "id": "teke_antalya",
         "name_tr": "Antalya / Attaleia",
         "x": 1091,
         "y": 536,
@@ -6001,7 +6001,7 @@
         "population": 31
       },
       {
-        "id": "konya_beysehir",
+        "id": "teke_konya_beysehir",
         "name_tr": "Seydişehir",
         "x": 1118,
         "y": 518,
@@ -6009,7 +6009,7 @@
         "population": 15
       },
       {
-        "id": "teke_beysehir",
+        "id": "teke_teke_beysehir",
         "name_tr": "Beyşehir",
         "x": 1111,
         "y": 519,
@@ -6017,7 +6017,7 @@
         "population": 15
       },
       {
-        "id": "korkuteli_teke",
+        "id": "teke_korkuteli",
         "name_tr": "Korkuteli",
         "x": 1106,
         "y": 527,
@@ -6025,7 +6025,7 @@
         "population": 15
       },
       {
-        "id": "isparta",
+        "id": "teke_isparta",
         "name_tr": "Isparta",
         "x": 1091,
         "y": 517,
@@ -6034,7 +6034,7 @@
         "population": 15
       },
       {
-        "id": "finike_teke",
+        "id": "teke_finike",
         "name_tr": "Finike",
         "x": 1079,
         "y": 548,
@@ -6047,7 +6047,7 @@
     "region_id": "hamideli",
     "settlements": [
       {
-        "id": "karahisar",
+        "id": "hamideli_karahisar",
         "name_tr": "Karahisar",
         "x": 1089,
         "y": 502,
@@ -6061,7 +6061,7 @@
     "region_id": "beysehir",
     "settlements": [
       {
-        "id": "beysehir",
+        "id": "beysehir_beysehir",
         "name_tr": "Beyşehir",
         "x": 1097,
         "y": 491,
@@ -6097,7 +6097,7 @@
     "region_id": "sivrihisar",
     "settlements": [
       {
-        "id": "sivrihisar",
+        "id": "sivrihisar_sivrihisar",
         "name_tr": "Sivrihisar",
         "x": 1096,
         "y": 479,
@@ -6111,7 +6111,7 @@
     "region_id": "cankiri",
     "settlements": [
       {
-        "id": "cankiri",
+        "id": "cankiri_cankiri",
         "name_tr": "Çankırı",
         "x": 1142,
         "y": 463,
@@ -6119,7 +6119,7 @@
         "population": 19
       },
       {
-        "id": "ankara",
+        "id": "cankiri_ankara",
         "name_tr": "Ankara",
         "x": 1131,
         "y": 475,
@@ -6127,7 +6127,7 @@
         "population": 17
       },
       {
-        "id": "cubuk_ankara",
+        "id": "cankiri_cubuk_ankara",
         "name_tr": "Kesikköprü",
         "x": 1142,
         "y": 487,
@@ -6135,7 +6135,7 @@
         "population": 17
       },
       {
-        "id": "kizilcahamam_ankara",
+        "id": "cankiri_kizilcahamam_ankara",
         "name_tr": "Kızılcahamam",
         "x": 1133,
         "y": 470,
@@ -6143,7 +6143,7 @@
         "population": 17
       },
       {
-        "id": "ankara_beypazari",
+        "id": "cankiri_beypazari",
         "name_tr": "Beypazarı",
         "x": 1125,
         "y": 467,
@@ -6151,7 +6151,7 @@
         "population": 17
       },
       {
-        "id": "ankara_kalecik",
+        "id": "cankiri_kalecik",
         "name_tr": "Kalecik",
         "x": 1141,
         "y": 470,
@@ -6160,7 +6160,7 @@
         "population": 8
       },
       {
-        "id": "candaroglu_tosya",
+        "id": "cankiri_tosya",
         "name_tr": "Tosya",
         "x": 1147,
         "y": 455,
@@ -6173,7 +6173,7 @@
     "region_id": "larende",
     "settlements": [
       {
-        "id": "karaman_aksehir",
+        "id": "larende_aksehir",
         "name_tr": "Akşehir",
         "x": 1126,
         "y": 526,
@@ -6181,7 +6181,7 @@
         "population": 33
       },
       {
-        "id": "konya_main",
+        "id": "larende_main",
         "name_tr": "Konya",
         "x": 1128,
         "y": 513,
@@ -6190,7 +6190,7 @@
         "population": 16
       },
       {
-        "id": "karaman_konya",
+        "id": "larende_karaman_konya",
         "name_tr": "Karaman/Larende",
         "x": 1141,
         "y": 528,
@@ -6198,7 +6198,7 @@
         "population": 33
       },
       {
-        "id": "karaman_karapinar",
+        "id": "larende_karapinar",
         "name_tr": "Karapınar",
         "x": 1146,
         "y": 516,
@@ -6206,7 +6206,7 @@
         "population": 15
       },
       {
-        "id": "eregli_konya",
+        "id": "larende_eregli_konya",
         "name_tr": "Ereğli",
         "x": 1155,
         "y": 522,
@@ -6219,7 +6219,7 @@
     "region_id": "tasucu",
     "settlements": [
       {
-        "id": "karaman_ermenek",
+        "id": "tasucu_ermenek",
         "name_tr": "Anamur",
         "x": 1134,
         "y": 550,
@@ -6228,7 +6228,7 @@
         "population": 18
       },
       {
-        "id": "karaman_tasucu",
+        "id": "tasucu_karaman",
         "name_tr": "Taşucu",
         "x": 1152,
         "y": 548,
@@ -6241,7 +6241,7 @@
     "region_id": "nigde",
     "settlements": [
       {
-        "id": "konya_aksaray",
+        "id": "nigde_aksaray",
         "name_tr": "Sultanhanı",
         "x": 1148,
         "y": 508,
@@ -6250,7 +6250,7 @@
         "population": 31
       },
       {
-        "id": "kayseri_kirsehir",
+        "id": "nigde_kirsehir",
         "name_tr": "Kırşehir",
         "x": 1154,
         "y": 491,
@@ -6258,7 +6258,7 @@
         "population": 15
       },
       {
-        "id": "karaman_nigde",
+        "id": "nigde_karaman",
         "name_tr": "Niğde",
         "x": 1163,
         "y": 514,
@@ -6266,7 +6266,7 @@
         "population": 31
       },
       {
-        "id": "kayseri_agacoren",
+        "id": "nigde_agacoren",
         "name_tr": "Ağaçören",
         "x": 1149,
         "y": 495,
@@ -6274,7 +6274,7 @@
         "population": 15
       },
       {
-        "id": "incesu_kayseri",
+        "id": "nigde_kayseri",
         "name_tr": "İncesu",
         "x": 1168,
         "y": 503,
@@ -6282,7 +6282,7 @@
         "population": 63
       },
       {
-        "id": "kayseri_avanos",
+        "id": "nigde_avanos",
         "name_tr": "Avanos",
         "x": 1169,
         "y": 496,
@@ -6290,7 +6290,7 @@
         "population": 63
       },
       {
-        "id": "konya_kaman",
+        "id": "nigde_kaman",
         "name_tr": "Kaman",
         "x": 1153,
         "y": 484,
@@ -6312,7 +6312,7 @@
         "population": 21
       },
       {
-        "id": "trebizond_ordu",
+        "id": "eretna_ordu",
         "name_tr": "Ordu",
         "x": 1234,
         "y": 457,
@@ -6320,7 +6320,7 @@
         "population": 64
       },
       {
-        "id": "giresun",
+        "id": "eretna_giresun",
         "name_tr": "Giresun",
         "x": 1247,
         "y": 458,
@@ -6328,7 +6328,7 @@
         "population": 64
       },
       {
-        "id": "sinop_unye",
+        "id": "eretna_unye",
         "name_tr": "Ünye",
         "x": 1220,
         "y": 453,
@@ -6341,7 +6341,7 @@
     "region_id": "malatya",
     "settlements": [
       {
-        "id": "malatya",
+        "id": "malatya_malatya",
         "name_tr": "Malatya",
         "x": 1238,
         "y": 501,
@@ -6358,7 +6358,7 @@
         "population": 31
       },
       {
-        "id": "dulkadir_goksun",
+        "id": "malatya_goksun",
         "name_tr": "Göksun",
         "x": 1211,
         "y": 511,
@@ -6366,7 +6366,7 @@
         "population": 22
       },
       {
-        "id": "maras",
+        "id": "malatya_maras",
         "name_tr": "Maraş",
         "x": 1217,
         "y": 517,
@@ -6379,7 +6379,7 @@
     "region_id": "dulkadirli",
     "settlements": [
       {
-        "id": "elbistan",
+        "id": "dulkadirli_elbistan",
         "name_tr": "Elbistan",
         "x": 1223,
         "y": 506,
@@ -6402,7 +6402,7 @@
         "population": 45
       },
       {
-        "id": "malatya_urfa_gate",
+        "id": "dulkadir_urfa_gate",
         "name_tr": "Samsat",
         "x": 1244,
         "y": 520,
@@ -6410,7 +6410,7 @@
         "population": 31
       },
       {
-        "id": "birecik",
+        "id": "dulkadir_birecik",
         "name_tr": "Birecik",
         "x": 1235,
         "y": 527,
@@ -6423,7 +6423,7 @@
     "region_id": "erzincan",
     "settlements": [
       {
-        "id": "erzincan",
+        "id": "erzincan_erzincan",
         "name_tr": "Erzincan",
         "x": 1269,
         "y": 484,
@@ -6440,7 +6440,7 @@
         "population": 31
       },
       {
-        "id": "kemah_erzincan",
+        "id": "erzincan_kemah",
         "name_tr": "Kemah",
         "x": 1265,
         "y": 493,
@@ -6456,7 +6456,7 @@
         "population": 44
       },
       {
-        "id": "malatya_palu",
+        "id": "erzincan_palu",
         "name_tr": "Palu",
         "x": 1253,
         "y": 482,
@@ -6464,7 +6464,7 @@
         "population": 15
       },
       {
-        "id": "harput_malatya",
+        "id": "erzincan_malatya",
         "name_tr": "Harput",
         "x": 1251,
         "y": 492,
@@ -6509,7 +6509,7 @@
         "population": 32
       },
       {
-        "id": "drama_serres",
+        "id": "vidin_serres",
         "name_tr": "Nevrekop",
         "x": 954,
         "y": 442,
@@ -6517,7 +6517,7 @@
         "population": 16
       },
       {
-        "id": "bulgaria_plovdiv",
+        "id": "vidin_plovdiv",
         "name_tr": "Filibe",
         "x": 972,
         "y": 430,
@@ -6525,7 +6525,7 @@
         "population": 32
       },
       {
-        "id": "sofia",
+        "id": "vidin_sofia",
         "name_tr": "Sofya",
         "x": 946,
         "y": 424,
@@ -6539,7 +6539,7 @@
     "region_id": "styria",
     "settlements": [
       {
-        "id": "austria_salzburg",
+        "id": "styria_salzburg",
         "name_tr": "Salzburg",
         "x": 738,
         "y": 327,
@@ -6548,7 +6548,7 @@
         "population": 23
       },
       {
-        "id": "austria_linz",
+        "id": "styria_linz",
         "name_tr": "Linz",
         "x": 764,
         "y": 318,
@@ -6584,7 +6584,7 @@
         "population": 24
       },
       {
-        "id": "bohemia_olomouc",
+        "id": "moravia_olomouc",
         "name_tr": "Olomouc",
         "x": 830,
         "y": 292,
@@ -6592,7 +6592,7 @@
         "population": 11
       },
       {
-        "id": "bohemia_brno",
+        "id": "moravia_brno",
         "name_tr": "Brno",
         "x": 803,
         "y": 299,
@@ -6621,7 +6621,7 @@
     "region_id": "silesia",
     "settlements": [
       {
-        "id": "silesia_main",
+        "id": "silesia_silesia_main",
         "name_tr": "Silezya",
         "x": 828,
         "y": 274,
@@ -6630,7 +6630,7 @@
         "population": 32
       },
       {
-        "id": "poland_main",
+        "id": "silesia_poland_main",
         "name_tr": "Poznan",
         "x": 825,
         "y": 242,
@@ -6652,7 +6652,7 @@
         "population": 76
       },
       {
-        "id": "poland_lublin",
+        "id": "mazovia_lublin",
         "name_tr": "Lublin",
         "x": 930,
         "y": 257,
@@ -6660,7 +6660,7 @@
         "population": 38
       },
       {
-        "id": "galicia_volhynia_peremyshl",
+        "id": "mazovia_peremyshl",
         "name_tr": "Premişl",
         "x": 931,
         "y": 288,
@@ -6740,7 +6740,7 @@
         "population": 31
       },
       {
-        "id": "hungary_szeged",
+        "id": "alfold_szeged",
         "name_tr": "Szeged",
         "x": 880,
         "y": 357,
@@ -6775,7 +6775,7 @@
     "region_id": "cremona",
     "settlements": [
       {
-        "id": "milan_cremona",
+        "id": "cremona_milan",
         "name_tr": "Cremona",
         "x": 684,
         "y": 379,
@@ -6806,7 +6806,7 @@
         "population": 48
       },
       {
-        "id": "venice_ravenna",
+        "id": "ferrara_ravenna",
         "name_tr": "Ravenna",
         "x": 723,
         "y": 394,
@@ -6814,7 +6814,7 @@
         "population": 33
       },
       {
-        "id": "papal_states_rimini",
+        "id": "ferrara_states_rimini",
         "name_tr": "Rimini",
         "x": 732,
         "y": 400,
@@ -6827,7 +6827,7 @@
     "region_id": "siena",
     "settlements": [
       {
-        "id": "florence_arezzo",
+        "id": "siena_arezzo",
         "name_tr": "Arezzo",
         "x": 723,
         "y": 421,
@@ -6836,7 +6836,7 @@
         "population": 42
       },
       {
-        "id": "papal_states_viterbo",
+        "id": "siena_states_viterbo",
         "name_tr": "Viterbo",
         "x": 729,
         "y": 437,
@@ -6865,7 +6865,7 @@
     "region_id": "apulia",
     "settlements": [
       {
-        "id": "puglia_main",
+        "id": "apulia_main",
         "name_tr": "Birindisi",
         "x": 835,
         "y": 463,
@@ -6874,7 +6874,7 @@
         "population": 63
       },
       {
-        "id": "naples_bari",
+        "id": "apulia_bari",
         "name_tr": "Bari",
         "x": 814,
         "y": 455,
@@ -6882,7 +6882,7 @@
         "population": 47
       },
       {
-        "id": "naples_taranto",
+        "id": "apulia_taranto",
         "name_tr": "Taranto",
         "x": 822,
         "y": 467,
@@ -6898,7 +6898,7 @@
         "population": 20
       },
       {
-        "id": "naples_cannae",
+        "id": "apulia_cannae",
         "name_tr": "Cannae",
         "x": 804,
         "y": 453,
@@ -6936,7 +6936,7 @@
         "population": 18
       },
       {
-        "id": "serbia_uzice",
+        "id": "rascia_uzice",
         "name_tr": "Ujitse",
         "x": 868,
         "y": 401,
@@ -6949,7 +6949,7 @@
     "region_id": "rijeka",
     "settlements": [
       {
-        "id": "dalmatia_zadar",
+        "id": "rijeka_zadar",
         "name_tr": "Zadar",
         "x": 784,
         "y": 398,
@@ -6965,7 +6965,7 @@
         "population": 30
       },
       {
-        "id": "croatia_karlovac",
+        "id": "rijeka_karlovac",
         "name_tr": "Karlovac",
         "x": 788,
         "y": 380,
@@ -6979,7 +6979,7 @@
     "region_id": "knin",
     "settlements": [
       {
-        "id": "dalmatia_knin",
+        "id": "knin_dalmatia",
         "name_tr": "Knin",
         "x": 801,
         "y": 401,
@@ -6988,7 +6988,7 @@
         "population": 11
       },
       {
-        "id": "dalmatia_trogir",
+        "id": "knin_trogir",
         "name_tr": "Trogir",
         "x": 796,
         "y": 397,
@@ -6996,7 +6996,7 @@
         "population": 15
       },
       {
-        "id": "dalmatia_split",
+        "id": "knin_split",
         "name_tr": "Split",
         "x": 804,
         "y": 407,
@@ -7009,7 +7009,7 @@
     "region_id": "dalmatia",
     "settlements": [
       {
-        "id": "dalmatia_main",
+        "id": "dalmatia_dalmatia_main",
         "name_tr": "Makarska",
         "x": 820,
         "y": 413,
@@ -7018,7 +7018,7 @@
         "population": 31
       },
       {
-        "id": "ragusa_main",
+        "id": "dalmatia_ragusa_main",
         "name_tr": "Ragusa",
         "x": 838,
         "y": 425,
@@ -7047,7 +7047,7 @@
         "population": 28
       },
       {
-        "id": "croatia_zagreb",
+        "id": "kvarner_zagreb",
         "name_tr": "Zagreb",
         "x": 800,
         "y": 364,
@@ -7056,7 +7056,7 @@
         "population": 69
       },
       {
-        "id": "dalmatia_sibenik",
+        "id": "kvarner_sibenik",
         "name_tr": "Şibenik",
         "x": 790,
         "y": 371,
@@ -7069,7 +7069,7 @@
     "region_id": "hum",
     "settlements": [
       {
-        "id": "bosnia_sarajevo",
+        "id": "hum_sarajevo",
         "name_tr": "Saraybosna",
         "x": 843,
         "y": 402,
@@ -7078,7 +7078,7 @@
         "population": 44
       },
       {
-        "id": "bosnia_srebrenik",
+        "id": "hum_srebrenik",
         "name_tr": "Srebrenik",
         "x": 848,
         "y": 383,
@@ -7099,7 +7099,7 @@
         "population": 24
       },
       {
-        "id": "hum_rysan",
+        "id": "herzegovina_rysan",
         "name_tr": "Rysan",
         "x": 839,
         "y": 422,
@@ -7107,7 +7107,7 @@
         "population": 46
       },
       {
-        "id": "bosnia_mostar",
+        "id": "herzegovina_mostar",
         "name_tr": "Mostar",
         "x": 832,
         "y": 412,
@@ -7138,7 +7138,7 @@
         "population": 14
       },
       {
-        "id": "albania_vlore",
+        "id": "epirus_vlore",
         "name_tr": "Avlonya",
         "x": 865,
         "y": 469,
@@ -7205,7 +7205,7 @@
     "region_id": "yanya",
     "settlements": [
       {
-        "id": "epirus_arta",
+        "id": "yanya_arta",
         "name_tr": "Arta",
         "x": 893,
         "y": 493,
@@ -7214,7 +7214,7 @@
         "population": 9
       },
       {
-        "id": "epirus_parga",
+        "id": "yanya_parga",
         "name_tr": "Parga",
         "x": 886,
         "y": 491,
@@ -7222,7 +7222,7 @@
         "population": 14
       },
       {
-        "id": "epirus_ioannina",
+        "id": "yanya_ioannina",
         "name_tr": "Yanya",
         "x": 889,
         "y": 480,
@@ -7243,7 +7243,7 @@
     "region_id": "thessaloniki_hinterland",
     "settlements": [
       {
-        "id": "thessaloniki_city",
+        "id": "thessaloniki_hinterland_city",
         "name_tr": "Selanik",
         "x": 937,
         "y": 468,
@@ -7252,7 +7252,7 @@
         "population": 4
       },
       {
-        "id": "langadas",
+        "id": "thessaloniki_hinterland_langadas",
         "name_tr": "Langaza",
         "x": 913,
         "y": 460,
@@ -7311,7 +7311,7 @@
     "region_id": "korint_region",
     "settlements": [
       {
-        "id": "morea_lechaion",
+        "id": "korint_region_lechaion",
         "name_tr": "Lechaion",
         "x": 937,
         "y": 512,
@@ -7320,7 +7320,7 @@
         "population": 0
       },
       {
-        "id": "morea_kenchrai",
+        "id": "korint_region_kenchrai",
         "name_tr": "Kenchrai",
         "x": 939,
         "y": 515,
@@ -7333,7 +7333,7 @@
     "region_id": "morea_south",
     "settlements": [
       {
-        "id": "morea_mistra",
+        "id": "morea_south_mistra",
         "name_tr": "Mistra",
         "x": 923,
         "y": 529,
@@ -7416,7 +7416,7 @@
         "population": 25
       },
       {
-        "id": "yenisehir",
+        "id": "bithynia_yenisehir",
         "name_tr": "İnegöl",
         "x": 1054,
         "y": 480,
@@ -7429,7 +7429,7 @@
     "region_id": "kutahya",
     "settlements": [
       {
-        "id": "usak",
+        "id": "kutahya_usak",
         "name_tr": "Uşak",
         "x": 1059,
         "y": 502,
@@ -7451,7 +7451,7 @@
     "region_id": "galicia_volhynia",
     "settlements": [
       {
-        "id": "galicia_main",
+        "id": "galicia_volhynia_main",
         "name_tr": "Galicya",
         "x": 968,
         "y": 260,
@@ -7527,7 +7527,7 @@
     "region_id": "podolia",
     "settlements": [
       {
-        "id": "kiev_main",
+        "id": "podolia_main",
         "name_tr": "Odessa",
         "x": 1091,
         "y": 354,
@@ -7535,7 +7535,7 @@
         "population": 33
       },
       {
-        "id": "bessarabia_ismail",
+        "id": "podolia_ismail",
         "name_tr": "İsmail",
         "x": 1050,
         "y": 371,
@@ -7543,7 +7543,7 @@
         "population": 24
       },
       {
-        "id": "cetatea_alba",
+        "id": "podolia_alba",
         "name_tr": "Akkerman",
         "x": 1080,
         "y": 358,
@@ -7552,7 +7552,7 @@
         "population": 8
       },
       {
-        "id": "bessarabia_chilia",
+        "id": "podolia_chilia",
         "name_tr": "Kili",
         "x": 1059,
         "y": 371,
@@ -7565,7 +7565,7 @@
     "region_id": "aleppo",
     "settlements": [
       {
-        "id": "aleppo",
+        "id": "aleppo_aleppo",
         "name_tr": "Halep",
         "x": 1219,
         "y": 546,
@@ -7582,7 +7582,7 @@
         "population": 12
       },
       {
-        "id": "hama",
+        "id": "aleppo_hama",
         "name_tr": "İdlib",
         "x": 1206,
         "y": 552,
@@ -7603,7 +7603,7 @@
         "population": 0
       },
       {
-        "id": "homs_damascus",
+        "id": "levant_region_homs_damascus",
         "name_tr": "Humus",
         "x": 1211,
         "y": 579,
@@ -7611,7 +7611,7 @@
         "population": 25
       },
       {
-        "id": "hama_damascus",
+        "id": "levant_region_hama_damascus",
         "name_tr": "Hama",
         "x": 1210,
         "y": 569,
@@ -7620,7 +7620,7 @@
         "population": 25
       },
       {
-        "id": "aleppo_maarrat",
+        "id": "levant_region_maarrat",
         "name_tr": "Maarretünnu'man",
         "x": 1209,
         "y": 560,
@@ -7642,7 +7642,7 @@
         "population": 112
       },
       {
-        "id": "homs",
+        "id": "raqqa_homs",
         "name_tr": "Menbiç",
         "x": 1236,
         "y": 542,
@@ -7655,7 +7655,7 @@
     "region_id": "mosul",
     "settlements": [
       {
-        "id": "arbela",
+        "id": "mosul_arbela",
         "name_tr": "Erbil",
         "x": 1354,
         "y": 550,
@@ -7663,7 +7663,7 @@
         "population": 22
       },
       {
-        "id": "mosul",
+        "id": "mosul_mosul",
         "name_tr": "Musul",
         "x": 1338,
         "y": 542,
@@ -7685,7 +7685,7 @@
     "region_id": "kerkuk",
     "settlements": [
       {
-        "id": "mosul_kirkuk",
+        "id": "kerkuk_kirkuk",
         "name_tr": "Kerkük",
         "x": 1362,
         "y": 569,
@@ -7694,7 +7694,7 @@
         "population": 38
       },
       {
-        "id": "mosul_tikrit",
+        "id": "kerkuk_tikrit",
         "name_tr": "Tikrit",
         "x": 1349,
         "y": 578,
@@ -7702,7 +7702,7 @@
         "population": 9
       },
       {
-        "id": "baghdad_samarra",
+        "id": "kerkuk_samarra",
         "name_tr": "Samarra",
         "x": 1356,
         "y": 585,
@@ -7710,7 +7710,7 @@
         "population": 58
       },
       {
-        "id": "baghdad_diyala",
+        "id": "kerkuk_diyala",
         "name_tr": "Diyala",
         "x": 1382,
         "y": 576,
@@ -7723,7 +7723,7 @@
     "region_id": "basra",
     "settlements": [
       {
-        "id": "basra",
+        "id": "basra_basra",
         "name_tr": "Basra",
         "x": 1433,
         "y": 656,
@@ -7732,7 +7732,7 @@
         "population": 42
       },
       {
-        "id": "ubulla",
+        "id": "basra_ubulla",
         "name_tr": "Ubulla",
         "x": 1433,
         "y": 652,
@@ -7748,7 +7748,7 @@
         "population": 20
       },
       {
-        "id": "qurna",
+        "id": "basra_qurna",
         "name_tr": "Kurna",
         "x": 1426,
         "y": 645,
@@ -7761,7 +7761,7 @@
     "region_id": "nicomedia",
     "settlements": [
       {
-        "id": "nicomedia",
+        "id": "nicomedia_nicomedia",
         "name_tr": "Nikomedia",
         "x": 1073,
         "y": 460,
@@ -7786,7 +7786,7 @@
         "population": 7
       },
       {
-        "id": "bithynia_yalova",
+        "id": "nicomedia_yalova",
         "name_tr": "Yalova",
         "x": 1061,
         "y": 463,
@@ -7799,7 +7799,7 @@
     "region_id": "khalkedon",
     "settlements": [
       {
-        "id": "chalcedon",
+        "id": "khalkedon_chalcedon",
         "name_tr": "Khalkedon",
         "x": 1060,
         "y": 457,
@@ -7807,7 +7807,7 @@
         "population": 22
       },
       {
-        "id": "scutari",
+        "id": "khalkedon_scutari",
         "name_tr": "Scutari",
         "x": 1061,
         "y": 454,
@@ -7821,7 +7821,7 @@
     "region_id": "bilecik_frontier",
     "settlements": [
       {
-        "id": "bilecik",
+        "id": "bilecik_frontier_bilecik",
         "name_tr": "Bilecik",
         "x": 1078,
         "y": 471,
@@ -7830,7 +7830,7 @@
         "population": 53
       },
       {
-        "id": "sogut",
+        "id": "bilecik_frontier_sogut",
         "name_tr": "Söğüt",
         "x": 1084,
         "y": 476,
@@ -7843,7 +7843,7 @@
     "region_id": "paphlagonia",
     "settlements": [
       {
-        "id": "kastamonu",
+        "id": "paphlagonia_kastamonu",
         "name_tr": "Kastamonu",
         "x": 1139,
         "y": 449,
@@ -7868,7 +7868,7 @@
         "population": 21
       },
       {
-        "id": "safranbolu",
+        "id": "paphlagonia_safranbolu",
         "name_tr": "Safranbolu",
         "x": 1125,
         "y": 454,
@@ -7889,7 +7889,7 @@
     "region_id": "sinop",
     "settlements": [
       {
-        "id": "sinop",
+        "id": "sinop_sinop",
         "name_tr": "Sinop",
         "x": 1174,
         "y": 438,
@@ -7906,7 +7906,7 @@
         "population": 12
       },
       {
-        "id": "candaroglu_taskopru",
+        "id": "sinop_taskopru",
         "name_tr": "Taşköprü",
         "x": 1154,
         "y": 448,
@@ -7914,7 +7914,7 @@
         "population": 24
       },
       {
-        "id": "candaroglu_boyabat",
+        "id": "sinop_boyabat",
         "name_tr": "Boyabat",
         "x": 1169,
         "y": 448,
@@ -7927,7 +7927,7 @@
     "region_id": "chrysopolis",
     "settlements": [
       {
-        "id": "paphlagonia_bolu",
+        "id": "chrysopolis_bolu",
         "name_tr": "Claudipolis",
         "x": 1092,
         "y": 461,
@@ -7935,7 +7935,7 @@
         "population": 21
       },
       {
-        "id": "chrysopolis",
+        "id": "chrysopolis_chrysopolis",
         "name_tr": "Hrisopolis",
         "x": 1088,
         "y": 454,
@@ -8077,7 +8077,7 @@
     "region_id": "azak_region",
     "settlements": [
       {
-        "id": "north_caucasus_azak",
+        "id": "azak_region_azak",
         "name_tr": "Azak",
         "x": 1265,
         "y": 344,
@@ -8099,7 +8099,7 @@
     "region_id": "sarkel_region",
     "settlements": [
       {
-        "id": "kipchak_steppe_sarkel",
+        "id": "sarkel_region_sarkel",
         "name_tr": "Sarkel Kalesi",
         "x": 1320,
         "y": 325,
@@ -8113,7 +8113,7 @@
     "region_id": "astrakhan_region",
     "settlements": [
       {
-        "id": "north_caucasus_astrahan",
+        "id": "astrakhan_region_astrahan",
         "name_tr": "Astrahan",
         "x": 1439,
         "y": 357,
@@ -8135,7 +8135,7 @@
     "region_id": "dagestan",
     "settlements": [
       {
-        "id": "mangislak",
+        "id": "dagestan_mangislak",
         "name_tr": "Mangışlak",
         "x": 1535,
         "y": 468,
@@ -8173,7 +8173,7 @@
         "population": 19
       },
       {
-        "id": "thessaloniki_kavala",
+        "id": "chalcidice_kavala",
         "name_tr": "Kavala",
         "x": 960,
         "y": 462,
@@ -8181,7 +8181,7 @@
         "population": 13
       },
       {
-        "id": "serres",
+        "id": "chalcidice_serres",
         "name_tr": "Serez",
         "x": 956,
         "y": 453,
@@ -8190,7 +8190,7 @@
         "population": 9
       },
       {
-        "id": "zichna_serres",
+        "id": "chalcidice_zichna_serres",
         "name_tr": "Zihne",
         "x": 960,
         "y": 454,
@@ -8198,7 +8198,7 @@
         "population": 9
       },
       {
-        "id": "thessaloniki_drama",
+        "id": "chalcidice_drama",
         "name_tr": "Drama",
         "x": 942,
         "y": 453,
@@ -8225,7 +8225,7 @@
     "region_id": "egriboz_island",
     "settlements": [
       {
-        "id": "chalkis",
+        "id": "egriboz_island_chalkis",
         "name_tr": "Halkis",
         "x": 950,
         "y": 504,
