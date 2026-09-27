@@ -97,7 +97,7 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 	}
 
 	// Alt bilgi
-	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Versiyon 1.0.0	Alfa", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Version 1.0.0 Alfa - Copyleft® 2026 by CORARS", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 func mainMenuBackgroundImage() *ebiten.Image {
@@ -226,27 +226,33 @@ func (r *Renderer) handleMainMenuInput(hasSave bool, hasAutoSave bool, input gam
 	// Hover ile satır vurgusunu güncelle
 	for i, btn := range buttons {
 		if btn.HitTest(input.MouseX, input.MouseY) {
-			r.factionCursor = i
+			if !items[i].disabled {
+				r.setMenuCursor(&r.factionCursor, i)
+			} else {
+				r.factionCursor = i
+			}
 			break
 		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
-		r.factionCursor = (r.factionCursor + 1) % n
-		for items[r.factionCursor].disabled {
-			r.factionCursor = (r.factionCursor + 1) % n
+		next := (r.factionCursor + 1) % n
+		for items[next].disabled {
+			next = (next + 1) % n
 		}
+		r.setMenuCursor(&r.factionCursor, next)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
-		r.factionCursor = (r.factionCursor - 1 + n) % n
-		for items[r.factionCursor].disabled {
-			r.factionCursor = (r.factionCursor - 1 + n) % n
+		next := (r.factionCursor - 1 + n) % n
+		for items[next].disabled {
+			next = (next - 1 + n) % n
 		}
+		r.setMenuCursor(&r.factionCursor, next)
 	}
 	if r.keyJustPressed(ebiten.KeyTab) {
 		next := focusButtonIndex(buttons, r.factionCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
 		if next >= 0 && next < n {
-			r.factionCursor = next
+			r.setMenuCursor(&r.factionCursor, next)
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {

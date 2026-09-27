@@ -388,21 +388,21 @@ func (r *Renderer) handleVictorySelectInput(input gameui.InputState) InputAction
 
 	for i, btn := range buttons {
 		if btn.HitTest(input.MouseX, input.MouseY) {
-			r.factionCursor = i
+			r.setMenuCursor(&r.factionCursor, i)
 			break
 		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
-		r.factionCursor = (r.factionCursor + 1) % n
+		r.setMenuCursor(&r.factionCursor, (r.factionCursor+1)%n)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
-		r.factionCursor = (r.factionCursor - 1 + n) % n
+		r.setMenuCursor(&r.factionCursor, (r.factionCursor-1+n)%n)
 	}
 	if r.keyJustPressed(ebiten.KeyTab) {
 		next := focusButtonIndex(buttons, r.factionCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
 		if next >= 0 && next < n {
-			r.factionCursor = next
+			r.setMenuCursor(&r.factionCursor, next)
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) {

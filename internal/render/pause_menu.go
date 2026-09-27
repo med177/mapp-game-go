@@ -59,7 +59,7 @@ func buildPauseMenuButtons(hasSave bool, settings Settings) []gameui.Button {
 		case ActionToggleMusic:
 			label = "Müzik: " + boolLabel(settings.MusicOn)
 		case ActionAdjustMusic:
-			label = "Müzik Seviyesi: < " + itoa(settings.MusicVolume) + "% >"
+			label = "Müzik Seviyesi: ◄ " + itoa(settings.MusicVolume) + "% ►"
 		}
 		btn := gameui.NewButton(layout.itemsRect.X, y, layout.itemsRect.W, itemH-10, label)
 		btn.Enabled = !item.disabled
@@ -148,27 +148,33 @@ func (r *Renderer) handlePauseMenuInput(input gameui.InputState) InputAction {
 	buttons := buildPauseMenuButtons(r.HasSave, r.CurrentSettings)
 	for i, btn := range buttons {
 		if btn.HitTest(input.MouseX, input.MouseY) {
-			r.pauseCursor = i
+			if !items[i].disabled {
+				r.setMenuCursor(&r.pauseCursor, i)
+			} else {
+				r.pauseCursor = i
+			}
 			break
 		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
-		r.pauseCursor = (r.pauseCursor + 1) % n
-		for items[r.pauseCursor].disabled {
-			r.pauseCursor = (r.pauseCursor + 1) % n
+		next := (r.pauseCursor + 1) % n
+		for items[next].disabled {
+			next = (next + 1) % n
 		}
+		r.setMenuCursor(&r.pauseCursor, next)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
-		r.pauseCursor = (r.pauseCursor - 1 + n) % n
-		for items[r.pauseCursor].disabled {
-			r.pauseCursor = (r.pauseCursor - 1 + n) % n
+		next := (r.pauseCursor - 1 + n) % n
+		for items[next].disabled {
+			next = (next - 1 + n) % n
 		}
+		r.setMenuCursor(&r.pauseCursor, next)
 	}
 	if r.keyJustPressed(ebiten.KeyTab) {
 		next := focusButtonIndex(buttons, r.pauseCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
 		if next >= 0 && next < n {
-			r.pauseCursor = next
+			r.setMenuCursor(&r.pauseCursor, next)
 		}
 	}
 	if items[r.pauseCursor].action == ActionAdjustMusic {

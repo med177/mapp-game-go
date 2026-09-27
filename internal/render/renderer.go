@@ -49,6 +49,7 @@ const (
 	selectedAttackerSiegeButtonW = 160.0
 	selectedSiegeButtonH         = 38.0
 	initialCameraZoomFactor      = 2.50
+	cameraZoomStep               = 1.12
 	maxCameraZoomScale           = 10
 	settlementMediumZoomScale    = 1.25
 	settlementCloseZoomScale     = 1.8
@@ -828,6 +829,7 @@ func (r *Renderer) ensureWorldMap() {
 // resetCamera kamerayı mevcut ScreenWidth/ScreenHeight'e göre dünyayı tam dolduracak şekilde ayarlar.
 func (r *Renderer) resetCamera() {
 	r.navalContactCameraSaved = false
+	audio.StopZoomInLoop()
 	r.camScale = initialCameraScale()
 	r.camX = float64(WorldW) / 2
 	// Haritanın üst kenarını ekranın üstüne hizala.
@@ -1361,6 +1363,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 			"marine_move",
 			"army_fight",
 			"marine_fight",
+			"conquered",
 			"victory_success",
 		})
 		settlementImageCache = map[string]*ebiten.Image{}
@@ -1694,7 +1697,7 @@ func (r *Renderer) scrollEventCodexDetail(delta int) {
 // ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~3 saniye gösterir.
 func (r *Renderer) ShowCombatResult(msg string) {
 	r.ShowInfo(msg)
-	audio.PlaySound("combat")
+	audio.PlaySound("info_message")
 }
 
 // ShowInfo oyun içi kısa bilgi mesajını ses efekti olmadan ekranda gösterir.

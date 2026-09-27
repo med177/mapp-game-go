@@ -20,6 +20,11 @@ import (
 
 const mapRegionDoubleClickWindow = 750 * time.Millisecond
 
+const (
+	menuSelectionSound = "select"
+	endTurnSound       = "end_turn"
+)
+
 // İlişki iyileştirme ve hediye bildirimleri normalde mevcut 60 TPS akışında
 // üç saniye görünür kalır; hızlı AI açıkken bu süre bir saniyeye iner.
 const (
@@ -29,6 +34,21 @@ const (
 
 func infoPopupClickDismisses(timer int, popup gameui.Rect, mx, my float64, leftPressed, leftWasPressed bool) bool {
 	return timer > 0 && leftPressed && !leftWasPressed && popup.Hit(mx, my)
+}
+
+func isZoomInLoopLevel(scale float64) bool {
+	finalFiveLevelThreshold := maxCameraZoomScale / (cameraZoomStep * cameraZoomStep * cameraZoomStep * cameraZoomStep)
+	return scale >= finalFiveLevelThreshold
+}
+
+// setMenuCursor, menü seçenekleri arasında gerçekten geçiş yapıldığında aynı
+// seçim sesini çalar. Hover, klavye ve Tab gezinmesi bu ortak yolu kullanır.
+func (r *Renderer) setMenuCursor(cursor *int, next int) {
+	if cursor == nil || *cursor == next {
+		return
+	}
+	*cursor = next
+	audio.PlaySound(menuSelectionSound)
 }
 
 func (r *Renderer) diplomacyNotificationAutoCloseFrameLimit() int {
@@ -519,21 +539,21 @@ func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction
 	// Hover ile kart vurgusunu güncelle
 	for i, btn := range buttons {
 		if btn.HitTest(input.MouseX, input.MouseY) {
-			r.factionCursor = i
+			r.setMenuCursor(&r.factionCursor, i)
 			break
 		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) || r.keyJustPressed(ebiten.KeyArrowRight) {
-		r.factionCursor = (r.factionCursor + 1) % n
+		r.setMenuCursor(&r.factionCursor, (r.factionCursor+1)%n)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) || r.keyJustPressed(ebiten.KeyArrowLeft) {
-		r.factionCursor = (r.factionCursor - 1 + n) % n
+		r.setMenuCursor(&r.factionCursor, (r.factionCursor-1+n)%n)
 	}
 	if r.keyJustPressed(ebiten.KeyTab) {
 		next := focusButtonIndex(buttons, r.factionCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
 		if next >= 0 && next < n {
-			r.factionCursor = next
+			r.setMenuCursor(&r.factionCursor, next)
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) && r.factionCursor < len(factions) {
@@ -743,6 +763,7 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 	if r.uiLayerAllowsAt(fx, fy, uiLayerBottom) && bottomButtons[4].HitTest(fx, fy) {
+		audio.PlaySound(endTurnSound)
 		return InputAction{Kind: ActionEndTurn}
 	}
 
@@ -1591,8 +1612,6 @@ func (r *Renderer) handleRightClick() InputAction {
 		}
 	}
 	navalTargetSettlementID := ""
-	navalTargetIsCenter := false
-	navalTargetIsPort := false
 	if a.IsNaval {
 		clickedRegion := r.gs.Regions[clickedRegionID]
 		if clickedRegion != nil && clickedRegion.CanLandEnter() {
@@ -1606,15 +1625,6 @@ func (r *Renderer) handleRightClick() InputAction {
 			}
 			rid = settlementRegion
 			navalTargetSettlementID = settlementID
-			if target := r.gs.Regions[settlementRegion]; target != nil {
-				for _, settlement := range target.Settlements {
-					if settlement.ID == settlementID {
-						navalTargetIsCenter = settlement.IsCenter
-						navalTargetIsPort = settlement.Type == world.SettlementPort
-						break
-					}
-				}
-			}
 		} else {
 			reachability := r.movementReachabilityForArmy(a)
 			if targetID, _, targetHit := r.navalMovementTargetAt(fx, fy, a, reachability); targetHit {
@@ -1649,6 +1659,9 @@ func (r *Renderer) handleRightClick() InputAction {
 		r.SelectedEmbarkedArmyFleet = ""
 		r.clearArmySplitSelection()
 		return InputAction{Kind: ActionMoveArmy, ArmyID: a.ID, TargetRegion: rid}
+	}
+	if a.IsNaval && r.openNavalCoastalTargetDialog(a, r.gs.Regions[rid], rid, navalTargetSettlementID) {
+		return InputAction{}
 	}
 	// Hedef doğrudan komşu değilse renderer yalnızca son hedefi taşır; oyun
 	// katmanı aynı ortak route hesabıyla ara adımları sırayla çözer. Böylece
@@ -1723,35 +1736,6 @@ func (r *Renderer) handleRightClick() InputAction {
 				return InputAction{}
 			}
 		}
-		if a.IsNaval && len(a.EmbarkedUnits) > 0 && navalTargetIsPort &&
-			navalCanDockAtRegion(r.gs, a, target) && navalShowsFriendlyDisembark(r.gs, a, target) {
-			// Yüklü filonun dost liman marker'ı iki farklı niyete sahiptir:
-			// filo limana yanaşabilir veya taşıdığı orduyu dost kıyıya sevk edebilir.
-			// Sağ tıkta seçimi açıkça oyuncuya bırak; iki aksiyon da hedef
-			// settlement/bölge bilgisini kaybetmeden oyun katmanına aktarılır.
-			r.ShowThreeChoiceDialog(
-				"Kıyı hedefi",
-				"Bu filo ordu taşıyor. Limana girmek mi, yoksa orduyu dost bölgeye sevk etmek mi istiyorsun?",
-				"Sevk Et",
-				"Limana Gir",
-				"İptal",
-				InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
-				InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID},
-				InputAction{},
-			)
-			return InputAction{}
-		}
-		if a.IsNaval && navalTargetIsCenter && navalShowsFriendlyDisembark(r.gs, a, target) {
-			r.ShowConfirmDialog(
-				"Orduyu Sevk Et",
-				"Gemideki birlikler bu dost bölgeye sevk edilsin mi?",
-				"Sevk Et",
-				"İptal",
-				InputAction{Kind: ActionDisembarkArmy, ArmyID: r.SelectedArmy, TargetRegion: rid},
-				nil,
-			)
-			return InputAction{}
-		}
 		// Kuşatılan bölgedeki sahip veya müttefik ordu önce kuşatanla huruç
 		// savaşı yapmalıdır. Savaş kaynak bölgede, başarılı hareket ise seçilen
 		// komşu hedefte çözülür.
@@ -1782,6 +1766,51 @@ func (r *Renderer) handleRightClick() InputAction {
 		return act
 	}
 	return InputAction{}
+}
+
+// openNavalCoastalTargetDialog, taşıyan filonun kıyı settlement hedefindeki
+// niyet seçimini rota uzunluğundan bağımsız açar. Bu karar rota kuyruğundan
+// önce verilmelidir; aksi halde çok düğümlü hedef doğrudan dock komutuna düşer.
+func (r *Renderer) openNavalCoastalTargetDialog(fleet *army.Army, target *world.Region, targetRegion world.RegionID, settlementID string) bool {
+	if r == nil || r.gs == nil || fleet == nil || target == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+		return false
+	}
+
+	isPort := false
+	isCenter := false
+	for _, settlement := range target.Settlements {
+		if settlement.ID != settlementID {
+			continue
+		}
+		isPort = settlement.Type == world.SettlementPort
+		isCenter = settlement.IsCenter
+		break
+	}
+	if isPort && navalCanDockAtRegion(r.gs, fleet, target) && navalShowsFriendlyDisembark(r.gs, fleet, target) {
+		r.ShowThreeChoiceDialog(
+			"Kıyı hedefi",
+			"Bu filo ordu taşıyor. Limana girmek mi, yoksa orduyu dost bölgeye sevk etmek mi istiyorsun?",
+			"Sevk Et",
+			"Limana Gir",
+			"İptal",
+			InputAction{Kind: ActionDisembarkArmy, ArmyID: fleet.ID, TargetRegion: targetRegion},
+			InputAction{Kind: ActionMoveArmy, ArmyID: fleet.ID, TargetRegion: targetRegion, TargetSettlementID: settlementID},
+			InputAction{},
+		)
+		return true
+	}
+	if isCenter && navalShowsFriendlyDisembark(r.gs, fleet, target) {
+		r.ShowConfirmDialog(
+			"Orduyu Sevk Et",
+			"Gemideki birlikler bu dost bölgeye sevk edilsin mi?",
+			"Sevk Et",
+			"İptal",
+			InputAction{Kind: ActionDisembarkArmy, ArmyID: fleet.ID, TargetRegion: targetRegion},
+			nil,
+		)
+		return true
+	}
+	return false
 }
 
 // dockedFleetSamePortIsNoOp, boş docked filonun kendi limanına yeniden
@@ -1916,15 +1945,20 @@ func (r *Renderer) handleCamera() {
 		mouseWX, mouseWY := r.screenToWorld(float64(mx), float64(my))
 		minScale := minCameraScale()
 		if dy > 0 && r.camScale < maxCameraZoomScale {
-			r.camScale *= 1.12
+			r.camScale *= cameraZoomStep
 			if r.camScale > maxCameraZoomScale {
 				r.camScale = maxCameraZoomScale
 			}
 		} else if dy < 0 && r.camScale > minScale {
-			r.camScale /= 1.12
+			r.camScale /= cameraZoomStep
 			if r.camScale < minScale {
 				r.camScale = minScale
 			}
+		}
+		if isZoomInLoopLevel(r.camScale) {
+			audio.StartZoomInLoop()
+		} else {
+			audio.StopZoomInLoop()
 		}
 		afterWX, afterWY := r.screenToWorld(float64(mx), float64(my))
 		r.camX += mouseWX - afterWX

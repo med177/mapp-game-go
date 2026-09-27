@@ -73,6 +73,7 @@ type pendingPlayerMovement struct {
 	armyID             army.ArmyID
 	steps              []world.RegionID
 	targetSettlementID string
+	forceDisembark     bool
 }
 
 type aiTurnState struct {
@@ -161,6 +162,7 @@ func New() *Game {
 	audio.SetMusicVolume(r.CurrentSettings.MusicVolume)
 	audio.SetSoundEnabled(r.CurrentSettings.SoundOn)
 	audio.SetSoundVolume(r.CurrentSettings.SoundVolume)
+	audio.PlayGlobalSoundLoop("entrance_intro")
 	return &Game{
 		gs:       gs,
 		renderer: r,
@@ -276,6 +278,7 @@ func (g *Game) Update() error {
 			g.gs.AvailableVictories = scenario.FilterVictoryOptionsForFaction(g.gs.ScenarioVictories, string(action.TargetFaction))
 			g.gs.Phase = state.PhaseVictorySelect
 		case render.ActionBack:
+			g.stopScenarioIntro(g.gs.ScenarioPath)
 			g.gs.Phase = state.PhaseScenarioSelect
 			g.renderer.SetCursor(0)
 		}
@@ -660,6 +663,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) startLoading(kind loadingKind, message string, fn func(func(int)) loadingResult) {
+	audio.StopGlobalSound("entrance_intro")
 	g.gs.Phase = state.PhaseLoading
 	g.renderer.SetLoadingMessage(message)
 	g.renderer.SetLoadingProgress(0)
@@ -703,6 +707,7 @@ func (g *Game) pollLoading() {
 
 func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	if res.err != nil {
+		g.stopScenarioIntro(g.renderer.LoadingScenarioPath)
 		g.renderer.ShowCombatResult("Yükleme hatası: " + res.err.Error())
 		if res.fallback == "" {
 			res.fallback = state.PhaseMainMenu
@@ -728,10 +733,10 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
 		g.renderer.ReloadGameState(res.gs)
-		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.SetCursor(0)
 		g.refreshEventCodex()
 	case loadingSave:
+		g.stopScenarioIntro(res.gs.ScenarioPath)
 		g.lastLandUnitID = ""
 		g.lastNavalUnitID = ""
 		res.gs.Phase = state.PhasePlayerTurn
@@ -761,8 +766,10 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		}
 		g.refreshEventCodex()
 	case loadingWorldMap:
+		g.stopScenarioIntro(g.gs.ScenarioPath)
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.ReloadGameStateWithPreparedMap(g.gs, res.worldMap)
+		g.startScenarioMusic(g.gs.ScenarioPath)
 		if evt := events.TickOpeningHistoricalEvent(g.gs, g.evts); evt != nil {
 			events.Apply(g.gs, evt)
 			g.handleTriggeredEvent(evt)
@@ -3848,7 +3855,9 @@ func (g *Game) loadSlot(slotName string) {
 func (g *Game) startLoadSlot(slotName string, fallback state.Phase) {
 	// Kayıt state'i arka planda yüklenirken loading ekranı da aynı senaryonun
 	// arka planını gösterebilsin. Tam state yükleme yine loading job içinde kalır.
-	g.renderer.SetLoadingScenarioPath(save.ScenarioPathForSlot(slotName))
+	scenarioPath := save.ScenarioPathForSlot(slotName)
+	g.renderer.SetLoadingScenarioPath(scenarioPath)
+	g.startScenarioIntro(scenarioPath)
 	g.startLoading(loadingSave, "Kayıt yükleniyor...", func(setProgress func(int)) loadingResult {
 		setProgress(10)
 		gs, err := save.LoadSlot(slotName)
@@ -3898,6 +3907,9 @@ func (g *Game) resetToScenarioSelect(editMode bool) {
 		difficulty = 2
 	}
 	audio.StopMusic()
+	if g.gs != nil {
+		g.stopScenarioIntro(g.gs.ScenarioPath)
+	}
 	g.finishAITurnSequence()
 	g.lastLandUnitID = ""
 	g.lastNavalUnitID = ""
@@ -3954,6 +3966,7 @@ func (g *Game) startLoadScenario(scenarioPath string) {
 	difficulty := g.gs.Difficulty
 	editMode := g.editModeRequested && g.renderer.EditModeEnabled
 	g.renderer.SetLoadingScenarioPath(scenarioPath)
+	g.startScenarioIntro(scenarioPath)
 	g.startLoading(loadingScenario, "Senaryo yükleniyor...", func(setProgress func(int)) loadingResult {
 		gs, evts, err := loadScenarioDataForMode(scenarioPath, difficulty, editMode, setProgress)
 		if err != nil {
@@ -3965,6 +3978,23 @@ func (g *Game) startLoadScenario(scenarioPath string) {
 			scenarioPath: scenarioPath,
 		}
 	})
+}
+
+func (g *Game) startScenarioIntro(scenarioPath string) {
+	if g != nil && g.gs != nil && g.gs.ScenarioPath != "" && g.gs.ScenarioPath != scenarioPath {
+		g.stopScenarioIntro(g.gs.ScenarioPath)
+	}
+	if scenarioPath == "" {
+		return
+	}
+	audio.PlayScenarioSoundLoop(filepath.Join(scenarioPath, "audio"), "scenario_intro")
+}
+
+func (g *Game) stopScenarioIntro(scenarioPath string) {
+	if scenarioPath == "" {
+		return
+	}
+	audio.StopScenarioSound(filepath.Join(scenarioPath, "audio"), "scenario_intro")
 }
 
 func loadScenarioData(scenarioPath string, difficulty int, setProgress func(int)) (*state.GameState, []*events.Event, error) {
@@ -5074,6 +5104,17 @@ func (g *Game) forceDisembarkFleetWithStance(aid army.ArmyID, target world.Regio
 	if !ok {
 		return
 	}
+	if g.pendingPlayerMovement == nil {
+		if route := g.gs.MovementRouteForArmy(fleet, target); len(route) >= 2 {
+			g.pendingPlayerMovement = &pendingPlayerMovement{
+				armyID:         aid,
+				steps:          append([]world.RegionID(nil), route[1:]...),
+				forceDisembark: true,
+			}
+			g.advancePendingPlayerMovement()
+			return
+		}
+	}
 	src, ok := g.gs.Regions[fleet.RegionID]
 	if !ok {
 		return
@@ -5170,6 +5211,9 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	g.gs.RecordWarRegionCapture(faction.FactionID(newOwnerID), faction.FactionID(prevOwnerID))
 	targetRegion.ApplyConquest(newOwnerID, attackerReligion)
 	g.gs.ClearProductionOrdersForRegion(targetRegion.ID)
+	if newOwnerID == string(g.gs.PlayerFactionID) && prevOwnerID != newOwnerID {
+		audio.PlayScenarioSound(filepath.Join(g.gs.ScenarioPath, "audio"), "conquered")
+	}
 	if prevOwnerID == "" || prevOwnerID == newOwnerID {
 		return eliminationResult{}
 	}
@@ -5590,7 +5634,11 @@ func (g *Game) advancePendingPlayerMovement() {
 	}
 	fromRegion := a.RegionID
 	g.renderer.StartArmyMovementAnimation(a.ID, next, settlementID, finalStep)
-	g.moveArmyToSettlementWithStance(a.ID, next, settlementID, combat.BattleStanceBalanced)
+	if pending.forceDisembark && finalStep {
+		g.forceDisembarkFleetWithStance(a.ID, next, combat.BattleStanceBalanced)
+	} else {
+		g.moveArmyToSettlementWithStance(a.ID, next, settlementID, combat.BattleStanceBalanced)
+	}
 
 	updated := g.gs.Armies[pending.armyID]
 	if updated == nil {

@@ -194,7 +194,11 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool, input gameui.InputState)
 	// Onay bekleniyor: sadece Enter (onayla) ve Esc (iptal) çalışır
 	if r.pendingDeleteSlot != "" {
 		if i := r.slotHoverIndex(input.MouseX, input.MouseY); i >= 0 {
-			r.slotCursor = i
+			if saveMode || SaveSlots[i].Exists {
+				r.setMenuCursor(&r.slotCursor, i)
+			} else {
+				r.slotCursor = i
+			}
 		}
 		if yesBtn, noBtn, ok := buildSlotConfirmButtons(r.pendingDeleteSlot); ok {
 			if yesBtn.HandleInput(input) {
@@ -219,29 +223,35 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool, input gameui.InputState)
 	}
 
 	if i := r.slotHoverIndex(input.MouseX, input.MouseY); i >= 0 {
-		r.slotCursor = i
+		if saveMode || SaveSlots[i].Exists {
+			r.setMenuCursor(&r.slotCursor, i)
+		} else {
+			r.slotCursor = i
+		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
-		r.slotCursor = (r.slotCursor + 1) % n
+		next := (r.slotCursor + 1) % n
 		if !saveMode {
-			for !SaveSlots[r.slotCursor].Exists {
-				r.slotCursor = (r.slotCursor + 1) % n
+			for !SaveSlots[next].Exists {
+				next = (next + 1) % n
 			}
 		}
+		r.setMenuCursor(&r.slotCursor, next)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
-		r.slotCursor = (r.slotCursor - 1 + n) % n
+		next := (r.slotCursor - 1 + n) % n
 		if !saveMode {
-			for !SaveSlots[r.slotCursor].Exists {
-				r.slotCursor = (r.slotCursor - 1 + n) % n
+			for !SaveSlots[next].Exists {
+				next = (next - 1 + n) % n
 			}
 		}
+		r.setMenuCursor(&r.slotCursor, next)
 	}
 	if r.keyJustPressed(ebiten.KeyTab) {
 		next := focusButtonIndex(buildSlotFocusButtons(saveMode), r.slotCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
 		if next >= 0 && next < n {
-			r.slotCursor = next
+			r.setMenuCursor(&r.slotCursor, next)
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {

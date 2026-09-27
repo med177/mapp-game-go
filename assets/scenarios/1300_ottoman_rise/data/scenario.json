@@ -35,28 +35,32 @@
     "playlists": {
       "campaign": [
         {
+          "file": "Cinematic-Ambient-Background.mp3",
+          "weight": 6
+        },
+        {
           "file": "Cerkes-Muzikleri-Aglatan-Cerkes-Muzigi.mp3",
           "weight": 1
         },
         {
           "file": "Osmanli-Muzikleri-Artar-Cihadla-Sanimiz.mp3",
-          "weight": 3
+          "weight": 7
         },
         {
           "file": "Osmanli-Muzikleri-Devlet-Marsi.mp3",
-          "weight": 5
+          "weight": 2
         },
         {
           "file": "Osmanli-Muzikleri-Estergon-Kalas.mp3",
-          "weight": 5
+          "weight": 3
         },
         {
           "file": "Osmanli-Muzikleri-Gafil-Ne-Bilir.mp3",
-          "weight": 5
+          "weight": 4
         },
         {
           "file": "Osmanli-Muzikleri-Tarihi-Cevir.mp3",
-          "weight": 5
+          "weight": 3
         }
       ]
     }

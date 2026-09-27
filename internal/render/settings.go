@@ -81,7 +81,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		{"Ses Efektleri", boolLabel(s.SoundOn)},
 		{"Ses Seviyesi", itoa(s.SoundVolume) + "%"},
 		{"Kısayollar", ""},
-		{"< Geri Dön", ""},
+		{"← Geri Dön", ""},
 	}
 
 	for i, r := range rows {
@@ -100,7 +100,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		}
 		drawUILabel(screen, gameui.Rect{X: rect.X + 30, Y: y + 6}, r.label, col, gameui.TextLarge, gameui.TextAlignStart)
 		if r.value != "" {
-			drawUILabel(screen, gameui.Rect{X: rect.X + 310, Y: y + 6}, "<  "+r.value+"  >", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: rect.X + 310, Y: y + 6}, "◄  "+r.value+"  ►", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
 		}
 	}
 	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Sol tık: değiştir  •  ESC: kaydet ve çık", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
@@ -136,14 +136,14 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 	rowCount := settingsRowCount // zorluk, ekran modu, AI hamleleri, müzik, müzik seviyesi, ses, ses seviyesi, kısayollar, geri dön
 	mx, my := ebiten.CursorPosition()
 	if i := r.settingsHoverIndex(float64(mx), float64(my)); i >= 0 {
-		r.factionCursor = i
+		r.setMenuCursor(&r.factionCursor, i)
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
-		r.factionCursor = (r.factionCursor + 1) % rowCount
+		r.setMenuCursor(&r.factionCursor, (r.factionCursor+1)%rowCount)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
-		r.factionCursor = (r.factionCursor - 1 + rowCount) % rowCount
+		r.setMenuCursor(&r.factionCursor, (r.factionCursor-1+rowCount)%rowCount)
 	}
 
 	switch r.factionCursor {
@@ -211,7 +211,7 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 		if hover < 0 {
 			return InputAction{}
 		}
-		r.factionCursor = hover
+		r.setMenuCursor(&r.factionCursor, hover)
 		switch hover {
 		case 0:
 			s.Difficulty++

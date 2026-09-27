@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-27: Ordu taşıyan filonun iki veya daha fazla düğümlü rota üzerindeki
+  liman/merkez settlement hedefleri artık rota emri verilmeden önce kıyı niyet
+  modalını açıyor. `Limana Gir` seçimi `TargetSettlementID` ile docking'i,
+  `Sevk Et` seçimi ise ara deniz düğümlerinden sonra son kıyıda indirmeyi
+  koruyor. Regression: `TestNavalCoastalTargetDialogKeepsBothPortIntentActions`
+  ve `TestForceDisembarkToDistantCoastUsesMovementRoute`.
+
 - 2026-09-27: Aktif kuşatma altındaki bir devlet, aynı turda üçüncü bir
   devletin AI-AI barış vassallığıyla kuşatmacıdan önce bağlı hale gelemiyor.
   `canImposeVassalage()` aktif kuşatmayı kontrol ediyor; regresyon:
@@ -3813,3 +3820,4 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 - 2026-09-17: Edit Mode'da `regions.json` içindeki `area::` komşularının yükleme sırası runtime arazi senkronizasyonu ve kayıt yazımı boyunca korunuyor; böylece yalnız arazi alanı sırası değiştiği için gereksiz veri farkı oluşmuyor. Regression: `TestSyncTerrainAreaRegionsPreservesLoadedAreaNeighborOrder`, `go test ./... -count=1`.
 - 2026-09-19: 1300 başlangıç ekonomisi, AI ticaret gemileri rotalara atandıktan sonra ordu ve bina bakımları düşülerek yeniden kalibre edildi. İki veya daha fazla kara bölgesi olan aktif devletler için net gelir tabanı `+100`, tek bölgeli küçük beylik/kontluklar için `+50` olarak belirlendi; bakım değerleri yapay biçimde azaltılmadı. Bölgesel `base_gold_income` düzenlemesi ve `Test1300OpeningEconomyCoversUpkeepAfterMerchantAssignments` regresyonu eklendi.
 - 2026-09-22: 1300 senaryosunun son Almanya/İskandinavya bölge ekleri kopya ekonomi profillerinden ayrıştırıldı; nüfus ve kaynaklar bölgesel ölçeğe indirildi, Norveç/İsveç/Danimarka/HRE başlangıç garnizonları dağıtıldı ve Saksonya ordusunun kararlı kimliği geri getirildi. `regionlint` ve ilgili veri/başlangıç yükleme testleri geçti; genel ekonomi ve save/load testlerindeki mevcut baseline hataları ayrıca korunuyor.
+- 2026-09-27: Senaryo seçiminden sonra `audio/scenario_intro.mp3` kesintisiz döngüde çalıyor; fraksiyon ve zafer seçimleri boyunca korunup harita yüklenerek oyuncu turu başladığında, akış iptal edildiğinde veya yükleme hata verdiğinde duruyor. Regression: `TestPlayScenarioSoundLoopTracksScenarioIntro`; doğrulama: `go test ./... -count=1`.

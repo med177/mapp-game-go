@@ -21,6 +21,7 @@ const sampleRate = 44100
 var (
 	audioContext         *audio.Context
 	soundCache           map[string][]byte
+	globalSoundPlayers   map[string]*audio.Player
 	scenarioSoundCache   map[string][]byte
 	scenarioSoundPlayers map[string]*audio.Player
 	soundEnabled         = true
@@ -41,7 +42,10 @@ var (
 	musicCurrentIndex = -1
 	musicUnavailable  bool
 	musicRandom       = rand.New(rand.NewSource(time.Now().UnixNano()))
+	zoomInMusicDucked = false
 )
+
+const zoomInMusicVolumeFactor = 0.35
 
 // MusicTrack points to a file under a scenario's musics/ folder.
 type MusicTrack struct {
@@ -59,12 +63,13 @@ type MusicStatus struct {
 
 func init() {
 	soundCache = make(map[string][]byte)
+	globalSoundPlayers = make(map[string]*audio.Player)
 	scenarioSoundCache = make(map[string][]byte)
 	scenarioSoundPlayers = make(map[string]*audio.Player)
 	audioContext = audio.NewContext(sampleRate)
 }
 
-// LoadGlobalSounds clears old sounds and loads all shared .wav effects.
+// LoadGlobalSounds clears old sounds and loads all shared WAV/MP3 effects.
 func LoadGlobalSounds(soundsDir string) {
 	// Clear old cache
 	soundCache = make(map[string][]byte)
@@ -75,7 +80,11 @@ func LoadGlobalSounds(soundsDir string) {
 	}
 
 	for _, entry := range entries {
-		if entry.IsDir() || filepath.Ext(entry.Name()) != ".wav" {
+		if entry.IsDir() {
+			continue
+		}
+		ext := strings.ToLower(filepath.Ext(entry.Name()))
+		if ext != ".wav" && ext != ".mp3" {
 			continue
 		}
 
@@ -86,26 +95,37 @@ func LoadGlobalSounds(soundsDir string) {
 			continue
 		}
 
-		// Decode WAV to PCM
-		s, err := wav.DecodeWithoutResampling(bytes.NewReader(data))
-		if err != nil {
-			log.Printf("WAV decode hatası %s: %v", path, err)
+		var s io.Reader
+		var decodeErr error
+		switch ext {
+		case ".wav":
+			// Decode WAV to PCM.
+			s, decodeErr = wav.DecodeWithoutResampling(bytes.NewReader(data))
+		case ".mp3":
+			// Global menu efektleri de senaryo efektleri gibi MP3 olabilir.
+			s, decodeErr = mp3.DecodeWithSampleRate(sampleRate, bytes.NewReader(data))
+		}
+		if decodeErr != nil {
+			log.Printf("Ses decode hatası %s: %v", path, decodeErr)
 			continue
 		}
 
 		pcmData, err := io.ReadAll(s)
 		if err != nil {
-			log.Printf("WAV okuma hatası %s: %v", path, err)
+			log.Printf("PCM okuma hatası %s: %v", path, err)
 			continue
 		}
 
-		name := entry.Name()[:len(entry.Name())-4] // Remove .wav extension
+		name := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
 		soundCache[name] = pcmData
 	}
 }
 
 func SetSoundEnabled(enabled bool) {
 	soundEnabled = enabled
+	if !enabled {
+		StopZoomInLoop()
+	}
 }
 
 func SetSoundVolume(percent int) {
@@ -127,6 +147,79 @@ func PlaySound(name string) {
 	player.Play()
 }
 
+// PlayGlobalSound, bitene kadar takip edilmesi gereken global bir MP3/WAV
+// efektini çalar. Menü açılış sesi gibi efektler için PlaySound'dan ayrıdır.
+func PlayGlobalSound(name string) {
+	playGlobalSound(name, false)
+}
+
+// PlayGlobalSoundLoop, takip edilen global MP3/WAV efektini kesintisiz döngüde
+// çalar. Oyun giriş müziği gibi menü boyunca sürmesi gereken sesler içindir.
+func PlayGlobalSoundLoop(name string) {
+	playGlobalSound(name, true)
+}
+
+func playGlobalSound(name string, loop bool) {
+	if !soundEnabled || soundVolume <= 0 {
+		return
+	}
+	pcmData, ok := soundCache[name]
+	if !ok {
+		return
+	}
+	if previous := globalSoundPlayers[name]; previous != nil {
+		_ = previous.Close()
+	}
+	var player *audio.Player
+	if loop {
+		var err error
+		player, err = audioContext.NewPlayer(audio.NewInfiniteLoop(bytes.NewReader(pcmData), int64(len(pcmData))))
+		if err != nil {
+			return
+		}
+	} else {
+		player = audioContext.NewPlayerFromBytes(pcmData)
+	}
+	player.SetVolume(soundVolume * soundGain(name))
+	globalSoundPlayers[name] = player
+	player.Play()
+}
+
+// StopGlobalSound, takip edilen global efektin oynatımını durdurur.
+func StopGlobalSound(name string) {
+	if player := globalSoundPlayers[name]; player != nil {
+		_ = player.Close()
+		delete(globalSoundPlayers, name)
+	}
+}
+
+// StartZoomInLoop, haritanın son zoom seviyelerinde zoom sesini döngüde çalar
+// ve arka plan müziğini geçici olarak kısar.
+func StartZoomInLoop() {
+	if !soundEnabled || soundVolume <= 0 {
+		return
+	}
+	if player := globalSoundPlayers["zoom_in"]; player == nil || !player.IsPlaying() {
+		PlayGlobalSoundLoop("zoom_in")
+	}
+	if globalSoundPlayers["zoom_in"] == nil {
+		return
+	}
+	zoomInMusicDucked = true
+	applyMusicVolume()
+}
+
+// StopZoomInLoop, son zoom seviyelerinden çıkıldığında efekt döngüsünü kapatır
+// ve müziğin kullanıcı tarafından seçilen seviyesini geri yükler.
+func StopZoomInLoop() {
+	StopGlobalSound("zoom_in")
+	if !zoomInMusicDucked {
+		return
+	}
+	zoomInMusicDucked = false
+	applyMusicVolume()
+}
+
 func HasSound(name string) bool {
 	_, ok := soundCache[name]
 	return ok
@@ -135,6 +228,17 @@ func HasSound(name string) bool {
 // PlayScenarioSound, aktif senaryonun audio klasöründeki kısa MP3 efektlerini
 // cache'leyip çalar. Senaryo sesleri global WAV efektlerinden ayrı tutulur.
 func PlayScenarioSound(audioDir, name string) {
+	playScenarioSound(audioDir, name, false)
+}
+
+// PlayScenarioSoundLoop, aktif senaryonun sesini kesintisiz döngüde çalar.
+// Senaryo seçimi ile oyun başlangıcı arasındaki intro gibi uzun akışlar için
+// kullanılır.
+func PlayScenarioSoundLoop(audioDir, name string) {
+	playScenarioSound(audioDir, name, true)
+}
+
+func playScenarioSound(audioDir, name string, loop bool) {
 	if !soundEnabled || soundVolume <= 0 || audioDir == "" || name == "" {
 		return
 	}
@@ -146,7 +250,16 @@ func PlayScenarioSound(audioDir, name string) {
 	if previous := scenarioSoundPlayers[path]; previous != nil {
 		_ = previous.Close()
 	}
-	player := audioContext.NewPlayerFromBytes(pcmData)
+	var player *audio.Player
+	if loop {
+		var err error
+		player, err = audioContext.NewPlayer(audio.NewInfiniteLoop(bytes.NewReader(pcmData), int64(len(pcmData))))
+		if err != nil {
+			return
+		}
+	} else {
+		player = audioContext.NewPlayerFromBytes(pcmData)
+	}
 	player.SetVolume(soundVolume * soundGain(name))
 	scenarioSoundPlayers[path] = player
 	player.Play()
@@ -234,6 +347,7 @@ func StartMusicPlaylist(baseDir string, tracks []MusicTrack) {
 }
 
 func StopMusic() {
+	StopZoomInLoop()
 	if musicPlayer != nil {
 		_ = musicPlayer.Close()
 		musicPlayer = nil
@@ -256,7 +370,7 @@ func SetMusicEnabled(enabled bool) {
 		musicPlayer.Pause()
 		return
 	}
-	musicPlayer.SetVolume(musicVolume)
+	musicPlayer.SetVolume(musicPlaybackVolume())
 	musicPlayer.Play()
 }
 
@@ -272,7 +386,7 @@ func ToggleMusic() bool {
 func SetMusicVolume(percent int) {
 	musicVolume = percentToVolume(percent)
 	if musicPlayer != nil {
-		musicPlayer.SetVolume(musicVolume)
+		musicPlayer.SetVolume(musicPlaybackVolume())
 		if musicEnabled && musicVolume > 0 {
 			musicPlayer.Play()
 		}
@@ -320,6 +434,19 @@ func UpdateMusic() {
 	}
 }
 
+func musicPlaybackVolume() float64 {
+	if zoomInMusicDucked {
+		return musicVolume * zoomInMusicVolumeFactor
+	}
+	return musicVolume
+}
+
+func applyMusicVolume() {
+	if musicPlayer != nil {
+		musicPlayer.SetVolume(musicPlaybackVolume())
+	}
+}
+
 func playNextMusic() {
 	if len(musicPlaylist) == 0 || musicBaseDir == "" {
 		return
@@ -344,7 +471,7 @@ func playNextMusic() {
 		}
 		musicCurrentIndex = next
 		musicPlayer = player
-		musicPlayer.SetVolume(musicVolume)
+		musicPlayer.SetVolume(musicPlaybackVolume())
 		musicPlayer.Play()
 		return
 	}

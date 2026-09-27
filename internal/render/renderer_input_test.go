@@ -10,6 +10,16 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestZoomInLoopLevelsUseFinalFiveZoomSteps(t *testing.T) {
+	threshold := maxCameraZoomScale / (cameraZoomStep * cameraZoomStep * cameraZoomStep * cameraZoomStep)
+	if !isZoomInLoopLevel(threshold) {
+		t.Fatal("son beş zoom seviyesinin alt sınırı loop seviyesi kabul edilmedi")
+	}
+	if isZoomInLoopLevel(threshold - 0.01) {
+		t.Fatal("son beş zoom seviyesinin altındaki ölçek loop seviyesi kabul edildi")
+	}
+}
+
 func TestTurnTechHudMetricHitRectsMatchDisplayedTexts(t *testing.T) {
 	gs := &state.GameState{PlayerFactionID: "player"}
 	fatigueRect, routeRect := turnTechHudMetricRects(gs)
@@ -74,6 +84,43 @@ func TestCoastalTargetDialogButtonPresentation(t *testing.T) {
 	wantBG := color.RGBA{55, 92, 142, 240}
 	if style.BG != wantBG {
 		t.Fatalf("limana gir buton arka planı = %#v, want %#v", style.BG, wantBG)
+	}
+}
+
+func TestNavalCoastalTargetDialogKeepsBothPortIntentActions(t *testing.T) {
+	const targetRegion = world.RegionID("target")
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			targetRegion: {
+				ID:        targetRegion,
+				OwnerID:   "player",
+				Buildings: []string{"port"},
+				Settlements: []world.Settlement{
+					{ID: "target-port", Type: world.SettlementPort},
+				},
+			},
+		},
+	}
+	fleet := &army.Army{
+		ID:            "fleet",
+		OwnerID:       "player",
+		IsNaval:       true,
+		EmbarkedUnits: []army.Unit{{TypeID: "infantry"}},
+	}
+	r := &Renderer{gs: gs}
+
+	if !r.openNavalCoastalTargetDialog(fleet, gs.Regions[targetRegion], targetRegion, "target-port") {
+		t.Fatal("geçerli liman hedefi kıyı niyet modalını açmadı")
+	}
+	if !r.confirmDialog.show || r.confirmDialog.acceptLabel != "Sevk Et" || r.confirmDialog.thirdLabel != "Limana Gir" {
+		t.Fatalf("kıyı modalı beklenen düğmeleri göstermedi: %+v", r.confirmDialog)
+	}
+	if r.confirmDialog.pendingAction.Kind != ActionDisembarkArmy {
+		t.Fatalf("sevk aksiyonu = %q, want %q", r.confirmDialog.pendingAction.Kind, ActionDisembarkArmy)
+	}
+	if got := r.confirmDialog.thirdAction.TargetSettlementID; got != "target-port" {
+		t.Fatalf("liman aksiyonunun settlement hedefi = %q, want target-port", got)
 	}
 }
 

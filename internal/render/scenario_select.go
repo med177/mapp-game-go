@@ -115,21 +115,21 @@ func (r *Renderer) handleScenarioSelectInput(input gameui.InputState) InputActio
 
 	for i, btn := range buttons {
 		if btn.HitTest(input.MouseX, input.MouseY) {
-			r.scenarioCursor = i
+			r.setMenuCursor(&r.scenarioCursor, i)
 			break
 		}
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
-		r.scenarioCursor = (r.scenarioCursor + 1) % n
+		r.setMenuCursor(&r.scenarioCursor, (r.scenarioCursor+1)%n)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
-		r.scenarioCursor = (r.scenarioCursor - 1 + n) % n
+		r.setMenuCursor(&r.scenarioCursor, (r.scenarioCursor-1+n)%n)
 	}
 	if r.keyJustPressed(ebiten.KeyTab) {
 		next := focusButtonIndex(buttons, r.scenarioCursor, ebiten.IsKeyPressed(ebiten.KeyShift))
 		if next >= 0 && next < n {
-			r.scenarioCursor = next
+			r.setMenuCursor(&r.scenarioCursor, next)
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {

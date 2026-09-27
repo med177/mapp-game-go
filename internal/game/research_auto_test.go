@@ -97,6 +97,59 @@ func TestMoveDockedFleetToSamePortDoesNotConsumeMovement(t *testing.T) {
 	}
 }
 
+func TestForceDisembarkToDistantCoastUsesMovementRoute(t *testing.T) {
+	const (
+		sea0 = world.RegionID("sea0")
+		sea1 = world.RegionID("sea1")
+		sea2 = world.RegionID("sea2")
+		port = world.RegionID("port")
+	)
+	fleet := &army.Army{
+		ID:            "fleet",
+		OwnerID:       "player",
+		RegionID:      sea0,
+		IsNaval:       true,
+		MovePoints:    3,
+		MaxMovePoints: 3,
+		EmbarkedUnits: []army.Unit{{TypeID: "infantry"}},
+	}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			sea0: {ID: sea0, IsSea: true, Neighbors: []world.RegionID{sea1}},
+			sea1: {ID: sea1, IsSea: true, Neighbors: []world.RegionID{sea0, sea2}},
+			sea2: {ID: sea2, IsSea: true, Neighbors: []world.RegionID{sea1, port}},
+			port: {ID: port, OwnerID: "player", Neighbors: []world.RegionID{sea2}},
+		},
+		Armies: map[army.ArmyID]*army.Army{fleet.ID: fleet},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.forceDisembarkFleetWithStance(fleet.ID, port, combat.BattleStanceBalanced)
+	for g.pendingPlayerMovement != nil {
+		g.advancePendingPlayerMovement()
+	}
+
+	if fleet.RegionID != sea2 {
+		t.Fatalf("filo uzak kıyıya giderken beklenen son deniz = %q, got %q", sea2, fleet.RegionID)
+	}
+	if len(fleet.EmbarkedUnits) != 0 {
+		t.Fatalf("uzak sevkte filo üzerindeki birlikler boşaltılmadı: %d", len(fleet.EmbarkedUnits))
+	}
+	if fleet.MovePoints != 0 {
+		t.Fatalf("uzak sevk hareket puanı = %d, want 0", fleet.MovePoints)
+	}
+	for _, current := range gs.Armies {
+		if current.ID != fleet.ID && current.RegionID == port && !current.IsNaval {
+			return
+		}
+	}
+	t.Fatal("uzak sevk sonunda hedef liman bölgesinde kara ordusu oluşmadı")
+}
+
 func TestShouldOfferPostWarVassalizationRejectsSeaRegion(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "venice",
