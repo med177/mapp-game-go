@@ -13,7 +13,7 @@ func armyOrganizationPopupRect() gameui.Rect {
 		popupW = 270.0
 		popupH = 76.0
 	)
-	x := 908.0 + 130.0 - popupW
+	x := float64(manpowerHUDCardX+manpowerHUDCardW) - popupW
 	if x < 8 {
 		x = 8
 	}

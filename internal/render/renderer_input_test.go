@@ -64,6 +64,23 @@ func TestArmyOrganizationHUDValueRectMatchesDisplayedValue(t *testing.T) {
 	}
 }
 
+func TestManpowerHUDValuesShareRightEdgeAndStayInsideCard(t *testing.T) {
+	values := []string{"130/375", "12/12", "114/147"}
+	wantRight := float64(manpowerHUDCardX+manpowerHUDCardW) - manpowerHUDCardPad
+	for row, value := range values {
+		displayed, rect := manpowerHUDRowValueRect(float64(row*22), value)
+		if displayed != value {
+			t.Fatalf("%q kapasite değeri gereksiz kırpıldı: %q", value, displayed)
+		}
+		if rect.X+rect.W != wantRight {
+			t.Fatalf("%q sağ kenarı = %.2f, want %.2f", value, rect.X+rect.W, wantRight)
+		}
+		if rect.X < float64(manpowerHUDCardX) || rect.X+rect.W > float64(manpowerHUDCardX+manpowerHUDCardW) {
+			t.Fatalf("%q kart dışına taşıyor: rect=%+v", value, rect)
+		}
+	}
+}
+
 func TestCoastalTargetDialogButtonPresentation(t *testing.T) {
 	embark := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "Gemiye Bin"), "Gemiye Bin", "accept")
 	if embark.Icon != gameui.IconLoad {

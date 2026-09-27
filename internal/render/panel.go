@@ -30,14 +30,18 @@ import (
 // ── Layout sabitleri ────────────────────────────────────────────────
 
 const (
-	bottomBarH        = float32(80)
-	topStatusW        = float32(1050)
-	topStatusH        = float32(82)
-	topDateHudW       = float32(255)
-	topDateHudH       = float32(80)
-	actionHudPad      = float32(8)
-	actionHudGap      = float32(5)
-	actionHudGroupGap = float32(216)
+	bottomBarH          = float32(80)
+	topStatusW          = float32(1050)
+	topStatusH          = float32(82)
+	topDateHudW         = float32(255)
+	topDateHudH         = float32(80)
+	manpowerHUDCardX    = float32(908)
+	manpowerHUDCardW    = float32(130)
+	manpowerHUDCardPad  = float64(8)
+	manpowerHUDValueGap = float64(4)
+	actionHudPad        = float32(8)
+	actionHudGap        = float32(5)
+	actionHudGroupGap   = float32(216)
 
 	minimapW = float32(240)
 	minimapH = float32(165)
@@ -715,14 +719,27 @@ func armyOrganizationHUDValueRect(gs *state.GameState) gameui.Rect {
 	if gs == nil || gs.PlayerFactionID == "" {
 		return gameui.Rect{}
 	}
-	const (
-		cardX = 908.0
-		cardW = 130.0
-	)
 	value := itoa(gs.CurrentLandArmies(gs.PlayerFactionID)) + "/" + itoa(gs.MaxLandArmies(gs.PlayerFactionID))
+	_, rect := manpowerHUDRowValueRect(22, value)
+	return rect
+}
+
+// manpowerHUDRowValueRect, üst kapasite kartındaki değerlerin aynı sağ kolona
+// hizalanmasını ve kart çerçevesi içinde kalmasını sağlar.
+func manpowerHUDRowValueRect(rowOffset float64, value string) (string, gameui.Rect) {
+	labelX := float64(manpowerHUDCardX) + manpowerHUDCardPad
+	valueRight := float64(manpowerHUDCardX+manpowerHUDCardW) - manpowerHUDCardPad
+	maxLabelW := MeasureText("Donanma", FaceSmall)
+	valueStart := labelX + maxLabelW + manpowerHUDValueGap
+	value = trimTextToWidth(value, FaceMed, valueRight-valueStart)
 	valueW := MeasureText(value, FaceMed)
-	valueRight := cardX + 12 + cardW - 24
-	return gameui.Rect{X: valueRight - valueW, Y: 12 + 22 - 5, W: valueW, H: 20}
+	rowY := 12.0 + rowOffset
+	return value, gameui.Rect{
+		X: valueRight - valueW,
+		Y: rowY - 4,
+		W: valueW,
+		H: 20,
+	}
 }
 
 func topDateHudRect() (x, y, w, h float32) {
@@ -3413,13 +3430,12 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 
 	// 1024 px genişliğindeki ekranlarda kartın sağ kenarı ve sağa hizalı
 	// değerler görünür alanda kalacak şekilde bir miktar içeri alınır.
-	cardX := float32(908)
+	cardX := manpowerHUDCardX
 	cardY := float32(panelY) + 7
-	cardW := float32(130)
+	cardW := manpowerHUDCardW
 	cardH := topStatusH - 14
 	drawTopStatusCard(screen, cardX, cardY, cardW, cardH)
 
-	mx := float64(cardX) + 12
 	my := panelY + 12
 
 	unitStr := itoa(deployed) + "/" + itoa(cap)
@@ -3427,21 +3443,29 @@ func drawManpowerDisplay(screen *ebiten.Image, gs *state.GameState, panelY float
 	if cap > 0 && deployed >= cap {
 		unitCol = ColorRed
 	}
-	drawUIKeyValueRow(screen, mx, my, float64(cardW)-24, "Savaşçı", unitStr, ColorGray, unitCol)
+	drawManpowerHUDRow(screen, my, 0, "Savaşçı", unitStr, unitCol)
 
 	armyStr := itoa(armies) + "/" + itoa(maxArmies)
 	armyCol := ColorGold
 	if armies >= maxArmies {
 		armyCol = ColorRed
 	}
-	drawUIKeyValueRow(screen, mx, my+22, float64(cardW)-24, "Ordu", armyStr, ColorGray, armyCol)
+	drawManpowerHUDRow(screen, my, 22, "Ordu", armyStr, armyCol)
 
 	navalStr := itoa(navalDeployed) + "/" + itoa(navalCap)
 	navalCol := ColorGold
 	if navalCap > 0 && navalDeployed >= navalCap {
 		navalCol = ColorRed
 	}
-	drawUIKeyValueRow(screen, mx, my+44, float64(cardW)-24, "Donanma", navalStr, ColorGray, navalCol)
+	drawManpowerHUDRow(screen, my, 44, "Donanma", navalStr, navalCol)
+}
+
+func drawManpowerHUDRow(screen *ebiten.Image, y, rowOffset float64, label, value string, valueColor color.Color) {
+	displayValue, valueRect := manpowerHUDRowValueRect(rowOffset, value)
+	labelX := float64(manpowerHUDCardX) + manpowerHUDCardPad
+	labelW := valueRect.X - labelX - manpowerHUDValueGap
+	drawUILabel(screen, gameui.Rect{X: labelX, Y: y + rowOffset, W: labelW}, label, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: valueRect.X, Y: y + rowOffset, W: valueRect.W}, displayValue, valueColor, gameui.TextMedium, gameui.TextAlignEnd)
 }
 
 // drawVictoryProgress seçilen zafer tipine göre ilerlemeyi gösterir.
