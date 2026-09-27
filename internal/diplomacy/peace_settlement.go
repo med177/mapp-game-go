@@ -112,6 +112,13 @@ func canImposeVassalage(gs *state.GameState, winner, loser faction.FactionID, wi
 	if gs == nil || winner == "" || loser == "" || DirectOverlord(gs, winner) != "" || DirectOverlord(gs, loser) != "" {
 		return false
 	}
+	// Başka bir devletin aktif kuşatması sürerken AI-AI barışının loser'ı
+	// vassal yapmasına izin verme. Aksi halde kuşatılan devlet, gerçek
+	// kuşatma sonucu çözülmeden üçüncü bir devletin vassalı olabilir; kuşatma
+	// ordusu bölgeyi almadan ortaya çıkan HRE-Napoli sonucu bunun örneğidir.
+	if factionHasActiveSiegeByOther(gs, loser, winner) {
+		return false
+	}
 	if len(gs.LandRegionsOwnedBy(loser)) > 4 {
 		return false
 	}
@@ -121,6 +128,31 @@ func canImposeVassalage(gs *state.GameState, winner, loser faction.FactionID, wi
 		return false
 	}
 	return winnerAssessment.WarScore >= 70
+}
+
+func factionHasActiveSiegeByOther(gs *state.GameState, defender, exemptAttacker faction.FactionID) bool {
+	if gs == nil || defender == "" || len(gs.Sieges) == 0 {
+		return false
+	}
+	for regionID, siege := range gs.Sieges {
+		if siege == nil {
+			continue
+		}
+		region := gs.Regions[regionID]
+		if region == nil || region.IsSea || region.OwnerID != string(defender) {
+			continue
+		}
+
+		attackerID := faction.FactionID(siege.AttackerFactionID)
+		if attacker := gs.Armies[siege.AttackerArmyID]; attacker != nil {
+			attackerID = faction.FactionID(attacker.OwnerID)
+		}
+		if attackerID == "" || attackerID == defender || attackerID == exemptAttacker {
+			continue
+		}
+		return true
+	}
+	return false
 }
 
 func peaceCessionRegion(gs *state.GameState, winner, loser faction.FactionID) world.RegionID {

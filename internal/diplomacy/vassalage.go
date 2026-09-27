@@ -716,26 +716,70 @@ func applyInciteRevolt(gs *state.GameState, actor, target faction.FactionID) Res
 	}
 }
 
+func currentVassalizedTurn(gs *state.GameState) int {
+	if gs == nil || gs.Turn <= 0 {
+		return 1
+	}
+	return gs.Turn
+}
+
+// reparentVassalDescendants, yeni overlord vassal yapılan eski sahibin alt
+// vassallarını yeni üst devletin doğrudan vassalı yapar. Vassal devletler
+// başka vassallara sahip olamadığı için daha derin zincirler de aynı anda
+// düzleştirilir.
+func reparentVassalDescendants(gs *state.GameState, formerOverlord, newOverlord faction.FactionID) {
+	if gs == nil || formerOverlord == "" || newOverlord == "" || formerOverlord == newOverlord {
+		return
+	}
+
+	queue := []faction.FactionID{formerOverlord}
+	seen := map[faction.FactionID]struct{}{formerOverlord: {}}
+	descendants := make([]faction.FactionID, 0)
+	for len(queue) > 0 {
+		parent := queue[0]
+		queue = queue[1:]
+		for fid, f := range gs.Factions {
+			if f == nil || f.IsEliminated || f.OverlordID != parent {
+				continue
+			}
+			if _, exists := seen[fid]; exists {
+				continue
+			}
+			seen[fid] = struct{}{}
+			descendants = append(descendants, fid)
+			queue = append(queue, fid)
+		}
+	}
+
+	for _, fid := range descendants {
+		f := gs.Factions[fid]
+		if f == nil {
+			continue
+		}
+		f.OverlordID = newOverlord
+		f.VassalizedTurn = currentVassalizedTurn(gs)
+	}
+}
+
 func applyVassalization(gs *state.GameState, actor, target faction.FactionID) Result {
 	targetFaction := gs.Factions[target]
 	if targetFaction == nil {
 		return Result{Message: "Fraksiyon bulunamadı."}
 	}
+	if DirectOverlord(gs, actor) != "" {
+		return Result{Message: "Bağlı devletler yeni vassal edinemaz."}
+	}
+	reparentVassalDescendants(gs, target, actor)
 	targetFaction.OverlordID = actor
 	gs.MarkFactionSubjugation(actor, target)
 	targetFaction.TributeRate = vassalTributeRatePercent
 	targetFaction.TributeRateConfigured = true
-	targetFaction.VassalizedTurn = gs.Turn
-	if targetFaction.VassalizedTurn <= 0 {
-		targetFaction.VassalizedTurn = 1
-	}
+	targetFaction.VassalizedTurn = currentVassalizedTurn(gs)
+	NormalizeVassalage(gs)
 	root := realmRoot(gs, actor)
 	if root == "" {
 		root = actor
 	}
-	normalizeVassalRealmRelations(gs, root)
-	sanitizeVassalExternalDiplomacy(gs, target, root)
-	ensureTradeRoutesBetween(gs, actor, target)
 	synchronizeVassalWars(gs, root)
 	return Result{
 		Accepted: true,
@@ -906,6 +950,19 @@ func NormalizeVassalage(gs *state.GameState) {
 			f.TributeRateConfigured = true
 		}
 		f.TributeRate = ClampVassalTributeRate(f.TributeRate)
+	}
+
+	// Vassal devletler yeni vassal sahibi olamadığından, eski kayıtlarda veya
+	// doğrudan state değişikliklerinde kalmış nested zincirleri de köke bağla.
+	for fid, f := range gs.Factions {
+		if f == nil || f.IsEliminated || f.OverlordID == "" {
+			continue
+		}
+		parent := DirectOverlord(gs, fid)
+		root := realmRoot(gs, fid)
+		if parent != "" && root != "" && parent != root {
+			f.OverlordID = root
+		}
 	}
 
 	for fid, f := range gs.Factions {

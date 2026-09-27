@@ -348,6 +348,9 @@ deterministiktir.
 altın tazminatı veya vassallık olarak sınıflandırır. `ExecuteAIPeace` AI-AI
 barışlarında sonucu uygular. Oyuncunun mevcut barış aksiyonu ise seçim yapılmadan
 toprak veya altın kaybettirmemek için varsayılan olarak beyaz barıştır.
+AI-AI barışında kaybeden devlet üçüncü bir devletin aktif kuşatması altındaysa
+vassallık sonucu uygulanmaz; böylece kuşatma sürerken başka bir devletin
+kuşatılan devleti vassal yapması engellenir.
 
 Barış sonrası taraflara beş turluk save-backed ateşkes verilir. Bu bilgi
 `GameState.RecentTruces` içinde relation key ve bitiş turu olarak tutulur;
@@ -433,6 +436,10 @@ Bu sayede elenen devletler diğer devletlerle diplomasi verisi taşımaya devam 
 ## Vassallık Kuralları
 
 - Vassallık kabul edilince hedef fraksiyonun `OverlordID` alanı doldurulur.
+- Bir overlord başka bir devletin vassalı olduğunda, onun doğrudan veya daha
+  derin alt vassalları yeni en üst devletin doğrudan vassalı olur; vassallar
+  başka vassallara sahip olamaz. Bu aktarımda yeni vassallık bağı için bekleme
+  turu yeniden başlar.
 - Vassallık kabulünde `VassalizedTurn` kaydedilir; doğrudan overlord, bağın
   kurulmasından itibaren en az 12 tamamlanmış tur geçmeden vassalı ilhak edemez.
   Bekleme süresi dolana kadar aynı `ActionBlockReason()` kapısı yönetim kartını

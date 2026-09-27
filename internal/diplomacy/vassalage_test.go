@@ -129,3 +129,45 @@ func TestNormalizeVassalagePreservesExternalVassalTrade(t *testing.T) {
 		t.Fatal("vassal dış ticaret rotası normalize edilirken silindi")
 	}
 }
+
+func TestApplyVassalizationPromotesNestedVassalsToNewOverlord(t *testing.T) {
+	gs := &state.GameState{
+		Turn: 7,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"new_overlord":    {ID: "new_overlord", NameTR: "Yeni Üst Devlet"},
+			"former_overlord": {ID: "former_overlord", NameTR: "Eski Üst Devlet"},
+			"vassal":          {ID: "vassal", NameTR: "Vassal", OverlordID: "former_overlord", VassalizedTurn: 2},
+			"nested":          {ID: "nested", NameTR: "Alt Vassal", OverlordID: "vassal", VassalizedTurn: 3},
+		},
+	}
+
+	result := applyVassalization(gs, "new_overlord", "former_overlord")
+	if !result.Applied {
+		t.Fatalf("vassallık uygulanmadı: %s", result.Message)
+	}
+	for _, fid := range []faction.FactionID{"former_overlord", "vassal", "nested"} {
+		f := gs.Factions[fid]
+		if f.OverlordID != "new_overlord" {
+			t.Fatalf("%s yeni üst devletin doğrudan vassalı olmadı: got=%s", fid, f.OverlordID)
+		}
+		if f.VassalizedTurn != gs.Turn {
+			t.Fatalf("%s yeni vassallık turunu taşımadı: got=%d want=%d", fid, f.VassalizedTurn, gs.Turn)
+		}
+	}
+}
+
+func TestNormalizeVassalageFlattensNestedVassals(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"overlord": {ID: "overlord"},
+			"vassal":   {ID: "vassal", OverlordID: "overlord"},
+			"nested":   {ID: "nested", OverlordID: "vassal"},
+		},
+	}
+
+	NormalizeVassalage(gs)
+
+	if got := gs.Factions["nested"].OverlordID; got != "overlord" {
+		t.Fatalf("nested vassal kök üst devlete bağlanmadı: got=%s", got)
+	}
+}

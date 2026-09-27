@@ -7,6 +7,18 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-27: Aktif kuşatma altındaki bir devlet, aynı turda üçüncü bir
+  devletin AI-AI barış vassallığıyla kuşatmacıdan önce bağlı hale gelemiyor.
+  `canImposeVassalage()` aktif kuşatmayı kontrol ediyor; regresyon:
+  `TestCanImposeVassalageBlocksThirdPartyBesiegedLoser`.
+
+- 2026-09-27: Bir overlord başka bir devletin vassalı olduğunda doğrudan ve
+  daha derin alt vassallar yeni en üst devletin doğrudan vassalı olacak şekilde
+  vassal zinciri düzleştiriliyor. Yeni otomatik bağlarda ilhak bekleme turu
+  yeniden başlıyor; `NormalizeVassalage()` eski nested zincirleri de onarıyor.
+  Regression: `TestApplyVassalizationPromotesNestedVassalsToNewOverlord` ve
+  `TestNormalizeVassalageFlattensNestedVassals`.
+
 - 2026-09-27: Filo birleşmesinde kaynak filonun taşıdığı kara ordusu ve varsa
   taşınan komutan hedef filoya aktarılıyor; böylece kaynak filo silinirken
   embarked birlikler kaybolmuyor. Taşınan kara ordusu bulunan filo artık
