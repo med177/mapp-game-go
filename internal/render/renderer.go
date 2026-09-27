@@ -1694,7 +1694,7 @@ func (r *Renderer) scrollEventCodexDetail(delta int) {
 	r.clampEventCodexDetailScroll()
 }
 
-// ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~3 saniye gösterir.
+// ShowCombatResult oyun içi kısa uyarı/bilgi mesajını ekranda ~1,5 saniye gösterir.
 func (r *Renderer) ShowCombatResult(msg string) {
 	r.ShowInfo(msg)
 	audio.PlaySound("info_message")
@@ -1703,26 +1703,19 @@ func (r *Renderer) ShowCombatResult(msg string) {
 // ShowInfo oyun içi kısa bilgi mesajını ses efekti olmadan ekranda gösterir.
 func (r *Renderer) ShowInfo(msg string) {
 	r.combatLog = msg
-	r.combatLogTimer = 180
+	r.combatLogTimer = infoPopupAutoCloseFrames
 }
 
 func (r *Renderer) infoPopupRect() gameui.Rect {
-	const popupW = float64(430)
 	if r == nil {
 		return gameui.Rect{}
 	}
 	popupH := float64(infoPopupHeight(r.combatLog))
-	popupY := ScreenHeight*0.26 - popupH/2
-	if r.gs != nil && r.gs.Phase == state.PhaseAITurn && r.aiTurnActor != "" {
-		const aiOverlayGap = float32(40)
-		const aiOverlayH = float32(180)
-		_, turnHudY, _, turnHudH := turnTechHudRect()
-		popupY = float64(turnHudY + turnHudH + aiOverlayGap + aiOverlayH + 16)
-	}
+	activeWarsButton := buildActiveWarsHUDButton()
 	return gameui.Rect{
-		X: ScreenWidth/2 - popupW/2,
-		Y: popupY,
-		W: popupW,
+		X: activeWarsButton.X + activeWarsButton.W + float64(infoPopupActiveWarsGap),
+		Y: float64(infoPopupTop),
+		W: float64(infoPopupW),
 		H: popupH,
 	}
 }
@@ -2134,7 +2127,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.combatLogTimer < 60 {
 			alpha = uint8(r.combatLogTimer * 255 / 60)
 		}
-		drawInfoPopupAt(screen, r.combatLog, alpha, float32(r.infoPopupRect().Y))
+		drawInfoPopupAt(screen, r.combatLog, alpha, r.infoPopupRect())
 		r.combatLogTimer--
 	}
 

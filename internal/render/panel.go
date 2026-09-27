@@ -54,6 +54,9 @@ const (
 
 	infoPanelW                  = float32(315)
 	infoPanelH                  = float32(780)
+	infoPopupW                  = float32(430)
+	infoPopupActiveWarsGap      = float32(20)
+	infoPopupTop                = float32(8)
 	factionPanelHeaderH         = 70.0
 	factionPanelBodyPadBottom   = 12.0
 	factionPanelScrollStep      = 28.0
@@ -2139,9 +2142,7 @@ func eventDetailLines(message string, maxWidth float64) []string {
 }
 
 func infoPopupHeight(message string) float32 {
-	const pw = float32(430)
-
-	lines := wrapTextLines(message, FaceMed, float64(pw-40))
+	lines := wrapTextLines(message, FaceMed, float64(infoPopupW-40))
 	lineCount := len(lines)
 	if lineCount > 3 {
 		lineCount = 3
@@ -2149,10 +2150,10 @@ func infoPopupHeight(message string) float32 {
 	return float32(48 + lineCount*20)
 }
 
-func drawInfoPopupAt(screen *ebiten.Image, message string, alpha uint8, py float32) {
-	const pw = float32(430)
-
-	px := float32(ScreenWidth)/2 - pw/2
+func drawInfoPopupAt(screen *ebiten.Image, message string, alpha uint8, rect gameui.Rect) {
+	px := float32(rect.X)
+	py := float32(rect.Y)
+	pw := float32(rect.W)
 	ph := infoPopupHeight(message)
 
 	bgAlpha := alpha

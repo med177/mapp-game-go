@@ -21,8 +21,9 @@ import (
 const mapRegionDoubleClickWindow = 750 * time.Millisecond
 
 const (
-	menuSelectionSound = "select"
-	endTurnSound       = "end_turn"
+	menuSelectionSound       = "select"
+	endTurnSound             = "end_turn"
+	infoPopupAutoCloseFrames = 90
 )
 
 // İlişki iyileştirme ve hediye bildirimleri normalde mevcut 60 TPS akışında
@@ -34,6 +35,14 @@ const (
 
 func infoPopupClickDismisses(timer int, popup gameui.Rect, mx, my float64, leftPressed, leftWasPressed bool) bool {
 	return timer > 0 && leftPressed && !leftWasPressed && popup.Hit(mx, my)
+}
+
+func (r *Renderer) dismissInfoPopup() {
+	if r == nil {
+		return
+	}
+	r.combatLog = ""
+	r.combatLogTimer = 0
 }
 
 func isZoomInLoopLevel(scale float64) bool {
@@ -191,8 +200,7 @@ func (r *Renderer) HandleInput() InputAction {
 	mx, my := ebiten.CursorPosition()
 	if infoPopupClickDismisses(r.combatLogTimer, r.infoPopupRect(), float64(mx), float64(my), leftPressed, leftWasPressed) {
 		r.prevMouse[ebiten.MouseButtonLeft] = true
-		r.combatLog = ""
-		r.combatLogTimer = 0
+		r.dismissInfoPopup()
 		return InputAction{}
 	}
 
@@ -296,7 +304,7 @@ func (r *Renderer) HandleInput() InputAction {
 		} else {
 			r.combatLog = "Geliştirme: askerî güç belirsizliği geri açıldı"
 		}
-		r.combatLogTimer = 180
+		r.combatLogTimer = infoPopupAutoCloseFrames
 		return InputAction{}
 	}
 	if r.gs.DevelopmentMode && r.keyJustPressed(ebiten.KeyF12) {
@@ -768,6 +776,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 
 	// UI alanlarında tıklama işleme
+	// Bildirim, gerçek harita tıklamasıyla da kapanır. UI katmanları üzerindeki
+	// tıklamalar bildirimi kapatmaz; böylece HUD/panel eylemleri bölünmez.
+	if r.combatLogTimer > 0 && !r.uiLayers.BlocksAt(fx, fy) {
+		r.dismissInfoPopup()
+	}
 	if topStatusPanelHit(fx, fy) || topDateHudHit(fx, fy) || bottomActionHudHit(fx, fy) || musicHudHit(fx, fy) ||
 		(r.showActiveWars && activeWarsPanelHit(fx, fy)) ||
 		eventLogPanelHit(fx, fy, r.eventLogCollapsed) || minimapHit(fx, fy) {

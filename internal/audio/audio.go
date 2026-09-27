@@ -196,7 +196,7 @@ func StopGlobalSound(name string) {
 // StartZoomInLoop, haritanın son zoom seviyelerinde zoom sesini döngüde çalar
 // ve arka plan müziğini geçici olarak kısar.
 func StartZoomInLoop() {
-	if !soundEnabled || soundVolume <= 0 {
+	if !soundEnabled || !musicEnabled || soundVolume <= 0 {
 		return
 	}
 	if player := globalSoundPlayers["zoom_in"]; player == nil || !player.IsPlaying() {
@@ -360,6 +360,9 @@ func StopMusic() {
 
 func SetMusicEnabled(enabled bool) {
 	musicEnabled = enabled
+	if !enabled {
+		StopZoomInLoop()
+	}
 	if musicPlayer == nil {
 		if enabled && musicVolume > 0 && len(musicPlaylist) > 0 {
 			playNextMusic()

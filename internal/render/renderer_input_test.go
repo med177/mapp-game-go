@@ -174,6 +174,33 @@ func TestInfoPopupClickDismissesRequiresNewClick(t *testing.T) {
 	}
 }
 
+func TestInfoPopupUsesTopRightSharedRect(t *testing.T) {
+	originalWidth := ScreenWidth
+	defer func() { ScreenWidth = originalWidth }()
+	ScreenWidth = 1680
+
+	r := &Renderer{combatLog: "Donanma limana konuşlandı."}
+	popup := r.infoPopupRect()
+	activeWarsButton := buildActiveWarsHUDButton()
+	wantX := activeWarsButton.X + activeWarsButton.W + float64(infoPopupActiveWarsGap)
+	if popup.X != wantX || popup.Y != float64(infoPopupTop) || popup.W != float64(infoPopupW) {
+		t.Fatalf("bildirim recti = %+v, sağ üst recti bekleniyordu: x=%v y=%v w=%v", popup, wantX, infoPopupTop, infoPopupW)
+	}
+}
+
+func TestInfoPopupDismissClearsMessageAndTimer(t *testing.T) {
+	r := &Renderer{}
+	r.ShowInfo("Kısa bilgi")
+	if r.combatLogTimer != infoPopupAutoCloseFrames {
+		t.Fatalf("bildirim süresi = %d, want %d kare", r.combatLogTimer, infoPopupAutoCloseFrames)
+	}
+
+	r.dismissInfoPopup()
+	if r.combatLog != "" || r.combatLogTimer != 0 {
+		t.Fatalf("bildirim kapatılmadı: message=%q timer=%d", r.combatLog, r.combatLogTimer)
+	}
+}
+
 func TestMapRegionDoubleClickUsesTerrainParentIdentity(t *testing.T) {
 	parentID := world.RegionID("parent")
 	fragmentID := world.RegionID("area::forest::parent")

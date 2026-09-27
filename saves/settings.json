@@ -2,8 +2,8 @@
   "Difficulty": 3,
   "Fullscreen": true,
   "FastAITurns": true,
-  "MusicOn": true,
-  "MusicVolume": 30,
+  "MusicOn": false,
+  "MusicVolume": 20,
   "SoundOn": true,
   "SoundVolume": 40
 }

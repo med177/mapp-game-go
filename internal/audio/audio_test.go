@@ -32,6 +32,34 @@ func TestLoadScenarioSoundLoadsConqueredEffect(t *testing.T) {
 	}
 }
 
+func TestZoomInLoopRespectsMusicSetting(t *testing.T) {
+	oldMusicEnabled := musicEnabled
+	oldSoundEnabled := soundEnabled
+	oldSoundVolume := soundVolume
+	oldMusicDucked := zoomInMusicDucked
+	defer func() {
+		musicEnabled = oldMusicEnabled
+		soundEnabled = oldSoundEnabled
+		soundVolume = oldSoundVolume
+		zoomInMusicDucked = oldMusicDucked
+		StopGlobalSound("zoom_in")
+	}()
+
+	musicEnabled = false
+	soundEnabled = true
+	soundVolume = 1
+	StartZoomInLoop()
+	if _, ok := globalSoundPlayers["zoom_in"]; ok {
+		t.Fatal("müzik kapalıyken zoom sesi başlatıldı")
+	}
+
+	zoomInMusicDucked = true
+	SetMusicEnabled(false)
+	if zoomInMusicDucked {
+		t.Fatal("müzik kapatılırken zoom sesi ducking durumu temizlenmedi")
+	}
+}
+
 func TestPlayScenarioSoundLoopTracksScenarioIntro(t *testing.T) {
 	audioDir := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "audio")
 	path := filepath.Join(audioDir, "scenario_intro.mp3")
