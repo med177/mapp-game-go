@@ -66,10 +66,10 @@ func (s *GameState) BeginNavalContact(attacker, defender *army.Army, seaID, atta
 		AttackerDecision:     navalContactDefaultDecision(attacker, trigger),
 		DefenderDecision:     navalContactDefaultDecision(defender, trigger),
 	}
-	if attacker.OwnerID == string(s.PlayerFactionID) {
+	if attacker.OwnerID == string(s.PlayerFactionID) && !s.AIControlsPlayerFaction {
 		contact.PlayerArmyID = attacker.ID
 		contact.AttackerDecision = NavalContactUndecided
-	} else if defender.OwnerID == string(s.PlayerFactionID) {
+	} else if defender.OwnerID == string(s.PlayerFactionID) && !s.AIControlsPlayerFaction {
 		contact.PlayerArmyID = defender.ID
 		contact.DefenderDecision = NavalContactUndecided
 	}

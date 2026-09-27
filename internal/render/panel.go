@@ -37,7 +37,7 @@ const (
 	topDateHudH       = float32(80)
 	actionHudPad      = float32(8)
 	actionHudGap      = float32(5)
-	actionHudGroupGap = float32(18)
+	actionHudGroupGap = float32(216)
 
 	minimapW = float32(240)
 	minimapH = float32(165)
@@ -586,6 +586,75 @@ func BottomButtonRects() [5][4]float32 {
 	}
 }
 
+// playerAITurnControlRect, Tur Bitir düğmesinin yanındaki iki satırlı AI test
+// kontrolünün çizim ve input geometrisini birlikte üretir.
+func playerAITurnControlRect() gameui.Rect {
+	end := BottomButtonRects()[4]
+	const inset = float32(8)
+	return gameui.Rect{
+		X: float64(end[0] - actionHudGroupGap + inset),
+		Y: float64(end[1] + inset/2),
+		W: float64(actionHudGroupGap - inset*2),
+		H: float64(end[3] - inset),
+	}
+}
+
+func playerAITurnCheckboxRects() [2]gameui.Rect {
+	control := playerAITurnControlRect()
+	const horizontalInset = 6.0
+	rowHeight := control.H / 2
+	return [2]gameui.Rect{
+		{X: control.X + horizontalInset, Y: control.Y, W: control.W - horizontalInset*2, H: rowHeight},
+		{X: control.X + horizontalInset, Y: control.Y + rowHeight, W: control.W - horizontalInset*2, H: rowHeight},
+	}
+}
+
+// playerAITurnCheckboxRect, ilk satırın geriye dönük ortak geometri adıdır.
+func playerAITurnCheckboxRect() gameui.Rect {
+	return playerAITurnCheckboxRects()[0]
+}
+
+func playerAITurnCheckboxIndex(fx, fy float64) int {
+	for index, rect := range playerAITurnCheckboxRects() {
+		if rect.Hit(fx, fy) {
+			return index
+		}
+	}
+	return -1
+}
+
+func playerAITurnCheckboxHit(fx, fy float64) bool {
+	return playerAITurnCheckboxIndex(fx, fy) >= 0
+}
+
+func drawPlayerAITurnCheckbox(screen *ebiten.Image, complete, economy bool) {
+	control := playerAITurnControlRect()
+	drawRoundedHUDFrame(screen, [4]float32{float32(control.X), float32(control.Y), float32(control.W), float32(control.H)}, 6, 1, color.RGBA{26, 22, 16, 220}, color.RGBA{126, 101, 57, 230})
+	checkboxRects := playerAITurnCheckboxRects()
+	checkboxes := [2]gameui.Checkbox{
+		gameui.NewCheckbox(checkboxRects[0].X, checkboxRects[0].Y, checkboxRects[0].W, checkboxRects[0].H, "Komple AI Yönetsin"),
+		gameui.NewCheckbox(checkboxRects[1].X, checkboxRects[1].Y, checkboxRects[1].W, checkboxRects[1].H, "Sadece Geliştirme ve Pazar"),
+	}
+	checkboxes[0].Checked = complete
+	checkboxes[1].Checked = complete || economy
+	checkboxes[1].Enabled = !complete
+	style := gameui.CheckboxStyle{
+		BoxBG:        color.RGBA{44, 36, 24, 235},
+		BoxBorder:    color.RGBA{178, 150, 84, 230},
+		CheckColor:   color.RGBA{242, 210, 112, 255},
+		TextColor:    ColorWhite,
+		DisabledText: ColorGray,
+		BoxSize:      14,
+		TextOffsetY:  3,
+		TextVariant:  gameui.TextSmall,
+		BorderWidth:  1,
+		CornerRadius: 3,
+	}
+	for _, checkbox := range checkboxes {
+		gameui.DrawCheckbox(screen, checkbox, style, renderText)
+	}
+}
+
 func bottomActionHudHit(fx, fy float64) bool {
 	x, y, w, h := bottomActionHudRect()
 	if fx >= float64(x) && fx <= float64(x+w) && fy >= float64(y) && fy <= float64(y+h) {
@@ -599,6 +668,9 @@ func bottomActionHudHit(fx, fy float64) bool {
 }
 
 func bottomActionButtonHit(fx, fy float64) bool {
+	if playerAITurnCheckboxHit(fx, fy) {
+		return true
+	}
 	for _, btn := range buildBottomActionButtons("Ordu", true) {
 		if btn.HitTest(fx, fy) {
 			return true
@@ -802,7 +874,7 @@ func turnTechHudWarFatigueHit(gs *state.GameState, fx, fy float64) bool {
 // ── Ana alt bar ──────────────────────────────────────────────────────
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
-func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID army.ArmyID, showArmyDetail, showRecruit, recruitEnabled bool, recruitReason string, showTrade, showDiplomacy, showTech, showImperialPanel, showActiveWars bool, mapMode MapMode) {
+func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID army.ArmyID, showArmyDetail, showRecruit, recruitEnabled bool, recruitReason string, showTrade, showDiplomacy, showTech, showImperialPanel, showActiveWars, aiControlsPlayerFaction, aiControlsPlayerEconomy bool, mapMode MapMode) {
 	by := float32(0)
 	bw := topStatusW
 	if bw > float32(ScreenWidth) {
@@ -948,6 +1020,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 			DrawText(screen, reason, float64(r[0])+float64(r[2])/2-reasonW/2, float64(r[1])+31, FaceTiny, color.RGBA{120, 112, 96, 210})
 		}
 	}
+	drawPlayerAITurnCheckbox(screen, aiControlsPlayerFaction, aiControlsPlayerEconomy)
 	drawMapModeHud(screen, mapMode)
 	if imperialPanelAvailable(gs) {
 		drawImperialHUD(screen, gs, showImperialPanel)

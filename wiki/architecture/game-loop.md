@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-09-23
+last_updated: 2026-09-27
 related: [state-management, render-pipeline]
 ---
 
@@ -148,6 +148,19 @@ erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir
 `Hızlı Tur` açıkken aynı scheduler bir frame içinde birden çok AI step'i işler;
 oyuncu kararı isteyen pencere (barış, ticaret, ittifak veya vassallık gibi)
 oluştuğunda durur.
+
+Oyuncu turundaki alt HUD'da `Tur Bitir` düğmesinin yanında iki satırlı AI
+kontrolü bulunur. `Komple AI Yönetsin` açık kaldığı sürece oyuncu devleti de AI
+sırasına dahil edilir ve listenin ilk devleti olarak işlenir; ardından diğer
+fraksiyonlar mevcut `FactionOrder` sırasıyla devam eder. Bu seçenek oyuncu
+devletinin askerî, diplomatik, geliştirme ve pazar kararlarını devreder.
+`Geliştirme ve Pazar AI` ise daha dar bir devirdir: oyuncu devleti yine ilk AI
+sırasında işlenir ancak yalnız bina/teknoloji geliştirmesi ve pazar kararları
+AI'ye bırakılır; askerî, diplomatik ve vergi kararları oyuncuda kalır. Tam AI
+açıkken alt seçenek bunun kapsandığını göstermek için işaretli ve pasiftir.
+Seçimler kapatılana kadar sonraki turlarda korunur; tam AI modunda oyuncu
+devletinin AI tarafından yürütülen temas kararları da oyuncu modalı açmadan AI
+kararıyla çözülür.
 
 1. Oyuncu kameranın anlık konumunu saklar. Hızlı turda AI hamleleri kamerayı
    hareket ettirmez.

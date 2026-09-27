@@ -103,6 +103,9 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 	if gs == nil {
 		return nil
 	}
+	if fid == gs.PlayerFactionID && gs.AIControlsPlayerEconomy && !gs.AIControlsPlayerFaction {
+		return runPlayerEconomyPreludeWithPreparedContext(gs, fid, eventDefs, preparedContext, steps)
+	}
 	planningContext := preparedContext
 	if planningContext != nil && (planningContext.gs != gs || planningContext.FactionID != fid) {
 		planningContext = nil
@@ -164,6 +167,57 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 
 	// Yeni üretilen veya daha önce komutansız kalan AI ordularını kariyer havuzuna bağla.
 	gs.EnsureFactionCommanders(string(fid))
+
+	if aiStrategicPlanningEnabled(gs) {
+		result := prepareStrategicContextWithEvents(gs, fid, eventDefs)
+		result.budget = budget
+		return result
+	}
+	return nil
+}
+
+// runPlayerEconomyPreludeWithPreparedContext, oyuncu devleti için yalnız
+// geliştirme (bina ve teknoloji) ile pazar kararlarını yürütür. Askerî,
+// diplomatik ve vergi kararları oyuncuda kalır; böylece ikinci alt HUD seçeneği
+// tam AI devrinin daha dar bir test varyantı olarak çalışır.
+func runPlayerEconomyPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionID, eventDefs []*gameevents.Event, preparedContext *StrategicContext, steps *[]TurnStep) *StrategicContext {
+	planningContext := preparedContext
+	if planningContext != nil && (planningContext.gs != gs || planningContext.FactionID != fid) {
+		planningContext = nil
+	}
+	if aiStrategicPlanningEnabled(gs) && planningContext == nil {
+		planningContext = prepareStrategicContextWithEvents(gs, fid, eventDefs)
+	}
+	if purchased := aiProcureGrain(gs, fid); purchased > 0 {
+		addTurnStep(steps, TurnStep{
+			FactionID: fid,
+			Kind:      TurnStepInfo,
+			Message:   turnFactionName(gs, fid) + " stratejik tahıl rezervini açık pazardan tamamlıyor.",
+		})
+	}
+	if purchased := aiProcureStrategicResources(gs, fid, planningContext); purchased != (economy.ResourceCost{}) {
+		addTurnStep(steps, TurnStep{
+			FactionID: fid,
+			Kind:      TurnStepInfo,
+			Message:   turnFactionName(gs, fid) + " gerekli üretim kaynaklarını ticaret ağından tamamlıyor.",
+		})
+	}
+
+	budget := prepareAIBudget(gs, fid, planningContext)
+	if budget == nil {
+		aiEconomyBuildWithSteps(gs, fid, steps)
+		aiResearchWithSteps(gs, fid, steps)
+	} else {
+		for _, category := range budget.Order {
+			switch category {
+			case aiBudgetEconomy:
+				aiEconomyBuildWithStrategicContextAndSteps(gs, fid, budget, planningContext, steps)
+			case aiBudgetResearch:
+				aiResearchWithStrategicContextAndSteps(gs, fid, budget, planningContext, steps)
+			}
+			budget.release(category)
+		}
+	}
 
 	if aiStrategicPlanningEnabled(gs) {
 		result := prepareStrategicContextWithEvents(gs, fid, eventDefs)
@@ -1302,6 +1356,9 @@ func FormCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID) {
 }
 
 func formCoalitionAgainstPlayer(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {
+	if gs == nil || fid == "" || fid == gs.PlayerFactionID {
+		return
+	}
 	playerRegions := len(gs.RegionsOwnedBy(gs.PlayerFactionID))
 	if playerRegions < coalitionThreshold {
 		return
@@ -1355,7 +1412,7 @@ func moveArmy(gs *state.GameState, a *army.Army) {
 // olmadığını belirler. Oyuncu filosunun görev state'i bu yola hiç girmez;
 // AI'de ise stratejik rol geçici tur bağlamından okunur.
 func aiNavalPatrolMoveIntent(gs *state.GameState, a *army.Army, target world.RegionID, ctx *StrategicContext) bool {
-	if gs == nil || a == nil || !a.IsNaval || a.OwnerID == string(gs.PlayerFactionID) || !isWarshipFleet(a, gs.UnitTypes) {
+	if gs == nil || a == nil || !a.IsNaval || (a.OwnerID == string(gs.PlayerFactionID) && !gs.AIControlsPlayerFaction) || !isWarshipFleet(a, gs.UnitTypes) {
 		return false
 	}
 	targetRegion := gs.Regions[target]

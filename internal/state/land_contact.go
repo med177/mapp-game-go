@@ -65,10 +65,10 @@ func (s *GameState) BeginLandContact(attacker, defender *army.Army, landID, atta
 	if defender.InAmbush {
 		contact.AmbushArmyID = defender.ID
 	}
-	if attacker.OwnerID == string(s.PlayerFactionID) {
+	if attacker.OwnerID == string(s.PlayerFactionID) && !s.AIControlsPlayerFaction {
 		contact.PlayerArmyID = attacker.ID
 		contact.AttackerDecision = LandContactUndecided
-	} else if defender.OwnerID == string(s.PlayerFactionID) {
+	} else if defender.OwnerID == string(s.PlayerFactionID) && !s.AIControlsPlayerFaction {
 		contact.PlayerArmyID = defender.ID
 		contact.DefenderDecision = LandContactUndecided
 	}

@@ -802,6 +802,8 @@ func (g *Game) startAITurnSequence() {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
+	g.gs.AIControlsPlayerFaction = g.playerFactionAITurnsEnabled()
+	g.gs.AIControlsPlayerEconomy = g.playerFactionAIEconomyEnabled()
 	marketPreparation := ai.NewMarketOrderPreparation(g.gs, g.evts)
 	if g.quickTurnEnabled() {
 		g.suppressQuickTurnRelationshipNotifications()
@@ -864,6 +866,12 @@ func (g *Game) orderedAIFactions() []faction.FactionID {
 	}
 	order := make([]faction.FactionID, 0, len(g.gs.Factions))
 	seen := make(map[faction.FactionID]struct{}, len(g.gs.Factions))
+	if g.playerFactionAITurnsEnabled() || g.playerFactionAIEconomyEnabled() {
+		if player := g.gs.Factions[g.gs.PlayerFactionID]; g.gs.PlayerFactionID != "" && player != nil && !player.IsVirtual {
+			order = append(order, g.gs.PlayerFactionID)
+			seen[g.gs.PlayerFactionID] = struct{}{}
+		}
+	}
 	for _, fid := range g.gs.FactionOrder {
 		f := g.gs.Factions[fid]
 		if fid == g.gs.PlayerFactionID || f == nil || f.IsVirtual {
@@ -884,6 +892,14 @@ func (g *Game) orderedAIFactions() []faction.FactionID {
 	}
 	sort.Slice(extra, func(i, j int) bool { return extra[i] < extra[j] })
 	return append(order, extra...)
+}
+
+func (g *Game) playerFactionAITurnsEnabled() bool {
+	return g != nil && g.renderer != nil && g.renderer.AIControlsPlayerFaction
+}
+
+func (g *Game) playerFactionAIEconomyEnabled() bool {
+	return g != nil && g.renderer != nil && (g.renderer.AIControlsPlayerFaction || g.renderer.AIControlsPlayerEconomy)
 }
 
 // advanceAITurnMarketPreparation pazar hazırlığını AI fazına girdikten sonra
@@ -1125,6 +1141,8 @@ func (g *Game) finishAITurnSequence() {
 		g.renderer.RestoreCamera(g.aiTurn.camera)
 	}
 	g.renderer.ClearAITurnStatus()
+	g.gs.AIControlsPlayerFaction = false
+	g.gs.AIControlsPlayerEconomy = false
 	g.aiTurn = nil
 }
 
@@ -3916,6 +3934,8 @@ func (g *Game) resetToScenarioSelect(editMode bool) {
 		g.stopScenarioIntro(g.gs.ScenarioPath)
 	}
 	g.finishAITurnSequence()
+	g.renderer.AIControlsPlayerFaction = false
+	g.renderer.AIControlsPlayerEconomy = false
 	g.lastLandUnitID = ""
 	g.lastNavalUnitID = ""
 	gs := &state.GameState{

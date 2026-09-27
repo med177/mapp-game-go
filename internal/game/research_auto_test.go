@@ -804,3 +804,128 @@ func TestSplitFleetWithEmbarkedArmyIsBlocked(t *testing.T) {
 		t.Fatalf("bölme engellenmesine rağmen gemi sayısı = %d, want 2", got)
 	}
 }
+
+func TestOrderedAIFactionsPutsPlayerFirstWhenEnabled(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		FactionOrder:    []faction.FactionID{"north", "player", "south"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"north":  {ID: "north"},
+			"player": {ID: "player"},
+			"south":  {ID: "south"},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{AIControlsPlayerFaction: true}}
+
+	got := g.orderedAIFactions()
+	want := []faction.FactionID{"player", "north", "south"}
+	if len(got) != len(want) {
+		t.Fatalf("AI faction sırası uzunluğu: got=%v want=%v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("AI faction sırası: got=%v want=%v", got, want)
+		}
+	}
+}
+
+func TestOrderedAIFactionsKeepsPlayerOutWhenDisabled(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		FactionOrder:    []faction.FactionID{"north", "player", "south"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"north":  {ID: "north"},
+			"player": {ID: "player"},
+			"south":  {ID: "south"},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	got := g.orderedAIFactions()
+	want := []faction.FactionID{"north", "south"}
+	if len(got) != len(want) || got[0] != want[0] || got[1] != want[1] {
+		t.Fatalf("kapalı seçenekte oyuncu AI sırası: got=%v want=%v", got, want)
+	}
+}
+
+func TestOrderedAIFactionsPutsPlayerFirstForEconomyOnlyMode(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		FactionOrder:    []faction.FactionID{"north", "player", "south"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"north":  {ID: "north"},
+			"player": {ID: "player"},
+			"south":  {ID: "south"},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{AIControlsPlayerEconomy: true}}
+
+	got := g.orderedAIFactions()
+	want := []faction.FactionID{"player", "north", "south"}
+	if len(got) != len(want) {
+		t.Fatalf("ekonomi AI faction sırası uzunluğu: got=%v want=%v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("ekonomi AI faction sırası: got=%v want=%v", got, want)
+		}
+	}
+}
+
+func TestStartAITurnSequenceStartsPlayerFactionImmediatelyWhenChecked(t *testing.T) {
+	gs := &state.GameState{
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "player",
+		FactionOrder:    []faction.FactionID{"north", "player"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"north":  {ID: "north"},
+			"player": {ID: "player"},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{AIControlsPlayerFaction: true}}
+
+	g.startAITurnSequence()
+
+	if gs.Phase != state.PhaseAITurn {
+		t.Fatalf("Tur Bitir sonrasında AI fazı başlamadı: got=%q", gs.Phase)
+	}
+	if !gs.AIControlsPlayerFaction {
+		t.Fatal("oyuncu devletinin AI kontrolü AI fazı başında etkinleşmedi")
+	}
+	if g.aiTurn == nil || len(g.aiTurn.order) == 0 || g.aiTurn.order[0] != gs.PlayerFactionID {
+		var order []faction.FactionID
+		if g.aiTurn != nil {
+			order = g.aiTurn.order
+		}
+		t.Fatalf("AI fazı oyuncu devletiyle başlamadı: order=%v", order)
+	}
+}
+
+func TestStartAITurnSequenceEnablesEconomyOnlyModeImmediatelyWhenChecked(t *testing.T) {
+	gs := &state.GameState{
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "player",
+		FactionOrder:    []faction.FactionID{"north", "player"},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"north":  {ID: "north"},
+			"player": {ID: "player"},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{AIControlsPlayerEconomy: true}}
+
+	g.startAITurnSequence()
+
+	if !gs.AIControlsPlayerEconomy {
+		t.Fatal("geliştirme ve pazar AI seçeneği AI fazı başında etkinleşmedi")
+	}
+	if gs.AIControlsPlayerFaction {
+		t.Fatal("ekonomi-only seçeneği oyuncunun askerî tam kontrolünü etkinleştirdi")
+	}
+	if g.aiTurn == nil || len(g.aiTurn.order) == 0 || g.aiTurn.order[0] != gs.PlayerFactionID {
+		var order []faction.FactionID
+		if g.aiTurn != nil {
+			order = g.aiTurn.order
+		}
+		t.Fatalf("ekonomi-only AI fazı oyuncu devletiyle başlamadı: order=%v", order)
+	}
+}

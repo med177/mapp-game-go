@@ -19,7 +19,7 @@ func ResolveLandContactDecision(gs *state.GameState, contact *state.LandContact)
 	setDecision := func(armyID army.ArmyID, opponentID army.ArmyID, decision *state.LandContactDecision) {
 		current := gs.Armies[armyID]
 		opponent := gs.Armies[opponentID]
-		if current == nil || opponent == nil || decision == nil || current.OwnerID == string(gs.PlayerFactionID) {
+		if current == nil || opponent == nil || decision == nil || (current.OwnerID == string(gs.PlayerFactionID) && !gs.AIControlsPlayerFaction) {
 			return
 		}
 		chosen := state.LandContactClash

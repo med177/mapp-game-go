@@ -107,6 +107,9 @@ func (s *TurnStepper) Step() (TurnStep, bool) {
 			s.preludeIdx++
 			return step, false
 		}
+		if s.fid == s.gs.PlayerFactionID && s.gs.AIControlsPlayerEconomy && !s.gs.AIControlsPlayerFaction {
+			return TurnStep{FactionID: s.fid, Kind: TurnStepComplete}, true
+		}
 		if s.armyOrder == nil {
 			s.initArmyOrder()
 		}

@@ -45,7 +45,7 @@ func NewMarketOrderPreparation(gs *state.GameState, eventDefs []*gameevents.Even
 		BuyOrders:  make(map[faction.FactionID]map[economy.GoodType]int),
 	}
 	for _, fid := range aiSortedFactionIDs(gs) {
-		if fid == gs.PlayerFactionID {
+		if fid == gs.PlayerFactionID && !gs.AIControlsPlayerEconomy && !gs.AIControlsPlayerFaction {
 			continue
 		}
 		f := gs.Factions[fid]

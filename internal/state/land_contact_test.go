@@ -42,6 +42,30 @@ func TestLandContactAmbushCannotBeDeclinedByEnteringArmy(t *testing.T) {
 	}
 }
 
+func TestAIControlledPlayerArmyContactDoesNotBecomePlayerPrompt(t *testing.T) {
+	attacker := &army.Army{ID: "attacker", OwnerID: "player", RegionID: "from"}
+	defender := &army.Army{ID: "defender", OwnerID: "enemy", RegionID: "target"}
+	gs := &GameState{
+		PlayerFactionID:         "player",
+		AIControlsPlayerFaction: true,
+		Armies: map[army.ArmyID]*army.Army{
+			attacker.ID: attacker,
+			defender.ID: defender,
+		},
+	}
+
+	contact := gs.BeginLandContact(attacker, defender, "target", "from", LandContactMovement)
+	if contact == nil {
+		t.Fatal("AI kontrollü oyuncu ordusu için kara teması oluşturulamadı")
+	}
+	if contact.PlayerArmyID != "" {
+		t.Fatalf("AI kontrollü temas oyuncu penceresine ayrıldı: %q", contact.PlayerArmyID)
+	}
+	if contact.AttackerDecision != LandContactClash || contact.DefenderDecision != LandContactClash {
+		t.Fatalf("AI kontrollü temas kararları otomatik çözülmedi: attacker=%q defender=%q", contact.AttackerDecision, contact.DefenderDecision)
+	}
+}
+
 func TestLandContactRetreatRegionRejectsBlockedTerrainArea(t *testing.T) {
 	current := &world.Region{
 		ID:        "izmir",

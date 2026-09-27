@@ -438,6 +438,13 @@ type GameState struct {
 	PendingNavalContact *NavalContact `json:"-"`
 	// Geçici kara temas kararı; temas çözülünce temizlenir ve save'e yazılmaz.
 	PendingLandContact *LandContact `json:"-"`
+	// AIControlsPlayerFaction yalnız oyuncu devletinin AI tarafından yürütüldüğü
+	// tur fazında aktiftir. Save'e yazılmaz; oyuncunun normal temas kararları
+	// bu bayrak kapalıyken korunur.
+	AIControlsPlayerFaction bool `json:"-"`
+	// AIControlsPlayerEconomy yalnız oyuncu devletinin geliştirme ve pazar
+	// kararlarının AI'ye bırakıldığı tur fazında aktiftir. Save'e yazılmaz.
+	AIControlsPlayerEconomy bool `json:"-"`
 }
 
 // HistoricalFactionChangeReport, takvimde uygulanan tek bir faction

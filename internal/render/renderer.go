@@ -198,8 +198,14 @@ type Renderer struct {
 	HasAutoSave     bool
 	EditModeEnabled bool
 	CurrentSettings Settings
-	LoadingMessage  string
-	LoadingProgress int
+	// AIControlsPlayerFaction, Tur Bitir'in yanında seçilen ve oyuncu kapatana
+	// kadar açık kalan test seçeneğidir.
+	AIControlsPlayerFaction bool
+	// AIControlsPlayerEconomy, oyuncunun geliştirme ve pazar kararlarını
+	// ikinci test seçeneğiyle AI'ye bırakır.
+	AIControlsPlayerEconomy bool
+	LoadingMessage          string
+	LoadingProgress         int
 	// LoadingScenarioPath yükleme ekranında gösterilecek senaryonun klasörüdür.
 	LoadingScenarioPath string
 
@@ -2021,7 +2027,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 				recruitReason = recruitPanelDisabledReason(r.gs, r.SelectedRegion)
 			}
 		}
-		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showImperialPanel, r.showActiveWars, r.mapMode)
+		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showImperialPanel, r.showActiveWars, r.AIControlsPlayerFaction, r.AIControlsPlayerEconomy, r.mapMode)
 		r.drawGrainEconomyPopup(screen)
 		r.drawGoldIncomePopup(screen)
 		r.drawArmyOrganizationPopup(screen)

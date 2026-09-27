@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-27: Alt HUD'daki `Tur Bitir` düğmesinin yanına iki satırlı kalıcı AI
+  kontrolü eklendi. `Komple AI Yönetsin` oyuncu devletinin tüm kararlarını,
+  `Geliştirme ve Pazar AI` yalnız bina/teknoloji ile pazar kararlarını devrediyor;
+  her iki modda da oyuncu devleti AI turunun ilk sırasında işlenip ardından
+  normal `FactionOrder` devam ediyor. Seçimler kapatılana kadar sonraki turlarda
+  korunuyor. Regresyonlar: `TestOrderedAIFactionsPutsPlayerFirstWhenEnabled`,
+  `TestOrderedAIFactionsPutsPlayerFirstForEconomyOnlyMode`,
+  `TestAIControlledPlayerArmyContactDoesNotBecomePlayerPrompt`.
+
 - 2026-09-27: AI strateji ve claim referansları senaryo yüklemesinde güncel
   faction/bölge kimliklerine karşı doğrulanıyor. 1300 senaryosunda Papalık
   strateji kimliği düzeltildi; Karaman’ın artık kara bağlantısı olmayan

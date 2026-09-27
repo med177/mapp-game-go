@@ -736,6 +736,18 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{Kind: ActionOpenImperialPanel}
 	}
 	// --- Alt panel butonları ---
+	if r.uiLayerAllowsAt(fx, fy, uiLayerBottom) {
+		switch playerAITurnCheckboxIndex(fx, fy) {
+		case 0:
+			r.AIControlsPlayerFaction = !r.AIControlsPlayerFaction
+			return InputAction{}
+		case 1:
+			if !r.AIControlsPlayerFaction {
+				r.AIControlsPlayerEconomy = !r.AIControlsPlayerEconomy
+			}
+			return InputAction{}
+		}
+	}
 	recruitEnabled := RecruitPanelButtonEnabled(r.gs, r.SelectedRegion)
 	armyLabel, armyEnabled, _, _, _ := bottomArmyAction(r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled)
 	bottomButtons := buildBottomActionButtons(armyLabel, armyEnabled)

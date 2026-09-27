@@ -19,7 +19,7 @@ func ResolveNavalContactDecision(gs *state.GameState, contact *state.NavalContac
 	setDecision := func(fleetID army.ArmyID, opponentID army.ArmyID, decision *state.NavalContactDecision, excludedRegions ...world.RegionID) {
 		fleet := gs.Armies[fleetID]
 		opponent := gs.Armies[opponentID]
-		if fleet == nil || opponent == nil || decision == nil || fleet.OwnerID == string(gs.PlayerFactionID) {
+		if fleet == nil || opponent == nil || decision == nil || (fleet.OwnerID == string(gs.PlayerFactionID) && !gs.AIControlsPlayerFaction) {
 			return
 		}
 		chosen := aiNavalContactBaseDecision(fleet)
@@ -60,8 +60,8 @@ func ResolveAIOnlyNavalContact(gs *state.GameState, contact *state.NavalContact)
 		}
 	}
 
-// ResolveNavalContactBattle expects the contact to have already been
-// accepted for battle and only uses the fleets' current locations. Clear the transient
+	// ResolveNavalContactBattle expects the contact to have already been
+	// accepted for battle and only uses the fleets' current locations. Clear the transient
 	// prompt before resolving so a battle cannot leave a stale modal state.
 	gs.ClearNavalContact()
 	return ResolveNavalContactBattle(
