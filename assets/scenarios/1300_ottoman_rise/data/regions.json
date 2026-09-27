@@ -2403,8 +2403,8 @@
       "lazio",
       "tyrrhenian_sea"
     ],
-    "world_x": 774,
-    "world_y": 464,
+    "world_x": 773,
+    "world_y": 465,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -11584,7 +11584,7 @@
       "otranto_strait"
     ],
     "world_x": 799,
-    "world_y": 453,
+    "world_y": 454,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,

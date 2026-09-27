@@ -9,331 +9,237 @@ import (
 // updateCursorShape her frame fare konumuna göre OS imlecini günceller.
 func (r *Renderer) updateCursorShape() {
 	mx, my := ebiten.CursorPosition()
-	fx, fy := float64(mx), float64(my)
+	ebiten.SetCursorShape(r.cursorShapeAt(float64(mx), float64(my)))
+}
 
+// cursorShapeAt bütün ekran ve oyun fazları için tek cursor karar yoludur.
+// UI katmanı önce değerlendirilir; harita üzerindeki faza özel hedefler ancak
+// cursor bir UI yüzeyinin üzerinde değilse kontrol edilir.
+func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) && r.uiLayers.BlocksAt(fx, fy) {
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) {
-		ebiten.SetCursorShape(ebiten.CursorShapeMove)
-		return
+		return ebiten.CursorShapeMove
 	}
 	if r.navalMissionTargeting {
 		if r.navalMissionTargetHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-		} else {
-			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+			return ebiten.CursorShapePointer
 		}
-		return
+		return ebiten.CursorShapeDefault
 	}
 
 	// Açık paneller öncelikli kontrol
 	if r.showHistoricalEvent {
 		if r.historicalEventHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.battleReport.show {
 		if r.battleReportHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.showVictoryDetail {
 		if victoryDetailCloseHit(fx, fy) || !victoryDetailPopupHit(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.regionTaskDialog.show {
 		if r.regionTaskDialogHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.confirmDialog.show {
 		if r.confirmDialogHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.warConfirm.show {
 		if r.warConfirmHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.warSummary.show {
 		if r.warSummaryHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.battlePlan.show {
 		if r.battlePlanHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
 		if r.diplomacyOfferHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.showEventCodex {
 		if eventCodexCloseHit(fx, fy) || !eventCodexPopupHit(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 		for _, btn := range buildEventCodexFilterButtons() {
 			if btn.HitTest(fx, fy) {
-				ebiten.SetCursorShape(ebiten.CursorShapePointer)
-				return
+				return ebiten.CursorShapePointer
 			}
 		}
 		if eventCodexEntryHit(fx, fy, len(r.currentEventCodexEntries()), r.eventCodexScroll) >= 0 {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.eventDetail != "" {
 		if eventDetailCloseHit(fx, fy) || !eventDetailPopupHit(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.showImperialPanel {
 		if r.imperialPanelPointerHit(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if pointer, handled := r.overlayPanelCursorHit(fx, fy); handled {
 		if pointer {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-		} else {
-			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+			return ebiten.CursorShapePointer
 		}
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.grainEconomyPopupHovering(fx, fy) {
-		ebiten.SetCursorShape(ebiten.CursorShapePointer)
-		return
+		return ebiten.CursorShapePointer
 	}
 	if r.goldIncomePopupHovering(fx, fy) {
-		ebiten.SetCursorShape(ebiten.CursorShapePointer)
-		return
+		return ebiten.CursorShapePointer
 	}
 	if r.showDiplomacy {
 		if diplomacyPanelPointerHit(fx, fy, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.showTech {
 		if r.techPanelPointerHit(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.showTrade {
 		if tradePanelPointerHit(fx, fy, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeListFilter, r.tradeListSort) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.showCommanderPanel {
 		if r.commanderPanelHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-		ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-		return
+		return ebiten.CursorShapeDefault
 	}
 	if r.selectedSiegePanelHovering(fx, fy) {
-		ebiten.SetCursorShape(ebiten.CursorShapePointer)
-		return
+		return ebiten.CursorShapePointer
 	}
 
 	switch r.gs.Phase {
 	case state.PhaseMainMenu:
 		if r.mainMenuHoverIndex(fx, fy) >= 0 {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 	case state.PhaseScenarioSelect:
 		if buildBackButton().HitTest(fx, fy) || r.scenarioHoverIndex(fx, fy) >= 0 {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 	case state.PhaseFactionSelect:
 		if buildBackButton().HitTest(fx, fy) || r.factionCardHoverIndex(fx, fy) >= 0 {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 	case state.PhaseVictorySelect:
 		if buildBackButton().HitTest(fx, fy) || r.victoryCardHoverIndex(fx, fy) >= 0 {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
-	case state.PhasePlayerTurn:
+	case state.PhasePlayerTurn, state.PhaseEditMode:
+		if r.gs.Phase == state.PhaseEditMode && r.editNewShapeModal.show {
+			if editNewShapeModalHit(fx, fy) {
+				return ebiten.CursorShapePointer
+			}
+			return ebiten.CursorShapeDefault
+		}
+		if r.gs.Phase == state.PhaseEditMode && r.editRegionForm.show {
+			if r.editRegionFormInteractiveHit(fx, fy) {
+				return ebiten.CursorShapePointer
+			}
+			return ebiten.CursorShapeDefault
+		}
+		if r.gs.Phase == state.PhaseEditMode && r.editFactionForm.show {
+			if editFactionFormHit(fx, fy) {
+				return ebiten.CursorShapePointer
+			}
+			return ebiten.CursorShapeDefault
+		}
 		if r.uiLayers.BlocksAt(fx, fy) {
 			if r.uiLayerPointerAt(fx, fy) {
-				ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			} else {
-				ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+				return ebiten.CursorShapePointer
 			}
-			return
+			return ebiten.CursorShapeDefault
 		}
-		if _, ok := r.navalSupplyCargoHitAt(fx, fy); ok {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.navalMovementTargetHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.embarkFleetTargetHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.armyMovementTargetHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.currentRegionArmyTaskHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.inGameHovering(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-	case state.PhaseEditMode:
-		if r.editNewShapeModal.show {
-			if editNewShapeModalHit(fx, fy) {
-				ebiten.SetCursorShape(ebiten.CursorShapePointer)
-				return
+		if r.gs.Phase == state.PhasePlayerTurn {
+			if _, ok := r.navalSupplyCargoHitAt(fx, fy); ok ||
+				r.navalMovementTargetHovering(fx, fy) ||
+				r.embarkFleetTargetHovering(fx, fy) ||
+				r.armyMovementTargetHovering(fx, fy) ||
+				r.currentRegionArmyTaskHovering(fx, fy) ||
+				r.inGameHovering(fx, fy) {
+				return ebiten.CursorShapePointer
 			}
-			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-			return
-		}
-		if r.editRegionForm.show {
-			if r.editRegionFormInteractiveHit(fx, fy) {
-				ebiten.SetCursorShape(ebiten.CursorShapePointer)
-				return
-			}
-			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-			return
-		}
-		if r.editFactionForm.show {
-			if editFactionFormHit(fx, fy) {
-				ebiten.SetCursorShape(ebiten.CursorShapePointer)
-				return
-			}
-			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-			return
-		}
-		if r.editOwnerDropdown.IsOpen() && r.editOwnerDropdown.HitTest(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.editSuccessorDropdown.IsOpen() && r.editSuccessorDropdown.HitTest(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.editTerrainDropdown.IsOpen() && r.editTerrainDropdown.HitTest(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.editSettlementTypeDropdown.IsOpen() && r.editSettlementTypeDropdown.HitTest(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
-		}
-		if r.editInspectorActiveButtonAt(fx, fy) != editButtonNone {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapeDefault
 		}
 		if r.editShapeHelpPanelHit(fx, fy) {
-			ebiten.SetCursorShape(ebiten.CursorShapeDefault)
-			return
+			return ebiten.CursorShapeDefault
 		}
 		if _, ok := r.editRegionCenterAt(fx, fy); ok {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 		if editModifierPressed() && r.editRegionAt(fx, fy) != "" {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 		if editAddModifierPressed() && r.editRegionAt(fx, fy) != "" {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 		if _, _, ok := r.editSettlementAt(fx, fy); ok {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 		if _, ok := r.editArmyAt(fx, fy); ok {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 	case state.PhasePauseMenu:
 		if r.pauseMenuHoverIndex(fx, fy) >= 0 {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 	case state.PhaseLoadSelect:
 		if r.slotSelectHovering(fx, fy, false) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 	case state.PhaseSaveSelect:
 		if r.slotSelectHovering(fx, fy, true) {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 	case state.PhaseSettings:
 		if r.settingsHoverIndex(fx, fy) >= 0 {
-			ebiten.SetCursorShape(ebiten.CursorShapePointer)
-			return
+			return ebiten.CursorShapePointer
 		}
 	}
 
-	ebiten.SetCursorShape(ebiten.CursorShapeDefault)
+	return ebiten.CursorShapeDefault
 }
 
 func (r *Renderer) currentRegionArmyTaskHovering(fx, fy float64) bool {

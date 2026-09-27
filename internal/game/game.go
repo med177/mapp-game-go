@@ -720,6 +720,13 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.lastLandUnitID = ""
 		g.lastNavalUnitID = ""
 		g.gs = res.gs
+		if g.gs.EditMode {
+			// Edit Mode'da dünya haritası yükleme aşaması atlandığı için
+			// senaryo seçiminde başlatılan intro loop'u burada kapatılmalıdır.
+			// Editör ayrıca senaryo playlist'i çalmamalıdır.
+			g.stopScenarioIntro(g.gs.ScenarioPath)
+			audio.StopMusic()
+		}
 		refreshMarketOrdersAndPrices(g.gs)
 		g.pendingWarFollowUp = nil
 		g.pendingPlayerMovement = nil
