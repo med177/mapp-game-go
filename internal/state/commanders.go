@@ -611,6 +611,45 @@ func (s *GameState) AvailableCommanders(ownerID string) []*army.Commander {
 	return available
 }
 
+// AssignStrongestCommanderToArmy, yeni kurulan bir ordunun sahibine ait aktif
+// komutanlar arasından en yüksek seviyeli ve tecrübeli olanı atar. Tarihsel
+// başlangıç/bitiş aralığına girmeyen komutanlar özellikle aday yapılmaz.
+func (s *GameState) AssignStrongestCommanderToArmy(armyID army.ArmyID) bool {
+	if s == nil || armyID == "" {
+		return false
+	}
+	currentArmy := s.Armies[armyID]
+	if currentArmy == nil || currentArmy.Commander != nil {
+		return currentArmy != nil && currentArmy.Commander != nil
+	}
+	s.SyncCommanderAvailability()
+	s.SyncCommanderLinks()
+	candidates := make([]*army.Commander, 0)
+	for _, commander := range s.Commanders {
+		if commander == nil || commander.OwnerID != currentArmy.OwnerID || commander.AssignedArmyID != "" || !commander.ActiveInYear(s.Year) {
+			continue
+		}
+		candidates = append(candidates, commander)
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		left, right := candidates[i], candidates[j]
+		if left.Level != right.Level {
+			return left.Level > right.Level
+		}
+		if left.Experience != right.Experience {
+			return left.Experience > right.Experience
+		}
+		if left.Victories != right.Victories {
+			return left.Victories > right.Victories
+		}
+		return left.ID < right.ID
+	})
+	if len(candidates) == 0 {
+		return false
+	}
+	return s.AssignCommanderToArmy(candidates[0].ID, armyID)
+}
+
 // AssignCommanderToArmy tekil bir komutanı orduya atar.
 func (s *GameState) AssignCommanderToArmy(commanderID string, armyID army.ArmyID) bool {
 	if s == nil || armyID == "" {

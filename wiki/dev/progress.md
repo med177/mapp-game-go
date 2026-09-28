@@ -7,6 +7,22 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-28: Haritada ikmal yükü taşıyan diğer devlet filolarının `i` rozeti
+  artık oyuncu filolarıyla aynı hover/cursor popup akışından görülebiliyor;
+  ikmal miktarı ve bağlı ordu bilgisi sahibi devletten bağımsız gösteriliyor.
+  `internal/render/naval_mission_effects_test.go` yabancı filo popup'ını doğrular.
+
+- 2026-09-28: 1300 Osmanlı senaryosuna, Bursa'nın 1326 tarihli fetih hedefini
+  ve fetih sonrası Anadolu desteğini desteklemek üzere 1310 Türkmen/gaza göçü,
+  1321 Bithynia seferberliği ve 1327 Anadolu beylikleri desteği event'leri
+  eklendi. İlk event iki piyade, iki hafif süvari, nüfus ve tahıl; ikinci event
+  iki piyade ve bir mancınık; üçüncü event üç piyade, iki hafif süvari, bir
+  mancınık, altın-tahıl ve beylik ilişkisi desteği sağlar. İlk iki event
+  Bilecik-Bithynia sahipliği ve Doğu Roma ile savaş koşuluna, üçüncü event ise
+  Bursa sahipliğine ve ilgili beyliklerle savaşılmamasına bağlıdır. Event
+  yükleme ve gerçek veri üzerinden birlik, kaynak ve nüfus uygulaması
+  regresyonları `internal/events` altında doğrulanır.
+
 - 2026-09-28: `cmd/simreport` ve `internal/game/headless_report.go` ile pencere
   açmadan normal tur çözümleme hattını kullanan headless kampanya simülasyonu
   eklendi. AI kararları, savaş/ekonomi/diplomasi değişimleri, bölge geçişleri,
@@ -22,8 +38,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   kontrol ediyor (`internal/economy/economy.go`, `internal/ai/merchant_trade.go`,
   `internal/save/save_test.go`).
 
-- 2026-09-27: Üst HUD'a son genişleme hızından türetilen `Aşırı Genişleme`
-  yüzdesi eklendi. Oyuncu değeri 0-100 arasında renkli olarak görür; AI aynı
+- 2026-09-27: Üst HUD'ın altındaki ince uyarı şeridine, son genişleme hızından
+  türetilen `Aşırı Genişleme` yüzdesi eklendi. Oyuncu değeri 0-100 arasında
+  renkli olarak görür; hover durumunda pointer ve eşiklerin anlamını açıklayan
+  bilgi popup'ı açılır; AI aynı
   değeri savaş puanında kullanarak saldırganlığı yüksek devletlerin riski daha
   fazla göze almasına, temkinli devletlerin ise yeni genişlemeyi yavaşlatmasına
   izin verir. Regresyonlar: `TestOverextensionScoreUsesRecentAndRelativeExpansion`,

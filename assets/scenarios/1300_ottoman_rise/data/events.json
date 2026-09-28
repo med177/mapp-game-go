@@ -1,5 +1,29 @@
 [
   {
+    "affected_faction": "ottoman",
+    "desc_tr": "Doğu sınırlarından gelen Türkmen obaları ve gaza erleri, Bilecik uçlarında Osmanlı beyliğine katılıyor. Yeni savaşçılar Söğüt çevresinde toplanırken sınır köyleri de nüfus ve iaşe bakımından güçleniyor.",
+    "grain_delta": 80,
+    "historical_month": 9,
+    "historical_year": 1310,
+    "id": "ottoman_turkmen_gazi_migration_1310",
+    "min_turn": 0,
+    "name_tr": "Türkmenlerin ve Gaza Erlerinin Uçlara Gelişi",
+    "one_shot": true,
+    "probability": 0,
+    "population_delta": 30,
+    "requires_active_factions": ["east_rome"],
+    "requires_owned_regions": ["bilecik_frontier", "bithynia"],
+    "relation_requirements": [
+      { "faction_id": "east_rome", "stance": "war" }
+    ],
+    "sat_delta": 4,
+    "target": "specific_faction",
+    "unit_reinforcements": [
+      { "unit_type": "infantry", "unit_count": 2 },
+      { "unit_type": "light_cavalry", "unit_count": 2 }
+    ]
+  },
+  {
     "id": "swiss_confederacy_emerges_1310",
     "name_tr": "İsviçre Konfederasyonu'nun Doğuşu",
     "desc_tr": "1291 tarihli Waldstätte yemini Schwyz çevresindeki özgür vadileri ortak savunma için bir araya getirdi. Bu eski ittifak artık açık bir konfederasyon olarak yeniden ortaya çıkıyor.",
@@ -55,6 +79,30 @@
     "probability": 0,
     "sat_delta": -10,
     "target": "specific_faction"
+  },
+  {
+    "affected_faction": "ottoman",
+    "desc_tr": "Bursa surlarına karşı sefer hazırlığı için Anadolu uç beyleri ortak bir kuvvet topluyor. Gaza erlerinin getirdiği insan gücüne, surları dövecek mancınıklar ve yeni piyade birlikleri ekleniyor.",
+    "grain_delta": 60,
+    "gold_delta": 100,
+    "historical_month": 8,
+    "historical_year": 1321,
+    "id": "ottoman_bithynian_campaign_muster_1321",
+    "min_turn": 0,
+    "name_tr": "Bithynia Bursa Seferberliği",
+    "one_shot": true,
+    "probability": 0,
+    "requires_active_factions": ["east_rome"],
+    "requires_owned_regions": ["bilecik_frontier", "bithynia"],
+    "relation_requirements": [
+      { "faction_id": "east_rome", "stance": "war" }
+    ],
+    "sat_delta": 2,
+    "target": "specific_faction",
+    "unit_reinforcements": [
+      { "unit_type": "infantry", "unit_count": 2 },
+      { "unit_type": "catapult", "unit_count": 1 }
+    ]
   },
   {
     "affected_faction": "ottoman",
@@ -232,6 +280,37 @@
     "target": "specific_faction"
   },
   {
+    "affected_faction": "ottoman",
+    "desc_tr": "Bursa'nın fethinden sonra Anadolu beyleri ve gaza çevreleri Osmanlı'nın yeni merkezini korumak için yardım gönderiyor. Türkmen süvarileri, piyadeler ve kuşatma ustaları Bursa'da toplanırken Germiyan, Karesi ve Karaman beyleriyle bağlar güçleniyor.",
+    "gold_delta": 140,
+    "grain_delta": 110,
+    "historical_month": 9,
+    "historical_year": 1327,
+    "id": "ottoman_anatolian_beylik_support_1327",
+    "min_turn": 0,
+    "name_tr": "Anadolu Beyliklerinden Bursa Sonrası Destek",
+    "one_shot": true,
+    "probability": 0,
+    "relations": [
+      { "faction_id": "germiyan_bey", "score_delta": 8 },
+      { "faction_id": "karesioglu_bey", "score_delta": 8 },
+      { "faction_id": "karaman_bey", "score_delta": 8 }
+    ],
+    "relation_requirements": [
+      { "faction_id": "germiyan_bey", "blocks_stances": [ "war" ] },
+      { "faction_id": "karesioglu_bey", "blocks_stances": [ "war" ] },
+      { "faction_id": "karaman_bey", "blocks_stances": [ "war" ] }
+    ],
+    "requires_owned_regions": ["bursa"],
+    "sat_delta": 5,
+    "target": "specific_faction",
+    "unit_reinforcements": [
+      { "unit_type": "infantry", "unit_count": 3 },
+      { "unit_type": "light_cavalry", "unit_count": 2 },
+      { "unit_type": "catapult", "unit_count": 1 }
+    ]
+  },
+  {
     "affected_faction": "ilkhanate",
     "army_hp_mod": 0.9,
     "successor_revivals": [
@@ -239,37 +318,43 @@
         "faction_id": "jelayirids",
         "region_id": "baghdad",
         "mode": "independent",
-        "militia_count": 6
+        "unit_type": "infantry",
+        "unit_count": 6
       },
       {
         "faction_id": "muzaffarids",
         "region_id": "isfahan",
         "mode": "independent",
-        "militia_count": 6
+        "unit_type": "infantry",
+        "unit_count": 6
       },
       {
         "faction_id": "afshar_beyligi",
         "region_id": "erzurum",
         "mode": "independent",
-        "militia_count": 5
+        "unit_type": "infantry",
+        "unit_count": 5
       },
       {
         "faction_id": "kadi_burhaneddin",
         "region_id": "sivas",
         "mode": "independent",
-        "militia_count": 5
+        "unit_type": "infantry",
+        "unit_count": 5
       },
       {
         "faction_id": "eretna_state",
-        "region_id": "kayseri",
+        "region_id": "nigde",
         "mode": "independent",
-        "militia_count": 5
+        "unit_type": "infantry",
+        "unit_count": 5
       },
       {
         "faction_id": "artuklu",
         "region_id": "mosul",
         "mode": "independent",
-        "militia_count": 5
+        "unit_type": "infantry",
+        "unit_count": 5
       }
     ],
     "desc_tr": "Ebu Said Bahadır Han'ın ölümüyle İlhanlı merkezî otoritesi sarsıldı; eyaletler ve yerel hanlıklar kendi yollarını arıyor.",

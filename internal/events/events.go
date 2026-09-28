@@ -497,9 +497,12 @@ func applyOneSuccessorRevival(gs *state.GameState, eff Effect, revival Successor
 			unitCount = revival.MilitiaCount
 		}
 	}
-	if _, ok := gs.ReviveSuccessorAtRegionWithUnit(regionID, successorID, unitType, unitCount); !ok {
+	armyID, ok := gs.ReviveSuccessorAtRegionWithUnit(regionID, successorID, unitType, unitCount)
+	if !ok {
 		return
 	}
+	world.EnsureSuccessorFoundingBuildings(gs.Regions[regionID])
+	gs.AssignStrongestCommanderToArmy(armyID)
 	overlordID := faction.FactionID(revival.OverlordID)
 	if overlordID == "" && revival.Mode == "vassal" {
 		overlordID = faction.FactionID(eff.AffectedFaction)

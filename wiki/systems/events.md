@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-09-18
+last_updated: 2026-09-28
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -62,6 +62,24 @@ desteği verir; örneğin Kahire fethi `+10000` altın kazandırır. Altın ve b
 etkileri event bildirimi, detay kaydı ve Event Codex özetinde gösterilir. Bu
 birlikler event'in uygulandığı anda oluşturulur ve normal ordu/save akışıyla
 devam eder.
+
+`successor_revival` veya `successor_revivals` ile elenmiş bir ardıl devlet
+yeniden kurulurken kuruluş bölgesine eksik `barracks` ve `granary` binalarının
+birinci seviyesi otomatik eklenir. Mevcut binalar korunur ve tekrar eklenmez.
+Kuruluş ordusu oluşturulduktan sonra, o tarih aralığında aktif olan faction'a
+ait en yüksek seviyeli ve tecrübeli komutan yeni orduya atanır.
+
+1300 Osmanlı senaryosunda bu mekanik, Bursa seferini ve fetih sonrası savunmayı
+destekleyen üç tarihsel event ile genişletilmiştir. `ottoman_turkmen_gazi_migration_1310`, Bilecik ve
+Bithynia Osmanlıda kaldığı ve Doğu Roma ile savaş sürdüğü sürece Söğüt'te iki
+piyade ile iki hafif süvari oluşturur; ayrıca Osmanlı bölgelerine nüfus ve
+tahıl desteği verir. `ottoman_bithynian_campaign_muster_1321` aynı cephe
+koşullarında iki piyade ve bir mancınık sağlayarak göçten gelen insan gücünü
+Bursa'nın surlarına karşı sefer hazırlığıyla tamamlar. `ottoman_anatolian_beylik_support_1327`,
+Bursa Osmanlıda kaldığı ve Germiyan, Karesi ya da Karaman ile savaşılmadığı
+sürece üç piyade, iki hafif süvari, bir mancınık ve altın-tahıl desteği sağlar;
+bu beyliklerle ilişkileri de iyileştirir. Bu event'ler genel AI agresifliğini
+değiştirmez ve birer kez çalışır.
 
 ---
 

@@ -37,6 +37,25 @@ func EnsureRequiredSettlementBuildings(region *Region, isCapitalRegion bool) boo
 	return changed
 }
 
+// EnsureSuccessorFoundingBuildings, tarihsel event ile yeniden kurulan tek
+// bölgeli devletin kuruluş bölgesine gerekli ilk askerî ve tahıl altyapısını
+// ekler. Mevcut binaları korur ve eksik olanların yalnızca birinci seviyesini
+// temsil eden tek kaydı ekler.
+func EnsureSuccessorFoundingBuildings(region *Region) bool {
+	if region == nil || region.IsSea {
+		return false
+	}
+	changed := false
+	for _, buildingID := range [...]string{"barracks", "granary"} {
+		if region.HasBuilding(buildingID) {
+			continue
+		}
+		region.Buildings = append(region.Buildings, buildingID)
+		changed = true
+	}
+	return changed
+}
+
 func hasSettlementType(region *Region, settlementType SettlementType) bool {
 	for _, settlement := range region.Settlements {
 		if settlement.Type == settlementType {

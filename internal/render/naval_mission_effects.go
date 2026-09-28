@@ -442,7 +442,7 @@ func (r *Renderer) drawNavalLandingTargetHoverTooltip(screen *ebiten.Image) {
 }
 
 func navalSupplyCargoTooltipText(gs *state.GameState, fleet *army.Army) (string, string, bool) {
-	if gs == nil || !navalSupplyCargoAvailable(fleet) || fleet.OwnerID != string(gs.PlayerFactionID) {
+	if gs == nil || !navalSupplyCargoAvailable(fleet) {
 		return "", "", false
 	}
 	parts := make([]string, 0, 6)
@@ -503,7 +503,7 @@ func (r *Renderer) navalSupplyCargoHitAt(mx, my float64) (army.ArmyID, bool) {
 	for i := len(positions) - 1; i >= 0; i-- {
 		pos := positions[i]
 		fleet := r.gs.Armies[pos.ArmyID]
-		if navalSupplyCargoAvailable(fleet) && fleet.OwnerID == string(r.gs.PlayerFactionID) && navalSupplyCargoBadgeRect(pos.X, pos.Y).Hit(mx, my) {
+		if navalSupplyCargoAvailable(fleet) && navalSupplyCargoBadgeRect(pos.X, pos.Y).Hit(mx, my) {
 			return pos.ArmyID, true
 		}
 	}

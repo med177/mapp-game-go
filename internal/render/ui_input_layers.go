@@ -113,7 +113,7 @@ func (r *Renderer) uiLayerPointerAt(mx, my float64) bool {
 	switch layer.ID {
 	case uiLayerTopStatus:
 		modeButtons := buildMapModeButtons()
-		return activeWarsHudButtonHit(mx, my) || (topStatusPanelHit(mx, my) && (r.grainEconomyPopupHovering(mx, my) || r.goldIncomePopupHovering(mx, my) ||
+		return activeWarsHudButtonHit(mx, my) || (topStatusPanelHit(mx, my) && (r.overextensionHUDHovering(mx, my) || r.grainEconomyPopupHovering(mx, my) || r.goldIncomePopupHovering(mx, my) ||
 			r.armyOrganizationPopupHovering(mx, my) ||
 			victoryProgressHit(mx, my) || modeButtons[0].HitTest(mx, my) || modeButtons[1].HitTest(mx, my) ||
 			(imperialPanelAvailable(r.gs) && imperialHUDButtonHit(mx, my))))
@@ -251,6 +251,7 @@ func (r *Renderer) rebuildUILayers() {
 	// sırasıyla eklenir. Böylece örtüşen iki yüzeyde yalnızca üstteki katman
 	// koordinatı sahiplenir.
 	r.addUILayer(uiLayerTopStatus, uiLayerRect(0, 0, ScreenWidth, float64(topStatusH)))
+	r.addUILayer(uiLayerTopStatus, topAlertHudRect())
 	x, y, w, h := topDateHudRect()
 	r.addUILayer(uiLayerTopDate, floatRect(x, y, w, h))
 	x, y, w, h = turnTechHudRect()
@@ -280,6 +281,10 @@ func (r *Renderer) rebuildUILayers() {
 	}
 	if r.armyOrganizationPopupHoveringAtCursor() {
 		r.addUILayer(uiLayerPopup, armyOrganizationPopupRect())
+	}
+	if r.overextensionPopupHoveringAtCursor() {
+		mx, my := ebiten.CursorPosition()
+		r.addUILayer(uiLayerPopup, overextensionPopupRect(float64(mx), float64(my)))
 	}
 
 	if r.SelectedRegion != "" {

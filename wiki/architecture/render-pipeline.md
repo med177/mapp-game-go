@@ -1,11 +1,19 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-09-23
+last_updated: 2026-09-28
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
 # Render Pipeline
+
+Üst oyuncu durum kartının altında, 4 px boşluk bırakan, aynı genişlikte ve 30 px
+yüksekliğinde yuvarlatılmış ince bir uyarı şeridi bulunur. `topAlertHudRect()`
+çizim alanını ve üst HUD'ın harita input'unu tükettiği sınırı ortaklaştırır;
+`Aşırı Genişleme` metni panel içinde dikey ortalanır ve ilerideki üst seviye
+uyarılar aynı yüzeye eklenebilir. Uyarı öğesi üzerinde pointer cursor ve cursor
+konumuna göre ortak tooltip gösterilir (`internal/render/panel.go`,
+`internal/render/overextension_popup.go`, `internal/render/ui_input_layers.go`).
 
 Teknoloji ağacı hover tooltip'inde teknoloji önkoşulları artık ham ID yerine
 `Technology.NameTR` etiketleriyle gösterilir; eksik veri için ID geri dönüşü

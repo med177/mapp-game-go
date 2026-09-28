@@ -33,6 +33,8 @@ const (
 	bottomBarH          = float32(80)
 	topStatusW          = float32(1050)
 	topStatusH          = float32(82)
+	topAlertHUDGap      = float32(4)
+	topAlertHUDH        = float32(30)
 	topDateHudW         = float32(255)
 	topDateHudH         = float32(80)
 	manpowerHUDCardX    = float32(908)
@@ -707,11 +709,27 @@ func bottomArmyAction(gs *state.GameState, selectedArmyID army.ArmyID, showArmyD
 }
 
 func topStatusPanelHit(fx, fy float64) bool {
+	return topStatusPanelRect().Hit(fx, fy) || topAlertHudRect().Hit(fx, fy)
+}
+
+func topStatusPanelRect() gameui.Rect {
 	w := float64(topStatusW)
 	if w > ScreenWidth {
 		w = ScreenWidth
 	}
-	return fx >= 0 && fx <= w && fy >= 0 && fy <= float64(topStatusH)
+	return gameui.Rect{X: 0, Y: 0, W: w, H: float64(topStatusH)}
+}
+
+// topAlertHudRect, Aşırı Genişleme ve ileride eklenecek üst seviye uyarılar
+// için üst HUD'ın hemen altında ayrılan ince panel alanıdır.
+func topAlertHudRect() gameui.Rect {
+	panel := topStatusPanelRect()
+	return gameui.Rect{
+		X: panel.X,
+		Y: panel.Y + panel.H + float64(topAlertHUDGap),
+		W: panel.W,
+		H: float64(topAlertHUDH),
+	}
 }
 
 // armyOrganizationHUDValueRect, çizim ve cursor/popup hit-test'inin aynı
@@ -893,12 +911,9 @@ func turnTechHudWarFatigueHit(gs *state.GameState, fx, fy float64) bool {
 
 // DrawBottomPanel üst sol durum panelini, sağ üst tarih HUD'unu ve alt-orta aksiyon HUD'unu çizer.
 func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID army.ArmyID, showArmyDetail, showRecruit, recruitEnabled bool, recruitReason string, showTrade, showDiplomacy, showTech, showImperialPanel, showActiveWars, aiControlsPlayerFaction, aiControlsPlayerEconomy bool, mapMode MapMode) {
-	by := float32(0)
-	bw := topStatusW
-	if bw > float32(ScreenWidth) {
-		bw = float32(ScreenWidth)
-	}
-	statusRect := gameui.Rect{X: 0, Y: float64(by), W: float64(bw), H: float64(topStatusH)}
+	statusRect := topStatusPanelRect()
+	by := float32(statusRect.Y)
+	bw := float32(statusRect.W)
 
 	drawUIPanelFrame(screen, statusRect, panelBg, panelBorder, 1.5, 3)
 	drawUISeparator(screen, 0, by+topStatusH, bw, 1.5, panelBorder)
@@ -919,8 +934,6 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 		militaryPower, militaryRank, factionCount := playerMilitaryPowerStanding(gs)
 		DrawText(screen, "Askeri güç: "+formatNumberTR(militaryPower), textX, float64(by)+34, FaceSmall, ColorGray)
 		DrawText(screen, "Güç sırası: "+formatNumberTR(militaryRank)+"/"+formatNumberTR(factionCount), textX, float64(by)+53, FaceSmall, ColorGray)
-		overextensionText, overextensionColor := overextensionHUDText(gs)
-		DrawText(screen, overextensionText, textX, float64(by)+69, FaceTiny, overextensionColor)
 	}
 
 	// Kaynaklar: solda 2x2 mal ızgarası, sağda Gelir/Altın
@@ -984,6 +997,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 		drawVictoryProgress(screen, gs, float64(by))
 		drawVictoryAchievedBanner(screen, gs)
 	}
+	drawTopAlertHud(screen, gs)
 
 	// Alt-orta: aksiyon HUD'u
 	hudX, hudY, hudW, hudH := bottomActionHudRect()
@@ -1050,6 +1064,19 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 	drawMusicHud(screen)
 	drawActiveWarsHUDButton(screen, gs, showActiveWars)
 	drawTurnTechHud(screen, gs)
+}
+
+// drawTopAlertHud, üst durum kartının altındaki ince uyarı panelini çizer.
+// Metin ve panel, ileride birden fazla uyarı eklendiğinde aynı yüzey altında
+// genişletilebilecek şekilde ayrı tutulur.
+func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState) {
+	alert := topAlertHudRect()
+	drawRoundedHUDFrame(screen, [4]float32{
+		float32(alert.X), float32(alert.Y), float32(alert.W), float32(alert.H),
+	}, 6, 1, panelBg, panelBorder)
+	text, textColor := overextensionHUDText(gs)
+	textY := alert.Y + (alert.H-FaceSmall.Size)/2
+	DrawText(screen, text, alert.X+10, textY, FaceSmall, textColor)
 }
 
 // factionMilitaryPowerStanding seçili devletin askeri gücünü ve aktif devletler
