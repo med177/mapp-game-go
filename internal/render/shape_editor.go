@@ -78,6 +78,9 @@ func (r *Renderer) invalidateShapeEditSession() {
 	r.editShapePendingRegionPaintPixels = nil
 	r.editTerrainAreaPolygon = nil
 	r.editTerrainAreaPolygonBefore = nil
+	r.editMinorRegionDrawing = false
+	r.editMinorRegionPolygon = nil
+	r.editMinorRegionPolygonBefore = nil
 	r.clearEditPaintPreview()
 }
 
@@ -467,6 +470,145 @@ func (r *Renderer) drawEditTerrainAreaButtons(screen *ebiten.Image) {
 func (r *Renderer) terrainAreaEditPending() bool {
 	return r != nil && r.editTerrainAreaMode &&
 		(len(r.editTerrainAreaPolygon) > 0 || r.editShapePaintPending)
+}
+
+func (r *Renderer) minorRegionEditPending() bool {
+	return r != nil && r.editMinorRegionDrawing
+}
+
+func (r *Renderer) editGeometryEditPending() bool {
+	return r.terrainAreaEditPending() || r.minorRegionEditPending()
+}
+
+func (r *Renderer) editGeometrySaveEnabled() bool {
+	return !r.editGeometryEditPending()
+}
+
+func (r *Renderer) beginMinorRegionDrawing(before *editWorldSnapshot) {
+	if r == nil {
+		return
+	}
+	r.editMinorRegionDrawing = true
+	r.editMinorRegionPolygon = nil
+	r.editMinorRegionPolygonBefore = before
+	r.editShapeTool = editShapeToolNone
+	r.editShapePainting = false
+	r.editShapePaintPending = false
+	r.editShapePendingBefore = nil
+	r.editSelectedSettlement = -1
+	r.editInspectorTab = editInspectorRegion
+}
+
+func (r *Renderer) cancelMinorRegionDrawing() {
+	if r == nil {
+		return
+	}
+	if r.editMinorRegionPolygonBefore != nil {
+		before := *r.editMinorRegionPolygonBefore
+		r.restoreWorldSnapshotSync(before)
+	}
+	r.editMinorRegionDrawing = false
+	r.editMinorRegionPolygon = nil
+	r.editMinorRegionPolygonBefore = nil
+	r.editDirty = r.editMinorRegionDirtyBefore
+	r.editMinorRegionDirtyBefore = false
+}
+
+func (r *Renderer) addMinorRegionPolygonPoint(fx, fy float64) {
+	if r == nil || !r.editMinorRegionDrawing || r.worldMap == nil {
+		return
+	}
+	wx, wy := r.screenToWorld(fx, fy)
+	x, y, ok := terrainAreaPolygonPointFromWorld(wx, wy)
+	if !ok {
+		return
+	}
+	if len(r.editMinorRegionPolygon) > 0 {
+		last := r.editMinorRegionPolygon[len(r.editMinorRegionPolygon)-1]
+		if last[0] == x && last[1] == y {
+			return
+		}
+	}
+	r.editMinorRegionPolygon = append(r.editMinorRegionPolygon, [2]int{x, y})
+}
+
+func (r *Renderer) minorRegionPolygonStartHovered(fx, fy float64) bool {
+	if r == nil || len(r.editMinorRegionPolygon) < 3 {
+		return false
+	}
+	x, y := r.worldToScreen(float64(r.editMinorRegionPolygon[0][0]), float64(r.editMinorRegionPolygon[0][1]))
+	dx, dy := fx-x, fy-y
+	return dx*dx+dy*dy <= 14*14
+}
+
+func (r *Renderer) finishMinorRegionPolygon() {
+	if r == nil || !r.editMinorRegionDrawing || len(r.editMinorRegionPolygon) < 3 || r.worldMap == nil {
+		return
+	}
+	minor := r.gs.Regions[r.editSelectedRegion]
+	if minor == nil || !minor.IsMinorRegion {
+		r.cancelMinorRegionDrawing()
+		return
+	}
+	parent := r.gs.Regions[minor.ParentRegionID]
+	if parent == nil {
+		r.cancelMinorRegionDrawing()
+		return
+	}
+
+	poly := make([][2]float32, len(r.editMinorRegionPolygon))
+	for i, point := range r.editMinorRegionPolygon {
+		poly[i] = [2]float32{float32(point[0]), float32(point[1])}
+	}
+	minX, minY := WorldW-1, WorldH-1
+	maxX, maxY := 0, 0
+	for _, point := range r.editMinorRegionPolygon {
+		if point[0] < minX {
+			minX = point[0]
+		}
+		if point[1] < minY {
+			minY = point[1]
+		}
+		if point[0] > maxX {
+			maxX = point[0]
+		}
+		if point[1] > maxY {
+			maxY = point[1]
+		}
+	}
+	minX = maxInt(0, minX)
+	minY = maxInt(0, minY)
+	maxX = minInt(WorldW-1, maxX)
+	maxY = minInt(WorldH-1, maxY)
+
+	r.ensureEditRegionPaintOverrides()
+	dirtyPixels := make(map[int]struct{})
+	for y := minY; y <= maxY; y++ {
+		for x := minX; x <= maxX; x++ {
+			if !pointInFloatPolygon(float64(x)+0.5, float64(y)+0.5, poly) {
+				continue
+			}
+			if r.worldMap.RegionAt(x, y) != parent.ID {
+				continue
+			}
+			pIdx := y*WorldW + x
+			r.editRegionPaintOverrides[pIdx] = minor.ID
+			dirtyPixels[pIdx] = struct{}{}
+		}
+	}
+	if len(dirtyPixels) == 0 {
+		r.ShowCombatResult("Minor alanı ana bölgenin içinde çizilmelidir.")
+		return
+	}
+
+	r.gs.RegionPaintOverrides = cloneRegionPaintOverrides(r.editRegionPaintOverrides)
+	r.refreshRegionPaintInEditMap(dirtyPixels)
+	r.syncSelectedRegionNeighborsFromVisual()
+	r.editMinorRegionDrawing = false
+	r.editMinorRegionPolygon = nil
+	r.editMinorRegionPolygonBefore = nil
+	r.editMinorRegionDirtyBefore = false
+	r.editDirty = true
 }
 
 func (r *Renderer) cancelTerrainAreaEdit() {
@@ -1064,6 +1206,10 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 	if selectedRegion == nil {
 		return
 	}
+	if r.editMinorRegionDrawing {
+		r.drawMinorRegionPolygonPreview(screen)
+		return
+	}
 	if shapeRegion != nil {
 		for _, ring := range r.gs.ShapeData.Shapes[shapeRegion.ShapeID] {
 			if len(ring) < 2 {
@@ -1123,34 +1269,46 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 	vector.StrokeCircle(screen, float32(screenX), float32(screenY), radius, 2, brushCol, true)
 }
 
-func (r *Renderer) drawTerrainAreaPolygonPreview(screen *ebiten.Image) {
-	if r == nil || len(r.editTerrainAreaPolygon) == 0 {
+func (r *Renderer) drawEditPolygonPreview(screen *ebiten.Image, polygon [][2]int, lineColor color.RGBA) {
+	if r == nil || len(polygon) == 0 {
 		return
 	}
-	for i, point := range r.editTerrainAreaPolygon {
+	for i, point := range polygon {
 		x, y := r.worldToScreen(float64(point[0]), float64(point[1]))
-		vector.FillCircle(screen, float32(x), float32(y), 4, color.RGBA{255, 220, 80, 230}, true)
+		vector.FillCircle(screen, float32(x), float32(y), 4, lineColor, true)
 		if i == 0 {
 			continue
 		}
-		px, py := r.worldToScreen(float64(r.editTerrainAreaPolygon[i-1][0]), float64(r.editTerrainAreaPolygon[i-1][1]))
-		vector.StrokeLine(screen, float32(px), float32(py), float32(x), float32(y), 2, color.RGBA{255, 220, 80, 230}, true)
+		px, py := r.worldToScreen(float64(polygon[i-1][0]), float64(polygon[i-1][1]))
+		vector.StrokeLine(screen, float32(px), float32(py), float32(x), float32(y), 2, lineColor, true)
 	}
-	if len(r.editTerrainAreaPolygon) >= 3 {
+	if len(polygon) >= 3 {
 		mx, my := ebiten.CursorPosition()
-		if r.terrainAreaPolygonStartHovered(float64(mx), float64(my)) {
-			x, y := r.worldToScreen(float64(r.editTerrainAreaPolygon[0][0]), float64(r.editTerrainAreaPolygon[0][1]))
+		x, y := r.worldToScreen(float64(polygon[0][0]), float64(polygon[0][1]))
+		dx, dy := float64(mx)-x, float64(my)-y
+		if dx*dx+dy*dy <= 14*14 {
 			vector.FillCircle(screen, float32(x), float32(y), 8, color.RGBA{80, 235, 120, 230}, true)
 			vector.StrokeCircle(screen, float32(x), float32(y), 12, 2, color.RGBA{150, 255, 170, 245}, true)
 		}
 	}
 	mx, my := ebiten.CursorPosition()
 	wx, wy := r.screenToWorld(float64(mx), float64(my))
-	if len(r.editTerrainAreaPolygon) > 0 {
-		px, py := r.worldToScreen(float64(r.editTerrainAreaPolygon[len(r.editTerrainAreaPolygon)-1][0]), float64(r.editTerrainAreaPolygon[len(r.editTerrainAreaPolygon)-1][1]))
+	if len(polygon) > 0 {
+		last := polygon[len(polygon)-1]
+		px, py := r.worldToScreen(float64(last[0]), float64(last[1]))
 		cx, cy := r.worldToScreen(wx, wy)
-		vector.StrokeLine(screen, float32(px), float32(py), float32(cx), float32(cy), 1, color.RGBA{255, 220, 80, 150}, true)
+		previewColor := lineColor
+		previewColor.A = 150
+		vector.StrokeLine(screen, float32(px), float32(py), float32(cx), float32(cy), 1, previewColor, true)
 	}
+}
+
+func (r *Renderer) drawTerrainAreaPolygonPreview(screen *ebiten.Image) {
+	r.drawEditPolygonPreview(screen, r.editTerrainAreaPolygon, color.RGBA{255, 220, 80, 230})
+}
+
+func (r *Renderer) drawMinorRegionPolygonPreview(screen *ebiten.Image) {
+	r.drawEditPolygonPreview(screen, r.editMinorRegionPolygon, color.RGBA{80, 235, 255, 230})
 }
 
 func (r *Renderer) terrainAreaPolygonStartHovered(fx, fy float64) bool {

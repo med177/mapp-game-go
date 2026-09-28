@@ -386,6 +386,10 @@ type Renderer struct {
 	editTerrainAreaTouchedIDs         map[string]struct{}
 	editTerrainAreaPolygon            [][2]int
 	editTerrainAreaPolygonBefore      *editWorldSnapshot
+	editMinorRegionDrawing            bool
+	editMinorRegionPolygon            [][2]int
+	editMinorRegionPolygonBefore      *editWorldSnapshot
+	editMinorRegionDirtyBefore        bool
 	editShapeBrushMode                editShapeBrushMode
 	editShapeBrushRadius              float64
 	editShapeStrokeBefore             *editWorldSnapshot

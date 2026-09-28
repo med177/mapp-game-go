@@ -64,6 +64,113 @@ func TestRegionCenterAffectsRasterOnlyForSeaOrSharedShape(t *testing.T) {
 	}
 }
 
+func TestBuildCountryShapesExcludesMinorRegionsFromVoronoiSeeds(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY
+	originalShapeScaleX, originalShapeScaleY := shapeScaleX, shapeScaleY
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+		shapeOffX, shapeOffY = originalShapeOffX, originalShapeOffY
+		shapeScaleX, shapeScaleY = originalShapeScaleX, originalShapeScaleY
+	})
+	WorldW, WorldH = 8, 1
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	parent := &world.Region{ID: "parent", ShapeID: "shared", WorldX: 1, WorldY: 0}
+	minor := &world.Region{
+		ID: "minor", ShapeID: "shared", IsMinorRegion: true, ParentRegionID: parent.ID,
+		WorldX: 6, WorldY: 0,
+	}
+	gs := &state.GameState{Regions: map[world.RegionID]*world.Region{
+		parent.ID: parent,
+		minor.ID:  minor,
+	}}
+	wm := &WorldMap{
+		basePixels: make([]byte, WorldW*WorldH*4),
+		regionAt:   make([]uint16, WorldW*WorldH),
+		regionIDs:  []world.RegionID{""},
+		regionIdx:  make(map[world.RegionID]uint16),
+		regionPx:   make(map[world.RegionID][]int),
+		seaIdx:     make(map[uint16]bool),
+	}
+	shapes := map[string]countryShape{
+		"shared": {ID: "shared", Rings: [][][2]float32{{
+			{0, 0}, {8, 0}, {8, 1}, {0, 1},
+		}}},
+	}
+
+	if !wm.buildCountryShapes(gs, shapes) {
+		t.Fatal("shared shape rasterı oluşturulmadı")
+	}
+	if got := len(wm.regionPx[minor.ID]); got != 0 {
+		t.Fatalf("minor bölge Voronoi ile %d piksel aldı, 0 bekleniyordu", got)
+	}
+	if got := len(wm.regionPx[parent.ID]); got != WorldW*WorldH {
+		t.Fatalf("ana bölge %d piksel aldı, %d bekleniyordu", got, WorldW*WorldH)
+	}
+}
+
+func TestFinishMinorRegionPolygonPaintsOnlyInsideParent(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY
+	originalShapeScaleX, originalShapeScaleY := shapeScaleX, shapeScaleY
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+		shapeOffX, shapeOffY = originalShapeOffX, originalShapeOffY
+		shapeScaleX, shapeScaleY = originalShapeScaleX, originalShapeScaleY
+	})
+	WorldW, WorldH = 4, 4
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	parent := &world.Region{ID: "parent", WorldX: 1, WorldY: 1}
+	minor := &world.Region{
+		ID: "minor", IsMinorRegion: true, ParentRegionID: parent.ID,
+		WorldX: 1, WorldY: 1,
+	}
+	regions := map[world.RegionID]*world.Region{parent.ID: parent, minor.ID: minor}
+	regionAt := make([]uint16, WorldW*WorldH)
+	for i := range regionAt {
+		regionAt[i] = 1
+	}
+	wm := &WorldMap{
+		basePixels:        make([]byte, WorldW*WorldH*4),
+		dispPixels:        make([]byte, WorldW*WorldH*4),
+		baseRegionAt:      append([]uint16(nil), regionAt...),
+		regionAt:          regionAt,
+		regionIDs:         []world.RegionID{"", parent.ID},
+		regionIdx:         map[world.RegionID]uint16{parent.ID: 1},
+		regionPx:          map[world.RegionID][]int{parent.ID: {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}},
+		regionAnchor:      make(map[world.RegionID][2]int),
+		settlementAnchor:  make(map[settlementAnchorKey][2]int),
+		primarySettlement: make(map[world.RegionID][2]int),
+		seaIdx:            make(map[uint16]bool),
+	}
+	r := &Renderer{
+		gs:                       &state.GameState{Phase: state.PhaseEditMode, Regions: regions},
+		worldMap:                 wm,
+		editSelectedRegion:       minor.ID,
+		editMinorRegionDrawing:   true,
+		editMinorRegionPolygon:   [][2]int{{0, 0}, {2, 0}, {2, 2}, {0, 2}},
+		editRegionPaintOverrides: make(map[int]world.RegionID),
+	}
+
+	r.finishMinorRegionPolygon()
+
+	if r.editMinorRegionDrawing {
+		t.Fatal("minor poligon çizimi tamamlanmadı")
+	}
+	if got := len(r.gs.RegionPaintOverrides); got != 4 {
+		t.Fatalf("override piksel sayısı = %d, 4 bekleniyordu", got)
+	}
+	for _, pIdx := range []int{0, 1, 4, 5} {
+		if got := r.gs.RegionPaintOverrides[pIdx]; got != minor.ID {
+			t.Fatalf("piksel %d override = %q, %q bekleniyordu", pIdx, got, minor.ID)
+		}
+	}
+}
+
 func TestRebuildShapeRegionAssignmentsOnlyTouchesTargetShape(t *testing.T) {
 	originalWorldW, originalWorldH := WorldW, WorldH
 	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY

@@ -42,8 +42,10 @@ type Region struct {
 
 `is_minor_region=true` olan bölgeler normal `Region` olarak kalır; bu nedenle
 kuşatılabilir, fethedilebilir ve sahiplik hesabına katılır. Edit Mode bu tip
-bölgeleri ana bölgenin `ShapeID` rasterı üzerinde oluşturur ve kesin alanın
-`region_shapes.json` ile boyanmasına izin verir. Küçük alt bölgelerde yalnızca
+bölgeleri ana bölgenin `ShapeID` rasterı üzerinde oluşturur; minor bölge
+merkezleri Voronoi alan dağıtımına katılmaz. `Küçük Alt Bölge Ekle` sonrasında
+çizilen poligon ana bölgenin rasterına paint override olarak işlenir ve kesin
+alan `region_shapes.json` ile saklanır. Küçük alt bölgelerde yalnızca
 `fortress` ve `port` yerleşimleri ile `walls` ve `port` binaları geçerlidir.
 `parent_region_id` ilişki bilgisidir; alt bölgenin fethedilmesi ana bölgenin
 sahipliğini değiştirmez.

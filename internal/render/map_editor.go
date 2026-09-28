@@ -115,25 +115,25 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	if r.editInspectorTab == editInspectorTerrainArea {
 		r.drawEditTerrainAreaInspector(screen, ly)
 		drawUIDropdown(screen, r.editTerrainDropdown)
-		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		r.drawEditShapeInspector(screen, ly)
-		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
 	if r.editInspectorTab == editInspectorData {
 		r.drawEditScenarioDataInspector(screen, ly)
-		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
 	if r.editInspectorTab == editInspectorFaction {
 		r.drawEditDataInspector(screen, ly)
-		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
@@ -154,7 +154,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 			// gerekir. Aksi halde Birim Tipi düğmesi listeyi açar, ancak liste
 			// görünmediği için kullanıcı bir seçim yapamaz.
 			drawUIDropdown(screen, r.editUnitTypeDropdown)
-			drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+			drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 			return
 		}
 	}
@@ -162,7 +162,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	if region == nil {
 		drawEditInspectorLabel(screen, float64(x)+14, ly, "Haritadan bir bolge veya yerlesim sec.", ColorGray, gameui.TextSmall)
 		r.drawEditRegionButtons(screen, nil)
-		drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
@@ -236,7 +236,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	drawUIDropdown(screen, r.editTerrainDropdown)
 	drawUIDropdown(screen, r.editSettlementTypeDropdown)
 	drawUIDropdown(screen, r.editUnitTypeDropdown)
-	drawEditInspectorSaveButton(screen, !r.terrainAreaEditPending())
+	drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 }
 
 func drawEditInspectorLabel(screen *ebiten.Image, x, y float64, text string, col color.Color, variant gameui.TextVariant) {
@@ -294,8 +294,19 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 	drawEditInspectorButton(screen, editButtonAddRegion, "Yeni Bölge Ekle", canRegion)
 	minorRegionEnabled := region != nil && !region.IsSea && !region.IsTerrainArea &&
 		!region.IsMinorRegion && region.ShapeID != ""
-	drawEditInspectorButton(screen, editButtonAddMinorRegion, "Küçük Alt Bölge Ekle", minorRegionEnabled)
-	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bölgeyi Sil", canRegion)
+	minorRegionLabel := "Küçük Alt Bölge Ekle"
+	deleteRegionLabel := "Bölgeyi Sil"
+	if r.editMinorRegionDrawing && region != nil && region.ID == r.editSelectedRegion {
+		minorRegionEnabled = len(r.editMinorRegionPolygon) >= 3
+		if minorRegionEnabled {
+			minorRegionLabel = "Minor Alanı Uygula"
+		} else {
+			minorRegionLabel = "Poligon Çiziliyor"
+		}
+		deleteRegionLabel = "Çizimi İptal"
+	}
+	drawEditInspectorButton(screen, editButtonAddMinorRegion, minorRegionLabel, minorRegionEnabled)
+	drawEditInspectorButton(screen, editButtonDeleteRegion, deleteRegionLabel, canRegion)
 	terrainLabel := "Bölge Tipi"
 	if region != nil && region.IsTerrainArea {
 		terrainLabel = "Bölge Tipi"
@@ -322,6 +333,11 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 	}
 	drawEditInspectorButton(screen, editButtonAddNeighbor, neighborLabel, canRegion)
 	drawEditInspectorButton(screen, editButtonEditRegionData, "Bölge Verileri", canRegion)
+	if r.editMinorRegionDrawing && region != nil && region.ID == r.editSelectedRegion {
+		x, y, _, h := editInspectorRect()
+		drawEditInspectorLabel(screen, float64(x)+14, float64(y)+float64(h)-130,
+			"Minor sınırı: haritada sol tıkla nokta ekle; ilk noktaya tıklayınca uygula.", ColorGold, gameui.TextSmall)
+	}
 }
 
 func drawEditInspectorSaveButton(screen *ebiten.Image, enabled bool) {
@@ -1238,7 +1254,7 @@ func (r *Renderer) drawEditVoronoiDebug(screen *ebiten.Image) {
 		rid = r.editRegionAt(float64(mx), float64(my))
 	}
 	region := r.gs.Regions[rid]
-	if region == nil {
+	if region == nil || region.IsMinorRegion {
 		return
 	}
 
@@ -1612,6 +1628,10 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
+		if r.editMinorRegionDrawing {
+			r.cancelMinorRegionDrawing()
+			return InputAction{}
+		}
 		r.editOwnerDropdown.Close()
 		r.editSuccessorDropdown.Close()
 		r.editTerrainDropdown.Close()
@@ -1623,15 +1643,21 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		}
 		return InputAction{Kind: ActionGoMainMenu}
 	}
+	if r.editMinorRegionDrawing && r.keyJustPressed(ebiten.KeyDelete) {
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyS) && (ebiten.IsKeyPressed(ebiten.KeyControl) ||
 		ebiten.IsKeyPressed(ebiten.KeyControlLeft) || ebiten.IsKeyPressed(ebiten.KeyControlRight)) {
+		if r.editGeometryEditPending() {
+			return InputAction{}
+		}
 		return InputAction{Kind: ActionSaveScenario}
 	}
 	if r.keyJustPressed(ebiten.KeyDelete) && r.editLandPassageAdjustMode {
 		r.deleteSelectedLandPassage()
 		return InputAction{}
 	}
-	if r.keyJustPressed(ebiten.KeyDelete) && !r.terrainAreaEditPending() &&
+	if r.keyJustPressed(ebiten.KeyDelete) && !r.editGeometryEditPending() &&
 		r.editTerrainAreaSelected >= 0 && r.editTerrainAreaSelected < len(r.gs.TerrainAreas) {
 		r.deleteSelectedTerrainArea()
 		return InputAction{}
@@ -1675,6 +1701,11 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.resetTerrainAreaDrawing()
 		return InputAction{}
 	}
+	if r.editMinorRegionDrawing && rightJustPressed && !inspectorOverlayOpen &&
+		!editInspectorHit(fx, fy) && !r.editShapeHelpPanelHit(fx, fy) {
+		r.cancelMinorRegionDrawing()
+		return InputAction{}
+	}
 	if !r.editShapePainting && rightJustPressed && !inspectorOverlayOpen && !editInspectorHit(fx, fy) && !r.editShapeHelpPanelHit(fx, fy) {
 		if rid, idx, ok := r.editSettlementAt(fx, fy); ok {
 			r.editOwnerDropdown.Close()
@@ -1696,6 +1727,16 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		if action, ok := r.handleEditInspectorClick(fx, fy); ok {
 			return action
 		}
+	}
+	if r.editMinorRegionDrawing {
+		if !inspectorOverlayOpen && !r.editShapeHelpPanelHit(fx, fy) && leftJustPressed {
+			if r.minorRegionPolygonStartHovered(fx, fy) {
+				r.finishMinorRegionPolygon()
+			} else {
+				r.addMinorRegionPolygonPoint(fx, fy)
+			}
+		}
+		return InputAction{}
 	}
 	if r.editLandPassageMode && leftJustPressed {
 		r.handleEditLandPassageClick(fx, fy)
@@ -2045,9 +2086,13 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	if !editInspectorHit(fx, fy) {
 		return InputAction{}, false
 	}
-	if r.terrainAreaEditPending() {
+	if r.editGeometryEditPending() {
 		if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(fx, fy) {
-			r.cancelTerrainAreaEdit()
+			if r.editMinorRegionDrawing {
+				r.cancelMinorRegionDrawing()
+			} else {
+				r.cancelTerrainAreaEdit()
+			}
 			return InputAction{}, true
 		}
 		if buildEditInspectorTabButton(editInspectorSettlement, "Yerleşim Birimi").HitTest(fx, fy) ||
@@ -2084,6 +2129,9 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		return InputAction{}, true
 	}
 	if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(fx, fy) {
+		if r.editGeometryEditPending() {
+			return InputAction{}, true
+		}
 		return InputAction{Kind: ActionSaveScenario}, true
 	}
 	if r.editInspectorTab == editInspectorTerrainArea {
@@ -2167,9 +2215,17 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	case editButtonAddRegion:
 		r.addRegionNearSelected()
 	case editButtonAddMinorRegion:
-		r.addMinorRegionNearSelected()
+		if r.editMinorRegionDrawing {
+			r.finishMinorRegionPolygon()
+		} else {
+			r.addMinorRegionNearSelected()
+		}
 	case editButtonDeleteRegion:
-		r.deleteSelectedRegion()
+		if r.editMinorRegionDrawing {
+			r.cancelMinorRegionDrawing()
+		} else {
+			r.deleteSelectedRegion()
+		}
 	case editButtonDeleteSettlement:
 		if r.hasEditSelection() {
 			r.deleteSelectedSettlement()
@@ -2763,7 +2819,7 @@ func (r *Renderer) finishRegionCenterDrag() bool {
 }
 
 func (r *Renderer) regionCenterAffectsRaster(region *world.Region) bool {
-	if region == nil {
+	if region == nil || region.IsMinorRegion {
 		return false
 	}
 	if region.IsSea || region.ShapeID == "" {
@@ -2771,7 +2827,7 @@ func (r *Renderer) regionCenterAffectsRaster(region *world.Region) bool {
 	}
 	count := 0
 	for _, candidate := range r.gs.Regions {
-		if candidate != nil && !candidate.IsSea && !candidate.IsTerrainArea && candidate.ShapeID == region.ShapeID {
+		if candidate != nil && !candidate.IsSea && !candidate.IsTerrainArea && !candidate.IsMinorRegion && candidate.ShapeID == region.ShapeID {
 			count++
 			if count > 1 {
 				return true
@@ -2943,12 +2999,14 @@ func (r *Renderer) addRegionNearSelected() {
 
 // addMinorRegionNearSelected, seçili ana bölgenin içinde oluşturulacak
 // küçük alt bölge için normal Region grafiğini ve düşük gelirli varsayılanları
-// hazırlar. Haritadaki kesin alan Edit Mode'un Bölge Boya aracıyla çizilir.
+// hazırlar. Haritadaki kesin alan ayrı bir poligon çizim oturumuyla belirlenir.
 func (r *Renderer) addMinorRegionNearSelected() {
 	parent := r.gs.Regions[r.editSelectedRegion]
 	if parent == nil || parent.IsSea || parent.IsTerrainArea || parent.IsMinorRegion || parent.ShapeID == "" {
 		return
 	}
+	r.editMinorRegionDirtyBefore = r.editDirty
+	before := r.worldSnapshot()
 	rid := nextRegionID(r.gs)
 	minor := world.NewMinorRegionFromParent(rid, parent, parent.WorldX+2, parent.WorldY+2)
 	if minor == nil {
@@ -2960,8 +3018,10 @@ func (r *Renderer) addMinorRegionNearSelected() {
 	r.editSelectedSettlement = -1
 	r.SelectedArmy = ""
 	complete := func() {
-		visual := r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf[:0])
-		r.applyVisualNeighbors(rid, visual)
+		// Minor alanı merkez mesafesiyle değil, aşağıdaki poligon çizimiyle
+		// belirlenecek. Bu aşamada boş görsel komşuluk uygulamak parent
+		// bağlantısını silmemeli.
+		r.beginMinorRegionDrawing(&before)
 		r.editDirty = true
 	}
 	if !r.requestEditWorldMapRebuildWithCompletion(complete) {

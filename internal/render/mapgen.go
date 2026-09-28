@@ -971,7 +971,10 @@ func (wm *WorldMap) buildCountryShapes(gs *state.GameState, shapes map[string]co
 
 	regionsByShape := make(map[string][]*world.Region)
 	for _, r := range gs.Regions {
-		if r.ShapeID != "" && !r.IsTerrainArea {
+		// Minor bölgelerin alanı merkez mesafesiyle Voronoi olarak
+		// üretilmez; sınırları Edit Mode'da çizilen paint override'ları
+		// belirler.
+		if r.ShapeID != "" && !r.IsTerrainArea && !r.IsMinorRegion {
 			regionsByShape[r.ShapeID] = append(regionsByShape[r.ShapeID], r)
 		}
 	}
@@ -1009,7 +1012,7 @@ func (wm *WorldMap) rebuildShapeRasterCache(gs *state.GameState) {
 	cache := make(map[string][]int)
 	for rid, pixels := range wm.regionPx {
 		region := gs.Regions[rid]
-		if region == nil || region.IsSea || region.IsTerrainArea || region.ShapeID == "" {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.IsMinorRegion || region.ShapeID == "" {
 			continue
 		}
 		cache[region.ShapeID] = append(cache[region.ShapeID], pixels...)
@@ -1034,7 +1037,7 @@ func (wm *WorldMap) rebuildShapeRegionAssignments(gs *state.GameState, shapeID s
 
 	regions := make([]*world.Region, 0)
 	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.IsTerrainArea || region.ShapeID != shapeID {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.IsMinorRegion || region.ShapeID != shapeID {
 			continue
 		}
 		regions = append(regions, region)
