@@ -291,7 +291,9 @@ func (r *Renderer) drawEditArmyButtons(screen *ebiten.Image, region *world.Regio
 
 func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Region) {
 	canRegion := region != nil
-	drawEditInspectorButton(screen, editButtonAddRegion, "Yeni Bölge Ekle", canRegion)
+	drawingMinor := r.editMinorRegionDrawing && region != nil && region.ID == r.editSelectedRegion
+	regionActionEnabled := canRegion && !drawingMinor
+	drawEditInspectorButton(screen, editButtonAddRegion, "Yeni Bölge Ekle", regionActionEnabled)
 	minorRegionEnabled := region != nil && !region.IsSea && !region.IsTerrainArea &&
 		!region.IsMinorRegion && region.ShapeID != ""
 	minorRegionLabel := "Küçük Alt Bölge Ekle"
@@ -311,7 +313,7 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 	if region != nil && region.IsTerrainArea {
 		terrainLabel = "Bölge Tipi"
 	}
-	drawEditInspectorButton(screen, editButtonRegionTerrain, terrainLabel, canRegion && !region.IsTerrainArea)
+	drawEditInspectorButton(screen, editButtonRegionTerrain, terrainLabel, regionActionEnabled && !region.IsTerrainArea)
 	nameTRLabel := "Ad TR"
 	nameLabel := "Ad EN"
 	nameEnabled := canRegion
@@ -320,24 +322,19 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 		nameLabel = "Arazi Adı Yok"
 		nameEnabled = false
 	}
-	drawEditInspectorButton(screen, editButtonRegionNameTR, nameTRLabel, canRegion && !region.IsTerrainArea)
-	drawEditInspectorButton(screen, editButtonRegionName, nameLabel, nameEnabled)
-	drawEditInspectorButton(screen, editButtonRegionID, "ID", canRegion)
-	drawEditInspectorButton(screen, editButtonRegionLock, "Kilit", canRegion)
-	drawEditInspectorButton(screen, editButtonUnlockMinus, "-10 Tur", canRegion)
-	drawEditInspectorButton(screen, editButtonUnlockPlus, "+10 Tur", canRegion)
-	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komşu Sync", canRegion)
+	drawEditInspectorButton(screen, editButtonRegionNameTR, nameTRLabel, regionActionEnabled && !region.IsTerrainArea)
+	drawEditInspectorButton(screen, editButtonRegionName, nameLabel, regionActionEnabled && nameEnabled)
+	drawEditInspectorButton(screen, editButtonRegionID, "ID", regionActionEnabled)
+	drawEditInspectorButton(screen, editButtonRegionLock, "Kilit", regionActionEnabled)
+	drawEditInspectorButton(screen, editButtonUnlockMinus, "-10 Tur", regionActionEnabled)
+	drawEditInspectorButton(screen, editButtonUnlockPlus, "+10 Tur", regionActionEnabled)
+	drawEditInspectorButton(screen, editButtonSyncNeighbors, "Komşu Sync", regionActionEnabled)
 	neighborLabel := "Komşu Ekle"
 	if r.editNeighborAddMode && r.editNeighborAddFrom == r.editSelectedRegion {
 		neighborLabel = "Uygula"
 	}
-	drawEditInspectorButton(screen, editButtonAddNeighbor, neighborLabel, canRegion)
-	drawEditInspectorButton(screen, editButtonEditRegionData, "Bölge Verileri", canRegion)
-	if r.editMinorRegionDrawing && region != nil && region.ID == r.editSelectedRegion {
-		x, y, _, h := editInspectorRect()
-		drawEditInspectorLabel(screen, float64(x)+14, float64(y)+float64(h)-130,
-			"Minor sınırı: haritada sol tıkla nokta ekle; ilk noktaya tıklayınca uygula.", ColorGold, gameui.TextSmall)
-	}
+	drawEditInspectorButton(screen, editButtonAddNeighbor, neighborLabel, regionActionEnabled)
+	drawEditInspectorButton(screen, editButtonEditRegionData, "Bölge Verileri", regionActionEnabled)
 }
 
 func drawEditInspectorSaveButton(screen *ebiten.Image, enabled bool) {
@@ -756,7 +753,9 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	case editButtonAddRegion:
 		return leftRect(0)
 	case editButtonAddMinorRegion:
-		return full(7)
+		return leftRect(6)
+	case editButtonEditRegionData:
+		return rightRect(6)
 	case editButtonDeleteRegion:
 		return rightRect(0)
 	case editButtonRegionTerrain:
@@ -777,8 +776,6 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return leftRect(5)
 	case editButtonAddNeighbor:
 		return rightRect(5)
-	case editButtonEditRegionData:
-		return full(6)
 	case editButtonSetFactionCapital:
 		return leftRect(1)
 	case editButtonSaveScenario:
@@ -2191,7 +2188,11 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.setSelectedFactionCapital()
 		return InputAction{}, true
 	}
-	switch r.editRegionInspectorButtonAt(fx, fy) {
+	kind := r.editRegionInspectorButtonAt(fx, fy)
+	if r.editMinorRegionDrawing && kind != editButtonAddMinorRegion && kind != editButtonDeleteRegion {
+		return InputAction{}, true
+	}
+	switch kind {
 	case editButtonRegionTerrain:
 		r.toggleEditTerrainDropdown()
 	case editButtonRegionNameTR:
@@ -3017,17 +3018,11 @@ func (r *Renderer) addMinorRegionNearSelected() {
 	r.editSelectedRegion = rid
 	r.editSelectedSettlement = -1
 	r.SelectedArmy = ""
-	complete := func() {
-		// Minor alanı merkez mesafesiyle değil, aşağıdaki poligon çizimiyle
-		// belirlenecek. Bu aşamada boş görsel komşuluk uygulamak parent
-		// bağlantısını silmemeli.
-		r.beginMinorRegionDrawing(&before)
-		r.editDirty = true
-	}
-	if !r.requestEditWorldMapRebuildWithCompletion(complete) {
-		r.rebuildEditWorldMap()
-		complete()
-	}
+	// Minor alanı merkez mesafesiyle değil, aşağıdaki poligon çizimiyle
+	// belirlenecek. Minor bölgeler Voronoi tohumlarına katılmadığı için burada
+	// haritayı yeniden oluşturmak veya raster ataması yapmak gerekmez.
+	r.beginMinorRegionDrawing(&before)
+	r.editDirty = true
 }
 
 func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {

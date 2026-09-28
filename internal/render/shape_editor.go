@@ -505,7 +505,9 @@ func (r *Renderer) cancelMinorRegionDrawing() {
 	}
 	if r.editMinorRegionPolygonBefore != nil {
 		before := *r.editMinorRegionPolygonBefore
-		r.restoreWorldSnapshotSync(before)
+		// Alt bölge oluşturulduğunda henüz harita pikselleri değiştirilmedi.
+		// Bu nedenle iptal sırasında tam harita/Voronoi rebuild'i gereksizdir.
+		r.restoreWorldSnapshotDataOnly(before)
 	}
 	r.editMinorRegionDrawing = false
 	r.editMinorRegionPolygon = nil
