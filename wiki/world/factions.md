@@ -48,7 +48,8 @@ fiilî özerkliği temsil eder: Avusturya ile barış kurar, HRE ile ilişkiyi n
 ticaret bonusu verir ve `swiss_de_facto_independence_1499` flag'ini yazar. Bu, 1648'deki
 hukuki bağımsızlık tanınmasından önceki siyasi durumu temsil eder; HRE vassallığı
 olmayan mevcut modelde teknik bir overlord koparımı yapmaz.
-Morgarten sonrasında `hre_supports_austria_against_swiss_1315` event'i HRE'nin
+Morgarten event'i, Uri ve Unterwalden'den gelen üç piyade desteğini ve dağ savunmasını
+temsil eder. Morgarten sonrasında `hre_supports_austria_against_swiss_1315` event'i HRE'nin
 Avusturya çağrısına cevap vermesini temsil eder; yalnızca İsviçre-Avusturya savaşı
 başladıktan sonra HRE ve Avusturya'yı aynı savaş koalisyonuna alır.
 

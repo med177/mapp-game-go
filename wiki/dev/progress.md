@@ -823,8 +823,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-09-28: İsviçre kuruluş event'inin `successor_revival` etkisi veriyle seçilen
   birlik tipini destekleyecek şekilde genişletildi. 1310 kuruluşu altı piyadeyle başlıyor;
-  Morgarten savunma bonusu %30'a çıkarıldı. Eski ardıl kuruluş çağrıları milis varsayılanını
-  koruyor; hedefli event testi eklendi.
+  Morgarten savunma bonusu %30'a çıkarıldı ve event'e Uri-Unterwalden kökenli üç piyade
+  takviyesi eklendi. Eski ardıl kuruluş çağrıları milis varsayılanını koruyor; hedefli event
+  testi eklendi.
 
 - 2026-09-12: Schwaben Savaşı sonrasındaki Basel Barışı için 1499 event'i eklendi.
   Event, İsviçre'nin HRE'den fiilî özerkliğini `swiss_de_facto_independence_1499`

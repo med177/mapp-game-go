@@ -143,7 +143,7 @@
   {
     "id": "swiss_morgarten_war_1315",
     "name_tr": "Morgarten Savaşı",
-    "desc_tr": "Habsburgların merkez İsviçre üzerindeki hâkimiyet iddiası yeniden güçleniyor. Konfederasyon, Morgarten geçidinde Avusturya-Habsburg ordusuna karşı açık savaşa hazırlanıyor.",
+    "desc_tr": "Habsburgların merkez İsviçre üzerindeki hâkimiyet iddiası yeniden güçleniyor. Uri ve Unterwalden'den gelen Waldstätte desteğiyle konfederasyon, Morgarten geçidinde Avusturya-Habsburg ordusuna karşı açık savaşa hazırlanıyor.",
     "historical_year": 1315,
     "historical_month": 11,
     "min_turn": 0,
@@ -158,6 +158,9 @@
       {"faction_id": "austria_duchy", "score_delta": -45, "stance": "war"}
     ],
     "combat_defense_percent": 30,
+    "unit_reinforcements": [
+      {"unit_type": "infantry", "unit_count": 3}
+    ],
     "set_flags": ["swiss_morgarten_war_started"]
   },
   {

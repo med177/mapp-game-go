@@ -69,8 +69,13 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 				t.Fatal("İsviçre kuruluş event'i 6 piyade ile yeniden kurulmuyor")
 			}
 		}
-		if event.ID == "swiss_morgarten_war_1315" && event.CombatDefensePercent != 30 {
-			t.Fatalf("Morgarten savunma bonusu = %d, 30 bekleniyordu", event.CombatDefensePercent)
+		if event.ID == "swiss_morgarten_war_1315" {
+			if event.CombatDefensePercent != 30 {
+				t.Fatalf("Morgarten savunma bonusu = %d, 30 bekleniyordu", event.CombatDefensePercent)
+			}
+			if len(event.UnitReinforcements) != 1 || event.UnitReinforcements[0].UnitType != "infantry" || event.UnitReinforcements[0].UnitCount != 3 {
+				t.Fatal("Morgarten event'i İsviçre'ye 3 piyade Waldstätte takviyesi vermiyor")
+			}
 		}
 	}
 	for id, found := range required {

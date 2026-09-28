@@ -81,9 +81,12 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
    `apply_patch` ile yap.
 3. Go kodunda `gofmt` çalıştır. Davranış, state, save/load, input, routing veya
    ortak helper değiştiyse ilgili regresyon testini ekle/güncelle.
-4. Önce hedefli testleri, sonra kapsam uygunsa `go test ./... -count=1` çalıştır;
-  iki sonucu ayrı raporla. Merkezi lint yapılandırması yoksa yeni bir lint
-  aracını varsayma; en azından `gofmt` ve ilgili testleri doğrula.
+4. Varsayılan olarak yalnızca yapılan değişiklikle doğrudan ilgili hedefli
+  testleri çalıştır. Kullanıcı açıkça istemedikçe veya değişikliğin kapsamı/risk
+  seviyesi bunu gerektirmedikçe `go test ./... -count=1` çalıştırma. Tam test
+  paketi çalıştırılırsa bunu hedefli testlerden ayrı raporla. Merkezi lint
+  yapılandırması yoksa yeni bir lint aracı varsayma; en azından `gofmt` ve
+  ilgili testleri doğrula.
 5. Gerekli olduğunda `go generate ./internal/buildinfo` ve
    `GOOS=windows GOARCH=amd64 go build -o bin/game.exe ./cmd/game` ile build'i
    doğrula. Veri değişikliklerinde ilgili lint ve yükleme testini de çalıştır.
