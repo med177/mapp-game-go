@@ -13107,6 +13107,7 @@
     "shape_id": "TUR",
     "is_sea": false,
     "is_minor_region": true,
+    "is_privileged": true,
     "parent_region_id": "chrysopolis",
     "is_locked": false,
     "unlock_turn": 0,

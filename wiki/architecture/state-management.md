@@ -420,6 +420,10 @@ save/load ise alanı campaign state içinde korur.
 
 `LandRegionsOwnedBy(fid) []*Region` — fraksiyonun yalnızca kara bölgeleri
 
+`RegionsVisibleTo(fid)` / `LandRegionsVisibleTo(fid)` — egemen sahibi veya
+imtiyazlı minor bölgenin kullanım sahibi olan fraksiyonun UI'da görebileceği
+bölge listeleri; egemenlik, ekonomi ve AI hesaplarında kullanılmaz.
+
 `SelectBattleDefender(attacker, target, navalSeaMove)` — hedef bölgede saldıranı karşılayacak düşman orduyu deterministik seçer; kara savaşında en güçlü savunucuyu, deniz savaşında ise yalnız `StanceWar` ilişkisine sahip filoları dikkate alır. Savaş preview modalı ile gerçek resolve aynı savunucuyu kullansın diye render ve game katmanı bu helper üzerinden bağlanır.
 
 `SiegeAt(regionID)` / `SiegeByArmy(armyID)` — aktif kuşatma kaydını bölge veya saldıran ordu üstünden döner; renderer, AI ve oyun mantığı aynı save verisini bu helper'larla okur.

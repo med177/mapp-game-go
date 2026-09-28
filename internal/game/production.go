@@ -153,6 +153,13 @@ func (g *Game) applyProductionTicks() []productionResult {
 			}
 			results = append(results, result)
 		case productionKindUnit:
+			unitType := g.gs.UnitTypes[order.TypeID]
+			if unitType != nil && !unitType.HasBuildingRequirements(region.BuildingLevels()) {
+				result.canceled = true
+				result.reason = "birim için gerekli binalar eksik"
+				results = append(results, result)
+				continue
+			}
 			capacityKey := productionCapacityKey{regionID: region.ID, lane: g.productionCapacityLane(order.TypeID)}
 			capacity := g.regionUnitProductionCapacity(region, order.TypeID)
 			if progressedUnitsByLane[capacityKey] >= capacity {
@@ -203,13 +210,14 @@ func (g *Game) completeBuilding(region *world.Region, buildingID string) bool {
 	if !ok {
 		return false
 	}
+	maxLevel := region.BuildingLevelCap(buildingID, b.MaxPerRegion)
 	count := 0
 	for _, bid := range region.Buildings {
 		if bid == buildingID {
 			count++
 		}
 	}
-	if count >= b.MaxPerRegion {
+	if count >= maxLevel {
 		return false
 	}
 	region.Buildings = append(region.Buildings, buildingID)
@@ -411,6 +419,9 @@ func (g *Game) completeUnit(region *world.Region, ownerID faction.FactionID, uni
 	utype, ok := g.gs.UnitTypes[unitTypeID]
 	if !ok {
 		return "birim tanımı bulunamadı"
+	}
+	if !utype.HasBuildingRequirements(region.BuildingLevels()) {
+		return "birim için gerekli binalar eksik"
 	}
 	if utype.PrimaryBuildingID() == "port" {
 		return g.completeNavalUnit(region, ownerID, unitTypeID)

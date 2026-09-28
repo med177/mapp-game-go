@@ -491,6 +491,8 @@ func (g *Game) Update() error {
 			g.inciteRevolt(action.TargetFaction)
 		case render.ActionGrainAid:
 			g.applyGrainAid(action.TargetRegion)
+		case render.ActionRevokeMinorPrivilege:
+			g.revokeMinorPrivilege(action.TargetRegion)
 		case render.ActionLiberateSuccessor:
 			g.liberateSuccessor(action.TargetRegion)
 		case render.ActionVassalizeRegionSuccessor:
@@ -2712,6 +2714,7 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		g.renderer.ShowCombatResult(b.NameTR + " sadece " + b.RequiredTerrain + " arazisine yapılır!")
 		return
 	}
+	maxLevel := region.BuildingLevelCap(buildingID, b.MaxPerRegion)
 	// Maks seviye kontrolü
 	count := 0
 	for _, bid := range region.Buildings {
@@ -2719,8 +2722,8 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 			count++
 		}
 	}
-	if count >= b.MaxPerRegion {
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s maksimum seviyede! (Lv%d)", b.NameTR, b.MaxPerRegion))
+	if count >= maxLevel {
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s maksimum seviyede! (Lv%d)", b.NameTR, maxLevel))
 		return
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
@@ -2735,8 +2738,8 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		return
 	}
 	queuedLevels := g.queuedBuildingCount(rid, buildingID)
-	if count+queuedLevels >= b.MaxPerRegion {
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s için seviye kuyruğu dolu! (Lv%d)", b.NameTR, b.MaxPerRegion))
+	if count+queuedLevels >= maxLevel {
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s için seviye kuyruğu dolu! (Lv%d)", b.NameTR, maxLevel))
 		return
 	}
 	targetLevel := count + queuedLevels + 1
@@ -2932,6 +2935,56 @@ func (g *Game) applyGrainAid(regionID world.RegionID) {
 	msg := fmt.Sprintf("%s bölgesine tahıl yardımı yapıldı.", regionName)
 	g.renderer.ShowCombatResult(msg)
 	g.renderer.AddEventDetail("[TAHIL] "+msg, fmt.Sprintf("%d tahıl harcandı; memnuniyet %d → %d.", state.GrainAidCost, before, region.Satisfaction))
+}
+
+func (g *Game) revokeMinorPrivilege(regionID world.RegionID) {
+	if g == nil || g.gs == nil {
+		return
+	}
+	region := g.gs.Regions[regionID]
+	if region == nil {
+		if g.renderer != nil {
+			g.renderer.ShowCombatResult("İmtiyaz bölgesi bulunamadı.")
+		}
+		return
+	}
+	// RevokeMinorPrivilege, imtiyaz kaldırılmadan önceki OwnerID'yi kullanım
+	// sahibi olarak bırakır; bu nedenle egemen sahibi çağrıdan önce alınmalı.
+	sovereignOwnerID := faction.FactionID(g.gs.SovereignOwnerID(region))
+	formerOwnerID := faction.FactionID(region.OwnerID)
+	result := diplomacy.RevokeMinorPrivilege(g.gs, g.gs.PlayerFactionID, regionID)
+	if g.renderer != nil {
+		g.renderer.ShowCombatResult(result.Message)
+	}
+	if !result.Applied {
+		return
+	}
+
+	// İmtiyaz kaldırılınca kullanım sahibi artık bölgenin sahibi olamaz;
+	// minor bölge ana bölgenin egemen devletine normal kara bölgesi olarak geçer.
+	region.OwnerID = string(sovereignOwnerID)
+	g.gs.ClearProductionOrdersForRegion(regionID)
+	g.clearSiege(regionID)
+	g.evictForcesFromRevokedMinorRegion(regionID, string(sovereignOwnerID))
+
+	var elimination eliminationResult
+	if formerOwnerID != "" && formerOwnerID != sovereignOwnerID && len(g.gs.LandRegionsOwnedBy(formerOwnerID)) == 0 {
+		// Ardıl aktarımı yok: eski imtiyaz sahibinin son toprağı da kaybedildiği
+		// için devleti elenir ve kalan tüm askeri birimleri silinir.
+		elimination = eliminateFaction(g.gs, formerOwnerID, "")
+	}
+	g.gs.NormalizeFactionCapitals()
+	g.gs.RefreshArmyMovePoints(false)
+	g.sanitizeDockedFleets()
+
+	if g.renderer != nil {
+		detail := "İmtiyaz kaldırıldı; bölge egemen devlete devredildi ve kullanım sahibinin kuvvetleri dışarı çıkarıldı."
+		if elimination.FactionID != "" {
+			detail += " Kullanım sahibi devletin son toprağıydı; devlet elendi ve tüm askeri birimleri silindi."
+		}
+		g.renderer.AddEventDetail("[DİPLOMASİ] "+result.Message, detail)
+		g.renderer.MarkMapDirty()
+	}
 }
 
 func (g *Game) offerVassalization(targetID faction.FactionID) {
@@ -4388,7 +4441,6 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		g.renderer.ShowCombatResult("Bu birlik için gerekli binalar eksik: " + strings.Join(missing, ", "))
 		return
 	}
-
 	// Teknoloji kontrolü: listedeki tüm teknoloji zinciri tamamlanmış olmalı.
 	if !utype.HasAllRequiredTechs(f.Research.Completed) {
 		missing := utype.MissingRequiredTechs(f.Research.Completed)
@@ -5562,6 +5614,73 @@ func (g *Game) evictDockedFleetsFromCapturedPort(capturedRegionID world.RegionID
 		fleet.DockedRegionID = ""
 		fleet.DockedSettlementID = ""
 	}
+}
+
+// evictForcesFromRevokedMinorRegion, imtiyaz kaldırılan minor bölgedeki
+// egemen devlet dışı kara ordularını kendi sahiplerinin en yakın kara
+// bölgesine, filoları ise denize çıkarır. Fetih tahliyesinden ayrı tutulur;
+// imtiyaz kaldırma savaş veya fetih sonucu değildir.
+func (g *Game) evictForcesFromRevokedMinorRegion(regionID world.RegionID, protectedOwnerID string) {
+	if g == nil || g.gs == nil || regionID == "" {
+		return
+	}
+	reference := g.gs.Regions[regionID]
+	if reference == nil {
+		return
+	}
+	for _, currentArmy := range g.gs.Armies {
+		if currentArmy == nil || currentArmy.OwnerID == "" || currentArmy.OwnerID == protectedOwnerID {
+			continue
+		}
+		if currentArmy.IsNaval {
+			if currentArmy.RegionID != regionID && currentArmy.DockedRegionID != regionID {
+				continue
+			}
+			if nearestSea := g.nearestSeaRegionForFleet(currentArmy, regionID); nearestSea != "" {
+				currentArmy.RegionID = nearestSea
+			}
+			currentArmy.DockedRegionID = ""
+			currentArmy.DockedSettlementID = ""
+			continue
+		}
+		if currentArmy.RegionID != regionID {
+			continue
+		}
+		if retreatRegion := g.nearestSovereignLandRegionForArmy(currentArmy, reference); retreatRegion != "" {
+			currentArmy.RegionID = retreatRegion
+			currentArmy.DockedRegionID = ""
+			currentArmy.DockedSettlementID = ""
+		}
+	}
+}
+
+// nearestSovereignLandRegionForArmy, OwnerID'si kullanım sahibi olarak
+// kullanılan imtiyazlı minor bölgeleri tahliye hedefi saymaz; hedefin gerçekten
+// ordunun sahibine ait egemen bir kara bölgesi olması gerekir.
+func (g *Game) nearestSovereignLandRegionForArmy(a *army.Army, reference *world.Region) world.RegionID {
+	if g == nil || g.gs == nil || a == nil || reference == nil || a.OwnerID == "" {
+		return ""
+	}
+	bestRegion := world.RegionID("")
+	bestDist := 0.0
+	found := false
+	for _, region := range g.gs.Regions {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.ID == reference.ID {
+			continue
+		}
+		if g.gs.SovereignOwnerID(region) != a.OwnerID {
+			continue
+		}
+		dx := float64(region.WorldX - reference.WorldX)
+		dy := float64(region.WorldY - reference.WorldY)
+		dist := dx*dx + dy*dy
+		if !found || dist < bestDist || (dist == bestDist && region.ID < bestRegion) {
+			bestRegion = region.ID
+			bestDist = dist
+			found = true
+		}
+	}
+	return bestRegion
 }
 
 func (g *Game) nearestSeaRegionForFleet(fleet *army.Army, capturedRegionID world.RegionID) world.RegionID {

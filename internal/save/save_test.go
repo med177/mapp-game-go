@@ -308,6 +308,22 @@ func TestCampaignSaveStateDoesNotPersistScenarioDerivedStartYear(t *testing.T) {
 	}
 }
 
+func TestCampaignSaveStatePreservesMinorPrivilegeRevocation(t *testing.T) {
+	base := &world.Region{ID: "galata", IsMinorRegion: true, IsPrivileged: true}
+	current := &world.Region{ID: "galata", IsMinorRegion: true, IsPrivileged: false}
+
+	saved, ok := makeRegionSaveState(current, base)
+	if !ok || saved.IsPrivileged == nil || *saved.IsPrivileged {
+		t.Fatalf("imtiyaz kaldırma compact save'e yazılmadı: %+v", saved.IsPrivileged)
+	}
+
+	restored := &world.Region{ID: "galata", IsMinorRegion: true, IsPrivileged: true}
+	applyRegionSaveState(restored, saved)
+	if restored.IsPrivileged {
+		t.Fatal("imtiyaz kaldırma compact save'den geri yüklenmedi")
+	}
+}
+
 func TestCompactSavePreservesNavalSupplyCargo(t *testing.T) {
 	armies := map[army.ArmyID]*army.Army{
 		"fleet": {

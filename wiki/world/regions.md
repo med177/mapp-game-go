@@ -48,7 +48,8 @@ merkezleri Voronoi alan dağıtımına katılmaz. `Küçük Alt Bölge Ekle` son
 çizilen poligon ana bölgenin rasterına paint override olarak işlenir ve kesin
 alanı `region_shapes.json` içindeki `minor_polygons` altında poligon noktalarıyla
 saklanır; runtime piksel override'ını bu geometriden üretir. Küçük alt bölgelerde yalnızca
-`fortress` ve `port` yerleşimleri ile `walls` ve `port` binaları geçerlidir.
+`fortress` ve `port` yerleşimleri ile `walls` ve `port` binaları geçerlidir;
+imtiyazlı minor bölgelerde bu iki bina da en fazla 1. seviyeye çıkabilir.
 `parent_region_id` ilişki bilgisidir; alt bölgenin fethedilmesi ana bölgenin
 sahipliğini değiştirmez. Edit Mode yeni minor kimliklerini `new_minor_region_*`
 önekiyle üretir. Poligon çizimi tamamlanana kadar minor için merkez/odak işareti
@@ -78,12 +79,24 @@ alt bölgenin kullanım/işletme sahibidir; egemen sahip ayrıca tutulmaz ve
 İmtiyazlı alt bölgenin parasal geliri egemen sahip ile kullanım sahibi arasında
 %50-%50 paylaşılır. Alt bölgenin egemen sahibine yapılan savaş ilanı kullanım
 sahibiyle doğrudan savaş başlatmaz; kullanım sahibiyle ilişkiyi 10 puan azaltır.
+İmtiyazlı minor bölge her iki devletin bölge görünümünde yer alır. Egemen devlet
+bölge panelindeki `İmtiyazı Kaldır` düğmesiyle hakkı sona erdirebilir; bu işlem
+kullanım sahibiyle ilişkiyi 10 puan azaltır ve savaş başlatmaz. Kaldırma anında
+minor bölge ana bölgenin egemen sahibine normal sahiplikle devredilir; bölgedeki
+diğer devlet orduları kendi devletlerinin en yakın kara bölgesine, filoları
+denize çıkarılır. Kullanım sahibinin başka egemen toprağı kalmamışsa devlet
+elenir ve tüm askeri birimleri silinir.
 `is_privileged=false` olduğunda alt bölge normal bölge gibi doğrudan `OwnerID`
 sahibine aittir.
 
 Minor bölgelerde `successor_faction_id` Edit Mode tarafından otomatik doldurulmaz;
 yeni minor kayıtlarında alan boş/eksik kalır. Kullanıcı `Ardıl Devlet` seçerse
 alan o zaman açıkça doldurulabilir.
+
+Kara birimi üretimi için bölgede en az bir `barracks` seviyesi gerekir; bina
+gereksinimi olmayan milis de bu kuralın dışına çıkmaz. `port` bulunan fakat
+`barracks` bulunmayan kıyı bölgelerinde yalnız deniz birimi üretim hattı açık
+kalır. Kışla ve limanın ikisi de yoksa alt HUD'daki üretim düğmesi pasif olur.
 
 `WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_center` ile seçilir. Bu alan hiçbir yerleşimde yoksa runtime merkezi sırasıyla kale, şehir, kasaba ve liman tiplerinden seçer ve seçimi `is_center` olarak tamamlar. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
 

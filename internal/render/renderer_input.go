@@ -825,6 +825,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.showSuccessorRegionConfirm(ActionVassalizeRegionSuccessor, "Vassallaştırma", "onu vassalın yapmak")
 			return InputAction{}
 		}
+		if regionRevokePrivilegeButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
+			r.showMinorPrivilegeRevokeConfirm()
+			return InputAction{}
+		}
 		if regionGrainAidButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
 			if r.gs.CanApplyGrainAid(r.SelectedRegion) {
 				return InputAction{Kind: ActionGrainAid, TargetRegion: r.SelectedRegion}
@@ -1152,6 +1156,29 @@ func (r *Renderer) showSuccessorRegionConfirm(action ActionKind, title, verb str
 		"Evet",
 		"Hayır",
 		InputAction{Kind: action, TargetRegion: r.SelectedRegion},
+		nil,
+	)
+}
+
+func (r *Renderer) showMinorPrivilegeRevokeConfirm() {
+	if r == nil || r.gs == nil || r.SelectedRegion == "" || !r.gs.CanRevokeMinorPrivilege(r.SelectedRegion) {
+		return
+	}
+	region := r.gs.Regions[r.SelectedRegion]
+	operatorName := factionDisplayName(r.gs, region.OwnerID)
+	if operatorName == "" {
+		operatorName = region.OwnerID
+	}
+	regionName := region.NameTR
+	if regionName == "" {
+		regionName = string(region.ID)
+	}
+	r.ShowConfirmDialog(
+		"İmtiyazı Kaldır",
+		fmt.Sprintf("%s bölgesindeki imtiyazı kaldırmak istiyor musun? %s ile ilişki -%d olacak.", regionName, operatorName, diplomacy.PrivilegeRevocationRelationPenalty),
+		"Kaldır",
+		"Vazgeç",
+		InputAction{Kind: ActionRevokeMinorPrivilege, TargetRegion: r.SelectedRegion},
 		nil,
 	)
 }

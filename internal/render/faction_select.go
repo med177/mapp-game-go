@@ -102,7 +102,7 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 36)}, religion.DisplayNameTR(f.Religion), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 		// Bölge sayısı ve başlangıç altını
-		regionCount := len(gs.RegionsOwnedBy(fid))
+		regionCount := len(gs.RegionsVisibleTo(fid))
 		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 54)}, itoa(regionCount)+" bölge", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 
 		totalVictories, historicalVictories, generalVictories, featuredVictory := factionVictorySummary(gs, fid)

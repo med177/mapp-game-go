@@ -46,6 +46,7 @@ const (
 	ActionSendGift                 ActionKind = "send_gift"
 	ActionInciteRevolt             ActionKind = "incite_revolt"
 	ActionGrainAid                 ActionKind = "grain_aid"
+	ActionRevokeMinorPrivilege     ActionKind = "revoke_minor_privilege"
 	ActionOfferVassalization       ActionKind = "offer_vassalization"
 	ActionReleaseVassal            ActionKind = "release_vassal"
 	ActionAnnexVassal              ActionKind = "annex_vassal"

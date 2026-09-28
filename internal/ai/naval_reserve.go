@@ -51,7 +51,8 @@ func aiProduceNavalReserve(gs *state.GameState, fid faction.FactionID, budget *a
 		}
 		current := aiBuildingLevel(region, "port")
 		queued := aiQueuedBuildingCount(gs, region.ID, "port", fid)
-		if current+queued >= requiredPortLevel || current+queued >= portType.MaxPerRegion {
+		maxPortLevel := region.BuildingLevelCap("port", portType.MaxPerRegion)
+		if current+queued >= requiredPortLevel || current+queued >= maxPortLevel {
 			continue
 		}
 		targetLevel := current + queued + 1

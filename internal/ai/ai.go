@@ -1114,6 +1114,9 @@ func aiBuildingAllowed(gs *state.GameState, region *world.Region, buildingID, re
 	if gs == nil || region == nil || region.IsSea || region.IsLocked {
 		return false
 	}
+	if !region.AllowsBuilding(buildingID) {
+		return false
+	}
 	if buildingID == "port" {
 		return region.IsCoastal(gs.Regions)
 	}
@@ -1183,7 +1186,14 @@ func aiFindRecruitRegion(gs *state.GameState, fid faction.FactionID, utype *army
 }
 
 func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.RegionID, unitType *army.UnitType) bool {
-	if gs == nil || gs.DeployedLandUnits(fid)+aiPendingLandUnitCount(gs, fid) >= gs.ManpowerCap(fid) {
+	if gs == nil || unitType == nil {
+		return false
+	}
+	region := gs.Regions[rid]
+	if region == nil || !aiUnitBuildingRequirementsMet(region, unitType) {
+		return false
+	}
+	if gs.DeployedLandUnits(fid)+aiPendingLandUnitCount(gs, fid) >= gs.ManpowerCap(fid) {
 		return false
 	}
 	// Yeni kara ordusu açılması artık MaxLandArmies ile sınırlanmaz. Bölge
@@ -2557,7 +2567,8 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 		queued := aiQueuedBuildingCount(gs, r.ID, "port", fid)
 		targetLevel := aiBuildingLevel(r, "port") + queued + 1
 		portCost := aiBuildingResourceCostAtLevel(portType, targetLevel)
-		if aiBuildingLevel(r, "port")+queued < portType.MaxPerRegion &&
+		portMaxLevel := r.BuildingLevelCap("port", portType.MaxPerRegion)
+		if aiBuildingLevel(r, "port")+queued < portMaxLevel &&
 			aiBuildingAllowed(gs, r, "port", portType.RequiredTerrain) &&
 			aiCanAffordForBudget(f, portCost, budget, aiBudgetNaval) {
 			if !aiApplyBudgetedCost(f, portCost, budget, aiBudgetNaval) {
@@ -2714,7 +2725,8 @@ func aiProduceNavalDefenseAtThreatenedPort(gs *state.GameState, fid faction.Fact
 	currentPortLevel := aiBuildingLevel(threatenedPort, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, threatenedPort.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
-		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, threatenedPort, "port", portType.RequiredTerrain) {
+		portMaxLevel := threatenedPort.BuildingLevelCap("port", portType.MaxPerRegion)
+		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portMaxLevel || !aiBuildingAllowed(gs, threatenedPort, "port", portType.RequiredTerrain) {
 			return
 		}
 		targetLevel := currentPortLevel + queuedPortLevels + 1

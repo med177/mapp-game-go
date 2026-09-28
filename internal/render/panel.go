@@ -2921,6 +2921,10 @@ func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *worl
 		}
 		btn := buildRegionGrainAidButton(gs, region.ID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, gs.CanApplyGrainAid(region.ID), solidButtonStyle(color.RGBA{112, 82, 36, 225}, color.RGBA{184, 142, 70, 255}, ColorWhite, 0))
+		if gs.CanRevokeMinorPrivilege(region.ID) {
+			revokeBtn := buildRegionRevokePrivilegeButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+			drawUIButton(screen, revokeBtn.X, revokeBtn.Y, revokeBtn.W, revokeBtn.H, revokeBtn.Label, gs.CanRevokeMinorPrivilege(region.ID), solidButtonStyle(color.RGBA{112, 58, 48, 235}, color.RGBA{194, 104, 82, 255}, ColorWhite, 0))
+		}
 		return
 	}
 	btn := buildRegionDiplomacyButtons(gs, ownerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
@@ -4128,6 +4132,9 @@ func regionPanelInteractiveHitForTab(mx, my float64, gs *state.GameState, rid wo
 	if regionGrainAidButtonHitForTab(mx, my, gs, rid, activeTab) {
 		return true
 	}
+	if regionRevokePrivilegeButtonHitForTab(mx, my, gs, rid, activeTab) {
+		return true
+	}
 	if regionVassalizeSuccessorButtonHitForTab(mx, my, gs, rid, activeTab) {
 		return true
 	}
@@ -4796,7 +4803,7 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 	y += 24
 	drawUIKeyValueRow(screen, 0, y, width, "Kara / Deniz Gücü", factionMilitaryPowerBreakdownLabel(gs, fid), ColorGray, ColorGold)
 	y += factionPanelRowH
-	drawUIKeyValueRow(screen, 0, y, width, "Bölgeler", itoa(len(gs.LandRegionsOwnedBy(fid))), ColorGray, ColorWhite)
+	drawUIKeyValueRow(screen, 0, y, width, "Bölgeler", itoa(len(gs.LandRegionsVisibleTo(fid))), ColorGray, ColorWhite)
 	y += factionPanelRowH
 	drawUIKeyValueRow(screen, 0, y, width, "Ordu", itoa(gs.CurrentLandArmies(fid))+"/"+itoa(gs.MaxLandArmies(fid)), ColorGray, ColorWhite)
 	y += factionPanelRowH
@@ -5193,6 +5200,23 @@ func regionGrainAidButtonHitForTab(mx, my float64, gs *state.GameState, rid worl
 	return buildRegionGrainAidButton(gs, rid, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
 
+func regionRevokePrivilegeButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	return regionRevokePrivilegeButtonHitForTab(mx, my, gs, rid, regionPanelTabBuildings)
+}
+
+func regionRevokePrivilegeButtonHitForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab) bool {
+	if gs == nil || rid == "" || !gs.CanRevokeMinorPrivilege(rid) {
+		return false
+	}
+	region := gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return false
+	}
+	barY := float32(regionPanelActionBarY(gs, region, activeTab))
+	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
+	return buildRegionRevokePrivilegeButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
+}
+
 func regionLiberationSuccessor(gs *state.GameState, region *world.Region) (faction.FactionID, bool) {
 	if gs == nil || region == nil || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) || region.SuccessorFactionID == "" {
 		return "", false
@@ -5206,8 +5230,9 @@ func regionLiberationSuccessor(gs *state.GameState, region *world.Region) (facti
 }
 
 const (
-	regionActionButtonWidth = float32(90)
-	regionActionButtonGap   = float32(5)
+	regionActionButtonWidth          = float32(90)
+	regionActionButtonGap            = float32(5)
+	regionRevokePrivilegeButtonWidth = float32(125)
 )
 
 func buildRegionLiberateButton(px, py, pw, ph float32) gameui.Button {
@@ -5291,6 +5316,16 @@ func buildRegionGrainAidButton(_ *state.GameState, _ world.RegionID, px, py, _, 
 	x := px + regionActionButtonGap
 	y := py + (ph-btnH)/2
 	return gameui.NewButton(float64(x), float64(y), float64(btnW), float64(btnH), "Tahıl Yardımı")
+}
+
+func buildRegionRevokePrivilegeButton(px, py, pw, ph float32) gameui.Button {
+	const btnH = float32(24)
+	x := px + regionActionButtonGap + regionActionButtonWidth + regionActionButtonGap
+	y := py + (ph-btnH)/2
+	if x+regionRevokePrivilegeButtonWidth > px+pw {
+		x = px + pw - regionRevokePrivilegeButtonWidth
+	}
+	return gameui.NewButton(float64(x), float64(y), float64(regionRevokePrivilegeButtonWidth), float64(btnH), "İmtiyazı Kaldır")
 }
 
 func regionTaxButtonRects(gs *state.GameState, rid world.RegionID) ([4]float32, [4]float32) {

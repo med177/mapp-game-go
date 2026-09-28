@@ -34,6 +34,7 @@ type settlementPatch struct {
 type regionSaveState struct {
 	OwnerID            *string          `json:"o,omitempty"`
 	SuccessorFactionID *string          `json:"sf,omitempty"`
+	IsPrivileged       *bool            `json:"ip,omitempty"`
 	Settlements        *settlementPatch `json:"sp,omitempty"`
 	IsLocked           *bool            `json:"l,omitempty"`
 	Satisfaction       *int             `json:"sat,omitempty"`
@@ -827,6 +828,9 @@ func makeRegionSaveState(current, base *world.Region) (regionSaveState, bool) {
 	if base == nil || current.SuccessorFactionID != base.SuccessorFactionID {
 		out.SuccessorFactionID = cloneStringPtr(current.SuccessorFactionID)
 	}
+	if base == nil || current.IsPrivileged != base.IsPrivileged {
+		out.IsPrivileged = cloneBoolPtr(current.IsPrivileged)
+	}
 	if patch, ok := diffSettlements(base, current); ok {
 		out.Settlements = patch
 	}
@@ -873,6 +877,9 @@ func applyRegionSaveState(region *world.Region, saved regionSaveState) {
 	}
 	if saved.SuccessorFactionID != nil {
 		region.SuccessorFactionID = *saved.SuccessorFactionID
+	}
+	if saved.IsPrivileged != nil {
+		region.IsPrivileged = *saved.IsPrivileged
 	}
 	if saved.IsLocked != nil {
 		region.IsLocked = *saved.IsLocked
@@ -1836,6 +1843,7 @@ func cloneAICompletedObjectives(src map[faction.FactionID]map[string]bool) map[f
 func isZeroRegionSaveState(saved regionSaveState) bool {
 	return saved.OwnerID == nil &&
 		saved.SuccessorFactionID == nil &&
+		saved.IsPrivileged == nil &&
 		saved.Settlements == nil &&
 		saved.IsLocked == nil &&
 		saved.Satisfaction == nil &&

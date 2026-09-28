@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -387,5 +388,34 @@ func TestRecruitPanelStateForRegionFollowsPreference(t *testing.T) {
 	r.recruitPanelPreference = false
 	if r.recruitPanelStateForRegion(ownedRegion) {
 		t.Fatal("Kışla tercihi kapatıldıktan sonra panel açık kaldı")
+	}
+}
+
+func TestRecruitPanelButtonDisabledWhenRegionHasNoMilitaryBuilding(t *testing.T) {
+	region := &world.Region{ID: "minor", OwnerID: "player", IsMinorRegion: true}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions:         map[world.RegionID]*world.Region{region.ID: region},
+		Factions:        map[faction.FactionID]*faction.Faction{"player": {ID: "player"}},
+		UnitTypes: map[string]*army.UnitType{"militia": {
+			ID: "militia", Category: army.CategoryInfantry,
+			RequiredBuildings: []army.BuildingRequirement{{ID: "barracks", Level: 1}},
+		}},
+		UnitTypeOrder: []string{"militia"},
+	}
+	if RecruitPanelButtonEnabled(gs, region.ID) {
+		t.Fatal("kışla ve limanı olmayan bölgede Kışla düğmesi aktif göründü")
+	}
+
+	region.Buildings = []string{"port"}
+	gs.Regions["black_sea"] = &world.Region{ID: "black_sea", IsSea: true}
+	region.Neighbors = []world.RegionID{"black_sea"}
+	gs.UnitTypes["transport"] = &army.UnitType{
+		ID: "transport", Category: army.CategoryNavalTrans,
+		RequiredBuildings: []army.BuildingRequirement{{ID: "port", Level: 1}},
+	}
+	gs.UnitTypeOrder = []string{"militia", "transport"}
+	if !RecruitPanelButtonEnabled(gs, region.ID) {
+		t.Fatal("yalnızca limanı olan bölgede deniz üretim paneli açılabilir olmalıydı")
 	}
 }

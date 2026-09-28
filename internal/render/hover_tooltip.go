@@ -6,6 +6,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -140,6 +141,10 @@ func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 		} else {
 			drawSmallHoverHint(screen, "12 tahıl harca, memnuniyeti +10 artır", fx, fy)
 		}
+		return
+	}
+	if regionRevokePrivilegeButtonHitForTab(fx, fy, gs, rid, activeTab) {
+		drawSmallHoverHint(screen, fmt.Sprintf("İmtiyazı kaldır, ilişki -%d", diplomacy.PrivilegeRevocationRelationPenalty), fx, fy)
 		return
 	}
 
@@ -310,8 +315,8 @@ func buildingAvailabilityStatus(gs *state.GameState, region *world.Region, b *ci
 		}
 	}
 	maxLevel := 1
-	if b.MaxPerRegion > 0 {
-		maxLevel = b.MaxPerRegion
+	if configuredMax := region.BuildingLevelCap(b.ID, b.MaxPerRegion); configuredMax > 0 {
+		maxLevel = configuredMax
 	}
 	if level >= maxLevel {
 		return fmt.Sprintf("Maksimum seviye (Lv%d)", level), color.RGBA{190, 170, 110, 230}
@@ -442,7 +447,7 @@ func buildingNavalCapacityEffectLines(gs *state.GameState, region *world.Region,
 			level++
 		}
 	}
-	maxLevel := b.MaxPerRegion
+	maxLevel := region.BuildingLevelCap(b.ID, b.MaxPerRegion)
 	if maxLevel <= 0 {
 		maxLevel = 1
 	}
@@ -470,7 +475,7 @@ func buildingLandCapacityEffectLines(gs *state.GameState, region *world.Region, 
 			level++
 		}
 	}
-	maxLevel := b.MaxPerRegion
+	maxLevel := region.BuildingLevelCap(b.ID, b.MaxPerRegion)
 	if maxLevel <= 0 {
 		maxLevel = 1
 	}

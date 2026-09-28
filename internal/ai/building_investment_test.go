@@ -3,11 +3,38 @@ package ai
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func TestAILandRecruitmentRequiresBarracksInMinorRegion(t *testing.T) {
+	minor := &world.Region{ID: "akcakoca", OwnerID: "player", IsMinorRegion: true}
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Regions: map[world.RegionID]*world.Region{minor.ID: minor},
+	}
+	militia := &army.UnitType{
+		ID: "militia", Category: army.CategoryInfantry,
+		RequiredBuildings: []army.BuildingRequirement{{ID: "barracks", Level: 1}},
+	}
+
+	if aiCanQueueLandUnit(gs, "player", minor.ID, militia) {
+		t.Fatal("AI kışlasız minor bölgede kara birimi kuyruğa alabildi")
+	}
+	minor.Buildings = []string{"port"}
+	if aiCanQueueLandUnit(gs, "player", minor.ID, militia) {
+		t.Fatal("AI yalnız limanı olan minor bölgede kara birimi kuyruğa alabildi")
+	}
+	minor.Buildings = []string{"barracks"}
+	if !aiCanQueueLandUnit(gs, "player", minor.ID, militia) {
+		t.Fatal("AI kışlası olan minor bölgede kara birimi kuyruğa alamadı")
+	}
+}
 
 func buildingInvestmentFixture() (*state.GameState, faction.FactionID) {
 	fid := faction.FactionID("player")

@@ -1931,6 +1931,38 @@ func (s *GameState) RegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	return result
 }
 
+// RegionsVisibleTo, egemen sahibi veya imtiyazlı minor bölgenin kullanım
+// sahibi olan fraksiyonun UI'da görebileceği bölgeleri döner. Bu liste
+// egemenlik/gelir/AI hesabı için kullanılan RegionsOwnedBy'dan ayrıdır.
+func (s *GameState) RegionsVisibleTo(fid faction.FactionID) []*world.Region {
+	var result []*world.Region
+	if s == nil || fid == "" {
+		return result
+	}
+	for _, region := range s.Regions {
+		if region == nil {
+			continue
+		}
+		if s.SovereignOwnerID(region) == string(fid) ||
+			(region.IsMinorRegion && region.IsPrivileged && region.OwnerID == string(fid)) {
+			result = append(result, region)
+		}
+	}
+	return result
+}
+
+// LandRegionsVisibleTo, RegionsVisibleTo'nun deniz ve terrain-area filtreli
+// görünümüdür; faction kartları ve bölge özetleri bunu kullanır.
+func (s *GameState) LandRegionsVisibleTo(fid faction.FactionID) []*world.Region {
+	var result []*world.Region
+	for _, region := range s.RegionsVisibleTo(fid) {
+		if region != nil && !region.IsSea && !region.IsTerrainArea {
+			result = append(result, region)
+		}
+	}
+	return result
+}
+
 // LandRegionsOwnedBy bir fraksiyonun sahip olduğu kara bölgelerini döner.
 func (s *GameState) LandRegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	var result []*world.Region
@@ -1955,6 +1987,32 @@ func (s *GameState) SovereignOwnerID(region *world.Region) string {
 		}
 	}
 	return region.OwnerID
+}
+
+// MinorPrivilegeRevokeBlockReason, imtiyaz kaldırma düğmesi ve oyun aksiyonu
+// için ortak yetki/uygunluk kontrolüdür. İmtiyazı yalnız gerçek egemen sahibi
+// kaldırabilir; kullanım sahibi bölgeyi görür ancak bu işlemi yapamaz.
+func (s *GameState) MinorPrivilegeRevokeBlockReason(rid world.RegionID) string {
+	if s == nil || rid == "" {
+		return "Geçersiz imtiyaz bölgesi."
+	}
+	region := s.Regions[rid]
+	if region == nil || region.IsSea || !region.IsMinorRegion || !region.IsPrivileged {
+		return "Bu bölgenin kaldırılacak aktif imtiyazı yok."
+	}
+	sovereignID := s.SovereignOwnerID(region)
+	if sovereignID == "" || sovereignID != string(s.PlayerFactionID) {
+		return "İmtiyazı yalnızca bölgenin egemen sahibi kaldırabilir."
+	}
+	if region.OwnerID == "" || region.OwnerID == sovereignID {
+		return "Bu bölgenin ayrı bir imtiyaz sahibi yok."
+	}
+	return ""
+}
+
+// CanRevokeMinorPrivilege oyuncunun seçili imtiyazı kaldırabileceğini döner.
+func (s *GameState) CanRevokeMinorPrivilege(rid world.RegionID) bool {
+	return s.MinorPrivilegeRevokeBlockReason(rid) == ""
 }
 
 // RegionIncomeShares, bölgenin parasal çıktısının hangi devlete yazılacağını

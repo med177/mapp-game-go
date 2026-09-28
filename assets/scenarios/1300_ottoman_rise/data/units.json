@@ -12,7 +12,9 @@
     "gold_upkeep": 5,
     "hp": 100,
     "morale": 40,
-    "required_buildings": [],
+    "required_buildings": [
+      { "id": "barracks", "level": 1 }
+    ],
     "required_tech": [ ],
     "tier": 1,
     "turns_required": 2,

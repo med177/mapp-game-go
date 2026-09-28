@@ -22,6 +22,23 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   kullanıyor; poligon çizilmeden merkez odağı gösterilmiyor ve çizim bitince
   geometrik orta nokta otomatik atanıyor.
 
+- 2026-09-28: İmtiyazlı minor bölgelerde kale (`walls`) ve liman (`port`)
+  binaları için ortak seviye tavanı 1 yapıldı; oyuncu, üretim tamamlanması,
+  tooltip/kart ve AI kontrolleri aynı bölge kuralını kullanıyor.
+
+- 2026-09-28: İmtiyazlı minor bölgeler egemen ve kullanım sahibi devletlerin UI
+  bölge listelerinde görünür hale getirildi. Egemen devlet için bölge paneline
+  `İmtiyazı Kaldır` onayı eklendi; kaldırma kullanım sahibiyle ilişkiyi düşürür,
+  ancak savaş başlatmaz. Bölge egemen devlete devredilir, yabancı ordular
+  tahliye edilir; kullanım sahibinin son toprağıysa devlet elenir ve birlikleri
+  silinir.
+
+- 2026-09-28: Kara birimi üretimi tüm bölgelerde `barracks` seviyesine bağlandı;
+  kışlasız bölgelerde temel milis de üretilemiyor. Yalnız `port` bulunan
+  bölgelerde deniz üretimi korunuyor; `barracks` ve `port` birlikte yoksa alt
+  HUD üretim düğmesi pasif kalıyor. AI kara üretim adayları da aynı kuralı
+  kullanıyor.
+
 - 2026-09-28: Haritada ikmal yükü taşıyan diğer devlet filolarının `i` rozeti
   artık oyuncu filolarıyla aynı hover/cursor popup akışından görülebiliyor;
   ikmal miktarı ve bağlı ordu bilgisi sahibi devletten bağımsız gösteriliyor.

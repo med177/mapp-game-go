@@ -58,6 +58,27 @@ func TestMinorRegionAllowsOnlyFortressPortAndWallsInfrastructure(t *testing.T) {
 	}
 }
 
+func TestMinorRegionCapsWallsAndPortAtLevelOne(t *testing.T) {
+	minor := &Region{IsMinorRegion: true, IsPrivileged: true}
+	ordinaryMinor := &Region{IsMinorRegion: true}
+	normal := &Region{}
+
+	for _, buildingID := range []string{"walls", "port"} {
+		if got := minor.BuildingLevelCap(buildingID, 5); got != MinorRegionMaxInfrastructureLevel {
+			t.Fatalf("minor %s seviye tavanı = %d, %d bekleniyordu", buildingID, got, MinorRegionMaxInfrastructureLevel)
+		}
+		if got := normal.BuildingLevelCap(buildingID, 5); got != 5 {
+			t.Fatalf("normal %s seviye tavanı = %d, 5 bekleniyordu", buildingID, got)
+		}
+		if got := ordinaryMinor.BuildingLevelCap(buildingID, 5); got != 5 {
+			t.Fatalf("imtiyazsız minor %s seviye tavanı = %d, 5 bekleniyordu", buildingID, got)
+		}
+	}
+	if got := minor.BuildingLevelCap("market", 3); got != 3 {
+		t.Fatalf("minor market seviye tavanı = %d, tanım tavanı 3 bekleniyordu", got)
+	}
+}
+
 func TestMinorRegionMetadataRoundTripsThroughJSON(t *testing.T) {
 	original := &Region{
 		ID:             "sinop_castle",

@@ -305,7 +305,7 @@ func aiNavalEmbarkPortViable(gs *state.GameState, fid faction.FactionID, region 
 	if portType == nil || !aiBuildingAllowed(gs, region, "port", portType.RequiredTerrain) {
 		return false
 	}
-	return aiBuildingLevel(region, "port") < portType.MaxPerRegion
+	return aiBuildingLevel(region, "port") < region.BuildingLevelCap("port", portType.MaxPerRegion)
 }
 
 func aiBestLandingSeaForContext(ctx *StrategicContext, start world.RegionID, target *world.Region) (world.RegionID, int) {
@@ -671,7 +671,8 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 	currentPortLevel := aiBuildingLevel(embarkRegion, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, embarkRegion.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
-		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, embarkRegion, "port", portType.RequiredTerrain) {
+		portMaxLevel := embarkRegion.BuildingLevelCap("port", portType.MaxPerRegion)
+		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portMaxLevel || !aiBuildingAllowed(gs, embarkRegion, "port", portType.RequiredTerrain) {
 			return
 		}
 		targetLevel := currentPortLevel + queuedPortLevels + 1
@@ -747,7 +748,8 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 	currentPortLevel := aiBuildingLevel(embarkRegion, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, embarkRegion.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
-		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portType.MaxPerRegion || !aiBuildingAllowed(gs, embarkRegion, "port", portType.RequiredTerrain) {
+		portMaxLevel := embarkRegion.BuildingLevelCap("port", portType.MaxPerRegion)
+		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portMaxLevel || !aiBuildingAllowed(gs, embarkRegion, "port", portType.RequiredTerrain) {
 			return
 		}
 		targetLevel := currentPortLevel + queuedPortLevels + 1

@@ -30,6 +30,20 @@ func TestPrivilegedMinorUsesParentOwnerAndSplitsIncome(t *testing.T) {
 	if got := len(gs.LandRegionsOwnedBy("genoa")); got != 0 {
 		t.Fatalf("kullanım sahibi imtiyazlı alt bölgeyi egemen toprağı saydı: got=%d", got)
 	}
+	if got := len(gs.LandRegionsVisibleTo("east_rome")); got != 2 {
+		t.Fatalf("egemen devlet imtiyazlı alt bölgeyi görünür saymadı: got=%d", got)
+	}
+	if got := len(gs.LandRegionsVisibleTo("genoa")); got != 1 {
+		t.Fatalf("kullanım sahibi imtiyazlı alt bölgeyi görünür saymadı: got=%d", got)
+	}
+	gs.PlayerFactionID = "east_rome"
+	if !gs.CanRevokeMinorPrivilege(minor.ID) {
+		t.Fatalf("egemen devlet imtiyazı kaldırabilir görünmüyor: %s", gs.MinorPrivilegeRevokeBlockReason(minor.ID))
+	}
+	gs.PlayerFactionID = "genoa"
+	if gs.CanRevokeMinorPrivilege(minor.ID) {
+		t.Fatal("kullanım sahibi imtiyaz kaldırma yetkisine sahip görünüyor")
+	}
 }
 
 func TestNonPrivilegedMinorRemainsOwnedByOwnerID(t *testing.T) {

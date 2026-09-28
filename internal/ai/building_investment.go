@@ -148,7 +148,8 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 			}
 			queued := aiQueuedBuildingCount(gs, region.ID, buildingID, fid)
 			level := aiBuildingLevel(region, buildingID)
-			if btype.MaxPerRegion <= 0 || level+queued >= btype.MaxPerRegion {
+			maxLevel := region.BuildingLevelCap(buildingID, btype.MaxPerRegion)
+			if maxLevel <= 0 || level+queued >= maxLevel {
 				continue
 			}
 			// Aynı bölge ve bina türü için aktif bir emir varken ikinci
@@ -324,6 +325,11 @@ func aiTradeBuildingScore(gs *state.GameState, fid faction.FactionID, region *wo
 	if marketType == nil || marketType.MaxPerRegion <= 0 {
 		return 0
 	}
+	marketMaxLevel := region.BuildingLevelCap("market", marketType.MaxPerRegion)
+	portMaxLevel := 0
+	if portType != nil {
+		portMaxLevel = region.BuildingLevelCap("port", portType.MaxPerRegion)
+	}
 
 	marketBefore := aiBuildingLevel(region, "market") + aiQueuedBuildingCount(gs, region.ID, "market", fid)
 	portBefore := aiBuildingLevel(region, "port") + aiQueuedBuildingCount(gs, region.ID, "port", fid)
@@ -337,23 +343,23 @@ func aiTradeBuildingScore(gs *state.GameState, fid faction.FactionID, region *wo
 	}
 
 	score := 0
-	if buildingID == "market" && marketBefore < marketType.MaxPerRegion {
+	if buildingID == "market" && marketBefore < marketMaxLevel {
 		// Her ara seviye son seviyeye giden yolu korur; son seviye ayrıca
 		// TradeRouteAmountLimit'teki +2 hacim bonusunu açar.
 		score += 35 + marketBefore*15
-		if marketAfter >= marketType.MaxPerRegion {
+		if marketAfter >= marketMaxLevel {
 			score += 260
 		}
 	}
-	if portType != nil && buildingID == "port" && portBefore < portType.MaxPerRegion && region.IsCoastal(gs.Regions) {
+	if portType != nil && buildingID == "port" && portBefore < portMaxLevel && region.IsCoastal(gs.Regions) {
 		// Partner bonusu için liman da maksimuma ulaşmalıdır. Liman ara
 		// seviyeleri merchant/deniz üretimiyle birlikte yine değer taşır.
 		score += 25 + portBefore*12
 	}
 
-	if portType != nil && portType.MaxPerRegion > 0 {
-		wasFullTradeRegion := marketBefore >= marketType.MaxPerRegion && portBefore >= portType.MaxPerRegion
-		isFullTradeRegion := marketAfter >= marketType.MaxPerRegion && portAfter >= portType.MaxPerRegion
+	if portType != nil && portMaxLevel > 0 {
+		wasFullTradeRegion := marketBefore >= marketMaxLevel && portBefore >= portMaxLevel
+		isFullTradeRegion := marketAfter >= marketMaxLevel && portAfter >= portMaxLevel
 		if !wasFullTradeRegion && isFullTradeRegion {
 			score += 300
 		}
@@ -773,7 +779,8 @@ func aiLegacyEconomyBuildWithSteps(gs *state.GameState, fid faction.FactionID, b
 				continue
 			}
 			queued := aiQueuedBuildingCount(gs, region.ID, buildingID, fid)
-			if btype.MaxPerRegion <= 0 || aiBuildingLevel(region, buildingID)+queued >= btype.MaxPerRegion || !aiLegacyBuildingNeeded(gs, fid, region, buildingID) {
+			maxLevel := region.BuildingLevelCap(buildingID, btype.MaxPerRegion)
+			if maxLevel <= 0 || aiBuildingLevel(region, buildingID)+queued >= maxLevel || !aiLegacyBuildingNeeded(gs, fid, region, buildingID) {
 				continue
 			}
 			targetLevel := aiBuildingLevel(region, buildingID) + queued + 1

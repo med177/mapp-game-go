@@ -175,6 +175,10 @@ type Settlement struct {
 
 const MinorRegionDefaultBaseGoldIncome = 10
 
+// MinorRegionMaxInfrastructureLevel imtiyazlı küçük alt bölgelerde izin verilen
+// kale ve liman altyapısının ortak seviye tavanıdır.
+const MinorRegionMaxInfrastructureLevel = 1
+
 // NewMinorRegionFromParent, Edit Mode'un yeni küçük alt bölge için kullandığı
 // düşük gelirli başlangıç modelini üretir. Alt bölge normal Region olarak
 // kaldığı için savaş, sahiplik ve gelir akışları tarafından işlenebilir.
@@ -232,6 +236,17 @@ func (r *Region) AllowsBuilding(buildingID string) bool {
 		return true
 	}
 	return buildingID == "walls" || buildingID == "port"
+}
+
+// BuildingLevelCap, bina tanımındaki bölge tavanını bölgenin özel kurallarıyla
+// birleştirir. İmtiyazlı minor bölgelerde kale ve liman yalnızca birinci
+// seviyeye kadar geliştirilebilir; diğer bölgelerde senaryonun bina tanımı
+// aynen korunur.
+func (r *Region) BuildingLevelCap(buildingID string, configuredMax int) int {
+	if r != nil && r.IsMinorRegion && r.IsPrivileged && (buildingID == "walls" || buildingID == "port") {
+		return MinorRegionMaxInfrastructureLevel
+	}
+	return configuredMax
 }
 
 // AllowedSettlementTypes, Edit Mode dropdown'ının bölgeye özel seçeneklerini
