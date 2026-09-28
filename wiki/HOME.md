@@ -51,6 +51,7 @@ Harita temalı sıra tabanlı strateji oyunu. Total War sefer haritası tarzı �
 | [[dev/spice-consumption-plan]] | 1300 baharat üretim ve sürekli tüketim planı |
 | [[dev/data-format]] | JSON veri şemaları, assets/data/ yapısı |
 | [[dev/build-setup]] | WSL bağımlılıkları, Windows build ve `bin/game.exe` akışı |
+| [[dev/headless-simulation]] | Penceresiz çok turlu simülasyon ve kampanya raporu |
 
 ---
 

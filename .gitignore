@@ -8,6 +8,9 @@
 *.zip
 *.tar.gz
 game
+!internal/game/
+internal/game/*
+!internal/game/headless_report.go
 
 # Test binary, built with `go test -c`
 *.test

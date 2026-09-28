@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-28: `cmd/simreport` ve `internal/game/headless_report.go` ile pencere
+  açmadan normal tur çözümleme hattını kullanan headless kampanya simülasyonu
+  eklendi. AI kararları, savaş/ekonomi/diplomasi değişimleri, bölge geçişleri,
+  üretim ve bina emirleri, teknoloji, eliminasyon ve olaylar Markdown veya JSON
+  raporuna yazılabiliyor. Aynı `-seed` değeri AI, savaş ve rastgele olaylarda
+  tekrarlanabilir sonuç üretir. Kullanım ayrıntısı: [[dev/headless-simulation]].
+
 - 2026-09-28: 1310 açılış ekonomisi tarihsel yerel vergi ve ticari gelir olarak
   ayrıştırıldı. `base_gold_income` artık nüfus, ticaret kapasitesi, liman ve
   pazarla sınırlanan bölgesel vergi tabanıyla denetleniyor; Venedik/Karesi gibi
