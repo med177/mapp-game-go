@@ -18,7 +18,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `minor_polygons` poligon noktalarıyla saklanıyor. Kaydetme sırasında
   `country_shapes.json` minor paint yüzünden yeniden üretilmiyor ve kaynak
   `regions.json` içindeki `area::...` komşulukları korunuyor. Harita verisi eklenmedi; tarihsel alt bölgeler kullanıcı
-  tarafından oluşturulacak.
+  tarafından oluşturulacak. Yeni minor kimlikleri `new_minor_region_*` önekini
+  kullanıyor; poligon çizilmeden merkez odağı gösterilmiyor ve çizim bitince
+  geometrik orta nokta otomatik atanıyor.
 
 - 2026-09-28: Haritada ikmal yükü taşıyan diğer devlet filolarının `i` rozeti
   artık oyuncu filolarıyla aynı hover/cursor popup akışından görülebiliyor;
@@ -2683,7 +2685,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   artık ring noktalarını tam sayıya yuvarlamadan ondalık koordinatla yazıyor; böylece
   ölçekli dünya pikseli sınırları kapatıp açtıktan sonra kaymıyor.
 
-- 2026-07-29: Edit Mode ordu/filo aksiyonu `Bu Devlete Ata` olarak yeniden
+- 2026-07-29: Edit Mode ordu/filo aksiyonu `Askeri Birimi Bölgenin Devletine Ata` olarak yeniden
   adlandırıldı. Kara orduları için seçili bölge, docked filolar için
   `DockedRegionID` ile gösterilen liman bölgesi sahiplik kaynağıdır; aksiyon
   yalnız ordu sahibi ile bölge sahibi farklıysa aktifleşir. Regression:
@@ -3839,6 +3841,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Zaman kilitli bölge açılışı | ✅ | `is_locked=true` ve `unlock_turn>0` olan region aktif tur eşik değerine gelince otomatik açılır; unlock bildirimi gösterilir; load/save sonrası geçmiş unlock'lar senkronlanır |
 | Edit mode bölge metadata editörü | ✅ | Inspector `Harita` sekmesinde region `name_tr`, `name`, `is_locked`, `unlock_turn` ve görsel Voronoi komşularından iki yönlü `neighbors` sync düzenlenir; deniz region seçiminde inspector `Deniz Bolgesi`, yerleşim olmadığını ve pasif `Denizde Yok` buton etiketini açıkça gösterir; settlement odaklı pasif butonlar da bağlama göre `Tip Yok` / `Isim Yok` / `Silinmez` ya da `Tip Sec` / `Isim Sec` / `Sil Sec` etiketine döner; kara/deniz odak noktası renkleri edit modda ayrıdır |
 | Edit mode bölge ekleme/silme | ✅ | `Ctrl+Alt+sol` veya `Bolge Ekle` mevcut shape içinde yeni Voronoi seed region oluşturur; kara ve deniz region'ları seçilip merkezleri taşınabilir, çoğaltılabilir ve silinebilir; `Bolge Sil` seçili region'ı, komşu referanslarını ve o region'daki başlangıç ordularını kaldırır |
+| Minor imtiyaz alanı | ✅ | `is_privileged` boolean'ı `regions.json` içinde tutulur; `true` olduğunda egemen sahip parent bölgeden, kullanım sahibi `OwnerID`'den çözülür, parasal gelir %50-%50 paylaşılır ve egemen devlete saldırı kullanım sahibine savaş açmadan ilişki cezası uygular |
 | Edit mode geniş veri editörü | ✅ | Inspector `Veri` sekmesinde faction ekleme/düzenleme formu, faction silme, başlangıç kaynakları/playable/AI değeri, başlangıç diplomasi `stance/score`, başlangıç kara ordusu/donanma ekleme-silme ve seçili ordu/donanma birim sayıları düzenlenir; `Birim Tipi` dropdown'ı veri sekmesinde görünür; harita üstünde tüm ordu/donanma sayıları edit mode'da gizlenmeden görünür ve açık fraksiyon renklerinde kontrastlı metinle okunur; limanda demirli filolar liman anchor'ında, denize açılanlar deniz bölgesi anchor'ında çizilir; form `Kaydet` ve Ctrl+S `regions.json`, `factions.json`, `relations.json`, `armies.json` yazar |
 | Edit mode shape paint editor | ✅ | Inspector `Shape` sekmesi seçili kara region'ın `shape_id` verisini sağ mouse drag ile boya/sil düzenler; stroke sırasında yeşil/kırmızı canlı preview overlay ve yardım paneli görünür; stroke bitince mask contour'ları yeniden ring'e çevrilir, `ShapeData` + `Region.Shape` güncellenir; `Kaydet` artık `country_shapes.json` da yazar. Aynı sekmedeki `Bolge Boya/Sil` aracı kara veya deniz region'larında `region_shapes.json` override katmanına kalıcı yazar; ülke dış sınırının dışına taşan boyamalar ile deniz alanı dağılımı restart sonrası korunur ve sonraki stroke'lar eski override piksellerini yanlışlıkla düşürmez. Region tool canlı preview'i stroke başlangıcına göre ayrı overlay çizer ve shape session'ı lazy tuttuğu için yoğun boyama sonrası merkez taşıma/geçişler daha akıcıdır |
 | Ticaret yolu görsel sadeleştirme | ✅ | Harita üstü ticaret çizimi `A->B` ve `B->A` rotalarını tek koridorda birleştirir; `camScale < 0.85` iken yalnızca oyuncuya bağlı hatlar çizilir, etiketler yalnızca yakın zoom'da görünür |

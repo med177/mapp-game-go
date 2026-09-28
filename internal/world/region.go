@@ -66,6 +66,10 @@ type Region struct {
 	// fethedilebilen ancak yalnızca kale/liman altyapısına izin verilen küçük
 	// stratejik alt bölgeyi işaretler.
 	IsMinorRegion bool `json:"is_minor_region,omitempty"`
+	// IsPrivileged, küçük alt bölgenin kullanım hakkının OwnerID'de kalırken
+	// egemenliğinin ParentRegionID ile bağlı ana bölge sahibinden çözülmesini
+	// sağlar. false olduğunda OwnerID hem kullanım hem egemenlik sahibidir.
+	IsPrivileged bool `json:"is_privileged,omitempty"`
 	// IsTerrainArea marks a runtime child region painted inside a parent region.
 	// These regions are navigable but have no economy or settlements.
 	IsTerrainArea bool `json:"-"`

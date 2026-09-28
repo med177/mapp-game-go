@@ -71,13 +71,14 @@ func canArmyStartSiege(gs *state.GameState, attacker *army.Army, targetRegion *w
 	if !targetRegion.CanLandEnter() {
 		return false, "Bu bölgeye kuşatma kurulamaz."
 	}
-	if targetRegion.OwnerID == "" || targetRegion.OwnerID == attacker.OwnerID {
+	targetOwnerID := gs.SovereignOwnerID(targetRegion)
+	if targetOwnerID == "" || targetOwnerID == attacker.OwnerID {
 		return false, "Kuşatma için düşman tahkimatı gerekli."
 	}
 	if !targetRegion.IsFortified() {
 		return false, "Bu bölge tahkimli değil."
 	}
-	if !gameFactionsAtWar(gs, attacker.OwnerID, targetRegion.OwnerID) {
+	if !gameFactionsAtWar(gs, attacker.OwnerID, targetOwnerID) {
 		return false, "Kuşatma için önce savaş halinde olmalısın."
 	}
 	if attacker.RegionID != targetRegion.ID && !regionsAdjacent(gs, attacker.RegionID, targetRegion.ID) {
@@ -108,7 +109,7 @@ func canArmyAssaultSiege(gs *state.GameState, attacker *army.Army, targetRegion 
 		if attacker.RegionID != targetRegion.ID && !regionsAdjacent(gs, attacker.RegionID, targetRegion.ID) {
 			return nil, false, "Genel hücum için kuşatma hattında kalmalısın."
 		}
-		if !gameFactionsAtWar(gs, attacker.OwnerID, targetRegion.OwnerID) {
+		if !gameFactionsAtWar(gs, attacker.OwnerID, gs.SovereignOwnerID(targetRegion)) {
 			return nil, false, "Kuşatma artık geçersiz; savaş hali sona ermiş."
 		}
 		return siege, true, ""
@@ -416,7 +417,7 @@ func (g *Game) virtualSiegeGarrison(targetRegion *world.Region) *army.Army {
 		units = append(units, army.Unit{TypeID: unitTypeID, CurrentHP: army.MaxUnitHP})
 	}
 	return &army.Army{
-		OwnerID:    targetRegion.OwnerID,
+		OwnerID:    g.gs.SovereignOwnerID(targetRegion),
 		RegionID:   targetRegion.ID,
 		Units:      units,
 		MovePoints: 0,
@@ -636,6 +637,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 		return false
 	}
 	stance = combat.NormalizeBattleStance(stance)
+	targetOwnerID := g.gs.SovereignOwnerID(targetRegion)
 	fortLevel := targetRegion.FortificationLevel()
 	breachLevel := 0
 	if siege != nil {
@@ -654,7 +656,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	atkMods := techModsFor(g.gs, attacker.OwnerID)
 	defMods := combat.TechMods{}
 	if virtualDefense {
-		defMods = techModsFor(g.gs, targetRegion.OwnerID)
+		defMods = techModsFor(g.gs, targetOwnerID)
 	} else {
 		defMods = techModsFor(g.gs, defender.OwnerID)
 	}
@@ -671,7 +673,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 		extraLost, _ := applyArmyFlatDamage(attacker, extraDamage)
 		result.AttackerLost += extraLost
 	}
-	defenderOwnerID := targetRegion.OwnerID
+	defenderOwnerID := targetOwnerID
 	if !virtualDefense && defender != nil {
 		defenderOwnerID = defender.OwnerID
 	}
@@ -696,7 +698,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 				"Hücum Gücü",
 				defenderLabel,
 				g.factionNameTR(attacker.OwnerID),
-				g.factionNameTR(targetRegion.OwnerID),
+				g.factionNameTR(targetOwnerID),
 				attackerBefore,
 				attacker,
 				defenderBefore,
@@ -731,7 +733,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 			"Hücum Gücü",
 			defenderLabel,
 			g.factionNameTR(attacker.OwnerID),
-			g.factionNameTR(targetRegion.OwnerID),
+			g.factionNameTR(targetOwnerID),
 			attackerBefore,
 			attacker,
 			defenderBefore,
@@ -754,7 +756,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 		"Hücum Gücü",
 		defenderLabel,
 		g.factionNameTR(attacker.OwnerID),
-		g.factionNameTR(targetRegion.OwnerID),
+		g.factionNameTR(targetOwnerID),
 		attackerBefore,
 		attacker,
 		defenderBefore,
@@ -776,7 +778,11 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 		targetRegion := g.gs.Regions[regionID]
 		attacker := g.gs.Armies[siege.AttackerArmyID]
 		g.evacuateNonBelligerentArmiesFromSiege(regionID, siege, attacker)
-		if targetRegion == nil || attacker == nil || targetRegion.OwnerID == "" || targetRegion.OwnerID == attacker.OwnerID || (attacker.RegionID != regionID && !regionsAdjacent(g.gs, attacker.RegionID, regionID)) || !gameFactionsAtWar(g.gs, attacker.OwnerID, targetRegion.OwnerID) {
+		targetOwnerID := ""
+		if targetRegion != nil {
+			targetOwnerID = g.gs.SovereignOwnerID(targetRegion)
+		}
+		if targetRegion == nil || attacker == nil || targetOwnerID == "" || targetOwnerID == attacker.OwnerID || (attacker.RegionID != regionID && !regionsAdjacent(g.gs, attacker.RegionID, regionID)) || !gameFactionsAtWar(g.gs, attacker.OwnerID, targetOwnerID) {
 			// Kuşatma geçersiz → orduyu homeRegion'a geri taşı
 			if attacker != nil && siege.AttackerHomeRegionID != "" {
 				attacker.RegionID = siege.AttackerHomeRegionID
@@ -812,7 +818,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			damage := siegeAttritionDamage(progressGain, siege.BreachLevel, siege.FortLevel)
 			damage = reduceAttritionDamageForGranary(damage, granaryAttritionReductionPercent(targetRegion))
 			lostUnits, totalHPDamage := applyArmyFlatDamage(defender, damage)
-			g.gs.RecordWarAttritionCasualties(faction.FactionID(attacker.OwnerID), faction.FactionID(targetRegion.OwnerID), 0, lostUnits)
+			g.gs.RecordWarAttritionCasualties(faction.FactionID(attacker.OwnerID), faction.FactionID(targetOwnerID), 0, lostUnits)
 			if len(defender.Units) == 0 {
 				g.gs.RemoveArmy(defender.ID)
 				defender = nil
@@ -822,7 +828,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 				updates = append(updates, siegeTurnUpdate{
 					Message: fmt.Sprintf("%s kuşatması savunanlara baskı uyguluyor.", targetRegion.NameTR),
 					Detail:  fmt.Sprintf("%s kuşatmasında savunan ordu %d HP ve %d birim kaybetti.", targetRegion.NameTR, totalHPDamage, lostUnits),
-					Popup:   attacker.OwnerID == string(g.gs.PlayerFactionID) || targetRegion.OwnerID == string(g.gs.PlayerFactionID),
+					Popup:   attacker.OwnerID == string(g.gs.PlayerFactionID) || targetOwnerID == string(g.gs.PlayerFactionID),
 				})
 			}
 		} else {
@@ -835,7 +841,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			lostUnits, totalHPDamage := applyArmyFlatDamage(attacker, damage)
 			g.gs.RecordWarAttritionCasualties(
 				faction.FactionID(attacker.OwnerID),
-				faction.FactionID(targetRegion.OwnerID),
+				faction.FactionID(targetOwnerID),
 				lostUnits,
 				0,
 			)
@@ -856,7 +862,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			updates = append(updates, siegeTurnUpdate{
 				Message: fmt.Sprintf("%s surlarında %s açıldı.", targetRegion.NameTR, breachLabel),
 				Detail:  fmt.Sprintf("%s kuşatması %d turdur sürüyor. İlerleme: %d, tahkimat: %d.", targetRegion.NameTR, siege.TurnsElapsed, siege.BreachProgress, siege.FortLevel),
-				Popup:   attacker.OwnerID == string(g.gs.PlayerFactionID) || targetRegion.OwnerID == string(g.gs.PlayerFactionID),
+				Popup:   attacker.OwnerID == string(g.gs.PlayerFactionID) || targetOwnerID == string(g.gs.PlayerFactionID),
 			})
 		}
 
@@ -893,7 +899,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			updates = append(updates, siegeTurnUpdate{
 				Message: msg,
 				Detail:  detail,
-				Popup:   attacker.OwnerID == string(g.gs.PlayerFactionID) || targetRegion.OwnerID == string(g.gs.PlayerFactionID),
+				Popup:   attacker.OwnerID == string(g.gs.PlayerFactionID) || targetOwnerID == string(g.gs.PlayerFactionID),
 			})
 			g.announceElimination(collapse)
 		}

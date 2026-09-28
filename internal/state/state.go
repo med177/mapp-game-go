@@ -36,6 +36,10 @@ const civilianGrainPopulationUnit = 18
 // üretebileceği altını mevcut temel vergi gelirine bağlar.
 const grainSaleGoldCapPercentOfTaxIncome = 100
 
+// PrivilegeIncomeSharePercent imtiyazlı küçük alt bölgenin parasal gelirinin
+// ana bölge egemeni ile kullanım sahibi arasındaki eşit paylaşımıdır.
+const PrivilegeIncomeSharePercent = 50
+
 const (
 	grainCivilianStorageMonths  = 6
 	grainArmyStorageMonths      = 3
@@ -1493,10 +1497,16 @@ func (s *GameState) TaxIncomeForFaction(fid faction.FactionID) int {
 	}
 	total := 0
 	for _, region := range s.Regions {
-		if region == nil || region.IsSea || region.OwnerID != string(fid) || s.SiegeAt(region.ID) != nil {
+		if region == nil || region.IsSea || s.SovereignOwnerID(region) == "" || s.SiegeAt(region.ID) != nil {
 			continue
 		}
-		total += scaleBlockadeOutput(region.GoldIncome(), s.RegionBlockadeOutputRetentionPercent(region))
+		sovereign, operator := s.RegionIncomeShares(region, scaleBlockadeOutput(region.GoldIncome(), s.RegionBlockadeOutputRetentionPercent(region)))
+		if s.SovereignOwnerID(region) == string(fid) {
+			total += sovereign
+		}
+		if region.OwnerID == string(fid) {
+			total += operator
+		}
 	}
 	return total
 }
@@ -1914,7 +1924,7 @@ func (s *GameState) SyncTimedRegionUnlocks() []world.RegionID {
 func (s *GameState) RegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	var result []*world.Region
 	for _, r := range s.Regions {
-		if r.OwnerID == string(fid) {
+		if r != nil && s.SovereignOwnerID(r) == string(fid) {
 			result = append(result, r)
 		}
 	}
@@ -1925,11 +1935,42 @@ func (s *GameState) RegionsOwnedBy(fid faction.FactionID) []*world.Region {
 func (s *GameState) LandRegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	var result []*world.Region
 	for _, r := range s.Regions {
-		if r != nil && r.OwnerID == string(fid) && !r.IsSea && !r.IsTerrainArea {
+		if r != nil && s.SovereignOwnerID(r) == string(fid) && !r.IsSea && !r.IsTerrainArea {
 			result = append(result, r)
 		}
 	}
 	return result
+}
+
+// SovereignOwnerID, imtiyazlı küçük alt bölgelerde gerçek/egemen sahibi ana
+// bölgeden çözer. OwnerID bu durumda kullanım ve işletme sahibidir; imtiyazlı
+// olmayan bölgelerde iki anlam da aynı OwnerID'de kalır.
+func (s *GameState) SovereignOwnerID(region *world.Region) string {
+	if s == nil || region == nil {
+		return ""
+	}
+	if region.IsMinorRegion && region.IsPrivileged && region.ParentRegionID != "" {
+		if parent := s.Regions[region.ParentRegionID]; parent != nil && !parent.IsSea && parent.OwnerID != "" {
+			return parent.OwnerID
+		}
+	}
+	return region.OwnerID
+}
+
+// RegionIncomeShares, bölgenin parasal çıktısının hangi devlete yazılacağını
+// döner. Normal ve imtiyazsız bölgelerde tüm gelir OwnerID'ye gider; imtiyazlı
+// bölgede egemen ve kullanım sahibi yarı yarıya paylaşır.
+func (s *GameState) RegionIncomeShares(region *world.Region, amount int) (sovereign, operator int) {
+	if region == nil || amount == 0 {
+		return 0, 0
+	}
+	sovereignID := s.SovereignOwnerID(region)
+	operatorID := region.OwnerID
+	if !region.IsMinorRegion || !region.IsPrivileged || sovereignID == "" || operatorID == "" || sovereignID == operatorID {
+		return amount, 0
+	}
+	operator = amount * PrivilegeIncomeSharePercent / 100
+	return amount - operator, operator
 }
 
 // SelectBattleDefender hedef bölgede saldıranı karşılayacak düşman orduyu deterministik seçer.
@@ -3055,17 +3096,23 @@ func (s *GameState) FactionProductionSummary(fid faction.FactionID) RegionProduc
 
 	var out RegionProductionSummary
 	for _, region := range s.Regions {
-		if region == nil || region.IsSea || region.OwnerID != string(fid) || s.SiegeAt(region.ID) != nil {
+		if region == nil || region.IsSea || s.SiegeAt(region.ID) != nil {
 			continue
 		}
 		production := s.RegionProductionSummary(region)
-		out.Gold += production.Gold
-		out.Grain += production.Grain
-		out.Iron += production.Iron
-		out.Timber += production.Timber
-		out.Stone += production.Stone
-		out.Spice += production.Spice
-		out.Cloth += production.Cloth
+		sovereignGold, operatorGold := s.RegionIncomeShares(region, production.Gold)
+		if s.SovereignOwnerID(region) == string(fid) {
+			out.Gold += sovereignGold
+		}
+		if region.OwnerID == string(fid) {
+			out.Gold += operatorGold
+			out.Grain += production.Grain
+			out.Iron += production.Iron
+			out.Timber += production.Timber
+			out.Stone += production.Stone
+			out.Spice += production.Spice
+			out.Cloth += production.Cloth
+		}
 	}
 	loot := s.BlockadeLootForFaction(fid)
 	out.Gold += loot.Gold

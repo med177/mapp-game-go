@@ -171,7 +171,8 @@ func (s *GameState) movementRegionCanTransit(a *army.Army, region *world.Region)
 	if region.IsSea {
 		return false
 	}
-	if region.OwnerID != "" && region.OwnerID != a.OwnerID && !s.movementOwnerCanTransit(a.OwnerID, region.OwnerID) {
+	regionOwnerID := s.SovereignOwnerID(region)
+	if regionOwnerID != "" && regionOwnerID != a.OwnerID && !s.movementOwnerCanTransit(a.OwnerID, regionOwnerID) {
 		return false
 	}
 	// Başka bir ordunun bulunduğu bölge, rota için güvenli bir transit noktası
@@ -201,10 +202,11 @@ func (s *GameState) navalLandMovementAllowed(fleet *army.Army, target *world.Reg
 		return false
 	}
 	hasCargo := len(fleet.EmbarkedUnits) > 0
-	if target.OwnerID == "" {
+	targetOwnerID := s.SovereignOwnerID(target)
+	if targetOwnerID == "" {
 		return hasCargo
 	}
-	if target.OwnerID == fleet.OwnerID || s.movementOwnerCanTransit(fleet.OwnerID, target.OwnerID) {
+	if targetOwnerID == fleet.OwnerID || s.movementOwnerCanTransit(fleet.OwnerID, targetOwnerID) {
 		return target.HasPortBuilding() || hasCargo
 	}
 	// Düşman kıyıya çıkarma, mevcut hareket akışında savaş ilanı/temas

@@ -528,6 +528,15 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	clothByFaction := make(map[string]int)
 	raidLootByFaction := make(map[string]state.RegionProductionSummary)
 	storageCapacityByFaction := make(map[string]int)
+	addSharedGold := func(region *world.Region, amount int, target map[string]int) {
+		sovereignShare, operatorShare := gs.RegionIncomeShares(region, amount)
+		if sovereignID := gs.SovereignOwnerID(region); sovereignID != "" {
+			target[sovereignID] += sovereignShare
+		}
+		if operatorShare != 0 && region.OwnerID != "" {
+			target[region.OwnerID] += operatorShare
+		}
+	}
 	gs.GrainEconomy = make(map[faction.FactionID]state.GrainEconomyStatus, len(gs.Factions))
 	gs.GoldEconomy = make(map[faction.FactionID]state.GoldEconomyStatus, len(gs.Factions))
 
@@ -574,10 +583,10 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 		tradeCenterIncome := tradeIncome - tradeBaseIncome
 
-		incomeByFaction[r.OwnerID] += income + tradeIncome
-		taxIncomeByFaction[r.OwnerID] += income
-		tradeIncomeByFaction[r.OwnerID] += tradeBaseIncome
-		tradeCenterIncomeByFaction[r.OwnerID] += tradeCenterIncome
+		addSharedGold(r, income+tradeIncome, incomeByFaction)
+		addSharedGold(r, income, taxIncomeByFaction)
+		addSharedGold(r, tradeBaseIncome, tradeIncomeByFaction)
+		addSharedGold(r, tradeCenterIncome, tradeCenterIncomeByFaction)
 		civilianGrainDemandByFaction[r.OwnerID] += gs.CivilianGrainDemandForRegion(r)
 		ironByFaction[r.OwnerID] += iron
 		timberByFaction[r.OwnerID] += timber
@@ -585,8 +594,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		spiceByFaction[r.OwnerID] += spice
 		clothByFaction[r.OwnerID] += cloth
 		if bonus := gs.CapitalRegionBonus(r); bonus.Gold != 0 {
-			incomeByFaction[r.OwnerID] += bonus.Gold
-			capitalIncomeByFaction[r.OwnerID] += bonus.Gold
+			addSharedGold(r, bonus.Gold, incomeByFaction)
+			addSharedGold(r, bonus.Gold, capitalIncomeByFaction)
 		}
 		if raid := gs.Raids[r.ID]; raid != nil && raid.Turn == gs.Turn && raid.RaiderFactionID != faction.FactionID(r.OwnerID) {
 			loot := gs.RaidLootPreview(r)
@@ -597,7 +606,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			stone -= loot.Stone
 			spice -= loot.Spice
 			cloth -= loot.Cloth
-			incomeByFaction[r.OwnerID] -= loot.Gold
+			addSharedGold(r, -loot.Gold, incomeByFaction)
 			ironByFaction[r.OwnerID] -= loot.Iron
 			timberByFaction[r.OwnerID] -= loot.Timber
 			stoneByFaction[r.OwnerID] -= loot.Stone

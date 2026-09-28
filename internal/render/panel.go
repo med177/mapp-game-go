@@ -2605,17 +2605,18 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 	ly := float64(py) + 10
 	sepW := pw - float32(panelPad*2)
 	production := gs.RegionProductionSummary(region)
-	ownerName, ownerCol := ownerDisplay(gs, region.OwnerID)
+	sovereignOwnerID := gs.SovereignOwnerID(region)
+	ownerName, ownerCol := ownerDisplay(gs, sovereignOwnerID)
 
-	if region.OwnerID != "" {
+	if sovereignOwnerID != "" {
 		badgeBG := color.Color(ColorGray)
-		if ownerFaction := gs.Factions[faction.FactionID(region.OwnerID)]; ownerFaction != nil {
+		if ownerFaction := gs.Factions[faction.FactionID(sovereignOwnerID)]; ownerFaction != nil {
 			badgeBG = color.RGBA{ownerFaction.Color[0], ownerFaction.Color[1], ownerFaction.Color[2], 255}
 		}
 		ownerFlag := regionPanelOwnerFlagRect(lx, float64(py))
-		drawFactionFlagBadge(screen, faction.FactionID(region.OwnerID), factionInitial(ownerName), ownerFlag.X, ownerFlag.Y, ownerFlag.W, badgeBG, panelBorder)
+		drawFactionFlagBadge(screen, faction.FactionID(sovereignOwnerID), factionInitial(ownerName), ownerFlag.X, ownerFlag.Y, ownerFlag.W, badgeBG, panelBorder)
 
-		if empireID := regionImperialEmpireID(gs, region.OwnerID); empireID != "" {
+		if empireID := regionImperialEmpireID(gs, sovereignOwnerID); empireID != "" {
 			empireName, _ := ownerDisplay(gs, string(empireID))
 			empireFaction := gs.Factions[empireID]
 			empireBG := color.Color(ColorGray)
@@ -2636,11 +2637,16 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		vector.StrokeLine(screen, float32(ownerRect.X), float32(underlineY), float32(ownerRect.X+ownerRect.W), float32(underlineY), 1, color.RGBA{215, 215, 215, 120}, false)
 	}
 	ly += float64(regionOwnerNameH)
-	if overlordLabel, overlordCol, ok := vassalOverlordDisplay(gs, region.OwnerID); ok {
+	if region.IsMinorRegion && region.IsPrivileged && region.OwnerID != "" && region.OwnerID != sovereignOwnerID {
+		operatorName, operatorCol := ownerDisplay(gs, region.OwnerID)
+		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "İmtiyaz / Kullanım: "+operatorName, operatorCol, gameui.TextSmall, gameui.TextAlignStart)
+		ly += regionVassalInfoH
+	}
+	if overlordLabel, overlordCol, ok := vassalOverlordDisplay(gs, sovereignOwnerID); ok {
 		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "Bağlı: "+overlordLabel, overlordCol, gameui.TextSmall, gameui.TextAlignStart)
 		ly += regionVassalInfoH
 	}
-	if tributeLabel, tributeCol, ok := vassalTributeDisplay(gs, region.OwnerID); ok {
+	if tributeLabel, tributeCol, ok := vassalTributeDisplay(gs, sovereignOwnerID); ok {
 		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, tributeLabel, tributeCol, gameui.TextSmall, gameui.TextAlignStart)
 		ly += regionVassalInfoH
 	}
@@ -2899,10 +2905,14 @@ func buildingGridEndY(gs *state.GameState, region *world.Region, startY float32)
 func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *world.Region, px, y, pw float32) {
 	bar := gameui.Rect{X: float64(px) + panelPad, Y: float64(y), W: float64(pw) - panelPad*2, H: regionPanelActionBarHeight}
 	drawUICardRect(screen, bar, color.RGBA{20, 19, 16, 225}, panelBorder, 1)
-	if region == nil || region.OwnerID == "" {
+	ownerID := ""
+	if gs != nil && region != nil {
+		ownerID = gs.SovereignOwnerID(region)
+	}
+	if region == nil || ownerID == "" {
 		return
 	}
-	if region.OwnerID == string(gs.PlayerFactionID) {
+	if ownerID == string(gs.PlayerFactionID) {
 		if _, ok := regionLiberationSuccessor(gs, region); ok {
 			vassalizeBtn := buildRegionVassalizeSuccessorButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
 			drawUIButtonWidget(screen, vassalizeBtn, solidButtonStyle(color.RGBA{74, 87, 126, 235}, color.RGBA{130, 150, 205, 255}, ColorWhite, 0))
@@ -2913,7 +2923,7 @@ func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *worl
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, gs.CanApplyGrainAid(region.ID), solidButtonStyle(color.RGBA{112, 82, 36, 225}, color.RGBA{184, 142, 70, 255}, ColorWhite, 0))
 		return
 	}
-	btn := buildRegionDiplomacyButtons(gs, region.OwnerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+	btn := buildRegionDiplomacyButtons(gs, ownerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
 	drawUIButtonWidget(screen, btn, solidButtonStyle(color.RGBA{55, 92, 142, 225}, panelBorder, ColorWhite, 0))
 }
 
@@ -5154,12 +5164,16 @@ func regionDiplomacyButtonHitForTab(mx, my float64, gs *state.GameState, rid wor
 		return false
 	}
 	region, ok := gs.Regions[rid]
-	if !ok || region.IsSea || region.OwnerID == "" || region.OwnerID == string(gs.PlayerFactionID) {
+	ownerID := ""
+	if ok && region != nil {
+		ownerID = gs.SovereignOwnerID(region)
+	}
+	if !ok || region.IsSea || ownerID == "" || ownerID == string(gs.PlayerFactionID) {
 		return false
 	}
 	barY := float32(regionPanelActionBarY(gs, region, activeTab))
 	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
-	return buildRegionDiplomacyButtons(gs, region.OwnerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
+	return buildRegionDiplomacyButtons(gs, ownerID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
 
 func regionGrainAidButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {

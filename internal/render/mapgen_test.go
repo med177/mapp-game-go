@@ -22,6 +22,28 @@ func TestLoadMinorRegionPolygonsTreatsEmptyJSONAsNoPolygons(t *testing.T) {
 	}
 }
 
+func TestNextMinorRegionIDUsesMinorPrefix(t *testing.T) {
+	gs := &state.GameState{Regions: map[world.RegionID]*world.Region{
+		"parent":             {ID: "parent"},
+		"new_minor_region_3": {ID: "new_minor_region_3"},
+	}}
+
+	if got, want := nextMinorRegionID(gs), world.RegionID("new_minor_region_4"); got != want {
+		t.Fatalf("minor region ID = %q, %q bekleniyordu", got, want)
+	}
+}
+
+func TestPendingMinorRegionHasNoEditCenterMarker(t *testing.T) {
+	minor := &world.Region{ID: "minor", IsMinorRegion: true}
+	r := &Renderer{gs: &state.GameState{Regions: map[world.RegionID]*world.Region{
+		minor.ID: minor,
+	}}}
+
+	if markers := r.editRegionCenterMarkers(); len(markers) != 0 {
+		t.Fatalf("çizilmemiş minor için %d merkez işareti üretildi", len(markers))
+	}
+}
+
 func TestEnsureEditRegionPaintOverridesInitializesNilMap(t *testing.T) {
 	r := &Renderer{}
 	r.ensureEditRegionPaintOverrides()
@@ -172,6 +194,9 @@ func TestFinishMinorRegionPolygonPaintsOnlyInsideParent(t *testing.T) {
 	polygons := r.gs.MinorRegionPolygons[minor.ID]
 	if len(polygons) != 1 || len(polygons[0]) != 4 {
 		t.Fatalf("minor poligonu kaydedilmedi: %#v", polygons)
+	}
+	if minor.WorldX != 1 || minor.WorldY != 1 {
+		t.Fatalf("minor merkez = (%d,%d), (1,1) bekleniyordu", minor.WorldX, minor.WorldY)
 	}
 }
 

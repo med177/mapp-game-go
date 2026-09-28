@@ -62,6 +62,7 @@ func TestMinorRegionMetadataRoundTripsThroughJSON(t *testing.T) {
 	original := &Region{
 		ID:             "sinop_castle",
 		IsMinorRegion:  true,
+		IsPrivileged:   true,
 		ParentRegionID: "sinop",
 		BaseGoldIncome: MinorRegionDefaultBaseGoldIncome,
 	}
@@ -73,7 +74,7 @@ func TestMinorRegionMetadataRoundTripsThroughJSON(t *testing.T) {
 	if err := json.Unmarshal(data, &restored); err != nil {
 		t.Fatalf("JSON decode hatası: %v", err)
 	}
-	if !restored.IsMinorRegion || restored.ParentRegionID != original.ParentRegionID {
+	if !restored.IsMinorRegion || !restored.IsPrivileged || restored.ParentRegionID != original.ParentRegionID {
 		t.Fatalf("küçük alt bölge metadata round-trip kayboldu: %#v", restored)
 	}
 }

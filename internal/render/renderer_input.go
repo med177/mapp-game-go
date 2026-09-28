@@ -833,8 +833,12 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		if regionDiplomacyButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
 			region := r.gs.Regions[r.SelectedRegion]
-			if region != nil && region.OwnerID != "" && region.OwnerID != string(r.gs.PlayerFactionID) {
-				r.openDiplomacyTarget(faction.FactionID(region.OwnerID), 0)
+			ownerID := ""
+			if region != nil {
+				ownerID = r.gs.SovereignOwnerID(region)
+			}
+			if ownerID != "" && ownerID != string(r.gs.PlayerFactionID) {
+				r.openDiplomacyTarget(faction.FactionID(ownerID), 0)
 				return InputAction{}
 			}
 		}
@@ -1247,8 +1251,8 @@ func diplomacyOwnerForMapRegion(gs *state.GameState, rid world.RegionID) string 
 	if region == nil || region.IsSea {
 		return ""
 	}
-	if region.OwnerID != "" {
-		return region.OwnerID
+	if ownerID := gs.SovereignOwnerID(region); ownerID != "" {
+		return ownerID
 	}
 	if region.IsTerrainArea && region.ParentRegionID != "" {
 		if parent := gs.Regions[region.ParentRegionID]; parent != nil && !parent.IsSea {
@@ -1703,16 +1707,17 @@ func (r *Renderer) handleRightClick() InputAction {
 			break
 		}
 		isAlliedRegion := false
-		if target.OwnerID != "" && target.OwnerID != a.OwnerID {
-			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
-			if diplomacy.SameRealm(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID)) {
+		targetOwnerID := r.gs.SovereignOwnerID(target)
+		if targetOwnerID != "" && targetOwnerID != a.OwnerID {
+			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetOwnerID))
+			if diplomacy.SameRealm(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetOwnerID)) {
 				isAlliedRegion = true
 			} else if rel, exists := r.gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
 				isAlliedRegion = true
 			}
 		}
 		allySieging := false
-		if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
+		if !a.IsNaval && target.CanLandEnter() && targetOwnerID != "" && targetOwnerID != a.OwnerID && target.IsFortified() {
 			if r.canJoinActiveSiege(a, rid) {
 				allySieging = true
 			} else if siege := r.gs.SiegeAt(rid); siege != nil && siege.AttackerArmyID != a.ID {
@@ -1730,7 +1735,7 @@ func (r *Renderer) handleRightClick() InputAction {
 		// Düşman kara bölgesi ama savaş yok → onay diyalogu aç.
 		// Donanma-deniz hareketinde savaş ilanı zorunlu değil.
 		// Dost bölgeye çıkarma değil, ordu sevki için indirme onayı göster.
-		if !target.IsTerrainArea && !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && target.OwnerID != "" && target.OwnerID != a.OwnerID {
+		if !target.IsTerrainArea && !(a.IsNaval && target.CanNavalEnter()) && !navalCanDockAtRegion(r.gs, a, target) && targetOwnerID != "" && targetOwnerID != a.OwnerID {
 			if armyRegionIsFriendly(r.gs, a, target) && len(a.EmbarkedUnits) > 0 {
 				// Dost kıyısına çıkarma değil, ordu sevk etme onayı.
 				r.ShowConfirmDialog(
@@ -1744,15 +1749,15 @@ func (r *Renderer) handleRightClick() InputAction {
 				return InputAction{}
 			}
 			if shouldPromptWarConfirmForMove(r.gs, a, target) {
-				name := target.OwnerID
-				if f, ok := r.gs.Factions[faction.FactionID(target.OwnerID)]; ok {
+				name := targetOwnerID
+				if f, ok := r.gs.Factions[faction.FactionID(targetOwnerID)]; ok {
 					name = f.NameTR
 				}
 				pendingEnemy := army.ArmyID("")
 				if enemyArmy != nil {
 					pendingEnemy = enemyArmy.ID
 				}
-				r.openWarConfirm(faction.FactionID(target.OwnerID), name, r.SelectedArmy, rid, pendingEnemy, opensBattlePlan && !amphibiousSiegeLanding && !landContact, battleAction, battleContext)
+				r.openWarConfirm(faction.FactionID(targetOwnerID), name, r.SelectedArmy, rid, pendingEnemy, opensBattlePlan && !amphibiousSiegeLanding && !landContact, battleAction, battleContext)
 				return InputAction{}
 			}
 		}

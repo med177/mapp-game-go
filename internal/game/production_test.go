@@ -1,7 +1,10 @@
 package game
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
+	"time"
 
 	"mapp-game-go/internal/city"
 	"mapp-game-go/internal/state"
@@ -64,5 +67,30 @@ func TestScenarioExportNeighborsRestoresSourceAreaLinks(t *testing.T) {
 		if got[i] != want[i] {
 			t.Fatalf("neighbor[%d] = %q, %q bekleniyordu", i, got[i], want[i])
 		}
+	}
+}
+
+func TestWriteScenarioFileIfChangedSkipsIdenticalData(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "country_shapes.json")
+	data := []byte("{\"id\":\"shapes\"}\n")
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	writtenAt := time.Unix(123, 456)
+	if err := os.Chtimes(path, writtenAt, writtenAt); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := writeScenarioFileIfChanged(path, data); err != nil {
+		t.Fatal(err)
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !info.ModTime().Equal(writtenAt) {
+		t.Fatalf("aynı içerik için dosya yeniden yazıldı: modtime = %v, %v bekleniyordu", info.ModTime(), writtenAt)
 	}
 }

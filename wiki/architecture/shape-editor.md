@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, editor, shapes, country-shapes, tooling]
-last_updated: 2026-09-11
+last_updated: 2026-09-28
 related: [architecture/render-pipeline, architecture/state-management, dev/data-format, dev/progress]
 ---
 
@@ -50,6 +50,13 @@ shape, bölge ve bölge sırası değişiklikleri doğrudan runtime state'e yaz�
   override öncesi `baseRegionAt` snapshot'ı alınır; poligonlar yalnızca bu
   temel raster üzerinde runtime piksel atamalarına çevrilir. Edit mode erase
   baseline'ı ikinci bir tam world map kurmadan bundan okunur.
+- Yeni minor bölge kimlikleri `new_minor_region_*` önekiyle üretilir. Çizim
+  tamamlanmadan merkez işareti oluşturulmaz; poligon commit edildiğinde merkez
+  geometriden hesaplanıp senaryo koordinatlarına çevrilir.
+- Bölge sekmesindeki `İmtiyazlı: Evet/Hayır` düğmesi yalnız minor bölgelerde
+  görünür. `Evet` durumunda egemen sahip parent bölgeden çözülür, mevcut
+  `OwnerID` kullanım sahibi olarak kalır; ayrı bir privilege-owner alanı
+  oluşturulmaz.
 - `Shape/Bolge Boya/Sil` canlı preview'i stroke sırasında world-space önizleme görüntüsüne artımlı işlenir; her frame'de etkilenen piksel listesi ve yeni UI overlay'i yeniden çizilmez. Region tool büyük country mask'ini lazy tutar.
 - Boyama koordinatı raster hücresinin bulunduğu aralığa `floor` ile atanır;
   önizleme ve fırça imleci aynı hücrenin merkezini (`x+0.5`, `y+0.5`) kullanır.

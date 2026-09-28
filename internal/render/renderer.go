@@ -685,13 +685,17 @@ type warConfirmState struct {
 }
 
 func renderTargetRequiresSiegeDecision(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
+	targetOwnerID := ""
+	if gs != nil {
+		targetOwnerID = gs.SovereignOwnerID(target)
+	}
 	return gs != nil &&
 		attacker != nil &&
 		target != nil &&
 		!attacker.IsNaval &&
 		target.CanLandEnter() &&
-		target.OwnerID != "" &&
-		target.OwnerID != attacker.OwnerID &&
+		targetOwnerID != "" &&
+		targetOwnerID != attacker.OwnerID &&
 		target.IsFortified()
 }
 
@@ -711,14 +715,18 @@ func hasLandContactOpponent(gs *state.GameState, attacker *army.Army, target *wo
 }
 
 func renderTargetRequiresAmphibiousSiegeLanding(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
+	targetOwnerID := ""
+	if gs != nil {
+		targetOwnerID = gs.SovereignOwnerID(target)
+	}
 	return gs != nil &&
 		attacker != nil &&
 		target != nil &&
 		attacker.IsNaval &&
 		len(attacker.EmbarkedUnits) > 0 &&
 		target.CanLandEnter() &&
-		target.OwnerID != "" &&
-		target.OwnerID != attacker.OwnerID &&
+		targetOwnerID != "" &&
+		targetOwnerID != attacker.OwnerID &&
 		target.IsFortified() &&
 		!armyRegionIsFriendly(gs, attacker, target)
 }
@@ -1995,7 +2003,6 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawEditNeighborLinks(screen)
 		r.drawEditVoronoiDebug(screen)
 		r.drawEditShapeOverlay(screen)
-		r.drawEditCountryHover(screen)
 	}
 
 	// 6. Ordu ikonları (ticaret modunda gizlenir)
@@ -2288,17 +2295,21 @@ func (r *Renderer) PlayerMovementBlocked() bool {
 // ilanı gerektiren yabancı bölgeye geldiğinde, normal sağ tık akışındaki aynı
 // savaş onayını açar. Kuyruk bu modalı doğrudan aşmaz.
 func (r *Renderer) OpenQueuedWarConfirm(attacker *army.Army, target *world.Region) bool {
-	if r == nil || r.gs == nil || attacker == nil || target == nil || target.OwnerID == "" ||
-		target.OwnerID == attacker.OwnerID || target.IsSea || !shouldPromptWarConfirmForMove(r.gs, attacker, target) {
+	targetOwnerID := ""
+	if r != nil && r.gs != nil {
+		targetOwnerID = r.gs.SovereignOwnerID(target)
+	}
+	if r == nil || r.gs == nil || attacker == nil || target == nil || targetOwnerID == "" ||
+		targetOwnerID == attacker.OwnerID || target.IsSea || !shouldPromptWarConfirmForMove(r.gs, attacker, target) {
 		return false
 	}
-	name := target.OwnerID
-	if owner := r.gs.Factions[faction.FactionID(target.OwnerID)]; owner != nil && owner.NameTR != "" {
+	name := targetOwnerID
+	if owner := r.gs.Factions[faction.FactionID(targetOwnerID)]; owner != nil && owner.NameTR != "" {
 		name = owner.NameTR
 	}
 	enemyArmy := r.gs.SelectBattleDefender(attacker, target.ID, attacker.IsNaval && target.CanNavalEnter())
 	battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(attacker, target, enemyArmy)
-	r.openWarConfirm(faction.FactionID(target.OwnerID), name, attacker.ID, target.ID, func() army.ArmyID {
+	r.openWarConfirm(faction.FactionID(targetOwnerID), name, attacker.ID, target.ID, func() army.ArmyID {
 		if enemyArmy == nil {
 			return ""
 		}
@@ -2652,11 +2663,15 @@ func armyCanEnterRegion(gs *state.GameState, a *army.Army, target *world.Region)
 }
 
 func armyRegionIsFriendly(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
-	if gs == nil || attacker == nil || target == nil || target.OwnerID == "" || target.OwnerID == attacker.OwnerID {
+	targetOwnerID := ""
+	if gs != nil {
+		targetOwnerID = gs.SovereignOwnerID(target)
+	}
+	if gs == nil || attacker == nil || target == nil || targetOwnerID == "" || targetOwnerID == attacker.OwnerID {
 		return false
 	}
 	attackerFID := faction.FactionID(attacker.OwnerID)
-	targetFID := faction.FactionID(target.OwnerID)
+	targetFID := faction.FactionID(targetOwnerID)
 	if diplomacy.SameRealm(gs, attackerFID, targetFID) {
 		return true
 	}
@@ -2665,13 +2680,17 @@ func armyRegionIsFriendly(gs *state.GameState, attacker *army.Army, target *worl
 }
 
 func shouldPromptWarConfirmForMove(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
-	if gs == nil || attacker == nil || target == nil || target.OwnerID == "" || target.OwnerID == attacker.OwnerID {
+	targetOwnerID := ""
+	if gs != nil {
+		targetOwnerID = gs.SovereignOwnerID(target)
+	}
+	if gs == nil || attacker == nil || target == nil || targetOwnerID == "" || targetOwnerID == attacker.OwnerID {
 		return false
 	}
 	if armyRegionIsFriendly(gs, attacker, target) {
 		return false
 	}
-	rel := diplomacy.Relation(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
+	rel := diplomacy.Relation(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(targetOwnerID))
 	return rel == nil || rel.Stance != faction.StanceWar
 }
 

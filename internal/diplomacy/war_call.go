@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	warCallAcceptanceThreshold = 50
-	warCallRefusalScorePenalty = 10
+	warCallAcceptanceThreshold     = 50
+	warCallRefusalScorePenalty     = 10
+	privilegeAttackRelationPenalty = 10
 )
 
 type WarCallAssessment struct {
@@ -106,6 +107,7 @@ func ExecuteWarDeclaration(gs *state.GameState, actor, target faction.FactionID,
 	}
 
 	alliancePenalties := applyAllianceWarRelationPenalties(gs, actorRoot, targetRoot)
+	privilegeOperators := applyPrivilegeWarRelationPenalties(gs, actorRoot, targetRoot)
 	attackerCalls := resolveAttackerWarCalls(gs, actorRoot, targetRoot, calledAllies)
 	defenderCalls := resolveAutoWarCalls(gs, targetRoot, actorRoot, actorRoot)
 
@@ -123,7 +125,7 @@ func ExecuteWarDeclaration(gs *state.GameState, actor, target faction.FactionID,
 		}
 	}
 
-	message := buildWarDeclarationMessage(gs, actorRoot, targetRoot, attackerCalls, defenderCalls, alliancePenalties)
+	message := buildWarDeclarationMessage(gs, actorRoot, targetRoot, attackerCalls, defenderCalls, alliancePenalties, privilegeOperators)
 	return WarDeclarationResult{
 		Result: Result{
 			Accepted: true,
@@ -133,6 +135,32 @@ func ExecuteWarDeclaration(gs *state.GameState, actor, target faction.FactionID,
 		PlayerCalls: attackerCalls,
 		EnemyCalls:  defenderCalls,
 	}
+}
+
+// applyPrivilegeWarRelationPenalties, egemenliği ana bölge sahibinde olan
+// imtiyazlı alt bölgelere saldırı sonrasında kullanım sahiplerini savaşa
+// sokmadan ilişki cezası uygular. Faction-level savaş modeli nedeniyle bu,
+// hedef devletin sahip olduğu tüm imtiyazlı alt bölgelerin kullanım sahipleri
+// için savaş ilanı sırasında bir kez çalışır.
+func applyPrivilegeWarRelationPenalties(gs *state.GameState, attacker, target faction.FactionID) []faction.FactionID {
+	if gs == nil || attacker == "" || target == "" || attacker == target {
+		return nil
+	}
+	seen := make(map[faction.FactionID]bool)
+	operators := make([]faction.FactionID, 0)
+	for _, region := range gs.Regions {
+		if region == nil || !region.IsMinorRegion || !region.IsPrivileged || gs.SovereignOwnerID(region) != string(target) {
+			continue
+		}
+		operator := faction.FactionID(region.OwnerID)
+		if operator == "" || operator == attacker || operator == target || seen[operator] || IsWar(gs, attacker, operator) {
+			continue
+		}
+		ForceRelation(gs, attacker, operator, "", -privilegeAttackRelationPenalty)
+		seen[operator] = true
+		operators = append(operators, operator)
+	}
+	return operators
 }
 
 func AssessWarCall(gs *state.GameState, caller, ally, enemy faction.FactionID) WarCallAssessment {
@@ -467,9 +495,12 @@ func breakAllianceForWarRefusal(gs *state.GameState, caller, ally faction.Factio
 	rel.Score = clamp(rel.Score-warCallRefusalScorePenalty, -100, 100)
 }
 
-func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot faction.FactionID, attackerCalls, defenderCalls []WarCallOutcome, alliancePenalties []AllianceWarRelationPenalty) string {
+func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot faction.FactionID, attackerCalls, defenderCalls []WarCallOutcome, alliancePenalties []AllianceWarRelationPenalty, privilegeOperators []faction.FactionID) string {
 	parts := []string{factionLabel(gs, actorRoot) + " ile " + factionLabel(gs, targetRoot) + " arasında savaş başladı."}
 	if penaltyText := allianceWarPenaltyMessage(gs, alliancePenalties); penaltyText != "" {
+		parts = append(parts, penaltyText)
+	}
+	if penaltyText := privilegeWarPenaltyMessage(gs, privilegeOperators); penaltyText != "" {
 		parts = append(parts, penaltyText)
 	}
 	if joined := joinedNames(attackerCalls); joined != "" {
@@ -497,6 +528,17 @@ func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot facti
 		parts = append(parts, factionLabel(gs, targetRoot)+" tarafına sınırlı yardım gönderenler: "+limited+".")
 	}
 	return strings.Join(parts, " ")
+}
+
+func privilegeWarPenaltyMessage(gs *state.GameState, operators []faction.FactionID) string {
+	if gs == nil || len(operators) == 0 {
+		return ""
+	}
+	names := make([]string, 0, len(operators))
+	for _, operator := range operators {
+		names = append(names, factionLabel(gs, operator))
+	}
+	return "İmtiyaz alanlarına saldırı nedeniyle ilişki -" + itoa(privilegeAttackRelationPenalty) + ": " + strings.Join(names, ", ") + "."
 }
 
 func allianceWarPenaltyMessage(gs *state.GameState, penalties []AllianceWarRelationPenalty) string {

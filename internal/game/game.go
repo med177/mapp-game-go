@@ -1,7 +1,9 @@
 package game
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -3423,6 +3425,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 		Terrain            world.TerrainType `json:"terrain"`
 		OwnerID            string            `json:"owner_id"`
 		SuccessorFactionID string            `json:"successor_faction_id,omitempty"`
+		IsPrivileged       bool              `json:"is_privileged,omitempty"`
 		Neighbors          []world.RegionID  `json:"neighbors"`
 		WorldX             int               `json:"world_x"`
 		WorldY             int               `json:"world_y"`
@@ -3461,6 +3464,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 			Terrain:            region.Terrain,
 			OwnerID:            region.OwnerID,
 			SuccessorFactionID: region.SuccessorFactionID,
+			IsPrivileged:       region.IsPrivileged,
 			Neighbors:          neighbors,
 			WorldX:             region.WorldX,
 			WorldY:             region.WorldY,
@@ -3734,6 +3738,18 @@ func writeScenarioShapes(gs *state.GameState) error {
 		return err
 	}
 	data = append(data, '\n')
+	return writeScenarioFileIfChanged(path, data)
+}
+
+func writeScenarioFileIfChanged(path string, data []byte) error {
+	existing, err := os.ReadFile(path)
+	if err == nil {
+		if bytes.Equal(existing, data) {
+			return nil
+		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
 	return os.WriteFile(path, data, 0644)
 }
 
@@ -6109,6 +6125,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	if !ok {
 		return
 	}
+	targetOwnerID := g.gs.SovereignOwnerID(targetRegion)
 	// Arazi alanları devlet toprağı değildir. OwnerID kalıntısı bulunsa bile
 	// normal hareketi savaş/işgal akışına sokma; yalnız hedefteki gerçek düşman
 	// ordu SelectBattleDefender üzerinden temas başlatabilsin.
@@ -6204,11 +6221,11 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	// zincirinde askeri geçiş hakkı gerekir.
 	// Donanma-deniz hareketinde bu kural uygulanmaz; denizde serbest dolaşım var.
 	isAlliedRegion := neutralTerrainArea
-	if !neutralTerrainArea && !navalSeaMove && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
-		if diplomacy.SameRealm(g.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
+	if !neutralTerrainArea && !navalSeaMove && targetOwnerID != "" && targetOwnerID != a.OwnerID {
+		if diplomacy.SameRealm(g.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetOwnerID)) {
 			isAlliedRegion = true
 		}
-		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetOwnerID))
 		rel, exists := g.gs.Relations[key]
 		if !isAlliedRegion && (!exists || (rel.Stance != faction.StanceWar && rel.Stance != faction.StanceAllied)) {
 			g.renderer.ShowCombatResult("Savaş ilanı, ittifak veya bağlı devlet askeri geçişi olmadan yabancı toprağa girilemez!")
@@ -6245,7 +6262,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	}
 	targetSiege := g.gs.SiegeAt(target)
 	allyJoiningSiege := false
-	if !a.IsNaval && targetRegion.IsFortified() && targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
+	if !a.IsNaval && targetRegion.IsFortified() && targetOwnerID != "" && targetOwnerID != a.OwnerID {
 		if targetSiege != nil && targetSiege.AttackerArmyID == aid && !resolved {
 			// Hareket emri doğrudan oyun katmanına geldiyse (ör. renderer'ın
 			// hedef kararını atladığı eski kayıt/akış), aynı tahkimat kararını
@@ -6446,8 +6463,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 			return
 		}
 		// Müttefik bölgesi fethedilemez, sadece içinden geçilir.
-		if !targetRegion.IsSea && targetRegion.OwnerID != a.OwnerID && !isAlliedRegion {
-			defenderFaction := g.factionNameTR(targetRegion.OwnerID)
+		if !targetRegion.IsSea && targetOwnerID != a.OwnerID && !isAlliedRegion {
+			defenderFaction := g.factionNameTR(targetOwnerID)
 			prompted := g.queueConquestDecision(faction.FactionID(a.OwnerID), targetRegion, true)
 			collapse := eliminationResult{}
 			detail := "Bölgede savunan ordu yoktu; ilerleme savaşsız şekilde tamamlandı ve bölge ele geçirildi."

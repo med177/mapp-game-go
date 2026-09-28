@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal, succession]
-last_updated: 2026-09-17
+last_updated: 2026-09-28
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -22,6 +22,7 @@ type Region struct {
 
     IsSea     bool             // deniz bölgesi
     IsMinorRegion bool         // ana bölge içindeki fethedilebilir küçük alt bölge
+    IsPrivileged bool           // kullanım OwnerID'de, egemenlik ana bölge sahibinde
     ParentRegionID RegionID    // küçük alt bölgenin ana bölgesi
     IsLocked  bool             // henüz keşfedilmemiş
     WorldX, WorldY int         // harita koordinatı
@@ -49,7 +50,10 @@ alanı `region_shapes.json` içindeki `minor_polygons` altında poligon noktalar
 saklanır; runtime piksel override'ını bu geometriden üretir. Küçük alt bölgelerde yalnızca
 `fortress` ve `port` yerleşimleri ile `walls` ve `port` binaları geçerlidir.
 `parent_region_id` ilişki bilgisidir; alt bölgenin fethedilmesi ana bölgenin
-sahipliğini değiştirmez.
+sahipliğini değiştirmez. Edit Mode yeni minor kimliklerini `new_minor_region_*`
+önekiyle üretir. Poligon çizimi tamamlanana kadar minor için merkez/odak işareti
+gösterilmez; onaydan sonra poligonun geometrik merkezi `WorldX/WorldY` olarak
+atanır.
 
 `successor_faction_id`, edit mode'da `Ardıl Devlet` düğmesiyle atanır. Bölge oyuncu
 tarafından fethedildiğinde bu fraksiyon `is_eliminated=true` ise bilgi panelinde
@@ -67,6 +71,15 @@ oyuncuya verir; `Serbest Bırak` ardıl devleti bağımsız müttefik olarak kur
 fraksiyon hâlâ oyundaysa panel açılmadan bölge doğrudan ilhak edilir. Elenmiş
 ardıl, iki bölgesel kurulum seçeneğinde düşük kaynak ve beş milisle yeniden
 etkinleştirilir.
+
+`is_privileged=true` yalnız küçük alt bölgelerde kullanılır. Bu durumda `OwnerID`
+alt bölgenin kullanım/işletme sahibidir; egemen sahip ayrıca tutulmaz ve
+`parent_region_id` ile bağlı ana bölgenin güncel `OwnerID` değerinden çözülür.
+İmtiyazlı alt bölgenin parasal geliri egemen sahip ile kullanım sahibi arasında
+%50-%50 paylaşılır. Alt bölgenin egemen sahibine yapılan savaş ilanı kullanım
+sahibiyle doğrudan savaş başlatmaz; kullanım sahibiyle ilişkiyi 10 puan azaltır.
+`is_privileged=false` olduğunda alt bölge normal bölge gibi doğrudan `OwnerID`
+sahibine aittir.
 
 `WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_center` ile seçilir. Bu alan hiçbir yerleşimde yoksa runtime merkezi sırasıyla kale, şehir, kasaba ve liman tiplerinden seçer ve seçimi `is_center` olarak tamamlar. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
 

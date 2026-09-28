@@ -433,14 +433,13 @@ func (r *Renderer) drawEditTerrainAreaButtons(screen *ebiten.Image) {
 	if r.editTerrainAreaMoveCost == 0 {
 		attritionLabel = 0
 	}
-	drawEditInspectorButton(screen, editButtonRegionTerrain, "Arazi Tipi", areaControlsAvailable)
-	drawEditInspectorButton(screen, editButtonRegionNameTR, "Arazi Adı", region != nil && region.IsTerrainArea && !terrainPending)
-	drawEditInspectorButton(screen, editButtonTerrainAreaType, areaTypeLabel, areaControlsAvailable)
+	drawTerrainAreaInspectorButton(screen, editButtonRegionNameTR, "Arazi Adı", region != nil && region.IsTerrainArea && !terrainPending)
+	drawTerrainAreaInspectorButton(screen, editButtonTerrainAreaType, areaTypeLabel, areaControlsAvailable)
 	appendLabel := "Araziye Ekle"
 	if r.editTerrainAreaAppendMode {
 		appendLabel = "> Araziye Ekle"
 	}
-	drawEditInspectorButton(screen, editButtonTerrainAreaAppend, appendLabel, canAppendArea)
+	drawTerrainAreaInspectorButton(screen, editButtonTerrainAreaAppend, appendLabel, canAppendArea)
 	areaLabel := "Arazi Alanı Boya"
 	if r.editTerrainAreaMode {
 		areaLabel = "> Poligon Çiz"
@@ -451,20 +450,25 @@ func (r *Renderer) drawEditTerrainAreaButtons(screen *ebiten.Image) {
 		}
 	}
 	if terrainPending {
-		rect := editInspectorButtonRect(editButtonTerrainArea)
+		rect := editTerrainAreaInspectorButtonRect(editButtonTerrainArea)
 		drawUIButton(screen, rect[0], rect[1], rect[2], rect[3], areaLabel, true, applyTinyButtonStyle)
 	} else {
-		drawEditInspectorButton(screen, editButtonTerrainArea, areaLabel, canArea)
+		drawTerrainAreaInspectorButton(screen, editButtonTerrainArea, areaLabel, canArea)
 	}
 	if terrainDraft || terrainPending {
 		// Çizim sırasında sağ sütun, Uygula'nın yanındaki İptal düğmesine ayrılır.
-		drawEditInspectorButton(screen, editButtonTerrainAreaCancel, "İptal", true)
+		drawTerrainAreaInspectorButton(screen, editButtonTerrainAreaCancel, "İptal", true)
 	} else {
-		drawEditInspectorButton(screen, editButtonTerrainAreaCost, "Alan Maliyeti: "+itoa(r.editTerrainAreaMoveCost), areaControlsAvailable)
+		drawTerrainAreaInspectorButton(screen, editButtonTerrainAreaCost, "Alan Maliyeti: "+itoa(r.editTerrainAreaMoveCost), areaControlsAvailable)
 	}
-	drawEditInspectorButton(screen, editButtonTerrainAreaAttrition, "Yıpranma: %"+itoa(attritionLabel), attritionControlsAvailable)
+	drawTerrainAreaInspectorButton(screen, editButtonTerrainAreaAttrition, "Yıpranma: %"+itoa(attritionLabel), attritionControlsAvailable)
 	canDeleteArea := areaControlsAvailable && !terrainPending && r.editTerrainAreaSelected >= 0 && r.editTerrainAreaSelected < len(r.gs.TerrainAreas)
-	drawEditInspectorButton(screen, editButtonTerrainAreaDelete, "Arazi Alanını Sil", canDeleteArea)
+	drawTerrainAreaInspectorButton(screen, editButtonTerrainAreaDelete, "Arazi Alanını Sil", canDeleteArea)
+}
+
+func drawTerrainAreaInspectorButton(screen *ebiten.Image, kind editInspectorButton, label string, active bool) {
+	rect := editTerrainAreaInspectorButtonRect(kind)
+	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), label, active)
 }
 
 func (r *Renderer) terrainAreaEditPending() bool {
@@ -514,6 +518,7 @@ func (r *Renderer) cancelMinorRegionDrawing() {
 	r.editMinorRegionPolygonBefore = nil
 	r.editDirty = r.editMinorRegionDirtyBefore
 	r.editMinorRegionDirtyBefore = false
+	r.invalidateEditRegionCenterMarkers()
 }
 
 func (r *Renderer) addMinorRegionPolygonPoint(fx, fy float64) {
@@ -606,6 +611,12 @@ func (r *Renderer) finishMinorRegionPolygon() {
 	if r.gs.MinorRegionPolygons == nil {
 		r.gs.MinorRegionPolygons = make(map[world.RegionID][][][2]int)
 	}
+	if centerX, centerY, ok := (world.TerrainArea{
+		Polygons: [][][2]int{append([][2]int(nil), r.editMinorRegionPolygon...)},
+	}).PolygonCenter(); ok {
+		minor.WorldX = worldPixelToShapeX(float64(centerX))
+		minor.WorldY = worldPixelToShapeY(float64(centerY))
+	}
 	r.gs.MinorRegionPolygons[minor.ID] = [][][2]int{append([][2]int(nil), r.editMinorRegionPolygon...)}
 	r.gs.RegionPaintOverrides = cloneRegionPaintOverrides(r.editRegionPaintOverrides)
 	r.refreshRegionPaintInEditMap(dirtyPixels)
@@ -615,6 +626,7 @@ func (r *Renderer) finishMinorRegionPolygon() {
 	r.editMinorRegionPolygonBefore = nil
 	r.editMinorRegionDirtyBefore = false
 	r.editDirty = true
+	r.invalidateEditRegionCenterMarkers()
 }
 
 func (r *Renderer) cancelTerrainAreaEdit() {
