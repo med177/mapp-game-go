@@ -62,10 +62,18 @@ type Region struct {
 
 	// Deniz bölgesi mi? Oynanabilir kara bölgesi değildir.
 	IsSea bool `json:"is_sea"`
+	// IsMinorRegion, ana bir bölgenin içinde yer alan; normal bölge gibi
+	// fethedilebilen ancak yalnızca kale/liman altyapısına izin verilen küçük
+	// stratejik alt bölgeyi işaretler.
+	IsMinorRegion bool `json:"is_minor_region,omitempty"`
 	// IsTerrainArea marks a runtime child region painted inside a parent region.
 	// These regions are navigable but have no economy or settlements.
-	IsTerrainArea  bool     `json:"-"`
-	ParentRegionID RegionID `json:"-"`
+	IsTerrainArea bool `json:"-"`
+	// ParentRegionID, küçük alt bölgenin kalıcı ana bölgesini veya terrain
+	// alanının runtime geometrik parent bilgisini taşır. Terrain alanları
+	// scenario export'unda ayrıca filtrelendiği için bu alan normal alt
+	// bölgelerde kalıcı, terrain runtime düğümlerinde geçicidir.
+	ParentRegionID RegionID `json:"parent_region_id,omitempty"`
 	TerrainAreaID  string   `json:"-"`
 
 	IsLocked   bool `json:"is_locked"`
@@ -159,6 +167,76 @@ type Settlement struct {
 	Type       SettlementType `json:"type,omitempty"`
 	IsCenter   bool           `json:"is_center,omitempty"`
 	Population int            `json:"population"`
+}
+
+const MinorRegionDefaultBaseGoldIncome = 10
+
+// NewMinorRegionFromParent, Edit Mode'un yeni küçük alt bölge için kullandığı
+// düşük gelirli başlangıç modelini üretir. Alt bölge normal Region olarak
+// kaldığı için savaş, sahiplik ve gelir akışları tarafından işlenebilir.
+func NewMinorRegionFromParent(id RegionID, parent *Region, worldX, worldY int) *Region {
+	if parent == nil || parent.IsSea || parent.IsTerrainArea || id == "" {
+		return nil
+	}
+	taxRate := parent.TaxRate
+	if taxRate == 0 {
+		taxRate = 45
+	}
+	return &Region{
+		ID:             id,
+		Name:           "New Minor Region",
+		NameTR:         "Yeni Küçük Alt Bölge",
+		Terrain:        parent.Terrain,
+		OwnerID:        parent.OwnerID,
+		Neighbors:      []RegionID{parent.ID},
+		WorldX:         worldX,
+		WorldY:         worldY,
+		ShapeID:        parent.ShapeID,
+		IsMinorRegion:  true,
+		ParentRegionID: parent.ID,
+		IsLocked:       parent.IsLocked,
+		UnlockTurn:     parent.UnlockTurn,
+		BaseGoldIncome: MinorRegionDefaultBaseGoldIncome,
+		Satisfaction:   70,
+		TaxRate:        taxRate,
+		Religion:       parent.Religion,
+		Buildings:      []string{},
+		Settlements:    []Settlement{},
+	}
+}
+
+// AllowsSettlementType, küçük alt bölge kuralını domain katmanında tutar.
+// Normal bölgelerde mevcut tüm yerleşim tipleri geçerlidir.
+func (r *Region) AllowsSettlementType(settlementType SettlementType) bool {
+	if r == nil || r.IsSea {
+		return false
+	}
+	if !r.IsMinorRegion {
+		return true
+	}
+	return settlementType == SettlementFortress || settlementType == SettlementPort
+}
+
+// AllowsBuilding, küçük alt bölgeye yalnızca kale ve liman altyapısının
+// eklenebilmesini sağlar. Mevcut geçerli binalar korunur; eski kayıtlardaki
+// geçersiz içerik bu helper tarafından geriye dönük silinmez.
+func (r *Region) AllowsBuilding(buildingID string) bool {
+	if r == nil || r.IsSea || buildingID == "" {
+		return false
+	}
+	if !r.IsMinorRegion {
+		return true
+	}
+	return buildingID == "walls" || buildingID == "port"
+}
+
+// AllowedSettlementTypes, Edit Mode dropdown'ının bölgeye özel seçeneklerini
+// üretir; UI settlement kuralını tekrar etmez.
+func (r *Region) AllowedSettlementTypes() []SettlementType {
+	if r != nil && r.IsMinorRegion {
+		return []SettlementType{SettlementFortress, SettlementPort}
+	}
+	return AllSettlementTypeValues()
 }
 
 // PrimarySettlementIndex returns the center settlement index. Explicitly

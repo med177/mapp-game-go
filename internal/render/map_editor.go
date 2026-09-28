@@ -179,6 +179,8 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 			ownerLabel = "-"
 		}
 		settlementLabel = "yok"
+	} else if region.IsMinorRegion {
+		regionKind = "Küçük Alt Bölge"
 	}
 	drawEditInspectorLabel(screen, float64(x)+14, ly, name, ColorWhite, gameui.TextSmall)
 	ly += 18
@@ -186,6 +188,14 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	ly += 18
 	drawEditInspectorLabel(screen, float64(x)+14, ly, "Tur: "+regionKind+"   Sahip: "+ownerLabel+"   Arazi: "+string(region.Terrain), ColorGray, gameui.TextSmall)
 	ly += 18
+	if region.IsMinorRegion {
+		parentLabel := string(region.ParentRegionID)
+		if parentLabel == "" {
+			parentLabel = "-"
+		}
+		drawEditInspectorLabel(screen, float64(x)+14, ly, "Ana Bölge: "+parentLabel, ColorGray, gameui.TextSmall)
+		ly += 18
+	}
 	successorLabel := region.SuccessorFactionID
 	if successorLabel == "" {
 		successorLabel = "-"
@@ -282,6 +292,9 @@ func (r *Renderer) drawEditArmyButtons(screen *ebiten.Image, region *world.Regio
 func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Region) {
 	canRegion := region != nil
 	drawEditInspectorButton(screen, editButtonAddRegion, "Yeni Bölge Ekle", canRegion)
+	minorRegionEnabled := region != nil && !region.IsSea && !region.IsTerrainArea &&
+		!region.IsMinorRegion && region.ShapeID != ""
+	drawEditInspectorButton(screen, editButtonAddMinorRegion, "Küçük Alt Bölge Ekle", minorRegionEnabled)
 	drawEditInspectorButton(screen, editButtonDeleteRegion, "Bölgeyi Sil", canRegion)
 	terrainLabel := "Bölge Tipi"
 	if region != nil && region.IsTerrainArea {
@@ -644,6 +657,7 @@ const (
 	editButtonUnlockPlus
 	editButtonSyncNeighbors
 	editButtonAddRegion
+	editButtonAddMinorRegion
 	editButtonEditRegionData
 	editButtonDeleteRegion
 	editButtonDeleteSettlement
@@ -725,6 +739,8 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return rightRect(2)
 	case editButtonAddRegion:
 		return leftRect(0)
+	case editButtonAddMinorRegion:
+		return full(7)
 	case editButtonDeleteRegion:
 		return rightRect(0)
 	case editButtonRegionTerrain:
@@ -899,6 +915,7 @@ func editSettlementInspectorButtonAt(mx, my float64) editInspectorButton {
 func editRegionInspectorButtonAt(mx, my float64) editInspectorButton {
 	for _, kind := range [...]editInspectorButton{
 		editButtonAddRegion,
+		editButtonAddMinorRegion,
 		editButtonDeleteRegion,
 		editButtonRegionTerrain,
 		editButtonRegionNameTR,
@@ -2149,6 +2166,8 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.openEditRegionForm()
 	case editButtonAddRegion:
 		r.addRegionNearSelected()
+	case editButtonAddMinorRegion:
+		r.addMinorRegionNearSelected()
 	case editButtonDeleteRegion:
 		r.deleteSelectedRegion()
 	case editButtonDeleteSettlement:
@@ -2284,7 +2303,12 @@ func (r *Renderer) toggleEditSettlementTypeDropdown() {
 	r.editSettlementTypeDropdown.SetPosition(float64(dx), float64(dy))
 	region := r.gs.Regions[r.editSelectedRegion]
 	settlement := region.Settlements[r.editSelectedSettlement]
-	r.editSettlementTypeDropdown.SetOptions(world.AllSettlementTypes(), string(settlement.Type))
+	options := region.AllowedSettlementTypes()
+	labels := make([]string, len(options))
+	for i, option := range options {
+		labels[i] = string(option)
+	}
+	r.editSettlementTypeDropdown.SetOptions(labels, string(settlement.Type))
 	r.editSettlementTypeDropdown.Toggle()
 }
 
@@ -2854,12 +2878,16 @@ func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 	if len(region.Settlements) > 0 {
 		name += " " + itoa(len(region.Settlements)+1)
 	}
+	settlementType := world.SettlementCity
+	if region.IsMinorRegion {
+		settlementType = world.SettlementFortress
+	}
 	settlement := world.Settlement{
 		ID:       nextSettlementID(region),
 		NameTR:   name,
 		X:        x,
 		Y:        y,
-		Type:     "city",
+		Type:     settlementType,
 		IsCenter: len(region.Settlements) == 0,
 	}
 	region.Settlements = append(region.Settlements, settlement)
@@ -2911,6 +2939,35 @@ func (r *Renderer) addRegionNearSelected() {
 		return
 	}
 	r.addRegionFromSource(source.ID, source.WorldX+12, source.WorldY+12)
+}
+
+// addMinorRegionNearSelected, seçili ana bölgenin içinde oluşturulacak
+// küçük alt bölge için normal Region grafiğini ve düşük gelirli varsayılanları
+// hazırlar. Haritadaki kesin alan Edit Mode'un Bölge Boya aracıyla çizilir.
+func (r *Renderer) addMinorRegionNearSelected() {
+	parent := r.gs.Regions[r.editSelectedRegion]
+	if parent == nil || parent.IsSea || parent.IsTerrainArea || parent.IsMinorRegion || parent.ShapeID == "" {
+		return
+	}
+	rid := nextRegionID(r.gs)
+	minor := world.NewMinorRegionFromParent(rid, parent, parent.WorldX+2, parent.WorldY+2)
+	if minor == nil {
+		return
+	}
+	r.gs.Regions[rid] = minor
+	r.insertRegionOrderAfter(parent.ID, rid)
+	r.editSelectedRegion = rid
+	r.editSelectedSettlement = -1
+	r.SelectedArmy = ""
+	complete := func() {
+		visual := r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf[:0])
+		r.applyVisualNeighbors(rid, visual)
+		r.editDirty = true
+	}
+	if !r.requestEditWorldMapRebuildWithCompletion(complete) {
+		r.rebuildEditWorldMap()
+		complete()
+	}
 }
 
 func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
@@ -2988,6 +3045,9 @@ func (r *Renderer) deleteSelectedRegion() {
 	}
 	rid := region.ID
 	for _, other := range r.gs.Regions {
+		if other != nil && other.ParentRegionID == rid {
+			other.ParentRegionID = ""
+		}
 		removeNeighborID(other, rid)
 	}
 	delete(r.gs.Regions, rid)
@@ -3143,6 +3203,9 @@ func (r *Renderer) setSelectedSettlementType(typ string) {
 	region := r.gs.Regions[r.editSelectedRegion]
 	settlement := &region.Settlements[r.editSelectedSettlement]
 	st := world.SettlementType(typ)
+	if !region.AllowsSettlementType(st) {
+		return
+	}
 	if settlement.Type == st {
 		return
 	}
@@ -3307,6 +3370,9 @@ func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
 	for _, candidate := range r.gs.Regions {
 		if candidate == nil {
 			continue
+		}
+		if candidate.ParentRegionID == oldID {
+			candidate.ParentRegionID = newID
 		}
 		for i, neighborID := range candidate.Neighbors {
 			if neighborID == oldID {
@@ -5090,6 +5156,9 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 		return
 	}
 	settlement := source.Settlements[r.editSelectedSettlement]
+	if !target.AllowsSettlementType(settlement.Type) {
+		return
+	}
 	settlement.X = x
 	settlement.Y = y
 	source.Settlements = append(source.Settlements[:r.editSelectedSettlement], source.Settlements[r.editSelectedSettlement+1:]...)

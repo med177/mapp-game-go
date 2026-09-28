@@ -128,6 +128,12 @@ func (g *Game) applyProductionTicks() []productionResult {
 
 		switch order.Kind {
 		case productionKindBuilding:
+			if !region.AllowsBuilding(order.TypeID) {
+				result.canceled = true
+				result.reason = "küçük alt bölgede bu bina türüne izin yok"
+				results = append(results, result)
+				continue
+			}
 			order.TurnsLeft--
 			if order.TurnsLeft > 0 {
 				remaining = append(remaining, order)
@@ -190,6 +196,9 @@ func (g *Game) applyProductionTicks() []productionResult {
 }
 
 func (g *Game) completeBuilding(region *world.Region, buildingID string) bool {
+	if region == nil || !region.AllowsBuilding(buildingID) {
+		return false
+	}
 	b, ok := g.gs.BuildingTypes[buildingID]
 	if !ok {
 		return false

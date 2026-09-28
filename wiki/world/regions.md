@@ -21,6 +21,8 @@ type Region struct {
     Neighbors []RegionID       // komşu bölge listesi
 
     IsSea     bool             // deniz bölgesi
+    IsMinorRegion bool         // ana bölge içindeki fethedilebilir küçük alt bölge
+    ParentRegionID RegionID    // küçük alt bölgenin ana bölgesi
     IsLocked  bool             // henüz keşfedilmemiş
     WorldX, WorldY int         // harita koordinatı
     ShapeID string             // Natural Earth kaynak ID'si
@@ -37,6 +39,14 @@ type Region struct {
     ActiveEventID   string
 }
 ```
+
+`is_minor_region=true` olan bölgeler normal `Region` olarak kalır; bu nedenle
+kuşatılabilir, fethedilebilir ve sahiplik hesabına katılır. Edit Mode bu tip
+bölgeleri ana bölgenin `ShapeID` rasterı üzerinde oluşturur ve kesin alanın
+`region_shapes.json` ile boyanmasına izin verir. Küçük alt bölgelerde yalnızca
+`fortress` ve `port` yerleşimleri ile `walls` ve `port` binaları geçerlidir.
+`parent_region_id` ilişki bilgisidir; alt bölgenin fethedilmesi ana bölgenin
+sahipliğini değiştirmez.
 
 `successor_faction_id`, edit mode'da `Ardıl Devlet` düğmesiyle atanır. Bölge oyuncu
 tarafından fethedildiğinde bu fraksiyon `is_eliminated=true` ise bilgi panelinde
@@ -72,7 +82,7 @@ type Settlement struct {
 
 Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken uyarı loglanır ve nokta aynı region içindeki en yakın piksele taşınır.
 
-Kıyı bölgesinde `port` binası tamamlandığında, bölgede henüz `type=port` settlement yoksa oyun bu bölge için denize yakın yeni bir `Liman` yerleşimi üretir. Böylece liman binası sadece ekonomi/üretim değil, dock edilen filonun görünür anchor noktası için de tekil veri kaynağı olur.
+Kıyı bölgesinde `port` binası tamamlandığında, bölgede henüz `type=port` settlement yoksa oyun bu bölge için denize yakın yeni bir `Liman` yerleşimi üretir. Bu akış minor bölgeler için de aynıdır; Edit Mode'da minor alan kıyıya boyandığında görsel deniz komşuluğu state'e aktarılır. Böylece liman binası sadece ekonomi/üretim değil, dock edilen filonun görünür anchor noktası için de tekil veri kaynağı olur.
 
 `1300_ottoman_rise` başlangıç verisinde Londra, Normandiya, Portekiz, Sicilya ve
 Mısır'a tarihsel başlangıç filolarının dock edilebilmesi için birinci seviye `port`

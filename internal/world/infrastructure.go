@@ -18,7 +18,7 @@ func EnsureRequiredSettlementBuildings(region *Region, isCapitalRegion bool) boo
 		required[requiredCount] = "port"
 		requiredCount++
 	}
-	if isCapitalRegion {
+	if isCapitalRegion && !region.IsMinorRegion {
 		for _, buildingID := range [...]string{"barracks", "granary", "temple", "market"} {
 			required[requiredCount] = buildingID
 			requiredCount++
@@ -42,7 +42,7 @@ func EnsureRequiredSettlementBuildings(region *Region, isCapitalRegion bool) boo
 // ekler. Mevcut binaları korur ve eksik olanların yalnızca birinci seviyesini
 // temsil eden tek kaydı ekler.
 func EnsureSuccessorFoundingBuildings(region *Region) bool {
-	if region == nil || region.IsSea {
+	if region == nil || region.IsSea || region.IsMinorRegion {
 		return false
 	}
 	changed := false

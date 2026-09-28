@@ -3991,6 +3991,9 @@ func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
 		if !ok {
 			continue
 		}
+		if region.IsMinorRegion && builtCount[bid] == 0 && !region.AllowsBuilding(bid) {
+			continue
+		}
 		if builtCount[bid] > 0 || buildingVisibleByRegionRules(gs, region, bid, b) {
 			ids = append(ids, bid)
 		}
@@ -5494,6 +5497,9 @@ func buildingVisibleInRegion(gs *state.GameState, region *world.Region, bid stri
 }
 
 func buildingVisibleByRegionRules(gs *state.GameState, region *world.Region, bid string, b *city.Building) bool {
+	if !region.AllowsBuilding(bid) {
+		return false
+	}
 	if bid == "port" && !region.IsCoastal(gs.Regions) {
 		return false
 	}

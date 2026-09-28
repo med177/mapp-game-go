@@ -1012,6 +1012,13 @@ func (r *Renderer) applyPendingShapePaint() {
 		pendingRegionPaintPixels := r.editShapePendingRegionPaintPixels
 		r.syncRegionPaintOverridesToGameState()
 		r.refreshRegionPaintInEditMap(pendingRegionPaintPixels)
+		// Minor bölgeler editörde elle kıyıya çizildiğinde port inşasının
+		// normal bölgelerle aynı IsCoastal akışını kullanması için görsel
+		// komşuluklarını hemen state'e aktar. Normal bölgelerdeki mevcut
+		// "Komşu Sync" davranışı korunur.
+		if region := r.gs.Regions[r.editSelectedRegion]; region != nil && region.IsMinorRegion {
+			r.syncSelectedRegionNeighborsFromVisual()
+		}
 		if pendingAffectsLandShapes {
 			syncLandShapesFromWorldMapForIDs(r.gs, r.worldMap, pendingLandShapeIDs)
 			r.requestEditWorldMapRebuild()

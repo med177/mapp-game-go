@@ -7,6 +7,15 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-28: Edit Mode için normal Region tabanlı küçük alt bölge altyapısı
+  hazırlandı. `is_minor_region` ve `parent_region_id` alanları senaryo
+  kaydına ekleniyor; oluşturulan alt bölgeler düşük gelirle başlıyor ve yalnız
+  kale/liman yerleşim-bina kurallarını kabul ediyor. Minor bölge kıyıya
+  boyandığında görsel komşuluk otomatik senkronlanıyor; liman binası tamamlanınca
+  `Liman` settlement'ı normal bölgelerdeki ortak akışla haritada gösteriliyor.
+  Harita verisi eklenmedi; tarihsel alt bölgeler kullanıcı tarafından
+  oluşturulacak.
+
 - 2026-09-28: Haritada ikmal yükü taşıyan diğer devlet filolarının `i` rozeti
   artık oyuncu filolarıyla aynı hover/cursor popup akışından görülebiliyor;
   ikmal miktarı ve bağlı ordu bilgisi sahibi devletten bağımsız gösteriliyor.

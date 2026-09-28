@@ -2697,6 +2697,10 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 	if !ok {
 		return
 	}
+	if !region.AllowsBuilding(buildingID) {
+		g.renderer.ShowCombatResult("Küçük alt bölgelerde yalnızca kale ve liman altyapısı kullanılabilir.")
+		return
+	}
 	if buildingID == "port" && !region.IsCoastal(g.gs.Regions) {
 		g.renderer.ShowCombatResult("Liman sadece kıyı bölgelerinde inşa edilebilir!")
 		return
@@ -3427,6 +3431,8 @@ func writeScenarioRegions(gs *state.GameState) error {
 		WorldY             int               `json:"world_y"`
 		ShapeID            string            `json:"shape_id,omitempty"`
 		IsSea              bool              `json:"is_sea"`
+		IsMinorRegion      bool              `json:"is_minor_region,omitempty"`
+		ParentRegionID     world.RegionID    `json:"parent_region_id,omitempty"`
 		IsLocked           bool              `json:"is_locked"`
 		UnlockTurn         int               `json:"unlock_turn"`
 		BaseGoldIncome     int               `json:"base_gold_income"`
@@ -3463,6 +3469,8 @@ func writeScenarioRegions(gs *state.GameState) error {
 			WorldY:             region.WorldY,
 			ShapeID:            region.ShapeID,
 			IsSea:              region.IsSea,
+			IsMinorRegion:      region.IsMinorRegion,
+			ParentRegionID:     region.ParentRegionID,
 			IsLocked:           region.IsLocked,
 			UnlockTurn:         region.UnlockTurn,
 			BaseGoldIncome:     region.BaseGoldIncome,
