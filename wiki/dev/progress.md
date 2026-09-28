@@ -14,8 +14,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   boyandığında görsel komşuluk otomatik senkronlanıyor; liman binası tamamlanınca
   `Liman` settlement'ı normal bölgelerdeki ortak akışla haritada gösteriliyor.
   `Küçük Alt Bölge Ekle` artık Voronoi'ye katılmayan bir poligon çizim oturumu
-  açıyor; çizilen alan mevcut `region_shapes.json` paint override katmanına
-  kaydediliyor. Harita verisi eklenmedi; tarihsel alt bölgeler kullanıcı
+  açıyor; çizilen alan `region_shapes.json` içinde piksel listesi yerine
+  `minor_polygons` poligon noktalarıyla saklanıyor. Kaydetme sırasında
+  `country_shapes.json` minor paint yüzünden yeniden üretilmiyor ve kaynak
+  `regions.json` içindeki `area::...` komşulukları korunuyor. Harita verisi eklenmedi; tarihsel alt bölgeler kullanıcı
   tarafından oluşturulacak.
 
 - 2026-09-28: Haritada ikmal yükü taşıyan diğer devlet filolarının `i` rozeti

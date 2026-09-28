@@ -3386,12 +3386,9 @@ func writeScenarioEditData(gs *state.GameState) error {
 	if err := writeScenarioArmies(gs); err != nil {
 		return err
 	}
-	// Region paint overrides'larını region_shapes.json'a kaydet
-	if gs.RegionPaintOverrides != nil {
-		path := filepath.Join(gs.ScenarioPath, "data", "region_shapes.json")
-		if err := render.SaveRegionPaintOverrides(path, gs.RegionPaintOverrides); err != nil {
-			return err
-		}
+	path := filepath.Join(gs.ScenarioPath, "data", "region_shapes.json")
+	if err := render.SaveMinorRegionPolygons(path, gs.MinorRegionPolygons); err != nil {
+		return err
 	}
 	return nil
 }
@@ -3456,7 +3453,7 @@ func writeScenarioRegions(gs *state.GameState) error {
 		if region == nil || region.IsTerrainArea {
 			return nil
 		}
-		neighbors := world.SortedRegionIDs(region.NeighborsInSourceAreaOrder())
+		neighbors := world.SortedRegionIDs(scenarioExportNeighbors(region))
 		out := &regionExport{
 			ID:                 region.ID,
 			Name:               region.Name,
@@ -3528,6 +3525,27 @@ func writeScenarioRegions(gs *state.GameState) error {
 	}
 	data = append(data, '\n')
 	return os.WriteFile(path, data, 0644)
+}
+
+// scenarioExportNeighbors preserves the source regions.json area:: links
+// without putting missing runtime terrain nodes back into the live graph.
+func scenarioExportNeighbors(region *world.Region) []world.RegionID {
+	if region == nil {
+		return nil
+	}
+	neighbors := append([]world.RegionID(nil), region.Neighbors...)
+	seen := make(map[world.RegionID]struct{}, len(neighbors)+len(region.AreaNeighborOrder))
+	for _, neighborID := range neighbors {
+		seen[neighborID] = struct{}{}
+	}
+	for _, neighborID := range region.AreaNeighborOrder {
+		if _, exists := seen[neighborID]; exists {
+			continue
+		}
+		neighbors = append(neighbors, neighborID)
+		seen[neighborID] = struct{}{}
+	}
+	return neighbors
 }
 
 func writeScenarioSettlements(gs *state.GameState) error {
@@ -3665,7 +3683,6 @@ func writeScenarioTradeCenters(gs *state.GameState) error {
 
 func writeScenarioShapes(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "country_shapes.json")
-	render.SyncLandShapesFromRegionPaint(gs)
 	offsetX, offsetY, scaleX, scaleY := scenarioShapeTransform(gs)
 	type shapeEntryJSON struct {
 		ID    string         `json:"id"`

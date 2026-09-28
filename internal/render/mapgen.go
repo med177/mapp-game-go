@@ -1,9 +1,7 @@
 package render
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"image"
 	"image/color"
 	_ "image/png"
@@ -169,15 +167,13 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 		setProgress(28)
 	}
 
-	// region_shapes.json (paint overrides) yükle ve uygula
-	if includeRegionPaintOverrides {
-		var regionPaintOverrides map[int]world.RegionID
+	// region_shapes.json yalnızca minor bölge poligonlarını taşır. Poligonlar
+	// burada runtime'ın kullandığı piksel override'larına rasterize edilir.
+	if includeRegionPaintOverrides && !gs.MinorRegionPolygonsLoaded {
 		if gs.ScenarioPath != "" {
-			regionPaintOverrides = loadRegionPaintOverrides(gs.ScenarioPath + "/data/region_shapes.json")
+			gs.MinorRegionPolygons = loadMinorRegionPolygons(gs.ScenarioPath + "/data/region_shapes.json")
 		}
-		if len(regionPaintOverrides) > 0 {
-			gs.RegionPaintOverrides = regionPaintOverrides
-		}
+		gs.MinorRegionPolygonsLoaded = true
 	}
 
 	wm.buildCountryShapes(gs, shapes)
@@ -189,10 +185,11 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 	if setProgress != nil {
 		setProgress(72)
 	}
-	// region_shapes.json paint overrides'larını kalıcı olarak uygula
+	// Minor poligonlarından üretilen runtime paint override'larını uygula.
 	if includeRegionPaintOverrides {
 		wm.baseRegionAt = make([]uint16, len(wm.regionAt))
 		copy(wm.baseRegionAt, wm.regionAt)
+		applyMinorRegionPolygonsToOverrides(gs, wm, gs.MinorRegionPolygons)
 		if len(gs.RegionPaintOverrides) > 0 {
 			wm.applyRegionPaintOverridesToWorldMap(gs.RegionPaintOverrides)
 		}
@@ -1908,13 +1905,14 @@ func shapeRasterWorldBoundary(value float64) int {
 	return int(value)
 }
 
-// regionShapeOverridesFile region_shapes.json formatı (paint overrides)
-type regionShapeOverridesFile struct {
-	PaintOverrides map[string]world.RegionID `json:"paint_overrides"`
+// minorRegionPolygonsFile region_shapes.json'ın kalıcı formatıdır. Minor
+// sınırları dünya koordinatlarında poligon olarak tutulur; piksel atamaları
+// yalnızca harita hazırlanırken runtime için üretilir.
+type minorRegionPolygonsFile struct {
+	MinorPolygons map[string][][][2]int `json:"minor_polygons"`
 }
 
-// loadRegionPaintOverrides region_shapes.json'ı yükler ve paint overrides'ı döner
-func loadRegionPaintOverrides(path string) map[int]world.RegionID {
+func loadMinorRegionPolygons(path string) map[world.RegionID][][][2]int {
 	if path == "" {
 		return nil
 	}
@@ -1922,50 +1920,34 @@ func loadRegionPaintOverrides(path string) map[int]world.RegionID {
 	if err != nil {
 		return nil
 	}
-	trimmed := bytes.TrimSpace(dataBytes)
-	if len(trimmed) == 0 || bytes.Equal(trimmed, []byte("null")) || bytes.Equal(trimmed, []byte("[]")) {
+	if len(dataBytes) == 0 {
 		return nil
 	}
 
-	var data regionShapeOverridesFile
-	if err := json.Unmarshal(trimmed, &data); err != nil {
+	var data minorRegionPolygonsFile
+	if err := json.Unmarshal(dataBytes, &data); err != nil {
 		log.Printf("region_shapes.json decode hatası: %v", err)
 		return nil
 	}
-
-	// String keys'i int keys'e dönüştür
-	result := make(map[int]world.RegionID, len(data.PaintOverrides))
-	for keyStr, rid := range data.PaintOverrides {
-		var keyInt int
-		if _, err := fmt.Sscanf(keyStr, "%d", &keyInt); err == nil {
-			result[keyInt] = rid
+	result := make(map[world.RegionID][][][2]int, len(data.MinorPolygons))
+	for rid, polygons := range data.MinorPolygons {
+		if rid == "" || len(polygons) == 0 {
+			continue
 		}
+		result[world.RegionID(rid)] = cloneIntPolygons(polygons)
 	}
 	return result
 }
 
-// SaveRegionPaintOverrides bölge paint overrides'ları region_shapes.json'a kaydet
-func SaveRegionPaintOverrides(path string, paintOverrides map[int]world.RegionID) error {
-	if len(paintOverrides) == 0 {
-		// Boş ise dosyayı silmek yerine boş content kaydet
-		data := regionShapeOverridesFile{PaintOverrides: make(map[string]world.RegionID)}
-		f, err := os.Create(path)
-		if err != nil {
-			return err
+func SaveMinorRegionPolygons(path string, polygons map[world.RegionID][][][2]int) error {
+	entries := make(map[string][][][2]int, len(polygons))
+	for rid, regionPolygons := range polygons {
+		if rid == "" || len(regionPolygons) == 0 {
+			continue
 		}
-		defer f.Close()
-		enc := json.NewEncoder(f)
-		enc.SetIndent("", "  ")
-		return enc.Encode(&data)
+		entries[string(rid)] = cloneIntPolygons(regionPolygons)
 	}
-
-	// String keys'e dönüştür
-	strKeys := make(map[string]world.RegionID, len(paintOverrides))
-	for keyInt, rid := range paintOverrides {
-		strKeys[fmt.Sprintf("%d", keyInt)] = rid
-	}
-
-	data := regionShapeOverridesFile{PaintOverrides: strKeys}
+	data := minorRegionPolygonsFile{MinorPolygons: entries}
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -1977,9 +1959,57 @@ func SaveRegionPaintOverrides(path string, paintOverrides map[int]world.RegionID
 	return enc.Encode(&data)
 }
 
-// applyRegionPaintOverridesToWorldMap, region_shapes.json'dan gelen paint overrides'ları
-// doğrudan WorldMap'in regionAt dizisine kalıcı olarak uygular.
-// Bu sayede normal oyunda da paint edilmiş sınırlar kalıcı olarak görünür.
+func cloneIntPolygons(src [][][2]int) [][][2]int {
+	if src == nil {
+		return nil
+	}
+	dst := make([][][2]int, len(src))
+	for i, polygon := range src {
+		dst[i] = append([][2]int(nil), polygon...)
+	}
+	return dst
+}
+
+func applyMinorRegionPolygonsToOverrides(gs *state.GameState, wm *WorldMap, polygons map[world.RegionID][][][2]int) {
+	if gs == nil || wm == nil || len(polygons) == 0 {
+		return
+	}
+	if gs.RegionPaintOverrides == nil {
+		gs.RegionPaintOverrides = make(map[int]world.RegionID)
+	}
+	for rid, regionPolygons := range polygons {
+		region := gs.Regions[rid]
+		if region == nil || !region.IsMinorRegion || region.ParentRegionID == "" {
+			continue
+		}
+		parent := region.ParentRegionID
+		for _, polygon := range regionPolygons {
+			if len(polygon) < 3 {
+				continue
+			}
+			minX, minY, maxX, maxY := intPolygonBounds(polygon)
+			minX = maxInt(0, minX)
+			minY = maxInt(0, minY)
+			maxX = minInt(WorldW-1, maxX)
+			maxY = minInt(WorldH-1, maxY)
+			for y := minY; y <= maxY; y++ {
+				for x := minX; x <= maxX; x++ {
+					if !pointInIntPolygon(float64(x)+0.5, float64(y)+0.5, polygon) {
+						continue
+					}
+					if wm.RegionAt(x, y) != parent {
+						continue
+					}
+					gs.RegionPaintOverrides[y*WorldW+x] = rid
+				}
+			}
+		}
+	}
+}
+
+// applyRegionPaintOverridesToWorldMap, runtime'da üretilen paint override'larını
+// doğrudan WorldMap'in regionAt dizisine uygular. Minor poligonları rasterize
+// edildikten sonra normal oyun haritasında da bu katmandan görünür.
 func (wm *WorldMap) applyRegionPaintOverridesToWorldMap(overrides map[int]world.RegionID) {
 	if len(overrides) == 0 {
 		return

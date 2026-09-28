@@ -46,7 +46,10 @@ shape, bölge ve bölge sırası değişiklikleri doğrudan runtime state'e yaz�
 
 `Bolge Boya/Sil` performans notu:
 - Stroke sırasında `regionAt` canlı olarak güncellenir ama ağır `regionPx` dilim bakımı mouse hareketi başına yapılmaz; bu toplu indeks yenilemesi rebuild aşamasına bırakılır.
-- `region_shapes.json` override'ları yüklendiğinde world map override öncesi `baseRegionAt` snapshot'ı alınır; edit mode erase baseline'ı ikinci bir tam world map kurmadan bundan okunur.
+- `region_shapes.json` içindeki `minor_polygons` yüklendiğinde world map
+  override öncesi `baseRegionAt` snapshot'ı alınır; poligonlar yalnızca bu
+  temel raster üzerinde runtime piksel atamalarına çevrilir. Edit mode erase
+  baseline'ı ikinci bir tam world map kurmadan bundan okunur.
 - `Shape/Bolge Boya/Sil` canlı preview'i stroke sırasında world-space önizleme görüntüsüne artımlı işlenir; her frame'de etkilenen piksel listesi ve yeni UI overlay'i yeniden çizilmez. Region tool büyük country mask'ini lazy tutar.
 - Boyama koordinatı raster hücresinin bulunduğu aralığa `floor` ile atanır;
   önizleme ve fırça imleci aynı hücrenin merkezini (`x+0.5`, `y+0.5`) kullanır.
@@ -88,7 +91,7 @@ shape, bölge ve bölge sırası değişiklikleri doğrudan runtime state'e yaz�
   çakışan ID reddedilir. Kabul edilen değişiklik region map anahtarını,
   komşuları, geçişleri, ordu/donanma konumlarını, paint override'larını ve
   editor seçim state'i ile birlikte runtime state'te tutulur.
-- Deniz region'larında `Yeni Kara Sınırı` düğmesi aktif olur; yeni `shape_id` ve ad girildiğinde seçilen deniz pikselinde küçük bir başlangıç halkası oluşturulur. Yeni shape'e bağlanan deniz bölgesi `Sınır Boya` ile genişletilebilir. Deniz alanı dağılımı için `Bölge Boya/Sil` aracı da aynı `region_shapes.json` override katmanına yazmaya devam eder; kara region'larda ise `Yeni Kara Sınırı` pasiftir.
+- Deniz region'larında `Yeni Kara Sınırı` düğmesi aktif olur; yeni `shape_id` ve ad girildiğinde seçilen deniz pikselinde küçük bir başlangıç halkası oluşturulur. Yeni shape'e bağlanan deniz bölgesi `Sınır Boya` ile genişletilebilir. `Bölge Boya/Sil` aracı commit sırasında ilgili ülke shape'ini günceller; `region_shapes.json` ise minor bölge poligonları için kullanılır. Kara region'larda `Yeni Kara Sınırı` pasiftir.
 
 ## Sınırlamalar
 

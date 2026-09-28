@@ -47,3 +47,22 @@ func TestCompleteBuildingAddsNamedPortSettlementToMinorRegion(t *testing.T) {
 		t.Fatalf("liman kıyı konumu = (%d, %d), (%d, %d) bekleniyordu", port.X, port.Y, 110, 200)
 	}
 }
+
+func TestScenarioExportNeighborsRestoresSourceAreaLinks(t *testing.T) {
+	region := &world.Region{
+		ID:                "parent",
+		Neighbors:         []world.RegionID{"neighbor"},
+		AreaNeighborOrder: []world.RegionID{"area::first", "area::second"},
+	}
+
+	got := scenarioExportNeighbors(region)
+	want := []world.RegionID{"neighbor", "area::first", "area::second"}
+	if len(got) != len(want) {
+		t.Fatalf("neighbor sayısı = %d, %d bekleniyordu: %#v", len(got), len(want), got)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("neighbor[%d] = %q, %q bekleniyordu", i, got[i], want[i])
+		}
+	}
+}

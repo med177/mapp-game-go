@@ -603,6 +603,10 @@ func (r *Renderer) finishMinorRegionPolygon() {
 		return
 	}
 
+	if r.gs.MinorRegionPolygons == nil {
+		r.gs.MinorRegionPolygons = make(map[world.RegionID][][][2]int)
+	}
+	r.gs.MinorRegionPolygons[minor.ID] = [][][2]int{append([][2]int(nil), r.editMinorRegionPolygon...)}
 	r.gs.RegionPaintOverrides = cloneRegionPaintOverrides(r.editRegionPaintOverrides)
 	r.refreshRegionPaintInEditMap(dirtyPixels)
 	r.syncSelectedRegionNeighborsFromVisual()

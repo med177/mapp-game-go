@@ -10,14 +10,14 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-func TestLoadRegionPaintOverridesTreatsEmptyJSONAsNoOverrides(t *testing.T) {
-	for _, content := range []string{"null", "[]"} {
+func TestLoadMinorRegionPolygonsTreatsEmptyJSONAsNoPolygons(t *testing.T) {
+	for _, content := range []string{"{}", `{"minor_polygons":{}}`} {
 		path := filepath.Join(t.TempDir(), "region_shapes.json")
 		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 			t.Fatal(err)
 		}
-		if overrides := loadRegionPaintOverrides(path); len(overrides) != 0 {
-			t.Fatalf("content %q: expected no overrides, got %#v", content, overrides)
+		if polygons := loadMinorRegionPolygons(path); len(polygons) != 0 {
+			t.Fatalf("content %q: expected no polygons, got %#v", content, polygons)
 		}
 	}
 }
@@ -168,6 +168,41 @@ func TestFinishMinorRegionPolygonPaintsOnlyInsideParent(t *testing.T) {
 		if got := r.gs.RegionPaintOverrides[pIdx]; got != minor.ID {
 			t.Fatalf("piksel %d override = %q, %q bekleniyordu", pIdx, got, minor.ID)
 		}
+	}
+	polygons := r.gs.MinorRegionPolygons[minor.ID]
+	if len(polygons) != 1 || len(polygons[0]) != 4 {
+		t.Fatalf("minor poligonu kaydedilmedi: %#v", polygons)
+	}
+}
+
+func TestApplyMinorRegionPolygonsToOverridesRasterizesInsideParent(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+	})
+	WorldW, WorldH = 4, 4
+
+	parent := &world.Region{ID: "parent"}
+	minor := &world.Region{ID: "minor", IsMinorRegion: true, ParentRegionID: parent.ID}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{parent.ID: parent, minor.ID: minor},
+	}
+	regionAt := make([]uint16, WorldW*WorldH)
+	for i := range regionAt {
+		regionAt[i] = 1
+	}
+	wm := &WorldMap{
+		regionAt:  regionAt,
+		regionIDs: []world.RegionID{"", parent.ID},
+		regionIdx: map[world.RegionID]uint16{parent.ID: 1},
+	}
+	polygons := map[world.RegionID][][][2]int{
+		minor.ID: {{{0, 0}, {2, 0}, {2, 2}, {0, 2}}},
+	}
+
+	applyMinorRegionPolygonsToOverrides(gs, wm, polygons)
+	if got := len(gs.RegionPaintOverrides); got != 4 {
+		t.Fatalf("rasterize edilen piksel sayısı = %d, 4 bekleniyordu", got)
 	}
 }
 

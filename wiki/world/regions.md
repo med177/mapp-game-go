@@ -45,7 +45,8 @@ kuşatılabilir, fethedilebilir ve sahiplik hesabına katılır. Edit Mode bu ti
 bölgeleri ana bölgenin `ShapeID` rasterı üzerinde oluşturur; minor bölge
 merkezleri Voronoi alan dağıtımına katılmaz. `Küçük Alt Bölge Ekle` sonrasında
 çizilen poligon ana bölgenin rasterına paint override olarak işlenir ve kesin
-alan `region_shapes.json` ile saklanır. Küçük alt bölgelerde yalnızca
+alanı `region_shapes.json` içindeki `minor_polygons` altında poligon noktalarıyla
+saklanır; runtime piksel override'ını bu geometriden üretir. Küçük alt bölgelerde yalnızca
 `fortress` ve `port` yerleşimleri ile `walls` ve `port` binaları geçerlidir.
 `parent_region_id` ilişki bilgisidir; alt bölgenin fethedilmesi ana bölgenin
 sahipliğini değiştirmez.

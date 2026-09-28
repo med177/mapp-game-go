@@ -25,6 +25,9 @@ func TestCloneEditMapBuildStateIsolatedFromSource(t *testing.T) {
 			Shapes: map[string][][][2]float32{"shape_a": {{{1, 2}}}},
 		},
 		RegionPaintOverrides: map[int]world.RegionID{12: "region_a"},
+		MinorRegionPolygons: map[world.RegionID][][][2]int{
+			"region_a": {{{1, 1}, {2, 1}, {2, 2}}},
+		},
 	}
 
 	clone := cloneEditMapBuildState(gs)
@@ -35,6 +38,7 @@ func TestCloneEditMapBuildStateIsolatedFromSource(t *testing.T) {
 	clone.TerrainAreas[0].Polygons[0][0][0] = 99
 	clone.ShapeData.Shapes["shape_a"][0][0][0] = 99
 	clone.RegionPaintOverrides[12] = "changed"
+	clone.MinorRegionPolygons["region_a"][0][0][0] = 99
 
 	if region.Neighbors[0] != "region_b" || region.Settlements[0].ID != "settlement_a" {
 		t.Fatal("cloning the map state mutated source region data")
@@ -44,6 +48,9 @@ func TestCloneEditMapBuildStateIsolatedFromSource(t *testing.T) {
 	}
 	if gs.ShapeData.Shapes["shape_a"][0][0][0] != 1 || gs.RegionPaintOverrides[12] != "region_a" {
 		t.Fatal("cloning the map state mutated source shape/override data")
+	}
+	if gs.MinorRegionPolygons["region_a"][0][0][0] != 1 {
+		t.Fatal("cloning the map state mutated source minor polygon data")
 	}
 }
 

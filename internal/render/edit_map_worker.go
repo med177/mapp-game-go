@@ -53,6 +53,7 @@ func cloneEditMapBuildState(gs *state.GameState) *state.GameState {
 	copyState.TradeCenters = cloneTradeCenterConfig(gs.TradeCenters)
 	copyState.Sieges = cloneSieges(gs.Sieges)
 	copyState.RegionPaintOverrides = cloneRegionPaintOverrides(gs.RegionPaintOverrides)
+	copyState.MinorRegionPolygons = cloneMinorRegionPolygons(gs.MinorRegionPolygons)
 	return &copyState
 }
 

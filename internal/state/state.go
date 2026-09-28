@@ -444,8 +444,14 @@ type GameState struct {
 	// Kazanan (boş = oyun devam ediyor)
 	WinnerID faction.FactionID `json:"winner_id"`
 
-	// Region paint overrides - edit modunda bölge boyama değişiklikleri (piksel indeksi -> bölge ID)
+	// Region paint overrides, edit modunda harita üzerinde anlık kullanılan
+	// piksel atamalarıdır. Senaryo kaynağına minor poligonları yazılmaz; bunlar
+	// MinorRegionPolygons üzerinden yeniden rasterize edilir.
 	RegionPaintOverrides map[int]world.RegionID `json:"region_paint_overrides,omitempty"`
+	// MinorRegionPolygons, kalıcı minor bölge sınırlarını dünya koordinatlarında
+	// poligon olarak tutar. Piksel override'ları yalnızca runtime türevidir.
+	MinorRegionPolygons       map[world.RegionID][][][2]int `json:"minor_region_polygons,omitempty"`
+	MinorRegionPolygonsLoaded bool                          `json:"-"`
 
 	// Aktif bölge event ikonları (haritada birkaç tur görünür kalır)
 	ActiveRegionEvents []RegionEventStatus `json:"active_region_events,omitempty"`

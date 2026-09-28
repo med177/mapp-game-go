@@ -3106,6 +3106,17 @@ func (r *Renderer) deleteSelectedRegion() {
 		removeNeighborID(other, rid)
 	}
 	delete(r.gs.Regions, rid)
+	delete(r.gs.MinorRegionPolygons, rid)
+	for pIdx, targetID := range r.gs.RegionPaintOverrides {
+		if targetID == rid {
+			delete(r.gs.RegionPaintOverrides, pIdx)
+		}
+	}
+	for pIdx, targetID := range r.editRegionPaintOverrides {
+		if targetID == rid {
+			delete(r.editRegionPaintOverrides, pIdx)
+		}
+	}
 	r.removeRegionFromOrder(rid)
 	for aid, a := range r.gs.Armies {
 		if a != nil && a.RegionID == rid {
@@ -3498,6 +3509,10 @@ func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
 			r.editRegionPaintOverrides[pIdx] = newID
 		}
 	}
+	if polygons, ok := r.gs.MinorRegionPolygons[oldID]; ok {
+		delete(r.gs.MinorRegionPolygons, oldID)
+		r.gs.MinorRegionPolygons[newID] = polygons
+	}
 
 	if r.editSelectedRegion == oldID {
 		r.editSelectedRegion = newID
@@ -3621,6 +3636,7 @@ func (r *Renderer) worldSnapshot() editWorldSnapshot {
 		RelationOrder:        append([]string(nil), r.gs.RelationOrder...),
 		ShapeData:            cloneCountryShapeJSON(r.gs.ShapeData),
 		RegionPaintOverrides: cloneRegionPaintOverrides(r.editRegionPaintOverrides),
+		MinorRegionPolygons:  cloneMinorRegionPolygons(r.gs.MinorRegionPolygons),
 		TerrainAreas:         cloneTerrainAreas(r.gs.TerrainAreas),
 		Selected:             r.editSelectedRegion,
 		Settlement:           r.editSelectedSettlement,
@@ -3654,6 +3670,7 @@ func (r *Renderer) restoreWorldSnapshotMode(snapshot editWorldSnapshot, asyncBui
 	r.gs.RelationOrder = append([]string(nil), snapshot.RelationOrder...)
 	r.gs.ShapeData = cloneCountryShapeJSON(snapshot.ShapeData)
 	r.editRegionPaintOverrides = cloneRegionPaintOverrides(snapshot.RegionPaintOverrides)
+	r.gs.MinorRegionPolygons = cloneMinorRegionPolygons(snapshot.MinorRegionPolygons)
 	// Region paint overrides'ı oyun durumuna da senkronize et
 	if len(r.editRegionPaintOverrides) > 0 {
 		if r.gs.RegionPaintOverrides == nil {
@@ -5085,6 +5102,21 @@ func cloneRegionPaintOverrides(src map[int]world.RegionID) map[int]world.RegionI
 	dst := make(map[int]world.RegionID, len(src))
 	for k, v := range src {
 		dst[k] = v
+	}
+	return dst
+}
+
+func cloneMinorRegionPolygons(src map[world.RegionID][][][2]int) map[world.RegionID][][][2]int {
+	if src == nil {
+		return nil
+	}
+	dst := make(map[world.RegionID][][][2]int, len(src))
+	for rid, polygons := range src {
+		copiedPolygons := make([][][2]int, len(polygons))
+		for i, polygon := range polygons {
+			copiedPolygons[i] = append([][2]int(nil), polygon...)
+		}
+		dst[rid] = copiedPolygons
 	}
 	return dst
 }

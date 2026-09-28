@@ -383,7 +383,7 @@ Bu alanlar JSON'a yazılmaz; oyun her başladığında assets'ten yeniden yükle
 
 **Neden bu ayrım?** Tanım verisi değişmez — onu kayıt dosyasına koymak gereksiz ve kırılgan. Sadece *durum* (kim neye sahip, ne araştırdı) kaydedilir.
 
-`MapConfig`, `TradeCenters`, bölge adları/komşulukları/shape kimlikleri, fraksiyon adları/renkleri ve `region_shapes.json` kaynaklı region paint override verisi senaryodan gelir ve kayıt dosyasına yazılmaz. Kayıt yalnız sahiplik, ekonomi, araştırma, ordular, diplomasi ve benzeri mutable campaign state'i taşır.
+`MapConfig`, `TradeCenters`, bölge adları/komşulukları/shape kimlikleri, fraksiyon adları/renkleri ve `region_shapes.json` içindeki minor poligonları senaryodan gelir ve kayıt dosyasına yazılmaz. Kayıt yalnız sahiplik, ekonomi, araştırma, ordular, diplomasi ve benzeri mutable campaign state'i taşır.
 
 Kompakt save formatı ayrıca şu sıkıştırmaları kullanır:
 

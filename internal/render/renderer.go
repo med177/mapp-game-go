@@ -526,6 +526,7 @@ type editWorldSnapshot struct {
 	RelationOrder        []string
 	ShapeData            world.CountryShapeJSON
 	RegionPaintOverrides map[int]world.RegionID
+	MinorRegionPolygons  map[world.RegionID][][][2]int
 	TerrainAreas         []world.TerrainArea
 	Selected             world.RegionID
 	Settlement           int
