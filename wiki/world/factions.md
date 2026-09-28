@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-09-12
+last_updated: 2026-09-28
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -34,7 +34,7 @@ korunması kendisinde kalır.
 1300 açılışında İsviçre, modern beş kantonlu devlet olarak değil, 1291 tarihli erken
 konfederasyon çekirdeği olarak modellenir. Senaryo 1310 Mart'ta başladığı için
 `swiss_confederacy_emerges_1310` olayı, 1291 yemininden kalan siyasi çekirdeği Schwyz'de
-oyuna çıkarır ve ilk milis gücünü kurar. Bern, Zürih, Fribourg ve Basel HRE içinde kalır;
+oyuna çıkarır ve altı piyadeden oluşan kuruluş savunmasını kurar. Bern, Zürih, Fribourg ve Basel HRE içinde kalır;
 bu bölgeler için AI hedefleri tarihsel katılım yıllarına göre (1351, 1353, 1481, 1501)
 açılır. Bölgesel ekonomi Alp kerestesi, demir/taş, tarım ve Basel-Fribourg tekstil
 uzmanlaşmasını temsil eder. Morgarten, Sempach, Näfels ve Schwaben savaşı event'leri

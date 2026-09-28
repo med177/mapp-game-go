@@ -58,6 +58,8 @@ type SuccessorRevivalEffect struct {
 	RegionID         string `json:"region_id"`
 	Mode             string `json:"mode,omitempty"` // independent | vassal
 	OverlordID       string `json:"overlord_id,omitempty"`
+	UnitType         string `json:"unit_type,omitempty"` // boşsa legacy milis
+	UnitCount        int    `json:"unit_count,omitempty"`
 	MilitiaCount     int    `json:"militia_count,omitempty"`
 	SuppressRelation bool   `json:"suppress_relation,omitempty"`
 }
@@ -487,7 +489,15 @@ func applyOneSuccessorRevival(gs *state.GameState, eff Effect, revival Successor
 	if successorID == "" || regionID == "" {
 		return
 	}
-	if _, ok := gs.ReviveSuccessorAtRegion(regionID, successorID, revival.MilitiaCount); !ok {
+	unitType := revival.UnitType
+	unitCount := revival.UnitCount
+	if unitType == "" {
+		unitType = "militia"
+		if unitCount <= 0 {
+			unitCount = revival.MilitiaCount
+		}
+	}
+	if _, ok := gs.ReviveSuccessorAtRegionWithUnit(regionID, successorID, unitType, unitCount); !ok {
 		return
 	}
 	overlordID := faction.FactionID(revival.OverlordID)

@@ -63,6 +63,15 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 		if event.ID == "diet_of_worms_1521" && !containsEventFlag(event.RequiresFlags, "reformation_1517_started") {
 			t.Fatal("Worms event'i Reformasyon karar flag'ine bağlanmamış")
 		}
+		if event.ID == "swiss_confederacy_emerges_1310" {
+			revival := event.SuccessorRevival
+			if revival == nil || revival.FactionID != "swiss_confederacy" || revival.UnitType != "infantry" || revival.UnitCount != 6 {
+				t.Fatal("İsviçre kuruluş event'i 6 piyade ile yeniden kurulmuyor")
+			}
+		}
+		if event.ID == "swiss_morgarten_war_1315" && event.CombatDefensePercent != 30 {
+			t.Fatalf("Morgarten savunma bonusu = %d, 30 bekleniyordu", event.CombatDefensePercent)
+		}
 	}
 	for id, found := range required {
 		if !found {
@@ -100,6 +109,44 @@ func Test1300UntimedFlagFollowUpsFollowParent(t *testing.T) {
 		childIndex, childOK := indices[pair[1]]
 		if !parentOK || !childOK || childIndex != parentIndex+1 {
 			t.Fatalf("%s event'i %s event'inin hemen altında değil", pair[1], pair[0])
+		}
+	}
+}
+
+func TestApplySuccessorRevivalUsesConfiguredUnit(t *testing.T) {
+	const (
+		regionID    = world.RegionID("switzerland")
+		successor   = faction.FactionID("swiss_confederacy")
+		predecessor = faction.FactionID("hre")
+	)
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			regionID: {ID: regionID, OwnerID: string(predecessor), Settlements: []world.Settlement{{ID: "switzerland_schwyz"}}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			predecessor: {ID: predecessor},
+			successor:   {ID: successor, IsEliminated: true, CapitalSettlementID: "switzerland_schwyz"},
+		},
+		Armies: map[army.ArmyID]*army.Army{},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", Category: army.CategoryInfantry},
+		},
+	}
+
+	Apply(gs, &Event{
+		Target:          "specific_faction",
+		AffectedFaction: string(predecessor),
+		SuccessorRevival: &SuccessorRevivalEffect{
+			FactionID: string(successor), RegionID: string(regionID), UnitType: "infantry", UnitCount: 6,
+		},
+	})
+
+	if len(gs.Armies) != 1 {
+		t.Fatalf("yeniden kuruluş %d ordu oluşturdu, 1 bekleniyordu", len(gs.Armies))
+	}
+	for _, current := range gs.Armies {
+		if current.OwnerID != string(successor) || current.RegionID != regionID || len(current.Units) != 6 || current.Units[0].TypeID != "infantry" {
+			t.Fatalf("yeniden kuruluş 6 piyade ile beklenen orduda oluşturulmadı")
 		}
 	}
 }

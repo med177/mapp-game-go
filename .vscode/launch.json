@@ -33,7 +33,7 @@
         "-scenario",
         "assets/scenarios/1300_ottoman_rise",
         "-turns",
-        "100",
+        "${input:simulationTurns}",
         "-player",
         "ottoman",
         "-seed",
@@ -53,6 +53,14 @@
       "request": "launch",
       "command": "go test ./... -count=1",
       "cwd": "${workspaceFolder}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "simulationTurns",
+      "type": "promptString",
+      "description": "Kaç tur simüle edilsin?",
+      "default": "100"
     }
   ]
 }

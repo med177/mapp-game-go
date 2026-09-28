@@ -814,12 +814,17 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   overlord seçimleri engelleniyor. Doğrulama: `go test ./... -count=1`.
 
 - 2026-09-12: İsviçre-Konfederasyonu için 1310 başlangıcından 1501'e uzanan event zinciri
-  eklendi. Schwyz, `successor_revival` ile 1310'da üç milisle ortaya çıkıyor; Morgarten,
+  eklendi. Schwyz, `successor_revival` ile 1310'da altı piyadeyle ortaya çıkıyor; Morgarten,
   Sempach, Näfels ve Schwaben savaşları Avusturya-Habsburg (`austria_duchy`) ile
   çatışmayı başlatıyor; HRE doğrudan savaş tarafı olarak kullanılmıyor. Zürih, Bern,
   Fribourg ve Basel katılım event'leri ilgili bölgelerin İsviçre tarafından alınmasını
   şart koşuyor; kesin zafer event'i Avusturya-Habsburg faction'ı yenildiğinde tetikleniyor.
   Doğrulama: JSON/referans kontrolleri ve `go test ./... -count=1`.
+
+- 2026-09-28: İsviçre kuruluş event'inin `successor_revival` etkisi veriyle seçilen
+  birlik tipini destekleyecek şekilde genişletildi. 1310 kuruluşu altı piyadeyle başlıyor;
+  Morgarten savunma bonusu %30'a çıkarıldı. Eski ardıl kuruluş çağrıları milis varsayılanını
+  koruyor; hedefli event testi eklendi.
 
 - 2026-09-12: Schwaben Savaşı sonrasındaki Basel Barışı için 1499 event'i eklendi.
   Event, İsviçre'nin HRE'den fiilî özerkliğini `swiss_de_facto_independence_1499`

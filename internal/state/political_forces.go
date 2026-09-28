@@ -37,6 +37,13 @@ func (s *GameState) ConsumeFactionSubjugation() (faction.FactionID, faction.Fact
 // state işlemini yürütür. Bölge sahibi değişir, faction etkinleşir ve temel
 // bir kuruluş ordusu oluşturulur.
 func (s *GameState) ReviveSuccessorAtRegion(regionID world.RegionID, successorID faction.FactionID, militiaCount int) (army.ArmyID, bool) {
+	return s.ReviveSuccessorAtRegionWithUnit(regionID, successorID, "militia", militiaCount)
+}
+
+// ReviveSuccessorAtRegionWithUnit, event ile yeniden kurulan ardıl devletin
+// kuruluş ordusunu veriyle seçilen birim tipinde oluşturur. Eski çağrılar
+// ReviveSuccessorAtRegion üzerinden milis varsayılanını korur.
+func (s *GameState) ReviveSuccessorAtRegionWithUnit(regionID world.RegionID, successorID faction.FactionID, unitType string, unitCount int) (army.ArmyID, bool) {
 	if s == nil || s.Regions == nil || s.Factions == nil || regionID == "" || successorID == "" {
 		return "", false
 	}
@@ -45,8 +52,11 @@ func (s *GameState) ReviveSuccessorAtRegion(regionID world.RegionID, successorID
 	if region == nil || region.IsSea || successor == nil || !successor.IsEliminated || len(s.LandRegionsOwnedBy(successorID)) != 0 {
 		return "", false
 	}
-	if militiaCount <= 0 {
-		militiaCount = DefaultSuccessorRevivalMilitia
+	if unitType == "" {
+		unitType = "militia"
+	}
+	if unitCount <= 0 {
+		unitCount = DefaultSuccessorRevivalMilitia
 	}
 	successor.IsEliminated = false
 	successor.IsVirtual = false
@@ -66,7 +76,7 @@ func (s *GameState) ReviveSuccessorAtRegion(regionID world.RegionID, successorID
 		ID:            armyID,
 		OwnerID:       string(successorID),
 		RegionID:      regionID,
-		Units:         army.MakeUnits("militia", militiaCount),
+		Units:         army.MakeUnits(unitType, unitCount),
 		MaxMovePoints: army.DefaultArmyMovePoints,
 		MovePoints:    army.DefaultArmyMovePoints,
 	}
