@@ -24,8 +24,7 @@ func aiExecuteMerchantTradeStrategy(gs *state.GameState, fid faction.FactionID, 
 	if gs == nil || !aiMerchantTradeFaction(gs, fid) {
 		return
 	}
-	routes := aiEligibleMerchantRoutes(gs, fid)
-	aiAssignMerchantTradeFleets(gs, fid, routes)
+	routes := assignOpeningMerchantFleets(gs, fid)
 	if len(routes) == 0 {
 		return
 	}
@@ -33,6 +32,23 @@ func aiExecuteMerchantTradeStrategy(gs *state.GameState, fid faction.FactionID, 
 		return
 	}
 	aiProduceMerchantShipIfNeeded(gs, fid, routes, budget, steps)
+}
+
+// AssignOpeningMerchantFleets, ekonomi/ordu kararı almadan başlangıçtaki
+// merchant filolarını kullanılabilir deniz rotalarına bağlar. Açılış ekonomi
+// önizlemesi ve senaryo testleri bu dar akışı kullanır; böylece AI'nin vergi,
+// üretim veya askerî kararları tarihsel başlangıç gelirini değiştirmez.
+func AssignOpeningMerchantFleets(gs *state.GameState, fid faction.FactionID) {
+	if gs == nil || !aiMerchantTradeFaction(gs, fid) {
+		return
+	}
+	assignOpeningMerchantFleets(gs, fid)
+}
+
+func assignOpeningMerchantFleets(gs *state.GameState, fid faction.FactionID) []aiMerchantRoute {
+	routes := aiEligibleMerchantRoutes(gs, fid)
+	aiAssignMerchantTradeFleets(gs, fid, routes)
+	return routes
 }
 
 func aiMerchantTradeFaction(gs *state.GameState, fid faction.FactionID) bool {

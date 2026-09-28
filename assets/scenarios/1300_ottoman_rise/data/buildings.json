@@ -17,7 +17,7 @@
     "grain_cost": 60,
     "iron_cost": 35,
     "stone_cost": 300,
-    "timber_cost": 100
+    "timber_cost": 80
   },
   {
     "id": "forge",
@@ -41,8 +41,8 @@
     "grain_cost": 15,
     "iron_cost": 17,
     "spice_cost": 0,
-    "stone_cost": 80,
-    "timber_cost": 35
+    "stone_cost": 40,
+    "timber_cost": 45
   },
   {
     "id": "workshop",
@@ -67,8 +67,8 @@
     "grain_cost": 20,
     "iron_cost": 50,
     "spice_cost": 8,
-    "stone_cost": 100,
-    "timber_cost": 50
+    "stone_cost": 80,
+    "timber_cost": 35
   },
   {
     "id": "walls",
@@ -87,7 +87,7 @@
     "grain_cost": 120,
     "iron_cost": 32,
     "stone_cost": 800,
-    "timber_cost": 100
+    "timber_cost": 200
   },
   {
     "id": "temple",
@@ -108,8 +108,8 @@
     "grain_cost": 40,
     "iron_cost": 4,
     "spice_cost": 4,
-    "stone_cost": 400,
-    "timber_cost": 25
+    "stone_cost": 150,
+    "timber_cost": 35
   },
   {
     "id": "market",
@@ -141,8 +141,8 @@
     "grain_cost": 60,
     "iron_cost": 10,
     "spice_cost": 30,
-    "stone_cost": 80,
-    "timber_cost": 25
+    "stone_cost": 70,
+    "timber_cost": 20
   },
   {
     "id": "farm",
@@ -161,8 +161,8 @@
     "gold_maintenance": 3,
     "grain_cost": 25,
     "iron_cost": 2,
-    "stone_cost": 5,
-    "timber_cost": 15
+    "stone_cost": 3,
+    "timber_cost": 10
   },
   {
     "id": "granary",
@@ -182,8 +182,8 @@
     "gold_maintenance": 5,
     "grain_cost": 30,
     "iron_cost": 20,
-    "stone_cost": 75,
-    "timber_cost": 35
+    "stone_cost": 35,
+    "timber_cost": 25
   },
   {
     "id": "port",
@@ -207,7 +207,7 @@
     "grain_cost": 15,
     "iron_cost": 30,
     "spice_cost": 10,
-    "stone_cost": 200,
-    "timber_cost": 110
+    "stone_cost": 120,
+    "timber_cost": 90
   }
 ]

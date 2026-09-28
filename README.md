@@ -104,7 +104,7 @@ saves/quicksave.debug.json
 go run ./tools/regionlint -file assets/scenarios/1300_ottoman_rise/data/regions.json
 ```
 
-Bu komut `name` ve `name_tr` alanlarında snake_case, placeholder sayı ve ASCII kalıntı (örn. `Kralligi`, `Kiyisi`) gibi hataları raporlar; sorun varsa `exit 1` döner.
+Bu komut `name` ve `name_tr` alanlarında snake_case, placeholder sayı ve ASCII kalıntı (örn. `Kralligi`, `Kiyisi`) gibi hataları; ayrıca düşük nüfuslu bölgelerde açılış ekonomi testi uğruna aşırı yükseltilmiş `base_gold_income` değerlerini raporlar. Sorun varsa `exit 1` döner.
 
 ---
 

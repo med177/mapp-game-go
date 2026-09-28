@@ -264,24 +264,27 @@ func Test1300OpeningEconomyCoversUpkeepAfterMerchantAssignments(t *testing.T) {
 	}
 	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 	for _, fid := range gs.FactionOrder {
-		ai.TakeTurn(gs, fid)
+		ai.AssignOpeningMerchantFleets(gs, fid)
 	}
 
+	const openingRunwayTurns = 10
 	for _, fid := range gs.FactionOrder {
 		regions := gs.RegionsOwnedBy(fid)
 		if len(regions) == 0 {
 			continue
 		}
-		minimumNetChange := 100
-		if len(regions) <= 2 {
-			minimumNetChange = 50
-		}
+		owner := gs.Factions[fid]
 		status := victory.GoldEconomyPreview(gs, fid)
-		if status.Income <= 0 || status.NetChange >= minimumNetChange {
-			continue
+		projectedGold := 0
+		if owner != nil {
+			projectedGold = owner.Gold + status.NetChange*openingRunwayTurns
 		}
-		t.Fatalf("%s ilk tur net altın geliri yetersiz: %d (hedef=%d, bölge=%d, gelir=%d, ordu bakımı=%d, bina bakımı=%d)",
-			fid, status.NetChange, minimumNetChange, len(regions), status.Income, status.Upkeep, status.BuildingUpkeep)
+		if status.Income <= 0 || projectedGold < 0 {
+			t.Fatalf("%s açılış ekonomi dayanıklılığı yetersiz: net=%d, 10 tur sonrası hazine=%d (bölge=%d, gelir=%d, ordu bakımı=%d, bina bakımı=%d)",
+				fid, status.NetChange, projectedGold, len(regions), status.Income, status.Upkeep, status.BuildingUpkeep)
+		}
+		t.Logf("%s açılış ekonomisi: net=%d, 10 tur sonrası hazine=%d, gelir=%d, ordu bakımı=%d, bina bakımı=%d",
+			fid, status.NetChange, projectedGold, status.Income, status.Upkeep, status.BuildingUpkeep)
 	}
 }
 

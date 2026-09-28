@@ -444,18 +444,28 @@ vermez; ticaret gemisini doğrudan rota sistemine bağlarken savaş gemisini yal
 ilgili deniz bölgelerinde hazır bulunduğu için AI ilk turdan itibaren uygun,
 savaşta olmayan ticaret merkezi bağlantılarını kullanabilir.
 
-1300 açılış altın dengesi, ticaret gemileri AI tarafından rotalara atandıktan
-sonra ve hem ordu hem bina bakımı düşüldükten sonra değerlendirilir. İki veya
-daha fazla kara bölgesi olan aktif devletler için bölgesel `base_gold_income`
-kalibrasyonunun hedefi en az `+100` net altın/tur, tek kara bölgesine sahip
-küçük devletler için ise en az `+50` net altın/tur'dur. Böylece büyük
-devletler teknoloji, ordu ve bina yatırımı için gerçek bir geliştirme payı
-bulurken, küçük beylik ve kontluklara yapay biçimde büyük devlet geliri
-verilmez. Bu eşikler `victory.GoldEconomyPreview()` ile
-`Test1300OpeningEconomyCoversUpkeepAfterMerchantAssignments` testinde aynı
-ticaret rotası ve AI atama akışı üzerinden doğrulanır; bakım maliyetleri
-genel olarak düşürülmez, yalnız senaryo bölgelerinin başlangıç gelir tabanı
-kalibre edilir.
+1310 açılış altın dengesi, ticaret gemileri kullanılabilir rotalara bağlandıktan
+sonra ve hem ordu hem bina bakımı düşüldükten sonra değerlendirilir. Yerel
+`base_gold_income` artık açılış testini geçirmek için doğrudan yükseltilmez.
+1310 senaryosunun normalize nüfus ölçeğinde yerel vergi tabanı için üst sınır
+`40 + ceil(population / 2) + 10 × trade_capacity` olarak hesaplanır; bölgede
+liman varsa `+25`, pazar varsa `+25` eklenir. Bu sınır nüfus ile geliri birebir
+eşitlemez; düşük nüfuslu bölgelerin büyük devlet vergi tabanı taşımasını
+engellerken liman ve pazarın yerel idari kapasite farkını korur.
+
+Ticari devletlerin ana farkı yerel vergiye değil `trade_capacity`, ticaret
+merkezi bonusu, liman ve merchant rota gelirlerine taşınır. Kilise vergileri,
+bağışlar ve özel devlet mülkleri gibi bölgeye ait olmayan düzenli gelirler
+`other_income_periods` altında tutulur. Böylece Venedik ve Ceneviz gibi
+merkezler zengin kalırken bu zenginlik düşük nüfuslu her komşu bölgeye yapay
+vergi olarak kopyalanmaz.
+
+`Test1300OpeningEconomyCoversUpkeepAfterMerchantAssignments` artık AI'nin vergi,
+üretim ve askerî kararlarını çalıştırmadan yalnızca başlangıç merchant filo
+atamasını yapar. Her fraksiyonun brüt geliri sıfırdan büyük olmalı ve mevcut
+başlangıç hazinesi on stratejik tur sonunda tükenmemelidir. Böylece tarihsel
+olarak kısa vadeli açık veren küçük devletler korunur; test, onları zorla
+`+50` veya `+100` net altın/tur üretmeye zorlamaz.
 
 ## Üretim Reçeteleri ve Lojistik
 

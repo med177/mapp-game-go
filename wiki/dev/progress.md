@@ -1,11 +1,19 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-27
+last_updated: 2026-09-28
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-28: 1310 açılış ekonomisi tarihsel yerel vergi ve ticari gelir olarak
+  ayrıştırıldı. `base_gold_income` artık nüfus, ticaret kapasitesi, liman ve
+  pazarla sınırlanan bölgesel vergi tabanıyla denetleniyor; Venedik/Karesi gibi
+  düşük nüfuslu yüksek vergi aykırı değerleri düşürüldü. Açılış ekonomi testi
+  yalnız başlangıç merchant filo atamasını yapıyor ve on tur hazine dayanımı
+  kontrol ediyor (`internal/economy/economy.go`, `internal/ai/merchant_trade.go`,
+  `internal/save/save_test.go`).
 
 - 2026-09-27: Üst HUD'a son genişleme hızından türetilen `Aşırı Genişleme`
   yüzdesi eklendi. Oyuncu değeri 0-100 arasında renkli olarak görür; AI aynı

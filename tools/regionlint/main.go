@@ -7,6 +7,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"mapp-game-go/internal/economy"
 )
 
 type settlement struct {
@@ -15,11 +17,16 @@ type settlement struct {
 }
 
 type region struct {
-	ID          string       `json:"id"`
-	Name        string       `json:"name"`
-	NameTR      string       `json:"name_tr"`
-	IsSea       bool         `json:"is_sea"`
-	Settlements []settlement `json:"settlements"`
+	ID             string       `json:"id"`
+	Name           string       `json:"name"`
+	NameTR         string       `json:"name_tr"`
+	IsSea          bool         `json:"is_sea"`
+	IsTerrainArea  bool         `json:"is_terrain_area"`
+	Settlements    []settlement `json:"settlements"`
+	BaseGoldIncome int          `json:"base_gold_income"`
+	Population     int          `json:"population"`
+	TradeCapacity  int          `json:"trade_capacity"`
+	Buildings      []string     `json:"buildings"`
 }
 
 var (
@@ -90,7 +97,25 @@ func checkRegion(r region) []string {
 		issues = append(issues, lintNameTR(r.ID, "settlement("+s.ID+").name_tr", s.NameTR, false)...)
 	}
 
+	if !r.IsSea && !r.IsTerrainArea && r.Population > 0 {
+		hasPort := contains(r.Buildings, "port")
+		hasMarket := contains(r.Buildings, "market")
+		cap := economy.RegionalTaxBaseCap(r.Population, r.TradeCapacity, hasPort, hasMarket)
+		if r.BaseGoldIncome > cap {
+			issues = append(issues, fmtIssue(r.ID, fmt.Sprintf("base_gold_income nüfus/ticaret tabanına göre yüksek: %d > %d", r.BaseGoldIncome, cap)))
+		}
+	}
+
 	return issues
+}
+
+func contains(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
 }
 
 func lintNameTR(regionID, field, value string, allowNumbered bool) []string {

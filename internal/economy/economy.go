@@ -482,6 +482,31 @@ func RegionTradeIncome(tradeCapacity int) int {
 	return baseTradeIncome
 }
 
+// RegionalTaxBaseCap, nüfus ve yerel ticari altyapıya göre bir bölgenin
+// başlangıç yerel vergi tabanı için makul üst sınırı döner. Ticaret merkezi
+// geliri bu hesaba dahil değildir; o gelir trade_capacity ve ticaret merkezi
+// mekaniklerinden gelir.
+//
+// Bu katsayılar 1310 senaryosundaki normalize nüfus ölçeği içindir. Amaç
+// nüfusla geliri birebir eşitlemek değil, düşük nüfuslu bölgelerin açılış
+// ekonomi testi uğruna büyük devlet vergi tabanı taşımasını engellemektir.
+func RegionalTaxBaseCap(population, tradeCapacity int, hasPort, hasMarket bool) int {
+	if population <= 0 {
+		return 0
+	}
+	if tradeCapacity < 0 {
+		tradeCapacity = 0
+	}
+	cap := 40 + (population+1)/2 + tradeCapacity*10
+	if hasPort {
+		cap += 25
+	}
+	if hasMarket {
+		cap += 25
+	}
+	return cap
+}
+
 // ── Korsanlık ──────────────────────────────────────────────────────────
 
 // ApplyPirateRaids rastgele korsan baskını olayları üretir.
