@@ -13388,8 +13388,8 @@
   },
   {
     "id": "sinope_minor",
-    "name": "New Minor Region",
-    "name_tr": "Yeni Küçük Alt Bölge",
+    "name": "Sinop Minor",
+    "name_tr": "Sinop Minor",
     "terrain": "coast",
     "owner_id": "genoa",
     "is_privileged": true,
