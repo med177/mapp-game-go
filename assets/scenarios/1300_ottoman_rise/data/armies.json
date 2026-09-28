@@ -238,6 +238,17 @@
     ]
   },
   {
+    "id": "army_denmark_south_1",
+    "owner_id": "denmark_kingdom",
+    "region_id": "malmo_halland",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
     "id": "army_edit_111",
     "owner_id": "cyprus_kingdom",
     "region_id": "cyprus",
@@ -326,17 +337,6 @@
       {
         "type_id": "militia",
         "count": 5
-      }
-    ]
-  },
-  {
-    "id": "army_edit_120",
-    "owner_id": "france",
-    "region_id": "dijon",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 10
       }
     ]
   },
@@ -485,6 +485,28 @@
     "id": "army_edit_158",
     "owner_id": "golden_horde",
     "region_id": "kipchak_steppe",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_161",
+    "owner_id": "france",
+    "region_id": "languedoc",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_162",
+    "owner_id": "burgundy",
+    "region_id": "burgundy",
     "units": [
       {
         "type_id": "infantry",
@@ -645,43 +667,8 @@
     "region_id": "paris",
     "units": [
       {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
         "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 1
-      }
-    ]
-  },
-  {
-    "id": "army_france_burgundy_front",
-    "owner_id": "france",
-    "region_id": "burgundy",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
+        "count": 11
       }
     ]
   },
@@ -1050,6 +1037,28 @@
     ]
   },
   {
+    "id": "army_hre_north_1",
+    "owner_id": "hre",
+    "region_id": "saxony_lower",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_hre_south_1",
+    "owner_id": "hre",
+    "region_id": "baden_vurtemberg",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_hungarian_kingdom_1",
     "owner_id": "hungarian_kingdom",
     "region_id": "hungary",
@@ -1335,6 +1344,32 @@
     ]
   },
   {
+    "id": "army_norway_1",
+    "owner_id": "norway_kingdom",
+    "region_id": "norway",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_norway_2",
+    "owner_id": "norway_kingdom",
+    "region_id": "bohuslan",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
     "id": "army_novgorod_1",
     "owner_id": "novgorod_rep",
     "region_id": "novgorod",
@@ -1459,6 +1494,25 @@
     ]
   },
   {
+    "id": "army_saxony_1",
+    "owner_id": "saxony_duchy",
+    "region_id": "saxony",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
+    ]
+  },
+  {
     "id": "army_scotland_1",
     "owner_id": "scotland_kingdom",
     "region_id": "scotland",
@@ -1508,6 +1562,32 @@
       {
         "type_id": "militia",
         "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_sweden_1",
+    "owner_id": "sweden_kingdom",
+    "region_id": "sweden",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_sweden_2",
+    "owner_id": "sweden_kingdom",
+    "region_id": "goteborg_coast",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 2
       }
     ]
   },
@@ -2316,110 +2396,6 @@
       },
       {
         "type_id": "transport",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_saxony_1",
-    "owner_id": "saxony_duchy",
-    "region_id": "saxony",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "militia",
-        "count": 4
-      }
-    ]
-  },
-  {
-    "id": "army_hre_north_1",
-    "owner_id": "hre",
-    "region_id": "saxony_lower",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_hre_south_1",
-    "owner_id": "hre",
-    "region_id": "baden_vurtemberg",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_denmark_south_1",
-    "owner_id": "denmark_kingdom",
-    "region_id": "malmo_halland",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_norway_1",
-    "owner_id": "norway_kingdom",
-    "region_id": "norway",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_norway_2",
-    "owner_id": "norway_kingdom",
-    "region_id": "bohuslan",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_sweden_1",
-    "owner_id": "sweden_kingdom",
-    "region_id": "sweden",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "militia",
-        "count": 3
-      }
-    ]
-  },
-  {
-    "id": "army_sweden_2",
-    "owner_id": "sweden_kingdom",
-    "region_id": "goteborg_coast",
-    "units": [
-      {
-        "type_id": "militia",
         "count": 2
       }
     ]

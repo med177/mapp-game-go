@@ -7,6 +7,7 @@
     "owner_id": "england",
     "successor_faction_id": "england",
     "neighbors": [
+      "area::area__135",
       "dover_strait",
       "east_anglia",
       "english_channel",
@@ -97,10 +98,10 @@
     "owner_id": "england",
     "successor_faction_id": "england",
     "neighbors": [
+      "area::area__135",
       "belgium_shore",
       "east_england_shore",
       "essex",
-      "mercia",
       "thames_entrance"
     ],
     "world_x": 502,
@@ -117,7 +118,7 @@
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 3,
-    "satisfaction": 72,
+    "satisfaction": 32,
     "tax_rate": 35,
     "population": 280,
     "rural_population": 182,
@@ -129,7 +130,8 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "walls"
     ]
   },
   {
@@ -139,7 +141,7 @@
     "terrain": "forest",
     "owner_id": "england",
     "neighbors": [
-      "east_anglia",
+      "area::area__135",
       "east_england_shore",
       "essex",
       "welsh_marches",
@@ -512,31 +514,76 @@
     "successor_faction_id": "france",
     "neighbors": [
       "anjou",
+      "area::area__133::paris",
       "area::area__36",
-      "burgundy",
+      "auxerre_region",
       "champagne",
-      "dijon",
-      "normandy",
-      "toulouse"
+      "normandy"
     ],
-    "world_x": 522,
+    "world_x": 532,
     "world_y": 327,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 158,
-    "base_grain_output": 30,
-    "base_iron_output": 2,
-    "base_timber_output": 2,
-    "base_stone_output": 25,
+    "base_gold_income": 150,
+    "base_grain_output": 25,
+    "base_iron_output": 1,
+    "base_timber_output": 5,
+    "base_stone_output": 15,
     "base_spice_output": 0,
     "base_cloth_output": 24,
-    "trade_capacity": 6,
+    "trade_capacity": 5,
     "satisfaction": 75,
     "tax_rate": 45,
-    "population": 500,
-    "rural_population": 345,
+    "population": 405,
+    "rural_population": 300,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": [
+      "barracks",
+      "barracks",
+      "granary",
+      "temple",
+      "market",
+      "walls",
+      "walls",
+      "walls"
+    ]
+  },
+  {
+    "id": "auxerre_region",
+    "name": "Auxerre Region",
+    "name_tr": "Auxerre Bölgesi",
+    "terrain": "plain",
+    "owner_id": "france",
+    "successor_faction_id": "france",
+    "neighbors": [
+      "anjou",
+      "area::area__133::auxerre_region",
+      "area::area__133::paris",
+      "area::area__36",
+      "paris",
+      "toulouse"
+    ],
+    "world_x": 552,
+    "world_y": 354,
+    "shape_id": "FRA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 58,
+    "base_grain_output": 15,
+    "base_iron_output": 10,
+    "base_timber_output": 10,
+    "base_stone_output": 20,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 1,
+    "satisfaction": 75,
+    "tax_rate": 45,
+    "population": 148,
+    "rural_population": 85,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -639,6 +686,7 @@
     "owner_id": "france",
     "neighbors": [
       "aquitaine",
+      "auxerre_region",
       "brittany",
       "normandy",
       "paris",
@@ -678,8 +726,8 @@
       "aquitaine",
       "area::area__36",
       "area::area__9::toulouse",
-      "languedoc",
-      "paris"
+      "auxerre_region",
+      "languedoc"
     ],
     "world_x": 513,
     "world_y": 396,
@@ -711,19 +759,21 @@
     "owner_id": "france",
     "successor_faction_id": "france",
     "neighbors": [
+      "area::area__11",
       "area::area__11::champagne",
       "area::area__11::lorraine",
       "area::area__11::walonia",
+      "area::area__132::champagne",
+      "area::area__132::flanders",
+      "area::area__132::walonia",
+      "area::area__133::champagne",
+      "area::area__133::paris",
       "belgium_shore",
-      "burgundy",
-      "flanders",
-      "lorraine",
       "normandy",
-      "paris",
-      "walonia"
+      "paris"
     ],
-    "world_x": 568,
-    "world_y": 289,
+    "world_x": 557,
+    "world_y": 302,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -757,21 +807,24 @@
     "name": "Burgundy",
     "name_tr": "Burgonya",
     "terrain": "plain",
-    "owner_id": "france",
+    "owner_id": "burgundy",
     "successor_faction_id": "burgundy",
     "neighbors": [
       "alsace",
       "area::area__11::burgundy",
       "area::area__11::lorraine",
-      "champagne",
+      "area::area__133::burgundy",
+      "area::area__133::lorraine",
+      "area::area__14",
+      "area::area__36",
       "dijon",
       "lorraine",
-      "paris",
+      "savoy",
       "sch_basel",
       "sch_fribourg"
     ],
-    "world_x": 589,
-    "world_y": 327,
+    "world_x": 588,
+    "world_y": 337,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -786,7 +839,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 42,
-    "population": 379,
+    "population": 461,
     "rural_population": 326,
     "religion": "catholic",
     "active_event_id": "",
@@ -796,7 +849,11 @@
       "farm",
       "farm",
       "farm",
-      "walls"
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -804,7 +861,7 @@
     "name": "Dijon",
     "name_tr": "Dijon",
     "terrain": "plain",
-    "owner_id": "france",
+    "owner_id": "hre",
     "successor_faction_id": "france",
     "neighbors": [
       "area::area__14",
@@ -812,12 +869,10 @@
       "area::area__36",
       "burgundy",
       "languedoc",
-      "paris",
-      "savoy",
-      "sch_fribourg"
+      "savoy"
     ],
-    "world_x": 584,
-    "world_y": 352,
+    "world_x": 581,
+    "world_y": 369,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -832,7 +887,7 @@
     "trade_capacity": 4,
     "satisfaction": 70,
     "tax_rate": 42,
-    "population": 368,
+    "population": 273,
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
@@ -857,7 +912,6 @@
       "gulf_of_genoa",
       "gulf_of_lion",
       "languedoc",
-      "ligurian_sea",
       "sanremo"
     ],
     "world_x": 602,
@@ -897,6 +951,7 @@
       "area::area__14",
       "area::area__15",
       "area::area__16::savoy",
+      "burgundy",
       "dijon",
       "sch_fribourg"
     ],
@@ -1678,7 +1733,6 @@
       "area::area__111",
       "area::area__13",
       "burgundy",
-      "dijon",
       "savoy",
       "sch_basel",
       "sch_bern"
@@ -2258,18 +2312,18 @@
     "owner_id": "papal_states",
     "successor_faction_id": "papal_states",
     "neighbors": [
+      "area::area__134::lazio",
       "area::area__28",
       "area::area__31::lazio",
       "area::area__32",
       "area::area__33::lazio",
       "area::area__34",
-      "campania",
       "northern_tyrrhenian_sea",
       "siena",
       "tyrrhenian_sea"
     ],
-    "world_x": 749,
-    "world_y": 442,
+    "world_x": 744,
+    "world_y": 436,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -2284,7 +2338,7 @@
     "trade_capacity": 3,
     "satisfaction": 78,
     "tax_rate": 20,
-    "population": 627,
+    "population": 645,
     "rural_population": 431,
     "religion": "catholic",
     "active_event_id": "",
@@ -2311,10 +2365,11 @@
       "area::area__28",
       "area::area__31::abruzzo",
       "area::area__32",
+      "area::area__33::abruzzo",
       "marche"
     ],
-    "world_x": 758,
-    "world_y": 432,
+    "world_x": 756,
+    "world_y": 428,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -2354,12 +2409,13 @@
       "abruzzo",
       "adriatic_sea_venice",
       "area::area__32",
+      "area::area__33::lazio",
       "area::area__33::marche",
       "area::area__34",
       "ferrara"
     ],
-    "world_x": 744,
-    "world_y": 407,
+    "world_x": 743,
+    "world_y": 408,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -2396,15 +2452,18 @@
     "owner_id": "naples_kingdom",
     "successor_faction_id": "naples_kingdom",
     "neighbors": [
+      "area::area__134::campania",
       "area::area__28",
       "area::area__29",
+      "area::area__31::campania",
+      "area::area__32",
+      "area::area__35::apulia",
       "area::area__35::campania",
       "calabria",
-      "lazio",
       "tyrrhenian_sea"
     ],
-    "world_x": 773,
-    "world_y": 465,
+    "world_x": 764,
+    "world_y": 460,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -2419,7 +2478,7 @@
     "trade_capacity": 3,
     "satisfaction": 65,
     "tax_rate": 35,
-    "population": 558,
+    "population": 582,
     "rural_population": 311,
     "religion": "catholic",
     "active_event_id": "",
@@ -2587,16 +2646,16 @@
     "successor_faction_id": "polish_kingdom",
     "neighbors": [
       "area::area__115",
+      "area::area__130",
       "baltic_sea",
       "gulf_of_finland",
       "konigsberg",
       "mazovia",
-      "moravia",
       "silesia",
       "vistula_river"
     ],
-    "world_x": 864,
-    "world_y": 244,
+    "world_x": 862,
+    "world_y": 225,
     "shape_id": "POL",
     "is_sea": false,
     "is_locked": false,
@@ -2636,6 +2695,7 @@
     "owner_id": "lithuanian_gd",
     "successor_faction_id": "lithuanian_gd",
     "neighbors": [
+      "area::area__130",
       "belarus",
       "gulf_of_finland",
       "konigsberg",
@@ -2798,7 +2858,6 @@
       "oltenia",
       "rascia",
       "serbia",
-      "transylvania",
       "vidin"
     ],
     "world_x": 899,
@@ -2845,7 +2904,6 @@
     "neighbors": [
       "area::area__115",
       "bessarabia",
-      "bulgaria",
       "danube_romania",
       "danube_wallacia",
       "dobruja",
@@ -2879,17 +2937,58 @@
     ]
   },
   {
+    "id": "vicinia_minor",
+    "name": "Vicinia",
+    "name_tr": "Vicinia",
+    "terrain": "plain",
+    "owner_id": "genoa",
+    "is_privileged": true,
+    "neighbors": [
+      "bulgaria",
+      "danube_romania",
+      "dobruja"
+    ],
+    "world_x": 1029,
+    "world_y": 398,
+    "shape_id": "ROU",
+    "is_sea": false,
+    "is_minor_region": true,
+    "parent_region_id": "wallachia",
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 10,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 25,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "orthodox",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "port"
+    ]
+  },
+  {
     "id": "oltenia",
     "name": "Oltenia",
     "name_tr": "Oltenya",
     "terrain": "plain",
     "owner_id": "wallachia_prince",
+    "successor_faction_id": "wallachia_prince",
     "neighbors": [
       "area::area__115",
       "danube_serbia",
       "danube_wallacia",
       "nis",
       "transylvania",
+      "vidin",
       "wallachia"
     ],
     "world_x": 964,
@@ -2973,7 +3072,9 @@
     "name_tr": "Bulgar Krallığı",
     "terrain": "mountain",
     "owner_id": "bulgarian_empire",
+    "successor_faction_id": "bulgarian_empire",
     "neighbors": [
+      "area::area__129",
       "area::area__67",
       "area::area__68",
       "bosphorus_approaches",
@@ -2983,8 +3084,8 @@
       "serres",
       "silivri",
       "thrace",
+      "vicinia_minor",
       "vidin",
-      "wallachia",
       "west_black_sea"
     ],
     "world_x": 1015,
@@ -3009,7 +3110,11 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls"
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -3530,6 +3635,7 @@
     "neighbors": [
       "area::area__117",
       "area::area__118",
+      "area::area__127",
       "bilecik_frontier",
       "bithynia",
       "east_marmara_sea",
@@ -3553,8 +3659,8 @@
     "trade_capacity": 4,
     "satisfaction": 55,
     "tax_rate": 30,
-    "population": 943,
-    "rural_population": 650,
+    "population": 873,
+    "rural_population": 697,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -3739,7 +3845,11 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -5262,10 +5372,10 @@
       "albania",
       "area::area__63",
       "area::area__64",
-      "chalcidice",
       "epirus",
       "kosovo",
       "nis",
+      "serez",
       "thessaloniki_hinterland",
       "vidin"
     ],
@@ -5299,6 +5409,7 @@
     "name_tr": "Moldova",
     "terrain": "plain",
     "owner_id": "golden_horde",
+    "successor_faction_id": "moldavia_prince",
     "neighbors": [
       "bessarabia",
       "danube_romania",
@@ -6057,6 +6168,7 @@
       "herzegovina",
       "knin",
       "montenegro",
+      "otranto_minor",
       "otranto_strait"
     ],
     "world_x": 851,
@@ -6094,6 +6206,7 @@
       "epirus",
       "ionian_sea",
       "korfu",
+      "otranto_minor",
       "yanya"
     ],
     "world_x": 862,
@@ -6304,6 +6417,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "bozcaada",
       "chalcidice",
       "chios",
       "dardanelles_strait",
@@ -6315,6 +6429,7 @@
       "mediterranean_open_6",
       "midilli",
       "saruhan",
+      "serez",
       "serres"
     ],
     "world_x": 990,
@@ -6377,7 +6492,7 @@
     "name": "Lemnos",
     "name_tr": "Limni",
     "terrain": "plain",
-    "owner_id": "east_rome",
+    "owner_id": "venice",
     "successor_faction_id": "east_rome",
     "neighbors": [
       "aegean_sea"
@@ -6560,7 +6675,7 @@
     "name": "Naxos",
     "name_tr": "Naksos",
     "terrain": "plain",
-    "owner_id": "east_rome",
+    "owner_id": "venice",
     "neighbors": [
       "cretan_sea",
       "islands_sea",
@@ -6984,7 +7099,9 @@
       "constantinople",
       "east_marmara_sea",
       "galata",
+      "galata_minor",
       "khalkedon",
+      "riva",
       "silivri"
     ],
     "world_x": 1059,
@@ -7082,12 +7199,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "area::area__128",
       "black_open_4",
       "bulgaria",
       "danube_wallacia",
       "dobruja",
       "moldova",
       "podolia",
+      "vicinia_minor",
       "wallachia",
       "west_black_sea"
     ],
@@ -7128,6 +7247,7 @@
       "galata",
       "khalkedon",
       "nicomedia",
+      "riva",
       "silivri",
       "west_black_sea"
     ],
@@ -7165,7 +7285,8 @@
       "candaroglu",
       "crimean_black_sea",
       "kerch_strait",
-      "sinop"
+      "sinop",
+      "sinope_minor"
     ],
     "world_x": 1170,
     "world_y": 426,
@@ -7415,7 +7536,7 @@
     "terrain": "plain",
     "owner_id": "lithuanian_gd",
     "neighbors": [
-      "galicia_volhynia",
+      "area::area__131",
       "kiev",
       "latvia",
       "lithuania",
@@ -8019,6 +8140,7 @@
     "neighbors": [
       "bosphorus",
       "bosphorus_approaches",
+      "galata_minor",
       "silivri"
     ],
     "world_x": 1058,
@@ -8037,7 +8159,7 @@
     "trade_capacity": 4,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 410,
+    "population": 374,
     "rural_population": 338,
     "religion": "orthodox",
     "active_event_id": "",
@@ -8050,6 +8172,43 @@
       "walls",
       "walls",
       "walls"
+    ]
+  },
+  {
+    "id": "galata_minor",
+    "name": "Galata",
+    "name_tr": "Galata",
+    "terrain": "coast",
+    "owner_id": "genoa",
+    "is_privileged": true,
+    "neighbors": [
+      "bosphorus",
+      "galata"
+    ],
+    "world_x": 1057,
+    "world_y": 453,
+    "shape_id": "TRA",
+    "is_sea": false,
+    "is_minor_region": true,
+    "parent_region_id": "galata",
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 10,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 30,
+    "population": 36,
+    "rural_population": 0,
+    "religion": "orthodox",
+    "active_event_id": "",
+    "buildings": [
+      "port"
     ]
   },
   {
@@ -8346,8 +8505,10 @@
     "owner_id": "flanders_county",
     "successor_faction_id": "flanders_county",
     "neighbors": [
+      "area::area__132",
+      "area::area__132::flanders",
+      "area::area__132::walonia",
       "belgium_shore",
-      "champagne",
       "holland",
       "walonia"
     ],
@@ -8393,9 +8554,10 @@
     "owner_id": "flanders_county",
     "successor_faction_id": "flanders_county",
     "neighbors": [
+      "area::area__11",
       "area::area__11::champagne",
       "area::area__11::walonia",
-      "champagne",
+      "area::area__132::walonia",
       "flanders",
       "holland",
       "luxembourg",
@@ -8476,6 +8638,7 @@
     "terrain": "plain",
     "owner_id": "hre",
     "neighbors": [
+      "area::area__11",
       "area::area__11::luxembourg",
       "area::area__11::walonia",
       "lorraine",
@@ -8648,9 +8811,9 @@
     "owner_id": "teutonic_order",
     "successor_faction_id": "teutonic_order",
     "neighbors": [
+      "area::area__130",
       "gulf_of_finland",
       "lithuania",
-      "mazovia",
       "poland"
     ],
     "world_x": 904,
@@ -9101,6 +9264,7 @@
     "name_tr": "Kuzey Kıbrıs",
     "terrain": "coast",
     "owner_id": "cyprus_kingdom",
+    "successor_faction_id": "cyprus_kingdom",
     "neighbors": [
       "cyprus",
       "east_mediterranean",
@@ -9315,6 +9479,43 @@
     ]
   },
   {
+    "id": "bozcaada",
+    "name": "Bozcaada",
+    "name_tr": "Bozcaada",
+    "terrain": "coast",
+    "owner_id": "venice",
+    "is_privileged": true,
+    "neighbors": [
+      "aegean_sea"
+    ],
+    "world_x": 998,
+    "world_y": 479,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_minor_region": true,
+    "parent_region_id": "karesi",
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 10,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 30,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "port"
+    ]
+  },
+  {
     "id": "saruhan",
     "name": "Saruhan",
     "name_tr": "Saruhan",
@@ -9472,6 +9673,7 @@
       "black_open_1",
       "central_black_sea",
       "eretna",
+      "samsun_minor",
       "sinop",
       "sivas",
       "yozgat"
@@ -9501,7 +9703,46 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "walls"
+    ]
+  },
+  {
+    "id": "samsun_minor",
+    "name": "New Minor Region",
+    "name_tr": "Simisso",
+    "terrain": "coast",
+    "owner_id": "genoa",
+    "is_privileged": true,
+    "neighbors": [
+      "black_open_1",
+      "candaroglu"
+    ],
+    "world_x": 1211,
+    "world_y": 451,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_minor_region": true,
+    "parent_region_id": "candaroglu",
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 10,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 30,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "port"
     ]
   },
   {
@@ -10308,7 +10549,6 @@
       "alfold",
       "area::area__115",
       "danube_serbia",
-      "nis",
       "oltenia",
       "serbia"
     ],
@@ -11010,10 +11250,11 @@
       "area::area__67",
       "area::area__68",
       "bulgaria",
-      "chalcidice",
       "danube_wallacia",
       "nis",
-      "north_macedonia"
+      "north_macedonia",
+      "oltenia",
+      "serez"
     ],
     "world_x": 943,
     "world_y": 413,
@@ -11135,7 +11376,6 @@
       "area::area__115",
       "austria",
       "bohemia",
-      "poland",
       "silesia",
       "slovakia"
     ],
@@ -11176,6 +11416,7 @@
     "owner_id": "polish_kingdom",
     "successor_faction_id": "polish_kingdom",
     "neighbors": [
+      "area::area__115",
       "baltic_sea",
       "bohemia",
       "brandenburg",
@@ -11185,8 +11426,8 @@
       "pomerania",
       "stettin_lagoon"
     ],
-    "world_x": 806,
-    "world_y": 247,
+    "world_x": 815,
+    "world_y": 233,
     "shape_id": "POL",
     "is_sea": false,
     "is_locked": false,
@@ -11218,14 +11459,15 @@
     "owner_id": "polish_kingdom",
     "neighbors": [
       "area::area__115",
+      "area::area__130",
+      "area::area__131",
       "belarus",
       "galicia_volhynia",
-      "konigsberg",
       "lithuania",
       "poland"
     ],
-    "world_x": 921,
-    "world_y": 245,
+    "world_x": 927,
+    "world_y": 251,
     "shape_id": "POL",
     "is_sea": false,
     "is_locked": false,
@@ -11292,14 +11534,15 @@
     "owner_id": "hre",
     "neighbors": [
       "alsace",
+      "area::area__11",
       "area::area__11::lorraine",
+      "area::area__133::lorraine",
       "burgundy",
-      "champagne",
       "luxembourg",
       "palatinate"
     ],
-    "world_x": 605,
-    "world_y": 303,
+    "world_x": 609,
+    "world_y": 310,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -11327,14 +11570,17 @@
     "terrain": "plain",
     "owner_id": "hre",
     "neighbors": [
+      "area::area__133::alsace",
+      "area::area__133::burgundy",
+      "area::area__133::lorraine",
       "baden_vurtemberg",
       "burgundy",
       "lorraine",
       "palatinate",
       "sch_basel"
     ],
-    "world_x": 627,
-    "world_y": 309,
+    "world_x": 618,
+    "world_y": 318,
     "shape_id": "FRA",
     "is_sea": false,
     "is_locked": false,
@@ -11540,8 +11786,8 @@
       "lazio",
       "northern_tyrrhenian_sea"
     ],
-    "world_x": 712,
-    "world_y": 428,
+    "world_x": 709,
+    "world_y": 420,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -11556,7 +11802,7 @@
     "trade_capacity": 4,
     "satisfaction": 65,
     "tax_rate": 33,
-    "population": 480,
+    "population": 438,
     "rural_population": 292,
     "religion": "catholic",
     "active_event_id": "",
@@ -11585,10 +11831,11 @@
       "area::area__29",
       "area::area__35::apulia",
       "calabria",
+      "otranto_minor",
       "otranto_strait"
     ],
-    "world_x": 799,
-    "world_y": 454,
+    "world_x": 800,
+    "world_y": 453,
     "shape_id": "ITA",
     "is_sea": false,
     "is_locked": false,
@@ -11603,7 +11850,7 @@
     "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 28,
-    "population": 460,
+    "population": 440,
     "rural_population": 273,
     "religion": "catholic",
     "active_event_id": "",
@@ -11619,6 +11866,43 @@
       "farm",
       "farm",
       "farm"
+    ]
+  },
+  {
+    "id": "otranto_minor",
+    "name": "Otranto",
+    "name_tr": "Otranto",
+    "terrain": "plain",
+    "owner_id": "naples_kingdom",
+    "neighbors": [
+      "adriatic_sea_ragusa",
+      "apulia",
+      "otranto_strait"
+    ],
+    "world_x": 842,
+    "world_y": 475,
+    "shape_id": "ITA",
+    "is_sea": false,
+    "is_minor_region": true,
+    "parent_region_id": "apulia",
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 10,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 28,
+    "population": 20,
+    "rural_population": 0,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": [
+      "walls"
     ]
   },
   {
@@ -12006,7 +12290,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 25,
-    "population": 294,
+    "population": 285,
     "rural_population": 221,
     "religion": "orthodox",
     "active_event_id": "",
@@ -12082,10 +12366,11 @@
       "epirus",
       "mediterranean_open_6",
       "north_macedonia",
+      "serez",
       "thessaly"
     ],
-    "world_x": 918,
-    "world_y": 472,
+    "world_x": 920,
+    "world_y": 475,
     "shape_id": "GRC",
     "is_sea": false,
     "is_locked": false,
@@ -12100,7 +12385,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 25,
-    "population": 424,
+    "population": 433,
     "rural_population": 273,
     "religion": "orthodox",
     "active_event_id": "",
@@ -12287,9 +12572,11 @@
     "owner_id": "bulgarian_empire",
     "successor_faction_id": "bulgarian_empire",
     "neighbors": [
+      "area::area__128",
       "bulgaria",
       "danube_romania",
       "podolia",
+      "vicinia_minor",
       "wallachia",
       "west_black_sea"
     ],
@@ -12421,7 +12708,7 @@
     "owner_id": "polish_kingdom",
     "neighbors": [
       "area::area__115",
-      "belarus",
+      "area::area__131",
       "bessarabia",
       "kiev",
       "mazovia",
@@ -12459,6 +12746,7 @@
     "owner_id": "golden_horde",
     "successor_faction_id": "golden_horde",
     "neighbors": [
+      "area::area__131",
       "belarus",
       "galicia_volhynia",
       "lower_ukrainian_steppe",
@@ -12806,8 +13094,8 @@
       "east_marmara_sea",
       "khalkedon"
     ],
-    "world_x": 1068,
-    "world_y": 460,
+    "world_x": 1070,
+    "world_y": 463,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -12822,7 +13110,7 @@
     "trade_capacity": 2,
     "satisfaction": 62,
     "tax_rate": 30,
-    "population": 295,
+    "population": 365,
     "rural_population": 182,
     "religion": "orthodox",
     "active_event_id": "",
@@ -12843,7 +13131,8 @@
       "bosphorus",
       "bosphorus_approaches",
       "east_marmara_sea",
-      "nicomedia"
+      "nicomedia",
+      "riva"
     ],
     "world_x": 1064,
     "world_y": 453,
@@ -12868,6 +13157,44 @@
     "buildings": [
       "port",
       "walls",
+      "walls"
+    ]
+  },
+  {
+    "id": "riva",
+    "name": "Riva",
+    "name_tr": "Anadolu Kavağı",
+    "terrain": "coast",
+    "owner_id": "genoa",
+    "is_privileged": true,
+    "neighbors": [
+      "bosphorus",
+      "bosphorus_approaches",
+      "khalkedon"
+    ],
+    "world_x": 1062,
+    "world_y": 452,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_minor_region": true,
+    "parent_region_id": "khalkedon",
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 10,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 30,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "orthodox",
+    "active_event_id": "",
+    "buildings": [
       "walls"
     ]
   },
@@ -12926,6 +13253,7 @@
     "name_tr": "Paflagonya",
     "terrain": "coast",
     "owner_id": "candar_bey",
+    "successor_faction_id": "candar_bey",
     "neighbors": [
       "amasra",
       "area::area__69",
@@ -12961,7 +13289,11 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -13016,6 +13348,7 @@
       "cankiri",
       "central_black_sea",
       "paphlagonia",
+      "sinope_minor",
       "yozgat"
     ],
     "world_x": 1171,
@@ -13024,7 +13357,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 248,
+    "base_gold_income": 242,
     "base_grain_output": 30,
     "base_iron_output": 2,
     "base_timber_output": 24,
@@ -13034,7 +13367,7 @@
     "trade_capacity": 3,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 256,
+    "population": 244,
     "rural_population": 182,
     "religion": "sunni",
     "active_event_id": "",
@@ -13051,6 +13384,44 @@
       "farm",
       "farm",
       "farm"
+    ]
+  },
+  {
+    "id": "sinope_minor",
+    "name": "New Minor Region",
+    "name_tr": "Yeni Küçük Alt Bölge",
+    "terrain": "coast",
+    "owner_id": "genoa",
+    "is_privileged": true,
+    "neighbors": [
+      "central_black_sea",
+      "sinop"
+    ],
+    "world_x": 1177,
+    "world_y": 438,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_minor_region": true,
+    "parent_region_id": "sinop",
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 10,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 28,
+    "population": 12,
+    "rural_population": 0,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "port"
     ]
   },
   {
@@ -13098,6 +13469,7 @@
     "name_tr": "Akçakoca",
     "terrain": "coast",
     "owner_id": "genoa",
+    "is_privileged": true,
     "neighbors": [
       "bosphorus_approaches",
       "chrysopolis"
@@ -13107,7 +13479,6 @@
     "shape_id": "TUR",
     "is_sea": false,
     "is_minor_region": true,
-    "is_privileged": true,
     "parent_region_id": "chrysopolis",
     "is_locked": false,
     "unlock_turn": 0,
@@ -13476,29 +13847,68 @@
       "aegean_sea",
       "area::area__68",
       "mediterranean_open_6",
-      "north_macedonia",
-      "serres",
-      "thessaloniki_hinterland",
-      "vidin"
+      "serez",
+      "thessaloniki_hinterland"
     ],
-    "world_x": 956,
-    "world_y": 458,
+    "world_x": 948,
+    "world_y": 469,
     "shape_id": "GRC",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 73,
+    "base_gold_income": 58,
     "base_grain_output": 35,
-    "base_iron_output": 2,
+    "base_iron_output": 1,
     "base_timber_output": 8,
-    "base_stone_output": 17,
+    "base_stone_output": 8,
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
     "satisfaction": 72,
     "tax_rate": 20,
-    "population": 176,
-    "rural_population": 117,
+    "population": 129,
+    "rural_population": 70,
+    "religion": "orthodox",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "walls"
+    ]
+  },
+  {
+    "id": "serez",
+    "name": "Serez Region",
+    "name_tr": "Serez Bölgesi",
+    "terrain": "coast",
+    "owner_id": "east_rome",
+    "successor_faction_id": "east_rome",
+    "neighbors": [
+      "aegean_sea",
+      "area::area__68",
+      "chalcidice",
+      "north_macedonia",
+      "serres",
+      "thessaloniki_hinterland",
+      "vidin"
+    ],
+    "world_x": 954,
+    "world_y": 456,
+    "shape_id": "GRC",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 43,
+    "base_grain_output": 25,
+    "base_iron_output": 2,
+    "base_timber_output": 8,
+    "base_stone_output": 15,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 1,
+    "satisfaction": 72,
+    "tax_rate": 20,
+    "population": 52,
+    "rural_population": 52,
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
@@ -13516,8 +13926,8 @@
       "aegean_sea",
       "area::area__68",
       "bulgaria",
-      "chalcidice",
       "gallipoli",
+      "serez",
       "tekfurdagi",
       "thrace"
     ],
@@ -13550,6 +13960,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "area::area__11",
       "area::area__11::lorraine",
       "area::area__11::luxembourg",
       "area::area__11::walonia",
@@ -14008,6 +14419,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "area::area__135",
       "atlantic_open_6",
       "belgium_shore",
       "east_anglia",
@@ -14222,6 +14634,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "area::area__132",
+      "area::area__132::champagne",
+      "area::area__132::flanders",
       "champagne",
       "dover_strait",
       "east_anglia",
@@ -14867,7 +15282,8 @@
       "central_black_sea",
       "eretna",
       "kerch_strait",
-      "north_caucasus"
+      "north_caucasus",
+      "samsun_minor"
     ],
     "world_x": 1229,
     "world_y": 415,
@@ -15113,6 +15529,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "area::area__131",
       "belarus",
       "kiev",
       "lower_ukrainian_steppe",
@@ -15387,6 +15804,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "area::area__134",
+      "area::area__134::campania",
+      "area::area__134::lazio",
       "calabria",
       "campania",
       "ionian_sea",
@@ -15429,7 +15849,6 @@
       "genoa",
       "gulf_of_genoa",
       "northern_tyrrhenian_sea",
-      "provence",
       "sanremo"
     ],
     "world_x": 671,

@@ -71,14 +71,6 @@
     "region_id": "east_anglia",
     "settlements": [
       {
-        "id": "east_anglia_cambridge",
-        "name_tr": "Cambridge",
-        "x": 492,
-        "y": 241,
-        "type": "town",
-        "population": 23
-      },
-      {
         "id": "east_anglia_ipswich",
         "name_tr": "Ipswich",
         "x": 506,
@@ -94,6 +86,14 @@
         "type": "city",
         "is_center": true,
         "population": 43
+      },
+      {
+        "id": "east_anglia_cambridge",
+        "name_tr": "Cambridge",
+        "x": 492,
+        "y": 244,
+        "type": "fortress",
+        "population": 23
       }
     ]
   },
@@ -232,8 +232,8 @@
       {
         "id": "welsh_marches_leeds",
         "name_tr": "Leeds",
-        "x": 443,
-        "y": 218,
+        "x": 447,
+        "y": 219,
         "type": "town",
         "population": 11
       }
@@ -416,7 +416,6 @@
         "x": 523,
         "y": 310,
         "type": "city",
-        "is_center": true,
         "population": 80
       },
       {
@@ -426,6 +425,37 @@
         "y": 327,
         "type": "fortress",
         "population": 25
+      },
+      {
+        "id": "paris_orleans",
+        "name_tr": "Orleans",
+        "x": 517,
+        "y": 326,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "paris_amiens",
+        "name_tr": "Amiens",
+        "x": 520,
+        "y": 294,
+        "type": "town",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "auxerre_region",
+    "settlements": [
+      {
+        "id": "dijon_nevers",
+        "name_tr": "Nevers",
+        "x": 555,
+        "y": 348,
+        "type": "fortress",
+        "is_center": true,
+        "population": 13
       },
       {
         "id": "paris_auxerre",
@@ -569,43 +599,19 @@
     "region_id": "champagne",
     "settlements": [
       {
-        "id": "champagne_chalons",
-        "name_tr": "Chalons",
-        "x": 556,
-        "y": 309,
-        "type": "town",
-        "population": 23
-      },
-      {
-        "id": "champagne_main",
-        "name_tr": "Şampanya",
-        "x": 557,
-        "y": 318,
-        "type": "city",
-        "population": 44
-      },
-      {
-        "id": "champagne_reims",
-        "name_tr": "Reims",
-        "x": 551,
-        "y": 302,
-        "type": "city",
-        "is_center": true,
-        "population": 44
-      },
-      {
         "id": "champagne_sedan",
         "name_tr": "Sedan",
         "x": 570,
         "y": 292,
         "type": "fortress",
+        "is_center": true,
         "population": 11
       },
       {
         "id": "champagne_lille",
         "name_tr": "Lille",
-        "x": 547,
-        "y": 278,
+        "x": 543,
+        "y": 283,
         "type": "fortress",
         "population": 11
       },
@@ -616,6 +622,30 @@
         "y": 266,
         "type": "port",
         "population": 0
+      },
+      {
+        "id": "champagne_main",
+        "name_tr": "Şampanya",
+        "x": 557,
+        "y": 318,
+        "type": "city",
+        "population": 44
+      },
+      {
+        "id": "champagne_chalons",
+        "name_tr": "Chalons",
+        "x": 556,
+        "y": 309,
+        "type": "town",
+        "population": 23
+      },
+      {
+        "id": "champagne_reims",
+        "name_tr": "Reims",
+        "x": 551,
+        "y": 303,
+        "type": "city",
+        "population": 44
       }
     ]
   },
@@ -630,17 +660,12 @@
         "type": "fortress",
         "is_center": true,
         "population": 53
-      }
-    ]
-  },
-  {
-    "region_id": "dijon",
-    "settlements": [
+      },
       {
         "id": "dijon_main",
         "name_tr": "Dijon",
-        "x": 579,
-        "y": 340,
+        "x": 580,
+        "y": 338,
         "type": "city",
         "population": 54
       },
@@ -651,22 +676,19 @@
         "y": 350,
         "type": "town",
         "population": 28
-      },
-      {
-        "id": "dijon_nevers",
-        "name_tr": "Nevers",
-        "x": 555,
-        "y": 348,
-        "type": "fortress",
-        "is_center": true,
-        "population": 13
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "dijon",
+    "settlements": [
       {
         "id": "dijon_lyon",
         "name_tr": "Lyon",
         "x": 579,
         "y": 368,
         "type": "city",
+        "is_center": true,
         "population": 0
       }
     ]
@@ -1550,12 +1572,12 @@
         "population": 98
       },
       {
-        "id": "lazio_capua",
-        "name_tr": "Capua",
-        "x": 756,
-        "y": 452,
-        "type": "fortress",
-        "population": 24
+        "id": "siena_states_viterbo",
+        "name_tr": "Viterbo",
+        "x": 729,
+        "y": 437,
+        "type": "town",
+        "population": 42
       }
     ]
   },
@@ -1654,6 +1676,14 @@
         "y": 467,
         "type": "town",
         "population": 12
+      },
+      {
+        "id": "lazio_capua",
+        "name_tr": "Capua",
+        "x": 757,
+        "y": 454,
+        "type": "fortress",
+        "population": 24
       }
     ]
   },
@@ -1780,6 +1810,7 @@
         "x": 871,
         "y": 278,
         "type": "fortress",
+        "is_center": true,
         "population": 65
       },
       {
@@ -1788,7 +1819,6 @@
         "x": 886,
         "y": 238,
         "type": "city",
-        "is_center": true,
         "population": 262
       }
     ]
@@ -2004,6 +2034,20 @@
         "y": 399,
         "type": "fortress",
         "population": 23
+      }
+    ]
+  },
+  {
+    "region_id": "vicinia_minor",
+    "settlements": [
+      {
+        "id": "vicinia_minor_port",
+        "name_tr": "Vicinia",
+        "x": 1028,
+        "y": 396,
+        "type": "port",
+        "is_center": true,
+        "population": 0
       }
     ]
   },
@@ -2513,26 +2557,10 @@
       {
         "id": "bursa_prusa",
         "name_tr": "Prusa",
-        "x": 1052,
-        "y": 474,
+        "x": 1056,
+        "y": 473,
         "type": "city",
         "is_center": true,
-        "population": 70
-      },
-      {
-        "id": "bursa_nicaea",
-        "name_tr": "Neapolis",
-        "x": 1060,
-        "y": 477,
-        "type": "town",
-        "population": 47
-      },
-      {
-        "id": "bursa_iznik",
-        "name_tr": "Nicaea",
-        "x": 1060,
-        "y": 467,
-        "type": "fortress",
         "population": 70
       }
     ]
@@ -4388,13 +4416,19 @@
         "type": "town",
         "is_center": true,
         "population": 36
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "galata_minor",
+    "settlements": [
       {
         "id": "galata_galata",
         "name_tr": "Galata",
-        "x": 1057,
-        "y": 453,
+        "x": 1059,
+        "y": 454,
         "type": "port",
+        "is_center": true,
         "population": 36
       }
     ]
@@ -4631,8 +4665,8 @@
       {
         "id": "flanders_brugge",
         "name_tr": "Brugge",
-        "x": 542,
-        "y": 265,
+        "x": 541,
+        "y": 264,
         "type": "port",
         "is_center": true,
         "population": 93
@@ -4640,8 +4674,8 @@
       {
         "id": "flanders_ghent",
         "name_tr": "Gent",
-        "x": 556,
-        "y": 267,
+        "x": 554,
+        "y": 266,
         "type": "city",
         "population": 122
       },
@@ -5224,13 +5258,27 @@
         "y": 469,
         "type": "port",
         "population": 52
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "bozcaada",
+    "settlements": [
       {
         "id": "karesi_bozcaada",
         "name_tr": "Bozcaada",
-        "x": 998,
-        "y": 479,
-        "type": "town",
+        "x": 993,
+        "y": 474,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "bozcaada_settlement_2",
+        "name_tr": "Liman",
+        "x": 999,
+        "y": 480,
+        "type": "port",
         "population": 0
       }
     ]
@@ -5360,6 +5408,28 @@
         "y": 445,
         "type": "town",
         "population": 24
+      }
+    ]
+  },
+  {
+    "region_id": "samsun_minor",
+    "settlements": [
+      {
+        "id": "samsun_minor_port",
+        "name_tr": "Liman",
+        "x": 1208,
+        "y": 448,
+        "type": "port",
+        "population": 0
+      },
+      {
+        "id": "samsun_minor_castle",
+        "name_tr": "Simisso Kalesi",
+        "x": 1213,
+        "y": 450,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
       }
     ]
   },
@@ -6836,14 +6906,6 @@
         "population": 42
       },
       {
-        "id": "siena_states_viterbo",
-        "name_tr": "Viterbo",
-        "x": 729,
-        "y": 437,
-        "type": "town",
-        "population": 42
-      },
-      {
         "id": "siena_piombino",
         "name_tr": "Piombino",
         "x": 698,
@@ -6890,20 +6952,26 @@
         "population": 47
       },
       {
-        "id": "apulia_otranto",
-        "name_tr": "Otranto",
-        "x": 845,
-        "y": 474,
-        "type": "fortress",
-        "population": 20
-      },
-      {
         "id": "apulia_cannae",
         "name_tr": "Cannae",
         "x": 804,
         "y": 453,
         "type": "town",
         "population": 10
+      }
+    ]
+  },
+  {
+    "region_id": "otranto_minor",
+    "settlements": [
+      {
+        "id": "apulia_otranto",
+        "name_tr": "Otranto",
+        "x": 845,
+        "y": 474,
+        "type": "fortress",
+        "is_center": true,
+        "population": 20
       }
     ]
   },
@@ -7190,14 +7258,6 @@
         "y": 498,
         "type": "city",
         "population": 19
-      },
-      {
-        "id": "thessaly_trikala",
-        "name_tr": "Tırhala",
-        "x": 910,
-        "y": 483,
-        "type": "town",
-        "population": 9
       }
     ]
   },
@@ -7258,6 +7318,14 @@
         "y": 460,
         "type": "town",
         "population": 147
+      },
+      {
+        "id": "thessaly_trikala",
+        "name_tr": "Tırhala",
+        "x": 909,
+        "y": 482,
+        "type": "town",
+        "population": 9
       }
     ]
   },
@@ -7763,24 +7831,16 @@
       {
         "id": "nicomedia_nicomedia",
         "name_tr": "Nikomedia",
-        "x": 1073,
+        "x": 1076,
         "y": 460,
         "type": "city",
         "population": 32
       },
       {
-        "id": "nicomedia_hereke",
-        "name_tr": "Hereke",
-        "x": 1066,
-        "y": 459,
-        "type": "port",
-        "population": 22
-      },
-      {
         "id": "nicomedia_izmit_castle",
         "name_tr": "İzmit Kalesi",
-        "x": 1070,
-        "y": 458,
+        "x": 1071,
+        "y": 460,
         "type": "fortress",
         "is_center": true,
         "population": 7
@@ -7792,6 +7852,22 @@
         "y": 463,
         "type": "port",
         "population": 52
+      },
+      {
+        "id": "bursa_nicaea",
+        "name_tr": "Nicaea",
+        "x": 1074,
+        "y": 467,
+        "type": "fortress",
+        "population": 70
+      },
+      {
+        "id": "nicomedia_hereke",
+        "name_tr": "Hereke",
+        "x": 1066,
+        "y": 460,
+        "type": "port",
+        "population": 22
       }
     ]
   },
@@ -7801,19 +7877,33 @@
       {
         "id": "khalkedon_chalcedon",
         "name_tr": "Khalkedon",
-        "x": 1060,
-        "y": 457,
+        "x": 1059,
+        "y": 458,
         "type": "port",
         "population": 22
       },
       {
         "id": "khalkedon_scutari",
         "name_tr": "Scutari",
-        "x": 1061,
-        "y": 454,
+        "x": 1060,
+        "y": 455,
         "type": "town",
         "is_center": true,
         "population": 15
+      }
+    ]
+  },
+  {
+    "region_id": "riva",
+    "settlements": [
+      {
+        "id": "riva_yoros",
+        "name_tr": "Yoros",
+        "x": 1062,
+        "y": 452,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
       }
     ]
   },
@@ -7905,19 +7995,11 @@
       {
         "id": "sinop_sinop",
         "name_tr": "Sinop",
-        "x": 1174,
-        "y": 438,
+        "x": 1172,
+        "y": 439,
         "type": "town",
-        "population": 26
-      },
-      {
-        "id": "sinop_castle",
-        "name_tr": "Sinop Kalesi",
-        "x": 1178,
-        "y": 438,
-        "type": "fortress",
         "is_center": true,
-        "population": 12
+        "population": 26
       },
       {
         "id": "sinop_taskopru",
@@ -7934,6 +8016,28 @@
         "y": 448,
         "type": "fortress",
         "population": 12
+      }
+    ]
+  },
+  {
+    "region_id": "sinope_minor",
+    "settlements": [
+      {
+        "id": "sinop_castle",
+        "name_tr": "Sinop Kalesi",
+        "x": 1176,
+        "y": 437,
+        "type": "fortress",
+        "is_center": true,
+        "population": 12
+      },
+      {
+        "id": "sinope_minor_port",
+        "name_tr": "Liman",
+        "x": 1180,
+        "y": 439,
+        "type": "port",
+        "population": 0
       }
     ]
   },
@@ -8242,6 +8346,10 @@
         "population": 9
       }
     ]
+  },
+  {
+    "region_id": "serez",
+    "settlements": null
   },
   {
     "region_id": "serres",
