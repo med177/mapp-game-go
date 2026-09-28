@@ -22,6 +22,20 @@ func TestLoadMinorRegionPolygonsTreatsEmptyJSONAsNoPolygons(t *testing.T) {
 	}
 }
 
+func TestMinorRegionDoesNotAutoAssignSuccessorFaction(t *testing.T) {
+	minor := &world.Region{
+		ID: "akçakoca", OwnerID: "genoa", IsMinorRegion: true,
+		Settlements: []world.Settlement{{Type: world.SettlementFortress, IsCenter: true}},
+	}
+
+	if setRegionSuccessorToOwner(minor) {
+		t.Fatal("minor bölge için ardıl devlet otomatik atandı")
+	}
+	if minor.SuccessorFactionID != "" {
+		t.Fatalf("minor bölgenin ardıl devleti boş kalmadı: %q", minor.SuccessorFactionID)
+	}
+}
+
 func TestNextMinorRegionIDUsesMinorPrefix(t *testing.T) {
 	gs := &state.GameState{Regions: map[world.RegionID]*world.Region{
 		"parent":             {ID: "parent"},

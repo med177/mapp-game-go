@@ -7852,14 +7852,6 @@
         "population": 7
       },
       {
-        "id": "paphlagonia_amastris",
-        "name_tr": "Amasra",
-        "x": 1114,
-        "y": 448,
-        "type": "port",
-        "population": 21
-      },
-      {
         "id": "paphlagonia_inebolu",
         "name_tr": "İnebolu",
         "x": 1139,
@@ -7882,6 +7874,28 @@
         "y": 451,
         "type": "town",
         "population": 14
+      }
+    ]
+  },
+  {
+    "region_id": "amasra",
+    "settlements": [
+      {
+        "id": "paphlagonia_amastris",
+        "name_tr": "Amasra",
+        "x": 1126,
+        "y": 441,
+        "type": "port",
+        "is_center": true,
+        "population": 21
+      },
+      {
+        "id": "amasra_castle",
+        "name_tr": "Amasra Kalesi",
+        "x": 1122,
+        "y": 443,
+        "type": "fortress",
+        "population": 0
       }
     ]
   },
@@ -7946,8 +7960,26 @@
     ]
   },
   {
-    "region_id": "new_region_527",
-    "settlements": null
+    "region_id": "akcakoca",
+    "settlements": [
+      {
+        "id": "akcakoca_castle",
+        "name_tr": "Akçakoca Kalesi",
+        "x": 1104,
+        "y": 453,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "akcakoca_port",
+        "name_tr": "Liman",
+        "x": 1097,
+        "y": 453,
+        "type": "port",
+        "population": 0
+      }
+    ]
   },
   {
     "region_id": "novgorod",

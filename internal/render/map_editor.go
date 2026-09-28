@@ -5349,7 +5349,7 @@ func syncRegionSuccessorToOwner(region *world.Region) bool {
 }
 
 func setRegionSuccessorToOwner(region *world.Region) bool {
-	if region == nil || region.OwnerID == "" || region.SuccessorFactionID == region.OwnerID {
+	if region == nil || region.IsMinorRegion || region.OwnerID == "" || region.SuccessorFactionID == region.OwnerID {
 		return false
 	}
 	region.SuccessorFactionID = region.OwnerID

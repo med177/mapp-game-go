@@ -3585,7 +3585,7 @@
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
-    "unlock_turn": 10,
+    "unlock_turn": 0,
     "base_gold_income": 136,
     "base_grain_output": 50,
     "base_iron_output": 2,
@@ -3628,7 +3628,7 @@
     "shape_id": "CRM",
     "is_sea": false,
     "is_locked": false,
-    "unlock_turn": 10,
+    "unlock_turn": 0,
     "base_gold_income": 114,
     "base_grain_output": 160,
     "base_iron_output": 2,
@@ -3674,7 +3674,7 @@
     "shape_id": "CRM",
     "is_sea": false,
     "is_locked": false,
-    "unlock_turn": 10,
+    "unlock_turn": 0,
     "base_gold_income": 80,
     "base_grain_output": 75,
     "base_iron_output": 2,
@@ -3717,7 +3717,7 @@
     "shape_id": "CRM",
     "is_sea": false,
     "is_locked": false,
-    "unlock_turn": 10,
+    "unlock_turn": 0,
     "base_gold_income": 220,
     "base_grain_output": 45,
     "base_iron_output": 2,
@@ -4952,7 +4952,7 @@
     "world_y": 732,
     "shape_id": "SAU",
     "is_sea": false,
-    "is_locked": true,
+    "is_locked": false,
     "unlock_turn": 0,
     "base_gold_income": 147,
     "base_grain_output": 10,
@@ -6629,6 +6629,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "amasra",
       "area::area__69",
       "black_sea",
       "bosphorus_approaches",
@@ -7118,6 +7119,7 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "akcakoca",
       "black_sea",
       "blacksea_inebolu",
       "bosphorus",
@@ -7125,7 +7127,6 @@
       "chrysopolis",
       "galata",
       "khalkedon",
-      "new_region_527",
       "nicomedia",
       "silivri",
       "west_black_sea"
@@ -12926,6 +12927,7 @@
     "terrain": "coast",
     "owner_id": "candar_bey",
     "neighbors": [
+      "amasra",
       "area::area__69",
       "blacksea_inebolu",
       "cankiri",
@@ -12948,7 +12950,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 28,
-    "population": 220,
+    "population": 199,
     "rural_population": 143,
     "religion": "sunni",
     "active_event_id": "",
@@ -12960,6 +12962,44 @@
       "farm",
       "farm",
       "farm"
+    ]
+  },
+  {
+    "id": "amasra",
+    "name": "Amasra",
+    "name_tr": "Amasra",
+    "terrain": "coast",
+    "owner_id": "genoa",
+    "is_privileged": true,
+    "neighbors": [
+      "blacksea_inebolu",
+      "paphlagonia"
+    ],
+    "world_x": 1124,
+    "world_y": 443,
+    "shape_id": "TUR",
+    "is_sea": false,
+    "is_minor_region": true,
+    "parent_region_id": "paphlagonia",
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 10,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 28,
+    "population": 21,
+    "rural_population": 0,
+    "religion": "sunni",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "walls"
     ]
   },
   {
@@ -13020,12 +13060,12 @@
     "terrain": "coast",
     "owner_id": "east_rome",
     "neighbors": [
+      "akcakoca",
       "aksaray",
       "bilecik_frontier",
       "blacksea_inebolu",
       "bosphorus_approaches",
       "cankiri",
-      "new_region_527",
       "nicomedia",
       "paphlagonia",
       "sivrihisar"
@@ -13053,16 +13093,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_527",
-    "name": "New Minor Region",
-    "name_tr": "Yeni Küçük Alt Bölge",
+    "id": "akcakoca",
+    "name": "Akcakoca",
+    "name_tr": "Akçakoca",
     "terrain": "coast",
     "owner_id": "genoa",
     "neighbors": [
       "bosphorus_approaches",
       "chrysopolis"
     ],
-    "world_x": 1101,
+    "world_x": 1100,
     "world_y": 455,
     "shape_id": "TUR",
     "is_sea": false,
@@ -13084,7 +13124,10 @@
     "rural_population": 0,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "port"
+    ]
   },
   {
     "id": "novgorod",

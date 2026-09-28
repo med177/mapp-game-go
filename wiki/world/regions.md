@@ -81,6 +81,10 @@ sahibiyle doğrudan savaş başlatmaz; kullanım sahibiyle ilişkiyi 10 puan aza
 `is_privileged=false` olduğunda alt bölge normal bölge gibi doğrudan `OwnerID`
 sahibine aittir.
 
+Minor bölgelerde `successor_faction_id` Edit Mode tarafından otomatik doldurulmaz;
+yeni minor kayıtlarında alan boş/eksik kalır. Kullanıcı `Ardıl Devlet` seçerse
+alan o zaman açıkça doldurulabilir.
+
 `WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_center` ile seçilir. Bu alan hiçbir yerleşimde yoksa runtime merkezi sırasıyla kale, şehir, kasaba ve liman tiplerinden seçer ve seçimi `is_center` olarak tamamlar. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
 
 ```go
