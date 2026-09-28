@@ -46,6 +46,37 @@ func TestPrivilegedMinorUsesParentOwnerAndSplitsIncome(t *testing.T) {
 	}
 }
 
+func TestPrivilegedMinorFollowsParentOwnerChangeForIncomeAndRevoke(t *testing.T) {
+	parent := &world.Region{ID: "constantinople", OwnerID: "east_rome"}
+	minor := &world.Region{
+		ID: "galata", OwnerID: "genoa", IsMinorRegion: true,
+		IsPrivileged: true, ParentRegionID: parent.ID,
+	}
+	gs := &GameState{
+		PlayerFactionID: "venice",
+		Regions: map[world.RegionID]*world.Region{
+			parent.ID: parent,
+			minor.ID:  minor,
+		},
+	}
+
+	parent.OwnerID = "venice"
+	if got := gs.SovereignOwnerID(minor); got != "venice" {
+		t.Fatalf("üst bölge el değiştirince minor egemen sahibi = %q, venice bekleniyordu", got)
+	}
+	sovereign, operator := gs.RegionIncomeShares(minor, 100)
+	if sovereign != 50 || operator != 50 {
+		t.Fatalf("yeni egemenin minor geliri = (%d, %d), (50, 50) bekleniyordu", sovereign, operator)
+	}
+	if !gs.CanRevokeMinorPrivilege(minor.ID) {
+		t.Fatalf("üst bölgeyi alan yeni devlet imtiyazı kaldırabilir görünmüyor: %s", gs.MinorPrivilegeRevokeBlockReason(minor.ID))
+	}
+	gs.PlayerFactionID = "east_rome"
+	if gs.CanRevokeMinorPrivilege(minor.ID) {
+		t.Fatal("eski üst bölge sahibi imtiyazı kaldırabilir görünmeye devam ediyor")
+	}
+}
+
 func TestNonPrivilegedMinorRemainsOwnedByOwnerID(t *testing.T) {
 	parent := &world.Region{ID: "constantinople", OwnerID: "east_rome"}
 	minor := &world.Region{

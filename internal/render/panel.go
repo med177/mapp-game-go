@@ -4005,7 +4005,7 @@ func visibleBuildingIDs(gs *state.GameState, region *world.Region) []string {
 		if !ok {
 			continue
 		}
-		if region.IsMinorRegion && builtCount[bid] == 0 && !region.AllowsBuilding(bid) {
+		if region.IsMinorRegion && builtCount[bid] == 0 && !region.AllowsBuilding(bid, b.MinorRegions) {
 			continue
 		}
 		if builtCount[bid] > 0 || buildingVisibleByRegionRules(gs, region, bid, b) {
@@ -5331,13 +5331,11 @@ func buildRegionRevokePrivilegeButton(px, py, pw, ph float32) gameui.Button {
 func regionTaxButtonRects(gs *state.GameState, rid world.RegionID) ([4]float32, [4]float32) {
 	px := infoPanelX()
 	pw := infoPanelW
-	ownerID := ""
+	var region *world.Region
 	if gs != nil && rid != "" {
-		if region := gs.Regions[rid]; region != nil {
-			ownerID = region.OwnerID
-		}
+		region = gs.Regions[rid]
 	}
-	ly := regionPanelStatRowsStartY(gs, ownerID)
+	ly := regionPanelStatRowsStartY(gs, region)
 	y := float32(ly + regionPanelStatRowGap + (regionPanelStatRowGap-float64(regionPanelTaxButtonH))/2 - 1)
 	contentRight := px + pw - float32(panelPad)
 	incX := contentRight - regionPanelTaxButtonW
@@ -5345,10 +5343,10 @@ func regionTaxButtonRects(gs *state.GameState, rid world.RegionID) ([4]float32, 
 	return [4]float32{decX, y, regionPanelTaxButtonW, regionPanelTaxButtonH}, [4]float32{incX, y, regionPanelTaxButtonW, regionPanelTaxButtonH}
 }
 
-func regionPanelStatRowsStartY(gs *state.GameState, ownerID string) float64 {
+func regionPanelStatRowsStartY(gs *state.GameState, region *world.Region) float64 {
 	ly := float64(infoPanelY()) + 10
 	ly += 24
-	ly += regionOwnerBlockHeight(gs, ownerID)
+	ly += regionPanelOwnerBlockHeight(gs, region)
 	if gs.DevelopmentMode {
 		ly += 34
 	}
@@ -5446,7 +5444,7 @@ func regionGoldProductionRect(gs *state.GameState, rid world.RegionID) (gameui.R
 	px := float64(infoPanelX()) + panelPad
 	width := float64(infoPanelW) - panelPad*2
 	colW := (width - 14) / 2
-	y := regionPanelStatRowsStartY(gs, region.OwnerID) - regionPanelStatRowGap*4
+	y := regionPanelStatRowsStartY(gs, region) - regionPanelStatRowGap*4
 	return gameui.Rect{X: px, Y: y, W: colW, H: regionPanelStatRowGap}, true
 }
 
@@ -5461,7 +5459,7 @@ func regionPanelLogisticsRect(gs *state.GameState, rid world.RegionID) (gameui.R
 	if _, ok := regionPanelLogisticsStatus(gs, region); !ok {
 		return gameui.Rect{}, false
 	}
-	y := regionPanelStatRowsStartY(gs, region.OwnerID) + regionPanelStatRowGap*2
+	y := regionPanelStatRowsStartY(gs, region) + regionPanelStatRowGap*2
 	if gs.RegionBlockadeEconomicEffect(region).BlockadePercent > 0 {
 		y += 16
 	}
@@ -5546,7 +5544,7 @@ func buildingVisibleInRegion(gs *state.GameState, region *world.Region, bid stri
 }
 
 func buildingVisibleByRegionRules(gs *state.GameState, region *world.Region, bid string, b *city.Building) bool {
-	if !region.AllowsBuilding(bid) {
+	if !region.AllowsBuilding(bid, b.MinorRegions) {
 		return false
 	}
 	if bid == "port" && !region.IsCoastal(gs.Regions) {
@@ -5565,7 +5563,7 @@ func buildingGridStartY(gs *state.GameState, region *world.Region, _ bool) float
 	py := infoPanelY()
 	ly := float64(py) + 10
 	ly += 24
-	ly += regionOwnerBlockHeight(gs, region.OwnerID)
+	ly += regionPanelOwnerBlockHeight(gs, region)
 	if gs.DevelopmentMode {
 		ly += 34
 	}
@@ -5926,6 +5924,25 @@ func regionOwnerBlockHeight(gs *state.GameState, ownerID string) float64 {
 		height += regionVassalInfoH
 	}
 	if _, _, ok := vassalTributeDisplay(gs, ownerID); ok {
+		height += regionVassalInfoH
+	}
+	return height
+}
+
+// regionPanelOwnerBlockHeight, panel çiziminde sahibi izleyen tüm durum
+// satırlarının ortak yüksekliğidir. İmtiyazlı minor bölgelerde kullanım sahibi
+// satırı da bu bloğa dahildir; böylece alt içerik ve hit-test çizilen panelle
+// aynı başlangıç Y'sini kullanır.
+func regionPanelOwnerBlockHeight(gs *state.GameState, region *world.Region) float64 {
+	if region == nil {
+		return 0
+	}
+	sovereignOwnerID := region.OwnerID
+	if gs != nil {
+		sovereignOwnerID = gs.SovereignOwnerID(region)
+	}
+	height := regionOwnerBlockHeight(gs, sovereignOwnerID)
+	if region.IsMinorRegion && region.IsPrivileged && region.OwnerID != "" && region.OwnerID != sovereignOwnerID {
 		height += regionVassalInfoH
 	}
 	return height

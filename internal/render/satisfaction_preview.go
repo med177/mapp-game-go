@@ -43,7 +43,7 @@ func regionPanelSatisfactionRowY(gs *state.GameState, region *world.Region) floa
 	if gs == nil || region == nil {
 		return 0
 	}
-	y := regionPanelStatRowsStartY(gs, region.OwnerID)
+	y := regionPanelStatRowsStartY(gs, region)
 	if gs.RegionBlockadeEconomicEffect(region).BlockadePercent > 0 {
 		y += 16
 	}

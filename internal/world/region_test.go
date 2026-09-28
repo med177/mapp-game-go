@@ -34,7 +34,7 @@ func TestNewMinorRegionFromParentUsesIndependentLowIncomeDefaults(t *testing.T) 
 	}
 }
 
-func TestMinorRegionAllowsOnlyFortressPortAndWallsInfrastructure(t *testing.T) {
+func TestMinorRegionUsesBuildingMinorRegionsFlag(t *testing.T) {
 	minor := &Region{IsMinorRegion: true}
 	for _, typ := range []SettlementType{SettlementFortress, SettlementPort} {
 		if !minor.AllowsSettlementType(typ) {
@@ -46,11 +46,14 @@ func TestMinorRegionAllowsOnlyFortressPortAndWallsInfrastructure(t *testing.T) {
 			t.Fatalf("küçük alt bölge %q tipini kabul etti", typ)
 		}
 	}
-	if !minor.AllowsBuilding("walls") || !minor.AllowsBuilding("port") {
-		t.Fatal("kale/liman altyapısı reddedildi")
+	if !minor.AllowsBuilding("walls", true) || !minor.AllowsBuilding("port", true) {
+		t.Fatal("minor_regions=true olan bina reddedildi")
 	}
-	if minor.AllowsBuilding("market") {
-		t.Fatal("küçük alt bölge pazar binasını kabul etti")
+	if minor.AllowsBuilding("market", false) {
+		t.Fatal("minor_regions=false olan bina reddedildi")
+	}
+	if !minor.AllowsBuilding("market", true) {
+		t.Fatal("minor_regions=true olan bina kabul edilmedi")
 	}
 	minor.Settlements = []Settlement{{Type: SettlementFortress}}
 	if !EnsureRequiredSettlementBuildings(minor, true) || len(minor.Buildings) != 1 || minor.Buildings[0] != "walls" {
@@ -58,24 +61,28 @@ func TestMinorRegionAllowsOnlyFortressPortAndWallsInfrastructure(t *testing.T) {
 	}
 }
 
-func TestMinorRegionCapsWallsAndPortAtLevelOne(t *testing.T) {
+func TestMinorRegionUsesScenarioPrivilegeBuildingLevelCap(t *testing.T) {
 	minor := &Region{IsMinorRegion: true, IsPrivileged: true}
 	ordinaryMinor := &Region{IsMinorRegion: true}
 	normal := &Region{}
+	privilegedMaxLevel := 3
 
 	for _, buildingID := range []string{"walls", "port"} {
-		if got := minor.BuildingLevelCap(buildingID, 5); got != MinorRegionMaxInfrastructureLevel {
-			t.Fatalf("minor %s seviye tavanı = %d, %d bekleniyordu", buildingID, got, MinorRegionMaxInfrastructureLevel)
+		if got := minor.BuildingLevelCap(buildingID, 5, true, privilegedMaxLevel); got != privilegedMaxLevel {
+			t.Fatalf("minor %s seviye tavanı = %d, %d bekleniyordu", buildingID, got, privilegedMaxLevel)
 		}
-		if got := normal.BuildingLevelCap(buildingID, 5); got != 5 {
+		if got := normal.BuildingLevelCap(buildingID, 5, true, privilegedMaxLevel); got != 5 {
 			t.Fatalf("normal %s seviye tavanı = %d, 5 bekleniyordu", buildingID, got)
 		}
-		if got := ordinaryMinor.BuildingLevelCap(buildingID, 5); got != 5 {
+		if got := ordinaryMinor.BuildingLevelCap(buildingID, 5, true, privilegedMaxLevel); got != 5 {
 			t.Fatalf("imtiyazsız minor %s seviye tavanı = %d, 5 bekleniyordu", buildingID, got)
 		}
 	}
-	if got := minor.BuildingLevelCap("market", 3); got != 3 {
+	if got := minor.BuildingLevelCap("market", 3, false, privilegedMaxLevel); got != 3 {
 		t.Fatalf("minor market seviye tavanı = %d, tanım tavanı 3 bekleniyordu", got)
+	}
+	if got := minor.BuildingLevelCap("granary", 5, true, privilegedMaxLevel); got != privilegedMaxLevel {
+		t.Fatalf("minor_regions=true granary seviye tavanı = %d, %d bekleniyordu", got, privilegedMaxLevel)
 	}
 }
 

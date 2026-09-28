@@ -37,6 +37,26 @@ func TestLoadRequiresValidPeriod(t *testing.T) {
 	}
 }
 
+func TestLoadReadsPrivilegedBuildingMaxLevel(t *testing.T) {
+	dir := t.TempDir()
+	dataDir := filepath.Join(dir, "data")
+	if err := os.Mkdir(dataDir, 0o700); err != nil {
+		t.Fatalf("data klasörü oluşturulamadı: %v", err)
+	}
+	content := []byte(`{"id":"test","name":"Test","period":"medieval","privileged_building_max_level":3}`)
+	if err := os.WriteFile(filepath.Join(dataDir, "scenario.json"), content, 0o600); err != nil {
+		t.Fatalf("scenario.json yazılamadı: %v", err)
+	}
+
+	definition, err := Load(dir)
+	if err != nil {
+		t.Fatalf("Load() hatası: %v", err)
+	}
+	if definition.PrivilegedBuildingMaxLevel != 3 {
+		t.Fatalf("imtiyazlı bina seviye tavanı = %d, 3 bekleniyordu", definition.PrivilegedBuildingMaxLevel)
+	}
+}
+
 func TestLoadPoliticalTransformationsValidatesUnionMetadata(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "political_transformations.json")

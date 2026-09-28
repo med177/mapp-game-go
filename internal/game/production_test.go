@@ -29,12 +29,14 @@ func TestCompleteBuildingAddsNamedPortSettlementToMinorRegion(t *testing.T) {
 		WorldY: 200,
 	}
 	gs := &state.GameState{
+		PrivilegedBuildingMaxLevel: 1,
 		Regions: map[world.RegionID]*world.Region{
 			minor.ID: minor,
 			sea.ID:   sea,
 		},
 		BuildingTypes: map[string]*city.Building{
-			"port": {ID: "port", MaxPerRegion: 3},
+			"port":   {ID: "port", MaxPerRegion: 3, MinorRegions: true},
+			"market": {ID: "market", MaxPerRegion: 3},
 		},
 	}
 
@@ -54,6 +56,9 @@ func TestCompleteBuildingAddsNamedPortSettlementToMinorRegion(t *testing.T) {
 	}
 	if g.completeBuilding(minor, "port") {
 		t.Fatal("minor bölge ikinci liman seviyesini tamamladı; seviye 1 tavanı aşılmamalı")
+	}
+	if g.completeBuilding(minor, "market") {
+		t.Fatal("minor_regions=false olan bina minor bölgede tamamlandı")
 	}
 }
 

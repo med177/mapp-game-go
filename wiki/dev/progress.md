@@ -22,9 +22,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   kullanıyor; poligon çizilmeden merkez odağı gösterilmiyor ve çizim bitince
   geometrik orta nokta otomatik atanıyor.
 
-- 2026-09-28: İmtiyazlı minor bölgelerde kale (`walls`) ve liman (`port`)
-  binaları için ortak seviye tavanı 1 yapıldı; oyuncu, üretim tamamlanması,
-  tooltip/kart ve AI kontrolleri aynı bölge kuralını kullanıyor.
+- 2026-09-28: Minor bölge bina izinleri artık bina tanımındaki
+  `minor_regions` alanından okunuyor; `1300_ottoman_rise` verisindeki
+  `walls`, `granary` ve `port` işaretleri oyuncu inşası, üretim tamamlanması,
+  tooltip/kart ve AI kontrollerinde ortak kullanılıyor. İmtiyazlı minor
+  bölgelerde işaretli binaların seviye tavanı senaryodaki
+  `privileged_building_max_level` alanından okunuyor.
 
 - 2026-09-28: İmtiyazlı minor bölgeler egemen ve kullanım sahibi devletlerin UI
   bölge listelerinde görünür hale getirildi. Egemen devlet için bölge paneline
@@ -32,6 +35,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   ancak savaş başlatmaz. Bölge egemen devlete devredilir, yabancı ordular
   tahliye edilir; kullanım sahibinin son toprağıysa devlet elenir ve birlikleri
   silinir.
+
+- 2026-09-28: AI imtiyazlı minor bölgelerde egemen/işletmeci ayrımını kullanıyor.
+  Bütçe, gelir ve bina yatırım getirileri gerçek %50 gelir payına göre
+  hesaplanıyor; stratejik sahiplik üst bölgenin güncel sahibinden çözülüyor.
+  Egemen AI yüksek getirili ve düşük ilişkili imtiyazları kaldırabiliyor;
+  bölge devri, kuvvet tahliyesi ve gerekirse işletmeci devlet eliminasyonu AI
+  akışında da uygulanıyor. Müttefik/yüksek ilişkili işletmecilerin imtiyazı
+  korunuyor.
 
 - 2026-09-28: Kara birimi üretimi tüm bölgelerde `barracks` seviyesine bağlandı;
   kışlasız bölgelerde temel milis de üretilemiyor. Yalnız `port` bulunan

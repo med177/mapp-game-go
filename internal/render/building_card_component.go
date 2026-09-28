@@ -93,7 +93,7 @@ func buildBuildingCardComponents(gs *state.GameState, region *world.Region, pane
 		canAfford := false
 		if hasDef {
 			name = b.NameTR
-			if configuredMax := region.BuildingLevelCap(bid, b.MaxPerRegion); configuredMax > 0 {
+			if configuredMax := gs.BuildingLevelCap(region, bid); configuredMax > 0 {
 				maxLevel = configuredMax
 			}
 			if regionBuildingActionsAvailable(gs, region) {

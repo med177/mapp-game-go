@@ -8,6 +8,7 @@
   "turn_months": 3,
   "year": 1310,
   "month": 3,
+  "privileged_building_max_level": 1,
   "diplomacy": {
     "relation_improvement_gold_cost": 1000,
     "relation_improvement_bonus": 5,

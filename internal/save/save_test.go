@@ -25,6 +25,9 @@ func TestLoadScenarioBaseStateLoadsTerrainAreas(t *testing.T) {
 	if len(gs.TerrainAreas) == 0 {
 		t.Fatal("scenario terrain areas were not loaded")
 	}
+	if got, want := gs.PrivilegedBuildingMaxLevel, 1; got != want {
+		t.Fatalf("imtiyazlı bina seviye tavanı = %d, %d bekleniyordu", got, want)
+	}
 	for _, area := range gs.TerrainAreas {
 		if gs.Regions[world.TerrainAreaRegionID(area.ID)] == nil {
 			t.Fatalf("runtime terrain region for %q was not created", area.ID)

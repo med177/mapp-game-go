@@ -2701,8 +2701,8 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 	if !ok {
 		return
 	}
-	if !region.AllowsBuilding(buildingID) {
-		g.renderer.ShowCombatResult("Küçük alt bölgelerde yalnızca kale ve liman altyapısı kullanılabilir.")
+	if !region.AllowsBuilding(buildingID, b.MinorRegions) {
+		g.renderer.ShowCombatResult("Bu bina küçük alt bölgelerde kullanılamaz.")
 		return
 	}
 	if buildingID == "port" && !region.IsCoastal(g.gs.Regions) {
@@ -2714,7 +2714,7 @@ func (g *Game) buildBuilding(rid world.RegionID, buildingID string) {
 		g.renderer.ShowCombatResult(b.NameTR + " sadece " + b.RequiredTerrain + " arazisine yapılır!")
 		return
 	}
-	maxLevel := region.BuildingLevelCap(buildingID, b.MaxPerRegion)
+	maxLevel := g.gs.BuildingLevelCap(region, buildingID)
 	// Maks seviye kontrolü
 	count := 0
 	for _, bid := range region.Buildings {
@@ -2948,10 +2948,9 @@ func (g *Game) revokeMinorPrivilege(regionID world.RegionID) {
 		}
 		return
 	}
-	// RevokeMinorPrivilege, imtiyaz kaldırılmadan önceki OwnerID'yi kullanım
-	// sahibi olarak bırakır; bu nedenle egemen sahibi çağrıdan önce alınmalı.
+	// İlişki cezasından sonra ortak state helper'ı bölge devrini ve
+	// kullanım sahibinin kuvvet/üretim temizliğini tamamlar.
 	sovereignOwnerID := faction.FactionID(g.gs.SovereignOwnerID(region))
-	formerOwnerID := faction.FactionID(region.OwnerID)
 	result := diplomacy.RevokeMinorPrivilege(g.gs, g.gs.PlayerFactionID, regionID)
 	if g.renderer != nil {
 		g.renderer.ShowCombatResult(result.Message)
@@ -2960,12 +2959,7 @@ func (g *Game) revokeMinorPrivilege(regionID world.RegionID) {
 		return
 	}
 
-	// İmtiyaz kaldırılınca kullanım sahibi artık bölgenin sahibi olamaz;
-	// minor bölge ana bölgenin egemen devletine normal kara bölgesi olarak geçer.
-	region.OwnerID = string(sovereignOwnerID)
-	g.gs.ClearProductionOrdersForRegion(regionID)
-	g.clearSiege(regionID)
-	g.evictForcesFromRevokedMinorRegion(regionID, string(sovereignOwnerID))
+	formerOwnerID := faction.FactionID(g.gs.TransferRevokedMinorOwnership(regionID, string(sovereignOwnerID)))
 
 	var elimination eliminationResult
 	if formerOwnerID != "" && formerOwnerID != sovereignOwnerID && len(g.gs.LandRegionsOwnedBy(formerOwnerID)) == 0 {
@@ -4263,58 +4257,61 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	monthsPerTurn := 1
 	var mapConfig scenario.MapConfig
 	diplomacyConfig := scenario.DefaultDiplomacyConfig()
+	privilegedBuildingMaxLevel := 0
 	var victoryOpts []scenario.VictoryOptionDef
 	if sc != nil {
 		year = sc.Year
 		month = sc.Month
 		monthsPerTurn = sc.CalendarMonthsPerTurn()
 		mapConfig = sc.MapConfig
+		privilegedBuildingMaxLevel = sc.PrivilegedBuildingMaxLevel
 		diplomacyConfig = sc.Diplomacy.WithDefaults()
 		victoryOpts = sc.VictoryConditions
 	}
 
 	gs := &state.GameState{
-		Turn:                     1,
-		DecisionSeed:             uint64(time.Now().UnixNano()),
-		Year:                     year,
-		Month:                    month,
-		MonthsPerTurn:            monthsPerTurn,
-		StartYear:                year,
-		Phase:                    state.PhaseFactionSelect,
-		Difficulty:               difficulty,
-		DevelopmentMode:          devMode,
-		EditMode:                 editMode,
-		ScenarioID:               scenarioIDFromPath(scenarioPath),
-		ScenarioPath:             scenarioPath,
-		MapConfig:                mapConfig,
-		DiplomacyConfig:          diplomacyConfig,
-		Regions:                  regions,
-		RegionOrder:              regionOrder,
-		LandPassages:             landPassages,
-		TerrainAreas:             terrainAreas,
-		Factions:                 factions,
-		FactionOrder:             factionOrder,
-		Armies:                   armies,
-		ArmyOrder:                nil,
-		RelationOrder:            relationOrder,
-		AIStrategies:             aiConfig.Strategies,
-		AIStrategyOrder:          append([]string(nil), aiConfig.StrategyOrder...),
-		AIDifficultyPolicy:       aiConfig.DifficultyPolicy,
-		ShapeData:                shapeData,
-		UnitTypes:                unitTypes,
-		UnitTypeOrder:            unitTypeOrder,
-		CommanderTemplates:       commanderTemplates,
-		BuildingTypes:            buildingTypes,
-		BuildingOrder:            buildingOrder,
-		TechTypes:                techTypes,
-		ScenarioVictories:        victoryOpts,
-		PoliticalTransformations: politicalTransformations,
-		AvailableVictories:       scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
-		Relations:                relations,
-		Imperial:                 imperialState,
-		TradeCenters:             tradeCenters,
-		NextArmySeq:              len(armies),
-		FiredEventIDs:            map[string]bool{},
+		Turn:                       1,
+		DecisionSeed:               uint64(time.Now().UnixNano()),
+		Year:                       year,
+		Month:                      month,
+		MonthsPerTurn:              monthsPerTurn,
+		StartYear:                  year,
+		Phase:                      state.PhaseFactionSelect,
+		Difficulty:                 difficulty,
+		DevelopmentMode:            devMode,
+		EditMode:                   editMode,
+		ScenarioID:                 scenarioIDFromPath(scenarioPath),
+		ScenarioPath:               scenarioPath,
+		MapConfig:                  mapConfig,
+		PrivilegedBuildingMaxLevel: privilegedBuildingMaxLevel,
+		DiplomacyConfig:            diplomacyConfig,
+		Regions:                    regions,
+		RegionOrder:                regionOrder,
+		LandPassages:               landPassages,
+		TerrainAreas:               terrainAreas,
+		Factions:                   factions,
+		FactionOrder:               factionOrder,
+		Armies:                     armies,
+		ArmyOrder:                  nil,
+		RelationOrder:              relationOrder,
+		AIStrategies:               aiConfig.Strategies,
+		AIStrategyOrder:            append([]string(nil), aiConfig.StrategyOrder...),
+		AIDifficultyPolicy:         aiConfig.DifficultyPolicy,
+		ShapeData:                  shapeData,
+		UnitTypes:                  unitTypes,
+		UnitTypeOrder:              unitTypeOrder,
+		CommanderTemplates:         commanderTemplates,
+		BuildingTypes:              buildingTypes,
+		BuildingOrder:              buildingOrder,
+		TechTypes:                  techTypes,
+		ScenarioVictories:          victoryOpts,
+		PoliticalTransformations:   politicalTransformations,
+		AvailableVictories:         scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
+		Relations:                  relations,
+		Imperial:                   imperialState,
+		TradeCenters:               tradeCenters,
+		NextArmySeq:                len(armies),
+		FiredEventIDs:              map[string]bool{},
 	}
 	if editMode {
 		gs.ArmyOrder = armyOrder
@@ -5615,74 +5612,6 @@ func (g *Game) evictDockedFleetsFromCapturedPort(capturedRegionID world.RegionID
 		fleet.DockedSettlementID = ""
 	}
 }
-
-// evictForcesFromRevokedMinorRegion, imtiyaz kaldırılan minor bölgedeki
-// egemen devlet dışı kara ordularını kendi sahiplerinin en yakın kara
-// bölgesine, filoları ise denize çıkarır. Fetih tahliyesinden ayrı tutulur;
-// imtiyaz kaldırma savaş veya fetih sonucu değildir.
-func (g *Game) evictForcesFromRevokedMinorRegion(regionID world.RegionID, protectedOwnerID string) {
-	if g == nil || g.gs == nil || regionID == "" {
-		return
-	}
-	reference := g.gs.Regions[regionID]
-	if reference == nil {
-		return
-	}
-	for _, currentArmy := range g.gs.Armies {
-		if currentArmy == nil || currentArmy.OwnerID == "" || currentArmy.OwnerID == protectedOwnerID {
-			continue
-		}
-		if currentArmy.IsNaval {
-			if currentArmy.RegionID != regionID && currentArmy.DockedRegionID != regionID {
-				continue
-			}
-			if nearestSea := g.nearestSeaRegionForFleet(currentArmy, regionID); nearestSea != "" {
-				currentArmy.RegionID = nearestSea
-			}
-			currentArmy.DockedRegionID = ""
-			currentArmy.DockedSettlementID = ""
-			continue
-		}
-		if currentArmy.RegionID != regionID {
-			continue
-		}
-		if retreatRegion := g.nearestSovereignLandRegionForArmy(currentArmy, reference); retreatRegion != "" {
-			currentArmy.RegionID = retreatRegion
-			currentArmy.DockedRegionID = ""
-			currentArmy.DockedSettlementID = ""
-		}
-	}
-}
-
-// nearestSovereignLandRegionForArmy, OwnerID'si kullanım sahibi olarak
-// kullanılan imtiyazlı minor bölgeleri tahliye hedefi saymaz; hedefin gerçekten
-// ordunun sahibine ait egemen bir kara bölgesi olması gerekir.
-func (g *Game) nearestSovereignLandRegionForArmy(a *army.Army, reference *world.Region) world.RegionID {
-	if g == nil || g.gs == nil || a == nil || reference == nil || a.OwnerID == "" {
-		return ""
-	}
-	bestRegion := world.RegionID("")
-	bestDist := 0.0
-	found := false
-	for _, region := range g.gs.Regions {
-		if region == nil || region.IsSea || region.IsTerrainArea || region.ID == reference.ID {
-			continue
-		}
-		if g.gs.SovereignOwnerID(region) != a.OwnerID {
-			continue
-		}
-		dx := float64(region.WorldX - reference.WorldX)
-		dy := float64(region.WorldY - reference.WorldY)
-		dist := dx*dx + dy*dy
-		if !found || dist < bestDist || (dist == bestDist && region.ID < bestRegion) {
-			bestRegion = region.ID
-			bestDist = dist
-			found = true
-		}
-	}
-	return bestRegion
-}
-
 func (g *Game) nearestSeaRegionForFleet(fleet *army.Army, capturedRegionID world.RegionID) world.RegionID {
 	if fleet != nil {
 		if r, ok := g.gs.Regions[fleet.RegionID]; ok && r != nil && r.IsSea {

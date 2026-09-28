@@ -301,11 +301,12 @@ type GameState struct {
 	DecisionSeed uint64 `json:"decision_seed,omitempty"`
 
 	// Senaryo
-	ScenarioID      string                   `json:"scenario_id"`   // aktif senaryo ID'si
-	ScenarioPath    string                   `json:"scenario_path"` // aktif senaryo klasörü
-	MapConfig       scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
-	DiplomacyConfig scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
-	BaseGoldValues  map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
+	ScenarioID                 string                   `json:"scenario_id"`   // aktif senaryo ID'si
+	ScenarioPath               string                   `json:"scenario_path"` // aktif senaryo klasörü
+	MapConfig                  scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
+	PrivilegedBuildingMaxLevel int                      `json:"-"`             // aktif senaryonun imtiyazlı minor bina tavanı
+	DiplomacyConfig            scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
+	BaseGoldValues             map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
 
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
@@ -471,6 +472,19 @@ type GameState struct {
 	// AIControlsPlayerEconomy yalnız oyuncu devletinin geliştirme ve pazar
 	// kararlarının AI'ye bırakıldığı tur fazında aktiftir. Save'e yazılmaz.
 	AIControlsPlayerEconomy bool `json:"-"`
+}
+
+// BuildingLevelCap, bina tanımı ile aktif senaryonun imtiyazlı minor kuralını
+// birlikte değerlendirir. Senaryo alanı yoksa bina tanımındaki tavan korunur.
+func (s *GameState) BuildingLevelCap(region *world.Region, buildingID string) int {
+	if s == nil || region == nil || buildingID == "" {
+		return 0
+	}
+	building := s.BuildingTypes[buildingID]
+	if building == nil {
+		return 0
+	}
+	return region.BuildingLevelCap(buildingID, building.MaxPerRegion, building.MinorRegions, s.PrivilegedBuildingMaxLevel)
 }
 
 // HistoricalFactionChangeReport, takvimde uygulanan tek bir faction

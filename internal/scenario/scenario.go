@@ -154,6 +154,9 @@ type Scenario struct {
 	// TurnMonths bir stratejik turun temsil ettiği takvim ayı sayısıdır.
 	// 0 değeri eski senaryolar için bir aylık uyumluluk davranışını korur.
 	TurnMonths int `json:"turn_months,omitempty"`
+	// PrivilegedBuildingMaxLevel, imtiyazlı minor bölgenin kullanım sahibinin
+	// minor_regions=true binalarını çıkarabileceği azami seviyedir.
+	PrivilegedBuildingMaxLevel int `json:"privileged_building_max_level,omitempty"`
 
 	Diplomacy DiplomacyConfig `json:"diplomacy,omitempty"`
 

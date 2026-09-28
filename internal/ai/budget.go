@@ -61,14 +61,14 @@ func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicC
 	}
 
 	ownedRegions := 0
-	grossIncome := 0
+	goldIncome := 0
 	hasCoast := false
+	ownedRegions = len(gs.LandRegionsOwnedBy(fid))
+	goldIncome = aiFactionGoldProduction(gs, fid)
 	for _, region := range aiSortedRegions(gs) {
-		if region.IsSea || region.OwnerID != string(fid) {
+		if region == nil || region.IsSea || region.OwnerID != string(fid) {
 			continue
 		}
-		ownedRegions++
-		grossIncome += gs.RegionProductionSummary(region).Gold
 		if region.IsCoastal(gs.Regions) {
 			hasCoast = true
 		}
@@ -92,7 +92,7 @@ func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicC
 		}
 	}
 
-	incomeReserve := minInt(aiBudgetIncomeReserveCap, grossIncome/aiBudgetIncomeDivisor)
+	incomeReserve := minInt(aiBudgetIncomeReserveCap, goldIncome/aiBudgetIncomeDivisor)
 	emergency := aiBudgetBaseReserve + ownedRegions*aiBudgetReservePerRegion + warCount*aiBudgetReservePerWar + incomeReserve
 	if criticalThreat {
 		emergency += aiBudgetCriticalReserve

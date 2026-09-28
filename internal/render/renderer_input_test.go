@@ -419,3 +419,44 @@ func TestRecruitPanelButtonDisabledWhenRegionHasNoMilitaryBuilding(t *testing.T)
 		t.Fatal("yalnızca limanı olan bölgede deniz üretim paneli açılabilir olmalıydı")
 	}
 }
+
+func TestMinorRegionPanelGeometryIncludesPrivilegeRow(t *testing.T) {
+	parentID := world.RegionID("parent")
+	minorID := world.RegionID("minor")
+	normalID := world.RegionID("normal")
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			parentID: {ID: parentID, OwnerID: "player"},
+			minorID: {
+				ID:             minorID,
+				OwnerID:        "operator",
+				IsMinorRegion:  true,
+				IsPrivileged:   true,
+				ParentRegionID: parentID,
+			},
+			normalID: {ID: normalID, OwnerID: "player"},
+		},
+	}
+
+	normal := gs.Regions[normalID]
+	minor := gs.Regions[minorID]
+	if got, want := regionPanelOwnerBlockHeight(gs, minor), regionOwnerBlockHeight(gs, "player")+regionVassalInfoH; got != want {
+		t.Fatalf("minor sahibi bloğu yüksekliği = %.1f, %.1f bekleniyordu", got, want)
+	}
+	if got, want := buildingGridStartY(gs, minor, false)-buildingGridStartY(gs, normal, false), float32(regionVassalInfoH); got != want {
+		t.Fatalf("minor bina başlangıç kayması = %.1f, %.1f bekleniyordu", got, want)
+	}
+
+	barY := float32(regionPanelActionBarY(gs, minor, regionPanelTabBuildings))
+	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
+	button := buildRegionRevokePrivilegeButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+	mx := button.X + button.W/2
+	my := button.Y + button.H/2
+	if !regionRevokePrivilegeButtonHitForTab(mx, my, gs, minorID, regionPanelTabBuildings) {
+		t.Fatal("minor bölgedeki İmtiyazı Kaldır düğmesinin merkezi hit-test tarafından yakalanmadı")
+	}
+	if !regionPanelInteractiveHitForTab(mx, my, gs, minorID, regionPanelTabBuildings, 0) {
+		t.Fatal("minor bölgedeki İmtiyazı Kaldır düğmesi panel etkileşim alanına dahil edilmedi")
+	}
+}

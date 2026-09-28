@@ -7,7 +7,7 @@ related: [systems/combat, world/factions, architecture/render-pipeline]
 
 # Bölge Sistemi
 
-**Kaynak:** `internal/world/region.go`, `internal/world/terrain.go`, `assets/scenarios/<id>/data/regions.json`
+**Kaynak:** `internal/world/region.go`, `internal/world/terrain.go`, `internal/city/building.go`, `assets/scenarios/<id>/data/regions.json`, `assets/scenarios/<id>/data/buildings.json`
 
 ## Region Yapısı
 
@@ -48,8 +48,11 @@ merkezleri Voronoi alan dağıtımına katılmaz. `Küçük Alt Bölge Ekle` son
 çizilen poligon ana bölgenin rasterına paint override olarak işlenir ve kesin
 alanı `region_shapes.json` içindeki `minor_polygons` altında poligon noktalarıyla
 saklanır; runtime piksel override'ını bu geometriden üretir. Küçük alt bölgelerde yalnızca
-`fortress` ve `port` yerleşimleri ile `walls` ve `port` binaları geçerlidir;
-imtiyazlı minor bölgelerde bu iki bina da en fazla 1. seviyeye çıkabilir.
+`fortress` ve `port` yerleşimleri geçerlidir. Bina izni bina tanımındaki
+`minor_regions` alanından gelir; `1300_ottoman_rise` senaryosunda `walls`,
+`granary` ve `port` bu alanla işaretlidir. İmtiyazlı minor bölgelerde
+`minor_regions=true` olan binaların tavanı senaryonun
+`privileged_building_max_level` alanından okunur; 1300 senaryosunda bu değer 1'dir.
 `parent_region_id` ilişki bilgisidir; alt bölgenin fethedilmesi ana bölgenin
 sahipliğini değiştirmez. Edit Mode yeni minor kimliklerini `new_minor_region_*`
 önekiyle üretir. Poligon çizimi tamamlanana kadar minor için merkez/odak işareti
@@ -76,9 +79,11 @@ etkinleştirilir.
 `is_privileged=true` yalnız küçük alt bölgelerde kullanılır. Bu durumda `OwnerID`
 alt bölgenin kullanım/işletme sahibidir; egemen sahip ayrıca tutulmaz ve
 `parent_region_id` ile bağlı ana bölgenin güncel `OwnerID` değerinden çözülür.
-İmtiyazlı alt bölgenin parasal geliri egemen sahip ile kullanım sahibi arasında
-%50-%50 paylaşılır. Alt bölgenin egemen sahibine yapılan savaş ilanı kullanım
-sahibiyle doğrudan savaş başlatmaz; kullanım sahibiyle ilişkiyi 10 puan azaltır.
+İmtiyazlı alt bölgenin parasal geliri, `parent_region_id` ile bağlı üst bölgenin
+güncel sahibi ile kullanım sahibi arasında %50-%50 paylaşılır; üst bölge el
+değiştirirse bu gelir payı ve `İmtiyazı Kaldır` yetkisi yeni egemen devlete geçer.
+Alt bölgenin egemen sahibine yapılan savaş ilanı kullanım sahibiyle doğrudan
+savaş başlatmaz; kullanım sahibiyle ilişkiyi 10 puan azaltır.
 İmtiyazlı minor bölge her iki devletin bölge görünümünde yer alır. Egemen devlet
 bölge panelindeki `İmtiyazı Kaldır` düğmesiyle hakkı sona erdirebilir; bu işlem
 kullanım sahibiyle ilişkiyi 10 puan azaltır ve savaş başlatmaz. Kaldırma anında
@@ -86,6 +91,11 @@ minor bölge ana bölgenin egemen sahibine normal sahiplikle devredilir; bölged
 diğer devlet orduları kendi devletlerinin en yakın kara bölgesine, filoları
 denize çıkarılır. Kullanım sahibinin başka egemen toprağı kalmamışsa devlet
 elenir ve tüm askeri birimleri silinir.
+AI kararları da bu ayrımı kullanır: egemen AI kendi %50 gelir payını bütçe ve
+stratejik değer hesabına katar; işletmeci AI yalnız kendi %50 altın payını
+yatırım getirisinde görür. Egemen AI, yüksek getirili ve ilişkisi yeterince
+güçlü olmayan imtiyazları kaldırarak bölgeyi doğrudan yönetimine alabilir;
+müttefik veya yüksek ilişkili işletmecilerin imtiyazlarını korur.
 `is_privileged=false` olduğunda alt bölge normal bölge gibi doğrudan `OwnerID`
 sahibine aittir.
 

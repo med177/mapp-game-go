@@ -315,7 +315,7 @@ func buildingAvailabilityStatus(gs *state.GameState, region *world.Region, b *ci
 		}
 	}
 	maxLevel := 1
-	if configuredMax := region.BuildingLevelCap(b.ID, b.MaxPerRegion); configuredMax > 0 {
+	if configuredMax := gs.BuildingLevelCap(region, b.ID); configuredMax > 0 {
 		maxLevel = configuredMax
 	}
 	if level >= maxLevel {
@@ -447,7 +447,7 @@ func buildingNavalCapacityEffectLines(gs *state.GameState, region *world.Region,
 			level++
 		}
 	}
-	maxLevel := region.BuildingLevelCap(b.ID, b.MaxPerRegion)
+	maxLevel := gs.BuildingLevelCap(region, b.ID)
 	if maxLevel <= 0 {
 		maxLevel = 1
 	}
@@ -475,7 +475,7 @@ func buildingLandCapacityEffectLines(gs *state.GameState, region *world.Region, 
 			level++
 		}
 	}
-	maxLevel := region.BuildingLevelCap(b.ID, b.MaxPerRegion)
+	maxLevel := gs.BuildingLevelCap(region, b.ID)
 	if maxLevel <= 0 {
 		maxLevel = 1
 	}

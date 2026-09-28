@@ -128,7 +128,8 @@ func (g *Game) applyProductionTicks() []productionResult {
 
 		switch order.Kind {
 		case productionKindBuilding:
-			if !region.AllowsBuilding(order.TypeID) {
+			building := g.gs.BuildingTypes[order.TypeID]
+			if building == nil || !region.AllowsBuilding(order.TypeID, building.MinorRegions) {
 				result.canceled = true
 				result.reason = "küçük alt bölgede bu bina türüne izin yok"
 				results = append(results, result)
@@ -203,14 +204,14 @@ func (g *Game) applyProductionTicks() []productionResult {
 }
 
 func (g *Game) completeBuilding(region *world.Region, buildingID string) bool {
-	if region == nil || !region.AllowsBuilding(buildingID) {
+	if region == nil {
 		return false
 	}
 	b, ok := g.gs.BuildingTypes[buildingID]
-	if !ok {
+	if !ok || !region.AllowsBuilding(buildingID, b.MinorRegions) {
 		return false
 	}
-	maxLevel := region.BuildingLevelCap(buildingID, b.MaxPerRegion)
+	maxLevel := g.gs.BuildingLevelCap(region, buildingID)
 	count := 0
 	for _, bid := range region.Buildings {
 		if bid == buildingID {

@@ -148,7 +148,7 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 			}
 			queued := aiQueuedBuildingCount(gs, region.ID, buildingID, fid)
 			level := aiBuildingLevel(region, buildingID)
-			maxLevel := region.BuildingLevelCap(buildingID, btype.MaxPerRegion)
+			maxLevel := gs.BuildingLevelCap(region, buildingID)
 			if maxLevel <= 0 || level+queued >= maxLevel {
 				continue
 			}
@@ -224,7 +224,11 @@ func aiEconomyBuildingIDsForState(gs *state.GameState) []string {
 
 func aiScoreBuildingInvestment(gs *state.GameState, self *faction.Faction, region *world.Region, btype *city.Building, cost economy.ResourceCost, turns, level, queued int, snapshot aiEconomySnapshot, signals aiRegionInvestmentSignals, satisfactionCalculator *satisfaction.Calculator, before state.RegionProductionSummary, tradePowerShare, baseTradeCapacity int) aiBuildingCandidate {
 	after := aiBuildingProductionAfter(gs, region, btype.ID)
-	goldGain := maxInt(0, after.Gold-before.Gold)
+	projectedRegion := *region
+	projectedRegion.Buildings = append(append([]string(nil), region.Buildings...), btype.ID)
+	beforeGold := aiFactionGoldFromProduction(gs, self.ID, region, before)
+	afterGold := aiFactionGoldFromProduction(gs, self.ID, &projectedRegion, after)
+	goldGain := maxInt(0, afterGold-beforeGold)
 	grainGain := maxInt(0, after.Grain-before.Grain)
 	resourceGainValue := aiBuildingResourceGainValue(gs, before, after, snapshot)
 	projectedValue := goldGain * aiBuildingProjectionTurns
@@ -325,10 +329,10 @@ func aiTradeBuildingScore(gs *state.GameState, fid faction.FactionID, region *wo
 	if marketType == nil || marketType.MaxPerRegion <= 0 {
 		return 0
 	}
-	marketMaxLevel := region.BuildingLevelCap("market", marketType.MaxPerRegion)
+	marketMaxLevel := gs.BuildingLevelCap(region, "market")
 	portMaxLevel := 0
 	if portType != nil {
-		portMaxLevel = region.BuildingLevelCap("port", portType.MaxPerRegion)
+		portMaxLevel = gs.BuildingLevelCap(region, "port")
 	}
 
 	marketBefore := aiBuildingLevel(region, "market") + aiQueuedBuildingCount(gs, region.ID, "market", fid)
@@ -411,16 +415,20 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 	}
 	snapshot.GrainCapacity = gs.GrainStorageCapacityForFaction(fid)
 	for _, region := range aiSortedRegions(gs) {
-		if region.IsSea || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
+		if region.IsSea || gs.SiegeAt(region.ID) != nil || (gs.SovereignOwnerID(region) != string(fid) && region.OwnerID != string(fid)) {
 			continue
 		}
 		production := gs.RegionProductionSummary(region)
-		snapshot.GoldProduction += production.Gold
-		snapshot.GrainProduction += production.Grain
-		snapshot.GrainDemand += gs.CivilianGrainDemandForRegion(region)
-		for _, buildingID := range region.Buildings {
-			if buildingID == "granary" {
-				snapshot.GranaryCount++
+		snapshot.GoldProduction += aiFactionGoldFromProduction(gs, fid, region, production)
+		if region.OwnerID == string(fid) {
+			snapshot.GrainProduction += production.Grain
+			snapshot.GrainDemand += gs.CivilianGrainDemandForRegion(region)
+		}
+		if region.OwnerID == string(fid) {
+			for _, buildingID := range region.Buildings {
+				if buildingID == "granary" {
+					snapshot.GranaryCount++
+				}
 			}
 		}
 	}
@@ -779,7 +787,7 @@ func aiLegacyEconomyBuildWithSteps(gs *state.GameState, fid faction.FactionID, b
 				continue
 			}
 			queued := aiQueuedBuildingCount(gs, region.ID, buildingID, fid)
-			maxLevel := region.BuildingLevelCap(buildingID, btype.MaxPerRegion)
+			maxLevel := gs.BuildingLevelCap(region, buildingID)
 			if maxLevel <= 0 || aiBuildingLevel(region, buildingID)+queued >= maxLevel || !aiLegacyBuildingNeeded(gs, fid, region, buildingID) {
 				continue
 			}

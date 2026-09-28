@@ -144,7 +144,7 @@ func buildingAtMaxLevel(gs *state.GameState, region *world.Region, buildingID st
 		return false
 	}
 	building := gs.BuildingTypes[buildingID]
-	return building != nil && region.BuildingLevelCap(buildingID, building.MaxPerRegion) > 0 && region.BuildingLevel(buildingID) >= region.BuildingLevelCap(buildingID, building.MaxPerRegion)
+	return building != nil && gs.BuildingLevelCap(region, buildingID) > 0 && region.BuildingLevel(buildingID) >= gs.BuildingLevelCap(region, buildingID)
 }
 
 // rejectedOfferRelationPenalty her reddedilen normal diplomasi teklifinin

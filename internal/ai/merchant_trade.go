@@ -294,7 +294,7 @@ func aiProduceMerchantShipIfNeeded(gs *state.GameState, fid faction.FactionID, r
 	currentPortLevel := aiBuildingLevel(port, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, port.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
-		portMaxLevel := port.BuildingLevelCap("port", portType.MaxPerRegion)
+		portMaxLevel := gs.BuildingLevelCap(port, "port")
 		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portMaxLevel || !aiBuildingAllowed(gs, port, "port", portType.RequiredTerrain) {
 			return false
 		}
@@ -360,7 +360,7 @@ func aiProduceTradeEscortIfNeeded(gs *state.GameState, fid faction.FactionID, ro
 	currentPortLevel := aiBuildingLevel(threatenedPort, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, threatenedPort.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
-		portMaxLevel := threatenedPort.BuildingLevelCap("port", portType.MaxPerRegion)
+		portMaxLevel := gs.BuildingLevelCap(threatenedPort, "port")
 		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portMaxLevel || !aiBuildingAllowed(gs, threatenedPort, "port", portType.RequiredTerrain) {
 			return false
 		}

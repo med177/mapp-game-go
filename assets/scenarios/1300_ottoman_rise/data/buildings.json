@@ -87,7 +87,8 @@
     "grain_cost": 120,
     "iron_cost": 32,
     "stone_cost": 800,
-    "timber_cost": 200
+    "timber_cost": 200,
+    "minor_regions": true
   },
   {
     "id": "temple",
@@ -183,7 +184,8 @@
     "grain_cost": 30,
     "iron_cost": 20,
     "stone_cost": 35,
-    "timber_cost": 25
+    "timber_cost": 25,
+    "minor_regions": true
   },
   {
     "id": "port",
@@ -208,6 +210,7 @@
     "iron_cost": 30,
     "spice_cost": 10,
     "stone_cost": 120,
-    "timber_cost": 90
+    "timber_cost": 90,
+    "minor_regions": true
   }
 ]

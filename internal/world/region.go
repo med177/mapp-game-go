@@ -62,9 +62,9 @@ type Region struct {
 
 	// Deniz bölgesi mi? Oynanabilir kara bölgesi değildir.
 	IsSea bool `json:"is_sea"`
-	// IsMinorRegion, ana bir bölgenin içinde yer alan; normal bölge gibi
-	// fethedilebilen ancak yalnızca kale/liman altyapısına izin verilen küçük
-	// stratejik alt bölgeyi işaretler.
+	// IsMinorRegion, ana bir bölgenin içinde yer alan ve normal bölge gibi
+	// fethedilebilen küçük stratejik alt bölgeyi işaretler. Hangi binaların
+	// kullanılabileceği bina tanımlarındaki minor_regions alanından gelir.
 	IsMinorRegion bool `json:"is_minor_region,omitempty"`
 	// IsPrivileged, küçük alt bölgenin kullanım hakkının OwnerID'de kalırken
 	// egemenliğinin ParentRegionID ile bağlı ana bölge sahibinden çözülmesini
@@ -175,10 +175,6 @@ type Settlement struct {
 
 const MinorRegionDefaultBaseGoldIncome = 10
 
-// MinorRegionMaxInfrastructureLevel imtiyazlı küçük alt bölgelerde izin verilen
-// kale ve liman altyapısının ortak seviye tavanıdır.
-const MinorRegionMaxInfrastructureLevel = 1
-
 // NewMinorRegionFromParent, Edit Mode'un yeni küçük alt bölge için kullandığı
 // düşük gelirli başlangıç modelini üretir. Alt bölge normal Region olarak
 // kaldığı için savaş, sahiplik ve gelir akışları tarafından işlenebilir.
@@ -225,26 +221,29 @@ func (r *Region) AllowsSettlementType(settlementType SettlementType) bool {
 	return settlementType == SettlementFortress || settlementType == SettlementPort
 }
 
-// AllowsBuilding, küçük alt bölgeye yalnızca kale ve liman altyapısının
-// eklenebilmesini sağlar. Mevcut geçerli binalar korunur; eski kayıtlardaki
-// geçersiz içerik bu helper tarafından geriye dönük silinmez.
-func (r *Region) AllowsBuilding(buildingID string) bool {
+// AllowsBuilding, bina tanımındaki minor_regions işaretine göre küçük alt
+// bölgede inşaata izin verilip verilmediğini döner. Mevcut geçerli binalar
+// korunur; eski kayıtlardaki geçersiz içerik bu helper tarafından geriye dönük
+// silinmez.
+func (r *Region) AllowsBuilding(buildingID string, minorRegions bool) bool {
 	if r == nil || r.IsSea || buildingID == "" {
 		return false
 	}
 	if !r.IsMinorRegion {
 		return true
 	}
-	return buildingID == "walls" || buildingID == "port"
+	return minorRegions
 }
 
 // BuildingLevelCap, bina tanımındaki bölge tavanını bölgenin özel kurallarıyla
-// birleştirir. İmtiyazlı minor bölgelerde kale ve liman yalnızca birinci
-// seviyeye kadar geliştirilebilir; diğer bölgelerde senaryonun bina tanımı
-// aynen korunur.
-func (r *Region) BuildingLevelCap(buildingID string, configuredMax int) int {
-	if r != nil && r.IsMinorRegion && r.IsPrivileged && (buildingID == "walls" || buildingID == "port") {
-		return MinorRegionMaxInfrastructureLevel
+// birleştirir. İmtiyazlı minor bölgelerde minor_regions ile işaretli binalar
+// senaryonun privileged_building_max_level değerine kadar geliştirilebilir;
+// diğer bölgelerde senaryonun bina tanımı aynen korunur.
+func (r *Region) BuildingLevelCap(buildingID string, configuredMax int, minorRegions bool, privilegedMaxLevel int) int {
+	if r != nil && r.IsMinorRegion && r.IsPrivileged && minorRegions && privilegedMaxLevel > 0 {
+		if configuredMax <= 0 || privilegedMaxLevel < configuredMax {
+			return privilegedMaxLevel
+		}
 	}
 	return configuredMax
 }

@@ -93,13 +93,13 @@ func buildStrategicContext(gs *state.GameState, fid faction.FactionID) *Strategi
 
 	borderSet := make(map[world.RegionID]struct{})
 	for _, region := range aiSortedRegions(gs) {
-		if region.IsSea || region.OwnerID != string(fid) {
+		if region.IsSea || gs.SovereignOwnerID(region) != string(fid) {
 			continue
 		}
 		ctx.OwnedLandRegionIDs = append(ctx.OwnedLandRegionIDs, region.ID)
 		for _, neighborID := range region.Neighbors {
 			neighbor := gs.Regions[neighborID]
-			if neighbor == nil || neighbor.IsSea || neighbor.OwnerID == "" || neighbor.OwnerID == string(fid) {
+			if neighbor == nil || neighbor.IsSea || gs.SovereignOwnerID(neighbor) == "" || gs.SovereignOwnerID(neighbor) == string(fid) {
 				continue
 			}
 			borderSet[region.ID] = struct{}{}

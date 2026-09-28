@@ -110,6 +110,11 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 	if aiStrategicPlanningEnabled(gs) && planningContext == nil {
 		planningContext = prepareStrategicContextWithEvents(gs, fid, eventDefs)
 	}
+	if aiManageMinorPrivilegesWithSteps(gs, fid, steps) {
+		// İmtiyaz kaldırma bölge sahipliğini ve ilişki ağını değiştirebilir;
+		// sonraki savaş/diplomasi kararları eski stratejik görüntüyü kullanmasın.
+		planningContext = prepareStrategicContextWithEvents(gs, fid, eventDefs)
+	}
 	// Difficulty 3: herhangi bir fraksiyonun sabit büyüklüğünü değil, kısa
 	// süredeki hızlı genişlemesini tehdit olarak değerlendir.
 	if gs.Difficulty >= 3 {
@@ -804,7 +809,14 @@ func aiRegionStrategicValue(gs *state.GameState, region *world.Region) int {
 		return 0
 	}
 	prod := gs.RegionProductionSummary(region)
-	return prod.Gold + prod.Grain + prod.Iron + prod.Timber + prod.Stone + prod.Spice*2 + prod.Cloth*2
+	gold := prod.Gold
+	if region.IsMinorRegion && region.IsPrivileged && gs.SovereignOwnerID(region) != region.OwnerID {
+		// Bir fetih veya işletme hesabında bu alt bölgenin brüt altını değil,
+		// kullanım sahibine kalan payı stratejik değere katılır. Egemen AI'nin
+		// kendi payı ise ortak gelir hesabında ayrıca görünür.
+		_, gold = gs.RegionIncomeShares(region, prod.Gold)
+	}
+	return gold + prod.Grain + prod.Iron + prod.Timber + prod.Stone + prod.Spice*2 + prod.Cloth*2
 }
 
 func aiEnqueueProduction(gs *state.GameState, fid faction.FactionID, kind string, rid world.RegionID, typeID string, turns int) state.ProductionOrder {
@@ -1114,7 +1126,8 @@ func aiBuildingAllowed(gs *state.GameState, region *world.Region, buildingID, re
 	if gs == nil || region == nil || region.IsSea || region.IsLocked {
 		return false
 	}
-	if !region.AllowsBuilding(buildingID) {
+	building := gs.BuildingTypes[buildingID]
+	if building == nil || !region.AllowsBuilding(buildingID, building.MinorRegions) {
 		return false
 	}
 	if buildingID == "port" {
@@ -2567,7 +2580,7 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 		queued := aiQueuedBuildingCount(gs, r.ID, "port", fid)
 		targetLevel := aiBuildingLevel(r, "port") + queued + 1
 		portCost := aiBuildingResourceCostAtLevel(portType, targetLevel)
-		portMaxLevel := r.BuildingLevelCap("port", portType.MaxPerRegion)
+		portMaxLevel := gs.BuildingLevelCap(r, "port")
 		if aiBuildingLevel(r, "port")+queued < portMaxLevel &&
 			aiBuildingAllowed(gs, r, "port", portType.RequiredTerrain) &&
 			aiCanAffordForBudget(f, portCost, budget, aiBudgetNaval) {
@@ -2725,7 +2738,7 @@ func aiProduceNavalDefenseAtThreatenedPort(gs *state.GameState, fid faction.Fact
 	currentPortLevel := aiBuildingLevel(threatenedPort, "port")
 	queuedPortLevels := aiQueuedBuildingCount(gs, threatenedPort.ID, "port", fid)
 	if currentPortLevel < requiredPortLevel {
-		portMaxLevel := threatenedPort.BuildingLevelCap("port", portType.MaxPerRegion)
+		portMaxLevel := gs.BuildingLevelCap(threatenedPort, "port")
 		if queuedPortLevels > 0 || currentPortLevel+queuedPortLevels >= portMaxLevel || !aiBuildingAllowed(gs, threatenedPort, "port", portType.RequiredTerrain) {
 			return
 		}

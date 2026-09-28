@@ -40,6 +40,7 @@ type Building struct {
 	StorageCapacity       int     `json:"storage_capacity"`   // tahıl depolama kapasitesi bonusu
 	MaxPerRegion          int     `json:"max_per_region"`     // bölgede max adet (genelde 1)
 	RequiredTerrain       string  `json:"required_terrain"`   // "" = her arazi
+	MinorRegions          bool    `json:"minor_regions"`      // minor bölgelerde kullanılabilir mi?
 }
 
 // LoadBuildings bina tiplerini JSON'dan yükler.
