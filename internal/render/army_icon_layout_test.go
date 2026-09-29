@@ -161,3 +161,39 @@ func TestArmyMarkerZoomVisibilityUsesPlayerDiplomacy(t *testing.T) {
 		t.Fatal("Edit Mode'da devlet marker'ı filtrelendi")
 	}
 }
+
+func TestArmyMarkerRenderOrderKeepsPlayerMarkersOnTop(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Armies: map[army.ArmyID]*army.Army{
+			"foreign-low":  {ID: "foreign-low", OwnerID: "foreign"},
+			"player-low":   {ID: "player-low", OwnerID: "player"},
+			"foreign-high": {ID: "foreign-high", OwnerID: "foreign", IsNaval: true},
+			"player-high":  {ID: "player-high", OwnerID: "player", IsNaval: true},
+		},
+	}
+	positions := []armyIconPos{
+		{ArmyID: "player-low", X: 10, Y: 10},
+		{ArmyID: "foreign-low", X: 10, Y: 10},
+		{ArmyID: "player-high", X: 20, Y: 20},
+		{ArmyID: "foreign-high", X: 20, Y: 20},
+	}
+
+	sortArmyIconPositionsForRender(gs, positions)
+	seenPlayer := false
+	for _, pos := range positions {
+		if armyMarkerIsPlayerOwned(gs, gs.Armies[pos.ArmyID]) {
+			seenPlayer = true
+			continue
+		}
+		if seenPlayer {
+			t.Fatalf("yabancı marker oyuncu markerından sonra sıralandı: %+v", positions)
+		}
+	}
+	if !seenPlayer {
+		t.Fatal("oyuncu markerları sıralama testinde bulunamadı")
+	}
+	if got := positions[len(positions)-1].ArmyID; got != "player-high" {
+		t.Fatalf("en üst çizim/hit-test markerı = %q, want player-high", got)
+	}
+}

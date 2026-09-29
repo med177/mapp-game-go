@@ -4262,6 +4262,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	diplomacyConfig := scenario.DefaultDiplomacyConfig()
 	privilegedBuildingMaxLevel := 0
 	minorPrivilegeProtectionTurns := scenario.DefaultMinorPrivilegeProtectionTurns
+	aggressiveExpansionLastTurns := scenario.DefaultAggressiveExpansionLastTurns
 	var victoryOpts []scenario.VictoryOptionDef
 	if sc != nil {
 		year = sc.Year
@@ -4270,6 +4271,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		mapConfig = sc.MapConfig
 		privilegedBuildingMaxLevel = sc.PrivilegedBuildingMaxLevel
 		minorPrivilegeProtectionTurns = sc.MinorPrivilegeProtectionTurns
+		aggressiveExpansionLastTurns = sc.AggressiveExpansionLastTurns
 		diplomacyConfig = sc.Diplomacy.WithDefaults()
 		victoryOpts = sc.VictoryConditions
 	}
@@ -4290,6 +4292,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		MapConfig:                     mapConfig,
 		PrivilegedBuildingMaxLevel:    privilegedBuildingMaxLevel,
 		MinorPrivilegeProtectionTurns: minorPrivilegeProtectionTurns,
+		AggressiveExpansionLastTurns:  aggressiveExpansionLastTurns,
 		DiplomacyConfig:               diplomacyConfig,
 		Regions:                       regions,
 		RegionOrder:                   regionOrder,

@@ -3598,16 +3598,38 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		}
 	}
 
-	sort.SliceStable(r.armyIconBuf, func(i, j int) bool {
-		if r.armyIconBuf[i].Y != r.armyIconBuf[j].Y {
-			return r.armyIconBuf[i].Y < r.armyIconBuf[j].Y
-		}
-		if r.armyIconBuf[i].X != r.armyIconBuf[j].X {
-			return r.armyIconBuf[i].X < r.armyIconBuf[j].X
-		}
-		return r.armyIconBuf[i].ArmyID < r.armyIconBuf[j].ArmyID
-	})
+	sortArmyIconPositionsForRender(r.gs, r.armyIconBuf)
 	return r.armyIconBuf
+}
+
+// sortArmyIconPositionsForRender, oyuncunun sahip olduğu marker'ları yabancı
+// marker'lardan sonra sıralar. Marker'lar bu liste sırasıyla çizilir;
+// armyHitAt ise aynı listeyi tersten taradığı için görsel ve tıklama katmanı
+// birlikte korunur.
+func sortArmyIconPositionsForRender(gs *state.GameState, positions []armyIconPos) {
+	sort.SliceStable(positions, func(i, j int) bool {
+		var left, right *army.Army
+		if gs != nil {
+			left = gs.Armies[positions[i].ArmyID]
+			right = gs.Armies[positions[j].ArmyID]
+		}
+		leftPlayerOwned := armyMarkerIsPlayerOwned(gs, left)
+		rightPlayerOwned := armyMarkerIsPlayerOwned(gs, right)
+		if leftPlayerOwned != rightPlayerOwned {
+			return !leftPlayerOwned
+		}
+		if positions[i].Y != positions[j].Y {
+			return positions[i].Y < positions[j].Y
+		}
+		if positions[i].X != positions[j].X {
+			return positions[i].X < positions[j].X
+		}
+		return positions[i].ArmyID < positions[j].ArmyID
+	})
+}
+
+func armyMarkerIsPlayerOwned(gs *state.GameState, a *army.Army) bool {
+	return gs != nil && a != nil && gs.PlayerFactionID != "" && a.OwnerID == string(gs.PlayerFactionID)
 }
 
 // armyVisibleAtCurrentZoom, yakın görünümde tüm devletlerin marker'larını;

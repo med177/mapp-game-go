@@ -328,6 +328,13 @@ func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
 	if gs == nil || e == nil {
 		return false
 	}
+	// Tarihsel tarih, yalnızca takvimle çalışan olaylar için alt sınırdır.
+	// Bir olayın state koşulları gerçekleşmişse (ör. Bursa'nın erken
+	// fethedilmesi), tarihsel yılı beklemek olayın gerçekleşen sonucu
+	// yansıtmasını geciktirmemelidir.
+	if historicalEventHasStateTrigger(e) {
+		return true
+	}
 	if gs.HistoricalDateOccursThisTurn(e.HistoricalYear, e.HistoricalMonth) {
 		return true
 	}
@@ -342,6 +349,17 @@ func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
 	targetAbs := e.HistoricalYear*12 + e.HistoricalMonth - 1
 	graceMonths := gs.CalendarMonthsPerTurn() - 1
 	return targetAbs < startAbs && targetAbs >= startAbs-graceMonths
+}
+
+func historicalEventHasStateTrigger(e *Event) bool {
+	if e == nil {
+		return false
+	}
+	return len(e.RequiresFlags) > 0 ||
+		len(e.RequiresTechs) > 0 ||
+		len(e.RequiresOwnedRegions) > 0 ||
+		len(e.RelationRequirements) > 0 ||
+		e.FactionSubjugationTrigger != nil
 }
 
 func pendingHistoricalEventKey(id string) string {

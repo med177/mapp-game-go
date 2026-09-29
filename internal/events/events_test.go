@@ -147,6 +147,59 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 	}
 }
 
+func TestTickHistoricalStateTriggeredEventDoesNotWaitForYear(t *testing.T) {
+	const ottomanID = faction.FactionID("ottoman")
+	gs := &state.GameState{
+		Year:  1300,
+		Month: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			ottomanID: {ID: ottomanID},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"bursa": {ID: "bursa", OwnerID: string(ottomanID)},
+		},
+	}
+	event := &Event{
+		ID:                   "bursa_conquest_1326",
+		HistoricalYear:       1326,
+		HistoricalMonth:      4,
+		OneShot:              true,
+		Target:               "specific_faction",
+		AffectedFaction:      string(ottomanID),
+		RequiresOwnedRegions: []world.RegionID{"bursa"},
+	}
+
+	if got := Tick(gs, []*Event{event}); got != event {
+		t.Fatalf("state koşulu gerçekleşmiş tarihsel event erken tetiklenmedi: %#v", got)
+	}
+	if !gs.FiredEventIDs[event.ID] {
+		t.Fatal("erken tetiklenen tek seferlik event fired olarak işaretlenmedi")
+	}
+}
+
+func TestTickDateOnlyHistoricalEventStillWaitsForYear(t *testing.T) {
+	const ottomanID = faction.FactionID("ottoman")
+	gs := &state.GameState{
+		Year:  1300,
+		Month: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			ottomanID: {ID: ottomanID},
+		},
+	}
+	event := &Event{
+		ID:              "date_only_event",
+		HistoricalYear:  1326,
+		HistoricalMonth: 4,
+		OneShot:         true,
+		Target:          "specific_faction",
+		AffectedFaction: string(ottomanID),
+	}
+
+	if got := Tick(gs, []*Event{event}); got != nil {
+		t.Fatalf("yalnız tarih koşullu event erken tetiklendi: %#v", got)
+	}
+}
+
 func TestApplyOttomanPostBursaSupportHonorsBeylikWarBlock(t *testing.T) {
 	path := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "data", "events.json")
 	definitions, err := LoadEvents(path)
@@ -176,6 +229,8 @@ func TestApplyOttomanPostBursaSupportHonorsBeylikWarBlock(t *testing.T) {
 		faction.FactionID("karaman_bey"),
 	}
 	gs := &state.GameState{
+		Year:    1300,
+		Month:   1,
 		Regions: map[world.RegionID]*world.Region{bursa.ID: bursa},
 		Factions: map[faction.FactionID]*faction.Faction{
 			ownerID: {ID: ownerID, CapitalSettlementID: "bursa_prusa", Gold: 300, Grain: 500},
@@ -193,6 +248,9 @@ func TestApplyOttomanPostBursaSupportHonorsBeylikWarBlock(t *testing.T) {
 
 	if !ConditionsMet(gs, support) {
 		t.Fatal("1327 destek event'i Bursa Osmanlıdayken ve beyliklerle savaş yokken hazır görünmüyor")
+	}
+	if got := Tick(gs, []*Event{support}); got != support {
+		t.Fatal("1327 Bursa sonrası destek event'i tarihini beklemeden tetiklenmedi")
 	}
 	Apply(gs, support)
 	if len(gs.Armies) != 3 {

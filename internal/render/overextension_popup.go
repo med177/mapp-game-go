@@ -3,7 +3,6 @@ package render
 import (
 	"image/color"
 
-	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -46,7 +45,7 @@ func (r *Renderer) drawOverextensionPopup(screen *ebiten.Image) {
 	label, labelColor := overextensionHUDText(r.gs)
 	DrawText(screen, "Aşırı Genişleme", popup.X+10, popup.Y+10, FaceMed, ColorGold)
 	DrawText(screen, label, popup.X+10, popup.Y+32, FaceSmall, labelColor)
-	DrawText(screen, "Son "+itoa(state.RecentFactionExpansionWindowTurns)+" turdaki hızlı kara kazanımından", popup.X+10, popup.Y+52, FaceSmall, ColorGray)
+	DrawText(screen, "Son "+itoa(r.gs.AggressiveExpansionWindowTurns())+" turdaki hızlı kara kazanımından", popup.X+10, popup.Y+52, FaceSmall, ColorGray)
 	DrawText(screen, "türetilen 0–100 arası risk göstergesidir.", popup.X+10, popup.Y+68, FaceSmall, ColorGray)
 
 	for index, line := range overextensionPopupRangeLines() {

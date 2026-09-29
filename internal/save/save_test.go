@@ -38,6 +38,16 @@ func TestLoadScenarioBaseStateLoadsTerrainAreas(t *testing.T) {
 	}
 }
 
+func TestLoadScenarioBaseStateReadsAggressiveExpansionDuration(t *testing.T) {
+	gs, err := loadScenarioBaseState("1300_ottoman_rise", filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise"))
+	if err != nil {
+		t.Fatalf("loadScenarioBaseState() error = %v", err)
+	}
+	if got, want := gs.AggressiveExpansionLastTurns, 12; got != want {
+		t.Fatalf("aşırı genişleme süresi = %d, %d bekleniyordu", got, want)
+	}
+}
+
 func Test1300TradeCenterRelationsSeedAIMerchantAssignments(t *testing.T) {
 	gs, err := loadScenarioBaseState("1300_ottoman_rise", filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise"))
 	if err != nil {
@@ -403,7 +413,11 @@ func TestCompactSavePreservesRecentFactionExpansion(t *testing.T) {
 		Turn:       9,
 		ScenarioID: "1300_ottoman_rise",
 		RecentFactionExpansion: map[faction.FactionID]state.FactionExpansionRecord{
-			"ai_rival": {WindowStartTurn: 7, RegionsGained: 4},
+			"ai_rival": {
+				WindowStartTurn: 7,
+				RegionsGained:   4,
+				TurnGains:       map[int]int{7: 2, 8: 2},
+			},
 		},
 	}
 	payload, err := json.Marshal(saved)
@@ -418,7 +432,7 @@ func TestCompactSavePreservesRecentFactionExpansion(t *testing.T) {
 	gs := &state.GameState{}
 	applyCampaignSaveState(gs, decoded)
 	got := gs.RecentFactionExpansion["ai_rival"]
-	if got.WindowStartTurn != 7 || got.RegionsGained != 4 {
+	if got.WindowStartTurn != 7 || got.RegionsGained != 4 || got.TurnGains[7] != 2 || got.TurnGains[8] != 2 {
 		t.Fatalf("yakın dönem genişleme kaydı korunmadı: %+v", got)
 	}
 }

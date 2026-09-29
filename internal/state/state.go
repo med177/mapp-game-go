@@ -21,10 +21,10 @@ const MaxDiplomacyOffersPerTurn = 3
 // aksiyon üçlüsü için zorunlu bekleme süresidir.
 const DiplomaticOfferRetryCooldownTurns = 3
 
-// RecentFactionExpansionWindowTurns, hızlı genişleme baskısının ölçüldüğü
-// kısa kampanya penceresidir. Bu alan save'e yazılır; eski kayıtlar boş
-// başlayıp yeni fetihlerle doğal olarak dolar.
-const RecentFactionExpansionWindowTurns = 6
+// RecentFactionExpansionWindowTurns eski doğrudan GameState kullanan kod ve
+// testler için geriye dönük varsayılandır. Aktif senaryolar kendi
+// AggressiveExpansionLastTurns değerini kullanır.
+const RecentFactionExpansionWindowTurns = scenario.DefaultAggressiveExpansionLastTurns
 
 // civilianGrainPopulationUnit nüfusun aylık temel tahıl tüketim oranını taşır.
 // 18 nüfus bir tahıl birimi tüketir; 1300 senaryosundaki üretim ve stoklar
@@ -83,6 +83,10 @@ type AIDiagnosticHistoryEntry struct {
 type FactionExpansionRecord struct {
 	WindowStartTurn int `json:"window_start_turn,omitempty"`
 	RegionsGained   int `json:"regions_gained,omitempty"`
+	// TurnGains yeni kayıtlar için kazanımları tur bazında tutar. Eski save'ler
+	// yalnız üstteki iki alanı içerdiğinde kayıt, WindowStartTurn'da yapılmış
+	// tek toplu kazanım olarak geriye dönük okunur.
+	TurnGains map[int]int `json:"turn_gains,omitempty"`
 }
 
 // VictoryType zafer koşulu türü.
@@ -310,6 +314,7 @@ type GameState struct {
 	MapConfig                     scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
 	PrivilegedBuildingMaxLevel    int                      `json:"-"`             // aktif senaryonun imtiyazlı minor bina tavanı
 	MinorPrivilegeProtectionTurns int                      `json:"-"`             // aktif senaryonun yeni imtiyaz koruma süresi
+	AggressiveExpansionLastTurns  int                      `json:"-"`             // aktif senaryonun aşırı genişleme baskı süresi
 	DiplomacyConfig               scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
 	BaseGoldValues                map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
 

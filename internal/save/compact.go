@@ -1744,6 +1744,12 @@ func cloneFactionExpansion(src map[faction.FactionID]state.FactionExpansionRecor
 	}
 	out := make(map[faction.FactionID]state.FactionExpansionRecord, len(src))
 	for key, value := range src {
+		if len(value.TurnGains) > 0 {
+			value.TurnGains = make(map[int]int, len(value.TurnGains))
+			for turn, count := range src[key].TurnGains {
+				value.TurnGains[turn] = count
+			}
+		}
 		out[key] = value
 	}
 	return out

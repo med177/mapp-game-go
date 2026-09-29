@@ -1,6 +1,8 @@
 package state
 
 import (
+	"math"
+
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
@@ -40,38 +42,108 @@ func (s *GameState) RecordRegionAcquisition(conqueror, previousOwner faction.Fac
 	if s.RecentFactionExpansion == nil {
 		s.RecentFactionExpansion = make(map[faction.FactionID]FactionExpansionRecord)
 	}
-	record := s.RecentFactionExpansion[conqueror]
-	if record.WindowStartTurn <= 0 || s.Turn-record.WindowStartTurn >= RecentFactionExpansionWindowTurns {
-		record = FactionExpansionRecord{WindowStartTurn: s.Turn}
+	turn := s.Turn
+	if turn <= 0 {
+		turn = 1
 	}
-	record.RegionsGained++
+	lastTurns := s.AggressiveExpansionWindowTurns()
+	record := s.RecentFactionExpansion[conqueror]
+	gains := expansionTurnGains(record, turn)
+	for gainTurn := range gains {
+		if turn-gainTurn >= lastTurns {
+			delete(gains, gainTurn)
+		}
+	}
+	gains[turn]++
+	record.TurnGains = gains
+	record.RegionsGained = 0
+	record.WindowStartTurn = turn
+	for gainTurn, count := range gains {
+		record.RegionsGained += count
+		if gainTurn < record.WindowStartTurn {
+			record.WindowStartTurn = gainTurn
+		}
+	}
 	s.RecentFactionExpansion[conqueror] = record
 }
 
-// RecentRegionGain kısa genişleme penceresi hâlâ aktifse kazanılan bölge
-// sayısını döner. Eski veya süresi dolmuş kayıtlar AI tarafından etkisiz kabul
-// edilir; fiziksel temizlik save yükünü artırmamak için gerekli değildir.
+// RecentRegionGain kısa genişleme penceresindeki kademeli baskıyı yuvarlanmış
+// bölge karşılığı olarak döner. Eski veya süresi dolmuş kazanımlar etkisizdir.
 func (s *GameState) RecentRegionGain(fid faction.FactionID) int {
 	if s == nil || fid == "" || s.RecentFactionExpansion == nil {
 		return 0
 	}
 	record := s.RecentFactionExpansion[fid]
-	if record.WindowStartTurn <= 0 || record.RegionsGained <= 0 || s.Turn-record.WindowStartTurn >= RecentFactionExpansionWindowTurns {
+	if record.RegionsGained <= 0 {
 		return 0
 	}
-	return record.RegionsGained
+	return int(math.Round(s.recentRegionGainValue(record)))
+}
+
+// AggressiveExpansionWindowTurns aktif senaryonun aşırı genişleme baskısının
+// kaç tur sürdüğünü döner. Doğrudan oluşturulan eski test/state nesneleri için
+// sabit varsayılan korunur; yüklenmiş senaryolar bu değeri doldurur.
+func (s *GameState) AggressiveExpansionWindowTurns() int {
+	if s != nil && s.AggressiveExpansionLastTurns > 0 {
+		return s.AggressiveExpansionLastTurns
+	}
+	return RecentFactionExpansionWindowTurns
+}
+
+// expansionTurnGains, eski save formatını yeni tur bazlı geçmiş biçimine
+// dönüştürür. Map'in sahibi çağıran olduğu için burada yerinde güncellenir.
+func expansionTurnGains(record FactionExpansionRecord, fallbackTurn int) map[int]int {
+	if record.TurnGains != nil {
+		return record.TurnGains
+	}
+	if record.RegionsGained <= 0 {
+		return make(map[int]int)
+	}
+	turn := record.WindowStartTurn
+	if turn <= 0 {
+		turn = fallbackTurn
+	}
+	return map[int]int{turn: record.RegionsGained}
+}
+
+// recentRegionGainValue, her kazanımın etkisini kalan süre oranının karesiyle
+// azaltır. Böylece baskı tur tur düşer ve sürenin sonuna doğru daha hızlı söner.
+func (s *GameState) recentRegionGainValue(record FactionExpansionRecord) float64 {
+	if s == nil || record.RegionsGained <= 0 {
+		return 0
+	}
+	lastTurns := s.AggressiveExpansionWindowTurns()
+	if lastTurns <= 0 {
+		return 0
+	}
+	gains := expansionTurnGains(record, s.Turn)
+	value := 0.0
+	for gainTurn, count := range gains {
+		if count <= 0 {
+			continue
+		}
+		age := s.Turn - gainTurn
+		if age < 0 || age >= lastTurns {
+			continue
+		}
+		remainingRatio := float64(lastTurns-age) / float64(lastTurns)
+		value += float64(count) * remainingRatio * remainingRatio
+	}
+	return value
 }
 
 // OverextensionScore son kısa genişleme penceresini oyuncuya ve AI'ye ortak
 // bir 0-100 risk değeri olarak sunar. Mutlak kazanım ve mevcut devlete göre
 // büyüme oranından yüksek olanı kullanır; böylece dört bölge kazanan büyük bir
 // devlet ile iki bölge kazanarak iki katına çıkan küçük devlet aynı baskı
-// sinyalini paylaşabilir. Bu değer türetilmiştir, ayrıca save alanı gerektirmez.
+// sinyalini paylaşabilir. Skor türetilmiştir; geçmiş kazanımlar save'de tutulur,
+// skor için ayrıca bir alan gerekmez.
 func (s *GameState) OverextensionScore(fid faction.FactionID) int {
 	if s == nil || fid == "" {
 		return 0
 	}
-	gained := s.RecentRegionGain(fid)
+	record := s.RecentFactionExpansion[fid]
+	gained := s.recentRegionGainValue(record)
 	if gained <= 0 {
 		return 0
 	}
@@ -79,8 +151,8 @@ func (s *GameState) OverextensionScore(fid faction.FactionID) int {
 	if owned <= 0 {
 		return 0
 	}
-	absScore := gained * 20
-	relativeScore := (gained * 100 / owned) * 2
+	absScore := int(math.Ceil(gained * 20))
+	relativeScore := int(math.Ceil(gained * 100 / float64(owned) * 2))
 	score := absScore
 	if relativeScore > score {
 		score = relativeScore

@@ -91,6 +91,12 @@ Tetikleme kriterleri:
 - **Yıl/ay:** `historical_year` + opsiyonel `historical_month`; üç aylık
   senaryolarda `GameState.HistoricalDateOccursThisTurn()` olay ayını aktif
   takvim penceresinde arar.
+- **Gerçekleşen state koşulu:** `requires_owned_regions`, `requires_flags`,
+  `requires_techs`, `relation_requirements` veya siyasi sonuç koşulu bulunan
+  tarihsel event'ler, bu koşullar tarihsel yıldan önce gerçekleşirse o turda
+  tetiklenir. Örneğin Bursa erken fethedilirse Bursa'nın merkez oluşu event'i
+  1326'yı beklemez. Yalnızca takvimle tanımlanan koşulsuz tarihsel event'ler
+  tarih/yıl penceresini bekler.
 - **Rastgele olay:** `probability > 0` ve `min_turn` eşiği
 - **Tek seferlik olay:** `one_shot=true` ise tekrar tetiklenmez
 

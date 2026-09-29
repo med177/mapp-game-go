@@ -86,8 +86,9 @@ func TestRecentRegionGainTracksShortExpansionWindow(t *testing.T) {
 
 func TestOverextensionScoreUsesRecentAndRelativeExpansion(t *testing.T) {
 	gs := &GameState{
-		Turn:    1,
-		Regions: make(map[world.RegionID]*world.Region),
+		Turn:                         1,
+		AggressiveExpansionLastTurns: 12,
+		Regions:                      make(map[world.RegionID]*world.Region),
 	}
 	for i := 0; i < 10; i++ {
 		id := world.RegionID("owned_" + string(rune('a'+i)))
@@ -101,8 +102,29 @@ func TestOverextensionScoreUsesRecentAndRelativeExpansion(t *testing.T) {
 		t.Fatalf("aşırı genişleme değeri = %d, want %d", got, want)
 	}
 
-	gs.Turn = 1 + RecentFactionExpansionWindowTurns
+	initial := gs.OverextensionScore("fast")
+	gs.Turn = 2
+	if got := gs.OverextensionScore("fast"); got >= initial || got <= 0 {
+		t.Fatalf("aşırı genişleme kademeli azalmadı: başlangıç=%d, bir tur sonra=%d", initial, got)
+	}
+
+	gs.Turn = 1 + gs.AggressiveExpansionWindowTurns()
 	if got := gs.OverextensionScore("fast"); got != 0 {
 		t.Fatalf("süresi dolan genişleme sonrası aşırı genişleme = %d, want 0", got)
+	}
+}
+
+func TestRecordRegionAcquisitionKeepsPerTurnGainsForDecay(t *testing.T) {
+	gs := &GameState{Turn: 1, AggressiveExpansionLastTurns: 12}
+	gs.RecordRegionAcquisition("fast", "old_a")
+	gs.Turn = 5
+	gs.RecordRegionAcquisition("fast", "old_b")
+
+	record := gs.RecentFactionExpansion["fast"]
+	if record.RegionsGained != 2 {
+		t.Fatalf("aktif kazanım toplamı = %d, want 2", record.RegionsGained)
+	}
+	if record.TurnGains[1] != 1 || record.TurnGains[5] != 1 {
+		t.Fatalf("tur bazlı kazanımlar = %#v, want 1. tur ve 5. turda birer kazanım", record.TurnGains)
 	}
 }

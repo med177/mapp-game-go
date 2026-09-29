@@ -9,7 +9,8 @@
   "year": 1310,
   "month": 3,
   "privileged_building_max_level": 1,
-  "minor_privilege_protection_turns": 30,
+  "minor_privilege_protection_turns": 100,
+  "aggressive_expansion_last_turns": 12,
   "diplomacy": {
     "relation_improvement_gold_cost": 1000,
     "relation_improvement_bonus": 5,

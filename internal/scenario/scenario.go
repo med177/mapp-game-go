@@ -11,6 +11,10 @@ import (
 // kullanılan geriye dönük uyumluluk varsayılanıdır.
 const DefaultMinorPrivilegeProtectionTurns = 30
 
+// DefaultAggressiveExpansionLastTurns, eski senaryolarda aşırı genişleme
+// süresi eksikse kullanılan geriye dönük uyumluluk varsayılanıdır.
+const DefaultAggressiveExpansionLastTurns = 6
+
 // VictoryOptionDef bir senaryo için tek bir kazanma koşulunu tanımlar.
 // UI metni (Title, Description, Detail) ve oyun mekaniği değerlerini (Type, hedefler) bir arada tutar.
 type VictoryOptionDef struct {
@@ -164,6 +168,9 @@ type Scenario struct {
 	// MinorPrivilegeProtectionTurns, egemen AI'nin yeni verilmiş imtiyazı
 	// savaş yokken ekonomik gerekçeyle kaldırmadan önce beklediği tur sayısıdır.
 	MinorPrivilegeProtectionTurns int `json:"minor_privilege_protection_turns,omitempty"`
+	// AggressiveExpansionLastTurns, bir bölge kazanımının aşırı genişleme
+	// baskısına katkısının kademeli olarak azalacağı tur sayısıdır.
+	AggressiveExpansionLastTurns int `json:"aggressive_expansion_last_turns,omitempty"`
 
 	Diplomacy DiplomacyConfig `json:"diplomacy,omitempty"`
 
@@ -283,6 +290,9 @@ func Load(path string) (*Scenario, error) {
 	}
 	if definition.MinorPrivilegeProtectionTurns <= 0 {
 		definition.MinorPrivilegeProtectionTurns = DefaultMinorPrivilegeProtectionTurns
+	}
+	if definition.AggressiveExpansionLastTurns <= 0 {
+		definition.AggressiveExpansionLastTurns = DefaultAggressiveExpansionLastTurns
 	}
 	definition.Path = path
 	definition.Diplomacy = definition.Diplomacy.WithDefaults()

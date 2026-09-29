@@ -1505,7 +1505,16 @@ func diplomacyOfferRelationLine(gs *state.GameState, subject faction.FactionID, 
 	}
 	factions := sortedFactions(gs)
 	if gs.PlayerFactionID != "" && gs.PlayerFactionID != subject {
-		factions = append(factions, gs.PlayerFactionID)
+		playerAlreadyListed := false
+		for _, fid := range factions {
+			if fid == gs.PlayerFactionID {
+				playerAlreadyListed = true
+				break
+			}
+		}
+		if !playerAlreadyListed {
+			factions = append(factions, gs.PlayerFactionID)
+		}
 	}
 
 	var names [3]string

@@ -613,6 +613,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		MapConfig:                     sc.MapConfig,
 		PrivilegedBuildingMaxLevel:    sc.PrivilegedBuildingMaxLevel,
 		MinorPrivilegeProtectionTurns: sc.MinorPrivilegeProtectionTurns,
+		AggressiveExpansionLastTurns:  sc.AggressiveExpansionLastTurns,
 		DiplomacyConfig:               sc.Diplomacy.WithDefaults(),
 		BaseGoldValues:                baseGoldValues,
 		Regions:                       regions,

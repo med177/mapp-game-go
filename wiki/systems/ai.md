@@ -1175,10 +1175,10 @@ Bu sayede hareket state'i gerçek zamanda akarken aynı anda UI mesajı ve yakı
 için korunur.
 
 **Tetikleme koşulu:** Oyuncu veya AI tarafından yönetilen herhangi bir fraksiyonun
-son 6 turda en az 4 kara bölgesi kazanması ya da en az 3 bölge kazanarak mevcut
-kara varlığının en az `%30`'una eşdeğer bir sıçrama yapması. Sabit bölge toplamı
-tek başına koalisyon başlatmaz; eski save'lerdeki eksik geçmiş de otomatik tehdit
-üretmez.
+senaryodaki `aggressive_expansion_last_turns` süresi içinde en az 4 kara bölgesi
+kazanması ya da en az 3 bölge kazanarak mevcut kara varlığının en az `%30`'una
+eşdeğer bir sıçrama yapması. Sabit bölge toplamı tek başına koalisyon başlatmaz;
+eski save'lerdeki eksik geçmiş de otomatik tehdit üretmez.
 
 **Etki:** Her AI aktörü hızlı büyüyen rakipler arasından en yüksek normal savaş
 fırsatı puanına sahip tek hedefi seçebilir. Hedefle müttefiklik veya güçlü ticaret
@@ -1188,11 +1188,13 @@ açılmaz. Bu yol diğer AI devletlerini de hedefleyebilir; herkesi oyuncuya kar
 toplayan ayrı bir zorunlu savaş/ittifak akışı yoktur.
 
 Oyuncunun üst HUD'ında görünen **Aşırı Genişleme** değeri `0-100` arasında
-hesaplanır. Son kısa penceredeki mutlak bölge kazanımı ile kazanımın mevcut kara
-varlığına oranından yüksek olan baskıyı gösterir; `75+` kırmızı, `50-74` turuncu,
-`25-49` sarı, daha düşük değerler yeşildir. AI kendi değerini yeni savaş puanına
-da taşır: yüksek saldırganlık daha fazla riski tolere eder, temkinli AI aynı
-değerde yeni genişleme savaşını erteleyip toparlanmaya yönelir.
+hesaplanır. `aggressive_expansion_last_turns` içindeki her kazanımın katkısı,
+kalan süre oranının karesiyle kademeli olarak azalır; böylece süre dolunca ani
+sıfırlama olmaz. Mutlak bölge kazanımı ile kazanımın mevcut kara varlığına
+oranından yüksek olan baskı gösterilir; `75+` kırmızı, `50-74` turuncu, `25-49`
+sarı, daha düşük değerler yeşildir. AI kendi değerini yeni savaş puanına da
+taşır: yüksek saldırganlık daha fazla riski tolere eder, temkinli AI aynı değerde
+yeni genişleme savaşını erteleyip toparlanmaya yönelir.
 
 → İttifak mekanizması: [[systems/diplomacy]]
 
