@@ -198,10 +198,10 @@ func terrainAreaRenderKey(gs *state.GameState, selectedAreaID string, selectedRe
 const (
 	// Alfa değerleri düşük tutulur; terrain overlay haritanın altında kalan
 	// dokuyu ve sınırları kapatmadan yalnızca arazi tipini belirtir.
-	terrainAreaPassableAlpha         uint8 = 55
-	terrainAreaBlockedAlpha          uint8 = 110
-	terrainAreaSelectedPassableAlpha uint8 = 125
-	terrainAreaSelectedBlockedAlpha  uint8 = 135
+	terrainAreaPassableAlpha         uint8 = 35
+	terrainAreaBlockedAlpha          uint8 = 75
+	terrainAreaSelectedPassableAlpha uint8 = 90
+	terrainAreaSelectedBlockedAlpha  uint8 = 100
 )
 
 func terrainAreaColor(terrain world.TerrainType) color.RGBA {
