@@ -282,7 +282,7 @@ func Test1300OpeningEconomyCoversUpkeepAfterMerchantAssignments(t *testing.T) {
 		if owner != nil {
 			projectedGold = owner.Gold + status.NetChange*openingRunwayTurns
 		}
-		if status.Income <= 0 || projectedGold < 0 {
+		if status.Income <= 0 || status.NetChange < 0 || projectedGold < 0 {
 			t.Fatalf("%s açılış ekonomi dayanıklılığı yetersiz: net=%d, 10 tur sonrası hazine=%d (bölge=%d, gelir=%d, ordu bakımı=%d, bina bakımı=%d)",
 				fid, status.NetChange, projectedGold, len(regions), status.Income, status.Upkeep, status.BuildingUpkeep)
 		}

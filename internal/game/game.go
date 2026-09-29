@@ -1304,6 +1304,10 @@ func (g *Game) suppressQuickTurnRelationshipNotifications() {
 func (g *Game) resolveTurn() {
 	g.sanitizeOccupiedNeutralRegions()
 	g.sanitizeDockedFleets()
+	// Başkent taşıması tamamlanan turda ekonomi yeni başkent üzerinden
+	// hesaplanmalı; aksi halde eski bölge bir tur daha bonus alır ve HUD/ledger
+	// gerçek başkent state'inin gerisinde kalır.
+	capitalMoveUpdates := g.gs.AdvanceCapitalMoves()
 	applySeasonEffects(g.gs)
 	g.executePlayerNavalMissions()
 	g.gs.MergeMerchantTradeFleets()
@@ -1316,7 +1320,6 @@ func (g *Game) resolveTurn() {
 	checkRebellions(g.gs)
 	checkEliminations(g.gs)
 	g.gs.NormalizeEmptyArmies()
-	capitalMoveUpdates := g.gs.AdvanceCapitalMoves()
 	applyRelationDecay(g.gs)
 	prevVictoryAchieved := g.gs.VictoryAchieved
 	victory.Check(g.gs)

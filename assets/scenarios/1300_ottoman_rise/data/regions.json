@@ -817,11 +817,9 @@
       "area::area__133::lorraine",
       "area::area__14",
       "area::area__36",
-      "dijon",
+      "franche_comte",
       "lorraine",
-      "savoy",
-      "sch_basel",
-      "sch_fribourg"
+      "lyon"
     ],
     "world_x": 588,
     "world_y": 337,
@@ -857,9 +855,9 @@
     ]
   },
   {
-    "id": "dijon",
-    "name": "Dijon",
-    "name_tr": "Dijon",
+    "id": "lyon",
+    "name": "Lyon",
+    "name_tr": "Lyon",
     "terrain": "plain",
     "owner_id": "hre",
     "successor_faction_id": "france",
@@ -868,6 +866,7 @@
       "area::area__15",
       "area::area__36",
       "burgundy",
+      "franche_comte",
       "languedoc",
       "savoy"
     ],
@@ -888,7 +887,7 @@
     "satisfaction": 70,
     "tax_rate": 42,
     "population": 273,
-    "rural_population": 273,
+    "rural_population": 203,
     "religion": "catholic",
     "active_event_id": "",
     "buildings": [
@@ -898,6 +897,49 @@
       "farm",
       "farm",
       "farm"
+    ]
+  },
+  {
+    "id": "franche_comte",
+    "name": "Free County of Burgundy",
+    "name_tr": "Burgonya Kontluğu",
+    "terrain": "forest",
+    "owner_id": "franche_comte",
+    "successor_faction_id": "franche_comte",
+    "neighbors": [
+      "alsace",
+      "area::area__14",
+      "burgundy",
+      "lyon",
+      "savoy",
+      "sch_basel",
+      "sch_fribourg"
+    ],
+    "world_x": 603,
+    "world_y": 345,
+    "shape_id": "FRA",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 82,
+    "base_grain_output": 24,
+    "base_iron_output": 4,
+    "base_timber_output": 10,
+    "base_stone_output": 18,
+    "base_spice_output": 0,
+    "base_cloth_output": 4,
+    "trade_capacity": 2,
+    "satisfaction": 70,
+    "tax_rate": 34,
+    "population": 220,
+    "rural_population": 150,
+    "religion": "catholic",
+    "active_event_id": "",
+    "buildings": [
+      "walls",
+      "farm",
+      "farm",
+      "market"
     ]
   },
   {
@@ -951,8 +993,8 @@
       "area::area__14",
       "area::area__15",
       "area::area__16::savoy",
-      "burgundy",
-      "dijon",
+      "franche_comte",
+      "lyon",
       "sch_fribourg"
     ],
     "world_x": 607,
@@ -1001,8 +1043,8 @@
       "area::area__9::languedoc",
       "area::area__9::toulouse",
       "catalonia",
-      "dijon",
       "gulf_of_lion",
+      "lyon",
       "provence",
       "toulouse"
     ],
@@ -1732,7 +1774,7 @@
     "neighbors": [
       "area::area__111",
       "area::area__13",
-      "burgundy",
+      "franche_comte",
       "savoy",
       "sch_basel",
       "sch_bern"
@@ -1843,7 +1885,7 @@
     "neighbors": [
       "alsace",
       "baden_vurtemberg",
-      "burgundy",
+      "franche_comte",
       "sch_bern",
       "sch_fribourg"
     ],
@@ -11575,6 +11617,7 @@
       "area::area__133::lorraine",
       "baden_vurtemberg",
       "burgundy",
+      "franche_comte",
       "lorraine",
       "palatinate",
       "sch_basel"

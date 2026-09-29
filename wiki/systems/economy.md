@@ -149,6 +149,21 @@ bölgeleri kontrol eder.
 Bina inşası `city.LoadBuildings()` ile yüklenen altın + kaynak reçetesini ister (`grain/iron/timber/stone/spice/cloth_cost`). Pazar, liman ve ibadet yeri gibi ticaret/kültür yapıları baharat veya kumaş tüketebilir; temel tarım ve savunma yapıları bölgesel hammaddelere dayanır.
 Bina `MaxPerRegion` ile sınırlıdır.
 
+### Başkent altyapısı ve bakım
+
+Edit Mode'un yerleşim ve başkent kurallarından eklediği minimum altyapının ilk
+seviyesi, aktif ulusal başkentte idari merkez gideri sayılır ve altın bakımından
+muaf tutulur. Bu kapsamda kale suru, liman yerleşiminin limanı ve başkent için
+zorunlu `barracks`, `granary`, `temple`, `market` seviyeleri bulunur. Aynı bina
+türünün sonraki seviyeleri, isteğe bağlı binalar ve başkent dışındaki tüm
+binalar normal `GoldMaintenance` öder.
+
+Başkent fethedildiğinde binalar fiziksel altyapı olarak bölgede kalır; ancak
+yeni sahip kendi başkentini o settlement'a taşımadığı sürece muafiyet uygulanmaz.
+Bu nedenle fetih, ele geçirene kalıcı ücretsiz ekonomi bonusu vermez. Minimum
+setin tanımı `world.RequiredInfrastructureBuildingIDs()` ile Edit Mode ve
+bakım hesabında ortak kullanılır.
+
 `upgrade_cost_multiplier`, bina seviyeleri için bileşik maliyet artışını belirler.
 Seviye 1 JSON'daki taban maliyeti kullanır; sonraki seviyelerde her kaynak
 `round(taban_maliyet × multiplier^(seviye-1))` ile hesaplanır. 1300 senaryosunda

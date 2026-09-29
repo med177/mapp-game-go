@@ -4666,5 +4666,17 @@
     "faction_b": "achaea_principality",
     "score": 25,
     "stance": "peace"
+  },
+  {
+    "faction_a": "franche_comte",
+    "faction_b": "burgundy",
+    "score": 55,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "franche_comte",
+    "faction_b": "hre",
+    "score": 65,
+    "stance": "allied"
   }
 ]

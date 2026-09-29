@@ -25,7 +25,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "capital_settlement_id": "sogut",
+    "capital_settlement_id": "bilecik_frontier_sogut",
     "gold": 5000,
     "grain": 2800,
     "iron": 55,
@@ -128,11 +128,6 @@
         "core": true
       },
       {
-        "region_id": "cyprus",
-        "value": 100,
-        "core": true
-      },
-      {
         "region_id": "dalmatia",
         "value": 100,
         "core": true
@@ -144,16 +139,6 @@
       },
       {
         "region_id": "knin",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "montenegro",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "north_cyprus",
         "value": 100,
         "core": true
       },
@@ -173,8 +158,7 @@
       },
       {
         "region_id": "verona",
-        "value": 100,
-        "core": true
+        "value": 70
       }
     ]
   },
@@ -442,7 +426,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50,
+    "ai_aggressiveness": 42,
     "territorial_claims": [
       {
         "region_id": "alsace",
@@ -465,6 +449,11 @@
       },
       {
         "region_id": "lorraine",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lyon",
         "value": 100,
         "core": true
       },
@@ -589,7 +578,7 @@
         "core": true
       },
       {
-        "region_id": "dijon",
+        "region_id": "lyon",
         "value": 100,
         "core": true
       },
@@ -820,22 +809,12 @@
         "value": 94
       },
       {
-        "region_id": "dagestan",
-        "value": 100,
-        "core": true
-      },
-      {
         "region_id": "moscow",
         "value": 100,
         "core": true
       },
       {
         "region_id": "nizhny_novgorod",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "north_caucasus",
         "value": 100,
         "core": true
       },
@@ -1269,7 +1248,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55,
+    "ai_aggressiveness": 50,
     "territorial_claims": [
       {
         "region_id": "bulgaria",
@@ -1679,7 +1658,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "kutahya",
+    "capital_settlement_id": "germiyan_kutahya",
     "gold": 5000,
     "grain": 1180,
     "iron": 50,
@@ -1748,7 +1727,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 66,
+    "ai_aggressiveness": 64,
     "territorial_claims": [
       {
         "region_id": "kiev",
@@ -1819,8 +1798,7 @@
     "territorial_claims": [
       {
         "region_id": "algarve",
-        "value": 100,
-        "core": true
+        "value": 72
       },
       {
         "region_id": "granada",
@@ -1834,8 +1812,7 @@
       },
       {
         "region_id": "sevilla",
-        "value": 100,
-        "core": true
+        "value": 66
       },
       {
         "region_id": "castile",
@@ -2139,7 +2116,7 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60,
+    "ai_aggressiveness": 52,
     "territorial_claims": [
       {
         "region_id": "alfold",
@@ -2212,11 +2189,10 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 54,
+    "ai_aggressiveness": 46,
     "ai_expansion_targets": [
       "mamluk",
-      "georgia_kingdom",
-      "ramazan_bey"
+      "georgia_kingdom"
     ],
     "territorial_claims": [
       {
@@ -2401,7 +2377,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "aydinoglu_atikhisar",
+    "capital_settlement_id": "karesi_atikhisar",
     "gold": 5000,
     "grain": 420,
     "iron": 45,
@@ -2416,11 +2392,6 @@
     },
     "ai_aggressiveness": 50,
     "territorial_claims": [
-      {
-        "region_id": "izmir",
-        "value": 100,
-        "core": true
-      },
       {
         "region_id": "saruhan",
         "value": 82
@@ -2614,8 +2585,7 @@
       },
       {
         "region_id": "verona",
-        "value": 100,
-        "core": true
+        "value": 78
       }
     ]
   },
@@ -2754,7 +2724,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "adana_cilicia",
+    "capital_settlement_id": "cilicia_adana",
     "gold": 5000,
     "grain": 1060,
     "iron": 50,
@@ -2796,7 +2766,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "manisa",
+    "capital_settlement_id": "saruhan_manisa",
     "gold": 5000,
     "grain": 1120,
     "iron": 50,
@@ -2927,10 +2897,9 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 65,
+    "ai_aggressiveness": 56,
     "ai_expansion_targets": [
-      "arnavut_des",
-      "east_rome"
+      "arnavut_des"
     ],
     "territorial_claims": [
       {
@@ -3169,7 +3138,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "capital_settlement_id": "tlemcen_main",
+    "capital_settlement_id": "algiers_main",
     "gold": 5000,
     "grain": 1840,
     "iron": 65,
@@ -3500,13 +3469,11 @@
       },
       {
         "region_id": "herzegovina",
-        "value": 100,
-        "core": true
+        "value": 60
       },
       {
         "region_id": "hum",
-        "value": 100,
-        "core": true
+        "value": 60
       },
       {
         "region_id": "kvarner",
@@ -3647,7 +3614,7 @@
     "overlord_id": "france",
     "tribute_rate": 20,
     "tribute_rate_configured": true,
-    "capital_settlement_id": "navarre_pamplona",
+    "capital_settlement_id": "navarra_pamplona",
     "gold": 5000,
     "grain": 1200,
     "iron": 300,
@@ -3684,8 +3651,8 @@
       70
     ],
     "is_playable": false,
-    "is_eliminated": true,
-    "capital_settlement_id": "burgundy_main",
+    "is_eliminated": false,
+    "capital_settlement_id": "dijon_main",
     "gold": 5000,
     "grain": 100,
     "iron": 50,
@@ -3703,6 +3670,40 @@
       {
         "region_id": "burgundy",
         "value": 100
+      }
+    ]
+  },
+  {
+    "id": "franche_comte",
+    "name": "Free County of Burgundy",
+    "name_tr": "Burgonya Kontluğu",
+    "religion": "catholic",
+    "color": [
+      155,
+      105,
+      45
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "besancon_main",
+    "gold": 4200,
+    "grain": 700,
+    "iron": 35,
+    "timber": 80,
+    "stone": 300,
+    "spice": 30,
+    "cloth": 15,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 32,
+    "territorial_claims": [
+      {
+        "region_id": "franche_comte",
+        "value": 100,
+        "core": true
       }
     ]
   },
@@ -4229,6 +4230,13 @@
     "is_eliminated": false,
     "capital_settlement_id": "rhodes_main",
     "gold": 2200,
+    "other_income_periods": [
+      {
+        "start_year": 1310,
+        "amount": 40,
+        "description": "Papalık ve Batı Avrupa bağışları, hacı hizmetleri ve finansal aracılık/emanetçilik gelirleri"
+      }
+    ],
     "grain": 820,
     "iron": 25,
     "timber": 35,
@@ -4509,7 +4517,7 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "capital_settlement_id": "rome",
+    "capital_settlement_id": "lazio_rome",
     "gold": 5000,
     "other_income_periods": [
       {

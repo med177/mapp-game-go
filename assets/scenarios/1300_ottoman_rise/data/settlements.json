@@ -654,11 +654,10 @@
     "settlements": [
       {
         "id": "burgundy_main",
-        "name_tr": "Burgonya",
+        "name_tr": "Ferme du Fosse",
         "x": 594,
         "y": 324,
         "type": "fortress",
-        "is_center": true,
         "population": 53
       },
       {
@@ -667,6 +666,7 @@
         "x": 580,
         "y": 338,
         "type": "city",
+        "is_center": true,
         "population": 54
       },
       {
@@ -680,16 +680,30 @@
     ]
   },
   {
-    "region_id": "dijon",
+    "region_id": "lyon",
     "settlements": [
       {
-        "id": "dijon_lyon",
+        "id": "lyon_main",
         "name_tr": "Lyon",
         "x": 579,
         "y": 368,
         "type": "city",
         "is_center": true,
-        "population": 0
+        "population": 70
+      }
+    ]
+  },
+  {
+    "region_id": "franche_comte",
+    "settlements": [
+      {
+        "id": "besancon_main",
+        "name_tr": "Besançon",
+        "x": 605,
+        "y": 341,
+        "type": "fortress",
+        "is_center": true,
+        "population": 70
       }
     ]
   },

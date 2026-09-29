@@ -2473,6 +2473,82 @@
     "target": "specific_faction"
   },
   {
+    "id": "burgundy_flanders_marriage_1369",
+    "name_tr": "Burgonya-Flandre Hanedan Evliliği",
+    "desc_tr": "Burgonya Düklüğü ile Flandre Kontluğu arasındaki hanedan evliliği, ileride birleşecek mirasların siyasi temelini atıyor.",
+    "historical_year": 1369,
+    "historical_month": 6,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "burgundy",
+    "requires_active_factions": [
+      "burgundy",
+      "flanders_county"
+    ],
+    "choice_prompt_tr": "Burgonya ile Flandre arasındaki hanedan evliliği onaylansın mı?",
+    "choices": [
+      {
+        "id": "accept_burgundy_flanders_marriage",
+        "label_tr": "Hanedan evliliğini kabul et",
+        "desc_tr": "Burgonya ile Flandre arasında kalıcı bir hanedan bağı ve dostluk kurulur.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "burgundy",
+          "relations": [
+            {
+              "faction_id": "flanders_county",
+              "score_delta": 30,
+              "stance": "allied"
+            }
+          ],
+          "set_flags": [
+            "burgundy_flanders_marriage_1369"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "burgundy_flanders_inheritance_1384",
+    "name_tr": "Burgonya-Flandre Miras Birliği",
+    "desc_tr": "Flandre ve Franche-Comté mirasları Burgundy Düklüğü'ne geçerek Batı Avrupa'da geniş bir Burgonya hanedanı oluşturuyor.",
+    "historical_year": 1384,
+    "historical_month": 1,
+    "min_turn": 0,
+    "probability": 0,
+    "one_shot": true,
+    "target": "specific_faction",
+    "affected_faction": "burgundy",
+    "requires_flags": [
+      "burgundy_flanders_marriage_1369"
+    ],
+    "requires_active_factions": [
+      "burgundy",
+      "flanders_county",
+      "franche_comte"
+    ],
+    "choice_prompt_tr": "Flandre ve Franche-Comté mirasları Burgonya Düklüğü ile birleşsin mi?",
+    "choices": [
+      {
+        "id": "form_burgundian_personal_union_1384",
+        "label_tr": "Burgonya miras birliğini kur",
+        "desc_tr": "Flandre ve Franche-Comté toprakları, orduları ve kaynakları Burgundy Düklüğü'ne aktarılır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "burgundy",
+          "political_transformation_id": "burgundy_flanders_inheritance_1384",
+          "set_flags": [
+            "burgundy_flanders_inheritance_1384"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "id": "burgundian_habsburg_inheritance_1477",
     "name_tr": "Burgonya Habsburg Mirası",
     "desc_tr": "Burgonya mirası Habsburg hanedanının eline geçiyor. Avusturya artık Batı Avrupa siyasetinde yeni bir güç merkezi haline geliyor.",

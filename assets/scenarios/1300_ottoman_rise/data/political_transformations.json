@@ -158,6 +158,29 @@
     "description_tr": "Aragon Tacı Napoli Krallığı üzerinde hanedan birliği kurar."
   },
   {
+    "id": "burgundy_flanders_inheritance_1384",
+    "type": "dynastic_union",
+    "members": [
+      "burgundy",
+      "flanders_county",
+      "franche_comte"
+    ],
+    "result_faction": "burgundy",
+    "trigger": {
+      "event_id": "burgundy_flanders_inheritance_1384",
+      "year": 1384,
+      "month": 1
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Burgonya Düklüğü, Flandre ve Franche-Comté miraslarını tek hanedan altında birleştirir."
+  },
+  {
     "id": "burgundian_habsburg_inheritance_1477",
     "type": "dynastic_union",
     "members": [

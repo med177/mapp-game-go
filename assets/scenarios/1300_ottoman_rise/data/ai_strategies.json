@@ -559,8 +559,9 @@
               "value": 78
             }
           ],
-          "priority": 78,
-          "commitment": 52,
+          "priority": 60,
+          "commitment": 38,
+          "min_year": 1318,
           "allow_vassalization": true
         }
       ]
@@ -592,6 +593,24 @@
           ],
           "priority": 92,
           "commitment": 78
+        }
+      ]
+    },
+    {
+      "faction_id": "franche_comte",
+      "profile": "imperial_burgundian_border",
+      "objectives": [
+        {
+          "id": "hold_free_county",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "franche_comte",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 76
         }
       ]
     },
@@ -803,11 +822,11 @@
             },
             {
               "region_id": "herzegovina",
-              "value": 100
+              "value": 60
             },
             {
               "region_id": "hum",
-              "value": 100
+              "value": 60
             },
             {
               "region_id": "kvarner",
@@ -985,8 +1004,9 @@
               "value": 70
             }
           ],
-          "priority": 88,
-          "commitment": 68
+          "priority": 62,
+          "commitment": 45,
+          "min_year": 1350
         }
       ]
     },
@@ -1266,7 +1286,7 @@
               "value": 100
             },
             {
-              "region_id": "dijon",
+              "region_id": "lyon",
               "value": 100
             },
             {
@@ -1464,8 +1484,8 @@
               "value": 94
             }
           ],
-          "priority": 94,
-          "commitment": 72,
+          "priority": 88,
+          "commitment": 66,
           "readiness_regions": [
             "ukrainian_steppe",
             "kiev"
@@ -1505,10 +1525,6 @@
           "id": "hold_andalusian_emirate",
           "kind": "defend",
           "territorial_claims": [
-            {
-              "region_id": "algarve",
-              "value": 100
-            },
             {
               "region_id": "granada",
               "value": 100
@@ -1759,7 +1775,7 @@
           ]
         },
         {
-          "id": "restore_imperial_authority_in_italy_1311",
+          "id": "restore_imperial_authority_in_italy_1330",
           "kind": "expand",
           "territorial_claims": [
             {
@@ -1775,9 +1791,9 @@
               "value": 90
             }
           ],
-          "priority": 90,
-          "commitment": 76,
-          "min_year": 1311,
+          "priority": 75,
+          "commitment": 58,
+          "min_year": 1330,
           "max_year": 1495,
           "readiness_regions": [
             "switzerland",
@@ -1823,8 +1839,9 @@
               "value": 70
             }
           ],
-          "priority": 70,
-          "commitment": 46,
+          "priority": 60,
+          "commitment": 35,
+          "min_year": 1320,
           "readiness_regions": [
             "transylvania"
           ]
@@ -1836,8 +1853,7 @@
       "profile": "eastern_imperial_frontier",
       "expansion_targets": [
         "mamluk",
-        "georgia_kingdom",
-        "ramazan_bey"
+        "georgia_kingdom"
       ],
       "objectives": [
         {
@@ -1857,8 +1873,9 @@
               "value": 94
             }
           ],
-          "priority": 94,
-          "commitment": 70,
+          "priority": 84,
+          "commitment": 58,
+          "min_year": 1315,
           "readiness_regions": [
             "mosul",
             "baghdad",
@@ -2288,7 +2305,7 @@
             },
             {
               "region_id": "verona",
-              "value": 100
+              "value": 78
             }
           ],
           "priority": 100,
@@ -2802,7 +2819,7 @@
           "max_year": 1478,
           "readiness_regions": [
             "moscow",
-            "north_caucasus"
+            "nizhny_novgorod"
           ]
         },
         {
@@ -2810,19 +2827,11 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "dagestan",
-              "value": 84
-            },
-            {
               "region_id": "moscow",
               "value": 84
             },
             {
               "region_id": "nizhny_novgorod",
-              "value": 84
-            },
-            {
-              "region_id": "north_caucasus",
               "value": 84
             }
           ],
@@ -3010,8 +3019,7 @@
       "faction_id": "serbian_empire",
       "profile": "balkan_hegemony_buffer",
       "expansion_targets": [
-        "arnavut_des",
-        "east_rome"
+        "arnavut_des"
       ],
       "objectives": [
         {
@@ -3048,7 +3056,33 @@
             }
           ],
           "priority": 55,
-          "commitment": 45,
+          "commitment": 40,
+          "allow_vassalization": true
+        },
+        {
+          "id": "press_east_roman_frontier_1320",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "north_macedonia",
+              "value": 68
+            },
+            {
+              "region_id": "thessaloniki_hinterland",
+              "value": 65
+            },
+            {
+              "region_id": "thessaly",
+              "value": 58
+            }
+          ],
+          "priority": 68,
+          "commitment": 52,
+          "min_year": 1320,
+          "readiness_regions": [
+            "nis",
+            "kosovo"
+          ],
           "allow_vassalization": true
         }
       ]
@@ -3292,14 +3326,6 @@
           "territorial_claims": [
             {
               "region_id": "crete",
-              "value": 100
-            },
-            {
-              "region_id": "cyprus",
-              "value": 100
-            },
-            {
-              "region_id": "north_cyprus",
               "value": 100
             },
             {

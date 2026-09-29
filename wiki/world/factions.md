@@ -255,7 +255,9 @@ Bir fraksiyon tüm bölgelerini kaybedince `checkEliminations()` tarafından tes
 
 - Her fraksiyonun aynı anda tek aktif başkenti vardır.
 - Senaryo verisinde `capital_settlement_id` yoksa runtime yükleme akışı fraksiyonun en yüksek getirili kara bölgesindeki ana settlement'ı başkent olarak seçer.
-- Başkent bölgesi ek gelir, stok ve lojistik avantajı alır.
+- Başkent bölgesi ek gelir, stok ve lojistik avantajı alır; bu bonus yalnız settlement'ı hâlen sahip olan fraksiyonun aktif başkentiyse geçerlidir.
+- Başkentteki Edit Mode minimum altyapısının ilk seviyesi aktif sahibin bina bakımından muaftır. Binalar fetihte silinmez, fakat yeni sahip kendi başkentini oraya taşımadıkça bu muafiyeti alamaz.
+- Başkent taşıması tamamlandığı tur ekonomi tick'inden önce uygulanır; eski bölge aynı turda bonusu kaybeder, yeni bölge bonusu alır.
 - Başkent fethedilirse savunan fraksiyonun hazine/hammadde stoklarının bir bölümü fethedene geçer.
 - Başkent fetheden taraf, savunanın sahip olduğu ama kendisinde olmayan tamamlanmış teknolojilerin yaklaşık yarısını anında açar.
 - Başkent kaybeden ama hayatta kalan devletin yeni başkenti otomatik olarak en yüksek getirili bölgesinin merkez settlement'ına atanır.

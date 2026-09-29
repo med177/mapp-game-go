@@ -325,7 +325,15 @@
     "units": [
       {
         "type_id": "militia",
-        "count": 10
+        "count": 4
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 3
       }
     ]
   },
@@ -380,7 +388,7 @@
     "units": [
       {
         "type_id": "infantry",
-        "count": 8
+        "count": 10
       }
     ]
   },
@@ -392,6 +400,10 @@
       {
         "type_id": "elite_infantry",
         "count": 6
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
       }
     ]
   },
@@ -510,6 +522,21 @@
     "units": [
       {
         "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_franche_comte_1",
+    "owner_id": "franche_comte",
+    "region_id": "franche_comte",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
         "count": 5
       }
     ]
@@ -1069,15 +1096,15 @@
       },
       {
         "type_id": "infantry",
-        "count": 2
+        "count": 6
       },
       {
         "type_id": "light_cavalry",
-        "count": 1
+        "count": 5
       },
       {
         "type_id": "militia",
-        "count": 16
+        "count": 8
       }
     ]
   },

@@ -255,6 +255,123 @@ func (s *GameState) UnitePoliticalFactions(memberIDs []faction.FactionID, result
 	return report
 }
 
+// MergePoliticalRelations, birleşen faction'ların dış ilişkilerini sonuç
+// faction'ına taşır. Aynı dış faction'a birden fazla kaynak ilişki bağlanıyorsa
+// daha sert diplomatik durum, eşit durumda ise daha yüksek skor korunur.
+// Birleşen üyeler arasındaki eski relation kayıtları da temizlenir.
+func (s *GameState) MergePoliticalRelations(memberIDs []faction.FactionID, resultFaction faction.FactionID) {
+	if s == nil || s.Relations == nil || resultFaction == "" || len(memberIDs) == 0 {
+		return
+	}
+	mergedMembers := make(map[faction.FactionID]struct{}, len(memberIDs))
+	for _, memberID := range memberIDs {
+		if memberID != "" && memberID != resultFaction {
+			mergedMembers[memberID] = struct{}{}
+		}
+	}
+	if len(mergedMembers) == 0 {
+		return
+	}
+
+	candidates := make(map[string]*faction.Relation)
+	for _, relation := range s.Relations {
+		if relation == nil {
+			continue
+		}
+		var external faction.FactionID
+		switch {
+		case hasFactionID(mergedMembers, relation.FactionA):
+			external = relation.FactionB
+		case hasFactionID(mergedMembers, relation.FactionB):
+			external = relation.FactionA
+		default:
+			continue
+		}
+		if external == "" || external == resultFaction || hasFactionID(mergedMembers, external) {
+			continue
+		}
+		candidate := &faction.Relation{
+			FactionA:                 resultFaction,
+			FactionB:                 external,
+			Score:                    relation.Score,
+			Stance:                   relation.Stance,
+			NextAIRelationRepairTurn: relation.NextAIRelationRepairTurn,
+		}
+		key := faction.RelationKey(resultFaction, external)
+		candidates[key] = selectPoliticalRelation(candidates[key], candidate)
+	}
+
+	for key, relation := range s.Relations {
+		if relation == nil {
+			continue
+		}
+		if hasFactionID(mergedMembers, relation.FactionA) || hasFactionID(mergedMembers, relation.FactionB) {
+			delete(s.Relations, key)
+		}
+	}
+	for key, candidate := range candidates {
+		s.Relations[key] = selectPoliticalRelation(s.Relations[key], candidate)
+	}
+
+	if len(s.RelationOrder) == 0 {
+		return
+	}
+	ordered := make([]string, 0, len(s.Relations))
+	seen := make(map[string]struct{}, len(s.Relations))
+	for _, key := range s.RelationOrder {
+		if _, exists := s.Relations[key]; !exists {
+			continue
+		}
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		ordered = append(ordered, key)
+	}
+	missing := make([]string, 0, len(s.Relations))
+	for key := range s.Relations {
+		if _, exists := seen[key]; !exists {
+			missing = append(missing, key)
+		}
+	}
+	sort.Strings(missing)
+	s.RelationOrder = append(ordered, missing...)
+}
+
+func hasFactionID(ids map[faction.FactionID]struct{}, target faction.FactionID) bool {
+	_, ok := ids[target]
+	return ok
+}
+
+func selectPoliticalRelation(current, candidate *faction.Relation) *faction.Relation {
+	if current == nil {
+		return candidate
+	}
+	if candidate == nil {
+		return current
+	}
+	if politicalStancePriority(candidate.Stance) > politicalStancePriority(current.Stance) ||
+		(politicalStancePriority(candidate.Stance) == politicalStancePriority(current.Stance) && candidate.Score > current.Score) {
+		return candidate
+	}
+	return current
+}
+
+func politicalStancePriority(stance faction.DiplomaticStance) int {
+	switch stance {
+	case faction.StanceWar:
+		return 4
+	case faction.StanceAllied:
+		return 3
+	case faction.StanceTrade:
+		return 2
+	case faction.StancePeace:
+		return 1
+	default:
+		return 0
+	}
+}
+
 // SplitFactionForces dağıtılacak faction'ların kuvvetlerini bölge sahipliği
 // veya explicit regionTargets bilgisine göre hedef faction'lara aktarır.
 // Bölge eşleşmesi olmayan açık deniz filoları ve konumsuz kuvvetler, hedefler

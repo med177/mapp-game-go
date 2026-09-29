@@ -1,11 +1,31 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-28
+last_updated: 2026-09-29
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-29: 1300 senaryosunun batı HRE verisi tarihsel ayrımla güncellendi.
+  Dijon kimliği Lyon olarak ayrıştırıldı; 1300'de imparatorluk egemenliğindeki
+  Lyon doğrudan HRE bölgesi olarak kaldı. Franche-Comté/Burgonya Kontluğu,
+  Besançon merkezli bağımsız bir HRE prensi, başlangıç garnizonu ve savunma AI
+  hedefiyle eklendi. Fransa'nın Lyon claim'i ve HRE'nin Lyon core'u güncellendi;
+  Burgonya Dükalığı HRE üyesi yapılmadı ve 1300 başlangıcında aktif bırakıldı.
+  Franche-Comté'nin Burgonya Dükalığı
+  ve HRE ile başlangıç ittifakları açık relation kayıtlarıyla tanımlandı
+  (`assets/scenarios/1300_ottoman_rise/data/imperial.json`, `regions.json`,
+  `factions.json`, `settlements.json`, `relations.json`).
+
+- 2026-09-29: Burgonya hanedan zinciri siyasi birleşme mekaniğine bağlandı.
+  1369 hanedan evliliği olayı sonrasında 1384'te Burgundy, Flandre ve
+  Franche-Comté mirasları Burgundy sonucunda birleşiyor; bölgeler, ordular,
+  filolar ve kaynaklar aktarılıyor. Birleşen üyelerin dış diplomatik ilişkileri
+  sonuç faction'ında stance önceliğiyle birleştiriliyor ve eski relation
+  kayıtları temizleniyor (`assets/scenarios/1300_ottoman_rise/data/events.json`,
+  `political_transformations.json`, `internal/game/political_transformations.go`,
+  `internal/state/political_forces.go`).
 
 - 2026-09-28: Edit Mode için normal Region tabanlı küçük alt bölge altyapısı
   hazırlandı. `is_minor_region` ve `parent_region_id` alanları senaryo
@@ -85,6 +105,52 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   yalnız başlangıç merchant filo atamasını yapıyor ve on tur hazine dayanımı
   kontrol ediyor (`internal/economy/economy.go`, `internal/ai/merchant_trade.go`,
   `internal/save/save_test.go`).
+
+- 2026-09-29: Edit Mode'un otomatik başkent altyapısı için ilk zorunlu bina
+  seviyeleri aktif başkentte bakım dışı bırakıldı; ek seviyeler ve başkent
+  el değiştirdiğinde aynı binalar normal bakım ödüyor. Yeni bölgeler sonrası
+  geçersiz kalan sekiz `capital_settlement_id` gerçek settlement ID'lerine
+  düzeltildi. Başkent bonusunun fetihle taşınmadığı ve küçük devletlerin
+  açılış net gelirinin hazine tamponu yerine doğrudan pozitif olması regression
+  testleriyle güvenceye alındı (`internal/world/infrastructure.go`,
+  `internal/state/state.go`, `internal/state/capital_test.go`,
+  `internal/save/save_test.go`).
+
+- 2026-09-29: Başkent taşıması tamamlandığı tur ekonomi tick'inden sonra
+  işlendiği için eski bölgenin bir tur daha başkent geliri alması düzeltildi.
+  Taşıma artık ekonomi hesaplanmadan önce uygulanıyor; eski ve yeni bölge
+  bonuslarının karşılıklı aktarımı regression ile doğrulanıyor
+  (`internal/game/game.go`, `internal/state/capital_test.go`).
+
+- 2026-09-29: 1300 AI genişleme dengesi yeniden kalibre edildi. HRE'nin İtalya
+  hedefi 1330'a, Doğu Roma'nın Bithynia hedefi 1350'ye ertelendi; Sırp hedefleri
+  Arnavutluk ve 1320 sonrası kuzey Makedonya/Selanik hattıyla sınırlandı.
+  İlhanlı'nın Ramazan hedefi kaldırılıp Memlük-Gürcistan ekseni korunurken,
+  Bulgaristan, Macaristan ve Altın Orda'nın saldırganlık/taahhüt değerleri
+  orta seviyeye çekildi. Bulgaristan ve Macaristan açılış orduları milis ağırlığı
+  azaltılarak düzenli piyade/hafif süvariye çevrildi; Doğu Roma'ya sınırlı piyade
+  takviyesi, Osmanlı'ya iki piyadeli sınır rezervi verildi. Referans raporun
+  300 tur içerdiği dikkate alınarak ayrı tutulan aynı seed'li 100 tur headless
+  kontrolde Osmanlı `+2` bölgeyle, Bizans `-4`, Sırp `0`, İlhanlı `0`, HRE `0`
+  ve Altın Orda `0` değişimle ayakta kaldı (`assets/scenarios/1300_ottoman_rise/data/`
+  `factions.json`, `ai_strategies.json`, `armies.json`; `cmd/simreport`).
+
+- 2026-09-29: 1310 senaryosunun açık faction claim/core kayıtları güncel harita
+  ve tarihsel dönem açısından denetlendi. Venedik'in 1489 sonrası Kıbrıs ve
+  Kuzey Kıbrıs core'ları ile Karadağ core'u kaldırıldı; Moskova'nın Dağıstan ve
+  Kuzey Kafkasya core'ları kaldırıldı. Gırnata'nın Algarve ve Sevilla kayıtları,
+  Karesi'nin İzmir kaydı, Milano'nın Verona kaydı ve Hırvatistan'ın Hum/
+  Herzegovina kayıtları core yerine sınırlı claim olarak düzeltildi. Başlangıçta
+  sahip olunan bölgelerin core'ları runtime'da otomatik türetildiği için JSON'a
+  gereksiz tekrarlar eklenmedi (`assets/scenarios/1300_ottoman_rise/data/factions.json`).
+
+- 2026-09-29: AI objective claim'leri açık faction claim/core düzeltmeleriyle
+  hizalandı. Venedik'in 1310'da Kıbrıs savunma hedefleri kaldırıldı; Rusya'nın
+  Dağıstan/Kuzey Kafkasya savunma ve yanlış hazırlık hedefleri çıkarıldı;
+  Gırnata'nın Algarve savunması kaldırıldı; Milano-Verona savunma ağırlığı 78'e,
+  Hırvatistan'ın Hum/Herzegovina ağırlıkları 60'a çekildi. Böylece objective
+  claim'leri başlangıçta daha yüksek bir stratejik hak iddiası üreterek önceki
+  tarihsel denetimi geri çevirmiyor (`assets/scenarios/1300_ottoman_rise/data/ai_strategies.json`).
 
 - 2026-09-27: Üst HUD'ın altındaki ince uyarı şeridine, son genişleme hızından
   türetilen `Aşırı Genişleme` yüzdesi eklendi. Oyuncu değeri 0-100 arasında

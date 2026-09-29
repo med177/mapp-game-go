@@ -1,29 +1,38 @@
 package world
 
+// RequiredInfrastructureBuildingIDs, yerleşim tipleri ve ulusal başkent
+// statüsünden türeyen minimum bina setini döndürür. Dizi kullanımı, bu
+// kuralların bakım hesabında her tur gereksiz allocation üretmemesini sağlar.
+// Count kadar eleman geçerlidir.
+func RequiredInfrastructureBuildingIDs(region *Region, isCapitalRegion bool) ([6]string, int) {
+	var required [6]string
+	if region == nil || region.IsSea {
+		return required, 0
+	}
+
+	count := 0
+	if region.HasFortressSettlement() {
+		required[count] = "walls"
+		count++
+	}
+	if hasSettlementType(region, SettlementPort) {
+		required[count] = "port"
+		count++
+	}
+	if isCapitalRegion && !region.IsMinorRegion {
+		for _, buildingID := range [...]string{"barracks", "granary", "temple", "market"} {
+			required[count] = buildingID
+			count++
+		}
+	}
+	return required, count
+}
+
 // EnsureRequiredSettlementBuildings, yerleşim tiplerinden ve ulusal başkent
 // statüsünden türeyen minimum bina kurallarını uygular. Mevcut binalar korunur;
 // yalnızca eksik minimum seviyeler eklenir.
 func EnsureRequiredSettlementBuildings(region *Region, isCapitalRegion bool) bool {
-	if region == nil || region.IsSea {
-		return false
-	}
-
-	var required [6]string
-	requiredCount := 0
-	if region.HasFortressSettlement() {
-		required[requiredCount] = "walls"
-		requiredCount++
-	}
-	if hasSettlementType(region, SettlementPort) {
-		required[requiredCount] = "port"
-		requiredCount++
-	}
-	if isCapitalRegion && !region.IsMinorRegion {
-		for _, buildingID := range [...]string{"barracks", "granary", "temple", "market"} {
-			required[requiredCount] = buildingID
-			requiredCount++
-		}
-	}
+	required, requiredCount := RequiredInfrastructureBuildingIDs(region, isCapitalRegion)
 
 	changed := false
 	for i := 0; i < requiredCount; i++ {

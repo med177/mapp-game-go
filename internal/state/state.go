@@ -2479,7 +2479,10 @@ func (s *GameState) FactionGoldUpkeep(fid faction.FactionID) int {
 
 // FactionBuildingGoldUpkeep bir fraksiyona ait binaların tur başı altın
 // bakımını döner. GoldMaintenance bina başına tanımlandığı için aynı bina
-// türünün her seviyesi ayrı bir bakım yükü oluşturur.
+// türünün her seviyesi ayrı bir bakım yükü oluşturur. Aktif başkentteki
+// yerleşim/başkent kuralının eklediği ilk minimum altyapı seviyesi, devletin
+// idari merkezi olarak bakım dışıdır. Ek seviyeler ve başkent el değiştirmişse
+// aynı yapılar normal bakım öder.
 func (s *GameState) FactionBuildingGoldUpkeep(fid faction.FactionID) int {
 	if s == nil || fid == "" {
 		return 0
@@ -2489,13 +2492,35 @@ func (s *GameState) FactionBuildingGoldUpkeep(fid faction.FactionID) int {
 		if region == nil || region.IsSea || region.OwnerID != string(fid) {
 			continue
 		}
+		freeInfrastructure, freeInfrastructureCount := s.freeCapitalInfrastructure(region, fid)
+		var consumedInfrastructure [6]bool
 		for _, buildingID := range region.Buildings {
-			if building := s.BuildingTypes[buildingID]; building != nil && building.GoldMaintenance > 0 {
-				total += building.GoldMaintenance
+			free := false
+			if freeInfrastructureCount > 0 {
+				for i := 0; i < freeInfrastructureCount; i++ {
+					if consumedInfrastructure[i] || freeInfrastructure[i] != buildingID {
+						continue
+					}
+					consumedInfrastructure[i] = true
+					free = true
+					break
+				}
+			}
+			if !free {
+				if building := s.BuildingTypes[buildingID]; building != nil && building.GoldMaintenance > 0 {
+					total += building.GoldMaintenance
+				}
 			}
 		}
 	}
 	return total
+}
+
+func (s *GameState) freeCapitalInfrastructure(region *world.Region, fid faction.FactionID) ([6]string, int) {
+	if s == nil || region == nil || fid == "" || !s.IsFactionCapitalRegion(fid, region) {
+		return [6]string{}, 0
+	}
+	return world.RequiredInfrastructureBuildingIDs(region, true)
 }
 
 // RegionalArmyGrainDemand bölgesel ikmal baskısında kullanılan tahıl talebini

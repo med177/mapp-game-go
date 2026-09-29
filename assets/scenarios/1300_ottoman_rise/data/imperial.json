@@ -75,6 +75,13 @@
       "elector_weight": 1
     },
     {
+      "faction_id": "franche_comte",
+      "status": "prince",
+      "loyalty": 64,
+      "autonomy": 86,
+      "military_commitment": 42
+    },
+    {
       "faction_id": "teutonic_order",
       "status": "order",
       "loyalty": 58,
