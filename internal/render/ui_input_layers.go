@@ -50,6 +50,7 @@ const (
 	uiLayerEditInspector  = "edit-inspector"
 	uiLayerEditForm       = "edit-form"
 	uiLayerEditDropdown   = "edit-dropdown"
+	uiLayerEditBuildings  = "edit-buildings"
 )
 
 func uiLayerRect(x, y, w, h float64) gameui.Rect {
@@ -180,6 +181,8 @@ func (r *Renderer) uiLayerPointerAt(mx, my float64) bool {
 			(r.editSettlementTypeDropdown != nil && r.editSettlementTypeDropdown.IsOpen() && r.editSettlementTypeDropdown.HitTest(mx, my)) ||
 			(r.editUnitTypeDropdown != nil && r.editUnitTypeDropdown.IsOpen() && r.editUnitTypeDropdown.HitTest(mx, my)) ||
 			(r.editRegionReligionDropdown != nil && r.editRegionReligionDropdown.IsOpen() && r.editRegionReligionDropdown.HitTest(mx, my))
+	case uiLayerEditBuildings:
+		return r.editBuildingsPanel && r.editBuildingPanelInteractiveHit(mx, my)
 	case uiLayerModal:
 		return r.editNewShapeModal.show && editNewShapeModalHit(mx, my)
 	default:
@@ -243,6 +246,9 @@ func (r *Renderer) rebuildUILayers() {
 		}
 		if r.editNewShapeModal.show || r.editRenaming {
 			r.addUIScreenLayer(uiLayerModal)
+		}
+		if r.editBuildingsPanel {
+			r.addUIScreenLayer(uiLayerEditBuildings)
 		}
 		return
 	}

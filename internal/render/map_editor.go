@@ -336,12 +336,246 @@ func (r *Renderer) drawEditRegionButtons(screen *ebiten.Image, region *world.Reg
 	}
 	drawEditInspectorButton(screen, editButtonAddNeighbor, neighborLabel, regionActionEnabled)
 	drawEditInspectorButton(screen, editButtonEditRegionData, "Bölge Verileri", regionActionEnabled)
+	drawEditInspectorButton(screen, editButtonRegionBuildings, "Binalar", regionActionEnabled && !region.IsSea && !region.IsTerrainArea)
 	privilegeLabel := "İmtiyazlı: Hayır"
 	privilegeEnabled := region != nil && region.IsMinorRegion && !region.IsSea && !region.IsTerrainArea && !drawingMinor
 	if privilegeEnabled && region.IsPrivileged {
 		privilegeLabel = "İmtiyazlı: Evet"
 	}
 	drawEditInspectorButton(screen, editButtonRegionPrivilege, privilegeLabel, privilegeEnabled)
+}
+
+// editBuildingIDs, bina panelinin sırasını senaryo JSON'ındaki BuildingOrder
+// ile korur. Sentetik test state'lerinde order verilmemişse map sırası yerine
+// kararlı alfabetik bir fallback kullanılır.
+func (r *Renderer) editBuildingIDs() []string {
+	if r == nil || r.gs == nil || len(r.gs.BuildingTypes) == 0 {
+		return nil
+	}
+	ids := make([]string, 0, len(r.gs.BuildingTypes))
+	seen := make(map[string]struct{}, len(r.gs.BuildingTypes))
+	for _, id := range r.gs.BuildingOrder {
+		if r.gs.BuildingTypes[id] == nil {
+			continue
+		}
+		ids = append(ids, id)
+		seen[id] = struct{}{}
+	}
+	missing := make([]string, 0, len(r.gs.BuildingTypes)-len(ids))
+	for id, building := range r.gs.BuildingTypes {
+		if building != nil {
+			if _, ok := seen[id]; !ok {
+				missing = append(missing, id)
+			}
+		}
+	}
+	sort.Strings(missing)
+	return append(ids, missing...)
+}
+
+func editBuildingsPanelRect() gameui.Rect {
+	const w, h = 640.0, 520.0
+	return gameui.Rect{X: (ScreenWidth - w) / 2, Y: (ScreenHeight - h) / 2, W: w, H: h}
+}
+
+func editBuildingsPanelCloseButton() gameui.Button {
+	rect := editBuildingsPanelRect()
+	return gameui.NewCloseButton(rect.X+rect.W-34, rect.Y+8, 24, 24)
+}
+
+func editBuildingsPanelFooterButton() gameui.Button {
+	rect := editBuildingsPanelRect()
+	return gameui.NewButton(rect.X+rect.W-136, rect.Y+rect.H-42, 112, 30, "Kapat")
+}
+
+func editBuildingsPanelRowRect(index int) gameui.Rect {
+	rect := editBuildingsPanelRect()
+	return gameui.Rect{X: rect.X + 24, Y: rect.Y + 94 + float64(index)*38, W: rect.W - 48, H: 32}
+}
+
+func editBuildingsPanelMinusButton(index int, enabled bool) gameui.Button {
+	row := editBuildingsPanelRowRect(index)
+	button := gameui.NewButton(row.X+row.W-112, row.Y+2, 34, 28, "-")
+	button.Enabled = enabled
+	return button
+}
+
+func editBuildingsPanelPlusButton(index int, enabled bool) gameui.Button {
+	row := editBuildingsPanelRowRect(index)
+	button := gameui.NewButton(row.X+row.W-42, row.Y+2, 34, 28, "+")
+	button.Enabled = enabled
+	return button
+}
+
+func (r *Renderer) editBuildingCanAdd(region *world.Region, buildingID string) bool {
+	if r == nil || r.gs == nil || region == nil || region.IsSea {
+		return false
+	}
+	building := r.gs.BuildingTypes[buildingID]
+	if building == nil || !region.AllowsBuilding(buildingID, building.MinorRegions) {
+		return false
+	}
+	if buildingID == "port" && !region.IsCoastal(r.gs.Regions) {
+		return false
+	}
+	if buildingID != "port" && building.RequiredTerrain != "" && string(region.Terrain) != building.RequiredTerrain {
+		return false
+	}
+	maxLevel := r.gs.BuildingLevelCap(region, buildingID)
+	return maxLevel > 0 && region.BuildingLevel(buildingID) < maxLevel
+}
+
+func (r *Renderer) editBuildingPanelInteractiveHit(mx, my float64) bool {
+	if r == nil || r.gs == nil || !r.editBuildingsPanel {
+		return false
+	}
+	if editBuildingsPanelCloseButton().HitTest(mx, my) {
+		return true
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	for index, id := range r.editBuildingIDs() {
+		minus := editBuildingsPanelMinusButton(index, region != nil && region.BuildingLevel(id) > 0)
+		plus := editBuildingsPanelPlusButton(index, r.editBuildingCanAdd(region, id))
+		if minus.HitTest(mx, my) || plus.HitTest(mx, my) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Renderer) drawEditBuildingsPanel(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || !r.editBuildingsPanel {
+		return
+	}
+	rect := editBuildingsPanelRect()
+	drawUIOverlay(screen, color.RGBA{0, 0, 0, 150})
+	drawUIPanelRect(screen, rect, color.RGBA{16, 20, 24, 248}, panelBorder, 1)
+	drawUIPanelTitle(screen, gameui.Rect{X: rect.X, Y: rect.Y + 12, W: rect.W}, "BÖLGE BİNALARI")
+	drawCloseButton(screen, editBuildingsPanelCloseButton())
+
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || region.IsSea {
+		drawUILabel(screen, gameui.Rect{X: rect.X + 24, Y: rect.Y + 54, W: rect.W - 48}, "Önce bir kara bölgesi seçin.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		return
+	}
+	name := region.NameTR
+	if name == "" {
+		name = region.Name
+	}
+	drawUILabel(screen, gameui.Rect{X: rect.X + 24, Y: rect.Y + 54, W: rect.W - 48}, name+"  ["+string(region.ID)+"]", ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 24, Y: rect.Y + 72, W: rect.W - 48}, "Seviye doğrudan değişir; maliyet ve inşa süresi uygulanmaz.", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+
+	for index, id := range r.editBuildingIDs() {
+		building := r.gs.BuildingTypes[id]
+		row := editBuildingsPanelRowRect(index)
+		vector.FillRect(screen, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), color.RGBA{28, 24, 18, 220}, false)
+		vector.StrokeRect(screen, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), 1, color.RGBA{76, 62, 40, 210}, false)
+		label := id
+		if building.NameTR != "" {
+			label = building.NameTR
+		}
+		allowed := region.AllowsBuilding(id, building.MinorRegions)
+		if !allowed {
+			label += " (bu bölgede kullanılamaz)"
+		}
+		labelColor := color.Color(ColorGray)
+		if allowed {
+			labelColor = ColorWhite
+		}
+		drawUILabel(screen, gameui.Rect{X: row.X + 12, Y: row.Y + 8, W: 258}, label, labelColor, gameui.TextSmall, gameui.TextAlignStart)
+		level := region.BuildingLevel(id)
+		maxLevel := r.gs.BuildingLevelCap(region, id)
+		drawUILabel(screen, gameui.Rect{X: row.X + 300, Y: row.Y + 8, W: 82}, "Lv "+itoa(level)+" / "+itoa(maxLevel), ColorGold, gameui.TextSmall, gameui.TextAlignCenter)
+		drawUIButtonWidget(screen, editBuildingsPanelMinusButton(index, level > 0), dangerTinyButtonStyle)
+		drawUIButtonWidget(screen, editBuildingsPanelPlusButton(index, r.editBuildingCanAdd(region, id)), applyTinyButtonStyle)
+	}
+	drawUIButtonWidget(screen, editBuildingsPanelFooterButton(), tinyButtonStyle)
+}
+
+func (r *Renderer) openEditBuildingsPanel() {
+	if r == nil || r.gs == nil {
+		return
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	if region == nil || region.IsSea || region.IsTerrainArea {
+		return
+	}
+	r.editOwnerDropdown.Close()
+	r.editSuccessorDropdown.Close()
+	r.editTerrainDropdown.Close()
+	r.editSettlementTypeDropdown.Close()
+	r.editUnitTypeDropdown.Close()
+	r.editBuildingsPanel = true
+}
+
+func (r *Renderer) closeEditBuildingsPanel() {
+	if r != nil {
+		r.editBuildingsPanel = false
+	}
+}
+
+func (r *Renderer) handleEditBuildingsPanelInput() InputAction {
+	if r == nil || !r.editBuildingsPanel {
+		return InputAction{}
+	}
+	if r.keyJustPressed(ebiten.KeyEscape) {
+		r.closeEditBuildingsPanel()
+		return InputAction{}
+	}
+	mx, my := ebiten.CursorPosition()
+	fx, fy := float64(mx), float64(my)
+	if !r.mouseJustPressed(ebiten.MouseButtonLeft) {
+		return InputAction{}
+	}
+	if editBuildingsPanelCloseButton().HitTest(fx, fy) || editBuildingsPanelFooterButton().HitTest(fx, fy) {
+		r.closeEditBuildingsPanel()
+		return InputAction{}
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	for index, id := range r.editBuildingIDs() {
+		if editBuildingsPanelMinusButton(index, region != nil && region.BuildingLevel(id) > 0).HitTest(fx, fy) {
+			r.changeEditBuildingLevel(id, -1)
+			return InputAction{}
+		}
+		if editBuildingsPanelPlusButton(index, r.editBuildingCanAdd(region, id)).HitTest(fx, fy) {
+			r.changeEditBuildingLevel(id, 1)
+			return InputAction{}
+		}
+	}
+	return InputAction{}
+}
+
+func (r *Renderer) changeEditBuildingLevel(buildingID string, delta int) bool {
+	if r == nil || r.gs == nil || delta == 0 {
+		return false
+	}
+	region := r.gs.Regions[r.editSelectedRegion]
+	building := r.gs.BuildingTypes[buildingID]
+	if region == nil || building == nil || region.IsSea || delta < -1 || delta > 1 {
+		return false
+	}
+	level := region.BuildingLevel(buildingID)
+	if delta > 0 {
+		if !r.editBuildingCanAdd(region, buildingID) {
+			return false
+		}
+		region.Buildings = append(region.Buildings, buildingID)
+	} else {
+		if level == 0 {
+			return false
+		}
+		for index := len(region.Buildings) - 1; index >= 0; index-- {
+			if region.Buildings[index] != buildingID {
+				continue
+			}
+			region.Buildings = append(region.Buildings[:index], region.Buildings[index+1:]...)
+			break
+		}
+	}
+	r.editDirty = true
+	r.RebuildSettlementAnchors()
+	r.MarkMapDirty()
+	return true
 }
 
 func drawEditInspectorSaveButton(screen *ebiten.Image, enabled bool) {
@@ -678,6 +912,7 @@ const (
 	editButtonRegionOwner
 	editButtonRegionSuccessor
 	editButtonRegionPrivilege
+	editButtonRegionBuildings
 	editButtonRegionNameTR
 	editButtonRegionName
 	editButtonRegionID
@@ -772,6 +1007,8 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return leftRect(6)
 	case editButtonEditRegionData:
 		return rightRect(6)
+	case editButtonRegionBuildings:
+		return leftRect(7)
 	case editButtonDeleteRegion:
 		return rightRect(0)
 	case editButtonRegionTerrain:
@@ -799,7 +1036,7 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	case editButtonRegionSuccessor:
 		return rightRect(0)
 	case editButtonRegionPrivilege:
-		return full(7)
+		return rightRect(7)
 	case editButtonRegionOwner:
 		return leftRect(0)
 	case editButtonShapePaint:
@@ -983,6 +1220,7 @@ func editRegionInspectorButtonAt(mx, my float64) editInspectorButton {
 		editButtonAddNeighbor,
 		editButtonEditRegionData,
 		editButtonRegionPrivilege,
+		editButtonRegionBuildings,
 	} {
 		if buildEditInspectorActionButton(kind, "").HitTest(mx, my) {
 			return kind
@@ -1572,6 +1810,9 @@ func editCtrlPressed() bool {
 }
 
 func (r *Renderer) handleEditModeInput() InputAction {
+	if r.editBuildingsPanel {
+		return r.handleEditBuildingsPanelInput()
+	}
 	if r.editRenaming {
 		return r.handleEditRenameInput()
 	}
@@ -2240,6 +2481,8 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 		r.toggleEditNeighborAddMode()
 	case editButtonEditRegionData:
 		r.openEditRegionForm()
+	case editButtonRegionBuildings:
+		r.openEditBuildingsPanel()
 	case editButtonRegionPrivilege:
 		r.toggleSelectedRegionPrivilege()
 	case editButtonAddRegion:

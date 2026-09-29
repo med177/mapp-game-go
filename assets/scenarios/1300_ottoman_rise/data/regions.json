@@ -8583,8 +8583,6 @@
       "market",
       "farm",
       "farm",
-      "farm",
-      "farm",
       "farm"
     ]
   },
@@ -14710,7 +14708,13 @@
     "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "port",
+      "walls",
+      "farm",
+      "farm",
+      "farm"
+    ]
   },
   {
     "id": "thames_entrance",

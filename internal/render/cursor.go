@@ -171,6 +171,12 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 			return ebiten.CursorShapePointer
 		}
 	case state.PhasePlayerTurn, state.PhaseEditMode:
+		if r.gs.Phase == state.PhaseEditMode && r.editBuildingsPanel {
+			if r.editBuildingPanelInteractiveHit(fx, fy) {
+				return ebiten.CursorShapePointer
+			}
+			return ebiten.CursorShapeDefault
+		}
 		if r.gs.Phase == state.PhaseEditMode && r.editNewShapeModal.show {
 			if editNewShapeModalHit(fx, fy) {
 				return ebiten.CursorShapePointer

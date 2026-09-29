@@ -427,6 +427,7 @@ type Renderer struct {
 	editMapLastPostProcessDuration    time.Duration
 	editFactionForm                   editFactionFormState
 	editRegionForm                    editRegionFormState
+	editBuildingsPanel                bool
 }
 
 type merchantTradeMainPortRef struct {
@@ -1423,6 +1424,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.queuedBattleReport = battleReportState{}
 	r.warSummary = warSummaryState{}
 	r.eventLogScroll = 0
+	r.editBuildingsPanel = false
 	r.editRegionPaintOverrides = make(map[int]world.RegionID)
 	// Oyun durumundan region paint overrides'ı geri yükle
 	if gs.RegionPaintOverrides != nil {
@@ -2084,6 +2086,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawEditFactionForm(screen)
 		r.drawEditRegionForm(screen)
 		r.drawEditNewShapeModal(screen)
+		r.drawEditBuildingsPanel(screen)
 	}
 
 	// 7. Diplomasi paneli (üst katman)

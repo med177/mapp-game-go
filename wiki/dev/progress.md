@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-29: Edit Mode bölge inspector'ına `Binalar` paneli eklendi. Seçili
+  bölgedeki senaryo bina türleri ve mevcut seviyeleri gösteriliyor; uygun
+  binalar doğrudan eklenip azaltılabiliyor, bina tanımındaki seviye tavanı ve
+  minor/kıyı/arazi izinleri korunuyor. Değişiklikler `Region.Buildings` alanına
+  işlendiği için senaryo kaydetme akışıyla birlikte kalıcı hale geliyor
+  (`internal/render/map_editor.go`, `internal/render/edit_buildings_test.go`).
+
 - 2026-09-29: 1300 senaryosunun batı HRE verisi tarihsel ayrımla güncellendi.
   Dijon kimliği Lyon olarak ayrıştırıldı; 1300'de imparatorluk egemenliğindeki
   Lyon doğrudan HRE bölgesi olarak kaldı. Franche-Comté/Burgonya Kontluğu,
