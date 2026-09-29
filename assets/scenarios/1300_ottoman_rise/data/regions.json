@@ -1737,7 +1737,6 @@
       "area::area__114",
       "area::area__13",
       "area::area__17::switzerland",
-      "milan",
       "sch_zurich",
       "tyrol"
     ],
@@ -10255,7 +10254,6 @@
       "area::area__27",
       "cremona",
       "genoa",
-      "switzerland",
       "turin"
     ],
     "world_x": 666,
