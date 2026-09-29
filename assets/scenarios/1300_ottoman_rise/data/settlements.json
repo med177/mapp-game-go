@@ -5227,13 +5227,29 @@
     "region_id": "germiyan",
     "settlements": [
       {
-        "id": "germiyan_kutahya",
-        "name_tr": "Kütahya",
-        "x": 1070,
-        "y": 490,
+        "id": "germiyan_kula",
+        "name_tr": "Kula",
+        "x": 1036,
+        "y": 504,
         "type": "fortress",
         "is_center": true,
-        "population": 133
+        "population": 0
+      },
+      {
+        "id": "germiyan_gediz",
+        "name_tr": "Gediz",
+        "x": 1050,
+        "y": 498,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "germiyan_usak",
+        "name_tr": "Uşak",
+        "x": 1057,
+        "y": 505,
+        "type": "town",
+        "population": 49
       }
     ]
   },
@@ -5272,6 +5288,14 @@
         "y": 469,
         "type": "port",
         "population": 52
+      },
+      {
+        "id": "karesi_balikesir",
+        "name_tr": "Karesi",
+        "x": 1032,
+        "y": 480,
+        "type": "city",
+        "population": 0
       }
     ]
   },
@@ -6085,14 +6109,6 @@
         "population": 31
       },
       {
-        "id": "teke_konya_beysehir",
-        "name_tr": "Seydişehir",
-        "x": 1118,
-        "y": 518,
-        "type": "town",
-        "population": 15
-      },
-      {
         "id": "teke_teke_beysehir",
         "name_tr": "Beyşehir",
         "x": 1111,
@@ -6121,9 +6137,17 @@
         "id": "teke_finike",
         "name_tr": "Finike",
         "x": 1079,
-        "y": 548,
+        "y": 547,
         "type": "port",
         "population": 22
+      },
+      {
+        "id": "teke_konya_beysehir",
+        "name_tr": "Seydişehir",
+        "x": 1117,
+        "y": 519,
+        "type": "town",
+        "population": 15
       }
     ]
   },
@@ -7491,7 +7515,7 @@
       {
         "id": "bithynia_bilecik",
         "name_tr": "Pazaryeri",
-        "x": 1066,
+        "x": 1065,
         "y": 483,
         "type": "fortress",
         "is_center": true,
@@ -7511,21 +7535,37 @@
     "region_id": "kutahya",
     "settlements": [
       {
-        "id": "kutahya_usak",
-        "name_tr": "Uşak",
-        "x": 1059,
-        "y": 502,
-        "type": "town",
-        "population": 49
-      },
-      {
         "id": "kutahya_simav",
         "name_tr": "Simav",
-        "x": 1053,
-        "y": 496,
+        "x": 1052,
+        "y": 494,
         "type": "city",
         "is_center": true,
         "population": 98
+      },
+      {
+        "id": "germiyan_kutahya",
+        "name_tr": "Kütahya",
+        "x": 1070,
+        "y": 490,
+        "type": "fortress",
+        "population": 133
+      },
+      {
+        "id": "kutahya_settlement_3",
+        "name_tr": "Tavşanlı",
+        "x": 1062,
+        "y": 488,
+        "type": "town",
+        "population": 0
+      },
+      {
+        "id": "kutahya_emet",
+        "name_tr": "Emet",
+        "x": 1056,
+        "y": 492,
+        "type": "town",
+        "population": 0
       }
     ]
   },
@@ -8069,8 +8109,8 @@
       {
         "id": "chrysopolis_chrysopolis",
         "name_tr": "Hrisopolis",
-        "x": 1088,
-        "y": 454,
+        "x": 1090,
+        "y": 456,
         "type": "city",
         "is_center": true,
         "population": 42

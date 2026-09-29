@@ -9436,15 +9436,14 @@
     "successor_faction_id": "germiyan_bey",
     "neighbors": [
       "area::area__41",
-      "beysehir",
-      "bilecik_frontier",
-      "hamideli",
+      "area::area__42",
+      "bithynia",
+      "izmir",
       "kutahya",
-      "mentese",
-      "sivrihisar"
+      "saruhan"
     ],
-    "world_x": 1080,
-    "world_y": 499,
+    "world_x": 1048,
+    "world_y": 503,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -9459,7 +9458,7 @@
     "trade_capacity": 2,
     "satisfaction": 60,
     "tax_rate": 30,
-    "population": 380,
+    "population": 296,
     "rural_population": 247,
     "religion": "sunni",
     "active_event_id": "",
@@ -9565,10 +9564,10 @@
     "neighbors": [
       "aegean_sea",
       "bithynia",
+      "germiyan",
       "islands_sea",
       "izmir",
-      "karesi",
-      "kutahya"
+      "karesi"
     ],
     "world_x": 1022,
     "world_y": 495,
@@ -9613,8 +9612,8 @@
     "successor_faction_id": "aydin_bey",
     "neighbors": [
       "area::area__42",
+      "germiyan",
       "islands_sea",
-      "kutahya",
       "mentese_hinterland",
       "saruhan"
     ],
@@ -9666,8 +9665,8 @@
       "mediterranean_open_1",
       "mentese"
     ],
-    "world_x": 1042,
-    "world_y": 523,
+    "world_x": 1044,
+    "world_y": 521,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -10623,14 +10622,13 @@
     "neighbors": [
       "area::area__41",
       "area::area__42",
-      "germiyan",
       "kutahya",
       "mediterranean_open_1",
       "mentese_hinterland",
       "teke"
     ],
-    "world_x": 1059,
-    "world_y": 519,
+    "world_x": 1058,
+    "world_y": 521,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -10679,7 +10677,7 @@
       "mentese",
       "tasucu"
     ],
-    "world_x": 1101,
+    "world_x": 1098,
     "world_y": 522,
     "shape_id": "TUR",
     "is_sea": false,
@@ -10721,10 +10719,10 @@
       "area::area__41",
       "area::area__61",
       "beysehir",
-      "germiyan",
+      "kutahya",
       "teke"
     ],
-    "world_x": 1089,
+    "world_x": 1093,
     "world_y": 502,
     "shape_id": "TUR",
     "is_sea": false,
@@ -10767,11 +10765,11 @@
     "neighbors": [
       "aksaray",
       "bilecik_frontier",
-      "germiyan",
       "hamideli",
+      "kutahya",
       "sivrihisar"
     ],
-    "world_x": 1093,
+    "world_x": 1095,
     "world_y": 490,
     "shape_id": "TUR",
     "is_sea": false,
@@ -10855,8 +10853,7 @@
       "beysehir",
       "bilecik_frontier",
       "cankiri",
-      "chrysopolis",
-      "germiyan"
+      "chrysopolis"
     ],
     "world_x": 1096,
     "world_y": 479,
@@ -12661,6 +12658,7 @@
     "neighbors": [
       "bilecik_frontier",
       "bursa",
+      "germiyan",
       "karesi",
       "kutahya",
       "saruhan"
@@ -12704,15 +12702,17 @@
     "owner_id": "germiyan_bey",
     "successor_faction_id": "germiyan_bey",
     "neighbors": [
+      "area::area__41",
       "area::area__42",
+      "beysehir",
+      "bilecik_frontier",
       "bithynia",
       "germiyan",
-      "izmir",
-      "mentese",
-      "saruhan"
+      "hamideli",
+      "mentese"
     ],
-    "world_x": 1054,
-    "world_y": 497,
+    "world_x": 1061,
+    "world_y": 496,
     "shape_id": "TUR",
     "is_sea": false,
     "is_locked": false,
@@ -12727,7 +12727,7 @@
     "trade_capacity": 3,
     "satisfaction": 62,
     "tax_rate": 28,
-    "population": 420,
+    "population": 504,
     "rural_population": 273,
     "religion": "sunni",
     "active_event_id": "",
@@ -12736,7 +12736,12 @@
       "farm",
       "farm",
       "farm",
-      "farm"
+      "farm",
+      "walls",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
     ]
   },
   {
@@ -13250,7 +13255,7 @@
       "bithynia",
       "bursa",
       "chrysopolis",
-      "germiyan",
+      "kutahya",
       "nicomedia",
       "sivrihisar"
     ],
