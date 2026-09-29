@@ -235,6 +235,11 @@ Olay tetiklendiğinde:
   - `Hazir`: tarih ve koşullar uygun
   - `Takvim`: koşullar uygun ama event tarihi henüz gelmedi
   - `Kilitli`: flag, bölge, tech veya diplomasi koşulu eksik
+- `dynastic_settlement` etkisinde alıcı faction oyuncuysa event, `Oyuncu`
+  filtresinde de gösterilir. Tarihi geçmiş fakat state koşulları nedeniyle
+  uygulanmamış state-tetikli eventler listeden silinmez; koşulları sağlanmıyorsa
+  `Kilitli` olarak kalır. Kodex listesi kaydırılabildiği için eventler ilk 12
+  kayıtla sınırlandırılmaz.
 - Kodex popup'ında `Tümü / Hazır / Takvim / Kilitli` filtre sekmeleri bulunur; ok tuşları veya mouse ile değiştirilebilir
 - Kodex popup'ında bekleyen event filtrelerinin yanında `Gerçekleşen` sekmesi de bulunur; tarihi gelip uygulanmış tarihsel eventler `FiredEventIDs` kaydından bu sekmede listelenir
 - Kodex listesi artık event başına:
@@ -254,7 +259,8 @@ Olay tetiklendiğinde:
   - sağda seçilen zincirin tam açıklaması, kalan süre ve eksik koşul dökümü
 - Üst HUD altındaki `Aşırı Genişleme` bilgi paneli, Kodex'in `Tümü` listesindeki
   kalan turu en az olan event başlığını `(N tur)` biçiminde gösterir. Panel
-  tıklanınca aynı event kimliğiyle Kodex satırını seçerek açar.
+  tıklanınca aynı event kimliğiyle Kodex satırını seçerek açar. Hover popup'ı
+  event tarihi, kalan tur, koşul durumu ve getirileri kısa biçimde gösterir.
 
 ---
 

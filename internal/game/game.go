@@ -1912,6 +1912,22 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 		if entry.status == "Gerçekleşti" {
 			detail = append(detail, "Durum: Bu event gerçekleşti.")
 		}
+		conditionSummary := "Koşullar sağlanıyor."
+		if len(entry.reasons) > 0 {
+			conditionSummary = g.codexReasonLabel(entry.reasons[0], evt)
+		} else if entry.timingReason != "" {
+			conditionSummary = "Takvim bekleniyor"
+		} else if entry.status == "Gerçekleşti" {
+			conditionSummary = "Gerçekleşti"
+		}
+		effectSummary := strings.Join(g.eventCodexEffectLines(evt), " | ")
+		if effectSummary == "" {
+			if len(evt.Choices) > 0 {
+				effectSummary = "Seçimlere bağlı"
+			} else {
+				effectSummary = "Belirtilen getiri yok"
+			}
+		}
 		if len(entry.reasons) > 0 {
 			detail = append(detail, "Kritik eksik: "+g.codexReasonLabel(entry.reasons[0], evt))
 			for _, reason := range entry.reasons {
@@ -1923,18 +1939,17 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 			detail = append(detail, "Koşullar sağlanıyor.")
 		}
 		views = append(views, render.EventCodexEntry{
-			EventID:     evt.ID,
-			Title:       evt.NameTR,
-			Status:      entry.status,
-			DateLabel:   dateLabel,
-			Summary:     evt.DescTR,
-			Detail:      strings.Join(detail, "\n"),
-			MonthsUntil: entry.monthsUntil,
-			TurnsUntil:  turnsUntilHistoricalEvent(g.gs, evt),
+			EventID:          evt.ID,
+			Title:            evt.NameTR,
+			Status:           entry.status,
+			DateLabel:        dateLabel,
+			Summary:          evt.DescTR,
+			Detail:           strings.Join(detail, "\n"),
+			ConditionSummary: conditionSummary,
+			EffectSummary:    effectSummary,
+			MonthsUntil:      entry.monthsUntil,
+			TurnsUntil:       turnsUntilHistoricalEvent(g.gs, evt),
 		})
-		if len(views) >= 12 {
-			break
-		}
 	}
 	return views
 }
@@ -1956,7 +1971,9 @@ func (g *Game) collectEventCodexEntries(filter string) []eventCodexEntry {
 		if filter == eventCodexPlayerFilter && !g.eventRelevantToPlayer(evt) {
 			continue
 		}
-		if !past && (evt.HistoricalYear < g.gs.Year || (evt.HistoricalYear == g.gs.Year && evt.HistoricalMonth != 0 && evt.HistoricalMonth < g.gs.Month)) {
+		historicalDatePassed := evt.HistoricalYear < g.gs.Year ||
+			(evt.HistoricalYear == g.gs.Year && evt.HistoricalMonth != 0 && evt.HistoricalMonth < g.gs.Month)
+		if !past && historicalDatePassed && !events.HasStateTrigger(evt) {
 			continue
 		}
 		entry := eventCodexEntry{

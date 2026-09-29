@@ -288,9 +288,9 @@ func (r *Renderer) rebuildUILayers() {
 	if r.armyOrganizationPopupHoveringAtCursor() {
 		r.addUILayer(uiLayerPopup, armyOrganizationPopupRect())
 	}
-	if r.overextensionPopupHoveringAtCursor() {
+	if r.eventAlertPopupHoveringAtCursor() {
 		mx, my := ebiten.CursorPosition()
-		r.addUILayer(uiLayerPopup, overextensionPopupRect(float64(mx), float64(my)))
+		r.addUILayer(uiLayerPopup, eventAlertPopupRect(float64(mx), float64(my)))
 	}
 
 	if r.SelectedRegion != "" {

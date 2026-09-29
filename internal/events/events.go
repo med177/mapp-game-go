@@ -380,6 +380,13 @@ func historicalEventHasStateTrigger(e *Event) bool {
 		e.FactionSubjugationTrigger != nil
 }
 
+// HasStateTrigger, Kodex gibi dış tüketicilerin tarihsel event'in takvim
+// geçse bile state koşulları oluştuğunda hâlâ uygulanabilir olup olmadığını
+// aynı canonical helper üzerinden değerlendirmesini sağlar.
+func HasStateTrigger(e *Event) bool {
+	return historicalEventHasStateTrigger(e)
+}
+
 func pendingHistoricalEventKey(id string) string {
 	return "pending:event:" + id
 }
@@ -476,6 +483,9 @@ func IsPlayerRelevant(gs *state.GameState, e *Event) bool {
 			if playerFactionID == string(gs.PlayerFactionID) {
 				return true
 			}
+		}
+		if e.DynasticSettlement != nil && e.DynasticSettlement.RecipientFactionID == string(gs.PlayerFactionID) {
+			return true
 		}
 		return false
 	case "player_faction", "all_factions", "all_armies", "random_region":

@@ -39,7 +39,7 @@ func TestOverextensionHUDTextShowsPlayerValue(t *testing.T) {
 	}
 }
 
-func TestOverextensionHUDUsesPointerAndPopupThresholdLines(t *testing.T) {
+func TestOverextensionHUDUsesPointerAndEventPopup(t *testing.T) {
 	r := &Renderer{gs: &state.GameState{Phase: state.PhasePlayerTurn, PlayerFactionID: "player"}}
 	r.rebuildUILayers()
 	alert := topAlertHudRect()
@@ -51,8 +51,31 @@ func TestOverextensionHUDUsesPointerAndPopupThresholdLines(t *testing.T) {
 	if got := r.cursorShapeAt(mx, my); got != ebiten.CursorShapePointer {
 		t.Fatalf("Aşırı Genişleme cursor şekli = %v, want pointer", got)
 	}
-	if got := len(overextensionPopupRangeLines()); got != 4 {
-		t.Fatalf("Aşırı Genişleme popup eşik satırı = %d, want 4", got)
+	r.eventCodexEntries = [6][]EventCodexEntry{{
+		{EventID: "event-1", Title: "Bursa'nın Fethi", Status: "Takvim", DateLabel: "1326/04", TurnsUntil: 3, ConditionSummary: "Takvim bekleniyor", EffectSummary: "Etki: +100 altın"},
+	}}
+	if !r.nearestEventHUDHovering(mx, my) {
+		t.Fatal("yaklaşan event alanı hover olarak algılanmadı")
+	}
+}
+
+func TestEventAlertPopupUsesDateConditionsAndEffects(t *testing.T) {
+	event := EventCodexEntry{
+		Title:            "Bursa'nın Fethi",
+		DateLabel:        "1326/04",
+		TurnsUntil:       3,
+		ConditionSummary: "Bursa sahibi olmalı",
+		EffectSummary:    "Etki: +100 altın",
+	}
+	lines := eventAlertPopupLines(event)
+	if lines[1] != "Tarih: 1326/04 • Kalan: 3 tur" {
+		t.Fatalf("event popup tarih satırı = %q", lines[1])
+	}
+	if lines[2] != "Şartlar: Bursa sahibi olmalı" {
+		t.Fatalf("event popup şart satırı = %q", lines[2])
+	}
+	if lines[3] != "Getiriler: +100 altın" {
+		t.Fatalf("event popup getiri satırı = %q", lines[3])
 	}
 }
 

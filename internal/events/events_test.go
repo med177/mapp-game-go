@@ -697,6 +697,25 @@ func TestApplyDynasticSettlementTransfersDowryAndFinalUnion(t *testing.T) {
 	}
 }
 
+func TestIsPlayerRelevantIncludesDynasticSettlementRecipient(t *testing.T) {
+	const (
+		ottomanID  = faction.FactionID("ottoman")
+		germiyanID = faction.FactionID("germiyan_bey")
+	)
+	gs := &state.GameState{PlayerFactionID: ottomanID}
+	event := &Event{
+		Target:          "specific_faction",
+		AffectedFaction: string(germiyanID),
+		DynasticSettlement: &DynasticSettlementEffect{
+			SourceFactionID:    string(germiyanID),
+			RecipientFactionID: string(ottomanID),
+		},
+	}
+	if !IsPlayerRelevant(gs, event) {
+		t.Fatal("hanedan aktarımının alıcısı olan oyuncu event'i ilgili görmüyor")
+	}
+}
+
 func TestApplyBaseEventReinforcement(t *testing.T) {
 	const ownerID = faction.FactionID("ottoman")
 	capital := &world.Region{

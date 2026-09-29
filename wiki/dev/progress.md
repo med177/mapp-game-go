@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: Event Kodex, hanedan aktarımının alıcısı olan oyuncu faction'ına
+  ait eventleri `Oyuncu` filtresinde göstermeye başladı. Tarihi geçmiş fakat
+  state koşulları nedeniyle bekleyen eventler `Kilitli` olarak korunuyor;
+  kaydırmalı Kodex listesi artık ilk 12 kayıtla kesilmiyor. Germiyan çeyizi ve
+  vasiyeti bu akışta görünür hale geldi (`internal/events/events.go`,
+  `internal/game/game.go`).
+
 - 2026-09-30: 1300 Osmanlı senaryosuna Karesi'nin Dursun Bey sonrası barışçıl
   katılımı, 1381 Germiyan çeyizi ve 1429 Germiyan vasiyeti eklendi. Yeni
   `dynastic_settlement` event etkisi Kütahya'nın savaşsız devrini, Germiyan
@@ -18,8 +25,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-09-30: Üst HUD altındaki `Aşırı Genişleme` bilgi paneli artık en yakın
   tarihsel event başlığını ve kalan turu parantez içinde gösteriyor. Panel hover
   edildiğinde pointer cursor kullanıyor; tıklama Event Kodex'i `Tümü` sekmesinde
-  ilgili event kimliğine göre seçili açıyor (`internal/render/panel.go`,
-  `internal/render/renderer.go`).
+  ilgili event kimliğine göre seçili açıyor. Hover popup'ı artık Aşırı Genişleme
+  eşikleri yerine event tarihi, koşul durumu ve getirileri özetliyor
+  (`internal/render/overextension_popup.go`, `internal/render/renderer.go`).
 
 - 2026-09-29: Sonradan tamamlanan `port` binalarının ürettiği `Liman` marker'ı,
   mevcut yerleşim marker'larından ayrıştırılmış en yakın kıyı adayına
@@ -213,8 +221,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-09-27: Üst HUD'ın altındaki ince uyarı şeridine, son genişleme hızından
   türetilen `Aşırı Genişleme` yüzdesi eklendi. Oyuncu değeri 0-100 arasında
-  renkli olarak görür; hover durumunda pointer ve eşiklerin anlamını açıklayan
-  bilgi popup'ı açılır; AI aynı
+  renkli olarak görür; AI aynı
   değeri savaş puanında kullanarak saldırganlığı yüksek devletlerin riski daha
   fazla göze almasına, temkinli devletlerin ise yeni genişlemeyi yavaşlatmasına
   izin verir. Regresyonlar: `TestOverextensionScoreUsesRecentAndRelativeExpansion`,
