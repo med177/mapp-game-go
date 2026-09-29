@@ -111,10 +111,12 @@ Minor bölgelerde `successor_faction_id` Edit Mode tarafından otomatik doldurul
 yeni minor kayıtlarında alan boş/eksik kalır. Kullanıcı `Ardıl Devlet` seçerse
 alan o zaman açıkça doldurulabilir.
 
-Kara birimi üretimi için bölgede en az bir `barracks` seviyesi gerekir; bina
-gereksinimi olmayan milis de bu kuralın dışına çıkmaz. `port` bulunan fakat
+Kara birimi üretimi için bölgede en az bir `barracks` seviyesi gerekir; milis
+de bu kuralın dışına çıkmaz. `port` bulunan fakat
 `barracks` bulunmayan kıyı bölgelerinde yalnız deniz birimi üretim hattı açık
-kalır. Kışla ve limanın ikisi de yoksa alt HUD'daki üretim düğmesi pasif olur.
+kalır. En az bir birim hattının bina gereksinimi sağlanıyorsa alt HUD'daki
+üretim düğmesi aktiftir; teknoloji ve kaynak eksikleri üretim panelindeki kartta
+gösterilir. Kışla ve limanın ikisi de yoksa düğme pasif olur.
 
 `WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_center` ile seçilir. Bu alan hiçbir yerleşimde yoksa runtime merkezi sırasıyla kale, şehir, kasaba ve liman tiplerinden seçer ve seçimi `is_center` olarak tamamlar. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
 
@@ -133,7 +135,7 @@ type Settlement struct {
 
 Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken uyarı loglanır ve nokta aynı region içindeki en yakın piksele taşınır.
 
-Kıyı bölgesinde `port` binası tamamlandığında, bölgede henüz `type=port` settlement yoksa oyun bu bölge için denize yakın yeni bir `Liman` yerleşimi üretir. Bu akış minor bölgeler için de aynıdır; Edit Mode'da minor alan kıyıya boyandığında görsel deniz komşuluğu state'e aktarılır. Böylece liman binası sadece ekonomi/üretim değil, dock edilen filonun görünür anchor noktası için de tekil veri kaynağı olur.
+Kıyı bölgesinde `port` binası tamamlandığında, bölgede henüz `type=port` settlement yoksa oyun bu bölge için denize yakın yeni bir `Liman` yerleşimi üretir. Kıyı adayı aynı bölgedeki mevcut settlement marker'larından en az marker açıklığı kadar ayrılır; tercih edilen nokta doluysa aynı kıyı doğrultusundaki başka bir aday seçilir. Bu akış minor bölgeler için de aynıdır; Edit Mode'da minor alan kıyıya boyandığında görsel deniz komşuluğu state'e aktarılır. Böylece liman binası sadece ekonomi/üretim değil, dock edilen filonun görünür anchor noktası için de tekil veri kaynağı olur.
 
 `1300_ottoman_rise` başlangıç verisinde Londra, Normandiya, Portekiz, Sicilya ve
 Mısır'a tarihsel başlangıç filolarının dock edilebilmesi için birinci seviye `port`

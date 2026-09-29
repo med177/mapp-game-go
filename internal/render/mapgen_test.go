@@ -22,6 +22,60 @@ func TestLoadMinorRegionPolygonsTreatsEmptyJSONAsNoPolygons(t *testing.T) {
 	}
 }
 
+func TestCoastalSettlementPointAvoidsExistingSettlementMarker(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY
+	originalShapeScaleX, originalShapeScaleY := shapeScaleX, shapeScaleY
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+		shapeOffX, shapeOffY = originalShapeOffX, originalShapeOffY
+		shapeScaleX, shapeScaleY = originalShapeScaleX, originalShapeScaleY
+	})
+	WorldW, WorldH = 8, 40
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	landID := world.RegionID("land")
+	seaID := world.RegionID("sea")
+	land := &world.Region{
+		ID: landID, WorldX: 1, WorldY: 20,
+		Neighbors:   []world.RegionID{seaID},
+		Settlements: []world.Settlement{{ID: "castle", X: 1, Y: 20}},
+	}
+	sea := &world.Region{ID: seaID, IsSea: true, WorldX: 6, WorldY: 20}
+	regionAt := make([]uint16, WorldW*WorldH)
+	regionPixels := make([]int, 0, 3*WorldH)
+	for y := 0; y < WorldH; y++ {
+		for x := 0; x < 3; x++ {
+			regionAt[y*WorldW+x] = 1
+			regionPixels = append(regionPixels, y*WorldW+x)
+		}
+		for x := 3; x < WorldW; x++ {
+			regionAt[y*WorldW+x] = 2
+		}
+	}
+	wm := &WorldMap{
+		regionAt:  regionAt,
+		regionIDs: []world.RegionID{"", landID, seaID},
+		regionIdx: map[world.RegionID]uint16{landID: 1, seaID: 2},
+		regionPx:  map[world.RegionID][]int{landID: regionPixels},
+	}
+
+	x, y, ok := wm.CoastalSettlementPoint(land, map[world.RegionID]*world.Region{
+		landID: land,
+		seaID:  sea,
+	})
+	if !ok {
+		t.Fatal("kıyı yerleşimi için aday nokta bulunamadı")
+	}
+	if !land.SettlementPositionClear(x, y, coastalSettlementMarkerClearance) {
+		t.Fatalf("kıyı noktası mevcut marker'a çok yakın: (%d, %d)", x, y)
+	}
+	if x == 1 && y == 20 {
+		t.Fatalf("kıyı noktası mevcut marker'ın koordinatını kullandı: (%d, %d)", x, y)
+	}
+}
+
 func TestMinorRegionDoesNotAutoAssignSuccessorFaction(t *testing.T) {
 	minor := &world.Region{
 		ID: "akçakoca", OwnerID: "genoa", IsMinorRegion: true,

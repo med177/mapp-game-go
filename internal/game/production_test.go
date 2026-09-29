@@ -101,6 +101,52 @@ func TestCompleteBuildingAddsNamedPortSettlementToMinorRegion(t *testing.T) {
 	}
 }
 
+func TestCompleteBuildingPlacesPortAwayFromExistingSettlementMarker(t *testing.T) {
+	minor := &world.Region{
+		ID:            "sinop_castle",
+		IsMinorRegion: true,
+		Neighbors:     []world.RegionID{"black_sea"},
+		WorldX:        100,
+		WorldY:        200,
+		Settlements: []world.Settlement{{
+			ID:   "castle",
+			Type: world.SettlementFortress,
+			X:    110,
+			Y:    200,
+		}},
+	}
+	sea := &world.Region{
+		ID:     "black_sea",
+		IsSea:  true,
+		WorldX: 130,
+		WorldY: 200,
+	}
+	gs := &state.GameState{
+		PrivilegedBuildingMaxLevel: 1,
+		Regions: map[world.RegionID]*world.Region{
+			minor.ID: minor,
+			sea.ID:   sea,
+		},
+		BuildingTypes: map[string]*city.Building{
+			"port": {ID: "port", MaxPerRegion: 1, MinorRegions: true},
+		},
+	}
+
+	if !(&Game{gs: gs}).completeBuilding(minor, "port") {
+		t.Fatal("liman binası tamamlanmadı")
+	}
+	if len(minor.Settlements) != 2 {
+		t.Fatalf("liman yerleşimi eklenmedi: %#v", minor.Settlements)
+	}
+	port := minor.Settlements[1]
+	if port.X == 110 && port.Y == 200 {
+		t.Fatalf("liman mevcut marker'ın üzerine yerleştirildi: (%d, %d)", port.X, port.Y)
+	}
+	if !(&world.Region{Settlements: minor.Settlements[:1]}).SettlementPositionClear(port.X, port.Y, portSettlementMarkerClearance) {
+		t.Fatalf("liman mevcut marker'a çok yakın: (%d, %d)", port.X, port.Y)
+	}
+}
+
 func TestScenarioExportNeighborsRestoresSourceAreaLinks(t *testing.T) {
 	region := &world.Region{
 		ID:                "parent",

@@ -510,8 +510,7 @@ func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
 		return false
 	}
 	region := gs.Regions[rid]
-	ff := gs.Factions[gs.PlayerFactionID]
-	if region == nil || ff == nil {
+	if region == nil || gs.Factions[gs.PlayerFactionID] == nil {
 		return false
 	}
 	buildingLevels := region.BuildingLevels()
@@ -523,12 +522,9 @@ func RecruitPanelButtonEnabled(gs *state.GameState, rid world.RegionID) bool {
 		if !utype.HasBuildingRequirements(buildingLevels) {
 			continue
 		}
-		if !utype.HasAllRequiredTechs(ff.Research.Completed) {
-			continue
-		}
-		// Ordu düğmesi üretim panelini açar; kaynak uygunluğu kart üzerinde
-		// gösterilir ve üretim emri oluşturulurken oyun katmanında doğrulanır.
-		// Altın yetersizliği paneli erişilemez hale getirmemelidir.
+		// Alt HUD düğmesi, bölgede en az bir üretim hattı açıldığında paneli
+		// erişilebilir tutar. Teknoloji ve kaynak uygunluğu kart üzerinde
+		// gösterilir; üretim emri oluşturulurken oyun katmanında doğrulanır.
 		return true
 	}
 	return false

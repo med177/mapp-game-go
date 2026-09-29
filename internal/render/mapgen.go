@@ -460,7 +460,10 @@ func (wm *WorldMap) CoastalSettlementPoint(region *world.Region, regions map[wor
 	return 0, 0, false
 }
 
-const coastalSettlementInset = 2.0
+const (
+	coastalSettlementInset           = 2.0
+	coastalSettlementMarkerClearance = 12
+)
 
 func nearestSeaNeighborCenterForMap(region *world.Region, regions map[world.RegionID]*world.Region) (world.RegionID, float64, float64, bool) {
 	if region == nil {
@@ -510,7 +513,9 @@ func (wm *WorldMap) coastalSettlementPointForSea(region *world.Region, seaID wor
 	ux, uy := dx/dist, dy/dist
 	bestScore := math.MaxFloat64
 	bestProjection := -math.MaxFloat64
-	bestX, bestY := 0.0, 0.0
+	bestX, bestY := 0, 0
+	bestFallbackClearance := -1.0
+	bestFallbackScore := math.MaxFloat64
 	found := false
 
 	for _, pIdx := range pixels {
@@ -530,22 +535,49 @@ func (wm *WorldMap) coastalSettlementPointForSea(region *world.Region, seaID wor
 		perpendicularX := fromCenterX - projection*ux
 		perpendicularY := fromCenterY - projection*uy
 		score := perpendicularX*perpendicularX + perpendicularY*perpendicularY
+		candidateX := int(math.Round(worldX - ux*coastalSettlementInset))
+		candidateY := int(math.Round(worldY - uy*coastalSettlementInset))
+		candidateClearance := settlementCandidateClearanceSquared(region, candidateX, candidateY)
+		if candidateClearance > bestFallbackClearance ||
+			(math.Abs(candidateClearance-bestFallbackClearance) <= 0.0001 && score < bestFallbackScore) {
+			bestFallbackClearance = candidateClearance
+			bestFallbackScore = score
+			bestX, bestY = candidateX, candidateY
+		}
+		if !region.SettlementPositionClear(candidateX, candidateY, coastalSettlementMarkerClearance) {
+			continue
+		}
 		if score > bestScore+0.0001 || (math.Abs(score-bestScore) <= 0.0001 && projection <= bestProjection) {
 			continue
 		}
 		bestScore = score
 		bestProjection = projection
-		bestX, bestY = worldX, worldY
+		bestX, bestY = candidateX, candidateY
 		found = true
 	}
-	if !found {
+	if !found && bestFallbackClearance < 0 {
 		return 0, 0, false
 	}
+	// Sınır pikselinin kara tarafında kalması için küçük bir kara içi pay bırakıldı.
+	// Kıyının tercih edilen noktası doluysa, aynı kıyı boyunca en uzak uygun
+	// aday seçilir; böylece yeni liman mevcut marker'ın üstüne çizilmez.
+	return bestX, bestY, true
+}
 
-	// Sınır pikselinin kara tarafında kalması için küçük bir kara içi pay bırak.
-	bestX -= ux * coastalSettlementInset
-	bestY -= uy * coastalSettlementInset
-	return int(math.Round(bestX)), int(math.Round(bestY)), true
+func settlementCandidateClearanceSquared(region *world.Region, x, y int) float64 {
+	if region == nil || len(region.Settlements) == 0 {
+		return math.MaxFloat64
+	}
+	best := math.MaxFloat64
+	for _, settlement := range region.Settlements {
+		dx := float64(settlement.X - x)
+		dy := float64(settlement.Y - y)
+		distanceSquared := dx*dx + dy*dy
+		if distanceSquared < best {
+			best = distanceSquared
+		}
+	}
+	return best
 }
 
 func (wm *WorldMap) pixelTouchesRegion(px, py int, target world.RegionID) bool {

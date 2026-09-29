@@ -177,6 +177,27 @@ type Settlement struct {
 	Population int            `json:"population"`
 }
 
+// SettlementPositionClear, verilen koordinatın mevcut yerleşim marker'larına
+// yeterince uzak olup olmadığını döner. Marker ölçüsü render katmanına ait
+// olduğu için açıklık çağıran tarafından world-coordinate birimiyle verilir.
+func (r *Region) SettlementPositionClear(x, y, clearance int) bool {
+	if r == nil {
+		return false
+	}
+	if clearance < 0 {
+		clearance = 0
+	}
+	clearanceSquared := clearance * clearance
+	for _, settlement := range r.Settlements {
+		dx := settlement.X - x
+		dy := settlement.Y - y
+		if dx*dx+dy*dy < clearanceSquared {
+			return false
+		}
+	}
+	return true
+}
+
 const MinorRegionDefaultBaseGoldIncome = 10
 
 // NewMinorRegionFromParent, Edit Mode'un yeni küçük alt bölge için kullandığı

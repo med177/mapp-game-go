@@ -7,6 +7,17 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-29: Sonradan tamamlanan `port` binalarının ürettiği `Liman` marker'ı,
+  mevcut yerleşim marker'larından ayrıştırılmış en yakın kıyı adayına
+  yerleştiriliyor; renderer'sız eski/sentetik akışta da aynı çakışma koruması
+  uygulanıyor.
+
+- 2026-09-29: Alt HUD üretim düğmesi, yalnızca teknoloji/kaynak uygunluğuna
+  değil, bölgedeki birim üretim hattının bina gereksinimine bağlandı. Kışlasız
+  ama limanlı kıyı bölgeleri, deniz biriminin teknolojisi henüz açılmamış olsa
+  bile üretim panelini açabiliyor; teknoloji ve kaynak durumu birim kartında
+  gösteriliyor.
+
 - 2026-09-29: 1300 senaryosuna T4 `rifleman` / Tüfekli Piyade eklendi. Ağır
   Piyade'nin üst kademesi olan birim `barracks Lv3`, `forge Lv2`, `workshop Lv1`
   ister; `early_firearms` (1400) ve `professional_officer_corps` (1450) tarih

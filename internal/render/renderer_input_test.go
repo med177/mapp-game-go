@@ -391,7 +391,7 @@ func TestRecruitPanelStateForRegionFollowsPreference(t *testing.T) {
 	}
 }
 
-func TestRecruitPanelButtonDisabledWhenRegionHasNoMilitaryBuilding(t *testing.T) {
+func TestRecruitPanelButtonUsesUnitBuildingRequirements(t *testing.T) {
 	region := &world.Region{ID: "minor", OwnerID: "player", IsMinorRegion: true}
 	gs := &state.GameState{
 		PlayerFactionID: "player",
@@ -413,10 +413,11 @@ func TestRecruitPanelButtonDisabledWhenRegionHasNoMilitaryBuilding(t *testing.T)
 	gs.UnitTypes["transport"] = &army.UnitType{
 		ID: "transport", Category: army.CategoryNavalTrans,
 		RequiredBuildings: []army.BuildingRequirement{{ID: "port", Level: 1}},
+		RequiredTech:      []string{"navigation"},
 	}
 	gs.UnitTypeOrder = []string{"militia", "transport"}
 	if !RecruitPanelButtonEnabled(gs, region.ID) {
-		t.Fatal("yalnızca limanı olan bölgede deniz üretim paneli açılabilir olmalıydı")
+		t.Fatal("yalnızca limanı olan bölgede, teknoloji eksik olsa da üretim paneli açılabilir olmalıydı")
 	}
 }
 

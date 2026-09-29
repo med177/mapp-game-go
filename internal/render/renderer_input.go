@@ -1207,7 +1207,7 @@ func (r *Renderer) openTradeMarketPanel() {
 	r.tradeGoodFocus = 0
 	r.tradeAmount = 5
 	r.tradeRouteFilter = TradeRouteFilterOwned
-	r.tradeListFilter = TradeListAll
+	r.tradeListFilter = TradeListSellers
 	r.tradeListSort = TradeSortDistance
 }
 

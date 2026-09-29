@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	productionKindBuilding  = "building"
-	productionKindUnit      = "unit"
-	autoPortSettlementInset = 2.0
+	productionKindBuilding        = "building"
+	productionKindUnit            = "unit"
+	autoPortSettlementInset       = 2.0
+	portSettlementMarkerClearance = 12
 )
 
 type productionResult struct {
@@ -258,6 +259,7 @@ func (g *Game) ensurePortSettlement(region *world.Region) bool {
 			break
 		}
 	}
+	x, y = distinctPortSettlementPoint(region, x, y, g.gs.Regions)
 	region.Settlements = append(region.Settlements, world.Settlement{
 		ID:     nextPortSettlementID(region),
 		Name:   "Port",
@@ -268,6 +270,47 @@ func (g *Game) ensurePortSettlement(region *world.Region) bool {
 	})
 	region.RecalculatePopulation()
 	return true
+}
+
+func distinctPortSettlementPoint(region *world.Region, x, y int, regions map[world.RegionID]*world.Region) (int, int) {
+	if region == nil || region.SettlementPositionClear(x, y, portSettlementMarkerClearance) {
+		return x, y
+	}
+
+	seaX, seaY, ok := nearestSeaNeighborCenter(region, regions)
+	if ok {
+		dx := seaX - float64(region.WorldX)
+		dy := seaY - float64(region.WorldY)
+		distance := math.Hypot(dx, dy)
+		if distance > 0 {
+			// Liman aynı kıyı çizgisi üzerinde kalacak şekilde deniz yönüne
+			// dik eksende aranır.
+			tangentX := -dy / distance
+			tangentY := dx / distance
+			for step := portSettlementMarkerClearance; step <= portSettlementMarkerClearance*6; step++ {
+				for _, side := range []float64{-1, 1} {
+					candidateX := int(math.Round(float64(x) + tangentX*float64(step)*side))
+					candidateY := int(math.Round(float64(y) + tangentY*float64(step)*side))
+					if region.SettlementPositionClear(candidateX, candidateY, portSettlementMarkerClearance) {
+						return candidateX, candidateY
+					}
+				}
+			}
+		}
+	}
+
+	// Deniz komşusu bulunamayan eski/sentetik kayıtlarda da aynı koordinatı
+	// tekrar kullanmamak için deterministik bir son çare bırak.
+	for radius := portSettlementMarkerClearance; radius <= portSettlementMarkerClearance*6; radius++ {
+		for _, offset := range [][2]int{{radius, 0}, {-radius, 0}, {0, radius}, {0, -radius}} {
+			candidateX := x + offset[0]
+			candidateY := y + offset[1]
+			if region.SettlementPositionClear(candidateX, candidateY, portSettlementMarkerClearance) {
+				return candidateX, candidateY
+			}
+		}
+	}
+	return x + portSettlementMarkerClearance, y
 }
 
 func autoPortSettlementPoint(region *world.Region, regions map[world.RegionID]*world.Region) (int, int, bool) {

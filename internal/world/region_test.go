@@ -86,6 +86,17 @@ func TestMinorRegionUsesScenarioPrivilegeBuildingLevelCap(t *testing.T) {
 	}
 }
 
+func TestSettlementPositionClearRequiresMarkerClearance(t *testing.T) {
+	region := &Region{Settlements: []Settlement{{X: 100, Y: 200}}}
+
+	if region.SettlementPositionClear(108, 200, 12) {
+		t.Fatal("mevcut marker'a çok yakın koordinat boş kabul edildi")
+	}
+	if !region.SettlementPositionClear(112, 200, 12) {
+		t.Fatal("marker açıklığı kadar uzak koordinat çakışıyor kabul edildi")
+	}
+}
+
 func TestMinorRegionMetadataRoundTripsThroughJSON(t *testing.T) {
 	original := &Region{
 		ID:             "sinop_castle",
