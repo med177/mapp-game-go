@@ -28,6 +28,9 @@ func TestLoadScenarioBaseStateLoadsTerrainAreas(t *testing.T) {
 	if got, want := gs.PrivilegedBuildingMaxLevel, 1; got != want {
 		t.Fatalf("imtiyazlı bina seviye tavanı = %d, %d bekleniyordu", got, want)
 	}
+	if got, want := gs.MinorPrivilegeProtectionTurns, 30; got != want {
+		t.Fatalf("minor imtiyaz koruma turu = %d, %d bekleniyordu", got, want)
+	}
 	for _, area := range gs.TerrainAreas {
 		if gs.Regions[world.TerrainAreaRegionID(area.ID)] == nil {
 			t.Fatalf("runtime terrain region for %q was not created", area.ID)
@@ -324,6 +327,21 @@ func TestCampaignSaveStatePreservesMinorPrivilegeRevocation(t *testing.T) {
 	applyRegionSaveState(restored, saved)
 	if restored.IsPrivileged {
 		t.Fatal("imtiyaz kaldırma compact save'den geri yüklenmedi")
+	}
+}
+
+func TestCampaignSaveStatePreservesMinorPrivilegeGrantedTurn(t *testing.T) {
+	base := &world.Region{ID: "galata", IsMinorRegion: true, IsPrivileged: true, PrivilegeGrantedTurn: 1}
+	current := &world.Region{ID: "galata", IsMinorRegion: true, IsPrivileged: true, PrivilegeGrantedTurn: 7}
+
+	saved, ok := makeRegionSaveState(current, base)
+	if !ok || saved.PrivilegeGrantedTurn == nil || *saved.PrivilegeGrantedTurn != 7 {
+		t.Fatalf("imtiyaz başlangıç turu compact save'e yazılmadı: %+v", saved.PrivilegeGrantedTurn)
+	}
+	restored := &world.Region{ID: "galata", IsMinorRegion: true, IsPrivileged: true, PrivilegeGrantedTurn: 1}
+	applyRegionSaveState(restored, saved)
+	if restored.PrivilegeGrantedTurn != 7 {
+		t.Fatalf("imtiyaz başlangıç turu geri yüklenmedi: %d", restored.PrivilegeGrantedTurn)
 	}
 }
 

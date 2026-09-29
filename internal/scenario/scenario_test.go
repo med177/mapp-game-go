@@ -43,7 +43,7 @@ func TestLoadReadsPrivilegedBuildingMaxLevel(t *testing.T) {
 	if err := os.Mkdir(dataDir, 0o700); err != nil {
 		t.Fatalf("data klasörü oluşturulamadı: %v", err)
 	}
-	content := []byte(`{"id":"test","name":"Test","period":"medieval","privileged_building_max_level":3}`)
+	content := []byte(`{"id":"test","name":"Test","period":"medieval","privileged_building_max_level":3,"minor_privilege_protection_turns":17}`)
 	if err := os.WriteFile(filepath.Join(dataDir, "scenario.json"), content, 0o600); err != nil {
 		t.Fatalf("scenario.json yazılamadı: %v", err)
 	}
@@ -54,6 +54,9 @@ func TestLoadReadsPrivilegedBuildingMaxLevel(t *testing.T) {
 	}
 	if definition.PrivilegedBuildingMaxLevel != 3 {
 		t.Fatalf("imtiyazlı bina seviye tavanı = %d, 3 bekleniyordu", definition.PrivilegedBuildingMaxLevel)
+	}
+	if definition.MinorPrivilegeProtectionTurns != 17 {
+		t.Fatalf("minor imtiyaz koruma turu = %d, 17 bekleniyordu", definition.MinorPrivilegeProtectionTurns)
 	}
 }
 

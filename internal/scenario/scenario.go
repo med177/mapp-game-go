@@ -7,6 +7,10 @@ import (
 	"path/filepath"
 )
 
+// DefaultMinorPrivilegeProtectionTurns, eski senaryolarda yeni alan eksikse
+// kullanılan geriye dönük uyumluluk varsayılanıdır.
+const DefaultMinorPrivilegeProtectionTurns = 30
+
 // VictoryOptionDef bir senaryo için tek bir kazanma koşulunu tanımlar.
 // UI metni (Title, Description, Detail) ve oyun mekaniği değerlerini (Type, hedefler) bir arada tutar.
 type VictoryOptionDef struct {
@@ -157,6 +161,9 @@ type Scenario struct {
 	// PrivilegedBuildingMaxLevel, imtiyazlı minor bölgenin kullanım sahibinin
 	// minor_regions=true binalarını çıkarabileceği azami seviyedir.
 	PrivilegedBuildingMaxLevel int `json:"privileged_building_max_level,omitempty"`
+	// MinorPrivilegeProtectionTurns, egemen AI'nin yeni verilmiş imtiyazı
+	// savaş yokken ekonomik gerekçeyle kaldırmadan önce beklediği tur sayısıdır.
+	MinorPrivilegeProtectionTurns int `json:"minor_privilege_protection_turns,omitempty"`
 
 	Diplomacy DiplomacyConfig `json:"diplomacy,omitempty"`
 
@@ -273,6 +280,9 @@ func Load(path string) (*Scenario, error) {
 			return nil, fmt.Errorf("senaryo period alanı zorunludur")
 		}
 		return nil, fmt.Errorf("geçersiz senaryo period değeri %q", definition.Period)
+	}
+	if definition.MinorPrivilegeProtectionTurns <= 0 {
+		definition.MinorPrivilegeProtectionTurns = DefaultMinorPrivilegeProtectionTurns
 	}
 	definition.Path = path
 	definition.Diplomacy = definition.Diplomacy.WithDefaults()

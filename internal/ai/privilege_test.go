@@ -31,6 +31,7 @@ func TestAIPartitionedMinorGoldUsesActualFactionShare(t *testing.T) {
 
 func TestAISovereignRevokesValuableMinorPrivilege(t *testing.T) {
 	gs := aiPrivilegeTestState(0, faction.StancePeace)
+	gs.Turn = state.DefaultMinorPrivilegeProtectionTurns + 1
 	steps := make([]TurnStep, 0, 1)
 
 	if !aiManageMinorPrivilegesWithSteps(gs, "sovereign", &steps) {
@@ -53,12 +54,36 @@ func TestAISovereignRevokesValuableMinorPrivilege(t *testing.T) {
 
 func TestAIPreservesValuablePrivilegeForTrustedOperator(t *testing.T) {
 	gs := aiPrivilegeTestState(60, faction.StanceAllied)
+	gs.Turn = state.DefaultMinorPrivilegeProtectionTurns + 1
 	if aiManageMinorPrivilegesWithSteps(gs, "sovereign", nil) {
 		t.Fatal("AI müttefik işletmeciye ait imtiyazı gereksiz yere kaldırdı")
 	}
 	minor := gs.Regions["minor"]
 	if !minor.IsPrivileged || minor.OwnerID != "operator" {
 		t.Fatalf("güvenilir işletmecinin imtiyazı korunmadı: %#v", minor)
+	}
+}
+
+func TestAIPreservesNewMinorPrivilegeDuringProtectionWindow(t *testing.T) {
+	gs := aiPrivilegeTestState(0, faction.StancePeace)
+	gs.Turn = 10
+	gs.Regions["minor"].PrivilegeGrantedTurn = 1
+
+	if aiManageMinorPrivilegesWithSteps(gs, "sovereign", nil) {
+		t.Fatal("AI koruma süresi dolmadan yeni imtiyazı kaldırdı")
+	}
+	if !gs.Regions["minor"].IsPrivileged {
+		t.Fatal("koruma süresindeki imtiyaz korunmadı")
+	}
+}
+
+func TestAIRevokesNewMinorPrivilegeImmediatelyWhenAtWarWithOperator(t *testing.T) {
+	gs := aiPrivilegeTestState(0, faction.StanceWar)
+	gs.Turn = 10
+	gs.Regions["minor"].PrivilegeGrantedTurn = 1
+
+	if !aiManageMinorPrivilegesWithSteps(gs, "sovereign", nil) {
+		t.Fatal("AI savaş varken koruma süresindeki imtiyazı kaldırmadı")
 	}
 }
 
@@ -92,6 +117,7 @@ func TestAISovereignPrivilegeRevokeEliminatesLandlessOperator(t *testing.T) {
 
 func aiPrivilegeTestState(relationScore int, stance faction.DiplomaticStance) *state.GameState {
 	return &state.GameState{
+		Turn: state.DefaultMinorPrivilegeProtectionTurns + 1,
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("sovereign", "operator"): {
 				FactionA: "sovereign", FactionB: "operator",
@@ -107,7 +133,8 @@ func aiPrivilegeTestState(relationScore int, stance faction.DiplomaticStance) *s
 			"minor": {
 				ID: "minor", NameTR: "Minor", OwnerID: "operator", BaseGoldIncome: 10,
 				IsMinorRegion: true, IsPrivileged: true, ParentRegionID: "parent",
-				TaxRate: 100, Satisfaction: 50,
+				PrivilegeGrantedTurn: 1,
+				TaxRate:              100, Satisfaction: 50,
 			},
 			"operator_home": {ID: "operator_home", OwnerID: "operator"},
 		},

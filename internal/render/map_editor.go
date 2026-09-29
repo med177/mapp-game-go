@@ -3853,6 +3853,11 @@ func (r *Renderer) toggleSelectedRegionPrivilege() {
 		return
 	}
 	region.IsPrivileged = !region.IsPrivileged
+	if region.IsPrivileged {
+		region.PrivilegeGrantedTurn = r.gs.Turn
+	} else {
+		region.PrivilegeGrantedTurn = 0
+	}
 	r.editDirty = true
 }
 

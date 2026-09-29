@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal, succession]
-last_updated: 2026-09-28
+last_updated: 2026-09-29
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -23,6 +23,7 @@ type Region struct {
     IsSea     bool             // deniz bölgesi
     IsMinorRegion bool         // ana bölge içindeki fethedilebilir küçük alt bölge
     IsPrivileged bool           // kullanım OwnerID'de, egemenlik ana bölge sahibinde
+    PrivilegeGrantedTurn int    // aktif imtiyazın verildiği kampanya turu
     ParentRegionID RegionID    // küçük alt bölgenin ana bölgesi
     IsLocked  bool             // henüz keşfedilmemiş
     WorldX, WorldY int         // harita koordinatı
@@ -96,6 +97,13 @@ stratejik değer hesabına katar; işletmeci AI yalnız kendi %50 altın payın�
 yatırım getirisinde görür. Egemen AI, yüksek getirili ve ilişkisi yeterince
 güçlü olmayan imtiyazları kaldırarak bölgeyi doğrudan yönetimine alabilir;
 müttefik veya yüksek ilişkili işletmecilerin imtiyazlarını korur.
+Yeni verilen imtiyazlar `PrivilegeGrantedTurn` ile damgalanır; bekleme süresi
+senaryonun `minor_privilege_protection_turns` alanından okunur. Egemen AI,
+işletmeciyle savaş yoksa ilk 30 kampanya turu boyunca bu imtiyazı ekonomik
+gerekçeyle kaldıramaz. Egemen devlet işletmeciyle savaştaysa bu koruma
+uygulanmaz ve imtiyaz savaş istisnası olarak hemen kaldırılabilir. Başlangıç
+senaryosundaki imtiyazlar 1. turda verilmiş kabul edilir; damga compact campaign
+save içinde korunur.
 `is_privileged=false` olduğunda alt bölge normal bölge gibi doğrudan `OwnerID`
 sahibine aittir.
 

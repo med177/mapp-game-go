@@ -40,6 +40,10 @@ const grainSaleGoldCapPercentOfTaxIncome = 100
 // ana bölge egemeni ile kullanım sahibi arasındaki eşit paylaşımıdır.
 const PrivilegeIncomeSharePercent = 50
 
+// DefaultMinorPrivilegeProtectionTurns, senaryo alanı eksik olduğunda
+// kullanılan geriye dönük uyumluluk varsayılanıdır.
+const DefaultMinorPrivilegeProtectionTurns = 30
+
 const (
 	grainCivilianStorageMonths  = 6
 	grainArmyStorageMonths      = 3
@@ -301,12 +305,13 @@ type GameState struct {
 	DecisionSeed uint64 `json:"decision_seed,omitempty"`
 
 	// Senaryo
-	ScenarioID                 string                   `json:"scenario_id"`   // aktif senaryo ID'si
-	ScenarioPath               string                   `json:"scenario_path"` // aktif senaryo klasörü
-	MapConfig                  scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
-	PrivilegedBuildingMaxLevel int                      `json:"-"`             // aktif senaryonun imtiyazlı minor bina tavanı
-	DiplomacyConfig            scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
-	BaseGoldValues             map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
+	ScenarioID                    string                   `json:"scenario_id"`   // aktif senaryo ID'si
+	ScenarioPath                  string                   `json:"scenario_path"` // aktif senaryo klasörü
+	MapConfig                     scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
+	PrivilegedBuildingMaxLevel    int                      `json:"-"`             // aktif senaryonun imtiyazlı minor bina tavanı
+	MinorPrivilegeProtectionTurns int                      `json:"-"`             // aktif senaryonun yeni imtiyaz koruma süresi
+	DiplomacyConfig               scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
+	BaseGoldValues                map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
 
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
@@ -2027,6 +2032,26 @@ func (s *GameState) MinorPrivilegeRevokeBlockReason(rid world.RegionID) string {
 // CanRevokeMinorPrivilege oyuncunun seçili imtiyazı kaldırabileceğini döner.
 func (s *GameState) CanRevokeMinorPrivilege(rid world.RegionID) bool {
 	return s.MinorPrivilegeRevokeBlockReason(rid) == ""
+}
+
+// MinorPrivilegeProtectionRemaining, imtiyazın ekonomik gerekçeyle AI
+// tarafından kaldırılmasına kalan tur sayısını döner. Sıfır yaş bilgisi eski
+// test/fixture state'lerinde bilinmeyen değer anlamına gelir ve koruma
+// uygulanmaz; gerçek senaryo yükleyicisi başlangıç imtiyazlarını tur 1 ile
+// damgalar.
+func (s *GameState) MinorPrivilegeProtectionRemaining(region *world.Region) int {
+	if s == nil || region == nil || !region.IsMinorRegion || !region.IsPrivileged || region.PrivilegeGrantedTurn <= 0 {
+		return 0
+	}
+	protectionTurns := s.MinorPrivilegeProtectionTurns
+	if protectionTurns <= 0 {
+		protectionTurns = DefaultMinorPrivilegeProtectionTurns
+	}
+	remaining := protectionTurns - (s.Turn - region.PrivilegeGrantedTurn)
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
 }
 
 // RegionIncomeShares, bölgenin parasal çıktısının hangi devlete yazılacağını

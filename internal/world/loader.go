@@ -32,6 +32,9 @@ func LoadRegionsWithOrder(path string) (map[RegionID]*Region, []RegionID, error)
 	order := make([]RegionID, 0, len(list))
 	for _, r := range list {
 		if r != nil {
+			if r.IsMinorRegion && r.IsPrivileged && r.PrivilegeGrantedTurn <= 0 {
+				r.PrivilegeGrantedTurn = 1
+			}
 			r.TaxRate = ClampTaxRate(r.TaxRate)
 			r.EnsurePrimarySettlement()
 			for _, neighborID := range r.Neighbors {

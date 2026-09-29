@@ -32,19 +32,20 @@ type settlementPatch struct {
 }
 
 type regionSaveState struct {
-	OwnerID            *string          `json:"o,omitempty"`
-	SuccessorFactionID *string          `json:"sf,omitempty"`
-	IsPrivileged       *bool            `json:"ip,omitempty"`
-	Settlements        *settlementPatch `json:"sp,omitempty"`
-	IsLocked           *bool            `json:"l,omitempty"`
-	Satisfaction       *int             `json:"sat,omitempty"`
-	TaxRate            *int             `json:"tx,omitempty"`
-	Population         *int             `json:"pop,omitempty"`
-	RuralPopulation    *int             `json:"rpop,omitempty"`
-	Religion           *string          `json:"rel,omitempty"`
-	ConversionTurns    *int             `json:"conv,omitempty"`
-	ActiveEventID      *string          `json:"evt,omitempty"`
-	Buildings          *stringList      `json:"b,omitempty"`
+	OwnerID              *string          `json:"o,omitempty"`
+	SuccessorFactionID   *string          `json:"sf,omitempty"`
+	IsPrivileged         *bool            `json:"ip,omitempty"`
+	PrivilegeGrantedTurn *int             `json:"ipt,omitempty"`
+	Settlements          *settlementPatch `json:"sp,omitempty"`
+	IsLocked             *bool            `json:"l,omitempty"`
+	Satisfaction         *int             `json:"sat,omitempty"`
+	TaxRate              *int             `json:"tx,omitempty"`
+	Population           *int             `json:"pop,omitempty"`
+	RuralPopulation      *int             `json:"rpop,omitempty"`
+	Religion             *string          `json:"rel,omitempty"`
+	ConversionTurns      *int             `json:"conv,omitempty"`
+	ActiveEventID        *string          `json:"evt,omitempty"`
+	Buildings            *stringList      `json:"b,omitempty"`
 }
 
 type factionSaveState struct {
@@ -831,6 +832,9 @@ func makeRegionSaveState(current, base *world.Region) (regionSaveState, bool) {
 	if base == nil || current.IsPrivileged != base.IsPrivileged {
 		out.IsPrivileged = cloneBoolPtr(current.IsPrivileged)
 	}
+	if base == nil || current.PrivilegeGrantedTurn != base.PrivilegeGrantedTurn {
+		out.PrivilegeGrantedTurn = cloneIntPtr(current.PrivilegeGrantedTurn)
+	}
 	if patch, ok := diffSettlements(base, current); ok {
 		out.Settlements = patch
 	}
@@ -880,6 +884,9 @@ func applyRegionSaveState(region *world.Region, saved regionSaveState) {
 	}
 	if saved.IsPrivileged != nil {
 		region.IsPrivileged = *saved.IsPrivileged
+	}
+	if saved.PrivilegeGrantedTurn != nil {
+		region.PrivilegeGrantedTurn = *saved.PrivilegeGrantedTurn
 	}
 	if saved.IsLocked != nil {
 		region.IsLocked = *saved.IsLocked
@@ -1844,6 +1851,7 @@ func isZeroRegionSaveState(saved regionSaveState) bool {
 	return saved.OwnerID == nil &&
 		saved.SuccessorFactionID == nil &&
 		saved.IsPrivileged == nil &&
+		saved.PrivilegeGrantedTurn == nil &&
 		saved.Settlements == nil &&
 		saved.IsLocked == nil &&
 		saved.Satisfaction == nil &&

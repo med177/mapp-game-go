@@ -70,6 +70,10 @@ type Region struct {
 	// egemenliğinin ParentRegionID ile bağlı ana bölge sahibinden çözülmesini
 	// sağlar. false olduğunda OwnerID hem kullanım hem egemenlik sahibidir.
 	IsPrivileged bool `json:"is_privileged,omitempty"`
+	// PrivilegeGrantedTurn, aktif imtiyazın verildiği kampanya turudur. Senaryo
+	// başlangıcındaki imtiyazlar yükleyici tarafından 1. tur olarak damgalanır.
+	// Bu alan senaryo export'una değil, kampanya save'ine aittir.
+	PrivilegeGrantedTurn int `json:"-"`
 	// IsTerrainArea marks a runtime child region painted inside a parent region.
 	// These regions are navigable but have no economy or settlements.
 	IsTerrainArea bool `json:"-"`

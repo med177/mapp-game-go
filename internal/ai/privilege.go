@@ -91,8 +91,13 @@ func aiShouldRevokeMinorPrivilege(gs *state.GameState, fid faction.FactionID, re
 	if operatorFaction == nil || operatorFaction.IsEliminated {
 		return false
 	}
+	// Egemen devletle savaş, yeni imtiyaz korumasını bozan bilinçli askerî
+	// istisnadır; savaş yoksa ilk 30 turda AI ekonomik gerekçeyle kaldıramaz.
 	if diplomacy.IsWar(gs, fid, operator) {
 		return true
+	}
+	if gs.MinorPrivilegeProtectionRemaining(region) > 0 {
+		return false
 	}
 	relation := diplomacy.Relation(gs, fid, operator)
 	if relation != nil && (relation.Stance == faction.StanceAllied || relation.Score >= aiPrivilegeKeepRelationScore) {
