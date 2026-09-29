@@ -123,7 +123,7 @@ func TestNearestEventClickOpensCodexWithMatchingEntryFocused(t *testing.T) {
 func TestNearestEventHUDKeepsRemainingTurnsInParentheses(t *testing.T) {
 	entry := EventCodexEntry{Title: "Bursa'nın Fethi", TurnsUntil: 3}
 	text := nearestEventHUDLabel(entry.Title, entry.TurnsUntil)
-	if text != "En yakın event: Bursa'nın Fethi (3 tur)" {
+	if text != "Yaklaşan: Bursa'nın Fethi (3 tur)" {
 		t.Fatalf("event HUD metni = %q", text)
 	}
 }

@@ -1082,7 +1082,7 @@ func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent *Ev
 	eventRect := topAlertEventRect(gs)
 	separatorX := eventRect.X
 	remaining := "(" + itoa(nearestEvent.TurnsUntil) + " tur)"
-	maxTitleW := eventRect.W - MeasureText("En yakın event: "+remaining, FaceSmall) - 4
+	maxTitleW := eventRect.W - MeasureText("Yaklaşan: "+remaining, FaceSmall) - 4
 	if maxTitleW <= 0 {
 		return
 	}
@@ -1091,7 +1091,7 @@ func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent *Ev
 }
 
 func nearestEventHUDLabel(title string, turnsUntil int) string {
-	return "En yakın event: " + title + " (" + itoa(turnsUntil) + " tur)"
+	return "Yaklaşan: " + title + " (" + itoa(turnsUntil) + " tur)"
 }
 
 func topAlertOverextensionRect(gs *state.GameState) gameui.Rect {
