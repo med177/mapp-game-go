@@ -788,11 +788,11 @@ func captureHeadlessCheckpoint(gs *state.GameState, elapsedTurn int) HeadlessChe
 				continue
 			}
 			armies++
+			power += gs.EffectiveArmyStrength(a)
 			if a.IsNaval {
 				naval += len(a.Units)
 			} else {
 				land += len(a.Units)
-				power += gs.EffectiveArmyStrength(a)
 			}
 		}
 		rankings = append(rankings, HeadlessFactionRanking{FactionID: fid, NameTR: f.NameTR, Regions: len(gs.LandRegionsOwnedBy(fid)), Armies: armies, LandUnits: land, NavalUnits: naval, MilitaryPower: power})

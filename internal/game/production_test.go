@@ -13,6 +13,45 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestCaptureHeadlessCheckpointIncludesNavalMilitaryPower(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"venice": {ID: "venice", NameTR: "Venedik"},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", Attack: 40, HP: 100},
+			"warship":  {ID: "warship", Attack: 70, HP: 100},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"venice_land": {
+				ID:      "venice_land",
+				OwnerID: "venice",
+				Units:   []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+			},
+			"venice_fleet": {
+				ID:      "venice_fleet",
+				OwnerID: "venice",
+				IsNaval: true,
+				Units:   []army.Unit{{TypeID: "warship", CurrentHP: 100}},
+			},
+		},
+	}
+
+	checkpoints := captureHeadlessCheckpoint(gs, 10)
+	if len(checkpoints.Rankings) != 1 {
+		t.Fatalf("tek devlet checkpoint'te görünmeli: %+v", checkpoints.Rankings)
+	}
+	ranking := checkpoints.Rankings[0]
+	landPower := gs.EffectiveArmyStrength(gs.Armies["venice_land"])
+	navalPower := gs.EffectiveArmyStrength(gs.Armies["venice_fleet"])
+	if ranking.MilitaryPower != landPower+navalPower {
+		t.Fatalf("checkpoint toplam gücü kara ve donanmayı içermiyor: got=%d want=%d", ranking.MilitaryPower, landPower+navalPower)
+	}
+	if ranking.NavalUnits != 1 {
+		t.Fatalf("checkpoint donanma birimi sayısını kaydetmedi: got=%d", ranking.NavalUnits)
+	}
+}
+
 func TestCompleteBuildingAddsNamedPortSettlementToMinorRegion(t *testing.T) {
 	minor := &world.Region{
 		ID:            "sinop_castle",
