@@ -29,11 +29,16 @@ func main() {
 		Turns:           *turns,
 		Seed:            *seed,
 		Difficulty:      *difficulty,
+		Progress: func(completedTurns, totalTurns int) {
+			fmt.Fprintf(os.Stderr, "\r%d/%d Tur", completedTurns, totalTurns)
+		},
 	})
 	if err != nil {
+		fmt.Fprintln(os.Stderr)
 		fmt.Fprintln(os.Stderr, "simülasyon hatası:", err)
 		os.Exit(1)
 	}
+	fmt.Fprintln(os.Stderr)
 
 	var data []byte
 	switch strings.ToLower(*format) {
@@ -142,7 +147,7 @@ func renderMarkdown(report *game.HeadlessSimulationReport) string {
 
 	b.WriteString("## Elenen devletler\n\n")
 	if len(report.Eliminations) == 0 {
-		b.WriteString("100 tur içinde elenen devlet olmadı.\n\n")
+		fmt.Fprintf(&b, "%d tur içinde elenen devlet olmadı.\n\n", report.CompletedTurns)
 	} else {
 		for _, e := range report.Eliminations {
 			fmt.Fprintf(&b, "- %d. tur: **%s**\n", e.Turn, md(e.NameTR))

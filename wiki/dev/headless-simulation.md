@@ -18,8 +18,12 @@ bir raporda incelenebilir.
 go run ./cmd/simreport \
   -scenario assets/scenarios/1300_ottoman_rise \
   -turns 100 -player ottoman -seed 13100301 -difficulty 2 \
-  -out reports/headless_100_turn_report.md
+  -out reports/headless_seed_13100301_turn_report.md
 ```
+
+VS Code'daki headless çalıştırma profili tur ve seed değerlerini sorar; raporu
+`reports/headless_seed_<seed>_turn_report.md` adıyla yazar. Böylece farklı
+seed'lerle yapılan koşular önceki raporların üzerine yazılmaz.
 
 `-format json` makine tarafından işlenebilir çıktı üretir. `-out` verilmezse
 çıktı stdout'a yazılır. Aynı seed ile AI kararları, savaş zarları ve rastgele

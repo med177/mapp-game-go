@@ -27,6 +27,7 @@ type HeadlessSimulationOptions struct {
 	Turns           int
 	Seed            uint64
 	Difficulty      int
+	Progress        func(completedTurns, totalTurns int)
 }
 
 // HeadlessSimulationReport, headless kampanyanın ölçülebilir sonuçlarını taşır.
@@ -291,6 +292,9 @@ func RunHeadlessSimulation(options HeadlessSimulationOptions) (*HeadlessSimulati
 		previousAlliances = captureAllianceSnapshots(gs)
 		if gs.Turn%10 == 0 || completed == options.Turns-1 || gs.Phase == state.PhaseGameOver {
 			report.Checkpoints = append(report.Checkpoints, captureHeadlessCheckpoint(gs, completed+1))
+		}
+		if options.Progress != nil {
+			options.Progress(completed+1, options.Turns)
 		}
 	}
 

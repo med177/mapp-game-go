@@ -22,7 +22,7 @@
       "output": "${workspaceFolder}/bin/game/mapp-linux"
     },
     {
-      "name": "Debug Headless Simulation (100 Tur)",
+      "name": "Debug Headless Simulation",
       "type": "go",
       "request": "launch",
       "mode": "debug",
@@ -37,13 +37,13 @@
         "-player",
         "ottoman",
         "-seed",
-        "13100301",
+        "${input:simulationSeed}",
         "-difficulty",
         "2",
         "-format",
         "markdown",
         "-out",
-        "reports/headless_100_turn_report.md"
+        "reports/headless_seed_${input:simulationSeed}_turn_report.md"
       ],
       "output": "${workspaceFolder}/bin/simreport-debug"
     },
@@ -61,6 +61,12 @@
       "type": "promptString",
       "description": "Kaç tur simüle edilsin?",
       "default": "100"
+    },
+    {
+      "id": "simulationSeed",
+      "type": "promptString",
+      "description": "Simülasyon seed'i?",
+      "default": "13100301"
     }
   ]
 }

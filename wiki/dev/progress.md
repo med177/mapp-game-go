@@ -66,6 +66,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   yükleme ve gerçek veri üzerinden birlik, kaynak ve nüfus uygulaması
   regresyonları `internal/events` altında doğrulanır.
 
+- 2026-09-29: Headless simülasyon raporunda eliminasyon tur sayısı artık dinamik
+  gösteriliyor. VS Code çalıştırma profili seed'i soruyor ve rapor dosyasını
+  `reports/headless_seed_<seed>_turn_report.md` adıyla yazarak farklı seed'lerin
+  önceki raporları ezmesini engelliyor.
+
 - 2026-09-28: `cmd/simreport` ve `internal/game/headless_report.go` ile pencere
   açmadan normal tur çözümleme hattını kullanan headless kampanya simülasyonu
   eklendi. AI kararları, savaş/ekonomi/diplomasi değişimleri, bölge geçişleri,
