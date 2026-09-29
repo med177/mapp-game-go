@@ -799,9 +799,9 @@
       "id": "continental_market",
       "title": "Kıtasal Pazar",
       "description": "Vergi, üretim ve ticaret ağını kalıcı bir mali güce dönüştür; savaşın maliyetini ekonomin taşısın.",
-      "detail": "Tur başı 1.100 altın gelir; 10 tur koru",
+      "detail": "Tur başı 11.000 altın gelir; 10 tur koru",
       "type": "economic",
-      "target_gold_income": 1100,
+      "target_gold_income": 11000,
       "gold_hold_turns": 10,
       "deadline_year": 1460,
       "deadline_month": 12
