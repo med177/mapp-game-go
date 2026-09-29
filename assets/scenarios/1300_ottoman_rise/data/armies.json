@@ -807,18 +807,6 @@
     ]
   },
   {
-    "id": "army_garrison_209",
-    "owner_id": "ahiler",
-    "region_id": "sivrihisar",
-    "is_garrison": true,
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_garrison_211",
     "owner_id": "mentese_bey",
     "region_id": "mentese_hinterland",
@@ -844,7 +832,7 @@
   },
   {
     "id": "army_garrison_215",
-    "owner_id": "ilkhanate",
+    "owner_id": "ahiler",
     "region_id": "cankiri",
     "is_garrison": true,
     "units": [

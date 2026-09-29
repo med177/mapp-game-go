@@ -2614,6 +2614,14 @@
         "type": "city",
         "is_center": true,
         "population": 0
+      },
+      {
+        "id": "nigde_avanos",
+        "name_tr": "Avanos",
+        "x": 1169,
+        "y": 496,
+        "type": "town",
+        "population": 63
       }
     ]
   },
@@ -5246,7 +5254,7 @@
       {
         "id": "germiyan_usak",
         "name_tr": "Uşak",
-        "x": 1057,
+        "x": 1056,
         "y": 505,
         "type": "town",
         "population": 49
@@ -5446,6 +5454,22 @@
         "y": 445,
         "type": "town",
         "population": 24
+      },
+      {
+        "id": "sivas_tokat_sivas",
+        "name_tr": "Tokat",
+        "x": 1202,
+        "y": 475,
+        "type": "town",
+        "population": 22
+      },
+      {
+        "id": "sivas_eretna_tokat",
+        "name_tr": "Zile",
+        "x": 1195,
+        "y": 474,
+        "type": "town",
+        "population": 43
       }
     ]
   },
@@ -5490,22 +5514,6 @@
         "y": 491,
         "type": "fortress",
         "population": 11
-      },
-      {
-        "id": "sivas_tokat_sivas",
-        "name_tr": "Tokat",
-        "x": 1203,
-        "y": 476,
-        "type": "town",
-        "population": 22
-      },
-      {
-        "id": "sivas_eretna_tokat",
-        "name_tr": "Zile",
-        "x": 1196,
-        "y": 474,
-        "type": "town",
-        "population": 43
       },
       {
         "id": "sivas_amasya",
@@ -6109,14 +6117,6 @@
         "population": 31
       },
       {
-        "id": "teke_teke_beysehir",
-        "name_tr": "Beyşehir",
-        "x": 1111,
-        "y": 519,
-        "type": "town",
-        "population": 15
-      },
-      {
         "id": "teke_korkuteli",
         "name_tr": "Korkuteli",
         "x": 1106,
@@ -6140,14 +6140,6 @@
         "y": 547,
         "type": "port",
         "population": 22
-      },
-      {
-        "id": "teke_konya_beysehir",
-        "name_tr": "Seydişehir",
-        "x": 1117,
-        "y": 519,
-        "type": "town",
-        "population": 15
       }
     ]
   },
@@ -6162,6 +6154,14 @@
         "type": "fortress",
         "is_center": true,
         "population": 112
+      },
+      {
+        "id": "hamideli_yalvac",
+        "name_tr": "Yalvaç",
+        "x": 1103,
+        "y": 499,
+        "type": "town",
+        "population": 0
       }
     ]
   },
@@ -6171,11 +6171,19 @@
       {
         "id": "beysehir_beysehir",
         "name_tr": "Beyşehir",
-        "x": 1097,
-        "y": 491,
-        "type": "town",
+        "x": 1111,
+        "y": 518,
+        "type": "city",
         "is_center": true,
         "population": 105
+      },
+      {
+        "id": "teke_konya_beysehir",
+        "name_tr": "Seydişehir",
+        "x": 1118,
+        "y": 520,
+        "type": "town",
+        "population": 15
       }
     ]
   },
@@ -6185,7 +6193,7 @@
       {
         "id": "aksaray_main",
         "name_tr": "Aksaray",
-        "x": 1120,
+        "x": 1122,
         "y": 491,
         "type": "city",
         "is_center": true,
@@ -6194,10 +6202,18 @@
       {
         "id": "aksaray_sultanhani",
         "name_tr": "Sultanhanı",
-        "x": 1124,
-        "y": 498,
+        "x": 1126,
+        "y": 497,
         "type": "fortress",
         "population": 23
+      },
+      {
+        "id": "cankiri_cubuk_ankara",
+        "name_tr": "Kesikköprü",
+        "x": 1142,
+        "y": 487,
+        "type": "town",
+        "population": 17
       }
     ]
   },
@@ -6207,8 +6223,8 @@
       {
         "id": "sivrihisar_sivrihisar",
         "name_tr": "Sivrihisar",
-        "x": 1096,
-        "y": 479,
+        "x": 1106,
+        "y": 478,
         "type": "fortress",
         "is_center": true,
         "population": 126
@@ -6231,14 +6247,6 @@
         "name_tr": "Ankara",
         "x": 1131,
         "y": 475,
-        "type": "town",
-        "population": 17
-      },
-      {
-        "id": "cankiri_cubuk_ankara",
-        "name_tr": "Kesikköprü",
-        "x": 1142,
-        "y": 487,
         "type": "town",
         "population": 17
       },
@@ -6266,14 +6274,6 @@
         "type": "fortress",
         "is_center": true,
         "population": 8
-      },
-      {
-        "id": "cankiri_tosya",
-        "name_tr": "Tosya",
-        "x": 1147,
-        "y": 455,
-        "type": "town",
-        "population": 17
       }
     ]
   },
@@ -6349,15 +6349,6 @@
     "region_id": "nigde",
     "settlements": [
       {
-        "id": "nigde_aksaray",
-        "name_tr": "Sultanhanı",
-        "x": 1148,
-        "y": 508,
-        "type": "city",
-        "is_center": true,
-        "population": 31
-      },
-      {
         "id": "nigde_kirsehir",
         "name_tr": "Kırşehir",
         "x": 1154,
@@ -6371,6 +6362,7 @@
         "x": 1163,
         "y": 514,
         "type": "city",
+        "is_center": true,
         "population": 31
       },
       {
@@ -6390,18 +6382,10 @@
         "population": 63
       },
       {
-        "id": "nigde_avanos",
-        "name_tr": "Avanos",
-        "x": 1169,
-        "y": 496,
-        "type": "town",
-        "population": 63
-      },
-      {
         "id": "nigde_kaman",
         "name_tr": "Kaman",
-        "x": 1153,
-        "y": 484,
+        "x": 1154,
+        "y": 485,
         "type": "town",
         "population": 63
       }
@@ -7535,20 +7519,12 @@
     "region_id": "kutahya",
     "settlements": [
       {
-        "id": "kutahya_simav",
-        "name_tr": "Simav",
-        "x": 1052,
-        "y": 494,
-        "type": "city",
-        "is_center": true,
-        "population": 98
-      },
-      {
         "id": "germiyan_kutahya",
         "name_tr": "Kütahya",
-        "x": 1070,
+        "x": 1069,
         "y": 490,
         "type": "fortress",
+        "is_center": true,
         "population": 133
       },
       {
@@ -7566,6 +7542,14 @@
         "y": 492,
         "type": "town",
         "population": 0
+      },
+      {
+        "id": "kutahya_simav",
+        "name_tr": "Simav",
+        "x": 1052,
+        "y": 493,
+        "type": "city",
+        "population": 98
       }
     ]
   },
@@ -7968,7 +7952,7 @@
         "id": "bilecik_frontier_bilecik",
         "name_tr": "Bilecik",
         "x": 1078,
-        "y": 471,
+        "y": 473,
         "type": "town",
         "is_center": true,
         "population": 53
@@ -8018,6 +8002,14 @@
         "y": 451,
         "type": "town",
         "population": 14
+      },
+      {
+        "id": "cankiri_tosya",
+        "name_tr": "Tosya",
+        "x": 1147,
+        "y": 455,
+        "type": "town",
+        "population": 17
       }
     ]
   },
