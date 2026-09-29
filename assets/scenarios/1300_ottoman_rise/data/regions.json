@@ -10228,7 +10228,6 @@
     "active_event_id": "",
     "buildings": [
       "market",
-      "port",
       "walls",
       "barracks",
       "granary",
