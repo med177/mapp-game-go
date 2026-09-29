@@ -67,8 +67,15 @@ func newUnitTooltipLayout(iconH float64, costLineCount, requirementLineCount int
 	return layout
 }
 
-func unitTooltipImageMetrics() (width, height float64) {
+func unitTooltipImageMetrics(sprite *ebiten.Image) (width, height float64) {
 	height = float64(unitSpriteHeight(recruitCardW)) + unitTooltipImageExtraH
+	if sprite != nil {
+		bounds := sprite.Bounds()
+		if bounds.Dx() > 0 && bounds.Dy() > 0 {
+			width = height * float64(bounds.Dx()) / float64(bounds.Dy())
+			return width, height
+		}
+	}
 	width = height / float64(unitSpriteAspectH)
 	return width, height
 }
@@ -552,7 +559,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	costLines := unitCostRequirementLines(gs, utype)
 	reqLines, reqMissing := unitRequirementLines(gs, rid, utype)
 	status, statusCol := unitAvailabilityStatus(gs, utype, reqMissing)
-	iconW, iconH := unitTooltipImageMetrics()
+	iconW, iconH := unitTooltipImageMetrics(sprite)
 	layout := newUnitTooltipLayout(iconH, len(costLines), len(reqLines))
 	tooltipH := layout.height
 	if tooltipH < iconH+28 {
@@ -577,12 +584,11 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: y + layout.costLinesY, W: w - (textX - x) - 10}, tooltipRichLines(costLines), 14)
 
 	attributeX := x + w - 145
-	attributeColX := attributeX + 70
 	DrawText(screen, "Nitelik:", attributeX, y+layout.attributesY, FaceSmall, ColorGray)
 	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), attributeX, y+layout.attributesY+14, FaceSmall, ColorGray)
-	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), attributeColX, y+layout.attributesY+14, FaceSmall, ColorGray)
-	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), attributeX, y+layout.attributesY+30, FaceSmall, ColorGray)
-	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), attributeColX, y+layout.attributesY+30, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), attributeX, y+layout.attributesY+30, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), attributeX, y+layout.attributesY+46, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), attributeX, y+layout.attributesY+62, FaceSmall, ColorGray)
 
 	// Gereksinimler görselin sağ kolonu yerine görselin altında popup'ın
 	// tamamını kullanır; uzun teknoloji adları artık sağ kenardan taşmaz.
@@ -609,8 +615,9 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 	}
 
 	ensureArmySprites()
+	sprite := unitSpriteForFaction(gs, a.OwnerID, unit.TypeID)
 	tooltipH := 190.0
-	iconW, iconH := unitTooltipImageMetrics()
+	iconW, iconH := unitTooltipImageMetrics(sprite)
 	if tooltipH < iconH+28 {
 		tooltipH = iconH + 28
 	}
@@ -644,7 +651,7 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 	}
 	DrawText(screen, fmt.Sprintf("Can: %d", currentHP), textX, statY, FaceSmall, ColorGray)
 
-	if sprite := unitSpriteForFaction(gs, a.OwnerID, unit.TypeID); sprite != nil {
+	if sprite != nil {
 		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})
 	}
 }

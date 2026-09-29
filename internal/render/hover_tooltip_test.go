@@ -1,6 +1,11 @@
 package render
 
-import "testing"
+import (
+	"math"
+	"testing"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 func TestUnitTooltipLayoutPlacesRequirementsBelowImage(t *testing.T) {
 	const iconH = 201.0
@@ -21,5 +26,14 @@ func TestUnitTooltipLayoutPlacesRequirementsBelowImage(t *testing.T) {
 	}
 	if layout.height <= layout.requirementLinesY+12*14 {
 		t.Fatalf("tooltip yüksekliği gereksinim bloğunu kapsamıyor: height=%v", layout.height)
+	}
+}
+
+func TestUnitTooltipImageMetricsPreservesSpriteAspect(t *testing.T) {
+	sprite := ebiten.NewImage(300, 500)
+	width, height := unitTooltipImageMetrics(sprite)
+
+	if got, want := width/height, 300.0/500.0; math.Abs(got-want) > 1e-9 {
+		t.Fatalf("tooltip görsel oranı = %v, want %v", got, want)
 	}
 }
