@@ -1,8 +1,13 @@
 package audio
 
 import (
+	"errors"
 	"path/filepath"
+	"sync"
 	"testing"
+	"time"
+
+	ebitenaudio "github.com/hajimehoshi/ebiten/v2/audio"
 )
 
 func TestLoadGlobalSoundsLoadsMP3Effects(t *testing.T) {
@@ -77,21 +82,21 @@ func TestPlayScenarioSoundLoopTracksScenarioIntro(t *testing.T) {
 	StopScenarioSound(audioDir, "scenario_intro")
 }
 
-func TestNewMusicPlayerFullyDecodesScenarioPlaylistTracks(t *testing.T) {
+func TestNewMusicPlayerCreatesStreamingScenarioPlaylistTracks(t *testing.T) {
 	musicDir := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "musics")
 	tracks := []string{
 		"Cinematic-Ambient-Background.mp3",
-		"Osmanli-Muzikleri-Artar-Cihadla-Sanimiz.mp3",
-		"Osmanli-Muzikleri-Devlet-Marsi.mp3",
-		"Osmanli-Muzikleri-Estergon-Kalas.mp3",
-		"Osmanli-Muzikleri-Gafil-Ne-Bilir.mp3",
-		"Osmanli-Muzikleri-Tarihi-Cevir.mp3",
+		"ottoman/Osmanli-Muzikleri-Artar-Cihadla-Sanimiz.mp3",
+		"ottoman/Osmanli-Muzikleri-Devlet-Marsi.mp3",
+		"ottoman/Osmanli-Muzikleri-Estergon-Kalas.mp3",
+		"ottoman/Osmanli-Muzikleri-Gafil-Ne-Bilir.mp3",
+		"ottoman/Osmanli-Muzikleri-Tarihi-Cevir.mp3",
 	}
 
 	for _, track := range tracks {
 		player, err := newMusicPlayer(filepath.Join(musicDir, track))
 		if err != nil {
-			t.Fatalf("playlist parçası tamamen decode edilemedi (%s): %v", track, err)
+			t.Fatalf("playlist parçası için stream oynatıcısı oluşturulamadı (%s): %v", track, err)
 		}
 		if player == nil {
 			t.Fatalf("playlist parçası için oynatıcı oluşturulmadı (%s)", track)
@@ -100,9 +105,71 @@ func TestNewMusicPlayerFullyDecodesScenarioPlaylistTracks(t *testing.T) {
 	}
 }
 
-func TestNewMusicPlayerRejectsUnsupportedMPEG25Track(t *testing.T) {
-	path := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "musics", "Cerkes-Muzikleri-Aglatan-Cerkes-Muzigi.mp3")
-	if _, err := newMusicPlayer(path); err == nil {
-		t.Fatal("MPEG 2.5 içeren parça reddedilmedi")
+func TestNewMusicPlayerDefersTrackDecode(t *testing.T) {
+	path := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "musics", "ottoman", "Cerkes-Muzikleri-Aglatan-Cerkes-Muzigi.mp3")
+	player, err := newMusicPlayer(path)
+	if err != nil {
+		t.Fatalf("stream oynatıcısı decode tamamlanmadan oluşturulamadı: %v", err)
+	}
+	if player == nil {
+		t.Fatal("stream oynatıcısı oluşturulmadı")
+	}
+	_ = player.Close()
+}
+
+func TestStartMusicPlaylistDoesNotBlockOnTrackPreparation(t *testing.T) {
+	oldLoader := musicPlayerLoader
+	oldMusicEnabled := musicEnabled
+	oldMusicVolume := musicVolume
+	var releaseOnce sync.Once
+	release := make(chan struct{})
+	loaderStarted := make(chan struct{})
+	releaseLoader := func() {
+		releaseOnce.Do(func() { close(release) })
+	}
+	defer func() {
+		releaseLoader()
+		StopMusic()
+		musicPlayerLoader = oldLoader
+		musicEnabled = oldMusicEnabled
+		musicVolume = oldMusicVolume
+	}()
+
+	StopMusic()
+	musicEnabled = true
+	musicVolume = 1
+	musicPlayerLoader = func(string) (*ebitenaudio.Player, error) {
+		close(loaderStarted)
+		<-release
+		return nil, errors.New("test müzik yükleme hatası")
+	}
+
+	startReturned := make(chan struct{})
+	go func() {
+		StartMusicPlaylist("test-music", []MusicTrack{{File: "track.mp3"}})
+		close(startReturned)
+	}()
+
+	select {
+	case <-loaderStarted:
+	case <-time.After(time.Second):
+		t.Fatal("müzik yükleme worker'ı başlatılmadı")
+	}
+	select {
+	case <-startReturned:
+	case <-time.After(time.Second):
+		t.Fatal("playlist başlatma müzik hazırlamasını bekletti")
+	}
+
+	releaseLoader()
+	deadline := time.After(time.Second)
+	for musicLoadPending {
+		UpdateMusic()
+		select {
+		case <-deadline:
+			t.Fatal("müzik yükleme sonucu oyun akışına dönmedi")
+		default:
+			time.Sleep(time.Millisecond)
+		}
 	}
 }

@@ -34,15 +34,23 @@ var (
 		"battle_siege":      0.1,
 	}
 
-	musicEnabled      = true
-	musicVolume       = 0.45
-	musicBaseDir      string
-	musicPlaylist     []MusicTrack
-	musicPlayer       *audio.Player
-	musicCurrentIndex = -1
-	musicUnavailable  bool
-	musicRandom       = rand.New(rand.NewSource(time.Now().UnixNano()))
-	zoomInMusicDucked = false
+	musicEnabled              = true
+	musicVolume               = 0.45
+	musicBaseDir              string
+	musicPlaylist             []MusicTrack
+	musicPlayer               *audio.Player
+	musicCurrentIndex         = -1
+	musicUnavailable          bool
+	musicRandom               = rand.New(rand.NewSource(time.Now().UnixNano()))
+	musicLoadRequests         = make(chan musicLoadRequest, 1)
+	musicLoadResults          = make(chan musicLoadResult, 1)
+	musicLoadPending          = false
+	musicLoadAttempts         int
+	musicLoadGeneration       uint64
+	musicLoadRequestID        uint64
+	musicLoadActiveRequestID  uint64
+	musicLoadRestartRequestID uint64
+	zoomInMusicDucked         = false
 )
 
 const zoomInMusicVolumeFactor = 0.35
@@ -61,12 +69,32 @@ type MusicStatus struct {
 	Enabled     bool
 }
 
+type musicLoadRequest struct {
+	generation uint64
+	requestID  uint64
+	index      int
+	path       string
+}
+
+type musicLoadResult struct {
+	generation uint64
+	requestID  uint64
+	index      int
+	player     *audio.Player
+	err        error
+}
+
+// musicPlayerLoader ayrı tutulur; müzik dosyasını hazırlayan worker'ın testte
+// gerçek dosya/decoder yerine kontrollü bir loader kullanabilmesini sağlar.
+var musicPlayerLoader = newMusicPlayer
+
 func init() {
 	soundCache = make(map[string][]byte)
 	globalSoundPlayers = make(map[string]*audio.Player)
 	scenarioSoundCache = make(map[string][]byte)
 	scenarioSoundPlayers = make(map[string]*audio.Player)
 	audioContext = audio.NewContext(sampleRate)
+	go musicLoader()
 }
 
 // LoadGlobalSounds clears old sounds and loads all shared WAV/MP3 effects.
@@ -348,6 +376,10 @@ func StartMusicPlaylist(baseDir string, tracks []MusicTrack) {
 
 func StopMusic() {
 	StopZoomInLoop()
+	musicLoadGeneration++
+	musicLoadPending = false
+	musicLoadRestartRequestID = 0
+	musicLoadAttempts = 0
 	if musicPlayer != nil {
 		_ = musicPlayer.Close()
 		musicPlayer = nil
@@ -365,7 +397,9 @@ func SetMusicEnabled(enabled bool) {
 	}
 	if musicPlayer == nil {
 		if enabled && musicVolume > 0 && len(musicPlaylist) > 0 {
-			playNextMusic()
+			if !musicLoadPending {
+				playNextMusic()
+			}
 		}
 		return
 	}
@@ -424,12 +458,26 @@ func NextMusic() {
 	// musicEnabled değerini güncellemez; bu da HUD ikonunu "Çal" durumunda
 	// bırakır.
 	musicEnabled = true
+	if musicLoadPending {
+		// Worker eski parçayı hazırlamaya devam edebilir; sonucu yeni seçimi
+		// ezmemesi için bu isteği nesil ile iptal edilmiş say.
+		if musicLoadRestartRequestID == 0 {
+			musicLoadRestartRequestID = musicLoadActiveRequestID
+		}
+		musicLoadGeneration++
+		musicLoadAttempts = 0
+		return
+	}
 	playNextMusic()
 }
 
 // UpdateMusic advances the scenario playlist when the current track ends.
 func UpdateMusic() {
+	pollMusicLoadResults()
 	if !musicEnabled || musicVolume <= 0 || len(musicPlaylist) == 0 || musicUnavailable {
+		return
+	}
+	if musicLoadPending {
 		return
 	}
 	if musicPlayer == nil || !musicPlayer.IsPlaying() {
@@ -458,27 +506,128 @@ func playNextMusic() {
 		_ = musicPlayer.Close()
 		musicPlayer = nil
 	}
-	for attempts := 0; attempts < len(musicPlaylist); attempts++ {
-		next := chooseMusicIndex()
-		if next < 0 {
-			musicUnavailable = true
-			return
-		}
-		track := musicPlaylist[next]
-		path := filepath.Join(musicBaseDir, track.File)
-		player, err := newMusicPlayer(path)
-		if err != nil {
-			log.Printf("Müzik yüklenemedi %s: %v", path, err)
-			musicCurrentIndex = next
-			continue
-		}
-		musicCurrentIndex = next
-		musicPlayer = player
-		musicPlayer.SetVolume(musicPlaybackVolume())
-		musicPlayer.Play()
+	musicLoadGeneration++
+	musicLoadAttempts = 0
+	musicLoadRestartRequestID = 0
+	scheduleNextMusicLoad()
+}
+
+func scheduleNextMusicLoad() {
+	if musicLoadPending || len(musicPlaylist) == 0 || musicBaseDir == "" {
 		return
 	}
-	musicUnavailable = true
+	if musicLoadAttempts >= len(musicPlaylist) {
+		musicUnavailable = true
+		return
+	}
+
+	next := chooseMusicIndex()
+	if next < 0 {
+		musicUnavailable = true
+		return
+	}
+	musicCurrentIndex = next
+	musicLoadAttempts++
+	musicLoadRequestID++
+	musicLoadActiveRequestID = musicLoadRequestID
+	musicLoadPending = true
+	if !enqueueMusicLoad(musicLoadRequest{
+		generation: musicLoadGeneration,
+		requestID:  musicLoadActiveRequestID,
+		index:      next,
+		path:       filepath.Join(musicBaseDir, musicPlaylist[next].File),
+	}) {
+		musicLoadPending = false
+	}
+}
+
+func enqueueMusicLoad(request musicLoadRequest) bool {
+	select {
+	case musicLoadRequests <- request:
+		return true
+	default:
+		// StopMusic/StartMusicPlaylist arka arkaya çağrıldığında worker eski
+		// isteği henüz almamış olabilir. Kuyruktaki eski isteği beklemeden
+		// değiştir; ana oyun döngüsü kanal gönderiminde bloklanmasın.
+		select {
+		case <-musicLoadRequests:
+		default:
+		}
+		select {
+		case musicLoadRequests <- request:
+			return true
+		default:
+			// Worker isteği tam bu sırada aldıysa sonuç eski nesil olarak
+			// atılacak; pending'i kaldırıp sonraki UpdateMusic'e bırak.
+			return false
+		}
+	}
+}
+
+func pollMusicLoadResults() {
+	for {
+		select {
+		case result := <-musicLoadResults:
+			if result.player != nil &&
+				(result.generation != musicLoadGeneration || result.requestID != musicLoadActiveRequestID) {
+				_ = result.player.Close()
+			}
+
+			if result.requestID == musicLoadRestartRequestID {
+				musicLoadPending = false
+				musicLoadRestartRequestID = 0
+				scheduleNextMusicLoad()
+				continue
+			}
+			if result.generation != musicLoadGeneration || result.requestID != musicLoadActiveRequestID {
+				continue
+			}
+
+			musicLoadPending = false
+			if result.err != nil {
+				log.Printf("Müzik yüklenemedi %s: %v", musicTrackPath(result.index), result.err)
+				scheduleNextMusicLoad()
+				continue
+			}
+			if result.player == nil {
+				log.Printf("Müzik oynatıcısı oluşturulamadı %s", musicTrackPath(result.index))
+				scheduleNextMusicLoad()
+				continue
+			}
+			if !musicEnabled || musicVolume <= 0 || len(musicPlaylist) == 0 {
+				_ = result.player.Close()
+				continue
+			}
+
+			musicUnavailable = false
+			musicLoadAttempts = 0
+			musicPlayer = result.player
+			musicPlayer.SetVolume(musicPlaybackVolume())
+			musicPlayer.Play()
+		default:
+			return
+		}
+	}
+}
+
+func musicTrackPath(index int) string {
+	if index < 0 || index >= len(musicPlaylist) {
+		return musicBaseDir
+	}
+	return filepath.Join(musicBaseDir, musicPlaylist[index].File)
+}
+
+func musicLoader() {
+	for request := range musicLoadRequests {
+		player, err := musicPlayerLoader(request.path)
+		musicLoadResults <- musicLoadResult{
+			generation: request.generation,
+			requestID:  request.requestID,
+			index:      request.index,
+			player:     player,
+			err:        err,
+		}
+	}
 }
 
 func chooseMusicIndex() int {
@@ -537,19 +686,10 @@ func newMusicPlayer(path string) (*audio.Player, error) {
 		return nil, err
 	}
 
-	// Müzik stream'ini doğrudan oto oynatıcısına vermek decoder hatalarını
-	// oynatma sırasında ve dosya yolu olmadan raporlatabiliyordu. Özellikle
-	// go-mp3 MPEG 2.5 frame'lerini desteklemediği için bozuk/uyumsuz bir parça
-	// seçildiğinde hata ancak parça okunurken ortaya çıkıyordu. Tamamını burada
-	// PCM'e çevirerek hatalı parçayı playlist'e girmeden yakala.
-	pcmData, err := io.ReadAll(stream)
-	if err != nil {
-		return nil, err
-	}
-	if len(pcmData) == 0 {
-		return nil, io.ErrUnexpectedEOF
-	}
-	return audioContext.NewPlayerFromBytes(pcmData), nil
+	// Decoder çıktısını doğrudan oynatıcıya ver. NewPlayer ses verisini Play
+	// sonrasında parça parça okur; burada io.ReadAll kullanmak uzun playlist
+	// parçalarını tamamen PCM'e çevirip ilk oyun yüklemesini bloklar.
+	return audioContext.NewPlayer(stream)
 }
 
 func percentToVolume(percent int) float64 {
