@@ -536,7 +536,20 @@ func newMusicPlayer(path string) (*audio.Player, error) {
 	if err != nil {
 		return nil, err
 	}
-	return audioContext.NewPlayer(stream)
+
+	// Müzik stream'ini doğrudan oto oynatıcısına vermek decoder hatalarını
+	// oynatma sırasında ve dosya yolu olmadan raporlatabiliyordu. Özellikle
+	// go-mp3 MPEG 2.5 frame'lerini desteklemediği için bozuk/uyumsuz bir parça
+	// seçildiğinde hata ancak parça okunurken ortaya çıkıyordu. Tamamını burada
+	// PCM'e çevirerek hatalı parçayı playlist'e girmeden yakala.
+	pcmData, err := io.ReadAll(stream)
+	if err != nil {
+		return nil, err
+	}
+	if len(pcmData) == 0 {
+		return nil, io.ErrUnexpectedEOF
+	}
+	return audioContext.NewPlayerFromBytes(pcmData), nil
 }
 
 func percentToVolume(percent int) float64 {

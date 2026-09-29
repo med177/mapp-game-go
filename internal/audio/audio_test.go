@@ -76,3 +76,33 @@ func TestPlayScenarioSoundLoopTracksScenarioIntro(t *testing.T) {
 
 	StopScenarioSound(audioDir, "scenario_intro")
 }
+
+func TestNewMusicPlayerFullyDecodesScenarioPlaylistTracks(t *testing.T) {
+	musicDir := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "musics")
+	tracks := []string{
+		"Cinematic-Ambient-Background.mp3",
+		"Osmanli-Muzikleri-Artar-Cihadla-Sanimiz.mp3",
+		"Osmanli-Muzikleri-Devlet-Marsi.mp3",
+		"Osmanli-Muzikleri-Estergon-Kalas.mp3",
+		"Osmanli-Muzikleri-Gafil-Ne-Bilir.mp3",
+		"Osmanli-Muzikleri-Tarihi-Cevir.mp3",
+	}
+
+	for _, track := range tracks {
+		player, err := newMusicPlayer(filepath.Join(musicDir, track))
+		if err != nil {
+			t.Fatalf("playlist parçası tamamen decode edilemedi (%s): %v", track, err)
+		}
+		if player == nil {
+			t.Fatalf("playlist parçası için oynatıcı oluşturulmadı (%s)", track)
+		}
+		_ = player.Close()
+	}
+}
+
+func TestNewMusicPlayerRejectsUnsupportedMPEG25Track(t *testing.T) {
+	path := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "musics", "Cerkes-Muzikleri-Aglatan-Cerkes-Muzigi.mp3")
+	if _, err := newMusicPlayer(path); err == nil {
+		t.Fatal("MPEG 2.5 içeren parça reddedilmedi")
+	}
+}
