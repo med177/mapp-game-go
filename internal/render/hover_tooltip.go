@@ -26,8 +26,46 @@ const (
 	buildingTooltipImageSize = 200.0
 	buildingTooltipWidth     = 450.0
 	unitTooltipImageExtraH   = 50.0
-	unitTooltipWidth         = 358.0
+	unitTooltipWidth         = 400.0
 )
+
+type unitTooltipLayout struct {
+	upkeepY           float64
+	movementY         float64
+	costY             float64
+	costLinesY        float64
+	attributesY       float64
+	requirementY      float64
+	requirementLinesY float64
+	height            float64
+}
+
+func newUnitTooltipLayout(iconH float64, costLineCount, requirementLineCount int) unitTooltipLayout {
+	const (
+		iconY         = 14.0
+		lineH         = 14.0
+		contentBottom = 12.0
+	)
+
+	layout := unitTooltipLayout{
+		upkeepY:     50,
+		movementY:   68,
+		costY:       88,
+		costLinesY:  102,
+		attributesY: 88,
+	}
+	// Gereksinimler görselin sağ kolonu yerine görselin altında popup'ın
+	// tamamını kullanır. Maliyet bloğu beklenmedik şekilde büyürse de
+	// gereksinim başlığıyla çakışmaması için alt sınırı koru.
+	layout.requirementY = iconY + iconH + 10
+	costBottom := layout.costLinesY + float64(costLineCount)*lineH
+	if costBottom+8 > layout.requirementY {
+		layout.requirementY = costBottom + 8
+	}
+	layout.requirementLinesY = layout.requirementY + lineH
+	layout.height = layout.requirementLinesY + float64(requirementLineCount)*lineH + contentBottom
+	return layout
+}
 
 func unitTooltipImageMetrics() (width, height float64) {
 	height = float64(unitSpriteHeight(recruitCardW)) + unitTooltipImageExtraH
@@ -514,8 +552,9 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	costLines := unitCostRequirementLines(gs, utype)
 	reqLines, reqMissing := unitRequirementLines(gs, rid, utype)
 	status, statusCol := unitAvailabilityStatus(gs, utype, reqMissing)
-	tooltipH := 190.0 + float64(len(costLines))*14 + float64(len(reqLines))*14
 	iconW, iconH := unitTooltipImageMetrics()
+	layout := newUnitTooltipLayout(iconH, len(costLines), len(reqLines))
+	tooltipH := layout.height
 	if tooltipH < iconH+28 {
 		tooltipH = iconH + 28
 	}
@@ -531,29 +570,29 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	DrawText(screen, utype.NameTR, textX, y+12, FaceMed, ColorGold)
 	drawTooltipStatusRow(screen, textX, y+34, status, statusCol)
 
-	DrawText(screen, "Maliyet:", textX, y+50, FaceSmall, ColorGray)
-	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: y + 64}, tooltipRichLines(costLines), 14)
+	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl + %d altın/tur", utype.GrainUpkeep, utype.GoldUpkeep), textX, y+layout.upkeepY, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Hareket: %d PU", utype.BaseMovementPoints()), textX, y+layout.movementY, FaceSmall, ColorGray)
 
-	reqY := y + 64 + float64(len(costLines))*14 + 2
-	DrawText(screen, "Gereksinim:", textX, reqY, FaceSmall, ColorGray)
-	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: reqY + 14}, tooltipRichLines(reqLines), 14)
+	DrawText(screen, "Maliyet:", textX, y+layout.costY, FaceSmall, ColorGray)
+	drawUIRichTextBlock(screen, gameui.Rect{X: textX, Y: y + layout.costLinesY, W: w - (textX - x) - 10}, tooltipRichLines(costLines), 14)
 
-	upkeepY := reqY + 14 + float64(len(reqLines))*14 + 6
-	DrawText(screen, fmt.Sprintf("Bakım: %d tahıl + %d altın/tur", utype.GrainUpkeep, utype.GoldUpkeep), textX, upkeepY, FaceSmall, ColorGray)
-	DrawText(screen, fmt.Sprintf("Hareket: %d PU", utype.BaseMovementPoints()), textX, upkeepY+18, FaceSmall, ColorGray)
+	attributeX := x + w - 145
+	attributeColX := attributeX + 70
+	DrawText(screen, "Nitelik:", attributeX, y+layout.attributesY, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), attributeX, y+layout.attributesY+14, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), attributeColX, y+layout.attributesY+14, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), attributeX, y+layout.attributesY+30, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), attributeColX, y+layout.attributesY+30, FaceSmall, ColorGray)
+
+	// Gereksinimler görselin sağ kolonu yerine görselin altında popup'ın
+	// tamamını kullanır; uzun teknoloji adları artık sağ kenardan taşmaz.
+	requirementX := x + 10
+	DrawText(screen, "Gereksinim:", requirementX, y+layout.requirementY, FaceSmall, ColorGray)
+	drawUIRichTextBlock(screen, gameui.Rect{X: requirementX, Y: y + layout.requirementLinesY, W: w - 20}, tooltipRichLines(reqLines), 14)
 
 	if sprite != nil {
 		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})
 	}
-
-	statY := upkeepY + 36
-	DrawText(screen, fmt.Sprintf("Saldırı: %d", utype.Attack), textX, statY, FaceSmall, ColorGray)
-	statY += 16
-	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), textX, statY, FaceSmall, ColorGray)
-	statY += 16
-	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), textX, statY, FaceSmall, ColorGray)
-	statY += 16
-	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), textX, statY, FaceSmall, ColorGray)
 }
 
 // drawArmyUnitTooltip, recruit tooltip'ından ayrı olarak seçili ordudaki
