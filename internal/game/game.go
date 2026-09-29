@@ -1923,6 +1923,7 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 			detail = append(detail, "Koşullar sağlanıyor.")
 		}
 		views = append(views, render.EventCodexEntry{
+			EventID:     evt.ID,
 			Title:       evt.NameTR,
 			Status:      entry.status,
 			DateLabel:   dateLabel,

@@ -17,34 +17,37 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 		t.Fatalf("1300 event verisi yüklenemedi: %v", err)
 	}
 	required := map[string]bool{
-		"ottoman_turkmen_gazi_migration_1310":    false,
-		"ottoman_bithynian_campaign_muster_1321": false,
-		"ottoman_anatolian_beylik_support_1327":  false,
-		"golden_bull_1356":                       false,
-		"jan_hus_constance_1415":                 false,
-		"council_of_constance_1417":              false,
-		"hussite_uprising_1419":                  false,
-		"first_hussite_crusade_1420":             false,
-		"hussite_counteroffensive_1427":          false,
-		"lipany_hussite_settlement_1434":         false,
-		"baltic_crusade_against_lithuania_1345":  false,
-		"lithuanian_christianization_1387":       false,
-		"grunwald_battle_1410":                   false,
-		"burgundian_succession_war_1477":         false,
-		"burgundian_succession_settlement_1493":  false,
-		"habsburg_imperial_succession_1440":      false,
-		"second_kosovo_battle_1448":              false,
-		"belgrade_defense_1456":                  false,
-		"serbian_despotate_falls_1459":           false,
-		"fall_of_trebizond_1461":                 false,
-		"bosnia_conquest_1463":                   false,
-		"italian_wars_begin_1494":                false,
-		"marignano_battle_1515":                  false,
-		"diet_of_worms_1521":                     false,
-		"pavia_battle_1525":                      false,
-		"german_peasants_war_1525":               false,
-		"sack_of_rome_1527":                      false,
-		"siege_of_vienna_1529":                   false,
+		"ottoman_turkmen_gazi_migration_1310":      false,
+		"ottoman_bithynian_campaign_muster_1321":   false,
+		"ottoman_anatolian_beylik_support_1327":    false,
+		"ottoman_karesi_peaceful_integration_1345": false,
+		"germiyan_dowry_settlement_1381":           false,
+		"germiyan_will_integration_1429":           false,
+		"golden_bull_1356":                         false,
+		"jan_hus_constance_1415":                   false,
+		"council_of_constance_1417":                false,
+		"hussite_uprising_1419":                    false,
+		"first_hussite_crusade_1420":               false,
+		"hussite_counteroffensive_1427":            false,
+		"lipany_hussite_settlement_1434":           false,
+		"baltic_crusade_against_lithuania_1345":    false,
+		"lithuanian_christianization_1387":         false,
+		"grunwald_battle_1410":                     false,
+		"burgundian_succession_war_1477":           false,
+		"burgundian_succession_settlement_1493":    false,
+		"habsburg_imperial_succession_1440":        false,
+		"second_kosovo_battle_1448":                false,
+		"belgrade_defense_1456":                    false,
+		"serbian_despotate_falls_1459":             false,
+		"fall_of_trebizond_1461":                   false,
+		"bosnia_conquest_1463":                     false,
+		"italian_wars_begin_1494":                  false,
+		"marignano_battle_1515":                    false,
+		"diet_of_worms_1521":                       false,
+		"pavia_battle_1525":                        false,
+		"german_peasants_war_1525":                 false,
+		"sack_of_rome_1527":                        false,
+		"siege_of_vienna_1529":                     false,
 	}
 	for _, event := range events {
 		if event == nil {
@@ -137,6 +140,23 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 				event.UnitReinforcements[1].UnitType != "light_cavalry" || event.UnitReinforcements[1].UnitCount != 2 ||
 				event.UnitReinforcements[2].UnitType != "catapult" || event.UnitReinforcements[2].UnitCount != 1 {
 				t.Fatal("1327 Anadolu beylikleri desteği 3 piyade, 2 hafif süvari ve 1 mancınık vermiyor")
+			}
+		}
+		if event.ID == "germiyan_dowry_settlement_1381" {
+			settlement := event.DynasticSettlement
+			if settlement == nil || settlement.SourceFactionID != "germiyan_bey" ||
+				settlement.RecipientFactionID != "ottoman" || settlement.Mode != "dowry" ||
+				len(settlement.RegionIDs) != 1 || settlement.RegionIDs[0] != "kutahya" ||
+				settlement.ArmyTransferPercent != 30 || settlement.ResourceTransferPercent != 30 {
+				t.Fatal("Germiyan çeyizi Kütahya ve yüzde 30 aktarım sözleşmesini taşımıyor")
+			}
+		}
+		if event.ID == "germiyan_will_integration_1429" {
+			settlement := event.DynasticSettlement
+			if settlement == nil || !settlement.AutoUnionWhenSourceEmpty ||
+				settlement.UnionResultFactionID != "ottoman" || len(settlement.RegionIDs) != 1 ||
+				settlement.RegionIDs[0] != "germiyan" {
+				t.Fatal("Germiyan vasiyeti kalan bölgeyi otomatik birleşmeye bağlamıyor")
 			}
 		}
 	}
@@ -603,6 +623,77 @@ func TestApplyOtherIncomeDeltaPersistsOnFaction(t *testing.T) {
 
 	if got := gs.Factions[ownerID].OtherIncomeDelta; got != 20 {
 		t.Fatalf("kalıcı diğer gelir deltası = %d, 20 bekleniyordu", got)
+	}
+}
+
+func TestApplyDynasticSettlementTransfersDowryAndFinalUnion(t *testing.T) {
+	const (
+		ottomanID  = faction.FactionID("ottoman")
+		germiyanID = faction.FactionID("germiyan_bey")
+	)
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"kutahya":  {ID: "kutahya", OwnerID: string(germiyanID)},
+			"germiyan": {ID: "germiyan", OwnerID: string(germiyanID)},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			ottomanID:  {ID: ottomanID},
+			germiyanID: {ID: germiyanID, Gold: 100, Grain: 100, Iron: 10, Timber: 10, Stone: 10, Spice: 10, Cloth: 10},
+		},
+		Relations: map[string]*faction.Relation{},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_a": {ID: "army_a", OwnerID: string(germiyanID)},
+			"army_b": {ID: "army_b", OwnerID: string(germiyanID)},
+			"army_c": {ID: "army_c", OwnerID: string(germiyanID)},
+			"fleet":  {ID: "fleet", OwnerID: string(germiyanID), IsNaval: true},
+		},
+	}
+
+	Apply(gs, &Event{
+		Target:          "specific_faction",
+		AffectedFaction: string(germiyanID),
+		DynasticSettlement: &DynasticSettlementEffect{
+			SourceFactionID:         string(germiyanID),
+			RecipientFactionID:      string(ottomanID),
+			RegionIDs:               []world.RegionID{"kutahya"},
+			ArmyTransferPercent:     30,
+			ResourceTransferPercent: 30,
+			RelationStance:          "allied",
+			RelationScoreDelta:      50,
+		},
+	})
+
+	if gs.Regions["kutahya"].OwnerID != string(ottomanID) || gs.Regions["germiyan"].OwnerID != string(germiyanID) {
+		t.Fatal("çeyiz yalnız Kütahya'yı Osmanlı'ya devretmedi")
+	}
+	if got := gs.Factions[germiyanID].Gold; got != 70 || gs.Factions[ottomanID].Gold != 30 {
+		t.Fatalf("çeyiz altın aktarımı = Germiyan %d, Osmanlı %d; 70/30 bekleniyordu", got, gs.Factions[ottomanID].Gold)
+	}
+	if gs.Armies["army_a"].OwnerID != string(ottomanID) || gs.Armies["army_b"].OwnerID != string(germiyanID) || gs.Armies["fleet"].OwnerID != string(germiyanID) {
+		t.Fatal("çeyiz yüzde 30 kara ordusu aktarımını deterministik uygulamadı veya filoyu aktardı")
+	}
+	relation := gs.Relations[faction.RelationKey(ottomanID, germiyanID)]
+	if relation == nil || relation.Stance != faction.StanceAllied || relation.Score != 50 {
+		t.Fatalf("çeyiz ilişkisi müttefik olarak kurulmadı: %+v", relation)
+	}
+
+	Apply(gs, &Event{
+		Target:          "specific_faction",
+		AffectedFaction: string(germiyanID),
+		DynasticSettlement: &DynasticSettlementEffect{
+			SourceFactionID:          string(germiyanID),
+			RecipientFactionID:       string(ottomanID),
+			RegionIDs:                []world.RegionID{"germiyan"},
+			AutoUnionWhenSourceEmpty: true,
+			UnionResultFactionID:     string(ottomanID),
+		},
+	})
+
+	if gs.Regions["germiyan"].OwnerID != string(ottomanID) || !gs.Factions[germiyanID].IsEliminated {
+		t.Fatal("vasiyet sonrası Germiyan tamamen Osmanlı'ya bağlanmadı")
+	}
+	if got := gs.Factions[ottomanID].Gold; got != 100 {
+		t.Fatalf("vasiyet sonrası kalan Germiyan kaynağı Osmanlı'ya aktarılmadı: %d", got)
 	}
 }
 

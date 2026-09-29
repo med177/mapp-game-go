@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-09-28
+last_updated: 2026-09-30
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -24,7 +24,7 @@ gelişmeleri gibi tarihsel zincirler eklenmiştir. Rastgele havuza kuraklık,
 çekirge, kervan baskını, liman yangını, vergi isyanı, maden keşfi, hac panayırı
 ve sınır akınları eklenerek uzun oyunlarda tekrar çeşitliliği artırılmıştır.
 
-Genişletilmiş olay havuzu 159 kayda ulaşır. Dinamik olaylar düşük memnuniyet,
+Genişletilmiş olay havuzu 167 kayda ulaşır. Dinamik olaylar düşük memnuniyet,
 sınır baskısı, ticaret dalgalanması, hazine ve ikmal sorunlarını temsil eder.
 Aktif bölgesel etkiler ayrıca `trade_income_percent`,
 `region_gold_income_percent` ve `army_upkeep_percent` alanlarıyla ticaret,
@@ -80,6 +80,16 @@ Bursa Osmanlıda kaldığı ve Germiyan, Karesi ya da Karaman ile savaşılmadı
 sürece üç piyade, iki hafif süvari, bir mancınık ve altın-tahıl desteği sağlar;
 bu beyliklerle ilişkileri de iyileştirir. Bu event'ler genel AI agresifliğini
 değiştirmez ve birer kez çalışır.
+
+Karesi ve Germiyan katılım zinciri de savaş dışı siyasi aktarım kullanır:
+`ottoman_karesi_peaceful_integration_1345`, Dursun Bey'in sığınması ve ölümü
+sonrasında Karesi bölgesini Osmanlı'ya geçirir; `germiyan_dowry_settlement_1381`
+yalnız `kutahya` bölgesini çeyiz olarak aktarırken Germiyan kara ordularının ve
+kaynaklarının yüzde 30'unu taşır; `germiyan_will_integration_1429`, II. Yakup
+Bey'in vasiyetiyle Germiyan'ın kalan bölgesini devreder ve kaynak faction boşalınca
+Osmanlı ile otomatik siyasi birleşme yapar. Bu aktarım savaş başlatmaz, WarLedger
+ve fetih istatistiklerini değiştirmez; birlik yüzdesi deterministik olarak ordu
+kimlik sırasından seçilir ve filolar kapsam dışıdır.
 
 ---
 
@@ -162,6 +172,13 @@ Yeni choice katmanı:
 
 Choice sonuçları artık doğrudan follow-up event açabilir.
 
+`dynastic_settlement` etkisi, savaşsız hanedan anlaşmalarını veri üzerinden
+uygular. `source_faction_id`, `recipient_faction_id` ve `region_ids` sahiplik
+devrini; `army_transfer_percent` yalnız kara ordularının yüzdesini;
+`resource_transfer_percent` faction kaynaklarının yüzdesini tanımlar.
+`auto_union_when_source_empty` açık olduğunda kaynak faction'ın son kara
+bölgesi de devredilince normal siyasi birleşme yardımcıları kullanılır.
+
 - `Effect.set_flags[]` seçilen kararın state flag'ini yazar
 - `Effect.clear_flags[]` eski veya rakip branch flag'ini temizler
 - `Effect.other_income_delta` hedef fraksiyonun kalıcı devlet düzeyi gelirini değiştirir
@@ -235,6 +252,9 @@ Olay tetiklendiğinde:
 - Kodex artık iki kolonlu çalışır:
   - solda seçilebilir zincir listesi
   - sağda seçilen zincirin tam açıklaması, kalan süre ve eksik koşul dökümü
+- Üst HUD altındaki `Aşırı Genişleme` bilgi paneli, Kodex'in `Tümü` listesindeki
+  kalan turu en az olan event başlığını `(N tur)` biçiminde gösterir. Panel
+  tıklanınca aynı event kimliğiyle Kodex satırını seçerek açar.
 
 ---
 

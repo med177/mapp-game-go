@@ -618,6 +618,7 @@ const (
 )
 
 type EventCodexEntry struct {
+	EventID     string
 	Title       string
 	Status      string
 	DateLabel   string
@@ -1504,7 +1505,11 @@ func (r *Renderer) HasEventCodex() bool {
 }
 
 func (r *Renderer) OpenEventCodex() {
-	if !r.HasEventCodex() {
+	r.openEventCodexAt(nil)
+}
+
+func (r *Renderer) openEventCodexAt(target *EventCodexEntry) {
+	if r == nil || !r.HasEventCodex() {
 		return
 	}
 	r.showEventCodex = true
@@ -1512,6 +1517,46 @@ func (r *Renderer) OpenEventCodex() {
 	r.eventCodexFocus = 0
 	r.eventCodexScroll = 0
 	r.eventCodexDetailScroll = 0
+	if target == nil {
+		return
+	}
+	for i, entry := range r.currentEventCodexEntries() {
+		if (target.EventID != "" && entry.EventID == target.EventID) ||
+			(target.EventID == "" && entry.Title == target.Title) {
+			r.eventCodexFocus = i
+			r.ensureEventCodexFocusVisible()
+			return
+		}
+	}
+}
+
+func (r *Renderer) nearestEventCodexEntry() (EventCodexEntry, bool) {
+	if r == nil || len(r.eventCodexEntries) <= int(EventCodexAll) {
+		return EventCodexEntry{}, false
+	}
+	entries := r.eventCodexEntries[int(EventCodexAll)]
+	var nearest EventCodexEntry
+	found := false
+	for _, entry := range entries {
+		if entry.Title == "" || entry.Status == "Gerçekleşti" {
+			continue
+		}
+		if !found || entry.TurnsUntil < nearest.TurnsUntil ||
+			(entry.TurnsUntil == nearest.TurnsUntil && entry.Title < nearest.Title) {
+			nearest = entry
+			found = true
+		}
+	}
+	return nearest, found
+}
+
+func (r *Renderer) openNearestEventCodex() bool {
+	entry, ok := r.nearestEventCodexEntry()
+	if !ok {
+		return false
+	}
+	r.openEventCodexAt(&entry)
+	return r.showEventCodex
 }
 
 func (r *Renderer) CloseEventCodex() {
@@ -2046,7 +2091,13 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 				recruitReason = recruitPanelDisabledReason(r.gs, r.SelectedRegion)
 			}
 		}
+		nearestEvent, hasNearestEvent := r.nearestEventCodexEntry()
 		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showImperialPanel, r.showActiveWars, r.AIControlsPlayerFaction, r.AIControlsPlayerEconomy, r.mapMode)
+		var nearestEventPtr *EventCodexEntry
+		if hasNearestEvent {
+			nearestEventPtr = &nearestEvent
+		}
+		drawTopAlertHud(screen, r.gs, nearestEventPtr)
 		r.drawGrainEconomyPopup(screen)
 		r.drawGoldIncomePopup(screen)
 		r.drawArmyOrganizationPopup(screen)

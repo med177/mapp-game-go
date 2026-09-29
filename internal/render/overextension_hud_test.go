@@ -55,3 +55,41 @@ func TestOverextensionHUDUsesPointerAndPopupThresholdLines(t *testing.T) {
 		t.Fatalf("Aşırı Genişleme popup eşik satırı = %d, want 4", got)
 	}
 }
+
+func TestNearestEventHUDUsesSmallestRemainingTurn(t *testing.T) {
+	r := &Renderer{eventCodexEntries: [6][]EventCodexEntry{
+		{
+			{EventID: "far", Title: "Uzak Event", Status: "Takvim", TurnsUntil: 8},
+			{EventID: "near", Title: "Yakın Event", Status: "Kilitli", TurnsUntil: 2},
+		},
+	}}
+
+	entry, ok := r.nearestEventCodexEntry()
+	if !ok || entry.EventID != "near" {
+		t.Fatalf("en yakın event = %+v, ok=%v; near event bekleniyordu", entry, ok)
+	}
+}
+
+func TestNearestEventClickOpensCodexWithMatchingEntryFocused(t *testing.T) {
+	r := &Renderer{eventCodexEntries: [6][]EventCodexEntry{
+		{
+			{EventID: "far", Title: "Aynı Başlık", Status: "Takvim", TurnsUntil: 6},
+			{EventID: "near", Title: "Aynı Başlık", Status: "Takvim", TurnsUntil: 1},
+		},
+	}}
+
+	if !r.openNearestEventCodex() {
+		t.Fatal("en yakın event için Event Kodex açılmadı")
+	}
+	if r.eventCodexFilter != EventCodexAll || r.eventCodexFocus != 1 {
+		t.Fatalf("Kodex seçimi = filter=%v focus=%d, all/1 bekleniyordu", r.eventCodexFilter, r.eventCodexFocus)
+	}
+}
+
+func TestNearestEventHUDKeepsRemainingTurnsInParentheses(t *testing.T) {
+	entry := EventCodexEntry{Title: "Bursa'nın Fethi", TurnsUntil: 3}
+	text := nearestEventHUDLabel(entry.Title, entry.TurnsUntil)
+	if text != "En yakın event: Bursa'nın Fethi (3 tur)" {
+		t.Fatalf("event HUD metni = %q", text)
+	}
+}

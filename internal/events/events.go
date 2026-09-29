@@ -81,6 +81,22 @@ type UnitReinforcementEffect struct {
 	UnitCount int    `json:"unit_count"`
 }
 
+// DynasticSettlementEffect, bir hanedan anlaşmasıyla belirli bölgelerin
+// savaş dışı aktarılmasını tanımlar. Tam siyasi birleşmeden farklı olarak
+// kaynak faction aktarım sonrasında yaşamaya devam edebilir.
+type DynasticSettlementEffect struct {
+	SourceFactionID          string           `json:"source_faction_id"`
+	RecipientFactionID       string           `json:"recipient_faction_id"`
+	Mode                     string           `json:"mode,omitempty"`
+	RegionIDs                []world.RegionID `json:"region_ids"`
+	ArmyTransferPercent      int              `json:"army_transfer_percent,omitempty"`
+	ResourceTransferPercent  int              `json:"resource_transfer_percent,omitempty"`
+	RelationStance           string           `json:"relation_stance,omitempty"`
+	RelationScoreDelta       int              `json:"relation_score_delta,omitempty"`
+	AutoUnionWhenSourceEmpty bool             `json:"auto_union_when_source_empty,omitempty"`
+	UnionResultFactionID     string           `json:"union_result_faction_id,omitempty"`
+}
+
 // ImperialSuccessionEffect tarihsel bir event'in HRE imparatorunu belirleyip
 // sonraki elektör seçimini kapatmasını tanımlar. Elektör üyeleri state'te
 // korunur; yalnızca seçim takvimi bu tarihsel hanedan sonucuna bağlanır.
@@ -127,6 +143,7 @@ type Effect struct {
 	SuccessorRevivals         []SuccessorRevivalEffect     `json:"successor_revivals,omitempty"`
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
 	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
+	DynasticSettlement        *DynasticSettlementEffect    `json:"dynastic_settlement,omitempty"`
 	ImperialSuccession        *ImperialSuccessionEffect    `json:"imperial_succession,omitempty"`
 	SetFlags                  []string                     `json:"set_flags,omitempty"`
 	ClearFlags                []string                     `json:"clear_flags,omitempty"`
@@ -175,6 +192,7 @@ type Event struct {
 	ClearFlags                []string                     `json:"clear_flags,omitempty"`
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
 	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
+	DynasticSettlement        *DynasticSettlementEffect    `json:"dynastic_settlement,omitempty"`
 
 	// Tarihsel tetiklenme alanları
 	HistoricalYear  int    `json:"historical_year,omitempty"`  // 0 = tarihsel değil
@@ -412,6 +430,7 @@ func (e *Event) BaseEffect() Effect {
 		SuccessorRevivals:         e.SuccessorRevivals,
 		TradeNetworkModifiers:     e.TradeNetworkModifiers,
 		UnitReinforcements:        e.UnitReinforcements,
+		DynasticSettlement:        e.DynasticSettlement,
 		CapitalSettlementID:       "",
 		CapitalMoveTurns:          0,
 	}
@@ -472,8 +491,10 @@ func Apply(gs *state.GameState, e *Event) {
 	if gs == nil || e == nil {
 		return
 	}
-	targetRegionID := applyEffect(gs, e.BaseEffect())
-	applySuccessorRevival(gs, e.BaseEffect())
+	eff := e.BaseEffect()
+	targetRegionID := applyEffect(gs, eff)
+	applyDynasticSettlement(gs, eff.DynasticSettlement)
+	applySuccessorRevival(gs, eff)
 	addRegionEventStatus(gs, e, nil, targetRegionID)
 }
 
@@ -484,6 +505,7 @@ func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
 	choice := e.Choices[idx]
 	eff := choiceEffect(e, choice)
 	targetRegionID := applyEffect(gs, eff)
+	applyDynasticSettlement(gs, eff.DynasticSettlement)
 	applySuccessorRevival(gs, eff)
 	addRegionEventStatus(gs, e, &choice, targetRegionID)
 	return choice, true
@@ -979,6 +1001,98 @@ func applyEffect(gs *state.GameState, eff Effect) world.RegionID {
 	applyTradeNetworkModifiers(gs, eff.TradeNetworkModifiers)
 	applyFlags(gs, eff)
 	return targetRegionID
+}
+
+func applyDynasticSettlement(gs *state.GameState, settlement *DynasticSettlementEffect) {
+	if gs == nil || settlement == nil {
+		return
+	}
+	sourceID := faction.FactionID(settlement.SourceFactionID)
+	recipientID := faction.FactionID(settlement.RecipientFactionID)
+	if sourceID == "" || recipientID == "" || sourceID == recipientID {
+		return
+	}
+	source := gs.Factions[sourceID]
+	recipient := gs.Factions[recipientID]
+	if source == nil || recipient == nil {
+		return
+	}
+
+	for _, regionID := range settlement.RegionIDs {
+		region := gs.Regions[regionID]
+		if region == nil || region.IsSea || region.OwnerID != string(sourceID) {
+			continue
+		}
+		region.OwnerID = string(recipientID)
+	}
+
+	resourcePercent := clamp(settlement.ResourceTransferPercent, 0, 100)
+	transferFactionResources(source, recipient, resourcePercent)
+
+	armyPercent := clamp(settlement.ArmyTransferPercent, 0, 100)
+	if armyPercent > 0 {
+		armyIDs := make([]army.ArmyID, 0)
+		for armyID, current := range gs.Armies {
+			if current == nil || current.OwnerID != string(sourceID) || current.IsNaval {
+				continue
+			}
+			armyIDs = append(armyIDs, armyID)
+		}
+		sort.Slice(armyIDs, func(i, j int) bool { return armyIDs[i] < armyIDs[j] })
+		transferCount := (len(armyIDs)*armyPercent + 99) / 100
+		if transferCount > len(armyIDs) {
+			transferCount = len(armyIDs)
+		}
+		for _, armyID := range armyIDs[:transferCount] {
+			gs.Armies[armyID].OwnerID = string(recipientID)
+		}
+	}
+
+	if stance := dynasticSettlementStance(settlement.RelationStance); stance != "" {
+		diplomacy.ForceRelation(gs, sourceID, recipientID, stance, settlement.RelationScoreDelta)
+	}
+
+	if !settlement.AutoUnionWhenSourceEmpty || len(gs.LandRegionsOwnedBy(sourceID)) != 0 {
+		gs.NormalizeFactionCapitals()
+		return
+	}
+	resultID := recipientID
+	if settlement.UnionResultFactionID != "" {
+		resultID = faction.FactionID(settlement.UnionResultFactionID)
+	}
+	if gs.Factions[resultID] == nil {
+		return
+	}
+	// Bu birleşme savaş sonucu değildir: WarLedger ve fetih istatistikleri
+	// değiştirilmeden mevcut siyasi birleşme state yardımcısı kullanılır.
+	gs.UnitePoliticalFactions([]faction.FactionID{resultID, sourceID}, resultID)
+}
+
+func transferFactionResources(source, recipient *faction.Faction, percent int) {
+	if source == nil || recipient == nil || percent <= 0 {
+		return
+	}
+	transfer := func(value *int, target *int) {
+		amount := *value * percent / 100
+		*value -= amount
+		*target += amount
+	}
+	transfer(&source.Gold, &recipient.Gold)
+	transfer(&source.Grain, &recipient.Grain)
+	transfer(&source.Iron, &recipient.Iron)
+	transfer(&source.Timber, &recipient.Timber)
+	transfer(&source.Stone, &recipient.Stone)
+	transfer(&source.Spice, &recipient.Spice)
+	transfer(&source.Cloth, &recipient.Cloth)
+}
+
+func dynasticSettlementStance(value string) faction.DiplomaticStance {
+	switch faction.DiplomaticStance(value) {
+	case faction.StancePeace, faction.StanceAllied, faction.StanceTrade:
+		return faction.DiplomaticStance(value)
+	default:
+		return ""
+	}
 }
 
 func applyTradeNetworkModifiers(gs *state.GameState, modifiers []TradeNetworkModifierEffect) {

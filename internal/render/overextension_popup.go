@@ -20,6 +20,14 @@ func (r *Renderer) overextensionHUDHovering(fx, fy float64) bool {
 	return r != nil && r.gs != nil && r.gs.PlayerFactionID != "" && topAlertHudRect().Hit(fx, fy)
 }
 
+func (r *Renderer) nearestEventHUDHovering(fx, fy float64) bool {
+	if r == nil || r.gs == nil || r.gs.PlayerFactionID == "" {
+		return false
+	}
+	_, ok := r.nearestEventCodexEntry()
+	return ok && topAlertHudRect().Hit(fx, fy)
+}
+
 func overextensionPopupRect(mx, my float64) gameui.Rect {
 	x, y, w, h := tooltipRect(mx, my, overextensionPopupW, overextensionPopupH)
 	return gameui.Rect{X: x, Y: y, W: w, H: h}

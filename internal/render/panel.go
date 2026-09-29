@@ -997,8 +997,6 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 		drawVictoryProgress(screen, gs, float64(by))
 		drawVictoryAchievedBanner(screen, gs)
 	}
-	drawTopAlertHud(screen, gs)
-
 	// Alt-orta: aksiyon HUD'u
 	hudX, hudY, hudW, hudH := bottomActionHudRect()
 	drawRoundedHUDFrame(screen, [4]float32{hudX, hudY, hudW, hudH}, bottomActionHUDRadius, 1.5, panelBg, panelBorder)
@@ -1069,7 +1067,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 // drawTopAlertHud, üst durum kartının altındaki ince uyarı panelini çizer.
 // Metin ve panel, ileride birden fazla uyarı eklendiğinde aynı yüzey altında
 // genişletilebilecek şekilde ayrı tutulur.
-func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState) {
+func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent *EventCodexEntry) {
 	alert := topAlertHudRect()
 	drawRoundedHUDFrame(screen, [4]float32{
 		float32(alert.X), float32(alert.Y), float32(alert.W), float32(alert.H),
@@ -1077,6 +1075,21 @@ func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState) {
 	text, textColor := overextensionHUDText(gs)
 	textY := alert.Y + (alert.H-FaceSmall.Size)/2
 	DrawText(screen, text, alert.X+10, textY, FaceSmall, textColor)
+	if nearestEvent == nil || nearestEvent.Title == "" {
+		return
+	}
+	separatorX := alert.X + 10 + MeasureText(text, FaceSmall) + 16
+	remaining := "(" + itoa(nearestEvent.TurnsUntil) + " tur)"
+	maxTitleW := alert.X + alert.W - 10 - separatorX - MeasureText("En yakın event: "+remaining, FaceSmall) - 4
+	if maxTitleW <= 0 {
+		return
+	}
+	title := trimTextToWidth(nearestEvent.Title, FaceSmall, maxTitleW)
+	DrawText(screen, nearestEventHUDLabel(title, nearestEvent.TurnsUntil), separatorX, textY, FaceSmall, ColorGold)
+}
+
+func nearestEventHUDLabel(title string, turnsUntil int) string {
+	return "En yakın event: " + title + " (" + itoa(turnsUntil) + " tur)"
 }
 
 // factionMilitaryPowerStanding seçili devletin askeri gücünü ve aktif devletler

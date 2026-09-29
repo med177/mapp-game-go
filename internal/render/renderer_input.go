@@ -635,6 +635,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 			return InputAction{}
 		}
 	}
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTopStatus) && r.nearestEventHUDHovering(fx, fy) {
+		r.openNearestEventCodex()
+		return InputAction{Kind: ActionOpenEventCodex}
+	}
 	if r.uiLayerAllowsAt(fx, fy, uiLayerTopDate) && topDateHudMenuButtonHit(fx, fy) {
 		r.pauseCursor = 0
 		return InputAction{Kind: ActionOpenPauseMenu}

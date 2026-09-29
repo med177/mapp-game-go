@@ -1,11 +1,25 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-29
+last_updated: 2026-09-30
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-09-30: 1300 Osmanlı senaryosuna Karesi'nin Dursun Bey sonrası barışçıl
+  katılımı, 1381 Germiyan çeyizi ve 1429 Germiyan vasiyeti eklendi. Yeni
+  `dynastic_settlement` event etkisi Kütahya'nın savaşsız devrini, Germiyan
+  kaynakları ve kara ordularının yüzde 30'luk payını, filo dışlamasını ve son
+  bölge devrinde otomatik Osmanlı birleşmesini veri üzerinden çözüyor.
+  Aktarımlar WarLedger/fetih istatistiklerine yazılmıyor; resolver ve gerçek
+  event kayıtları `internal/events/events_test.go` içinde doğrulanıyor.
+
+- 2026-09-30: Üst HUD altındaki `Aşırı Genişleme` bilgi paneli artık en yakın
+  tarihsel event başlığını ve kalan turu parantez içinde gösteriyor. Panel hover
+  edildiğinde pointer cursor kullanıyor; tıklama Event Kodex'i `Tümü` sekmesinde
+  ilgili event kimliğine göre seçili açıyor (`internal/render/panel.go`,
+  `internal/render/renderer.go`).
 
 - 2026-09-29: Sonradan tamamlanan `port` binalarının ürettiği `Liman` marker'ı,
   mevcut yerleşim marker'larından ayrıştırılmış en yakın kıyı adayına

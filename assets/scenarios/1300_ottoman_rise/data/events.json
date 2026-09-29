@@ -4475,5 +4475,89 @@
     "sat_delta": 8,
     "target": "random_region",
     "population_delta": 10
+  },
+  {
+    "affected_faction": "karesioglu_bey",
+    "army_hp_mod": 1,
+    "desc_tr": "Acar Bey'in (Yahni Bey diye de anılır) ölümünün ardından Karesi tahtında kardeşler arasında mücadele başlıyor. Dursun Bey, kardeşine karşı üstün gelemeyeceğini anlayıp Orhan Gazi'ye sığınıyor ve Osmanlı himayesi karşılığında beyliğin bir kısmını teklif ediyor. Bergama ve Balıkesir çevresindeki kuşatma sırasında Dursun Bey'in bir okla ölmesine rağmen Ece Halil, Hacı İlbey, Evrenos Bey ve Karesi ileri gelenleri savaşmadan Osmanlı düzenine katılıyor.",
+    "historical_month": 12,
+    "historical_year": 1345,
+    "id": "ottoman_karesi_peaceful_integration_1345",
+    "name_tr": "Karesi İç Çekişmesi ve Barışçıl Katılım",
+    "one_shot": true,
+    "probability": 0,
+    "requires_active_factions": ["ottoman", "karesioglu_bey"],
+    "requires_owned_regions": ["karesi"],
+    "relation_requirements": [
+      {"faction_id": "ottoman", "blocks_stances": ["war"]}
+    ],
+    "set_flags": ["karesi_peaceful_integration_accepted"],
+    "target": "specific_faction",
+    "dynastic_settlement": {
+      "source_faction_id": "karesioglu_bey",
+      "recipient_faction_id": "ottoman",
+      "mode": "peaceful_integration",
+      "region_ids": ["karesi"],
+      "relation_stance": "allied",
+      "relation_score_delta": 50,
+      "auto_union_when_source_empty": true,
+      "union_result_faction_id": "ottoman"
+    }
+  },
+  {
+    "affected_faction": "germiyan_bey",
+    "army_hp_mod": 1,
+    "desc_tr": "Germiyanoğlu Süleyman Şah, Karamanoğulları baskısına karşı Osmanlı ile akrabalık kuruyor. Devlet Hatun'un Şehzade Bayezid ile evliliğiyle Kütahya, Germiyan'ın değerli batı topraklarının çeyizi olarak Osmanlı'ya bırakılıyor; Germiyan beyliği Kula ve Taşlıca tarafında varlığını sürdürüyor.",
+    "historical_month": 3,
+    "historical_year": 1381,
+    "id": "germiyan_dowry_settlement_1381",
+    "name_tr": "Germiyan Çeyizi ve Devlet Hatun'un Evliliği",
+    "one_shot": true,
+    "probability": 0,
+    "requires_active_factions": ["ottoman", "germiyan_bey"],
+    "requires_owned_regions": ["kutahya"],
+    "relation_requirements": [
+      {"faction_id": "ottoman", "blocks_stances": ["war"]}
+    ],
+    "set_flags": ["germiyan_dowry_1381"],
+    "target": "specific_faction",
+    "dynastic_settlement": {
+      "source_faction_id": "germiyan_bey",
+      "recipient_faction_id": "ottoman",
+      "mode": "dowry",
+      "region_ids": ["kutahya"],
+      "army_transfer_percent": 30,
+      "resource_transfer_percent": 30,
+      "relation_stance": "allied",
+      "relation_score_delta": 50
+    }
+  },
+  {
+    "affected_faction": "germiyan_bey",
+    "army_hp_mod": 1,
+    "desc_tr": "Erkek varisi bulunmayan II. Yakup Bey, halkının huzuru ve Osmanlı padişahı II. Murad'a duyduğu güven için beyliğin geleceğini vasiyet ediyor. Yakup Bey'in 1429'daki vefatıyla Germiyan'ın kalan toprakları savaşsız biçimde Osmanlı yönetimine geçiyor.",
+    "historical_month": 1,
+    "historical_year": 1429,
+    "id": "germiyan_will_integration_1429",
+    "name_tr": "Germiyanoğlu Vasiyeti ve Son Katılım",
+    "one_shot": true,
+    "probability": 0,
+    "requires_active_factions": ["ottoman", "germiyan_bey"],
+    "requires_owned_regions": ["germiyan"],
+    "relation_requirements": [
+      {"faction_id": "ottoman", "blocks_stances": ["war"]}
+    ],
+    "set_flags": ["germiyan_final_integration_1429"],
+    "target": "specific_faction",
+    "dynastic_settlement": {
+      "source_faction_id": "germiyan_bey",
+      "recipient_faction_id": "ottoman",
+      "mode": "testament",
+      "region_ids": ["germiyan"],
+      "relation_stance": "allied",
+      "relation_score_delta": 50,
+      "auto_union_when_source_empty": true,
+      "union_result_faction_id": "ottoman"
+    }
   }
 ]
