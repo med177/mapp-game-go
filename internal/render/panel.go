@@ -1074,13 +1074,15 @@ func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent *Ev
 	}, 6, 1, panelBg, panelBorder)
 	text, textColor := overextensionHUDText(gs)
 	textY := alert.Y + (alert.H-FaceSmall.Size)/2
-	DrawText(screen, text, alert.X+10, textY, FaceSmall, textColor)
+	overextension := topAlertOverextensionRect(gs)
+	DrawText(screen, text, overextension.X, textY, FaceSmall, textColor)
 	if nearestEvent == nil || nearestEvent.Title == "" {
 		return
 	}
-	separatorX := alert.X + 10 + MeasureText(text, FaceSmall) + 16
+	eventRect := topAlertEventRect(gs)
+	separatorX := eventRect.X
 	remaining := "(" + itoa(nearestEvent.TurnsUntil) + " tur)"
-	maxTitleW := alert.X + alert.W - 10 - separatorX - MeasureText("En yakın event: "+remaining, FaceSmall) - 4
+	maxTitleW := eventRect.W - MeasureText("En yakın event: "+remaining, FaceSmall) - 4
 	if maxTitleW <= 0 {
 		return
 	}
@@ -1090,6 +1092,29 @@ func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent *Ev
 
 func nearestEventHUDLabel(title string, turnsUntil int) string {
 	return "En yakın event: " + title + " (" + itoa(turnsUntil) + " tur)"
+}
+
+func topAlertOverextensionRect(gs *state.GameState) gameui.Rect {
+	alert := topAlertHudRect()
+	text, _ := overextensionHUDText(gs)
+	return gameui.Rect{
+		X: alert.X + 10,
+		Y: alert.Y,
+		W: MeasureText(text, FaceSmall),
+		H: alert.H,
+	}
+}
+
+func topAlertEventRect(gs *state.GameState) gameui.Rect {
+	alert := topAlertHudRect()
+	overextension := topAlertOverextensionRect(gs)
+	x := overextension.X + overextension.W + 16
+	return gameui.Rect{
+		X: x,
+		Y: alert.Y,
+		W: max(0, alert.X+alert.W-10-x),
+		H: alert.H,
+	}
 }
 
 // factionMilitaryPowerStanding seçili devletin askeri gücünü ve aktif devletler

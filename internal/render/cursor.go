@@ -125,6 +125,9 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 	if r.overextensionHUDHovering(fx, fy) {
 		return ebiten.CursorShapePointer
 	}
+	if r.nearestEventHUDHovering(fx, fy) {
+		return ebiten.CursorShapePointer
+	}
 	if r.showDiplomacy {
 		if r.diplomacyPanelPointerHit(fx, fy, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 			return ebiten.CursorShapePointer

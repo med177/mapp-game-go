@@ -39,23 +39,34 @@ func TestOverextensionHUDTextShowsPlayerValue(t *testing.T) {
 	}
 }
 
-func TestOverextensionHUDUsesPointerAndEventPopup(t *testing.T) {
+func TestTopAlertUsesSeparatePointerAndPopupAreas(t *testing.T) {
 	r := &Renderer{gs: &state.GameState{Phase: state.PhasePlayerTurn, PlayerFactionID: "player"}}
 	r.rebuildUILayers()
-	alert := topAlertHudRect()
-	mx := alert.X + alert.W/2
-	my := alert.Y + alert.H/2
+	overextension := topAlertOverextensionRect(r.gs)
+	mx := overextension.X + overextension.W/2
+	my := overextension.Y + overextension.H/2
 	if !r.overextensionHUDHovering(mx, my) {
 		t.Fatal("Aşırı Genişleme alanı hover olarak algılanmadı")
 	}
 	if got := r.cursorShapeAt(mx, my); got != ebiten.CursorShapePointer {
 		t.Fatalf("Aşırı Genişleme cursor şekli = %v, want pointer", got)
 	}
+	if got := len(overextensionPopupRangeLines()); got != 4 {
+		t.Fatalf("Aşırı Genişleme popup eşik satırı = %d, want 4", got)
+	}
 	r.eventCodexEntries = [6][]EventCodexEntry{{
 		{EventID: "event-1", Title: "Bursa'nın Fethi", Status: "Takvim", DateLabel: "1326/04", TurnsUntil: 3, ConditionSummary: "Takvim bekleniyor", EffectSummary: "Etki: +100 altın"},
 	}}
-	if !r.nearestEventHUDHovering(mx, my) {
+	eventRect := topAlertEventRect(r.gs)
+	eventX := eventRect.X + eventRect.W/2
+	if r.overextensionHUDHovering(eventX, my) {
+		t.Fatal("Aşırı Genişleme hit alanı event alanına taşıyor")
+	}
+	if !r.nearestEventHUDHovering(eventX, my) {
 		t.Fatal("yaklaşan event alanı hover olarak algılanmadı")
+	}
+	if got := r.cursorShapeAt(eventX, my); got != ebiten.CursorShapePointer {
+		t.Fatalf("event cursor şekli = %v, want pointer", got)
 	}
 }
 
