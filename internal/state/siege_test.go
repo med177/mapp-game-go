@@ -1,6 +1,7 @@
 package state
 
 import (
+	"math"
 	"testing"
 
 	"mapp-game-go/internal/army"
@@ -38,5 +39,51 @@ func TestNormalizeSiegeDefenderReferencesClearsOnlyStaleLinks(t *testing.T) {
 	}
 	if got := gs.Sieges["yanya"].DefenderArmyID; got != defender.ID {
 		t.Fatalf("Yanya geçerli savunmacı bağlantısı korunmalı: %q", got)
+	}
+}
+
+func TestSiegeDefensePressureUsesCompatibleUnitsAndCurrentHP(t *testing.T) {
+	types := map[string]*army.UnitType{
+		"bombard": {
+			ID:                      "bombard",
+			Category:                army.CategorySiege,
+			Tier:                    2,
+			SiegeBreachMaxFortLevel: 6,
+			SiegeDefensePressure:    4,
+		},
+		"catapult": {
+			ID:                   "catapult",
+			Category:             army.CategorySiege,
+			Tier:                 1,
+			SiegeDefensePressure: 8,
+		},
+	}
+	attacker := &army.Army{
+		Units: []army.Unit{
+			{TypeID: "bombard", CurrentHP: army.MaxUnitHP},
+			{TypeID: "bombard", CurrentHP: army.MaxUnitHP / 2},
+			{TypeID: "catapult", CurrentHP: army.MaxUnitHP},
+		},
+	}
+
+	if got := SiegeDefensePressureForArmy(types, attacker, 6); got != 0.06 {
+		t.Fatalf("T6 baskısı = %v, 0.06 bekleniyordu", got)
+	}
+	if got := SiegeDefensePressureForArmy(types, attacker, 7); got != 0 {
+		t.Fatalf("T7 baskısı = %v, uyumsuz kuşatma birimleri katkı vermemeli", got)
+	}
+}
+
+func TestSiegeDefenseBonusAppliesPressureWithCap(t *testing.T) {
+	withoutPressure := SiegeDefenseBonus(6, 0, 0)
+	withPressure := SiegeDefenseBonus(6, 0, 0.04)
+	if withoutPressure != 1.02 {
+		t.Fatalf("baskısız T6 savunma bonusu = %v, 1.02 bekleniyordu", withoutPressure)
+	}
+	if withPressure != 0.98 {
+		t.Fatalf("%%4 baskılı T6 savunma bonusu = %v, 0.98 bekleniyordu", withPressure)
+	}
+	if got := SiegeDefenseBonus(6, 2, 0.50); math.Abs(got-0.01) > 1e-9 {
+		t.Fatalf("baskı kapaklı büyük gedik bonusu = %v, 0.01 bekleniyordu", got)
 	}
 }

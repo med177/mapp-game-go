@@ -33,21 +33,6 @@ func aiClearSiegesByArmy(gs *state.GameState, armyID army.ArmyID) {
 	}
 }
 
-func aiSiegeDefenseBonus(fortLevel, breachLevel int) float64 {
-	if fortLevel <= 0 {
-		return 0
-	}
-	base := float64(fortLevel) * 0.14
-	switch breachLevel {
-	case 2:
-		return base * 0.25
-	case 1:
-		return base * 0.55
-	default:
-		return base + 0.18
-	}
-}
-
 func aiVirtualSiegeGarrison(gs *state.GameState, target *world.Region) *army.Army {
 	if gs == nil || target == nil {
 		return nil

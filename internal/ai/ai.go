@@ -2203,7 +2203,8 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			}
 			atkMods := aiTechMods(gs, a.OwnerID)
 			defMods := aiTechMods(gs, targetRegion.OwnerID)
-			defMods.DefenseMod += aiSiegeDefenseBonus(activeSiege.FortLevel, activeSiege.BreachLevel)
+			defensePressure := state.SiegeDefensePressureForArmy(gs.UnitTypes, a, activeSiege.FortLevel)
+			defMods.DefenseMod += state.SiegeDefenseBonus(activeSiege.FortLevel, activeSiege.BreachLevel, defensePressure)
 			result := combat.ResolveBattleWithContextPlan(a, defender, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, combat.BattleStanceBalanced)
 			gs.RecordWarCasualtiesByType(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, defender.IsNaval)
 			recordCommanderBattle(gs, a, defender, nil, result.AttackerWins)

@@ -71,6 +71,11 @@ AI zaten aynı `ResearchState` ve `tech.StartResearch / tech.Tick / tech.PauseRe
 
 Birim üretim kapıları `assets/scenarios/<id>/data/units.json` içindeki `required_tech` dizisini AND olarak değerlendirir. Birim, listelenen zincirin tüm halkaları tamamlanmadan oyuncu veya AI tarafından üretilemez.
 
+1300 senaryosundaki `rifleman` / Tüfekli Piyade bu zinciri gecikmeli bir ileri
+piyade kapısı olarak kullanır: `early_firearms` ve 1400 tarih sınırının yanında
+`professional_officer_corps` ve 1450 tarih sınırını, bunların önkoşullarıyla
+birlikte ister. Böylece Ağır Piyade'nin üst kademesi erken oyunda üretilemez.
+
 `applyTechTicks(gs)` — her tur `TurnsLeft--`, `0` olunca teknoloji tamamlanır.
 
 Teknoloji tamamlanma bildirimi yalnız `PlayerFactionID` fraksiyonu için kısa

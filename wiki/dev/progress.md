@@ -7,6 +7,28 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-29: 1300 senaryosuna T4 `rifleman` / Tüfekli Piyade eklendi. Ağır
+  Piyade'nin üst kademesi olan birim `barracks Lv3`, `forge Lv2`, `workshop Lv1`
+  ister; `early_firearms` (1400) ve `professional_officer_corps` (1450) tarih
+  kapıları ile teknoloji zincirinin tamamı bitmeden üretilemez. Doğu ve Batı
+  `rifleman.png` sprite'ları recruit/ordu kartı eşlemesine bağlandı.
+
+- 2026-09-29: 1300 senaryosuna `arsenal` / Sahra Topu birimi eklendi. Yeni
+  `arsenal.png` kartı doğu ve batı ordu sprite setlerine bağlandı; birim T1
+  kuşatma sınıfında olmasına rağmen yalnız T3 tahkimata kadar gedik açabilir
+  ve Mancınıktan `1.15` katsayıyla biraz daha güçlüdür. `attack: 38` ve
+  `defense: 10` değerleriyle asıl etkisi meydan savaşlarındaki saldırı ve
+  savunma gücüdür.
+
+- 2026-09-29: Kuşatma birimlerine veri tabanlı savunma baskısı eklendi.
+  Bombarda T6 tahkimata kadar etki eder ve canlı HP'sine göre savunma bonusunu
+  azaltır; gedik gücünde Lağımcılar orta, Top en yüksek değerdedir ve Top T7
+  tahkimata kadar gedik açabilir. Savunma baskısında Bombarda ana özel etkiyi
+  taşır; gedik gücü ile savunma baskısı ayrı alanlardan okunur ve
+  oyuncu ve AI hücumları ortak `state.SiegeDefenseBonus` hesabını kullanır.
+  `internal/state/siege_test.go` ile HP, tahkimat uyumluluğu ve %20 baskı tavanı
+  doğrulanır.
+
 - 2026-09-29: Edit Mode bölge inspector'ına `Binalar` paneli eklendi. Seçili
   bölgedeki senaryo bina türleri ve mevcut seviyeleri gösteriliyor; uygun
   binalar doğrudan eklenip azaltılabiliyor, bina tanımındaki seviye tavanı ve

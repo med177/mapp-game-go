@@ -134,21 +134,6 @@ func siegeBreachLevel(progress, fortLevel int) int {
 	}
 }
 
-func siegeDefenseBonus(fortLevel, breachLevel int) float64 {
-	if fortLevel <= 0 {
-		return 0
-	}
-	base := float64(fortLevel) * 0.14
-	switch breachLevel {
-	case 2:
-		return base * 0.25
-	case 1:
-		return base * 0.55
-	default:
-		return base + 0.18
-	}
-}
-
 func siegeAssaultCanCapture(breachLevel int) bool {
 	return breachLevel > 0
 }
@@ -179,12 +164,14 @@ func siegeAssaultAttackerDamage(fortLevel, breachLevel int) int {
 // Kuşatma başlangıcından sonra bölgeye gelen aynı realm/müttefik ordular da
 // bu kuvvete dahil edilir; SiegeState yalnızca ana kuşatan ArmyID'sini
 // serialize ettiği için destek orduları her tick'te canlı state'ten taranır.
+// DefensePressure, uygun kuşatma birimlerinin tahkimat savunmasını yıpratır.
 type siegeForce struct {
-	UnitScore     int
-	HighestTier   int
-	BreachPower   float64
-	ProgressBonus int
-	BreachBonus   int
+	UnitScore       int
+	HighestTier     int
+	BreachPower     float64
+	DefensePressure float64
+	ProgressBonus   int
+	BreachBonus     int
 }
 
 // siegeForceForArmy tek bir ordunun kuşatma katkısını hesaplar. Gedik gücü,
@@ -197,6 +184,7 @@ func siegeForceForArmy(gs *state.GameState, attacker *army.Army, fortLevel int) 
 	}
 	force.UnitScore = attacker.SiegeUnitScore(gs.UnitTypes)
 	force.HighestTier = attacker.HighestSiegeTier(gs.UnitTypes)
+	force.DefensePressure = state.SiegeDefensePressureForArmy(gs.UnitTypes, attacker, fortLevel)
 	for _, unit := range attacker.Units {
 		unitType := gs.UnitTypes[unit.TypeID]
 		maxFortLevel := 0
@@ -252,6 +240,10 @@ func activeSiegeForce(gs *state.GameState, siege *state.SiegeState, attacker *ar
 		candidateForce := siegeForceForArmy(gs, candidate, fortLevel)
 		force.UnitScore += candidateForce.UnitScore
 		force.BreachPower += candidateForce.BreachPower
+		force.DefensePressure += candidateForce.DefensePressure
+		if force.DefensePressure > state.MaxSiegeDefensePressure {
+			force.DefensePressure = state.MaxSiegeDefensePressure
+		}
 		if candidateForce.HighestTier > force.HighestTier {
 			force.HighestTier = candidateForce.HighestTier
 		}
@@ -664,7 +656,11 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	if virtualDefense {
 		defenderLabel = "Garnizon"
 	}
-	defMods.DefenseMod += siegeDefenseBonus(fortLevel, breachLevel)
+	force := siegeForceForArmy(g.gs, attacker, fortLevel)
+	if siege != nil {
+		force = activeSiegeForce(g.gs, siege, attacker)
+	}
+	defMods.DefenseMod += state.SiegeDefenseBonus(fortLevel, breachLevel, force.DefensePressure)
 	result := combat.ResolveBattleWithContextPlan(attacker, defender, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
 	g.recordCommanderBattle(attacker, defender, nil, result.AttackerWins)
 	var collapse eliminationResult

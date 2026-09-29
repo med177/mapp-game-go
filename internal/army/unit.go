@@ -12,7 +12,7 @@ const (
 	CategoryNavalTrade UnitCategory = "naval_trade"
 )
 
-// UnitTier birimin seviyesi (1=temel, 2=orta, 3=elit).
+// UnitTier birimin seviyesi (1=temel, 2=orta, 3=elit, 4=ileri).
 type UnitTier int
 
 const MaxUnitHP = 100
@@ -48,6 +48,10 @@ type UnitType struct {
 	// SiegeBreachMaxFortLevel, birimin gedik açabileceği en yüksek tahkimat
 	// seviyesini belirtir. Alan yoksa tier + 2 kuralı kullanılır.
 	SiegeBreachMaxFortLevel int `json:"siege_breach_max_fort_level,omitempty"`
+	// SiegeDefensePressure, tam HP'li birimin kuşatma hücumunda sur savunma
+	// bonusundan düşülecek yüzde puanını belirtir. Canlı HP oranına göre
+	// ölçeklenir; alanı olmayan birimler ek savunma baskısı oluşturmaz.
+	SiegeDefensePressure float64 `json:"siege_defense_pressure,omitempty"`
 
 	// Maliyet
 	GoldCost    int `json:"gold_cost"`

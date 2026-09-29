@@ -499,6 +499,8 @@ Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temel
 
 `required_buildings` dizisi de AND semantiğine sahiptir. Her kayıt bina ID'sini ve gereken seviyeyi taşır; liste boşsa bina şartı yoktur.
 
+Kuşatma birimleri için opsiyonel `siege_breach_multiplier`, `siege_breach_max_fort_level` ve `siege_defense_pressure` alanları kullanılabilir. İlk alan gedik gücünü çarpar; ikincisi `tier + 2` varsayılanından daha yüksek tahkimatlara erişim verir. `siege_defense_pressure`, tam HP'li birimin kuşatma hücumunda savunma bonusundan düşülecek yüzde puanını belirtir ve canlı HP ile orantılanır.
+
 `carry_capacity` sadece `category = "naval_trans"` birimlerinde kullanılır. Her nakliye gemisinin aynı anda taşıyabildiği kara birimi slot sayısını belirtir. Filo toplam kapasitesi, filodaki tüm nakliye gemilerinin `carry_capacity` toplamıdır; ancak mevcut oyun kuralı gereği toplam taşınan kara birimi sayısı yine `MaxArmySize` sınırını aşmaz.
 
 ---

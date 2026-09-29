@@ -74,7 +74,7 @@
     "id": "walls",
     "name": "Walls",
     "name_tr": "Surlar",
-    "max_per_region": 5,
+    "max_per_region": 7,
     "required_terrain": "",
     "turns_required": 7,
     "upgrade_cost_multiplier": 1.50,
