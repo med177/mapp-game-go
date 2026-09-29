@@ -930,7 +930,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 		drawFactionFlagBadge(screen, f.ID, initial, flagX, flagY, factionHUDFlagSize, fc, panelBorder)
 
 		textX := flagX + factionHUDFlagSize + 13
-		DrawText(screen, f.NameTR, textX, float64(by)+10, FaceLarge, ColorWhite)
+		DrawText(screen, factionHUDNameText(f.NameTR, textX), textX, float64(by)+10, FaceLarge, ColorWhite)
 		militaryPower, militaryRank, factionCount := playerMilitaryPowerStanding(gs)
 		DrawText(screen, "Askeri güç: "+formatNumberTR(militaryPower), textX, float64(by)+34, FaceSmall, ColorGray)
 		DrawText(screen, "Güç sırası: "+formatNumberTR(militaryRank)+"/"+formatNumberTR(factionCount), textX, float64(by)+53, FaceSmall, ColorGray)
@@ -3920,6 +3920,18 @@ func topResourceHUDColumns() (leftCol1, leftCol2, rightCol, leftColW, rightColW 
 	leftCol2 = leftCol1 + leftColW + colGap
 	rightCol = resEndX - rightColW
 	return
+}
+
+// factionHUDNameText, kaynak sütunlarının başladığı noktaya kadar olan ortak
+// üst-HUD alanını kullanır. Böylece uzun devlet isimleri Tahıl satırının
+// üzerine çizilmez.
+func factionHUDNameText(name string, textX float64) string {
+	leftCol1, _, _, _, _ := topResourceHUDColumns()
+	maxWidth := leftCol1 - textX - 12
+	if maxWidth <= 0 {
+		return ""
+	}
+	return trimTextToWidth(name, FaceLarge, maxWidth)
 }
 
 func formatResourceHUDValue(current, change int) string {
