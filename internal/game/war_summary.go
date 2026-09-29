@@ -34,13 +34,21 @@ func (g *Game) buildWarSummaryFor(attackerID, targetID faction.FactionID, result
 	if defender.PowerApproximate {
 		defenderPower = "~" + defenderPower
 	}
-	return render.WarSummaryReport{
+	report := render.WarSummaryReport{
 		Title:        g.factionNameTR(string(defenderRoot)) + " Savaşı Özeti",
 		BalanceLabel: warBalanceLabelTR(attacker.TotalStrength, defender.TotalStrength),
 		PowerText:    fmt.Sprintf("%s %s güç • %s %s güç", attacker.LeaderNameTR, attackerPower, defender.LeaderNameTR, defenderPower),
 		Attacker:     attacker,
 		Defender:     defender,
 	}
+	playerRoot := diplomacy.RealmRoot(g.gs, g.gs.PlayerFactionID)
+	if playerRoot == "" {
+		playerRoot = g.gs.PlayerFactionID
+	}
+	if defenderRoot == playerRoot {
+		report.AnnouncementText = g.factionNameTR(string(attackerRoot)) + " size SAVAŞ ilan etti."
+	}
+	return report
 }
 
 func (g *Game) buildWarSummarySide(label string, primaryRoot faction.FactionID, calls []diplomacy.WarCallOutcome) render.WarSummarySide {

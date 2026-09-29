@@ -43,11 +43,12 @@ type WarSummarySide struct {
 }
 
 type WarSummaryReport struct {
-	Title        string
-	BalanceLabel string
-	PowerText    string
-	Attacker     WarSummarySide
-	Defender     WarSummarySide
+	Title            string
+	AnnouncementText string
+	BalanceLabel     string
+	PowerText        string
+	Attacker         WarSummarySide
+	Defender         WarSummarySide
 }
 
 type warSummaryState struct {
@@ -278,8 +279,14 @@ func drawWarSummaryDialog(screen *ebiten.Image, gs *state.GameState, state warSu
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 	drawUILabel(screen, layout.titleRect, state.data.Title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignCenter)
 	drawUICardRect(screen, layout.balanceRect, color.RGBA{24, 18, 12, 228}, color.RGBA{102, 78, 42, 210}, 1)
-	drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 14, W: layout.balanceRect.W - 36}, state.data.BalanceLabel, ColorWhite, gameui.TextMedium, gameui.TextAlignCenter)
-	drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 40, W: layout.balanceRect.W - 36}, state.data.PowerText, color.RGBA{208, 200, 182, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	if state.data.AnnouncementText != "" {
+		drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 7, W: layout.balanceRect.W - 36}, state.data.AnnouncementText, color.RGBA{255, 235, 176, 255}, gameui.TextMedium, gameui.TextAlignCenter)
+		drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 31, W: layout.balanceRect.W - 36}, state.data.BalanceLabel, ColorWhite, gameui.TextSmall, gameui.TextAlignCenter)
+		drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 51, W: layout.balanceRect.W - 36}, state.data.PowerText, color.RGBA{208, 200, 182, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	} else {
+		drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 14, W: layout.balanceRect.W - 36}, state.data.BalanceLabel, ColorWhite, gameui.TextMedium, gameui.TextAlignCenter)
+		drawUILabel(screen, gameui.Rect{X: layout.balanceRect.X + 18, Y: layout.balanceRect.Y + 40, W: layout.balanceRect.W - 36}, state.data.PowerText, color.RGBA{208, 200, 182, 255}, gameui.TextSmall, gameui.TextAlignCenter)
+	}
 	drawWarSummarySide(screen, gs, layout.attackerRect, layout.attackerListRect, state.data.Attacker, state.attackerScroll)
 	drawWarSummarySide(screen, gs, layout.defenderRect, layout.defenderListRect, state.data.Defender, state.defenderScroll)
 	drawUIButtonWidget(screen, buildWarSummaryCloseButton(), solidButtonStyle(color.RGBA{70, 98, 62, 235}, color.RGBA{122, 160, 112, 255}, ColorWhite, 10))

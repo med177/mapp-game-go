@@ -555,6 +555,9 @@ func TestBuildWarSummaryIncludesCoalitionMetrics(t *testing.T) {
 	if report.Attacker.Participants[0].FactionID == "" || report.Defender.Participants[0].FactionID == "" {
 		t.Fatal("bayrak çizimi için faction ID snapshot'a taşınmadı")
 	}
+	if got, want := report.AnnouncementText, "Saldıran size SAVAŞ ilan etti."; got != want {
+		t.Fatalf("oyuncuya savaş ilanı metni: got=%q want=%q", got, want)
+	}
 }
 
 func TestAITurnWarDeclarationShowsSummaryDuringQuickTurn(t *testing.T) {
