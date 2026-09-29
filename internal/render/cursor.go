@@ -338,7 +338,13 @@ func (r *Renderer) factionCardHoverIndex(fx, fy float64) int {
 }
 
 func (r *Renderer) victoryCardHoverIndex(fx, fy float64) int {
-	for i, btn := range buildVictoryCardButtons(r.gs) {
+	opts, historicalCount := orderedVictoryOptions(r.gs)
+	cardW, cardH := victoryCardDimensions()
+	viewport := victoryLayoutScrolled(len(opts), historicalCount, cardW, cardH, 12, 80, r.victorySelectScroll).viewport
+	if !viewport.Hit(fx, fy) {
+		return -1
+	}
+	for i, btn := range buildVictoryCardButtons(r.gs, r.victorySelectScroll) {
 		if btn.HitTest(fx, fy) {
 			return i
 		}

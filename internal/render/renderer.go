@@ -128,6 +128,9 @@ type Renderer struct {
 	// Fraksiyon seçim ekranı
 	factionCursor int
 
+	// Zafer koşulu seçim ekranı kart listesi
+	victorySelectScroll float64
+
 	// Diplomasi paneli
 	showDiplomacy                    bool
 	diplomacyFocus                   int
@@ -1905,7 +1908,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// Zafer koşulu seçim ekranı
 	if r.gs.Phase == "victory_select" {
-		DrawVictorySelect(screen, r.gs, r.factionCursor)
+		DrawVictorySelect(screen, r.gs, r.factionCursor, r.victorySelectScroll)
 		return
 	}
 

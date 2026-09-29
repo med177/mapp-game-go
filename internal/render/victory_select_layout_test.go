@@ -25,3 +25,27 @@ func TestHistoricalVictoryCardsUseFullRow(t *testing.T) {
 		t.Fatalf("genel hedeflerin iki sütunlu düzeni korunmadı: %.1f, %.1f", firstGeneral.W, secondGeneral.W)
 	}
 }
+
+func TestVictorySelectScrollKeepsViewportFixed(t *testing.T) {
+	const (
+		total      = 12
+		historical = 8
+		cardW      = 780.0
+		cardH      = 126.0
+		gap        = 12.0
+		headerH    = 80.0
+	)
+
+	atTop := victoryLayoutScrolled(total, historical, cardW, cardH, gap, headerH, 0)
+	maxScroll := victorySelectMaxScroll(total, historical, cardW, cardH, gap, headerH)
+	atBottom := victoryLayoutScrolled(total, historical, cardW, cardH, gap, headerH, maxScroll)
+	if maxScroll <= 0 {
+		t.Fatal("uzun zafer listesi için pozitif scroll alanı oluşturulmadı")
+	}
+	if atTop.viewport != atBottom.viewport {
+		t.Fatalf("scroll viewport'i hareket ettirdi: üst=%+v alt=%+v", atTop.viewport, atBottom.viewport)
+	}
+	if atBottom.historicalStack.Y >= atTop.historicalStack.Y {
+		t.Fatalf("scroll kart listesini aşağı taşımadı: üst=%.1f alt=%.1f", atTop.historicalStack.Y, atBottom.historicalStack.Y)
+	}
+}

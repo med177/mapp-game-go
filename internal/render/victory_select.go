@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image"
 	"image/color"
 	"strings"
 
@@ -14,19 +15,22 @@ import (
 
 const victoryGroupGap = 26.0
 const victoryGroupLabelH = 20.0
+const victorySelectViewportTop = 104.0
+const victorySelectViewportBottom = 18.0
+const victorySelectScrollStep = 72.0
 
 func victoryCardDimensions() (float64, float64) {
 	return 780.0, 126.0
 }
 
-func buildVictoryCardButtons(gs *state.GameState) []gameui.Button {
+func buildVictoryCardButtons(gs *state.GameState, scroll float64) []gameui.Button {
 	opts, historicalCount := orderedVictoryOptions(gs)
 	cardW, cardH := victoryCardDimensions()
 	gap := 12.0
 	headerH := 80.0
 	buttons := make([]gameui.Button, 0, len(opts))
 	for i, opt := range opts {
-		r := victoryCardRect(i, len(opts), historicalCount, cardW, cardH, gap, headerH)
+		r := victoryCardRectScrolled(i, len(opts), historicalCount, cardW, cardH, gap, headerH, scroll)
 		buttons = append(buttons, gameui.NewButton(r.X, r.Y, r.W, r.H, opt.Title))
 	}
 	return buttons
@@ -56,25 +60,43 @@ type victorySelectLayout struct {
 	historicalStack gameui.Rect
 	generalLabel    gameui.Rect
 	generalStack    gameui.Rect
+	viewport        gameui.Rect
+	contentHeight   float64
+	scroll          float64
 }
 
 func victoryLayout(total, historicalCount int, cardW, cardH, gap, headerH float64) victorySelectLayout {
+	return victoryLayoutScrolled(total, historicalCount, cardW, cardH, gap, headerH, 0)
+}
+
+func victoryLayoutScrolled(total, historicalCount int, cardW, cardH, gap, headerH, scroll float64) victorySelectLayout {
 	generalCount := total - historicalCount
-	totalH := 0.0
+	contentH := 0.0
 	if historicalCount > 0 {
-		totalH += victoryGroupLabelH + 6
-		totalH += victoryGroupHeight(historicalCount, cardH, gap, true)
+		contentH += victoryGroupLabelH + 6
+		contentH += victoryGroupHeight(historicalCount, cardH, gap, true)
 	}
 	if generalCount > 0 {
-		if totalH > 0 {
-			totalH += victoryGroupGap
+		if contentH > 0 {
+			contentH += victoryGroupGap
 		}
-		totalH += victoryGroupLabelH + 6
-		totalH += victoryGroupHeight(generalCount, cardH, gap, false)
+		contentH += victoryGroupLabelH + 6
+		contentH += victoryGroupHeight(generalCount, cardH, gap, false)
 	}
 	stackX := ScreenWidth/2 - cardW/2
-	startY := ScreenHeight/2 - (totalH+headerH)/2 + headerH
+	viewport := gameui.Rect{
+		X: stackX,
+		Y: victorySelectViewportTop,
+		W: cardW,
+		H: ScreenHeight - victorySelectViewportTop - victorySelectViewportBottom,
+	}
+	maxScroll := maxFloat64Value(contentH - viewport.H)
+	scroll = clampVictorySelectScroll(scroll, maxScroll)
+	startY := viewport.Y - scroll
 	layout := victorySelectLayout{}
+	layout.viewport = viewport
+	layout.contentHeight = contentH
+	layout.scroll = scroll
 	currentY := startY
 	if historicalCount > 0 {
 		layout.historicalLabel = gameui.Rect{X: stackX, Y: currentY, W: cardW, H: victoryGroupLabelH}
@@ -130,11 +152,45 @@ func victoryGroupItemRect(stack gameui.Rect, index, count int, cardH, gap float6
 }
 
 func victoryCardRect(index, total, historicalCount int, cardW, cardH, gap, headerH float64) gameui.Rect {
-	layout := victoryLayout(total, historicalCount, cardW, cardH, gap, headerH)
+	return victoryCardRectScrolled(index, total, historicalCount, cardW, cardH, gap, headerH, 0)
+}
+
+func victoryCardRectScrolled(index, total, historicalCount int, cardW, cardH, gap, headerH, scroll float64) gameui.Rect {
+	layout := victoryLayoutScrolled(total, historicalCount, cardW, cardH, gap, headerH, scroll)
 	if historicalCount > 0 && index < historicalCount {
 		return victoryGroupItemRect(layout.historicalStack, index, historicalCount, cardH, gap, true)
 	}
 	return victoryGroupItemRect(layout.generalStack, index-historicalCount, total-historicalCount, cardH, gap, false)
+}
+
+func victorySelectMaxScroll(total, historicalCount int, cardW, cardH, gap, headerH float64) float64 {
+	layout := victoryLayoutScrolled(total, historicalCount, cardW, cardH, gap, headerH, 0)
+	return maxFloat64Value(layout.contentHeight - layout.viewport.H)
+}
+
+func clampVictorySelectScroll(scroll, maxScroll float64) float64 {
+	if scroll < 0 {
+		return 0
+	}
+	if scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func drawVictorySelectScrollbar(screen *ebiten.Image, viewport gameui.Rect, contentHeight, scroll float64) {
+	maxScroll := maxFloat64Value(contentHeight - viewport.H)
+	if maxScroll <= 0 || viewport.H <= 0 {
+		return
+	}
+	track := gameui.Rect{X: viewport.X + viewport.W + 10, Y: viewport.Y, W: 5, H: viewport.H}
+	thumbH := track.H * viewport.H / contentHeight
+	if thumbH < 28 {
+		thumbH = 28
+	}
+	thumbY := track.Y + (track.H-thumbH)*scroll/maxScroll
+	drawUICardRect(screen, track, color.RGBA{25, 25, 45, 220}, color.RGBA{80, 80, 120, 200}, 1)
+	drawUICardRect(screen, gameui.Rect{X: track.X, Y: thumbY, W: track.W, H: thumbH}, color.RGBA{180, 150, 60, 230}, color.RGBA{220, 190, 100, 240}, 1)
 }
 
 func victoryAudienceBadge(opt scenario.VictoryOptionDef) (string, color.RGBA, color.RGBA) {
@@ -326,14 +382,14 @@ func activeVictoryTargetSummary(gs *state.GameState) string {
 
 // DrawVictorySelect zafer koşulu seçim ekranını çizer.
 // Seçenekler gs.AvailableVictories'ten okunur — hardcode değil.
-func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
+func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int, scroll float64) {
 	opts, historicalCount := orderedVictoryOptions(gs)
 	drawUIScreenChrome(screen, color.RGBA{10, 10, 20, 255}, "ZAFER KOŞULUNU SEÇ", victorySelectSubtitle(gs))
 
 	cardW, cardH := victoryCardDimensions()
 	gap := 12.0
 	headerH := 80.0
-	layout := victoryLayout(len(opts), historicalCount, cardW, cardH, gap, headerH)
+	layout := victoryLayoutScrolled(len(opts), historicalCount, cardW, cardH, gap, headerH, scroll)
 
 	drawBackButton(screen)
 
@@ -342,48 +398,57 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		return
 	}
 
-	if historicalCount > 0 {
-		drawUILabel(screen, layout.historicalLabel, "Tarihsel Hedefler", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
-	}
-	if historicalCount < len(opts) {
-		drawUILabel(screen, layout.generalLabel, "Genel Hedefler", ColorGray, gameui.TextMedium, gameui.TextAlignStart)
-	}
-
-	for i, opt := range opts {
-		rect := victoryCardRect(i, len(opts), historicalCount, cardW, cardH, gap, headerH)
-		y := rect.Y
-
-		bg := color.RGBA{25, 25, 45, 220}
-		border := color.RGBA{80, 80, 120, 200}
-		if i == cursor {
-			bg = color.RGBA{50, 45, 90, 240}
-			border = color.RGBA{200, 160, 60, 255}
+	if layout.viewport.H > 0 {
+		left, top := int(layout.viewport.X), int(layout.viewport.Y)
+		right, bottom := int(layout.viewport.X+layout.viewport.W), int(layout.viewport.Y+layout.viewport.H)
+		body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
+		if historicalCount > 0 {
+			drawUILabel(body, layout.historicalLabel, "Tarihsel Hedefler", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+		}
+		if historicalCount < len(opts) {
+			drawUILabel(body, layout.generalLabel, "Genel Hedefler", ColorGray, gameui.TextMedium, gameui.TextAlignStart)
 		}
 
-		drawUICardRect(screen, rect, bg, border, 2)
+		for i, opt := range opts {
+			rect := victoryCardRectScrolled(i, len(opts), historicalCount, cardW, cardH, gap, headerH, layout.scroll)
+			if rect.Y+rect.H <= layout.viewport.Y || rect.Y >= layout.viewport.Y+layout.viewport.H {
+				continue
+			}
+			y := rect.Y
 
-		titleCol := ColorWhite
-		if i == cursor {
-			titleCol = ColorYellow
+			bg := color.RGBA{25, 25, 45, 220}
+			border := color.RGBA{80, 80, 120, 200}
+			if i == cursor {
+				bg = color.RGBA{50, 45, 90, 240}
+				border = color.RGBA{200, 160, 60, 255}
+			}
+
+			drawUICardRect(body, rect, bg, border, 2)
+
+			titleCol := ColorWhite
+			if i == cursor {
+				titleCol = ColorYellow
+			}
+			badgeLabel, badgeBG, badgeBorder := victoryAudienceBadge(opt)
+			badgeW := MeasureText(badgeLabel, FaceSmall) + 18
+			badgeRect := gameui.Rect{X: rect.X + rect.W - badgeW - 16, Y: y + 12, W: badgeW, H: 20}
+			drawUICardRect(body, badgeRect, badgeBG, badgeBorder, 1)
+			drawUILabel(body, gameui.Rect{X: badgeRect.X, Y: badgeRect.Y + 2, W: badgeRect.W}, badgeLabel, ColorWhite, gameui.TextSmall, gameui.TextAlignCenter)
+
+			titleMaxW := badgeRect.X - rect.X - 34
+			title := trimTextToWidth(opt.Title, FaceMed, titleMaxW)
+			drawUILabel(body, gameui.Rect{X: rect.X + 18, Y: y + 14, W: titleMaxW}, title, titleCol, gameui.TextLarge, gameui.TextAlignStart)
+			drawUIWrappedLabel(body, gameui.Rect{X: rect.X + 18, Y: y + 42, W: rect.W - 36}, opt.Description, ColorGray, gameui.TextMedium, 19, 2)
+			targetSummary := victoryTargetSummary(gs, opt)
+			drawUIWrappedLabel(body, gameui.Rect{X: rect.X + 18, Y: y + 84, W: rect.W - 36}, targetSummary, color.RGBA{140, 120, 80, 220}, gameui.TextSmall, 16, 2)
 		}
-		badgeLabel, badgeBG, badgeBorder := victoryAudienceBadge(opt)
-		badgeW := MeasureText(badgeLabel, FaceSmall) + 18
-		badgeRect := gameui.Rect{X: rect.X + rect.W - badgeW - 16, Y: y + 12, W: badgeW, H: 20}
-		drawUICardRect(screen, badgeRect, badgeBG, badgeBorder, 1)
-		drawUILabel(screen, gameui.Rect{X: badgeRect.X, Y: badgeRect.Y + 2, W: badgeRect.W}, badgeLabel, ColorWhite, gameui.TextSmall, gameui.TextAlignCenter)
-
-		titleMaxW := badgeRect.X - rect.X - 34
-		title := trimTextToWidth(opt.Title, FaceMed, titleMaxW)
-		drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 14, W: titleMaxW}, title, titleCol, gameui.TextLarge, gameui.TextAlignStart)
-		drawUIWrappedLabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 42, W: rect.W - 36}, opt.Description, ColorGray, gameui.TextMedium, 19, 2)
-		targetSummary := victoryTargetSummary(gs, opt)
-		drawUIWrappedLabel(screen, gameui.Rect{X: rect.X + 18, Y: y + 84, W: rect.W - 36}, targetSummary, color.RGBA{140, 120, 80, 220}, gameui.TextSmall, 16, 2)
 	}
+	drawVictorySelectScrollbar(screen, layout.viewport, layout.contentHeight, layout.scroll)
 }
 
 // handleVictorySelectInput zafer seçim ekranı girişini işler.
 func (r *Renderer) handleVictorySelectInput(input gameui.InputState) InputAction {
-	opts, _ := orderedVictoryOptions(r.gs)
+	opts, historicalCount := orderedVictoryOptions(r.gs)
 	n := len(opts)
 	if n == 0 {
 		if r.keyJustPressed(ebiten.KeyEscape) {
@@ -391,10 +456,22 @@ func (r *Renderer) handleVictorySelectInput(input gameui.InputState) InputAction
 		}
 		return InputAction{}
 	}
-	buttons := buildVictoryCardButtons(r.gs)
+	cardW, cardH := victoryCardDimensions()
+	gap := 12.0
+	headerH := 80.0
+	maxScroll := victorySelectMaxScroll(n, historicalCount, cardW, cardH, gap, headerH)
+	mx, my := ebiten.CursorPosition()
+	viewport := victoryLayoutScrolled(n, historicalCount, cardW, cardH, gap, headerH, r.victorySelectScroll).viewport
+	if wheelX, wheelY := ebiten.Wheel(); (wheelX != 0 || wheelY != 0) && viewport.Hit(float64(mx), float64(my)) {
+		r.victorySelectScroll = clampVictorySelectScroll(r.victorySelectScroll-wheelY*victorySelectScrollStep, maxScroll)
+		return InputAction{}
+	}
+	r.victorySelectScroll = clampVictorySelectScroll(r.victorySelectScroll, maxScroll)
+	buttons := buildVictoryCardButtons(r.gs, r.victorySelectScroll)
+	insideViewport := viewport.Hit(input.MouseX, input.MouseY)
 
 	for i, btn := range buttons {
-		if btn.HitTest(input.MouseX, input.MouseY) {
+		if insideViewport && btn.HitTest(input.MouseX, input.MouseY) {
 			r.setMenuCursor(&r.factionCursor, i)
 			break
 		}
@@ -418,10 +495,11 @@ func (r *Renderer) handleVictorySelectInput(input gameui.InputState) InputAction
 	if input.LeftJustPressed {
 		if buildBackButton().HandleInput(input) {
 			r.factionCursor = 0
+			r.victorySelectScroll = 0
 			return InputAction{Kind: ActionBack}
 		}
 		for i, btn := range buttons {
-			if btn.HandleInput(input) {
+			if insideViewport && btn.HandleInput(input) {
 				return InputAction{Kind: ActionSelectVictory, BuildingID: opts[i].ID}
 			}
 		}
