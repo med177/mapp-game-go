@@ -1288,7 +1288,19 @@ func (r *Renderer) editShapeInspectorButtonAt(mx, my float64) editInspectorButto
 
 func (r *Renderer) editTerrainAreaInspectorButtonAt(mx, my float64) editInspectorButton {
 	for _, kind := range editTerrainAreaInspectorButtonKinds() {
+		// Çizim taslağı veya uygulanmayı bekleyen boya varken Alan Maliyeti
+		// düğmesinin rect'i İptal tarafından görsel olarak devralınır. Aynı
+		// rect'te maliyet düğmesini önce kontrol etmek, İptal tıklamasını
+		// maliyet değişikliği olarak yutuyordu.
+		if kind == editButtonTerrainAreaCost && r != nil && r.editTerrainAreaMode &&
+			(r.editShapePaintPending || len(r.editTerrainAreaPolygon) > 0) {
+			continue
+		}
 		if editRectButton(editTerrainAreaInspectorButtonRect(kind), "").HitTest(mx, my) {
+			if kind == editButtonTerrainAreaCancel && (r == nil || !r.editTerrainAreaMode ||
+				(!r.editShapePaintPending && len(r.editTerrainAreaPolygon) == 0)) {
+				continue
+			}
 			return kind
 		}
 	}
@@ -2023,7 +2035,7 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			return InputAction{}
 		}
 		if leftJustPressed {
-			if len(r.editTerrainAreaPolygon) == 0 && r.selectTerrainAreaAt(fx, fy) {
+			if len(r.editTerrainAreaPolygon) == 0 && terrainAreaSelectionAtPolygonStartAllowed(r.editTerrainAreaAppendMode) && r.selectTerrainAreaAt(fx, fy) {
 				return InputAction{}
 			}
 			if r.terrainAreaPolygonStartHovered(fx, fy) {
@@ -2239,6 +2251,10 @@ func (r *Renderer) selectTerrainAreaAt(fx, fy float64) bool {
 	r.editDraggingRegion = false
 	r.editDraggingSettlement = false
 	return true
+}
+
+func terrainAreaSelectionAtPolygonStartAllowed(appendMode bool) bool {
+	return !appendMode
 }
 
 func (r *Renderer) terrainAreaRegionAt(fx, fy float64) (world.RegionID, bool) {

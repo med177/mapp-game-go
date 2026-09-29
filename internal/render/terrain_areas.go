@@ -29,7 +29,7 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 		r.terrainAreaKey = key
 	}
 
-	drawArea := func(area world.TerrainArea) {
+	areaColor := func(area world.TerrainArea) color.RGBA {
 		col := terrainAreaColor(area.Terrain)
 		passable := world.TerrainAreaIsPassable(area)
 		if passable {
@@ -49,6 +49,11 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 				col.A = terrainAreaSelectedBlockedAlpha
 			}
 		}
+		return col
+	}
+
+	drawArea := func(area world.TerrainArea) {
+		col := areaColor(area)
 		if len(area.Polygons) > 0 {
 			var path vector.Path
 			hasPolygon := false
@@ -96,6 +101,48 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 	mapOp := &ebiten.DrawImageOptions{}
 	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 	screen.DrawImage(r.terrainAreaImage, mapOp)
+
+	// Uygulanmış poligonları ekran koordinatlarında doğrudan çiz. Önceki
+	// raster dolgu Cells/legacy alanları için fallback olarak kalır; polygon
+	// verisi olan alanlarda bu katman, önizlemedeki düzgün geometrinin
+	// uygulama sonrasında da korunmasını sağlar.
+	drawPolygon := func(area world.TerrainArea) {
+		if len(area.Polygons) == 0 {
+			return
+		}
+		col := areaColor(area)
+		var path vector.Path
+		hasPolygon := false
+		for _, polygon := range area.Polygons {
+			if len(polygon) < 3 {
+				continue
+			}
+			hasPolygon = true
+			x, y := r.worldToScreen(float64(polygon[0][0]), float64(polygon[0][1]))
+			path.MoveTo(float32(x), float32(y))
+			for _, point := range polygon[1:] {
+				x, y := r.worldToScreen(float64(point[0]), float64(point[1]))
+				path.LineTo(float32(x), float32(y))
+			}
+			path.Close()
+		}
+		if !hasPolygon {
+			return
+		}
+		var options vector.DrawPathOptions
+		options.ColorScale.ScaleWithColor(col)
+		vector.FillPath(screen, &path, nil, &options)
+	}
+	for _, area := range r.gs.TerrainAreas {
+		if !world.TerrainAreaIsPassable(area) {
+			drawPolygon(area)
+		}
+	}
+	for _, area := range r.gs.TerrainAreas {
+		if world.TerrainAreaIsPassable(area) {
+			drawPolygon(area)
+		}
+	}
 	if selectedAreaID != "" {
 		for _, area := range r.gs.TerrainAreas {
 			if area.ID != selectedAreaID {

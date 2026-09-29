@@ -23,3 +23,29 @@ func TestTerrainAreaInspectorButtonsUseOrderedRows(t *testing.T) {
 		t.Fatalf("kaldırılan genel arazi tipi düğmesi hâlâ hit-test ediliyor: %v", got)
 	}
 }
+
+func TestTerrainAreaCancelOwnsCostButtonRectWhileDrawing(t *testing.T) {
+	cost := editTerrainAreaInspectorButtonRect(editButtonTerrainAreaCost)
+	mx := cost[0] + cost[2]/2
+	my := cost[1] + cost[3]/2
+
+	r := &Renderer{editTerrainAreaMode: true, editTerrainAreaPolygon: [][2]int{{10, 10}}}
+	if got := r.editTerrainAreaInspectorButtonAt(mx, my); got != editButtonTerrainAreaCancel {
+		t.Fatalf("çizim taslağında maliyet rect'i = %v, want %v", got, editButtonTerrainAreaCancel)
+	}
+
+	r.editTerrainAreaPolygon = nil
+	r.editShapePaintPending = true
+	if got := r.editTerrainAreaInspectorButtonAt(mx, my); got != editButtonTerrainAreaCancel {
+		t.Fatalf("uygulanmayı bekleyen çizimde maliyet rect'i = %v, want %v", got, editButtonTerrainAreaCancel)
+	}
+}
+
+func TestTerrainAreaAppendKeepsInitialSelectionAtPolygonStart(t *testing.T) {
+	if terrainAreaSelectionAtPolygonStartAllowed(true) {
+		t.Fatal("araziye ekleme modunda ilk çizim tıklaması arazi seçimini değiştirmemeli")
+	}
+	if !terrainAreaSelectionAtPolygonStartAllowed(false) {
+		t.Fatal("normal arazi çiziminde başlangıç arazi seçimi çalışmalı")
+	}
+}
