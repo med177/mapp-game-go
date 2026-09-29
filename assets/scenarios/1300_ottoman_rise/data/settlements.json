@@ -4679,8 +4679,8 @@
       {
         "id": "flanders_brugge",
         "name_tr": "Brugge",
-        "x": 541,
-        "y": 264,
+        "x": 542,
+        "y": 265,
         "type": "port",
         "is_center": true,
         "population": 93
@@ -4704,7 +4704,7 @@
       {
         "id": "flanders_settlement_4",
         "name_tr": "Sluys",
-        "x": 551,
+        "x": 550,
         "y": 259,
         "type": "port",
         "population": 0
