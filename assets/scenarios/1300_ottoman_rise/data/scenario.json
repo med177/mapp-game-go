@@ -830,11 +830,11 @@
       "id": "merchant_princes",
       "title": "Tüccarların Hâkimiyeti",
       "description": "Üretim, vergi ve deniz ticaretini tek bir mali sistemde birleştirerek savaşları finanse edebilen kalıcı bir ekonomik güç ol.",
-      "detail": "Tur başı 1.500 altın gelir; 12 tur koru",
+      "detail": "Tur başı 5.000 altın gelir; 12 tur koru",
       "type": "economic",
-      "target_gold_income": 1500,
+      "target_gold_income": 5000,
       "gold_hold_turns": 12,
-      "deadline_year": 1300,
+      "deadline_year": 1350,
       "deadline_month": 12
     },
     {
