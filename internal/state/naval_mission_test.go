@@ -83,6 +83,72 @@ func TestSupplyCargoLoadsAssignsAndUnloadsAtCapital(t *testing.T) {
 	}
 }
 
+func TestLoadSupplyCargoForTurnsAddsToExistingCargoAndLeavesOverflowInStock(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_port", Grain: 200},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 5},
+			"soldier":   {ID: "soldier", Category: army.CategoryInfantry, GrainUpkeep: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital": {ID: "capital", OwnerID: "player", Settlements: []world.Settlement{{ID: "capital_port", Type: world.SettlementPort}}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID: "fleet", OwnerID: "player", IsNaval: true, DockedRegionID: "capital",
+				Units:       []army.Unit{{TypeID: "transport"}},
+				SupplyCargo: economy.ResourceCost{Grain: 80},
+			},
+		},
+	}
+
+	cargo, ok, reason := gs.LoadSupplyCargoForTurns("fleet", 5)
+	if !ok || reason != "" {
+		t.Fatalf("mevcut yüke ek yükleme sonucu = (%+v, %v, %q)", cargo, ok, reason)
+	}
+	if cargo.Grain != 170 {
+		t.Fatalf("yüklenen tahıl = %d, want 170", cargo.Grain)
+	}
+	if got := gs.Armies["fleet"].SupplyCargo.Grain; got != 250 {
+		t.Fatalf("filonun toplam ikmal yükü = %d, want 250", got)
+	}
+	if got := gs.Factions["player"].Grain; got != 30 {
+		t.Fatalf("merkez ambarındaki tahıl = %d, want 30", got)
+	}
+}
+
+func TestLoadSupplyCargoForTurnsLoadsOnlyAvailableStock(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_port", Grain: 40},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 5},
+			"soldier":   {ID: "soldier", Category: army.CategoryInfantry, GrainUpkeep: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital": {ID: "capital", OwnerID: "player", Settlements: []world.Settlement{{ID: "capital_port", Type: world.SettlementPort}}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID: "fleet", OwnerID: "player", IsNaval: true, DockedRegionID: "capital",
+				Units:       []army.Unit{{TypeID: "transport"}},
+				SupplyCargo: economy.ResourceCost{Grain: 80},
+			},
+		},
+	}
+
+	cargo, ok, reason := gs.LoadSupplyCargoForTurns("fleet", 5)
+	if !ok || reason != "" {
+		t.Fatalf("stok miktarına kadar yükleme sonucu = (%+v, %v, %q)", cargo, ok, reason)
+	}
+	if cargo.Grain != 40 || gs.Armies["fleet"].SupplyCargo.Grain != 120 || gs.Factions["player"].Grain != 0 {
+		t.Fatalf("stoktan fazla yükleme yapıldı: cargo=%+v fleet=%+v stock=%d", cargo, gs.Armies["fleet"].SupplyCargo, gs.Factions["player"].Grain)
+	}
+}
+
 func TestConvertInvalidNavalBlockadesKeepsUnrelatedMissions(t *testing.T) {
 	gs := navalMissionTransitionState()
 	gs.Armies["patrol"] = &army.Army{

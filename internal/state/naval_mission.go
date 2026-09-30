@@ -169,6 +169,13 @@ func (s *GameState) LoadSupplyCargoForTurns(fleetID army.ArmyID, turns int) (eco
 	if remaining <= 0 {
 		return economy.ResourceCost{}, false, "Bu filo seçilen süre için azami ikmal yükünü zaten taşıyor."
 	}
+	faction := s.Factions[factionID(fleet.OwnerID)]
+	if faction == nil || faction.Grain <= 0 {
+		return economy.ResourceCost{}, false, "Devletin stoklarında yüklenecek tahıl yok."
+	}
+	if faction.Grain < remaining {
+		remaining = faction.Grain
+	}
 	cargo := economy.ResourceCost{Grain: remaining}
 	if ok, reason := s.LoadSupplyCargoAtCapital(fleetID, cargo); !ok {
 		return economy.ResourceCost{}, false, reason

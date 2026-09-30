@@ -91,9 +91,9 @@
     "id": "rifleman",
     "name": "Rifleman",
     "name_tr": "Tüfekli Piyade",
-    "attack": 34,
+    "attack": 25,
     "category": "infantry",
-    "defense": 24,
+    "defense": 28,
     "embarkable": true,
     "gold_cost": 360,
     "grain_upkeep": 14,
@@ -357,9 +357,9 @@
     "id": "arsenal",
     "name": "Field Artillery",
     "name_tr": "Sahra Topu",
-    "attack": 38,
+    "attack": 35,
     "category": "siege",
-    "defense": 10,
+    "defense": 30,
     "embarkable": true,
     "gold_cost": 280,
     "grain_upkeep": 20,
@@ -384,7 +384,7 @@
     "stone_cost": 12,
     "cloth_cost": 2,
     "spice_cost": 1,
-    "movement_points": 1
+    "movement_points": 2
   },
   {
     "id": "transport",
