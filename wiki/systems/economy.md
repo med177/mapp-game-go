@@ -250,6 +250,7 @@ type TradeRoute struct {
     Good          GoodType `json:"good"`
     AmountPerTurn int      `json:"amount_per_turn"`
     GoldPerUnit   int      `json:"gold_per_unit"`
+    IsPrivilegedMinor bool  `json:"is_privileged_minor,omitempty"`
 }
 ```
 
@@ -260,6 +261,11 @@ Ticaret anlaşması kurulunca aktif olur. `ApplyTradeRoutes()` her tur:
 4. Kaynak fraksiyona **altın ekler**
 
 Hedef fraksiyonun `StrategicGrainDemand` değeri üç aylık güvenli rezerv hedefine kalan açığı gösterir. Yeni rota kurulurken hedefte bu sinyal pozitif, kaynakta `StrategicGrainSurplus` pozitifse kaynak-hedef rotası tahıl malına yönlendirilir; böylece ithalat mevcut rota transferi üzerinden gerçekleşir. Abluka rota hacmini azaltabilir; kaynakta stok veya hedefte altın yetersizse rota o tur çalışmaz.
+
+`is_privileged_minor=true` rotalar, imtiyazlı minor bölgenin egemeni ile
+işletmecisi arasında otomatik kurulur. Mal akışı devam eder; ancak normal
+`Ticaret rotası ödemesi` ve gümrük sıfırdır. Bu rotalar dış partner sayısına ve
+ortak rota kapasitesi havuzuna dahil edilmez.
 
 AI ayrıca `internal/ai/grain_procurement.go` üzerinden aktif rota grafiğine bağlı
 devletlerden doğrudan tahıl satın alır. Bu tamamlayıcı alım, rota başına sabit transfer

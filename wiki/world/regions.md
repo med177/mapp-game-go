@@ -92,6 +92,11 @@ minor bölge ana bölgenin egemen sahibine normal sahiplikle devredilir; bölged
 diğer devlet orduları kendi devletlerinin en yakın kara bölgesine, filoları
 denize çıkarılır. Kullanım sahibinin başka egemen toprağı kalmamışsa devlet
 elenir ve tüm askeri birimleri silinir.
+İmtiyaz aktif olduğu sürece ana bölgenin egemeni ile kullanım sahibi arasında
+otomatik iki yönlü, `IsPrivilegedMinor` işaretli ticaret rotası bulunur. Bu rota
+normal dış partner ve rota kapasitesi hakkına yazılmaz; imtiyaz ticaretinde
+normal `Ticaret rotası ödemesi` ve gümrük uygulanmaz. İmtiyaz kaldırılırsa rota,
+varsa normal ticaret ilişkisine döner; böyle bir ilişki yoksa kaldırılır.
 AI kararları da bu ayrımı kullanır: egemen AI kendi %50 gelir payını bütçe ve
 stratejik değer hesabına katar; işletmeci AI yalnız kendi %50 altın payını
 yatırım getirisinde görür. Egemen AI, yüksek getirili ve ilişkisi yeterince

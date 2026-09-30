@@ -74,6 +74,45 @@ func Test1300TradeCenterRelationsSeedAIMerchantAssignments(t *testing.T) {
 	}
 }
 
+func Test1300PrivilegedMinorRegionsSeedExemptTradeRoutes(t *testing.T) {
+	gs, err := loadScenarioBaseState("1300_ottoman_rise", filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise"))
+	if err != nil {
+		t.Fatalf("loadScenarioBaseState() error = %v", err)
+	}
+	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
+
+	checked := 0
+	for _, region := range gs.Regions {
+		if region == nil || !region.IsMinorRegion || !region.IsPrivileged || region.OwnerID == "" {
+			continue
+		}
+		sovereignID := gs.SovereignOwnerID(region)
+		if sovereignID == "" || sovereignID == region.OwnerID {
+			continue
+		}
+		checked++
+		directions := 0
+		for _, route := range gs.TradeRoutes {
+			if route == nil || !route.IsPrivilegedMinor {
+				continue
+			}
+			if (route.FromFactionID == sovereignID && route.ToFactionID == region.OwnerID) ||
+				(route.FromFactionID == region.OwnerID && route.ToFactionID == sovereignID) {
+				if route.GoldEarned() != 0 {
+					t.Fatalf("%s imtiyaz rotası ödeme üretiyor: %#v", region.ID, route)
+				}
+				directions++
+			}
+		}
+		if directions != 2 {
+			t.Fatalf("%s için imtiyaz rotası yönleri = %d, 2 bekleniyordu (egemen=%s işletmeci=%s)", region.ID, directions, sovereignID, region.OwnerID)
+		}
+	}
+	if checked == 0 {
+		t.Fatal("1300 senaryosunda kontrol edilecek imtiyazlı minor bölge bulunamadı")
+	}
+}
+
 func Test1300LandTradeCenterRouteDoesNotAcceptMerchantFleet(t *testing.T) {
 	gs, err := loadScenarioBaseState("1300_ottoman_rise", filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise"))
 	if err != nil {
@@ -331,6 +370,27 @@ func TestCampaignSaveStatePreservesMinorPrivilegeGrantedTurn(t *testing.T) {
 	applyRegionSaveState(restored, saved)
 	if restored.PrivilegeGrantedTurn != 7 {
 		t.Fatalf("imtiyaz başlangıç turu geri yüklenmedi: %d", restored.PrivilegeGrantedTurn)
+	}
+}
+
+func TestCampaignSaveStatePreservesPrivilegedMinorTradeRoute(t *testing.T) {
+	saved := campaignSaveState{
+		TradeRoutes: []*economy.TradeRoute{{
+			FromFactionID:     "operator",
+			ToFactionID:       "grantor",
+			IsPrivilegedMinor: true,
+		}},
+	}
+	payload, err := json.Marshal(saved)
+	if err != nil {
+		t.Fatalf("imtiyaz rota save'i marshal edilemedi: %v", err)
+	}
+	var restored campaignSaveState
+	if err := json.Unmarshal(payload, &restored); err != nil {
+		t.Fatalf("imtiyaz rota save'i geri okunamadı: %v", err)
+	}
+	if len(restored.TradeRoutes) != 1 || restored.TradeRoutes[0] == nil || !restored.TradeRoutes[0].IsPrivilegedMinor {
+		t.Fatalf("imtiyaz rota işareti save/load sonrasında korunmadı: %#v", restored.TradeRoutes)
 	}
 }
 

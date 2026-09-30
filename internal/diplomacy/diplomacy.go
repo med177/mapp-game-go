@@ -648,10 +648,14 @@ func overextensionRelationPenaltyForFaction(gs *state.GameState, target faction.
 }
 
 func EnsureTradeRoutesForActiveRelations(gs *state.GameState) {
-	if gs == nil || len(gs.Relations) == 0 {
+	if gs == nil {
 		return
 	}
+	EnsurePrivilegedMinorTradeRoutes(gs)
 	SanitizeTradeRoutes(gs)
+	if len(gs.Relations) == 0 {
+		return
+	}
 	relationKeys := make([]string, 0, len(gs.Relations))
 	for key := range gs.Relations {
 		relationKeys = append(relationKeys, key)
@@ -670,7 +674,114 @@ func EnsureTradeRoutesForActiveRelations(gs *state.GameState) {
 		}
 		ensureTradeRoutesBetween(gs, rel.FactionA, rel.FactionB)
 	}
+	EnsurePrivilegedMinorTradeRoutes(gs)
 	RebalanceTradeRouteCapacities(gs)
+}
+
+type privilegedMinorTradePair struct {
+	left  faction.FactionID
+	right faction.FactionID
+}
+
+// EnsurePrivilegedMinorTradeRoutes, imtiyazlı bir minor bölgenin egemeni ile
+// işletmecisi arasında otomatik ve tarifsiz iki yönlü rota kurar. Bu rota
+// normal diplomasi ilişkisinden bağımsızdır; imtiyaz kaldırılınca normal bir
+// ticaret ilişkisi varsa onu korur, yoksa rotayı temizler.
+func EnsurePrivilegedMinorTradeRoutes(gs *state.GameState) {
+	if gs == nil {
+		return
+	}
+	pairs := privilegedMinorTradePairs(gs)
+
+	filtered := make([]*economy.TradeRoute, 0, len(gs.TradeRoutes))
+	existingDirections := make(map[string]map[string]struct{})
+	for _, route := range gs.TradeRoutes {
+		if route == nil || route.FromFactionID == "" || route.ToFactionID == "" || route.FromFactionID == route.ToFactionID {
+			continue
+		}
+		key, _, _ := tradeAgreementKey(faction.FactionID(route.FromFactionID), faction.FactionID(route.ToFactionID))
+		_, privileged := pairs[key]
+		if privileged {
+			route.IsPrivilegedMinor = true
+			route.GoldPerUnit = 0
+		} else if route.IsPrivilegedMinor {
+			// İmtiyaz kaldırılmışsa sıradan, geçerli diplomatik rota korunur.
+			fromID := faction.FactionID(route.FromFactionID)
+			toID := faction.FactionID(route.ToFactionID)
+			if !relationAllowsTrade(Relation(gs, fromID, toID)) && !SameRealm(gs, fromID, toID) {
+				continue
+			}
+			route.IsPrivilegedMinor = false
+			if route.GoldPerUnit <= 0 {
+				route.GoldPerUnit = gs.BasePrice(route.Good)
+			}
+		}
+		filtered = append(filtered, route)
+		if privileged {
+			if existingDirections[key] == nil {
+				existingDirections[key] = make(map[string]struct{})
+			}
+			existingDirections[key][route.FromFactionID+"->"+route.ToFactionID] = struct{}{}
+		}
+	}
+
+	keys := make([]string, 0, len(pairs))
+	for key := range pairs {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		pair := pairs[key]
+		if existingDirections[key] == nil {
+			existingDirections[key] = make(map[string]struct{})
+		}
+		for _, direction := range [][2]faction.FactionID{{pair.left, pair.right}, {pair.right, pair.left}} {
+			directionKey := string(direction[0]) + "->" + string(direction[1])
+			if _, exists := existingDirections[key][directionKey]; exists {
+				continue
+			}
+			route := buildTradeRoute(gs, direction[0], direction[1])
+			route.IsPrivilegedMinor = true
+			route.GoldPerUnit = 0
+			filtered = append(filtered, route)
+			existingDirections[key][directionKey] = struct{}{}
+		}
+	}
+
+	gs.TradeRoutes = filtered
+	sortTradeRoutes(gs.TradeRoutes)
+	gs.NormalizeMerchantTradeAssignments()
+	RebalanceTradeRouteCapacities(gs)
+}
+
+func privilegedMinorTradePairs(gs *state.GameState) map[string]privilegedMinorTradePair {
+	pairs := make(map[string]privilegedMinorTradePair)
+	if gs == nil {
+		return pairs
+	}
+	regionIDs := make([]world.RegionID, 0, len(gs.Regions))
+	for regionID := range gs.Regions {
+		regionIDs = append(regionIDs, regionID)
+	}
+	for _, regionID := range world.SortedRegionIDs(regionIDs) {
+		region := gs.Regions[regionID]
+		if region == nil || region.IsSea || !region.IsMinorRegion || !region.IsPrivileged || region.OwnerID == "" {
+			continue
+		}
+		sovereignID := faction.FactionID(gs.SovereignOwnerID(region))
+		operatorID := faction.FactionID(region.OwnerID)
+		if sovereignID == "" || operatorID == "" || sovereignID == operatorID {
+			continue
+		}
+		sovereign := gs.Factions[sovereignID]
+		operator := gs.Factions[operatorID]
+		if sovereign == nil || operator == nil || sovereign.IsEliminated || operator.IsEliminated {
+			continue
+		}
+		key, left, right := tradeAgreementKey(sovereignID, operatorID)
+		pairs[key] = privilegedMinorTradePair{left: left, right: right}
+	}
+	return pairs
 }
 
 func SanitizeTradeRoutes(gs *state.GameState) {
@@ -678,6 +789,7 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 		return
 	}
 	validByAgreement := make(map[string][]*economy.TradeRoute)
+	privilegedPairs := privilegedMinorTradePairs(gs)
 	seenDirections := make(map[string]struct{}, len(gs.TradeRoutes))
 	for _, route := range gs.TradeRoutes {
 		if route == nil || route.FromFactionID == "" || route.ToFactionID == "" || route.FromFactionID == route.ToFactionID {
@@ -690,10 +802,15 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 		if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
 			continue
 		}
-		if !relationAllowsTrade(Relation(gs, fromID, toID)) {
+		key, _, _ := tradeAgreementKey(fromID, toID)
+		if route.IsPrivilegedMinor {
+			if _, ok := privilegedPairs[key]; !ok {
+				continue
+			}
+		} else if !relationAllowsTrade(Relation(gs, fromID, toID)) {
 			continue
 		}
-		if !SameRealm(gs, fromID, toID) && !CanEstablishTradeRoute(gs, fromID, toID) {
+		if !route.IsPrivilegedMinor && !SameRealm(gs, fromID, toID) && !CanEstablishTradeRoute(gs, fromID, toID) {
 			continue
 		}
 		directionKey := route.AssignmentKey()
@@ -701,7 +818,6 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 			continue
 		}
 		seenDirections[directionKey] = struct{}{}
-		key, _, _ := tradeAgreementKey(fromID, toID)
 		validByAgreement[key] = append(validByAgreement[key], route)
 	}
 
@@ -720,7 +836,14 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 		fromID := faction.FactionID(routes[0].FromFactionID)
 		toID := faction.FactionID(routes[0].ToFactionID)
 		_, left, right := tradeAgreementKey(fromID, toID)
-		if !SameRealm(gs, left, right) {
+		privileged := false
+		for _, route := range routes {
+			if route.IsPrivilegedMinor {
+				privileged = true
+				break
+			}
+		}
+		if !privileged && !SameRealm(gs, left, right) {
 			if partnerCount[left] >= TradePartnerLimit(gs, left) || partnerCount[right] >= TradePartnerLimit(gs, right) {
 				continue
 			}
@@ -1326,6 +1449,9 @@ func ensureTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 	if gs == nil || a == "" || b == "" || a == b || !canMaintainOrAddTradePartner(gs, a, b) {
 		return
 	}
+	if hasPrivilegedMinorTradeRouteBetween(gs, a, b) {
+		return
+	}
 	ensureAcceptedTradeRoutesBetween(gs, a, b)
 }
 
@@ -1335,6 +1461,9 @@ func ensureTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 // sonra RebalanceTradeRouteCapacities ile dengelenir.
 func ensureAcceptedTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 	if gs == nil || a == "" || b == "" || a == b {
+		return
+	}
+	if hasPrivilegedMinorTradeRouteBetween(gs, a, b) {
 		return
 	}
 	removeTradeRoutesBetween(gs, a, b)
@@ -1358,6 +1487,9 @@ func removeTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 		}
 		if (route.FromFactionID == aStr && route.ToFactionID == bStr) ||
 			(route.FromFactionID == bStr && route.ToFactionID == aStr) {
+			if route.IsPrivilegedMinor {
+				filtered = append(filtered, route)
+			}
 			continue
 		}
 		filtered = append(filtered, route)
@@ -1365,6 +1497,24 @@ func removeTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 	sortTradeRoutes(filtered)
 	gs.TradeRoutes = filtered
 	RebalanceTradeRouteCapacities(gs)
+}
+
+func hasPrivilegedMinorTradeRouteBetween(gs *state.GameState, a, b faction.FactionID) bool {
+	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
+	aStr := string(a)
+	bStr := string(b)
+	for _, route := range gs.TradeRoutes {
+		if route == nil || !route.IsPrivilegedMinor {
+			continue
+		}
+		if (route.FromFactionID == aStr && route.ToFactionID == bStr) ||
+			(route.FromFactionID == bStr && route.ToFactionID == aStr) {
+			return true
+		}
+	}
+	return false
 }
 
 func HasTradeRouteBetween(gs *state.GameState, a, b faction.FactionID) bool {
@@ -1465,7 +1615,7 @@ func ActiveTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {
 	partners := make(map[string]struct{})
 	self := string(fid)
 	for _, route := range gs.TradeRoutes {
-		if route == nil || route.SuspendedTurns > 0 {
+		if route == nil || route.SuspendedTurns > 0 || route.IsPrivilegedMinor {
 			continue
 		}
 		switch {
@@ -1533,6 +1683,7 @@ func RebalanceTradeRouteCapacities(gs *state.GameState) {
 		left, right                    faction.FactionID
 		routes                         []*economy.TradeRoute
 		hasLeftToRight, hasRightToLeft bool
+		privileged                     bool
 		active                         bool
 	}
 	agreementsByKey := make(map[string]*agreement)
@@ -1549,6 +1700,7 @@ func RebalanceTradeRouteCapacities(gs *state.GameState) {
 			agreementsByKey[key] = item
 		}
 		item.routes = append(item.routes, route)
+		item.privileged = item.privileged || route.IsPrivilegedMinor
 		if fromID == left && toID == right {
 			item.hasLeftToRight = true
 		} else {
@@ -1561,7 +1713,7 @@ func RebalanceTradeRouteCapacities(gs *state.GameState) {
 
 	partnersByFaction := make(map[faction.FactionID][]string)
 	for key, item := range agreementsByKey {
-		if !item.active || !item.hasLeftToRight || !item.hasRightToLeft || SameRealm(gs, item.left, item.right) {
+		if !item.active || !item.hasLeftToRight || !item.hasRightToLeft || item.privileged || SameRealm(gs, item.left, item.right) {
 			continue
 		}
 		partnersByFaction[item.left] = append(partnersByFaction[item.left], key)
@@ -1593,7 +1745,7 @@ func RebalanceTradeRouteCapacities(gs *state.GameState) {
 	}
 
 	for _, item := range agreementsByKey {
-		if !item.active || !item.hasLeftToRight || !item.hasRightToLeft || SameRealm(gs, item.left, item.right) {
+		if !item.active || !item.hasLeftToRight || !item.hasRightToLeft || item.privileged || SameRealm(gs, item.left, item.right) {
 			continue
 		}
 		amount := sharesByFaction[item.left][item.key]
@@ -1617,7 +1769,7 @@ func TradeRouteCapacityUsage(gs *state.GameState, fid faction.FactionID) int {
 	}
 	amountByAgreement := make(map[string]int)
 	for _, route := range gs.TradeRoutes {
-		if route == nil || route.SuspendedTurns > 0 {
+		if route == nil || route.SuspendedTurns > 0 || route.IsPrivilegedMinor {
 			continue
 		}
 		fromID := faction.FactionID(route.FromFactionID)

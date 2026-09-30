@@ -291,11 +291,15 @@ func drawTradeRoutesTab(screen *ebiten.Image, gs *state.GameState, layout tradeL
 		}
 		vector.FillRect(screen, px+4, ry, w-8, tradeRowH-4, bg, false)
 
+		amountLabel := itoa(tr.AmountPerTurn) + " @" + itoa(tr.GoldPerUnit) + " altın"
+		if tr.IsPrivilegedMinor {
+			amountLabel = itoa(tr.AmountPerTurn) + " · İmtiyaz / tarifsiz"
+		}
 		row := gameui.NewTableRow(gameui.Rect{X: float64(px) + 10, Y: float64(ry) + 10, W: float64(w) - 70}, []gameui.TableCell{
 			{Text: economy.GoodNameTR(tr.Good), Color: ColorWhite, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.35},
 			{Text: factionDisplayName(gs, tr.FromFactionID), Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.20},
 			{Text: factionDisplayName(gs, tr.ToFactionID), Color: ColorGray, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.20},
-			{Text: itoa(tr.AmountPerTurn) + " @" + itoa(tr.GoldPerUnit) + " altın", Color: ColorGold, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.25},
+			{Text: amountLabel, Color: ColorGold, Variant: gameui.TextSmall, Align: gameui.TextAlignStart, Weight: 0.25},
 		}, 0)
 		drawUITableRow(screen, row)
 		filteredIndex++

@@ -1311,6 +1311,9 @@ func (g *Game) resolveTurn() {
 	applySeasonEffects(g.gs)
 	g.executePlayerNavalMissions()
 	g.gs.MergeMerchantTradeFleets()
+	// Fetih, imtiyaz veya ana bölge sahipliği önceki turda değişmiş olabilir;
+	// otomatik imtiyaz rotalarını ekonomi çalışmadan önce güncelle.
+	diplomacy.EnsurePrivilegedMinorTradeRoutes(g.gs)
 	economyReport := applyEconomyTick(g.gs)
 	navalVoyageAlerts := applyEmbarkedVoyageAttrition(g.gs)
 	completedTechs := applyTechTicks(g.gs)

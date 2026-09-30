@@ -170,6 +170,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 - Bir devlet en fazla `MaxAlliances = 5` doğrudan dış müttefike sahip olabilir. `ActiveAllianceCount()` aynı vassal realm içindeki zorunlu `StanceAllied` kayıtlarını saymaz; sınır hem doğrudan tekliflerde hem de kuyruktaki teklif çözümünde uygulanır.
 - Zaten aynı duruştaysa tekrar kurulamaz; ancak `StanceTrade` duruşunda rota kaydı eksikse teklif akışı rotayı yeniden kurar
 - Vassal-overlord bağı ayrı tutulur; iç realm relation'ları normalizasyonda `allied` çizgisine çekilir ve doğrudan overlord-vassal arasında kapasite/partner sınırından bağımsız iki yönlü ticaret rotası garanti edilir. İç-realm rota, dış partner sayısına ve dış rota kapasitesi paylaşımına girmez.
+- İmtiyazlı minor bölgenin ana egemeni ile işletmecisi arasında `IsPrivilegedMinor` işaretli rota otomatik kurulur. Bu rota diplomatik ticaret teklifi gerektirmez; dış partner/rota kapasitesi hakkını, normal rota ödemesini ve gümrüğü tüketmez.
 
 ---
 

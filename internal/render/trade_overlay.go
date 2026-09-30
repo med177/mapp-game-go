@@ -876,8 +876,12 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 
 			goldLabel := "-"
 			if detail.route != nil {
-				gold := detail.amount * detail.route.GoldPerUnit
-				goldLabel = itoa(gold) + " Altın"
+				if detail.route.IsPrivilegedMinor {
+					goldLabel = "Tarifesiz"
+				} else {
+					gold := detail.amount * detail.route.GoldPerUnit
+					goldLabel = itoa(gold) + " Altın"
+				}
 			}
 			goodsLabel := detail.good
 			if goodsLabel == "" {
@@ -893,7 +897,10 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 		goodName := economy.GoodNameTR(c.route.Good)
 		playerID := string(r.gs.PlayerFactionID)
 		DrawText(screen, "Hacim: "+itoa(amount)+"/tur   Emtia: "+goodName, float64(x)+10, float64(y)+64, FaceSmall, color.RGBA{187, 203, 222, 230})
-		if c.route.FromFactionID == playerID {
+		if c.route.IsPrivilegedMinor {
+			DrawText(screen, "İmtiyaz ticareti: tarifsiz", float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{225, 205, 170, 240})
+			DrawText(screen, "Mal akışı: "+goodName+" "+itoa(amount)+"/tur", float64(x)+10, float64(y)+100, FaceSmall, color.RGBA{225, 205, 170, 240})
+		} else if c.route.FromFactionID == playerID {
 			DrawText(screen, "Veriyoruz: "+goodName+" "+itoa(amount)+"/tur", float64(x)+10, float64(y)+82, FaceSmall, color.RGBA{225, 205, 170, 240})
 			DrawText(screen, "Alıyoruz: Altın +"+itoa(gold)+"/tur", float64(x)+10, float64(y)+100, FaceSmall, color.RGBA{225, 205, 170, 240})
 			DrawText(screen, "Gelir: +"+itoa(gold)+" altın/tur", float64(x)+10, float64(y)+118, FaceSmall, color.RGBA{145, 220, 155, 245})

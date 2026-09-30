@@ -32,6 +32,7 @@ func RevokeMinorPrivilege(gs *state.GameState, actor faction.FactionID, rid worl
 	}
 
 	region.IsPrivileged = false
+	EnsurePrivilegedMinorTradeRoutes(gs)
 	ForceRelation(gs, actor, operator, "", -PrivilegeRevocationRelationPenalty)
 	return Result{
 		Accepted: true,

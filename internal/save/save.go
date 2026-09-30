@@ -439,10 +439,7 @@ func loadFromPath(path string) (*state.GameState, error) {
 	if gs.TradeRoutes == nil {
 		gs.TradeRoutes = []*economy.TradeRoute{}
 	}
-	diplomacy.SanitizeTradeRoutes(gs)
-	if len(gs.TradeRoutes) == 0 {
-		diplomacy.EnsureTradeRoutesForActiveRelations(gs)
-	}
+	diplomacy.EnsureTradeRoutesForActiveRelations(gs)
 	gs.MergeMerchantTradeFleets()
 	grainDemandByFaction := make(map[faction.FactionID]int, len(gs.Factions))
 	for fid := range gs.Factions {

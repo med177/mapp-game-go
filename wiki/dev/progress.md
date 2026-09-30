@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: İmtiyazlı minor bölgenin ana egemeni ile işletmecisi arasında
+  otomatik iki yönlü ve `IsPrivilegedMinor` işaretli ticaret rotası kuruldu.
+  Bu rota dış partner/rota kapasitesi hakkına yazılmıyor; normal `Ticaret
+  rotası ödemesi` ve gümrük uygulanmıyor. İmtiyaz kaldırılınca geçerli normal
+  ticaret ilişkisi korunuyor, aksi halde rota temizleniyor. Regression:
+  `internal/diplomacy/privilege_test.go`, `internal/economy/economy_test.go`,
+  `internal/save/save_test.go`.
+
 - 2026-09-30: Aktif kuşatma marker grubunda kendi/müttefik destek orduları,
   yardım ettikleri tarafa göre ana kuşatanın solunda veya kuşatılanın sağında
   gösteriliyor; tüm taraflar aynı kale anchor'ında tutuluyor. Regression:

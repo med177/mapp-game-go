@@ -228,6 +228,10 @@ type TradeRoute struct {
 	AmountPerTurn  int      `json:"amount_per_turn"`
 	GoldPerUnit    int      `json:"gold_per_unit"`   // anlaşmadaki sabit fiyat (dinamik değil)
 	SuspendedTurns int      `json:"suspended_turns"` // korsan/olay nedeniyle kaç tur askıda (0=aktif)
+	// IsPrivilegedMinor, imtiyazlı minor bölge nedeniyle otomatik açılan rotayı
+	// normal diplomatik ticaret rotasından ayırır. Bu rotalarda partner/rota
+	// kapasitesi hakkı, rota ödemesi ve gümrük uygulanmaz.
+	IsPrivilegedMinor bool `json:"is_privileged_minor,omitempty"`
 
 	// MerchantAmountBonus save'e yazılmaz; her ekonomi çözümünde filoların
 	// aktif görevi ve gerçek deniz konumundan yeniden hesaplanır.
@@ -307,6 +311,9 @@ func MerchantBonusCapacity(t *TradeRoute) int {
 
 // GoldEarned bu güzergahtan tur başına altın kazancını döner (satan taraf için).
 func (t *TradeRoute) GoldEarned() int {
+	if t == nil || t.IsPrivilegedMinor {
+		return 0
+	}
 	return t.EffectiveAmountPerTurn() * t.GoldPerUnit
 }
 
