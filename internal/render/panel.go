@@ -5664,8 +5664,8 @@ func regionStatusSummaryHeight(gs *state.GameState, region *world.Region) float6
 }
 
 // regionPanelLogisticsStatus, güncel ordu talebini geçmiş tur snapshot'ındaki
-// kapasiteyle birleştirir. Hareket sonrası talep yeniden hesaplanır; hareket
-// yoksa çözümlemenin yerleşim, rezerv ve filo katkıları korunur.
+// kapasiteyle birleştirir. Snapshot yoksa ortak state önizlemesi çözümlemenin
+// yerleşim, ambar, rezerv ve filo katkılarını yeniden üretir.
 func regionPanelLogisticsStatus(gs *state.GameState, region *world.Region) (state.RegionLogisticsStatus, bool) {
 	if gs == nil || region == nil {
 		return state.RegionLogisticsStatus{}, false
@@ -5680,48 +5680,16 @@ func regionPanelLogisticsStatus(gs *state.GameState, region *world.Region) (stat
 		}
 		return status, status.Demand > 0
 	}
-	status := state.RegionLogisticsStatus{RegionID: region.ID}
-	status.Demand = regionPanelCurrentArmyDemand(gs, region)
-	for _, currentArmy := range gs.Armies {
-		if currentArmy != nil && !currentArmy.IsNaval && currentArmy.RegionID == region.ID && len(currentArmy.Units) > 0 {
-			status.ArmyCount++
+	// Hareket veya henüz tamamlanmamış ilk çözümleme snapshot'ı sildiğinde
+	// yalnızca yerel üretimi göstermek hatalıdır. İkmal desteği, ambar ve merkez
+	// rezervi de çözümlemedeki ortak, yan etkisiz önizlemeden alınır.
+	if status, ok := gs.PreviewRegionalLogisticsStatus(region.ID); ok {
+		if status.Overload < 0 {
+			status.Overload = 0
 		}
+		return status, true
 	}
-	if status.ArmyCount == 0 {
-		return state.RegionLogisticsStatus{}, false
-	}
-	status.LocalProduction = regionPanelCurrentLocalProduction(gs, region)
-	status.Capacity = status.LocalProduction
-	status.NavalSupplyGrainSpent = regionPanelActiveNavalSupply(gs, region, status.Demand-status.Capacity)
-	status.Capacity += status.NavalSupplyGrainSpent
-	status.Overload = status.Demand - status.Capacity
-	if status.Overload < 0 {
-		status.Overload = 0
-	}
-	return status, true
-}
-
-func regionPanelActiveNavalSupply(gs *state.GameState, region *world.Region, shortage int) int {
-	if gs == nil || region == nil || shortage <= 0 {
-		return 0
-	}
-	supplied := 0
-	for _, fleet := range gs.Armies {
-		if supplied >= shortage || fleet == nil || !fleet.IsNaval || fleet.NavalMission == nil || fleet.NavalMission.Kind != army.NavalMissionSupplyArmy || fleet.SupplyCargo.Grain <= 0 {
-			continue
-		}
-		target := gs.Armies[fleet.NavalMission.TargetArmyID]
-		if target == nil || target.RegionID != region.ID || !navalSupplyTargetArmy(gs, fleet, target) {
-			continue
-		}
-		amount := fleet.SupplyCargo.Grain
-		remaining := shortage - supplied
-		if amount > remaining {
-			amount = remaining
-		}
-		supplied += amount
-	}
-	return supplied
+	return state.RegionLogisticsStatus{}, false
 }
 
 func regionPanelCurrentArmyDemand(gs *state.GameState, region *world.Region) int {

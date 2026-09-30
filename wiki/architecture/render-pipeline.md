@@ -592,11 +592,12 @@ hit-test'inden geçmeden hareket/çıkarma aksiyonu üretmez
 (`internal/render/renderer.go`, `internal/render/renderer_input.go`).
 
 Aynı settlement anchor'ına birden fazla kara ordusu geldiğinde
-`armyGroupDisplayOrder` grup içindeki ilk görülme sırasını korur. Başka bir
-bölgeden sonradan gelen oyuncu veya müttefik ordusu grubun yeni üyesi olarak
-soldaki slota yerleşir; kuşatma çifti için kuşatanın solda, savunmacının sağda
-kalması kuralı yalnızca doğrudan kuşatma çifti arasında önceliğini korur; sonradan
-gelen destek ordusu kuşatanın soluna yerleşebilir (`internal/render/renderer.go`).
+`armyGroupDisplayOrder` grup içindeki ilk görülme sırasını korur. Aktif kuşatma
+grubunda ana kuşatan ve kuşatılan ile bunlara destek veren kendi/müttefik ordular
+aynı kale anchor'ında toplanır; sıra soldan sağa kuşatan destekleri, kuşatan,
+kuşatılan ve kuşatılan destekleri şeklindedir. Böylece destek marker'ı geliş
+sırasından bağımsız olarak yardım ettiği tarafın yanında kalır
+(`internal/render/renderer.go`).
 
 Yan yana aynı gruptaki kara ve donanma marker'ları 40 px merkez aralığıyla
 çizilir. Marker gövdesinin yanı sıra komutan portresi ve üst rozetler de bu

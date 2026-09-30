@@ -7,6 +7,19 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: Aktif kuşatma marker grubunda kendi/müttefik destek orduları,
+  yardım ettikleri tarafa göre ana kuşatanın solunda veya kuşatılanın sağında
+  gösteriliyor; tüm taraflar aynı kale anchor'ında tutuluyor. Regression:
+  `TestSiegeSupportMarkersStayBesideTheirSiegeSide` (`internal/render/renderer.go`,
+  `internal/render/siege_display_test.go`).
+
+- 2026-09-30: Bölge panelinde çözümleme snapshot'ı silinmiş bölgeler artık
+  yalnızca yerel üretimi göstermiyor. `PreviewRegionalLogisticsStatus()` ortak
+  hesabıyla settlement tamponu, ambar desteği, merkez rezervi ve uygun filo
+  ikmali de gösteriliyor; çözümleme ve UI bu bileşenlerin aynı state yardımcılarını
+  kullanıyor (`internal/state/regional_logistics_preview.go`,
+  `internal/render/panel.go`).
+
 - 2026-09-30: Yerleşim nüfusu veri modelinden çıkarıldı. `Region.Population`
   artık `regions.json` içindeki bağımsız bölge değeridir; eski settlement
   `population` alanları yok sayılır, kaydetmede yazılmaz ve Edit Mode yerleşim

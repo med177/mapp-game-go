@@ -449,6 +449,13 @@ yardımcı `RuralPopulation` alanı toplamla başlatılır.
 
 `RegionLogisticsStatus` / `ArmyLogisticsStatus` — son turdaki bölgesel ikmal yükü, kapasite, abluka yüzdesi, aşım ve zayiat bilgisini render katmanına taşır; serialize edilmez.
 
+`GameState.PreviewRegionalLogisticsStatus()` — çözümleme snapshot'ı hareket veya
+ilk açılış nedeniyle henüz yoksa bölge panelinin kullanacağı yan etkisiz ikmal
+önizlemesini üretir. Yerel üretim, settlement tamponu, abluka, ambar desteği,
+başkent öncelikli merkez rezervi ve uygun filo yükü aynı hesapta gösterilir;
+`RegionSettlementLogisticsBuffer()`, `RegionReserveSupport()` ve
+`RegionGranaryStorageCapacity()` gerçek çözümleme ile ortak kullanılır.
+
 `GameState.ClearArmyLogisticsAfterRelocation()` — ordu veya filonun `LocationID()` değeri değiştiğinde eski konuma ait ordu yıpranma snapshot'ını temizler. Kara ordusunun bölgeye özgü `OverCapacityTurns` sayacı sıfırlanır; filonun açık deniz yolculuk süresini ifade eden `TurnsWithoutPort` korunur.
 
 `GameState.ArmySupplyDistanceFromCapital()` ve `CapitalSupplyPenaltyPercent()` — kara ordusunun başkentten kendi kara bölgeleri üzerinden en kısa ikmal hattını çözer; bu bilgi `RegionalArmyGrainDemand()` içinde kullanılarak uzak/kopuk cephelerin lojistik yıpranma baskısını merkezi biçimde üretir. `HasFriendlyLandSupplyBorder()` aynı modelde, düşman bölgesindeki kuşatmanın kendi, aynı realm/vassal veya müttefik kara sınırından ikmal alıp almadığını belirler.

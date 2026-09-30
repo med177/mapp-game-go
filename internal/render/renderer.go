@@ -3554,6 +3554,14 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		sort.Slice(aids, func(i, j int) bool {
 			ai := r.gs.Armies[aids[i]]
 			aj := r.gs.Armies[aids[j]]
+			aiSiege, aiSiegeSide := r.siegeArmyDisplayClassification(ai)
+			ajSiege, ajSiegeSide := r.siegeArmyDisplayClassification(aj)
+			if aiSiege != nil && ajSiege != nil && aiSiege.RegionID == ajSiege.RegionID && aiSiegeSide != ajSiegeSide {
+				// Destek ordusu geldiği tarafın dışına taşmasın: kuşatan
+				// destekleri solda, ana kuşatan, ana kuşatılan ve kuşatılan
+				// destekleri sağda gruplanır.
+				return aiSiegeSide < ajSiegeSide
+			}
 			aiHasCommander := armyHasDisplayedCommander(ai)
 			ajHasCommander := armyHasDisplayedCommander(aj)
 			if aiHasCommander != ajHasCommander {
@@ -3805,29 +3813,58 @@ func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32,
 	return armyDisplayGroupKey{RegionID: region.ID}, float32(sx), float32(sy), true
 }
 
-// siegeForArmyDisplay, aktif kuşatmanın hem kuşatanını hem de kuşatılan
-// garnizonunu aynı kale anchor'ında toplar. Garnizonun normal landArmyAnchor
-// ile merkez yerleşime gitmesi, marker grubunu ikiye böler ve savaş rozeti
-// bir durumda marker'ın sağına, diğerinde merkezine düşer.
-func (r *Renderer) siegeForArmyDisplay(a *army.Army) *state.SiegeState {
+type siegeArmyDisplaySide uint8
+
+const (
+	siegeArmyDisplayUnrelated siegeArmyDisplaySide = iota
+	siegeArmyDisplayAttackerSupport
+	siegeArmyDisplayAttacker
+	siegeArmyDisplayDefender
+	siegeArmyDisplayDefenderSupport
+)
+
+// siegeArmyDisplayClassification, aktif kuşatma bölgesindeki bir ordunun
+// kuşatan tarafına mı, kuşatılan tarafına mı ait olduğunu döner. Destek
+// orduları da ana kuşatma çiftiyle aynı kale anchor'ında gösterilir; böylece
+// marker, hareket sırasına göre yanlış tarafa savrulmaz.
+func (r *Renderer) siegeArmyDisplayClassification(a *army.Army) (*state.SiegeState, siegeArmyDisplaySide) {
 	if r == nil || r.gs == nil || a == nil || r.gs.Sieges == nil {
-		return nil
+		return nil, siegeArmyDisplayUnrelated
 	}
 	for _, siege := range r.gs.Sieges {
 		if siege == nil {
 			continue
 		}
 		if siege.AttackerArmyID == a.ID {
-			return siege
+			return siege, siegeArmyDisplayAttacker
 		}
 		// DefenderArmyID save'de kalmış bir ipucu olabilir. Savunmacı ancak
 		// gerçekten kuşatılan bölgede duruyorsa bu bağlantıyla anchor'lanır;
 		// aksi halde eski kuşatma kaydı orduyu yanlış bölgeye çeker.
 		if siege.DefenderArmyID == a.ID && siege.RegionID == a.RegionID && r.gs.IsArmyDefendingSiegedRegion(a) {
-			return siege
+			return siege, siegeArmyDisplayDefender
+		}
+		if siege.RegionID != a.RegionID {
+			continue
+		}
+		if r.gs.IsArmyDefendingSiegedRegion(a) {
+			return siege, siegeArmyDisplayDefenderSupport
+		}
+		if r.gs.CanJoinActiveSiege(a, siege.RegionID) {
+			return siege, siegeArmyDisplayAttackerSupport
 		}
 	}
-	return nil
+	return nil, siegeArmyDisplayUnrelated
+}
+
+// siegeForArmyDisplay, aktif kuşatmanın kuşatanını, kuşatılanını ve ilgili
+// destek ordularını aynı kale anchor'ında toplar. Garnizonun veya desteğin
+// normal landArmyAnchor ile merkez yerleşime gitmesi, marker grubunu ikiye
+// böler ve savaş rozeti bir durumda marker'ın sağına, diğerinde merkezine
+// düşer.
+func (r *Renderer) siegeForArmyDisplay(a *army.Army) *state.SiegeState {
+	siege, _ := r.siegeArmyDisplayClassification(a)
+	return siege
 }
 
 func (r *Renderer) landArmyAnchor(region *world.Region) (int, int, bool) {

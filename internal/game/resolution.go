@@ -1348,13 +1348,13 @@ func applyRegionalLogisticsPressure(gs *state.GameState) []state.RegionLogistics
 		if region.OwnerID != ownerID {
 			militaryProduction = 0
 		}
-		settlementBuffer := regionSettlementLogisticsBuffer(gs, region)
+		settlementBuffer := gs.RegionSettlementLogisticsBuffer(region)
 		blockadePercent := gs.RegionBlockadePercent(region, ownerID)
 		settlementBuffer = settlementBuffer * (100 - blockadePercent) / 100
 		availableReserve := availableReserveByFaction[ownerID]
-		granarySupport := minInt(availableReserve, regionGranaryStorageCapacity(gs, region))
+		granarySupport := minInt(availableReserve, gs.RegionGranaryStorageCapacity(region))
 		availableReserve -= granarySupport
-		reserveSupport := regionReserveSupport(availableReserve, militaryProduction, settlementBuffer)
+		reserveSupport := state.RegionReserveSupport(availableReserve, militaryProduction, settlementBuffer)
 		availableReserveByFaction[ownerID] = availableReserve - reserveSupport
 		capacity := militaryProduction + settlementBuffer + granarySupport + reserveSupport
 		// Deniz ikmali, bölgenin kendi kapasitesi tükendikten sonra devreye
@@ -1601,66 +1601,6 @@ func friendlySupplyArmyLogisticsStatus(a *army.Army, region state.RegionLogistic
 		FriendlySupplyGrainSpent: supply.GrainSpent,
 		FriendlySupplySameRealm:  supply.SameRealm,
 	}
-}
-
-func regionSettlementLogisticsBuffer(gs *state.GameState, region *world.Region) int {
-	buffer := 0
-	for _, settlement := range region.Settlements {
-		switch settlement.Type {
-		case world.SettlementCity:
-			buffer += 8
-		case world.SettlementTown:
-			buffer += 5
-		case world.SettlementFortress:
-			buffer += 6
-		case world.SettlementPort:
-			buffer += 6
-		default:
-			buffer += 4
-		}
-		if settlement.IsCenter {
-			buffer += 4
-		}
-	}
-	if gs != nil && gs.IsCapitalRegion(region) {
-		buffer += state.CapitalRegionLogisticsBonus
-	}
-	if tc := region.TradeCapacity / 2; tc > 0 {
-		if tc > 6 {
-			tc = 6
-		}
-		buffer += tc
-	}
-	return buffer
-}
-
-func regionReserveSupport(availableGrain, production, settlementBuffer int) int {
-	if availableGrain <= 0 {
-		return 0
-	}
-	cap := production/2 + settlementBuffer/2 + 4
-	if cap < 4 {
-		cap = 4
-	}
-	reserve := availableGrain / 10
-	if reserve > cap {
-		reserve = cap
-	}
-	return reserve
-}
-
-func regionGranaryStorageCapacity(gs *state.GameState, region *world.Region) int {
-	if gs == nil || region == nil {
-		return 0
-	}
-	capacity := 0
-	for _, buildingID := range region.Buildings {
-		building := gs.BuildingTypes[buildingID]
-		if building != nil && building.StorageCapacity > 0 {
-			capacity += building.StorageCapacity
-		}
-	}
-	return capacity
 }
 
 func logisticsDamagePerUnit(totalDemand, capacity, overload, nextTurn int) int {
