@@ -107,6 +107,9 @@ Tetikleme kriterleri:
   tetiklenir. Örneğin Bursa erken fethedilirse Bursa'nın merkez oluşu event'i
   1326'yı beklemez. Yalnızca takvimle tanımlanan koşulsuz tarihsel event'ler
   tarih/yıl penceresini bekler.
+- **Kesin tarih:** `historical_date_strict=true`, state koşulları daha erken
+  oluşsa bile event'in `historical_year` / `historical_month` penceresini
+  beklemesini sağlar. Tarihsel zincirdeki istisnalar bu alanı açıkça kullanır.
 - **Rastgele olay:** `probability > 0` ve `min_turn` eşiği
 - **Tek seferlik olay:** `one_shot=true` ise tekrar tetiklenmez
 

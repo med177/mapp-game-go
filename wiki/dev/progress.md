@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: Germiyan'ın 1381 çeyiz ve 1429 vasiyet event'leri kesin tarih
+  penceresine bağlandı; vasiyet yalnız çeyiz event'inin
+  `germiyan_dowry_1381` flag'i set edildikten sonra tetiklenebiliyor. Böylece
+  state koşullarının bu iki tarihsel olayı 1335 gibi erken çalıştırması ve
+  zincirin atlanması engellendi (`internal/events/events.go`,
+  `assets/scenarios/1300_ottoman_rise/data/events.json`).
+
 - 2026-09-30: Event Kodex, hanedan aktarımının alıcısı olan oyuncu faction'ına
   ait eventleri `Oyuncu` filtresinde göstermeye başladı. Tarihi geçmiş fakat
   state koşulları nedeniyle bekleyen eventler `Kilitli` olarak korunuyor;

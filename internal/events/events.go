@@ -195,10 +195,11 @@ type Event struct {
 	DynasticSettlement        *DynasticSettlementEffect    `json:"dynastic_settlement,omitempty"`
 
 	// Tarihsel tetiklenme alanları
-	HistoricalYear  int    `json:"historical_year,omitempty"`  // 0 = tarihsel değil
-	HistoricalMonth int    `json:"historical_month,omitempty"` // 0 = yılın herhangi bir ayı
-	OneShot         bool   `json:"one_shot,omitempty"`         // true = yalnızca bir kez tetiklenir
-	AffectedFaction string `json:"affected_faction,omitempty"` // belirli fraksiyonu hedefle
+	HistoricalYear       int    `json:"historical_year,omitempty"`        // 0 = tarihsel değil
+	HistoricalMonth      int    `json:"historical_month,omitempty"`       // 0 = yılın herhangi bir ayı
+	HistoricalDateStrict bool   `json:"historical_date_strict,omitempty"` // state koşulları olsa da tarihi bekle
+	OneShot              bool   `json:"one_shot,omitempty"`               // true = yalnızca bir kez tetiklenir
+	AffectedFaction      string `json:"affected_faction,omitempty"`       // belirli fraksiyonu hedefle
 
 	ChoicePromptTR            string                     `json:"choice_prompt_tr,omitempty"`
 	Choices                   []Choice                   `json:"choices,omitempty"`
@@ -371,6 +372,9 @@ func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
 
 func historicalEventHasStateTrigger(e *Event) bool {
 	if e == nil {
+		return false
+	}
+	if e.HistoricalDateStrict {
 		return false
 	}
 	return len(e.RequiresFlags) > 0 ||

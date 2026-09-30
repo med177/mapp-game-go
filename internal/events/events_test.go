@@ -147,7 +147,8 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 			if settlement == nil || settlement.SourceFactionID != "germiyan_bey" ||
 				settlement.RecipientFactionID != "ottoman" || settlement.Mode != "dowry" ||
 				len(settlement.RegionIDs) != 1 || settlement.RegionIDs[0] != "kutahya" ||
-				settlement.ArmyTransferPercent != 30 || settlement.ResourceTransferPercent != 30 {
+				settlement.ArmyTransferPercent != 30 || settlement.ResourceTransferPercent != 30 ||
+				!event.HistoricalDateStrict {
 				t.Fatal("Germiyan çeyizi Kütahya ve yüzde 30 aktarım sözleşmesini taşımıyor")
 			}
 		}
@@ -155,7 +156,8 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 			settlement := event.DynasticSettlement
 			if settlement == nil || !settlement.AutoUnionWhenSourceEmpty ||
 				settlement.UnionResultFactionID != "ottoman" || len(settlement.RegionIDs) != 1 ||
-				settlement.RegionIDs[0] != "germiyan" {
+				settlement.RegionIDs[0] != "germiyan" || !event.HistoricalDateStrict ||
+				!containsEventFlag(event.RequiresFlags, "germiyan_dowry_1381") {
 				t.Fatal("Germiyan vasiyeti kalan bölgeyi otomatik birleşmeye bağlamıyor")
 			}
 		}
@@ -217,6 +219,69 @@ func TestTickDateOnlyHistoricalEventStillWaitsForYear(t *testing.T) {
 
 	if got := Tick(gs, []*Event{event}); got != nil {
 		t.Fatalf("yalnız tarih koşullu event erken tetiklendi: %#v", got)
+	}
+}
+
+func TestTickStrictHistoricalStateTriggeredEventWaitsForYear(t *testing.T) {
+	const ottomanID = faction.FactionID("ottoman")
+	gs := &state.GameState{
+		Year:  1300,
+		Month: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			ottomanID: {ID: ottomanID},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"bursa": {ID: "bursa", OwnerID: string(ottomanID)},
+		},
+	}
+	event := &Event{
+		ID:                   "strict_state_event",
+		HistoricalYear:       1326,
+		HistoricalMonth:      4,
+		HistoricalDateStrict: true,
+		OneShot:              true,
+		Target:               "specific_faction",
+		AffectedFaction:      string(ottomanID),
+		RequiresOwnedRegions: []world.RegionID{"bursa"},
+	}
+
+	if got := Tick(gs, []*Event{event}); got != nil {
+		t.Fatalf("kesin tarihli state event'i tarihinden önce tetiklendi: %#v", got)
+	}
+
+	gs.Year = 1326
+	gs.Month = 4
+	if got := Tick(gs, []*Event{event}); got != event {
+		t.Fatalf("kesin tarihli state event'i tarih penceresinde tetiklenmedi: %#v", got)
+	}
+}
+
+func TestTickHistoricalEventRequiresFollowUpFlag(t *testing.T) {
+	const germiyanID = faction.FactionID("germiyan_bey")
+	gs := &state.GameState{
+		Year:  1429,
+		Month: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			germiyanID: {ID: germiyanID},
+		},
+	}
+	event := &Event{
+		ID:              "germiyan_will_integration_1429",
+		HistoricalYear:  1429,
+		HistoricalMonth: 1,
+		OneShot:         true,
+		Target:          "specific_faction",
+		AffectedFaction: string(germiyanID),
+		RequiresFlags:   []string{"germiyan_dowry_1381"},
+	}
+
+	if got := Tick(gs, []*Event{event}); got != nil {
+		t.Fatalf("follow-up flag'i olmadan Germiyan vasiyeti tetiklendi: %#v", got)
+	}
+
+	gs.FiredEventIDs = map[string]bool{"flag:germiyan_dowry_1381": true}
+	if got := Tick(gs, []*Event{event}); got != event {
+		t.Fatalf("çeyiz flag'i varken Germiyan vasiyeti tetiklenmedi: %#v", got)
 	}
 }
 
