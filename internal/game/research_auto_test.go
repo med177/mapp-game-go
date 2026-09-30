@@ -195,6 +195,44 @@ func TestQuickTurnSuppressesOnlyRelationshipNotifications(t *testing.T) {
 	}
 }
 
+func TestResolveSiegeSettlementRejectionNamesBesiegedFaction(t *testing.T) {
+	const (
+		attacker = faction.FactionID("attacker")
+		defender = faction.FactionID("defender")
+	)
+
+	for _, action := range []diplomacy.Action{
+		diplomacy.ActionProposeSurrender,
+		diplomacy.ActionProposeSiegeVassalization,
+	} {
+		t.Run(string(action), func(t *testing.T) {
+			gs := &state.GameState{
+				PlayerFactionID: defender,
+				Factions: map[faction.FactionID]*faction.Faction{
+					attacker: {ID: attacker, NameTR: "Kuşatan Devlet"},
+					defender: {ID: defender, NameTR: "Kuşatılan Devlet"},
+				},
+				DiplomaticOffers: []state.DiplomaticOffer{{
+					FromFactionID: attacker,
+					ToFactionID:   defender,
+					Action:        string(action),
+					RegionID:      "target",
+				}},
+			}
+			g := &Game{gs: gs}
+
+			_, result, ok := g.resolveDiplomacyOffer(0, false)
+			if !ok {
+				t.Fatal("kuşatma yerleşim teklifi çözümlenemedi")
+			}
+			want := "Kuşatılan Devlet " + siegeSettlementOfferLabelTR(string(action)) + " teklifini reddetti."
+			if result.Message != want {
+				t.Fatalf("ret mesajı: got=%q want=%q", result.Message, want)
+			}
+		})
+	}
+}
+
 func TestAutoStartResearchIfIdleIgnoresPausedTechsWhenAnotherTechIsAvailable(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

@@ -3384,7 +3384,7 @@ func (g *Game) resolveDiplomacyOffer(index int, accepted bool) (state.Diplomatic
 			} else {
 				g.gs.MarkDiplomaticOfferRejected(string(offer.FromFactionID), string(offer.ToFactionID), offer.Action)
 			}
-			result = diplomacy.Result{Accepted: false, Message: g.factionNameTR(string(offer.FromFactionID)) + " " + siegeSettlementOfferLabelTR(offer.Action) + " teklifini reddetti."}
+			result = diplomacy.Result{Accepted: false, Message: g.factionNameTR(string(offer.ToFactionID)) + " " + siegeSettlementOfferLabelTR(offer.Action) + " teklifini reddetti."}
 		} else {
 			if offer.Action == string(diplomacy.ActionProposeSiegeVassalization) {
 				result = g.applySiegeVassalizationOffer(offer)
