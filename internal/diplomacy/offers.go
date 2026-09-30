@@ -273,7 +273,7 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 			return Result{
 				Accepted: false,
 				Applied:  false,
-				Message:  factionLabel(gs, offer.FromFactionID) + " imtiyaz teklifini reddetti.",
+				Message:  factionLabel(gs, offer.ToFactionID) + " imtiyaz teklifini reddetti.",
 			}
 		}
 		markRejectedDiplomaticOffer(gs, offer.FromFactionID, offer.ToFactionID, action)
