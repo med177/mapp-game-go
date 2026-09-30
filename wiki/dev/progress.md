@@ -22,6 +22,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   ise merkez sahibi devlet adı gösteriliyor. Regression:
   `internal/render/trade_test.go`.
 
+- 2026-09-30: Fraksiyon bilgi panelinde imtiyaz rotası partnerleri normal
+  diplomatik ticaretten ayrılarak `İmtiyazlı Ticaret` başlığında devlet adlarıyla
+  gösteriliyor. Regression: `internal/render/trade_test.go`.
+
 - 2026-09-30: Aktif kuşatma marker grubunda kendi/müttefik destek orduları,
   yardım ettikleri tarafa göre ana kuşatanın solunda veya kuşatılanın sağında
   gösteriliyor; tüm taraflar aynı kale anchor'ında tutuluyor. Regression:

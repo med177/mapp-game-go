@@ -4632,16 +4632,18 @@ type factionDiplomacyEntry struct {
 }
 
 type factionDiplomacySummary struct {
-	Overlord      factionDiplomacyEntry
-	HasOverlord   bool
-	Vassals       []factionDiplomacyEntry
-	Allies        []factionDiplomacyEntry
-	Trade         []factionDiplomacyEntry
-	Enemies       []factionDiplomacyEntry
-	VassalCount   int
-	AllianceCount int
-	TradeCount    int
-	EnemyCount    int
+	Overlord             factionDiplomacyEntry
+	HasOverlord          bool
+	Vassals              []factionDiplomacyEntry
+	Allies               []factionDiplomacyEntry
+	Trade                []factionDiplomacyEntry
+	PrivilegedTrade      []factionDiplomacyEntry
+	Enemies              []factionDiplomacyEntry
+	VassalCount          int
+	AllianceCount        int
+	TradeCount           int
+	PrivilegedTradeCount int
+	EnemyCount           int
 }
 
 func factionPanelBodyCanvasSize() (int, int) {
@@ -4766,14 +4768,47 @@ func buildFactionDiplomacySummary(gs *state.GameState, fid faction.FactionID) fa
 			summary.Trade = append(summary.Trade, entry)
 		}
 	}
+	privilegedTradeIDs := make(map[faction.FactionID]struct{})
+	for _, route := range gs.TradeRoutes {
+		if route == nil || !route.IsPrivilegedMinor || route.SuspendedTurns > 0 {
+			continue
+		}
+		var partnerID faction.FactionID
+		switch {
+		case route.FromFactionID == string(fid):
+			partnerID = faction.FactionID(route.ToFactionID)
+		case route.ToFactionID == string(fid):
+			partnerID = faction.FactionID(route.FromFactionID)
+		default:
+			continue
+		}
+		if partnerID == "" || partnerID == fid {
+			continue
+		}
+		if _, exists := privilegedTradeIDs[partnerID]; exists {
+			continue
+		}
+		partner := gs.Factions[partnerID]
+		if partner == nil || partner.IsEliminated || partner.IsVirtual {
+			continue
+		}
+		privilegedTradeIDs[partnerID] = struct{}{}
+		summary.PrivilegedTrade = append(summary.PrivilegedTrade, factionDiplomacyEntry{
+			ID:    partnerID,
+			Name:  factionDisplayName(gs, string(partnerID)),
+			Score: diplomacy.RelationScore(gs, fid, partnerID),
+		})
+	}
 
 	sortFactionDiplomacyEntries(summary.Vassals, false)
 	sortFactionDiplomacyEntries(summary.Allies, true)
 	sortFactionDiplomacyEntries(summary.Trade, true)
+	sortFactionDiplomacyEntries(summary.PrivilegedTrade, true)
 	sortFactionDiplomacyEntries(summary.Enemies, false)
 	summary.VassalCount = len(summary.Vassals)
 	summary.AllianceCount = len(summary.Allies)
 	summary.TradeCount = len(summary.Trade)
+	summary.PrivilegedTradeCount = len(summary.PrivilegedTrade)
 	summary.EnemyCount = len(summary.Enemies)
 	return summary
 }
@@ -4816,6 +4851,10 @@ func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *fa
 	if summary.AllianceCount > 0 {
 		y += factionPanelSectionH
 		y += float64(summary.AllianceCount) * factionPanelRowH
+	}
+	if summary.PrivilegedTradeCount > 0 {
+		y += factionPanelSectionH
+		y += float64(summary.PrivilegedTradeCount) * factionPanelRowH
 	}
 	if summary.TradeCount > 0 {
 		y += factionPanelSectionH
@@ -4918,6 +4957,7 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 
 	y = drawFactionDiplomacyGroup(screen, 0, y, width, "Vassallar", summary.Vassals, "Bağlı", false, factionDiplomacyEntryColor(faction.StanceAllied))
 	y = drawFactionDiplomacyGroup(screen, 0, y, width, "İttifaklar", summary.Allies, faction.DiplomaticStanceLabelTR(faction.StanceAllied), true, factionDiplomacyEntryColor(faction.StanceAllied))
+	y = drawFactionDiplomacyGroup(screen, 0, y, width, "İmtiyazlı Ticaret", summary.PrivilegedTrade, "", false, color.RGBA{188, 112, 216, 255})
 	y = drawFactionDiplomacyGroup(screen, 0, y, width, "Ticaret Anlaşmaları", summary.Trade, faction.DiplomaticStanceLabelTR(faction.StanceTrade), true, factionDiplomacyEntryColor(faction.StanceTrade))
 	y = drawFactionDiplomacyGroup(screen, 0, y, width, "Düşmanlar", summary.Enemies, faction.DiplomaticStanceLabelTR(faction.StanceWar), true, factionDiplomacyEntryColor(faction.StanceWar))
 

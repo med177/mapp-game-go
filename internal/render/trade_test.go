@@ -295,6 +295,39 @@ func TestPrivilegedMinorTradeCorridorUsesMinorAndOperatorCapitalPort(t *testing.
 	}
 }
 
+func TestFactionDiplomacySummaryIncludesPrivilegedTradePartnerNames(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ottoman": {ID: "ottoman", NameTR: "Osmanoğulları Beyliği"},
+			"genoa":   {ID: "genoa", NameTR: "Ceneviz Cumhuriyeti"},
+			"venice":  {ID: "venice", NameTR: "Venedik Cumhuriyeti"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"istanbul": {ID: "istanbul", OwnerID: "ottoman"},
+			"galata":   {ID: "galata", OwnerID: "genoa", IsMinorRegion: true, IsPrivileged: true, ParentRegionID: "istanbul"},
+			"kadi":     {ID: "kadi", OwnerID: "venice", IsMinorRegion: true, IsPrivileged: true, ParentRegionID: "istanbul"},
+		},
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: "ottoman", ToFactionID: "genoa", IsPrivilegedMinor: true},
+			{FromFactionID: "genoa", ToFactionID: "ottoman", IsPrivilegedMinor: true},
+			{FromFactionID: "ottoman", ToFactionID: "venice", IsPrivilegedMinor: true},
+			{FromFactionID: "venice", ToFactionID: "ottoman", IsPrivilegedMinor: true},
+		},
+	}
+
+	summary := buildFactionDiplomacySummary(gs, "ottoman")
+	if summary.TradeCount != 0 || summary.PrivilegedTradeCount != 2 {
+		t.Fatalf("normal/imtiyazlı ticaret partner sayıları = %d/%d, want 0/2", summary.TradeCount, summary.PrivilegedTradeCount)
+	}
+	got := make(map[faction.FactionID]bool, len(summary.PrivilegedTrade))
+	for _, entry := range summary.PrivilegedTrade {
+		got[entry.ID] = true
+	}
+	if !got["genoa"] || !got["venice"] {
+		t.Fatalf("imtiyazlı ticaret devletleri bilgi özetinde yok: %+v", summary.PrivilegedTrade)
+	}
+}
+
 func TestSourceTradeLinkUsesDirectLandGeometryAndDistinctPalette(t *testing.T) {
 	gs := &state.GameState{TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
 		{ID: "source", OffMap: true, Links: []world.TradeCenterLink{{RegionID: "center", Type: world.TradeRouteSea}}},

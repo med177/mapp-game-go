@@ -247,6 +247,11 @@ ticaret haritasında komutan portresi çizilmez. Normal haritadaki görünürlü
 genel ordu/donanma zoom ve diplomasi filtresini izler; ticaret haritası ise
 marker katmanını kendi overlay'i üzerinden yönetir.
 
+Fraksiyon bilgi panelinin `Diplomasi Özeti`, normal diplomatik ticaret
+anlaşmalarını `Ticaret Anlaşmaları` altında; kapasite ve normal ilişki puanından
+bağımsız imtiyaz rotası partnerlerini ise ayrı `İmtiyazlı Ticaret` başlığı altında
+devlet adlarıyla gösterir (`internal/render/panel.go`).
+
 İmtiyazlı minor rotaları merkez grafiğine veya normal merchant-liman koridoruna
 katılmaz. Her aktif imtiyaz için minor bölgenin liman/merkez anchor'ından,
 işletmeci devletin canonical merkez limanına tek bir iki yönlü koridor çizilir.
