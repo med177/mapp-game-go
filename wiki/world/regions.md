@@ -120,6 +120,14 @@ gösterilir. Kışla ve limanın ikisi de yoksa düğme pasif olur.
 
 `WorldX/WorldY` bölge geometrisi ve Voronoi ayrımı için korunur. Haritadaki şehir noktaları `Settlements` üzerinden çizilir; ana yerleşim `is_center` ile seçilir. Bu alan hiçbir yerleşimde yoksa runtime merkezi sırasıyla kale, şehir, kasaba ve liman tiplerinden seçer ve seçimi `is_center` olarak tamamlar. `settlements` eksikse renderer eski davranışa dönüp bölge adını `WorldX/WorldY` noktasından çizer.
 
+Edit Mode'da seçili bölgeden `Yeni Bölge Ekle` ile oluşturulan yeni kayıt,
+seçili bölgenin ekonomik üretimlerini (`base_*`), ticaret kapasitesini ve
+nüfusunu kopyalamaz; bu değerler iki bölge arasında toplam korunacak şekilde
+bölünür. Tek sayılarda kalan birim yeni bölgeye aktarılır. Kaynak bölgedeki
+`population` ve `rural_population` alanları da bölünür; yerleşim kayıtları bu
+işlemde değiştirilmez ve yeni bölgeye yerleşim ekleme işi Edit Mode'da ayrıca
+yapılır.
+
 ```go
 type Settlement struct {
     ID         string

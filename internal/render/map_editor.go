@@ -3321,6 +3321,7 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 	if source == nil {
 		return
 	}
+	split := splitEditRegionResources(source)
 	rid := nextRegionID(r.gs)
 	nameNo := itoa(len(r.gs.Regions) + 1)
 	region := &world.Region{
@@ -3336,17 +3337,18 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 		IsSea:              source.IsSea,
 		IsLocked:           source.IsLocked,
 		UnlockTurn:         source.UnlockTurn,
-		BaseGoldIncome:     source.BaseGoldIncome,
-		BaseGrainOutput:    source.BaseGrainOutput,
-		BaseIronOutput:     source.BaseIronOutput,
-		BaseTimberOutput:   source.BaseTimberOutput,
-		BaseSpiceOutput:    source.BaseSpiceOutput,
-		BaseClothOutput:    source.BaseClothOutput,
-		TradeCapacity:      source.TradeCapacity,
+		BaseGoldIncome:     split.baseGoldIncome,
+		BaseGrainOutput:    split.baseGrainOutput,
+		BaseIronOutput:     split.baseIronOutput,
+		BaseTimberOutput:   split.baseTimberOutput,
+		BaseStoneOutput:    split.baseStoneOutput,
+		BaseSpiceOutput:    split.baseSpiceOutput,
+		BaseClothOutput:    split.baseClothOutput,
+		TradeCapacity:      split.tradeCapacity,
 		Satisfaction:       source.Satisfaction,
 		TaxRate:            source.TaxRate,
-		Population:         source.Population,
-		RuralPopulation:    source.RuralPopulation,
+		Population:         split.population,
+		RuralPopulation:    split.ruralPopulation,
 		Religion:           source.Religion,
 		ActiveEventID:      source.ActiveEventID,
 		Buildings:          cloneStringSlice(source.Buildings),
@@ -3378,6 +3380,49 @@ func (r *Renderer) addRegionFromSource(sourceID world.RegionID, x, y int) {
 		r.rebuildEditWorldMap()
 		complete()
 	}
+}
+
+type editRegionResourceSplit struct {
+	baseGoldIncome   int
+	baseGrainOutput  int
+	baseIronOutput   int
+	baseTimberOutput int
+	baseStoneOutput  int
+	baseSpiceOutput  int
+	baseClothOutput  int
+	tradeCapacity    int
+	population       int
+	ruralPopulation  int
+}
+
+// splitEditRegionResources yeni bölge oluştururken bölgesel ekonomiyi ve
+// nüfusu toplamı koruyacak şekilde iki bölgeye ayırır. Tek sayılarda kalan
+// birim yeni bölgeye verilir. Yerleşim kayıtları bu işlemde değiştirilmez.
+func splitEditRegionResources(source *world.Region) editRegionResourceSplit {
+	if source == nil {
+		return editRegionResourceSplit{}
+	}
+
+	splitValue := func(value *int) int {
+		kept := *value / 2
+		child := *value - kept
+		*value = kept
+		return child
+	}
+
+	split := editRegionResourceSplit{
+		baseGoldIncome:   splitValue(&source.BaseGoldIncome),
+		baseGrainOutput:  splitValue(&source.BaseGrainOutput),
+		baseIronOutput:   splitValue(&source.BaseIronOutput),
+		baseTimberOutput: splitValue(&source.BaseTimberOutput),
+		baseStoneOutput:  splitValue(&source.BaseStoneOutput),
+		baseSpiceOutput:  splitValue(&source.BaseSpiceOutput),
+		baseClothOutput:  splitValue(&source.BaseClothOutput),
+		tradeCapacity:    splitValue(&source.TradeCapacity),
+		population:       splitValue(&source.Population),
+		ruralPopulation:  splitValue(&source.RuralPopulation),
+	}
+	return split
 }
 
 func (r *Renderer) deleteSelectedRegion() {

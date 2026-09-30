@@ -556,6 +556,18 @@ func setWarBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 }
 
 func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
+	setPeaceBetweenCoalitionsWithAssessment(gs, a, b, true)
+}
+
+// setPeaceBetweenCoalitionsCommitted, oyuncunun kabul ettiği barış teklifini
+// teklif sonrası yeni bir barış değerlendirmesine sokmadan uygular. Savaş
+// sonrası ilişki için sabit post-war tabanı kullanılır; teklifin kabul kararı
+// yeniden hesaplanmaz.
+func setPeaceBetweenCoalitionsCommitted(gs *state.GameState, a, b faction.FactionID) {
+	setPeaceBetweenCoalitionsWithAssessment(gs, a, b, false)
+}
+
+func setPeaceBetweenCoalitionsWithAssessment(gs *state.GameState, a, b faction.FactionID, assessPostWar bool) {
 	if gs == nil || a == "" || b == "" {
 		return
 	}
@@ -570,7 +582,7 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 			wasWar := rel.Stance == faction.StanceWar
 			leftAssessment := PeaceAssessment{}
 			rightAssessment := PeaceAssessment{}
-			if wasWar {
+			if wasWar && assessPostWar {
 				leftAssessment = AssessPeaceDesire(gs, lhs, rhs)
 				rightAssessment = AssessPeaceDesire(gs, rhs, lhs)
 			}

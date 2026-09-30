@@ -253,35 +253,76 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 			Message:  factionLabel(gs, offer.FromFactionID) + " den gelen teklif reddedildi.",
 		}
 	}
-	if action == ActionProposePeace {
-		rel := EnsureRelation(gs, offer.FromFactionID, offer.ToFactionID)
-		if rel.Stance != faction.StanceWar {
-			return Result{Message: "Barış teklifi artık geçerli değil."}
-		}
-		settlement := AssessPeaceSettlement(gs, offer.FromFactionID, offer.ToFactionID)
-		setPeaceBetweenCoalitions(gs, offer.FromFactionID, offer.ToFactionID)
-		return Result{
-			Accepted:   true,
-			Applied:    true,
-			Settlement: &settlement,
-			Message:    factionLabel(gs, offer.ToFactionID) + " barışı kabul etti.",
-		}
+	if !offerPartiesExist(gs, offer) {
+		return Result{Message: "Teklif artık geçerli değil."}
 	}
-	if action == ActionProposeAlliance {
+	switch action {
+	case ActionProposePeace:
+		return resolveAcceptedPeaceOffer(gs, offer)
+	case ActionProposeAlliance:
 		return resolveAcceptedAllianceOffer(gs, offer)
+	case ActionProposeTrade:
+		return resolveAcceptedTradeOffer(gs, offer)
+	case ActionImproveRelations:
+		return applyRelationImprovement(gs, offer.FromFactionID, offer.ToFactionID, RelationImprovementGoldCostFor(gs), RelationImprovementBonusFor(gs), 0, "diplomatik heyet")
+	case ActionSendGift:
+		return applyRelationImprovement(gs, offer.FromFactionID, offer.ToFactionID, GiftGoldCostFor(gs), GiftRelationBonusFor(gs), GiftReceiverGoldFor(gs), "hediye")
+	case ActionInciteRevolt:
+		return applyInciteRevolt(gs, offer.FromFactionID, offer.ToFactionID)
+	case ActionOfferVassalization:
+		return applyVassalization(gs, offer.FromFactionID, offer.ToFactionID)
 	}
-	// Gönderen diplomasi kotasını teklif kuyruğa alınırken zaten harcadı.
-	// Teklifin güncel koşullarını yeniden doğrula, ancak kabul sırasında aynı
-	// teklif için kotayı ikinci kez tüketme.
-	result := execute(gs, offer.FromFactionID, offer.ToFactionID, action, false)
-	if accepted && !result.Applied {
-		return Result{
-			Accepted: false,
-			Applied:  false,
-			Message:  "Teklif koşulları değiştiği için uygulanamadı.",
-		}
+	return Result{Message: "Teklif artık geçerli değil."}
+}
+
+// resolveAcceptedPeaceOffer, kabul edilmiş barış teklifini yeniden kabul
+// hesabına sokmadan uygular. Barış sonucu beyaz barış olarak sabitlenir;
+// oyuncu kabulünden sonra savaş puanı veya barış isteği yeniden ölçülmez.
+func resolveAcceptedPeaceOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {
+	if !offerPartiesExist(gs, offer) {
+		return Result{Message: "Barış teklifi artık geçerli değil."}
 	}
-	return result
+	settlement := PeaceSettlement{Outcome: PeaceOutcomeWhitePeace}
+	setPeaceBetweenCoalitionsCommitted(gs, offer.FromFactionID, offer.ToFactionID)
+	return Result{
+		Accepted:   true,
+		Applied:    true,
+		Settlement: &settlement,
+		Message:    factionLabel(gs, offer.ToFactionID) + " barışı kabul etti.",
+	}
+}
+
+func offerPartiesExist(gs *state.GameState, offer state.DiplomaticOffer) bool {
+	if gs == nil || offer.FromFactionID == "" || offer.ToFactionID == "" || offer.FromFactionID == offer.ToFactionID {
+		return false
+	}
+	from := gs.Factions[offer.FromFactionID]
+	to := gs.Factions[offer.ToFactionID]
+	return from != nil && to != nil && !from.IsEliminated && !to.IsEliminated
+}
+
+// resolveAcceptedTradeOffer, AI'nin teklif kuyruğuna eklediği ve oyuncunun
+// kabul ettiği ticareti yeniden değerlendirme yapmadan uygular. Teklif
+// kuyruğa alınırken AI değerlendirmesi zaten tamamlanmıştır; oyuncunun cevabı
+// bu kararı tekrar puan, kapasite veya şans hesabına sokmaz.
+func resolveAcceptedTradeOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {
+	if !offerPartiesExist(gs, offer) {
+		return Result{Message: "Ticaret teklifi artık geçerli değil."}
+	}
+	rel := EnsureRelation(gs, offer.FromFactionID, offer.ToFactionID)
+	if rel.Stance == faction.StanceWar {
+		return Result{Message: "Savaş halindeyken ticaret kurulamaz."}
+	}
+	prevStance := rel.Stance
+	if prevStance != faction.StanceAllied {
+		rel.Stance = faction.StanceTrade
+	}
+	AddRelationScoreBoth(gs, offer.FromFactionID, offer.ToFactionID, 15)
+	ensureAcceptedTradeRoutesBetween(gs, offer.FromFactionID, offer.ToFactionID)
+	if prevStance == faction.StanceAllied {
+		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, offer.ToFactionID) + " ile müttefiklik korunarak ticaret anlaşması açıldı."}
+	}
+	return Result{Accepted: true, Applied: true, Message: factionLabel(gs, offer.ToFactionID) + " ile ticaret anlaşması imzalandı."}
 }
 
 // resolveAcceptedAllianceOffer, AI'nin daha önce oluşturduğu ittifak teklifini
@@ -290,12 +331,7 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 // hesabına sokmamalıdır. Sadece ilişkinin artık savaşta veya aynı realm'de olup
 // olmadığı gibi teklifin temel geçerlilik koşulları yeniden kontrol edilir.
 func resolveAcceptedAllianceOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {
-	if gs == nil || offer.FromFactionID == "" || offer.ToFactionID == "" || offer.FromFactionID == offer.ToFactionID {
-		return Result{Message: "İttifak teklifi artık geçerli değil."}
-	}
-	actor := gs.Factions[offer.FromFactionID]
-	target := gs.Factions[offer.ToFactionID]
-	if actor == nil || target == nil || actor.IsEliminated || target.IsEliminated {
+	if !offerPartiesExist(gs, offer) {
 		return Result{Message: "İttifak teklifi artık geçerli değil."}
 	}
 	if sameRealm(gs, offer.FromFactionID, offer.ToFactionID) {
@@ -305,17 +341,8 @@ func resolveAcceptedAllianceOffer(gs *state.GameState, offer state.DiplomaticOff
 	if rel.Stance == faction.StanceWar {
 		return Result{Message: "İttifak teklifi artık geçerli değil."}
 	}
-	if _, conflict := allianceWarConflictBetween(gs, offer.FromFactionID, offer.ToFactionID); conflict {
-		return Result{Message: "İttifak teklifi artık geçerli değil."}
-	}
 	if rel.Stance == faction.StanceAllied {
 		return Result{Accepted: true, Applied: true, Message: "Zaten müttefiksiniz."}
-	}
-	if reason := allianceLimitBlockReason(gs, offer.FromFactionID); reason != "" {
-		return Result{Message: reason}
-	}
-	if reason := allianceLimitBlockReason(gs, offer.ToFactionID); reason != "" {
-		return Result{Message: reason}
 	}
 	rel.Stance = faction.StanceAllied
 	AddRelationScoreBoth(gs, offer.FromFactionID, offer.ToFactionID, 20)
@@ -352,9 +379,6 @@ func resolveAcceptedWarJoinOffer(gs *state.GameState, offer state.DiplomaticOffe
 			Applied:  true,
 			Message:  factionLabel(gs, enemyRoot) + " savaşına zaten dahilsiniz.",
 		}
-	}
-	if assessment := AssessWarCall(gs, callerRoot, playerRoot, enemyRoot); assessment.BlockReason != "" {
-		return Result{Message: "Savaş çağrısı artık geçerli değil."}
 	}
 	if callerRoot == declarerRoot {
 		setWarBetweenCoalitions(gs, playerRoot, enemyRoot)

@@ -468,7 +468,7 @@ func ApplyRelationDecay(gs *state.GameState) {
 				rel.SetScoreFrom(from, clamp(rel.ScoreFrom(from)-penalty, -100, 100))
 			}
 		}
-		if rel.Stance == faction.StanceTrade && (rel.ScoreFrom(rel.FactionA) < tradeRelationThreshold || rel.ScoreFrom(rel.FactionB) < tradeRelationThreshold) {
+		if rel.Stance == faction.StanceTrade && tradeRelationBelowThreshold(gs, rel) {
 			removeTradeRoutesBetween(gs, rel.FactionA, rel.FactionB)
 			rel.Stance = faction.StancePeace
 		}
@@ -476,6 +476,24 @@ func ApplyRelationDecay(gs *state.GameState) {
 	if !passiveTrendAlreadyApplied {
 		gs.RelationTrendAppliedTurn = gs.Turn
 	}
+}
+
+// tradeRelationBelowThreshold, oyuncunun kabul ederek kurduğu dış ticaret
+// ilişkisinde oyuncunun puanını yeniden karar ölçütü yapmaz. Oyuncu teklif
+// ekranında anlaşmayı onayladığı için bu ilişkinin devamlılığı yalnızca karşı
+// AI devletin görüşüyle; AI-AI ilişkilerinde ise iki tarafın görüşüyle ölçülür.
+func tradeRelationBelowThreshold(gs *state.GameState, rel *faction.Relation) bool {
+	if rel == nil {
+		return false
+	}
+	if gs != nil && gs.PlayerFactionID != "" && (rel.FactionA == gs.PlayerFactionID || rel.FactionB == gs.PlayerFactionID) {
+		aiFaction := rel.FactionA
+		if aiFaction == gs.PlayerFactionID {
+			aiFaction = rel.FactionB
+		}
+		return rel.ScoreFrom(aiFaction) < tradeRelationThreshold
+	}
+	return rel.ScoreFrom(rel.FactionA) < tradeRelationThreshold || rel.ScoreFrom(rel.FactionB) < tradeRelationThreshold
 }
 
 func applyRelationStanceDecay(gs *state.GameState, rel *faction.Relation) {
@@ -1306,6 +1324,17 @@ func peaceTechBonus(gs *state.GameState, fid faction.FactionID) int {
 
 func ensureTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 	if gs == nil || a == "" || b == "" || a == b || !canMaintainOrAddTradePartner(gs, a, b) {
+		return
+	}
+	ensureAcceptedTradeRoutesBetween(gs, a, b)
+}
+
+// ensureAcceptedTradeRoutesBetween, oyuncunun kabul ettiği teklifte rota
+// partner kotasını yeniden karar kapısı olarak kullanmaz. Teklif zaten AI
+// tarafından gönderilmiş ve oyuncu tarafından onaylanmıştır; rota hacmi daha
+// sonra RebalanceTradeRouteCapacities ile dengelenir.
+func ensureAcceptedTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
+	if gs == nil || a == "" || b == "" || a == b {
 		return
 	}
 	removeTradeRoutesBetween(gs, a, b)

@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: Edit Mode'da `Yeni Bölge Ekle` artık seçili bölgenin ekonomik
+  üretimlerini, ticaret kapasitesini ve nüfusunu yeni bölgeye kopyalamıyor;
+  toplam değerler iki bölge arasında bölünüyor. Tek sayılardaki kalan yeni
+  bölgeye veriliyor; `population` ve `rural_population` alanları doğrudan
+  ikiye bölünüyor, yerleşim kayıtları korunuyor
+  (`internal/render/map_editor.go`, `internal/render/map_editor_region_split_test.go`).
+
 - 2026-09-30: Tarihli state koşullu event'ler artık sahiplik/flag/ilişki
   koşulları erken oluştu diye minimum tarihinden önce çalışmıyor; minimum tarih
   geçtikten sonra koşulların sağlandığı ilk turda tetikleniyor. Bursa erken
@@ -57,12 +64,19 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `0–500` aralığında gösteriliyor ve `scenario.json` içindeki
   `aggressive_expansion_last_turns` penceresindeki kazanımların ağırlığı
   kademeli olarak azalıyor. Yüksek değer, savaşsız dış ilişkilere tur başına
-  kademe ceza yazıyor; ilişki `15` altına indiğinde ticaret rotaları kesilip
-  ilişki barışa dönüyor. Sonraki AI savaş kararı yine güç, cephe ve lojistik
-  filtrelerinden geçiyor (`internal/state/war_ledger.go`,
-  `internal/diplomacy/diplomacy.go`). Regression:
+  kademe ceza yazıyor; AI-AI ilişkisinde puan `15` altına indiğinde ticaret
+  rotaları kesilip ilişki barışa dönüyor. Oyuncunun kabul ettiği tüm bekleyen
+  diplomasi tekliflerinde teklif koşulları yeniden değerlendirilmiyor; tur
+  sonrasındaki sürdürülebilirlik kontrolünde oyuncunun kendi puanı da iptal
+  ölçütüne sokulmuyor, karşı AI puanı izleniyor. Sonraki AI savaş kararı yine
+  güç, cephe ve lojistik filtrelerinden geçiyor (`internal/state/war_ledger.go`,
+  `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`). Regression:
   `TestOverextensionScoreAllowsCriticalValuesAboveLegacyCap`,
-  `TestApplyRelationDecayPenalizesTradeAndCancelsItBelowThreshold`.
+  `TestApplyRelationDecayPenalizesTradeAndCancelsItBelowThreshold`,
+  `TestApplyRelationDecayPlayerTradeIgnoresPlayerScore`,
+  `TestResolveAcceptedTradeOfferDoesNotReassessOffer`,
+  `TestResolveAcceptedAllianceOfferIgnoresAllianceLimit`,
+  `TestResolveAcceptedWarJoinOfferSkipsWarCallAssessment`.
 
 - 2026-09-30: Vassallık kabulü hedef devletin en fazla 3 kara bölgesi olmasıyla
   sınırlandı. Dört veya daha fazla bölgesi olan devletlere normal teklif

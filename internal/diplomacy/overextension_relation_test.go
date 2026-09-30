@@ -73,6 +73,39 @@ func TestApplyRelationDecayPenalizesTradeAndCancelsItBelowThreshold(t *testing.T
 	}
 }
 
+func TestApplyRelationDecayPlayerTradeIgnoresPlayerScore(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            1,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"ai":     {ID: "ai"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "ai"): {
+				FactionA:  "player",
+				FactionB:  "ai",
+				ScoreAToB: -80,
+				ScoreBToA: 20,
+				Stance:    faction.StanceTrade,
+			},
+		},
+		TradeRoutes: []*economy.TradeRoute{
+			{FromFactionID: "player", ToFactionID: "ai", AmountPerTurn: 1},
+		},
+	}
+
+	ApplyRelationDecay(gs)
+
+	rel := gs.Relations[faction.RelationKey("player", "ai")]
+	if rel.Stance != faction.StanceTrade {
+		t.Fatalf("oyuncunun düşük puanı ticareti bitirdi: %q", rel.Stance)
+	}
+	if !HasTradeRouteBetween(gs, "player", "ai") {
+		t.Fatal("oyuncunun kabul ettiği ticaret rotası korunmadı")
+	}
+}
+
 func TestApplyRelationDecayAddsPassiveRelationTrendUpTo25(t *testing.T) {
 	gs := &state.GameState{
 		Turn: 1,
