@@ -2164,6 +2164,62 @@
     ]
   },
   {
+    "region_id": "dobruca_region",
+    "settlements": null
+  },
+  {
+    "region_id": "burgaz_region",
+    "settlements": [
+      {
+        "id": "dobruca_region_poros",
+        "name_tr": "Poros Kalesi",
+        "x": 1029,
+        "y": 429,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "dobruca_region_mesembria",
+        "name_tr": "Mesembria",
+        "x": 1030,
+        "y": 426,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
+    "region_id": "filibe_region",
+    "settlements": [
+      {
+        "id": "filibe_region_asen",
+        "name_tr": "Asen Kalesi",
+        "x": 980,
+        "y": 439,
+        "type": "fortress",
+        "is_center": true,
+        "population": 0
+      },
+      {
+        "id": "filibe_region_boruy",
+        "name_tr": "Boruy Kalesi",
+        "x": 993,
+        "y": 429,
+        "type": "fortress",
+        "population": 0
+      },
+      {
+        "id": "filibe_region_mezek",
+        "name_tr": "Mezek Kalesi",
+        "x": 1000,
+        "y": 441,
+        "type": "fortress",
+        "population": 0
+      }
+    ]
+  },
+  {
     "region_id": "morocco",
     "settlements": [
       {
@@ -3669,8 +3725,8 @@
     "region_id": "kosovo",
     "settlements": [
       {
-        "id": "kosovo_main",
-        "name_tr": "Kosova",
+        "id": "kosovo_pristine",
+        "name_tr": "Priştine",
         "x": 897,
         "y": 422,
         "type": "fortress",
@@ -3725,7 +3781,7 @@
         "name_tr": "Ohri",
         "x": 893,
         "y": 452,
-        "type": "town",
+        "type": "fortress",
         "population": 23
       },
       {
@@ -3762,6 +3818,10 @@
         "population": 22
       }
     ]
+  },
+  {
+    "region_id": "vardar",
+    "settlements": null
   },
   {
     "region_id": "moldova",
@@ -6566,7 +6626,7 @@
     ]
   },
   {
-    "region_id": "vidin",
+    "region_id": "vidin_region",
     "settlements": [
       {
         "id": "vidin_belogradchik",
@@ -6605,7 +6665,7 @@
         "name_tr": "Nevrekop",
         "x": 954,
         "y": 442,
-        "type": "town",
+        "type": "fortress",
         "population": 16
       },
       {
@@ -6618,12 +6678,26 @@
       },
       {
         "id": "vidin_sofia",
-        "name_tr": "Sofya",
+        "name_tr": "Sofya/Sredets",
         "x": 946,
         "y": 424,
         "type": "town",
         "is_center": true,
         "population": 16
+      }
+    ]
+  },
+  {
+    "region_id": "nevrekop_region",
+    "settlements": [
+      {
+        "id": "nevrekop_region_kostendil",
+        "name_tr": "Köstendil",
+        "x": 935,
+        "y": 437,
+        "type": "town",
+        "is_center": true,
+        "population": 0
       }
     ]
   },
@@ -7488,7 +7562,7 @@
         "name_tr": "Tulça",
         "x": 1046,
         "y": 377,
-        "type": "town",
+        "type": "fortress",
         "population": 24
       }
     ]

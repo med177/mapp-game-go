@@ -120,7 +120,7 @@
     ]
   },
   {
-    "from": "vidin",
+    "from": "vidin_region",
     "to": "oltenia",
     "type": "strait",
     "move_cost": 1,

@@ -321,7 +321,7 @@
   {
     "id": "army_edit_117",
     "owner_id": "bulgarian_empire",
-    "region_id": "vidin",
+    "region_id": "vidin_region",
     "units": [
       {
         "type_id": "militia",
