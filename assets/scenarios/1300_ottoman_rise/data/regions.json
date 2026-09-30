@@ -3157,8 +3157,8 @@
   },
   {
     "id": "dobruca_region",
-    "name": "New Region 555",
-    "name_tr": "Yeni Bolge 555",
+    "name": "Dobruca",
+    "name_tr": "Dobruca",
     "terrain": "mountain",
     "owner_id": "bulgarian_empire",
     "successor_faction_id": "bulgarian_empire",
@@ -3249,8 +3249,8 @@
   },
   {
     "id": "filibe_region",
-    "name": "New Region 556",
-    "name_tr": "Yeni Bolge 556",
+    "name": "Philippopolis",
+    "name_tr": "Filibe",
     "terrain": "mountain",
     "owner_id": "bulgarian_empire",
     "successor_faction_id": "bulgarian_empire",
@@ -11499,8 +11499,8 @@
   },
   {
     "id": "nevrekop_region",
-    "name": "New Region 554",
-    "name_tr": "Yeni Bolge 554",
+    "name": "Nevrekop",
+    "name_tr": "Nevrekop",
     "terrain": "plain",
     "owner_id": "bulgarian_empire",
     "successor_faction_id": "bulgarian_empire",

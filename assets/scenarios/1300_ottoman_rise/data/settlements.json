@@ -2121,7 +2121,20 @@
         "population": 48
       },
       {
-        "id": "bulgaria_shumen",
+        "id": "bulgaria_tarnovo",
+        "name_tr": "Tırnova",
+        "x": 986,
+        "y": 414,
+        "type": "city",
+        "population": 61
+      }
+    ]
+  },
+  {
+    "region_id": "dobruca_region",
+    "settlements": [
+      {
+        "id": "dobruca_shumen",
         "name_tr": "Şumnu",
         "x": 1024,
         "y": 413,
@@ -2130,7 +2143,7 @@
         "population": 15
       },
       {
-        "id": "bulgaria_varna",
+        "id": "dobruca_varna",
         "name_tr": "Varna",
         "x": 1035,
         "y": 412,
@@ -2138,15 +2151,7 @@
         "population": 45
       },
       {
-        "id": "bulgaria_tarnovo",
-        "name_tr": "Tırnova",
-        "x": 986,
-        "y": 414,
-        "type": "city",
-        "population": 61
-      },
-      {
-        "id": "bulgaria_silistra",
+        "id": "dobruca_silistra",
         "name_tr": "Silistre",
         "x": 1017,
         "y": 397,
@@ -2154,7 +2159,7 @@
         "population": 15
       },
       {
-        "id": "bulgaria_main",
+        "id": "dobruca_main",
         "name_tr": "Dobrica",
         "x": 1035,
         "y": 403,
@@ -2164,14 +2169,10 @@
     ]
   },
   {
-    "region_id": "dobruca_region",
-    "settlements": null
-  },
-  {
     "region_id": "burgaz_region",
     "settlements": [
       {
-        "id": "dobruca_region_poros",
+        "id": "burgaz_poros",
         "name_tr": "Poros Kalesi",
         "x": 1029,
         "y": 429,
@@ -2180,7 +2181,7 @@
         "population": 0
       },
       {
-        "id": "dobruca_region_mesembria",
+        "id": "burgaz_mesembria",
         "name_tr": "Mesembria",
         "x": 1030,
         "y": 426,
@@ -2216,6 +2217,14 @@
         "y": 441,
         "type": "fortress",
         "population": 0
+      },
+      {
+        "id": "filibe_plovdiv",
+        "name_tr": "Filibe",
+        "x": 972,
+        "y": 430,
+        "type": "city",
+        "population": 32
       }
     ]
   },
@@ -6659,9 +6668,14 @@
         "y": 401,
         "type": "city",
         "population": 32
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "nevrekop_region",
+    "settlements": [
       {
-        "id": "vidin_serres",
+        "id": "nevrekop_nevrekop",
         "name_tr": "Nevrekop",
         "x": 954,
         "y": 442,
@@ -6669,27 +6683,13 @@
         "population": 16
       },
       {
-        "id": "vidin_plovdiv",
-        "name_tr": "Filibe",
-        "x": 972,
-        "y": 430,
-        "type": "city",
-        "population": 32
-      },
-      {
-        "id": "vidin_sofia",
+        "id": "nevrekop_sofia",
         "name_tr": "Sofya/Sredets",
         "x": 946,
         "y": 424,
         "type": "town",
-        "is_center": true,
         "population": 16
-      }
-    ]
-  },
-  {
-    "region_id": "nevrekop_region",
-    "settlements": [
+      },
       {
         "id": "nevrekop_region_kostendil",
         "name_tr": "Köstendil",

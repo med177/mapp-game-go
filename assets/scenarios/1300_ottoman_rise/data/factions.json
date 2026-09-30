@@ -1265,7 +1265,7 @@
         "value": 78
       },
       {
-        "region_id": "vidin",
+        "region_id": "vidin_region",
         "value": 100,
         "core": true
       },

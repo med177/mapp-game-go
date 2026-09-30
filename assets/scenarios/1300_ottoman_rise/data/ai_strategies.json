@@ -535,7 +535,23 @@
               "value": 96
             },
             {
+              "region_id": "burgaz_region",
+              "value": 96
+            },
+            {
+              "region_id": "dobruca_region",
+              "value": 96
+            },
+            {
               "region_id": "dobruja",
+              "value": 96
+            },
+            {
+              "region_id": "filibe_region",
+              "value": 96
+            },
+            {
+              "region_id": "nevrekop_region",
               "value": 96
             },
             {
