@@ -18,28 +18,28 @@ func TestMergePoliticalRelationsConsolidatesExternalRelations(t *testing.T) {
 	gs := &GameState{
 		Relations: map[string]*faction.Relation{
 			resultExternalKey: {
-				FactionA: resultID,
-				FactionB: externalID,
-				Score:    25,
-				Stance:   faction.StancePeace,
+				FactionA:  resultID,
+				FactionB:  externalID,
+				ScoreAToB: 25, ScoreBToA: 25,
+				Stance: faction.StancePeace,
 			},
 			sourceOneExternalKey: {
-				FactionA: sourceOneID,
-				FactionB: externalID,
-				Score:    65,
-				Stance:   faction.StanceAllied,
+				FactionA:  sourceOneID,
+				FactionB:  externalID,
+				ScoreAToB: 65, ScoreBToA: 65,
+				Stance: faction.StanceAllied,
 			},
 			sourceTwoExternalKey: {
-				FactionA: sourceTwoID,
-				FactionB: externalID,
-				Score:    90,
-				Stance:   faction.StanceTrade,
+				FactionA:  sourceTwoID,
+				FactionB:  externalID,
+				ScoreAToB: 90, ScoreBToA: 90,
+				Stance: faction.StanceTrade,
 			},
 			faction.RelationKey(sourceOneID, sourceTwoID): {
-				FactionA: sourceOneID,
-				FactionB: sourceTwoID,
-				Score:    80,
-				Stance:   faction.StanceAllied,
+				FactionA:  sourceOneID,
+				FactionB:  sourceTwoID,
+				ScoreAToB: 80, ScoreBToA: 80,
+				Stance: faction.StanceAllied,
 			},
 		},
 		RelationOrder: []string{
@@ -56,8 +56,8 @@ func TestMergePoliticalRelationsConsolidatesExternalRelations(t *testing.T) {
 	if merged == nil {
 		t.Fatal("sonuç faction'ı için dış relation oluşturulmadı")
 	}
-	if merged.Stance != faction.StanceAllied || merged.Score != 65 {
-		t.Fatalf("birleşik relation = %s/%d, want allied/65", merged.Stance, merged.Score)
+	if merged.Stance != faction.StanceAllied || merged.ScoreFrom(resultID) != 65 {
+		t.Fatalf("birleşik relation = %s/%d, want allied/65", merged.Stance, merged.ScoreFrom(resultID))
 	}
 	if _, exists := gs.Relations[sourceOneExternalKey]; exists {
 		t.Fatal("ilk kaynak faction relation'ı temizlenmedi")

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -44,7 +45,7 @@ func TestAISovereignRevokesValuableMinorPrivilege(t *testing.T) {
 	if minor.OwnerID != "sovereign" {
 		t.Fatalf("imtiyaz kaldırılan bölgenin sahibi = %q, sovereign bekleniyordu", minor.OwnerID)
 	}
-	if relation := diplomacyRelationForTest(gs, "sovereign", "operator"); relation == nil || relation.Score != -10 {
+	if relation := diplomacyRelationForTest(gs, "sovereign", "operator"); relation == nil || diplomacy.RelationScore(gs, "sovereign", "operator") != -10 {
 		t.Fatalf("imtiyaz kaldırma ilişki cezası uygulanmadı: %#v", relation)
 	}
 	if len(steps) != 1 || steps[0].TargetRegion != "minor" {
@@ -121,7 +122,7 @@ func aiPrivilegeTestState(relationScore int, stance faction.DiplomaticStance) *s
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("sovereign", "operator"): {
 				FactionA: "sovereign", FactionB: "operator",
-				Score: relationScore, Stance: stance,
+				ScoreAToB: relationScore, ScoreBToA: relationScore, Stance: stance,
 			},
 		},
 		Factions: map[faction.FactionID]*faction.Faction{

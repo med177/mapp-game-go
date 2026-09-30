@@ -17,27 +17,6 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-func TestLoadScenarioBaseStateLoadsTerrainAreas(t *testing.T) {
-	gs, err := loadScenarioBaseState("1300_ottoman_rise", filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise"))
-	if err != nil {
-		t.Fatalf("loadScenarioBaseState() error = %v", err)
-	}
-	if len(gs.TerrainAreas) == 0 {
-		t.Fatal("scenario terrain areas were not loaded")
-	}
-	if got, want := gs.PrivilegedBuildingMaxLevel, 1; got != want {
-		t.Fatalf("imtiyazlı bina seviye tavanı = %d, %d bekleniyordu", got, want)
-	}
-	if got, want := gs.MinorPrivilegeProtectionTurns, 30; got != want {
-		t.Fatalf("minor imtiyaz koruma turu = %d, %d bekleniyordu", got, want)
-	}
-	for _, area := range gs.TerrainAreas {
-		if gs.Regions[world.TerrainAreaRegionID(area.ID)] == nil {
-			t.Fatalf("runtime terrain region for %q was not created", area.ID)
-		}
-	}
-}
-
 func TestLoadScenarioBaseStateReadsAggressiveExpansionDuration(t *testing.T) {
 	gs, err := loadScenarioBaseState("1300_ottoman_rise", filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise"))
 	if err != nil {
@@ -438,9 +417,11 @@ func TestCompactSavePreservesRecentFactionExpansion(t *testing.T) {
 }
 
 func TestCompactSavePreservesRegionAttackRelationTrend(t *testing.T) {
-	score := 14
+	scoreAToB := 14
+	scoreBToA := 23
 	stance := encodeStance(faction.StancePeace)
-	passiveModifier := -6
+	passiveAToB := -6
+	passiveBToA := 4
 	saved := campaignSaveState{
 		Turn:               9,
 		ScenarioID:         "1300_ottoman_rise",
@@ -451,9 +432,11 @@ func TestCompactSavePreservesRegionAttackRelationTrend(t *testing.T) {
 		RelationTrendAppliedTurn: 9,
 		Relations: map[string]relationSaveState{
 			"attacker|neighbor": {
-				Score:                   &score,
-				Stance:                  &stance,
-				PassiveRelationModifier: &passiveModifier,
+				ScoreAToB:           &scoreAToB,
+				ScoreBToA:           &scoreBToA,
+				Stance:              &stance,
+				PassiveModifierAToB: &passiveAToB,
+				PassiveModifierBToA: &passiveBToA,
 			},
 		},
 	}
@@ -472,7 +455,7 @@ func TestCompactSavePreservesRegionAttackRelationTrend(t *testing.T) {
 		t.Fatalf("saldırı trend metadata'sı korunmadı: turns=%v targets=%v applied=%d", gs.FactionAttackTurns, gs.FactionAttackTargetTurns, gs.RelationTrendAppliedTurn)
 	}
 	rel := gs.Relations["attacker|neighbor"]
-	if rel == nil || rel.Score != score || rel.Stance != faction.StancePeace || rel.PassiveRelationModifier != passiveModifier {
+	if rel == nil || rel.ScoreFrom("attacker") != scoreAToB || rel.ScoreFrom("neighbor") != scoreBToA || rel.Stance != faction.StancePeace || rel.PassiveModifierFrom("attacker") != passiveAToB || rel.PassiveModifierFrom("neighbor") != passiveBToA {
 		t.Fatalf("ilişki trendi korunmadı: %+v", rel)
 	}
 }

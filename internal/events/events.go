@@ -213,7 +213,7 @@ type Event struct {
 	// Tarihsel tetiklenme alanları
 	HistoricalYear       int    `json:"historical_year,omitempty"`        // 0 = tarihsel değil
 	HistoricalMonth      int    `json:"historical_month,omitempty"`       // 0 = yılın herhangi bir ayı
-	HistoricalDateStrict bool   `json:"historical_date_strict,omitempty"` // state koşulları olsa da tarihi bekle
+	HistoricalDateStrict bool   `json:"historical_date_strict,omitempty"` // tarihsel zincirin state görünürlük işareti
 	OneShot              bool   `json:"one_shot,omitempty"`               // true = yalnızca bir kez tetiklenir
 	AffectedFaction      string `json:"affected_faction,omitempty"`       // belirli fraksiyonu hedefle
 
@@ -226,6 +226,7 @@ type Event struct {
 	RequiresTechs             []string                   `json:"requires_techs,omitempty"`
 	BlocksTechs               []string                   `json:"blocks_techs,omitempty"`
 	RequiresOwnedRegions      []world.RegionID           `json:"requires_owned_regions,omitempty"`
+	RequiresUnownedRegions    []world.RegionID           `json:"requires_unowned_regions,omitempty"`
 	RequiresActiveFactions    []string                   `json:"requires_active_factions,omitempty"`
 	RelationRequirements      []RelationRequirement      `json:"relation_requirements,omitempty"`
 	FactionSubjugationTrigger *FactionSubjugationTrigger `json:"faction_subjugation_trigger,omitempty"`
@@ -357,33 +358,26 @@ func TickOpeningHistoricalEvent(gs *state.GameState, evts []*Event) *Event {
 	return nil
 }
 
-// historicalEventDueThisTurn tarihsel olayın aktif turun takvim aralığına
-// denk gelip gelmediğini bildirir.
+// historicalEventDueThisTurn tarihsel olayın minimum tarihine ulaşılıp
+// ulaşılmadığını bildirir. Tarih geçtikten sonra koşulları daha sonraki bir
+// turda sağlayan event o turda tetiklenebilir.
 func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
 	if gs == nil || e == nil {
 		return false
 	}
-	// Tarihsel tarih, yalnızca takvimle çalışan olaylar için alt sınırdır.
-	// Bir olayın state koşulları gerçekleşmişse (ör. Bursa'nın erken
-	// fethedilmesi), tarihsel yılı beklemek olayın gerçekleşen sonucu
-	// yansıtmasını geciktirmemelidir.
-	if historicalEventHasStateTrigger(e) {
-		return true
-	}
-	if gs.HistoricalDateOccursThisTurn(e.HistoricalYear, e.HistoricalMonth) {
-		return true
-	}
-	if e.HistoricalMonth <= 0 || e.HistoricalMonth > 12 || gs.Year <= 0 {
+	if e.HistoricalYear <= 0 || gs.Year <= 0 {
 		return false
 	}
-	startMonth := gs.Month
-	if startMonth < 1 || startMonth > 12 {
-		startMonth = 1
+	endYear, endMonth := gs.CurrentTurnEndDate()
+	if e.HistoricalMonth <= 0 {
+		return endYear >= e.HistoricalYear
 	}
-	startAbs := gs.Year*12 + startMonth - 1
+	if e.HistoricalMonth > 12 {
+		return false
+	}
+	endAbs := endYear*12 + endMonth - 1
 	targetAbs := e.HistoricalYear*12 + e.HistoricalMonth - 1
-	graceMonths := gs.CalendarMonthsPerTurn() - 1
-	return targetAbs < startAbs && targetAbs >= startAbs-graceMonths
+	return endAbs >= targetAbs
 }
 
 func historicalEventHasStateTrigger(e *Event) bool {
@@ -396,13 +390,14 @@ func historicalEventHasStateTrigger(e *Event) bool {
 	return len(e.RequiresFlags) > 0 ||
 		len(e.RequiresTechs) > 0 ||
 		len(e.RequiresOwnedRegions) > 0 ||
+		len(e.RequiresUnownedRegions) > 0 ||
 		len(e.RelationRequirements) > 0 ||
 		e.FactionSubjugationTrigger != nil
 }
 
-// HasStateTrigger, Kodex gibi dış tüketicilerin tarihsel event'in takvim
-// geçse bile state koşulları oluştuğunda hâlâ uygulanabilir olup olmadığını
-// aynı canonical helper üzerinden değerlendirmesini sağlar.
+// HasStateTrigger, Kodex gibi dış tüketicilerin tarihi geçmiş olsa bile state
+// koşullarıyla anlamlı bir kilitli giriş olarak gösterilecek event'i ayırt
+// etmesini sağlar. Bu yardımcı, Tick'in tarih penceresini bypass etmez.
 func HasStateTrigger(e *Event) bool {
 	return historicalEventHasStateTrigger(e)
 }
@@ -740,6 +735,19 @@ func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 			}
 		}
 	}
+	if len(e.RequiresUnownedRegions) > 0 {
+		fid := eventConditionFactionID(gs, e)
+		if fid == "" {
+			reasons = append(reasons, "sahipsiz olmasi gereken bolge kosulu icin fraksiyon yok")
+		} else {
+			for _, rid := range e.RequiresUnownedRegions {
+				r := gs.Regions[rid]
+				if r != nil && r.OwnerID == string(fid) {
+					reasons = append(reasons, "bolge zaten hedef faction'da: "+string(rid))
+				}
+			}
+		}
+	}
 	if failedFaction := firstInactiveRequiredFaction(gs, e.RequiresActiveFactions); failedFaction != "" {
 		reasons = append(reasons, "aktif faction gerekli: "+failedFaction)
 	}
@@ -793,6 +801,18 @@ func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 		for _, rid := range e.RequiresOwnedRegions {
 			r := gs.Regions[rid]
 			if r == nil || r.OwnerID != string(fid) {
+				return false
+			}
+		}
+	}
+	if len(e.RequiresUnownedRegions) > 0 {
+		fid := eventConditionFactionID(gs, e)
+		if fid == "" {
+			return false
+		}
+		for _, rid := range e.RequiresUnownedRegions {
+			r := gs.Regions[rid]
+			if r != nil && r.OwnerID == string(fid) {
 				return false
 			}
 		}
@@ -935,7 +955,7 @@ func relationRequirementSatisfied(gs *state.GameState, source faction.FactionID,
 	score := 0
 	stance := faction.StancePeace
 	if rel != nil {
-		score = rel.Score
+		score = diplomacy.RelationScore(gs, source, target)
 		if rel.Stance != "" {
 			stance = rel.Stance
 		}
@@ -970,7 +990,7 @@ func relationRequirementReason(gs *state.GameState, source faction.FactionID, re
 	score := 0
 	stance := faction.StancePeace
 	if rel != nil {
-		score = rel.Score
+		score = diplomacy.RelationScore(gs, source, target)
 		if rel.Stance != "" {
 			stance = rel.Stance
 		}
@@ -1365,8 +1385,8 @@ func applyRelationDeltaAll(gs *state.GameState, fid faction.FactionID, delta int
 		if otherID == fid || other == nil || other.IsEliminated {
 			continue
 		}
-		rel := diplomacy.EnsureRelation(gs, fid, otherID)
-		rel.Score = clamp(rel.Score+delta, -100, 100)
+		diplomacy.EnsureRelation(gs, fid, otherID)
+		diplomacy.AddRelationScoreBoth(gs, fid, otherID, delta)
 	}
 }
 

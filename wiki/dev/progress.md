@@ -7,6 +7,23 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: Tarihli state koşullu event'ler artık sahiplik/flag/ilişki
+  koşulları erken oluştu diye minimum tarihinden önce çalışmıyor; minimum tarih
+  geçtikten sonra koşulların sağlandığı ilk turda tetikleniyor. Bursa erken
+  Osmanlı'ya geçtiyse 1321 Bursa seferberliği `requires_unowned_regions`
+  koşuluyla devre dışı kalıyor. Regression testleri `internal/events/events_test.go`
+  içinde güncellendi.
+
+- 2026-09-30: Diplomasi ilişkileri çift yönlü state'e geçirildi. `A→B` ve
+  `B→A` puanları ile pasif trend birikimleri ayrı tutuluyor; bölge/din saldırısı
+  yalnız saldıranın dışarıya bakan yönünü etkiliyor, karşılıklı anlaşma ve doğrudan
+  diplomasi sonuçları iki yönü birlikte güncelleyebiliyor. Compact save artık yalnız
+  yönlü alanları yazıyor/okuyor; eski tekil `Score` kayıtları için geriye dönük
+  yükleme desteği bulunmuyor (`internal/faction/faction.go`,
+  `internal/diplomacy/diplomacy.go`, `internal/save/compact.go`). Regression:
+  `TestReligionAttackRelationTrendTargetsReligiousGroupsOncePerTurn`,
+  `TestCompactSavePreservesRegionAttackRelationTrend`.
+
 - 2026-09-30: Event'lere `army_defections` etkisi eklendi. Mevcut kara orduları
   kaynak ve alıcı faction, kaynak bölgesi, adet/yüzde ve isteğe bağlı hedef
   bölgeyle deterministik biçimde taraf değiştirebiliyor; komutan sahipliği de

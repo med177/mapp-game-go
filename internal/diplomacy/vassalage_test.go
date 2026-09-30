@@ -61,7 +61,7 @@ func TestVassalizationRejectsTargetWithMoreThanThreeRegions(t *testing.T) {
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("actor", "target"): {
-				FactionA: "actor", FactionB: "target", Score: 80, Stance: faction.StancePeace,
+				FactionA: "actor", FactionB: "target", ScoreAToB: 80, ScoreBToA: 80, Stance: faction.StancePeace,
 			},
 		},
 		Regions: map[world.RegionID]*world.Region{},
@@ -142,7 +142,7 @@ func TestNormalizeVassalagePreservesExternalVassalTrade(t *testing.T) {
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("venice", "vassal"): {
-				FactionA: "venice", FactionB: "vassal", Score: 30, Stance: faction.StanceTrade,
+				FactionA: "venice", FactionB: "vassal", ScoreAToB: 30, ScoreBToA: 30, Stance: faction.StanceTrade,
 			},
 		},
 		TradeRoutes: []*economy.TradeRoute{

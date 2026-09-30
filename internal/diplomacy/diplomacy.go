@@ -264,7 +264,7 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		if prevStance != faction.StanceAllied {
 			rel.Stance = faction.StanceTrade
 		}
-		rel.Score = clamp(rel.Score+15, -100, 100)
+		AddRelationScoreBoth(gs, actor, target, 15)
 		ensureTradeRoutesBetween(gs, actor, target)
 		if prevStance == faction.StanceAllied {
 			return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile müttefiklik korunarak ticaret anlaşması açıldı."}
@@ -277,7 +277,7 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 			return Result{Message: factionLabel(gs, target) + " ittifak teklifini reddetti."}
 		}
 		rel.Stance = faction.StanceAllied
-		rel.Score = clamp(rel.Score+20, -100, 100)
+		AddRelationScoreBoth(gs, actor, target, 20)
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ittifak kuruldu."}
 
 	case ActionCancelAlliance:
@@ -287,7 +287,7 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		} else {
 			rel.Stance = faction.StancePeace
 		}
-		rel.Score = clamp(rel.Score-15, -100, 100)
+		AddRelationScoreBoth(gs, actor, target, -15)
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ittifak sona erdirildi."}
 
 	case ActionCancelTrade:
@@ -295,7 +295,7 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		if rel.Stance == faction.StanceTrade {
 			rel.Stance = faction.StancePeace
 		}
-		rel.Score = clamp(rel.Score-5, -100, 100)
+		AddRelationScoreBoth(gs, actor, target, -5)
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ticaret anlaşması sona erdirildi."}
 
 	case ActionImproveRelations:
@@ -330,10 +330,11 @@ func EnsureRelation(gs *state.GameState, a, b faction.FactionID) *faction.Relati
 		return rel
 	}
 	rel := &faction.Relation{
-		FactionA: a,
-		FactionB: b,
-		Score:    0,
-		Stance:   faction.StancePeace,
+		FactionA:  a,
+		FactionB:  b,
+		ScoreAToB: 0,
+		ScoreBToA: 0,
+		Stance:    faction.StancePeace,
 	}
 	gs.Relations[key] = rel
 	return rel
@@ -344,6 +345,47 @@ func Relation(gs *state.GameState, a, b faction.FactionID) *faction.Relation {
 		return nil
 	}
 	return gs.Relations[faction.RelationKey(a, b)]
+}
+
+// RelationScore, from devletinin target devletine yönelik ilişki puanını
+// döner. İlişkiler yönlü tutulduğu için caller'ın bakış açısı kullanılır.
+func RelationScore(gs *state.GameState, from, target faction.FactionID) int {
+	rel := Relation(gs, from, target)
+	if rel == nil {
+		return 0
+	}
+	return rel.ScoreFrom(from)
+}
+
+// SetRelationScore, tek bir devletin karşı devlete yönelik ilişki puanını
+// ayarlar.
+func SetRelationScore(gs *state.GameState, from, target faction.FactionID, score int) {
+	if rel := Relation(gs, from, target); rel != nil {
+		rel.SetScoreFrom(from, clamp(score, -100, 100))
+	}
+}
+
+// AddRelationScore, tek bir devletin karşı devlete yönelik ilişki puanını
+// yönlü olarak değiştirir.
+func AddRelationScore(gs *state.GameState, from, target faction.FactionID, delta int) {
+	SetRelationScore(gs, from, target, RelationScore(gs, from, target)+delta)
+}
+
+// SetRelationScoreBoth, karşılıklı diplomasi işlemlerinde iki yönü birlikte
+// ayarlar.
+func SetRelationScoreBoth(gs *state.GameState, a, b faction.FactionID, score int) {
+	if rel := Relation(gs, a, b); rel != nil {
+		rel.SetScoreBoth(clamp(score, -100, 100))
+	}
+}
+
+// AddRelationScoreBoth, karşılıklı diplomasi işlemlerinde iki yöne birlikte
+// delta uygular.
+func AddRelationScoreBoth(gs *state.GameState, a, b faction.FactionID, delta int) {
+	if rel := Relation(gs, a, b); rel != nil {
+		rel.SetScoreFrom(a, clamp(rel.ScoreFrom(a)+delta, -100, 100))
+		rel.SetScoreFrom(b, clamp(rel.ScoreFrom(b)+delta, -100, 100))
+	}
 }
 
 // markRejectedDiplomaticOffer ret bilgisini kaydeder ve ilişkiyi küçük bir
@@ -358,8 +400,8 @@ func markRejectedDiplomaticOffer(gs *state.GameState, actor, target faction.Fact
 	if gs.PlayerFactionID == "" || (actor != gs.PlayerFactionID && target != gs.PlayerFactionID) {
 		return
 	}
-	rel := EnsureRelation(gs, actor, target)
-	rel.Score = clamp(rel.Score-rejectedOfferRelationPenalty, -100, 100)
+	EnsureRelation(gs, actor, target)
+	AddRelationScoreBoth(gs, actor, target, -rejectedOfferRelationPenalty)
 	gs.MarkDiplomaticOfferRejected(string(actor), string(target), string(action))
 }
 
@@ -374,7 +416,7 @@ func ForceRelation(gs *state.GameState, a, b faction.FactionID, stance faction.D
 	}
 	rel := EnsureRelation(gs, a, b)
 	prevStance := rel.Stance
-	rel.Score = clamp(rel.Score+scoreDelta, -100, 100)
+	AddRelationScoreBoth(gs, a, b, scoreDelta)
 	if stance != "" {
 		rel.Stance = stance
 	}
@@ -406,58 +448,73 @@ func ApplyRelationDecay(gs *state.GameState) {
 		if !passiveTrendAlreadyApplied {
 			applyReligionAttackRelationTrend(gs, rel)
 		}
-		switch rel.Stance {
-		case faction.StanceWar:
-			rel.Score = clamp(rel.Score-1, -100, 100)
-		case faction.StancePeace:
-			if rel.Score < 0 {
-				rel.Score++
-			}
-		case faction.StanceTrade:
-			if rel.Score < 30 {
-				rel.Score++
-			}
-		case faction.StanceAllied:
-			if SameRealm(gs, rel.FactionA, rel.FactionB) {
-				if rel.Score < 50 {
-					rel.Score++
-				}
-				continue
-			}
-			if HasDirectThreat(gs, rel.FactionA, rel.FactionB) && !HasCommonEnemy(gs, rel.FactionA, rel.FactionB) && !HasSharedMajorThreat(gs, rel.FactionA, rel.FactionB) {
-				rel.Score = clamp(rel.Score-2, -100, 100)
-			} else if allianceHasStrategicBasis(gs, rel.FactionA, rel.FactionB) {
-				if rel.Score < 50 {
-					rel.Score++
-				}
-			} else {
-				if rel.Score > 20 {
-					rel.Score--
-				} else if rel.Score < 20 {
-					rel.Score++
-				}
-			}
-		}
+		applyRelationStanceDecay(gs, rel)
 		if rel.Stance == faction.StanceWar || SameRealm(gs, rel.FactionA, rel.FactionB) {
 			continue
 		}
-		penalty := overextensionRelationPenalty(gs, rel)
-		// Aktif yüksek aşırı genişleme baskısı, saldırı yapılmayan turdaki
-		// normal +1 iyileşmeyi bastırır; aksi halde iki ayrı ilişki sistemi
-		// aynı turda birbirini görünmez biçimde nötrler.
-		if !passiveTrendAlreadyApplied && (penalty == 0 || gs.FactionAttackedThisTurn(rel.FactionA) || gs.FactionAttackedThisTurn(rel.FactionB)) {
-			applyPassiveRelationTrend(gs, rel)
+		for _, from := range []faction.FactionID{rel.FactionA, rel.FactionB} {
+			to := rel.FactionB
+			if from == rel.FactionB {
+				to = rel.FactionA
+			}
+			penalty := overextensionRelationPenaltyForFaction(gs, to)
+			// Yüksek genişleme baskısı, saldırı yapılmayan yöndeki pasif
+			// iyileşmeyi bastırır; saldıran yön ise kendi -1 trendini almaya
+			// devam eder.
+			if !passiveTrendAlreadyApplied && (penalty == 0 || gs.FactionAttackedThisTurn(from)) {
+				applyPassiveRelationTrend(gs, rel, from)
+			}
+			if penalty > 0 {
+				rel.SetScoreFrom(from, clamp(rel.ScoreFrom(from)-penalty, -100, 100))
+			}
 		}
-		if penalty > 0 {
-			rel.Score = clamp(rel.Score-penalty, -100, 100)
-		}
-		if rel.Stance == faction.StanceTrade && rel.Score < tradeRelationThreshold {
+		if rel.Stance == faction.StanceTrade && (rel.ScoreFrom(rel.FactionA) < tradeRelationThreshold || rel.ScoreFrom(rel.FactionB) < tradeRelationThreshold) {
 			removeTradeRoutesBetween(gs, rel.FactionA, rel.FactionB)
 			rel.Stance = faction.StancePeace
 		}
 	}
 	if !passiveTrendAlreadyApplied {
 		gs.RelationTrendAppliedTurn = gs.Turn
+	}
+}
+
+func applyRelationStanceDecay(gs *state.GameState, rel *faction.Relation) {
+	if gs == nil || rel == nil {
+		return
+	}
+	for _, from := range []faction.FactionID{rel.FactionA, rel.FactionB} {
+		score := rel.ScoreFrom(from)
+		switch rel.Stance {
+		case faction.StanceWar:
+			score = clamp(score-1, -100, 100)
+		case faction.StancePeace:
+			if score < 0 {
+				score++
+			}
+		case faction.StanceTrade:
+			if score < 30 {
+				score++
+			}
+		case faction.StanceAllied:
+			if SameRealm(gs, rel.FactionA, rel.FactionB) {
+				if score < 50 {
+					score++
+				}
+			} else if HasDirectThreat(gs, rel.FactionA, rel.FactionB) && !HasCommonEnemy(gs, rel.FactionA, rel.FactionB) && !HasSharedMajorThreat(gs, rel.FactionA, rel.FactionB) {
+				score = clamp(score-2, -100, 100)
+			} else if allianceHasStrategicBasis(gs, rel.FactionA, rel.FactionB) {
+				if score < 50 {
+					score++
+				}
+			} else {
+				if score > 20 {
+					score--
+				} else if score < 20 {
+					score++
+				}
+			}
+		}
+		rel.SetScoreFrom(from, score)
 	}
 }
 
@@ -520,7 +577,7 @@ func applyReligionAttackRelationTrend(gs *state.GameState, rel *faction.Relation
 			}
 		}
 		if delta != 0 {
-			rel.Score = clamp(rel.Score+delta, -100, 100)
+			AddRelationScore(gs, attacker, otherID, delta)
 		}
 	}
 }
@@ -529,49 +586,43 @@ func applyReligionAttackRelationTrend(gs *state.GameState, rel *faction.Relation
 // başına -1; o tur saldırmayan devletlerin ilişkilerine +1 yazar. Yalnız bu
 // mekanizmanın birikimi -25/+25 aralığında tutulur; Score içindeki diğer
 // diplomatik etkiler korunur.
-func applyPassiveRelationTrend(gs *state.GameState, rel *faction.Relation) {
+func applyPassiveRelationTrend(gs *state.GameState, rel *faction.Relation, from faction.FactionID) {
 	if gs == nil || rel == nil {
 		return
 	}
-	attacked := gs.FactionAttackedThisTurn(rel.FactionA) || gs.FactionAttackedThisTurn(rel.FactionB)
+	attacked := gs.FactionAttackedThisTurn(from)
 	if attacked {
-		if rel.PassiveRelationModifier <= passiveRelationModifierMin {
+		if rel.PassiveModifierFrom(from) <= passiveRelationModifierMin {
 			return
 		}
-		rel.PassiveRelationModifier--
-		rel.Score = clamp(rel.Score-1, -100, 100)
+		rel.SetPassiveModifierFrom(from, rel.PassiveModifierFrom(from)-1)
+		rel.SetScoreFrom(from, clamp(rel.ScoreFrom(from)-1, -100, 100))
 		return
 	}
-	if rel.PassiveRelationModifier >= passiveRelationModifierMax {
+	if rel.PassiveModifierFrom(from) >= passiveRelationModifierMax {
 		return
 	}
-	rel.PassiveRelationModifier++
-	rel.Score = clamp(rel.Score+1, -100, 100)
+	rel.SetPassiveModifierFrom(from, rel.PassiveModifierFrom(from)+1)
+	rel.SetScoreFrom(from, clamp(rel.ScoreFrom(from)+1, -100, 100))
 }
 
-// overextensionRelationPenalty, yüksek aşırı genişlemenin dış devletlerin
-// ilişki puanına her çözüm turunda yazacağı baskıyı döner. İki tarafın daha
-// tehditkâr olan değeri kullanılır; aynı realm ilişkileri ApplyRelationDecay
-// içinde bu helper'a gelmeden korunur.
-func overextensionRelationPenalty(gs *state.GameState, rel *faction.Relation) int {
-	if gs == nil || rel == nil {
+// overextensionRelationPenaltyForFaction, hedef devletin son genişlemesinin
+// karşı devletin o hedefe yönelik görüşüne yazacağı baskıyı döner.
+func overextensionRelationPenaltyForFaction(gs *state.GameState, target faction.FactionID) int {
+	if gs == nil || target == "" {
 		return 0
 	}
-	scoreA := gs.OverextensionScore(rel.FactionA)
-	scoreB := gs.OverextensionScore(rel.FactionB)
-	if scoreB > scoreA {
-		scoreA = scoreB
-	}
+	score := gs.OverextensionScore(target)
 	switch {
-	case scoreA >= 400:
+	case score >= 400:
 		return 6
-	case scoreA >= 250:
+	case score >= 250:
 		return 5
-	case scoreA >= 150:
+	case score >= 150:
 		return 4
-	case scoreA >= 75:
+	case score >= 75:
 		return 3
-	case scoreA >= 25:
+	case score >= 25:
 		return 1
 	default:
 		return 0
@@ -736,7 +787,7 @@ func HasDiplomaticContact(gs *state.GameState, a, b faction.FactionID) bool {
 		if rel.Stance != faction.StancePeace {
 			return true
 		}
-		if rel.Score != baseRelationScore(gs, a, b) {
+		if rel.ScoreFrom(a) != baseRelationScore(gs, a, b) || rel.ScoreFrom(b) != baseRelationScore(gs, a, b) {
 			return true
 		}
 	}
@@ -1064,7 +1115,7 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 		assessment.BlockReason = "Geçersiz diplomasi hedefi"
 		return assessment
 	}
-	if rel.Score < allianceRelationThresholdFor(gs) {
+	if RelationScore(gs, actor, target) < allianceRelationThresholdFor(gs) {
 		assessment.BlockReason = allianceRelationBlockReason(gs)
 		return assessment
 	}
@@ -1120,7 +1171,7 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 	actorRegions := landRegionCount(gs, actor)
 	targetRegions := landRegionCount(gs, target)
 
-	chance := 20 + rel.Score
+	chance := 20 + RelationScore(gs, actor, target)
 	if rel.Stance == faction.StanceTrade {
 		chance += 8
 	}
@@ -1177,7 +1228,7 @@ func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, targ
 		assessment.BlockReason = "Geçersiz diplomasi hedefi"
 		return assessment
 	}
-	if rel.Score < tradeRelationThreshold {
+	if RelationScore(gs, actor, target) < tradeRelationThreshold {
 		assessment.BlockReason = "Ticaret için ilişki puanı 15 altı"
 		return assessment
 	}
@@ -1217,7 +1268,7 @@ func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, targ
 	}
 
 	regionDelta := actorLand - targetLand
-	chance := 40 + rel.Score + clamp(regionDelta, -10, 20)
+	chance := 40 + RelationScore(gs, actor, target) + clamp(regionDelta, -10, 20)
 	if rel.Stance == faction.StanceAllied {
 		chance += 8
 	}

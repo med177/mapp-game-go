@@ -4443,7 +4443,7 @@ func factionPanelSubtitle(gs *state.GameState, fid faction.FactionID, f *faction
 		parts = append(parts, "Rakip")
 	}
 	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
-		parts = append(parts, "İlişki: "+faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(rel.Score)+")")
+		parts = append(parts, "İlişki: "+faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(diplomacy.RelationScore(gs, gs.PlayerFactionID, fid))+")")
 	}
 	return strings.Join(parts, "  |  ")
 }
@@ -4758,7 +4758,7 @@ func buildFactionDiplomacySummary(gs *state.GameState, fid faction.FactionID) fa
 		if rel == nil {
 			continue
 		}
-		entry := factionDiplomacyEntry{ID: otherID, Name: factionDisplayName(gs, string(otherID)), Score: rel.Score}
+		entry := factionDiplomacyEntry{ID: otherID, Name: factionDisplayName(gs, string(otherID)), Score: diplomacy.RelationScore(gs, fid, otherID)}
 		switch rel.Stance {
 		case faction.StanceWar:
 			summary.Enemies = append(summary.Enemies, entry)
@@ -4895,7 +4895,7 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 		y += factionPanelRowH
 	}
 	if rel := factionRelationToPlayer(gs, fid); rel != nil && fid != gs.PlayerFactionID {
-		drawUIKeyValueRow(screen, 0, y, width, "Oyuncuya Durum", faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(rel.Score)+")", ColorGray, ColorWhite)
+		drawUIKeyValueRow(screen, 0, y, width, "Oyuncuya Durum", faction.DiplomaticStanceLabelTR(rel.Stance)+" ("+itoa(diplomacy.RelationScore(gs, gs.PlayerFactionID, fid))+")", ColorGray, ColorWhite)
 		y += 22
 	} else {
 		y += 4

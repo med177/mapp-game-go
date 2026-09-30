@@ -113,7 +113,7 @@ func buildCachedDiplomacyFactionOrder(gs *state.GameState, sortMode diplomacyLis
 	case diplomacyListSortRelation:
 		for _, fid := range fids {
 			if rel := diplomacy.Relation(gs, gs.PlayerFactionID, fid); rel != nil {
-				relationScores[fid] = rel.Score
+				relationScores[fid] = diplomacy.RelationScore(gs, gs.PlayerFactionID, fid)
 			}
 			adjacentToPlayer[fid] = factionsShareLandBorder(gs, gs.PlayerFactionID, fid)
 		}

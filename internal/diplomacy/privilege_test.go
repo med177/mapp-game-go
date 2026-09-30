@@ -37,7 +37,7 @@ func TestWarAgainstPrivilegedSovereignPenalizesOperatorWithoutWar(t *testing.T) 
 		t.Fatal("imtiyaz kullanım sahibine doğrudan savaş açıldı")
 	}
 	rel := Relation(gs, "venice", "genoa")
-	if rel == nil || rel.Score != -privilegeAttackRelationPenalty || rel.Stance != faction.StancePeace {
+	if rel == nil || RelationScore(gs, "venice", "genoa") != -privilegeAttackRelationPenalty || rel.Stance != faction.StancePeace {
 		t.Fatalf("imtiyaz kullanım sahibine ilişki cezası yanlış: %#v", rel)
 	}
 }
@@ -50,7 +50,7 @@ func TestRevokeMinorPrivilegePenalizesOperatorWithoutWar(t *testing.T) {
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("east_rome", "genoa"): {
-				FactionA: "east_rome", FactionB: "genoa", Score: 20, Stance: faction.StancePeace,
+				FactionA: "east_rome", FactionB: "genoa", ScoreAToB: 20, ScoreBToA: 20, Stance: faction.StancePeace,
 			},
 		},
 		Regions: map[world.RegionID]*world.Region{
@@ -66,7 +66,7 @@ func TestRevokeMinorPrivilegePenalizesOperatorWithoutWar(t *testing.T) {
 	if !result.Applied || gs.Regions["galata"].IsPrivileged {
 		t.Fatalf("imtiyaz kaldırılmadı: result=%#v region=%#v", result, gs.Regions["galata"])
 	}
-	if rel := Relation(gs, "east_rome", "genoa"); rel == nil || rel.Score != 20-PrivilegeRevocationRelationPenalty || rel.Stance != faction.StancePeace {
+	if rel := Relation(gs, "east_rome", "genoa"); rel == nil || RelationScore(gs, "east_rome", "genoa") != 20-PrivilegeRevocationRelationPenalty || rel.Stance != faction.StancePeace {
 		t.Fatalf("imtiyaz kaldırma ilişki cezası yanlış: %#v", rel)
 	}
 	if IsWar(gs, "east_rome", "genoa") {

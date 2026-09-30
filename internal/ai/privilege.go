@@ -100,7 +100,7 @@ func aiShouldRevokeMinorPrivilege(gs *state.GameState, fid faction.FactionID, re
 		return false
 	}
 	relation := diplomacy.Relation(gs, fid, operator)
-	if relation != nil && (relation.Stance == faction.StanceAllied || relation.Score >= aiPrivilegeKeepRelationScore) {
+	if relation != nil && (relation.Stance == faction.StanceAllied || diplomacy.RelationScore(gs, fid, operator) >= aiPrivilegeKeepRelationScore) {
 		return false
 	}
 	production := gs.RegionProductionSummary(region)

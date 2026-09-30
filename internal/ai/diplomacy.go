@@ -91,7 +91,7 @@ func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, 
 				continue
 			}
 			var allianceAssessment diplomacy.AllianceProposalAssessment
-			if rel.Score >= diplomacy.AllianceRelationThreshold(gs) {
+			if diplomacy.RelationScore(gs, fid, otherID) >= diplomacy.AllianceRelationThreshold(gs) {
 				allianceAssessment = diplomacy.AssessAllianceProposal(gs, rel, fid, otherID)
 			}
 			if aiShouldAttemptAllianceOffer(gs, fid, otherID, allianceAssessment) && aiDiplomacyOfferRetryAllowed(gs, fid, otherID, diplomacy.ActionProposeAlliance) {
@@ -108,7 +108,7 @@ func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, 
 				}
 				continue
 			}
-			if rel.Score >= 15 && diplomacy.Relation(gs, fid, otherID).Stance == faction.StancePeace && aiTradePartnerCount(gs, fid) < 3 && aiTradePartnerCount(gs, otherID) < 3 && !diplomacy.HasDirectThreat(gs, fid, otherID) && aiDiplomacyOfferRetryAllowed(gs, fid, otherID, diplomacy.ActionProposeTrade) {
+			if diplomacy.RelationScore(gs, fid, otherID) >= 15 && diplomacy.Relation(gs, fid, otherID).Stance == faction.StancePeace && aiTradePartnerCount(gs, fid) < 3 && aiTradePartnerCount(gs, otherID) < 3 && !diplomacy.HasDirectThreat(gs, fid, otherID) && aiDiplomacyOfferRetryAllowed(gs, fid, otherID, diplomacy.ActionProposeTrade) {
 				if otherID == gs.PlayerFactionID {
 					assessment := diplomacy.AssessTradeProposal(gs, diplomacy.Relation(gs, fid, otherID), fid, otherID)
 					if assessment.BlockReason == "" {
@@ -193,7 +193,7 @@ func aiPursueHistoricalWarAlliance(gs *state.GameState, fid faction.FactionID, s
 			continue
 		}
 		rel := diplomacy.Relation(gs, fid, candidateID)
-		if rel == nil || rel.Stance != faction.StancePeace || rel.Score < diplomacy.AllianceRelationThreshold(gs) || !aiDiplomacyOfferRetryAllowed(gs, fid, candidateID, diplomacy.ActionProposeAlliance) {
+		if rel == nil || rel.Stance != faction.StancePeace || diplomacy.RelationScore(gs, fid, candidateID) < diplomacy.AllianceRelationThreshold(gs) || !aiDiplomacyOfferRetryAllowed(gs, fid, candidateID, diplomacy.ActionProposeAlliance) {
 			continue
 		}
 		// Hedefin mevcut müttefikiyle hedefe karşı ittifak aranmaz. Adayın
@@ -399,7 +399,7 @@ func aiRelationshipRepairActionWithThreat(gs *state.GameState, fid, otherID fact
 	if hasAllianceInterest || commonEnemy || sharedThreat || directThreat {
 		desiredScore = maxInt(desiredScore, diplomacy.AllianceRelationThreshold(gs))
 	}
-	if rel.Score >= desiredScore {
+	if diplomacy.RelationScore(gs, self.ID, otherID) >= desiredScore {
 		return "", "", false
 	}
 
@@ -410,7 +410,7 @@ func aiRelationshipRepairActionWithThreat(gs *state.GameState, fid, otherID fact
 		reason = "sınır gerilimini azaltma"
 	}
 
-	if rel.Score < 15 {
+	if diplomacy.RelationScore(gs, self.ID, otherID) < 15 {
 		if self.Gold < diplomacy.RelationImprovementGoldCostFor(gs)+aiMinGoldReserve {
 			return "", "", false
 		}

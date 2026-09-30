@@ -358,10 +358,10 @@ func satisfactionPressureFor(gs *state.GameState, fid faction.FactionID) int {
 
 func relationshipPressureFor(gs *state.GameState, actor, opponent faction.FactionID) int {
 	rel := Relation(gs, actor, opponent)
-	if rel == nil || rel.Score >= 0 {
+	if rel == nil || RelationScore(gs, actor, opponent) >= 0 {
 		return 0
 	}
-	return min(20, -rel.Score/5)
+	return min(20, -RelationScore(gs, actor, opponent)/5)
 }
 
 // futureLossPressureFor, barış reddedilirse actor'un kısa vadede asker ve

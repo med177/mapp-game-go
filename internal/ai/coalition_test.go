@@ -44,7 +44,7 @@ func TestAICoalitionWarCandidateRejectsAlliedRapidExpansionTarget(t *testing.T) 
 	gs.Relations = map[string]*faction.Relation{
 		faction.RelationKey("actor", "ai_rival"): {
 			FactionA: "actor", FactionB: "ai_rival",
-			Stance: faction.StanceAllied, Score: 80,
+			Stance: faction.StanceAllied, ScoreAToB: 80, ScoreBToA: 80,
 		},
 	}
 	gs.Factions["actor"] = &faction.Faction{ID: "actor", NameTR: "Aktör"}

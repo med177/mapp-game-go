@@ -318,7 +318,7 @@ func resolveAcceptedAllianceOffer(gs *state.GameState, offer state.DiplomaticOff
 		return Result{Message: reason}
 	}
 	rel.Stance = faction.StanceAllied
-	rel.Score = clamp(rel.Score+20, -100, 100)
+	AddRelationScoreBoth(gs, offer.FromFactionID, offer.ToFactionID, 20)
 	return Result{
 		Accepted: true,
 		Applied:  true,

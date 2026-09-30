@@ -208,7 +208,7 @@ func relationSnapshot(gs *state.GameState, a, b faction.FactionID) (int, faction
 	if rel == nil {
 		return 0, faction.StancePeace
 	}
-	return rel.Score, rel.Stance
+	return RelationScore(gs, a, b), rel.Stance
 }
 
 func AssessVassalizationProposal(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) VassalProposalAssessment {
@@ -235,7 +235,7 @@ func AssessVassalizationProposal(gs *state.GameState, rel *faction.Relation, act
 	}
 	score := 0
 	if rel != nil {
-		score = rel.Score
+		score = RelationScore(gs, actor, target)
 	}
 	if score < vassalizationMinScore {
 		assessment.BlockReason = "İlişki puanı 55 altı"
@@ -523,8 +523,8 @@ func normalizeVassalRealmRelations(gs *state.GameState, root faction.FactionID) 
 		for j := i + 1; j < len(members); j++ {
 			rel := EnsureRelation(gs, members[i], members[j])
 			rel.Stance = faction.StanceAllied
-			if rel.Score < vassalInternalRelationFloor {
-				rel.Score = vassalInternalRelationFloor
+			if rel.ScoreFrom(members[i]) < vassalInternalRelationFloor || rel.ScoreFrom(members[j]) < vassalInternalRelationFloor {
+				rel.SetScoreBoth(vassalInternalRelationFloor)
 			}
 		}
 	}
@@ -545,7 +545,7 @@ func setWarBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 			rel := EnsureRelation(gs, lhs, rhs)
 			wasWar := rel.Stance == faction.StanceWar
 			rel.Stance = faction.StanceWar
-			rel.Score = -80
+			rel.SetScoreBoth(-80)
 			removeTradeRoutesBetween(gs, lhs, rhs)
 			if !wasWar {
 				gs.BeginWarLedger(lhs, rhs)
@@ -576,7 +576,7 @@ func setPeaceBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 			}
 			rel.Stance = faction.StancePeace
 			if wasWar {
-				rel.Score = postWarRelationScore(leftAssessment, rightAssessment)
+				rel.SetScoreBoth(postWarRelationScore(leftAssessment, rightAssessment))
 			}
 			removeTradeRoutesBetween(gs, lhs, rhs)
 			if wasWar {
@@ -668,8 +668,8 @@ func applyRelationImprovement(gs *state.GameState, actor, target faction.Faction
 	if receiverGold > 0 {
 		gs.RecordGiftGold(actor, target, cost, receiverGold)
 	}
-	rel := EnsureRelation(gs, actor, target)
-	rel.Score = clamp(rel.Score+delta, -100, 100)
+	EnsureRelation(gs, actor, target)
+	AddRelationScoreBoth(gs, actor, target, delta)
 	return Result{
 		Accepted: true,
 		Applied:  true,
@@ -708,11 +708,11 @@ func applyInciteRevolt(gs *state.GameState, actor, target faction.FactionID) Res
 			region.Satisfaction = 0
 		}
 	}
-	targetRel := EnsureRelation(gs, actor, target)
-	targetRel.Score = clamp(targetRel.Score+InciteRevoltRelationBonusFor(gs), -100, 100)
-	ownerRel := EnsureRelation(gs, target, overlord)
-	ownerRel.Score = clamp(ownerRel.Score-InciteRevoltOverlordPenaltyFor(gs), -100, 100)
-	if targetRel.Score >= InciteRevoltVassalThresholdFor(gs) && ownerRel.Score <= InciteRevoltOwnerThresholdFor(gs) {
+	EnsureRelation(gs, actor, target)
+	AddRelationScoreBoth(gs, actor, target, InciteRevoltRelationBonusFor(gs))
+	EnsureRelation(gs, target, overlord)
+	AddRelationScoreBoth(gs, target, overlord, -InciteRevoltOverlordPenaltyFor(gs))
+	if RelationScore(gs, actor, target) >= InciteRevoltVassalThresholdFor(gs) && RelationScore(gs, target, overlord) <= InciteRevoltOwnerThresholdFor(gs) {
 		targetFaction.OverlordID = ""
 		targetFaction.TributeRate = 0
 		targetFaction.TributeRateConfigured = false
@@ -816,8 +816,8 @@ func releaseVassalage(gs *state.GameState, actor, target faction.FactionID) Resu
 	targetFaction.VassalizedTurn = 0
 	rel := EnsureRelation(gs, actor, target)
 	rel.Stance = faction.StanceTrade
-	if rel.Score < 25 {
-		rel.Score = 25
+	if rel.ScoreFrom(actor) < 25 || rel.ScoreFrom(target) < 25 {
+		rel.SetScoreBoth(25)
 	}
 	ensureTradeRoutesBetween(gs, actor, target)
 	normalizeVassalRealmRelations(gs, actor)
@@ -899,7 +899,7 @@ func sanitizeVassalExternalDiplomacy(gs *state.GameState, vassal, root faction.F
 		rootRel := Relation(gs, root, realmRoot(gs, other))
 		if rootRel != nil && rootRel.Stance == faction.StanceWar {
 			rel.Stance = faction.StanceWar
-			rel.Score = -80
+			rel.SetScoreBoth(-80)
 			removeTradeRoutesBetween(gs, vassal, other)
 			continue
 		}
@@ -910,8 +910,8 @@ func sanitizeVassalExternalDiplomacy(gs *state.GameState, vassal, root faction.F
 			continue
 		}
 		rel.Stance = faction.StancePeace
-		if rel.Score < -20 {
-			rel.Score = -20
+		if rel.ScoreFrom(vassal) < -20 || rel.ScoreFrom(other) < -20 {
+			rel.SetScoreBoth(-20)
 		}
 		removeTradeRoutesBetween(gs, vassal, other)
 	}

@@ -94,6 +94,7 @@
     "probability": 0,
     "requires_active_factions": ["east_rome"],
     "requires_owned_regions": ["bilecik_frontier", "bithynia"],
+    "requires_unowned_regions": ["bursa"],
     "relation_requirements": [
       { "faction_id": "east_rome", "stance": "war" }
     ],

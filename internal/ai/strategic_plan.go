@@ -810,7 +810,7 @@ func aiBestOpportunisticExpansionTarget(gs *state.GameState, self *faction.Facti
 			continue
 		}
 		rel := diplomacy.Relation(gs, self.ID, targetID)
-		if rel == nil || rel.Stance != faction.StancePeace || rel.Score > 30 {
+		if rel == nil || rel.Stance != faction.StancePeace || diplomacy.RelationScore(gs, self.ID, targetID) > 30 {
 			continue
 		}
 		targetRegions := len(gs.LandRegionsOwnedBy(targetID))
@@ -822,7 +822,7 @@ func aiBestOpportunisticExpansionTarget(gs *state.GameState, self *faction.Facti
 		if selfPower <= 0 || (targetPower > 0 && selfPower*100 < targetPower*85) {
 			continue
 		}
-		score := 40 - rel.Score
+		score := 40 - diplomacy.RelationScore(gs, self.ID, targetID)
 		score += minInt(25, aiBestBorderTargetValue(gs, self.ID, targetID)/10)
 		score += minInt(20, maxInt(0, selfPower-targetPower)/12)
 		score += minInt(12, self.AIAggressiveness/6)

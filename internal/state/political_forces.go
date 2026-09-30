@@ -290,13 +290,26 @@ func (s *GameState) MergePoliticalRelations(memberIDs []faction.FactionID, resul
 		if external == "" || external == resultFaction || hasFactionID(mergedMembers, external) {
 			continue
 		}
+		resultToExternal := relation.ScoreFrom(relation.FactionA)
+		externalToResult := relation.ScoreFrom(relation.FactionB)
+		resultPassive := relation.PassiveModifierFrom(relation.FactionA)
+		externalPassive := relation.PassiveModifierFrom(relation.FactionB)
+		if hasFactionID(mergedMembers, relation.FactionB) {
+			resultToExternal = relation.ScoreFrom(relation.FactionB)
+			externalToResult = relation.ScoreFrom(relation.FactionA)
+			resultPassive = relation.PassiveModifierFrom(relation.FactionB)
+			externalPassive = relation.PassiveModifierFrom(relation.FactionA)
+		}
 		candidate := &faction.Relation{
 			FactionA:                 resultFaction,
 			FactionB:                 external,
-			Score:                    relation.Score,
 			Stance:                   relation.Stance,
 			NextAIRelationRepairTurn: relation.NextAIRelationRepairTurn,
 		}
+		candidate.SetScoreFrom(resultFaction, resultToExternal)
+		candidate.SetScoreFrom(external, externalToResult)
+		candidate.SetPassiveModifierFrom(resultFaction, resultPassive)
+		candidate.SetPassiveModifierFrom(external, externalPassive)
 		key := faction.RelationKey(resultFaction, external)
 		candidates[key] = selectPoliticalRelation(candidates[key], candidate)
 	}
@@ -351,7 +364,7 @@ func selectPoliticalRelation(current, candidate *faction.Relation) *faction.Rela
 		return current
 	}
 	if politicalStancePriority(candidate.Stance) > politicalStancePriority(current.Stance) ||
-		(politicalStancePriority(candidate.Stance) == politicalStancePriority(current.Stance) && candidate.Score > current.Score) {
+		(politicalStancePriority(candidate.Stance) == politicalStancePriority(current.Stance) && candidate.ScoreFrom(candidate.FactionA) > current.ScoreFrom(current.FactionA)) {
 		return candidate
 	}
 	return current

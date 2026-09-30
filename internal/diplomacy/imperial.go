@@ -103,7 +103,7 @@ func AssessImperialWarCall(gs *state.GameState, empire, memberID, enemy faction.
 	chance -= member.Autonomy / 10
 
 	if rel := Relation(gs, empire, memberID); rel != nil {
-		chance += clamp(rel.Score/4, -15, 18)
+		chance += clamp(RelationScore(gs, empire, memberID)/4, -15, 18)
 	}
 	if sharesBorder(gs, memberID, enemy) {
 		chance += 22

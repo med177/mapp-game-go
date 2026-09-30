@@ -404,7 +404,7 @@ func aiCoalitionWarCandidate(gs *state.GameState, actor, target faction.FactionI
 	if rel == nil || rel.Stance == faction.StanceWar || rel.Stance == faction.StanceAllied {
 		return false
 	}
-	if rel.Stance == faction.StanceTrade && rel.Score >= 15 {
+	if rel.Stance == faction.StanceTrade && diplomacy.RelationScore(gs, actor, target) >= 15 {
 		return false
 	}
 	if gs.TruceRemaining(actor, target) > 0 {
@@ -499,7 +499,7 @@ func aiRecklessWarCandidateScore(gs *state.GameState, actor, target faction.Fact
 	if ctx != nil && ctx.CriticalThreat {
 		return -1
 	}
-	if rel.Score > 35 || aiFrontierPower(gs, actor, target) <= 0 {
+	if diplomacy.RelationScore(gs, actor, target) > 35 || aiFrontierPower(gs, actor, target) <= 0 {
 		return -1
 	}
 	actorPower := aiFactionMilitaryPowerAsSeenBy(gs, actor, actor)
@@ -507,7 +507,8 @@ func aiRecklessWarCandidateScore(gs *state.GameState, actor, target faction.Fact
 	if actorPower <= 0 || targetPower <= 0 || actorPower*100 >= targetPower*110 {
 		return -1
 	}
-	score := 50 - rel.Score
+	relationScore := diplomacy.RelationScore(gs, actor, target)
+	score := 50 - relationScore
 	score += minInt(24, aiBestBorderTargetValue(gs, actor, target)/12)
 	score += minInt(15, gs.Factions[actor].AIAggressiveness/5)
 	if targetPower > actorPower*2 {
@@ -586,7 +587,7 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 		maxPeaceScore = -10
 	}
 	sharesLandBorder := aiSharesLandBorder(gs, actor, target)
-	if rel.Score > maxPeaceScore {
+	if diplomacy.RelationScore(gs, actor, target) > maxPeaceScore {
 		return -1
 	}
 	if !sharesLandBorder && !aiNavalWarReady(strategicContext, target) {
@@ -620,9 +621,10 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 	} else {
 		score -= 18
 	}
-	score += minInt(18, maxInt(0, -rel.Score/2))
-	if rel.Score > 0 {
-		score -= rel.Score
+	currentRelationScore := diplomacy.RelationScore(gs, actor, target)
+	score += minInt(18, maxInt(0, -currentRelationScore/2))
+	if currentRelationScore > 0 {
+		score -= currentRelationScore
 	}
 	selfRegions := len(gs.LandRegionsOwnedBy(actor))
 	targetRegions := len(gs.LandRegionsOwnedBy(target))
@@ -658,7 +660,7 @@ func aiWarOpportunityScoreWithContext(gs *state.GameState, actor, target faction
 	score += (self.AIAggressiveness - 45) / 2
 	if isExpansionTarget {
 		score += 18
-		if rel.Score <= 0 {
+		if diplomacy.RelationScore(gs, actor, target) <= 0 {
 			score += 6
 		}
 		if self.AIAggressiveness >= 60 {

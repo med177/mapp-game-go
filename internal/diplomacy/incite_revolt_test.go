@@ -18,8 +18,8 @@ func TestInciteRevoltRaisesVassalRelationAndLowersOverlordRelationEveryTime(t *t
 			"overlord": {ID: "overlord", NameTR: "Sahip"},
 		},
 		Relations: map[string]*faction.Relation{
-			faction.RelationKey("player", "vassal"):   {FactionA: "player", FactionB: "vassal", Score: 20, Stance: faction.StancePeace},
-			faction.RelationKey("vassal", "overlord"): {FactionA: "vassal", FactionB: "overlord", Score: 50, Stance: faction.StanceAllied},
+			faction.RelationKey("player", "vassal"):   {FactionA: "player", FactionB: "vassal", ScoreAToB: 20, ScoreBToA: 20, Stance: faction.StancePeace},
+			faction.RelationKey("vassal", "overlord"): {FactionA: "vassal", FactionB: "overlord", ScoreAToB: 50, ScoreBToA: 50, Stance: faction.StanceAllied},
 		},
 		DiplomacyConfig: scenario.DiplomacyConfig{
 			InciteRevoltGoldCost:        600,
@@ -41,10 +41,10 @@ func TestInciteRevoltRaisesVassalRelationAndLowersOverlordRelationEveryTime(t *t
 		if got := gs.Factions["vassal"].Gold; got != (i+1)*600 {
 			t.Fatalf("%d. teşvikte vassal hazinesi: got=%d want=%d", i+1, got, (i+1)*600)
 		}
-		if got := Relation(gs, "player", "vassal").Score; got != 20+(i+1)*10 {
+		if got := RelationScore(gs, "player", "vassal"); got != 20+(i+1)*10 {
 			t.Fatalf("%d. teşvikte vassal ilişkisi: got=%d", i+1, got)
 		}
-		if got := Relation(gs, "vassal", "overlord").Score; got != 50-(i+1)*10 {
+		if got := RelationScore(gs, "vassal", "overlord"); got != 50-(i+1)*10 {
 			t.Fatalf("%d. teşvikte sahip ilişkisi: got=%d", i+1, got)
 		}
 	}
@@ -60,7 +60,7 @@ func TestInciteRevoltBreaksVassalageAtConfiguredThresholds(t *testing.T) {
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("player", "vassal"):   {FactionA: "player", FactionB: "vassal", Stance: faction.StancePeace},
-			faction.RelationKey("vassal", "overlord"): {FactionA: "vassal", FactionB: "overlord", Score: 40, Stance: faction.StanceAllied},
+			faction.RelationKey("vassal", "overlord"): {FactionA: "vassal", FactionB: "overlord", ScoreAToB: 40, ScoreBToA: 40, Stance: faction.StanceAllied},
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"vassal_region_a": {ID: "vassal_region_a", OwnerID: "vassal", Satisfaction: 80},
@@ -133,7 +133,7 @@ func TestInciteRevoltRemainsAvailableWhenVassalRelationIsMaxed(t *testing.T) {
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("venice", "flanders"): {
-				FactionA: "flanders", FactionB: "venice", Score: 100, Stance: faction.StanceTrade,
+				FactionA: "flanders", FactionB: "venice", ScoreAToB: 100, ScoreBToA: 100, Stance: faction.StanceTrade,
 			},
 		},
 		DiplomacyConfig: scenario.DiplomacyConfig{

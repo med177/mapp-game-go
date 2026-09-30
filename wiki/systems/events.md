@@ -115,18 +115,21 @@ kimlik sırasından seçilir ve filolar kapsam dışıdır.
 `events.Tick(gs, evts)` — tur çözümleme sırasında çağrılır.
 
 Tetikleme kriterleri:
-- **Yıl/ay:** `historical_year` + opsiyonel `historical_month`; üç aylık
-  senaryolarda `GameState.HistoricalDateOccursThisTurn()` olay ayını aktif
-  takvim penceresinde arar.
-- **Gerçekleşen state koşulu:** `requires_owned_regions`, `requires_flags`,
-  `requires_techs`, `relation_requirements` veya siyasi sonuç koşulu bulunan
-  tarihsel event'ler, bu koşullar tarihsel yıldan önce gerçekleşirse o turda
-  tetiklenir. Örneğin Bursa erken fethedilirse Bursa'nın merkez oluşu event'i
-  1326'yı beklemez. Yalnızca takvimle tanımlanan koşulsuz tarihsel event'ler
-  tarih/yıl penceresini bekler.
-- **Kesin tarih:** `historical_date_strict=true`, state koşulları daha erken
-  oluşsa bile event'in `historical_year` / `historical_month` penceresini
-  beklemesini sağlar. Tarihsel zincirdeki istisnalar bu alanı açıkça kullanır.
+- **Minimum tarih:** `historical_year` + opsiyonel `historical_month`; bu tarih
+  event'in en erken çalışabileceği zamanı belirtir. Üç aylık senaryolarda
+  turun kapsadığı tarih minimum tarihi geçtiğinde event uygun sayılır.
+- **State koşulu:** `requires_owned_regions`, `requires_unowned_regions`,
+  `requires_flags`, `requires_techs` ve `relation_requirements` event'in
+  uygulanabilmesi için gereken state'i sınırlar; bu koşullar tek başına
+  tarihsel event'in minimum tarihini öne çekmez.
+- **Tarih sonrası koşul:** Bütün tarihsel event'ler minimum tarihten önce
+  çalışmaz; minimum tarih geçtikten sonra koşullar hangi turda sağlanırsa o tur
+  çalışır. `historical_date_strict=true` alanı, Kodex'te state koşullu geçmiş
+  event görünürlüğünü belirleyen veri işaretidir.
+- **Bölge sahipliği:** `requires_owned_regions` hedef faction'ın bölgeyi
+  kontrol etmesini, `requires_unowned_regions` ise bu faction'ın bölgeyi
+  henüz kontrol etmemesini ister. Örneğin Bursa Osmanlı'ya erken geçtiyse,
+  Bursa seferberliği event'i artık destek göndermez.
 - **Rastgele olay:** `probability > 0` ve `min_turn` eşiği
 - **Tek seferlik olay:** `one_shot=true` ise tekrar tetiklenmez
 

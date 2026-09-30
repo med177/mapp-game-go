@@ -70,9 +70,11 @@ type factionSaveState struct {
 }
 
 type relationSaveState struct {
-	Score                    *int   `json:"s,omitempty"`
+	ScoreAToB                *int   `json:"sab,omitempty"`
+	ScoreBToA                *int   `json:"sba,omitempty"`
 	Stance                   *uint8 `json:"t,omitempty"`
-	PassiveRelationModifier  *int   `json:"p,omitempty"`
+	PassiveModifierAToB      *int   `json:"pab,omitempty"`
+	PassiveModifierBToA      *int   `json:"pba,omitempty"`
 	NextAIRelationRepairTurn *int   `json:"r,omitempty"`
 	Deleted                  bool   `json:"x,omitempty"`
 }
@@ -441,13 +443,17 @@ func makeLegacyRelationState(relations map[string]*faction.Relation) map[string]
 		if rel == nil {
 			continue
 		}
-		score := rel.Score
+		scoreAToB := rel.ScoreFrom(rel.FactionA)
+		scoreBToA := rel.ScoreFrom(rel.FactionB)
+		passiveAToB := rel.PassiveModifierFrom(rel.FactionA)
+		passiveBToA := rel.PassiveModifierFrom(rel.FactionB)
 		stance := encodeStance(rel.Stance)
-		passiveModifier := rel.PassiveRelationModifier
 		out[key] = relationSaveState{
-			Score:                   &score,
-			Stance:                  &stance,
-			PassiveRelationModifier: &passiveModifier,
+			ScoreAToB:           &scoreAToB,
+			ScoreBToA:           &scoreBToA,
+			Stance:              &stance,
+			PassiveModifierAToB: &passiveAToB,
+			PassiveModifierBToA: &passiveBToA,
 		}
 	}
 	return out
@@ -1309,30 +1315,48 @@ func makeRelationDelta(current, base map[string]*faction.Relation) map[string]re
 		case currentRel == nil:
 			out[key] = relationSaveState{Deleted: true}
 		case baseRel == nil:
-			score := currentRel.Score
+			scoreAToB := currentRel.ScoreFrom(currentRel.FactionA)
+			scoreBToA := currentRel.ScoreFrom(currentRel.FactionB)
+			passiveAToB := currentRel.PassiveModifierFrom(currentRel.FactionA)
+			passiveBToA := currentRel.PassiveModifierFrom(currentRel.FactionB)
 			stance := encodeStance(currentRel.Stance)
-			passiveModifier := currentRel.PassiveRelationModifier
 			nextRepairTurn := currentRel.NextAIRelationRepairTurn
-			out[key] = relationSaveState{Score: &score, Stance: &stance, PassiveRelationModifier: &passiveModifier, NextAIRelationRepairTurn: &nextRepairTurn}
+			out[key] = relationSaveState{ScoreAToB: &scoreAToB, ScoreBToA: &scoreBToA, Stance: &stance, PassiveModifierAToB: &passiveAToB, PassiveModifierBToA: &passiveBToA, NextAIRelationRepairTurn: &nextRepairTurn}
 		default:
 			var delta relationSaveState
-			if currentRel.Score != baseRel.Score {
-				score := currentRel.Score
-				delta.Score = &score
+			currentAToB := currentRel.ScoreFrom(currentRel.FactionA)
+			currentBToA := currentRel.ScoreFrom(currentRel.FactionB)
+			baseAToB := baseRel.ScoreFrom(baseRel.FactionA)
+			baseBToA := baseRel.ScoreFrom(baseRel.FactionB)
+			currentPassiveAToB := currentRel.PassiveModifierFrom(currentRel.FactionA)
+			currentPassiveBToA := currentRel.PassiveModifierFrom(currentRel.FactionB)
+			basePassiveAToB := baseRel.PassiveModifierFrom(baseRel.FactionA)
+			basePassiveBToA := baseRel.PassiveModifierFrom(baseRel.FactionB)
+			if currentAToB != baseAToB {
+				score := currentAToB
+				delta.ScoreAToB = &score
+			}
+			if currentBToA != baseBToA {
+				score := currentBToA
+				delta.ScoreBToA = &score
+			}
+			if currentPassiveAToB != basePassiveAToB {
+				modifier := currentPassiveAToB
+				delta.PassiveModifierAToB = &modifier
+			}
+			if currentPassiveBToA != basePassiveBToA {
+				modifier := currentPassiveBToA
+				delta.PassiveModifierBToA = &modifier
 			}
 			if currentRel.Stance != baseRel.Stance {
 				stance := encodeStance(currentRel.Stance)
 				delta.Stance = &stance
 			}
-			if currentRel.PassiveRelationModifier != baseRel.PassiveRelationModifier {
-				passiveModifier := currentRel.PassiveRelationModifier
-				delta.PassiveRelationModifier = &passiveModifier
-			}
 			if currentRel.NextAIRelationRepairTurn != baseRel.NextAIRelationRepairTurn {
 				nextRepairTurn := currentRel.NextAIRelationRepairTurn
 				delta.NextAIRelationRepairTurn = &nextRepairTurn
 			}
-			if delta.Score != nil || delta.Stance != nil || delta.PassiveRelationModifier != nil || delta.NextAIRelationRepairTurn != nil {
+			if delta.ScoreAToB != nil || delta.ScoreBToA != nil || delta.Stance != nil || delta.PassiveModifierAToB != nil || delta.PassiveModifierBToA != nil || delta.NextAIRelationRepairTurn != nil {
 				out[key] = delta
 			}
 		}
@@ -1358,14 +1382,24 @@ func applyRelationDelta(gs *state.GameState, deltas map[string]relationSaveState
 			rel = &faction.Relation{FactionA: a, FactionB: b}
 			gs.Relations[key] = rel
 		}
-		if delta.Score != nil {
-			rel.Score = *delta.Score
+		if delta.ScoreAToB != nil || delta.ScoreBToA != nil {
+			if delta.ScoreAToB != nil {
+				rel.SetScoreFrom(rel.FactionA, *delta.ScoreAToB)
+			}
+			if delta.ScoreBToA != nil {
+				rel.SetScoreFrom(rel.FactionB, *delta.ScoreBToA)
+			}
+		}
+		if delta.PassiveModifierAToB != nil || delta.PassiveModifierBToA != nil {
+			if delta.PassiveModifierAToB != nil {
+				rel.SetPassiveModifierFrom(rel.FactionA, *delta.PassiveModifierAToB)
+			}
+			if delta.PassiveModifierBToA != nil {
+				rel.SetPassiveModifierFrom(rel.FactionB, *delta.PassiveModifierBToA)
+			}
 		}
 		if delta.Stance != nil {
 			rel.Stance = decodeStance(*delta.Stance)
-		}
-		if delta.PassiveRelationModifier != nil {
-			rel.PassiveRelationModifier = *delta.PassiveRelationModifier
 		}
 		if delta.NextAIRelationRepairTurn != nil {
 			rel.NextAIRelationRepairTurn = *delta.NextAIRelationRepairTurn

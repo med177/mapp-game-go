@@ -55,7 +55,7 @@ func aiTechMods(gs *state.GameState, ownerID string) combat.TechMods {
 // relationScore iki fraksiyon arasındaki ilişki puanını döner; yoksa 0.
 func relationScore(gs *state.GameState, a, b string) (int, faction.DiplomaticStance) {
 	if rel := diplomacy.Relation(gs, faction.FactionID(a), faction.FactionID(b)); rel != nil {
-		return rel.Score, rel.Stance
+		return diplomacy.RelationScore(gs, faction.FactionID(a), faction.FactionID(b)), rel.Stance
 	}
 	return 0, faction.StancePeace
 }
@@ -314,7 +314,7 @@ func aiDiplomacyOfferPriorityDetails(gs *state.GameState, from, to faction.Facti
 	score := 0
 	reasons := make([]string, 0, 5)
 	if rel := diplomacy.Relation(gs, from, to); rel != nil {
-		relScore := minInt(20, maxInt(0, -rel.Score/4))
+		relScore := minInt(20, maxInt(0, -diplomacy.RelationScore(gs, from, to)/4))
 		score += relScore
 		if relScore > 0 {
 			reasons = append(reasons, "ilişki baskısı")
@@ -541,7 +541,7 @@ func aiShouldCancelAlliance(gs *state.GameState, from, to faction.FactionID) boo
 	if strategic.ExpansionTensionPenalty > 0 && strategic.ThreatValue == 0 && strategic.Score < 22 {
 		return true
 	}
-	if strategic.Score < strategicAllianceRetentionFloor(gs, from) && rel.Score <= 50 {
+	if strategic.Score < strategicAllianceRetentionFloor(gs, from) && diplomacy.RelationScore(gs, from, to) <= 50 {
 		return true
 	}
 	if aiActiveAllianceCount(gs, from) > aiAllianceSoftCap(gs, from) && strategic.ThreatValue == 0 && strategic.Score < 24 {

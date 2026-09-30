@@ -13,10 +13,11 @@ func relationshipRepairTestState(gold int) (*state.GameState, *faction.Relation)
 	actor := faction.FactionID("actor")
 	target := faction.FactionID("target")
 	rel := &faction.Relation{
-		FactionA: actor,
-		FactionB: target,
-		Score:    20,
-		Stance:   faction.StanceTrade,
+		FactionA:  actor,
+		FactionB:  target,
+		ScoreAToB: 20,
+		ScoreBToA: 20,
+		Stance:    faction.StanceTrade,
 	}
 	return &state.GameState{
 		Turn: 1,
@@ -53,7 +54,7 @@ func TestAIGiftTreasuryGateRejectsHalfTreasuryGift(t *testing.T) {
 	// Deterministik başarı zarı bu turu seçmeyebilir; iki durumda da güvenli
 	// olmayan hediye uygulanmamalı, en fazla heyet uygulanmalıdır.
 	aiHandleRelationshipRepairWithBudget(gs, rel.FactionA, rel.FactionB, rel, nil)
-	if actor.Gold == 2500 || rel.Score == 32 {
+	if actor.Gold == 2500 || rel.ScoreFrom(rel.FactionA) == 32 {
 		t.Fatal("AI güvenli olmayan hediyeyi uyguladı")
 	}
 }

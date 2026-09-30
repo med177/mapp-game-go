@@ -219,7 +219,7 @@ func AssessWarCall(gs *state.GameState, caller, ally, enemy faction.FactionID) W
 		return assessment
 	}
 
-	chance := 20 + rel.Score
+	chance := 20 + RelationScore(gs, callerRoot, allyRoot)
 	chance += clamp(-relationScoreAgainst(gs, allyRoot, enemyRoot)/3, -10, 24)
 	if HasTradeRouteBetween(gs, allyRoot, enemyRoot) {
 		chance -= 14
@@ -492,7 +492,7 @@ func breakAllianceForWarRefusal(gs *state.GameState, caller, ally faction.Factio
 	} else {
 		rel.Stance = faction.StancePeace
 	}
-	rel.Score = clamp(rel.Score-warCallRefusalScorePenalty, -100, 100)
+	AddRelationScoreBoth(gs, caller, ally, -warCallRefusalScorePenalty)
 }
 
 func buildWarDeclarationMessage(gs *state.GameState, actorRoot, targetRoot faction.FactionID, attackerCalls, defenderCalls []WarCallOutcome, alliancePenalties []AllianceWarRelationPenalty, privilegeOperators []faction.FactionID) string {
@@ -613,7 +613,7 @@ func relationScoreAgainst(gs *state.GameState, a, b faction.FactionID) int {
 	if rel == nil {
 		return 0
 	}
-	return rel.Score
+	return RelationScore(gs, a, b)
 }
 
 func itoa(v int) string {

@@ -128,7 +128,8 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 		}
 		if event.ID == "ottoman_bithynian_campaign_muster_1321" {
 			if event.HistoricalYear != 1321 || event.AffectedFaction != "ottoman" ||
-				len(event.RequiresOwnedRegions) != 2 || len(event.RelationRequirements) != 1 ||
+				len(event.RequiresOwnedRegions) != 2 || len(event.RequiresUnownedRegions) != 1 ||
+				event.RequiresUnownedRegions[0] != "bursa" || len(event.RelationRequirements) != 1 ||
 				event.RelationRequirements[0].FactionID != "east_rome" ||
 				event.RelationRequirements[0].Stance != string(faction.StanceWar) {
 				t.Fatal("1321 Bithynia seferberliği event'inin tarih, sahiplik veya savaş koşulları eksik")
@@ -184,7 +185,7 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 	}
 }
 
-func TestTickHistoricalStateTriggeredEventDoesNotWaitForYear(t *testing.T) {
+func TestTickHistoricalStateTriggeredEventWaitsForMinimumDate(t *testing.T) {
 	const ottomanID = faction.FactionID("ottoman")
 	gs := &state.GameState{
 		Year:  1300,
@@ -206,11 +207,42 @@ func TestTickHistoricalStateTriggeredEventDoesNotWaitForYear(t *testing.T) {
 		RequiresOwnedRegions: []world.RegionID{"bursa"},
 	}
 
+	if got := Tick(gs, []*Event{event}); got != nil {
+		t.Fatalf("state koşulu gerçekleşmiş tarihsel event kendi tarihinden önce tetiklendi: %#v", got)
+	}
+
+	gs.Year = 1327
+	gs.Month = 1
 	if got := Tick(gs, []*Event{event}); got != event {
-		t.Fatalf("state koşulu gerçekleşmiş tarihsel event erken tetiklenmedi: %#v", got)
+		t.Fatalf("state koşulu gerçekleşmiş tarihsel event minimum tarihten sonra tetiklenmedi: %#v", got)
 	}
 	if !gs.FiredEventIDs[event.ID] {
-		t.Fatal("erken tetiklenen tek seferlik event fired olarak işaretlenmedi")
+		t.Fatal("minimum tarihten sonra tetiklenen tek seferlik event fired olarak işaretlenmedi")
+	}
+}
+
+func TestRequiresUnownedRegionsBlocksCompletedTarget(t *testing.T) {
+	const ottomanID = faction.FactionID("ottoman")
+	event := &Event{
+		Target:                 "specific_faction",
+		AffectedFaction:        string(ottomanID),
+		RequiresUnownedRegions: []world.RegionID{"bursa"},
+	}
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			ottomanID: {ID: ottomanID},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"bursa": {ID: "bursa", OwnerID: "east_rome"},
+		},
+	}
+	if !ConditionsMet(gs, event) {
+		t.Fatal("hedef faction Bursa'yı kontrol etmiyorken unowned koşulu sağlanmadı")
+	}
+
+	gs.Regions["bursa"].OwnerID = string(ottomanID)
+	if ConditionsMet(gs, event) {
+		t.Fatal("hedef faction Bursa'yı aldıktan sonra unowned koşulu sağlandı")
 	}
 }
 
@@ -237,7 +269,7 @@ func TestTickDateOnlyHistoricalEventStillWaitsForYear(t *testing.T) {
 	}
 }
 
-func TestTickStrictHistoricalStateTriggeredEventWaitsForYear(t *testing.T) {
+func TestTickStrictHistoricalStateTriggeredEventWaitsForMinimumDate(t *testing.T) {
 	const ottomanID = faction.FactionID("ottoman")
 	gs := &state.GameState{
 		Year:  1300,
@@ -264,10 +296,10 @@ func TestTickStrictHistoricalStateTriggeredEventWaitsForYear(t *testing.T) {
 		t.Fatalf("kesin tarihli state event'i tarihinden önce tetiklendi: %#v", got)
 	}
 
-	gs.Year = 1326
-	gs.Month = 4
+	gs.Year = 1327
+	gs.Month = 1
 	if got := Tick(gs, []*Event{event}); got != event {
-		t.Fatalf("kesin tarihli state event'i tarih penceresinde tetiklenmedi: %#v", got)
+		t.Fatalf("state event'i minimum tarihten sonra tetiklenmedi: %#v", got)
 	}
 }
 
@@ -329,8 +361,8 @@ func TestApplyOttomanPostBursaSupportHonorsBeylikWarBlock(t *testing.T) {
 		faction.FactionID("karaman_bey"),
 	}
 	gs := &state.GameState{
-		Year:    1300,
-		Month:   1,
+		Year:    1327,
+		Month:   9,
 		Regions: map[world.RegionID]*world.Region{bursa.ID: bursa},
 		Factions: map[faction.FactionID]*faction.Faction{
 			ownerID: {ID: ownerID, CapitalSettlementID: "bursa_prusa", Gold: 300, Grain: 500},
@@ -350,7 +382,7 @@ func TestApplyOttomanPostBursaSupportHonorsBeylikWarBlock(t *testing.T) {
 		t.Fatal("1327 destek event'i Bursa Osmanlıdayken ve beyliklerle savaş yokken hazır görünmüyor")
 	}
 	if got := Tick(gs, []*Event{support}); got != support {
-		t.Fatal("1327 Bursa sonrası destek event'i tarihini beklemeden tetiklenmedi")
+		t.Fatal("1327 Bursa sonrası destek event'i minimum tarihten sonra tetiklenmedi")
 	}
 	Apply(gs, support)
 	if len(gs.Armies) != 3 {
@@ -753,7 +785,7 @@ func TestApplyDynasticSettlementTransfersDowryAndFinalUnion(t *testing.T) {
 		t.Fatal("çeyiz yüzde 30 kara ordusu aktarımını deterministik uygulamadı veya filoyu aktardı")
 	}
 	relation := gs.Relations[faction.RelationKey(ottomanID, germiyanID)]
-	if relation == nil || relation.Stance != faction.StanceAllied || relation.Score != 50 {
+	if relation == nil || relation.Stance != faction.StanceAllied || relation.ScoreFrom(relation.FactionA) != 50 {
 		t.Fatalf("çeyiz ilişkisi müttefik olarak kurulmadı: %+v", relation)
 	}
 

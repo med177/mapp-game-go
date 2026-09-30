@@ -958,7 +958,7 @@ func sortedFactionsForTradeAgreements(gs *state.GameState) []tradeAgreementCandi
 		list = append(list, tradeAgreementCandidate{
 			ID:                      fid,
 			Stance:                  rel.Stance,
-			Score:                   rel.Score,
+			Score:                   diplomacy.RelationScore(gs, gs.PlayerFactionID, fid),
 			PlayerTradeCap:          playerCap,
 			TargetTradeCap:          targetCap,
 			PlayerRouteCapacityUsed: playerRouteCapacityUsed,

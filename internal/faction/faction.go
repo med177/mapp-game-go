@@ -199,16 +199,81 @@ const (
 
 // Relation iki fraksiyon arasındaki tam ilişkiyi tutar.
 type Relation struct {
-	FactionA FactionID        `json:"faction_a"`
-	FactionB FactionID        `json:"faction_b"`
-	Score    int              `json:"score"`
-	Stance   DiplomaticStance `json:"stance"`
-	// PassiveRelationModifier, savaşsız kalma veya bölge saldırısı kaynaklı
-	// tur trendinin bu ilişkiye yaptığı birikimli katkıyı taşır. Score içindeki
-	// diğer diplomasi etkilerinden ayrı tutulduğu için trend kendi -25/+25
-	// sınırını korurken tarihsel/dinî başlangıç puanları bozulmaz.
-	PassiveRelationModifier  int `json:"passive_relation_modifier,omitempty"`
-	NextAIRelationRepairTurn int `json:"next_ai_relation_repair_turn,omitempty"`
+	FactionA                 FactionID        `json:"faction_a"`
+	FactionB                 FactionID        `json:"faction_b"`
+	ScoreAToB                int              `json:"score_a_to_b"`
+	ScoreBToA                int              `json:"score_b_to_a"`
+	Stance                   DiplomaticStance `json:"stance"`
+	PassiveModifierAToB      int              `json:"passive_modifier_a_to_b,omitempty"`
+	PassiveModifierBToA      int              `json:"passive_modifier_b_to_a,omitempty"`
+	NextAIRelationRepairTurn int              `json:"next_ai_relation_repair_turn,omitempty"`
+}
+
+// ScoreFrom, from devletinin karşı devlete yönelik ilişki puanını döner.
+func (r *Relation) ScoreFrom(from FactionID) int {
+	if r == nil {
+		return 0
+	}
+	if from == r.FactionA {
+		return r.ScoreAToB
+	}
+	if from == r.FactionB {
+		return r.ScoreBToA
+	}
+	return 0
+}
+
+// SetScoreFrom, from devletinin karşı devlete yönelik ilişki puanını ayarlar.
+func (r *Relation) SetScoreFrom(from FactionID, score int) {
+	if r == nil {
+		return
+	}
+	switch from {
+	case r.FactionA:
+		r.ScoreAToB = score
+	case r.FactionB:
+		r.ScoreBToA = score
+	default:
+		return
+	}
+}
+
+// SetScoreBoth, iki yönü aynı başlangıç veya ortak karar puanına getirir.
+func (r *Relation) SetScoreBoth(score int) {
+	if r == nil {
+		return
+	}
+	r.ScoreAToB = score
+	r.ScoreBToA = score
+}
+
+// PassiveModifierFrom, from devletinin yönlü pasif trend birikimini döner.
+func (r *Relation) PassiveModifierFrom(from FactionID) int {
+	if r == nil {
+		return 0
+	}
+	if from == r.FactionA {
+		return r.PassiveModifierAToB
+	}
+	if from == r.FactionB {
+		return r.PassiveModifierBToA
+	}
+	return 0
+}
+
+// SetPassiveModifierFrom, from devletinin yönlü pasif trend birikimini ayarlar.
+func (r *Relation) SetPassiveModifierFrom(from FactionID, modifier int) {
+	if r == nil {
+		return
+	}
+	switch from {
+	case r.FactionA:
+		r.PassiveModifierAToB = modifier
+	case r.FactionB:
+		r.PassiveModifierBToA = modifier
+	default:
+		return
+	}
 }
 
 // RelationKey iki fraksiyon için sıralı anahtar üretir.

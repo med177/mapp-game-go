@@ -122,7 +122,7 @@ func applyAllianceWarRelationPenalties(gs *state.GameState, attacker, target fac
 				rel.Stance = faction.StancePeace
 			}
 		}
-		rel.Score = clamp(rel.Score-penalty, -100, 100)
+		AddRelationScoreBoth(gs, attackerRoot, allyRoot, -penalty)
 		penalties = append(penalties, AllianceWarRelationPenalty{
 			FactionID:       allyRoot,
 			RelationPenalty: penalty,

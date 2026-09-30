@@ -7,6 +7,13 @@ import (
 	"sort"
 )
 
+type relationDefinition struct {
+	FactionA FactionID        `json:"faction_a"`
+	FactionB FactionID        `json:"faction_b"`
+	Score    int              `json:"score"`
+	Stance   DiplomaticStance `json:"stance"`
+}
+
 // LoadFactionsWithOrder assets/data/factions.json dosyasını okur, map ve dosya sırasını döner.
 func LoadFactionsWithOrder(path string) (map[FactionID]*Faction, []FactionID, error) {
 	data, err := os.ReadFile(path)
@@ -61,7 +68,7 @@ func LoadRelationsWithOrder(path string, factions map[FactionID]*Faction) (map[s
 		return nil, nil, fmt.Errorf("relations dosyası okunamadı: %w", err)
 	}
 
-	var list []*Relation
+	var list []*relationDefinition
 	if err := json.Unmarshal(data, &list); err != nil {
 		return nil, nil, fmt.Errorf("relations JSON parse hatası: %w", err)
 	}
@@ -80,10 +87,11 @@ func LoadRelationsWithOrder(path string, factions map[FactionID]*Faction) (map[s
 		}
 		key := RelationKey(rel.FactionA, rel.FactionB)
 		relations[key] = &Relation{
-			FactionA: rel.FactionA,
-			FactionB: rel.FactionB,
-			Score:    rel.Score,
-			Stance:   normalizeStance(rel.Stance),
+			FactionA:  rel.FactionA,
+			FactionB:  rel.FactionB,
+			ScoreAToB: rel.Score,
+			ScoreBToA: rel.Score,
+			Stance:    normalizeStance(rel.Stance),
 		}
 		order = append(order, key)
 	}
@@ -111,10 +119,11 @@ func BuildInitialRelations(factions map[FactionID]*Faction) map[string]*Relation
 
 			key := RelationKey(a.ID, b.ID)
 			relations[key] = &Relation{
-				FactionA: a.ID,
-				FactionB: b.ID,
-				Score:    DefaultRelationScore(a, b),
-				Stance:   StancePeace,
+				FactionA:  a.ID,
+				FactionB:  b.ID,
+				ScoreAToB: DefaultRelationScore(a, b),
+				ScoreBToA: DefaultRelationScore(a, b),
+				Stance:    StancePeace,
 			}
 		}
 	}

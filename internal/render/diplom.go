@@ -1177,7 +1177,7 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 			stanceCol, stanceTR := diplomacyStatusDisplay(gs, gs.PlayerFactionID, fid, rel)
 			scoreValue := 0
 			if rel != nil {
-				scoreValue = rel.Score
+				scoreValue = diplomacy.RelationScore(gs, gs.PlayerFactionID, fid)
 			}
 			scoreCol := scoreColor(scoreValue)
 			rightRow := gameui.NewTableRow(relationRect, []gameui.TableCell{
@@ -1264,7 +1264,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 	rel := gs.Relations[faction.RelationKey(gs.PlayerFactionID, target)]
 	relScore := 0
 	if rel != nil {
-		relScore = rel.Score
+		relScore = diplomacy.RelationScore(gs, gs.PlayerFactionID, target)
 	}
 	statusColor, statusLabel := diplomacyStatusDisplay(gs, gs.PlayerFactionID, target, rel)
 	drawUICardRect(screen, layout.statusRect, color.RGBA{19, 16, 12, 220}, color.RGBA{92, 74, 38, 170}, 1)
@@ -1969,7 +1969,7 @@ func sortedDiplomacyFactions(gs *state.GameState, sortMode diplomacyListSort) []
 	if sortMode == diplomacyListSortRelation {
 		for _, fid := range fids {
 			if rel := diplomacy.Relation(gs, gs.PlayerFactionID, fid); rel != nil {
-				relationScores[fid] = rel.Score
+				relationScores[fid] = diplomacy.RelationScore(gs, gs.PlayerFactionID, fid)
 			}
 			adjacentToPlayer[fid] = factionsShareLandBorder(gs, gs.PlayerFactionID, fid)
 		}
@@ -2143,7 +2143,7 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 	score := 0
 	stance := faction.StancePeace
 	if rel != nil {
-		score = rel.Score
+		score = diplomacy.RelationScore(gs, gs.PlayerFactionID, target)
 		stance = rel.Stance
 	}
 	chance := 50 + score/2

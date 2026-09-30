@@ -4805,7 +4805,7 @@ func (r *Renderer) setFactionFormRelationTarget(target faction.FactionID) {
 		self = r.editFactionForm.originalID
 	}
 	if rel := r.relationForForm(self, target); rel != nil {
-		r.editFactionForm.relationScore = itoa(rel.Score)
+		r.editFactionForm.relationScore = itoa(diplomacy.RelationScore(r.gs, self, target))
 		r.editFactionForm.relationStance = rel.Stance
 		return
 	}
@@ -4892,13 +4892,13 @@ func (r *Renderer) ensureRelationsForFaction(fid faction.FactionID) {
 				stance = faction.StanceWar
 			}
 		}
-		r.gs.Relations[key] = &faction.Relation{FactionA: fid, FactionB: otherID, Score: score, Stance: stance}
+		r.gs.Relations[key] = &faction.Relation{FactionA: fid, FactionB: otherID, ScoreAToB: score, ScoreBToA: score, Stance: stance}
 	}
 }
 
 func (r *Renderer) setRelationValue(a, b faction.FactionID, score int, stance faction.DiplomaticStance) {
 	key := faction.RelationKey(a, b)
-	r.gs.Relations[key] = &faction.Relation{FactionA: a, FactionB: b, Score: score, Stance: stance}
+	r.gs.Relations[key] = &faction.Relation{FactionA: a, FactionB: b, ScoreAToB: score, ScoreBToA: score, Stance: stance}
 	for _, existing := range r.gs.RelationOrder {
 		if existing == key {
 			return

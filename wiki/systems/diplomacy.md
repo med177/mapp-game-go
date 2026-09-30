@@ -64,12 +64,17 @@ Oyuncu HRE değilse mevcut deterministik AI Diyet/seçim çözümü korunur.
 ```go
 type Relation struct {
     FactionA, FactionB FactionID
-    Score   int              // -100 (düşman) → +100 (müttefik)
+    ScoreAToB, ScoreBToA int // iki devletin ayrı bakış açıları; -100 → +100
     Stance  DiplomaticStance
 }
 ```
 
 `RelationKey(a, b)` → her zaman sıralı `"a|b"` string'i üretir (çift kayıt önler).
+İlişki puanı ve pasif trend birikimi yönlüdür: `ScoreAToB`, A'nın B'ye;
+`ScoreBToA` ise B'nin A'ya bakışıdır. Bir devletin bölge saldırısı, saldıranın
+dış devletlere giden yönünü etkiler; gözlemci devletin kendi yönü, kendi saldırı
+durumuna göre hesaplanır. Karşılıklı anlaşma, savaş ve doğrudan diplomasi
+sonuçları gerektiğinde iki yönü birlikte değiştirir.
 
 ## Barış Teklifi Kabulü
 
@@ -281,7 +286,7 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 | Ticaret | +15 |
 | İttifak | +20 |
 | Oyuncunun normal diplomasi teklifini reddetme | -3 |
-| `ApplyRelationDecay()` | Savaşta skor düşer; barış/ticaret yumuşar, desteklenmeyen ittifaklar aşınır; saldırı yapmayan dış devletlerin pasif ilişkileri tur başına `+1`, bölgeye saldıranlarınki `-1` ilerler ve bu trend `+25/-25` ile sınırlıdır; yüksek aşırı genişleme cezası pasif iyileşmeye önceliklidir |
+| `ApplyRelationDecay()` | Savaşta skor düşer; barış/ticaret yumuşar, desteklenmeyen ittifaklar aşınır; her devletin kendi bakış yönünde saldırı yapanlar `-1`, saldırmayanlar `+1` alır ve bu trend `+25/-25` ile sınırlıdır; yüksek aşırı genişleme cezası pasif iyileşmeye önceliklidir |
 | Karşı din devletine bölge saldırısı | Hedef dinindeki diğer devletlere `-3`; saldıranın dinindeki diğer devletlere `+1` (aynı turda aynı hedef dini bir kez) |
 | Ortak düşman | +bonus (AI koalisyon mantığında) |
 | Din bonusu/cezası | `religion.Relation(a,b)` — başlangıç skoru; +25 / -20 / -30 / -40 |
@@ -294,9 +299,9 @@ hedef aynı din için tek `-3` uygulanır ve saldıranın kendi dinindeki devlet
 `+1` alır. Bu hedef geçmişi compact save içinde korunur.
 Gerçek bölge muharebesi, kuşatma başlangıcı veya savunmasız bölgenin ele geçirilmesi
 `FactionAttackTurns` ile mevcut tura işaretlenir. İlişki kaydındaki
-`PassiveRelationModifier`, bu mekanizmanın birikimini diğer dinî, tarihsel ve
-diplomatik puanlardan ayrı tutar; compact save içinde saklandığı için kayıt yükleme
-sonrasında aynı tur yeniden uygulanmaz.
+`PassiveModifierAToB` ve `PassiveModifierBToA`, bu mekanizmanın iki yönlü
+birikimini diğer dinî, tarihsel ve diplomatik puanlardan ayrı tutar; compact save
+içinde saklandığı için kayıt yükleme sonrasında aynı tur yeniden uygulanmaz.
 
 ### Teklif Retleri ve Tekrar Denemeler
 

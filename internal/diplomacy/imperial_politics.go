@@ -254,7 +254,7 @@ func bestImperialCandidate(gs *state.GameState, elector faction.FactionID, candi
 			score += 20
 		}
 		if rel := Relation(gs, elector, candidate); rel != nil {
-			score += rel.Score
+			score += RelationScore(gs, elector, candidate)
 		}
 		score += MilitaryPower(gs, candidate) / 10
 		score += landRegionCount(gs, candidate) * 2

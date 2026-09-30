@@ -10,6 +10,24 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestAddRelationScoreBothPreservesDirectionalScores(t *testing.T) {
+	gs := &state.GameState{
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("a", "b"): {
+				FactionA: "a", FactionB: "b", ScoreAToB: 10, ScoreBToA: -20,
+			},
+		},
+	}
+
+	AddRelationScoreBoth(gs, "a", "b", 5)
+	if got := RelationScore(gs, "a", "b"); got != 15 {
+		t.Fatalf("A->B karşılıklı değişim sonrası = %d, want 15", got)
+	}
+	if got := RelationScore(gs, "b", "a"); got != -15 {
+		t.Fatalf("B->A karşılıklı değişim sonrası = %d, want -15", got)
+	}
+}
+
 func TestApplyRelationDecayPenalizesTradeAndCancelsItBelowThreshold(t *testing.T) {
 	gs := &state.GameState{
 		Turn:                         1,
@@ -23,10 +41,11 @@ func TestApplyRelationDecayPenalizesTradeAndCancelsItBelowThreshold(t *testing.T
 		},
 		Relations: map[string]*faction.Relation{
 			faction.RelationKey("expander", "neighbor"): {
-				FactionA: "expander",
-				FactionB: "neighbor",
-				Score:    35,
-				Stance:   faction.StanceTrade,
+				FactionA:  "expander",
+				FactionB:  "neighbor",
+				ScoreAToB: 35,
+				ScoreBToA: 35,
+				Stance:    faction.StanceTrade,
 			},
 		},
 		TradeRoutes: []*economy.TradeRoute{
@@ -43,8 +62,8 @@ func TestApplyRelationDecayPenalizesTradeAndCancelsItBelowThreshold(t *testing.T
 	}
 
 	rel := gs.Relations[faction.RelationKey("expander", "neighbor")]
-	if rel.Score >= tradeRelationThreshold {
-		t.Fatalf("aşırı genişleme sonrası ticaret ilişkisi yeterince düşmedi: %d", rel.Score)
+	if got := RelationScore(gs, "neighbor", "expander"); got >= tradeRelationThreshold {
+		t.Fatalf("aşırı genişleme sonrası expander görüşü yeterince düşmedi: %d", got)
 	}
 	if rel.Stance != faction.StancePeace {
 		t.Fatalf("ticaret eşiğin altında barışa dönmedi: %q", rel.Stance)
@@ -76,13 +95,13 @@ func TestApplyRelationDecayAddsPassiveRelationTrendUpTo25(t *testing.T) {
 	}
 
 	rel := gs.Relations[faction.RelationKey("quiet", "friend")]
-	if rel.Score != 25 || rel.PassiveRelationModifier != 25 {
-		t.Fatalf("saldırısız ilişki trendi = score %d modifier %d, want 25/25", rel.Score, rel.PassiveRelationModifier)
+	if rel.ScoreFrom("quiet") != 25 || rel.PassiveModifierFrom("quiet") != 25 {
+		t.Fatalf("saldırısız ilişki trendi = score %d modifier %d, want 25/25", rel.ScoreFrom("quiet"), rel.PassiveModifierFrom("quiet"))
 	}
 	gs.Turn = 30
 	ApplyRelationDecay(gs)
-	if rel.Score != 25 || rel.PassiveRelationModifier != 25 {
-		t.Fatalf("aynı turda ikinci trend uygulandı: score %d modifier %d", rel.Score, rel.PassiveRelationModifier)
+	if rel.ScoreFrom("quiet") != 25 || rel.PassiveModifierFrom("quiet") != 25 {
+		t.Fatalf("aynı turda ikinci trend uygulandı: score %d modifier %d", rel.ScoreFrom("quiet"), rel.PassiveModifierFrom("quiet"))
 	}
 }
 
@@ -113,8 +132,11 @@ func TestApplyRelationDecayPenalizesEveryOtherRelationAfterRegionAttack(t *testi
 
 	for _, other := range []faction.FactionID{"one", "two"} {
 		rel := gs.Relations[faction.RelationKey("attacker", other)]
-		if rel.Score != -1 || rel.PassiveRelationModifier != -1 {
-			t.Fatalf("%s ilişkisi = score %d modifier %d, want -1/-1", other, rel.Score, rel.PassiveRelationModifier)
+		if got := RelationScore(gs, "attacker", other); got != -1 || rel.PassiveModifierFrom("attacker") != -1 {
+			t.Fatalf("%s saldıran görüşü = score %d modifier %d, want -1/-1", other, got, rel.PassiveModifierFrom("attacker"))
+		}
+		if got := RelationScore(gs, other, "attacker"); got != 1 || rel.PassiveModifierFrom(other) != 1 {
+			t.Fatalf("%s saldırmayan görüşü = score %d modifier %d, want +1/+1", other, got, rel.PassiveModifierFrom(other))
 		}
 	}
 }
@@ -147,16 +169,22 @@ func TestReligionAttackRelationTrendTargetsReligiousGroupsOncePerTurn(t *testing
 		applyReligionAttackRelationTrend(gs, gs.Relations[faction.RelationKey("attacker", other)])
 	}
 
-	if got := gs.Relations[faction.RelationKey("attacker", "shia_one")].Score; got != -3 {
+	if got := RelationScore(gs, "attacker", "shia_one"); got != -3 {
 		t.Fatalf("karşı din ilişkisi = %d, want -3", got)
 	}
-	if got := gs.Relations[faction.RelationKey("attacker", "sunni_one")].Score; got != 1 {
+	if got := RelationScore(gs, "shia_one", "attacker"); got != 0 {
+		t.Fatalf("hedef dininin saldıran görüşü = %d, want 0", got)
+	}
+	if got := RelationScore(gs, "attacker", "sunni_one"); got != 1 {
 		t.Fatalf("aynı din ilişkisi = %d, want +1", got)
 	}
-	if got := gs.Relations[faction.RelationKey("attacker", "orthodox")].Score; got != 0 {
+	if got := RelationScore(gs, "sunni_one", "attacker"); got != 0 {
+		t.Fatalf("aynı din devletinin saldıran görüşü = %d, want 0", got)
+	}
+	if got := RelationScore(gs, "attacker", "orthodox"); got != 0 {
 		t.Fatalf("ilgisiz din ilişkisi = %d, want 0", got)
 	}
-	if got := gs.Relations[faction.RelationKey("attacker", "catholic_target")].Score; got != -3 {
+	if got := RelationScore(gs, "attacker", "catholic_target"); got != -3 {
 		t.Fatalf("ikinci karşı din ilişkisi = %d, want -3", got)
 	}
 }

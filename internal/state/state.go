@@ -1457,7 +1457,8 @@ func (s *GameState) adjustHistoricalReligionRelations(changedFactionID faction.F
 			delta = -40
 		}
 		if delta != 0 {
-			rel.Score = clampHistoricalRelationScore(rel.Score + delta)
+			rel.SetScoreFrom(changedFactionID, clampHistoricalRelationScore(rel.ScoreFrom(changedFactionID)+delta))
+			rel.SetScoreFrom(otherFactionID, clampHistoricalRelationScore(rel.ScoreFrom(otherFactionID)+delta))
 		}
 	}
 }
