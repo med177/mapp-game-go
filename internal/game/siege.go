@@ -522,6 +522,7 @@ func (g *Game) startSiegeForArmy(aid army.ArmyID, target world.RegionID, notify 
 		}
 		return false
 	}
+	g.gs.RecordFactionRegionAttackAgainst(faction.FactionID(attacker.OwnerID), faction.FactionID(targetRegion.OwnerID))
 	ensureSiegeMap(g.gs)
 	defender := g.gs.SelectBattleDefender(attacker, target, false)
 	fortLevel := targetRegion.FortificationLevel()
@@ -592,9 +593,10 @@ func validSiegeRetreatRegion(gs *state.GameState, candidate, target world.Region
 }
 
 func (g *Game) captureBesiegedRegion(attacker *army.Army, targetRegion *world.Region, showAfterBattleReport bool) (eliminationResult, bool) {
-	if g == nil || attacker == nil || targetRegion == nil {
+	if g == nil || g.gs == nil || attacker == nil || targetRegion == nil {
 		return eliminationResult{}, false
 	}
+	g.gs.RecordFactionRegionAttackAgainst(faction.FactionID(attacker.OwnerID), faction.FactionID(targetRegion.OwnerID))
 	attacker.RegionID = targetRegion.ID
 	attacker.DockedRegionID = ""
 	attacker.DockedSettlementID = ""

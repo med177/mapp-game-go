@@ -31,6 +31,7 @@ func aiApplyConquest(gs *state.GameState, region *world.Region, newOwnerID strin
 			return
 		}
 	}
+	gs.RecordFactionRegionAttackAgainst(faction.FactionID(newOwnerID), faction.FactionID(region.OwnerID))
 	gs.RecordWarRegionCapture(faction.FactionID(newOwnerID), faction.FactionID(region.OwnerID))
 	region.ApplyConquest(newOwnerID, aiOwnerReligion(gs, newOwnerID))
 }

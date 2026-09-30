@@ -57,12 +57,12 @@ func (r *Renderer) drawOverextensionPopup(screen *ebiten.Image) {
 	DrawText(screen, "Aşırı Genişleme", popup.X+10, popup.Y+10, FaceMed, ColorGold)
 	DrawText(screen, label, popup.X+10, popup.Y+32, FaceSmall, labelColor)
 	DrawText(screen, "Son "+itoa(r.gs.AggressiveExpansionWindowTurns())+" turdaki hızlı kara kazanımından", popup.X+10, popup.Y+52, FaceSmall, ColorGray)
-	DrawText(screen, "türetilen 0–100 arası risk göstergesidir.", popup.X+10, popup.Y+68, FaceSmall, ColorGray)
+	DrawText(screen, "türetilen 0–500 arası risk göstergesidir.", popup.X+10, popup.Y+68, FaceSmall, ColorGray)
 
 	for index, line := range overextensionPopupRangeLines() {
 		DrawText(screen, line.text, popup.X+10, popup.Y+92+float64(index)*16, FaceSmall, line.color)
 	}
-	DrawText(screen, "Doğrudan gelir, isyan veya savaş cezası değildir.", popup.X+10, popup.Y+164, FaceTiny, ColorGray)
+	DrawText(screen, "Gelir veya doğrudan savaş cezası değildir; diplomatik baskıdır.", popup.X+10, popup.Y+164, FaceTiny, ColorGray)
 }
 
 type overextensionPopupRangeLine struct {
@@ -73,9 +73,9 @@ type overextensionPopupRangeLine struct {
 func overextensionPopupRangeLines() [4]overextensionPopupRangeLine {
 	return [4]overextensionPopupRangeLine{
 		{text: "%0–24   Düşük: Genişleme baskısı sınırlı.", color: ColorGreen},
-		{text: "%25–49 Orta: Yeni fetihler daha dikkatli değerlendirilir.", color: ColorYellow},
-		{text: "%50–74 Yüksek: Yeni savaşlar daha riskli hale gelir.", color: color.RGBA{235, 155, 60, 255}},
-		{text: "%75–100 Kritik: Temkinli AI genişlemeyi güçlü biçimde yavaşlatır.", color: ColorRed},
+		{text: "%25–99 Orta: Yeni fetihler daha dikkatli değerlendirilir.", color: ColorYellow},
+		{text: "%100–199 Yüksek: Yeni savaşlar daha riskli hale gelir.", color: color.RGBA{235, 155, 60, 255}},
+		{text: "%200–500 Kritik: Diplomatik baskı ve savaş riski artar.", color: ColorRed},
 	}
 }
 

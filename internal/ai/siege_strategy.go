@@ -87,6 +87,7 @@ func aiStartSiege(gs *state.GameState, a *army.Army, target *world.Region, defen
 	if gs == nil || a == nil || target == nil {
 		return
 	}
+	gs.RecordFactionRegionAttackAgainst(faction.FactionID(a.OwnerID), faction.FactionID(target.OwnerID))
 	aiEnsureSiegeMap(gs)
 	siege := &state.SiegeState{RegionID: target.ID, AttackerArmyID: a.ID, AttackerHomeRegionID: a.RegionID, AttackerFactionID: a.OwnerID, StartedTurn: gs.Turn, FortLevel: target.FortificationLevel()}
 	if defender != nil {

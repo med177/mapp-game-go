@@ -1266,9 +1266,9 @@ func overextensionHUDText(gs *state.GameState) (string, color.RGBA) {
 	score := gs.OverextensionScore(gs.PlayerFactionID)
 	label := "Aşırı Genişleme: %" + itoa(score)
 	switch {
-	case score >= 75:
+	case score >= 200:
 		return label, color.RGBA{220, 90, 90, 255}
-	case score >= 50:
+	case score >= 100:
 		return label, color.RGBA{235, 155, 60, 255}
 	case score >= 25:
 		return label, ColorYellow

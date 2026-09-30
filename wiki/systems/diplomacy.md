@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-09-26
+last_updated: 2026-09-30
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -182,7 +182,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Vassala doğrudan teklif edilebilir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
-| Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse ve hedef başka devlete bağlı değilse; savaş duruşu teklifi göndermeyi engellemez, barışta mevcut `Score >= 55` ve askerî ön koşullar korunur |
+| Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse, hedef başka devlete bağlı değilse ve hedefin en fazla 3 kara bölgesi varsa; savaş duruşu teklifi göndermeyi engellemez, barışta mevcut `Score >= 55` ve askerî ön koşullar korunur |
 | Vasallığı bitir | `releaseVassal()` | Yalnız oyuncunun doğrudan vassalında; devlet bağımsızlaşır, overlord ile ticaret anlaşması devam eder |
 | Vassalı ilhak et | `annexVassal()` | Yalnız oyuncunun doğrudan vassalında ve onay sonrası; tüm bölgeler, kuvvetler, kaynaklar ve üretim emirleri oyuncuya devredilir, vassal fraksiyon elenir |
 
@@ -281,11 +281,22 @@ Diplomasi panelinin sağ kolonu seçili devletin güncel diplomatik ağını gö
 | Ticaret | +15 |
 | İttifak | +20 |
 | Oyuncunun normal diplomasi teklifini reddetme | -3 |
-| `ApplyRelationDecay()` | Savaşta skor düşer; barış/ticaret yumuşar, desteklenmeyen ittifaklar ise aşınır |
+| `ApplyRelationDecay()` | Savaşta skor düşer; barış/ticaret yumuşar, desteklenmeyen ittifaklar aşınır; saldırı yapmayan dış devletlerin pasif ilişkileri tur başına `+1`, bölgeye saldıranlarınki `-1` ilerler ve bu trend `+25/-25` ile sınırlıdır; yüksek aşırı genişleme cezası pasif iyileşmeye önceliklidir |
+| Karşı din devletine bölge saldırısı | Hedef dinindeki diğer devletlere `-3`; saldıranın dinindeki diğer devletlere `+1` (aynı turda aynı hedef dini bir kez) |
 | Ortak düşman | +bonus (AI koalisyon mantığında) |
 | Din bonusu/cezası | `religion.Relation(a,b)` — başlangıç skoru; +25 / -20 / -30 / -40 |
 
 → `applyRelationDecay` tur çözümleme sırası: [[architecture/game-loop]]
+
+Bir devletin savaş ilan etmesi tek başına bu küresel trendde saldırı kabul edilmez.
+Gerçek bir bölge saldırısı karşı dinî grupta tepki üretir; aynı turdaki birden fazla
+hedef aynı din için tek `-3` uygulanır ve saldıranın kendi dinindeki devletler
+`+1` alır. Bu hedef geçmişi compact save içinde korunur.
+Gerçek bölge muharebesi, kuşatma başlangıcı veya savunmasız bölgenin ele geçirilmesi
+`FactionAttackTurns` ile mevcut tura işaretlenir. İlişki kaydındaki
+`PassiveRelationModifier`, bu mekanizmanın birikimini diğer dinî, tarihsel ve
+diplomatik puanlardan ayrı tutar; compact save içinde saklandığı için kayıt yükleme
+sonrasında aynı tur yeniden uygulanmaz.
 
 ### Teklif Retleri ve Tekrar Denemeler
 
@@ -408,6 +419,10 @@ AI:
 - ittifakta artık sadece `ortak düşman` sert filtresine bakmaz; aynı alliance assessment helper'ını kullanır ve `ortak büyük tehdit` gördüğünde de teklif açabilir
 - AI dış ittifak açarken artık stratejik bağ, müttefik kapasitesi, `ai_expansion_targets` gerilimi ve hedefin somut katkısını da dikkate alır; ortak tehdit yoksa uzak/alakasız, tarihsel hedef olan veya büyük güç için gerçek askeri/stratejik fayda üretmeyen küçük devlete ittifak spam atmaz
 - barışta skor ve bağlanabilir kara/deniz hattı uygunsa ticaret açar
+- yüksek aşırı genişleme, aynı realm dışındaki savaşsız ilişkilere aktif senaryonun
+  aşırı genişleme penceresi boyunca kademe kademe ceza yazar. İlişki `15` altına
+  indiğinde aktif ticaret rotaları kaldırılır ve stance `peace` olur; sonraki AI
+  savaş taraması yine güç, cephe, lojistik, temas ve ateşkes filtrelerini uygular
 - AI, kendi çıkarı olan ve genişleme hedefi olmayan barışçıl ilişkilerde ticaret/ittifak/güvenlik eşiğini yükseltmek için senaryonun `diplomacy` ayarlarını kullanan aynı `Heyet` ve `Hediye` aksiyonlarını kullanır. `1300_ottoman_rise` içindeki güncel değerler `data/scenario.json` dosyasından okunur. Bu harcamalar AI hazinesinde tahıl/kaynak tedariki ile araştırma, ekonomi, donanma ve ordu yatırımlarından sonra gelir; yalnız bu önceliklerden arta kalan altın kullanılabilir. Harcama kararı sonrasında deterministik `%60` başarı zarı atılır; başarısız zar teklif veya ödeme üretmez. Aynı fraksiyon turunda en fazla bir ilişki bakım aksiyonu yapar ve uygulanan bakım aksiyonu ilgili ilişkiyi dört tur cooldown'a alır; oyuncuya gönderilen teklif de bu korumayı kuyruğa girişte başlatır. AI-AI işlemleri anında, oyuncuya gönderilenler ise `DiplomaticOffers` kuyruğunda yalnız `Tamam` bildirimiyle çözülür.
 - vassal durumundaki AI bağımsız diplomasi ve savaş değerlendirmesi yapmaz
 - barış kabul edildiğinde taraf çifti `GameState.RecentTruces` içinde beş turluk

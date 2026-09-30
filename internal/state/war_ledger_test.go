@@ -114,6 +114,22 @@ func TestOverextensionScoreUsesRecentAndRelativeExpansion(t *testing.T) {
 	}
 }
 
+func TestOverextensionScoreAllowsCriticalValuesAboveLegacyCap(t *testing.T) {
+	gs := &GameState{
+		Turn:                         1,
+		AggressiveExpansionLastTurns: 12,
+		Regions:                      make(map[world.RegionID]*world.Region),
+	}
+	gs.Regions["owned"] = &world.Region{ID: "owned", OwnerID: "fast"}
+	for i := 0; i < 30; i++ {
+		gs.RecordRegionAcquisition("fast", faction.FactionID("old_"+string(rune('a'+i))))
+	}
+
+	if got := gs.OverextensionScore("fast"); got != MaxOverextensionScore {
+		t.Fatalf("kritik aşırı genişleme değeri = %d, want %d", got, MaxOverextensionScore)
+	}
+}
+
 func TestRecordRegionAcquisitionKeepsPerTurnGainsForDecay(t *testing.T) {
 	gs := &GameState{Turn: 1, AggressiveExpansionLastTurns: 12}
 	gs.RecordRegionAcquisition("fast", "old_a")

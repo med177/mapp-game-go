@@ -81,6 +81,20 @@ type UnitReinforcementEffect struct {
 	UnitCount int    `json:"unit_count"`
 }
 
+// ArmyDefectionEffect, bir event sırasında mevcut bir ordu grubunun başka bir
+// faction'a katılmasını tanımlar. Seçim deterministik olsun diye uygun ordular
+// ArmyID sırasına göre değerlendirilir; hedef bölge verilirse ordu olayın
+// siyasi merkezine intikal etmiş kabul edilir.
+type ArmyDefectionEffect struct {
+	SourceFactionID     string           `json:"source_faction_id"`
+	RecipientFactionID  string           `json:"recipient_faction_id"`
+	SourceRegionIDs     []world.RegionID `json:"source_region_ids,omitempty"`
+	DestinationRegionID world.RegionID   `json:"destination_region_id,omitempty"`
+	ArmyCount           int              `json:"army_count,omitempty"`
+	ArmyPercent         int              `json:"army_percent,omitempty"`
+	IncludeNaval        bool             `json:"include_naval,omitempty"`
+}
+
 // DynasticSettlementEffect, bir hanedan anlaşmasıyla belirli bölgelerin
 // savaş dışı aktarılmasını tanımlar. Tam siyasi birleşmeden farklı olarak
 // kaynak faction aktarım sonrasında yaşamaya devam edebilir.
@@ -143,6 +157,7 @@ type Effect struct {
 	SuccessorRevivals         []SuccessorRevivalEffect     `json:"successor_revivals,omitempty"`
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
 	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
+	ArmyDefections            []ArmyDefectionEffect        `json:"army_defections,omitempty"`
 	DynasticSettlement        *DynasticSettlementEffect    `json:"dynastic_settlement,omitempty"`
 	ImperialSuccession        *ImperialSuccessionEffect    `json:"imperial_succession,omitempty"`
 	SetFlags                  []string                     `json:"set_flags,omitempty"`
@@ -192,6 +207,7 @@ type Event struct {
 	ClearFlags                []string                     `json:"clear_flags,omitempty"`
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
 	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
+	ArmyDefections            []ArmyDefectionEffect        `json:"army_defections,omitempty"`
 	DynasticSettlement        *DynasticSettlementEffect    `json:"dynastic_settlement,omitempty"`
 
 	// Tarihsel tetiklenme alanları
@@ -441,6 +457,7 @@ func (e *Event) BaseEffect() Effect {
 		SuccessorRevivals:         e.SuccessorRevivals,
 		TradeNetworkModifiers:     e.TradeNetworkModifiers,
 		UnitReinforcements:        e.UnitReinforcements,
+		ArmyDefections:            e.ArmyDefections,
 		DynasticSettlement:        e.DynasticSettlement,
 		CapitalSettlementID:       "",
 		CapitalMoveTurns:          0,
@@ -491,6 +508,18 @@ func IsPlayerRelevant(gs *state.GameState, e *Event) bool {
 		if e.DynasticSettlement != nil && e.DynasticSettlement.RecipientFactionID == string(gs.PlayerFactionID) {
 			return true
 		}
+		for _, defection := range e.ArmyDefections {
+			if defection.SourceFactionID == string(gs.PlayerFactionID) || defection.RecipientFactionID == string(gs.PlayerFactionID) {
+				return true
+			}
+		}
+		for _, choice := range e.Choices {
+			for _, defection := range choice.Effect.ArmyDefections {
+				if defection.SourceFactionID == string(gs.PlayerFactionID) || defection.RecipientFactionID == string(gs.PlayerFactionID) {
+					return true
+				}
+			}
+		}
 		return false
 	case "player_faction", "all_factions", "all_armies", "random_region":
 		return true
@@ -509,6 +538,7 @@ func Apply(gs *state.GameState, e *Event) {
 	targetRegionID := applyEffect(gs, eff)
 	applyDynasticSettlement(gs, eff.DynasticSettlement)
 	applySuccessorRevival(gs, eff)
+	applyArmyDefections(gs, eff.ArmyDefections)
 	addRegionEventStatus(gs, e, nil, targetRegionID)
 }
 
@@ -521,6 +551,7 @@ func ApplyChoice(gs *state.GameState, e *Event, idx int) (Choice, bool) {
 	targetRegionID := applyEffect(gs, eff)
 	applyDynasticSettlement(gs, eff.DynasticSettlement)
 	applySuccessorRevival(gs, eff)
+	applyArmyDefections(gs, eff.ArmyDefections)
 	addRegionEventStatus(gs, e, &choice, targetRegionID)
 	return choice, true
 }
@@ -571,6 +602,84 @@ func applyOneSuccessorRevival(gs *state.GameState, eff Effect, revival Successor
 		}
 	} else if eff.AffectedFaction != "" && !revival.SuppressRelation {
 		diplomacy.ForceRelation(gs, faction.FactionID(eff.AffectedFaction), successorID, faction.StanceAllied, 50)
+	}
+}
+
+func applyArmyDefections(gs *state.GameState, defections []ArmyDefectionEffect) {
+	if gs == nil || len(defections) == 0 || gs.Armies == nil || gs.Factions == nil {
+		return
+	}
+	for _, defection := range defections {
+		applyOneArmyDefection(gs, defection)
+	}
+}
+
+func applyOneArmyDefection(gs *state.GameState, defection ArmyDefectionEffect) {
+	sourceID := faction.FactionID(defection.SourceFactionID)
+	recipientID := faction.FactionID(defection.RecipientFactionID)
+	if sourceID == "" || recipientID == "" || sourceID == recipientID {
+		return
+	}
+	if gs.Factions[sourceID] == nil || gs.Factions[recipientID] == nil || gs.Factions[recipientID].IsEliminated {
+		return
+	}
+
+	allowedRegions := make(map[world.RegionID]struct{}, len(defection.SourceRegionIDs))
+	for _, regionID := range defection.SourceRegionIDs {
+		if regionID != "" {
+			allowedRegions[regionID] = struct{}{}
+		}
+	}
+
+	candidates := make([]army.ArmyID, 0)
+	for armyID, current := range gs.Armies {
+		if current == nil || current.OwnerID != string(sourceID) {
+			continue
+		}
+		if current.IsNaval && !defection.IncludeNaval {
+			continue
+		}
+		if len(allowedRegions) > 0 {
+			locationID := current.RegionID
+			if current.IsNaval && current.DockedRegionID != "" {
+				locationID = current.DockedRegionID
+			}
+			if _, ok := allowedRegions[locationID]; !ok {
+				continue
+			}
+		}
+		candidates = append(candidates, armyID)
+	}
+	sort.Slice(candidates, func(i, j int) bool { return candidates[i] < candidates[j] })
+
+	transferCount := 0
+	if defection.ArmyCount > 0 {
+		transferCount = defection.ArmyCount
+	} else if defection.ArmyPercent > 0 {
+		transferCount = (len(candidates)*clamp(defection.ArmyPercent, 0, 100) + 99) / 100
+	}
+	if transferCount > len(candidates) {
+		transferCount = len(candidates)
+	}
+	if transferCount <= 0 {
+		return
+	}
+
+	for _, armyID := range candidates[:transferCount] {
+		current := gs.Armies[armyID]
+		if current == nil {
+			continue
+		}
+		if destination := gs.Regions[defection.DestinationRegionID]; destination != nil && current.IsNaval == destination.IsSea {
+			current.PreviousRegionID = current.RegionID
+			current.RegionID = destination.ID
+			current.MovePoints = 0
+			if current.IsNaval {
+				current.DockedRegionID = ""
+				current.DockedSettlementID = ""
+			}
+		}
+		gs.TransferArmyOwnership(current, string(recipientID))
 	}
 }
 

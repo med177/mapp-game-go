@@ -7,6 +7,54 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: Event'lere `army_defections` etkisi eklendi. Mevcut kara orduları
+  kaynak ve alıcı faction, kaynak bölgesi, adet/yüzde ve isteğe bağlı hedef
+  bölgeyle deterministik biçimde taraf değiştirebiliyor; komutan sahipliği de
+  orduyla birlikte güncelleniyor. İlhanlı parçalanması, Timurî/Karakoyunlu/
+  Akkoyunlu yükselişleri ve Timur'a karşı savaş seçimi bu sözleşmeyi kullanıyor.
+  Siyasi birleşme/dağılma dönüşümleri zaten kendi tam kuvvet aktarımını yaptığı
+  için ayrıca etkilenmedi (`internal/events/events.go`,
+  `assets/scenarios/1300_ottoman_rise/data/events.json`). Regression:
+  `TestApplyArmyDefectionTransfersDeterministicLandArmyAndCommander`.
+
+- 2026-09-30: Gerçek bölge saldırısı yapan devletler, tur sonu diplomasi
+  trendinde diğer dış devletlerle ilişkisinde tur başına `-1`; o tur saldırmayan
+  devletler `+1` kazanıyor. Bu pasif trend devlet başına ilişki kaydında
+  `-25/+25` arasında tutuluyor; savaş ilanı tek başına saldırı sayılmıyor,
+  muharebe/kuşatma/fiilî ele geçirme sayılıyor ve saldırı işareti ile trend
+  compact save'e yazılıyor (`internal/state/war_ledger.go`,
+  `internal/diplomacy/diplomacy.go`, `internal/save/compact.go`). Regression:
+  `TestApplyRelationDecayAddsPassiveRelationTrendUpTo25`,
+  `TestApplyRelationDecayPenalizesEveryOtherRelationAfterRegionAttack`,
+  `TestCompactSavePreservesRegionAttackRelationTrend`.
+
+- 2026-09-30: Bölge saldırısının dinî yankısı eklendi. Karşı din devletlerine
+  saldıran devlet, hedef dinindeki diğer devletlerle `-3`, kendi dinindeki
+  devletlerle tur başına `+1` ilişki tepkisi alıyor; aynı turda aynı dine ait
+  birden fazla hedef tek tepki sayılıyor. Hedef saldırı geçmişi compact
+  save/load akışına eklendi (`internal/diplomacy/diplomacy.go`,
+  `internal/state/war_ledger.go`, `internal/save/compact.go`). Regression:
+  `TestReligionAttackRelationTrendTargetsReligiousGroupsOncePerTurn`.
+
+- 2026-09-30: Aşırı Genişleme değeri artık eski `%100` tavanında kırpılmıyor;
+  `0–500` aralığında gösteriliyor ve `scenario.json` içindeki
+  `aggressive_expansion_last_turns` penceresindeki kazanımların ağırlığı
+  kademeli olarak azalıyor. Yüksek değer, savaşsız dış ilişkilere tur başına
+  kademe ceza yazıyor; ilişki `15` altına indiğinde ticaret rotaları kesilip
+  ilişki barışa dönüyor. Sonraki AI savaş kararı yine güç, cephe ve lojistik
+  filtrelerinden geçiyor (`internal/state/war_ledger.go`,
+  `internal/diplomacy/diplomacy.go`). Regression:
+  `TestOverextensionScoreAllowsCriticalValuesAboveLegacyCap`,
+  `TestApplyRelationDecayPenalizesTradeAndCancelsItBelowThreshold`.
+
+- 2026-09-30: Vassallık kabulü hedef devletin en fazla 3 kara bölgesi olmasıyla
+  sınırlandı. Dört veya daha fazla bölgesi olan devletlere normal teklif
+  gönderilemiyor; normal AI kabulü ve AI-AI savaş sonrası barışı da aynı
+  `maxVassalRegions` sınırını kullanıyor (`internal/diplomacy/vassalage.go`,
+  `internal/diplomacy/peace_settlement.go`). Regression:
+  `TestVassalizationRejectsTargetWithMoreThanThreeRegions` ve
+  `TestCanImposeVassalageRejectsLoserWithMoreThanThreeRegions`.
+
 - 2026-09-30: Vassal edinimi artık vassalın kara bölgesi sayısını overlord'un
   kısa dönemli `Aşırı Genişleme` kazanımına ekliyor. Bölge sahibi değişmeden
   gerçekleşen normal, savaş sonrası ve kuşatma vassallığı yolları ortak

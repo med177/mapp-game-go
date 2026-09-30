@@ -437,6 +437,46 @@ func TestCompactSavePreservesRecentFactionExpansion(t *testing.T) {
 	}
 }
 
+func TestCompactSavePreservesRegionAttackRelationTrend(t *testing.T) {
+	score := 14
+	stance := encodeStance(faction.StancePeace)
+	passiveModifier := -6
+	saved := campaignSaveState{
+		Turn:               9,
+		ScenarioID:         "1300_ottoman_rise",
+		FactionAttackTurns: map[faction.FactionID]int{"attacker": 9},
+		FactionAttackTargetTurns: map[faction.FactionID]map[faction.FactionID]int{
+			"attacker": {"neighbor": 9},
+		},
+		RelationTrendAppliedTurn: 9,
+		Relations: map[string]relationSaveState{
+			"attacker|neighbor": {
+				Score:                   &score,
+				Stance:                  &stance,
+				PassiveRelationModifier: &passiveModifier,
+			},
+		},
+	}
+	payload, err := json.Marshal(saved)
+	if err != nil {
+		t.Fatalf("ilişki trendi save'e yazılamadı: %v", err)
+	}
+	decoded, err := decodeCampaignSaveState(payload)
+	if err != nil {
+		t.Fatalf("ilişki trendi save'den çözülemedi: %v", err)
+	}
+
+	gs := &state.GameState{}
+	applyCampaignSaveState(gs, decoded)
+	if gs.FactionAttackTurns["attacker"] != 9 || gs.FactionAttackTargetTurns["attacker"]["neighbor"] != 9 || gs.RelationTrendAppliedTurn != 9 {
+		t.Fatalf("saldırı trend metadata'sı korunmadı: turns=%v targets=%v applied=%d", gs.FactionAttackTurns, gs.FactionAttackTargetTurns, gs.RelationTrendAppliedTurn)
+	}
+	rel := gs.Relations["attacker|neighbor"]
+	if rel == nil || rel.Score != score || rel.Stance != faction.StancePeace || rel.PassiveRelationModifier != passiveModifier {
+		t.Fatalf("ilişki trendi korunmadı: %+v", rel)
+	}
+}
+
 func TestCampaignSaveStateRestoresOtherIncomeDelta(t *testing.T) {
 	const fid = faction.FactionID("portugal")
 	base := &faction.Faction{ID: fid}

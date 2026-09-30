@@ -41,6 +41,11 @@ type Result struct {
 const tradeAcceptanceThreshold = 45
 const tradeRelationThreshold = 15
 
+const (
+	passiveRelationModifierMin = -25
+	passiveRelationModifierMax = 25
+)
+
 // MaxTradePartners dış ticaret anlaşmalarında devlet başına verilen temel aktif
 // partner sayısıdır. Tam geliştirilmiş liman+pazar bölgeleri bu tabana eklenir.
 // Aynı realm içindeki overlord-vassal rotaları bu kota ve rota kapasitesi
@@ -390,9 +395,16 @@ func ForceRelation(gs *state.GameState, a, b faction.FactionID, stance faction.D
 }
 
 func ApplyRelationDecay(gs *state.GameState) {
+	if gs == nil {
+		return
+	}
+	passiveTrendAlreadyApplied := gs.RelationTrendAppliedTurn == gs.Turn && gs.Turn != 0
 	for _, rel := range gs.Relations {
 		if rel == nil {
 			continue
+		}
+		if !passiveTrendAlreadyApplied {
+			applyReligionAttackRelationTrend(gs, rel)
 		}
 		switch rel.Stance {
 		case faction.StanceWar:
@@ -414,20 +426,155 @@ func ApplyRelationDecay(gs *state.GameState) {
 			}
 			if HasDirectThreat(gs, rel.FactionA, rel.FactionB) && !HasCommonEnemy(gs, rel.FactionA, rel.FactionB) && !HasSharedMajorThreat(gs, rel.FactionA, rel.FactionB) {
 				rel.Score = clamp(rel.Score-2, -100, 100)
-				continue
-			}
-			if allianceHasStrategicBasis(gs, rel.FactionA, rel.FactionB) {
+			} else if allianceHasStrategicBasis(gs, rel.FactionA, rel.FactionB) {
 				if rel.Score < 50 {
 					rel.Score++
 				}
-				continue
-			}
-			if rel.Score > 20 {
-				rel.Score--
-			} else if rel.Score < 20 {
-				rel.Score++
+			} else {
+				if rel.Score > 20 {
+					rel.Score--
+				} else if rel.Score < 20 {
+					rel.Score++
+				}
 			}
 		}
+		if rel.Stance == faction.StanceWar || SameRealm(gs, rel.FactionA, rel.FactionB) {
+			continue
+		}
+		penalty := overextensionRelationPenalty(gs, rel)
+		// Aktif yüksek aşırı genişleme baskısı, saldırı yapılmayan turdaki
+		// normal +1 iyileşmeyi bastırır; aksi halde iki ayrı ilişki sistemi
+		// aynı turda birbirini görünmez biçimde nötrler.
+		if !passiveTrendAlreadyApplied && (penalty == 0 || gs.FactionAttackedThisTurn(rel.FactionA) || gs.FactionAttackedThisTurn(rel.FactionB)) {
+			applyPassiveRelationTrend(gs, rel)
+		}
+		if penalty > 0 {
+			rel.Score = clamp(rel.Score-penalty, -100, 100)
+		}
+		if rel.Stance == faction.StanceTrade && rel.Score < tradeRelationThreshold {
+			removeTradeRoutesBetween(gs, rel.FactionA, rel.FactionB)
+			rel.Stance = faction.StancePeace
+		}
+	}
+	if !passiveTrendAlreadyApplied {
+		gs.RelationTrendAppliedTurn = gs.Turn
+	}
+}
+
+// applyReligionAttackRelationTrend, karşı dinî gruba yapılan bölge saldırısını
+// saldıranın ve hedef dinin diğer devletlerine yansıtır. Aynı turda aynı dine
+// ait birden fazla hedefe saldırı tek dini tepki sayılır; farklı hedef dinleri
+// ayrı ayrı tepki üretir.
+func applyReligionAttackRelationTrend(gs *state.GameState, rel *faction.Relation) {
+	if gs == nil || rel == nil {
+		return
+	}
+	otherFor := func(attacker faction.FactionID) faction.FactionID {
+		switch attacker {
+		case rel.FactionA:
+			return rel.FactionB
+		case rel.FactionB:
+			return rel.FactionA
+		default:
+			return ""
+		}
+	}
+	for attacker, targets := range gs.FactionAttackTargetTurns {
+		if targets == nil {
+			continue
+		}
+		otherID := otherFor(attacker)
+		if otherID == "" || otherID == attacker {
+			continue
+		}
+		attackerFaction := gs.Factions[attacker]
+		otherFaction := gs.Factions[otherID]
+		if attackerFaction == nil || otherFaction == nil || attackerFaction.Religion == "" || otherFaction.Religion == "" {
+			continue
+		}
+
+		targetReligions := make(map[religion.Type]struct{})
+		for targetID, turn := range targets {
+			if turn != gs.Turn || targetID == attacker {
+				continue
+			}
+			targetFaction := gs.Factions[targetID]
+			if targetFaction == nil || targetFaction.Religion == "" {
+				continue
+			}
+			targetReligions[targetFaction.Religion] = struct{}{}
+		}
+		if len(targetReligions) == 0 {
+			continue
+		}
+
+		delta := 0
+		if otherFaction.Religion == attackerFaction.Religion {
+			// Aynı dinin devletleri, saldırılan hedef dinlerinin sayısından
+			// bağımsız olarak bu tur yalnızca bir kez desteklenir.
+			delta++
+		}
+		for targetReligion := range targetReligions {
+			if targetReligion != attackerFaction.Religion && otherFaction.Religion == targetReligion {
+				delta -= 3
+			}
+		}
+		if delta != 0 {
+			rel.Score = clamp(rel.Score+delta, -100, 100)
+		}
+	}
+}
+
+// applyPassiveRelationTrend, saldırı yapan devletin dış ilişkilerine tur
+// başına -1; o tur saldırmayan devletlerin ilişkilerine +1 yazar. Yalnız bu
+// mekanizmanın birikimi -25/+25 aralığında tutulur; Score içindeki diğer
+// diplomatik etkiler korunur.
+func applyPassiveRelationTrend(gs *state.GameState, rel *faction.Relation) {
+	if gs == nil || rel == nil {
+		return
+	}
+	attacked := gs.FactionAttackedThisTurn(rel.FactionA) || gs.FactionAttackedThisTurn(rel.FactionB)
+	if attacked {
+		if rel.PassiveRelationModifier <= passiveRelationModifierMin {
+			return
+		}
+		rel.PassiveRelationModifier--
+		rel.Score = clamp(rel.Score-1, -100, 100)
+		return
+	}
+	if rel.PassiveRelationModifier >= passiveRelationModifierMax {
+		return
+	}
+	rel.PassiveRelationModifier++
+	rel.Score = clamp(rel.Score+1, -100, 100)
+}
+
+// overextensionRelationPenalty, yüksek aşırı genişlemenin dış devletlerin
+// ilişki puanına her çözüm turunda yazacağı baskıyı döner. İki tarafın daha
+// tehditkâr olan değeri kullanılır; aynı realm ilişkileri ApplyRelationDecay
+// içinde bu helper'a gelmeden korunur.
+func overextensionRelationPenalty(gs *state.GameState, rel *faction.Relation) int {
+	if gs == nil || rel == nil {
+		return 0
+	}
+	scoreA := gs.OverextensionScore(rel.FactionA)
+	scoreB := gs.OverextensionScore(rel.FactionB)
+	if scoreB > scoreA {
+		scoreA = scoreB
+	}
+	switch {
+	case scoreA >= 400:
+		return 6
+	case scoreA >= 250:
+		return 5
+	case scoreA >= 150:
+		return 4
+	case scoreA >= 75:
+		return 3
+	case scoreA >= 25:
+		return 1
+	default:
+		return 0
 	}
 }
 

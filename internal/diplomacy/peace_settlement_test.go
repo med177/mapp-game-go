@@ -50,3 +50,15 @@ func TestCanImposeVassalageBlocksThirdPartyBesiegedLoser(t *testing.T) {
 		t.Fatal("üçüncü taraf kuşatması yokken uygun vassallık sonucu engellenmemeli")
 	}
 }
+
+func TestCanImposeVassalageRejectsLoserWithMoreThanThreeRegions(t *testing.T) {
+	gs := newPeaceSettlementTestState()
+	for i := 0; i < 3; i++ {
+		id := world.RegionID("naples_extra_" + string(rune('a'+i)))
+		gs.Regions[id] = &world.Region{ID: id, OwnerID: "naples"}
+	}
+
+	if canImposeVassalage(gs, "venice", "naples", PeaceAssessment{WarScore: 70}) {
+		t.Fatal("dört bölgeli devlet AI-AI barışında vassal olmayı kabul etti")
+	}
+}

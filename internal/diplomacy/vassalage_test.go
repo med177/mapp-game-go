@@ -53,6 +53,37 @@ func TestRelationImprovementMessageNamesSenderAndTarget(t *testing.T) {
 	}
 }
 
+func TestVassalizationRejectsTargetWithMoreThanThreeRegions(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"actor":  {ID: "actor", NameTR: "Üst Devlet"},
+			"target": {ID: "target", NameTR: "Hedef Devlet"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("actor", "target"): {
+				FactionA: "actor", FactionB: "target", Score: 80, Stance: faction.StancePeace,
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{},
+	}
+	for i := 0; i < 4; i++ {
+		id := world.RegionID("target_" + string(rune('a'+i)))
+		gs.Regions[id] = &world.Region{ID: id, OwnerID: "target"}
+	}
+
+	assessment := AssessVassalizationProposal(gs, Relation(gs, "actor", "target"), "actor", "target")
+	if assessment.BlockReason == "" {
+		t.Fatal("dört bölgeli hedef için vassallık kabulü engellenmedi")
+	}
+	if reason := ActionBlockReason(gs, "actor", "target", ActionOfferVassalization); reason == "" {
+		t.Fatal("dört bölgeli hedefe vassallık teklifi gönderimi engellenmedi")
+	}
+	gs.Relations[faction.RelationKey("actor", "target")].Stance = faction.StanceWar
+	if reason := ActionBlockReason(gs, "actor", "target", ActionOfferVassalization); reason == "" {
+		t.Fatal("savaş halindeki dört bölgeli hedefe vassallık teklifi gönderimi engellenmedi")
+	}
+}
+
 func TestCancelTradeWithVassalDoesNotRequireOverlordDiplomacy(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "outside",

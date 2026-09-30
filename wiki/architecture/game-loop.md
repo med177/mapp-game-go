@@ -128,7 +128,7 @@ Kamera kontrolleri normal harita ile aynıdır.
 8. `checkRegionUnlocks(gs)` — kilitli bölgeleri açma koşulları
 9. `checkRebellions(gs)` — düşük memnuniyet → nüfus/gelişmişlik/ikmal oranlı isyancı ordu; sonraki turda bastırma veya geçerli ardıl devletin kurulması
 10. `checkEliminations(gs)` — bölgesi kalmayan fraksiyon elenir
-10. `applyRelationDecay(gs)` — ilişki puanlarını sıfıra doğru çekme
+10. `applyRelationDecay(gs)` — ilişki puanlarını sıfıra doğru çekme; gerçek bölge saldırısı yapan devletlerin dış ilişkilerine tur trendi `-1`, saldırmayanlarınkine `+1` uygula (`-25/+25` sınırı)
 11. `victory.Check(gs)` — zafer/yenilgi koşulu kontrolü → [[systems/victory]]
 12. `events.Tick(gs, evts)` — tarihsel olayları tetikle → [[systems/events]]
 13. `events.Apply()` / `events.ApplyChoice()` — olayın anlık etkilerini uygula ve aktif bölge olayına üretim/tüketim modifiyerlerini taşı; bu geçici etkiler bir sonraki ekonomi tick'inde okunur

@@ -19,6 +19,7 @@ const (
 	vassalTributeMinimumRate    = 0
 	vassalTributeMaximumRate    = 50
 	vassalInternalRelationFloor = 40
+	maxVassalRegions            = 3
 	// VassalAnnexationMinimumTurns, yeni vassal yapılan devletin ilhak
 	// edilebilmesi için realm içinde kalması gereken asgari tur sayısıdır.
 	VassalAnnexationMinimumTurns = 12
@@ -78,6 +79,13 @@ func InciteRevoltSatisfactionPenaltyFor(gs *state.GameState) int {
 type VassalProposalAssessment struct {
 	Chance      int
 	BlockReason string
+}
+
+func vassalRegionLimitBlockReason(gs *state.GameState, target faction.FactionID) string {
+	if gs != nil && len(gs.LandRegionsOwnedBy(target)) > maxVassalRegions {
+		return "Hedef devletin 3'ten fazla kara bölgesi var"
+	}
+	return ""
 }
 
 func (a VassalProposalAssessment) Accepted() bool {
@@ -219,6 +227,10 @@ func AssessVassalizationProposal(gs *state.GameState, rel *faction.Relation, act
 		} else {
 			assessment.BlockReason = "Hedef başka bir devlete bağlı"
 		}
+		return assessment
+	}
+	if reason := vassalRegionLimitBlockReason(gs, target); reason != "" {
+		assessment.BlockReason = reason
 		return assessment
 	}
 	score := 0
@@ -452,6 +464,9 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	case ActionOfferVassalization:
 		if sameRealm(gs, actor, target) {
 			return "Aynı vassal zincirindeki devletlere vassallık teklif edilemez."
+		}
+		if reason := vassalRegionLimitBlockReason(gs, target); reason != "" {
+			return reason
 		}
 		// Savaşta da teklif gönderilebilir. İlişki/askerî uygunluk değerlendirmesi
 		// teklifin kabul edilip edilmeyeceğini belirler; savaş duruşu bu aksiyonu

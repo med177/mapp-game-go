@@ -119,7 +119,7 @@ func canImposeVassalage(gs *state.GameState, winner, loser faction.FactionID, wi
 	if factionHasActiveSiegeByOther(gs, loser, winner) {
 		return false
 	}
-	if len(gs.LandRegionsOwnedBy(loser)) > 4 {
+	if len(gs.LandRegionsOwnedBy(loser)) > maxVassalRegions {
 		return false
 	}
 	winnerPower := MilitaryPower(gs, winner)

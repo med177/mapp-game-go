@@ -2177,6 +2177,14 @@ func (g *Game) eventCodexContextLines(evt *events.Event) []string {
 			addFaction(revival.OverlordID)
 			addRegion(revival.RegionID)
 		}
+		for _, defection := range e.ArmyDefections {
+			addFaction(defection.SourceFactionID)
+			addFaction(defection.RecipientFactionID)
+			for _, regionID := range defection.SourceRegionIDs {
+				addRegion(string(regionID))
+			}
+			addRegion(string(defection.DestinationRegionID))
+		}
 		for _, modifier := range e.TradeNetworkModifiers {
 			for _, id := range modifier.RegionIDs {
 				addRegion(id)
@@ -2462,6 +2470,14 @@ func stanceLabel(stance faction.DiplomaticStance) string {
 
 func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) string {
 	parts := make([]string, 0, 8)
+	factionLabel := func(id string) string {
+		if gs != nil && gs.Factions != nil {
+			if f := gs.Factions[faction.FactionID(id)]; f != nil && f.NameTR != "" {
+				return f.NameTR
+			}
+		}
+		return id
+	}
 	if eff.GoldDelta != 0 {
 		parts = append(parts, fmt.Sprintf("Altın %+d", eff.GoldDelta))
 	}
@@ -2496,6 +2512,24 @@ func historicalChoiceEffectSummary(gs *state.GameState, eff events.Effect) strin
 		}
 		if len(reinforcementParts) > 0 {
 			parts = append(parts, "Askerî destek: "+strings.Join(reinforcementParts, ", "))
+		}
+	}
+	if len(eff.ArmyDefections) > 0 {
+		defectionParts := make([]string, 0, len(eff.ArmyDefections))
+		for _, defection := range eff.ArmyDefections {
+			count := ""
+			if defection.ArmyCount > 0 {
+				count = fmt.Sprintf("%d ordu", defection.ArmyCount)
+			} else if defection.ArmyPercent > 0 {
+				count = fmt.Sprintf("orduların %%%d'ı", defection.ArmyPercent)
+			}
+			if count == "" {
+				continue
+			}
+			defectionParts = append(defectionParts, factionLabel(defection.SourceFactionID)+" → "+factionLabel(defection.RecipientFactionID)+" ("+count+")")
+		}
+		if len(defectionParts) > 0 {
+			parts = append(parts, "Ordu saf değişimi: "+strings.Join(defectionParts, ", "))
 		}
 	}
 	if eff.StartResearchTech != "" {
@@ -5357,6 +5391,7 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	g.clearSiege(targetRegion.ID)
 	prevOwnerID := targetRegion.OwnerID
 	attackerReligion := ownerReligion(g.gs, newOwnerID)
+	g.gs.RecordFactionRegionAttackAgainst(faction.FactionID(newOwnerID), faction.FactionID(prevOwnerID))
 	g.gs.RecordWarRegionCapture(faction.FactionID(newOwnerID), faction.FactionID(prevOwnerID))
 	targetRegion.ApplyConquest(newOwnerID, attackerReligion)
 	g.gs.ClearProductionOrdersForRegion(targetRegion.ID)

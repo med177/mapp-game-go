@@ -39,6 +39,43 @@ func (s *GameState) RecordRegionAcquisition(conqueror, previousOwner faction.Fac
 	s.RecordRegionAcquisitions(conqueror, previousOwner, 1)
 }
 
+// RecordFactionRegionAttack, devletin bu tur gerçek bir bölge saldırısı
+// yaptığını işaretler. Savaş ilanı burada kaydedilmez; ilişki trendi yalnızca
+// muharebe, kuşatma veya fiilî bölge ele geçirme akışlarından beslenir.
+func (s *GameState) RecordFactionRegionAttack(fid faction.FactionID) {
+	if s == nil || fid == "" {
+		return
+	}
+	if s.FactionAttackTurns == nil {
+		s.FactionAttackTurns = make(map[faction.FactionID]int)
+	}
+	s.FactionAttackTurns[fid] = s.Turn
+}
+
+// RecordFactionRegionAttackAgainst, saldırının hedef devletini de kaydeder.
+// İlişki tepkisi tur sonunda hedef devletin bu kayıttaki dini üzerinden üretilir.
+func (s *GameState) RecordFactionRegionAttackAgainst(attacker, target faction.FactionID) {
+	if s == nil || attacker == "" || target == "" || attacker == target {
+		return
+	}
+	s.RecordFactionRegionAttack(attacker)
+	if s.FactionAttackTargetTurns == nil {
+		s.FactionAttackTargetTurns = make(map[faction.FactionID]map[faction.FactionID]int)
+	}
+	targets := s.FactionAttackTargetTurns[attacker]
+	if targets == nil {
+		targets = make(map[faction.FactionID]int)
+		s.FactionAttackTargetTurns[attacker] = targets
+	}
+	targets[target] = s.Turn
+}
+
+// FactionAttackedThisTurn, devletin mevcut turda saldırı işareti taşıyıp
+// taşımadığını döner.
+func (s *GameState) FactionAttackedThisTurn(fid faction.FactionID) bool {
+	return s != nil && fid != "" && s.FactionAttackTurns[fid] == s.Turn
+}
+
 // RecordRegionAcquisitions, tek bir siyasi kazanımın birden fazla kara
 // bölgesine karşılık geldiği durumlarda genişleme geçmişini bölge sayısıyla
 // günceller. Vassallıkta bölge sahibi değişmediği için bu kayıt, vassalın
@@ -141,7 +178,7 @@ func (s *GameState) recentRegionGainValue(record FactionExpansionRecord) float64
 }
 
 // OverextensionScore son kısa genişleme penceresini oyuncuya ve AI'ye ortak
-// bir 0-100 risk değeri olarak sunar. Mutlak kazanım ve mevcut devlete göre
+// bir 0-500 risk değeri olarak sunar. Mutlak kazanım ve mevcut devlete göre
 // büyüme oranından yüksek olanı kullanır; böylece dört bölge kazanan büyük bir
 // devlet ile iki bölge kazanarak iki katına çıkan küçük devlet aynı baskı
 // sinyalini paylaşabilir. Skor türetilmiştir; geçmiş kazanımlar save'de tutulur,
@@ -165,8 +202,8 @@ func (s *GameState) OverextensionScore(fid faction.FactionID) int {
 	if relativeScore > score {
 		score = relativeScore
 	}
-	if score > 100 {
-		return 100
+	if score > MaxOverextensionScore {
+		return MaxOverextensionScore
 	}
 	return score
 }
@@ -283,12 +320,14 @@ func (s *GameState) WarLedgerFor(a, b faction.FactionID) *WarLedger {
 // RecordWarCasualties muharebedeki tamamen kaybedilen birlik sayılarını iki
 // savaşan tarafa yazar. Aktif savaş ilişkisi yoksa kayıt üretmez.
 func (s *GameState) RecordWarCasualties(attacker, defender faction.FactionID, attackerLost, defenderLost int) {
+	s.RecordFactionRegionAttackAgainst(attacker, defender)
 	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, false, false, true)
 }
 
 // RecordWarCasualtiesByType muharebe kayıplarını toplam sayaçların yanında
 // ordunun kara kuvveti mi yoksa filo mu olduğuna göre ayrı sayaçlara yazar.
 func (s *GameState) RecordWarCasualtiesByType(attacker, defender faction.FactionID, attackerLost, defenderLost int, attackerNaval, defenderNaval bool) {
+	s.RecordFactionRegionAttackAgainst(attacker, defender)
 	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, attackerNaval, defenderNaval, true)
 }
 

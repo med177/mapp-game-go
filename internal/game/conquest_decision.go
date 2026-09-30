@@ -110,6 +110,7 @@ func (g *Game) captureUnfortifiedRegion(aid army.ArmyID, targetID world.RegionID
 		return
 	}
 
+	g.gs.RecordFactionRegionAttackAgainst(faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
 	collapse := g.applyConquestWithNavalEviction(target, attacker.OwnerID)
 	if g.renderer != nil {
 		g.renderer.MarkMapDirty()

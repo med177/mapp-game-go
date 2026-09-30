@@ -199,11 +199,16 @@ const (
 
 // Relation iki fraksiyon arasındaki tam ilişkiyi tutar.
 type Relation struct {
-	FactionA                 FactionID        `json:"faction_a"`
-	FactionB                 FactionID        `json:"faction_b"`
-	Score                    int              `json:"score"`
-	Stance                   DiplomaticStance `json:"stance"`
-	NextAIRelationRepairTurn int              `json:"next_ai_relation_repair_turn,omitempty"`
+	FactionA FactionID        `json:"faction_a"`
+	FactionB FactionID        `json:"faction_b"`
+	Score    int              `json:"score"`
+	Stance   DiplomaticStance `json:"stance"`
+	// PassiveRelationModifier, savaşsız kalma veya bölge saldırısı kaynaklı
+	// tur trendinin bu ilişkiye yaptığı birikimli katkıyı taşır. Score içindeki
+	// diğer diplomasi etkilerinden ayrı tutulduğu için trend kendi -25/+25
+	// sınırını korurken tarihsel/dinî başlangıç puanları bozulmaz.
+	PassiveRelationModifier  int `json:"passive_relation_modifier,omitempty"`
+	NextAIRelationRepairTurn int `json:"next_ai_relation_repair_turn,omitempty"`
 }
 
 // RelationKey iki fraksiyon için sıralı anahtar üretir.

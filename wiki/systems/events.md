@@ -69,6 +69,23 @@ birinci seviyesi otomatik eklenir. Mevcut binalar korunur ve tekrar eklenmez.
 Kuruluş ordusu oluşturulduktan sonra, o tarih aralığında aktif olan faction'a
 ait en yüksek seviyeli ve tecrübeli komutan yeni orduya atanır.
 
+Mevcut orduların event sırasında taraf değiştirmesi `army_defections` ile
+tanımlanır. Her kayıt `source_faction_id`, `recipient_faction_id` ve isteğe
+bağlı `source_region_ids` filtresini taşır; `army_count` veya
+`army_percent` ile aktarılacak kara ordusu sayısı belirlenir. Uygun ordular
+ArmyID sırasına göre seçildiği için sonuç deterministiktir. `include_naval`
+açık değilse filolar kapsam dışıdır. `destination_region_id` verilirse ordu
+hedef faction'ın kuruluş merkezine event çözümlemesi sırasında intikal eder;
+komutanın sahipliği de orduyla birlikte güncellenir.
+
+1300 Osmanlı senaryosunda `ilkhanate_breakup_1335`, Musul, Sivas, Malatya ve
+Erzurum'daki İlhanlı kuvvetlerinden birer orduyu sırasıyla Celayirli, Kadı
+Burhaneddin, Eretna ve Afşar devletlerine geçirir. `timurid_rise_1370`,
+`karakoyunlu_rise_1375` ve `akkoyunlu_rise_1378` aynı sözleşmeyle ilgili
+İlhanlı garnizonlarını yeni Türkmen/Timurî merkezlerine bağlar. Siyasi birleşme
+ve çözülme kayıtları ise zaten `political_transformations.json` içindeki bölge
+eşleşmelerine göre kendi ordu aktarımını yaptığı için ayrıca bu etkiyi kullanmaz.
+
 1300 Osmanlı senaryosunda bu mekanik, Bursa seferini ve fetih sonrası savunmayı
 destekleyen üç tarihsel event ile genişletilmiştir. `ottoman_turkmen_gazi_migration_1310`, Bilecik ve
 Bithynia Osmanlıda kaldığı ve Doğu Roma ile savaş sürdüğü sürece Söğüt'te iki

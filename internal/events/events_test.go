@@ -89,6 +89,21 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 					t.Fatalf("Eretna yanlış bölgede diriltiliyor: %s", revival.RegionID)
 				}
 			}
+			if len(event.ArmyDefections) != 4 {
+				t.Fatalf("İlhanlı parçalanması %d mevcut orduyu ardıllara aktarıyor, 4 bekleniyordu", len(event.ArmyDefections))
+			}
+			for _, defection := range event.ArmyDefections {
+				if defection.SourceFactionID != "ilkhanate" || defection.ArmyCount != 1 ||
+					len(defection.SourceRegionIDs) != 1 || defection.DestinationRegionID == "" {
+					t.Fatalf("İlhanlı ordu ayrılması eksik veya belirsiz: %+v", defection)
+				}
+			}
+		}
+		if event.ID == "timurid_rise_1370" || event.ID == "karakoyunlu_rise_1375" || event.ID == "akkoyunlu_rise_1378" {
+			if len(event.ArmyDefections) != 1 || event.ArmyDefections[0].SourceFactionID != "ilkhanate" ||
+				event.ArmyDefections[0].ArmyCount != 1 {
+				t.Fatalf("%s mevcut İlhanlı ordusunun ardıl devlete geçişini tanımlamıyor", event.ID)
+			}
 		}
 		if event.ID == "swiss_morgarten_war_1315" {
 			if event.CombatDefensePercent != 30 {
@@ -781,6 +796,23 @@ func TestIsPlayerRelevantIncludesDynasticSettlementRecipient(t *testing.T) {
 	}
 }
 
+func TestIsPlayerRelevantIncludesArmyDefectionRecipient(t *testing.T) {
+	const recipientID = faction.FactionID("jelayirids")
+	gs := &state.GameState{PlayerFactionID: recipientID}
+	event := &Event{
+		Target:          "specific_faction",
+		AffectedFaction: "ilkhanate",
+		ArmyDefections: []ArmyDefectionEffect{{
+			SourceFactionID:    "ilkhanate",
+			RecipientFactionID: string(recipientID),
+			ArmyCount:          1,
+		}},
+	}
+	if !IsPlayerRelevant(gs, event) {
+		t.Fatal("ordu saf değişiminin alıcısı olan oyuncu event'i ilgili görmüyor")
+	}
+}
+
 func TestApplyBaseEventReinforcement(t *testing.T) {
 	const ownerID = faction.FactionID("ottoman")
 	capital := &world.Region{
@@ -814,5 +846,75 @@ func TestApplyBaseEventReinforcement(t *testing.T) {
 		if current.RegionID != capital.ID || len(current.Units) != 3 || current.Units[0].TypeID != "infantry" {
 			t.Fatalf("temel event takviyesi başkentte 3 piyade oluşturmadı")
 		}
+	}
+}
+
+func TestApplyArmyDefectionTransfersDeterministicLandArmyAndCommander(t *testing.T) {
+	const (
+		sourceID    = faction.FactionID("ilkhanate")
+		recipientID = faction.FactionID("jelayirids")
+	)
+	commander := &army.Commander{
+		ID:             "commander_defector",
+		OwnerID:        string(sourceID),
+		Name:           "Sınır Komutanı",
+		AssignedArmyID: "army_a",
+	}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"sivas":   {ID: "sivas", OwnerID: string(sourceID)},
+			"baghdad": {ID: "baghdad", OwnerID: string(recipientID)},
+			"sea":     {ID: "sea", IsSea: true},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			sourceID:    {ID: sourceID},
+			recipientID: {ID: recipientID},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army_b": {
+				ID:       "army_b",
+				OwnerID:  string(sourceID),
+				RegionID: "sivas",
+			},
+			"army_a": {
+				ID:         "army_a",
+				OwnerID:    string(sourceID),
+				RegionID:   "sivas",
+				MovePoints: 2,
+				Commander:  commander,
+			},
+			"fleet": {
+				ID:       "fleet",
+				OwnerID:  string(sourceID),
+				RegionID: "sea",
+				IsNaval:  true,
+			},
+		},
+	}
+
+	Apply(gs, &Event{
+		Target:          "specific_faction",
+		AffectedFaction: string(sourceID),
+		ArmyDefections: []ArmyDefectionEffect{{
+			SourceFactionID:     string(sourceID),
+			RecipientFactionID:  string(recipientID),
+			SourceRegionIDs:     []world.RegionID{"sivas"},
+			DestinationRegionID: "baghdad",
+			ArmyCount:           1,
+		}},
+	})
+
+	defected := gs.Armies["army_a"]
+	if defected.OwnerID != string(recipientID) || defected.RegionID != "baghdad" || defected.PreviousRegionID != "sivas" || defected.MovePoints != 0 {
+		t.Fatalf("deterministik seçilen ordu doğru aktarılmadı: %+v", defected)
+	}
+	if commander.OwnerID != string(recipientID) || commander.AssignedArmyID != "army_a" {
+		t.Fatalf("orduyla birlikte komutan sahipliği aktarılmadı: %+v", commander)
+	}
+	if gs.Armies["army_b"].OwnerID != string(sourceID) {
+		t.Fatal("seçilmeyen kara ordusu aktarılmış")
+	}
+	if gs.Armies["fleet"].OwnerID != string(sourceID) {
+		t.Fatal("include_naval kapalıyken filo aktarılmış")
 	}
 }

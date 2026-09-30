@@ -26,6 +26,11 @@ const DiplomaticOfferRetryCooldownTurns = 3
 // AggressiveExpansionLastTurns değerini kullanır.
 const RecentFactionExpansionWindowTurns = scenario.DefaultAggressiveExpansionLastTurns
 
+// MaxOverextensionScore, aşırı genişleme değerinin diplomatik baskı ve HUD
+// için kullanılabilecek üst sınırıdır. Eski 0-100 aralığı artık yalnızca düşük
+// ve orta baskı seviyelerini ifade eder.
+const MaxOverextensionScore = 500
+
 // civilianGrainPopulationUnit nüfusun aylık temel tahıl tüketim oranını taşır.
 // 18 nüfus bir tahıl birimi tüketir; 1300 senaryosundaki üretim ve stoklar
 // birlikte değerlendirildiğinde bu oran barışta küçük rezerv, savaşta açık
@@ -403,6 +408,17 @@ type GameState struct {
 	// RecentFactionExpansion, son kısa zaman penceresinde kazanılan kara
 	// bölgelerini faction bazında taşır. AI koalisyon baskısı bu veriyi kullanır.
 	RecentFactionExpansion map[faction.FactionID]FactionExpansionRecord `json:"recent_faction_expansion,omitempty"`
+	// FactionAttackTurns, bir devletin gerçek bölge saldırısı yaptığı son
+	// turu taşır. Tur trendi çözümlemesi savaş ilanını tek başına saldırı
+	// saymaması için bu işareti kullanır.
+	FactionAttackTurns map[faction.FactionID]int `json:"faction_attack_turns,omitempty"`
+	// FactionAttackTargetTurns, saldıranın bu tur hangi devletlere saldırdığını
+	// taşır. Din temelli bölgesel ilişki tepkisi bu hedeflerin dinlerinden
+	// türetilir; aynı din grubuna birden fazla saldırı tek tepki sayılır.
+	FactionAttackTargetTurns map[faction.FactionID]map[faction.FactionID]int `json:"faction_attack_target_turns,omitempty"`
+	// RelationTrendAppliedTurn, aynı turda ilişki trendinin iki kez uygulanmasını
+	// ve save/load sonrasında yinelenmesini önler.
+	RelationTrendAppliedTurn int `json:"relation_trend_applied_turn,omitempty"`
 	// Geliştirme modunda save yükleme sonrası ilk AI turlarını karşılaştırmak
 	// için tutulan geçici telemetri. Normal campaign payload'ına yazılmaz;
 	// yalnız debug sidecar'a aktarılır.

@@ -357,6 +357,36 @@
         "unit_count": 5
       }
     ],
+    "army_defections": [
+      {
+        "source_faction_id": "ilkhanate",
+        "recipient_faction_id": "jelayirids",
+        "source_region_ids": ["mosul"],
+        "destination_region_id": "baghdad",
+        "army_count": 1
+      },
+      {
+        "source_faction_id": "ilkhanate",
+        "recipient_faction_id": "kadi_burhaneddin",
+        "source_region_ids": ["sivas"],
+        "destination_region_id": "sivas",
+        "army_count": 1
+      },
+      {
+        "source_faction_id": "ilkhanate",
+        "recipient_faction_id": "eretna_state",
+        "source_region_ids": ["malatya"],
+        "destination_region_id": "nigde",
+        "army_count": 1
+      },
+      {
+        "source_faction_id": "ilkhanate",
+        "recipient_faction_id": "afshar_beyligi",
+        "source_region_ids": ["erzurum"],
+        "destination_region_id": "erzurum",
+        "army_count": 1
+      }
+    ],
     "desc_tr": "Ebu Said Bahadır Han'ın ölümüyle İlhanlı merkezî otoritesi sarsıldı; eyaletler ve yerel hanlıklar kendi yollarını arıyor.",
     "gold_delta": -120,
     "grain_delta": -35,
@@ -937,6 +967,15 @@
       "mode": "independent",
       "militia_count": 12
     },
+    "army_defections": [
+      {
+        "source_faction_id": "ilkhanate",
+        "recipient_faction_id": "timurid_empire",
+        "source_region_ids": ["northern_persia"],
+        "destination_region_id": "northern_persia",
+        "army_count": 1
+      }
+    ],
     "set_flags": [
       "timurid_empire_formed"
     ]
@@ -1002,6 +1041,15 @@
       "mode": "independent",
       "militia_count": 8
     },
+    "army_defections": [
+      {
+        "source_faction_id": "ilkhanate",
+        "recipient_faction_id": "karakoyunlu_state",
+        "source_region_ids": ["azerbaijan"],
+        "destination_region_id": "karakoyunlu",
+        "army_count": 1
+      }
+    ],
     "set_flags": [
       "karakoyunlu_state_formed"
     ]
@@ -1026,6 +1074,15 @@
       "mode": "independent",
       "militia_count": 8
     },
+    "army_defections": [
+      {
+        "source_faction_id": "ilkhanate",
+        "recipient_faction_id": "akkoyunlu_state",
+        "source_region_ids": ["erzincan"],
+        "destination_region_id": "akkoyunlu",
+        "army_count": 1
+      }
+    ],
     "set_flags": [
       "akkoyunlu_state_formed"
     ]
@@ -1515,6 +1572,13 @@
         "ai_weight": 8,
         "desc_tr": "Timurî kuvvetlerle açık savaşı kabul eder, Anadolu beyliklerinin Osmanlı karşıtı safına katılmasını savaş sebebi sayarsın.",
         "effect": {
+          "army_defections": [
+            {
+              "source_faction_id": "ottoman",
+              "recipient_faction_id": "timurid_empire",
+              "army_percent": 10
+            }
+          ],
           "relations": [
             { "faction_id": "timurid_empire", "score_delta": -50, "stance": "war" },
             { "faction_id": "karakoyunlu_state", "score_delta": -25, "stance": "war" },

@@ -72,6 +72,7 @@ type factionSaveState struct {
 type relationSaveState struct {
 	Score                    *int   `json:"s,omitempty"`
 	Stance                   *uint8 `json:"t,omitempty"`
+	PassiveRelationModifier  *int   `json:"p,omitempty"`
 	NextAIRelationRepairTurn *int   `json:"r,omitempty"`
 	Deleted                  bool   `json:"x,omitempty"`
 }
@@ -128,42 +129,45 @@ type campaignSaveState struct {
 	// TerrainAreas eski save'leri okuyabilmek için korunur. Arazi alanlarının
 	// canonical kaynağı terrain_areas.json olduğundan yeni save'lere yazılmaz
 	// ve yükleme sırasında uygulanmaz.
-	TerrainAreas            []world.TerrainArea                                `json:"ta,omitempty"`
-	Factions                map[faction.FactionID]factionSaveState             `json:"fx,omitempty"`
-	Armies                  map[army.ArmyID]armySaveState                      `json:"ar,omitempty"`
-	Commanders              map[string]*army.Commander                         `json:"cmd,omitempty"`
-	DismissedCommanderIDs   map[string]bool                                    `json:"dcm,omitempty"`
-	AIPlans                 map[faction.FactionID]*state.AIPlanState           `json:"ap,omitempty"`
-	AICompletedObjectives   map[faction.FactionID]map[string]bool              `json:"aco,omitempty"`
-	Imperial                *state.ImperialState                               `json:"im,omitempty"`
-	WarLedgers              map[string]*state.WarLedger                        `json:"wl,omitempty"`
-	RecentTruces            map[string]int                                     `json:"rt,omitempty"`
-	RecentFactionExpansion  map[faction.FactionID]state.FactionExpansionRecord `json:"rx,omitempty"`
-	EconomicVictoryTurns    int                                                `json:"evt,omitempty"`
-	FactionsEliminated      int                                                `json:"fel,omitempty"`
-	ReligiousVictoryTurns   int                                                `json:"rvt,omitempty"`
-	VictoryAchieved         bool                                               `json:"va,omitempty"`
-	VictoryAchievedTurn     int                                                `json:"vat,omitempty"`
-	FiredEventIDs           []string                                           `json:"fe,omitempty"`
-	TradeNetworkModifiers   []state.TradeNetworkModifier                       `json:"tnm,omitempty"`
-	LastSubjugationActorID  faction.FactionID                                  `json:"lsa,omitempty"`
-	LastSubjugatedFactionID faction.FactionID                                  `json:"lst,omitempty"`
-	Relations               map[string]relationSaveState                       `json:"rl,omitempty"`
-	DiplomaticOffers        []state.DiplomaticOffer                            `json:"do,omitempty"`
-	DiplomaticOfferHistory  []state.DiplomaticOfferHistoryEntry                `json:"dh,omitempty"`
-	DiplomacyOfferCounts    map[faction.FactionID]int                          `json:"dq,omitempty"`
-	OfferRejectionTurns     map[string]int                                     `json:"dr,omitempty"`
-	TradeRoutes             []*economy.TradeRoute                              `json:"tr,omitempty"`
-	MarketOrders            *state.MarketOrderBook                             `json:"mo,omitempty"`
-	Sieges                  map[world.RegionID]*state.SiegeState               `json:"sg,omitempty"`
-	Raids                   map[world.RegionID]*state.RaidState                `json:"rd,omitempty"`
-	ProductionQueue         []state.ProductionOrder                            `json:"pq,omitempty"`
-	NextProductionSeq       int                                                `json:"np,omitempty"`
-	NextArmySeq             int                                                `json:"na,omitempty"`
-	NextCommanderSeq        int                                                `json:"nc,omitempty"`
-	Phase                   state.Phase                                        `json:"ph,omitempty"`
-	WinnerID                faction.FactionID                                  `json:"w,omitempty"`
-	ActiveRegionEvents      []state.RegionEventStatus                          `json:"ae,omitempty"`
+	TerrainAreas             []world.TerrainArea                                `json:"ta,omitempty"`
+	Factions                 map[faction.FactionID]factionSaveState             `json:"fx,omitempty"`
+	Armies                   map[army.ArmyID]armySaveState                      `json:"ar,omitempty"`
+	Commanders               map[string]*army.Commander                         `json:"cmd,omitempty"`
+	DismissedCommanderIDs    map[string]bool                                    `json:"dcm,omitempty"`
+	AIPlans                  map[faction.FactionID]*state.AIPlanState           `json:"ap,omitempty"`
+	AICompletedObjectives    map[faction.FactionID]map[string]bool              `json:"aco,omitempty"`
+	Imperial                 *state.ImperialState                               `json:"im,omitempty"`
+	WarLedgers               map[string]*state.WarLedger                        `json:"wl,omitempty"`
+	RecentTruces             map[string]int                                     `json:"rt,omitempty"`
+	RecentFactionExpansion   map[faction.FactionID]state.FactionExpansionRecord `json:"rx,omitempty"`
+	FactionAttackTurns       map[faction.FactionID]int                          `json:"fat,omitempty"`
+	FactionAttackTargetTurns map[faction.FactionID]map[faction.FactionID]int    `json:"fatt,omitempty"`
+	RelationTrendAppliedTurn int                                                `json:"rtt,omitempty"`
+	EconomicVictoryTurns     int                                                `json:"evt,omitempty"`
+	FactionsEliminated       int                                                `json:"fel,omitempty"`
+	ReligiousVictoryTurns    int                                                `json:"rvt,omitempty"`
+	VictoryAchieved          bool                                               `json:"va,omitempty"`
+	VictoryAchievedTurn      int                                                `json:"vat,omitempty"`
+	FiredEventIDs            []string                                           `json:"fe,omitempty"`
+	TradeNetworkModifiers    []state.TradeNetworkModifier                       `json:"tnm,omitempty"`
+	LastSubjugationActorID   faction.FactionID                                  `json:"lsa,omitempty"`
+	LastSubjugatedFactionID  faction.FactionID                                  `json:"lst,omitempty"`
+	Relations                map[string]relationSaveState                       `json:"rl,omitempty"`
+	DiplomaticOffers         []state.DiplomaticOffer                            `json:"do,omitempty"`
+	DiplomaticOfferHistory   []state.DiplomaticOfferHistoryEntry                `json:"dh,omitempty"`
+	DiplomacyOfferCounts     map[faction.FactionID]int                          `json:"dq,omitempty"`
+	OfferRejectionTurns      map[string]int                                     `json:"dr,omitempty"`
+	TradeRoutes              []*economy.TradeRoute                              `json:"tr,omitempty"`
+	MarketOrders             *state.MarketOrderBook                             `json:"mo,omitempty"`
+	Sieges                   map[world.RegionID]*state.SiegeState               `json:"sg,omitempty"`
+	Raids                    map[world.RegionID]*state.RaidState                `json:"rd,omitempty"`
+	ProductionQueue          []state.ProductionOrder                            `json:"pq,omitempty"`
+	NextProductionSeq        int                                                `json:"np,omitempty"`
+	NextArmySeq              int                                                `json:"na,omitempty"`
+	NextCommanderSeq         int                                                `json:"nc,omitempty"`
+	Phase                    state.Phase                                        `json:"ph,omitempty"`
+	WinnerID                 faction.FactionID                                  `json:"w,omitempty"`
+	ActiveRegionEvents       []state.RegionEventStatus                          `json:"ae,omitempty"`
 }
 
 type legacyRegionSaveState struct {
@@ -230,6 +234,9 @@ type legacyCampaignSaveState struct {
 	WarLedgers               map[string]*state.WarLedger                        `json:"war_ledgers,omitempty"`
 	RecentTruces             map[string]int                                     `json:"recent_truces,omitempty"`
 	RecentFactionExpansion   map[faction.FactionID]state.FactionExpansionRecord `json:"recent_faction_expansion,omitempty"`
+	FactionAttackTurns       map[faction.FactionID]int                          `json:"faction_attack_turns,omitempty"`
+	FactionAttackTargetTurns map[faction.FactionID]map[faction.FactionID]int    `json:"faction_attack_target_turns,omitempty"`
+	RelationTrendAppliedTurn int                                                `json:"relation_trend_applied_turn,omitempty"`
 	EconomicVictoryTurns     int                                                `json:"economic_victory_turns"`
 	FactionsEliminated       int                                                `json:"factions_eliminated"`
 	ReligiousVictoryTurns    int                                                `json:"religious_victory_turns"`
@@ -397,6 +404,9 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		WarLedgers:               cloneWarLedgers(legacy.WarLedgers),
 		RecentTruces:             cloneStringIntMap(legacy.RecentTruces),
 		RecentFactionExpansion:   cloneFactionExpansion(legacy.RecentFactionExpansion),
+		FactionAttackTurns:       cloneFactionIntMap(legacy.FactionAttackTurns),
+		FactionAttackTargetTurns: cloneFactionAttackTargets(legacy.FactionAttackTargetTurns),
+		RelationTrendAppliedTurn: legacy.RelationTrendAppliedTurn,
 		EconomicVictoryTurns:     legacy.EconomicVictoryTurns,
 		FactionsEliminated:       legacy.FactionsEliminated,
 		ReligiousVictoryTurns:    legacy.ReligiousVictoryTurns,
@@ -433,9 +443,11 @@ func makeLegacyRelationState(relations map[string]*faction.Relation) map[string]
 		}
 		score := rel.Score
 		stance := encodeStance(rel.Stance)
+		passiveModifier := rel.PassiveRelationModifier
 		out[key] = relationSaveState{
-			Score:  &score,
-			Stance: &stance,
+			Score:                   &score,
+			Stance:                  &stance,
+			PassiveRelationModifier: &passiveModifier,
 		}
 	}
 	return out
@@ -526,6 +538,9 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		WarLedgers:               cloneWarLedgers(gs.WarLedgers),
 		RecentTruces:             cloneStringIntMap(gs.RecentTruces),
 		RecentFactionExpansion:   cloneFactionExpansion(gs.RecentFactionExpansion),
+		FactionAttackTurns:       cloneFactionIntMap(gs.FactionAttackTurns),
+		FactionAttackTargetTurns: cloneFactionAttackTargets(gs.FactionAttackTargetTurns),
+		RelationTrendAppliedTurn: gs.RelationTrendAppliedTurn,
 		EconomicVictoryTurns:     gs.EconomicVictoryTurns,
 		FactionsEliminated:       gs.FactionsEliminated,
 		ReligiousVictoryTurns:    gs.ReligiousVictoryTurns,
@@ -632,6 +647,9 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		WarLedgers:               cloneWarLedgers(gs.WarLedgers),
 		RecentTruces:             cloneStringIntMap(gs.RecentTruces),
 		RecentFactionExpansion:   cloneFactionExpansion(gs.RecentFactionExpansion),
+		FactionAttackTurns:       cloneFactionIntMap(gs.FactionAttackTurns),
+		FactionAttackTargetTurns: cloneFactionAttackTargets(gs.FactionAttackTargetTurns),
+		RelationTrendAppliedTurn: gs.RelationTrendAppliedTurn,
 		EconomicVictoryTurns:     gs.EconomicVictoryTurns,
 		FactionsEliminated:       gs.FactionsEliminated,
 		ReligiousVictoryTurns:    gs.ReligiousVictoryTurns,
@@ -793,6 +811,9 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.EnsureDecisionSeed()
 	gs.RecentTruces = cloneStringIntMap(saved.RecentTruces)
 	gs.RecentFactionExpansion = cloneFactionExpansion(saved.RecentFactionExpansion)
+	gs.FactionAttackTurns = cloneFactionIntMap(saved.FactionAttackTurns)
+	gs.FactionAttackTargetTurns = cloneFactionAttackTargets(saved.FactionAttackTargetTurns)
+	gs.RelationTrendAppliedTurn = saved.RelationTrendAppliedTurn
 	gs.NextCommanderSeq = saved.NextCommanderSeq
 	gs.SyncCommanderLinks()
 
@@ -1290,8 +1311,9 @@ func makeRelationDelta(current, base map[string]*faction.Relation) map[string]re
 		case baseRel == nil:
 			score := currentRel.Score
 			stance := encodeStance(currentRel.Stance)
+			passiveModifier := currentRel.PassiveRelationModifier
 			nextRepairTurn := currentRel.NextAIRelationRepairTurn
-			out[key] = relationSaveState{Score: &score, Stance: &stance, NextAIRelationRepairTurn: &nextRepairTurn}
+			out[key] = relationSaveState{Score: &score, Stance: &stance, PassiveRelationModifier: &passiveModifier, NextAIRelationRepairTurn: &nextRepairTurn}
 		default:
 			var delta relationSaveState
 			if currentRel.Score != baseRel.Score {
@@ -1302,11 +1324,15 @@ func makeRelationDelta(current, base map[string]*faction.Relation) map[string]re
 				stance := encodeStance(currentRel.Stance)
 				delta.Stance = &stance
 			}
+			if currentRel.PassiveRelationModifier != baseRel.PassiveRelationModifier {
+				passiveModifier := currentRel.PassiveRelationModifier
+				delta.PassiveRelationModifier = &passiveModifier
+			}
 			if currentRel.NextAIRelationRepairTurn != baseRel.NextAIRelationRepairTurn {
 				nextRepairTurn := currentRel.NextAIRelationRepairTurn
 				delta.NextAIRelationRepairTurn = &nextRepairTurn
 			}
-			if delta.Score != nil || delta.Stance != nil || delta.NextAIRelationRepairTurn != nil {
+			if delta.Score != nil || delta.Stance != nil || delta.PassiveRelationModifier != nil || delta.NextAIRelationRepairTurn != nil {
 				out[key] = delta
 			}
 		}
@@ -1337,6 +1363,9 @@ func applyRelationDelta(gs *state.GameState, deltas map[string]relationSaveState
 		}
 		if delta.Stance != nil {
 			rel.Stance = decodeStance(*delta.Stance)
+		}
+		if delta.PassiveRelationModifier != nil {
+			rel.PassiveRelationModifier = *delta.PassiveRelationModifier
 		}
 		if delta.NextAIRelationRepairTurn != nil {
 			rel.NextAIRelationRepairTurn = *delta.NextAIRelationRepairTurn
@@ -1734,6 +1763,20 @@ func cloneFactionIntMap(src map[faction.FactionID]int) map[faction.FactionID]int
 	out := make(map[faction.FactionID]int, len(src))
 	for key, value := range src {
 		out[key] = value
+	}
+	return out
+}
+
+func cloneFactionAttackTargets(src map[faction.FactionID]map[faction.FactionID]int) map[faction.FactionID]map[faction.FactionID]int {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[faction.FactionID]map[faction.FactionID]int, len(src))
+	for attacker, targets := range src {
+		if len(targets) == 0 {
+			continue
+		}
+		out[attacker] = cloneFactionIntMap(targets)
 	}
 	return out
 }

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-09-26
+last_updated: 2026-09-30
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -1187,14 +1187,18 @@ denizaşırı erişim, güç, lojistik ve stratejik hazırlık filtreleri geçil
 açılmaz. Bu yol diğer AI devletlerini de hedefleyebilir; herkesi oyuncuya karşı
 toplayan ayrı bir zorunlu savaş/ittifak akışı yoktur.
 
-Oyuncunun üst HUD'ında görünen **Aşırı Genişleme** değeri `0-100` arasında
-hesaplanır. `aggressive_expansion_last_turns` içindeki her kazanımın katkısı,
+Oyuncunun üst HUD'ında görünen **Aşırı Genişleme** değeri `0-500` arasında
+hesaplanır. `scenario.json` içindeki `aggressive_expansion_last_turns` değeri
+aktif baskı penceresini belirler; bu süre içindeki her kazanımın katkısı,
 kalan süre oranının karesiyle kademeli olarak azalır; böylece süre dolunca ani
 sıfırlama olmaz. Mutlak bölge kazanımı ile kazanımın mevcut kara varlığına
-oranından yüksek olan baskı gösterilir; `75+` kırmızı, `50-74` turuncu, `25-49`
-sarı, daha düşük değerler yeşildir. AI kendi değerini yeni savaş puanına da
-taşır: yüksek saldırganlık daha fazla riski tolere eder, temkinli AI aynı değerde
-yeni genişleme savaşını erteleyip toparlanmaya yönelir.
+oranından yüksek olan baskı gösterilir; `200+` kırmızı, `100-199` turuncu,
+`25-99` sarı, daha düşük değerler yeşildir. Her turda bu değer, aynı realm
+içinde olmayan ve savaşta bulunmayan devletlerle ilişkiye kademe kademe ceza
+olarak yazılır. Böylece önce ticaret ilişkisi `15` puanın altına düşüp kesilir;
+barış ilişkisi sonraki turlarda savaş fırsatı filtresinin düşük ilişki eşiğine
+ulaşabilir. AI yine güç, cephe, lojistik, sınır/denizaşırı erişim ve ateşkes
+kontrollerini geçmeden savaş açmaz.
 
 → İttifak mekanizması: [[systems/diplomacy]]
 
