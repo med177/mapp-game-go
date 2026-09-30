@@ -3409,7 +3409,8 @@
         "name_tr": "Ohri",
         "x": 893,
         "y": 452,
-        "type": "fortress"
+        "type": "fortress",
+        "is_center": true
       },
       {
         "id": "north_macedonia_skopje",
@@ -3418,6 +3419,18 @@
         "y": 438,
         "type": "city"
       },
+      {
+        "id": "north_macedonia_bitola",
+        "name_tr": "Manastır",
+        "x": 901,
+        "y": 455,
+        "type": "town"
+      }
+    ]
+  },
+  {
+    "region_id": "vardar",
+    "settlements": [
       {
         "id": "north_macedonia_strumica",
         "name_tr": "Ustrumca",
@@ -3432,19 +3445,8 @@
         "x": 916,
         "y": 445,
         "type": "town"
-      },
-      {
-        "id": "north_macedonia_bitola",
-        "name_tr": "Manastır",
-        "x": 901,
-        "y": 455,
-        "type": "town"
       }
     ]
-  },
-  {
-    "region_id": "vardar",
-    "settlements": null
   },
   {
     "region_id": "moldova",
@@ -6662,19 +6664,12 @@
     "region_id": "thessaloniki_hinterland",
     "settlements": [
       {
-        "id": "thessaloniki_hinterland_city",
-        "name_tr": "Selanik",
-        "x": 937,
-        "y": 468,
-        "type": "fortress",
-        "is_center": true
-      },
-      {
         "id": "thessaloniki_hinterland_langadas",
         "name_tr": "Langaza",
         "x": 913,
         "y": 460,
-        "type": "town"
+        "type": "fortress",
+        "is_center": true
       },
       {
         "id": "thessaly_trikala",
@@ -6711,13 +6706,6 @@
         "type": "port"
       },
       {
-        "id": "morea_corinth",
-        "name_tr": "Korint",
-        "x": 934,
-        "y": 516,
-        "type": "fortress"
-      },
-      {
         "id": "morea_nauplion",
         "name_tr": "Eski Navarin",
         "x": 909,
@@ -6743,6 +6731,13 @@
         "x": 939,
         "y": 515,
         "type": "port"
+      },
+      {
+        "id": "morea_corinth",
+        "name_tr": "Korint",
+        "x": 934,
+        "y": 516,
+        "type": "fortress"
       }
     ]
   },
@@ -7611,7 +7606,7 @@
         "name_tr": "Serez",
         "x": 956,
         "y": 453,
-        "type": "town",
+        "type": "fortress",
         "is_center": true
       },
       {
@@ -7627,6 +7622,13 @@
         "x": 942,
         "y": 453,
         "type": "town"
+      },
+      {
+        "id": "thessaloniki_hinterland_city",
+        "name_tr": "Selanik",
+        "x": 936,
+        "y": 468,
+        "type": "fortress"
       }
     ]
   },
@@ -7642,7 +7644,7 @@
         "name_tr": "Koumoutzina",
         "x": 991,
         "y": 456,
-        "type": "city",
+        "type": "fortress",
         "is_center": true
       }
     ]

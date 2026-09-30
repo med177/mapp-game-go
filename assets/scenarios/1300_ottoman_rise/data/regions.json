@@ -5529,6 +5529,7 @@
     "name_tr": "Makedonya",
     "terrain": "plain",
     "owner_id": "east_rome",
+    "successor_faction_id": "east_rome",
     "neighbors": [
       "albania",
       "area::area__63",
@@ -5569,6 +5570,7 @@
     "name_tr": "Vardar",
     "terrain": "plain",
     "owner_id": "east_rome",
+    "successor_faction_id": "east_rome",
     "neighbors": [
       "nevrekop_region",
       "nis",
@@ -14183,7 +14185,9 @@
     "rural_population": 182,
     "religion": "orthodox",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "atlantic_open_1",
