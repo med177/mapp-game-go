@@ -26,6 +26,7 @@ const (
 	ActionImproveRelations          Action = "improve_relations"
 	ActionSendGift                  Action = "send_gift"
 	ActionInciteRevolt              Action = "incite_revolt"
+	ActionOfferMinorPrivilege       Action = "offer_minor_privilege"
 	ActionOfferVassalization        Action = "offer_vassalization"
 	ActionReleaseVassal             Action = "release_vassal"
 	ActionAnnexVassal               Action = "annex_vassal"
@@ -403,6 +404,18 @@ func markRejectedDiplomaticOffer(gs *state.GameState, actor, target faction.Fact
 	EnsureRelation(gs, actor, target)
 	AddRelationScoreBoth(gs, actor, target, -rejectedOfferRelationPenalty)
 	gs.MarkDiplomaticOfferRejected(string(actor), string(target), string(action))
+}
+
+func markRejectedDiplomaticOfferForRegion(gs *state.GameState, actor, target faction.FactionID, action Action, regionID world.RegionID) {
+	if gs == nil || actor == "" || target == "" || actor == target {
+		return
+	}
+	if gs.PlayerFactionID == "" || (actor != gs.PlayerFactionID && target != gs.PlayerFactionID) {
+		return
+	}
+	EnsureRelation(gs, actor, target)
+	AddRelationScoreBoth(gs, actor, target, -rejectedOfferRelationPenalty)
+	gs.MarkDiplomaticOfferRejectedForRegion(string(actor), string(target), string(action), regionID)
 }
 
 func IsWar(gs *state.GameState, a, b faction.FactionID) bool {

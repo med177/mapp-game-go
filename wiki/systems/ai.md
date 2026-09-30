@@ -16,6 +16,12 @@ kârlı imtiyazı korur. Merchant rota seçimi de imtiyazlı rotaları
 `GoldPerUnit=0` nedeniyle yanlışlıkla düşük önceliğe atmaz. İmtiyaz rotaları
 hâlâ normal rota ödemesi ve gümrük üretmez.
 
+Egemen AI, imtiyazsız minor bölgeleri dış devletlere de teklif edebilir. Teklif
+hedef devletin ilişki puanını ve bölgenin ekonomik faydasını değerlendirir; hedef
+oyuncuysa normal diplomatik teklif bildirimine bırakılır, hedef AI ise aynı turda
+kabul/red kararı verilir. Kabul edilen teklif kullanım hakkını hedefe aktarır,
+otomatik imtiyaz rotasını kurar ve ilişki bonusunu uygular.
+
 Kara kapasitesi artık temel bölge yuvalarına ek olarak kışla seviyelerini de hesaba katar; kışla yatırımı bu nedenle hem üretim hızını hem de sahaya çıkarılabilecek toplam asker sayısını artırır. Harita veya faction kimlikleri değiştiğinde `LoadAIConfig` sonrasında AI objective, readiness, hedef ve faction claim referansları yükleme sınırında doğrulanır. Doğrudan cephe kuramayan ve uzun süre hiçbir muharebe/deniz harekâtı üretmeyen eski savaşlar stalemate barışına açılır; doğrudan tehdit altında olup cephede üstün olan taraf ise sınırlı karşı taarruz yapabilir.
 
 1300 senaryosunda AI ekonomi ve askeri üretim kararları bölgesel kaynak uzmanlaşmasını ve ortak `ResourceCost` sözleşmesini kullanır. Bina yatırımı önceliği ihtiyaç katmanlarına ayrılır: tahıl üretimi/depolama açığı, gerekli memnuniyet toparlaması, bölgenin mevcut kaynak profilinde en yüksek üretim artışını sağlayan bina, altın ve diğer üretim/ticaret binaları; ardından gerekli askerî bina ve birim üretimi gelir. Bölge ve bina türü başına aynı anda en fazla bir pending bina emri tutulur; farklı bina türleri aynı bölgede aynı turda paralel kuyruğa girebilir. Bütçe yürütme sırası ekonomi, donanma, kara ordusu ve kalan araştırmadır. Kara ve deniz üretimi, kaynak, teknoloji, lojistik, üretim hattı ve `ManpowerCap`/`NavalCap` sınırları elverdiği sürece kapasiteyi doldurmayı dener. Pazar/liman/ibadet yeri ile elit kara ve deniz birliklerindeki baharat/kumaş maliyetleri `internal/ai/{building_investment.go,recruitment_strategy.go,unit_composition.go,naval_mission.go}` üzerinden aynı affordability ve bütçe akışına bağlanır. Tahıl açığı yaşayan devletler, açık pazarda savaşta olmadıkları ve kendi üç aylık rezervini koruyan satıcılardan tahıl alır; üretim kararındaki birim, bina, nakliye veya savaş gemisinin eksik kaynakları `aiProcureStrategicResources()` tarafından çıkarılır.

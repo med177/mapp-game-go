@@ -2172,6 +2172,18 @@ func (s *GameState) CanRevokeMinorPrivilege(rid world.RegionID) bool {
 	return s.MinorPrivilegeRevokeBlockReason(rid) == ""
 }
 
+// CanOfferMinorPrivilege, oyuncunun kendi egemenliğindeki imtiyazsız bir
+// minor bölge için ilk teklif ekranını açabileceğini döner. Hedef devlet
+// seçimi ve diplomasi kotası ayrıca teklif kuyruğunda doğrulanır.
+func (s *GameState) CanOfferMinorPrivilege(rid world.RegionID) bool {
+	if s == nil || rid == "" {
+		return false
+	}
+	region := s.Regions[rid]
+	return region != nil && !region.IsSea && region.IsMinorRegion && !region.IsPrivileged &&
+		region.OwnerID != "" && region.OwnerID == string(s.PlayerFactionID) && s.SovereignOwnerID(region) == string(s.PlayerFactionID)
+}
+
 // MinorPrivilegeProtectionRemaining, imtiyazın ekonomik gerekçeyle AI
 // tarafından kaldırılmasına kalan tur sayısını döner. Sıfır yaş bilgisi eski
 // test/fixture state'lerinde bilinmeyen değer anlamına gelir ve koruma

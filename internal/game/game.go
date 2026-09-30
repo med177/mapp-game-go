@@ -493,6 +493,8 @@ func (g *Game) Update() error {
 			g.applyGrainAid(action.TargetRegion)
 		case render.ActionRevokeMinorPrivilege:
 			g.revokeMinorPrivilege(action.TargetRegion)
+		case render.ActionOfferMinorPrivilege:
+			g.offerMinorPrivilege(action.TargetFaction, action.TargetRegion)
 		case render.ActionLiberateSuccessor:
 			g.liberateSuccessor(action.TargetRegion)
 		case render.ActionVassalizeRegionSuccessor:
@@ -3035,6 +3037,45 @@ func (g *Game) revokeMinorPrivilege(regionID world.RegionID) {
 		}
 		g.renderer.AddEventDetail("[DİPLOMASİ] "+result.Message, detail)
 		g.renderer.MarkMapDirty()
+	}
+}
+
+// offerMinorPrivilege, oyuncunun seçtiği minor bölge için belirli bir devlete
+// kabul bekleyen imtiyaz teklifi gönderir. AI hedefleri aynı turda karar verir;
+// oyuncu hedefiyse teklif normal diplomasi bildirim kuyruğunda görünür.
+func (g *Game) offerMinorPrivilege(targetID faction.FactionID, regionID world.RegionID) {
+	if g == nil || g.gs == nil {
+		return
+	}
+	actor := g.gs.PlayerFactionID
+	if reason := diplomacy.MinorPrivilegeOfferBlockReason(g.gs, actor, targetID, regionID); reason != "" {
+		if g.renderer != nil {
+			g.renderer.ShowCombatResult(reason)
+		}
+		return
+	}
+	if !diplomacy.QueueMinorPrivilegeOffer(g.gs, actor, targetID, regionID, 35, "minor bölge için imtiyaz ve karşılıklı ticaret önerisi") {
+		if g.renderer != nil {
+			g.renderer.ShowCombatResult("İmtiyaz teklifi kuyruğa eklenemedi.")
+		}
+		return
+	}
+	// Oyuncunun teklif ettiği AI devletleri bekleyen oyuncu penceresiyle
+	// kilitleme; ekonomik faydayı değerlendirip bu tur çöz.
+	if targetID != g.gs.PlayerFactionID {
+		for index, offer := range g.gs.DiplomaticOffers {
+			if offer.Action == string(diplomacy.ActionOfferMinorPrivilege) && offer.FromFactionID == actor && offer.ToFactionID == targetID && offer.RegionID == regionID {
+				assessment := diplomacy.AssessMinorPrivilegeOffer(g.gs, actor, targetID, regionID)
+				result := diplomacy.ResolveOffer(g.gs, index, assessment.Accepted())
+				if g.renderer != nil {
+					g.renderer.ShowCombatResult(result.Message)
+				}
+				return
+			}
+		}
+	}
+	if g.renderer != nil {
+		g.renderer.ShowCombatResult("İmtiyaz teklifi gönderildi; karşı devletin kabulü bekleniyor.")
 	}
 }
 

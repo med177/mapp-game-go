@@ -72,6 +72,28 @@ func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action 
 	return true
 }
 
+// QueueMinorPrivilegeOffer, belirli bir minor bölge için ilk imtiyaz teklifini
+// diplomatik karar kuyruğuna ekler. Bölge kimliği aynı devlet çiftindeki diğer
+// imtiyaz tekliflerinden ayrımı sağlar.
+func QueueMinorPrivilegeOffer(gs *state.GameState, from, to faction.FactionID, regionID world.RegionID, priority int, reason string) bool {
+	if reason := MinorPrivilegeOfferBlockReason(gs, from, to, regionID); reason != "" {
+		return false
+	}
+	if !spendDiplomacyOfferQuota(gs, from) {
+		return false
+	}
+	gs.DiplomaticOffers = append(gs.DiplomaticOffers, state.DiplomaticOffer{
+		FromFactionID:  from,
+		ToFactionID:    to,
+		Action:         string(ActionOfferMinorPrivilege),
+		RegionID:       regionID,
+		CreatedTurn:    gs.Turn,
+		Priority:       priority,
+		PriorityReason: reason,
+	})
+	return true
+}
+
 func QueueWarJoinOffer(gs *state.GameState, caller, player, declarer, enemy faction.FactionID, reason string) bool {
 	if gs == nil || caller == "" || player == "" || caller == player || declarer == "" || enemy == "" {
 		return false
@@ -246,6 +268,14 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		return resolveRejectedWarJoinOffer(gs, offer)
 	}
 	if !accepted {
+		if action == ActionOfferMinorPrivilege {
+			markRejectedDiplomaticOfferForRegion(gs, offer.FromFactionID, offer.ToFactionID, action, offer.RegionID)
+			return Result{
+				Accepted: false,
+				Applied:  false,
+				Message:  factionLabel(gs, offer.FromFactionID) + " imtiyaz teklifini reddetti.",
+			}
+		}
 		markRejectedDiplomaticOffer(gs, offer.FromFactionID, offer.ToFactionID, action)
 		return Result{
 			Accepted: false,
@@ -269,6 +299,8 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		return applyRelationImprovement(gs, offer.FromFactionID, offer.ToFactionID, GiftGoldCostFor(gs), GiftRelationBonusFor(gs), GiftReceiverGoldFor(gs), "hediye")
 	case ActionInciteRevolt:
 		return applyInciteRevolt(gs, offer.FromFactionID, offer.ToFactionID)
+	case ActionOfferMinorPrivilege:
+		return OfferMinorPrivilege(gs, offer.FromFactionID, offer.ToFactionID, offer.RegionID)
 	case ActionOfferVassalization:
 		return applyVassalization(gs, offer.FromFactionID, offer.ToFactionID)
 	}

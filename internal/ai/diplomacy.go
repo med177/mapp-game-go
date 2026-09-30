@@ -36,6 +36,7 @@ func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, 
 	if diplomacy.DirectOverlord(gs, fid) != "" {
 		return
 	}
+	aiOfferMinorPrivilegeWithSteps(gs, fid, steps)
 	// Tarihsel genişleme hedefi karşısında tek başına yeterli olmayan devlet,
 	// genel diplomasi taramasından önce aynı hedefe baskı yapabilecek müttefik
 	// arar. Kabul edilen AI-AI ittifakı bu turdaki savaş koalisyonuna da girer.
@@ -158,6 +159,54 @@ func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, 
 	aiHandleSiegeSurrenderOffersWithSteps(gs, fid, steps)
 
 	aiEvaluateWarOpportunitiesWithSteps(gs, fid, steps)
+}
+
+// aiOfferMinorPrivilegeWithSteps, egemen AI'nin henüz imtiyaz verilmemiş bir
+// minor bölgeyi dış bir devlete işletme hakkı olarak önermesini sağlar. Hedef
+// oyuncuysa teklif kuyruğa bırakılır; AI hedefi aynı turda ekonomik faydayı
+// değerlendirerek kabul veya reddeder.
+func aiOfferMinorPrivilegeWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) bool {
+	if gs == nil || fid == "" || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+		return false
+	}
+	for _, region := range aiSortedRegions(gs) {
+		if region == nil || region.IsSea || !region.IsMinorRegion || region.IsPrivileged || region.OwnerID != string(fid) || gs.SovereignOwnerID(region) != string(fid) {
+			continue
+		}
+		for _, targetID := range aiSortedFactionIDs(gs) {
+			if targetID == fid {
+				continue
+			}
+			target := gs.Factions[targetID]
+			if target == nil || target.IsEliminated {
+				continue
+			}
+			assessment := diplomacy.AssessMinorPrivilegeOffer(gs, fid, targetID, region.ID)
+			if assessment.BlockReason != "" || assessment.Chance < 45 {
+				continue
+			}
+			if !diplomacy.QueueMinorPrivilegeOffer(gs, fid, targetID, region.ID, 30+assessment.Chance, "ekonomik imtiyaz geliri ve diplomatik yakınlaşma") {
+				continue
+			}
+			message := turnFactionName(gs, fid) + " " + turnRegionName(gs, region.ID) + " için " + turnFactionName(gs, targetID) + " devletine imtiyaz teklif etti."
+			if targetID == gs.PlayerFactionID {
+				addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: targetID, TargetRegion: region.ID, FocusRegion: region.ID, Message: message})
+				return true
+			}
+			for index, offer := range gs.DiplomaticOffers {
+				if offer.Action != string(diplomacy.ActionOfferMinorPrivilege) || offer.FromFactionID != fid || offer.ToFactionID != targetID || offer.RegionID != region.ID {
+					continue
+				}
+				result := diplomacy.ResolveOffer(gs, index, assessment.Accepted())
+				if result.Applied || result.Accepted {
+					message += " " + result.Message
+				}
+				addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: targetID, TargetRegion: region.ID, FocusRegion: region.ID, Message: message})
+				return result.Applied
+			}
+		}
+	}
+	return false
 }
 
 func aiPursueHistoricalWarAlliance(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) {

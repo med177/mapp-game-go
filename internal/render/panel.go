@@ -2957,6 +2957,17 @@ func drawRegionActionBar(screen *ebiten.Image, gs *state.GameState, region *worl
 			liberateBtn := buildRegionLiberateButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
 			drawUIButtonWidget(screen, liberateBtn, solidButtonStyle(color.RGBA{76, 112, 66, 235}, color.RGBA{145, 190, 108, 255}, ColorWhite, 0))
 		}
+		if region.IsMinorRegion {
+			if gs.CanOfferMinorPrivilege(region.ID) {
+				offerBtn := buildRegionOfferPrivilegeButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+				drawUIButton(screen, offerBtn.X, offerBtn.Y, offerBtn.W, offerBtn.H, offerBtn.Label, gs.CanSpendDiplomacyOfferQuota(gs.PlayerFactionID), solidButtonStyle(color.RGBA{76, 112, 66, 235}, color.RGBA{145, 190, 108, 255}, ColorWhite, 0))
+			}
+			if gs.CanRevokeMinorPrivilege(region.ID) {
+				revokeBtn := buildRegionRevokePrivilegeButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+				drawUIButton(screen, revokeBtn.X, revokeBtn.Y, revokeBtn.W, revokeBtn.H, revokeBtn.Label, gs.CanRevokeMinorPrivilege(region.ID), solidButtonStyle(color.RGBA{112, 58, 48, 235}, color.RGBA{194, 104, 82, 255}, ColorWhite, 0))
+			}
+			return
+		}
 		btn := buildRegionGrainAidButton(gs, region.ID, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, btn.Label, gs.CanApplyGrainAid(region.ID), solidButtonStyle(color.RGBA{112, 82, 36, 225}, color.RGBA{184, 142, 70, 255}, ColorWhite, 0))
 		if gs.CanRevokeMinorPrivilege(region.ID) {
@@ -4182,6 +4193,9 @@ func regionPanelInteractiveHitForTab(mx, my float64, gs *state.GameState, rid wo
 	if regionGrainAidButtonHitForTab(mx, my, gs, rid, activeTab) {
 		return true
 	}
+	if regionOfferPrivilegeButtonHitForTab(mx, my, gs, rid, activeTab) {
+		return true
+	}
 	if regionRevokePrivilegeButtonHitForTab(mx, my, gs, rid, activeTab) {
 		return true
 	}
@@ -5280,12 +5294,29 @@ func regionGrainAidButtonHitForTab(mx, my float64, gs *state.GameState, rid worl
 		return false
 	}
 	region := gs.Regions[rid]
-	if region == nil || region.IsSea || region.OwnerID != string(gs.PlayerFactionID) {
+	if region == nil || region.IsSea || region.IsMinorRegion || region.OwnerID != string(gs.PlayerFactionID) {
 		return false
 	}
 	barY := float32(regionPanelActionBarY(gs, region, activeTab))
 	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
 	return buildRegionGrainAidButton(gs, rid, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
+}
+
+func regionOfferPrivilegeButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
+	return regionOfferPrivilegeButtonHitForTab(mx, my, gs, rid, regionPanelTabBuildings)
+}
+
+func regionOfferPrivilegeButtonHitForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab) bool {
+	if gs == nil || rid == "" || !gs.CanOfferMinorPrivilege(rid) {
+		return false
+	}
+	region := gs.Regions[rid]
+	if region == nil || region.IsSea {
+		return false
+	}
+	barY := float32(regionPanelActionBarY(gs, region, activeTab))
+	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
+	return buildRegionOfferPrivilegeButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H)).HitTest(mx, my)
 }
 
 func regionRevokePrivilegeButtonHit(mx, my float64, gs *state.GameState, rid world.RegionID) bool {
@@ -5320,6 +5351,7 @@ func regionLiberationSuccessor(gs *state.GameState, region *world.Region) (facti
 const (
 	regionActionButtonWidth          = float32(90)
 	regionActionButtonGap            = float32(5)
+	regionOfferPrivilegeButtonWidth  = float32(125)
 	regionRevokePrivilegeButtonWidth = float32(125)
 )
 
@@ -5406,9 +5438,19 @@ func buildRegionGrainAidButton(_ *state.GameState, _ world.RegionID, px, py, _, 
 	return gameui.NewButton(float64(x), float64(y), float64(btnW), float64(btnH), "Tahıl Yardımı")
 }
 
+func buildRegionOfferPrivilegeButton(px, py, pw, ph float32) gameui.Button {
+	const btnH = float32(24)
+	x := px + regionActionButtonGap
+	y := py + (ph-btnH)/2
+	if x+regionOfferPrivilegeButtonWidth > px+pw {
+		x = px + pw - regionOfferPrivilegeButtonWidth
+	}
+	return gameui.NewButton(float64(x), float64(y), float64(regionOfferPrivilegeButtonWidth), float64(btnH), "İmtiyaz Teklif et")
+}
+
 func buildRegionRevokePrivilegeButton(px, py, pw, ph float32) gameui.Button {
 	const btnH = float32(24)
-	x := px + regionActionButtonGap + regionActionButtonWidth + regionActionButtonGap
+	x := px + regionActionButtonGap
 	y := py + (ph-btnH)/2
 	if x+regionRevokePrivilegeButtonWidth > px+pw {
 		x = px + pw - regionRevokePrivilegeButtonWidth

@@ -171,6 +171,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 - Zaten aynı duruştaysa tekrar kurulamaz; ancak `StanceTrade` duruşunda rota kaydı eksikse teklif akışı rotayı yeniden kurar
 - Vassal-overlord bağı ayrı tutulur; iç realm relation'ları normalizasyonda `allied` çizgisine çekilir ve doğrudan overlord-vassal arasında kapasite/partner sınırından bağımsız iki yönlü ticaret rotası garanti edilir. İç-realm rota, dış partner sayısına ve dış rota kapasitesi paylaşımına girmez.
 - İmtiyazlı minor bölgenin ana egemeni ile işletmecisi arasında `IsPrivilegedMinor` işaretli rota otomatik kurulur. Bu rota diplomatik ticaret teklifi gerektirmez; dış partner/rota kapasitesi hakkını, normal rota ödemesini ve gümrüğü tüketmez.
+- İmtiyazsız minor bölgenin egemen sahibi, bölge panelindeki `İmtiyaz Teklif et` düğmesiyle hedef devleti seçip teklif kuyruğuna bir imtiyaz önerisi gönderebilir. Hedef kabul ederse `OwnerID` kullanım sahibine aktarılır, `IsPrivilegedMinor` iki yönlü rota kurulur ve iki devletin ilişkisi `+15` artar. Teklif normal diplomasi kotasını kullanır; reddedilirse bölge başına kısa retry kilidi uygulanır.
 
 ---
 
@@ -186,6 +187,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | Hediye gönder | `sendGift()` | Savaşta değil + aktif senaryonun `diplomacy.gift_gold_cost` değeri; vassala doğrudan gönderilebilir, `gift_relation_bonus` kadar artırır ve `gift_receiver_gold` kadar altın aktarır |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + tüm senaryolarda `Score >= 40`; iki tarafın doğrudan müttefikleriyle mevcut savaş çakışması varsa oyuncu ve AI için teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Vassala doğrudan teklif edilebilir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
+| Minor imtiyazı teklif et | `offerMinorPrivilege()` | Oyuncunun egemen olduğu imtiyazsız minor bölge seçilir; hedef devlet seçildikten sonra teklif kuyruğa girer. Kabulde kullanım hakkı, otomatik imtiyaz rotası ve karşılıklı ilişki bonusu uygulanır |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
 | Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse, hedef başka devlete bağlı değilse ve hedefin en fazla 3 kara bölgesi varsa; savaş duruşu teklifi göndermeyi engellemez, barışta mevcut `Score >= 55` ve askerî ön koşullar korunur |

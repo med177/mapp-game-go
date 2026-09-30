@@ -860,6 +860,10 @@ func (r *Renderer) handleLeftClick() InputAction {
 			r.showMinorPrivilegeRevokeConfirm()
 			return InputAction{}
 		}
+		if regionOfferPrivilegeButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
+			r.showMinorPrivilegeOfferTargetSelection()
+			return InputAction{}
+		}
 		if regionGrainAidButtonHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab) {
 			if r.gs.CanApplyGrainAid(r.SelectedRegion) {
 				return InputAction{Kind: ActionGrainAid, TargetRegion: r.SelectedRegion}
@@ -1199,6 +1203,51 @@ func (r *Renderer) showMinorPrivilegeRevokeConfirm() {
 		"Kaldır",
 		"Vazgeç",
 		InputAction{Kind: ActionRevokeMinorPrivilege, TargetRegion: r.SelectedRegion},
+		nil,
+	)
+}
+
+func (r *Renderer) showMinorPrivilegeOfferTargetSelection() {
+	if r == nil || r.gs == nil || r.SelectedRegion == "" || !r.gs.CanOfferMinorPrivilege(r.SelectedRegion) {
+		return
+	}
+	r.privilegeOfferRegion = r.SelectedRegion
+	r.invalidateDiplomacyCache()
+	r.showDiplomacy = true
+	r.diplomacyTargetFaction = ""
+	r.diplomacyFocus = 0
+	r.diplomacyScroll = 0
+	r.diplomacyRelationScroll = 0
+	r.diplomacyHistoryVisible = false
+}
+
+func (r *Renderer) showMinorPrivilegeOfferConfirm(target faction.FactionID) {
+	if r == nil || r.gs == nil || r.privilegeOfferRegion == "" {
+		return
+	}
+	rid := r.privilegeOfferRegion
+	if reason := diplomacy.MinorPrivilegeOfferBlockReason(r.gs, r.gs.PlayerFactionID, target, rid); reason != "" {
+		r.ShowCombatResult(reason)
+		return
+	}
+	region := r.gs.Regions[rid]
+	regionName := string(rid)
+	if region != nil && region.NameTR != "" {
+		regionName = region.NameTR
+	}
+	targetName := factionDisplayName(r.gs, string(target))
+	if targetName == "" {
+		targetName = string(target)
+	}
+	r.privilegeOfferRegion = ""
+	r.showDiplomacy = false
+	r.diplomacyTargetFaction = ""
+	r.ShowConfirmDialog(
+		"İmtiyaz Teklifi",
+		fmt.Sprintf("%s bölgesinin kullanım hakkını %s devletine teklif etmek istiyor musun? Kabul edilirse otomatik imtiyaz ticareti açılır ve ilişki +%d artar.", regionName, targetName, diplomacy.PrivilegeOfferRelationBonus),
+		"Teklif Et",
+		"Vazgeç",
+		InputAction{Kind: ActionOfferMinorPrivilege, TargetRegion: rid, TargetFaction: target},
 		nil,
 	)
 }

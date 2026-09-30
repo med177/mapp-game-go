@@ -158,3 +158,40 @@ func TestRevokeMinorPrivilegePenalizesOperatorWithoutWar(t *testing.T) {
 		t.Fatal("imtiyaz kaldırma kullanım sahibiyle savaş başlattı")
 	}
 }
+
+func TestMinorPrivilegeOfferRequiresAcceptanceAndCreatesRouteWithRelationBonus(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "grantor",
+		Turn:            7,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"grantor":  {ID: "grantor", NameTR: "İmtiyaz Veren"},
+			"operator": {ID: "operator", NameTR: "İmtiyaz Alan"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("grantor", "operator"): {
+				FactionA: "grantor", FactionB: "operator", ScoreAToB: 10, ScoreBToA: 10, Stance: faction.StancePeace,
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"parent": {ID: "parent", OwnerID: "grantor"},
+			"minor":  {ID: "minor", NameTR: "Minor", OwnerID: "grantor", IsMinorRegion: true, ParentRegionID: "parent"},
+		},
+	}
+
+	if !QueueMinorPrivilegeOffer(gs, "grantor", "operator", "minor", 20, "test") {
+		t.Fatal("imtiyaz teklifi kuyruğa alınmadı")
+	}
+	if len(gs.DiplomaticOffers) != 1 || gs.DiplomaticOffers[0].RegionID != "minor" {
+		t.Fatalf("bölge kimliği taşınmayan teklif: %#v", gs.DiplomaticOffers)
+	}
+	result := ResolveOffer(gs, 0, true)
+	if !result.Applied || !gs.Regions["minor"].IsPrivileged {
+		t.Fatalf("kabul edilen imtiyaz uygulanmadı: %#v", result)
+	}
+	if got := RelationScore(gs, "grantor", "operator"); got != 25 {
+		t.Fatalf("imtiyaz kabulünde ilişki skoru = %d, 25 bekleniyordu", got)
+	}
+	if len(gs.TradeRoutes) != 2 {
+		t.Fatalf("imtiyaz kabulünde otomatik rota çifti = %d, 2 bekleniyordu", len(gs.TradeRoutes))
+	}
+}

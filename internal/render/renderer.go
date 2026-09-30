@@ -139,6 +139,7 @@ type Renderer struct {
 	diplomacyListSort                diplomacyListSort
 	diplomacyActionFocus             int
 	diplomacyTargetFaction           faction.FactionID
+	privilegeOfferRegion             world.RegionID
 	diplomacyOfferHistoryBrowse      faction.FactionID
 	diplomacyHistoryVisible          bool
 	diplomacyHistoryDirectionFilter  diplomacyHistoryDirectionFilter
@@ -1594,6 +1595,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.diplomacyListSort = diplomacyListSortAlphabetical
 	r.diplomacyActionFocus = 0
 	r.diplomacyTargetFaction = ""
+	r.privilegeOfferRegion = ""
 	r.diplomacyOfferHistoryBrowse = ""
 	r.diplomacyHistoryVisible = false
 	r.showTech = false

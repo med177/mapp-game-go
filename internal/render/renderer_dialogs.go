@@ -1231,6 +1231,9 @@ func diplomacyOfferTitleTR(offer state.DiplomaticOffer) string {
 	if offer.Action == string(diplomacy.ActionProposeSiegeVassalization) {
 		return "Kuşatma Vassallığı"
 	}
+	if offer.Action == string(diplomacy.ActionOfferMinorPrivilege) {
+		return "İmtiyaz Teklifi"
+	}
 	if offer.Action == string(diplomacy.ActionImproveRelations) {
 		return "Diplomatik Heyet"
 	}
@@ -1271,6 +1274,15 @@ func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) s
 			}
 		}
 		return fromName + " devleti " + regionName + " kuşatmasında vassallığını istiyor. Kabul edersen devletin onun vassalı olur, bölgeni korursun ve kuşatma sona erer."
+	}
+	if offer.Action == string(diplomacy.ActionOfferMinorPrivilege) {
+		regionName := string(offer.RegionID)
+		if gs != nil {
+			if region := gs.Regions[offer.RegionID]; region != nil && region.NameTR != "" {
+				regionName = region.NameTR
+			}
+		}
+		return fromName + " devleti " + regionName + " bölgesinin kullanım hakkını size teklif ediyor. Kabul ederseniz imtiyazlı ticaret rotası kurulur; rota normal ticaret kotası ve tarifesi tüketmez."
 	}
 	if offer.Action == string(diplomacy.ActionImproveRelations) {
 		return fromName + " devleti size diplomatik heyet gönderdi. İlişkiniz +" + strconv.Itoa(diplomacy.RelationImprovementBonusFor(gs)) + " artacak."

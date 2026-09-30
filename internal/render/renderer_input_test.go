@@ -499,3 +499,24 @@ func TestMinorRegionPanelGeometryIncludesPrivilegeRow(t *testing.T) {
 		t.Fatal("minor bölgedeki İmtiyazı Kaldır düğmesi panel etkileşim alanına dahil edilmedi")
 	}
 }
+
+func TestUnprivilegedMinorPanelOffersPrivilegeWithoutGrainAid(t *testing.T) {
+	minorID := world.RegionID("minor")
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			minorID: {ID: minorID, OwnerID: "player", IsMinorRegion: true},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{"player": {ID: "player"}},
+	}
+	barY := float32(regionPanelActionBarY(gs, gs.Regions[minorID], regionPanelTabBuildings))
+	bar := gameui.Rect{X: float64(infoPanelX()) + panelPad, Y: float64(barY), W: float64(infoPanelW) - panelPad*2, H: regionPanelActionBarHeight}
+	offer := buildRegionOfferPrivilegeButton(float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H))
+	mx, my := offer.X+offer.W/2, offer.Y+offer.H/2
+	if !gs.CanOfferMinorPrivilege(minorID) || !regionOfferPrivilegeButtonHitForTab(mx, my, gs, minorID, regionPanelTabBuildings) {
+		t.Fatal("imtiyazsız minor bölgede İmtiyaz Teklif et düğmesi görünür/hit-test edilebilir değil")
+	}
+	if regionGrainAidButtonHitForTab(mx, my, gs, minorID, regionPanelTabBuildings) {
+		t.Fatal("minor bölgede Tahıl Yardımı düğmesi hâlâ hit-test ediliyor")
+	}
+}

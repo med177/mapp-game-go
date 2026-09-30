@@ -7,6 +7,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-10-01: Minor bölge bilgi paneline `İmtiyaz Teklif et` akışı eklendi.
+  Oyuncu hedef devleti seçip kabul bekleyen teklif gönderiyor; kabulde kullanım
+  hakkı, otomatik iki yönlü imtiyaz rotası ve karşılıklı `+15` ilişki bonusu
+  uygulanıyor. Minor panelinde `Tahıl Yardımı` gizleniyor; AI de imtiyazsız
+  minor bölgeleri uygun dış devletlere teklif edebiliyor. Regression:
+  `internal/diplomacy/privilege_test.go`, `internal/ai/privilege_test.go`,
+  `internal/render/renderer_input_test.go`.
+
 - 2026-10-01: İmtiyazlı ticaret rotaları artık normal ödeme/gümrük olmadan
   taşınan hacmin senaryo temel fiyatından ticari değer üretir. Kullanım sahibi
   bu değeri `İmtiyazlı ticaret geliri`, egemen devlet ise değerin `%25`'ini

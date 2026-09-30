@@ -102,6 +102,31 @@ func TestAIGoldProductionIncludesExpectedPrivilegedTradeIncome(t *testing.T) {
 	}
 }
 
+func TestAISovereignOffersUnprivilegedMinorToPlayer(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"sovereign": {ID: "sovereign", NameTR: "Egemen"},
+			"player":    {ID: "player", NameTR: "Oyuncu"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"parent": {ID: "parent", OwnerID: "sovereign"},
+			"minor":  {ID: "minor", NameTR: "Minor", OwnerID: "sovereign", IsMinorRegion: true, ParentRegionID: "parent"},
+		},
+	}
+	steps := make([]TurnStep, 0, 1)
+	if !aiOfferMinorPrivilegeWithSteps(gs, "sovereign", &steps) {
+		t.Fatal("AI imtiyazsız minor için oyuncuya teklif göndermedi")
+	}
+	if len(gs.DiplomaticOffers) != 1 {
+		t.Fatalf("AI imtiyaz teklif kuyruğu = %d, 1 bekleniyordu", len(gs.DiplomaticOffers))
+	}
+	offer := gs.DiplomaticOffers[0]
+	if offer.Action != string(diplomacy.ActionOfferMinorPrivilege) || offer.ToFactionID != "player" || offer.RegionID != "minor" {
+		t.Fatalf("AI imtiyaz teklifi yanlış: %#v", offer)
+	}
+}
+
 func TestAIPreservesNewMinorPrivilegeDuringProtectionWindow(t *testing.T) {
 	gs := aiPrivilegeTestState(0, faction.StancePeace)
 	gs.Turn = 10

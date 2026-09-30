@@ -12,6 +12,87 @@ import (
 // kaldırmasının kullanım sahibiyle ilişkiye verdiği puan cezasıdır.
 const PrivilegeRevocationRelationPenalty = 10
 
+// PrivilegeOfferRelationBonus, kabul edilen ilk imtiyazın iki devlet arasında
+// oluşturduğu karşılıklı ilişki artışıdır.
+const PrivilegeOfferRelationBonus = 15
+
+// MinorPrivilegeOfferAssessment, imtiyaz teklifinin hedef devlet açısından
+// ekonomik ve diplomatik kabul edilebilirliğini taşır.
+type MinorPrivilegeOfferAssessment struct {
+	Chance      int
+	BlockReason string
+}
+
+func (a MinorPrivilegeOfferAssessment) Accepted() bool {
+	return a.BlockReason == "" && a.Chance >= 45
+}
+
+// MinorPrivilegeOfferBlockReason, teklif düğmesi ve teklif kuyruğu için ortak
+// ilk imtiyaz uygunluk kontrolüdür.
+func MinorPrivilegeOfferBlockReason(gs *state.GameState, actor, target faction.FactionID, rid world.RegionID) string {
+	if gs == nil || actor == "" || target == "" || actor == target || rid == "" {
+		return "Geçersiz imtiyaz teklifi."
+	}
+	from := gs.Factions[actor]
+	to := gs.Factions[target]
+	if from == nil || to == nil || from.IsEliminated || to.IsEliminated {
+		return "Elenmiş devletlere imtiyaz teklif edilemez."
+	}
+	if from.IsVirtual || to.IsVirtual {
+		return "Sanal devletlere imtiyaz teklif edilemez."
+	}
+	region := gs.Regions[rid]
+	if region == nil || region.IsSea || !region.IsMinorRegion {
+		return "İmtiyaz yalnız minor bölgelere verilebilir."
+	}
+	if region.IsPrivileged {
+		return "Bu bölgenin zaten aktif bir imtiyazı var."
+	}
+	if gs.SovereignOwnerID(region) != string(actor) || region.OwnerID != string(actor) {
+		return "İmtiyazı yalnız bölgenin doğrudan egemen sahibi verebilir."
+	}
+	if IsWar(gs, actor, target) {
+		return "Savaş halindeki devlete imtiyaz teklif edilemez."
+	}
+	if sameRealm(gs, actor, target) {
+		return "Aynı realm içindeki devlete imtiyaz teklif edilemez."
+	}
+	if !gs.CanSpendDiplomacyOfferQuota(actor) {
+		return "Bu tur diplomasi elçisi hakkın doldu."
+	}
+	for _, offer := range gs.DiplomaticOffers {
+		if offer.Action == string(ActionOfferMinorPrivilege) && offer.FromFactionID == actor && offer.ToFactionID == target && offer.RegionID == rid {
+			return "Bu imtiyaz teklifi zaten bekliyor."
+		}
+	}
+	if gs.DiplomaticOfferRegionRetryBlocked(string(actor), string(target), string(ActionOfferMinorPrivilege), rid, 1) {
+		return "Bu devlet bu bölge imtiyazını yakın zamanda reddetti."
+	}
+	return ""
+}
+
+// AssessMinorPrivilegeOffer, teklif alacak devletin imtiyazdan elde edeceği
+// doğrudan ekonomik faydayı ilişkiyle birlikte değerlendirir. İmtiyaz rotası
+// kota ve normal tarife tüketmediği için ekonomik fayda sıfır olmayan her
+// gerçek minor teklif, normal ticaretten daha cazip bir başlangıç noktasıdır.
+func AssessMinorPrivilegeOffer(gs *state.GameState, actor, target faction.FactionID, rid world.RegionID) MinorPrivilegeOfferAssessment {
+	if reason := MinorPrivilegeOfferBlockReason(gs, actor, target, rid); reason != "" {
+		return MinorPrivilegeOfferAssessment{BlockReason: reason}
+	}
+	region := gs.Regions[rid]
+	chance := 60 + RelationScore(gs, actor, target)/4
+	if production := gs.RegionProductionSummary(region); production.Gold > 0 {
+		chance += 10
+	}
+	if chance < 0 {
+		chance = 0
+	}
+	if chance > 95 {
+		chance = 95
+	}
+	return MinorPrivilegeOfferAssessment{Chance: chance}
+}
+
 // RevokeMinorPrivilege, egemen devletin kendi imtiyazlı minor bölgesindeki
 // kullanım hakkını kaldırır. Kullanım sahibiyle savaş başlatmaz; yalnızca
 // ilişki puanını düşürür.
@@ -39,4 +120,42 @@ func RevokeMinorPrivilege(gs *state.GameState, actor faction.FactionID, rid worl
 		Applied:  true,
 		Message:  fmt.Sprintf("%s bölgesindeki imtiyaz kaldırıldı. %s ile ilişki -%d.", region.NameTR, factionLabel(gs, operator), PrivilegeRevocationRelationPenalty),
 	}
+}
+
+// OfferMinorPrivilege, kabul edilmiş ilk imtiyaz kararını uygular. Teklifin
+// kuyruğa alınması offers.go'daki kota ve tekrar kontrollerinden geçer.
+func OfferMinorPrivilege(gs *state.GameState, actor, target faction.FactionID, rid world.RegionID) Result {
+	if reason := MinorPrivilegeOfferBlockReasonWithoutQueueChecks(gs, actor, target, rid); reason != "" {
+		return Result{Message: reason}
+	}
+	region := gs.Regions[rid]
+	region.IsPrivileged = true
+	region.OwnerID = string(target)
+	region.PrivilegeGrantedTurn = gs.Turn
+	EnsurePrivilegedMinorTradeRoutes(gs)
+	AddRelationScoreBoth(gs, actor, target, PrivilegeOfferRelationBonus)
+	return Result{
+		Accepted: true,
+		Applied:  true,
+		Message:  fmt.Sprintf("%s bölgesinde %s devletine imtiyaz verildi; rota kuruldu ve ilişki +%d arttı.", region.NameTR, factionLabel(gs, target), PrivilegeOfferRelationBonus),
+	}
+}
+
+func MinorPrivilegeOfferBlockReasonWithoutQueueChecks(gs *state.GameState, actor, target faction.FactionID, rid world.RegionID) string {
+	if gs == nil || actor == "" || target == "" || actor == target || rid == "" {
+		return "Geçersiz imtiyaz teklifi."
+	}
+	from := gs.Factions[actor]
+	to := gs.Factions[target]
+	if from == nil || to == nil || from.IsEliminated || to.IsEliminated || from.IsVirtual || to.IsVirtual {
+		return "İmtiyaz teklifi taraflarından biri artık geçerli değil."
+	}
+	region := gs.Regions[rid]
+	if region == nil || region.IsSea || !region.IsMinorRegion || region.IsPrivileged {
+		return "Bu minor bölge için imtiyaz artık verilemez."
+	}
+	if gs.SovereignOwnerID(region) != string(actor) || region.OwnerID != string(actor) || IsWar(gs, actor, target) || sameRealm(gs, actor, target) {
+		return "İmtiyaz teklifi artık geçerli değil."
+	}
+	return ""
 }

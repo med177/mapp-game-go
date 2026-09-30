@@ -188,6 +188,10 @@ func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 		}
 		return
 	}
+	if regionOfferPrivilegeButtonHitForTab(fx, fy, gs, rid, activeTab) {
+		drawSmallHoverHint(screen, "Bir devlete imtiyaz teklif et", fx, fy)
+		return
+	}
 	if regionRevokePrivilegeButtonHitForTab(fx, fy, gs, rid, activeTab) {
 		drawSmallHoverHint(screen, fmt.Sprintf("İmtiyazı kaldır, ilişki -%d", diplomacy.PrivilegeRevocationRelationPenalty), fx, fy)
 		return

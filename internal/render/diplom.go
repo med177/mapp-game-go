@@ -1052,6 +1052,13 @@ func drawDiplomacyPanelWithSortAndRelationScroll(screen *ebiten.Image, gs *state
 
 func (r *Renderer) drawDiplomacyPanelWithSortAndRelationScroll(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind, sortMode diplomacyListSort, relationScroll int) {
 	drawDiplomacyPanelWithSortAndRelationScrollCached(screen, gs, focusIdx, scroll, actionFocus, target, browseTarget, historyVisible, historyDirFilter, historyActionFilter, sortMode, relationScroll, r.ensureDiplomacyCache(gs))
+	if r != nil && gs != nil && r.privilegeOfferRegion != "" && target == "" {
+		regionName := string(r.privilegeOfferRegion)
+		if region := gs.Regions[r.privilegeOfferRegion]; region != nil && region.NameTR != "" {
+			regionName = region.NameTR
+		}
+		drawUILabel(screen, gameui.Rect{X: ScreenWidth/2 - 210, Y: 48, W: 420, H: 22}, "İmtiyaz hedefi seç: "+regionName, ColorGold, gameui.TextMedium, gameui.TextAlignCenter)
+	}
 }
 
 func drawDiplomacyPanelWithSortAndRelationScrollCached(screen *ebiten.Image, gs *state.GameState, focusIdx, scroll, actionFocus int, target faction.FactionID, browseTarget faction.FactionID, historyVisible bool, historyDirFilter diplomacyHistoryDirectionFilter, historyActionFilter ActionKind, sortMode diplomacyListSort, relationScroll int, cache *diplomacyRenderCache) {
@@ -1625,6 +1632,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	if input.LeftJustPressed && !r.diplomacyPanelPointerHit(input.MouseX, input.MouseY, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 		r.showDiplomacy = false
 		r.diplomacyTargetFaction = ""
+		r.privilegeOfferRegion = ""
 		r.diplomacyOfferHistoryBrowse = ""
 		r.diplomacyHistoryVisible = false
 		return InputAction{}
@@ -1632,6 +1640,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	if buildDiplomacyCloseButton().HandleInput(input) {
 		r.showDiplomacy = false
 		r.diplomacyTargetFaction = ""
+		r.privilegeOfferRegion = ""
 		r.diplomacyOfferHistoryBrowse = ""
 		r.diplomacyHistoryVisible = false
 		return InputAction{}
@@ -1695,6 +1704,10 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 				// Oyuncunun kendi satırı listede görünür; ancak teklif hedefi
 				// olamayacağı için çift tıklama teklif sayfası açmaz.
 				if factions[idx] != r.gs.PlayerFactionID {
+					if r.privilegeOfferRegion != "" {
+						r.showMinorPrivilegeOfferConfirm(factions[idx])
+						return InputAction{}
+					}
 					r.openDiplomacyTarget(diplomacyDoubleClickTarget(r.gs, factions[idx]), 0)
 				}
 				return InputAction{}
@@ -1839,12 +1852,17 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 			r.diplomacyTargetFaction = ""
 		} else {
 			r.showDiplomacy = false
+			r.privilegeOfferRegion = ""
 		}
 		return InputAction{}
 	}
 	if r.keyJustPressed(ebiten.KeyEnter) {
 		if r.diplomacyTargetFaction == "" {
 			if r.diplomacyFocus < len(factions) {
+				if r.privilegeOfferRegion != "" {
+					r.showMinorPrivilegeOfferConfirm(factions[r.diplomacyFocus])
+					return InputAction{}
+				}
 				r.diplomacyTargetFaction = factions[r.diplomacyFocus]
 				r.diplomacyActionFocus = enabledDiplomacyActionFocus(r.gs, factions[r.diplomacyFocus], 0)
 				r.diplomacyHistoryVisible = false
@@ -2059,6 +2077,7 @@ func (r *Renderer) CloseDiplomacyPanel() {
 	}
 	r.showDiplomacy = false
 	r.diplomacyTargetFaction = ""
+	r.privilegeOfferRegion = ""
 	r.diplomacyRelationScroll = 0
 	r.diplomacyOfferHistoryBrowse = ""
 	r.diplomacyHistoryVisible = false
