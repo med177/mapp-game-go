@@ -219,6 +219,44 @@ func TestInfoPopupDismissClearsMessageAndTimer(t *testing.T) {
 	}
 }
 
+func TestSettlementCapitalActionOpensBeforePanelLayerBlocksMapInput(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"region": {
+				ID:      "region",
+				OwnerID: "player",
+				Settlements: []world.Settlement{
+					{ID: "target", NameTR: "Hedef"},
+				},
+			},
+		},
+	}
+	r := &Renderer{
+		gs:                       gs,
+		SelectedRegion:           "region",
+		selectedSettlementRegion: "region",
+		selectedSettlementIndex:  0,
+	}
+
+	button, ok := settlementCapitalActionButton(gs, gs.Regions["region"], &gs.Regions["region"].Settlements[0])
+	if !ok {
+		t.Fatal("başkent düğmesi oluşturulmadı")
+	}
+	if !r.handleSettlementCapitalActionAt(button.X+button.W/2, button.Y+button.H/2) {
+		t.Fatal("başkent düğmesi panel katmanı öncesinde işlenmedi")
+	}
+	if !r.confirmDialog.show {
+		t.Fatal("başkent taşıma onay penceresi açılmadı")
+	}
+	if got := r.confirmDialog.pendingAction.BuildingID; got != "target" {
+		t.Fatalf("onay aksiyonundaki yerleşim = %q, want target", got)
+	}
+}
+
 func TestMapRegionDoubleClickUsesTerrainParentIdentity(t *testing.T) {
 	parentID := world.RegionID("parent")
 	fragmentID := world.RegionID("area::forest::parent")

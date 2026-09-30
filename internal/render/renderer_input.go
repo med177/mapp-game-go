@@ -579,6 +579,33 @@ func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction
 	return InputAction{}
 }
 
+// handleSettlementCapitalActionAt, yerleşim panelindeki başkent düğmesini
+// panel katmanı harita inputunu engellemeden önce işler.
+func (r *Renderer) handleSettlementCapitalActionAt(mx, my float64) bool {
+	region, settlement, ok := r.selectedSettlement()
+	if !ok || region == nil || region.ID != r.SelectedRegion {
+		return false
+	}
+	btn, active := settlementCapitalActionButton(r.gs, region, settlement)
+	if !active || !btn.HitTest(mx, my) {
+		return false
+	}
+	name := settlement.NameTR
+	if name == "" {
+		name = settlement.Name
+	}
+	if name == "" {
+		name = region.NameTR
+	}
+	msg := fmt.Sprintf("%s yerleşimini başkent yapma süreci başlasın mı? Taşıma %d tur sürer.", name, state.DefaultCapitalMoveTurns)
+	r.ShowConfirmDialog("Başkent Taşı", msg, "Başlat", "İptal", InputAction{
+		Kind:         ActionScheduleCapitalMove,
+		TargetRegion: region.ID,
+		BuildingID:   settlement.ID,
+	}, nil)
+	return true
+}
+
 // handleLeftClick sol tıklamayı yorumlar: UI tuşları, ordu seçimi, bölge seçimi.
 func (r *Renderer) handleLeftClick() InputAction {
 	mx, my := ebiten.CursorPosition()
@@ -993,6 +1020,13 @@ func (r *Renderer) handleLeftClick() InputAction {
 		return InputAction{}
 	}
 
+	// Yerleşim paneli haritanın üzerinde çizilir. Bu düğme kontrolü, panelin
+	// UI katmanı harita inputunu engellemeden önce yapılmalıdır; aksi halde
+	// BlocksAt aşağıdaki aksiyon akışına ulaşılmasını keser.
+	if r.handleSettlementCapitalActionAt(fx, fy) {
+		return InputAction{}
+	}
+
 	// Panel içindeki kontroller yukarıda işlendi. Panel dikdörtgeni dışındaki
 	// harita ise normal tıklama akışını korumalıdır.
 	if r.SelectedRegion != "" && regionPanelHit(fx, fy) {
@@ -1069,26 +1103,6 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.resetRecruitSelection()
 		r.playArmySelectionSound(aid)
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
-	}
-	// Yerleşim paneli haritanın üzerinde çizildiği için panel düğmeleri,
-	// panelin altındaki harita marker'larından önce değerlendirilmelidir.
-	if region, settlement, ok := r.selectedSettlement(); ok && region != nil && region.ID == r.SelectedRegion {
-		if btn, active := settlementCapitalActionButton(r.gs, region, settlement); active && btn.HitTest(fx, fy) {
-			name := settlement.NameTR
-			if name == "" {
-				name = settlement.Name
-			}
-			if name == "" {
-				name = region.NameTR
-			}
-			msg := fmt.Sprintf("%s yerleşimini başkent yapma süreci başlasın mı? Taşıma %d tur sürer.", name, state.DefaultCapitalMoveTurns)
-			r.ShowConfirmDialog("Başkent Taşı", msg, "Başlat", "İptal", InputAction{
-				Kind:         ActionScheduleCapitalMove,
-				TargetRegion: region.ID,
-				BuildingID:   settlement.ID,
-			}, nil)
-			return InputAction{}
-		}
 	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
 		if r.selectMapRegionFromMapClickResult(rid, mapDoubleClick) {
