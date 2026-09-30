@@ -8010,6 +8010,14 @@
         "y": 455,
         "type": "town",
         "population": 17
+      },
+      {
+        "id": "paphlagonia_kure",
+        "name_tr": "Küre",
+        "x": 1139,
+        "y": 445,
+        "type": "town",
+        "population": 0
       }
     ]
   },
