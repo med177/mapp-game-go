@@ -2090,6 +2090,62 @@ func PrivilegedTradeRoyalty(value int) int {
 	return value * PrivilegeTradeRoyaltyPercent / 100
 }
 
+// ExpectedPrivilegedTradeIncomeForFaction, AI planlamasında kullanılacak
+// imtiyazlı ticaret gelirini döner. Bu değer kaynak stoklarının o turdaki
+// geçici yetersizliğini değil, aktif rotanın beklenen hacmini kullanır; AI
+// bütçesi gerçek ekonomi tick'inden önce gelecek tur kapasitesini buna göre
+// planlar.
+func (s *GameState) ExpectedPrivilegedTradeIncomeForFaction(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	total := 0
+	for _, route := range s.TradeRoutes {
+		if route == nil || !route.IsPrivilegedMinor || route.SuspendedTurns > 0 {
+			continue
+		}
+		sovereignID, operatorID, ok := s.PrivilegedTradeParticipants(route.FromFactionID, route.ToFactionID)
+		if !ok {
+			continue
+		}
+		value := s.PrivilegedTradeRouteValue(route, s.MerchantTradeRouteEffectiveAmount(route))
+		if operatorID == string(fid) {
+			total += value
+		}
+		if sovereignID == string(fid) {
+			total += PrivilegedTradeRoyalty(value)
+		}
+	}
+	return total
+}
+
+// ExpectedPrivilegeRoyaltyForRegion, egemen AI'nin belirli bir imtiyazı
+// koruduğunda alacağı rota telifini döner. Bir devlet çifti birden fazla
+// imtiyazlı minor paylaşsa bile otomatik rota çifti tek olduğu için eşleşen
+// yönlerin toplamı bu imtiyaza ait beklenen ticaret hacmini temsil eder.
+func (s *GameState) ExpectedPrivilegeRoyaltyForRegion(region *world.Region) int {
+	if s == nil || region == nil || !region.IsMinorRegion || !region.IsPrivileged || region.OwnerID == "" {
+		return 0
+	}
+	sovereignID := s.SovereignOwnerID(region)
+	if sovereignID == "" || sovereignID == region.OwnerID {
+		return 0
+	}
+	total := 0
+	for _, route := range s.TradeRoutes {
+		if route == nil || !route.IsPrivilegedMinor || route.SuspendedTurns > 0 {
+			continue
+		}
+		resolvedSovereign, resolvedOperator, ok := s.PrivilegedTradeParticipants(route.FromFactionID, route.ToFactionID)
+		if !ok || resolvedSovereign != sovereignID || resolvedOperator != region.OwnerID {
+			continue
+		}
+		value := s.PrivilegedTradeRouteValue(route, s.MerchantTradeRouteEffectiveAmount(route))
+		total += PrivilegedTradeRoyalty(value)
+	}
+	return total
+}
+
 // MinorPrivilegeRevokeBlockReason, imtiyaz kaldırma düğmesi ve oyun aksiyonu
 // için ortak yetki/uygunluk kontrolüdür. İmtiyazı yalnız gerçek egemen sahibi
 // kaldırabilir; kullanım sahibi bölgeyi görür ancak bu işlemi yapamaz.

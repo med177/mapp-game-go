@@ -16,6 +16,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   gösteriliyor. Regression: `internal/game`, `internal/state`,
   `internal/victory`; doğrulama: hedefli paket testleri.
 
+- 2026-10-01: AI imtiyazlı ticaret avantajını planlamaya dahil ediyor. Beklenen
+  rota ticaret değeri işletmeci AI bütçesine, `%25` telif egemen AI bütçesine
+  ekleniyor; egemen AI telif kaybı kullanım sahibine bırakılacak yerel payı
+  karşılıyorsa imtiyazı koruyor. Merchant rota sıralaması imtiyazlı rotaları
+  `GoldPerUnit=0` nedeniyle geri plana atmıyor. Regression:
+  `internal/ai/privilege_test.go`; doğrulama: `go test ./internal/ai ./internal/state`.
+
 - 2026-09-30: İmtiyazlı minor bölgenin ana egemeni ile işletmecisi arasında
   otomatik iki yönlü ve `IsPrivilegedMinor` işaretli ticaret rotası kuruldu.
   Bu rota dış partner/rota kapasitesi hakkına yazılmıyor; normal `Ticaret

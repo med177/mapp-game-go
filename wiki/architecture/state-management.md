@@ -63,6 +63,10 @@ ile birlikte kesilir. Gelir önizlemesi ve ekonomik zafer hesabı aynı yardımc
 hesapları kullanır (`internal/state/state.go`, `internal/game/resolution.go`,
 `internal/victory/victory.go`).
 
+AI planlama katmanı `ExpectedPrivilegedTradeIncomeForFaction()` ile aynı rota
+değerini gelecek tur bütçesine ekler; `ExpectedPrivilegeRoyaltyForRegion()` ise
+egemenin imtiyazı koruma/kaldırma kararında kullanılacak telifi verir.
+
 `PendingNavalContact` ve `PendingLandContact`, oyuncu kararını bekleyen geçici
 temas state'leridir ve `json:"-"` ile kayda girmez. AI-AI deniz temasları
 `ResolveAIOnlyNavalContact()` ile aynı AI adımında çözülüp temizlenir; bu alanın

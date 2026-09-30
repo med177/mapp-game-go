@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -62,6 +63,42 @@ func TestAIPreservesValuablePrivilegeForTrustedOperator(t *testing.T) {
 	minor := gs.Regions["minor"]
 	if !minor.IsPrivileged || minor.OwnerID != "operator" {
 		t.Fatalf("güvenilir işletmecinin imtiyazı korunmadı: %#v", minor)
+	}
+}
+
+func TestAISovereignPreservesPrivilegeWhenTradeRoyaltyCoversLocalShare(t *testing.T) {
+	gs := aiPrivilegeTestState(0, faction.StancePeace)
+	gs.BaseGoldValues = map[economy.GoodType]int{economy.GoodCloth: 8}
+	gs.TradeRoutes = []*economy.TradeRoute{{
+		FromFactionID: "sovereign", ToFactionID: "operator",
+		Good: economy.GoodCloth, AmountPerTurn: 3, IsPrivilegedMinor: true,
+	}}
+	gs.Turn = state.DefaultMinorPrivilegeProtectionTurns + 1
+
+	if aiManageMinorPrivilegesWithSteps(gs, "sovereign", nil) {
+		t.Fatal("rota telifi yerel payı karşıladığı halde AI imtiyazı kaldırdı")
+	}
+	if !gs.Regions["minor"].IsPrivileged {
+		t.Fatal("ticari avantajı kârlı olan imtiyaz korunmadı")
+	}
+}
+
+func TestAIGoldProductionIncludesExpectedPrivilegedTradeIncome(t *testing.T) {
+	gs := aiPrivilegeTestState(0, faction.StancePeace)
+	gs.BaseGoldValues = map[economy.GoodType]int{economy.GoodCloth: 8}
+	gs.TradeRoutes = []*economy.TradeRoute{{
+		FromFactionID: "sovereign", ToFactionID: "operator",
+		Good: economy.GoodCloth, AmountPerTurn: 3, IsPrivilegedMinor: true,
+	}}
+
+	if got := gs.ExpectedPrivilegedTradeIncomeForFaction("operator"); got != 24 {
+		t.Fatalf("işletmeci beklenen imtiyaz ticaret geliri = %d, 24 bekleniyordu", got)
+	}
+	if got := gs.ExpectedPrivilegedTradeIncomeForFaction("sovereign"); got != 6 {
+		t.Fatalf("egemen beklenen imtiyaz telifi = %d, 6 bekleniyordu", got)
+	}
+	if got := aiFactionGoldProduction(gs, "operator"); got != 29 {
+		t.Fatalf("AI işletmeci toplam beklenen altın üretimi = %d, 29 bekleniyordu", got)
 	}
 }
 

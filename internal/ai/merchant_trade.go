@@ -132,6 +132,9 @@ func aiEligibleMerchantRoutes(gs *state.GameState, fid faction.FactionID) []aiMe
 		result = append(result, aiMerchantRoute{route: route, key: route.AssignmentKey(), seas: seas})
 	}
 	sort.Slice(result, func(i, j int) bool {
+		if result[i].route.IsPrivilegedMinor != result[j].route.IsPrivilegedMinor {
+			return result[i].route.IsPrivilegedMinor
+		}
 		if result[i].route.GoldPerUnit != result[j].route.GoldPerUnit {
 			return result[i].route.GoldPerUnit > result[j].route.GoldPerUnit
 		}

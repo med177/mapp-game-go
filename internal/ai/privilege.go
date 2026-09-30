@@ -43,7 +43,7 @@ func aiFactionGoldProduction(gs *state.GameState, fid faction.FactionID) int {
 		}
 		total += aiFactionGoldFromProduction(gs, fid, region, gs.RegionProductionSummary(region))
 	}
-	return total
+	return total + gs.ExpectedPrivilegedTradeIncomeForFaction(fid)
 }
 
 func aiManageMinorPrivilegesWithSteps(gs *state.GameState, fid faction.FactionID, steps *[]TurnStep) bool {
@@ -105,6 +105,12 @@ func aiShouldRevokeMinorPrivilege(gs *state.GameState, fid faction.FactionID, re
 	}
 	production := gs.RegionProductionSummary(region)
 	_, operatorGold := gs.RegionIncomeShares(region, production.Gold)
+	// İmtiyazlı rota telifi, kullanım sahibine bırakılacak yerel payı
+	// karşılıyorsa egemen AI ekonomik avantajı korur. Aksi durumda eski
+	// davranış gibi bölgenin tamamını geri almayı değerlendirebilir.
+	if gs.ExpectedPrivilegeRoyaltyForRegion(region) >= operatorGold {
+		return false
+	}
 	return operatorGold >= aiPrivilegeMinimumGoldGain
 }
 

@@ -1,11 +1,20 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-09-30
+last_updated: 2026-10-01
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
 # Yapay Zeka Sistemi
+
+İmtiyazlı ticaret rotaları AI ekonomisinde de hesaba katılır.
+`aiFactionGoldProduction()` aktif rotaların beklenen ticari değerini kullanım
+sahibinin gelirine, egemen devletin `%25` telifini ise kendi gelirine ekler.
+Egemen AI, imtiyazı kaldırma kararında bu telifi kullanım sahibine bırakılacak
+yerel payla karşılaştırır; telif kaybı telafi ediyorsa ilişki düşük olsa bile
+kârlı imtiyazı korur. Merchant rota seçimi de imtiyazlı rotaları
+`GoldPerUnit=0` nedeniyle yanlışlıkla düşük önceliğe atmaz. İmtiyaz rotaları
+hâlâ normal rota ödemesi ve gümrük üretmez.
 
 Kara kapasitesi artık temel bölge yuvalarına ek olarak kışla seviyelerini de hesaba katar; kışla yatırımı bu nedenle hem üretim hızını hem de sahaya çıkarılabilecek toplam asker sayısını artırır. Harita veya faction kimlikleri değiştiğinde `LoadAIConfig` sonrasında AI objective, readiness, hedef ve faction claim referansları yükleme sınırında doğrulanır. Doğrudan cephe kuramayan ve uzun süre hiçbir muharebe/deniz harekâtı üretmeyen eski savaşlar stalemate barışına açılır; doğrudan tehdit altında olup cephede üstün olan taraf ise sınırlı karşı taarruz yapabilir.
 
