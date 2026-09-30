@@ -16,6 +16,12 @@ const PrivilegeRevocationRelationPenalty = 10
 // oluşturduğu karşılıklı ilişki artışıdır.
 const PrivilegeOfferRelationBonus = 15
 
+// privilegeEconomicBenefitRelationWeight, altın/tur cinsinden ekonomik
+// faydanın ilişki puanı yüküyle karşılaştırıldığı denge katsayısıdır. İlişki
+// skoru bir altın gibi bire bir sayılmaz; aksi halde düşük gelirli minorlar
+// -100 ilişki durumunda gereksiz yere hiç teklif alamaz.
+const privilegeEconomicBenefitRelationWeight = 20
+
 // MinorPrivilegeOfferAssessment, imtiyaz teklifinin hedef devlet açısından
 // ekonomik ve diplomatik kabul edilebilirliğini taşır.
 type MinorPrivilegeOfferAssessment struct {
@@ -75,8 +81,8 @@ func MinorPrivilegeOfferBlockReason(gs *state.GameState, actor, target faction.F
 
 // AssessMinorPrivilegeOffer, teklif alacak devletin imtiyazdan elde edeceği
 // yerel payı ve kurulacak rotanın tahmini brüt ticaret değerini ilişki yüküyle
-// karşılaştırır. Ekonomik fayda negatif ilişki puanının mutlak değerini aşarsa
-// ilişki skoru kararı ezemez; AI bu durumda sabit %60 kabul şansına zar atar.
+// karşılaştırır. Ekonomik fayda ilişki yükünü ölçeklendirilmiş olarak aşarsa
+// ilişki skoru kararı ezemez; AI bu durumda %90 kabul şansına zar atar.
 func AssessMinorPrivilegeOffer(gs *state.GameState, actor, target faction.FactionID, rid world.RegionID) MinorPrivilegeOfferAssessment {
 	if reason := MinorPrivilegeOfferBlockReason(gs, actor, target, rid); reason != "" {
 		return MinorPrivilegeOfferAssessment{BlockReason: reason}
@@ -89,10 +95,15 @@ func AssessMinorPrivilegeOffer(gs *state.GameState, actor, target faction.Factio
 	tradeValue := gs.PrivilegedTradeRouteValue(tradeRoute, tradeRoute.AmountPerTurn)
 	economicBenefit := localShare + tradeValue
 	relationScore := RelationScore(gs, actor, target)
-	economicAdvantage := economicBenefit > maxInt(0, -relationScore)
+	relationBurden := maxInt(0, -relationScore)
+	minimumEconomicBenefit := (relationBurden + privilegeEconomicBenefitRelationWeight - 1) / privilegeEconomicBenefitRelationWeight
+	if minimumEconomicBenefit < 1 {
+		minimumEconomicBenefit = 1
+	}
+	economicAdvantage := economicBenefit >= minimumEconomicBenefit
 	chance := 45 + relationScore/4
 	if economicAdvantage {
-		chance = 60
+		chance = 90
 	}
 	if chance < 0 {
 		chance = 0

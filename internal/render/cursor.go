@@ -442,7 +442,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 		}
 		if regionPanelInteractiveHitForTab(fx, fy, r.gs, r.SelectedRegion, r.regionPanelTab, r.regionPanelScroll) ||
 			r.settlementPanelHit(fx, fy) || r.settlementPanelCloseHit(fx, fy) ||
-			RecruitPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion) {
+			(r.mapMode != MapModeTrade && r.showRecruitPanel && RecruitPanelInteractiveHit(fx, fy, r.gs, r.SelectedRegion)) {
 			return true
 		}
 	}

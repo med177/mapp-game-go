@@ -216,7 +216,7 @@ func TestMinorPrivilegeOfferEconomicAdvantageOverridesNegativeRelation(t *testin
 	}
 
 	assessment := AssessMinorPrivilegeOffer(gs, "grantor", "operator", "minor")
-	if assessment.BlockReason != "" || !assessment.EconomicAdvantage || assessment.Chance != 60 {
+	if assessment.BlockReason != "" || !assessment.EconomicAdvantage || assessment.Chance != 90 {
 		t.Fatalf("ekonomik avantaj imtiyaz teklifini ezmedi: %#v", assessment)
 	}
 }

@@ -17,7 +17,7 @@ const (
 // ShouldAcceptMinorPrivilegeOffer, AI hedefinin ekonomik avantajı ilişki
 // yükünü aştığında kampanya karar zarını kullanır. Zar aynı teklif ve tur için
 // seed tabanlıdır; böylece kayıt yükleme ve headless simülasyon deterministik
-// kalırken kabul olasılığı gerçek anlamda %60 olur.
+// kalırken avantajlı tekliflerin kabul olasılığı %90 olur.
 func ShouldAcceptMinorPrivilegeOffer(gs *state.GameState, from, to faction.FactionID, rid world.RegionID, assessment diplomacy.MinorPrivilegeOfferAssessment) bool {
 	if gs == nil || assessment.BlockReason != "" {
 		return false
