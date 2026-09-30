@@ -209,6 +209,92 @@ func TestTradeRoutePaletteSeparatesLandAndSea(t *testing.T) {
 	}
 }
 
+func TestPrivilegedTradePaletteAndTooltipAreDistinct(t *testing.T) {
+	normalGlow, normalCore, normalArrow := tradeRoutePalette(world.TradeRouteSea)
+	privilegedGlow, privilegedCore, privilegedArrow := privilegedTradeRoutePalette()
+	if normalGlow == privilegedGlow || normalCore == privilegedCore || normalArrow == privilegedArrow {
+		t.Fatalf("imtiyaz ve normal ticaret paletleri ayrışmıyor: normal=(%v,%v,%v), imtiyaz=(%v,%v,%v)", normalGlow, normalCore, normalArrow, privilegedGlow, privilegedCore, privilegedArrow)
+	}
+	if got, want := tradeCorridorTooltipTitle(tradeCorridorInfo{privileged: true}), "İmtiyazlı Ticaret Koridoru"; got != want {
+		t.Fatalf("imtiyaz koridoru tooltip başlığı = %q, want %q", got, want)
+	}
+}
+
+func TestPrivilegedMinorTradeCorridorUsesMinorAndOperatorCapitalPort(t *testing.T) {
+	const (
+		sovereign = faction.FactionID("ottoman")
+		operator  = faction.FactionID("genoa")
+		minorID   = world.RegionID("galata")
+		capitalID = world.RegionID("genoa")
+		seaID     = world.RegionID("ligurian_sea")
+	)
+	minor := &world.Region{
+		ID: minorID, NameTR: "Galata", OwnerID: string(operator), ParentRegionID: "istanbul",
+		IsMinorRegion: true, IsPrivileged: true, WorldX: 100, WorldY: 100,
+		Settlements: []world.Settlement{{ID: "galata_port", Type: world.SettlementPort}},
+		Neighbors:   []world.RegionID{seaID},
+	}
+	parent := &world.Region{ID: "istanbul", OwnerID: string(sovereign), WorldX: 80, WorldY: 80}
+	capital := &world.Region{
+		ID: capitalID, NameTR: "Ceneviz", OwnerID: string(operator), WorldX: 500, WorldY: 500,
+		Neighbors: []world.RegionID{seaID},
+		Settlements: []world.Settlement{
+			{ID: "genoa_capital", IsCenter: true},
+			{ID: "genoa_port", Type: world.SettlementPort},
+		},
+	}
+	sea := &world.Region{ID: seaID, IsSea: true}
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			sovereign: {ID: sovereign, NameTR: "Osmanlı", CapitalSettlementID: "istanbul_capital"},
+			operator:  {ID: operator, NameTR: "Ceneviz", CapitalSettlementID: "genoa_capital"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			minorID:   minor,
+			parent.ID: parent,
+			capitalID: capital,
+			seaID:     sea,
+		},
+	}
+	// Yalnızca işletmecinin başkentinin canonical limanı gerekir; egemenin
+	// başkent limanı bu görsel endpoint için kullanılmamalıdır.
+	gs.Factions[sovereign].CapitalSettlementID = "istanbul_capital"
+	gs.Regions[parent.ID].Settlements = []world.Settlement{{ID: "istanbul_capital", IsCenter: true}}
+	gs.Regions[parent.ID].Buildings = []string{"port"}
+	gs.Regions[parent.ID].Neighbors = []world.RegionID{seaID}
+	wm := &WorldMap{
+		primarySettlement: map[world.RegionID][2]int{
+			minorID:   {100, 100},
+			capitalID: {500, 500},
+			parent.ID: {80, 80},
+		},
+		settlementAnchor: map[settlementAnchorKey][2]int{
+			{Region: minorID, Index: 0}:   {110, 110},
+			{Region: capitalID, Index: 1}: {520, 520},
+		},
+	}
+	r := &Renderer{gs: gs, worldMap: wm, camScale: 1}
+	routes := []*economy.TradeRoute{
+		{FromFactionID: string(sovereign), ToFactionID: string(operator), AmountPerTurn: 4, IsPrivilegedMinor: true},
+		{FromFactionID: string(operator), ToFactionID: string(sovereign), AmountPerTurn: 5, IsPrivilegedMinor: true},
+	}
+	corridor, ok := r.privilegedMinorTradeCorridor(minor, routes, "galata|ottoman|genoa")
+	if !ok {
+		t.Fatal("imtiyazlı minor koridoru oluşturulamadı")
+	}
+	wantStartX, wantStartY := r.worldToScreen(110, 110)
+	wantEndX, wantEndY := r.worldToScreen(520, 520)
+	if corridor.sx != wantStartX || corridor.sy != wantStartY {
+		t.Fatalf("imtiyaz koridoru minor endpoint'i = (%v,%v), want (%v,%v)", corridor.sx, corridor.sy, wantStartX, wantStartY)
+	}
+	if corridor.dx != wantEndX || corridor.dy != wantEndY {
+		t.Fatalf("imtiyaz koridoru merkez liman endpoint'i = (%v,%v), want (%v,%v)", corridor.dx, corridor.dy, wantEndX, wantEndY)
+	}
+	if corridor.fromName != "Osmanlı (Galata)" || corridor.toName != "Ceneviz" {
+		t.Fatalf("imtiyaz koridoru devlet/bölge adları = %q -> %q", corridor.fromName, corridor.toName)
+	}
+}
+
 func TestSourceTradeLinkUsesDirectLandGeometryAndDistinctPalette(t *testing.T) {
 	gs := &state.GameState{TradeCenters: world.TradeCenterConfig{Centers: []world.TradeCenterDef{
 		{ID: "source", OffMap: true, Links: []world.TradeCenterLink{{RegionID: "center", Type: world.TradeRouteSea}}},

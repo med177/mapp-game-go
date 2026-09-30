@@ -70,6 +70,7 @@ type tradeCorridorInfo struct {
 	routeType           world.TradeRouteType
 	hitWidth            float64
 	dashed              bool
+	privileged          bool
 	historical          bool
 	route               *economy.TradeRoute
 	routeKeys           []string
@@ -374,6 +375,9 @@ func tradeRouteTypeLabel(routeType world.TradeRouteType) string {
 }
 
 func tradeCorridorTooltipTitle(c tradeCorridorInfo) string {
+	if c.privileged {
+		return "İmtiyazlı Ticaret Koridoru"
+	}
 	if c.dashed {
 		return "Ticaret Anlaşması"
 	}
@@ -394,6 +398,17 @@ func tradeSourceRoutePalette() (glow, core, arrow color.RGBA) {
 func passiveTradeRoutePalette() (glow, core, arrow color.RGBA) {
 	gray := color.RGBA{145, 151, 158, 255}
 	return color.RGBA{}, gray, gray
+}
+
+func privilegedTradeRoutePalette() (glow, core, arrow color.RGBA) {
+	return color.RGBA{181, 82, 214, 255}, color.RGBA{244, 164, 255, 255}, color.RGBA{205, 91, 230, 255}
+}
+
+func tradeCorridorPalette(c tradeCorridorInfo) (glow, core, arrow color.RGBA) {
+	if c.privileged {
+		return privilegedTradeRoutePalette()
+	}
+	return tradeRoutePalette(c.routeType)
 }
 
 func tradeRoutePairKey(a, b string) string {
@@ -672,6 +687,19 @@ func tradeCenterOwnerFaction(gs *state.GameState, center tradeCenterVisual) stri
 	return region.OwnerID
 }
 
+func tradeCenterRouteLabel(gs *state.GameState, center tradeCenterVisual) string {
+	label := center.nameTR
+	ownerID := tradeCenterOwnerFaction(gs, center)
+	if ownerID == "" {
+		return label
+	}
+	ownerName := factionDisplayName(gs, ownerID)
+	if ownerName == "" || ownerName == label {
+		return label
+	}
+	return label + " (" + ownerName + ")"
+}
+
 func tradeCenterTierLabel(tier world.TradeCenterTier) string {
 	if tier == world.TradeCenterPrimary {
 		return "Ana merkez"
@@ -805,7 +833,7 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 		drawDashedTradeCurve(screen, c.sx, c.sy, c.cx, c.cy, c.dx, c.dy, 4.0,
 			playerTradeRouteColor, r.tradeOverlayOccludesSegment)
 	} else {
-		hoverGlow, hoverCore, _ := tradeRoutePalette(c.routeType)
+		hoverGlow, hoverCore, _ := tradeCorridorPalette(c)
 		hoverGlow.A = 56
 		hoverCore.A = 230
 		segments := 28
@@ -1044,6 +1072,9 @@ func (r *Renderer) merchantTradePortCorridor(route *economy.TradeRoute, visualKe
 	if r == nil || r.gs == nil || route == nil || route.AssignmentKey() == "" || visualKey == "" {
 		return tradeCorridorInfo{}, false
 	}
+	if route.IsPrivilegedMinor {
+		return tradeCorridorInfo{}, false
+	}
 	if len(r.gs.MerchantTradeRouteSeaRegions(route)) == 0 {
 		return tradeCorridorInfo{}, false
 	}
@@ -1087,6 +1118,211 @@ func (r *Renderer) merchantTradePortCorridor(route *economy.TradeRoute, visualKe
 		route:         route,
 		routeKeys:     []string{route.AssignmentKey()},
 	}, true
+}
+
+func privilegedMinorTradeEndpointLabel(gs *state.GameState, factionID string, region *world.Region) string {
+	name := factionDisplayName(gs, factionID)
+	if region == nil {
+		return name
+	}
+	regionName := chooseRegionLabel(region)
+	if name == "" || name == regionName {
+		return regionName
+	}
+	return name + " (" + regionName + ")"
+}
+
+// privilegedMinorTradeCorridor, imtiyaz rotasını merkez grafiğine sokmadan
+// imtiyazlı minor bölgenin görsel noktasından işletmecinin canonical merkez
+// limanına bağlar. İki yönlü state rotaları tek fiziksel koridorda birleşir.
+func (r *Renderer) privilegedMinorTradeCorridor(region *world.Region, routes []*economy.TradeRoute, visualKey string) (tradeCorridorInfo, bool) {
+	if r == nil || r.gs == nil || region == nil || len(routes) == 0 || visualKey == "" {
+		return tradeCorridorInfo{}, false
+	}
+	operatorID := region.OwnerID
+	sovereignID := r.gs.SovereignOwnerID(region)
+	if operatorID == "" || sovereignID == "" || operatorID == sovereignID {
+		return tradeCorridorInfo{}, false
+	}
+	toRegion := r.gs.MerchantTradePortRegion(operatorID)
+	if toRegion == nil {
+		return tradeCorridorInfo{}, false
+	}
+	toSettlementID := r.gs.MerchantTradePortSettlementID(operatorID)
+	sx, sy := r.tradePortScreenPos(region, "")
+	dx, dy := r.tradePortScreenPos(toRegion, toSettlementID)
+	vx := dx - sx
+	vy := dy - sy
+	dist := math.Hypot(vx, vy)
+	if dist < 1 {
+		return tradeCorridorInfo{}, false
+	}
+
+	sort.SliceStable(routes, func(i, j int) bool {
+		return routes[i].AssignmentKey() < routes[j].AssignmentKey()
+	})
+	details := make([]tradeCorridorRouteDetail, 0, len(routes))
+	keys := make([]string, 0, len(routes))
+	amount := 0
+	bestAmount := -1
+	bestRoute := routes[0]
+	goods := make(map[string]int, len(routes))
+	for _, route := range routes {
+		if route == nil {
+			continue
+		}
+		routeKey := route.AssignmentKey()
+		if routeKey == "" {
+			continue
+		}
+		displayAmount := tradeRouteDisplayAmount(route)
+		amount += displayAmount
+		keys = appendTradeRouteKeys(keys, routeKey)
+		details = appendTradeCorridorRouteDetail(details, tradeCorridorRouteDetail{
+			key:       routeKey,
+			direction: factionDisplayName(r.gs, route.FromFactionID) + " -> " + factionDisplayName(r.gs, route.ToFactionID),
+			good:      economy.GoodNameTR(route.Good),
+			amount:    displayAmount,
+			route:     route,
+		})
+		goods[economy.GoodNameTR(route.Good)] += displayAmount
+		if displayAmount > bestAmount {
+			bestAmount = displayAmount
+			bestRoute = route
+		}
+	}
+	if len(details) == 0 {
+		return tradeCorridorInfo{}, false
+	}
+	goodsList := make([]tradeCorridorGoodTotal, 0, len(goods))
+	for good, goodAmount := range goods {
+		goodsList = append(goodsList, tradeCorridorGoodTotal{good: good, amount: goodAmount})
+	}
+	sort.Slice(goodsList, func(i, j int) bool {
+		if goodsList[i].amount != goodsList[j].amount {
+			return goodsList[i].amount > goodsList[j].amount
+		}
+		return goodsList[i].good < goodsList[j].good
+	})
+	goodsLabel := "-"
+	if len(goodsList) > 0 {
+		goodsLabel = goodsList[0].good
+		if len(goodsList) > 1 {
+			goodsLabel += ", " + goodsList[1].good
+		}
+	}
+	curve := routeCurveOffset("privileged-minor|"+visualKey, dist)
+	mx := (sx + dx) / 2
+	my := (sy + dy) / 2
+	return tradeCorridorInfo{
+		fromName:       privilegedMinorTradeEndpointLabel(r.gs, sovereignID, region),
+		toName:         privilegedMinorTradeEndpointLabel(r.gs, operatorID, toRegion),
+		directionText:  factionDisplayName(r.gs, sovereignID) + " -> " + factionDisplayName(r.gs, operatorID),
+		amount:         amount,
+		factions:       2,
+		goods:          goodsLabel,
+		sx:             sx,
+		sy:             sy,
+		cx:             mx + (-vy/dist)*curve,
+		cy:             my + (vx/dist)*curve,
+		dx:             dx,
+		dy:             dy,
+		routeType:      world.TradeRouteSea,
+		hitWidth:       10,
+		privileged:     true,
+		route:          bestRoute,
+		routeKeys:      keys,
+		routeDetails:   details,
+		centerFactions: [2]string{sovereignID, operatorID},
+	}, true
+}
+
+func (r *Renderer) drawPrivilegedMinorTradeRoutes(screen *ebiten.Image, onlyPlayerRoutes bool) {
+	if r == nil || r.gs == nil {
+		return
+	}
+	routesByPair := make(map[string][]*economy.TradeRoute)
+	for _, route := range r.gs.TradeRoutes {
+		if route == nil || !route.IsPrivilegedMinor || route.FromFactionID == "" || route.ToFactionID == "" {
+			continue
+		}
+		key := tradeRoutePairKey(route.FromFactionID, route.ToFactionID)
+		routesByPair[key] = append(routesByPair[key], route)
+	}
+	if len(routesByPair) == 0 {
+		return
+	}
+	playerID := string(r.gs.PlayerFactionID)
+	regionIDs := make([]world.RegionID, 0, len(r.gs.Regions))
+	for regionID := range r.gs.Regions {
+		regionIDs = append(regionIDs, regionID)
+	}
+	regionIDs = world.SortedRegionIDs(regionIDs)
+	for _, regionID := range regionIDs {
+		region := r.gs.Regions[regionID]
+		if region == nil || region.IsSea || !region.IsMinorRegion || !region.IsPrivileged || region.OwnerID == "" {
+			continue
+		}
+		sovereignID := r.gs.SovereignOwnerID(region)
+		key := tradeRoutePairKey(sovereignID, region.OwnerID)
+		routes := routesByPair[key]
+		if len(routes) == 0 {
+			continue
+		}
+		if onlyPlayerRoutes && sovereignID != playerID && region.OwnerID != playerID {
+			continue
+		}
+		corridor, ok := r.privilegedMinorTradeCorridor(region, routes, string(regionID)+"|"+key)
+		if !ok {
+			continue
+		}
+		glow, core, arrow := privilegedTradeRoutePalette()
+		alpha := uint8(105)
+		if corridor.amount > 0 {
+			alpha = min(uint8(90+corridor.amount*14), 255)
+		}
+		glow.A = alpha
+		core.A = alpha
+		for segment := 0; segment < 36; segment++ {
+			t1 := float64(segment) / 36
+			t2 := float64(segment+1) / 36
+			x1, y1 := tradeCorridorPoint(corridor, t1)
+			x2, y2 := tradeCorridorPoint(corridor, t2)
+			if r.tradeOverlayOccludesSegment(x1, y1, x2, y2) {
+				continue
+			}
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 5.5, glow, false)
+			vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 1.8, core, false)
+		}
+		arrow.A = 245
+		hasForward, hasReverse := false, false
+		for _, detail := range corridor.routeDetails {
+			if detail.route == nil {
+				continue
+			}
+			if detail.route.FromFactionID == sovereignID && detail.route.ToFactionID == region.OwnerID {
+				hasForward = true
+			}
+			if detail.route.FromFactionID == region.OwnerID && detail.route.ToFactionID == sovereignID {
+				hasReverse = true
+			}
+		}
+		if hasForward {
+			drawTradeFlowArrow(screen, corridor.sx, corridor.sy, corridor.cx, corridor.cy, corridor.dx, corridor.dy, 0.42, false, arrow)
+		}
+		if hasReverse {
+			drawTradeFlowArrow(screen, corridor.sx, corridor.sy, corridor.cx, corridor.cy, corridor.dx, corridor.dy, 0.58, true, arrow)
+		}
+		if !r.tradeOverlayOccludesPoint(corridor.sx, corridor.sy) {
+			vector.FillCircle(screen, float32(corridor.sx), float32(corridor.sy), 5, arrow, true)
+			vector.StrokeCircle(screen, float32(corridor.sx), float32(corridor.sy), 8, 1.2, color.RGBA{92, 34, 105, 220}, true)
+		}
+		if !r.tradeOverlayOccludesPoint(corridor.dx, corridor.dy) {
+			vector.FillCircle(screen, float32(corridor.dx), float32(corridor.dy), 5, arrow, true)
+			vector.StrokeCircle(screen, float32(corridor.dx), float32(corridor.dy), 8, 1.2, color.RGBA{92, 34, 105, 220}, true)
+		}
+		r.tradeCorridors = append(r.tradeCorridors, corridor)
+	}
 }
 
 func (r *Renderer) drawPlayerTradePortRoutes(screen *ebiten.Image, merged map[string]tradeRouteVisual) {
@@ -1184,7 +1420,7 @@ func (r *Renderer) tradeRouteConnectionPoint(routeKey string, px, py float64) (f
 	if r == nil || routeKey == "" {
 		return 0, 0, false
 	}
-	if route := merchantRouteForKey(r.gs, routeKey); route != nil {
+	if route := merchantRouteForKey(r.gs, routeKey); route != nil && !route.IsPrivilegedMinor {
 		if corridor, ok := r.merchantTradePortCorridor(route, tradeRoutePairKey(route.FromFactionID, route.ToFactionID)); ok {
 			// Merchant filosunun connector'ı rota eğrisinin en yakın
 			// noktasında kesilmez; rota yönündeki gerçek hedef limanda biter.
@@ -1863,6 +2099,9 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if tr == nil || tr.FromFactionID == "" || tr.ToFactionID == "" || tr.FromFactionID == tr.ToFactionID {
 			continue
 		}
+		if tr.IsPrivilegedMinor {
+			continue
+		}
 		if onlyPlayerRoutes && tr.FromFactionID != playerID && tr.ToFactionID != playerID {
 			continue
 		}
@@ -1899,6 +2138,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	r.tradeCorridors = r.tradeCorridors[:0]
 	centers := r.buildTradeCenters(len(r.gs.TradeCenters.Centers))
 	r.tradeCenters = append(r.tradeCenters[:0], centers...)
+	r.drawPrivilegedMinorTradeRoutes(screen, onlyPlayerRoutes)
 	r.drawPlayerTradePortRoutes(screen, merged)
 	if len(centers) == 0 {
 		r.drawTradeBonusFleetMarkers(screen)
@@ -2419,17 +2659,19 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		if agg != nil {
 			factionCount = len(agg.factions)
 		}
-		directionText := centers[i].nameTR + " <-> " + centers[j].nameTR
+		fromLabel := tradeCenterRouteLabel(r.gs, centers[i])
+		toLabel := tradeCenterRouteLabel(r.gs, centers[j])
+		directionText := fromLabel + " <-> " + toLabel
 		if agg != nil {
 			forward := agg.directions[struct{ from, to int }{from: i, to: j}]
 			reverse := agg.directions[struct{ from, to int }{from: j, to: i}]
 			switch {
 			case forward > 0 && reverse == 0:
-				directionText = centers[i].nameTR + " -> " + centers[j].nameTR
+				directionText = fromLabel + " -> " + toLabel
 			case reverse > 0 && forward == 0:
-				directionText = centers[j].nameTR + " -> " + centers[i].nameTR
+				directionText = toLabel + " -> " + fromLabel
 			case forward > 0 && reverse > 0:
-				directionText = centers[i].nameTR + " <-> " + centers[j].nameTR
+				directionText = fromLabel + " <-> " + toLabel
 			}
 		}
 		corridor := tradeCorridorInfo{

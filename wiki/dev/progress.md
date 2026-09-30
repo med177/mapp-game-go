@@ -15,6 +15,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `internal/diplomacy/privilege_test.go`, `internal/economy/economy_test.go`,
   `internal/save/save_test.go`.
 
+- 2026-09-30: Ticaret Haritası imtiyazlı rotaları minor bölgeden işletmeci
+  devletin canonical merkez limanına özel mor koridorla çiziyor; bunlar normal
+  merkez grafiğinde veya merchant-liman koridorunda ikinci kez çizilmiyor.
+  Tooltip yönlerinde egemen/işletmeci devlet adları, normal merkez koridorlarında
+  ise merkez sahibi devlet adı gösteriliyor. Regression:
+  `internal/render/trade_test.go`.
+
 - 2026-09-30: Aktif kuşatma marker grubunda kendi/müttefik destek orduları,
   yardım ettikleri tarafa göre ana kuşatanın solunda veya kuşatılanın sağında
   gösteriliyor; tüm taraflar aynı kale anchor'ında tutuluyor. Regression:

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-09-28
+last_updated: 2026-09-30
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -246,6 +246,14 @@ Ticaret rotasına atanmış filo marker'ları rota ve öncelik rozetlerini korur
 ticaret haritasında komutan portresi çizilmez. Normal haritadaki görünürlük,
 genel ordu/donanma zoom ve diplomasi filtresini izler; ticaret haritası ise
 marker katmanını kendi overlay'i üzerinden yönetir.
+
+İmtiyazlı minor rotaları merkez grafiğine veya normal merchant-liman koridoruna
+katılmaz. Her aktif imtiyaz için minor bölgenin liman/merkez anchor'ından,
+işletmeci devletin canonical merkez limanına tek bir iki yönlü koridor çizilir.
+Bu koridor mor tonlu ayrı bir palet ve iki yön oku kullanır; hover tooltip'inde
+imtiyazlı rota başlığı, egemen/işletmeci devlet adları ve ilgili bölge adları
+gösterilir. Normal merkez koridorlarının tooltip yön etiketleri de merkez adının
+yanında sahibi devletin görünen adını taşır (`internal/render/trade_overlay.go`).
 
 `Yeni Rota` aday kartı, iki tarafın `kullanılan/toplam` rota kapasitesini ve
 aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Partner
