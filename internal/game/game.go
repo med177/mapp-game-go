@@ -3066,7 +3066,7 @@ func (g *Game) offerMinorPrivilege(targetID faction.FactionID, regionID world.Re
 		for index, offer := range g.gs.DiplomaticOffers {
 			if offer.Action == string(diplomacy.ActionOfferMinorPrivilege) && offer.FromFactionID == actor && offer.ToFactionID == targetID && offer.RegionID == regionID {
 				assessment := diplomacy.AssessMinorPrivilegeOffer(g.gs, actor, targetID, regionID)
-				result := diplomacy.ResolveOffer(g.gs, index, assessment.Accepted())
+				result := diplomacy.ResolveOffer(g.gs, index, ai.ShouldAcceptMinorPrivilegeOffer(g.gs, actor, targetID, regionID, assessment))
 				if g.renderer != nil {
 					g.renderer.ShowCombatResult(result.Message)
 				}

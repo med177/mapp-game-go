@@ -14,6 +14,18 @@ const (
 	aiPrivilegeMinimumGoldGain   = 5
 )
 
+// ShouldAcceptMinorPrivilegeOffer, AI hedefinin ekonomik avantajı ilişki
+// yükünü aştığında kampanya karar zarını kullanır. Zar aynı teklif ve tur için
+// seed tabanlıdır; böylece kayıt yükleme ve headless simülasyon deterministik
+// kalırken kabul olasılığı gerçek anlamda %60 olur.
+func ShouldAcceptMinorPrivilegeOffer(gs *state.GameState, from, to faction.FactionID, rid world.RegionID, assessment diplomacy.MinorPrivilegeOfferAssessment) bool {
+	if gs == nil || assessment.BlockReason != "" {
+		return false
+	}
+	roll := aiDecisionRoll(gs, from, to, string(diplomacy.ActionOfferMinorPrivilege)+"|"+string(rid))
+	return roll < assessment.Chance
+}
+
 // aiFactionGoldFromProduction, imtiyazlı minor bölgelerde AI'nin gerçekten
 // alacağı altın payını hesaplar. Kaynak üretimi OwnerID'de kalırken parasal
 // gelir sovereign/operator arasında state katmanında paylaşılır.

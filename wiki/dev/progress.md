@@ -15,6 +15,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `internal/diplomacy/privilege_test.go`, `internal/ai/privilege_test.go`,
   `internal/render/renderer_input_test.go`.
 
+- 2026-10-01: AI imtiyaz tekliflerinde hedefin yerel gelir ve tahmini imtiyaz
+  rotası ticaret değerini negatif ilişki yüküyle karşılaştırıyor. Ekonomik
+  avantaj ilişkiyi aşıyorsa kabul kararı kampanya seed'li `%60` zar ile veriliyor;
+  aksi halde ilişki skoru kabul şansını etkiliyor. Regression:
+  `internal/diplomacy/privilege_test.go`.
+
 - 2026-10-01: İmtiyazlı ticaret rotaları artık normal ödeme/gümrük olmadan
   taşınan hacmin senaryo temel fiyatından ticari değer üretir. Kullanım sahibi
   bu değeri `İmtiyazlı ticaret geliri`, egemen devlet ise değerin `%25`'ini

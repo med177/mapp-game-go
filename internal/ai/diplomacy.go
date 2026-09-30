@@ -197,7 +197,7 @@ func aiOfferMinorPrivilegeWithSteps(gs *state.GameState, fid faction.FactionID, 
 				if offer.Action != string(diplomacy.ActionOfferMinorPrivilege) || offer.FromFactionID != fid || offer.ToFactionID != targetID || offer.RegionID != region.ID {
 					continue
 				}
-				result := diplomacy.ResolveOffer(gs, index, assessment.Accepted())
+				result := diplomacy.ResolveOffer(gs, index, ShouldAcceptMinorPrivilegeOffer(gs, fid, targetID, region.ID, assessment))
 				if result.Applied || result.Accepted {
 					message += " " + result.Message
 				}

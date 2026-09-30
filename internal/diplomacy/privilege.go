@@ -19,8 +19,10 @@ const PrivilegeOfferRelationBonus = 15
 // MinorPrivilegeOfferAssessment, imtiyaz teklifinin hedef devlet açısından
 // ekonomik ve diplomatik kabul edilebilirliğini taşır.
 type MinorPrivilegeOfferAssessment struct {
-	Chance      int
-	BlockReason string
+	Chance            int
+	EconomicBenefit   int
+	EconomicAdvantage bool
+	BlockReason       string
 }
 
 func (a MinorPrivilegeOfferAssessment) Accepted() bool {
@@ -72,17 +74,25 @@ func MinorPrivilegeOfferBlockReason(gs *state.GameState, actor, target faction.F
 }
 
 // AssessMinorPrivilegeOffer, teklif alacak devletin imtiyazdan elde edeceği
-// doğrudan ekonomik faydayı ilişkiyle birlikte değerlendirir. İmtiyaz rotası
-// kota ve normal tarife tüketmediği için ekonomik fayda sıfır olmayan her
-// gerçek minor teklif, normal ticaretten daha cazip bir başlangıç noktasıdır.
+// yerel payı ve kurulacak rotanın tahmini brüt ticaret değerini ilişki yüküyle
+// karşılaştırır. Ekonomik fayda negatif ilişki puanının mutlak değerini aşarsa
+// ilişki skoru kararı ezemez; AI bu durumda sabit %60 kabul şansına zar atar.
 func AssessMinorPrivilegeOffer(gs *state.GameState, actor, target faction.FactionID, rid world.RegionID) MinorPrivilegeOfferAssessment {
 	if reason := MinorPrivilegeOfferBlockReason(gs, actor, target, rid); reason != "" {
 		return MinorPrivilegeOfferAssessment{BlockReason: reason}
 	}
 	region := gs.Regions[rid]
-	chance := 60 + RelationScore(gs, actor, target)/4
-	if production := gs.RegionProductionSummary(region); production.Gold > 0 {
-		chance += 10
+	production := gs.RegionProductionSummary(region)
+	localShare := production.Gold * state.PrivilegeIncomeSharePercent / 100
+	tradeRoute := buildTradeRoute(gs, actor, target)
+	tradeRoute.IsPrivilegedMinor = true
+	tradeValue := gs.PrivilegedTradeRouteValue(tradeRoute, tradeRoute.AmountPerTurn)
+	economicBenefit := localShare + tradeValue
+	relationScore := RelationScore(gs, actor, target)
+	economicAdvantage := economicBenefit > maxInt(0, -relationScore)
+	chance := 45 + relationScore/4
+	if economicAdvantage {
+		chance = 60
 	}
 	if chance < 0 {
 		chance = 0
@@ -90,7 +100,18 @@ func AssessMinorPrivilegeOffer(gs *state.GameState, actor, target faction.Factio
 	if chance > 95 {
 		chance = 95
 	}
-	return MinorPrivilegeOfferAssessment{Chance: chance}
+	return MinorPrivilegeOfferAssessment{
+		Chance:            chance,
+		EconomicBenefit:   economicBenefit,
+		EconomicAdvantage: economicAdvantage,
+	}
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 // RevokeMinorPrivilege, egemen devletin kendi imtiyazlı minor bölgesindeki

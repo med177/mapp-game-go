@@ -3,6 +3,7 @@ package diplomacy
 import (
 	"testing"
 
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -193,5 +194,29 @@ func TestMinorPrivilegeOfferRequiresAcceptanceAndCreatesRouteWithRelationBonus(t
 	}
 	if len(gs.TradeRoutes) != 2 {
 		t.Fatalf("imtiyaz kabulünde otomatik rota çifti = %d, 2 bekleniyordu", len(gs.TradeRoutes))
+	}
+}
+
+func TestMinorPrivilegeOfferEconomicAdvantageOverridesNegativeRelation(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"grantor":  {ID: "grantor", NameTR: "İmtiyaz Veren", Cloth: 10},
+			"operator": {ID: "operator", NameTR: "İmtiyaz Alan"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("grantor", "operator"): {
+				FactionA: "grantor", FactionB: "operator", ScoreAToB: -80, ScoreBToA: -80, Stance: faction.StancePeace,
+			},
+		},
+		BaseGoldValues: map[economy.GoodType]int{economy.GoodCloth: 100},
+		Regions: map[world.RegionID]*world.Region{
+			"parent": {ID: "parent", OwnerID: "grantor"},
+			"minor":  {ID: "minor", OwnerID: "grantor", IsMinorRegion: true, ParentRegionID: "parent", BaseGoldIncome: 10, TaxRate: 100, Satisfaction: 50},
+		},
+	}
+
+	assessment := AssessMinorPrivilegeOffer(gs, "grantor", "operator", "minor")
+	if assessment.BlockReason != "" || !assessment.EconomicAdvantage || assessment.Chance != 60 {
+		t.Fatalf("ekonomik avantaj imtiyaz teklifini ezmedi: %#v", assessment)
 	}
 }
