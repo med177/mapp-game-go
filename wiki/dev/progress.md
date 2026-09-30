@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: Yerleşim nüfusu veri modelinden çıkarıldı. `Region.Population`
+  artık `regions.json` içindeki bağımsız bölge değeridir; eski settlement
+  `population` alanları yok sayılır, kaydetmede yazılmaz ve Edit Mode yerleşim
+  ekleme/silme/taşıma işlemleri bölge nüfusunu değiştirmez. Nüfus kullanan
+  başkent skoru ve paneller de settlement nüfusundan ayrıştırıldı.
+
 - 2026-09-30: Edit Mode'da `Yeni Bölge Ekle` artık seçili bölgenin ekonomik
   üretimlerini, ticaret kapasitesini ve nüfusunu yeni bölgeye kopyalamıyor;
   toplam değerler iki bölge arasında bölünüyor. Tek sayılardaki kalan yeni

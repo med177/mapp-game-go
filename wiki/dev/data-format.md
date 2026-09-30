@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-08-06
+last_updated: 2026-09-30
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -253,7 +253,13 @@ Bölge listesi. Her kayıt:
 
 `world_x` / `world_y` bölgenin Voronoi/raster bölünmesindeki merkezidir. Haritada görünen şehir noktaları ve isimleri `settlements[]` üzerinden çizilir. Yerleşim `x` / `y` değerleri aynı senaryo koordinat uzayındadır; renderer bu koordinatı gerçek region piksel alanı dışında bulursa log uyarısı basar ve aynı region içindeki en yakın piksele fallback yapar. `settlements` eksikse eski davranış korunur ve bölge adı `world_x/world_y` noktasından çizilir.
 
-Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`, `port`, `fortress`. `is_capital: true` ana yerleşimi belirtir ve ordu/etiket anchor'ı için önceliklidir. Her yerleşim `population` alanıyla kendi nüfusunu taşır; bölgenin `population` değeri yerleşim nüfusları ile `rural_population` alanının toplamıdır. `rural_population`, köyler ve yerleşim dışı kırsal nüfusu temsil eder.
+Yerleşim `type` değerleri serbest metindir; mevcut kullanım: `city`, `town`,
+`port`, `fortress`. `is_center: true` ana yerleşimi belirtir ve ordu/etiket
+anchor'ı için önceliklidir. Yerleşim kayıtları nüfus taşımaz; eski dosyalardaki
+`population` alanı geriye dönük olarak okunmaz ve kaydetmede yeniden yazılmaz.
+Bölge nüfusunun tek senaryo kaynağı `regions.json` içindeki `population`
+alanıdır. `rural_population` yalnız eski save/oyun içi nüfus değişimleri için
+yardımcı uyumluluk alanıdır.
 
 ---
 
@@ -455,19 +461,25 @@ Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temel
   {
     "faction_a": "ottoman",
     "faction_b": "venice",
-    "score": -20,
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
     "faction_a": "venice",
     "faction_b": "east_rome",
-    "score": 35,
+    "score_a_to_b": 35,
+    "score_b_to_a": 20,
     "stance": "trade"
   }
 ]
 ```
 
-`stance` değerleri: `war`, `peace`, `allied`, `trade`. `score` aralığı editörde `-100..100` olarak tutulur.
+`stance` değerleri: `war`, `peace`, `allied`, `trade`. İlişki puanları editörde
+`-100..100` aralığında tutulur.
+`score_a_to_b` ve `score_b_to_a` iki yönün puanlarını ayrı ayrı tutar. Eski
+senaryolardaki tekil `score` alanı geriye dönük olarak iki yöne birlikte
+uygulanır; yeni kayıtlar yönlü alanları yazar.
 
 ---
 

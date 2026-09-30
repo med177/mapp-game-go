@@ -783,12 +783,6 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 		}
 		applyRegionSaveState(region, regionState)
 	}
-	for _, region := range gs.Regions {
-		if region != nil {
-			region.RecalculatePopulation()
-		}
-	}
-
 	for fid, factionState := range saved.Factions {
 		if gs.Factions[fid] == nil && factionState.IsVirtual != nil && *factionState.IsVirtual {
 			gs.Factions[fid] = newVirtualRebelFactionFromSave(gs, fid)
@@ -946,14 +940,10 @@ func applyRegionSaveState(region *world.Region, saved regionSaveState) {
 		region.Settlements = applySettlementPatch(region.Settlements, *saved.Settlements)
 	}
 	if saved.RuralPopulation == nil && saved.Population != nil {
-		// Eski save'lerde yalnız toplam bölge nüfusu vardı. Yeni yerleşim
-		// dağılımını koruyup farkı kırsal nüfusa taşıyarak toplamı muhafaza et.
-		region.RuralPopulation = *saved.Population - region.SettlementPopulation()
-		if region.RuralPopulation < 0 {
-			region.RuralPopulation = 0
-		}
+		// Eski save'lerde yalnız toplam bölge nüfusu vardı. Yerleşim
+		// noktalarında nüfus tutulmadığı için toplam değer aynen korunur.
+		region.RuralPopulation = *saved.Population
 	}
-	region.RecalculatePopulation()
 }
 
 func makeFactionSaveState(current, base *faction.Faction) (factionSaveState, bool) {

@@ -51,6 +51,8 @@ func LoadRegionsWithOrder(path string) (map[RegionID]*Region, []RegionID, error)
 
 // LoadRegionSettlements settlements.json dosyasını okur ve bölgelere yerleşimleri uygular.
 // Dosya yoksa veya boşsa geriye uyumluluk için hata dönmeden devam eder.
+// Eski population alanı JSON'dan gelse bile bilinçli olarak yok sayılır;
+// bölge nüfusu regions.json içindeki Population alanından korunur.
 func LoadRegionSettlements(path string, regions map[RegionID]*Region) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -83,7 +85,6 @@ func LoadRegionSettlements(path string, regions map[RegionID]*Region) error {
 	for _, region := range regions {
 		if region != nil {
 			region.EnsurePrimarySettlement()
-			region.RecalculatePopulation()
 		}
 	}
 	return nil

@@ -191,6 +191,58 @@ func TestWriteScenarioFileIfChangedSkipsIdenticalData(t *testing.T) {
 	}
 }
 
+func TestWriteScenarioRelationsSkipsIdenticalData(t *testing.T) {
+	scenarioPath := t.TempDir()
+	dataDir := filepath.Join(scenarioPath, "data")
+	if err := os.MkdirAll(dataDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	relationsPath := filepath.Join(dataDir, "relations.json")
+	data := []byte(`[
+  {
+    "faction_a": "a",
+    "faction_b": "b",
+    "score_a_to_b": -35,
+    "score_b_to_a": 20,
+    "stance": "peace"
+  }
+]
+`)
+	if err := os.WriteFile(relationsPath, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	writtenAt := time.Unix(123, 456)
+	if err := os.Chtimes(relationsPath, writtenAt, writtenAt); err != nil {
+		t.Fatal(err)
+	}
+
+	gs := &state.GameState{
+		ScenarioPath: scenarioPath,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a": {ID: "a"},
+			"b": {ID: "b"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("a", "b"): {
+				FactionA: "a", FactionB: "b", ScoreAToB: -35, ScoreBToA: 20,
+				Stance: faction.StancePeace,
+			},
+		},
+		RelationOrder: []string{faction.RelationKey("a", "b")},
+	}
+	if err := writeScenarioRelations(gs); err != nil {
+		t.Fatal(err)
+	}
+
+	info, err := os.Stat(relationsPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !info.ModTime().Equal(writtenAt) {
+		t.Fatalf("aynı ilişkiler için dosya yeniden yazıldı: modtime = %v, %v bekleniyordu", info.ModTime(), writtenAt)
+	}
+}
+
 func TestApplyProductionTicksCancelsLandUnitWithoutBarracks(t *testing.T) {
 	gs := &state.GameState{
 		Regions: map[world.RegionID]*world.Region{

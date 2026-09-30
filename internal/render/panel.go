@@ -4246,8 +4246,6 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	ly += 18
 	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Tip", settlement.Type.LabelTR(), ColorGray, ColorWhite)
 	ly += 18
-	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Nüfus", itoa(settlement.Population), ColorGray, ColorWhite)
-	ly += 18
 	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Koordinat", itoa(settlement.X)+","+itoa(settlement.Y), ColorGray, ColorWhite)
 	ly += 20
 
@@ -5429,7 +5427,7 @@ func regionPopulationDisplayText(region *world.Region) string {
 	if region == nil {
 		return "Nüfus: -"
 	}
-	return fmt.Sprintf("Nüfus: %d  (Kırsal: %d / Yerleşim: %d)", region.Population, region.RuralPopulation, region.SettlementPopulation())
+	return fmt.Sprintf("Nüfus: %d", region.Population)
 }
 
 func drawRegionMeterRow(screen *ebiten.Image, x, y float64, width float32, label, value string, fill float64, barColor color.Color) {

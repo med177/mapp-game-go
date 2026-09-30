@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal, succession]
-last_updated: 2026-09-29
+last_updated: 2026-09-30
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -33,8 +33,8 @@ type Region struct {
     Buildings    []string      // inşa edilmiş bina ID'leri
     TaxRate      int           // 0-60; world.ClampTaxRate ile sınırlandırılır
     Satisfaction int           // halk memnuniyeti
-    Population      int // RuralPopulation + SettlementPopulation()
-    RuralPopulation int // yerleşim dışındaki köy/kırsal nüfus
+    Population      int // regions.json içindeki bağımsız bölge toplam nüfusu
+    RuralPopulation int // eski save/oyun içi nüfus değişimleri için yardımcı alan
 
     Religion        string     // mevcut bölge dini
     ConversionTurns int        // din dönüşüm sayacı
@@ -134,11 +134,15 @@ type Settlement struct {
     NameTR     string
     X, Y       int     // world_x/world_y ile aynı koordinat uzayı
     Type       string  // city, town, port, fortress
-    IsCapital  bool
-    Population int
+    IsCenter   bool
 }
 
-`Region.Population` artık doğrudan bağımsız bir nüfus kaynağı değildir; `RuralPopulation` ile bölgedeki tüm `Settlement.Population` değerlerinin toplamıdır. Kırsal pay; köyler, mezralar ve yerleşim dışındaki tarımsal nüfusu temsil eder. Tahıl sivil tüketimi bu toplam bölge nüfusu üzerinden hesaplanır. Eski kayıtlarda bileşen alanları yoksa mevcut toplam nüfus kırsal nüfus olarak göç edilir.
+`Region.Population` senaryo verisindeki bağımsız bölge toplam nüfusudur. Yerleşim
+noktaları yalnızca harita/başkent/stratejik anchor olarak tutulur; `Settlement`
+içinde nüfus alanı yoktur ve `settlements.json` içindeki eski `population`
+alanları yüklenirken yok sayılır. Nüfus artışı ve olay etkileri doğrudan bölge
+toplamına uygulanır. Eski save'lerde yalnız toplam nüfus varsa yardımcı
+`RuralPopulation` alanı bu toplamla başlatılır.
 ```
 
 Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken uyarı loglanır ve nokta aynı region içindeki en yakın piksele taşınır.

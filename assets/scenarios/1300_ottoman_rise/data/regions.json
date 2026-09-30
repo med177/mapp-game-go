@@ -3148,7 +3148,6 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls",
       "barracks",
       "granary",
       "temple",
@@ -3193,11 +3192,7 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "walls",
-      "barracks",
-      "granary",
-      "temple",
-      "market"
+      "walls"
     ]
   },
   {
@@ -3239,12 +3234,7 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "port",
-      "walls",
-      "barracks",
-      "granary",
-      "temple",
-      "market"
+      "walls"
     ]
   },
   {
@@ -3284,12 +3274,7 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "port",
-      "walls",
-      "barracks",
-      "granary",
-      "temple",
-      "market"
+      "walls"
     ]
   },
   {
@@ -10389,7 +10374,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 350,
+    "base_gold_income": 340,
     "base_grain_output": 35,
     "base_iron_output": 10,
     "base_timber_output": 15,
@@ -10796,6 +10781,7 @@
     "name_tr": "Menteşe",
     "terrain": "coast",
     "owner_id": "mentese_bey",
+    "successor_faction_id": "mentese_bey",
     "neighbors": [
       "area::area__41",
       "area::area__42",
@@ -10858,7 +10844,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 226,
+    "base_gold_income": 211,
     "base_grain_output": 22,
     "base_iron_output": 2,
     "base_timber_output": 10,
@@ -11489,12 +11475,7 @@
       "port",
       "barracks",
       "granary",
-      "temple",
-      "market",
-      "walls",
-      "walls",
-      "farm",
-      "farm"
+      "walls"
     ]
   },
   {
@@ -11519,7 +11500,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 144,
+    "base_gold_income": 119,
     "base_grain_output": 19,
     "base_iron_output": 1,
     "base_timber_output": 4,
@@ -11534,15 +11515,7 @@
     "religion": "orthodox",
     "active_event_id": "",
     "buildings": [
-      "port",
-      "barracks",
-      "granary",
-      "temple",
-      "market",
-      "walls",
-      "walls",
-      "farm",
-      "farm"
+      "walls"
     ]
   },
   {
@@ -12861,15 +12834,6 @@
     "active_event_id": "",
     "buildings": [
       "port",
-      "barracks",
-      "granary",
-      "temple",
-      "market",
-      "farm",
-      "farm",
-      "farm",
-      "farm",
-      "farm",
       "walls"
     ]
   },

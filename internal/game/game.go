@@ -2878,7 +2878,6 @@ func (g *Game) removeGeneratedPortSettlement(region *world.Region) {
 		last := len(region.Settlements) - 1
 		region.Settlements[last] = world.Settlement{}
 		region.Settlements = region.Settlements[:last]
-		region.RecalculatePopulation()
 		return
 	}
 }
@@ -3928,7 +3927,7 @@ func writeScenarioRelations(gs *state.GameState) error {
 		return err
 	}
 	data = append(data, '\n')
-	return os.WriteFile(path, data, 0644)
+	return writeScenarioFileIfChanged(path, data)
 }
 
 func writeScenarioArmies(gs *state.GameState) error {

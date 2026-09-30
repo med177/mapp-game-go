@@ -100,7 +100,9 @@ type Region struct {
 	// Durum
 	Satisfaction int `json:"satisfaction"` // 0-100
 	TaxRate      int `json:"tax_rate"`     // 0-60 yüzde
-	// Population kırsal nüfus ile yerleşim nüfuslarının toplamıdır.
+	// Population senaryo verisindeki bölge toplam nüfusudur. Yerleşim noktaları
+	// bu değerin bileşeni değildir; settlement kayıtları yalnızca konum/tip ve
+	// merkez anchor'ı taşır.
 	Population      int `json:"population"`
 	RuralPopulation int `json:"rural_population"`
 
@@ -167,14 +169,13 @@ func (t SettlementType) LabelTR() string {
 }
 
 type Settlement struct {
-	ID         string         `json:"id"`
-	Name       string         `json:"name,omitempty"`
-	NameTR     string         `json:"name_tr"`
-	X          int            `json:"x"`
-	Y          int            `json:"y"`
-	Type       SettlementType `json:"type,omitempty"`
-	IsCenter   bool           `json:"is_center,omitempty"`
-	Population int            `json:"population"`
+	ID       string         `json:"id"`
+	Name     string         `json:"name,omitempty"`
+	NameTR   string         `json:"name_tr"`
+	X        int            `json:"x"`
+	Y        int            `json:"y"`
+	Type     SettlementType `json:"type,omitempty"`
+	IsCenter bool           `json:"is_center,omitempty"`
 }
 
 // SettlementPositionClear, verilen koordinatın mevcut yerleşim marker'larına
@@ -329,49 +330,14 @@ func (r *Region) EnsurePrimarySettlement() bool {
 	return true
 }
 
-// SettlementPopulation bölgedeki yerleşimlerin toplam nüfusunu döner.
-func (r *Region) SettlementPopulation() int {
-	if r == nil || r.IsTerrainArea {
-		return 0
-	}
-	total := 0
-	for _, settlement := range r.Settlements {
-		if settlement.Population > 0 {
-			total += settlement.Population
-		}
-	}
-	return total
-}
-
-// RecalculatePopulation, kırsal ve yerleşim nüfuslarını bölge toplamına bağlar.
-// Eski senaryo/kayıt verisinde bileşenler bulunmuyorsa mevcut Population değeri
-// geriye dönük uyumluluk için kırsal nüfus kabul edilir.
-func (r *Region) RecalculatePopulation() int {
-	if r == nil || r.IsTerrainArea {
-		return 0
-	}
-	if r.RuralPopulation < 0 {
-		r.RuralPopulation = 0
-	}
-	settlementPopulation := r.SettlementPopulation()
-	if r.RuralPopulation == 0 && r.Population > settlementPopulation {
-		r.RuralPopulation = r.Population - settlementPopulation
-	}
-	r.Population = r.RuralPopulation + settlementPopulation
-	return r.Population
-}
-
-// AddPopulation büyümeyi kırsal nüfusa ekler; yerleşim nüfusları korunur.
+// AddPopulation büyümeyi bölge nüfusuna ekler. Yerleşim noktaları yalnızca
+// görsel/stratejik anchor olduğundan bu işlem settlement verilerine bağlı değildir.
 func (r *Region) AddPopulation(amount int) {
 	if r == nil || r.IsTerrainArea || amount <= 0 {
 		return
 	}
-	settlementPopulation := r.SettlementPopulation()
-	if r.RuralPopulation == 0 && r.Population > settlementPopulation {
-		r.RuralPopulation = r.Population - settlementPopulation
-	}
+	r.Population += amount
 	r.RuralPopulation += amount
-	r.RecalculatePopulation()
 }
 
 // IsCoastal komşularda deniz olan kara bölgesiyse true döner.

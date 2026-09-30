@@ -280,7 +280,6 @@ func capitalDevelopmentScore(region *world.Region) int {
 		case world.SettlementTown:
 			score += 20
 		}
-		score += settlement.Population / 10
 	}
 	return score
 }

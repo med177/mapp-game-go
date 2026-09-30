@@ -8,10 +8,12 @@ import (
 )
 
 type relationDefinition struct {
-	FactionA FactionID        `json:"faction_a"`
-	FactionB FactionID        `json:"faction_b"`
-	Score    int              `json:"score"`
-	Stance   DiplomaticStance `json:"stance"`
+	FactionA  FactionID        `json:"faction_a"`
+	FactionB  FactionID        `json:"faction_b"`
+	Score     *int             `json:"score"`
+	ScoreAToB *int             `json:"score_a_to_b"`
+	ScoreBToA *int             `json:"score_b_to_a"`
+	Stance    DiplomaticStance `json:"stance"`
 }
 
 // LoadFactionsWithOrder assets/data/factions.json dosyasını okur, map ve dosya sırasını döner.
@@ -86,11 +88,22 @@ func LoadRelationsWithOrder(path string, factions map[FactionID]*Faction) (map[s
 			rel.Stance = StancePeace
 		}
 		key := RelationKey(rel.FactionA, rel.FactionB)
+		scoreAToB, scoreBToA := 0, 0
+		if rel.Score != nil {
+			scoreAToB = *rel.Score
+			scoreBToA = *rel.Score
+		}
+		if rel.ScoreAToB != nil {
+			scoreAToB = *rel.ScoreAToB
+		}
+		if rel.ScoreBToA != nil {
+			scoreBToA = *rel.ScoreBToA
+		}
 		relations[key] = &Relation{
 			FactionA:  rel.FactionA,
 			FactionB:  rel.FactionB,
-			ScoreAToB: rel.Score,
-			ScoreBToA: rel.Score,
+			ScoreAToB: scoreAToB,
+			ScoreBToA: scoreBToA,
 			Stance:    normalizeStance(rel.Stance),
 		}
 		order = append(order, key)

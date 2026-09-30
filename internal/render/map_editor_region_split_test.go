@@ -59,17 +59,17 @@ func TestSplitEditRegionResourcesPreservesEconomicTotals(t *testing.T) {
 	}
 }
 
-func TestSplitEditRegionResourcesKeepsSettlementsAndSplitsRuralPopulation(t *testing.T) {
+func TestSplitEditRegionResourcesKeepsSettlementPopulationIndependent(t *testing.T) {
 	source := &world.Region{
 		Population:      140,
 		RuralPopulation: 100,
-		Settlements:     []world.Settlement{{Population: 40}},
+		Settlements:     []world.Settlement{{ID: "center"}},
 	}
 
 	split := splitEditRegionResources(source)
 
-	if source.RuralPopulation != 50 || source.Population != 70 || source.Settlements[0].Population != 40 {
-		t.Fatalf("kaynak nüfusu = %d/%d, yerleşim=%d; want toplam 70, kırsal 50, yerleşim 40", source.Population, source.RuralPopulation, source.Settlements[0].Population)
+	if source.RuralPopulation != 50 || source.Population != 70 {
+		t.Fatalf("kaynak nüfusu = %d/%d; want toplam 70, kırsal 50", source.Population, source.RuralPopulation)
 	}
 	if split.population != 70 || split.ruralPopulation != 50 {
 		t.Fatalf("yeni bölge nüfusu = %d/%d, want toplam 70, kırsal 50", split.population, split.ruralPopulation)

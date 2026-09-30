@@ -231,7 +231,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 		}
 		drawEditInspectorLabel(screen, float64(x)+14, ly, "Secili yerlesim: "+sName, ColorGold, gameui.TextSmall)
 		ly += 18
-		drawEditInspectorLabel(screen, float64(x)+14, ly, settlement.ID+"  "+string(settlement.Type)+"  nüfus "+itoa(settlement.Population)+"  "+itoa(settlement.X)+","+itoa(settlement.Y), ColorGray, gameui.TextSmall)
+		drawEditInspectorLabel(screen, float64(x)+14, ly, settlement.ID+"  "+string(settlement.Type)+"  "+itoa(settlement.X)+","+itoa(settlement.Y), ColorGray, gameui.TextSmall)
 		if settlement.IsCenter {
 			ly += 18
 			drawEditInspectorLabel(screen, float64(x)+14, ly, "Ana yerlesim", ColorGray, gameui.TextSmall)
@@ -3236,7 +3236,6 @@ func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 		IsCenter: len(region.Settlements) == 0,
 	}
 	region.Settlements = append(region.Settlements, settlement)
-	region.RecalculatePopulation()
 	syncRegionSuccessorToOwner(region)
 	world.EnsureRequiredSettlementBuildings(region, r.gs.IsCapitalRegion(region))
 	r.editSelectedRegion = rid
@@ -3253,10 +3252,7 @@ func (r *Renderer) deleteSelectedSettlement() {
 	}
 	region := r.gs.Regions[r.editSelectedRegion]
 	removedCapital := region.Settlements[r.editSelectedSettlement].IsCenter
-	removedPopulation := region.Settlements[r.editSelectedSettlement].Population
 	region.Settlements = append(region.Settlements[:r.editSelectedSettlement], region.Settlements[r.editSelectedSettlement+1:]...)
-	region.RuralPopulation += removedPopulation
-	region.RecalculatePopulation()
 	if removedCapital {
 		ensurePrimarySettlement(region)
 		syncRegionSuccessorToOwner(region)
@@ -5608,7 +5604,6 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 	settlement.X = x
 	settlement.Y = y
 	source.Settlements = append(source.Settlements[:r.editSelectedSettlement], source.Settlements[r.editSelectedSettlement+1:]...)
-	source.RecalculatePopulation()
 
 	if settlement.IsCenter {
 		settlement.IsCenter = false
@@ -5620,7 +5615,6 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 	}
 
 	target.Settlements = append(target.Settlements, settlement)
-	target.RecalculatePopulation()
 	syncRegionSuccessorToOwner(target)
 	world.EnsureRequiredSettlementBuildings(source, r.gs.IsCapitalRegion(source))
 	world.EnsureRequiredSettlementBuildings(target, r.gs.IsCapitalRegion(target))

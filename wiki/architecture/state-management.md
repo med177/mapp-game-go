@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-09-23
+last_updated: 2026-09-30
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -122,7 +122,7 @@ sonra yalnız debug sidecar'a `state.ai_diagnostic_history` olarak yazılır. B�
 oynanabilir save formatı büyümeden AI plan/hedef/cephe/rezerv değişimi
 karşılaştırılabilir.
 
-Kaynak HUD'u için `FactionProductionSummary()` kuşatma dışı bölgelerin efektif üretimini toplar. `FactionGrainNetChange()` bu toplamdan sivil tahıl talebi ile orduların efektif tahıl bakımını çıkarır; böylece HUD'daki negatif net tahıl göstergesi ekonomi kurallarıyla aynı state hesaplarına dayanır. Bölge nüfusu `Region.RecalculatePopulation()` ile kırsal nüfus ve yerleşim nüfuslarının toplamından türetilir; `CivilianGrainDemand()` bu toplamı kullanır.
+Kaynak HUD'u için `FactionProductionSummary()` kuşatma dışı bölgelerin efektif üretimini toplar. `FactionGrainNetChange()` bu toplamdan sivil tahıl talebi ile orduların efektif tahıl bakımını çıkarır; böylece HUD'daki negatif net tahıl göstergesi ekonomi kurallarıyla aynı state hesaplarına dayanır. Bölge nüfusu doğrudan `Region.Population` alanından okunur; `CivilianGrainDemand()` bu toplamı kullanır.
 
 ```go
 type GameState struct {
@@ -434,7 +434,10 @@ bölge listeleri; egemenlik, ekonomi ve AI hesaplarında kullanılmaz.
 
 `FindSettlementByID(settlementID)` — settlement ID'den region + settlement çözümlemesi yapar
 
-`Region.SettlementPopulation()` / `Region.RecalculatePopulation()` — yerleşim nüfuslarını toplar ve `Population = RuralPopulation + yerleşim toplamı` sözleşmesini korur. Eski save'lerde yalnız toplam nüfus varsa fark kırsal nüfusa göç edilir.
+`Region.Population` — bölge toplam nüfusunun tek oyun kaynağıdır. Settlement
+kayıtları nüfus içermez; yükleme ve Edit Mode yerleşim ekleme/silme/taşıma
+işlemleri bu değeri değiştirmez. Eski save'lerde yalnız toplam nüfus varsa
+yardımcı `RuralPopulation` alanı toplamla başlatılır.
 
 `FactionCapital(fid)` — fraksiyonun geçerli başkent settlement ve bölgesini döner
 

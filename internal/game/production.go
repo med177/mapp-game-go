@@ -268,7 +268,6 @@ func (g *Game) ensurePortSettlement(region *world.Region) bool {
 		Y:      y,
 		Type:   world.SettlementPort,
 	})
-	region.RecalculatePopulation()
 	return true
 }
 
