@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-09-30
+last_updated: 2026-10-01
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -259,6 +259,12 @@ Bu koridor mor tonlu ayrı bir palet ve iki yön oku kullanır; hover tooltip'in
 imtiyazlı rota başlığı, egemen/işletmeci devlet adları ve ilgili bölge adları
 gösterilir. Normal merkez koridorlarının tooltip yön etiketleri de merkez adının
 yanında sahibi devletin görünen adını taşır (`internal/render/trade_overlay.go`).
+
+Gelir popup'ı normal `Ticaret rotası geliri` satırından ayrı olarak
+`İmtiyazlı ticaret geliri` ve egemen tarafın `İmtiyaz geliri` satırlarını gösterir.
+Bu satırlar `GoldEconomyPreview()` ile aynı state hesaplarından beslenir;
+imtiyazlı rotalar burada normal rota ödemesi veya gümrük satırına yazılmaz
+(`internal/render/income_popup.go`).
 
 `Yeni Rota` aday kartı, iki tarafın `kullanılan/toplam` rota kapasitesini ve
 aktif dış partner sayısını aynı `diplomacy` helper'larından gösterir. Partner

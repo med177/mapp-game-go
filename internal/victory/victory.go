@@ -61,14 +61,31 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 				status.RaidIncome += loot
 			}
 		}
-		baseIncomeByFaction[owner] += regionTotal
-		if owner != fid {
+		sovereign := faction.FactionID(gs.SovereignOwnerID(region))
+		sovereignTotal, operatorTotal := gs.RegionIncomeShares(region, regionTotal)
+		baseIncomeByFaction[sovereign] += sovereignTotal
+		if operatorTotal != 0 {
+			baseIncomeByFaction[owner] += operatorTotal
+		}
+		if sovereign != fid && owner != fid {
 			continue
 		}
-		status.TaxIncome += tax
-		status.TradeIncome += tradeBase
-		status.TradeCenterIncome += center
-		status.CapitalIncome += capital
+		sovereignTax, operatorTax := gs.RegionIncomeShares(region, tax)
+		sovereignTrade, operatorTrade := gs.RegionIncomeShares(region, tradeBase)
+		sovereignCenter, operatorCenter := gs.RegionIncomeShares(region, center)
+		sovereignCapital, operatorCapital := gs.RegionIncomeShares(region, capital)
+		if sovereign == fid {
+			status.TaxIncome += sovereignTax
+			status.TradeIncome += sovereignTrade
+			status.TradeCenterIncome += sovereignCenter
+			status.CapitalIncome += sovereignCapital
+		}
+		if owner == fid {
+			status.TaxIncome += operatorTax
+			status.TradeIncome += operatorTrade
+			status.TradeCenterIncome += operatorCenter
+			status.CapitalIncome += operatorCapital
+		}
 	}
 
 	blockadeLoot := gs.BlockadeLootForFaction(fid).Gold
@@ -122,11 +139,35 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 		fromID := faction.FactionID(route.FromFactionID)
 		toID := faction.FactionID(route.ToFactionID)
 		amountPerTurn := gs.MerchantTradeRouteEffectiveAmount(route)
-		if amountPerTurn <= 0 || route.GoldPerUnit <= 0 {
+		if amountPerTurn <= 0 {
+			continue
+		}
+		resourceKey := routeResource{fid: fromID, good: route.Good}
+		if route.IsPrivilegedMinor {
+			if availableGoods[resourceKey] < amountPerTurn {
+				continue
+			}
+			availableGoods[resourceKey] -= amountPerTurn
+			sovereignID, operatorID, ok := gs.PrivilegedTradeParticipants(route.FromFactionID, route.ToFactionID)
+			if ok {
+				value := gs.PrivilegedTradeRouteValue(route, amountPerTurn)
+				if string(operatorID) == string(fid) {
+					status.PrivilegedTradeIncome += value
+				}
+				if string(sovereignID) == string(fid) {
+					status.PrivilegeIncome += state.PrivilegedTradeRoyalty(value)
+				}
+			}
+			merchantIncome := gs.MerchantTradeIncomeForRoute(route, amountPerTurn)
+			if route.FromFactionID == string(fid) {
+				status.MerchantTradeIncome += merchantIncome
+			}
+			continue
+		}
+		if route.GoldPerUnit <= 0 {
 			continue
 		}
 		cost := amountPerTurn * route.GoldPerUnit
-		resourceKey := routeResource{fid: fromID, good: route.Good}
 		if availableGoods[resourceKey] < amountPerTurn || availableGold[toID] < cost {
 			continue
 		}
@@ -159,7 +200,7 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 	}
 	status.Upkeep = gs.FactionGoldUpkeep(fid)
 	status.BuildingUpkeep = gs.FactionBuildingGoldUpkeep(fid)
-	status.NetChange = status.Income + status.TradePowerIncome + status.MerchantTradeIncome + status.TradeRouteIncome - status.TradeRouteExpense + status.TradeRouteCustomsIncome + status.TributeIncome - status.TributePaid - status.Upkeep - status.BuildingUpkeep
+	status.NetChange = status.Income + status.TradePowerIncome + status.MerchantTradeIncome + status.TradeRouteIncome - status.TradeRouteExpense + status.TradeRouteCustomsIncome + status.PrivilegedTradeIncome + status.PrivilegeIncome + status.TributeIncome - status.TributePaid - status.Upkeep - status.BuildingUpkeep
 	return status
 }
 
@@ -422,7 +463,7 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 		fx = tech.ComputeEffects(gs.Factions[fid].Research.Completed, gs.TechTypes)
 	}
 	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID != string(fid) {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID == "" {
 			continue
 		}
 		goldMod := 1.0
@@ -432,21 +473,45 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 			}
 		}
 		retention := gs.RegionBlockadeOutputRetentionPercent(region)
-		income += state.ScaleBlockadeOutputForEconomy(int(float64(region.GoldIncome())*goldMod*float64(harvestMod)/100), retention)
+		taxIncome := state.ScaleBlockadeOutputForEconomy(int(float64(region.GoldIncome())*goldMod*float64(harvestMod)/100), retention)
 		tradeIncome := gs.BaseRegionTradeIncome(region)
 		tradeIncome = tradeIncome * seasonMod / 100
 		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, retention)
 		if fx.MarketGoldMod != 0 {
 			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
 		}
-		income += tradeIncome
+		regionIncome := taxIncome + tradeIncome
+		sovereignShare, operatorShare := gs.RegionIncomeShares(region, regionIncome)
+		if gs.SovereignOwnerID(region) == string(fid) {
+			income += sovereignShare
+		}
+		if region.OwnerID == string(fid) {
+			income += operatorShare
+		}
 	}
 	loot := gs.BlockadeLootForFaction(fid)
 	income += loot.Gold
 	income += gs.HistoricalTradeIncomeForFaction(fid)
 
 	for _, route := range gs.TradeRoutes {
-		if route != nil && route.FromFactionID == string(fid) {
+		if route == nil {
+			continue
+		}
+		if route.IsPrivilegedMinor {
+			sovereignID, operatorID, ok := gs.PrivilegedTradeParticipants(route.FromFactionID, route.ToFactionID)
+			if !ok {
+				continue
+			}
+			value := gs.PrivilegedTradeRouteValue(route, gs.MerchantTradeRouteEffectiveAmount(route))
+			if operatorID == string(fid) {
+				income += value
+			}
+			if sovereignID == string(fid) {
+				income += state.PrivilegedTradeRoyalty(value)
+			}
+			continue
+		}
+		if route.FromFactionID == string(fid) {
 			income += route.GoldEarned()
 		}
 	}

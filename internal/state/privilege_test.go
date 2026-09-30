@@ -3,6 +3,7 @@ package state
 import (
 	"testing"
 
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/world"
 )
 
@@ -94,5 +95,32 @@ func TestNonPrivilegedMinorRemainsOwnedByOwnerID(t *testing.T) {
 	sovereign, operator := gs.RegionIncomeShares(minor, 100)
 	if sovereign != 100 || operator != 0 {
 		t.Fatalf("imtiyazsız alt bölge geliri bölündü: sovereign=%d operator=%d", sovereign, operator)
+	}
+}
+
+func TestPrivilegedTradeParticipantsAndValue(t *testing.T) {
+	parent := &world.Region{ID: "galata_parent", OwnerID: "grantor"}
+	minor := &world.Region{
+		ID: "galata", OwnerID: "operator", IsMinorRegion: true,
+		IsPrivileged: true, ParentRegionID: parent.ID,
+	}
+	gs := &GameState{
+		Regions:        map[world.RegionID]*world.Region{parent.ID: parent, minor.ID: minor},
+		BaseGoldValues: map[economy.GoodType]int{economy.GoodCloth: 8},
+	}
+	route := &economy.TradeRoute{
+		FromFactionID: "grantor", ToFactionID: "operator",
+		Good: economy.GoodCloth, AmountPerTurn: 4, IsPrivilegedMinor: true,
+	}
+
+	sovereign, operator, ok := gs.PrivilegedTradeParticipants(route.FromFactionID, route.ToFactionID)
+	if !ok || sovereign != "grantor" || operator != "operator" {
+		t.Fatalf("imtiyazlı rota tarafları = (%q, %q, %t), (grantor, operator, true) bekleniyordu", sovereign, operator, ok)
+	}
+	if got := gs.PrivilegedTradeRouteValue(route, 4); got != 32 {
+		t.Fatalf("imtiyazlı rota değeri = %d, 32 bekleniyordu", got)
+	}
+	if got := PrivilegedTradeRoyalty(32); got != 8 {
+		t.Fatalf("imtiyaz telifi = %d, 8 bekleniyordu", got)
 	}
 }

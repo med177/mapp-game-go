@@ -3,6 +3,7 @@ package victory
 import (
 	"testing"
 
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -89,5 +90,46 @@ func TestOtherIncomeChangesAtHistoricalPeriodBoundary(t *testing.T) {
 	}
 	if got := f.OtherIncomeAt(1517, 10); got != 30 {
 		t.Fatalf("income after reform boundary = %d, want 30", got)
+	}
+}
+
+func TestPrivilegedTradePreviewShowsOperatorValueAndGrantorRoyalty(t *testing.T) {
+	const grantor faction.FactionID = "grantor"
+	const operator faction.FactionID = "operator"
+	parent := &world.Region{ID: "parent", OwnerID: string(grantor)}
+	minor := &world.Region{
+		ID: "minor", OwnerID: string(operator), IsMinorRegion: true,
+		IsPrivileged: true, ParentRegionID: parent.ID,
+	}
+	gs := &state.GameState{
+		Year: 1300, Month: 1,
+		Factions: map[faction.FactionID]*faction.Faction{
+			grantor:  {ID: grantor, Cloth: 10, Gold: 100},
+			operator: {ID: operator, Gold: 100},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			parent.ID: parent,
+			minor.ID:  minor,
+		},
+		TradeRoutes: []*economy.TradeRoute{{
+			FromFactionID: string(grantor), ToFactionID: string(operator),
+			Good: economy.GoodCloth, AmountPerTurn: 4, IsPrivilegedMinor: true,
+		}},
+		BaseGoldValues: map[economy.GoodType]int{economy.GoodCloth: 8},
+	}
+
+	operatorPreview := GoldEconomyPreview(gs, operator)
+	if operatorPreview.PrivilegedTradeIncome != 32 {
+		t.Fatalf("imtiyaz alanın ticaret geliri = %d, 32 bekleniyordu", operatorPreview.PrivilegedTradeIncome)
+	}
+	if operatorPreview.TradeRouteExpense != 0 || operatorPreview.TradeRouteCustomsIncome != 0 {
+		t.Fatalf("imtiyaz alan için normal rota kesintisi oluştu: expense=%d customs=%d", operatorPreview.TradeRouteExpense, operatorPreview.TradeRouteCustomsIncome)
+	}
+	grantorPreview := GoldEconomyPreview(gs, grantor)
+	if grantorPreview.PrivilegeIncome != 8 {
+		t.Fatalf("imtiyaz verenin telif geliri = %d, 8 bekleniyordu", grantorPreview.PrivilegeIncome)
+	}
+	if grantorPreview.TradeRouteExpense != 0 || grantorPreview.TradeRouteCustomsIncome != 0 {
+		t.Fatalf("imtiyaz verene normal rota kesintisi oluştu: expense=%d customs=%d", grantorPreview.TradeRouteExpense, grantorPreview.TradeRouteCustomsIncome)
 	}
 }

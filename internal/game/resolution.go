@@ -634,6 +634,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	tradeRouteIncomeByFaction := make(map[string]int)
 	tradeRouteExpenseByFaction := make(map[string]int)
 	tradeRouteCustomsByFaction := make(map[string]int)
+	privilegedTradeIncomeByFaction := make(map[string]int)
+	privilegeIncomeByFaction := make(map[string]int)
 	merchantTradeIncomeByFaction := make(map[string]int)
 	tradePowerIncomeByFaction := make(map[string]int)
 	historicalTradeIncomeByFaction := make(map[string]int)
@@ -644,10 +646,20 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		}
 	}
 	for _, transfer := range tradeTransfers {
-		tradeRouteIncomeByFaction[string(transfer.FromFactionID)] += transfer.Amount
-		tradeRouteExpenseByFaction[string(transfer.ToFactionID)] += transfer.Amount
-		tradeRouteCustomsByFaction[string(transfer.ToFactionID)] += transfer.CustomsAmount
-		if route := routesByKey[transfer.RouteKey]; route != nil {
+		route := routesByKey[transfer.RouteKey]
+		if route != nil && route.IsPrivilegedMinor {
+			sovereignID, operatorID, ok := gs.PrivilegedTradeParticipants(string(transfer.FromFactionID), string(transfer.ToFactionID))
+			if ok {
+				value := gs.PrivilegedTradeRouteValue(route, transfer.Volume)
+				privilegedTradeIncomeByFaction[operatorID] += value
+				privilegeIncomeByFaction[sovereignID] += state.PrivilegedTradeRoyalty(value)
+			}
+		} else {
+			tradeRouteIncomeByFaction[string(transfer.FromFactionID)] += transfer.Amount
+			tradeRouteExpenseByFaction[string(transfer.ToFactionID)] += transfer.Amount
+			tradeRouteCustomsByFaction[string(transfer.ToFactionID)] += transfer.CustomsAmount
+		}
+		if route != nil {
 			merchantTradeIncomeByFaction[string(transfer.FromFactionID)] += gs.MerchantTradeIncomeForRoute(route, transfer.Volume)
 		}
 	}
@@ -702,9 +714,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		// Yağmalanan vergi transferi doğrudan yağmalayan devlete geçer; hedef
 		// devletin tahıl arz cezasından etkilenmez.
 		goldIncome += raidLoot.Gold
+		privilegedTradeIncome := privilegedTradeIncomeByFaction[fidStr]
+		privilegeIncome := privilegeIncomeByFaction[fidStr]
 		tradePowerIncome := tradePowerIncomeByFaction[fidStr]
 		merchantTradeIncome := merchantTradeIncomeByFaction[fidStr]
-		f.Gold += goldIncome + tradePowerIncome + merchantTradeIncome
+		f.Gold += goldIncome + privilegedTradeIncome + privilegeIncome + tradePowerIncome + merchantTradeIncome
 		if f.Gold < 0 {
 			f.Gold = 0
 		}
@@ -736,6 +750,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			TradeRouteIncome:        tradeRouteIncomeByFaction[fidStr],
 			TradeRouteExpense:       tradeRouteExpenseByFaction[fidStr],
 			TradeRouteCustomsIncome: tradeRouteCustomsByFaction[fidStr],
+			PrivilegedTradeIncome:   privilegedTradeIncome,
+			PrivilegeIncome:         privilegeIncome,
 			MerchantTradeIncome:     merchantTradeIncome,
 			TradePowerIncome:        tradePowerIncome,
 			Upkeep:                  goldUpkeep,
@@ -751,7 +767,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			goldStatus.GiftIncome = ledger.GiftIncome
 			goldStatus.GiftExpense = ledger.GiftExpense
 		}
-		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.TradePowerIncome + goldStatus.MerchantTradeIncome - goldUpkeep - buildingGoldUpkeep
+		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.PrivilegedTradeIncome + goldStatus.PrivilegeIncome + goldStatus.TradePowerIncome + goldStatus.MerchantTradeIncome - goldUpkeep - buildingGoldUpkeep
 		if goldStatus.Shortage > 0 {
 			applyGoldUpkeepShortagePenalty(gs, fidStr, goldStatus.Upkeep, goldStatus.Shortage, &goldStatus)
 		}

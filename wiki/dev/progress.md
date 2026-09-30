@@ -1,11 +1,20 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-09-30
+last_updated: 2026-10-01
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-10-01: İmtiyazlı ticaret rotaları artık normal ödeme/gümrük olmadan
+  taşınan hacmin senaryo temel fiyatından ticari değer üretir. Kullanım sahibi
+  bu değeri `İmtiyazlı ticaret geliri`, egemen devlet ise değerin `%25`'ini
+  `İmtiyaz geliri` olarak alır; her iki gelir `GoldEconomyStatus`, gelir
+  önizlemesi ve ekonomik zafer hesabına bağlandı. İmtiyazlı minor bölgenin
+  yerel vergi/ticaret geliri önizlemede de egemen/kullanım sahibi payına göre
+  gösteriliyor. Regression: `internal/game`, `internal/state`,
+  `internal/victory`; doğrulama: hedefli paket testleri.
 
 - 2026-09-30: İmtiyazlı minor bölgenin ana egemeni ile işletmecisi arasında
   otomatik iki yönlü ve `IsPrivilegedMinor` işaretli ticaret rotası kuruldu.

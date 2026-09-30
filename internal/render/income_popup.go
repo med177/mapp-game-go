@@ -36,18 +36,20 @@ type goldIncomePopupLine struct {
 	color color.RGBA
 }
 
-func goldIncomePopupLines(status state.GoldEconomyStatus) [19]goldIncomePopupLine {
+func goldIncomePopupLines(status state.GoldEconomyStatus) [21]goldIncomePopupLine {
 	otherIncomeLabel := status.OtherIncomeDescription
 	if otherIncomeLabel == "" {
 		otherIncomeLabel = "Diğer gelirler"
 	}
-	return [19]goldIncomePopupLine{
+	return [21]goldIncomePopupLine{
 		{label: "Vergi", value: status.TaxIncome, color: ColorGold},
 		{label: otherIncomeLabel, value: status.OtherIncome, color: color.RGBA{220, 190, 130, 255}},
 		{label: "Pasif ticaret", value: status.TradeIncome, color: color.RGBA{145, 220, 155, 255}},
 		{label: "Ticaret merkezi geliri", value: status.TradeCenterIncome, color: color.RGBA{205, 180, 110, 255}},
 		{label: "Tarihsel ticaret", value: status.HistoricalTradeIncome, color: color.RGBA{228, 190, 120, 255}},
 		{label: "Ticaret rotası geliri", value: status.TradeRouteIncome, color: color.RGBA{145, 220, 155, 255}},
+		{label: "İmtiyazlı ticaret geliri", value: status.PrivilegedTradeIncome, color: color.RGBA{205, 150, 230, 255}},
+		{label: "İmtiyaz geliri", value: status.PrivilegeIncome, color: color.RGBA{230, 185, 120, 255}},
 		{label: "Merchant gemisi kârı", value: status.MerchantTradeIncome, color: color.RGBA{160, 220, 190, 255}},
 		{label: "Ticaret rotası ödemesi", value: -status.TradeRouteExpense, color: ColorRed},
 		{label: "Gümrük geliri", value: status.TradeRouteCustomsIncome, color: color.RGBA{205, 180, 110, 255}},
@@ -67,7 +69,7 @@ func goldIncomePopupLines(status state.GoldEconomyStatus) [19]goldIncomePopupLin
 func goldIncomePopupRect() gameui.Rect {
 	_, _, rightCol, _, rightColW := topResourceHUDColumns()
 	const popupW = 330.0
-	const popupH = 473.0
+	const popupH = 515.0
 	x := rightCol + rightColW - popupW
 	if x < 8 {
 		x = 8

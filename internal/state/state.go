@@ -45,6 +45,11 @@ const grainSaleGoldCapPercentOfTaxIncome = 100
 // ana bölge egemeni ile kullanım sahibi arasındaki eşit paylaşımıdır.
 const PrivilegeIncomeSharePercent = 50
 
+// PrivilegeTradeRoyaltyPercent, imtiyaz veren egemenin imtiyazlı ticaret
+// değerinden aldığı ayrıcalık bedelidir. Normal gümrük veya rota ödemesi
+// değildir; imtiyazlı ticaretin ek ekonomik değerinden doğar.
+const PrivilegeTradeRoyaltyPercent = 25
+
 // DefaultMinorPrivilegeProtectionTurns, senaryo alanı eksik olduğunda
 // kullanılan geriye dönük uyumluluk varsayılanıdır.
 const DefaultMinorPrivilegeProtectionTurns = 30
@@ -1087,6 +1092,8 @@ type GoldEconomyStatus struct {
 	TradeRouteIncome        int
 	TradeRouteExpense       int
 	TradeRouteCustomsIncome int
+	PrivilegedTradeIncome   int
+	PrivilegeIncome         int
 	MerchantTradeIncome     int
 	TradePowerIncome        int
 	TributeIncome           int
@@ -2028,6 +2035,59 @@ func (s *GameState) SovereignOwnerID(region *world.Region) string {
 		}
 	}
 	return region.OwnerID
+}
+
+// PrivilegedTradeParticipants, iki devlet arasındaki otomatik imtiyaz
+// rotasının hangi aktif minor imtiyazından doğduğunu çözer. Aynı devlet çifti
+// birden fazla imtiyazlı minor paylaşsa bile otomatik sistem tek rota çifti
+// tuttuğu için ilk eşleşen imtiyaz yeterlidir.
+func (s *GameState) PrivilegedTradeParticipants(fromID, toID string) (sovereignID, operatorID string, ok bool) {
+	if s == nil || fromID == "" || toID == "" || fromID == toID {
+		return "", "", false
+	}
+	regionIDs := make([]world.RegionID, 0, len(s.Regions))
+	for regionID := range s.Regions {
+		regionIDs = append(regionIDs, regionID)
+	}
+	for _, regionID := range world.SortedRegionIDs(regionIDs) {
+		region := s.Regions[regionID]
+		if region == nil || region.IsSea || !region.IsMinorRegion || !region.IsPrivileged || region.OwnerID == "" {
+			continue
+		}
+		sovereign := s.SovereignOwnerID(region)
+		operator := region.OwnerID
+		if (sovereign == fromID && operator == toID) || (sovereign == toID && operator == fromID) {
+			return sovereign, operator, true
+		}
+	}
+	return "", "", false
+}
+
+// PrivilegedTradeRouteValue, normal rota ödemesine dönüşmeden imtiyazlı
+// rotanın oluşturduğu brüt ticari değeri hesaplar. Otomatik imtiyaz rotaları
+// GoldPerUnit alanını tarifsiz olduklarını belirtmek için sıfır tuttuğundan,
+// bu durumda senaryonun temel mal fiyatı kullanılır.
+func (s *GameState) PrivilegedTradeRouteValue(route *economy.TradeRoute, volume int) int {
+	if s == nil || route == nil || !route.IsPrivilegedMinor || volume <= 0 {
+		return 0
+	}
+	unitPrice := route.GoldPerUnit
+	if unitPrice <= 0 {
+		unitPrice = s.BasePrice(route.Good)
+	}
+	if unitPrice <= 0 {
+		return 0
+	}
+	return volume * unitPrice
+}
+
+// PrivilegedTradeRoyalty, imtiyazlı ticaret değerinden egemen devlete giden
+// imtiyaz gelirini döner.
+func PrivilegedTradeRoyalty(value int) int {
+	if value <= 0 {
+		return 0
+	}
+	return value * PrivilegeTradeRoyaltyPercent / 100
 }
 
 // MinorPrivilegeRevokeBlockReason, imtiyaz kaldırma düğmesi ve oyun aksiyonu

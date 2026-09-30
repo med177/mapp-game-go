@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-09-30
+last_updated: 2026-10-01
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -51,6 +51,17 @@ Aktif dış `TradeRoute` anlaşmalarının bu kapasiteyi nasıl paylaştığı
 bir kalıcı kapasite snapshot'ı değildir. Rota kurulumu, sanitize/load ve her
 ekonomi tick'i bu dengelemeyi tekrarlar; aynı realm içi vassal rotaları dış
 partner havuzundan hariçtir.
+
+İmtiyazlı minor rotaları normal rota ödemesi ve gümrük üretmez. Başarılı rota
+hacmi, `PrivilegedTradeRouteValue()` ile senaryo temel mal fiyatı üzerinden
+brüt ticari değere çevrilir; bu değer kullanım sahibine
+`GoldEconomyStatus.PrivilegedTradeIncome` olarak yazılır. Aynı değerin
+`PrivilegeTradeRoyaltyPercent` oranındaki kısmı egemen devlete
+`PrivilegeIncome` olarak gider. `PrivilegedTradeParticipants()` tarafları
+aktif imtiyaz bölgesinden çözer; böylece imtiyaz kaldırıldığında gelir de rota
+ile birlikte kesilir. Gelir önizlemesi ve ekonomik zafer hesabı aynı yardımcı
+hesapları kullanır (`internal/state/state.go`, `internal/game/resolution.go`,
+`internal/victory/victory.go`).
 
 `PendingNavalContact` ve `PendingLandContact`, oyuncu kararını bekleyen geçici
 temas state'leridir ve `json:"-"` ile kayda girmez. AI-AI deniz temasları
