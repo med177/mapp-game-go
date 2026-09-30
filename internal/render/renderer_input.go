@@ -1070,17 +1070,8 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.playArmySelectionSound(aid)
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
 	}
-	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
-		if r.selectMapRegionFromMapClickResult(rid, mapDoubleClick) {
-			return InputAction{}
-		}
-		r.selectSettlement(rid, idx)
-		if !RecruitPanelVisible(r.gs, rid) {
-			r.showRecruitPanel = false
-		}
-		r.resetRecruitSelection()
-		return InputAction{}
-	}
+	// Yerleşim paneli haritanın üzerinde çizildiği için panel düğmeleri,
+	// panelin altındaki harita marker'larından önce değerlendirilmelidir.
 	if region, settlement, ok := r.selectedSettlement(); ok && region != nil && region.ID == r.SelectedRegion {
 		if btn, active := settlementCapitalActionButton(r.gs, region, settlement); active && btn.HitTest(fx, fy) {
 			name := settlement.NameTR
@@ -1098,6 +1089,17 @@ func (r *Renderer) handleLeftClick() InputAction {
 			}, nil)
 			return InputAction{}
 		}
+	}
+	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
+		if r.selectMapRegionFromMapClickResult(rid, mapDoubleClick) {
+			return InputAction{}
+		}
+		r.selectSettlement(rid, idx)
+		if !RecruitPanelVisible(r.gs, rid) {
+			r.showRecruitPanel = false
+		}
+		r.resetRecruitSelection()
+		return InputAction{}
 	}
 	if r.settlementPanelHit(fx, fy) {
 		// İlk tıklama bir yerleşim marker'ını açtıysa ikinci tıklama aynı

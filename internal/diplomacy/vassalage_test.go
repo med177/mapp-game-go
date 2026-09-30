@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestAnnexationTurnsRemainingMatchesAnnexationBlock(t *testing.T) {
@@ -153,6 +154,36 @@ func TestApplyVassalizationPromotesNestedVassalsToNewOverlord(t *testing.T) {
 		if f.VassalizedTurn != gs.Turn {
 			t.Fatalf("%s yeni vassallık turunu taşımadı: got=%d want=%d", fid, f.VassalizedTurn, gs.Turn)
 		}
+	}
+}
+
+func TestApplyVassalizationAddsVassalRegionsToOverextension(t *testing.T) {
+	gs := &state.GameState{
+		Turn:                         7,
+		AggressiveExpansionLastTurns: 12,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"overlord": {ID: "overlord", NameTR: "Üst Devlet"},
+			"vassal":   {ID: "vassal", NameTR: "Vassal"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"vassal_a": {ID: "vassal_a", OwnerID: "vassal"},
+			"vassal_b": {ID: "vassal_b", OwnerID: "vassal"},
+		},
+	}
+	for index := 0; index < 10; index++ {
+		id := world.RegionID("overlord_" + string(rune('a'+index)))
+		gs.Regions[id] = &world.Region{ID: id, OwnerID: "overlord"}
+	}
+
+	result := applyVassalization(gs, "overlord", "vassal")
+	if !result.Applied {
+		t.Fatalf("vassallık uygulanmadı: %s", result.Message)
+	}
+	if got, want := gs.RecentRegionGain("overlord"), 2; got != want {
+		t.Fatalf("vassal bölge kazanımı = %d, want %d", got, want)
+	}
+	if got, want := gs.OverextensionScore("overlord"), 40; got != want {
+		t.Fatalf("vassal bölgeleri sonrası aşırı genişleme = %d, want %d", got, want)
 	}
 }
 

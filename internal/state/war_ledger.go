@@ -36,7 +36,15 @@ func (s *GameState) TruceRemaining(a, b faction.FactionID) int {
 // ekler. Savaş dışı barış devri de bu kaydı kullanabilir; böylece koalisyon
 // mantığı yalnızca savaş ledger'larına bağlı kalmaz.
 func (s *GameState) RecordRegionAcquisition(conqueror, previousOwner faction.FactionID) {
-	if s == nil || conqueror == "" || conqueror == previousOwner {
+	s.RecordRegionAcquisitions(conqueror, previousOwner, 1)
+}
+
+// RecordRegionAcquisitions, tek bir siyasi kazanımın birden fazla kara
+// bölgesine karşılık geldiği durumlarda genişleme geçmişini bölge sayısıyla
+// günceller. Vassallıkta bölge sahibi değişmediği için bu kayıt, vassalın
+// topraklarını doğrudan fetih gibi ledger'a eklemek için kullanılır.
+func (s *GameState) RecordRegionAcquisitions(conqueror, previousOwner faction.FactionID, count int) {
+	if s == nil || conqueror == "" || conqueror == previousOwner || count <= 0 {
 		return
 	}
 	if s.RecentFactionExpansion == nil {
@@ -54,7 +62,7 @@ func (s *GameState) RecordRegionAcquisition(conqueror, previousOwner faction.Fac
 			delete(gains, gainTurn)
 		}
 	}
-	gains[turn]++
+	gains[turn] += count
 	record.TurnGains = gains
 	record.RegionsGained = 0
 	record.WindowStartTurn = turn

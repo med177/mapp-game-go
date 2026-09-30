@@ -766,6 +766,7 @@ func applyVassalization(gs *state.GameState, actor, target faction.FactionID) Re
 	if targetFaction == nil {
 		return Result{Message: "Fraksiyon bulunamadı."}
 	}
+	vassalRegionCount := len(gs.LandRegionsOwnedBy(target))
 	if DirectOverlord(gs, actor) != "" {
 		return Result{Message: "Bağlı devletler yeni vassal edinemaz."}
 	}
@@ -776,6 +777,7 @@ func applyVassalization(gs *state.GameState, actor, target faction.FactionID) Re
 	targetFaction.TributeRateConfigured = true
 	targetFaction.VassalizedTurn = currentVassalizedTurn(gs)
 	NormalizeVassalage(gs)
+	gs.RecordRegionAcquisitions(actor, target, vassalRegionCount)
 	root := realmRoot(gs, actor)
 	if root == "" {
 		root = actor

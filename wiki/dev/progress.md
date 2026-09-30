@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-09-30: Vassal edinimi artık vassalın kara bölgesi sayısını overlord'un
+  kısa dönemli `Aşırı Genişleme` kazanımına ekliyor. Bölge sahibi değişmeden
+  gerçekleşen normal, savaş sonrası ve kuşatma vassallığı yolları ortak
+  `applyVassalization` akışında aynı hesabı kullanıyor (`internal/state/war_ledger.go`,
+  `internal/diplomacy/vassalage.go`). Regression:
+  `TestApplyVassalizationAddsVassalRegionsToOverextension`.
+
 - 2026-09-30: Germiyan'ın 1381 çeyiz ve 1429 vasiyet event'leri kesin tarih
   penceresine bağlandı; vasiyet yalnız çeyiz event'inin
   `germiyan_dowry_1381` flag'i set edildikten sonra tetiklenebiliyor. Böylece
