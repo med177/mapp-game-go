@@ -339,28 +339,61 @@ func tradeRouteDisplayAmount(route *economy.TradeRoute) int {
 	return route.EffectiveAmountPerTurn()
 }
 
+const tradeCorridorTooltipTextWidth = 272.0
+
+func tradeCorridorTooltipDirection(c tradeCorridorInfo) string {
+	if c.directionText != "" {
+		return c.directionText
+	}
+	return c.fromName + " <-> " + c.toName
+}
+
+func tradeCorridorTooltipLines(s string) []string {
+	lines := wrapTextLines(s, FaceSmall, tradeCorridorTooltipTextWidth)
+	if len(lines) == 0 {
+		return []string{"-"}
+	}
+	return lines
+}
+
+func tradeCorridorTooltipDetailLineCount(c tradeCorridorInfo) int {
+	lines := 0
+	for _, detail := range tradeCorridorDetailsForCenter(c) {
+		if detail.historical {
+			lines++
+			lines += len(detail.historicalGoods)
+			continue
+		}
+		routeLabel := detail.direction
+		if routeLabel == "" {
+			routeLabel = tradeCorridorTooltipDirection(c)
+		}
+		lines += len(tradeCorridorTooltipLines(routeLabel))
+		goodsLabel := detail.good
+		if goodsLabel == "" {
+			goodsLabel = "-"
+		}
+		lines += len(tradeCorridorTooltipLines(goodsLabel + " " + itoa(detail.amount) + " | -"))
+	}
+	return lines
+}
+
 func tradeCorridorTooltipHeight(c tradeCorridorInfo) float64 {
 	details := tradeCorridorDetailsForCenter(c)
 	if len(details) > 0 {
-		lines := 0
-		for _, detail := range details {
-			if detail.historical {
-				lines++
-				lines += len(detail.historicalGoods)
-				continue
-			}
-			lines += 2
-		}
-		height := 96.0 + float64(lines)*16
+		directionLines := len(tradeCorridorTooltipLines(tradeCorridorTooltipDirection(c)))
+		height := 96.0 + float64(directionLines-1+tradeCorridorTooltipDetailLineCount(c))*16
 		if height < 128 {
 			height = 128
 		}
 		return height
 	}
 	if c.dashed && c.route != nil {
-		return 160
+		directionLines := len(tradeCorridorTooltipLines(tradeCorridorTooltipDirection(c)))
+		return 160 + float64(directionLines-1)*16
 	}
-	return 108
+	directionLines := len(tradeCorridorTooltipLines(tradeCorridorTooltipDirection(c)))
+	return 108 + float64(directionLines-1)*16
 }
 
 func tradeRouteTypeLabel(routeType world.TradeRouteType) string {
@@ -866,16 +899,16 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 	h := float32(rect.H)
 	vector.FillRect(screen, x, y, w, h, color.RGBA{10, 14, 20, 230}, false)
 	vector.StrokeRect(screen, x, y, w, h, 1.2, color.RGBA{145, 120, 74, 230}, false)
-	DrawText(screen, tradeCorridorTooltipTitle(c), float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 255})
-	directionText := c.directionText
-	if directionText == "" {
-		directionText = c.fromName + " <-> " + c.toName
+	DrawText(screen, trimTextToWidth(tradeCorridorTooltipTitle(c), FaceSmall, rect.W-20), float64(x)+10, float64(y)+8, FaceSmall, color.RGBA{242, 226, 174, 255})
+	directionLines := tradeCorridorTooltipLines(tradeCorridorTooltipDirection(c))
+	for i, line := range directionLines {
+		DrawText(screen, line, float64(x)+10, float64(y)+28+float64(i*16), FaceSmall, color.RGBA{215, 225, 236, 235})
 	}
-	DrawText(screen, directionText, float64(x)+10, float64(y)+28, FaceSmall, color.RGBA{215, 225, 236, 235})
-	DrawText(screen, "Tür: "+tradeRouteTypeLabel(c.routeType), float64(x)+10, float64(y)+46, FaceSmall, color.RGBA{197, 190, 168, 230})
+	typeY := float64(y) + 28 + float64(len(directionLines)*16) + 2
+	DrawText(screen, "Tür: "+tradeRouteTypeLabel(c.routeType), float64(x)+10, typeY, FaceSmall, color.RGBA{197, 190, 168, 230})
 	details := tradeCorridorDetailsForCenter(c)
 	if len(details) > 0 && r.gs != nil {
-		lineY := float64(y) + 64
+		lineY := typeY + 18
 		for _, detail := range details {
 			if detail.historical {
 				routeLabel := trimTextToWidth("Rota: Tarihsel akış", FaceSmall, rect.W-20)
@@ -889,18 +922,21 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 					return goods[i].good < goods[j].good
 				})
 				for _, total := range goods {
-					goodsLabel := trimTextToWidth(total.good+": "+itoa(total.amount)+"/tur", FaceSmall, rect.W-20)
-					DrawText(screen, goodsLabel, float64(x)+10, lineY, FaceSmall, color.RGBA{187, 203, 222, 230})
-					lineY += 16
+					for _, goodsLabel := range tradeCorridorTooltipLines(total.good + ": " + itoa(total.amount) + "/tur") {
+						DrawText(screen, goodsLabel, float64(x)+10, lineY, FaceSmall, color.RGBA{187, 203, 222, 230})
+						lineY += 16
+					}
 				}
 				continue
 			}
 			routeLabel := detail.direction
 			if routeLabel == "" {
-				routeLabel = c.directionText
+				routeLabel = tradeCorridorTooltipDirection(c)
 			}
-			routeLabel = trimTextToWidth(routeLabel, FaceSmall, rect.W-20)
-			DrawText(screen, routeLabel, float64(x)+10, lineY, FaceSmall, color.RGBA{225, 212, 180, 240})
+			for _, line := range tradeCorridorTooltipLines(routeLabel) {
+				DrawText(screen, line, float64(x)+10, lineY, FaceSmall, color.RGBA{225, 212, 180, 240})
+				lineY += 16
+			}
 
 			goldLabel := "-"
 			if detail.route != nil {
@@ -915,9 +951,10 @@ func (r *Renderer) drawTradeHoverTooltip(screen *ebiten.Image) {
 			if goodsLabel == "" {
 				goodsLabel = "-"
 			}
-			goodsLabel = trimTextToWidth(goodsLabel+" "+itoa(detail.amount)+" | "+goldLabel, FaceSmall, rect.W-20)
-			DrawText(screen, goodsLabel, float64(x)+10, lineY+16, FaceSmall, color.RGBA{187, 203, 222, 230})
-			lineY += 32
+			for _, line := range tradeCorridorTooltipLines(goodsLabel + " " + itoa(detail.amount) + " | " + goldLabel) {
+				DrawText(screen, line, float64(x)+10, lineY, FaceSmall, color.RGBA{187, 203, 222, 230})
+				lineY += 16
+			}
 		}
 	} else if c.dashed && c.route != nil && r.gs != nil {
 		amount := tradeRouteDisplayAmount(c.route)
@@ -1132,6 +1169,10 @@ func privilegedMinorTradeEndpointLabel(gs *state.GameState, factionID string, re
 	return name + " (" + regionName + ")"
 }
 
+func privilegedTradeRouteVisibleToPlayer(sovereignID, operatorID, playerID string) bool {
+	return playerID != "" && (sovereignID == playerID || operatorID == playerID)
+}
+
 // privilegedMinorTradeCorridor, imtiyaz rotasını merkez grafiğine sokmadan
 // imtiyazlı minor bölgenin görsel noktasından işletmecinin canonical merkez
 // limanına bağlar. İki yönlü state rotaları tek fiziksel koridorda birleşir.
@@ -1237,7 +1278,7 @@ func (r *Renderer) privilegedMinorTradeCorridor(region *world.Region, routes []*
 	}, true
 }
 
-func (r *Renderer) drawPrivilegedMinorTradeRoutes(screen *ebiten.Image, onlyPlayerRoutes bool) {
+func (r *Renderer) drawPrivilegedMinorTradeRoutes(screen *ebiten.Image) {
 	if r == nil || r.gs == nil {
 		return
 	}
@@ -1269,7 +1310,7 @@ func (r *Renderer) drawPrivilegedMinorTradeRoutes(screen *ebiten.Image, onlyPlay
 		if len(routes) == 0 {
 			continue
 		}
-		if onlyPlayerRoutes && sovereignID != playerID && region.OwnerID != playerID {
+		if !privilegedTradeRouteVisibleToPlayer(sovereignID, region.OwnerID, playerID) {
 			continue
 		}
 		corridor, ok := r.privilegedMinorTradeCorridor(region, routes, string(regionID)+"|"+key)
@@ -2165,7 +2206,10 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	r.tradeCorridors = r.tradeCorridors[:0]
 	centers := r.buildTradeCenters(len(r.gs.TradeCenters.Centers))
 	r.tradeCenters = append(r.tradeCenters[:0], centers...)
-	r.drawPrivilegedMinorTradeRoutes(screen, onlyPlayerRoutes)
+	// İmtiyazlı rotalar, normal rotaların uzak/yakın zoom filtresinden bağımsız
+	// olarak yalnızca oyuncunun egemen veya işletmeci olduğu minor bölgelerde
+	// görünür.
+	r.drawPrivilegedMinorTradeRoutes(screen)
 	r.drawPlayerTradePortRoutes(screen, merged)
 	if len(centers) == 0 {
 		r.drawTradeBonusFleetMarkers(screen)

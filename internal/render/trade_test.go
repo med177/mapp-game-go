@@ -220,6 +220,21 @@ func TestPrivilegedTradePaletteAndTooltipAreDistinct(t *testing.T) {
 	}
 }
 
+func TestPrivilegedTradeRouteVisibilityRequiresPlayerRelation(t *testing.T) {
+	if !privilegedTradeRouteVisibleToPlayer("player", "operator", "player") {
+		t.Fatal("oyuncunun egemen olduğu imtiyaz rotası görünür değil")
+	}
+	if !privilegedTradeRouteVisibleToPlayer("sovereign", "player", "player") {
+		t.Fatal("oyuncunun işletmeci olduğu imtiyaz rotası görünür değil")
+	}
+	if privilegedTradeRouteVisibleToPlayer("other-sovereign", "other-operator", "player") {
+		t.Fatal("oyuncuyla ilgisiz imtiyaz rotası görünür")
+	}
+	if privilegedTradeRouteVisibleToPlayer("player", "operator", "") {
+		t.Fatal("oyuncu kimliği yokken imtiyaz rotası görünür")
+	}
+}
+
 func TestPrivilegedMinorTradeCorridorUsesMinorAndOperatorCapitalPort(t *testing.T) {
 	const (
 		sovereign = faction.FactionID("ottoman")
@@ -548,6 +563,25 @@ func TestTradeCorridorTooltipHeightIncludesAllRoutes(t *testing.T) {
 	corridor := tradeCorridorInfo{routeDetails: make([]tradeCorridorRouteDetail, 4)}
 	if got, want := tradeCorridorTooltipHeight(corridor), 224.0; got != want {
 		t.Fatalf("çoklu rota tooltip yüksekliği = %v, want %v", got, want)
+	}
+}
+
+func TestTradeCorridorTooltipWrapsLongDirection(t *testing.T) {
+	corridor := tradeCorridorInfo{
+		directionText: "Candaroğulları Beyliği -> Akhaia Prensliği (Mora, Latin)",
+		routeDetails:  []tradeCorridorRouteDetail{{direction: "Candaroğulları Beyliği -> Akhaia Prensliği (Mora, Latin)"}},
+	}
+	lines := tradeCorridorTooltipLines(corridor.directionText)
+	if len(lines) < 2 {
+		t.Fatalf("uzun rota yönü tek satır kaldı: %q", corridor.directionText)
+	}
+	for _, line := range lines {
+		if got := MeasureText(line, FaceSmall); got > tradeCorridorTooltipTextWidth {
+			t.Fatalf("tooltip satırı genişliği = %.1f, üst sınır %.1f: %q", got, tradeCorridorTooltipTextWidth, line)
+		}
+	}
+	if got, want := tradeCorridorTooltipHeight(corridor), 160.0; got != want {
+		t.Fatalf("sarılmış rota tooltip yüksekliği = %v, want %v", got, want)
 	}
 }
 

@@ -257,7 +257,9 @@ katılmaz. Her aktif imtiyaz için minor bölgenin liman/merkez anchor'ından,
 işletmeci devletin canonical merkez limanına tek bir iki yönlü koridor çizilir.
 Bu koridor mor tonlu ayrı bir palet ve iki yön oku kullanır; hover tooltip'inde
 imtiyazlı rota başlığı, egemen/işletmeci devlet adları ve ilgili bölge adları
-gösterilir. Normal merkez koridorlarının tooltip yön etiketleri de merkez adının
+gösterilir. İmtiyazlı koridorlar zoom seviyesinden bağımsız olarak yalnızca
+oyuncunun egemen veya işletmeci olduğu rotalar için çizilir. Normal merkez
+koridorlarının tooltip yön etiketleri de merkez adının
 yanında sahibi devletin görünen adını taşır (`internal/render/trade_overlay.go`).
 
 Gelir popup'ı normal `Ticaret rotası geliri` satırından ayrı olarak
