@@ -55,3 +55,24 @@ func TestLoadRelationsWithOrderKeepsLegacySharedScore(t *testing.T) {
 		t.Fatalf("eski ortak score formatı korunmadı: %#v", relation)
 	}
 }
+
+func TestLoadRelationsWithOrderDoesNotMutateEliminatedFactionWar(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "relations.json")
+	data := []byte(`[
+  {"faction_a":"a","faction_b":"b","score_a_to_b":-80,"score_b_to_a":-80,"stance":"war"}
+]`)
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	relations, _, err := LoadRelationsWithOrder(path, map[FactionID]*Faction{
+		"a": {ID: "a", IsEliminated: true},
+		"b": {ID: "b"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := relations[RelationKey("a", "b")].Stance; got != StanceWar {
+		t.Fatalf("ilişki duruşu yüklemede değişti: got %q, want %q", got, StanceWar)
+	}
+}

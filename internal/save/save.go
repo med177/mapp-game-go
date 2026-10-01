@@ -641,6 +641,10 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		NextArmySeq:                   len(armies),
 		FiredEventIDs:                 map[string]bool{},
 	}
+	// Save/base yüklemesi normal oyun state'idir; editörün kaynak veriyi
+	// koruma davranışından bağımsız olarak elenmiş faction savaşlarını pasife
+	// çekmeye devam et.
+	gs.NormalizeEliminatedFactionRelations()
 	gs.ApplyHistoricalFactionChanges()
 	gs.SyncWarLedgers()
 	return gs, nil

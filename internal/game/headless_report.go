@@ -670,13 +670,14 @@ func countHeadlessProductionOrders(report *HeadlessSimulationReport, before, aft
 		if faction.FactionID(order.FactionID) != fid {
 			continue
 		}
-		if order.Kind == "building" {
+		switch order.Kind {
+		case "building":
 			for i := range report.Factions {
 				if report.Factions[i].ID == fid {
 					report.Factions[i].BuildingOrders++
 				}
 			}
-		} else if order.Kind == "unit" {
+		case "unit":
 			for i := range report.Factions {
 				if report.Factions[i].ID == fid {
 					report.Factions[i].ProductionOrders++

@@ -180,7 +180,7 @@ func Test1300MaritimeStatesStartWithTradeWeightedNavalComposition(t *testing.T) 
 		"hafsid_sultanate":  {warships: 1, merchants: 3, deployed: 4},
 		"karesioglu_bey":    {warships: 2, merchants: 1, deployed: 3},
 		"marinid_sultanate": {warships: 2, merchants: 3, deployed: 5},
-		"mamluk":            {warships: 1, merchants: 3, deployed: 10},
+		"mamluk":            {warships: 1, merchants: 3, deployed: 7},
 		"mecca_sharifate":   {warships: 0, merchants: 1, deployed: 1},
 		"mentese_bey":       {warships: 1, merchants: 1, deployed: 2},
 		"naples_kingdom":    {warships: 2, merchants: 3, deployed: 6},

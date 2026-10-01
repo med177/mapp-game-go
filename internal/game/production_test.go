@@ -177,6 +177,10 @@ func TestWriteScenarioFileIfChangedSkipsIdenticalData(t *testing.T) {
 	if err := os.Chtimes(path, writtenAt, writtenAt); err != nil {
 		t.Fatal(err)
 	}
+	before, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if err := writeScenarioFileIfChanged(path, data); err != nil {
 		t.Fatal(err)
@@ -186,33 +190,15 @@ func TestWriteScenarioFileIfChangedSkipsIdenticalData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !info.ModTime().Equal(writtenAt) {
-		t.Fatalf("aynı içerik için dosya yeniden yazıldı: modtime = %v, %v bekleniyordu", info.ModTime(), writtenAt)
+	if !info.ModTime().Equal(before.ModTime()) {
+		t.Fatalf("aynı içerik için dosya yeniden yazıldı: modtime = %v, %v bekleniyordu", info.ModTime(), before.ModTime())
 	}
 }
 
-func TestWriteScenarioRelationsSkipsIdenticalData(t *testing.T) {
+func TestWriteScenarioRelationsUsesDeterministicOrder(t *testing.T) {
 	scenarioPath := t.TempDir()
 	dataDir := filepath.Join(scenarioPath, "data")
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	relationsPath := filepath.Join(dataDir, "relations.json")
-	data := []byte(`[
-  {
-    "faction_a": "a",
-    "faction_b": "b",
-    "score_a_to_b": -35,
-    "score_b_to_a": 20,
-    "stance": "peace"
-  }
-]
-`)
-	if err := os.WriteFile(relationsPath, data, 0o644); err != nil {
-		t.Fatal(err)
-	}
-	writtenAt := time.Unix(123, 456)
-	if err := os.Chtimes(relationsPath, writtenAt, writtenAt); err != nil {
 		t.Fatal(err)
 	}
 
@@ -221,25 +207,26 @@ func TestWriteScenarioRelationsSkipsIdenticalData(t *testing.T) {
 		Factions: map[faction.FactionID]*faction.Faction{
 			"a": {ID: "a"},
 			"b": {ID: "b"},
+			"c": {ID: "c"},
 		},
 		Relations: map[string]*faction.Relation{
-			faction.RelationKey("a", "b"): {
-				FactionA: "a", FactionB: "b", ScoreAToB: -35, ScoreBToA: 20,
-				Stance: faction.StancePeace,
-			},
+			faction.RelationKey("b", "c"): {FactionA: "b", FactionB: "c", Stance: faction.StancePeace},
+			faction.RelationKey("a", "c"): {FactionA: "a", FactionB: "c", Stance: faction.StancePeace},
+			faction.RelationKey("a", "b"): {FactionA: "a", FactionB: "b", Stance: faction.StancePeace},
 		},
-		RelationOrder: []string{faction.RelationKey("a", "b")},
+		RelationOrder: []string{"b|c", "a|c", "a|b", "a|b"},
 	}
 	if err := writeScenarioRelations(gs); err != nil {
 		t.Fatal(err)
 	}
 
-	info, err := os.Stat(relationsPath)
+	data, err := os.ReadFile(filepath.Join(dataDir, "relations.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !info.ModTime().Equal(writtenAt) {
-		t.Fatalf("aynı ilişkiler için dosya yeniden yazıldı: modtime = %v, %v bekleniyordu", info.ModTime(), writtenAt)
+	want := "[\n  {\n    \"faction_a\": \"a\",\n    \"faction_b\": \"b\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  },\n  {\n    \"faction_a\": \"a\",\n    \"faction_b\": \"c\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  },\n  {\n    \"faction_a\": \"b\",\n    \"faction_b\": \"c\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  }\n]\n"
+	if string(data) != want {
+		t.Fatalf("ilişkiler deterministik sırada yazılmadı:\n%s", data)
 	}
 }
 

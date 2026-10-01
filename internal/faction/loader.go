@@ -82,11 +82,6 @@ func LoadRelationsWithOrder(path string, factions map[FactionID]*Faction) (map[s
 		if factions[rel.FactionA] == nil || factions[rel.FactionB] == nil || rel.FactionA == rel.FactionB {
 			continue
 		}
-		if rel.Stance == StanceWar && (factions[rel.FactionA].IsEliminated || factions[rel.FactionB].IsEliminated) {
-			// Elenmiş ardıl devletler başlangıç diplomasi savaşlarına katılmaz.
-			// İleride yeniden kurulduklarında ilişki normal diplomasi akışıyla açılır.
-			rel.Stance = StancePeace
-		}
 		key := RelationKey(rel.FactionA, rel.FactionB)
 		scoreAToB, scoreBToA := 0, 0
 		if rel.Score != nil {

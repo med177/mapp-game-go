@@ -9,7 +9,7 @@
       "program": "${workspaceFolder}/cmd/game",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "output": "${workspaceFolder}/bin/mapp-debug"
+      "output": "${workspaceFolder}/bin/debug/mapp-game"
     },
     {
       "name": "Run Game",
@@ -19,7 +19,7 @@
       "program": "${workspaceFolder}/cmd/game",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "output": "${workspaceFolder}/bin/game/mapp-linux"
+      "output": "${workspaceFolder}/bin/release/mapp-game"
     },
     {
       "name": "Debug Headless Simulation",

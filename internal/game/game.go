@@ -250,9 +250,10 @@ func (g *Game) Update() error {
 		}
 
 	case state.PhaseSettings:
-		if action.Kind == render.ActionOpenShortcuts {
+		switch action.Kind {
+		case render.ActionOpenShortcuts:
 			g.renderer.OpenShortcuts()
-		} else if action.Kind == render.ActionSaveSettings {
+		case render.ActionSaveSettings:
 			g.gs.Difficulty = g.renderer.CurrentSettings.Difficulty
 			render.ApplyDisplaySettings(g.renderer.CurrentSettings)
 			audio.SetMusicEnabled(g.renderer.CurrentSettings.MusicOn)
@@ -2106,7 +2107,7 @@ func (g *Game) eventRelevantToPlayer(evt *events.Event) bool {
 	return events.IsPlayerRelevant(g.gs, evt)
 }
 
-func (g *Game) codexReasonLabel(reason string, evt *events.Event) string {
+func (g *Game) codexReasonLabel(reason string, _ *events.Event) string {
 	if reason == "" {
 		return ""
 	}
@@ -3398,10 +3399,7 @@ func (g *Game) aiAcceptSiegeSurrenderOffer(attacker *army.Army, target *world.Re
 	if siege.TurnsElapsed < (totalTurns+1)/2 {
 		return false
 	}
-	defenderPower := 0
-	if defender != nil {
-		defenderPower = defender.TotalStrength(g.gs.UnitTypes)
-	}
+	defenderPower := defender.TotalStrength(g.gs.UnitTypes)
 	if defenderPower == 0 {
 		return rand.Intn(100) < 50
 	}
@@ -3974,12 +3972,27 @@ func rasterBoundaryForShapeSave(value float64) int {
 func writeScenarioRelations(gs *state.GameState) error {
 	path := filepath.Join(gs.ScenarioPath, "data", "relations.json")
 	keys := make([]string, 0, len(gs.Relations))
+	seen := make(map[string]struct{}, len(gs.RelationOrder))
 	for _, key := range gs.RelationOrder {
-		if gs.Relations[key] == nil {
+		if _, exists := seen[key]; exists || gs.Relations[key] == nil {
 			continue
 		}
 		keys = append(keys, key)
+		seen[key] = struct{}{}
 	}
+	// RelationOrder kaynak dosyadan gelebilir; map'e sonradan eklenen kayıtlar
+	// için de deterministik çıktı üret.
+	for key, rel := range gs.Relations {
+		if rel == nil {
+			continue
+		}
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		keys = append(keys, key)
+		seen[key] = struct{}{}
+	}
+	sort.Strings(keys)
 
 	relations := make([]*faction.Relation, 0, len(keys))
 	for _, key := range keys {
@@ -4445,6 +4458,10 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	}
 	if !editMode {
 		gs.ApplyHistoricalFactionChanges()
+		// Edit modunda relations.json kaynak verisi olduğu gibi korunmalıdır.
+		// Oyun yüklemesinde ise elenmiş faction'ların başlangıç savaşlarını
+		// pasife çekerek normal oyun invariant'ını uygula.
+		gs.NormalizeEliminatedFactionRelations()
 		army.InitializeLegacyFleetDocking(gs.Armies, gs.Regions)
 		gs.RepairArmiesInBlockedTerrain()
 		diplomacy.NormalizeVassalage(gs)
@@ -4979,9 +4996,10 @@ func (g *Game) assignNavalMission(fleetID army.ArmyID, kind army.NavalMissionKin
 		return
 	}
 	mission := army.NavalMission{Kind: kind, TargetRegionID: targetRegion}
-	if kind == army.NavalMissionEscort {
+	switch kind {
+	case army.NavalMissionEscort:
 		mission.TargetFleetID = targetFleetID
-	} else if kind == army.NavalMissionSupplyArmy {
+	case army.NavalMissionSupplyArmy:
 		mission.TargetArmyID = targetFleetID
 	}
 	previousMission := fleet.NavalMission
