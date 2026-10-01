@@ -1934,16 +1934,28 @@ func (r *Renderer) tradeCenterLinkPath(from, to tradeCenterVisual, routeType wor
 	if len(fromCandidates) == 0 || len(toCandidates) == 0 {
 		return nil, nil
 	}
-	sea := routeType == world.TradeRouteSea
+	cacheKey := string(from.id) + "|" + string(to.id) + "|" + string(routeType)
 	var best []world.RegionID
-	for _, fromID := range fromCandidates {
-		for _, toID := range toCandidates {
-			candidate := shortestTradeRegionPath(r.gs.Regions, fromID, toID, sea)
-			if len(candidate) == 0 || len(best) > 0 && len(candidate) >= len(best) {
-				continue
+	cachedPath := false
+	if r.tradeSeaPathCache != nil && r.tradeSeaPathCacheGS == r.gs && r.tradeSeaPathCacheRev == r.tradeOverlayRevision {
+		best, cachedPath = r.tradeSeaPathCache[cacheKey]
+	} else {
+		r.tradeSeaPathCache = make(map[string][]world.RegionID)
+		r.tradeSeaPathCacheGS = r.gs
+		r.tradeSeaPathCacheRev = r.tradeOverlayRevision
+	}
+	if !cachedPath {
+		sea := routeType == world.TradeRouteSea
+		for _, fromID := range fromCandidates {
+			for _, toID := range toCandidates {
+				candidate := shortestTradeRegionPath(r.gs.Regions, fromID, toID, sea)
+				if len(candidate) == 0 || len(best) > 0 && len(candidate) >= len(best) {
+					continue
+				}
+				best = candidate
 			}
-			best = candidate
 		}
+		r.tradeSeaPathCache[cacheKey] = append([]world.RegionID(nil), best...)
 	}
 	if len(best) == 0 {
 		return nil, nil
@@ -2083,23 +2095,24 @@ func tradeCenterSourceLinks(gs *state.GameState, centers []tradeCenterVisual) ma
 	return sources
 }
 
-// drawTradeRoutes tüm aktif ticaret rotalarını harita üzerinde sade koridorlar olarak çizer.
-// Çift yönlü rotalar (A->B ve B->A) tek bir görsel hatta birleştirilir.
-// Uzak zoom'da yalnızca oyuncuyla ilgili rotalar gösterilerek çizgi karmaşası azaltılır.
-func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
-	r.animationTick += 12
-	if r.camScale < 0.6 {
-		return
+func (r *Renderer) mergedTradeRoutes(onlyPlayerRoutes bool) map[string]tradeRouteVisual {
+	if r == nil || r.gs == nil {
+		return nil
 	}
-	playerID := string(r.gs.PlayerFactionID)
-	onlyPlayerRoutes := r.camScale < 0.85
+	if r.tradeMergedRouteCache != nil && r.tradeMergedRouteCacheGS == r.gs && r.tradeMergedRouteCacheRev == r.tradeOverlayRevision {
+		if cached, ok := r.tradeMergedRouteCache[onlyPlayerRoutes]; ok {
+			return cached
+		}
+	} else {
+		r.tradeMergedRouteCache = make(map[bool]map[string]tradeRouteVisual, 2)
+		r.tradeMergedRouteCacheGS = r.gs
+		r.tradeMergedRouteCacheRev = r.tradeOverlayRevision
+	}
 
+	playerID := string(r.gs.PlayerFactionID)
 	merged := make(map[string]tradeRouteVisual, len(r.gs.TradeRoutes))
 	for _, tr := range r.gs.TradeRoutes {
-		if tr == nil || tr.FromFactionID == "" || tr.ToFactionID == "" || tr.FromFactionID == tr.ToFactionID {
-			continue
-		}
-		if tr.IsPrivilegedMinor {
+		if tr == nil || tr.FromFactionID == "" || tr.ToFactionID == "" || tr.FromFactionID == tr.ToFactionID || tr.IsPrivilegedMinor {
 			continue
 		}
 		if onlyPlayerRoutes && tr.FromFactionID != playerID && tr.ToFactionID != playerID {
@@ -2135,6 +2148,20 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 		}
 		merged[key] = route
 	}
+	r.tradeMergedRouteCache[onlyPlayerRoutes] = merged
+	return merged
+}
+
+// drawTradeRoutes tüm aktif ticaret rotalarını harita üzerinde sade koridorlar olarak çizer.
+// Çift yönlü rotalar (A->B ve B->A) tek bir görsel hatta birleştirilir.
+// Uzak zoom'da yalnızca oyuncuyla ilgili rotalar gösterilerek çizgi karmaşası azaltılır.
+func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
+	r.animationTick += 12
+	if r.camScale < 0.6 {
+		return
+	}
+	onlyPlayerRoutes := r.camScale < 0.85
+	merged := r.mergedTradeRoutes(onlyPlayerRoutes)
 	r.tradeCorridors = r.tradeCorridors[:0]
 	centers := r.buildTradeCenters(len(r.gs.TradeCenters.Centers))
 	r.tradeCenters = append(r.tradeCenters[:0], centers...)

@@ -77,16 +77,23 @@ func (s *GameState) RegionGranaryStorageCapacity(region *world.Region) int {
 	return capacity
 }
 
-// PreviewRegionalLogisticsStatus, henüz ekonomi çözümlemesi bu bölge için
-// snapshot üretmemişse panelin kullanacağı yan etkisiz ikmal önizlemesidir.
+// PreviewRegionalLogisticsStatuses, henüz ekonomi çözümlemesi snapshot
+// üretmemişse panelin kullanacağı tüm bölgelerin yan etkisiz ikmal
+// önizlemesini tek geçişte üretir.
 //
-// Merkez rezervi desteği sınırlı ve bölge sırasına bağlı olduğu için yalnızca
-// istenen bölgeye bakarken bile başkent-öncelikli sırayı korur. Filo yükü burada
-// tüketilmez; yalnızca panelde gösterilecek mevcut katkı hesaplanır.
-func (s *GameState) PreviewRegionalLogisticsStatus(regionID world.RegionID) (RegionLogisticsStatus, bool) {
-	if s == nil || regionID == "" {
-		return RegionLogisticsStatus{}, false
+// Merkez rezervi desteği sınırlı ve bölge sırasına bağlı olduğu için tek bir
+// bölgeyi hesaplamak bile önceki bölgelerin sırasını gerektirir. Sonuç kümesini
+// bir defada üretmek, panelin her çiziminde aynı global taramayı tekrarlamayı
+// önler. Filo yükü burada tüketilmez; yalnızca gösterilecek mevcut katkı
+// hesaplanır.
+func (s *GameState) PreviewRegionalLogisticsStatuses() map[world.RegionID]RegionLogisticsStatus {
+	if s == nil {
+		return nil
 	}
+	if s.RegionalLogisticsPreviewCacheValid {
+		return s.RegionalLogisticsPreviewCache
+	}
+	statuses := make(map[world.RegionID]RegionLogisticsStatus)
 
 	armiesByRegion := make(map[world.RegionID][]*army.Army)
 	for _, currentArmy := range s.Armies {
@@ -178,11 +185,33 @@ func (s *GameState) PreviewRegionalLogisticsStatus(regionID world.RegionID) (Reg
 			status.Overload = demand - status.Capacity
 		}
 
-		if currentRegionID == regionID {
-			return status, demand > 0
+		if demand > 0 {
+			statuses[currentRegionID] = status
 		}
 	}
-	return RegionLogisticsStatus{}, false
+	s.RegionalLogisticsPreviewCache = statuses
+	s.RegionalLogisticsPreviewCacheValid = true
+	return statuses
+}
+
+// InvalidateRegionalLogisticsPreview, ordu/filo/rezerv veya bölge üretimi
+// değiştiğinde panel önizleme cache'ini bir sonraki isteğe bırakır.
+func (s *GameState) InvalidateRegionalLogisticsPreview() {
+	if s == nil {
+		return
+	}
+	s.RegionalLogisticsPreviewCacheValid = false
+}
+
+// PreviewRegionalLogisticsStatus, tek bölge isteyen eski çağrı noktaları için
+// tüm önizleme kümesinden ilgili sonucu seçer. GameState cache'i aynı state
+// invalid edilene kadar bu global taramayı bir kez tutar.
+func (s *GameState) PreviewRegionalLogisticsStatus(regionID world.RegionID) (RegionLogisticsStatus, bool) {
+	if s == nil || regionID == "" {
+		return RegionLogisticsStatus{}, false
+	}
+	status, ok := s.PreviewRegionalLogisticsStatuses()[regionID]
+	return status, ok
 }
 
 // ArmyLogisticsDamageVisible, önceki çözümlemede kaydedilmiş zayiatın güncel
@@ -190,6 +219,17 @@ func (s *GameState) PreviewRegionalLogisticsStatus(regionID world.RegionID) (Reg
 // kargosu sonradan değişebildiği için yalnızca ArmyLogistics snapshot'ına
 // bakmak, açığı kapanmış orduda eski kırmızı rozeti bırakabilir.
 func (s *GameState) ArmyLogisticsDamageVisible(armyID army.ArmyID) bool {
+	return s.armyLogisticsDamageVisible(armyID, s.PreviewRegionalLogisticsStatuses())
+}
+
+// ArmyLogisticsDamageVisibleFromPreview aynı global önizleme kümesini birden
+// fazla ordu için kullanır. Marker cache'i topluca yenilenirken her ordu için
+// lojistik ağacını baştan kurmamak için renderer tarafından kullanılır.
+func (s *GameState) ArmyLogisticsDamageVisibleFromPreview(armyID army.ArmyID, previews map[world.RegionID]RegionLogisticsStatus) bool {
+	return s.armyLogisticsDamageVisible(armyID, previews)
+}
+
+func (s *GameState) armyLogisticsDamageVisible(armyID army.ArmyID, previews map[world.RegionID]RegionLogisticsStatus) bool {
 	if s == nil || armyID == "" {
 		return false
 	}
@@ -201,7 +241,7 @@ func (s *GameState) ArmyLogisticsDamageVisible(armyID army.ArmyID) bool {
 	if target == nil || target.IsNaval {
 		return true
 	}
-	if preview, ok := s.PreviewRegionalLogisticsStatus(target.RegionID); ok && preview.Overload <= 0 {
+	if preview, ok := previews[target.RegionID]; ok && preview.Overload <= 0 {
 		return false
 	}
 	return true

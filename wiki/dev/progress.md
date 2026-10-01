@@ -7,6 +7,16 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-10-01: Harita dışındaki pahalı yardımcı yollar da cache'lendi. Bölgesel
+  lojistik önizlemesi tüm bölgeler için GameState runtime cache'inde tek geçişte
+  üretiliyor ve hareket/ikmal/harita state değişimlerinde invalid ediliyor.
+  Ticaret rotalarının faction birleştirmesi ve deniz bölgesi shortest-path
+  araması state değişmediği sürece frame başına tekrarlanmıyor. Settlement label adayları, ölçüleri,
+  sıralaması ve çakışma kararları sabit kamera zoom/state anahtarında korunuyor;
+  pan sırasında yalnız world-to-screen projeksiyonu yapılıyor. Regression:
+  `internal/state/regional_logistics_preview_test.go` içindeki cache invalidation
+  testi; doğrulama: `go test ./internal/render ./internal/state ./internal/game -count=1`.
+
 - 2026-10-01: Tur çözümlemesinde çatışmadan kaynaklanan kara ordusu ve donanma
   kayıpları artık geçici ortak kayıtta toplanıyor. Oyuncu turuna dönmeden önce
   kayıp veya tamamen yok olma yaşanan çatışmalar için yalnızca `Tamam` ile

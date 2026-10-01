@@ -74,6 +74,37 @@ func TestPreviewRegionalLogisticsIncludesSettlementGranaryAndReserveSupport(t *t
 	}
 }
 
+func TestPreviewRegionalLogisticsStatusesUsesInvalidatableCache(t *testing.T) {
+	const regionID = world.RegionID("front")
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			regionID: {ID: regionID, OwnerID: "player"},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: "player", RegionID: regionID, Units: []army.Unit{{TypeID: "infantry"}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", GrainUpkeep: 10},
+		},
+	}
+
+	first := gs.PreviewRegionalLogisticsStatuses()[regionID]
+	gs.Armies["army"].Units = append(gs.Armies["army"].Units, army.Unit{TypeID: "infantry"})
+	withoutInvalidation := gs.PreviewRegionalLogisticsStatuses()[regionID]
+	if withoutInvalidation.Demand != first.Demand {
+		t.Fatalf("cache invalid olmadan talep değişti: ilk=%d, sonra=%d", first.Demand, withoutInvalidation.Demand)
+	}
+
+	gs.InvalidateRegionalLogisticsPreview()
+	afterInvalidation := gs.PreviewRegionalLogisticsStatuses()[regionID]
+	if afterInvalidation.Demand <= first.Demand {
+		t.Fatalf("cache invalidation sonrası yeni talep hesaplanmadı: ilk=%d, yeni=%d", first.Demand, afterInvalidation.Demand)
+	}
+}
+
 func TestArmyLogisticsDamageVisibleUsesCurrentNavalSupplyPreview(t *testing.T) {
 	const factionID = faction.FactionID("player")
 	const landID = world.RegionID("coastal_front")

@@ -5765,7 +5765,7 @@ func regionPanelLogisticsStatus(gs *state.GameState, region *world.Region) (stat
 	// Hareket veya henüz tamamlanmamış ilk çözümleme snapshot'ı sildiğinde
 	// yalnızca yerel üretimi göstermek hatalıdır. İkmal desteği, ambar ve merkez
 	// rezervi de çözümlemedeki ortak, yan etkisiz önizlemeden alınır.
-	if status, ok := gs.PreviewRegionalLogisticsStatus(region.ID); ok {
+	if status, ok := gs.PreviewRegionalLogisticsStatuses()[region.ID]; ok {
 		if status.Overload < 0 {
 			status.Overload = 0
 		}

@@ -69,29 +69,30 @@ const MapScale = 1
 
 // WorldMap ülke shape'lerinden üretilen dünya harita dokusunu yönetir.
 type WorldMap struct {
-	img                *ebiten.Image
-	basePixels         []byte
-	dispPixels         []byte
-	baseRegionAt       []uint16         // region paint baseline'i: override oncesi atama
-	regionAt           []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
-	regionIDs          []world.RegionID // regionIDs[0] = "" (boş)
-	regionIdx          map[world.RegionID]uint16
-	regionPx           map[world.RegionID][]int
-	shapeRasterPixels  map[string][]int // shape icindeki base raster pikselleri
-	regionAnchor       map[world.RegionID][2]int
-	settlementAnchor   map[settlementAnchorKey][2]int
-	primarySettlement  map[world.RegionID][2]int
-	seaIdx             map[uint16]bool // deniz bölgesi indeksleri
-	borderSegments     []mapBorderSegment
-	borderStyles       []uint8
-	blockadeFractions  []float32 // kara-deniz segmentinin abluka ile kaplanan [0,1] oranı
-	borderVersion      uint64
-	hasBgImage         bool
-	ownerDirty         bool
-	selected           world.RegionID
-	currentMode        MapMode
-	diplomacySignature uint64
-	signatureValid     bool
+	img                     *ebiten.Image
+	basePixels              []byte
+	dispPixels              []byte
+	baseRegionAt            []uint16         // region paint baseline'i: override oncesi atama
+	regionAt                []uint16         // 0 = boş/deniz, 1..N = bölge indeksi
+	regionIDs               []world.RegionID // regionIDs[0] = "" (boş)
+	regionIdx               map[world.RegionID]uint16
+	regionPx                map[world.RegionID][]int
+	shapeRasterPixels       map[string][]int // shape icindeki base raster pikselleri
+	regionAnchor            map[world.RegionID][2]int
+	settlementAnchor        map[settlementAnchorKey][2]int
+	primarySettlement       map[world.RegionID][2]int
+	settlementAnchorVersion uint64
+	seaIdx                  map[uint16]bool // deniz bölgesi indeksleri
+	borderSegments          []mapBorderSegment
+	borderStyles            []uint8
+	blockadeFractions       []float32 // kara-deniz segmentinin abluka ile kaplanan [0,1] oranı
+	borderVersion           uint64
+	hasBgImage              bool
+	ownerDirty              bool
+	selected                world.RegionID
+	currentMode             MapMode
+	diplomacySignature      uint64
+	signatureValid          bool
 }
 
 type countryShapeFile struct {
@@ -638,12 +639,14 @@ func (wm *WorldMap) UpdateSettlementAnchor(gs *state.GameState, rid world.Region
 	if index == region.PrimarySettlementIndex() {
 		wm.primarySettlement[rid] = [2]int{ax, ay}
 	}
+	wm.settlementAnchorVersion++
 }
 
 func (wm *WorldMap) RebuildSettlementAnchors(gs *state.GameState) {
 	clear(wm.settlementAnchor)
 	clear(wm.primarySettlement)
 	wm.computeSettlementAnchors(gs)
+	wm.settlementAnchorVersion++
 }
 
 func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID, mode MapMode) {

@@ -329,6 +329,15 @@ type Renderer struct {
 	armyGroupDisplayOrder    map[armyDisplayGroupKey]map[army.ArmyID]uint64
 	nextArmyDisplayOrder     uint64
 	regionLabelBuf           []settlementDraw
+	regionLabelStaticBuf     []settlementDraw
+	regionLabelStaticKey     uint64
+	regionLabelStaticGS      *state.GameState
+	regionLabelStaticMap     *WorldMap
+	regionLabelStaticValid   bool
+	regionLabelStaticVersion uint64
+	regionLabelDrawKey       uint64
+	regionLabelDrawValid     bool
+	regionLabelDrawVisible   []bool
 	labelRectBuf             []screenRect
 	regionLabelMeasureCache  map[settlementLabelMeasureKey]float64
 	merchantTradeMainPortIDs map[string]merchantTradeMainPortRef
@@ -337,6 +346,13 @@ type Renderer struct {
 	tradeCenters             []tradeCenterVisual
 	tradeCenterDrawOrder     []int
 	tradeCenterIdx           int
+	tradeOverlayRevision     uint64
+	tradeMergedRouteCache    map[bool]map[string]tradeRouteVisual
+	tradeMergedRouteCacheGS  *state.GameState
+	tradeMergedRouteCacheRev uint64
+	tradeSeaPathCache        map[string][]world.RegionID
+	tradeSeaPathCacheGS      *state.GameState
+	tradeSeaPathCacheRev     uint64
 
 	editSelectedRegion                world.RegionID
 	editSelectedSettlement            int
@@ -993,7 +1009,23 @@ func (r *Renderer) MarkMapDirty() {
 		r.worldMap.MarkDirty()
 	}
 	r.armyIconLayoutValid = false
+	r.invalidateRegionLabelStatic()
+	if r.gs != nil {
+		r.gs.InvalidateRegionalLogisticsPreview()
+	}
+	r.tradeOverlayRevision++
+	r.tradeMergedRouteCache = nil
+	r.tradeSeaPathCache = nil
 	r.invalidateMovementReachability()
+}
+
+func (r *Renderer) invalidateRegionLabelStatic() {
+	if r == nil {
+		return
+	}
+	r.regionLabelStaticValid = false
+	r.regionLabelDrawValid = false
+	r.regionLabelStaticVersion++
 }
 
 func (r *Renderer) playArmySelectionSound(aid army.ArmyID) {
@@ -1381,6 +1413,11 @@ func RefreshFactionHistoricalVisuals(gs *state.GameState) {
 func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
 	r.cancelEditMapBuild()
 	r.gs = gs
+	r.invalidateRegionLabelStatic()
+	gs.InvalidateRegionalLogisticsPreview()
+	r.tradeOverlayRevision++
+	r.tradeMergedRouteCache = nil
+	r.tradeSeaPathCache = nil
 	r.terrainAreaImageDirty = true
 	r.RefreshAllArmyLogisticsBadges()
 	r.invalidateDiplomacyCache()
@@ -3553,7 +3590,10 @@ type armyDisplayGroupKey struct {
 type settlementDraw struct {
 	Region      *world.Region
 	Index       int
+	StaticIndex int
 	Text        string
+	TextW       float64
+	WX, WY      float64
 	TextX       float64
 	X, Y        float64
 	W, H        float64
@@ -4605,6 +4645,7 @@ func (r *Renderer) RefreshArmyLogisticsBadge(aid army.ArmyID) {
 	if r == nil || r.gs == nil || aid == "" {
 		return
 	}
+	r.gs.InvalidateRegionalLogisticsPreview()
 	if r.armyLogisticsBadgeVisible == nil {
 		r.armyLogisticsBadgeVisible = make(map[army.ArmyID]bool)
 	}
@@ -4623,9 +4664,10 @@ func (r *Renderer) RefreshAllArmyLogisticsBadges() {
 	} else {
 		clear(r.armyLogisticsBadgeVisible)
 	}
+	previews := r.gs.PreviewRegionalLogisticsStatuses()
 	for aid, status := range r.gs.ArmyLogistics {
 		if status.TotalHPDamage > 0 {
-			r.RefreshArmyLogisticsBadge(aid)
+			r.armyLogisticsBadgeVisible[aid] = r.gs.ArmyLogisticsDamageVisibleFromPreview(aid, previews)
 		}
 	}
 }
@@ -4936,54 +4978,63 @@ func armyIconCountColors(bg color.RGBA) (color.RGBA, color.RGBA) {
 
 // drawRegionLabels zoom yeterliyse bölgedeki yerleşim noktalarını ve adlarını yazar.
 func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIconPos) {
-	if r.camScale <= 0 {
+	if r == nil || r.gs == nil || r.camScale <= 0 {
 		return
+	}
+	staticLabels := r.regionLabelStatic()
+	if len(staticLabels) == 0 {
+		return
+	}
+	if !r.regionLabelDrawValid || r.regionLabelDrawKey != r.regionLabelStaticKey || len(r.regionLabelDrawVisible) != len(staticLabels) || r.armyMovementAnimation.visualActive {
+		r.regionLabelDrawVisible = r.regionLabelDrawVisible[:len(staticLabels)]
+		for i := range staticLabels {
+			visible := staticLabels[i].DrawLabel
+			if visible {
+				rect := screenRect{X: staticLabels[i].X, Y: staticLabels[i].Y, W: staticLabels[i].W, H: staticLabels[i].H}
+				for previous := 0; previous < i; previous++ {
+					if !r.regionLabelDrawVisible[previous] {
+						continue
+					}
+					previousRect := screenRect{X: staticLabels[previous].X, Y: staticLabels[previous].Y, W: staticLabels[previous].W, H: staticLabels[previous].H}
+					if rectIntersects(expandRect(rect, 4), expandRect(previousRect, 4)) {
+						visible = false
+						break
+					}
+				}
+				if visible {
+					for _, pos := range armyPositions {
+						armyRect := screenRect{X: float64(pos.X) - 15, Y: float64(pos.Y) - 15, W: 30, H: 30}
+						if rectIntersects(expandRect(rect, 3), armyRect) {
+							visible = false
+							break
+						}
+					}
+				}
+			}
+			r.regionLabelDrawVisible[i] = visible
+		}
+		r.regionLabelDrawKey = r.regionLabelStaticKey
+		r.regionLabelDrawValid = true
 	}
 
 	labelCol := color.RGBA{255, 255, 255, 220}
 	shadowCol := color.RGBA{0, 0, 0, 160}
-
 	r.regionLabelBuf = r.regionLabelBuf[:0]
-	clear(r.merchantTradeMainPortIDs)
-	tradeCenterRegion := map[world.RegionID]struct{}{}
-	if r.mapMode == MapModeTrade {
-		for _, def := range r.gs.TradeCenters.Centers {
-			if !def.ActiveInYear(r.gs.Year) || def.OffMap {
-				continue
-			}
-			tradeCenterRegion[def.ID] = struct{}{}
-		}
-	}
-	for _, region := range r.gs.Regions {
-		if region.IsSea || region.IsLocked {
+	r.labelRectBuf = r.labelRectBuf[:0]
+	for _, staticItem := range staticLabels {
+		sx, sy := r.worldToScreen(staticItem.WX, staticItem.WY)
+		if sx < -50 || sx > ScreenWidth+50 || sy < -20 || sy > ScreenHeight+20 {
 			continue
 		}
-		if r.mapMode == MapModeTrade {
-			if _, isTradeCenter := tradeCenterRegion[region.ID]; isTradeCenter {
-				r.appendTradeCenterSettlementDraws(region)
-				continue
-			}
-		}
-		r.appendSettlementDraws(region)
+		item := staticItem
+		item.SX, item.SY = sx, sy
+		item.X = sx - item.W/2
+		item.TextX = item.X + (item.W - item.TextW)
+		item.Y = sy + 16
+		r.regionLabelBuf = append(r.regionLabelBuf, item)
 	}
-
-	sort.SliceStable(r.regionLabelBuf, func(i, j int) bool {
-		if r.regionLabelBuf[i].Priority != r.regionLabelBuf[j].Priority {
-			return r.regionLabelBuf[i].Priority > r.regionLabelBuf[j].Priority
-		}
-		if r.regionLabelBuf[i].SY != r.regionLabelBuf[j].SY {
-			return r.regionLabelBuf[i].SY < r.regionLabelBuf[j].SY
-		}
-		if r.regionLabelBuf[i].SX != r.regionLabelBuf[j].SX {
-			return r.regionLabelBuf[i].SX < r.regionLabelBuf[j].SX
-		}
-		return r.regionLabelBuf[i].Region.ID < r.regionLabelBuf[j].Region.ID
-	})
-
 	hoverRID, hoverIdx := r.settlementHoverCandidate()
 	selectedRID, selectedIdx, selectedOK := r.selectedSettlementIdentity()
-
-	r.labelRectBuf = r.labelRectBuf[:0]
 	for _, item := range r.regionLabelBuf {
 		settlement := world.Settlement{}
 		if item.Region != nil && item.Index >= 0 && item.Index < len(item.Region.Settlements) {
@@ -4997,34 +5048,15 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			labelColor = ColorGold
 			shadowColor = color.RGBA{34, 22, 8, 210}
 		}
-		if !item.DrawLabel && !forceLabel {
+		drawLabel := r.regionLabelDrawVisible[item.StaticIndex]
+		if !drawLabel && !forceLabel {
 			isPrimary := item.Region != nil && item.Index == item.Region.PrimarySettlementIndex()
 			r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
 			r.drawSettlementSelectionOverlay(screen, settlement, item.Region, item.Index, float32(item.SX), float32(item.SY))
 			continue
 		}
 
-		rect := screenRect{X: item.X, Y: item.Y, W: item.W, H: item.H}
-		drawText := true
-		if !forceLabel {
-			for _, used := range r.labelRectBuf {
-				if rectIntersects(expandRect(rect, 4), expandRect(used, 4)) {
-					drawText = false
-					break
-				}
-			}
-		}
-		if drawText && !forceLabel {
-			for _, pos := range armyPositions {
-				armyRect := screenRect{X: float64(pos.X) - 15, Y: float64(pos.Y) - 15, W: 30, H: 30}
-				if rectIntersects(expandRect(rect, 3), armyRect) {
-					drawText = false
-					break
-				}
-			}
-		}
-
-		if drawText {
+		if drawLabel || forceLabel {
 			variant := gameui.TextSmall
 			if r.camScale >= 1.0 {
 				variant = gameui.TextMedium
@@ -5035,13 +5067,76 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 			outlined := gameui.NewOutlinedLabel(gameui.Rect{X: item.TextX, Y: item.Y}, item.Text, labelColor, shadowColor, variant, gameui.TextAlignStart)
 			outlined.Offsets = [][2]float64{{1, 1}}
 			outlined.Draw(screen, renderText)
-			r.labelRectBuf = append(r.labelRectBuf, rect)
 		}
 
 		isPrimary := item.Region != nil && item.Index == item.Region.PrimarySettlementIndex()
 		r.drawSettlementMarker(screen, item.Region, settlement, float32(item.SX), float32(item.SY), isPrimary)
 		r.drawSettlementSelectionOverlay(screen, settlement, item.Region, item.Index, float32(item.SX), float32(item.SY))
 	}
+}
+
+func (r *Renderer) regionLabelStatic() []settlementDraw {
+	if r == nil || r.gs == nil || r.worldMap == nil {
+		return nil
+	}
+	key := math.Float64bits(r.camScale)
+	key ^= uint64(r.mapMode+1) * 0x9e3779b97f4a7c15
+	key ^= r.worldMap.settlementAnchorVersion * 0x517cc1b727220a95
+	key ^= r.regionLabelStaticVersion * 0x6eed0e9da4d94a4f
+	key ^= r.armyIconLayoutKey
+	if r.regionLabelStaticValid && r.regionLabelStaticKey == key && r.regionLabelStaticGS == r.gs && r.regionLabelStaticMap == r.worldMap {
+		return r.regionLabelStaticBuf
+	}
+
+	r.regionLabelBuf = r.regionLabelBuf[:0]
+	clear(r.merchantTradeMainPortIDs)
+	tradeCenterRegion := map[world.RegionID]struct{}{}
+	if r.mapMode == MapModeTrade {
+		for _, def := range r.gs.TradeCenters.Centers {
+			if !def.ActiveInYear(r.gs.Year) || def.OffMap {
+				continue
+			}
+			tradeCenterRegion[def.ID] = struct{}{}
+		}
+	}
+	for _, region := range r.gs.Regions {
+		if region == nil || region.IsSea || region.IsLocked {
+			continue
+		}
+		if r.mapMode == MapModeTrade {
+			if _, isTradeCenter := tradeCenterRegion[region.ID]; isTradeCenter {
+				r.appendTradeCenterSettlementDraws(region)
+				continue
+			}
+		}
+		r.appendSettlementDraws(region)
+	}
+	sort.SliceStable(r.regionLabelBuf, func(i, j int) bool {
+		left, right := r.regionLabelBuf[i], r.regionLabelBuf[j]
+		if left.Priority != right.Priority {
+			return left.Priority > right.Priority
+		}
+		if left.WY != right.WY {
+			return left.WY < right.WY
+		}
+		if left.WX != right.WX {
+			return left.WX < right.WX
+		}
+		if left.Region.ID != right.Region.ID {
+			return left.Region.ID < right.Region.ID
+		}
+		return left.Index < right.Index
+	})
+	r.regionLabelStaticBuf = append(r.regionLabelStaticBuf[:0], r.regionLabelBuf...)
+	for index := range r.regionLabelStaticBuf {
+		r.regionLabelStaticBuf[index].StaticIndex = index
+	}
+	r.regionLabelStaticKey = key
+	r.regionLabelStaticGS = r.gs
+	r.regionLabelStaticMap = r.worldMap
+	r.regionLabelStaticValid = true
+	r.regionLabelDrawValid = false
+	return r.regionLabelStaticBuf
 }
 
 func (r *Renderer) appendSettlementDraws(region *world.Region) {
@@ -5099,10 +5194,6 @@ func (r *Renderer) appendTradeCenterSettlementDraws(region *world.Region) {
 }
 
 func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text string, sx, sy float64, drawLabel bool, priority int, capitalIcon bool) {
-	if sx < -50 || sx > ScreenWidth+50 || sy < -20 || sy > ScreenHeight+20 {
-		return
-	}
-
 	face := FaceSmall
 	if r.camScale >= 1.0 {
 		face = FaceMed
@@ -5128,10 +5219,14 @@ func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text st
 	if face == FaceMed {
 		h = 20
 	}
+	wx, wy := r.screenToWorld(sx, sy)
 	r.regionLabelBuf = append(r.regionLabelBuf, settlementDraw{
 		Region: region,
 		Index:  index,
 		Text:   text,
+		TextW:  textW,
+		WX:     wx,
+		WY:     wy,
 		TextX:  lx + iconAdvance,
 		X:      lx,
 		// Etiket noktaların altına çizilir; okunabilirlik artar.
