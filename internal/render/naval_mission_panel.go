@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"mapp-game-go/internal/army"
-	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -152,16 +151,16 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 	}
 	options := make([]navalMissionOption, 0, 6)
 	if fleet.IsDocked() {
-		capital, _, _, ok := gs.FactionCapital(faction.FactionID(fleet.OwnerID))
-		if ok && capital != nil && fleet.DockedRegionID == capital.ID && len(fleet.EmbarkedUnits) == 0 {
+		centralPort := gs.SupplyCargoPortRegion(fleet.OwnerID)
+		if centralPort != nil && fleet.DockedRegionID == centralPort.ID && len(fleet.EmbarkedUnits) == 0 {
 			loaded := gs.SupplyCargoLoadedAmount(fleet.ID)
 			options = append(options,
 				navalSupplyLoadOption(gs, fleet, loaded, 1),
 				navalSupplyLoadOption(gs, fleet, loaded, 3),
 				navalSupplyLoadOption(gs, fleet, loaded, 5),
 			)
-			if fleet.SupplyCargo.Grain > 0 {
-				options = append(options, navalMissionOption{kind: "unload_supply", unloadSupply: true, label: "İkmal yükünü boşalt", description: "Merkez limanında kalan yükü devlet stokuna iade et.", effect: "Etki: filodaki tahıl geri alınır."})
+			if gs.SupplyCargoLoadedAmount(fleet.ID) > 0 {
+				options = append(options, navalMissionOption{kind: "unload_supply", unloadSupply: true, label: "İkmal yükünü boşalt", description: "Merkez limanında kalan yükü devlet stokuna iade et.", effect: "Etki: filodaki ikmal malları devlet stokuna iade edilir."})
 			}
 		}
 	}

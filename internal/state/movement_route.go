@@ -207,7 +207,7 @@ func (s *GameState) navalLandMovementAllowed(fleet *army.Army, target *world.Reg
 		return hasCargo
 	}
 	if targetOwnerID == fleet.OwnerID || s.movementOwnerCanTransit(fleet.OwnerID, targetOwnerID) {
-		return target.HasPortBuilding() || hasCargo
+		return target.HasPort() || hasCargo
 	}
 	// Düşman kıyıya çıkarma, mevcut hareket akışında savaş ilanı/temas
 	// kararına bırakılan son duraktır; rotanın içinden geçiş noktası değildir.

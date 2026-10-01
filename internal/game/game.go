@@ -5487,7 +5487,7 @@ func (g *Game) canDockFleetAtRegion(fleet *army.Army, targetRegion *world.Region
 	if !g.fleetsCanSharePort(fleet.OwnerID, targetRegion.OwnerID) {
 		return false
 	}
-	return targetRegion.HasPortBuilding()
+	return targetRegion.HasPort()
 }
 
 // applyConquestWithNavalEviction bölge sahipliği değiştiğinde limanda bekleyen

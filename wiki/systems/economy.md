@@ -30,7 +30,8 @@ Devletin tur başı efektif üretimi `GameState.FactionProductionSummary()` ile 
 ### Nakliye filosu ile ileri ikmal
 
 Nakliye filosu merkez limanında 1, 3 veya 5 turluk tahıl yükünü devlet
-stokundan alabilir. Yeni yük, filodaki mevcut `Army.SupplyCargo` üzerine eklenir;
+stokundan alabilir. Başkent bölgesinde liman varsa merkez liman odur; başkent
+limansızsa başkente en yakın kendi kıyı limanı (ör. Rodosto) kullanılır. Yeni yük, filodaki mevcut `Army.SupplyCargo` üzerine eklenir;
 filo kapasitesi dolana kadar yüklenir ve kapasiteyi aşan tahıl merkez stokunda
 kalır. Yük `Army.SupplyCargo` içinde save/load ile korunur ve
 merkez limanında boşaltıldığında iade edilir; asker taşımaya ayrılmış filo

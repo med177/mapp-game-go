@@ -68,8 +68,8 @@ func buildAINavalSupplyMission(ctx *StrategicContext) *aiNavalSupplyMission {
 					TargetRegionID: target.RegionID,
 					TargetSeaID:    seaID,
 				}
-				if capital, _, _, ok := gs.FactionCapital(ctx.FactionID); ok && capital != nil {
-					best.CapitalRegionID = capital.ID
+				if centralPort := gs.SupplyCargoPortRegion(string(ctx.FactionID)); centralPort != nil {
+					best.CapitalRegionID = centralPort.ID
 				}
 			}
 		}
@@ -81,11 +81,11 @@ func buildAINavalSupplyMission(ctx *StrategicContext) *aiNavalSupplyMission {
 	// Uygun mevcut filo yoksa hedef yine de seçilir; hazırlık safhası başkent
 	// limanında nakliye üretimini kuyruğa alır. Böylece AI yalnızca tesadüfen
 	// hazır bulunan filoları kullanmaya mahkûm kalmaz.
-	capital, _, _, ok := gs.FactionCapital(ctx.FactionID)
-	if !ok || capital == nil {
+	centralPort := gs.SupplyCargoPortRegion(string(ctx.FactionID))
+	if centralPort == nil {
 		return nil
 	}
-	capitalSea := aiSeaNeighbor(gs, capital)
+	capitalSea := aiSeaNeighbor(gs, centralPort)
 	if capitalSea == "" {
 		return nil
 	}
@@ -112,7 +112,7 @@ func buildAINavalSupplyMission(ctx *StrategicContext) *aiNavalSupplyMission {
 		TargetArmyID:    targetCandidate.ID,
 		TargetRegionID:  targetCandidate.RegionID,
 		TargetSeaID:     targetSea,
-		CapitalRegionID: capital.ID,
+		CapitalRegionID: centralPort.ID,
 	}
 }
 
@@ -121,8 +121,8 @@ func aiMakeNavalSupplyMission(gs *state.GameState, fleet, target *army.Army) *ai
 	if targetRegion := gs.Regions[target.RegionID]; targetRegion != nil {
 		mission.TargetSeaID, _ = aiBestNavalSupplySea(gs, fleet.RegionID, targetRegion)
 	}
-	if capital, _, _, ok := gs.FactionCapital(faction.FactionID(fleet.OwnerID)); ok && capital != nil {
-		mission.CapitalRegionID = capital.ID
+	if centralPort := gs.SupplyCargoPortRegion(fleet.OwnerID); centralPort != nil {
+		mission.CapitalRegionID = centralPort.ID
 	}
 	return mission
 }

@@ -149,6 +149,36 @@ func TestLoadSupplyCargoForTurnsLoadsOnlyAvailableStock(t *testing.T) {
 	}
 }
 
+func TestSupplyCargoUsesNearestOwnedPortWhenCapitalRegionHasNoPort(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", CapitalSettlementID: "capital_city", Grain: 100},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 5},
+			"soldier":   {ID: "soldier", Category: army.CategoryInfantry, GrainUpkeep: 10},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital":      {ID: "capital", OwnerID: "player", WorldX: 0, WorldY: 0, Settlements: []world.Settlement{{ID: "capital_city", Type: world.SettlementCity}}},
+			"central_port": {ID: "central_port", OwnerID: "player", WorldX: 1, WorldY: 1, Neighbors: []world.RegionID{"sea"}, Settlements: []world.Settlement{{ID: "central_port_settlement", Type: world.SettlementPort}}},
+			"sea":          {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"central_port"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {ID: "fleet", OwnerID: "player", IsNaval: true, DockedRegionID: "central_port", RegionID: "sea", Units: []army.Unit{{TypeID: "transport"}}},
+		},
+	}
+
+	if got := gs.SupplyCargoPortRegion("player"); got == nil || got.ID != "central_port" {
+		t.Fatalf("canonical merkez limanı = %v, want central_port", got)
+	}
+	if ok, reason := gs.LoadSupplyCargoAtCapital("fleet", economy.ResourceCost{Grain: 20}); !ok || reason != "" {
+		t.Fatalf("başkent dışındaki canonical merkez limanında yükleme reddedildi: %v, %q", ok, reason)
+	}
+	if got := gs.Armies["fleet"].SupplyCargo.Grain; got != 20 {
+		t.Fatalf("canonical merkez limanı kargosu = %d, want 20", got)
+	}
+}
+
 func TestConvertInvalidNavalBlockadesKeepsUnrelatedMissions(t *testing.T) {
 	gs := navalMissionTransitionState()
 	gs.Armies["patrol"] = &army.Army{

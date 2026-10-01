@@ -12,6 +12,20 @@ const (
 	navalEscortDefenseBonusCap      = 0.30
 )
 
+// SupplyCargoPortRegion, fraksiyonun ikmal yükü için canonical merkez limanını
+// döner. Başkent bölgesinde kullanılabilir liman varsa onu, yoksa başkente en
+// yakın kendi limanını seçer. Ticaret ve ikmal aynı merkez liman sözleşmesini
+// kullanmalıdır.
+func (s *GameState) SupplyCargoPortRegion(ownerID string) *world.Region {
+	if s == nil || ownerID == "" {
+		return nil
+	}
+	if capital, _, _, ok := s.FactionCapital(faction.FactionID(ownerID)); ok && capital != nil && capital.HasPort() {
+		return capital
+	}
+	return s.merchantTradePortRegion(ownerID)
+}
+
 // CanAssignNavalMission merkezi oyuncu filo görevi doğrulamasıdır. Renderer
 // yalnız adayları gösterir; gerçek state değişikliği bu kapıdan geçer.
 func (s *GameState) CanAssignNavalMission(fleetID army.ArmyID, mission army.NavalMission) (bool, string) {
@@ -119,8 +133,8 @@ func (s *GameState) CanLoadSupplyCargoAtCapital(fleetID army.ArmyID, cargo econo
 	if fleet == nil || !fleet.IsNaval || fleet.OwnerID == "" {
 		return false, "Yalnız geçerli bir devlet filosu yüklenebilir."
 	}
-	capital, _, _, ok := s.FactionCapital(factionID(fleet.OwnerID))
-	if !ok || capital == nil || !capital.HasPort() || fleet.DockedRegionID != capital.ID {
+	centralPort := s.SupplyCargoPortRegion(fleet.OwnerID)
+	if centralPort == nil || fleet.DockedRegionID != centralPort.ID {
 		return false, "İkmal yükü yalnızca devletin merkez limanında yüklenebilir."
 	}
 	if len(fleet.EmbarkedUnits) > 0 {
@@ -224,8 +238,8 @@ func (s *GameState) UnloadSupplyCargoAtCapital(fleetID army.ArmyID) (economy.Res
 	if fleet == nil || !fleet.IsNaval {
 		return economy.ResourceCost{}, false, "İkmal yükü yalnızca merkez limanında boşaltılabilir."
 	}
-	capital, _, _, ok := s.FactionCapital(factionID(fleet.OwnerID))
-	if !ok || capital == nil || fleet.DockedRegionID != capital.ID {
+	centralPort := s.SupplyCargoPortRegion(fleet.OwnerID)
+	if centralPort == nil || fleet.DockedRegionID != centralPort.ID {
 		return economy.ResourceCost{}, false, "İkmal yükü yalnızca merkez limanında boşaltılabilir."
 	}
 	cargo := fleet.SupplyCargo

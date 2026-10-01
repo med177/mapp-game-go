@@ -612,7 +612,7 @@ func InitializeLegacyFleetDocking(armies map[ArmyID]*Army, regions map[world.Reg
 		}
 		for _, nid := range seaRegion.Neighbors {
 			region := regions[nid]
-			if region == nil || region.IsSea || region.OwnerID != a.OwnerID || !region.HasPortBuilding() {
+			if region == nil || region.IsSea || region.OwnerID != a.OwnerID || !region.HasPort() {
 				continue
 			}
 			for _, settlement := range region.Settlements {
