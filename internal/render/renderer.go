@@ -1966,29 +1966,32 @@ func (r *Renderer) applyWorldSubImageGeoM(op *ebiten.DrawImageOptions, bounds im
 	op.GeoM.SetElement(0, 1, r.camScale*mapShearX)
 	op.GeoM.SetElement(1, 0, 0)
 	op.GeoM.SetElement(1, 1, r.camScale*mapPitchY)
-	op.GeoM.SetElement(0, 2, ScreenWidth/2-r.camScale*r.camX+r.camScale*mapShearX*(minY-r.camY)-r.camScale*minX)
+	// Alt görüntünün yerel (0,0) noktası dünya koordinatında (minX,minY)
+	// konumundadır; X ekseninde bu başlangıç ofseti çıkarılmamalı, eklenmelidir.
+	op.GeoM.SetElement(0, 2, ScreenWidth/2-r.camScale*r.camX+r.camScale*mapShearX*(minY-r.camY)+r.camScale*minX)
 	op.GeoM.SetElement(1, 2, ScreenHeight/2-r.camScale*mapPitchY*r.camY+r.camScale*mapPitchY*minY)
 }
 
 func (r *Renderer) selectedRegionOverlayColor(region *world.Region, mode MapMode) color.RGBA {
+	const overlayAlpha uint8 = 85
 	if region == nil {
 		return color.RGBA{}
 	}
 	if region.IsSea {
-		return color.RGBA{80, 180, 255, 120}
+		return color.RGBA{80, 180, 255, 100}
 	}
 	if mode == MapModeTrade && r.gs != nil && len(r.gs.TradeCenters.Centers) > 0 {
 		if index := nearestTradeCenterIndex(region, r.gs.TradeCenters.Centers, r.gs.Regions, r.gs.Year); index >= 0 && index < len(tradeNodeColors) {
 			col := tradeNodeColors[index]
-			return color.RGBA{col[0], col[1], col[2], 140}
+			return color.RGBA{col[0], col[1], col[2], uint8(overlayAlpha)}
 		}
 	}
 	if r.gs != nil {
 		if f := r.gs.Factions[faction.FactionID(region.OwnerID)]; f != nil {
-			return color.RGBA{f.Color[0], f.Color[1], f.Color[2], 140}
+			return color.RGBA{f.Color[0], f.Color[1], f.Color[2], uint8(overlayAlpha)}
 		}
 	}
-	return color.RGBA{245, 205, 80, 140}
+	return color.RGBA{245, 205, 80, uint8(overlayAlpha)}
 }
 
 // drawSelectedRegionOverlay, seçim vurgusunu sahiplik rasterından ayırır.
