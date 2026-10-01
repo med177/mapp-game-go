@@ -220,3 +220,47 @@ func TestMinorPrivilegeOfferEconomicAdvantageOverridesNegativeRelation(t *testin
 		t.Fatalf("ekonomik avantaj imtiyaz teklifini ezmedi: %#v", assessment)
 	}
 }
+
+func TestMinorPrivilegeOfferChanceIgnoresRelationScore(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"grantor":  {ID: "grantor", NameTR: "İmtiyaz Veren"},
+			"operator": {ID: "operator", NameTR: "İmtiyaz Alan"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("grantor", "operator"): {
+				FactionA: "grantor", FactionB: "operator", ScoreAToB: -100, ScoreBToA: -100, Stance: faction.StancePeace,
+			},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"parent": {ID: "parent", OwnerID: "grantor"},
+			"minor":  {ID: "minor", OwnerID: "grantor", IsMinorRegion: true, ParentRegionID: "parent"},
+		},
+	}
+
+	assessment := AssessMinorPrivilegeOffer(gs, "grantor", "operator", "minor")
+	if assessment.BlockReason != "" || assessment.Chance != 90 {
+		t.Fatalf("ilişki skoru imtiyaz zarını etkiledi: %#v", assessment)
+	}
+}
+
+func TestQueuedMinorPrivilegeOfferRemainsAssessable(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"grantor":  {ID: "grantor", NameTR: "İmtiyaz Veren"},
+			"operator": {ID: "operator", NameTR: "İmtiyaz Alan"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"parent": {ID: "parent", OwnerID: "grantor"},
+			"minor":  {ID: "minor", OwnerID: "grantor", IsMinorRegion: true, ParentRegionID: "parent"},
+		},
+	}
+
+	if !QueueMinorPrivilegeOffer(gs, "grantor", "operator", "minor", 20, "test") {
+		t.Fatal("imtiyaz teklifi kuyruğa alınmadı")
+	}
+	assessment := AssessMinorPrivilegeOffer(gs, "grantor", "operator", "minor")
+	if assessment.BlockReason != "" || assessment.Chance != 90 {
+		t.Fatalf("kuyruğa alınan imtiyaz teklifi AI değerlendirmesinde bloklandı: %#v", assessment)
+	}
+}

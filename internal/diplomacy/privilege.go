@@ -16,12 +16,6 @@ const PrivilegeRevocationRelationPenalty = 10
 // oluşturduğu karşılıklı ilişki artışıdır.
 const PrivilegeOfferRelationBonus = 15
 
-// privilegeEconomicBenefitRelationWeight, altın/tur cinsinden ekonomik
-// faydanın ilişki puanı yüküyle karşılaştırıldığı denge katsayısıdır. İlişki
-// skoru bir altın gibi bire bir sayılmaz; aksi halde düşük gelirli minorlar
-// -100 ilişki durumunda gereksiz yere hiç teklif alamaz.
-const privilegeEconomicBenefitRelationWeight = 20
-
 // MinorPrivilegeOfferAssessment, imtiyaz teklifinin hedef devlet açısından
 // ekonomik ve diplomatik kabul edilebilirliğini taşır.
 type MinorPrivilegeOfferAssessment struct {
@@ -79,12 +73,16 @@ func MinorPrivilegeOfferBlockReason(gs *state.GameState, actor, target faction.F
 	return ""
 }
 
-// AssessMinorPrivilegeOffer, teklif alacak devletin imtiyazdan elde edeceği
-// yerel payı ve kurulacak rotanın tahmini brüt ticaret değerini ilişki yüküyle
-// karşılaştırır. Ekonomik fayda ilişki yükünü ölçeklendirilmiş olarak aşarsa
-// ilişki skoru kararı ezemez; AI bu durumda %90 kabul şansına zar atar.
+// AssessMinorPrivilegeOffer, geçerli bir imtiyaz teklifinin ekonomik bilgisini
+// raporlar. İmtiyaz teklifinde ilişki skoru kabul kararına katılmaz; geçerli
+// teklif doğrudan %90 kabul zarına girer. Savaş, realm ve taraf geçerliliği
+// gibi temel diplomasi engelleri yine uygulanır.
 func AssessMinorPrivilegeOffer(gs *state.GameState, actor, target faction.FactionID, rid world.RegionID) MinorPrivilegeOfferAssessment {
-	if reason := MinorPrivilegeOfferBlockReason(gs, actor, target, rid); reason != "" {
+	// Teklif oyuncu tarafından AI'ye gönderildiğinde önce kuyruğa alınır,
+	// ardından aynı kayıt AI'nin kabul kararına sunulur. Bu aşamada bekleyen
+	// teklif ve kota kontrollerini tekrar çalıştırmak değerlendirmeyi yanlış
+	// biçimde "zaten bekliyor" diye bloklamamalıdır.
+	if reason := MinorPrivilegeOfferBlockReasonWithoutQueueChecks(gs, actor, target, rid); reason != "" {
 		return MinorPrivilegeOfferAssessment{BlockReason: reason}
 	}
 	region := gs.Regions[rid]
@@ -94,35 +92,11 @@ func AssessMinorPrivilegeOffer(gs *state.GameState, actor, target faction.Factio
 	tradeRoute.IsPrivilegedMinor = true
 	tradeValue := gs.PrivilegedTradeRouteValue(tradeRoute, tradeRoute.AmountPerTurn)
 	economicBenefit := localShare + tradeValue
-	relationScore := RelationScore(gs, actor, target)
-	relationBurden := maxInt(0, -relationScore)
-	minimumEconomicBenefit := (relationBurden + privilegeEconomicBenefitRelationWeight - 1) / privilegeEconomicBenefitRelationWeight
-	if minimumEconomicBenefit < 1 {
-		minimumEconomicBenefit = 1
-	}
-	economicAdvantage := economicBenefit >= minimumEconomicBenefit
-	chance := 45 + relationScore/4
-	if economicAdvantage {
-		chance = 90
-	}
-	if chance < 0 {
-		chance = 0
-	}
-	if chance > 95 {
-		chance = 95
-	}
 	return MinorPrivilegeOfferAssessment{
-		Chance:            chance,
+		Chance:            90,
 		EconomicBenefit:   economicBenefit,
-		EconomicAdvantage: economicAdvantage,
+		EconomicAdvantage: economicBenefit > 0,
 	}
-}
-
-func maxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 // RevokeMinorPrivilege, egemen devletin kendi imtiyazlı minor bölgesindeki

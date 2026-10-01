@@ -15,10 +15,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `internal/diplomacy/privilege_test.go`, `internal/ai/privilege_test.go`,
   `internal/render/renderer_input_test.go`.
 
-- 2026-10-01: AI imtiyaz tekliflerinde hedefin yerel gelir ve tahmini imtiyaz
-  rotası ticaret değerini negatif ilişki yüküyle karşılaştırıyor. Ekonomik
-  avantaj ilişkiyi aşıyorsa kabul kararı kampanya seed'li `%90` zar ile veriliyor;
-  aksi halde ilişki skoru kabul şansını etkiliyor. Regression:
+- 2026-10-01: AI imtiyaz tekliflerinde geçerli teklifin ekonomik bilgisini
+  hesaplıyor ancak kabul kararında ilişki skorunu kullanmıyor. Kabul kararı
+  kampanya seed'li `%90` zar ile veriliyor; savaş, realm ve taraf geçerliliği
+  engelleri korunuyor. Regression:
   `internal/diplomacy/privilege_test.go`.
 
 - 2026-10-01: İmtiyazlı ticaret rotaları artık normal ödeme/gümrük olmadan

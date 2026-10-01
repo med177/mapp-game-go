@@ -24,10 +24,10 @@ otomatik imtiyaz rotasını kurar ve ilişki bonusunu uygular.
 
 İmtiyaz teklifini değerlendirirken hedef AI'nin alacağı minor yerel gelir ile
 kurulacak imtiyaz rotasının tahmini brüt ticaret değeri birlikte hesaplanır.
-Bu ekonomik avantaj negatif ilişki skorunun yükünü aşarsa ilişki skoru kararı
-ezemez; AI kampanya seed'i, tur, taraflar ve bölge kimliğinden üretilen zar ile
-`%90` kabul olasılığı kullanır. Avantaj ilişki yükünü aşmıyorsa ilişki skoru
-kabul şansını düşürmeye devam eder.
+İmtiyaz teklifi geçerli olduğu sürece ilişki skoru kabul kararına katılmaz; AI
+kampanya seed'i, tur, taraflar ve bölge kimliğinden üretilen zar ile `%90`
+kabul olasılığı kullanır. Savaş, aynı realm, elenmiş/sanal taraf veya geçersiz
+minor bölge gibi temel geçerlilik engelleri korunur.
 
 Kara kapasitesi artık temel bölge yuvalarına ek olarak kışla seviyelerini de hesaba katar; kışla yatırımı bu nedenle hem üretim hızını hem de sahaya çıkarılabilecek toplam asker sayısını artırır. Harita veya faction kimlikleri değiştiğinde `LoadAIConfig` sonrasında AI objective, readiness, hedef ve faction claim referansları yükleme sınırında doğrulanır. Doğrudan cephe kuramayan ve uzun süre hiçbir muharebe/deniz harekâtı üretmeyen eski savaşlar stalemate barışına açılır; doğrudan tehdit altında olup cephede üstün olan taraf ise sınırlı karşı taarruz yapabilir.
 
