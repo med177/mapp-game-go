@@ -16,6 +16,14 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 	if err != nil {
 		t.Fatalf("1300 event verisi yüklenemedi: %v", err)
 	}
+	regions, err := world.LoadRegions(filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "data", "regions.json"))
+	if err != nil {
+		t.Fatalf("1300 bölge verisi yüklenemedi: %v", err)
+	}
+	if err := world.LoadRegionSettlements(filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "data", "settlements.json"), regions); err != nil {
+		t.Fatalf("1300 yerleşim verisi yüklenemedi: %v", err)
+	}
+	scenarioState := &state.GameState{Regions: regions}
 	required := map[string]bool{
 		"ottoman_turkmen_gazi_migration_1310":      false,
 		"ottoman_bithynian_campaign_muster_1321":   false,
@@ -61,6 +69,28 @@ func TestLoad1300HistoricalEventChains(t *testing.T) {
 				event.Choices[0].Effect.ImperialSuccession.EmperorID != "austria_duchy" ||
 				!event.Choices[0].Effect.ImperialSuccession.ElectionLocked {
 				t.Fatal("Habsburg imparatorluk event'inin seçim kilidi etkisi eksik")
+			}
+		}
+		if event.ID == "ottoman_edirne_payitaht" {
+			targetID := ""
+			if len(event.Choices) > 0 {
+				targetID = event.Choices[0].Effect.CapitalSettlementID
+			}
+			if len(event.Choices) == 0 || targetID != "thrace_edirne" {
+				t.Fatalf("Edirne payitaht event'i gerçek settlement ID'sini kullanmıyor: %q", targetID)
+			}
+			if region, _, _, ok := scenarioState.FindSettlementByID(targetID); !ok || region.ID != "thrace" {
+				t.Fatalf("Edirne payitaht hedefi senaryo settlement'ına çözümlenemedi: %q", targetID)
+			}
+			regions["thrace"].OwnerID = "ottoman"
+			scenarioState.Factions = map[faction.FactionID]*faction.Faction{
+				"ottoman": {ID: "ottoman", CapitalSettlementID: "bilecik_frontier_sogut"},
+			}
+			if _, ok := ApplyChoice(scenarioState, event, 0); !ok {
+				t.Fatal("Edirne payitaht seçimi uygulanamadı")
+			}
+			if got := scenarioState.Factions["ottoman"].PendingCapitalSettlementID; got != targetID {
+				t.Fatalf("Edirne payitaht seçimi taşıma kuyruğuna alınmadı: got %q want %q", got, targetID)
 			}
 		}
 		if event.ID == "hussite_uprising_1419" && !containsEventFlag(event.RequiresFlags, "jan_hus_executed_1415") {

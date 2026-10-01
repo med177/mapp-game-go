@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
@@ -57,6 +58,10 @@ func (r *Renderer) ShowCombatSummary(report CombatSummaryReport) {
 	if r == nil || len(report.Entries) == 0 {
 		return
 	}
+	report.Entries = filterPlayerRelatedCombatSummaryEntries(r.gs, report.Entries)
+	if len(report.Entries) == 0 {
+		return
+	}
 	if report.Turn <= 0 {
 		for _, entry := range report.Entries {
 			if entry.Turn > 0 {
@@ -65,7 +70,12 @@ func (r *Renderer) ShowCombatSummary(report CombatSummaryReport) {
 			}
 		}
 	}
-	r.combatSummary = combatSummaryState{show: true, data: report}
+	summary := combatSummaryState{show: true, data: report}
+	if r.combatSummary.show || r.combatSummaryBlockedByEventWindow() {
+		r.queuedCombatSummary = summary
+		return
+	}
+	r.combatSummary = summary
 	r.combatLogTimer = 0
 }
 
@@ -74,6 +84,52 @@ func (r *Renderer) HideCombatSummary() {
 		return
 	}
 	r.combatSummary = combatSummaryState{}
+	r.promoteQueuedCombatSummary()
+}
+
+func filterPlayerRelatedCombatSummaryEntries(gs *state.GameState, entries []CombatSummaryEntry) []CombatSummaryEntry {
+	if gs == nil || gs.PlayerFactionID == "" || len(entries) == 0 {
+		return nil
+	}
+	filtered := make([]CombatSummaryEntry, 0, len(entries))
+	for _, entry := range entries {
+		if combatSummaryFactionRelatedToPlayer(gs, entry.AttackerFactionID) ||
+			combatSummaryFactionRelatedToPlayer(gs, entry.DefenderFactionID) {
+			filtered = append(filtered, entry)
+		}
+	}
+	return filtered
+}
+
+func combatSummaryFactionRelatedToPlayer(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || fid == "" || gs.PlayerFactionID == "" {
+		return false
+	}
+	if fid == gs.PlayerFactionID || diplomacy.SameRealm(gs, gs.PlayerFactionID, fid) {
+		return true
+	}
+	rel := diplomacy.Relation(gs, gs.PlayerFactionID, fid)
+	return rel != nil && (rel.Stance == faction.StanceAllied || rel.Stance == faction.StanceWar)
+}
+
+func (r *Renderer) combatSummaryBlockedByEventWindow() bool {
+	if r == nil {
+		return false
+	}
+	if r.showHistoricalEvent || r.showEventCodex || r.eventDetail != "" {
+		return true
+	}
+	_, hasOffer := r.playerDiplomacyOfferIndex()
+	return hasOffer
+}
+
+func (r *Renderer) promoteQueuedCombatSummary() {
+	if r == nil || !r.queuedCombatSummary.show || r.combatSummary.show || r.combatSummaryBlockedByEventWindow() {
+		return
+	}
+	r.combatSummary = r.queuedCombatSummary
+	r.queuedCombatSummary = combatSummaryState{}
+	r.combatLogTimer = 0
 }
 
 func buildCombatSummaryModal() gameui.Modal {

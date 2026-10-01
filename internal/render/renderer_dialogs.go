@@ -2105,7 +2105,7 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 	if r.confirmDialog.spacious {
 		content := gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 66, W: modal.Panel.Rect.W - 48}
 		for i, line := range r.confirmDialog.messageLines {
-			if i > 0 {
+			if i == 1 {
 				drawUISeparator(screen, float32(content.X), float32(content.Y+float64(i)*28-9), float32(content.X+content.W), 1, color.RGBA{96, 72, 38, 180})
 			}
 			drawUILabel(screen, gameui.Rect{X: content.X, Y: content.Y + float64(i)*28, W: content.W}, line, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
@@ -2206,8 +2206,7 @@ func navalContactDecisionLabelTR(decision state.NavalContactDecision) string {
 func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
 	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
 	acceptBtn = decorateConfirmDialogButton(acceptBtn, r.confirmDialog.acceptLabel, "accept")
-	drawUIButtonWidget(screen, acceptBtn,
-		solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
+	drawUIButtonWidget(screen, acceptBtn, confirmDialogActionButtonStyle(r.confirmDialog.acceptLabel))
 	if hasThird {
 		thirdBtn = decorateConfirmDialogButton(thirdBtn, r.confirmDialog.thirdLabel, "third")
 		declineBtn = decorateConfirmDialogButton(declineBtn, r.confirmDialog.declineLabel, "decline")
@@ -2225,6 +2224,17 @@ func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
 	}
 	drawUIButtonWidget(screen, declineBtn,
 		solidButtonStyle(color.RGBA{70, 70, 70, 220}, color.RGBA{120, 120, 120, 255}, ColorWhite, 10))
+}
+
+func confirmDialogActionButtonStyle(label string) gameui.ButtonStyle {
+	switch label {
+	case "Kuşatma Başlat":
+		return solidButtonStyle(color.RGBA{190, 100, 28, 240}, color.RGBA{240, 155, 70, 255}, ColorWhite, 10)
+	case "Genel Hücum":
+		return solidButtonStyle(color.RGBA{145, 38, 32, 240}, color.RGBA{235, 105, 92, 255}, ColorWhite, 10)
+	default:
+		return solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10)
+	}
 }
 
 func decorateConfirmDialogButton(btn gameui.Button, label string, role string) gameui.Button {
@@ -2273,6 +2283,9 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 }
 
 func confirmDialogThirdButtonStyle(label string) gameui.ButtonStyle {
+	if label == "Genel Hücum" {
+		return solidButtonStyle(color.RGBA{145, 38, 32, 240}, color.RGBA{235, 105, 92, 255}, ColorWhite, 10)
+	}
 	if label == "Limana Gir" {
 		return solidButtonStyle(color.RGBA{55, 92, 142, 240}, color.RGBA{112, 164, 202, 255}, ColorWhite, 10)
 	}

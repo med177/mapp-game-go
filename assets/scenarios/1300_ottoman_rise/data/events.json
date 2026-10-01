@@ -4113,7 +4113,7 @@
     "requires_owned_regions": [
       "thrace"
     ],
-    "blocks_capital_settlement_id": "edirne",
+    "blocks_capital_settlement_id": "thrace_edirne",
     "choices": [
       {
         "id": "move_to_edirne",
@@ -4123,7 +4123,7 @@
         "effect": {
           "gold_delta": -60,
           "sat_delta": 8,
-          "capital_settlement_id": "edirne",
+          "capital_settlement_id": "thrace_edirne",
           "capital_move_turns": 5
         }
       },

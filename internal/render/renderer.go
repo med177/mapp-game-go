@@ -41,7 +41,7 @@ const (
 	confirmDialogW               = float32(460)
 	confirmDialogH               = float32(166)
 	confirmDialogSpaciousW       = float32(620)
-	confirmDialogSpaciousH       = float32(276)
+	confirmDialogSpaciousH       = float32(304)
 	navalContactDialogW          = float32(720)
 	navalContactDialogH          = float32(380)
 	confirmDialogBtnW            = float32(120)
@@ -263,6 +263,7 @@ type Renderer struct {
 	battleReport             battleReportState
 	queuedBattleReport       battleReportState
 	combatSummary            combatSummaryState
+	queuedCombatSummary      combatSummaryState
 	warSummary               warSummaryState
 	showActiveWars           bool
 	activeWarsScroll         int
@@ -1485,6 +1486,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.battleReport = battleReportState{}
 	r.queuedBattleReport = battleReportState{}
 	r.combatSummary = combatSummaryState{}
+	r.queuedCombatSummary = combatSummaryState{}
 	r.warSummary = warSummaryState{}
 	r.eventLogScroll = 0
 	r.editBuildingsPanel = false
@@ -1623,6 +1625,7 @@ func (r *Renderer) openNearestEventCodex() bool {
 
 func (r *Renderer) CloseEventCodex() {
 	r.showEventCodex = false
+	r.promoteQueuedCombatSummary()
 }
 
 // PrepareForTurnAdvance oyuncu turundan çıkarken açık panelleri kapatır
@@ -1678,6 +1681,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.victoryDetailScroll = 0
 	r.warSummary = warSummaryState{}
 	r.combatSummary = combatSummaryState{}
+	r.queuedCombatSummary = combatSummaryState{}
 	r.showActiveWars = false
 	r.activeWarsScroll = 0
 	r.activeWarsDirty = true
@@ -1876,6 +1880,7 @@ func (r *Renderer) HideHistoricalEvent() {
 	r.historicalEventFocus = 0
 	r.commanderArrivals = r.commanderArrivals[:0]
 	r.commanderArrivalScroll = 0
+	r.promoteQueuedCombatSummary()
 }
 
 // ShowCommanderArrivals oyuncunun tarih aralığına giren komutanlarını, mevcut

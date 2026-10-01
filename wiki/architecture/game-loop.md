@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-09-27
+last_updated: 2026-10-01
 related: [state-management, render-pipeline]
 ---
 
@@ -141,9 +141,12 @@ hareket bilgisini taşımaz.
 
 Tur çözümlemesi sırasında gerçekleşen muharebeler, `RecordWarCasualties...`
 kanalından geçici kara/donanma kayıp kayıtlarına da yazılır. Kayıp veya tamamen
-yok olma varsa `resolveTurn()` oyuncu fazına dönmeden önce `Çatışma Özeti`
-modalını açar; oyuncu `Tamam` demeden harita etkileşimi başlamaz. Bu kayıtlar
-save'e yazılmaz ve özet açılırken tüketilir.
+yok olma varsa `resolveTurn()` oyuncu fazına dönmeden önce oyuncunun kendi
+devletiyle, vassallarıyla, müttefikleriyle veya düşmanlarıyla ilişkili kayıtları
+`Çatışma Özeti` için ayırır. Tarihsel event, event kararı veya bu event'in
+oluşturduğu diplomasi penceresi açıksa özet kuyruğa alınır; ilgili pencereler
+kapandıktan sonra gösterilir. Oyuncu `Tamam` demeden harita etkileşimi başlamaz.
+Bu kayıtlar save'e yazılmaz ve özet açılırken tüketilir.
 
 Askerî geçiş izni için ayrı diplomasi state'i henüz yoktur. Eklendiğinde tur sonu
 erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir.

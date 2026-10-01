@@ -84,6 +84,7 @@ func (r *Renderer) HandleInput() InputAction {
 	r.rebuildUILayers()
 	r.updateCursorShape()
 	r.updateEditDropdownPositions()
+	r.promoteQueuedCombatSummary()
 
 	if r.showShortcuts {
 		return r.handleShortcutsInput()
