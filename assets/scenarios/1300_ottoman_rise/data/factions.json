@@ -3850,11 +3850,20 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50,
+    "ai_aggressiveness": 60,
     "territorial_claims": [
       {
-        "region_id": "nigde",
+        "region_id": "sivas",
         "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "yozgat",
+        "value": 100,
+        "core": true
+      }, {
+        "region_id": "nigde",
+        "value": 80,
         "core": true
       }
     ]
@@ -3890,6 +3899,36 @@
       {
         "region_id": "sivas",
         "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "yozgat",
+        "value": 100,
+        "core": true
+      }, 
+      {
+        "region_id": "nigde",
+        "value": 80,
+        "core": true
+      },
+      {
+        "region_id": "erzincan",
+        "value": 80,
+        "core": true
+      },
+      {
+        "region_id": "malatya",
+        "value": 70,
+        "core": true
+      },
+      {
+        "region_id": "dulkadirli",
+        "value": 70,
+        "core": true
+      },
+      {
+        "region_id": "eretna",
+        "value": 60,
         "core": true
       }
     ]

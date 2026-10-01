@@ -337,13 +337,6 @@
         "unit_count": 5
       },
       {
-        "faction_id": "kadi_burhaneddin",
-        "region_id": "sivas",
-        "mode": "independent",
-        "unit_type": "infantry",
-        "unit_count": 5
-      },
-      {
         "faction_id": "eretna_state",
         "region_id": "nigde",
         "mode": "independent",
@@ -364,13 +357,6 @@
         "recipient_faction_id": "jelayirids",
         "source_region_ids": ["mosul"],
         "destination_region_id": "baghdad",
-        "army_count": 1
-      },
-      {
-        "source_faction_id": "ilkhanate",
-        "recipient_faction_id": "kadi_burhaneddin",
-        "source_region_ids": ["sivas"],
-        "destination_region_id": "sivas",
         "army_count": 1
       },
       {
@@ -421,9 +407,6 @@
             { "faction_id": "timurid_empire", "score_delta": 15, "stance": "peace" },
             { "faction_id": "muzaffarids", "score_delta": 15, "stance": "peace" },
             { "faction_id": "afshar_beyligi", "score_delta": 10, "stance": "peace" },
-            { "faction_id": "karakoyunlu_state", "score_delta": 10, "stance": "peace" },
-            { "faction_id": "akkoyunlu_state", "score_delta": 10, "stance": "peace" },
-            { "faction_id": "kadi_burhaneddin", "score_delta": 8, "stance": "peace" },
             { "faction_id": "eretna_state", "score_delta": 8, "stance": "peace" },
             { "faction_id": "artuklu", "score_delta": 8, "stance": "peace" }
           ],
@@ -442,9 +425,6 @@
             { "faction_id": "timurid_empire", "score_delta": -35, "stance": "war" },
             { "faction_id": "muzaffarids", "score_delta": -30, "stance": "war" },
             { "faction_id": "afshar_beyligi", "score_delta": -25, "stance": "war" },
-            { "faction_id": "karakoyunlu_state", "score_delta": -25, "stance": "war" },
-            { "faction_id": "akkoyunlu_state", "score_delta": -25, "stance": "war" },
-            { "faction_id": "kadi_burhaneddin", "score_delta": -20, "stance": "war" },
             { "faction_id": "eretna_state", "score_delta": -20, "stance": "war" },
             { "faction_id": "artuklu", "score_delta": -20, "stance": "war" }
           ],
