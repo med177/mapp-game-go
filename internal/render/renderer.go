@@ -40,10 +40,13 @@ var (
 const (
 	confirmDialogW               = float32(460)
 	confirmDialogH               = float32(166)
+	confirmDialogSpaciousW       = float32(620)
+	confirmDialogSpaciousH       = float32(276)
 	navalContactDialogW          = float32(720)
 	navalContactDialogH          = float32(380)
 	confirmDialogBtnW            = float32(120)
 	confirmDialogBtnH            = float32(36)
+	confirmDialogSpaciousBtnW    = float32(176)
 	selectedSiegePanelW          = 520.0
 	selectedSiegePanelH          = 298.0
 	selectedSiegeButtonW         = 224.0
@@ -492,6 +495,7 @@ var (
 
 type confirmDialogState struct {
 	show            bool
+	spacious        bool
 	title           string
 	message         string
 	messageLines    []string

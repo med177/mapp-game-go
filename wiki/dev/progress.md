@@ -38,12 +38,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `go test ./internal/render -count=1`.
 
 - 2026-10-01: Harita marker çiziminden pahalı lojistik önizlemesi çıkarıldı.
-  İkmal görevi/kargo değişimi, filo veya ordu hareketi, filo kaybı ve tur sonu
-  state değişimlerinde yalnız etkilenen eski/yeni bölge veya ikmal hedefinin
-  marker cache'i yenileniyor; seçim ve kamera sürükleme frame'leri artık
-  lojistik taraması yapmıyor. Regression:
-  `internal/render/army_logistics_badge_test.go` içindeki bölgesel hareket ve
-  ikmal bağlantısı testleri; doğrulama:
+  İkmal görevi/kargo değişimi, filo kaybı ve tur sonu state değişimlerinde
+  yalnız ikmal hedefinin marker cache'i yenileniyor. Sık gerçekleşen normal
+  hareket/temas/kuşatma akışlarından dinamik tarama çıkarıldı; seçim ve kamera
+  sürükleme frame'leri lojistik hesabı çalıştırmıyor. Regression:
+  `internal/render/army_logistics_badge_test.go` içindeki ikmal bağlantısı testi;
+  doğrulama:
   `go test ./internal/render ./internal/game ./internal/state -count=1`.
 
 - 2026-10-01: Ordu markerındaki `!` rozeti, bölge bilgi paneliyle aynı güncel

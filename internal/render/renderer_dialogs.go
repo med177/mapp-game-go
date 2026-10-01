@@ -96,9 +96,10 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 		msg := fmt.Sprintf("%s kuşatması sürüyor. Tahkimat: %d | İlerleme: %d | Durum: %s | Gedik kapasitesi: T%d/T%d. %s | %s", target.NameTR, active.FortLevel, active.BreachProgress, siegeBreachLabelTR(active.BreachLevel), maxBreachFortLevel, active.FortLevel, siegeCapabilityLabel(attacker, r.gs.UnitTypes, active.FortLevel), commanderSummary)
 		r.confirmDialog = confirmDialogState{
 			show:          true,
+			spacious:      true,
 			title:         "Kuşatma Kararı",
 			message:       msg,
-			messageLines:  wrapTextLines(msg, FaceSmall, float64(confirmDialogW)-40),
+			messageLines:  []string{target.NameTR + " kuşatması sürüyor.", fmt.Sprintf("Tahkimat seviyesi: T%d", active.FortLevel), fmt.Sprintf("İlerleme: %d  •  Durum: %s", active.BreachProgress, siegeBreachLabelTR(active.BreachLevel)), fmt.Sprintf("Gedik kapasitesi: T%d / T%d", maxBreachFortLevel, active.FortLevel), siegeCapabilityLabel(attacker, r.gs.UnitTypes, active.FortLevel), commanderSummary},
 			acceptLabel:   "Genel Hücum",
 			thirdLabel:    "Kuşatmayı Kaldır",
 			declineLabel:  "İptal",
@@ -111,9 +112,10 @@ func (r *Renderer) openSiegeDecision(attacker *army.Army, target *world.Region) 
 	thirdLabel := "Genel Hücum"
 	r.confirmDialog = confirmDialogState{
 		show:          true,
+		spacious:      true,
 		title:         "Kuşatma Kararı",
 		message:       msg,
-		messageLines:  wrapTextLines(msg, FaceSmall, float64(confirmDialogW)-40),
+		messageLines:  []string{target.NameTR + " tahkimli.", fmt.Sprintf("Tahkimat seviyesi: T%d", fortLevel), fmt.Sprintf("Kuşatma gücü: %d", attacker.SiegeUnitScore(r.gs.UnitTypes)), fmt.Sprintf("Gedik kapasitesi: T%d / T%d", maxBreachFortLevel, fortLevel), siegeCapabilityLabel(attacker, r.gs.UnitTypes, fortLevel), commanderSummary},
 		acceptLabel:   "Kuşatma Başlat",
 		thirdLabel:    thirdLabel,
 		declineLabel:  "İptal",
@@ -2099,8 +2101,18 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 	modal := buildConfirmDialogModalFor(r.confirmDialog)
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
-	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 28}, r.confirmDialog.title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
-	drawUIWrappedLabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 58, W: modal.Panel.Rect.W - 40}, r.confirmDialog.message, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, 17, 3)
+	drawUILabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 24}, r.confirmDialog.title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
+	if r.confirmDialog.spacious {
+		content := gameui.Rect{X: modal.Panel.Rect.X + 24, Y: modal.Panel.Rect.Y + 66, W: modal.Panel.Rect.W - 48}
+		for i, line := range r.confirmDialog.messageLines {
+			if i > 0 {
+				drawUISeparator(screen, float32(content.X), float32(content.Y+float64(i)*28-9), float32(content.X+content.W), 1, color.RGBA{96, 72, 38, 180})
+			}
+			drawUILabel(screen, gameui.Rect{X: content.X, Y: content.Y + float64(i)*28, W: content.W}, line, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		}
+	} else {
+		drawUIWrappedLabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 58, W: modal.Panel.Rect.W - 40}, r.confirmDialog.message, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, 17, 3)
+	}
 	r.drawConfirmDialogButtons(screen)
 }
 
@@ -2219,6 +2231,12 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 	btn.Label = label
 	switch role {
 	case "accept":
+		if label == "Kuşatma Başlat" {
+			return btn.WithIcon(gameui.IconSiege)
+		}
+		if label == "Genel Hücum" {
+			return btn.WithIcon(gameui.IconSword)
+		}
 		if strings.Contains(label, "İlhak") {
 			return btn.WithIcon(gameui.IconLogin)
 		}
@@ -2233,6 +2251,9 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 		}
 		return btn.WithIcon(gameui.IconCheck)
 	case "third":
+		if label == "Genel Hücum" {
+			return btn.WithIcon(gameui.IconSword)
+		}
 		if label == "Çıkış" {
 			return btn.WithIcon(gameui.IconExit)
 		}
@@ -2258,12 +2279,12 @@ func confirmDialogThirdButtonStyle(label string) gameui.ButtonStyle {
 	return solidButtonStyle(color.RGBA{145, 95, 45, 235}, color.RGBA{190, 135, 75, 255}, ColorWhite, 10)
 }
 
-func confirmDialogThreeButtonXs(cx float32) (float32, float32, float32) {
+func confirmDialogThreeButtonXs(cx float32, btnW, modalW float64) (float32, float32, float32) {
 	gap := float32(14)
-	totalW := confirmDialogBtnW*3 + gap*2
-	saveX := cx + (confirmDialogW-totalW)/2
-	discardX := saveX + confirmDialogBtnW + gap
-	cancelX := discardX + confirmDialogBtnW + gap
+	totalW := float32(btnW*3) + gap*2
+	saveX := cx + (float32(modalW)-totalW)/2
+	discardX := saveX + float32(btnW) + gap
+	cancelX := discardX + float32(btnW) + gap
 	return saveX, discardX, cancelX
 }
 

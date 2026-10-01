@@ -49,6 +49,10 @@ func buildConfirmDialogModal() gameui.Modal {
 func buildConfirmDialogModalFor(state confirmDialogState) gameui.Modal {
 	modalW := float64(confirmDialogW)
 	modalH := float64(confirmDialogH)
+	if state.spacious {
+		modalW = float64(confirmDialogSpaciousW)
+		modalH = float64(confirmDialogSpaciousH)
+	}
 	anchor := gameui.AnchorMiddle
 	if state.navalContact != nil {
 		modalW = float64(navalContactDialogW)
@@ -74,23 +78,27 @@ func buildConfirmDialogModalFor(state confirmDialogState) gameui.Modal {
 
 func buildConfirmDialogButtons(state confirmDialogState) (gameui.Button, gameui.Button, gameui.Button, bool) {
 	modal := buildConfirmDialogModalFor(state)
-	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - 16
+	btnW := float64(confirmDialogBtnW)
+	if state.spacious {
+		btnW = float64(confirmDialogSpaciousBtnW)
+	}
+	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - 18
 	if state.thirdLabel != "" {
-		saveX, discardX, cancelX := confirmDialogThreeButtonXs(float32(modal.Panel.Rect.X))
-		third := gameui.NewButton(float64(discardX), btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.thirdLabel)
+		saveX, discardX, cancelX := confirmDialogThreeButtonXs(float32(modal.Panel.Rect.X), btnW, modal.Panel.Rect.W)
+		third := gameui.NewButton(float64(discardX), btnY, btnW, float64(confirmDialogBtnH), state.thirdLabel)
 		third.Enabled = !state.thirdDisabled
-		decline := gameui.NewButton(float64(cancelX), btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.declineLabel)
+		decline := gameui.NewButton(float64(cancelX), btnY, btnW, float64(confirmDialogBtnH), state.declineLabel)
 		decline.Enabled = !state.declineDisabled
-		return gameui.NewButton(float64(saveX), btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.acceptLabel),
+		return gameui.NewButton(float64(saveX), btnY, btnW, float64(confirmDialogBtnH), state.acceptLabel),
 			third,
 			decline,
 			true
 	}
-	yesX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - float64(confirmDialogBtnW) - 10
+	yesX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - btnW - 10
 	noX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 + 10
-	return gameui.NewButton(yesX, btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.acceptLabel),
+	return gameui.NewButton(yesX, btnY, btnW, float64(confirmDialogBtnH), state.acceptLabel),
 		gameui.Button{},
-		gameui.NewButton(noX, btnY, float64(confirmDialogBtnW), float64(confirmDialogBtnH), state.declineLabel),
+		gameui.NewButton(noX, btnY, btnW, float64(confirmDialogBtnH), state.declineLabel),
 		false
 }
 

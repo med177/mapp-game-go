@@ -30,6 +30,7 @@ const (
 	IconTrash     IconID = "trash"
 	IconCheck     IconID = "check"
 	IconSword     IconID = "sword"
+	IconSiege     IconID = "siege"
 	IconSave      IconID = "save"
 	IconLoad      IconID = "load"
 	IconBuy       IconID = "buy"
@@ -68,6 +69,7 @@ func init() {
 		IconTrash,
 		IconCheck,
 		IconSword,
+		IconSiege,
 		IconSave,
 		IconLoad,
 		IconBuy,

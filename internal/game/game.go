@@ -5151,9 +5151,6 @@ func (g *Game) spawnDisembarkedArmy(ownerID string, target world.RegionID, units
 		IsNaval:       false,
 	}
 	g.gs.Armies[newID] = landed
-	if g.renderer != nil {
-		g.renderer.RefreshArmyLogisticsBadgesForRegions(target)
-	}
 	return landed
 }
 
@@ -6296,7 +6293,6 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		return
 	}
 	previousLocation := a.LocationID()
-	previousRegion := a.RegionID
 	if a.InAmbush && target != a.RegionID {
 		a.InAmbush = false
 	}
@@ -6308,25 +6304,6 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		}
 		if g.supplyFollowDepth == 0 {
 			g.followSupplyFleets(a.ID, previousLocation)
-		}
-		// Bölgesel ikmal kapasitesi aynı bölgedeki tüm ordular arasında
-		// paylaşıldığından, hareketin hem eski hem yeni bölgesindeki marker'lar
-		// birlikte yenilenmelidir. Yenileme tek önizleme taramasıyla yapılır;
-		// çizim döngüsü her frame lojistik hesabı çalıştırmaz.
-		refreshRegions := []world.RegionID{previousRegion, a.RegionID}
-		var missingSupplyTarget army.ArmyID
-		if a.IsNaval {
-			if targetID := supplyMissionTargetArmyID(a.NavalMission); targetID != "" {
-				if target := g.gs.Armies[targetID]; target != nil {
-					refreshRegions = append(refreshRegions, target.RegionID)
-				} else {
-					missingSupplyTarget = targetID
-				}
-			}
-		}
-		g.renderer.RefreshArmyLogisticsBadgesForRegions(refreshRegions...)
-		if missingSupplyTarget != "" {
-			g.renderer.RefreshArmyLogisticsBadge(missingSupplyTarget)
 		}
 	}()
 

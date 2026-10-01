@@ -19,7 +19,6 @@ func (g *Game) beginLandContact(attacker, defender *army.Army, landID, fromRegio
 	}
 	ai.ResolveLandContactDecision(g.gs, contact)
 	if moveBeforePrompt && contact.AttackerArmyID == attacker.ID && contact.AttackerFromRegionID == fromRegion && attacker.RegionID == fromRegion {
-		previousRegion := attacker.RegionID
 		attacker.PreviousRegionID = attacker.RegionID
 		attacker.RegionID = landID
 		attacker.DockedRegionID = ""
@@ -29,7 +28,6 @@ func (g *Game) beginLandContact(attacker, defender *army.Army, landID, fromRegio
 		}
 		contact.MovementConsumed = true
 		g.renderer.MarkMapDirty()
-		g.renderer.RefreshArmyLogisticsBadgesForRegions(previousRegion, landID)
 	}
 	if contact.PlayerArmyID != "" {
 		g.presentPendingLandContact()
