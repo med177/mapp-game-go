@@ -39,10 +39,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-10-01: Harita marker çiziminden pahalı lojistik önizlemesi çıkarıldı.
   İkmal görevi/kargo değişimi, filo veya ordu hareketi, filo kaybı ve tur sonu
-  state değişimlerinde yalnız ilgili marker cache'i yenileniyor; seçim ve
-  kamera sürükleme frame'leri artık lojistik taraması yapmıyor. Regression:
-  `internal/render/renderer_input_test.go` içindeki
-  `TestArmyLogisticsBadgeUsesEventCache`; doğrulama:
+  state değişimlerinde yalnız etkilenen eski/yeni bölge veya ikmal hedefinin
+  marker cache'i yenileniyor; seçim ve kamera sürükleme frame'leri artık
+  lojistik taraması yapmıyor. Regression:
+  `internal/render/army_logistics_badge_test.go` içindeki bölgesel hareket ve
+  ikmal bağlantısı testleri; doğrulama:
   `go test ./internal/render ./internal/game ./internal/state -count=1`.
 
 - 2026-10-01: Deniz ikmaliyle bölgesel lojistik açığı kapanan kara ordusunun

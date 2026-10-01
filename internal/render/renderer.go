@@ -4285,64 +4285,80 @@ func (r *Renderer) dockedSettlementAnchor(region *world.Region, settlementID str
 func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 	selectedArmy := r.gs.Armies[r.SelectedArmy]
 	r.drawNavalSupplyLinks(screen, positions)
-	// Tüm portreleri marker katmanından önce çiz. Portreleri her ordunun kendi
-	// marker'ıyla aynı döngüde çizmek, yakın bir sonraki ordunun portresinin
-	// önceki ordunun rozetini kapatmasına izin veriyordu.
-	for _, pos := range positions {
-		a, ok := r.gs.Armies[pos.ArmyID]
-		if !ok || a == nil {
-			continue
+	// Yabancı portreleri kendi marker katmanlarından önce çizilir; oyuncu
+	// portresi ise tüm marker ve rozetlerin ardından en üstte çizilecektir.
+	drawCommanderLayer := func(playerOwnedLayer bool) {
+		for _, pos := range positions {
+			a, ok := r.gs.Armies[pos.ArmyID]
+			if !ok || a == nil || r.armyMovementSpriteVisibleFor(a) {
+				continue
+			}
+			if armyMarkerIsPlayerOwned(r.gs, a) != playerOwnedLayer {
+				continue
+			}
+			r.drawArmyCommanderPortrait(screen, a, pos.X, pos.Y, a.IsNaval)
 		}
-		if r.armyMovementSpriteVisibleFor(a) {
-			continue
-		}
-		r.drawArmyCommanderPortrait(screen, a, pos.X, pos.Y, a.IsNaval)
 	}
+	drawCommanderLayer(false)
 
-	for _, pos := range positions {
-		a, ok := r.gs.Armies[pos.ArmyID]
-		if !ok {
-			continue
-		}
-		fc := factionColor(r.gs, a.OwnerID)
-		isSelected := pos.ArmyID == r.SelectedArmy
-		unitCount := len(a.Units)
-		if r.gs.Phase != state.PhaseEditMode && !playerCanSeeArmyDetails(r.gs, a) && !enemyArmyInPlayerMoveRange(r.gs, a) {
-			unitCount = -1
-		}
-		siegeBadgeX := pos.X + armyIconInnerHalf + 8
-		if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
-			for _, candidate := range positions {
-				if candidate.ArmyID == siege.DefenderArmyID && candidate.Y == pos.Y {
-					siegeBadgeX = armySiegeBadgeCenterX(pos.X, candidate.X, true)
-					break
+	drawMarkerLayer := func(playerOwnedLayer bool) {
+		for _, pos := range positions {
+			a, ok := r.gs.Armies[pos.ArmyID]
+			if !ok {
+				continue
+			}
+			fc := factionColor(r.gs, a.OwnerID)
+			isSelected := pos.ArmyID == r.SelectedArmy
+			unitCount := len(a.Units)
+			if r.gs.Phase != state.PhaseEditMode && !playerCanSeeArmyDetails(r.gs, a) && !enemyArmyInPlayerMoveRange(r.gs, a) {
+				unitCount = -1
+			}
+			siegeBadgeX := pos.X + armyIconInnerHalf + 8
+			if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
+				for _, candidate := range positions {
+					if candidate.ArmyID == siege.DefenderArmyID && candidate.Y == pos.Y {
+						siegeBadgeX = armySiegeBadgeCenterX(pos.X, candidate.X, true)
+						break
+					}
 				}
 			}
-		}
-		playerOwned := r.gs.PlayerFactionID != "" && a.OwnerID == string(r.gs.PlayerFactionID)
-		selectedSprite := playerOwned && isSelected && a.MovePoints > 0
-		animatingSprite := playerOwned && r.armyMovementVisualActiveFor(a.ID)
-		var movementSprite *ebiten.Image
-		if selectedSprite || animatingSprite {
-			movementSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
-		}
-		if movementSprite != nil && (selectedSprite || animatingSprite) {
-			r.drawArmyMarkerSprite(screen, movementSprite, pos.X, pos.Y)
-		} else {
-			r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, false, siegeBadgeX)
-		}
-		if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
-			embarkTargetColor := color.RGBA{120, 230, 240, 220}
-			if selectedArmy != nil && !r.confirmDialog.show {
-				mx, my := r.movementPreviewCursor()
-				hoveredFleet, _, _, hovered := r.embarkFleetTargetAt(mx, my, selectedArmy)
-				if hovered && hoveredFleet != nil && hoveredFleet.ID == a.ID {
-					embarkTargetColor = movementTargetHoverColor
-				}
+			playerOwned := r.gs.PlayerFactionID != "" && a.OwnerID == string(r.gs.PlayerFactionID)
+			if playerOwned != playerOwnedLayer {
+				continue
 			}
-			vector.StrokeCircle(screen, pos.X, pos.Y, embarkTargetMarkerRadius, 3, embarkTargetColor, true)
+			selectedSprite := playerOwned && isSelected && a.MovePoints > 0
+			animatingSprite := playerOwned && r.armyMovementVisualActiveFor(a.ID)
+			var movementSprite *ebiten.Image
+			if selectedSprite || animatingSprite {
+				movementSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
+			}
+			if movementSprite != nil && (selectedSprite || animatingSprite) {
+				r.drawArmyMarkerSprite(screen, movementSprite, pos.X, pos.Y)
+			} else {
+				r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, false, siegeBadgeX)
+			}
+			if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
+				embarkTargetColor := color.RGBA{120, 230, 240, 220}
+				if selectedArmy != nil && !r.confirmDialog.show {
+					mx, my := r.movementPreviewCursor()
+					hoveredFleet, _, _, hovered := r.embarkFleetTargetAt(mx, my, selectedArmy)
+					if hovered && hoveredFleet != nil && hoveredFleet.ID == a.ID {
+						embarkTargetColor = movementTargetHoverColor
+					}
+				}
+				vector.StrokeCircle(screen, pos.X, pos.Y, embarkTargetMarkerRadius, 3, embarkTargetColor, true)
+			}
 		}
 	}
+	drawMarkerLayer(false)
+	// Yabancı donanma rozetleri oyuncu marker katmanından önce tamamlanır.
+	for _, pos := range positions {
+		a := r.gs.Armies[pos.ArmyID]
+		if a != nil && a.IsNaval && !armyMarkerIsPlayerOwned(r.gs, a) {
+			r.drawNavalPriorityBadges(screen, a, pos.X, pos.Y)
+		}
+	}
+	drawMarkerLayer(true)
 	// Sprite kullanan oyuncu markerlarının yerleşik rozetleri sprite'tan sonra
 	// çizilir. Böylece büyük görsel komşu markerın rozetini kapatamaz.
 	for _, pos := range positions {
@@ -4360,24 +4376,23 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			r.drawArmySpriteBadges(screen, a, pos, positions)
 		}
 	}
-	// Bonus rozetleri tüm donanma marker'larından sonra çizilir. Böylece bir
-	// sonraki filonun dairesi veya başka marker'ı mavi/sarı rozeti kapatamaz.
+	// Oyuncunun dış rozetleri en son çizilir; yabancı marker veya rozet artık
+	// oyuncunun ordu/donanma markerının önüne geçemez.
 	for _, pos := range positions {
 		a, ok := r.gs.Armies[pos.ArmyID]
-		if !ok || a == nil || !a.IsNaval {
+		if !ok || a == nil || !a.IsNaval || !armyMarkerIsPlayerOwned(r.gs, a) {
 			continue
 		}
-		if r.gs.PlayerFactionID != "" && a.OwnerID == string(r.gs.PlayerFactionID) {
-			selectedSprite := pos.ArmyID == r.SelectedArmy && a.MovePoints > 0
-			animatingSprite := r.armyMovementSpriteVisibleFor(a)
-			if selectedSprite || animatingSprite {
-				if r.armyMovementSpriteFor(a.ID, a.OwnerID, true) != nil {
-					continue
-				}
+		selectedSprite := pos.ArmyID == r.SelectedArmy && a.MovePoints > 0
+		animatingSprite := r.armyMovementSpriteVisibleFor(a)
+		if selectedSprite || animatingSprite {
+			if r.armyMovementSpriteFor(a.ID, a.OwnerID, true) != nil {
+				continue
 			}
 		}
 		r.drawNavalPriorityBadges(screen, a, pos.X, pos.Y)
 	}
+	drawCommanderLayer(true)
 }
 
 // drawNavalSupplyLinks, aktif ikmal görevi ile bağlı filo ve kara ordusu
@@ -4637,19 +4652,62 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	}
 }
 
-// RefreshArmyLogisticsBadge, tek bir ordunun lojistik hasar rozeti için
-// gerekli pahalı deniz ikmal önizlemesini olay anında hesaplar. Çizim
-// döngüsü bu cache'i yalnızca okur; böylece marker seçimi ve kamera hareketi
-// lojistik hesabını yeniden çalıştırmaz.
+// RefreshArmyLogisticsBadge, bir orduyu etkileyen lojistik state değişiminde
+// aynı bölgedeki tüm marker cache'ini yeniler. Bölgesel kapasite/talep hesabı
+// aynı bölgedeki ordular arasında paylaşıldığı için yalnız hedef ordunun
+// kaydını güncellemek diğer marker'larda eski rozet bırakabilir.
 func (r *Renderer) RefreshArmyLogisticsBadge(aid army.ArmyID) {
 	if r == nil || r.gs == nil || aid == "" {
 		return
 	}
+	if target := r.gs.Armies[aid]; target != nil {
+		r.RefreshArmyLogisticsBadgesForRegions(target.RegionID)
+		return
+	}
+
+	// Savaşta yok edilen veya birleşme sırasında kaldırılan ordu için marker
+	// artık çizilmese de cache'teki eski değer ileride aynı ID tekrar görülürse
+	// sızmamalıdır.
 	r.gs.InvalidateRegionalLogisticsPreview()
 	if r.armyLogisticsBadgeVisible == nil {
 		r.armyLogisticsBadgeVisible = make(map[army.ArmyID]bool)
 	}
-	r.armyLogisticsBadgeVisible[aid] = r.gs.ArmyLogisticsDamageVisible(aid)
+	previews := r.gs.PreviewRegionalLogisticsStatuses()
+	r.armyLogisticsBadgeVisible[aid] = r.gs.ArmyLogisticsDamageVisibleFromPreview(aid, previews)
+}
+
+// RefreshArmyLogisticsBadgesForRegions, bölgesel lojistik hesabı değiştiğinde
+// yalnız etkilenen bölgelerdeki marker cache'ini yeniler. Önizleme bir kez
+// üretilir; çizim ve kamera hareketleri bu pahalı yolu çağırmaz.
+func (r *Renderer) RefreshArmyLogisticsBadgesForRegions(regionIDs ...world.RegionID) {
+	if r == nil || r.gs == nil || len(regionIDs) == 0 {
+		return
+	}
+
+	regions := make(map[world.RegionID]struct{}, len(regionIDs))
+	for _, regionID := range regionIDs {
+		if regionID != "" {
+			regions[regionID] = struct{}{}
+		}
+	}
+	if len(regions) == 0 {
+		return
+	}
+
+	r.gs.InvalidateRegionalLogisticsPreview()
+	if r.armyLogisticsBadgeVisible == nil {
+		r.armyLogisticsBadgeVisible = make(map[army.ArmyID]bool)
+	}
+	previews := r.gs.PreviewRegionalLogisticsStatuses()
+	for aid, target := range r.gs.Armies {
+		if target == nil {
+			continue
+		}
+		if _, affected := regions[target.RegionID]; !affected {
+			continue
+		}
+		r.armyLogisticsBadgeVisible[aid] = r.gs.ArmyLogisticsDamageVisibleFromPreview(aid, previews)
+	}
 }
 
 // RefreshAllArmyLogisticsBadges, state topluca değiştiğinde (yeni oyun,
@@ -4659,6 +4717,7 @@ func (r *Renderer) RefreshAllArmyLogisticsBadges() {
 	if r == nil || r.gs == nil {
 		return
 	}
+	r.gs.InvalidateRegionalLogisticsPreview()
 	if r.armyLogisticsBadgeVisible == nil {
 		r.armyLogisticsBadgeVisible = make(map[army.ArmyID]bool)
 	} else {

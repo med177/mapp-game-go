@@ -491,6 +491,7 @@ func (g *Game) clearSiegesByArmy(armyID army.ArmyID) {
 	if g == nil || g.gs == nil || g.gs.Sieges == nil || armyID == "" {
 		return
 	}
+	refreshRegions := make([]world.RegionID, 0, 2)
 	for rid, siege := range g.gs.Sieges {
 		if siege != nil && siege.AttackerArmyID == armyID {
 			if g.renderer != nil {
@@ -498,10 +499,15 @@ func (g *Game) clearSiegesByArmy(armyID army.ArmyID) {
 			}
 			// Orduyu kuşatma öncesi bulunduğu bölgeye geri taşı
 			if a := g.gs.Armies[armyID]; a != nil && siege.AttackerHomeRegionID != "" {
+				previousRegion := a.RegionID
 				a.RegionID = siege.AttackerHomeRegionID
+				refreshRegions = append(refreshRegions, previousRegion, a.RegionID)
 			}
 			delete(g.gs.Sieges, rid)
 		}
+	}
+	if g.renderer != nil && len(refreshRegions) > 0 {
+		g.renderer.RefreshArmyLogisticsBadgesForRegions(refreshRegions...)
 	}
 }
 
@@ -522,6 +528,7 @@ func (g *Game) startSiegeForArmy(aid army.ArmyID, target world.RegionID, notify 
 		}
 		return false
 	}
+	previousRegion := attacker.RegionID
 	g.gs.RecordFactionRegionAttackAgainst(faction.FactionID(attacker.OwnerID), faction.FactionID(targetRegion.OwnerID))
 	ensureSiegeMap(g.gs)
 	defender := g.gs.SelectBattleDefender(attacker, target, false)
@@ -541,6 +548,9 @@ func (g *Game) startSiegeForArmy(aid army.ArmyID, target world.RegionID, notify 
 	}
 	attacker.RegionID = target
 	attacker.MovePoints = 0
+	if g.renderer != nil {
+		g.renderer.RefreshArmyLogisticsBadgesForRegions(previousRegion, target)
+	}
 	if notify && g.renderer != nil {
 		msg := fmt.Sprintf("%s kuşatıldı. Tahkimat seviyesi: %d.", targetRegion.NameTR, fortLevel)
 		g.renderer.MarkMapDirty()
@@ -564,7 +574,9 @@ func (g *Game) liftSiege(aid army.ArmyID, target world.RegionID) {
 	// Orduyu kuşatma öncesi bulunduğu bölgeye geri taşı. Bazı eski/ara
 	// akışlarda home kaydı kuşatılan bölgenin kendisi olarak yazılmış olabilir;
 	// bu durumda son geçerli komşu konumu geri çekilme noktası olarak kullan.
+	previousRegion := world.RegionID("")
 	if a := g.gs.Armies[aid]; a != nil {
+		previousRegion = a.RegionID
 		retreatRegion := siege.AttackerHomeRegionID
 		if retreatRegion == target || !validSiegeRetreatRegion(g.gs, retreatRegion, target, a.OwnerID) {
 			if validSiegeRetreatRegion(g.gs, a.PreviousRegionID, target, a.OwnerID) {
@@ -576,6 +588,9 @@ func (g *Game) liftSiege(aid army.ArmyID, target world.RegionID) {
 		}
 	}
 	g.clearSiege(target)
+	if g.renderer != nil && previousRegion != "" {
+		g.renderer.RefreshArmyLogisticsBadgesForRegions(previousRegion, target)
+	}
 	if region := g.gs.Regions[target]; region != nil && g.renderer != nil {
 		msg := region.NameTR + " kuşatması kaldırıldı."
 		g.renderer.MarkMapDirty()

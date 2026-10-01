@@ -40,6 +40,7 @@ func (g *Game) beginNavalContact(attacker, defender *army.Army, seaID, fromRegio
 	}
 	ai.ResolveNavalContactDecision(g.gs, contact)
 	if moveBeforePrompt && trigger == state.NavalContactMovement && contact.AttackerArmyID == attacker.ID && contact.AttackerFromRegionID == fromRegion && attacker.RegionID == fromRegion {
+		previousRegion := attacker.RegionID
 		attacker.RegionID = seaID
 		attacker.DockedRegionID = ""
 		attacker.DockedSettlementID = ""
@@ -48,6 +49,7 @@ func (g *Game) beginNavalContact(attacker, defender *army.Army, seaID, fromRegio
 		}
 		contact.MovementConsumed = true
 		g.renderer.MarkMapDirty()
+		g.renderer.RefreshArmyLogisticsBadgesForRegions(previousRegion, seaID)
 	}
 	if contact.PlayerArmyID != "" {
 		g.presentPendingNavalContact()
@@ -148,8 +150,10 @@ func (g *Game) resolveNavalContactWithoutBattle(contact *state.NavalContact, att
 	if g == nil || g.gs == nil || contact == nil {
 		return
 	}
+	refreshRegions := make([]world.RegionID, 0, 4)
 	if contact.AttackerDecision == state.NavalContactWithdraw {
 		previousLocation := attacker.LocationID()
+		previousRegion := attacker.RegionID
 		retreat := navalContactRetreatRegion(g.gs, attacker, contact.AttackerFromRegionID)
 		if retreat != "" {
 			attacker.RegionID = retreat
@@ -157,17 +161,23 @@ func (g *Game) resolveNavalContactWithoutBattle(contact *state.NavalContact, att
 			attacker.DockedSettlementID = ""
 			attacker.MovePoints = max(0, attacker.MovePoints-state.NavalContactWithdrawMovementCost)
 			g.gs.ClearNavalMissionAfterRelocation(attacker, previousLocation)
+			refreshRegions = append(refreshRegions, previousRegion, attacker.RegionID)
 		}
 	}
 	if contact.DefenderDecision == state.NavalContactWithdraw {
 		previousLocation := defender.LocationID()
+		previousRegion := defender.RegionID
 		if retreat := navalContactRetreatRegion(g.gs, defender, contact.AttackerFromRegionID); retreat != "" {
 			defender.RegionID = retreat
 			defender.DockedRegionID = ""
 			defender.DockedSettlementID = ""
 			defender.MovePoints = max(0, defender.MovePoints-state.NavalContactWithdrawMovementCost)
 			g.gs.ClearNavalMissionAfterRelocation(defender, previousLocation)
+			refreshRegions = append(refreshRegions, previousRegion, defender.RegionID)
 		}
+	}
+	if g.renderer != nil && len(refreshRegions) > 0 {
+		g.renderer.RefreshArmyLogisticsBadgesForRegions(refreshRegions...)
 	}
 }
 
