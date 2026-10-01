@@ -4986,7 +4986,11 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 		return
 	}
 	if !r.regionLabelDrawValid || r.regionLabelDrawKey != r.regionLabelStaticKey || len(r.regionLabelDrawVisible) != len(staticLabels) || r.armyMovementAnimation.visualActive {
-		r.regionLabelDrawVisible = r.regionLabelDrawVisible[:len(staticLabels)]
+		if cap(r.regionLabelDrawVisible) < len(staticLabels) {
+			r.regionLabelDrawVisible = make([]bool, len(staticLabels))
+		} else {
+			r.regionLabelDrawVisible = r.regionLabelDrawVisible[:len(staticLabels)]
+		}
 		for i := range staticLabels {
 			visible := staticLabels[i].DrawLabel
 			if visible {

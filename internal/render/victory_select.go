@@ -69,7 +69,7 @@ func victoryLayout(total, historicalCount int, cardW, cardH, gap, headerH float6
 	return victoryLayoutScrolled(total, historicalCount, cardW, cardH, gap, headerH, 0)
 }
 
-func victoryLayoutScrolled(total, historicalCount int, cardW, cardH, gap, headerH, scroll float64) victorySelectLayout {
+func victoryLayoutScrolled(total, historicalCount int, cardW, cardH, gap, _, scroll float64) victorySelectLayout {
 	generalCount := total - historicalCount
 	contentH := 0.0
 	if historicalCount > 0 {
