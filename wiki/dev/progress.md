@@ -7,6 +7,13 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-10-01: Core bölgesindeki kara muharebelerine yerel savaş avantajı eklendi.
+  Güncel egemen sahibinin `core` bölgesinde saldıran ordu `%5` saldırı,
+  savunan ordu `%10` savunma bonusu alıyor; aynı kontrol gerçek çözümleme ve
+  savaş planı önizlemesinde kullanılıyor. `internal/state/state.go` içindeki
+  `IsCoreRegion`, minor/privileged bölgelerde egemen sahipliği dikkate alıyor.
+  Regression: `internal/combat/combat_test.go`; doğrulama: `go test ./internal/combat ./internal/state ./internal/game ./internal/ai ./internal/render -count=1`.
+
 - 2026-10-01: Harita dışındaki pahalı yardımcı yollar da cache'lendi. Bölgesel
   lojistik önizlemesi tüm bölgeler için GameState runtime cache'inde tek geçişte
   üretiliyor ve hareket/ikmal/harita state değişimlerinde invalid ediliyor.

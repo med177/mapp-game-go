@@ -591,6 +591,9 @@ func (r *Renderer) openBattlePlanWithDestination(attacker *army.Army, target *wo
 	}
 	atkMods := combat.TechModsFor(r.gs, attacker.OwnerID)
 	defMods := combat.TechModsFor(r.gs, defender.OwnerID)
+	combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+		r.gs.IsCoreRegion(faction.FactionID(attacker.OwnerID), target.ID),
+		r.gs.IsCoreRegion(faction.FactionID(defender.OwnerID), target.ID))
 	attackerHolding := len(contactHolding) > 0 && contactHolding[0]
 	defenderHolding := len(contactHolding) > 1 && contactHolding[1]
 	if defender.InAmbush {

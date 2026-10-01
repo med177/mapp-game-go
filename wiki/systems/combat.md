@@ -97,8 +97,8 @@ savaşsız işgali ve kuşatma sonrası fethi de kapsar.
 ## Hesap Akışı
 
 ```
-saldıranGücü = ordu.TotalStrength(types) × (1 + atkMods.AttackMod + komutanSaldırıModu)
-savunucuGücü = ordu.TotalStrength(types) × terrainBonus × (1 + defMods.DefenseMod + komutanSavunmaModu)
+saldıranGücü = ordu.TotalStrength(types) × (1 + atkMods.AttackMod + komutanSaldırıModu + coreSaldırıBonusu)
+savunucuGücü = ordu.TotalStrength(types) × terrainBonus × (1 + defMods.DefenseMod + komutanSavunmaModu + coreSavunmaBonusu)
 
 calculateOutcome(saldıranGücü, savunucuGücü)
     → (kazandıMı bool, saldıranKayıpOranı float64, savunucuKayıpOranı float64)
@@ -122,6 +122,15 @@ Result → saldıran/savunan kayıp birimi + toplam HP hasarı
 | Ova / Diğer | ×1.0 |
 
 → Arazi tipleri: [[world/regions]]
+
+## Core bölgesi avantajı
+
+Muharebe alanı tarafın güncel egemen mülkiyetinde ve o devletin `core` kaydındaysa
+devlet yerel savunma avantajı alır. Core bölgesindeki saldıran ordu efektif saldırı
+gücüne `%5`, savunan ordu efektif savunma gücüne `%10` ek alır. Avantaj yalnızca
+gerçek sahiplik korunuyorsa geçerlidir; fethedilmiş ancak eski sahibin `core`u olan
+bölgede eski devlet bonus alamaz. Aynı kontrol hem gerçek çözümlemede hem savaş
+planı önizlemesinde kullanılır; deniz bölgelerine uygulanmaz.
 
 ---
 

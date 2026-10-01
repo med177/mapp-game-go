@@ -1948,6 +1948,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					// AI vs AI huruç: hemen çöz.
 					atkMods := aiTechMods(gs, a.OwnerID)
 					defMods := aiTechMods(gs, siegeArmy.OwnerID)
+					combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+						gs.IsCoreRegion(faction.FactionID(a.OwnerID), sourceRegion.ID),
+						gs.IsCoreRegion(faction.FactionID(siegeArmy.OwnerID), sourceRegion.ID))
 					defMods.DefenseMod += 0.10
 					result := combat.ResolveBattleWithMods(a, siegeArmy, sourceRegion.Terrain, gs.UnitTypes, atkMods, defMods)
 					gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, siegeArmy.IsNaval, len(a.Units) == 0, len(siegeArmy.Units) == 0)
@@ -2058,6 +2061,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			}
 			atkMods := aiTechMods(gs, a.OwnerID)
 			defMods := aiTechMods(gs, enemyArmy.OwnerID)
+			combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+				gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
+				gs.IsCoreRegion(faction.FactionID(enemyArmy.OwnerID), targetRegion.ID))
 			result := combat.ResolveBattleWithMods(landing, enemyArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
 			gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost, landing.IsNaval, enemyArmy.IsNaval, len(landing.Units) == 0, len(enemyArmy.Units) == 0)
 			recordCommanderBattle(gs, landing, enemyArmy, nil, result.AttackerWins)
@@ -2203,6 +2209,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			}
 			atkMods := aiTechMods(gs, a.OwnerID)
 			defMods := aiTechMods(gs, targetRegion.OwnerID)
+			combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+				gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
+				gs.IsCoreRegion(faction.FactionID(targetRegion.OwnerID), targetRegion.ID))
 			defensePressure := state.SiegeDefensePressureForArmy(gs.UnitTypes, a, activeSiege.FortLevel)
 			defMods.DefenseMod += state.SiegeDefenseBonus(activeSiege.FortLevel, activeSiege.BreachLevel, defensePressure)
 			result := combat.ResolveBattleWithContextPlan(a, defender, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, combat.BattleStanceBalanced)
@@ -2361,6 +2370,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			defOwnerID = enemyArmy.OwnerID
 		}
 		defMods := aiTechMods(gs, defOwnerID)
+		combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+			gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
+			gs.IsCoreRegion(faction.FactionID(defOwnerID), targetRegion.ID))
 		if ambushDefender != nil {
 			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
 			ambushDefender.InAmbush = false

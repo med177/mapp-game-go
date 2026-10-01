@@ -2028,6 +2028,29 @@ func (s *GameState) LandRegionsOwnedBy(fid faction.FactionID) []*world.Region {
 	return result
 }
 
+// IsCoreRegion, bir bölgenin egemen sahibine ait ve o devletin core bölgesi
+// olup olmadığını döner. Savaş bonusu gibi sahiplik duyarlı kurallar için
+// minor/privileged bölgelerde gerçek egemen sahibi kullanır.
+func (s *GameState) IsCoreRegion(fid faction.FactionID, regionID world.RegionID) bool {
+	if s == nil || fid == "" || regionID == "" {
+		return false
+	}
+	region := s.Regions[regionID]
+	if region == nil || region.IsSea || region.IsTerrainArea || s.SovereignOwnerID(region) != string(fid) {
+		return false
+	}
+	owner := s.Factions[fid]
+	if owner == nil {
+		return false
+	}
+	for _, claim := range owner.TerritorialClaims {
+		if claim.Core && claim.RegionID == string(regionID) {
+			return true
+		}
+	}
+	return false
+}
+
 // SovereignOwnerID, imtiyazlı küçük alt bölgelerde gerçek/egemen sahibi ana
 // bölgeden çözer. OwnerID bu durumda kullanım ve işletme sahibidir; imtiyazlı
 // olmayan bölgelerde iki anlam da aynı OwnerID'de kalır.

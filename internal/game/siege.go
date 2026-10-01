@@ -654,6 +654,13 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	} else {
 		defMods = techModsFor(g.gs, defender.OwnerID)
 	}
+	defenderOwnerID := targetOwnerID
+	if !virtualDefense && defender != nil {
+		defenderOwnerID = defender.OwnerID
+	}
+	combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+		g.gs.IsCoreRegion(faction.FactionID(attacker.OwnerID), targetRegion.ID),
+		g.gs.IsCoreRegion(faction.FactionID(defenderOwnerID), targetRegion.ID))
 	defenderLabel := "Savunma Hattı"
 	if virtualDefense {
 		defenderLabel = "Garnizon"
@@ -670,10 +677,6 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	if extraDamage > 0 {
 		extraLost, _ := applyArmyFlatDamage(attacker, extraDamage)
 		result.AttackerLost += extraLost
-	}
-	defenderOwnerID := targetOwnerID
-	if !virtualDefense && defender != nil {
-		defenderOwnerID = defender.OwnerID
 	}
 	g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(attacker.OwnerID), faction.FactionID(defenderOwnerID), result.AttackerLost, result.DefenderLost, attacker.IsNaval, defender.IsNaval, len(attacker.Units) == 0, !virtualDefense && len(defender.Units) == 0)
 

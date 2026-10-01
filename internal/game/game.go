@@ -5260,6 +5260,9 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		defenderBefore := snapshotBattleArmy(enemyArmy, g.gs.UnitTypes)
 		atkMods := techModsFor(g.gs, fleet.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
+		combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+			g.gs.IsCoreRegion(faction.FactionID(fleet.OwnerID), targetRegion.ID),
+			g.gs.IsCoreRegion(faction.FactionID(enemyArmy.OwnerID), targetRegion.ID))
 		result := combat.ResolveBattleWithContextPlan(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextAmphibious, battleStance)
 		g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost, landing.IsNaval, enemyArmy.IsNaval, len(landing.Units) == 0, len(enemyArmy.Units) == 0)
 		g.recordCommanderBattle(landing, enemyArmy, nil, result.AttackerWins)
@@ -5977,6 +5980,9 @@ func (g *Game) resolveSortieMovement(a *army.Army, target *world.Region, stance 
 	defenderBefore := snapshotBattleArmy(siegeArmy, g.gs.UnitTypes)
 	atkMods := techModsFor(g.gs, a.OwnerID)
 	defMods := techModsFor(g.gs, siegeArmy.OwnerID)
+	combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+		g.gs.IsCoreRegion(faction.FactionID(a.OwnerID), sourceRegion.ID),
+		g.gs.IsCoreRegion(faction.FactionID(siegeArmy.OwnerID), sourceRegion.ID))
 	// Kuşatan ordu açık arazide savunuyor olsa da kuşatma hattının avantajı
 	// nedeniyle huruç savaşında küçük bir savunma bonusu korur.
 	defMods.DefenseMod += 0.10
@@ -6528,6 +6534,9 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		// Savunma modlarını bölge sahibinden al (birleşik orduda ilk ordu sahibi referans)
 		defOwnerID := enemyArmy.OwnerID
 		defMods := techModsFor(g.gs, defOwnerID)
+		combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
+			g.gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
+			g.gs.IsCoreRegion(faction.FactionID(defOwnerID), targetRegion.ID))
 		if !navalSeaMove && enemyArmy.InAmbush {
 			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
 			enemyArmy.InAmbush = false

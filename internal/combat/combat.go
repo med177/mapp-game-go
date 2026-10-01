@@ -53,13 +53,32 @@ type Preview struct {
 	DefenderLossExpected int
 }
 
-// TechMods savaşa etki eden teknoloji çarpanları.
+// TechMods savaşa etki eden teknoloji ve bölgesel çarpanları.
 type TechMods struct {
 	AttackMod           float64 // kara saldırı çarpanı (ör. 0.10 = +10%)
 	DefenseMod          float64 // kara savunma çarpanı
 	NavalAttackMod      float64 // deniz saldırı çarpanı
 	NavalDefenseMod     float64 // deniz savunma çarpanı
 	LandOrganizationMod float64 // kara ordusu slot aşımı çarpanı (ör. -0.10 = -10%)
+	CoreAttackMod       float64 // saldıranın kendi core bölgesindeki muharebe bonusu
+	CoreDefenseMod      float64 // savunucunun kendi core bölgesindeki muharebe bonusu
+}
+
+const (
+	CoreAttackBonus  = 0.05
+	CoreDefenseBonus = 0.10
+)
+
+// ApplyCoreCombatBonuses, muharebe alanı bir tarafın kendi core bölgesiyse
+// sahiplik avantajını ilgili teknoloji moduna ekler. Savunma avantajı bilinçli
+// olarak saldırı avantajından yüksektir.
+func ApplyCoreCombatBonuses(atkMods, defMods *TechMods, attackerCore, defenderCore bool) {
+	if atkMods != nil && attackerCore {
+		atkMods.CoreAttackMod += CoreAttackBonus
+	}
+	if defMods != nil && defenderCore {
+		defMods.CoreDefenseMod += CoreDefenseBonus
+	}
 }
 
 // Result savaşın sonucunu özetler.
@@ -390,8 +409,8 @@ func battleStrengthsWithContactDefense(atk, def *army.Army, terrain world.Terrai
 		defDefenseMod += defMods.LandOrganizationMod
 	}
 	cfg := battleStanceSpec(context, stance)
-	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod + commanderAttackMod + attackerMoraleMod)
-	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod + commanderDefenseMod + defenderMoraleMod)
+	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod + commanderAttackMod + attackerMoraleMod + atkMods.CoreAttackMod)
+	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod + commanderDefenseMod + defenderMoraleMod + defMods.CoreDefenseMod)
 	if attackerHolding {
 		atkStr *= 1 + ContactHoldDefenseBonus(context)
 	}
