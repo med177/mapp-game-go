@@ -537,6 +537,13 @@ func (wm *WorldMap) coastalSettlementPointForSea(region *world.Region, seaID wor
 		score := perpendicularX*perpendicularX + perpendicularY*perpendicularY
 		candidateX := int(math.Round(worldX - ux*coastalSettlementInset))
 		candidateY := int(math.Round(worldY - uy*coastalSettlementInset))
+		// Kıyıya temas eden pikselin iç tarafına kaydırılan aday, komşu
+		// bölgenin tarafına taşmış olabilir. Settlement koordinatı senaryo
+		// uzayında tutulduğu için kabul etmeden önce aynı koordinatı gerçek
+		// raster bölgesine geri çevirip doğrula.
+		if wm.RegionAt(int(shapeOffX+float64(candidateX)*shapeScaleX), int(shapeOffY+float64(candidateY)*shapeScaleY)) != region.ID {
+			continue
+		}
 		candidateClearance := settlementCandidateClearanceSquared(region, candidateX, candidateY)
 		if candidateClearance > bestFallbackClearance ||
 			(math.Abs(candidateClearance-bestFallbackClearance) <= 0.0001 && score < bestFallbackScore) {
@@ -627,11 +634,22 @@ func (wm *WorldMap) UpdateSettlementAnchor(gs *state.GameState, rid world.Region
 	wy := int(shapeOffY + float64(settlement.Y)*shapeScaleY)
 	ax, ay := wx, wy
 	if !regionContainsPoint(region, float64(settlement.X), float64(settlement.Y)) || wm.RegionAt(wx, wy) != rid {
-		if sx, sy, ok := nearestPointInRegionShape(region, settlement.X, settlement.Y); ok {
-			ax = int(shapeOffX + float64(sx)*shapeScaleX)
-			ay = int(shapeOffY + float64(sy)*shapeScaleY)
+		// Birden fazla bölgenin aynı ülke shape'ini paylaştığı durumda
+		// Shape yalnızca ülke sınırını temsil eder; geçersiz settlement
+		// koordinatını aynı shape içinde bırakmak yerine gerçek raster
+		// bölgesinin en yakın pikseline taşı.
+		if settlement.Type == world.SettlementPort {
+			if sx, sy, ok := wm.CoastalSettlementPoint(region, gs.Regions); ok {
+				ax = int(shapeOffX + float64(sx)*shapeScaleX)
+				ay = int(shapeOffY + float64(sy)*shapeScaleY)
+			} else if fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy); ok {
+				ax, ay = fx, fy
+			}
 		} else if fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy); ok {
 			ax, ay = fx, fy
+		} else if sx, sy, ok := nearestPointInRegionShape(region, settlement.X, settlement.Y); ok {
+			ax = int(shapeOffX + float64(sx)*shapeScaleX)
+			ay = int(shapeOffY + float64(sy)*shapeScaleY)
 		}
 	}
 
@@ -1363,19 +1381,29 @@ func (wm *WorldMap) computeSettlementAnchors(gs *state.GameState) {
 			wy := int(shapeOffY + float64(settlement.Y)*shapeScaleY)
 			ax, ay := wx, wy
 			if !regionContainsPoint(region, float64(settlement.X), float64(settlement.Y)) || wm.RegionAt(wx, wy) != rid {
-				if sx, sy, ok := nearestPointInRegionShape(region, settlement.X, settlement.Y); ok {
-					ax = int(shapeOffX + float64(sx)*shapeScaleX)
-					ay = int(shapeOffY + float64(sy)*shapeScaleY)
-				} else {
-					fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy)
-					if !ok {
+				// Shared country shape'lerinde nearestPointInRegionShape
+				// settlement'ın yanlış bölgedeki koordinatını geçerli sayabilir.
+				// Öncelik gerçek raster bölgesinde olmalıdır.
+				if settlement.Type == world.SettlementPort {
+					if sx, sy, ok := wm.CoastalSettlementPoint(region, gs.Regions); ok {
+						ax = int(shapeOffX + float64(sx)*shapeScaleX)
+						ay = int(shapeOffY + float64(sy)*shapeScaleY)
+					} else if fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy); ok {
+						ax, ay = fx, fy
+					} else {
 						log.Printf("yerlesim fallback bulunamadi: region=%s settlement=%s x=%d y=%d",
 							rid, settlement.ID, settlement.X, settlement.Y)
 						continue
 					}
-					log.Printf("yerlesim koordinati bolge disinda, fallback uygulandi: region=%s settlement=%s x=%d y=%d -> pixel=%d,%d",
-						rid, settlement.ID, settlement.X, settlement.Y, fx, fy)
+				} else if fx, fy, ok := wm.nearestRegionPixel(rid, wx, wy); ok {
 					ax, ay = fx, fy
+				} else if sx, sy, ok := nearestPointInRegionShape(region, settlement.X, settlement.Y); ok {
+					ax = int(shapeOffX + float64(sx)*shapeScaleX)
+					ay = int(shapeOffY + float64(sy)*shapeScaleY)
+				} else {
+					log.Printf("yerlesim fallback bulunamadi: region=%s settlement=%s x=%d y=%d",
+						rid, settlement.ID, settlement.X, settlement.Y)
+					continue
 				}
 			}
 

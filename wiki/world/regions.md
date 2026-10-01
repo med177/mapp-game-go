@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [regions, terrain, map, neighbors, coastal, succession]
-last_updated: 2026-09-30
+last_updated: 2026-10-01
 related: [systems/combat, world/factions, architecture/render-pipeline]
 ---
 
@@ -150,9 +150,12 @@ toplamına uygulanır. Eski save'lerde yalnız toplam nüfus varsa yardımcı
 `RuralPopulation` alanı bu toplamla başlatılır.
 ```
 
-Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken uyarı loglanır ve nokta aynı region içindeki en yakın piksele taşınır.
+Yerleşim koordinatı yanlışlıkla bölge raster alanının dışına düşerse render cache yüklenirken
+uyarılır ve nokta aynı region içindeki en yakın piksele taşınır. Kıyıdan otomatik üretilen
+liman adayları da kaydırma sonrası `RegionAt` ile doğrulanır; ortak ülke shape'i kullanan
+bölgelerde komşu bölgeye taşan aday kabul edilmez.
 
-Kıyı bölgesinde `port` binası tamamlandığında, bölgede henüz `type=port` settlement yoksa oyun bu bölge için denize yakın yeni bir `Liman` yerleşimi üretir. Kıyı adayı aynı bölgedeki mevcut settlement marker'larından en az marker açıklığı kadar ayrılır; tercih edilen nokta doluysa aynı kıyı doğrultusundaki başka bir aday seçilir. Bu akış minor bölgeler için de aynıdır; Edit Mode'da minor alan kıyıya boyandığında görsel deniz komşuluğu state'e aktarılır. Böylece liman binası sadece ekonomi/üretim değil, dock edilen filonun görünür anchor noktası için de tekil veri kaynağı olur.
+Kıyı bölgesinde `port` binası tamamlandığında, bölgede henüz `type=port` settlement yoksa oyun bu bölge için denize yakın yeni bir `Liman` yerleşimi üretir. Kıyı adayı aynı bölgedeki mevcut settlement marker'larından en az marker açıklığı kadar ayrılır; tercih edilen nokta doluysa aynı kıyı doğrultusundaki başka bir aday seçilir. Adayın gerçek raster bölgesine ait olduğu da doğrulanır. Bu akış minor bölgeler için de aynıdır; Edit Mode'da minor alan kıyıya boyandığında görsel deniz komşuluğu state'e aktarılır. Böylece liman binası sadece ekonomi/üretim değil, dock edilen filonun görünür anchor noktası için de tekil veri kaynağı olur.
 
 `1300_ottoman_rise` başlangıç verisinde Londra, Normandiya, Portekiz, Sicilya ve
 Mısır'a tarihsel başlangıç filolarının dock edilebilmesi için birinci seviye `port`

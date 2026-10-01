@@ -1,147 +1,7 @@
 [
   {
     "faction_a": "achaea_principality",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
     "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "achaea_principality",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "achaea_principality",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "serbian_empire",
-    "faction_b": "achaea_principality",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "afshar_beyligi",
-    "faction_b": "bosnian_banate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "afshar_beyligi",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "afshar_beyligi",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "afshar_beyligi",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "afshar_beyligi",
-    "faction_b": "safavid",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ahiler",
-    "faction_b": "bosnian_banate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ahiler",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ahiler",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ahiler",
-    "faction_b": "flanders_county",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "peace"
@@ -149,71 +9,8 @@
   {
     "faction_a": "ahiler",
     "faction_b": "ottoman",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ahiler",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ahiler",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "akkoyunlu_state",
-    "faction_b": "bosnian_banate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "akkoyunlu_state",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "akkoyunlu_state",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "akkoyunlu_state",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "akkoyunlu_state",
-    "faction_b": "safavid",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
     "stance": "peace"
   },
   {
@@ -225,30 +22,9 @@
   },
   {
     "faction_a": "aragon",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "aragon",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
     "faction_b": "france",
     "score_a_to_b": -15,
     "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -260,364 +36,14 @@
   },
   {
     "faction_a": "aragon",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
     "faction_b": "naples_kingdom",
     "score_a_to_b": 10,
     "score_b_to_a": 10,
     "stance": "peace"
   },
   {
-    "faction_a": "aragon",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aragon",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "epir",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "arnavut_des",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "artuklu",
-    "faction_b": "bosnian_banate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "artuklu",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "artuklu",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "artuklu",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "artuklu",
-    "faction_b": "safavid",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "athena_duk",
     "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "athena_duk",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "athena_duk",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aydin_bey",
-    "faction_b": "bosnian_banate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aydin_bey",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aydin_bey",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aydin_bey",
-    "faction_b": "flanders_county",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "peace"
@@ -631,156 +57,9 @@
   },
   {
     "faction_a": "aydin_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aydin_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "aydin_bey",
     "faction_b": "saruhan_bey",
     "score_a_to_b": -10,
     "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "bavaria_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "bohemian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "bosnian_banate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "brandenburg_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "castile_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "denmark_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "england",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "florence_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "france",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "genoa",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -792,707 +71,14 @@
   },
   {
     "faction_a": "barqa_emirate",
-    "faction_b": "hre",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "hungarian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "ilkhanate",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "leon_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "lithuanian_gd",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
     "faction_b": "mamluk",
     "score_a_to_b": -10,
     "score_b_to_a": -10,
     "stance": "peace"
   },
   {
-    "faction_a": "barqa_emirate",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": 0,
-    "score_b_to_a": 0,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "milan_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "naples_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "polish_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "portugal",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "safavid",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "savoy_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "saxony_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "barqa_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "barqa_emirate",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bavaria_duchy",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bohemian_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "candar_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "canik_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "dulkadir_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "eretna_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "esrefoglu_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "germiyan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "golden_horde",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "granada_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "hafsid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "hamid_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "hormuz_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "ilkhanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "jelayirids",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "kadi_burhaneddin",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "karakoyunlu_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "karaman_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "karesioglu_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "mamluk",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "marinid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "mentese_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "muzaffarids",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "ottoman",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "safavid",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "saruhan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "bosnian_banate",
     "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "shirvanshahs",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "usfurid_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bosnian_banate",
-    "faction_b": "zayyanid_tlemcen",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "brandenburg_margraviate",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "castile_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "denmark_kingdom",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "peace"
@@ -1502,41 +88,6 @@
     "faction_b": "east_rome",
     "score_a_to_b": 10,
     "score_b_to_a": 10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "england",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "florence_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "france",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -1548,287 +99,7 @@
   },
   {
     "faction_a": "bulgarian_empire",
-    "faction_b": "hre",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "hungarian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "lithuanian_gd",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "milan_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "naples_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "polish_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "portugal",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "savoy_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "saxony_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
     "faction_b": "serbian_empire",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "bulgarian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "bulgarian_empire",
-    "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "candar_bey",
-    "faction_b": "canik_bey",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "candar_bey",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "candar_bey",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "candar_bey",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "candar_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "candar_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "canik_bey",
-    "faction_b": "carniola_margraviate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "canik_bey",
-    "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "canik_bey",
-    "faction_b": "esrefoglu_bey",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "canik_bey",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "canik_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "canik_bey",
-    "faction_b": "safavid",
     "score_a_to_b": -15,
     "score_b_to_a": -15,
     "stance": "peace"
@@ -1836,258 +107,6 @@
   {
     "faction_a": "carniola_margraviate",
     "faction_b": "croatian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "dulkadir_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "eretna_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "esrefoglu_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "flanders_county",
-    "score_a_to_b": 0,
-    "score_b_to_a": 0,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "france",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "germiyan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "golden_horde",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "granada_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "hafsid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "hamid_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "hormuz_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "ilkhanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "jelayirids",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "kadi_burhaneddin",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "karakoyunlu_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "karaman_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "karesioglu_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "mamluk",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "marinid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "mentese_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "muzaffarids",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "ottoman",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "safavid",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "saruhan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "shirvanshahs",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "usfurid_emirate",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "peace"
@@ -2095,48 +114,6 @@
   {
     "faction_a": "carniola_margraviate",
     "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "carniola_margraviate",
-    "faction_b": "zayyanid_tlemcen",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "castile_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "castile_kingdom",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "castile_kingdom",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "castile_kingdom",
-    "faction_b": "mecca_sharifate",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "peace"
@@ -2150,287 +127,14 @@
   },
   {
     "faction_a": "castile_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "castile_kingdom",
     "faction_b": "portugal",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
+    "score_a_to_b": 20,
+    "score_b_to_a": 20,
     "stance": "trade"
   },
   {
-    "faction_a": "castile_kingdom",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "castile_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "castile_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "castile_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "castile_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "dulkadir_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "eretna_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "esrefoglu_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "germiyan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "golden_horde",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "granada_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "hafsid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "hamid_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "hormuz_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "ilkhanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "jelayirids",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "kadi_burhaneddin",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "karakoyunlu_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "karaman_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "karesioglu_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "mamluk",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "marinid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "mentese_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "muzaffarids",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "ottoman",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "safavid",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "saruhan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "croatian_kingdom",
     "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "shirvanshahs",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "usfurid_emirate",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "peace"
@@ -2443,144 +147,11 @@
     "stance": "peace"
   },
   {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "croatian_kingdom",
-    "faction_b": "zayyanid_tlemcen",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "cyprus_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "denmark_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "denmark_kingdom",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "denmark_kingdom",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "denmark_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "denmark_kingdom",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
     "faction_a": "denmark_kingdom",
     "faction_b": "novgorod_rep",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "trade"
-  },
-  {
-    "faction_a": "denmark_kingdom",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "denmark_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "denmark_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
   },
   {
     "faction_a": "sweden_kingdom",
@@ -2590,48 +161,6 @@
     "stance": "peace"
   },
   {
-    "faction_a": "denmark_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "denmark_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "dulkadir_bey",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "dulkadir_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "dulkadir_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "england",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "epir",
     "faction_b": "east_rome",
     "score_a_to_b": -20,
@@ -2640,150 +169,17 @@
   },
   {
     "faction_a": "east_rome",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "florence_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "france",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
     "faction_b": "genoa",
-    "score_a_to_b": 8,
-    "score_b_to_a": 8,
+    "score_a_to_b": 20,
+    "score_b_to_a": 20,
     "stance": "trade"
   },
   {
     "faction_a": "east_rome",
-    "faction_b": "hre",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "hungarian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "lithuanian_gd",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "milan_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "naples_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
     "faction_b": "ottoman",
-    "score_a_to_b": -70,
+    "score_a_to_b": -90,
     "score_b_to_a": -70,
     "stance": "war"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "polish_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "portugal",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "savoy_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "saxony_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
   },
   {
     "faction_a": "east_rome",
@@ -2793,80 +189,17 @@
     "stance": "peace"
   },
   {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "east_rome",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "east_rome",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "east_rome",
     "faction_b": "venice",
-    "score_a_to_b": 5,
-    "score_b_to_a": 5,
+    "score_a_to_b": 20,
+    "score_b_to_a": 20,
     "stance": "trade"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "england",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
   },
   {
     "faction_a": "england",
     "faction_b": "france",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "england",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "england",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "england",
-    "score_a_to_b": 40,
-    "score_b_to_a": 40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "england",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "england",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "england",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
+    "score_a_to_b": -45,
+    "score_b_to_a": -45,
     "stance": "peace"
   },
   {
@@ -2877,276 +210,10 @@
     "stance": "war"
   },
   {
-    "faction_a": "england",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "england",
-    "score_a_to_b": 20,
-    "score_b_to_a": 20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "england",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "england",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "florence_rep",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "france",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "genoa",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "hre",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "hungarian_kingdom",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "lithuanian_gd",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "milan_duchy",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "naples_kingdom",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "polish_kingdom",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "portugal",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "savoy_county",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "saxony_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
     "faction_a": "epir",
     "faction_b": "serbian_empire",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "epir",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "venice",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "epir",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "eretna_state",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "eretna_state",
-    "faction_b": "safavid",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "esrefoglu_bey",
-    "faction_b": "flanders_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "germiyan_bey",
-    "faction_b": "esrefoglu_bey",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "esrefoglu_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "safavid",
-    "faction_b": "esrefoglu_bey",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
     "stance": "peace"
   },
   {
@@ -3157,353 +224,10 @@
     "stance": "trade"
   },
   {
-    "faction_a": "flanders_county",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "germiyan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "golden_horde",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "granada_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "hafsid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "hamid_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "hormuz_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "ilkhanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "jelayirids",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "kadi_burhaneddin",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "karakoyunlu_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "karaman_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "karesioglu_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "mamluk",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "marinid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "mentese_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "muzaffarids",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "ottoman",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "safavid",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "saruhan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "shirvanshahs",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "usfurid_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "flanders_county",
-    "faction_b": "zayyanid_tlemcen",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "florence_rep",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "florence_rep",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "florence_rep",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "florence_rep",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "florence_rep",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "florence_rep",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "florence_rep",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "florence_rep",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "france",
     "faction_b": "hre",
     "score_a_to_b": -10,
     "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "genoa",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "genoa",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -3515,28 +239,7 @@
   },
   {
     "faction_a": "genoa",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "genoa",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "genoa",
     "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "genoa",
-    "faction_b": "serbian_empire",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "peace"
@@ -3556,185 +259,17 @@
     "stance": "trade"
   },
   {
-    "faction_a": "genoa",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "hre",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "hungarian_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "lithuanian_gd",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "milan_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "naples_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "polish_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "portugal",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "savoy_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "saxony_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "georgia_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "georgia_kingdom",
-    "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "germiyan_bey",
-    "faction_b": "hamid_bey",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "germiyan_bey",
-    "faction_b": "karaman_bey",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
     "faction_a": "karesioglu_bey",
     "faction_b": "germiyan_bey",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
+    "score_a_to_b": 60,
+    "score_b_to_a": 60,
     "stance": "peace"
   },
   {
     "faction_a": "germiyan_bey",
     "faction_b": "ottoman",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "germiyan_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "germiyan_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
+    "score_a_to_b": 45,
+    "score_b_to_a": 45,
     "stance": "peace"
   },
   {
@@ -3747,57 +282,8 @@
   {
     "faction_a": "golden_horde",
     "faction_b": "ilkhanate",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "golden_horde",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "golden_horde",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "granada_emirate",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "granada_emirate",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "marinid_sultanate",
-    "faction_b": "hafsid_sultanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hafsid_sultanate",
-    "faction_b": "safavid",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hafsid_sultanate",
-    "faction_b": "usfurid_emirate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
+    "score_a_to_b": -40,
+    "score_b_to_a": -40,
     "stance": "peace"
   },
   {
@@ -3810,8 +296,8 @@
   {
     "faction_a": "hamid_bey",
     "faction_b": "karaman_bey",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -3819,27 +305,6 @@
     "faction_b": "mentese_bey",
     "score_a_to_b": -10,
     "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hamid_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hamid_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hormuz_sultanate",
-    "faction_b": "ilkhanate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -3857,99 +322,8 @@
     "stance": "peace"
   },
   {
-    "faction_a": "hre",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hre",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hre",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hre",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hre",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hre",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hre",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hungarian_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hungarian_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hungarian_kingdom",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hungarian_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "hungarian_kingdom",
     "faction_b": "serbian_empire",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hungarian_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hungarian_kingdom",
-    "faction_b": "venice",
     "score_a_to_b": -15,
     "score_b_to_a": -15,
     "stance": "peace"
@@ -3959,13 +333,6 @@
     "faction_b": "wallachia_prince",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ilkhanate",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
     "stance": "peace"
   },
   {
@@ -3977,79 +344,16 @@
   },
   {
     "faction_a": "ilkhanate",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ilkhanate",
     "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
     "stance": "trade"
   },
   {
-    "faction_a": "jelayirids",
-    "faction_b": "safavid",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "kadi_burhaneddin",
-    "faction_b": "safavid",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "karakoyunlu_state",
-    "faction_b": "safavid",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "karaman_bey",
-    "faction_b": "ottoman",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "karaman_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "karaman_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
     "faction_a": "karesioglu_bey",
     "faction_b": "ottoman",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "karesioglu_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "karesioglu_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
+    "score_a_to_b": 55,
+    "score_b_to_a": 55,
     "stance": "peace"
   },
   {
@@ -4061,61 +365,12 @@
   },
   {
     "faction_a": "leon_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
     "faction_b": "portugal",
     "score_a_to_b": -10,
     "score_b_to_a": -10,
     "stance": "peace"
   },
   {
-    "faction_a": "leon_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "leon_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "lithuanian_gd",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "lithuanian_gd",
     "faction_b": "novgorod_rep",
     "score_a_to_b": -20,
@@ -4123,66 +378,10 @@
     "stance": "peace"
   },
   {
-    "faction_a": "lithuanian_gd",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "lithuanian_gd",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "lithuanian_gd",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "lithuanian_gd",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "lithuanian_gd",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "mamluk",
-    "faction_b": "ottoman",
-    "score_a_to_b": 10,
+    "faction_b": "ramazan_bey",
+    "score_a_to_b": 20,
     "score_b_to_a": 10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mamluk",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mamluk",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "marinid_sultanate",
-    "faction_b": "safavid",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
     "stance": "peace"
   },
   {
@@ -4193,395 +392,17 @@
     "stance": "peace"
   },
   {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "milan_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "naples_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "polish_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "portugal",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "safavid",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "savoy_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "saxony_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "mecca_sharifate",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mecca_sharifate",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mentese_bey",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mentese_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "mentese_bey",
-    "faction_b": "saruhan_bey",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "milan_duchy",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "milan_duchy",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "milan_duchy",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "milan_duchy",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "milan_duchy",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "milan_duchy",
     "faction_b": "venice",
     "score_a_to_b": -10,
     "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "milan_duchy",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "muzaffarids",
-    "faction_b": "safavid",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "naples_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "naples_kingdom",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "naples_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "naples_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "naples_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "naples_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "navarra",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": 20,
-    "score_b_to_a": 20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
     "faction_a": "norway_kingdom",
     "faction_b": "sweden_kingdom",
-    "score_a_to_b": 55,
-    "score_b_to_a": 55,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "norway_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "novgorod_rep",
-    "faction_b": "polish_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "novgorod_rep",
-    "faction_b": "portugal",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "novgorod_rep",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "novgorod_rep",
-    "faction_b": "savoy_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "novgorod_rep",
-    "faction_b": "saxony_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "novgorod_rep",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "novgorod_rep",
-    "score_a_to_b": -35,
-    "score_b_to_a": -35,
+    "score_a_to_b": 25,
+    "score_b_to_a": 25,
     "stance": "peace"
   },
   {
@@ -4592,255 +413,10 @@
     "stance": "peace"
   },
   {
-    "faction_a": "novgorod_rep",
-    "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ottoman",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ottoman",
-    "faction_b": "safavid",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "polish_kingdom",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "polish_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "polish_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "polish_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "polish_kingdom",
     "faction_b": "wallachia_prince",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "portugal",
-    "faction_b": "ramazan_bey",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "portugal",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "portugal",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "portugal",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "portugal",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ragusa",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "safavid",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "saruhan_bey",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "savoy_county",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "venice",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "ramazan_bey",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "russia",
-    "faction_b": "savoy_county",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "russia",
-    "faction_b": "saxony_duchy",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "russia",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "russia",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "russia",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "russia",
-    "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "safavid",
-    "faction_b": "saruhan_bey",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "safavid",
-    "faction_b": "shirvanshahs",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "safavid",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": -40,
-    "score_b_to_a": -40,
     "stance": "peace"
   },
   {
@@ -4851,148 +427,8 @@
     "stance": "trade"
   },
   {
-    "faction_a": "safavid",
-    "faction_b": "zayyanid_tlemcen",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "savoy_county",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "savoy_county",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "savoy_county",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "saxony_duchy",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "saxony_duchy",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "saxony_duchy",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "scotland_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "scotland_kingdom",
-    "score_a_to_b": 20,
-    "score_b_to_a": 20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "scotland_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "scotland_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "serbian_empire",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "serbian_empire",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
     "faction_a": "serbian_empire",
     "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "teutonic_order",
-    "score_a_to_b": 10,
-    "score_b_to_a": 10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "sweden_kingdom",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "teutonic_order",
-    "faction_b": "trebizond_emp",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "teutonic_order",
-    "faction_b": "wallachia_prince",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "trebizond_emp",
-    "faction_b": "venice",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "venice",
-    "faction_b": "wallachia_prince",
     "score_a_to_b": -20,
     "score_b_to_a": -20,
     "stance": "peace"
@@ -5007,8 +443,8 @@
   {
     "faction_a": "east_rome",
     "faction_b": "hospitaller",
-    "score_a_to_b": -50,
-    "score_b_to_a": -50,
+    "score_a_to_b": -30,
+    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -5042,8 +478,8 @@
   {
     "faction_a": "hospitaller",
     "faction_b": "venice",
-    "score_a_to_b": -35,
-    "score_b_to_a": -35,
+    "score_a_to_b": -25,
+    "score_b_to_a": -15,
     "stance": "peace"
   },
   {
@@ -5052,55 +488,6 @@
     "score_a_to_b": 80,
     "score_b_to_a": 80,
     "stance": "allied"
-  },
-  {
-    "faction_a": "austria_duchy",
-    "faction_b": "swiss_confederacy",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "burgundy",
-    "faction_b": "swiss_confederacy",
-    "score_a_to_b": 5,
-    "score_b_to_a": 5,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "france",
-    "faction_b": "swiss_confederacy",
-    "score_a_to_b": 10,
-    "score_b_to_a": 10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "genoa",
-    "faction_b": "swiss_confederacy",
-    "score_a_to_b": 5,
-    "score_b_to_a": 5,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "hre",
-    "faction_b": "swiss_confederacy",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "milan_duchy",
-    "faction_b": "swiss_confederacy",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "savoy_county",
-    "faction_b": "swiss_confederacy",
-    "score_a_to_b": 15,
-    "score_b_to_a": 15,
-    "stance": "peace"
   },
   {
     "faction_a": "hre",
@@ -5112,14 +499,14 @@
   {
     "faction_a": "hre",
     "faction_b": "austria_duchy",
-    "score_a_to_b": 45,
+    "score_a_to_b": 55,
     "score_b_to_a": 45,
     "stance": "trade"
   },
   {
     "faction_a": "hre",
     "faction_b": "bohemian_kingdom",
-    "score_a_to_b": 45,
+    "score_a_to_b": 35,
     "score_b_to_a": 45,
     "stance": "trade"
   },
@@ -5127,13 +514,13 @@
     "faction_a": "hre",
     "faction_b": "bavaria_duchy",
     "score_a_to_b": 40,
-    "score_b_to_a": 40,
+    "score_b_to_a": 30,
     "stance": "trade"
   },
   {
     "faction_a": "hre",
     "faction_b": "saxony_duchy",
-    "score_a_to_b": 40,
+    "score_a_to_b": 30,
     "score_b_to_a": 40,
     "stance": "trade"
   },
@@ -5141,28 +528,28 @@
     "faction_a": "hre",
     "faction_b": "brandenburg_margraviate",
     "score_a_to_b": 38,
-    "score_b_to_a": 38,
+    "score_b_to_a": 28,
     "stance": "trade"
   },
   {
     "faction_a": "hre",
     "faction_b": "savoy_county",
-    "score_a_to_b": 30,
-    "score_b_to_a": 30,
+    "score_a_to_b": 40,
+    "score_b_to_a": 50,
     "stance": "trade"
   },
   {
     "faction_a": "hre",
     "faction_b": "teutonic_order",
-    "score_a_to_b": 32,
+    "score_a_to_b": 22,
     "score_b_to_a": 32,
     "stance": "trade"
   },
   {
     "faction_a": "castile_kingdom",
     "faction_b": "granada_emirate",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
+    "score_a_to_b": -20,
+    "score_b_to_a": 10,
     "stance": "trade"
   },
   {
@@ -5189,8 +576,8 @@
   {
     "faction_a": "east_rome",
     "faction_b": "trebizond_emp",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
+    "score_a_to_b": 35,
+    "score_b_to_a": 35,
     "stance": "trade"
   },
   {
@@ -5204,7 +591,7 @@
     "faction_a": "flanders_county",
     "faction_b": "hre",
     "score_a_to_b": 25,
-    "score_b_to_a": 25,
+    "score_b_to_a": 35,
     "stance": "trade"
   },
   {
@@ -5217,15 +604,15 @@
   {
     "faction_a": "genoa",
     "faction_b": "golden_horde",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
+    "score_a_to_b": -20,
+    "score_b_to_a": -10,
     "stance": "trade"
   },
   {
     "faction_a": "genoa",
     "faction_b": "granada_emirate",
     "score_a_to_b": -30,
-    "score_b_to_a": -30,
+    "score_b_to_a": -10,
     "stance": "trade"
   },
   {
@@ -5252,8 +639,8 @@
   {
     "faction_a": "golden_horde",
     "faction_b": "russia",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
+    "score_a_to_b": -40,
+    "score_b_to_a": -40,
     "stance": "trade"
   },
   {
@@ -5294,8 +681,8 @@
   {
     "faction_a": "mamluk",
     "faction_b": "venice",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
+    "score_a_to_b": -20,
+    "score_b_to_a": -10,
     "stance": "trade"
   },
   {
@@ -5343,8 +730,8 @@
   {
     "faction_a": "aydin_bey",
     "faction_b": "east_rome",
-    "score_a_to_b": 0,
-    "score_b_to_a": 0,
+    "score_a_to_b": -10,
+    "score_b_to_a": -20,
     "stance": "trade"
   },
   {
@@ -5357,8 +744,8 @@
   {
     "faction_a": "candar_bey",
     "faction_b": "east_rome",
-    "score_a_to_b": 0,
-    "score_b_to_a": 0,
+    "score_a_to_b": -10,
+    "score_b_to_a": -20,
     "stance": "trade"
   },
   {
@@ -5378,8 +765,8 @@
   {
     "faction_a": "england",
     "faction_b": "flanders_county",
-    "score_a_to_b": 0,
-    "score_b_to_a": 0,
+    "score_a_to_b": 25,
+    "score_b_to_a": 35,
     "stance": "trade"
   },
   {
@@ -5392,8 +779,8 @@
   {
     "faction_a": "karesioglu_bey",
     "faction_b": "east_rome",
-    "score_a_to_b": 0,
-    "score_b_to_a": 0,
+    "score_a_to_b": -20,
+    "score_b_to_a": -10,
     "stance": "trade"
   },
   {
@@ -5412,44 +799,23 @@
   },
   {
     "faction_a": "naples_kingdom",
-    "faction_b": "achaea_principality",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "achaea_principality",
-    "faction_b": "afshar_beyligi",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "naples_kingdom",
     "faction_b": "france",
-    "score_a_to_b": 55,
-    "score_b_to_a": 55,
+    "score_a_to_b": 85,
+    "score_b_to_a": 95,
     "stance": "allied"
   },
   {
     "faction_a": "athena_duk",
     "faction_b": "achaea_principality",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "papal_states",
-    "faction_b": "achaea_principality",
-    "score_a_to_b": 25,
-    "score_b_to_a": 25,
+    "score_a_to_b": -10,
+    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
     "faction_a": "franche_comte",
     "faction_b": "burgundy",
-    "score_a_to_b": 55,
-    "score_b_to_a": 55,
+    "score_a_to_b": 95,
+    "score_b_to_a": 95,
     "stance": "allied"
   },
   {
@@ -5458,5 +824,936 @@
     "score_a_to_b": 65,
     "score_b_to_a": 65,
     "stance": "allied"
+  },
+  {
+    "faction_a": "arnavut_des",
+    "faction_b": "serbian_empire",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arnavut_des",
+    "faction_b": "epir",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arnavut_des",
+    "faction_b": "east_rome",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arnavut_des",
+    "faction_b": "venice",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "arnavut_des",
+    "faction_b": "ottoman",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arnavut_des",
+    "faction_b": "ragusa",
+    "score_a_to_b": 20,
+    "score_b_to_a": 20,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "canik_bey",
+    "faction_b": "candar_bey",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "canik_bey",
+    "faction_b": "east_rome",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "canik_bey",
+    "faction_b": "ottoman",
+    "score_a_to_b": 5,
+    "score_b_to_a": 5,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "canik_bey",
+    "faction_b": "trebizond_emp",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "canik_bey",
+    "faction_b": "ahiler",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "dulkadir_bey",
+    "faction_b": "mamluk",
+    "score_a_to_b": 25,
+    "score_b_to_a": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "dulkadir_bey",
+    "faction_b": "karaman_bey",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "dulkadir_bey",
+    "faction_b": "ramazan_bey",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "dulkadir_bey",
+    "faction_b": "ottoman",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "dulkadir_bey",
+    "faction_b": "ilkhanate",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "ragusa",
+    "faction_b": "venice",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "ragusa",
+    "faction_b": "bosnian_banate",
+    "score_a_to_b": 25,
+    "score_b_to_a": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "ragusa",
+    "faction_b": "serbian_empire",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "ragusa",
+    "faction_b": "croatian_kingdom",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "ragusa",
+    "faction_b": "hungarian_kingdom",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "ragusa",
+    "faction_b": "genoa",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "ragusa",
+    "faction_b": "ottoman",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "artuklu",
+    "faction_b": "ilkhanate",
+    "score_a_to_b": -25,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "artuklu",
+    "faction_b": "mamluk",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "artuklu",
+    "faction_b": "dulkadir_bey",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "artuklu",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "artuklu",
+    "faction_b": "jelayirids",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "eretna_state",
+    "faction_b": "ottoman",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "eretna_state",
+    "faction_b": "karaman_bey",
+    "score_a_to_b": -30,
+    "score_b_to_a": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "eretna_state",
+    "faction_b": "kadi_burhaneddin",
+    "score_a_to_b": 25,
+    "score_b_to_a": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "eretna_state",
+    "faction_b": "candar_bey",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "eretna_state",
+    "faction_b": "ilkhanate",
+    "score_a_to_b": -45,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "eretna_state",
+    "faction_b": "mamluk",
+    "score_a_to_b": 0,
+    "score_b_to_a": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "eretna_state",
+    "faction_b": "trebizond_emp",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "kadi_burhaneddin",
+    "faction_b": "karaman_bey",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "kadi_burhaneddin",
+    "faction_b": "ottoman",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "kadi_burhaneddin",
+    "faction_b": "candar_bey",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "kadi_burhaneddin",
+    "faction_b": "trebizond_emp",
+    "score_a_to_b": 5,
+    "score_b_to_a": 5,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "kadi_burhaneddin",
+    "faction_b": "akkoyunlu_state",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "kadi_burhaneddin",
+    "faction_b": "mamluk",
+    "score_a_to_b": 0,
+    "score_b_to_a": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "akkoyunlu_state",
+    "score_a_to_b": -40,
+    "score_b_to_a": -40,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "timurid_empire",
+    "score_a_to_b": -35,
+    "score_b_to_a": -35,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "jelayirids",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "georgia_kingdom",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "trebizond_emp",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "mamluk",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "safavid",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "shirvanshahs",
+    "score_a_to_b": 0,
+    "score_b_to_a": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "artuklu",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "akkoyunlu_state",
+    "faction_b": "timurid_empire",
+    "score_a_to_b": 15,
+    "score_b_to_a": -15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "akkoyunlu_state",
+    "faction_b": "kadi_burhaneddin",
+    "score_a_to_b": -30,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "akkoyunlu_state",
+    "faction_b": "trebizond_emp",
+    "score_a_to_b": -25,
+    "score_b_to_a": 15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "akkoyunlu_state",
+    "faction_b": "georgia_kingdom",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "akkoyunlu_state",
+    "faction_b": "mamluk",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "akkoyunlu_state",
+    "faction_b": "safavid",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "akkoyunlu_state",
+    "faction_b": "artuklu",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "jelayirids",
+    "faction_b": "ilkhanate",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "jelayirids",
+    "faction_b": "mamluk",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "jelayirids",
+    "faction_b": "timurid_empire",
+    "score_a_to_b": -45,
+    "score_b_to_a": -45,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "jelayirids",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "jelayirids",
+    "faction_b": "muzaffarids",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "jelayirids",
+    "faction_b": "shirvanshahs",
+    "score_a_to_b": 0,
+    "score_b_to_a": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "muzaffarids",
+    "faction_b": "timurid_empire",
+    "score_a_to_b": -30,
+    "score_b_to_a": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "muzaffarids",
+    "faction_b": "jelayirids",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "muzaffarids",
+    "faction_b": "ilkhanate",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "muzaffarids",
+    "faction_b": "safavid",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "muzaffarids",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "shirvanshahs",
+    "faction_b": "georgia_kingdom",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "shirvanshahs",
+    "faction_b": "golden_horde",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "shirvanshahs",
+    "faction_b": "timurid_empire",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "shirvanshahs",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "shirvanshahs",
+    "faction_b": "akkoyunlu_state",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "shirvanshahs",
+    "faction_b": "safavid",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "shirvanshahs",
+    "faction_b": "teodoro_principality",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "shirvanshahs",
+    "faction_b": "ilkhanate",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "golden_horde",
+    "score_a_to_b": -65,
+    "score_b_to_a": -35,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "ilkhanate",
+    "score_a_to_b": -45,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "jelayirids",
+    "score_a_to_b": -45,
+    "score_b_to_a": -45,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "muzaffarids",
+    "score_a_to_b": -40,
+    "score_b_to_a": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -50,
+    "score_b_to_a": -40,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "akkoyunlu_state",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "shirvanshahs",
+    "score_a_to_b": -30,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "safavid",
+    "score_a_to_b": -30,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "mamluk",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "timurid_empire",
+    "faction_b": "ottoman",
+    "score_a_to_b": -55,
+    "score_b_to_a": -45,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "afshar_beyligi",
+    "faction_b": "ilkhanate",
+    "score_a_to_b": -20,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "afshar_beyligi",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "afshar_beyligi",
+    "faction_b": "akkoyunlu_state",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "afshar_beyligi",
+    "faction_b": "shirvanshahs",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "afshar_beyligi",
+    "faction_b": "georgia_kingdom",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "afshar_beyligi",
+    "faction_b": "timurid_empire",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "afshar_beyligi",
+    "faction_b": "safavid",
+    "score_a_to_b": 25,
+    "score_b_to_a": 25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "crimean_khanate",
+    "faction_b": "golden_horde",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "crimean_khanate",
+    "faction_b": "genoa",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "crimean_khanate",
+    "faction_b": "teodoro_principality",
+    "score_a_to_b": 20,
+    "score_b_to_a": 20,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "crimean_khanate",
+    "faction_b": "lithuanian_gd",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "crimean_khanate",
+    "faction_b": "russia",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "crimean_khanate",
+    "faction_b": "ottoman",
+    "score_a_to_b": 60,
+    "score_b_to_a": 50,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "crimean_khanate",
+    "faction_b": "moldavia_prince",
+    "score_a_to_b": 0,
+    "score_b_to_a": 0,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "house_lancaster",
+    "faction_b": "house_york",
+    "score_a_to_b": -80,
+    "score_b_to_a": -80,
+    "stance": "war"
+  },
+  {
+    "faction_a": "house_lancaster",
+    "faction_b": "france",
+    "score_a_to_b": 35,
+    "score_b_to_a": 35,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "house_lancaster",
+    "faction_b": "scotland_kingdom",
+    "score_a_to_b": 30,
+    "score_b_to_a": 30,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "house_york",
+    "faction_b": "france",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "house_york",
+    "faction_b": "scotland_kingdom",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "kalmar_union",
+    "faction_b": "denmark_kingdom",
+    "score_a_to_b": 60,
+    "score_b_to_a": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "kalmar_union",
+    "faction_b": "norway_kingdom",
+    "score_a_to_b": 60,
+    "score_b_to_a": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "kalmar_union",
+    "faction_b": "sweden_kingdom",
+    "score_a_to_b": 60,
+    "score_b_to_a": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "kalmar_union",
+    "faction_b": "novgorod_rep",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "kalmar_union",
+    "faction_b": "teutonic_order",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "kalmar_union",
+    "faction_b": "hre",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "polish_lithuania",
+    "faction_b": "polish_kingdom",
+    "score_a_to_b": 60,
+    "score_b_to_a": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "polish_lithuania",
+    "faction_b": "lithuanian_gd",
+    "score_a_to_b": 60,
+    "score_b_to_a": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "polish_lithuania",
+    "faction_b": "teutonic_order",
+    "score_a_to_b": -45,
+    "score_b_to_a": -45,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "polish_lithuania",
+    "faction_b": "golden_horde",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "polish_lithuania",
+    "faction_b": "russia",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "polish_lithuania",
+    "faction_b": "novgorod_rep",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "polish_lithuania",
+    "faction_b": "hungarian_kingdom",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "polish_lithuania",
+    "faction_b": "moldavia_prince",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "swiss_confederacy",
+    "faction_b": "austria_duchy",
+    "score_a_to_b": -30,
+    "score_b_to_a": -30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "swiss_confederacy",
+    "faction_b": "hre",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "swiss_confederacy",
+    "faction_b": "burgundy",
+    "score_a_to_b": 5,
+    "score_b_to_a": 5,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "swiss_confederacy",
+    "faction_b": "france",
+    "score_a_to_b": 30,
+    "score_b_to_a": 30,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "swiss_confederacy",
+    "faction_b": "savoy_county",
+    "score_a_to_b": 35,
+    "score_b_to_a": 35,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "swiss_confederacy",
+    "faction_b": "milan_duchy",
+    "score_a_to_b": 20,
+    "score_b_to_a": 20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "moldavia_prince",
+    "faction_b": "polish_kingdom",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "moldavia_prince",
+    "faction_b": "lithuanian_gd",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "moldavia_prince",
+    "faction_b": "hungarian_kingdom",
+    "score_a_to_b": -10,
+    "score_b_to_a": -10,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "moldavia_prince",
+    "faction_b": "wallachia_prince",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "moldavia_prince",
+    "faction_b": "golden_horde",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "moldavia_prince",
+    "faction_b": "ottoman",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "moldavia_prince",
+    "faction_b": "serbian_empire",
+    "score_a_to_b": 5,
+    "score_b_to_a": 5,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "moldavia_prince",
+    "faction_b": "ragusa",
+    "score_a_to_b": 5,
+    "score_b_to_a": 5,
+    "stance": "trade"
   }
 ]

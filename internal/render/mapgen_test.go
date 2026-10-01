@@ -114,6 +114,83 @@ func TestCoastalSettlementPointAvoidsExistingSettlementMarker(t *testing.T) {
 	}
 }
 
+func TestCoastalSettlementPointRejectsCandidateOutsideRasterRegion(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY
+	originalShapeScaleX, originalShapeScaleY := shapeScaleX, shapeScaleY
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+		shapeOffX, shapeOffY = originalShapeOffX, originalShapeOffY
+		shapeScaleX, shapeScaleY = originalShapeScaleX, originalShapeScaleY
+	})
+	WorldW, WorldH = 4, 1
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	landID := world.RegionID("land")
+	seaID := world.RegionID("sea")
+	land := &world.Region{ID: landID, WorldX: 0, WorldY: 0, Neighbors: []world.RegionID{seaID}}
+	sea := &world.Region{ID: seaID, IsSea: true, WorldX: 3, WorldY: 0}
+	wm := &WorldMap{
+		regionAt:  []uint16{1, 2, 2, 2},
+		regionIDs: []world.RegionID{"", landID, seaID},
+		regionIdx: map[world.RegionID]uint16{landID: 1, seaID: 2},
+		regionPx:  map[world.RegionID][]int{landID: {0}},
+	}
+
+	if x, y, ok := wm.CoastalSettlementPoint(land, map[world.RegionID]*world.Region{
+		landID: land,
+		seaID:  sea,
+	}); ok {
+		t.Fatalf("bölge dışı kıyı adayı kabul edildi: (%d,%d), region=%q", x, y, wm.RegionAt(x, y))
+	}
+}
+
+func TestSettlementAnchorUsesAssignedRasterRegionForSharedShape(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY
+	originalShapeScaleX, originalShapeScaleY := shapeScaleX, shapeScaleY
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+		shapeOffX, shapeOffY = originalShapeOffX, originalShapeOffY
+		shapeScaleX, shapeScaleY = originalShapeScaleX, originalShapeScaleY
+	})
+	WorldW, WorldH = 8, 1
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	landID := world.RegionID("land_a")
+	otherID := world.RegionID("land_b")
+	land := &world.Region{
+		ID: landID, ShapeID: "shared", WorldX: 1, WorldY: 0,
+		Shape:       [][][2]float32{{{0, 0}, {8, 0}, {8, 1}, {0, 1}}},
+		Settlements: []world.Settlement{{ID: "land_a_port", X: 6, Y: 0, Type: world.SettlementPort}},
+	}
+	other := &world.Region{ID: otherID, ShapeID: "shared", WorldX: 6, WorldY: 0}
+	regionAt := []uint16{1, 1, 1, 2, 2, 2, 2, 2}
+	wm := &WorldMap{
+		regionAt:          regionAt,
+		regionIDs:         []world.RegionID{"", landID, otherID},
+		regionIdx:         map[world.RegionID]uint16{landID: 1, otherID: 2},
+		regionPx:          map[world.RegionID][]int{landID: {0, 1, 2}, otherID: {3, 4, 5, 6, 7}},
+		settlementAnchor:  make(map[settlementAnchorKey][2]int),
+		primarySettlement: make(map[world.RegionID][2]int),
+	}
+	gs := &state.GameState{Regions: map[world.RegionID]*world.Region{
+		landID:  land,
+		otherID: other,
+	}}
+
+	wm.computeSettlementAnchors(gs)
+	x, y, ok := wm.SettlementAnchor(landID, 0)
+	if !ok {
+		t.Fatal("geçersiz settlement için raster anchor üretilmedi")
+	}
+	if got := wm.RegionAt(x, y); got != landID {
+		t.Fatalf("shared shape anchor yanlış bölgeye taşındı: got=%q want=%q at=(%d,%d)", got, landID, x, y)
+	}
+}
+
 func TestMinorRegionDoesNotAutoAssignSuccessorFaction(t *testing.T) {
 	minor := &world.Region{
 		ID: "akçakoca", OwnerID: "genoa", IsMinorRegion: true,

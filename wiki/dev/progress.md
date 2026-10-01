@@ -243,6 +243,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   eşikleri yerine event tarihi, koşul durumu ve getirileri özetliyor
   (`internal/render/overextension_popup.go`, `internal/render/renderer.go`).
 
+- 2026-10-01: Otomatik üretilen liman adayları, kıyı içeri kaydırmasından sonra
+  gerçek raster bölgesiyle doğrulanıyor; ortak ülke shape'lerinde komşu bölgeye
+  taşan adaylar reddediliyor. Eski kayıtların geçersiz settlement koordinatları da
+  görsel anchor oluşturulurken aynı bölgenin en yakın raster pikseline taşınıyor
+  (`internal/render/mapgen.go`, `internal/render/mapgen_test.go`).
+
 - 2026-09-29: Sonradan tamamlanan `port` binalarının ürettiği `Liman` marker'ı,
   mevcut yerleşim marker'larından ayrıştırılmış en yakın kıyı adayına
   yerleştiriliyor; renderer'sız eski/sentetik akışta da aynı çakışma koruması
