@@ -7,6 +7,48 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-10-01: Tur çözümlemesinde çatışmadan kaynaklanan kara ordusu ve donanma
+  kayıpları artık geçici ortak kayıtta toplanıyor. Oyuncu turuna dönmeden önce
+  kayıp veya tamamen yok olma yaşanan çatışmalar için yalnızca `Tamam` ile
+  kapanan `Çatışma Özeti` modalı açılıyor; kara/donanma kayıpları ve yok edilen
+  oluşum sayıları fraksiyon bazında gösteriliyor. Save formatına yeni alan
+  eklenmedi. Regression: `internal/state/war_ledger_test.go` içindeki
+  `TestCombatLossSummaryKeepsTypeDestructionAndIsConsumed` ve
+  `internal/render/combat_summary_test.go`.
+
+- 2026-10-01: Harita seçim ve sürükleme performansı iyileştirildi. Bölge/ordu/
+  filo seçimi sahiplik rasterını milyonlarca piksel üzerinden yeniden üretmiyor;
+  seçim değişiminde yalnız sınır stilleri güncelleniyor. Terrain alanı dolguları
+  world-space image cache'inde tutuluyor, her frame polygon `FillPath` tekrarı
+  kaldırıldı. Ordu marker geometrisi kamera/state anahtarıyla frame'ler arasında
+  korunuyor; kuşatma sınıflandırması sort comparator dışında bir kez hazırlanıyor.
+  Hareket erişilebilirliği input çağrısında koşulsuz invalid edilmiyor, harita
+  state değişimlerinde yenileniyor. Regression: `internal/render/mapgen_test.go`
+  içindeki `TestWorldMapSelectionRefreshSkipsOwnershipRaster`; doğrulama:
+  `go test ./internal/render -count=1`.
+
+- 2026-10-01: Harita marker çiziminden pahalı lojistik önizlemesi çıkarıldı.
+  İkmal görevi/kargo değişimi, filo veya ordu hareketi, filo kaybı ve tur sonu
+  state değişimlerinde yalnız ilgili marker cache'i yenileniyor; seçim ve
+  kamera sürükleme frame'leri artık lojistik taraması yapmıyor. Regression:
+  `internal/render/renderer_input_test.go` içindeki
+  `TestArmyLogisticsBadgeUsesEventCache`; doğrulama:
+  `go test ./internal/render ./internal/game ./internal/state -count=1`.
+
+- 2026-10-01: Deniz ikmaliyle bölgesel lojistik açığı kapanan kara ordusunun
+  önceki turdan kalan kırmızı zayiat `!` rozeti artık gizleniyor; kargo
+  yetersizse veya hedefe ulaşmamışsa uyarı korunuyor. Ortak state önizlemesi ve
+  regresyon: `internal/state/regional_logistics_preview.go` ile
+  `internal/state/regional_logistics_preview_test.go`.
+
+- 2026-10-01: Oyuncu ordusuna verilen normal tek adımlı, uzak rotalı veya
+  limandan çıkış hareket emri artık hareket animasyonu ve çözümlemesi boyunca
+  `SelectedArmy` seçimini koruyor. Geçici detay/taşınan birlik/birim alt-
+  seçimleri temizlenirken ordu varıştan sonra haritada seçili çerçeveyle kalıyor.
+  Regression: `internal/render/renderer_input_test.go` içindeki
+  `TestPrepareArmyMovementActionKeepsArmySelection`; doğrulama:
+  `go test ./internal/render -count=1`.
+
 - 2026-10-01: Minor bölge bilgi paneline `İmtiyaz Teklif et` akışı eklendi.
   Oyuncu hedef devleti seçip kabul bekleyen teklif gönderiyor; kabulde kullanım
   hakkı, otomatik iki yönlü imtiyaz rotası ve karşılıklı `+15` ilişki bonusu

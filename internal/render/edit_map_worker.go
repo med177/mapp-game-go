@@ -263,6 +263,7 @@ func (r *Renderer) pollEditMapBuild() {
 		}
 		r.gs.Regions = result.snapshot.Regions
 		r.gs.TerrainAreas = result.snapshot.TerrainAreas
+		r.terrainAreaImageDirty = true
 		r.worldMap = FinalizePreparedWorldMap(result.worldMap)
 		r.editMapLastBuildDuration = result.duration
 		r.editMapLastRasterDuration = result.rasterTime

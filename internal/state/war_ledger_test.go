@@ -64,6 +64,25 @@ func TestRecordWarCasualtiesLegacyDefaultsToArmyLosses(t *testing.T) {
 	}
 }
 
+func TestCombatLossSummaryKeepsTypeDestructionAndIsConsumed(t *testing.T) {
+	gs := newWarLedgerTestState()
+	gs.Turn = 7
+	gs.RecordWarCasualtiesByTypeAndOutcome("a", "b", 4, 2, false, true, false, true)
+
+	if len(gs.TurnCombatLosses) != 1 {
+		t.Fatalf("geçici çatışma kaydı sayısı = %d, want 1", len(gs.TurnCombatLosses))
+	}
+	loss := gs.TurnCombatLosses[0]
+	if loss.AttackerFactionID != "a" || loss.DefenderFactionID != "b" || loss.AttackerLost != 4 || loss.DefenderLost != 2 || loss.AttackerNaval || !loss.DefenderNaval || loss.AttackerDestroyed || !loss.DefenderDestroyed || loss.Turn != 7 {
+		t.Fatalf("çatışma kaydı beklenmeyen değer taşıyor: %+v", loss)
+	}
+
+	taken := gs.TakeTurnCombatLosses()
+	if len(taken) != 1 || len(gs.TurnCombatLosses) != 0 {
+		t.Fatalf("çatışma kayıtları tüketilmedi: taken=%d remaining=%d", len(taken), len(gs.TurnCombatLosses))
+	}
+}
+
 func TestRecentRegionGainTracksShortExpansionWindow(t *testing.T) {
 	gs := &GameState{Turn: 1}
 	gs.RecordRegionAcquisition("fast", "old_a")

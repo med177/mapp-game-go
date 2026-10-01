@@ -185,6 +185,28 @@ func (s *GameState) PreviewRegionalLogisticsStatus(regionID world.RegionID) (Reg
 	return RegionLogisticsStatus{}, false
 }
 
+// ArmyLogisticsDamageVisible, önceki çözümlemede kaydedilmiş zayiatın güncel
+// ikmal durumu hâlâ uyarı gerektiriyorsa true döner. Deniz ikmali görevi veya
+// kargosu sonradan değişebildiği için yalnızca ArmyLogistics snapshot'ına
+// bakmak, açığı kapanmış orduda eski kırmızı rozeti bırakabilir.
+func (s *GameState) ArmyLogisticsDamageVisible(armyID army.ArmyID) bool {
+	if s == nil || armyID == "" {
+		return false
+	}
+	status, ok := s.ArmyLogistics[armyID]
+	if !ok || status.TotalHPDamage <= 0 {
+		return false
+	}
+	target := s.Armies[armyID]
+	if target == nil || target.IsNaval {
+		return true
+	}
+	if preview, ok := s.PreviewRegionalLogisticsStatus(target.RegionID); ok && preview.Overload <= 0 {
+		return false
+	}
+	return true
+}
+
 func previewNavalSupplyForRegion(s *GameState, armies []*army.Army, shortage int) int {
 	if s == nil || shortage <= 0 {
 		return 0

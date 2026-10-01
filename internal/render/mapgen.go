@@ -92,7 +92,6 @@ type WorldMap struct {
 	currentMode        MapMode
 	diplomacySignature uint64
 	signatureValid     bool
-	refreshFrame       uint32
 }
 
 type countryShapeFile struct {
@@ -651,13 +650,22 @@ func (wm *WorldMap) Refresh(gs *state.GameState, selected world.RegionID, mode M
 	if wm == nil {
 		return
 	}
-	wm.refreshFrame++
+	selectionChanged := wm.selected != selected || wm.currentMode != mode
 	diplomacySignature := wm.diplomacySignature
-	if !wm.signatureValid || wm.ownerDirty || wm.selected != selected || wm.currentMode != mode || wm.refreshFrame%30 == 0 {
+	if !wm.signatureValid || wm.ownerDirty || wm.currentMode != mode {
 		diplomacySignature = borderDiplomacySignature(gs)
 		wm.signatureValid = true
 	}
-	if !wm.ownerDirty && wm.selected == selected && wm.currentMode == mode && wm.diplomacySignature == diplomacySignature {
+	if !wm.ownerDirty && !selectionChanged && wm.diplomacySignature == diplomacySignature {
+		return
+	}
+	if !wm.ownerDirty && wm.currentMode == mode && wm.diplomacySignature == diplomacySignature && selectionChanged {
+		// Seçim artık sahiplik dokusunun parçası değildir. Yalnızca vektör
+		// sınır stillerini güncelle; milyonlarca pikseli tekrar kopyalama ve
+		// GPU'ya yeniden yükleme.
+		wm.updateBorderStyles(gs, selected, mode)
+		wm.selected = selected
+		wm.currentMode = mode
 		return
 	}
 	wm.applyOwnership(gs, selected, mode)
@@ -1525,15 +1533,6 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 
 	for rid, r := range gs.Regions {
 		if r.IsSea {
-			// Seçili deniz bölgesini belirgin açık mavi tintleyle vurgula
-			if rid == selected {
-				for _, pIdx := range wm.regionPx[rid] {
-					wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], 80, 120)
-					wm.dispPixels[pIdx*4+1] = blend(wm.dispPixels[pIdx*4+1], 180, 120)
-					wm.dispPixels[pIdx*4+2] = blend(wm.dispPixels[pIdx*4+2], 255, 120)
-					wm.dispPixels[pIdx*4+3] = 255
-				}
-			}
 			if enemyNavalRegions[rid] {
 				for _, pIdx := range wm.regionPx[rid] {
 					wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], borderColorEnemy.R, 62)
@@ -1583,15 +1582,8 @@ func (wm *WorldMap) applyOwnership(gs *state.GameState, selected world.RegionID,
 			fc = fcVal
 		}
 
-		if !ok && rid != selected {
+		if !ok {
 			continue
-		}
-
-		if rid == selected {
-			alpha = 140
-			if !ok {
-				fc = [3]byte{245, 205, 80}
-			}
 		}
 		for _, pIdx := range wm.regionPx[rid] {
 			wm.dispPixels[pIdx*4] = blend(wm.dispPixels[pIdx*4], fc[0], alpha)

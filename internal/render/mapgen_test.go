@@ -1,6 +1,7 @@
 package render
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,6 +10,43 @@ import (
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func TestWorldMapSelectionRefreshSkipsOwnershipRaster(t *testing.T) {
+	const (
+		first  = world.RegionID("first")
+		second = world.RegionID("second")
+	)
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			first:  {ID: first},
+			second: {ID: second},
+		},
+	}
+	wm := &WorldMap{
+		basePixels:   []byte{10, 20, 30, 255, 40, 50, 60, 255},
+		dispPixels:   []byte{11, 21, 31, 255, 41, 51, 61, 255},
+		regionIDs:    []world.RegionID{"", first, second},
+		regionIdx:    map[world.RegionID]uint16{first: 1, second: 2},
+		regionAt:     []uint16{1, 2},
+		regionPx:     map[world.RegionID][]int{first: {0}, second: {1}},
+		borderStyles: []uint8{},
+		selected:     first,
+		currentMode:  MapModeNormal,
+		ownerDirty:   false,
+	}
+	wm.diplomacySignature = borderDiplomacySignature(gs)
+	wm.signatureValid = true
+	before := append([]byte(nil), wm.dispPixels...)
+
+	wm.Refresh(gs, second, MapModeNormal)
+
+	if !bytes.Equal(wm.dispPixels, before) {
+		t.Fatal("seçim değişimi sahiplik rasterını yeniden yazdı")
+	}
+	if wm.selected != second {
+		t.Fatalf("seçim güncellenmedi: got %q, want %q", wm.selected, second)
+	}
+}
 
 func TestLoadMinorRegionPolygonsTreatsEmptyJSONAsNoPolygons(t *testing.T) {
 	for _, content := range []string{"{}", `{"minor_polygons":{}}`} {

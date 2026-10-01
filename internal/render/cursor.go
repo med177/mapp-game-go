@@ -42,6 +42,12 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 		}
 		return ebiten.CursorShapeDefault
 	}
+	if r.combatSummary.show {
+		if r.combatSummaryHovering(fx, fy) {
+			return ebiten.CursorShapePointer
+		}
+		return ebiten.CursorShapeDefault
+	}
 	if r.showVictoryDetail {
 		if victoryDetailCloseHit(fx, fy) || !victoryDetailPopupHit(fx, fy) {
 			return ebiten.CursorShapePointer

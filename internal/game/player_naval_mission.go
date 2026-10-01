@@ -152,7 +152,11 @@ func (g *Game) followSupplyFleets(targetArmyID army.ArmyID, previousLocation str
 		}
 		next := nextSeaStepToLand(g.gs, fleet.RegionID, land)
 		if next == "" {
+			supplyTargetID := supplyMissionTargetArmyID(fleet.NavalMission)
 			fleet.NavalMission = nil
+			if supplyTargetID != "" {
+				g.renderer.RefreshArmyLogisticsBadge(supplyTargetID)
+			}
 			continue
 		}
 		g.supplyFollowDepth++

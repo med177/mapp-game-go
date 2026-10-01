@@ -3168,6 +3168,7 @@ func (r *Renderer) moveSelectedSettlementTo(fx, fy float64) {
 	region.Settlements[r.editSelectedSettlement].X = newX
 	region.Settlements[r.editSelectedSettlement].Y = newY
 	r.worldMap.UpdateSettlementAnchor(r.gs, r.editSelectedRegion, r.editSelectedSettlement)
+	r.armyIconLayoutValid = false
 	r.editDirty = true
 }
 
@@ -3184,6 +3185,7 @@ func (r *Renderer) moveSelectedRegionCenterTo(fx, fy float64) {
 	region.WorldX = newX
 	region.WorldY = newY
 	r.invalidateEditRegionCenterMarkers()
+	r.armyIconLayoutValid = false
 	r.editDirty = true
 }
 
@@ -3243,6 +3245,7 @@ func (r *Renderer) addSettlement(rid world.RegionID, x, y int) {
 	r.editDraggingSettlement = false
 	r.editDraggingRegion = false
 	r.worldMap.UpdateSettlementAnchor(r.gs, rid, r.editSelectedSettlement)
+	r.armyIconLayoutValid = false
 	r.editDirty = true
 }
 
@@ -3261,6 +3264,7 @@ func (r *Renderer) deleteSelectedSettlement() {
 	r.editDraggingSettlement = false
 	r.editDraggingRegion = false
 	r.worldMap.RebuildSettlementAnchors(r.gs)
+	r.armyIconLayoutValid = false
 	r.editDirty = true
 }
 
@@ -3477,6 +3481,7 @@ func (r *Renderer) setSelectedSettlementCapital() {
 	}
 	if changed {
 		r.worldMap.RebuildSettlementAnchors(r.gs)
+		r.armyIconLayoutValid = false
 	}
 	successorChanged := syncRegionSuccessorToOwner(region)
 	infrastructureChanged := world.EnsureRequiredSettlementBuildings(region, r.gs.IsCapitalRegion(region))
@@ -3531,6 +3536,7 @@ func (r *Renderer) setSelectedRegionTerrain(terrain world.TerrainType) {
 		return
 	}
 	if region.IsTerrainArea {
+		r.terrainAreaImageDirty = true
 		if r.terrainAreaEditPending() {
 			for i := range r.gs.TerrainAreas {
 				if r.gs.TerrainAreas[i].ID == region.TerrainAreaID || r.terrainAreaWasTouched(i) {
@@ -4005,6 +4011,7 @@ func (r *Renderer) restoreWorldSnapshotMode(snapshot editWorldSnapshot, asyncBui
 	r.gs.RegionOrder = cloneRegionIDSlice(snapshot.RegionOrder)
 	r.gs.LandPassages = cloneLandPassages(snapshot.LandPassages)
 	r.gs.TerrainAreas = cloneTerrainAreas(snapshot.TerrainAreas)
+	r.terrainAreaImageDirty = true
 	r.gs.Factions = cloneFactionMap(snapshot.Factions)
 	r.gs.AIStrategies = cloneAIStrategyMap(snapshot.AIStrategies)
 	r.gs.AIStrategyOrder = append([]string(nil), snapshot.AIStrategyOrder...)
@@ -5314,6 +5321,7 @@ func (r *Renderer) rebuildEditWorldMap() {
 	r.cancelEditMapBuild()
 	r.invalidateShapeEditSession()
 	r.invalidateEditRegionCenterMarkers()
+	r.terrainAreaImageDirty = true
 	r.worldMap = NewWorldMap(r.gs)
 	r.buildRegionPaintBaseline()
 	overridesChanged := !regionPaintOverridesEqual(r.editRegionPaintOverrides, r.gs.RegionPaintOverrides)
@@ -5376,6 +5384,7 @@ func (r *Renderer) refreshTerrainAreasInEditMap() {
 	if r == nil || r.gs == nil || r.worldMap == nil {
 		return
 	}
+	r.terrainAreaImageDirty = true
 	// Önce eski terrain child atamalarını parent rasterına geri bırak; aksi
 	// halde aynı WorldMap üzerinde yeni alanları uygularken eski child indeksleri
 	// parent kontrolünü engeller.
@@ -5621,6 +5630,7 @@ func (r *Renderer) transferSelectedSettlement(targetID world.RegionID, x, y int)
 	r.editSelectedRegion = targetID
 	r.editSelectedSettlement = len(target.Settlements) - 1
 	r.worldMap.RebuildSettlementAnchors(r.gs)
+	r.armyIconLayoutValid = false
 	r.editDirty = true
 }
 

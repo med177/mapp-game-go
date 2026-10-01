@@ -356,6 +356,7 @@ func (g *Game) Update() error {
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
+			g.gs.ClearTurnCombatLosses()
 			g.startAITurnSequence()
 		case render.ActionConfirmEndTurn:
 			g.gs.ReleaseInvalidFleetCommanders()
@@ -363,6 +364,7 @@ func (g *Game) Update() error {
 			if !g.saveToSlot("autosave", false, "") {
 				break
 			}
+			g.gs.ClearTurnCombatLosses()
 			g.startAITurnSequence()
 		case render.ActionMoveArmy:
 			g.startPlayerMovement(action)
@@ -1436,6 +1438,27 @@ func (g *Game) resolveTurn() {
 		g.gs.Phase = state.PhasePlayerTurn
 		g.renderer.SelectPlayerCapitalRegion()
 		g.renderer.MarkMapDirty()
+	}
+	// Lojistik sonucu, filo kargosu ve görev bağlantıları tur boyunca topluca
+	// değişebilir. Marker önizlemesini her frame yerine tur sonunda bir kez
+	// güncelle.
+	g.renderer.RefreshAllArmyLogisticsBadges()
+	if losses := g.gs.TakeTurnCombatLosses(); len(losses) > 0 {
+		entries := make([]render.CombatSummaryEntry, 0, len(losses))
+		for _, loss := range losses {
+			entries = append(entries, render.CombatSummaryEntry{
+				AttackerFactionID: loss.AttackerFactionID,
+				DefenderFactionID: loss.DefenderFactionID,
+				AttackerLost:      loss.AttackerLost,
+				DefenderLost:      loss.DefenderLost,
+				AttackerNaval:     loss.AttackerNaval,
+				DefenderNaval:     loss.DefenderNaval,
+				AttackerDestroyed: loss.AttackerDestroyed,
+				DefenderDestroyed: loss.DefenderDestroyed,
+				Turn:              loss.Turn,
+			})
+		}
+		g.renderer.ShowCombatSummary(render.CombatSummaryReport{Turn: losses[0].Turn, Entries: entries})
 	}
 	g.refreshEventCodex()
 }
@@ -4962,10 +4985,18 @@ func (g *Game) assignNavalMission(fleetID army.ArmyID, kind army.NavalMissionKin
 		mission.TargetArmyID = targetFleetID
 	}
 	previousMission := fleet.NavalMission
-	missionChanged := previousMission == nil || previousMission.Kind != mission.Kind || previousMission.TargetRegionID != mission.TargetRegionID || previousMission.TargetFleetID != mission.TargetFleetID
+	previousSupplyTarget := supplyMissionTargetArmyID(previousMission)
+	missionChanged := previousMission == nil || previousMission.Kind != mission.Kind || previousMission.TargetRegionID != mission.TargetRegionID || previousMission.TargetFleetID != mission.TargetFleetID || previousMission.TargetArmyID != mission.TargetArmyID
 	if ok, reason := g.gs.AssignNavalMission(fleetID, mission); !ok {
 		g.renderer.ShowCombatResult(reason)
 		return
+	}
+	currentSupplyTarget := supplyMissionTargetArmyID(fleet.NavalMission)
+	if previousSupplyTarget != "" {
+		g.renderer.RefreshArmyLogisticsBadge(previousSupplyTarget)
+	}
+	if currentSupplyTarget != "" && currentSupplyTarget != previousSupplyTarget {
+		g.renderer.RefreshArmyLogisticsBadge(currentSupplyTarget)
 	}
 	if missionChanged && (kind == army.NavalMissionPatrol || kind == army.NavalMissionBlockade) && fleet.IsAtSea() {
 		if enemy := g.gs.SelectBattleDefender(fleet, fleet.RegionID, true); enemy != nil {
@@ -4986,9 +5017,18 @@ func (g *Game) clearNavalMission(fleetID army.ArmyID) {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
+	fleet := g.gs.Armies[fleetID]
+	var previousMission *army.NavalMission
+	if fleet != nil {
+		previousMission = fleet.NavalMission
+	}
+	previousSupplyTarget := supplyMissionTargetArmyID(previousMission)
 	if !g.gs.ClearNavalMission(fleetID) {
 		g.renderer.ShowCombatResult("Filo görevi kaldırılamadı.")
 		return
+	}
+	if previousSupplyTarget != "" {
+		g.renderer.RefreshArmyLogisticsBadge(previousSupplyTarget)
 	}
 	g.renderer.ShowCombatResult("Filo görevi kaldırıldı.")
 }
@@ -5007,6 +5047,9 @@ func (g *Game) loadSupplyCargo(fleetID army.ArmyID, turns int) {
 		g.renderer.ShowCombatResult(reason)
 		return
 	}
+	if targetID := supplyMissionTargetArmyID(fleet.NavalMission); targetID != "" {
+		g.renderer.RefreshArmyLogisticsBadge(targetID)
+	}
 	g.renderer.ShowCombatResult(fmt.Sprintf("İkmal yükü yüklendi: %d tahıl.", cargo.Grain))
 }
 
@@ -5014,12 +5057,28 @@ func (g *Game) unloadSupplyCargo(fleetID army.ArmyID) {
 	if g == nil || g.gs == nil || g.renderer == nil {
 		return
 	}
+	fleet := g.gs.Armies[fleetID]
+	var previousMission *army.NavalMission
+	if fleet != nil {
+		previousMission = fleet.NavalMission
+	}
+	previousSupplyTarget := supplyMissionTargetArmyID(previousMission)
 	cargo, ok, reason := g.gs.UnloadSupplyCargoAtCapital(fleetID)
 	if !ok {
 		g.renderer.ShowCombatResult(reason)
 		return
 	}
+	if previousSupplyTarget != "" {
+		g.renderer.RefreshArmyLogisticsBadge(previousSupplyTarget)
+	}
 	g.renderer.ShowCombatResult(fmt.Sprintf("İkmal yükü boşaltıldı: %d tahıl iade edildi.", cargo.Grain))
+}
+
+func supplyMissionTargetArmyID(mission *army.NavalMission) army.ArmyID {
+	if mission == nil || mission.Kind != army.NavalMissionSupplyArmy {
+		return ""
+	}
+	return mission.TargetArmyID
 }
 
 func navalMissionLabelTR(kind army.NavalMissionKind) string {
@@ -5202,7 +5261,7 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		atkMods := techModsFor(g.gs, fleet.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
 		result := combat.ResolveBattleWithContextPlan(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextAmphibious, battleStance)
-		g.gs.RecordWarCasualties(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost)
+		g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost, landing.IsNaval, enemyArmy.IsNaval, len(landing.Units) == 0, len(enemyArmy.Units) == 0)
 		g.recordCommanderBattle(landing, enemyArmy, nil, result.AttackerWins)
 		fleet.EmbarkedUnits = fleet.EmbarkedUnits[:0]
 		fleet.MovePoints--
@@ -5922,7 +5981,7 @@ func (g *Game) resolveSortieMovement(a *army.Army, target *world.Region, stance 
 	// nedeniyle huruç savaşında küçük bir savunma bonusu korur.
 	defMods.DefenseMod += 0.10
 	result := combat.ResolveBattleWithContextPlan(a, siegeArmy, sourceRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
-	g.gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost)
+	g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, siegeArmy.IsNaval, len(a.Units) == 0, len(siegeArmy.Units) == 0)
 	g.recordCommanderBattle(a, siegeArmy, nil, result.AttackerWins)
 
 	outcomeDetail := "Huruç püskürtüldü; ordu kuşatılan bölgede kaldı."
@@ -6163,8 +6222,12 @@ func (g *Game) sinkNavalFleet(fleetID army.ArmyID) int {
 	if fleet == nil || !fleet.IsNaval {
 		return 0
 	}
+	supplyTargetID := supplyMissionTargetArmyID(fleet.NavalMission)
 	cargoLost := len(fleet.EmbarkedUnits)
 	g.gs.RemoveArmy(fleetID)
+	if supplyTargetID != "" {
+		g.renderer.RefreshArmyLogisticsBadge(supplyTargetID)
+	}
 	return cargoLost
 }
 
@@ -6241,6 +6304,13 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		}
 		if g.supplyFollowDepth == 0 {
 			g.followSupplyFleets(a.ID, previousLocation)
+		}
+		if a.IsNaval {
+			if targetID := supplyMissionTargetArmyID(a.NavalMission); targetID != "" {
+				g.renderer.RefreshArmyLogisticsBadge(targetID)
+			}
+		} else {
+			g.renderer.RefreshArmyLogisticsBadge(a.ID)
 		}
 	}()
 
@@ -6475,7 +6545,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 			defMods.NavalDefenseMod += g.gs.NavalEscortDefenseBonus(defSourceIDs, target)
 		}
 		result := combat.ResolveBattleWithContactDefense(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance, contactAttackerHolding, contactDefenderHolding)
-		g.gs.RecordWarCasualties(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost)
+		defenderDestroyed := len(combinedDef.Units) == 0
+		g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, combinedDef.IsNaval, len(a.Units) == 0, defenderDestroyed)
 		g.recordCommanderBattle(a, combinedDef, defSourceIDs, result.AttackerWins)
 		var collapse eliminationResult
 		scene := render.BattleSceneLand

@@ -967,6 +967,7 @@ func (r *Renderer) setTerrainAreaTypeValue(areaID string, terrain world.TerrainT
 	if r == nil || r.gs == nil {
 		return
 	}
+	r.terrainAreaImageDirty = true
 	for i := range r.gs.TerrainAreas {
 		if r.gs.TerrainAreas[i].ID == areaID {
 			r.gs.TerrainAreas[i].Terrain = terrain

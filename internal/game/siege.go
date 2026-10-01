@@ -675,7 +675,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	if !virtualDefense && defender != nil {
 		defenderOwnerID = defender.OwnerID
 	}
-	g.gs.RecordWarCasualties(faction.FactionID(attacker.OwnerID), faction.FactionID(defenderOwnerID), result.AttackerLost, result.DefenderLost)
+	g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(attacker.OwnerID), faction.FactionID(defenderOwnerID), result.AttackerLost, result.DefenderLost, attacker.IsNaval, defender.IsNaval, len(attacker.Units) == 0, !virtualDefense && len(defender.Units) == 0)
 
 	if result.AttackerWins {
 		prompted := false

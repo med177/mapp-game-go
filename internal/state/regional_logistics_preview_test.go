@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
@@ -70,5 +71,51 @@ func TestPreviewRegionalLogisticsIncludesSettlementGranaryAndReserveSupport(t *t
 	}
 	if status.Overload != -101 {
 		t.Fatalf("aşım = %d, -101 olmalı", status.Overload)
+	}
+}
+
+func TestArmyLogisticsDamageVisibleUsesCurrentNavalSupplyPreview(t *testing.T) {
+	const factionID = faction.FactionID("player")
+	const landID = world.RegionID("coastal_front")
+	const seaID = world.RegionID("coastal_sea")
+
+	buildState := func(cargo int) *GameState {
+		mission := &army.NavalMission{Kind: army.NavalMissionSupplyArmy, TargetArmyID: "army"}
+		return &GameState{
+			PlayerFactionID: factionID,
+			Regions: map[world.RegionID]*world.Region{
+				landID: {
+					ID: landID, OwnerID: string(factionID), Neighbors: []world.RegionID{seaID},
+					Settlements: []world.Settlement{{ID: "port", Type: world.SettlementPort}},
+				},
+				seaID: {ID: seaID, IsSea: true, Neighbors: []world.RegionID{landID}},
+			},
+			Factions: map[faction.FactionID]*faction.Faction{
+				factionID: {ID: factionID},
+			},
+			Armies: map[army.ArmyID]*army.Army{
+				"army": {
+					ID: "army", OwnerID: string(factionID), RegionID: landID,
+					Units: []army.Unit{{TypeID: "infantry", CurrentHP: army.MaxUnitHP}},
+				},
+				"fleet": {
+					ID: "fleet", OwnerID: string(factionID), RegionID: seaID, IsNaval: true,
+					SupplyCargo: economy.ResourceCost{Grain: cargo}, NavalMission: mission,
+				},
+			},
+			UnitTypes: map[string]*army.UnitType{
+				"infantry": {ID: "infantry", GrainUpkeep: 10},
+			},
+			ArmyLogistics: map[army.ArmyID]ArmyLogisticsStatus{
+				"army": {ArmyID: "army", RegionID: landID, TotalHPDamage: 5},
+			},
+		}
+	}
+
+	if got := buildState(4).ArmyLogisticsDamageVisible("army"); got {
+		t.Fatal("açığı kapatan deniz ikmali varken kırmızı zayiat rozeti görünür kaldı")
+	}
+	if got := buildState(2).ArmyLogisticsDamageVisible("army"); !got {
+		t.Fatal("yetersiz deniz ikmalinde kırmızı zayiat rozeti gizlendi")
 	}
 }

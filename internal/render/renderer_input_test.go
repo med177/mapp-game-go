@@ -142,6 +142,32 @@ func TestNavalCoastalTargetDialogKeepsBothPortIntentActions(t *testing.T) {
 	}
 }
 
+func TestPrepareArmyMovementActionKeepsArmySelection(t *testing.T) {
+	r := &Renderer{
+		SelectedArmy:              "army",
+		showArmyDetailPanel:       true,
+		SelectedEmbarkedArmyFleet: "fleet",
+		splitSelectedUnits:        map[int]bool{1: true},
+	}
+	action := r.prepareArmyMovementAction(InputAction{Kind: ActionMoveArmy, ArmyID: "army"})
+
+	if action.Kind != ActionMoveArmy {
+		t.Fatalf("hareket aksiyonu korunmadı: %q", action.Kind)
+	}
+	if r.SelectedArmy != "army" {
+		t.Fatalf("hareket emrinden sonra seçili ordu temizlendi: %q", r.SelectedArmy)
+	}
+	if r.showArmyDetailPanel {
+		t.Fatal("hareket sırasında ordu detay paneli açık kaldı")
+	}
+	if r.SelectedEmbarkedArmyFleet != "" {
+		t.Fatalf("taşınan ordu alt görünümü temizlenmedi: %q", r.SelectedEmbarkedArmyFleet)
+	}
+	if len(r.splitSelectedUnits) != 0 {
+		t.Fatalf("hareket sırasında birim alt seçimi temizlenmedi: %+v", r.splitSelectedUnits)
+	}
+}
+
 func TestPostWarConquestChoiceUsesRequestedIcons(t *testing.T) {
 	annex := decorateConfirmDialogButton(gameui.NewButton(0, 0, 100, 40, "İlhak Et"), "İlhak Et", "accept")
 	if annex.Icon != gameui.IconLogin {
@@ -189,6 +215,32 @@ func TestInfoPopupClickDismissesRequiresNewClick(t *testing.T) {
 	popup := gameui.Rect{X: 100, Y: 100, W: 200, H: 80}
 	if infoPopupClickDismisses(10, popup, 150, 120, true, true) {
 		t.Fatal("basili tutulmus eski tiklama popup'i kapatti")
+	}
+}
+
+func TestArmyLogisticsBadgeUsesEventCache(t *testing.T) {
+	const aid = army.ArmyID("army")
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{},
+		ArmyLogistics: map[army.ArmyID]state.ArmyLogisticsStatus{
+			aid: {ArmyID: aid, TotalHPDamage: 5},
+		},
+	}
+	r := &Renderer{gs: gs, mapMode: MapModeNormal}
+
+	r.RefreshArmyLogisticsBadge(aid)
+	if !r.armyLogisticsDamageVisible(aid) {
+		t.Fatal("olay sonrası hesaplanan lojistik rozeti görünür değil")
+	}
+
+	delete(gs.ArmyLogistics, aid)
+	if !r.armyLogisticsDamageVisible(aid) {
+		t.Fatal("çizim sırasında state tekrar hesaplanarak cache değeri kaybedildi")
+	}
+
+	r.RefreshAllArmyLogisticsBadges()
+	if r.armyLogisticsDamageVisible(aid) {
+		t.Fatal("toplu state yenilemesi kaldırılmış lojistik kaydını cache'te tuttu")
 	}
 }
 

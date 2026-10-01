@@ -239,6 +239,21 @@ type WarLedger struct {
 	RecklessDeclaration bool `json:"reckless_declaration,omitempty"`
 }
 
+// CombatLossSummary tek bir muharebede iki tarafın verdiği birim kayıplarını
+// tur sonu oyuncu bildirimine taşır. Bu kayıt savaş ledger'ından bağımsızdır;
+// ledger yalnızca aktif savaşların diplomasi sayaçlarını tutmaya devam eder.
+type CombatLossSummary struct {
+	AttackerFactionID faction.FactionID
+	DefenderFactionID faction.FactionID
+	AttackerLost      int
+	DefenderLost      int
+	AttackerNaval     bool
+	DefenderNaval     bool
+	AttackerDestroyed bool
+	DefenderDestroyed bool
+	Turn              int
+}
+
 // BeginWarLedger savaş başlangıcını yalnızca ilk geçişte kaydeder.
 func (s *GameState) BeginWarLedger(a, b faction.FactionID) *WarLedger {
 	if s == nil || a == "" || b == "" || a == b {
@@ -320,15 +335,66 @@ func (s *GameState) WarLedgerFor(a, b faction.FactionID) *WarLedger {
 // RecordWarCasualties muharebedeki tamamen kaybedilen birlik sayılarını iki
 // savaşan tarafa yazar. Aktif savaş ilişkisi yoksa kayıt üretmez.
 func (s *GameState) RecordWarCasualties(attacker, defender faction.FactionID, attackerLost, defenderLost int) {
-	s.RecordFactionRegionAttackAgainst(attacker, defender)
-	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, false, false, true)
+	s.RecordWarCasualtiesByTypeAndOutcome(attacker, defender, attackerLost, defenderLost, false, false, false, false)
 }
 
 // RecordWarCasualtiesByType muharebe kayıplarını toplam sayaçların yanında
 // ordunun kara kuvveti mi yoksa filo mu olduğuna göre ayrı sayaçlara yazar.
 func (s *GameState) RecordWarCasualtiesByType(attacker, defender faction.FactionID, attackerLost, defenderLost int, attackerNaval, defenderNaval bool) {
+	s.RecordWarCasualtiesByTypeAndOutcome(attacker, defender, attackerLost, defenderLost, attackerNaval, defenderNaval, false, false)
+}
+
+// RecordWarCasualtiesByTypeAndOutcome muharebe kayıplarını türleri ve
+// tamamen yok olan taraflarıyla birlikte geçici tur özetine ekler.
+func (s *GameState) RecordWarCasualtiesByTypeAndOutcome(attacker, defender faction.FactionID, attackerLost, defenderLost int, attackerNaval, defenderNaval, attackerDestroyed, defenderDestroyed bool) {
 	s.RecordFactionRegionAttackAgainst(attacker, defender)
+	s.recordCombatLossSummary(attacker, defender, attackerLost, defenderLost, attackerNaval, defenderNaval, attackerDestroyed, defenderDestroyed)
 	s.recordWarCasualties(attacker, defender, attackerLost, defenderLost, attackerNaval, defenderNaval, true)
+}
+
+func (s *GameState) recordCombatLossSummary(attacker, defender faction.FactionID, attackerLost, defenderLost int, attackerNaval, defenderNaval, attackerDestroyed, defenderDestroyed bool) {
+	if s == nil || attacker == "" || defender == "" || attacker == defender {
+		return
+	}
+	if attackerLost < 0 {
+		attackerLost = 0
+	}
+	if defenderLost < 0 {
+		defenderLost = 0
+	}
+	if attackerLost == 0 && defenderLost == 0 && !attackerDestroyed && !defenderDestroyed {
+		return
+	}
+	s.TurnCombatLosses = append(s.TurnCombatLosses, CombatLossSummary{
+		AttackerFactionID: attacker,
+		DefenderFactionID: defender,
+		AttackerLost:      attackerLost,
+		DefenderLost:      defenderLost,
+		AttackerNaval:     attackerNaval,
+		DefenderNaval:     defenderNaval,
+		AttackerDestroyed: attackerDestroyed,
+		DefenderDestroyed: defenderDestroyed,
+		Turn:              s.Turn,
+	})
+}
+
+// ClearTurnCombatLosses oyuncu turunda daha önce gösterilmiş anlık muharebe
+// kayıtlarının bir sonraki tur özetine taşınmasını önler.
+func (s *GameState) ClearTurnCombatLosses() {
+	if s == nil {
+		return
+	}
+	s.TurnCombatLosses = nil
+}
+
+// TakeTurnCombatLosses mevcut tur muharebe kayıtlarını kopyalayıp tüketir.
+func (s *GameState) TakeTurnCombatLosses() []CombatLossSummary {
+	if s == nil || len(s.TurnCombatLosses) == 0 {
+		return nil
+	}
+	entries := append([]CombatLossSummary(nil), s.TurnCombatLosses...)
+	s.TurnCombatLosses = nil
+	return entries
 }
 
 // RecordWarAttritionCasualties kuşatma baskısı gibi muharebe dışı kayıpları

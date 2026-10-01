@@ -1561,7 +1561,7 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 			defMods := aiTechMods(gs, enemyInTarget.OwnerID)
 			seaTerrain := string(world.TerrainSea)
 			result := combat.ResolveBattleWithContextPlan(escort, enemyInTarget, world.TerrainType(seaTerrain), gs.UnitTypes, atkMods, defMods, combat.BattleContextNaval, combat.BattleStanceAggressive)
-			gs.RecordWarCasualtiesByType(faction.FactionID(escort.OwnerID), faction.FactionID(enemyInTarget.OwnerID), result.AttackerLost, result.DefenderLost, escort.IsNaval, enemyInTarget.IsNaval)
+			gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(escort.OwnerID), faction.FactionID(enemyInTarget.OwnerID), result.AttackerLost, result.DefenderLost, escort.IsNaval, enemyInTarget.IsNaval, len(escort.Units) == 0, len(enemyInTarget.Units) == 0)
 			recordCommanderBattle(gs, escort, enemyInTarget, nil, result.AttackerWins)
 
 			if result.AttackerWins {
@@ -1950,7 +1950,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					defMods := aiTechMods(gs, siegeArmy.OwnerID)
 					defMods.DefenseMod += 0.10
 					result := combat.ResolveBattleWithMods(a, siegeArmy, sourceRegion.Terrain, gs.UnitTypes, atkMods, defMods)
-					gs.RecordWarCasualtiesByType(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, siegeArmy.IsNaval)
+					gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, siegeArmy.IsNaval, len(a.Units) == 0, len(siegeArmy.Units) == 0)
 					recordCommanderBattle(gs, a, siegeArmy, nil, result.AttackerWins)
 					if result.AttackerWins {
 						if len(siegeArmy.Units) == 0 {
@@ -2059,7 +2059,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			atkMods := aiTechMods(gs, a.OwnerID)
 			defMods := aiTechMods(gs, enemyArmy.OwnerID)
 			result := combat.ResolveBattleWithMods(landing, enemyArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
-			gs.RecordWarCasualtiesByType(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost, landing.IsNaval, enemyArmy.IsNaval)
+			gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost, landing.IsNaval, enemyArmy.IsNaval, len(landing.Units) == 0, len(enemyArmy.Units) == 0)
 			recordCommanderBattle(gs, landing, enemyArmy, nil, result.AttackerWins)
 			a.EmbarkedUnits = a.EmbarkedUnits[:0]
 			a.MovePoints--
@@ -2206,7 +2206,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			defensePressure := state.SiegeDefensePressureForArmy(gs.UnitTypes, a, activeSiege.FortLevel)
 			defMods.DefenseMod += state.SiegeDefenseBonus(activeSiege.FortLevel, activeSiege.BreachLevel, defensePressure)
 			result := combat.ResolveBattleWithContextPlan(a, defender, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, combat.BattleStanceBalanced)
-			gs.RecordWarCasualtiesByType(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, defender.IsNaval)
+			gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, defender.IsNaval, len(a.Units) == 0, !virtualDefense && len(defender.Units) == 0)
 			recordCommanderBattle(gs, a, defender, nil, result.AttackerWins)
 			if result.AttackerWins {
 				if !virtualDefense && len(defender.Units) == 0 {
@@ -2370,7 +2370,8 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			contactContext = combat.BattleContextNaval
 		}
 		result := combat.ResolveBattleWithContactDefense(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, contactContext, combat.BattleStanceBalanced, contactAttackerHolding, contactDefenderHolding)
-		gs.RecordWarCasualtiesByType(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, defForBattle.IsNaval)
+		defenderDestroyed := len(defForBattle.Units) == 0
+		gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, defForBattle.IsNaval, len(a.Units) == 0, defenderDestroyed)
 		recordCommanderBattle(gs, a, defForBattle, defSourceIDs, result.AttackerWins)
 		if result.AttackerWins {
 			if len(defSourceIDs) > 0 {

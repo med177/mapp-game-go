@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image"
 	"image/color"
 	"math"
 	"os"
@@ -258,6 +259,7 @@ type Renderer struct {
 	commanderArrivalScroll   int
 	battleReport             battleReportState
 	queuedBattleReport       battleReportState
+	combatSummary            combatSummaryState
 	warSummary               warSummaryState
 	showActiveWars           bool
 	activeWarsScroll         int
@@ -299,7 +301,12 @@ type Renderer struct {
 	offerCursor         int
 
 	armyIconBuf                 []armyIconPos
-	armyIconCacheValid          bool
+	armyIconWorldBuf            []armyIconPos
+	armyIconLayoutKey           uint64
+	armyIconLayoutValid         bool
+	armySiegeDisplayCache       map[army.ArmyID]armySiegeDisplayCacheEntry
+	armySiegeDisplayCacheValid  bool
+	armyLogisticsBadgeVisible   map[army.ArmyID]bool
 	armyMovementAnimation       armyMovementAnimation
 	movementReachability        state.MovementReachability
 	movementReachabilityArmy    army.ArmyID
@@ -313,13 +320,17 @@ type Renderer struct {
 	merchantTradeStatusCache    map[army.ArmyID]state.MerchantFleetTradeStatus
 	merchantTradeStatusCacheSet bool
 	terrainAreaImage            *ebiten.Image
-	terrainAreaKey              uint64
+	terrainAreaImageDirty       bool
+	selectedRegionOverlay       *ebiten.Image
+	selectedRegionOverlayBounds image.Rectangle
+	selectedRegionOverlayKey    selectedRegionOverlayKey
 	// armyGroupDisplayOrder, aynı anchor'a sonradan giren ordunun mevcut
 	// orduların soluna yerleşebilmesi için grup bazlı ilk görülme sırasını tutar.
 	armyGroupDisplayOrder    map[armyDisplayGroupKey]map[army.ArmyID]uint64
 	nextArmyDisplayOrder     uint64
 	regionLabelBuf           []settlementDraw
 	labelRectBuf             []screenRect
+	regionLabelMeasureCache  map[settlementLabelMeasureKey]float64
 	merchantTradeMainPortIDs map[string]merchantTradeMainPortRef
 	tradeCorridors           []tradeCorridorInfo
 	tradeHoverIdx            int
@@ -834,6 +845,8 @@ func New(gs *state.GameState) *Renderer {
 		overlayPanelOrderLen:        overlayPanelCount,
 	}
 	r.resetCamera()
+	r.terrainAreaImageDirty = true
+	r.RefreshAllArmyLogisticsBadges()
 	return r
 }
 
@@ -973,10 +986,14 @@ func (r *Renderer) SetCursor(n int) { r.factionCursor = n }
 
 // MarkMapDirty sahiplik değiştiğinde çağrılır.
 func (r *Renderer) MarkMapDirty() {
-	if r == nil || r.worldMap == nil {
+	if r == nil {
 		return
 	}
-	r.worldMap.MarkDirty()
+	if r.worldMap != nil {
+		r.worldMap.MarkDirty()
+	}
+	r.armyIconLayoutValid = false
+	r.invalidateMovementReachability()
 }
 
 func (r *Renderer) playArmySelectionSound(aid army.ArmyID) {
@@ -1048,7 +1065,6 @@ func (r *Renderer) StartArmyMovementAnimation(aid army.ArmyID, target world.Regi
 		} else {
 			r.armyMovementAnimation.active = false
 		}
-		r.armyIconCacheValid = false
 		return
 	}
 	moveSound := "army_move"
@@ -1072,7 +1088,6 @@ func (r *Renderer) StartArmyMovementAnimation(aid army.ArmyID, target world.Regi
 		visualActive: true,
 	}
 	audio.EnsureScenarioSoundPlaying(filepath.Join(r.gs.ScenarioPath, "audio"), moveSound)
-	r.armyIconCacheValid = false
 }
 
 func (r *Renderer) IsArmyMovementAnimating() bool {
@@ -1107,7 +1122,6 @@ func (r *Renderer) CancelArmyMovementAnimation() {
 	}
 	r.stopArmyMovementSound()
 	r.armyMovementAnimation = armyMovementAnimation{}
-	r.armyIconCacheValid = false
 }
 
 func (r *Renderer) stopArmyMovementSound() {
@@ -1254,6 +1268,7 @@ func (r *Renderer) RebuildSettlementAnchors() {
 		return
 	}
 	r.worldMap.RebuildSettlementAnchors(r.gs)
+	r.armyIconLayoutValid = false
 }
 
 func (r *Renderer) MarkEditSaved() { r.editDirty = false }
@@ -1366,9 +1381,11 @@ func RefreshFactionHistoricalVisuals(gs *state.GameState) {
 func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared *WorldMap) {
 	r.cancelEditMapBuild()
 	r.gs = gs
+	r.terrainAreaImageDirty = true
+	r.RefreshAllArmyLogisticsBadges()
 	r.invalidateDiplomacyCache()
 	r.invalidateMovementReachability()
-	r.armyIconCacheValid = false
+	r.armyIconLayoutValid = false
 	r.invalidateEditRegionCenterMarkers()
 	syncFactionHistoricalFlagNames(gs)
 	r.editSuccessorDropdown.Close()
@@ -1426,6 +1443,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.queuedConfirmDialog = confirmDialogState{}
 	r.battleReport = battleReportState{}
 	r.queuedBattleReport = battleReportState{}
+	r.combatSummary = combatSummaryState{}
 	r.warSummary = warSummaryState{}
 	r.eventLogScroll = 0
 	r.editBuildingsPanel = false
@@ -1618,6 +1636,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.showVictoryDetail = false
 	r.victoryDetailScroll = 0
 	r.warSummary = warSummaryState{}
+	r.combatSummary = combatSummaryState{}
 	r.showActiveWars = false
 	r.activeWarsScroll = 0
 	r.activeWarsDirty = true
@@ -1644,7 +1663,7 @@ func (r *Renderer) armyPanelTooltipActive() bool {
 	if r.showHistoricalEvent || r.showCommanderPanel || r.showImperialPanel || r.showAIDiagnostic ||
 		r.showDiplomacy || r.showTech || r.showTrade || r.showEventCodex || r.showVictoryDetail ||
 		r.eventDetail != "" || r.regionTaskDialog.show || r.confirmDialog.show || r.warConfirm.show || r.warSummary.show ||
-		r.battlePlan.show || r.battleReport.show {
+		r.battlePlan.show || r.battleReport.show || r.combatSummary.show {
 		return false
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
@@ -1892,6 +1911,116 @@ func (r *Renderer) applyMapGeoM(op *ebiten.DrawImageOptions, sourceW, sourceH fl
 	op.GeoM.SetElement(1, 2, ScreenHeight/2-r.camScale*mapPitchY*r.camY)
 }
 
+func (r *Renderer) applyWorldSubImageGeoM(op *ebiten.DrawImageOptions, bounds image.Rectangle) {
+	if op == nil {
+		return
+	}
+	minX, minY := float64(bounds.Min.X), float64(bounds.Min.Y)
+	op.GeoM.SetElement(0, 0, r.camScale)
+	op.GeoM.SetElement(0, 1, r.camScale*mapShearX)
+	op.GeoM.SetElement(1, 0, 0)
+	op.GeoM.SetElement(1, 1, r.camScale*mapPitchY)
+	op.GeoM.SetElement(0, 2, ScreenWidth/2-r.camScale*r.camX+r.camScale*mapShearX*(minY-r.camY)-r.camScale*minX)
+	op.GeoM.SetElement(1, 2, ScreenHeight/2-r.camScale*mapPitchY*r.camY+r.camScale*mapPitchY*minY)
+}
+
+func (r *Renderer) selectedRegionOverlayColor(region *world.Region, mode MapMode) color.RGBA {
+	if region == nil {
+		return color.RGBA{}
+	}
+	if region.IsSea {
+		return color.RGBA{80, 180, 255, 120}
+	}
+	if mode == MapModeTrade && r.gs != nil && len(r.gs.TradeCenters.Centers) > 0 {
+		if index := nearestTradeCenterIndex(region, r.gs.TradeCenters.Centers, r.gs.Regions, r.gs.Year); index >= 0 && index < len(tradeNodeColors) {
+			col := tradeNodeColors[index]
+			return color.RGBA{col[0], col[1], col[2], 140}
+		}
+	}
+	if r.gs != nil {
+		if f := r.gs.Factions[faction.FactionID(region.OwnerID)]; f != nil {
+			return color.RGBA{f.Color[0], f.Color[1], f.Color[2], 140}
+		}
+	}
+	return color.RGBA{245, 205, 80, 140}
+}
+
+// drawSelectedRegionOverlay, seçim vurgusunu sahiplik rasterından ayırır.
+// Yalnız seçili bölgenin world-space bounding box'ı GPU'ya yüklenir; normal
+// seçim değişiminde WorldW*WorldH boyutundaki dünya dokusu yeniden yazılmaz.
+func (r *Renderer) drawSelectedRegionOverlay(screen *ebiten.Image, regionID world.RegionID) {
+	if r == nil || r.gs == nil || r.worldMap == nil || screen == nil || regionID == "" {
+		r.selectedRegionOverlay = nil
+		r.selectedRegionOverlayKey = selectedRegionOverlayKey{}
+		return
+	}
+	region := r.gs.Regions[regionID]
+	key := selectedRegionOverlayKey{
+		worldMap:      r.worldMap,
+		regionID:      regionID,
+		mode:          r.mapMode,
+		borderVersion: r.worldMap.borderVersion,
+	}
+	if r.selectedRegionOverlay == nil || r.selectedRegionOverlayKey != key {
+		pixels := r.worldMap.regionPx[regionID]
+		if len(pixels) == 0 {
+			r.selectedRegionOverlay = nil
+			r.selectedRegionOverlayKey = key
+			return
+		}
+		minX, minY := WorldW, WorldH
+		maxX, maxY := 0, 0
+		for _, pixel := range pixels {
+			if pixel < 0 || pixel >= WorldW*WorldH {
+				continue
+			}
+			x, y := pixel%WorldW, pixel/WorldW
+			if x < minX {
+				minX = x
+			}
+			if y < minY {
+				minY = y
+			}
+			if x > maxX {
+				maxX = x
+			}
+			if y > maxY {
+				maxY = y
+			}
+		}
+		if minX > maxX || minY > maxY {
+			r.selectedRegionOverlay = nil
+			r.selectedRegionOverlayKey = key
+			return
+		}
+		bounds := image.Rect(minX, minY, maxX+1, maxY+1)
+		width, height := bounds.Dx(), bounds.Dy()
+		data := make([]byte, width*height*4)
+		col := r.selectedRegionOverlayColor(region, r.mapMode)
+		for _, pixel := range pixels {
+			if pixel < 0 || pixel >= WorldW*WorldH {
+				continue
+			}
+			x, y := pixel%WorldW, pixel/WorldW
+			index := ((y-bounds.Min.Y)*width + x - bounds.Min.X) * 4
+			data[index] = col.R
+			data[index+1] = col.G
+			data[index+2] = col.B
+			data[index+3] = col.A
+		}
+		r.selectedRegionOverlay = ebiten.NewImage(width, height)
+		r.selectedRegionOverlay.WritePixels(data)
+		r.selectedRegionOverlayBounds = bounds
+		r.selectedRegionOverlayKey = key
+	}
+	if r.selectedRegionOverlay == nil {
+		return
+	}
+	op := &ebiten.DrawImageOptions{}
+	r.applyWorldSubImageGeoM(op, r.selectedRegionOverlayBounds)
+	screen.DrawImage(r.selectedRegionOverlay, op)
+}
+
 // --- Draw ---
 
 // Draw her frame çağrılır.
@@ -1901,11 +2030,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// hareket önizlemesi ve tooltip kararlarıyla aynı z-order sözleşmesini
 	// kullanmasını sağla.
 	r.rebuildUILayers()
-	// Aynı Draw frame'inde harita, tooltip ve ordu efektleri ikon
-	// koordinatlarını tekrar tekrar kullanır. Input cache'i çağrı sonunda
-	// temizlendiği için yeni oyun durumuyla başlayan Draw kendi cache'ini
-	// oluşturur.
-	r.armyIconCacheValid = false
+	// Harita, tooltip ve ordu efektleri aynı marker geometrisini kullanır.
+	// Cache artık Draw sınırında değil; kamera/state anahtarı değiştiğinde
+	// invalid edilir. Böylece sabit haritada her frame marker gruplaması
+	// yeniden yapılmaz.
 	r.merchantTradeStatusCacheSet = false
 	// Bu defer, ana menü ve diğer erken dönüş yapan ekranlarda da pencere
 	// kapatma onayının görünmesini sağlar. Modal her zaman son çizilen katman
@@ -2022,6 +2150,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	mapOp := &ebiten.DrawImageOptions{}
 	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 	screen.DrawImage(r.worldMap.Image(), mapOp)
+	r.drawSelectedRegionOverlay(screen, highlightRegion)
 	r.drawTerrainAreas(screen)
 	r.drawVectorMapBorders(screen)
 	r.drawLandPassages(screen)
@@ -2192,6 +2321,10 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		drawVictoryDetailPopup(screen, r.gs, r.victoryDetailScroll)
 	}
 
+	if r.combatSummary.show {
+		drawCombatSummaryDialog(screen, r.gs, r.combatSummary)
+	}
+
 	// 12. Ticaret koridor tooltip'i (en üst katman, trade panel hariç)
 	if tradeOverlayVisible && !r.showTrade {
 		r.drawTradeHoverTooltip(screen)
@@ -2317,7 +2450,7 @@ func (r *Renderer) tradeOverlayVisible() bool {
 	if r.showTech || r.showDiplomacy || r.showTrade || r.showEventCodex || r.showVictoryDetail || r.showHistoricalEvent {
 		return false
 	}
-	if r.regionTaskDialog.show || r.confirmDialog.show || r.warConfirm.show || r.warSummary.show || r.battlePlan.show || r.battleReport.show || r.eventDetail != "" {
+	if r.regionTaskDialog.show || r.confirmDialog.show || r.warConfirm.show || r.warSummary.show || r.battlePlan.show || r.battleReport.show || r.combatSummary.show || r.eventDetail != "" {
 		return false
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
@@ -2328,6 +2461,10 @@ func (r *Renderer) tradeOverlayVisible() bool {
 
 func (r *Renderer) BattleReportVisible() bool {
 	return r != nil && r.battleReport.show
+}
+
+func (r *Renderer) CombatSummaryVisible() bool {
+	return r != nil && r.combatSummary.show
 }
 
 func (r *Renderer) WarSummaryVisible() bool {
@@ -2349,7 +2486,7 @@ func (r *Renderer) PlayerMovementBlocked() bool {
 		return true
 	}
 	return r.regionTaskDialog.show || r.confirmDialog.show || r.warConfirm.show ||
-		r.warSummary.show || r.battlePlan.show || r.battleReport.show ||
+		r.warSummary.show || r.combatSummary.show || r.battlePlan.show || r.battleReport.show ||
 		r.showHistoricalEvent || r.eventDetail != "" || r.showVictoryDetail
 }
 
@@ -2557,6 +2694,9 @@ func (r *Renderer) movementPreviewCursorOverPanel(x, y float64) bool {
 		return true
 	}
 	if r.battleReport.show && battleReportPopupHit(x, y) {
+		return true
+	}
+	if r.combatSummary.show && combatSummaryPopupHit(x, y) {
 		return true
 	}
 	if r.showEventCodex && eventCodexPopupHit(x, y) {
@@ -3423,6 +3563,19 @@ type settlementDraw struct {
 	Priority    int
 }
 
+type settlementLabelMeasureKey struct {
+	Text    string
+	Medium  bool
+	Capital bool
+}
+
+type selectedRegionOverlayKey struct {
+	worldMap      *WorldMap
+	regionID      world.RegionID
+	mode          MapMode
+	borderVersion uint64
+}
+
 type screenRect struct {
 	X, Y, W, H float64
 }
@@ -3508,18 +3661,115 @@ func (r *Renderer) regionWorldPos(region *world.Region) (float64, float64) {
 	return wcX(region.WorldX), wcY(region.WorldY)
 }
 
+// armyIconStateKey, marker yerleşimini etkileyen küçük state özetini üretir.
+// Harita sürükleme sırasında pahalı geometriyi korurken, oyun state'i aynı
+// frame sınırı dışında değişmişse cache'in güvenli biçimde yenilenmesini
+// sağlar. Birimlerin tamamını hash'lemek yerine marker konumunu/görünümünü
+// etkileyen alanlar kullanılır.
+func (r *Renderer) armyIconStateKey() uint64 {
+	if r == nil || r.gs == nil {
+		return 0
+	}
+	key := borderHashString(string(r.gs.PlayerFactionID))
+	mix := func(value uint64) {
+		key ^= value + 0x9e3779b97f4a7c15 + (key << 6) + (key >> 2)
+	}
+	mix(math.Float64bits(r.camScale))
+	mix(uint64(r.mapMode))
+	mix(borderHashString(string(r.gs.Phase)))
+	mix(uint64(r.gs.Turn + 1))
+	mix(uint64(r.gs.Year + 1))
+	mix(uint64(r.gs.Month + 1))
+	mix(uint64(len(r.gs.Armies)))
+	for aid, a := range r.gs.Armies {
+		if a == nil {
+			continue
+		}
+		entry := borderHashString(string(aid))
+		entry ^= borderHashString(a.OwnerID)
+		entry ^= borderHashString(string(a.RegionID))
+		entry ^= borderHashString(string(a.DockedRegionID))
+		entry ^= borderHashString(a.DockedSettlementID)
+		entry ^= uint64(a.MovePoints+1) * 0x517cc1b727220a95
+		entry ^= uint64(len(a.Units)+1) * 0x6eed0e9da4d94a4f
+		entry ^= uint64(len(a.EmbarkedUnits)+1) * 0x94d049bb133111eb
+		if a.IsNaval {
+			entry ^= 0x243f6a8885a308d3
+		}
+		if a.IsGarrison || a.InAmbush || a.Commander != nil || a.EmbarkedCommander != nil {
+			entry ^= 0x13198a2e03707344
+		}
+		entry ^= borderHashString(a.TradeRouteKey)
+		if mission := a.NavalMission; mission != nil {
+			entry ^= borderHashString(string(mission.Kind))
+			entry ^= borderHashString(string(mission.TargetRegionID))
+			entry ^= borderHashString(string(mission.TargetFleetID))
+			entry ^= borderHashString(string(mission.TargetArmyID))
+		}
+		key ^= entry
+	}
+	for rid, siege := range r.gs.Sieges {
+		if siege == nil {
+			continue
+		}
+		entry := borderHashString(string(rid))
+		entry ^= borderHashString(string(siege.AttackerArmyID))
+		entry ^= borderHashString(string(siege.DefenderArmyID))
+		entry ^= borderHashString(siege.AttackerFactionID)
+		key ^= entry
+	}
+	for rid, raid := range r.gs.Raids {
+		if raid == nil {
+			continue
+		}
+		entry := borderHashString(string(rid)) ^ uint64(raid.Turn+1)
+		entry ^= borderHashString(string(raid.RaiderFactionID))
+		entry ^= borderHashString(string(raid.RaiderArmyID))
+		key ^= entry
+	}
+	return key
+}
+
 // armyIconPositions tüm orduların ekran koordinatlarını hesaplar.
 // Kara orduları region/yerleşim anchor'ında, sadece demirli donanmalar bağlı
 // liman yerleşimi anchor'ında, diğer donanmalar ise deniz bölgesi anchor'ında çizilir.
 func (r *Renderer) armyIconPositions() []armyIconPos {
-	if r.armyIconCacheValid && !r.armyMovementAnimation.active && !r.armyMovementAnimation.visualActive {
+	cacheKey := r.armyIconStateKey()
+	if r.armyIconLayoutValid && r.armyIconLayoutKey == cacheKey &&
+		!r.armyMovementAnimation.active && !r.armyMovementAnimation.visualActive {
+		r.armyIconBuf = r.armyIconBuf[:0]
+		for _, worldPos := range r.armyIconWorldBuf {
+			sx, sy := r.worldToScreen(float64(worldPos.X), float64(worldPos.Y))
+			r.armyIconBuf = append(r.armyIconBuf, armyIconPos{
+				ArmyID: worldPos.ArmyID,
+				X:      float32(sx),
+				Y:      float32(sy),
+			})
+		}
 		return r.armyIconBuf
 	}
-	r.armyIconCacheValid = true
+	if r.armySiegeDisplayCache == nil {
+		r.armySiegeDisplayCache = make(map[army.ArmyID]armySiegeDisplayCacheEntry, len(r.gs.Armies))
+	} else {
+		clear(r.armySiegeDisplayCache)
+	}
+	r.armySiegeDisplayCacheValid = true
+	defer func() { r.armySiegeDisplayCacheValid = false }()
 
 	byGroup := map[armyDisplayGroupKey][]army.ArmyID{}
 	groupBase := map[armyDisplayGroupKey][2]float32{}
+	siegeByArmy := make(map[army.ArmyID]*state.SiegeState, len(r.gs.Sieges))
+	siegeSideByArmy := make(map[army.ArmyID]siegeArmyDisplaySide, len(r.gs.Sieges))
+	commanderByArmy := make(map[army.ArmyID]bool, len(r.gs.Armies))
 	for aid, a := range r.gs.Armies {
+		if a != nil {
+			siege, side := r.siegeArmyDisplayClassification(a)
+			if siege != nil {
+				siegeByArmy[aid] = siege
+				siegeSideByArmy[aid] = side
+			}
+			commanderByArmy[aid] = armyHasDisplayedCommander(a)
+		}
 		if !r.armyVisibleAtCurrentZoom(a) {
 			continue
 		}
@@ -3556,31 +3806,31 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 		sort.Slice(aids, func(i, j int) bool {
 			ai := r.gs.Armies[aids[i]]
 			aj := r.gs.Armies[aids[j]]
-			aiSiege, aiSiegeSide := r.siegeArmyDisplayClassification(ai)
-			ajSiege, ajSiegeSide := r.siegeArmyDisplayClassification(aj)
+			aiSiege, aiSiegeSide := siegeByArmy[aids[i]], siegeSideByArmy[aids[i]]
+			ajSiege, ajSiegeSide := siegeByArmy[aids[j]], siegeSideByArmy[aids[j]]
 			if aiSiege != nil && ajSiege != nil && aiSiege.RegionID == ajSiege.RegionID && aiSiegeSide != ajSiegeSide {
 				// Destek ordusu geldiği tarafın dışına taşmasın: kuşatan
 				// destekleri solda, ana kuşatan, ana kuşatılan ve kuşatılan
 				// destekleri sağda gruplanır.
 				return aiSiegeSide < ajSiegeSide
 			}
-			aiHasCommander := armyHasDisplayedCommander(ai)
-			ajHasCommander := armyHasDisplayedCommander(aj)
+			aiHasCommander := commanderByArmy[aids[i]]
+			ajHasCommander := commanderByArmy[aids[j]]
 			if aiHasCommander != ajHasCommander {
 				return aiHasCommander
 			}
-			aiSieging := ai != nil && r.gs.SiegeByArmy(ai.ID) != nil
-			ajSieging := aj != nil && r.gs.SiegeByArmy(aj.ID) != nil
+			aiSieging := ai != nil && siegeByArmy[ai.ID] != nil
+			ajSieging := aj != nil && siegeByArmy[aj.ID] != nil
 			// Sadece kuşatma çifti kendi içinde sabitlenir: kuşatan solda,
 			// kuşatılan/ayrılan parça sağda kalır. Destek ordusu kuşatan
 			// ordudan sonra geldiyse arrival order'a göre onun soluna geçebilir.
 			if aiSieging {
-				if siege := r.gs.SiegeByArmy(ai.ID); siege != nil && siege.DefenderArmyID == aj.ID {
+				if siege := siegeByArmy[ai.ID]; siege != nil && siege.DefenderArmyID == aj.ID {
 					return true
 				}
 			}
 			if ajSieging {
-				if siege := r.gs.SiegeByArmy(aj.ID); siege != nil && siege.DefenderArmyID == ai.ID {
+				if siege := siegeByArmy[aj.ID]; siege != nil && siege.DefenderArmyID == ai.ID {
 					return false
 				}
 			}
@@ -3655,6 +3905,22 @@ func (r *Renderer) armyIconPositions() []armyIconPos {
 			r.armyIconBuf[idx].X = startX + float32(j)*coordStep
 		}
 	}
+	// Draw ve hit-test sırası, kamera kayınca da değişmemeli. Statik layout'u
+	// son sıralanmış marker'lardan world-space'e çevir; böylece pan yalnızca
+	// ucuz worldToScreen projeksiyonu yapar.
+	sortArmyIconPositionsForRender(r.gs, r.armyIconBuf)
+	r.armyIconWorldBuf = r.armyIconWorldBuf[:0]
+	for _, pos := range r.armyIconBuf {
+		wx, wy := r.screenToWorld(float64(pos.X), float64(pos.Y))
+		r.armyIconWorldBuf = append(r.armyIconWorldBuf, armyIconPos{
+			ArmyID: pos.ArmyID,
+			X:      float32(wx),
+			Y:      float32(wy),
+		})
+	}
+	r.armyIconLayoutKey = cacheKey
+	r.armyIconLayoutValid = true
+
 	for index := range r.armyIconBuf {
 		if x, y, ok := r.animatedArmyScreenPos(r.armyIconBuf[index].ArmyID); ok {
 			r.armyIconBuf[index].X = x
@@ -3817,6 +4083,11 @@ func (r *Renderer) armyDisplayGroup(a *army.Army) (armyDisplayGroupKey, float32,
 
 type siegeArmyDisplaySide uint8
 
+type armySiegeDisplayCacheEntry struct {
+	siege *state.SiegeState
+	side  siegeArmyDisplaySide
+}
+
 const (
 	siegeArmyDisplayUnrelated siegeArmyDisplaySide = iota
 	siegeArmyDisplayAttackerSupport
@@ -3833,6 +4104,19 @@ func (r *Renderer) siegeArmyDisplayClassification(a *army.Army) (*state.SiegeSta
 	if r == nil || r.gs == nil || a == nil || r.gs.Sieges == nil {
 		return nil, siegeArmyDisplayUnrelated
 	}
+	if r.armySiegeDisplayCacheValid {
+		if cached, ok := r.armySiegeDisplayCache[a.ID]; ok {
+			return cached.siege, cached.side
+		}
+	}
+	siege, side := r.computeSiegeArmyDisplayClassification(a)
+	if r.armySiegeDisplayCacheValid {
+		r.armySiegeDisplayCache[a.ID] = armySiegeDisplayCacheEntry{siege: siege, side: side}
+	}
+	return siege, side
+}
+
+func (r *Renderer) computeSiegeArmyDisplayClassification(a *army.Army) (*state.SiegeState, siegeArmyDisplaySide) {
 	for _, siege := range r.gs.Sieges {
 		if siege == nil {
 			continue
@@ -4113,7 +4397,7 @@ func (r *Renderer) drawArmySpriteBadges(screen *ebiten.Image, a *army.Army, pos 
 		badgeSize := float32(15)
 		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), siegeBadgeX, pos.Y, badgeSize-2)
 	}
-	if status, ok := r.gs.ArmyLogistics[a.ID]; ok && status.TotalHPDamage > 0 {
+	if r.armyLogisticsDamageVisible(a.ID) {
 		badgeX, badgeY := armyDamageBadgeCenter(pos.X, pos.Y)
 		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
 		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
@@ -4306,11 +4590,51 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 		badgeY := cy
 		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), badgeX, badgeY, badgeSize-2)
 	}
-	if status, ok := r.gs.ArmyLogistics[aid]; ok && status.TotalHPDamage > 0 {
+	if r.armyLogisticsDamageVisible(aid) {
 		badgeX, badgeY := armyDamageBadgeCenter(cx, cy)
 		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
 		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
 	}
+}
+
+// RefreshArmyLogisticsBadge, tek bir ordunun lojistik hasar rozeti için
+// gerekli pahalı deniz ikmal önizlemesini olay anında hesaplar. Çizim
+// döngüsü bu cache'i yalnızca okur; böylece marker seçimi ve kamera hareketi
+// lojistik hesabını yeniden çalıştırmaz.
+func (r *Renderer) RefreshArmyLogisticsBadge(aid army.ArmyID) {
+	if r == nil || r.gs == nil || aid == "" {
+		return
+	}
+	if r.armyLogisticsBadgeVisible == nil {
+		r.armyLogisticsBadgeVisible = make(map[army.ArmyID]bool)
+	}
+	r.armyLogisticsBadgeVisible[aid] = r.gs.ArmyLogisticsDamageVisible(aid)
+}
+
+// RefreshAllArmyLogisticsBadges, state topluca değiştiğinde (yeni oyun,
+// kayıt yükleme veya tur çözümlemesi) lojistik rozet cache'ini bir kez
+// yeniler. Hasar kaydı olmayan ordular için önizleme yapılmaz.
+func (r *Renderer) RefreshAllArmyLogisticsBadges() {
+	if r == nil || r.gs == nil {
+		return
+	}
+	if r.armyLogisticsBadgeVisible == nil {
+		r.armyLogisticsBadgeVisible = make(map[army.ArmyID]bool)
+	} else {
+		clear(r.armyLogisticsBadgeVisible)
+	}
+	for aid, status := range r.gs.ArmyLogistics {
+		if status.TotalHPDamage > 0 {
+			r.RefreshArmyLogisticsBadge(aid)
+		}
+	}
+}
+
+func (r *Renderer) armyLogisticsDamageVisible(aid army.ArmyID) bool {
+	if r == nil || r.mapMode == MapModeTrade || r.armyLogisticsBadgeVisible == nil {
+		return false
+	}
+	return r.armyLogisticsBadgeVisible[aid]
 }
 
 func (r *Renderer) drawArmyCommanderPortrait(screen *ebiten.Image, a *army.Army, cx, cy float32, isNaval bool) {
@@ -4789,7 +5113,15 @@ func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text st
 	if capitalIcon {
 		iconAdvance = capitalLabelIconAdvance(isMediumFace)
 	}
-	textW := MeasureText(text, face)
+	if r.regionLabelMeasureCache == nil {
+		r.regionLabelMeasureCache = make(map[settlementLabelMeasureKey]float64, 128)
+	}
+	measureKey := settlementLabelMeasureKey{Text: text, Medium: isMediumFace, Capital: capitalIcon}
+	textW, ok := r.regionLabelMeasureCache[measureKey]
+	if !ok {
+		textW = MeasureText(text, face)
+		r.regionLabelMeasureCache[measureKey] = textW
+	}
 	totalW := textW + iconAdvance
 	lx := sx - totalW/2
 	h := float64(16)

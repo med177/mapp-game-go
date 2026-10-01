@@ -68,16 +68,11 @@ func (r *Renderer) diplomacyNotificationAutoCloseFrameLimit() int {
 }
 
 func (r *Renderer) HandleInput() InputAction {
-	// İmleç ve input hit-testleri aynı HandleInput çağrısında ordu ikonlarını
-	// tekrar kullanabilir. Game.Update aksiyonu işledikten sonra Draw yeni
-	// durumu hesaplasın diye cache çağrı sınırında temizlenir.
-	r.armyIconCacheValid = false
-	if !r.movementPreviewFrozen {
-		r.invalidateMovementReachability()
-	}
+	// Marker geometrisi kamera/state anahtarıyla doğrulanır; input çağrı
+	// sınırında temizlenmez. Böylece cursor hit-test'i ile Draw aynı snapshot'ı
+	// kullanır. Kamera hareketi aşağıdaki handleCamera sonrasında invalid eder.
 	r.merchantTradeStatusCacheSet = false
 	defer func() {
-		r.armyIconCacheValid = false
 		r.merchantTradeStatusCacheSet = false
 		r.stopInactiveArmyFightSound()
 		r.flushPendingArmyMovementSound()
@@ -92,6 +87,9 @@ func (r *Renderer) HandleInput() InputAction {
 
 	if r.showShortcuts {
 		return r.handleShortcutsInput()
+	}
+	if r.combatSummary.show {
+		return r.handleCombatSummaryInput()
 	}
 
 	// Tarihsel olay popup'ı çizimde en üstte olduğundan inputta da ilk öncelik olmalı.
@@ -413,9 +411,8 @@ func (r *Renderer) HandleInput() InputAction {
 	}
 
 	r.handleCamera()
-	// Kamera kaymış/zoomlanmış olabilir; cursor kontrolündeki ikon
-	// koordinatları artık geçerli değildir.
-	r.armyIconCacheValid = false
+	// Pan için world-space marker layout korunur; zoom değişimi state key'ine
+	// dahil olduğu için yalnızca yeni ölçek gerektiğinde yeniden kurulur.
 
 	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
 		return InputAction{Kind: ActionEndTurn}
@@ -1654,6 +1651,16 @@ func (r *Renderer) selectedArmySplitIndices() []int {
 	return indices
 }
 
+// prepareArmyMovementAction, hareket emri verilirken ordu seçimini korur.
+// Hareket animasyonu sırasında detay/alt-birim panelleri kapanabilir; ancak
+// SelectedArmy korunmalı ki varıştan sonra aynı ordu seçili kalabilsin.
+func (r *Renderer) prepareArmyMovementAction(action InputAction) InputAction {
+	r.showArmyDetailPanel = false
+	r.SelectedEmbarkedArmyFleet = ""
+	r.clearArmySplitSelection()
+	return action
+}
+
 // handleRightClick sağ tıklamayı yorumlar: seçili ordunun hareket/saldırı emri.
 func (r *Renderer) handleRightClick() InputAction {
 	if r.SelectedArmy == "" {
@@ -1774,11 +1781,7 @@ func (r *Renderer) handleRightClick() InputAction {
 	// Limana bağlı donanma aynı deniz bölgesine sağ tıklarsa limandan ayrılıp
 	// bölgenin deniz merkezine geçiş (undock) emri verebilir.
 	if a.IsNaval && a.DockedRegionID != "" && rid == a.RegionID {
-		r.SelectedArmy = ""
-		r.showArmyDetailPanel = false
-		r.SelectedEmbarkedArmyFleet = ""
-		r.clearArmySplitSelection()
-		return InputAction{Kind: ActionMoveArmy, ArmyID: a.ID, TargetRegion: rid}
+		return r.prepareArmyMovementAction(InputAction{Kind: ActionMoveArmy, ArmyID: a.ID, TargetRegion: rid})
 	}
 	if a.IsNaval && r.openNavalCoastalTargetDialog(a, r.gs.Regions[rid], rid, navalTargetSettlementID) {
 		return InputAction{}
@@ -1787,12 +1790,7 @@ func (r *Renderer) handleRightClick() InputAction {
 	// katmanı aynı ortak route hesabıyla ara adımları sırayla çözer. Böylece
 	// cursor önizlemesi ile gerçek hareket arasında farklı bir yol oluşmaz.
 	if route := r.movementReachabilityForArmy(a).PathTo(rid); len(route) > 2 {
-		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID}
-		r.SelectedArmy = ""
-		r.showArmyDetailPanel = false
-		r.SelectedEmbarkedArmyFleet = ""
-		r.clearArmySplitSelection()
-		return act
+		return r.prepareArmyMovementAction(InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID})
 	}
 	for _, n := range src.Neighbors {
 		if n != rid {
@@ -1879,12 +1877,7 @@ func (r *Renderer) handleRightClick() InputAction {
 			r.openBattlePlan(a, target, enemyArmy, battleAction, battleContext)
 			return InputAction{}
 		}
-		act := InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID}
-		r.SelectedArmy = ""
-		r.showArmyDetailPanel = false
-		r.SelectedEmbarkedArmyFleet = ""
-		r.clearArmySplitSelection()
-		return act
+		return r.prepareArmyMovementAction(InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID})
 	}
 	return InputAction{}
 }

@@ -408,6 +408,10 @@ type GameState struct {
 	Relations map[string]*faction.Relation `json:"relations"`
 	// Aktif savaşların başlangıç durumu ve kalıcı kayıp/fetih sayaçları.
 	WarLedgers map[string]*WarLedger `json:"war_ledgers,omitempty"`
+	// TurnCombatLosses, tur çözümlemesinde gerçekleşen muharebe kayıplarının
+	// oyuncuya tek seferlik çatışma özeti olarak gösterilecek geçici kaydıdır.
+	// Save'e yazılmaz; tur başlangıcında temizlenir ve özet alınırken tüketilir.
+	TurnCombatLosses []CombatLossSummary `json:"-"`
 	// Barış sonrası geçici ateşkes bitiş turları (relation key -> expiry turn).
 	RecentTruces map[string]int `json:"recent_truces,omitempty"`
 	// RecentFactionExpansion, son kısa zaman penceresinde kazanılan kara

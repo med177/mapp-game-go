@@ -42,6 +42,7 @@ const (
 	uiLayerEventDetail    = "event-detail"
 	uiLayerVictoryDetail  = "victory-detail"
 	uiLayerBattleReport   = "battle-report"
+	uiLayerCombatSummary  = "combat-summary"
 	uiLayerWarSummary     = "war-summary"
 	uiLayerBattlePlan     = "battle-plan"
 	uiLayerConfirm        = "confirm-dialog"
@@ -383,6 +384,9 @@ func (r *Renderer) rebuildUILayers() {
 	}
 	if r.battleReport.show {
 		r.addUIScreenLayer(uiLayerBattleReport)
+	}
+	if r.combatSummary.show {
+		r.addUIScreenLayer(uiLayerCombatSummary)
 	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
 		r.addUIScreenLayer(uiLayerDiplomacyOffer)

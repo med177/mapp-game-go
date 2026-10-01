@@ -16,13 +16,15 @@ import (
 )
 
 const (
-	navalMissionPanelW           = float32(600)
-	navalMissionPanelHeaderH     = float32(70)
-	navalMissionPanelRowH        = float32(80)
-	navalMissionPanelFooterH     = float32(56)
-	navalMissionPanelVisibleRows = 7
-	navalMissionButtonW          = float64(78)
-	navalMissionButtonGap        = float64(6)
+	navalMissionPanelW               = float32(600)
+	navalMissionPanelHeaderH         = float32(70)
+	navalMissionPanelRowH            = float32(80)
+	navalMissionPanelFooterH         = float32(56)
+	navalMissionPanelVisibleRows     = 7
+	navalMissionButtonW              = float64(78)
+	navalMissionButtonGap            = float64(6)
+	navalSupplyTargetHighlightRadius = float32(24)
+	navalSupplyTargetHighlightBorder = float32(3)
 )
 
 type navalMissionPanelLayout struct {
@@ -397,8 +399,12 @@ func (r *Renderer) drawNavalMissionTargetingOverlay(screen *ebiten.Image) {
 			if !navalSupplyTargetArmy(r.gs, fleet, target) {
 				continue
 			}
-			vector.FillCircle(screen, pos.X, pos.Y, 19, color.RGBA{70, 170, 220, 90}, false)
-			vector.StrokeCircle(screen, pos.X, pos.Y, 19, 2, color.RGBA{145, 225, 255, 235}, false)
+			// Uygun orduların arka plan vurgusu marker'ın altında daha rahat
+			// seçilebilmesi için geniş tutulur; koyu dış border, harita ve
+			// marker renklerinden ayrışmasını sağlar.
+			vector.FillCircle(screen, pos.X, pos.Y, navalSupplyTargetHighlightRadius, color.RGBA{70, 170, 220, 100}, false)
+			vector.StrokeCircle(screen, pos.X, pos.Y, navalSupplyTargetHighlightRadius+navalSupplyTargetHighlightBorder, navalSupplyTargetHighlightBorder, color.RGBA{16, 45, 68, 240}, true)
+			vector.StrokeCircle(screen, pos.X, pos.Y, navalSupplyTargetHighlightRadius, 2, color.RGBA{145, 225, 255, 235}, true)
 		}
 		vector.FillRect(screen, 0, 0, float32(ScreenWidth), 42, color.RGBA{24, 18, 8, 235}, false)
 		DrawTextCentered(screen, "ORDU İKMAL HEDEFİ: uygun orduya sol tıkla • ESC: iptal", float64(ScreenWidth)/2, 14, FaceSmall, ColorGold)

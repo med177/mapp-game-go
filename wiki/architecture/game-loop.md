@@ -139,6 +139,12 @@ Kamera kontrolleri normal harita ile aynıdır.
 snapshot'ını temizler; sonraki oyuncu turunda ordu tahıl bakımı önceki turun
 hareket bilgisini taşımaz.
 
+Tur çözümlemesi sırasında gerçekleşen muharebeler, `RecordWarCasualties...`
+kanalından geçici kara/donanma kayıp kayıtlarına da yazılır. Kayıp veya tamamen
+yok olma varsa `resolveTurn()` oyuncu fazına dönmeden önce `Çatışma Özeti`
+modalını açar; oyuncu `Tamam` demeden harita etkileşimi başlamaz. Bu kayıtlar
+save'e yazılmaz ve özet açılırken tüketilir.
+
 Askerî geçiş izni için ayrı diplomasi state'i henüz yoktur. Eklendiğinde tur sonu
 erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir.
 
