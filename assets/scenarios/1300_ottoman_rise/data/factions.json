@@ -19,9 +19,9 @@
     ],
     "religion": "sunni",
     "color": [
-      220,
+      255,
       50,
-      50
+      70
     ],
     "is_playable": true,
     "is_eliminated": false,
@@ -1653,8 +1653,8 @@
     "religion": "sunni",
     "color": [
       155,
-      125,
-      65
+      255,
+      0
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -1827,8 +1827,8 @@
     "religion": "sunni",
     "color": [
       255,
-      95,
-      0
+      135,
+      40
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -2164,9 +2164,9 @@
     ],
     "religion": "shia",
     "color": [
-      145,
-      95,
-      45
+      65,
+      55,
+      65
     ],
     "is_playable": true,
     "is_eliminated": false,
@@ -2760,9 +2760,9 @@
     "name_tr": "Saruhanoğulları Beyliği",
     "religion": "sunni",
     "color": [
-      160,
-      255,
-      60
+      195,
+      85,
+      150
     ],
     "is_playable": false,
     "is_eliminated": false,
@@ -2878,8 +2878,8 @@
     "name_tr": "Sırp İmparatorluğu",
     "religion": "orthodox",
     "color": [
-      255,
-      0,
+      185,
+      20,
       0
     ],
     "is_playable": false,
@@ -3426,9 +3426,9 @@
     "name_tr": "Hırvat Krallığı",
     "religion": "catholic",
     "color": [
-      170,
+      140,
       55,
-      75
+      155
     ],
     "is_playable": false,
     "is_eliminated": false,
