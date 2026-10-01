@@ -59,7 +59,7 @@ func buildPauseMenuButtons(hasSave bool, settings Settings) []gameui.Button {
 		case ActionToggleMusic:
 			label = "Müzik: " + boolLabel(settings.MusicOn)
 		case ActionAdjustMusic:
-			label = "Müzik Seviyesi: ◄ " + itoa(settings.MusicVolume) + "% ►"
+			label = "Müzik Seviyesi: " + itoa(settings.MusicVolume) + "%"
 		}
 		btn := gameui.NewButton(layout.itemsRect.X, y, layout.itemsRect.W, itemH-10, label)
 		btn.Enabled = !item.disabled
@@ -68,23 +68,26 @@ func buildPauseMenuButtons(hasSave bool, settings Settings) []gameui.Button {
 	return buttons
 }
 
+func pauseMusicVolumeButtons(row gameui.Button, volume int) (gameui.Button, gameui.Button) {
+	const buttonW = 34.0
+	const buttonH = 32.0
+	minus := gameui.NewButton(row.X+198, row.Y+(row.H-buttonH)/2, buttonW, buttonH, "-")
+	plus := gameui.NewButton(row.X+row.W-44, row.Y+(row.H-buttonH)/2, buttonW, buttonH, "+")
+	minus.Enabled = volume > 0
+	plus.Enabled = volume < 100
+	return minus, plus
+}
+
 func buildPauseItems(hasSave bool) []pauseMenuItem {
 	return []pauseMenuItem{
 		{"Devam Et", ActionResume, false, 0},
 		{"Müzik", ActionToggleMusic, false, 0},
-		{"Müzik Seviyesi", ActionAdjustMusic, false, 10},
+		{"Müzik Seviyesi", ActionAdjustMusic, false, 5},
 		{"Kaydet", ActionOpenSaveSelect, false, 0},
 		{"Yükle", ActionLoadFromPause, !hasSave, 0},
 		{"Ana Menü", ActionGoMainMenu, false, 0},
 		{"Oyundan Çık", ActionQuit, false, 0},
 	}
-}
-
-func pauseMusicDeltaForClick(button gameui.Button, mouseX float64, delta int) int {
-	if mouseX < button.X+button.W/2 {
-		return -delta
-	}
-	return delta
 }
 
 // DrawPauseMenu oyun içi duraklama menüsünü yarı saydam overlay üzerine çizer.
@@ -134,8 +137,16 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 		if isSelected && !item.disabled {
 			prefix = "► "
 		}
-		label := buttons[i].Label
-		drawUILabel(screen, gameui.Rect{X: layout.itemsRect.X, Y: y + 8, W: layout.itemsRect.W}, prefix+label, col, gameui.TextLarge, gameui.TextAlignCenter)
+		if item.action == ActionAdjustMusic {
+			minus, plus := pauseMusicVolumeButtons(buttons[i], settings.MusicVolume)
+			drawUILabel(screen, gameui.Rect{X: buttons[i].X, Y: y + 8, W: 190}, prefix+"Müzik Seviyesi:", col, gameui.TextLarge, gameui.TextAlignCenter)
+			drawUILabel(screen, gameui.Rect{X: buttons[i].X + 238, Y: y + 8, W: 70}, itoa(settings.MusicVolume)+"%", ColorGold, gameui.TextLarge, gameui.TextAlignCenter)
+			drawUIButtonWidget(screen, minus, tinyButtonStyle)
+			drawUIButtonWidget(screen, plus, tinyButtonStyle)
+		} else {
+			label := buttons[i].Label
+			drawUILabel(screen, gameui.Rect{X: layout.itemsRect.X, Y: y + 8, W: layout.itemsRect.W}, prefix+label, col, gameui.TextLarge, gameui.TextAlignCenter)
+		}
 	}
 
 	drawUILabel(screen, layout.footerRect, "Menü seçeneğini tıklayarak devam et", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
@@ -195,13 +206,22 @@ func (r *Renderer) handlePauseMenuInput(input gameui.InputState) InputAction {
 		}
 	}
 	if input.LeftJustPressed {
+		musicRow := buttons[2]
+		minus, plus := pauseMusicVolumeButtons(musicRow, r.CurrentSettings.MusicVolume)
+		if minus.HitTest(input.MouseX, input.MouseY) && minus.Enabled {
+			r.setMenuCursor(&r.pauseCursor, 2)
+			return InputAction{Kind: ActionAdjustMusic, Delta: -5}
+		}
+		if plus.HitTest(input.MouseX, input.MouseY) && plus.Enabled {
+			r.setMenuCursor(&r.pauseCursor, 2)
+			return InputAction{Kind: ActionAdjustMusic, Delta: 5}
+		}
 		for i, btn := range buttons {
+			if items[i].action == ActionAdjustMusic {
+				continue
+			}
 			if btn.HandleInput(input) && !items[i].disabled {
-				delta := items[i].delta
-				if items[i].action == ActionAdjustMusic {
-					delta = pauseMusicDeltaForClick(btn, input.MouseX, delta)
-				}
-				return InputAction{Kind: items[i].action, Delta: delta}
+				return InputAction{Kind: items[i].action, Delta: items[i].delta}
 			}
 		}
 	}
