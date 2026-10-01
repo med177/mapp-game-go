@@ -4212,12 +4212,12 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 
 | Araç | Amaç |
 |---|---|
-| `tools/centroids/main.go` | Bölge merkez koordinatları hesapla |
-| `tools/populate_all_shapes.py` | Natural Earth'ten poligon üret |
-| `tools/update_shapes_from_ne.py` | Şekilleri güncelle |
+| `tools/obsolete/centroids/main.go` | Eski bölge merkez koordinatları aracı |
+| `tools/obsolete/populate_all_shapes.py` | Eski Natural Earth poligon üretim aracı |
+| `tools/obsolete/update_shapes_from_ne.py` | Eski şekil güncelleme aracı |
 | `tools/fix_*.py` | Belirli bölge düzeltmeleri |
 | `tools/add_regions*.py` | Yeni bölge ekleme |
-| `tools/add_missing_countries.js` | Eksik ülke tamamlama |
+| `tools/obsolete/add_missing_countries.js` | Eski eksik ülke tamamlama aracı |
 | `tools/audit_map.py` | Harita/veri denetimi |
 - 2026-07-22: Kuşatma teslimiyeti iki yönlü diplomasi teklifine bağlandı. AI kuşatan baskı yeterliyse oyuncuya bölge kimliği taşıyan teslim olma talebi gönderebiliyor; AI savunmacı da ağır kuşatmada oyuncuya teslimiyet teklif edebiliyor. Teklif modalı `Kabul Et` etiketi kullanıyor, mesaj alanı genişletilmiş dikey panelde daha fazla satır gösteriyor ve bölge bağlı tekliflerde kamera `RegionID` üzerinden kuşatılan alana odaklanıyor. Savunma kuşatma panelindeki `Teslim ol` yalnız gerçek teklif geldiğinde aktifleşiyor. Kabulde savunma orduları mümkünse en yakın dost bölgeye moral kaybıyla çekiliyor; AI'ın son toprağı için oyuncu kabulü doğrudan vassallık kuruyor. Kapsam: `internal/{state/state.go,diplomacy/{diplomacy.go,offers.go,quota.go},ai/diplomacy.go,game/game.go,render/{renderer_dialogs.go,renderer_input.go,ui_modals.go}}`, testler: `internal/{ai/siege_test.go,game/siege_test.go,render/war_confirm_test.go}`.
 - 2026-07-22: Saldıran kuşatma paneline `Teslimiyet Teklifi` düğmesi eklendi. Oyuncu aktif kuşatmadan AI savunmacıya teklif gönderebiliyor; AI baskı, gedik, süre ve güç dengesine göre aynı tur kabul veya ret veriyor. Kabul mevcut teslimiyet/fetih/vassallık çözümleyicisine, ret diplomasi geçmişi ve kota akışına bağlandı. Üçlü panel düğmeleri çakışmayacak şekilde daraltıldı. Kapsam: `internal/{render/{action.go,renderer.go,renderer_dialogs.go,renderer_input.go},game/game.go}`, testler: `internal/{game/siege_test.go,render/war_confirm_test.go}`.
