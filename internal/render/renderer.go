@@ -4335,7 +4335,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			if movementSprite != nil && (selectedSprite || animatingSprite) {
 				r.drawArmyMarkerSprite(screen, movementSprite, pos.X, pos.Y)
 			} else {
-				r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, false, siegeBadgeX)
+				r.drawArmyIcon(screen, a.ID, a.OwnerID, pos.X, pos.Y, fc, unitCount, isSelected, a.IsNaval, false, siegeBadgeX, !playerOwned)
 			}
 			if embarkableFleetForSelectedArmy(r.gs, selectedArmy, a) {
 				embarkTargetColor := color.RGBA{120, 230, 240, 220}
@@ -4362,6 +4362,34 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 	// Oyuncu portresi yabancı markerların üstünde kalır; markerın sol/sağ
 	// rozetleri ise portrenin üstünde görünmelidir.
 	drawCommanderLayer(true)
+	// Normal oyuncu markerında gövdeyle birlikte çizilmeyen kuşatma/hasar
+	// rozetlerini portreden sonra çiz; hareket sprite'ı kullanan markerlar bu
+	// rozetleri aşağıdaki sprite-rozet geçişinde alır.
+	for _, pos := range positions {
+		a, ok := r.gs.Armies[pos.ArmyID]
+		if !ok || a == nil || !armyMarkerIsPlayerOwned(r.gs, a) {
+			continue
+		}
+		selectedSprite := pos.ArmyID == r.SelectedArmy && a.MovePoints > 0
+		animatingSprite := r.armyMovementVisualActiveFor(a.ID)
+		movementSprite := (*ebiten.Image)(nil)
+		if selectedSprite || animatingSprite {
+			movementSprite = r.armyMovementSpriteFor(a.ID, a.OwnerID, a.IsNaval)
+		}
+		if movementSprite != nil && (selectedSprite || animatingSprite) {
+			continue
+		}
+		siegeBadgeX := pos.X + armyIconInnerHalf + 8
+		if siege := r.gs.SiegeByArmy(a.ID); siege != nil {
+			for _, candidate := range positions {
+				if candidate.ArmyID == siege.DefenderArmyID && candidate.Y == pos.Y {
+					siegeBadgeX = armySiegeBadgeCenterX(pos.X, candidate.X, true)
+					break
+				}
+			}
+		}
+		r.drawArmySideBadges(screen, a.ID, pos.X, pos.Y, siegeBadgeX)
+	}
 	// Sprite kullanan oyuncu markerlarının yerleşik rozetleri sprite'tan sonra
 	// çizilir. Böylece büyük görsel komşu markerın rozetini kapatamaz.
 	for _, pos := range positions {
@@ -4597,7 +4625,7 @@ const (
 
 var settlementBreachBorderColor = color.RGBA{80, 220, 120, 255}
 
-func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool, showCommander bool, siegeBadgeX float32) {
+func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID string, cx, cy float32, col color.RGBA, unitCount int, selected bool, isNaval bool, showCommander bool, siegeBadgeX float32, drawSideBadges bool) {
 	borderCol := armyIconBorderColor(r.gs, ownerID, selected)
 	a := r.gs.Armies[aid]
 	if showCommander {
@@ -4641,11 +4669,15 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 			drawMarkerBadgeText(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2), float64(badgeW), ColorWhite)
 		}
 	}
+	if drawSideBadges {
+		r.drawArmySideBadges(screen, aid, cx, cy, siegeBadgeX)
+	}
+}
+
+func (r *Renderer) drawArmySideBadges(screen *ebiten.Image, aid army.ArmyID, cx, cy, siegeBadgeX float32) {
 	if siege := r.gs.SiegeByArmy(aid); siege != nil {
 		badgeSize := float32(15)
-		badgeX := siegeBadgeX
-		badgeY := cy
-		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), badgeX, badgeY, badgeSize-2)
+		r.drawSettlementMarkerSprite(screen, armySiegeBadgeImage(), siegeBadgeX, cy, badgeSize-2)
 	}
 	if r.armyLogisticsDamageVisible(aid) {
 		badgeX, badgeY := armyDamageBadgeCenter(cx, cy)

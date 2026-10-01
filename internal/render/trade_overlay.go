@@ -1599,7 +1599,7 @@ func (r *Renderer) drawTradeBonusFleetMarkers(screen *ebiten.Image) {
 		}
 		unitCount := len(fleet.Units)
 		fc := factionColor(r.gs, fleet.OwnerID)
-		r.drawArmyIcon(screen, fleet.ID, fleet.OwnerID, position.X, position.Y, fc, unitCount, false, true, false, position.X+armyIconInnerHalf+8)
+		r.drawArmyIcon(screen, fleet.ID, fleet.OwnerID, position.X, position.Y, fc, unitCount, false, true, false, position.X+armyIconInnerHalf+8, true)
 		r.drawNavalPriorityBadges(screen, fleet, position.X, position.Y)
 	}
 }
