@@ -4782,7 +4782,7 @@
         "id": "germiyan_kula",
         "name_tr": "Kula",
         "x": 1036,
-        "y": 504,
+        "y": 503,
         "type": "fortress",
         "is_center": true
       },
@@ -4869,8 +4869,8 @@
       {
         "id": "saruhan_manisa",
         "name_tr": "Manisa",
-        "x": 1022,
-        "y": 498,
+        "x": 1024,
+        "y": 501,
         "type": "town"
       },
       {
@@ -4901,19 +4901,19 @@
         "type": "port"
       },
       {
-        "id": "izmir_aydin",
-        "name_tr": "Aydın / Tralles",
-        "x": 1031,
-        "y": 514,
-        "type": "fortress",
-        "is_center": true
-      },
-      {
         "id": "izmir_settlement_3",
         "name_tr": "İzmir",
         "x": 1017,
         "y": 506,
-        "type": "city"
+        "type": "city",
+        "is_center": true
+      },
+      {
+        "id": "izmir_aydin",
+        "name_tr": "Aydın / Tralles",
+        "x": 1028,
+        "y": 518,
+        "type": "fortress"
       }
     ]
   },
@@ -7187,14 +7187,14 @@
       {
         "id": "khalkedon_chalcedon",
         "name_tr": "Khalkedon",
-        "x": 1059,
-        "y": 458,
+        "x": 1060,
+        "y": 457,
         "type": "port"
       },
       {
         "id": "khalkedon_scutari",
         "name_tr": "Scutari",
-        "x": 1060,
+        "x": 1061,
         "y": 455,
         "type": "town",
         "is_center": true
@@ -7602,19 +7602,32 @@
         "type": "port"
       },
       {
-        "id": "chalcidice_serres",
-        "name_tr": "Serez",
-        "x": 956,
-        "y": 453,
+        "id": "thessaloniki_hinterland_city",
+        "name_tr": "Selanik",
+        "x": 936,
+        "y": 468,
         "type": "fortress",
         "is_center": true
-      },
+      }
+    ]
+  },
+  {
+    "region_id": "serez",
+    "settlements": [
       {
         "id": "chalcidice_zichna_serres",
         "name_tr": "Zihne",
         "x": 960,
         "y": 454,
-        "type": "town"
+        "type": "town",
+        "is_center": true
+      },
+      {
+        "id": "chalcidice_serres",
+        "name_tr": "Serez",
+        "x": 956,
+        "y": 453,
+        "type": "fortress"
       },
       {
         "id": "chalcidice_drama",
@@ -7622,19 +7635,8 @@
         "x": 942,
         "y": 453,
         "type": "town"
-      },
-      {
-        "id": "thessaloniki_hinterland_city",
-        "name_tr": "Selanik",
-        "x": 936,
-        "y": 468,
-        "type": "fortress"
       }
     ]
-  },
-  {
-    "region_id": "serez",
-    "settlements": null
   },
   {
     "region_id": "serres",

@@ -349,17 +349,6 @@
     ]
   },
   {
-    "id": "army_edit_121",
-    "owner_id": "hre",
-    "region_id": "thuringia",
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 14
-      }
-    ]
-  },
-  {
     "id": "army_edit_122",
     "owner_id": "polish_kingdom",
     "region_id": "mazovia",
@@ -511,7 +500,7 @@
     "units": [
       {
         "type_id": "infantry",
-        "count": 10
+        "count": 5
       }
     ]
   },
@@ -531,10 +520,6 @@
     "owner_id": "franche_comte",
     "region_id": "franche_comte",
     "units": [
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
       {
         "type_id": "militia",
         "count": 5
@@ -592,12 +577,8 @@
     "region_id": "leon",
     "units": [
       {
-        "type_id": "infantry",
-        "count": 9
-      },
-      {
         "type_id": "militia",
-        "count": 3
+        "count": 8
       }
     ]
   },
@@ -689,40 +670,6 @@
     ]
   },
   {
-    "id": "army_france_1",
-    "owner_id": "france",
-    "region_id": "paris",
-    "units": [
-      {
-        "type_id": "infantry",
-        "count": 11
-      }
-    ]
-  },
-  {
-    "id": "army_france_normandy",
-    "owner_id": "france",
-    "region_id": "normandy",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_garrison_201",
     "owner_id": "saruhan_bey",
     "region_id": "saruhan",
@@ -779,18 +726,6 @@
       {
         "type_id": "militia",
         "count": 10
-      }
-    ]
-  },
-  {
-    "id": "army_garrison_207",
-    "owner_id": "ilkhanate",
-    "region_id": "malatya",
-    "is_garrison": true,
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 3
       }
     ]
   },
@@ -867,18 +802,6 @@
     ]
   },
   {
-    "id": "army_garrison_218",
-    "owner_id": "ilkhanate",
-    "region_id": "erzurum",
-    "is_garrison": true,
-    "units": [
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_garrison_222",
     "owner_id": "serbian_empire",
     "region_id": "nis",
@@ -897,8 +820,8 @@
     "is_garrison": true,
     "units": [
       {
-        "type_id": "militia",
-        "count": 2
+        "type_id": "infantry",
+        "count": 5
       }
     ]
   },
@@ -965,25 +888,6 @@
     ]
   },
   {
-    "id": "army_golden_horde_1",
-    "owner_id": "golden_horde",
-    "region_id": "ukrainian_steppe",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 3
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 3
-      },
-      {
-        "type_id": "militia",
-        "count": 12
-      }
-    ]
-  },
-  {
     "id": "army_granada_1",
     "owner_id": "granada_emirate",
     "region_id": "granada",
@@ -1042,10 +946,6 @@
         "count": 2
       },
       {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
         "type_id": "militia",
         "count": 2
       }
@@ -1097,29 +997,6 @@
     ]
   },
   {
-    "id": "army_ilkhanate_1",
-    "owner_id": "ilkhanate",
-    "region_id": "northern_persia",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 1
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_ilkhanate_2",
     "owner_id": "ilkhanate",
     "region_id": "azerbaijan",
@@ -1127,29 +1004,6 @@
       {
         "type_id": "cavalry",
         "count": 1
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
-    "id": "army_ilkhanate_mosul_front",
-    "owner_id": "ilkhanate",
-    "region_id": "mosul",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 2
       },
       {
         "type_id": "infantry",
@@ -1192,75 +1046,6 @@
       {
         "type_id": "militia",
         "count": 5
-      }
-    ]
-  },
-  {
-    "id": "army_mamluk_1",
-    "owner_id": "mamluk",
-    "region_id": "alexandria",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 2
-      },
-      {
-        "type_id": "infantry",
-        "count": 1
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 8
-      }
-    ]
-  },
-  {
-    "id": "army_mamluk_2",
-    "owner_id": "mamluk",
-    "region_id": "damascus",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 2
-      },
-      {
-        "type_id": "infantry",
-        "count": 1
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 2
-      },
-      {
-        "type_id": "militia",
-        "count": 10
-      }
-    ]
-  },
-  {
-    "id": "army_mamluk_aleppo_relief",
-    "owner_id": "mamluk",
-    "region_id": "aleppo",
-    "units": [
-      {
-        "type_id": "cavalry",
-        "count": 2
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "light_cavalry",
-        "count": 1
-      },
-      {
-        "type_id": "militia",
-        "count": 2
       }
     ]
   },
@@ -1401,8 +1186,8 @@
     "region_id": "lazio",
     "units": [
       {
-        "type_id": "militia",
-        "count": 10
+        "type_id": "elite_infantry",
+        "count": 5
       }
     ]
   },
@@ -2159,7 +1944,7 @@
     "units": [
       {
         "type_id": "transport",
-        "count": 6
+        "count": 3
       }
     ]
   },
@@ -2412,6 +2197,182 @@
       {
         "type_id": "transport",
         "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_edit_163",
+    "owner_id": "mamluk",
+    "region_id": "upper_egypt",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_160",
+    "owner_id": "ilkhanate",
+    "region_id": "kerkuk",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_164",
+    "owner_id": "mamluk",
+    "region_id": "aleppo",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_165",
+    "owner_id": "ilkhanate",
+    "region_id": "urmiye",
+    "units": [
+      {
+        "type_id": "light_cavalry",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_159",
+    "owner_id": "mamluk",
+    "region_id": "lebanon",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_160",
+    "owner_id": "ilkhanate",
+    "region_id": "kerkuk",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_166",
+    "owner_id": "golden_horde",
+    "region_id": "sarkel_region",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_edit_167",
+    "owner_id": "golden_horde",
+    "region_id": "moldova",
+    "units": [
+      {
+        "type_id": "cavalry",
+        "count": 6
+      }
+    ]
+  },
+  {
+    "id": "army_edit_168",
+    "owner_id": "england",
+    "region_id": "aquitaine",
+    "units": [
+      {
+        "type_id": "militia",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_edit_169",
+    "owner_id": "france",
+    "region_id": "anjou",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_170",
+    "owner_id": "france",
+    "region_id": "brittany",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_171",
+    "owner_id": "france",
+    "region_id": "paris",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_edit_172",
+    "owner_id": "france",
+    "region_id": "champagne",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_173",
+    "owner_id": "hre",
+    "region_id": "thuringia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_174",
+    "owner_id": "papal_states",
+    "region_id": "marche",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_edit_175",
+    "owner_id": "mamluk",
+    "region_id": "palestine_jerusalem",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 5
       }
     ]
   }

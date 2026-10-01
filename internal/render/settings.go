@@ -100,10 +100,21 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		}
 		drawUILabel(screen, gameui.Rect{X: rect.X + 30, Y: y + 6}, r.label, col, gameui.TextLarge, gameui.TextAlignStart)
 		if r.value != "" {
-			drawUILabel(screen, gameui.Rect{X: rect.X + 310, Y: y + 6}, "◄  "+r.value+"  ►", ColorGold, gameui.TextLarge, gameui.TextAlignStart)
+			if i == 4 || i == 6 {
+				volume := s.MusicVolume
+				if i == 6 {
+					volume = s.SoundVolume
+				}
+				minus, plus := settingsVolumeButtons(i, volume)
+				drawUIButtonWidget(screen, minus, tinyButtonStyle)
+				drawUILabel(screen, gameui.Rect{X: rect.X + 340, Y: y + 6, W: 90}, r.value, ColorGold, gameui.TextLarge, gameui.TextAlignCenter)
+				drawUIButtonWidget(screen, plus, tinyButtonStyle)
+			} else {
+				drawUILabel(screen, gameui.Rect{X: rect.X + 310, Y: y + 6}, r.value, ColorGold, gameui.TextLarge, gameui.TextAlignStart)
+			}
 		}
 	}
-	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Sol tık: değiştir  •  ESC: kaydet ve çık", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "- / +: ses seviyesini ayarla  •  ESC: kaydet ve çık", ColorGray, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 func boolLabel(b bool) string {
@@ -118,6 +129,17 @@ func displayModeLabelTR(fullscreen bool) string {
 		return "Tam Ekran"
 	}
 	return "Pencereli"
+}
+
+func settingsVolumeButtons(row, volume int) (gameui.Button, gameui.Button) {
+	rect := settingsRowRect(row)
+	const buttonW = 34.0
+	const buttonH = 32.0
+	minus := gameui.NewButton(rect.X+300, rect.Y+(rect.H-buttonH)/2, buttonW, buttonH, "-")
+	plus := gameui.NewButton(rect.X+rect.W-64, rect.Y+(rect.H-buttonH)/2, buttonW, buttonH, "+")
+	minus.Enabled = volume > 0
+	plus.Enabled = volume < 100
+	return minus, plus
 }
 
 // ApplyDisplaySettings oyun penceresinin görünümünü ayarlara uygular.
@@ -227,20 +249,26 @@ func (r *Renderer) handleSettingsInput(s *Settings) InputAction {
 			s.MusicOn = !s.MusicOn
 			applyAudioSettings(*s)
 		case 4:
-			s.MusicVolume += 10
-			if s.MusicVolume > 100 {
-				s.MusicVolume = 0
+			minus, plus := settingsVolumeButtons(4, s.MusicVolume)
+			if minus.HitTest(float64(mx), float64(my)) && minus.Enabled {
+				s.MusicVolume = clampVolume(s.MusicVolume - 5)
+				applyAudioSettings(*s)
+			} else if plus.HitTest(float64(mx), float64(my)) && plus.Enabled {
+				s.MusicVolume = clampVolume(s.MusicVolume + 5)
+				applyAudioSettings(*s)
 			}
-			applyAudioSettings(*s)
 		case 5:
 			s.SoundOn = !s.SoundOn
 			applyAudioSettings(*s)
 		case 6:
-			s.SoundVolume += 10
-			if s.SoundVolume > 100 {
-				s.SoundVolume = 0
+			minus, plus := settingsVolumeButtons(6, s.SoundVolume)
+			if minus.HitTest(float64(mx), float64(my)) && minus.Enabled {
+				s.SoundVolume = clampVolume(s.SoundVolume - 5)
+				applyAudioSettings(*s)
+			} else if plus.HitTest(float64(mx), float64(my)) && plus.Enabled {
+				s.SoundVolume = clampVolume(s.SoundVolume + 5)
+				applyAudioSettings(*s)
 			}
-			applyAudioSettings(*s)
 		case 7:
 			return InputAction{Kind: ActionOpenShortcuts}
 		case 8:
