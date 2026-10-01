@@ -76,10 +76,6 @@ func TestArmyLogisticsBadgeRefreshTracksSupplyMissionConnection(t *testing.T) {
 		UnitTypes: map[string]*army.UnitType{
 			"infantry": {ID: "infantry", GrainUpkeep: 4},
 		},
-		ArmyLogistics: map[army.ArmyID]state.ArmyLogisticsStatus{
-			"army-1": {ArmyID: "army-1", RegionID: land, TotalHPDamage: 1},
-			"army-2": {ArmyID: "army-2", RegionID: land, TotalHPDamage: 1},
-		},
 	}
 	r := &Renderer{gs: gs, mapMode: MapModeNormal}
 	r.RefreshAllArmyLogisticsBadges()

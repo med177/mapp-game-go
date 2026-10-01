@@ -80,7 +80,7 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 2. Arama için `rg`/`rg --files`, JSON/YAML için `jq`/`yq` kullan. Düzenlemeleri
    `apply_patch` ile yap.
 3. Go kodunda `gofmt` çalıştır. Davranış, state, save/load, input, routing veya
-   ortak helper değiştiyse ilgili regresyon testini ekle/güncelle.
+   ortak helper değiştiyse ilgili regresyon testini güncelle. Test eklemen özellikle istenmedikçe test ekleme.
 4. Varsayılan olarak yalnızca yapılan değişiklikle doğrudan ilgili hedefli
   testleri çalıştır. Kullanıcı açıkça istemedikçe veya değişikliğin kapsamı/risk
   seviyesi bunu gerektirmedikçe `go test ./... -count=1` çalıştırma. Tam test

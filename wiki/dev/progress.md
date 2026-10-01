@@ -46,10 +46,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   ikmal bağlantısı testleri; doğrulama:
   `go test ./internal/render ./internal/game ./internal/state -count=1`.
 
-- 2026-10-01: Deniz ikmaliyle bölgesel lojistik açığı kapanan kara ordusunun
-  önceki turdan kalan kırmızı zayiat `!` rozeti artık gizleniyor; kargo
-  yetersizse veya hedefe ulaşmamışsa uyarı korunuyor. Ortak state önizlemesi ve
-  regresyon: `internal/state/regional_logistics_preview.go` ile
+- 2026-10-01: Ordu markerındaki `!` rozeti, bölge bilgi paneliyle aynı güncel
+  bölgesel ikmal aşımı hesabından belirleniyor. İkmal bağlantısı kesildiğinde,
+  önceki çözümlemede zayiat kaydı olmasa bile etkilenen bölge cache'i yenilenip
+  rozet gösteriliyor. Ortak state önizlemesi ve regresyon:
+  `internal/state/regional_logistics_preview.go` ile
   `internal/state/regional_logistics_preview_test.go`.
 
 - 2026-10-01: Oyuncu ordusuna verilen normal tek adımlı, uzak rotalı veya

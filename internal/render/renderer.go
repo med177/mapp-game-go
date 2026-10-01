@@ -4359,6 +4359,9 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		}
 	}
 	drawMarkerLayer(true)
+	// Oyuncu portresi yabancı markerların üstünde kalır; markerın sol/sağ
+	// rozetleri ise portrenin üstünde görünmelidir.
+	drawCommanderLayer(true)
 	// Sprite kullanan oyuncu markerlarının yerleşik rozetleri sprite'tan sonra
 	// çizilir. Böylece büyük görsel komşu markerın rozetini kapatamaz.
 	for _, pos := range positions {
@@ -4392,7 +4395,6 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		}
 		r.drawNavalPriorityBadges(screen, a, pos.X, pos.Y)
 	}
-	drawCommanderLayer(true)
 }
 
 // drawNavalSupplyLinks, aktif ikmal görevi ile bağlı filo ve kara ordusu
@@ -4712,7 +4714,9 @@ func (r *Renderer) RefreshArmyLogisticsBadgesForRegions(regionIDs ...world.Regio
 
 // RefreshAllArmyLogisticsBadges, state topluca değiştiğinde (yeni oyun,
 // kayıt yükleme veya tur çözümlemesi) lojistik rozet cache'ini bir kez
-// yeniler. Hasar kaydı olmayan ordular için önizleme yapılmaz.
+// yeniler. Her kara ordusu güncel bölgesel aşım hesabından değerlendirilir;
+// böylece önceki çözümlemede zayiat oluşmamış olsa bile bağlantı kopması
+// anında rozet kararı güncellenir.
 func (r *Renderer) RefreshAllArmyLogisticsBadges() {
 	if r == nil || r.gs == nil {
 		return
@@ -4724,10 +4728,8 @@ func (r *Renderer) RefreshAllArmyLogisticsBadges() {
 		clear(r.armyLogisticsBadgeVisible)
 	}
 	previews := r.gs.PreviewRegionalLogisticsStatuses()
-	for aid, status := range r.gs.ArmyLogistics {
-		if status.TotalHPDamage > 0 {
-			r.armyLogisticsBadgeVisible[aid] = r.gs.ArmyLogisticsDamageVisibleFromPreview(aid, previews)
-		}
+	for aid := range r.gs.Armies {
+		r.armyLogisticsBadgeVisible[aid] = r.gs.ArmyLogisticsDamageVisibleFromPreview(aid, previews)
 	}
 }
 

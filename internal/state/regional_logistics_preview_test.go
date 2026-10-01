@@ -150,3 +150,47 @@ func TestArmyLogisticsDamageVisibleUsesCurrentNavalSupplyPreview(t *testing.T) {
 		t.Fatal("yetersiz deniz ikmalinde kırmızı zayiat rozeti gizlendi")
 	}
 }
+
+func TestArmyLogisticsDamageVisibleUsesCurrentRegionalOverloadWithoutDamageSnapshot(t *testing.T) {
+	const factionID = faction.FactionID("player")
+	const landID = world.RegionID("coastal_front")
+	const seaID = world.RegionID("coastal_sea")
+
+	gs := &GameState{
+		PlayerFactionID: factionID,
+		Regions: map[world.RegionID]*world.Region{
+			landID: {
+				ID: landID, OwnerID: string(factionID), Neighbors: []world.RegionID{seaID},
+				Settlements: []world.Settlement{{ID: "port", Type: world.SettlementPort}},
+			},
+			seaID: {ID: seaID, IsSea: true, Neighbors: []world.RegionID{landID}},
+		},
+		Factions: map[faction.FactionID]*faction.Faction{
+			factionID: {ID: factionID},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {
+				ID: "army", OwnerID: string(factionID), RegionID: landID,
+				Units: []army.Unit{{TypeID: "infantry", CurrentHP: army.MaxUnitHP}},
+			},
+			"fleet": {
+				ID: "fleet", OwnerID: string(factionID), RegionID: seaID, IsNaval: true,
+				SupplyCargo:  economy.ResourceCost{Grain: 4},
+				NavalMission: &army.NavalMission{Kind: army.NavalMissionSupplyArmy, TargetArmyID: "army"},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", GrainUpkeep: 10},
+		},
+	}
+
+	if gs.ArmyLogisticsDamageVisible("army") {
+		t.Fatal("bağlı deniz ikmali varken güncel aşım rozeti görünür olmamalı")
+	}
+
+	gs.Armies["fleet"].NavalMission = nil
+	gs.InvalidateRegionalLogisticsPreview()
+	if !gs.ArmyLogisticsDamageVisible("army") {
+		t.Fatal("ikmal bağlantısı kopunca güncel bölgesel aşım rozeti görünür olmalı")
+	}
+}
