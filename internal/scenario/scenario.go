@@ -99,6 +99,7 @@ type MapConfig struct {
 	ShapeOffsetY *float64 `json:"shape_offset_y,omitempty"`
 	ShapeScaleX  *float64 `json:"shape_scale_x,omitempty"`
 	ShapeScaleY  *float64 `json:"shape_scale_y,omitempty"`
+	TerrainAlpha *float64 `json:"terrain_alpha,omitempty"`
 }
 
 // MusicTrackDef senaryo musics/ klasöründeki bir playlist parçasını tanımlar.

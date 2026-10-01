@@ -31,7 +31,8 @@
     "shape_offset_x": -530,
     "shape_offset_y": -180,
     "shape_scale_x": 2.025,
-    "shape_scale_y": 2.025
+    "shape_scale_y": 2.025,
+    "terrain_alpha": 0.40
   },
   "music": {
     "default_playlist": "campaign",

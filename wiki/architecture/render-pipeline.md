@@ -1336,8 +1336,9 @@ Bölge boya/sil onayı mevcut raster üzerinde lokal override güncellemesi yapa
 Ülke shape rasterı ve deniz BFS'i yalnızca boya işlemi kara shape gruplarını
 etkilediğinde yeniden çalışır; terrain alanları overlay katmanı olarak bundan
 sonra bir kez uygulanır. Terrain overlay renkleri artık bölge sahibinden
-türetilmez; arazi tipinin sabit paleti ve geçilebilirlik/seçim durumuna ait
-alfa sabitleri kullanılır. Shape değişiklikleri, kara shape grubunu etkileyen
+türetilmez; arazi tipinin sabit paleti kullanılır ve opaklık senaryonun
+`map.terrain_alpha` değerinden alınır. Geçilebilir alanlar bu değerin %80'iyle
+çizilir. Shape değişiklikleri, kara shape grubunu etkileyen
 bölge boyaları ile rasterı etkileyen merkez değişikliklerinin ağır tam harita
 üretimi, immutable map-build snapshot'ı ile goroutine'e taşınmıştır. Sonuç ana
 döngüde generation kontrolüyle kabul edilir;

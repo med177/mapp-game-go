@@ -1651,11 +1651,10 @@ func (r *Renderer) selectedArmySplitIndices() []int {
 	return indices
 }
 
-// prepareArmyMovementAction, hareket emri verilirken ordu seçimini korur.
-// Hareket animasyonu sırasında detay/alt-birim panelleri kapanabilir; ancak
-// SelectedArmy korunmalı ki varıştan sonra aynı ordu seçili kalabilsin.
+// prepareArmyMovementAction, hareket emri verilirken ordu seçimini ve açık
+// bilgi paneli durumunu korur. Geçici alt-birim görünümü hareket sırasında
+// temizlenir; SelectedArmy varıştan sonra aynı orduyu seçili tutar.
 func (r *Renderer) prepareArmyMovementAction(action InputAction) InputAction {
-	r.showArmyDetailPanel = false
 	r.SelectedEmbarkedArmyFleet = ""
 	r.clearArmySplitSelection()
 	return action

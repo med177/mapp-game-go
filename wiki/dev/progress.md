@@ -53,11 +53,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-10-01: Oyuncu ordusuna verilen normal tek adımlı, uzak rotalı veya
   limandan çıkış hareket emri artık hareket animasyonu ve çözümlemesi boyunca
-  `SelectedArmy` seçimini koruyor. Geçici detay/taşınan birlik/birim alt-
-  seçimleri temizlenirken ordu varıştan sonra haritada seçili çerçeveyle kalıyor.
-  Regression: `internal/render/renderer_input_test.go` içindeki
-  `TestPrepareArmyMovementActionKeepsArmySelection`; doğrulama:
-  `go test ./internal/render -count=1`.
+  `SelectedArmy` seçimini koruyor. Açık ordu bilgi paneli açık kalıyor; geçici
+  taşınan birlik/birim alt-seçimleri temizlenirken ordu varıştan sonra haritada
+  seçili çerçeveyle kalıyor.
+  Doğrulama: `go test ./internal/render -count=1`.
 
 - 2026-10-01: Minor bölge bilgi paneline `İmtiyaz Teklif et` akışı eklendi.
   Oyuncu hedef devleti seçip kabul bekleyen teklif gönderiyor; kabulde kullanım

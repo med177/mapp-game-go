@@ -2,6 +2,7 @@ package render
 
 import (
 	"image/color"
+	"math"
 
 	"mapp-game-go/internal/world"
 
@@ -33,12 +34,9 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 		if passable {
 			// Geçilebilir alan daha saydam çizilir; border ve altındaki harita
 			// görünür kalır.
-			col.A = terrainAreaPassableAlpha
+			col.A = terrainAreaAlpha(r.gs.MapConfig.TerrainAlpha, true)
 		} else {
-			// Geçilemeyen alan parlak bir terrain rengi üretmesin; koyu
-			// grimsi-siyah bir örtü olarak kalsın.
-			col = tintTerrainAreaColor(col, 0.32)
-			col.A = terrainAreaBlockedAlpha
+			col.A = terrainAreaAlpha(r.gs.MapConfig.TerrainAlpha, false)
 		}
 		return col
 	}
@@ -117,51 +115,59 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 	}
 }
 
-const (
-	// Alfa değerleri düşük tutulur; terrain overlay haritanın altında kalan
-	// dokuyu ve sınırları kapatmadan yalnızca arazi tipini belirtir.
-	terrainAreaPassableAlpha uint8 = 35
-	terrainAreaBlockedAlpha  uint8 = 75
-)
+func terrainAreaAlpha(configured *float64, passable bool) uint8 {
+	alpha := 1.0
+	if configured != nil {
+		alpha = *configured
+	}
+	if math.IsNaN(alpha) || math.IsInf(alpha, 0) {
+		alpha = 1.0
+	}
+	if passable {
+		alpha *= 0.8
+	}
+	if alpha < 0 {
+		alpha = 0
+	}
+	if alpha > 1 {
+		alpha = 1
+	}
+	return uint8(math.Round(255 * alpha))
+}
 
 func terrainAreaColor(terrain world.TerrainType) color.RGBA {
 	switch terrain {
 	case world.TerrainPlain:
-		return color.RGBA{224, 202, 112, 255}
+		return rgb(149, 135, 79)
 	case world.TerrainForest:
-		return color.RGBA{72, 112, 62, 255}
+		return rgb(29, 61, 21)
 	case world.TerrainDenseForest:
-		return color.RGBA{42, 78, 40, 255}
+		return rgb(15, 44, 13)
 	case world.TerrainMountain:
-		return color.RGBA{98, 65, 32, 255}
+		return rgb(49, 20, 4)
 	case world.TerrainDesert:
-		return color.RGBA{190, 154, 40, 255}
+		return rgb(129, 107, 36)
 	case world.TerrainLake:
-		return color.RGBA{120, 195, 232, 255}
+		return rgb(14, 40, 80)
 	case world.TerrainRiver:
-		return color.RGBA{80, 150, 205, 255}
+		return rgb(52, 100, 176)
 	case world.TerrainSwamp:
-		return color.RGBA{38, 98, 48, 255}
+		return rgb(53, 90, 5)
 	case world.TerrainPass:
-		return color.RGBA{155, 115, 70, 255}
+		return rgb(13, 74, 75)
 	case world.TerrainCoast:
-		return color.RGBA{170, 190, 120, 255}
+		return rgb(170, 190, 120)
 	default:
-		return color.RGBA{120, 120, 120, 255}
+		return rgb(74, 74, 74)
 	}
 }
 
-func tintTerrainAreaColor(col color.RGBA, factor float64) color.RGBA {
-	clamp := func(v float64) uint8 {
-		if v < 0 {
-			return 0
-		}
-		if v > 255 {
-			return 255
-		}
-		return uint8(v)
-	}
-	return color.RGBA{clamp(float64(col.R) * factor), clamp(float64(col.G) * factor), clamp(float64(col.B) * factor), col.A}
+func rgb(r, g, b uint8) color.RGBA {
+	return color.RGBA{R: r, G: g, B: b, A: 255}
+}
+
+func rgba(r, g, b uint8, a float64) color.RGBA {
+	return color.RGBA{R: r, G: g, B: b, A: uint8(math.Round(255 * a))}
 }
 
 func terrainAreaTypeColor(col, terrainColor color.RGBA) color.RGBA {
