@@ -2586,13 +2586,6 @@
         "x": 1296,
         "y": 453,
         "type": "port"
-      },
-      {
-        "id": "trebizond_erzurum",
-        "name_tr": "Bayburt",
-        "x": 1281,
-        "y": 471,
-        "type": "town"
       }
     ]
   },
@@ -2646,7 +2639,23 @@
   },
   {
     "region_id": "bayburt",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "trebizond_erzurum",
+        "name_tr": "Bayburt",
+        "x": 1279,
+        "y": 475,
+        "type": "fortress",
+        "is_center": true
+      },
+      {
+        "id": "bayburt_gumushane",
+        "name_tr": "Gümüşhane",
+        "x": 1260,
+        "y": 469,
+        "type": "city"
+      }
+    ]
   },
   {
     "region_id": "georgia",
@@ -4952,7 +4961,7 @@
     ]
   },
   {
-    "region_id": "candaroglu",
+    "region_id": "amasya",
     "settlements": [
       {
         "id": "candaroglu_samsun",
@@ -5026,8 +5035,8 @@
       {
         "id": "sivas_divrigi",
         "name_tr": "Divriği",
-        "x": 1223,
-        "y": 491,
+        "x": 1233,
+        "y": 489,
         "type": "fortress"
       },
       {
@@ -5115,7 +5124,7 @@
         "name_tr": "Nusaybin",
         "x": 1302,
         "y": 530,
-        "type": "fortress",
+        "type": "city",
         "is_center": true
       },
       {
@@ -5123,6 +5132,20 @@
         "name_tr": "Diyarbekir",
         "x": 1283,
         "y": 518,
+        "type": "fortress"
+      },
+      {
+        "id": "akkoyunlu_mardin",
+        "name_tr": "Mardin",
+        "x": 1290,
+        "y": 528,
+        "type": "fortress"
+      },
+      {
+        "id": "akkoyunlu_cizre",
+        "name_tr": "Cizre",
+        "x": 1308,
+        "y": 521,
         "type": "city"
       }
     ]
@@ -5818,7 +5841,7 @@
     ]
   },
   {
-    "region_id": "eretna",
+    "region_id": "ordu",
     "settlements": [
       {
         "id": "eretna_yildizeli",
@@ -5861,27 +5884,6 @@
         "y": 501,
         "type": "town",
         "is_center": true
-      },
-      {
-        "id": "malatya_pazarcik",
-        "name_tr": "Pazarcık",
-        "x": 1224,
-        "y": 520,
-        "type": "town"
-      },
-      {
-        "id": "malatya_goksun",
-        "name_tr": "Göksun",
-        "x": 1211,
-        "y": 511,
-        "type": "town"
-      },
-      {
-        "id": "malatya_maras",
-        "name_tr": "Maraş",
-        "x": 1217,
-        "y": 517,
-        "type": "city"
       }
     ]
   },
@@ -5892,14 +5894,35 @@
         "id": "dulkadirli_elbistan",
         "name_tr": "Elbistan",
         "x": 1223,
-        "y": 506,
+        "y": 508,
         "type": "town",
         "is_center": true
+      },
+      {
+        "id": "malatya_goksun",
+        "name_tr": "Göksun",
+        "x": 1213,
+        "y": 511,
+        "type": "town"
+      },
+      {
+        "id": "malatya_maras",
+        "name_tr": "Maraş",
+        "x": 1216,
+        "y": 522,
+        "type": "fortress"
+      },
+      {
+        "id": "malatya_pazarcik",
+        "name_tr": "Pazarcık",
+        "x": 1220,
+        "y": 525,
+        "type": "town"
       }
     ]
   },
   {
-    "region_id": "dulkadir",
+    "region_id": "adiyaman",
     "settlements": [
       {
         "id": "dulkadir_behisni",
@@ -5912,8 +5935,8 @@
       {
         "id": "dulkadir_urfa_gate",
         "name_tr": "Samsat",
-        "x": 1244,
-        "y": 520,
+        "x": 1245,
+        "y": 519,
         "type": "town"
       },
       {
@@ -5933,7 +5956,7 @@
         "name_tr": "Erzincan",
         "x": 1269,
         "y": 484,
-        "type": "town",
+        "type": "city",
         "is_center": true
       },
       {
@@ -5953,9 +5976,9 @@
       {
         "id": "erzincan_iskenderun",
         "name_tr": "Kemaliye",
-        "x": 1264,
-        "y": 501,
-        "type": "fortress"
+        "x": 1260,
+        "y": 499,
+        "type": "town"
       },
       {
         "id": "erzincan_palu",

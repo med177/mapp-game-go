@@ -1718,7 +1718,7 @@
     "id": "fleet_candar_trade",
     "owner_id": "candar_bey",
     "region_id": "black_open_1",
-    "docked_region_id": "candaroglu",
+    "docked_region_id": "amasya",
     "docked_settlement_id": "sinop_samsun",
     "is_naval": true,
     "units": [

@@ -639,7 +639,7 @@
           "kind": "expand",
           "territorial_claims": [
             {
-              "region_id": "eretna",
+              "region_id": "ordu",
               "value": 88
             }
           ],
@@ -652,7 +652,7 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "candaroglu",
+              "region_id": "amasya",
               "value": 80
             },
             {
@@ -678,7 +678,7 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "eretna",
+              "region_id": "ordu",
               "value": 94
             }
           ],
@@ -948,7 +948,7 @@
           "kind": "defend",
           "territorial_claims": [
             {
-              "region_id": "dulkadir",
+              "region_id": "adiyaman",
               "value": 95
             },
             {
@@ -2799,7 +2799,7 @@
           "kind": "expand",
           "territorial_claims": [
             {
-              "region_id": "dulkadir",
+              "region_id": "adiyaman",
               "value": 80
             }
           ],
