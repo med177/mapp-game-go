@@ -1008,11 +1008,11 @@
     "stance": "peace"
   },
   {
-    "faction_a": "artuklu",
-    "faction_b": "karakoyunlu_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
+    "faction_a": "karakoyunlu_state",
+    "faction_b": "artuklu",
+    "score_a_to_b": 10,
+    "score_b_to_a": 10,
+    "stance": "trade"
   },
   {
     "faction_a": "artuklu",
@@ -1099,9 +1099,9 @@
     "stance": "trade"
   },
   {
-    "faction_a": "kadi_burhaneddin",
-    "faction_b": "akkoyunlu_state",
-    "score_a_to_b": -20,
+    "faction_a": "akkoyunlu_state",
+    "faction_b": "kadi_burhaneddin",
+    "score_a_to_b": -30,
     "score_b_to_a": -20,
     "stance": "peace"
   },
@@ -1120,17 +1120,17 @@
     "stance": "peace"
   },
   {
-    "faction_a": "karakoyunlu_state",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": -35,
-    "score_b_to_a": -35,
+    "faction_a": "timurid_empire",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -50,
+    "score_b_to_a": -40,
     "stance": "peace"
   },
   {
-    "faction_a": "karakoyunlu_state",
-    "faction_b": "jelayirids",
-    "score_a_to_b": -25,
-    "score_b_to_a": -25,
+    "faction_a": "jelayirids",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -1162,32 +1162,18 @@
     "stance": "peace"
   },
   {
-    "faction_a": "karakoyunlu_state",
-    "faction_b": "shirvanshahs",
-    "score_a_to_b": 0,
-    "score_b_to_a": 0,
-    "stance": "trade"
-  },
-  {
-    "faction_a": "karakoyunlu_state",
-    "faction_b": "artuklu",
-    "score_a_to_b": 10,
-    "score_b_to_a": 10,
-    "stance": "trade"
-  },
-  {
-    "faction_a": "akkoyunlu_state",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": 15,
+    "faction_a": "shirvanshahs",
+    "faction_b": "karakoyunlu_state",
+    "score_a_to_b": -15,
     "score_b_to_a": -15,
-    "stance": "trade"
+    "stance": "peace"
   },
   {
-    "faction_a": "akkoyunlu_state",
-    "faction_b": "kadi_burhaneddin",
-    "score_a_to_b": -30,
-    "score_b_to_a": -20,
-    "stance": "peace"
+    "faction_a": "timurid_empire",
+    "faction_b": "akkoyunlu_state",
+    "score_a_to_b": 15,
+    "score_b_to_a": 15,
+    "stance": "trade"
   },
   {
     "faction_a": "akkoyunlu_state",
@@ -1239,22 +1225,15 @@
     "stance": "trade"
   },
   {
-    "faction_a": "jelayirids",
-    "faction_b": "timurid_empire",
+    "faction_a": "timurid_empire",
+    "faction_b": "jelayirids",
     "score_a_to_b": -45,
     "score_b_to_a": -45,
     "stance": "peace"
   },
   {
-    "faction_a": "jelayirids",
-    "faction_b": "karakoyunlu_state",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "jelayirids",
-    "faction_b": "muzaffarids",
+    "faction_a": "muzaffarids",
+    "faction_b": "jelayirids",
     "score_a_to_b": -10,
     "score_b_to_a": -10,
     "stance": "peace"
@@ -1267,17 +1246,10 @@
     "stance": "trade"
   },
   {
-    "faction_a": "muzaffarids",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": -30,
+    "faction_a": "timurid_empire",
+    "faction_b": "muzaffarids",
+    "score_a_to_b": -40,
     "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "muzaffarids",
-    "faction_b": "jelayirids",
-    "score_a_to_b": -10,
-    "score_b_to_a": -10,
     "stance": "peace"
   },
   {
@@ -1316,17 +1288,10 @@
     "stance": "peace"
   },
   {
-    "faction_a": "shirvanshahs",
-    "faction_b": "timurid_empire",
-    "score_a_to_b": -20,
+    "faction_a": "timurid_empire",
+    "faction_b": "shirvanshahs",
+    "score_a_to_b": -30,
     "score_b_to_a": -20,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "shirvanshahs",
-    "faction_b": "karakoyunlu_state",
-    "score_a_to_b": -15,
-    "score_b_to_a": -15,
     "stance": "peace"
   },
   {
@@ -1369,41 +1334,6 @@
     "faction_b": "ilkhanate",
     "score_a_to_b": -45,
     "score_b_to_a": -25,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "timurid_empire",
-    "faction_b": "jelayirids",
-    "score_a_to_b": -45,
-    "score_b_to_a": -45,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "timurid_empire",
-    "faction_b": "muzaffarids",
-    "score_a_to_b": -40,
-    "score_b_to_a": -30,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "timurid_empire",
-    "faction_b": "karakoyunlu_state",
-    "score_a_to_b": -50,
-    "score_b_to_a": -40,
-    "stance": "peace"
-  },
-  {
-    "faction_a": "timurid_empire",
-    "faction_b": "akkoyunlu_state",
-    "score_a_to_b": 15,
-    "score_b_to_a": 15,
-    "stance": "trade"
-  },
-  {
-    "faction_a": "timurid_empire",
-    "faction_b": "shirvanshahs",
-    "score_a_to_b": -30,
-    "score_b_to_a": -20,
     "stance": "peace"
   },
   {
@@ -1755,5 +1685,12 @@
     "score_a_to_b": 5,
     "score_b_to_a": 5,
     "stance": "trade"
+  },
+  {
+    "faction_a": "candar_bey",
+    "faction_b": "ahiler",
+    "score_a_to_b": 35,
+    "score_b_to_a": 35,
+    "stance": "peace"
   }
 ]
