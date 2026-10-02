@@ -51,17 +51,21 @@ type DiplomaticOfferEffect struct {
 	ReasonTR  string `json:"reason_tr,omitempty"`
 }
 
-// SuccessorRevivalEffect tarihsel bir event'in elenmiş ardıl faction'ı
-// belirli bir bölgede yeniden kurmasını tanımlar.
+// SuccessorRevivalEffect tarihsel bir event'in elenmiş ardıl faction'ını
+// bir veya daha fazla bölgede yeniden kurmasını tanımlar.
 type SuccessorRevivalEffect struct {
-	FactionID        string `json:"faction_id"`
-	RegionID         string `json:"region_id"`
-	Mode             string `json:"mode,omitempty"` // independent | vassal
-	OverlordID       string `json:"overlord_id,omitempty"`
-	UnitType         string `json:"unit_type,omitempty"` // boşsa legacy milis
-	UnitCount        int    `json:"unit_count,omitempty"`
-	MilitiaCount     int    `json:"militia_count,omitempty"`
-	SuppressRelation bool   `json:"suppress_relation,omitempty"`
+	FactionID string   `json:"faction_id"`
+	Regions   []string `json:"regions,omitempty"`
+	// RegionID eski event kayıtlarıyla uyumluluk için korunur. Yeni kayıtlar
+	// Regions kullanmalıdır.
+	RegionID         string                    `json:"region_id,omitempty"`
+	Mode             string                    `json:"mode,omitempty"` // independent | vassal
+	OverlordID       string                    `json:"overlord_id,omitempty"`
+	UnitType         string                    `json:"unit_type,omitempty"` // boşsa legacy milis
+	UnitCount        int                       `json:"unit_count,omitempty"`
+	MilitiaCount     int                       `json:"militia_count,omitempty"`
+	Units            []UnitReinforcementEffect `json:"units,omitempty"`
+	SuppressRelation bool                      `json:"suppress_relation,omitempty"`
 }
 
 // TradeNetworkModifierEffect, bir event'in ticaret ağı üzerindeki kalıcı
@@ -565,23 +569,41 @@ func applySuccessorRevival(gs *state.GameState, eff Effect) {
 
 func applyOneSuccessorRevival(gs *state.GameState, eff Effect, revival SuccessorRevivalEffect) {
 	successorID := faction.FactionID(revival.FactionID)
-	regionID := world.RegionID(revival.RegionID)
-	if successorID == "" || regionID == "" {
+	regionIDs := revivalRegionIDs(revival)
+	if successorID == "" || len(regionIDs) == 0 {
 		return
 	}
-	unitType := revival.UnitType
-	unitCount := revival.UnitCount
-	if unitType == "" {
-		unitType = "militia"
-		if unitCount <= 0 {
-			unitCount = revival.MilitiaCount
+	var armyID army.ArmyID
+	var ok bool
+	if len(revival.Units) > 0 {
+		units := make([]army.Unit, 0)
+		for _, composition := range revival.Units {
+			if composition.UnitType == "" || composition.UnitCount <= 0 {
+				continue
+			}
+			units = append(units, army.MakeUnits(composition.UnitType, composition.UnitCount)...)
 		}
+		if len(units) == 0 {
+			return
+		}
+		armyID, ok = gs.ReviveSuccessorAtRegionsWithUnits(regionIDs, successorID, units)
+	} else {
+		unitType := revival.UnitType
+		unitCount := revival.UnitCount
+		if unitType == "" {
+			unitType = "militia"
+			if unitCount <= 0 {
+				unitCount = revival.MilitiaCount
+			}
+		}
+		armyID, ok = gs.ReviveSuccessorAtRegionsWithUnit(regionIDs, successorID, unitType, unitCount)
 	}
-	armyID, ok := gs.ReviveSuccessorAtRegionWithUnit(regionID, successorID, unitType, unitCount)
 	if !ok {
 		return
 	}
-	world.EnsureSuccessorFoundingBuildings(gs.Regions[regionID])
+	for _, regionID := range regionIDs {
+		world.EnsureSuccessorFoundingBuildings(gs.Regions[regionID])
+	}
 	gs.AssignStrongestCommanderToArmy(armyID)
 	overlordID := faction.FactionID(revival.OverlordID)
 	if overlordID == "" && revival.Mode == "vassal" {
@@ -598,6 +620,22 @@ func applyOneSuccessorRevival(gs *state.GameState, eff Effect, revival Successor
 	} else if eff.AffectedFaction != "" && !revival.SuppressRelation {
 		diplomacy.ForceRelation(gs, faction.FactionID(eff.AffectedFaction), successorID, faction.StanceAllied, 50)
 	}
+}
+
+func revivalRegionIDs(revival SuccessorRevivalEffect) []world.RegionID {
+	if len(revival.Regions) > 0 {
+		regionIDs := make([]world.RegionID, 0, len(revival.Regions))
+		for _, regionID := range revival.Regions {
+			if regionID != "" {
+				regionIDs = append(regionIDs, world.RegionID(regionID))
+			}
+		}
+		return regionIDs
+	}
+	if revival.RegionID != "" {
+		return []world.RegionID{world.RegionID(revival.RegionID)}
+	}
+	return nil
 }
 
 func applyArmyDefections(gs *state.GameState, defections []ArmyDefectionEffect) {

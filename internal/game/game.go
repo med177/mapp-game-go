@@ -2207,6 +2207,9 @@ func (g *Game) eventCodexContextLines(evt *events.Event) []string {
 		}()...) {
 			addFaction(revival.FactionID)
 			addFaction(revival.OverlordID)
+			for _, regionID := range revival.Regions {
+				addRegion(regionID)
+			}
 			addRegion(revival.RegionID)
 		}
 		for _, defection := range e.ArmyDefections {

@@ -1,5 +1,53 @@
 [
   {
+    "id": "swiss_confederacy_emerges_1310",
+    "name_tr": "İsviçre Konfederasyonu'nun Doğuşu",
+    "desc_tr": "1291 tarihli Waldstätte yemini Schwyz çevresindeki özgür vadileri ortak savunma için bir araya getirdi. Bu eski ittifak artık açık bir konfederasyon olarak yeniden ortaya çıkıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "set_flags": [
+      "swiss_confederacy_formed"
+    ],
+    "successor_revival": {
+      "faction_id": "swiss_confederacy",
+      "regions": ["switzerland"],
+      "mode": "independent",
+      "units": [
+        { "unit_type": "infantry", "unit_count": 6 },
+        { "unit_type": "elite_infantry", "unit_count": 6 }
+      ],
+      "suppress_relation": true
+    },
+    "historical_year": 1310,
+    "historical_month": 3,
+    "one_shot": true,
+    "affected_faction": "austria_duchy",
+    "requires_active_factions": [
+      "austria_duchy"
+    ]
+  },
+  {
+    "id": "east_rome_frontier_crisis_1310",
+    "name_tr": "Doğu Roma Sınır Maliyesi",
+    "desc_tr": "İmparatorluk hazinesi saray harcamaları ve sınır savunması arasındaki baskı altında kaldı. Anadolu garnizonları için kaynak bulmak zorlaşıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": -10,
+    "gold_delta": -110,
+    "grain_delta": -15,
+    "army_hp_mod": 1,
+    "historical_year": 1310,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "east_rome"
+  },
+  {
     "id": "ottoman_turkmen_gazi_migration_1310",
     "name_tr": "Türkmenlerin ve Gaza Erlerinin Uçlara Gelişi",
     "desc_tr": "Doğu sınırlarından gelen Türkmen obaları ve gaza erleri, Bilecik uçlarında Osmanlı beyliğine katılıyor. Yeni savaşçılar Söğüt çevresinde toplanırken sınır köyleri de nüfus ve iaşe bakımından güçleniyor.",
@@ -28,121 +76,6 @@
     "requires_owned_regions": [
       "bilecik_frontier",
       "bithynia"
-    ],
-    "requires_active_factions": [
-      "east_rome"
-    ],
-    "relation_requirements": [
-      {
-        "faction_id": "east_rome",
-        "stance": "war"
-      }
-    ]
-  },
-  {
-    "id": "swiss_confederacy_emerges_1310",
-    "name_tr": "İsviçre Konfederasyonu'nun Doğuşu",
-    "desc_tr": "1291 tarihli Waldstätte yemini Schwyz çevresindeki özgür vadileri ortak savunma için bir araya getirdi. Bu eski ittifak artık açık bir konfederasyon olarak yeniden ortaya çıkıyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 0,
-    "gold_delta": 0,
-    "grain_delta": 0,
-    "army_hp_mod": 0,
-    "set_flags": [
-      "swiss_confederacy_formed"
-    ],
-    "successor_revival": {
-      "faction_id": "swiss_confederacy",
-      "region_id": "switzerland",
-      "mode": "independent",
-      "unit_type": "infantry",
-      "unit_count": 6,
-      "suppress_relation": true
-    },
-    "historical_year": 1310,
-    "historical_month": 3,
-    "one_shot": true,
-    "affected_faction": "austria_duchy",
-    "requires_active_factions": [
-      "austria_duchy"
-    ]
-  },
-  {
-    "id": "swiss_habsburg_final_victory",
-    "name_tr": "İsviçre'nin Habsburglar Karşısındaki Kesin Zaferi",
-    "desc_tr": "İsviçre konfederasyonu Habsburg Avusturya'yı savaşta yenerek bölgedeki hanedan baskısını sona erdirdi. Alp şehirleri ve vadileri artık ortak savunma ve ticaret düzeninde birleşiyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 15,
-    "gold_delta": 500,
-    "grain_delta": 120,
-    "army_hp_mod": 0,
-    "relation_delta_all": 8,
-    "set_flags": [
-      "swiss_habsburg_defeated"
-    ],
-    "one_shot": true,
-    "affected_faction": "swiss_confederacy",
-    "requires_flags": [
-      "swiss_confederacy_formed"
-    ],
-    "faction_subjugation_trigger": {
-      "faction_ids": [
-        "swiss_confederacy",
-        "austria_duchy"
-      ]
-    }
-  },
-  {
-    "id": "east_rome_frontier_crisis_1310",
-    "name_tr": "Doğu Roma Sınır Maliyesi",
-    "desc_tr": "İmparatorluk hazinesi saray harcamaları ve sınır savunması arasındaki baskı altında kaldı. Anadolu garnizonları için kaynak bulmak zorlaşıyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": -10,
-    "gold_delta": -110,
-    "grain_delta": -15,
-    "army_hp_mod": 1,
-    "historical_year": 1310,
-    "historical_month": 6,
-    "one_shot": true,
-    "affected_faction": "east_rome"
-  },
-  {
-    "id": "ottoman_bithynian_campaign_muster_1321",
-    "name_tr": "Bithynia Bursa Seferberliği",
-    "desc_tr": "Bursa surlarına karşı sefer hazırlığı için Anadolu uç beyleri ortak bir kuvvet topluyor. Gaza erlerinin getirdiği insan gücüne, surları dövecek mancınıklar ve yeni piyade birlikleri ekleniyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 2,
-    "gold_delta": 100,
-    "grain_delta": 60,
-    "army_hp_mod": 0,
-    "unit_reinforcements": [
-      {
-        "unit_type": "infantry",
-        "unit_count": 2
-      },
-      {
-        "unit_type": "catapult",
-        "unit_count": 1
-      }
-    ],
-    "historical_year": 1321,
-    "historical_month": 8,
-    "one_shot": true,
-    "affected_faction": "ottoman",
-    "requires_owned_regions": [
-      "bilecik_frontier",
-      "bithynia"
-    ],
-    "requires_unowned_regions": [
-      "bursa"
     ],
     "requires_active_factions": [
       "east_rome"
@@ -330,6 +263,48 @@
     ]
   },
   {
+    "id": "ottoman_bithynian_campaign_muster_1321",
+    "name_tr": "Bithynia Bursa Seferberliği",
+    "desc_tr": "Bursa surlarına karşı sefer hazırlığı için Anadolu uç beyleri ortak bir kuvvet topluyor. Gaza erlerinin getirdiği insan gücüne, surları dövecek mancınıklar ve yeni piyade birlikleri ekleniyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 2,
+    "gold_delta": 100,
+    "grain_delta": 60,
+    "army_hp_mod": 0,
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 2
+      },
+      {
+        "unit_type": "catapult",
+        "unit_count": 1
+      }
+    ],
+    "historical_year": 1321,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "requires_owned_regions": [
+      "bilecik_frontier",
+      "bithynia"
+    ],
+    "requires_unowned_regions": [
+      "bursa"
+    ],
+    "requires_active_factions": [
+      "east_rome"
+    ],
+    "relation_requirements": [
+      {
+        "faction_id": "east_rome",
+        "stance": "war"
+      }
+    ]
+  },
+  {
     "id": "bursa_conquest_1326",
     "name_tr": "Bursa'nın Merkez Oluşu",
     "desc_tr": "Bursa'nın alınması, Osmanlı beyliğinin uç teşkilatından daha merkezî bir devlete dönüşmesi için yeni bir imkân yarattı.",
@@ -462,38 +437,48 @@
     "successor_revivals": [
       {
         "faction_id": "jelayirids",
-        "region_id": "baghdad",
+        "regions": ["baghdad", "basra", "persian_basra"],
         "mode": "independent",
-        "unit_type": "infantry",
-        "unit_count": 6
+        "units": [
+          { "unit_type": "infantry", "unit_count": 6 },
+          { "unit_type": "elite_infantry", "unit_count": 6 }
+        ]
       },
       {
         "faction_id": "muzaffarids",
-        "region_id": "isfahan",
+        "regions": ["isfahan", "hemedan", "kazvin"],
         "mode": "independent",
-        "unit_type": "infantry",
-        "unit_count": 6
+        "units": [
+          { "unit_type": "infantry", "unit_count": 6 },
+          { "unit_type": "elite_infantry", "unit_count": 6 }
+        ]
       },
       {
         "faction_id": "afshar_beyligi",
-        "region_id": "erzurum",
+        "regions": ["erzurum", "bayburt", "erzincan"],
         "mode": "independent",
-        "unit_type": "infantry",
-        "unit_count": 5
+        "units": [
+          { "unit_type": "infantry", "unit_count": 5 },
+          { "unit_type": "elite_infantry", "unit_count": 5 }
+        ]
       },
       {
         "faction_id": "eretna_state",
-        "region_id": "nigde",
+        "regions": ["nigde", "aksaray", "sivas"],
         "mode": "independent",
-        "unit_type": "infantry",
-        "unit_count": 5
+        "units": [
+          { "unit_type": "infantry", "unit_count": 5 },
+          { "unit_type": "elite_infantry", "unit_count": 5 }
+        ]
       },
       {
         "faction_id": "artuklu",
-        "region_id": "mosul",
+        "regions": ["mosul", "kerkuk", "hakkari"],
         "mode": "independent",
-        "unit_type": "infantry",
-        "unit_count": 5
+        "units": [
+          { "unit_type": "infantry", "unit_count": 5 },
+          { "unit_type": "elite_infantry", "unit_count": 5 }
+        ]
       }
     ],
     "army_defections": [
@@ -768,6 +753,52 @@
       "teutonic_order",
       "lithuanian_gd",
       "hre"
+    ]
+  },
+  {
+    "id": "ottoman_karesi_peaceful_integration_1345",
+    "name_tr": "Karesi İç Çekişmesi ve Barışçıl Katılım",
+    "desc_tr": "Acar Bey'in (Yahni Bey diye de anılır) ölümünün ardından Karesi tahtında kardeşler arasında mücadele başlıyor. Dursun Bey, kardeşine karşı üstün gelemeyeceğini anlayıp Orhan Gazi'ye sığınıyor ve Osmanlı himayesi karşılığında beyliğin bir kısmını teklif ediyor. Bergama ve Balıkesir çevresindeki kuşatma sırasında Dursun Bey'in bir okla ölmesine rağmen Ece Halil, Hacı İlbey, Evrenos Bey ve Karesi ileri gelenleri savaşmadan Osmanlı düzenine katılıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 1,
+    "set_flags": [
+      "karesi_peaceful_integration_accepted"
+    ],
+    "dynastic_settlement": {
+      "source_faction_id": "karesioglu_bey",
+      "recipient_faction_id": "ottoman",
+      "mode": "peaceful_integration",
+      "region_ids": [
+        "karesi"
+      ],
+      "relation_stance": "allied",
+      "relation_score_delta": 50,
+      "auto_union_when_source_empty": true,
+      "union_result_faction_id": "ottoman"
+    },
+    "historical_year": 1345,
+    "historical_month": 12,
+    "one_shot": true,
+    "affected_faction": "karesioglu_bey",
+    "requires_owned_regions": [
+      "karesi"
+    ],
+    "requires_active_factions": [
+      "ottoman",
+      "karesioglu_bey"
+    ],
+    "relation_requirements": [
+      {
+        "faction_id": "ottoman",
+        "blocks_stances": [
+          "war"
+        ]
+      }
     ]
   },
   {
@@ -1210,6 +1241,49 @@
     ]
   },
   {
+    "id": "burgundy_flanders_marriage_1369",
+    "name_tr": "Burgonya-Flandre Hanedan Evliliği",
+    "desc_tr": "Burgonya Düklüğü ile Flandre Kontluğu arasındaki hanedan evliliği, ileride birleşecek mirasların siyasi temelini atıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1369,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "burgundy",
+    "choice_prompt_tr": "Burgonya ile Flandre arasındaki hanedan evliliği onaylansın mı?",
+    "choices": [
+      {
+        "id": "accept_burgundy_flanders_marriage",
+        "label_tr": "Hanedan evliliğini kabul et",
+        "desc_tr": "Burgonya ile Flandre arasında kalıcı bir hanedan bağı ve dostluk kurulur.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "burgundy",
+          "relations": [
+            {
+              "faction_id": "flanders_county",
+              "stance": "allied",
+              "score_delta": 30
+            }
+          ],
+          "set_flags": [
+            "burgundy_flanders_marriage_1369"
+          ]
+        }
+      }
+    ],
+    "requires_active_factions": [
+      "burgundy",
+      "flanders_county"
+    ]
+  },
+  {
     "id": "mamluk_red_sea_trade_1370",
     "name_tr": "Kızıldeniz Ticaret Yolları",
     "desc_tr": "Mısır, Suriye ve Hicaz arasındaki kervanlar Memlük hazinesi için olduğu kadar bölgesel istikrar için de önem taşıyor.",
@@ -1271,9 +1345,12 @@
     ],
     "successor_revival": {
       "faction_id": "timurid_empire",
-      "region_id": "northern_persia",
+      "regions": ["northern_persia", "gurgan", "meshed"],
       "mode": "independent",
-      "militia_count": 12
+      "units": [
+        { "unit_type": "infantry", "unit_count": 9 },
+        { "unit_type": "elite_infantry", "unit_count": 9 }
+      ]
     },
     "army_defections": [
       {
@@ -1353,9 +1430,12 @@
     ],
     "successor_revival": {
       "faction_id": "karakoyunlu_state",
-      "region_id": "karakoyunlu",
+      "regions": ["karakoyunlu", "azerbaijan", "urmiye"],
       "mode": "independent",
-      "militia_count": 8
+      "units": [
+        { "unit_type": "infantry", "unit_count": 7 },
+        { "unit_type": "elite_infantry", "unit_count": 7 }
+      ]
     },
     "army_defections": [
       {
@@ -1392,9 +1472,12 @@
     ],
     "successor_revival": {
       "faction_id": "akkoyunlu_state",
-      "region_id": "akkoyunlu",
+      "regions": ["akkoyunlu", "malatya", "ordu"],
       "mode": "independent",
-      "militia_count": 8
+      "units": [
+        { "unit_type": "infantry", "unit_count": 7 },
+        { "unit_type": "elite_infantry", "unit_count": 7 }
+      ]
     },
     "army_defections": [
       {
@@ -1435,6 +1518,53 @@
     ]
   },
   {
+    "id": "germiyan_dowry_settlement_1381",
+    "name_tr": "Germiyan Çeyizi ve Devlet Hatun'un Evliliği",
+    "desc_tr": "Germiyanoğlu Süleyman Şah, Karamanoğulları baskısına karşı Osmanlı ile akrabalık kuruyor. Devlet Hatun'un Şehzade Bayezid ile evliliğiyle Kütahya, Germiyan'ın değerli batı topraklarının çeyizi olarak Osmanlı'ya bırakılıyor; Germiyan beyliği Kula ve Taşlıca tarafında varlığını sürdürüyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 1,
+    "set_flags": [
+      "germiyan_dowry_1381"
+    ],
+    "dynastic_settlement": {
+      "source_faction_id": "germiyan_bey",
+      "recipient_faction_id": "ottoman",
+      "mode": "dowry",
+      "region_ids": [
+        "kutahya"
+      ],
+      "army_transfer_percent": 30,
+      "resource_transfer_percent": 30,
+      "relation_stance": "allied",
+      "relation_score_delta": 50
+    },
+    "historical_year": 1381,
+    "historical_month": 3,
+    "historical_date_strict": true,
+    "one_shot": true,
+    "affected_faction": "germiyan_bey",
+    "requires_owned_regions": [
+      "kutahya"
+    ],
+    "requires_active_factions": [
+      "ottoman",
+      "germiyan_bey"
+    ],
+    "relation_requirements": [
+      {
+        "faction_id": "ottoman",
+        "blocks_stances": [
+          "war"
+        ]
+      }
+    ]
+  },
+  {
     "id": "mamluk_iqta_crisis_1382",
     "name_tr": "Memlük İkta Bunalımı",
     "desc_tr": "İkta sahipleri vergi ve asker yükünün yeniden dağıtılmasına direniyor. Suriye eyaletlerinde huzursuzluk artıyor.",
@@ -1450,6 +1580,47 @@
     "historical_month": 3,
     "one_shot": true,
     "affected_faction": "mamluk"
+  },
+  {
+    "id": "burgundy_flanders_inheritance_1384",
+    "name_tr": "Burgonya-Flandre Miras Birliği",
+    "desc_tr": "Flandre ve Franche-Comté mirasları Burgundy Düklüğü'ne geçerek Batı Avrupa'da geniş bir Burgonya hanedanı oluşturuyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1384,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "burgundy",
+    "choice_prompt_tr": "Flandre ve Franche-Comté mirasları Burgonya Düklüğü ile birleşsin mi?",
+    "choices": [
+      {
+        "id": "form_burgundian_personal_union_1384",
+        "label_tr": "Burgonya miras birliğini kur",
+        "desc_tr": "Flandre ve Franche-Comté toprakları, orduları ve kaynakları Burgundy Düklüğü'ne aktarılır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "burgundy",
+          "political_transformation_id": "burgundy_flanders_inheritance_1384",
+          "set_flags": [
+            "burgundy_flanders_inheritance_1384"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "burgundy_flanders_marriage_1369"
+    ],
+    "requires_active_factions": [
+      "burgundy",
+      "flanders_county",
+      "franche_comte"
+    ]
   },
   {
     "id": "polish_lithuanian_union_1385",
@@ -2478,6 +2649,56 @@
     ]
   },
   {
+    "id": "germiyan_will_integration_1429",
+    "name_tr": "Germiyanoğlu Vasiyeti ve Son Katılım",
+    "desc_tr": "Erkek varisi bulunmayan II. Yakup Bey, halkının huzuru ve Osmanlı padişahı II. Murad'a duyduğu güven için beyliğin geleceğini vasiyet ediyor. Yakup Bey'in 1429'daki vefatıyla Germiyan'ın kalan toprakları savaşsız biçimde Osmanlı yönetimine geçiyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 1,
+    "set_flags": [
+      "germiyan_final_integration_1429"
+    ],
+    "dynastic_settlement": {
+      "source_faction_id": "germiyan_bey",
+      "recipient_faction_id": "ottoman",
+      "mode": "testament",
+      "region_ids": [
+        "germiyan"
+      ],
+      "relation_stance": "allied",
+      "relation_score_delta": 50,
+      "auto_union_when_source_empty": true,
+      "union_result_faction_id": "ottoman"
+    },
+    "historical_year": 1429,
+    "historical_month": 1,
+    "historical_date_strict": true,
+    "one_shot": true,
+    "affected_faction": "germiyan_bey",
+    "requires_flags": [
+      "germiyan_dowry_1381"
+    ],
+    "requires_owned_regions": [
+      "germiyan"
+    ],
+    "requires_active_factions": [
+      "ottoman",
+      "germiyan_bey"
+    ],
+    "relation_requirements": [
+      {
+        "faction_id": "ottoman",
+        "blocks_stances": [
+          "war"
+        ]
+      }
+    ]
+  },
+  {
     "id": "lipany_hussite_settlement_1434",
     "name_tr": "Lipany Savaşı ve Hussit Uzlaşması",
     "desc_tr": "Lipany'de ılımlı Hussitler ile radikal Taboritler arasındaki savaş, Hussit askerî hareketinin sonunu getiriyor. Bohemya, dinî ayrıcalıklarını koruyarak imparatorluk düzeniyle yeniden müzakere ediyor.",
@@ -3089,70 +3310,6 @@
     ]
   },
   {
-    "id": "war_of_the_roses_early_reunification_offer",
-    "name_tr": "İngiltere Tacını Yeniden Birleştirme Teklifi",
-    "desc_tr": "Seçtiğin hanedan rakibini savaşta etkisiz hale getirdi. Artık İngiltere tacını yeniden birleştirerek daha güçlü bir devlet olarak devam edebilirsin.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 0,
-    "gold_delta": 0,
-    "grain_delta": 0,
-    "army_hp_mod": 0,
-    "one_shot": true,
-    "affected_faction": "england",
-    "choice_prompt_tr": "Rakip hanedan yenildi. İngiltere tacını yeniden birleştirmek ister misin?",
-    "choices": [
-      {
-        "id": "early_england_reunification",
-        "label_tr": "Evet, İngiltere olarak birleş",
-        "desc_tr": "Seçtiğin hanedanın zaferini İngiltere tacı altında birleştirir ve oyuna İngiltere olarak devam edersin.",
-        "ai_weight": 10,
-        "effect": {
-          "target": "specific_faction",
-          "affected_faction": "england",
-          "political_transformation_id": "war_of_the_roses_reunification",
-          "political_winner_faction_id": "house_lancaster",
-          "political_winner_from_player": true,
-          "set_flags": [
-            "war_of_the_roses_resolved",
-            "war_of_the_roses_early_reunified"
-          ]
-        }
-      },
-      {
-        "id": "continue_as_dynasty",
-        "label_tr": "Hayır, hanedan olarak devam et",
-        "desc_tr": "Birleşmeyi reddeder ve seçtiğin Lancaster veya York hanedanıyla oyuna devam edersin.",
-        "ai_weight": 1,
-        "effect": {
-          "target": "specific_faction",
-          "affected_faction": "england",
-          "set_flags": [
-            "war_of_the_roses_reunification_declined"
-          ]
-        }
-      }
-    ],
-    "player_choice_factions": [
-      "house_lancaster",
-      "house_york"
-    ],
-    "requires_flags": [
-      "war_of_the_roses_started"
-    ],
-    "blocks_flags": [
-      "war_of_the_roses_resolved"
-    ],
-    "faction_subjugation_trigger": {
-      "faction_ids": [
-        "house_lancaster",
-        "house_york"
-      ],
-      "require_player_actor": true
-    }
-  },
-  {
     "id": "belgrade_defense_1456",
     "name_tr": "Belgrad'ın Savunulması",
     "desc_tr": "Hunyadi Janoş ve Haçlı savunması, Osmanlıların Belgrad kuşatmasını püskürtüyor. Zafer, Osmanlıların Orta Avrupa'ya ilerleyişini birkaç on yıl geciktiriyor.",
@@ -3395,90 +3552,6 @@
     ],
     "requires_owned_regions": [
       "constantinople"
-    ]
-  },
-  {
-    "id": "burgundy_flanders_marriage_1369",
-    "name_tr": "Burgonya-Flandre Hanedan Evliliği",
-    "desc_tr": "Burgonya Düklüğü ile Flandre Kontluğu arasındaki hanedan evliliği, ileride birleşecek mirasların siyasi temelini atıyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 0,
-    "gold_delta": 0,
-    "grain_delta": 0,
-    "army_hp_mod": 0,
-    "historical_year": 1369,
-    "historical_month": 6,
-    "one_shot": true,
-    "affected_faction": "burgundy",
-    "choice_prompt_tr": "Burgonya ile Flandre arasındaki hanedan evliliği onaylansın mı?",
-    "choices": [
-      {
-        "id": "accept_burgundy_flanders_marriage",
-        "label_tr": "Hanedan evliliğini kabul et",
-        "desc_tr": "Burgonya ile Flandre arasında kalıcı bir hanedan bağı ve dostluk kurulur.",
-        "ai_weight": 10,
-        "effect": {
-          "target": "specific_faction",
-          "affected_faction": "burgundy",
-          "relations": [
-            {
-              "faction_id": "flanders_county",
-              "stance": "allied",
-              "score_delta": 30
-            }
-          ],
-          "set_flags": [
-            "burgundy_flanders_marriage_1369"
-          ]
-        }
-      }
-    ],
-    "requires_active_factions": [
-      "burgundy",
-      "flanders_county"
-    ]
-  },
-  {
-    "id": "burgundy_flanders_inheritance_1384",
-    "name_tr": "Burgonya-Flandre Miras Birliği",
-    "desc_tr": "Flandre ve Franche-Comté mirasları Burgundy Düklüğü'ne geçerek Batı Avrupa'da geniş bir Burgonya hanedanı oluşturuyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 0,
-    "gold_delta": 0,
-    "grain_delta": 0,
-    "army_hp_mod": 0,
-    "historical_year": 1384,
-    "historical_month": 1,
-    "one_shot": true,
-    "affected_faction": "burgundy",
-    "choice_prompt_tr": "Flandre ve Franche-Comté mirasları Burgonya Düklüğü ile birleşsin mi?",
-    "choices": [
-      {
-        "id": "form_burgundian_personal_union_1384",
-        "label_tr": "Burgonya miras birliğini kur",
-        "desc_tr": "Flandre ve Franche-Comté toprakları, orduları ve kaynakları Burgundy Düklüğü'ne aktarılır.",
-        "ai_weight": 10,
-        "effect": {
-          "target": "specific_faction",
-          "affected_faction": "burgundy",
-          "political_transformation_id": "burgundy_flanders_inheritance_1384",
-          "set_flags": [
-            "burgundy_flanders_inheritance_1384"
-          ]
-        }
-      }
-    ],
-    "requires_flags": [
-      "burgundy_flanders_marriage_1369"
-    ],
-    "requires_active_factions": [
-      "burgundy",
-      "flanders_county",
-      "franche_comte"
     ]
   },
   {
@@ -5389,6 +5462,97 @@
     ]
   },
   {
+    "id": "swiss_habsburg_final_victory",
+    "name_tr": "İsviçre'nin Habsburglar Karşısındaki Kesin Zaferi",
+    "desc_tr": "İsviçre konfederasyonu Habsburg Avusturya'yı savaşta yenerek bölgedeki hanedan baskısını sona erdirdi. Alp şehirleri ve vadileri artık ortak savunma ve ticaret düzeninde birleşiyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 15,
+    "gold_delta": 500,
+    "grain_delta": 120,
+    "army_hp_mod": 0,
+    "relation_delta_all": 8,
+    "set_flags": [
+      "swiss_habsburg_defeated"
+    ],
+    "one_shot": true,
+    "affected_faction": "swiss_confederacy",
+    "requires_flags": [
+      "swiss_confederacy_formed"
+    ],
+    "faction_subjugation_trigger": {
+      "faction_ids": [
+        "swiss_confederacy",
+        "austria_duchy"
+      ]
+    }
+  },
+  {
+    "id": "war_of_the_roses_early_reunification_offer",
+    "name_tr": "İngiltere Tacını Yeniden Birleştirme Teklifi",
+    "desc_tr": "Seçtiğin hanedan rakibini savaşta etkisiz hale getirdi. Artık İngiltere tacını yeniden birleştirerek daha güçlü bir devlet olarak devam edebilirsin.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "one_shot": true,
+    "affected_faction": "england",
+    "choice_prompt_tr": "Rakip hanedan yenildi. İngiltere tacını yeniden birleştirmek ister misin?",
+    "choices": [
+      {
+        "id": "early_england_reunification",
+        "label_tr": "Evet, İngiltere olarak birleş",
+        "desc_tr": "Seçtiğin hanedanın zaferini İngiltere tacı altında birleştirir ve oyuna İngiltere olarak devam edersin.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "political_transformation_id": "war_of_the_roses_reunification",
+          "political_winner_faction_id": "house_lancaster",
+          "political_winner_from_player": true,
+          "set_flags": [
+            "war_of_the_roses_resolved",
+            "war_of_the_roses_early_reunified"
+          ]
+        }
+      },
+      {
+        "id": "continue_as_dynasty",
+        "label_tr": "Hayır, hanedan olarak devam et",
+        "desc_tr": "Birleşmeyi reddeder ve seçtiğin Lancaster veya York hanedanıyla oyuna devam edersin.",
+        "ai_weight": 1,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "england",
+          "set_flags": [
+            "war_of_the_roses_reunification_declined"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "house_lancaster",
+      "house_york"
+    ],
+    "requires_flags": [
+      "war_of_the_roses_started"
+    ],
+    "blocks_flags": [
+      "war_of_the_roses_resolved"
+    ],
+    "faction_subjugation_trigger": {
+      "faction_ids": [
+        "house_lancaster",
+        "house_york"
+      ],
+      "require_player_actor": true
+    }
+  },
+  {
     "id": "plague",
     "name_tr": "Yerel Salgın",
     "desc_tr": "Salgın hastalık bölgeye yayıldı. Halk memnuniyeti düşüyor, tahıl üretimi azalıyor.",
@@ -5936,148 +6100,5 @@
     "army_hp_mod": 1,
     "grain_production_percent": 20,
     "population_delta": 10
-  },
-  {
-    "id": "ottoman_karesi_peaceful_integration_1345",
-    "name_tr": "Karesi İç Çekişmesi ve Barışçıl Katılım",
-    "desc_tr": "Acar Bey'in (Yahni Bey diye de anılır) ölümünün ardından Karesi tahtında kardeşler arasında mücadele başlıyor. Dursun Bey, kardeşine karşı üstün gelemeyeceğini anlayıp Orhan Gazi'ye sığınıyor ve Osmanlı himayesi karşılığında beyliğin bir kısmını teklif ediyor. Bergama ve Balıkesir çevresindeki kuşatma sırasında Dursun Bey'in bir okla ölmesine rağmen Ece Halil, Hacı İlbey, Evrenos Bey ve Karesi ileri gelenleri savaşmadan Osmanlı düzenine katılıyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 0,
-    "gold_delta": 0,
-    "grain_delta": 0,
-    "army_hp_mod": 1,
-    "set_flags": [
-      "karesi_peaceful_integration_accepted"
-    ],
-    "dynastic_settlement": {
-      "source_faction_id": "karesioglu_bey",
-      "recipient_faction_id": "ottoman",
-      "mode": "peaceful_integration",
-      "region_ids": [
-        "karesi"
-      ],
-      "relation_stance": "allied",
-      "relation_score_delta": 50,
-      "auto_union_when_source_empty": true,
-      "union_result_faction_id": "ottoman"
-    },
-    "historical_year": 1345,
-    "historical_month": 12,
-    "one_shot": true,
-    "affected_faction": "karesioglu_bey",
-    "requires_owned_regions": [
-      "karesi"
-    ],
-    "requires_active_factions": [
-      "ottoman",
-      "karesioglu_bey"
-    ],
-    "relation_requirements": [
-      {
-        "faction_id": "ottoman",
-        "blocks_stances": [
-          "war"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "germiyan_dowry_settlement_1381",
-    "name_tr": "Germiyan Çeyizi ve Devlet Hatun'un Evliliği",
-    "desc_tr": "Germiyanoğlu Süleyman Şah, Karamanoğulları baskısına karşı Osmanlı ile akrabalık kuruyor. Devlet Hatun'un Şehzade Bayezid ile evliliğiyle Kütahya, Germiyan'ın değerli batı topraklarının çeyizi olarak Osmanlı'ya bırakılıyor; Germiyan beyliği Kula ve Taşlıca tarafında varlığını sürdürüyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 0,
-    "gold_delta": 0,
-    "grain_delta": 0,
-    "army_hp_mod": 1,
-    "set_flags": [
-      "germiyan_dowry_1381"
-    ],
-    "dynastic_settlement": {
-      "source_faction_id": "germiyan_bey",
-      "recipient_faction_id": "ottoman",
-      "mode": "dowry",
-      "region_ids": [
-        "kutahya"
-      ],
-      "army_transfer_percent": 30,
-      "resource_transfer_percent": 30,
-      "relation_stance": "allied",
-      "relation_score_delta": 50
-    },
-    "historical_year": 1381,
-    "historical_month": 3,
-    "historical_date_strict": true,
-    "one_shot": true,
-    "affected_faction": "germiyan_bey",
-    "requires_owned_regions": [
-      "kutahya"
-    ],
-    "requires_active_factions": [
-      "ottoman",
-      "germiyan_bey"
-    ],
-    "relation_requirements": [
-      {
-        "faction_id": "ottoman",
-        "blocks_stances": [
-          "war"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "germiyan_will_integration_1429",
-    "name_tr": "Germiyanoğlu Vasiyeti ve Son Katılım",
-    "desc_tr": "Erkek varisi bulunmayan II. Yakup Bey, halkının huzuru ve Osmanlı padişahı II. Murad'a duyduğu güven için beyliğin geleceğini vasiyet ediyor. Yakup Bey'in 1429'daki vefatıyla Germiyan'ın kalan toprakları savaşsız biçimde Osmanlı yönetimine geçiyor.",
-    "probability": 0,
-    "min_turn": 0,
-    "target": "specific_faction",
-    "sat_delta": 0,
-    "gold_delta": 0,
-    "grain_delta": 0,
-    "army_hp_mod": 1,
-    "set_flags": [
-      "germiyan_final_integration_1429"
-    ],
-    "dynastic_settlement": {
-      "source_faction_id": "germiyan_bey",
-      "recipient_faction_id": "ottoman",
-      "mode": "testament",
-      "region_ids": [
-        "germiyan"
-      ],
-      "relation_stance": "allied",
-      "relation_score_delta": 50,
-      "auto_union_when_source_empty": true,
-      "union_result_faction_id": "ottoman"
-    },
-    "historical_year": 1429,
-    "historical_month": 1,
-    "historical_date_strict": true,
-    "one_shot": true,
-    "affected_faction": "germiyan_bey",
-    "requires_flags": [
-      "germiyan_dowry_1381"
-    ],
-    "requires_owned_regions": [
-      "germiyan"
-    ],
-    "requires_active_factions": [
-      "ottoman",
-      "germiyan_bey"
-    ],
-    "relation_requirements": [
-      {
-        "faction_id": "ottoman",
-        "blocks_stances": [
-          "war"
-        ]
-      }
-    ]
   }
 ]

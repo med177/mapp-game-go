@@ -44,25 +44,62 @@ func (s *GameState) ReviveSuccessorAtRegion(regionID world.RegionID, successorID
 // kuruluş ordusunu veriyle seçilen birim tipinde oluşturur. Eski çağrılar
 // ReviveSuccessorAtRegion üzerinden milis varsayılanını korur.
 func (s *GameState) ReviveSuccessorAtRegionWithUnit(regionID world.RegionID, successorID faction.FactionID, unitType string, unitCount int) (army.ArmyID, bool) {
-	if s == nil || s.Regions == nil || s.Factions == nil || regionID == "" || successorID == "" {
-		return "", false
-	}
-	region := s.Regions[regionID]
-	successor := s.Factions[successorID]
-	if region == nil || region.IsSea || successor == nil || !successor.IsEliminated || len(s.LandRegionsOwnedBy(successorID)) != 0 {
-		return "", false
-	}
+	return s.ReviveSuccessorAtRegionsWithUnit([]world.RegionID{regionID}, successorID, unitType, unitCount)
+}
+
+// ReviveSuccessorAtRegionsWithUnit, elenmiş ardıl devleti birden fazla
+// bölgede aynı anda yeniden kurar ve tek kuruluş ordusunu ilk bölgeye koyar.
+func (s *GameState) ReviveSuccessorAtRegionsWithUnit(regionIDs []world.RegionID, successorID faction.FactionID, unitType string, unitCount int) (army.ArmyID, bool) {
 	if unitType == "" {
 		unitType = "militia"
 	}
 	if unitCount <= 0 {
 		unitCount = DefaultSuccessorRevivalMilitia
 	}
+	return s.ReviveSuccessorAtRegionsWithUnits(regionIDs, successorID, army.MakeUnits(unitType, unitCount))
+}
+
+// ReviveSuccessorAtRegionsWithUnits, kuruluş ordusunu birden fazla birim
+// türünden oluşturur. Üretim önkoşulları event kuruluşunda aranmaz; event'in
+// verdiği hazır birlikler doğrudan orduya eklenir.
+func (s *GameState) ReviveSuccessorAtRegionsWithUnits(regionIDs []world.RegionID, successorID faction.FactionID, units []army.Unit) (army.ArmyID, bool) {
+	if s == nil || s.Regions == nil || s.Factions == nil || len(regionIDs) == 0 || successorID == "" {
+		return "", false
+	}
+	if len(units) == 0 {
+		return "", false
+	}
+	successor := s.Factions[successorID]
+	if successor == nil || !successor.IsEliminated || len(s.LandRegionsOwnedBy(successorID)) != 0 {
+		return "", false
+	}
+	seen := make(map[world.RegionID]struct{}, len(regionIDs))
+	for _, regionID := range regionIDs {
+		if regionID == "" {
+			return "", false
+		}
+		if _, duplicate := seen[regionID]; duplicate {
+			continue
+		}
+		seen[regionID] = struct{}{}
+		region := s.Regions[regionID]
+		if region == nil || region.IsSea {
+			return "", false
+		}
+	}
 	successor.IsEliminated = false
 	successor.IsVirtual = false
 	successor.PendingCapitalSettlementID = ""
 	successor.PendingCapitalTurns = 0
-	region.OwnerID = string(successorID)
+	for regionID := range seen {
+		s.Regions[regionID].OwnerID = string(successorID)
+	}
+	// Event'teki ilk bölge, yeni devletin kuruluş başkentidir. Normalizasyon
+	// daha gelişmiş başka bir bölgeyi seçerek bu tarihsel tercihi ezmemelidir.
+	capitalRegion := s.Regions[regionIDs[0]]
+	if capitalSettlementIndex := primarySettlementIndex(capitalRegion); capitalSettlementIndex >= 0 {
+		successor.CapitalSettlementID = capitalRegion.Settlements[capitalSettlementIndex].ID
+	}
 	if s.Armies == nil {
 		s.Armies = make(map[army.ArmyID]*army.Army)
 	}
@@ -75,8 +112,8 @@ func (s *GameState) ReviveSuccessorAtRegionWithUnit(regionID world.RegionID, suc
 	newArmy := &army.Army{
 		ID:            armyID,
 		OwnerID:       string(successorID),
-		RegionID:      regionID,
-		Units:         army.MakeUnits(unitType, unitCount),
+		RegionID:      regionIDs[0],
+		Units:         append([]army.Unit(nil), units...),
 		MaxMovePoints: army.DefaultArmyMovePoints,
 		MovePoints:    army.DefaultArmyMovePoints,
 	}

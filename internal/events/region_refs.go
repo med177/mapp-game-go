@@ -60,7 +60,15 @@ func renameEffectRegionReferences(effect *Effect, oldID, newID world.RegionID) {
 }
 
 func renameSuccessorRevival(effect *SuccessorRevivalEffect, oldID, newID world.RegionID) {
-	if effect != nil && effect.RegionID == string(oldID) {
+	if effect == nil {
+		return
+	}
+	for i := range effect.Regions {
+		if effect.Regions[i] == string(oldID) {
+			effect.Regions[i] = string(newID)
+		}
+	}
+	if effect.RegionID == string(oldID) {
 		effect.RegionID = string(newID)
 	}
 }
