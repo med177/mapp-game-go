@@ -3998,20 +3998,9 @@ func writeScenarioRelations(gs *state.GameState) error {
 		keys = append(keys, key)
 		seen[key] = struct{}{}
 	}
-	// RelationOrder kaynak dosyadan gelebilir; map'e sonradan eklenen kayıtlar
-	// için de deterministik çıktı üret.
-	for key, rel := range gs.Relations {
-		if rel == nil {
-			continue
-		}
-		if _, exists := seen[key]; exists {
-			continue
-		}
-		keys = append(keys, key)
-		seen[key] = struct{}{}
-	}
-	sort.Strings(keys)
-
+	// gs.Relations varsayılan ilişki çiftlerini de içerir. Bunlar yalnızca
+	// çalışma zamanı hesabı içindir; kaynak JSON'a yalnızca RelationOrder'da
+	// bulunan veya Edit Mode'da açıkça eklenen ilişkiler yazılmalıdır.
 	relations := make([]*faction.Relation, 0, len(keys))
 	for _, key := range keys {
 		rel := gs.Relations[key]

@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-09-30
+last_updated: 2026-10-02
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -454,7 +454,11 @@ ilişkileri mevcut yükleme turundan sıfır sayaçla başlatılır.
 
 ## relations.json
 
-Başlangıç diplomasi ilişkileri. Dosya yoksa tüm faction çiftleri din temelli varsayılanlarla üretilir.
+Başlangıç diplomasi ilişkileri. Dosyada bulunmayan faction çiftleri runtime'da din
+temelli varsayılanlarla üretilir; bu varsayılan çiftler Edit Mode kaydında JSON'a
+eklenmez. Böylece dosya yalnızca özel olarak tanımlanmış veya editörde açıkça
+değiştirilmiş ilişkileri taşır. Edit Mode'da değişiklik yapılmadan kaydetmek,
+ilişki kayıtlarının sırasını ve içeriğini değiştirmez.
 
 ```json
 [

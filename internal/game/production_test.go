@@ -1,6 +1,7 @@
 package game
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -195,7 +196,7 @@ func TestWriteScenarioFileIfChangedSkipsIdenticalData(t *testing.T) {
 	}
 }
 
-func TestWriteScenarioRelationsUsesDeterministicOrder(t *testing.T) {
+func TestWriteScenarioRelationsPreservesRelationOrder(t *testing.T) {
 	scenarioPath := t.TempDir()
 	dataDir := filepath.Join(scenarioPath, "data")
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
@@ -224,9 +225,111 @@ func TestWriteScenarioRelationsUsesDeterministicOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := "[\n  {\n    \"faction_a\": \"a\",\n    \"faction_b\": \"b\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  },\n  {\n    \"faction_a\": \"a\",\n    \"faction_b\": \"c\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  },\n  {\n    \"faction_a\": \"b\",\n    \"faction_b\": \"c\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  }\n]\n"
+	want := "[\n  {\n    \"faction_a\": \"b\",\n    \"faction_b\": \"c\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  },\n  {\n    \"faction_a\": \"a\",\n    \"faction_b\": \"c\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  },\n  {\n    \"faction_a\": \"a\",\n    \"faction_b\": \"b\",\n    \"score_a_to_b\": 0,\n    \"score_b_to_a\": 0,\n    \"stance\": \"peace\"\n  }\n]\n"
 	if string(data) != want {
-		t.Fatalf("ilişkiler deterministik sırada yazılmadı:\n%s", data)
+		t.Fatalf("ilişki kaynak sırası korunmadı:\n%s", data)
+	}
+}
+
+func TestWriteScenarioRelationsSkipsRuntimeDefaultRelations(t *testing.T) {
+	scenarioPath := t.TempDir()
+	dataDir := filepath.Join(scenarioPath, "data")
+	if err := os.MkdirAll(dataDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	gs := &state.GameState{
+		ScenarioPath: scenarioPath,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a": {ID: "a"},
+			"b": {ID: "b"},
+			"c": {ID: "c"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("a", "b"): {
+				FactionA: "a", FactionB: "b", ScoreAToB: -40, ScoreBToA: -40, Stance: faction.StancePeace,
+			},
+			// a|c, kaynakta özel ilişki olmayan runtime varsayılanıdır.
+			faction.RelationKey("a", "c"): {
+				FactionA: "a", FactionB: "c", ScoreAToB: -30, ScoreBToA: -30, Stance: faction.StancePeace,
+			},
+		},
+		RelationOrder: []string{faction.RelationKey("a", "b")},
+	}
+
+	if err := writeScenarioRelations(gs); err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(dataDir, "relations.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var relations []faction.Relation
+	if err := json.Unmarshal(data, &relations); err != nil {
+		t.Fatal(err)
+	}
+	if len(relations) != 1 {
+		t.Fatalf("runtime varsayılan ilişkiler kaynak dosyaya yazıldı: %#v", relations)
+	}
+	if got := faction.RelationKey(relations[0].FactionA, relations[0].FactionB); got != faction.RelationKey("a", "b") {
+		t.Fatalf("açık ilişki yerine yanlış kayıt yazıldı: %q", got)
+	}
+}
+
+func TestWriteScenarioRelationsPreservesUnchangedSourceData(t *testing.T) {
+	scenarioPath := t.TempDir()
+	dataDir := filepath.Join(scenarioPath, "data")
+	if err := os.MkdirAll(dataDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	source := []byte(`[
+  {
+    "faction_a": "b",
+    "faction_b": "c",
+    "score_a_to_b": 12,
+    "score_b_to_a": -8,
+    "stance": "trade"
+  },
+  {
+    "faction_a": "a",
+    "faction_b": "c",
+    "score_a_to_b": -35,
+    "score_b_to_a": -35,
+    "stance": "peace"
+  }
+]
+`)
+	path := filepath.Join(dataDir, "relations.json")
+	if err := os.WriteFile(path, source, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	factions := map[faction.FactionID]*faction.Faction{
+		"a": {ID: "a"},
+		"b": {ID: "b"},
+		"c": {ID: "c"},
+	}
+	relations, order, err := faction.LoadRelationsWithOrder(path, factions)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := writeScenarioRelations(&state.GameState{
+		ScenarioPath:  scenarioPath,
+		Factions:      factions,
+		Relations:     relations,
+		RelationOrder: order,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != string(source) {
+		t.Fatalf("değişiklik yapılmayan relations.json yeniden biçimlendirildi:\n%s", got)
 	}
 }
 

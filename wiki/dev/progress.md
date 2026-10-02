@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-10-02: Edit Mode senaryo kaydında runtime'ın din temelli varsayılan
+  ilişkileri artık `relations.json` dosyasına yazılmıyor; kaynak ilişkilerin
+  sırası ve değişiklik yapılmayan içeriği korunuyor. Regression:
+  `internal/game/production_test.go` içindeki relation yazma testleri;
+  doğrulama: `go test ./internal/faction ./internal/game -count=1`.
+
 - 2026-10-01: Core bölgesindeki kara muharebelerine yerel savaş avantajı eklendi.
   Güncel egemen sahibinin `core` bölgesinde saldıran ordu `%5` saldırı,
   savunan ordu `%10` savunma bonusu alıyor; aynı kontrol gerçek çözümleme ve

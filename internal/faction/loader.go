@@ -57,11 +57,9 @@ func LoadRelations(path string, factions map[FactionID]*Faction) (map[string]*Re
 // ilişki sırasını ayrıca döner. Edit Mode kaydında bu sıra korunmalıdır.
 func LoadRelationsWithOrder(path string, factions map[FactionID]*Faction) (map[string]*Relation, []string, error) {
 	relations := BuildInitialRelations(factions)
-	order := make([]string, 0, len(relations))
-	for key := range relations {
-		order = append(order, key)
-	}
-	sort.Strings(order)
+	// Varsayılan runtime ilişkileri kaynak ilişkisi değildir. Dosya yoksa veya
+	// dosyada bulunmuyorsa kaydetme sırasında JSON'a yazılmamalıdır.
+	order := make([]string, 0)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -74,7 +72,6 @@ func LoadRelationsWithOrder(path string, factions map[FactionID]*Faction) (map[s
 	if err := json.Unmarshal(data, &list); err != nil {
 		return nil, nil, fmt.Errorf("relations JSON parse hatası: %w", err)
 	}
-	order = order[:0]
 	for _, rel := range list {
 		if rel == nil {
 			continue
