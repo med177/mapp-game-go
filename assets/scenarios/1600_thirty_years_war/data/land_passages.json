@@ -1,0 +1,152 @@
+[
+  {
+    "from": "bessarabia",
+    "to": "moldova",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1027,
+      336
+    ],
+    "end": [
+      1029,
+      334
+    ]
+  },
+  {
+    "from": "denmark",
+    "to": "scania",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      691,
+      185
+    ],
+    "end": [
+      699,
+      178
+    ]
+  },
+  {
+    "from": "dobruja",
+    "to": "podolia",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1049,
+      379
+    ],
+    "end": [
+      1049,
+      375
+    ]
+  },
+  {
+    "from": "gallipoli",
+    "to": "karesi",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      1009,
+      468
+    ],
+    "end": [
+      1010,
+      470
+    ]
+  },
+  {
+    "from": "nis",
+    "to": "oltenia",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      925,
+      389
+    ],
+    "end": [
+      929,
+      385
+    ]
+  },
+  {
+    "from": "scania",
+    "to": "malmo_halland",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      725,
+      170
+    ],
+    "end": [
+      729,
+      168
+    ]
+  },
+  {
+    "from": "sicily",
+    "to": "calabria",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      786,
+      509
+    ],
+    "end": [
+      791,
+      511
+    ]
+  },
+  {
+    "from": "ulster",
+    "to": "scotland",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      365,
+      200
+    ],
+    "end": [
+      374,
+      192
+    ]
+  },
+  {
+    "from": "vidin_region",
+    "to": "oltenia",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      947,
+      404
+    ],
+    "end": [
+      947,
+      400
+    ]
+  },
+  {
+    "from": "egriboz_island",
+    "to": "greece",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 15,
+    "start": [
+      950,
+      504
+    ],
+    "end": [
+      948,
+      506
+    ]
+  }
+]

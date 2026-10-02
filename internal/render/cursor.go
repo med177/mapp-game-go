@@ -344,7 +344,12 @@ func (r *Renderer) mainMenuHoverIndex(fx, fy float64) int {
 }
 
 func (r *Renderer) factionCardHoverIndex(fx, fy float64) int {
-	for i, btn := range buildFactionCardButtons(r.gs) {
+	factions, historicalCount := selectableFactions(r.gs)
+	viewport := factionGroupLayoutScrolled(len(factions), historicalCount, 3, 350, 138, 30, 12, 70, r.factionSelectScroll).viewport
+	if !viewport.Hit(fx, fy) {
+		return -1
+	}
+	for i, btn := range buildFactionCardButtons(r.gs, r.factionSelectScroll) {
 		if btn.HitTest(fx, fy) {
 			return i
 		}

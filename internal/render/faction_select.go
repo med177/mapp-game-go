@@ -1,6 +1,7 @@
 package render
 
 import (
+	"image"
 	"image/color"
 	"path/filepath"
 
@@ -16,6 +17,9 @@ import (
 const factionGroupGap = 34.0
 const factionGroupLabelH = 20.0
 const factionGroupLabelPad = 6.0
+const factionSelectViewportTop = 104.0
+const factionSelectViewportBottom = 18.0
+const factionSelectScrollStep = 72.0
 
 const (
 	factionCardFlagSize     = 94.0
@@ -28,7 +32,7 @@ var (
 	factionSelectBackground     *ebiten.Image
 )
 
-func buildFactionCardButtons(gs *state.GameState) []gameui.Button {
+func buildFactionCardButtons(gs *state.GameState, scroll float64) []gameui.Button {
 	factions, historicalCount := selectableFactions(gs)
 	cols := 3
 	cardW := 350.0
@@ -38,7 +42,7 @@ func buildFactionCardButtons(gs *state.GameState) []gameui.Button {
 	headerH := 70.0
 	buttons := make([]gameui.Button, 0, len(factions))
 	for i, fid := range factions {
-		r := factionCardRect(i, historicalCount, len(factions), cols, cardW, cardH, padX, padY, headerH)
+		r := factionCardRectScrolled(i, historicalCount, len(factions), cols, cardW, cardH, padX, padY, headerH, scroll)
 		label := ""
 		if f := gs.Factions[fid]; f != nil {
 			label = f.NameTR
@@ -49,7 +53,7 @@ func buildFactionCardButtons(gs *state.GameState) []gameui.Button {
 }
 
 // DrawFactionSelect fraksiyon seçim ekranını çizer.
-func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
+func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int, scroll float64) {
 	if background := factionSelectBackgroundImage(gs); background != nil {
 		drawUIImageCover(screen, background)
 		// Senaryo görseli üzerindeki kart ve başlık metinlerini okunabilir tut.
@@ -67,11 +71,19 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 
 	drawBackButton(screen)
 
-	drawFactionGroupLabels(screen, len(factions), historicalCount, cols, float64(cardW), float64(cardH), 30, 12, headerH)
+	layout := factionGroupLayoutScrolled(len(factions), historicalCount, cols, float64(cardW), float64(cardH), 30, 12, headerH, scroll)
 
+	if layout.viewport.H <= 0 {
+		return
+	}
+	body := screen.SubImage(image.Rect(int(layout.viewport.X), int(layout.viewport.Y), int(layout.viewport.X+layout.viewport.W), int(layout.viewport.Y+layout.viewport.H))).(*ebiten.Image)
+	drawFactionGroupLabels(body, layout, len(factions), historicalCount)
 	for i, fid := range factions {
 		f := gs.Factions[fid]
-		cell := factionCardRect(i, historicalCount, len(factions), cols, float64(cardW), float64(cardH), 30, 12, headerH)
+		cell := factionCardRectScrolled(i, historicalCount, len(factions), cols, float64(cardW), float64(cardH), 30, 12, headerH, layout.scroll)
+		if cell.Y+cell.H <= layout.viewport.Y || cell.Y >= layout.viewport.Y+layout.viewport.H {
+			continue
+		}
 		x := float32(cell.X)
 		y := float32(cell.Y)
 		flagRect := factionCardFlagRect(cell)
@@ -85,25 +97,25 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 			borderCol = fc
 		}
 
-		drawUICardRect(screen, cell, bgCol, borderCol, 2)
+		drawUICardRect(body, cell, bgCol, borderCol, 2)
 
 		// Renk şeridi
-		drawUICardAccent(screen, cell, 8, fc)
+		drawUICardAccent(body, cell, 8, fc)
 
 		// İsim
 		nameCol := ColorWhite
 		if i == cursor {
 			nameCol = ColorYellow
 		}
-		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 12)}, f.NameTR, nameCol, gameui.TextLarge, gameui.TextAlignStart)
-		drawFactionFlagBadge(screen, f.ID, factionInitial(f.NameTR), flagRect.X, flagRect.Y, flagRect.W, fc, panelBorder)
+		drawUILabel(body, gameui.Rect{X: float64(x + 16), Y: float64(y + 12)}, f.NameTR, nameCol, gameui.TextLarge, gameui.TextAlignStart)
+		drawFactionFlagBadge(body, f.ID, factionInitial(f.NameTR), flagRect.X, flagRect.Y, flagRect.W, fc, panelBorder)
 
 		// Din
-		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 36)}, religion.DisplayNameTR(f.Religion), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(body, gameui.Rect{X: float64(x + 16), Y: float64(y + 36)}, religion.DisplayNameTR(f.Religion), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 		// Bölge sayısı ve başlangıç altını
 		regionCount := len(gs.RegionsVisibleTo(fid))
-		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 54)}, itoa(regionCount)+" bölge", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(body, gameui.Rect{X: float64(x + 16), Y: float64(y + 54)}, itoa(regionCount)+" bölge", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 
 		totalVictories, historicalVictories, generalVictories, featuredVictory := factionVictorySummary(gs, fid)
 		victoryLine := itoa(totalVictories) + " zafer hedefi"
@@ -113,11 +125,12 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int) {
 		if generalVictories > 0 {
 			victoryLine += "  |  " + itoa(generalVictories) + " genel"
 		}
-		drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 74), W: textW}, trimTextToWidth(victoryLine, FaceSmall, textW), color.RGBA{188, 176, 142, 235}, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(body, gameui.Rect{X: float64(x + 16), Y: float64(y + 74), W: textW}, trimTextToWidth(victoryLine, FaceSmall, textW), color.RGBA{188, 176, 142, 235}, gameui.TextSmall, gameui.TextAlignStart)
 		if featuredVictory != "" {
-			drawUILabel(screen, gameui.Rect{X: float64(x + 16), Y: float64(y + 94), W: textW}, trimTextToWidth("Öne çıkan: "+featuredVictory, FaceSmall, textW), color.RGBA{210, 188, 118, 235}, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(body, gameui.Rect{X: float64(x + 16), Y: float64(y + 94), W: textW}, trimTextToWidth("Öne çıkan: "+featuredVictory, FaceSmall, textW), color.RGBA{210, 188, 118, 235}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
+	drawFactionSelectScrollbar(screen, layout)
 }
 
 func factionCardFlagRect(card gameui.Rect) gameui.Rect {
@@ -210,7 +223,11 @@ func selectableFactions(gs *state.GameState) ([]faction.FactionID, int) {
 }
 
 func factionCardRect(index, historicalCount, total, cols int, cardW, cardH, padX, padY, headerH float64) gameui.Rect {
-	layout := factionGroupLayout(total, historicalCount, cols, cardW, cardH, padX, padY, headerH)
+	return factionCardRectScrolled(index, historicalCount, total, cols, cardW, cardH, padX, padY, headerH, 0)
+}
+
+func factionCardRectScrolled(index, historicalCount, total, cols int, cardW, cardH, padX, padY, headerH, scroll float64) gameui.Rect {
+	layout := factionGroupLayoutScrolled(total, historicalCount, cols, cardW, cardH, padX, padY, headerH, scroll)
 	if historicalCount > 0 && index < historicalCount {
 		col := index % cols
 		row := index / cols
@@ -227,9 +244,16 @@ type factionSelectLayout struct {
 	generalGrid     gameui.Rect
 	historicalLabel gameui.Rect
 	generalLabel    gameui.Rect
+	viewport        gameui.Rect
+	contentHeight   float64
+	scroll          float64
 }
 
 func factionGroupLayout(total, historicalCount, cols int, cardW, cardH, padX, padY, headerH float64) factionSelectLayout {
+	return factionGroupLayoutScrolled(total, historicalCount, cols, cardW, cardH, padX, padY, headerH, 0)
+}
+
+func factionGroupLayoutScrolled(total, historicalCount, cols int, cardW, cardH, padX, padY, headerH, scroll float64) factionSelectLayout {
 	generalCount := total - historicalCount
 	historicalRows := 0
 	if historicalCount > 0 {
@@ -255,8 +279,14 @@ func factionGroupLayout(total, historicalCount, cols int, cardW, cardH, padX, pa
 	}
 
 	baseX := ScreenWidth/2 - gridW/2
-	baseY := ScreenHeight/2 - (blockH+headerH)/2 + headerH
+	viewport := gameui.Rect{X: baseX, Y: factionSelectViewportTop, W: gridW, H: ScreenHeight - factionSelectViewportTop - factionSelectViewportBottom}
+	maxScroll := maxFloat64Value(blockH - viewport.H)
+	scroll = clampFactionSelectScroll(scroll, maxScroll)
+	baseY := viewport.Y - scroll
 	layout := factionSelectLayout{}
+	layout.viewport = viewport
+	layout.contentHeight = blockH
+	layout.scroll = scroll
 	currentY := baseY
 
 	if historicalRows > 0 {
@@ -288,11 +318,10 @@ func factionGroupLayout(total, historicalCount, cols int, cardW, cardH, padX, pa
 	return layout
 }
 
-func drawFactionGroupLabels(screen *ebiten.Image, total, historicalCount, cols int, cardW, cardH, padX, padY, headerH float64) {
+func drawFactionGroupLabels(screen *ebiten.Image, layout factionSelectLayout, total, historicalCount int) {
 	if total == 0 {
 		return
 	}
-	layout := factionGroupLayout(total, historicalCount, cols, cardW, cardH, padX, padY, headerH)
 	if historicalCount > 0 && layout.historicalLabel.W > 0 {
 		drawFactionGroupLabelBackdrop(screen, layout.historicalLabel)
 		drawUIOutlinedLabel(screen, layout.historicalLabel, "Tarihsel Hedefi Olan Devletler", ColorGold, ownerLabelOutlineColor(ColorGold), gameui.TextMedium, gameui.TextAlignCenter)
@@ -301,6 +330,31 @@ func drawFactionGroupLabels(screen *ebiten.Image, total, historicalCount, cols i
 		drawFactionGroupLabelBackdrop(screen, layout.generalLabel)
 		drawUIOutlinedLabel(screen, layout.generalLabel, "Genel Hedefi Olan Devletler", ColorGold, ownerLabelOutlineColor(ColorGold), gameui.TextMedium, gameui.TextAlignCenter)
 	}
+}
+
+func clampFactionSelectScroll(scroll, maxScroll float64) float64 {
+	if scroll < 0 {
+		return 0
+	}
+	if scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func drawFactionSelectScrollbar(screen *ebiten.Image, layout factionSelectLayout) {
+	maxScroll := maxFloat64Value(layout.contentHeight - layout.viewport.H)
+	if maxScroll <= 0 {
+		return
+	}
+	track := gameui.Rect{X: layout.viewport.X + layout.viewport.W + 10, Y: layout.viewport.Y, W: 5, H: layout.viewport.H}
+	thumbH := track.H * layout.viewport.H / layout.contentHeight
+	if thumbH < 28 {
+		thumbH = 28
+	}
+	thumbY := track.Y + (track.H-thumbH)*layout.scroll/maxScroll
+	drawUICardRect(screen, track, color.RGBA{25, 25, 45, 220}, color.RGBA{80, 80, 120, 200}, 1)
+	drawUICardRect(screen, gameui.Rect{X: track.X, Y: thumbY, W: track.W, H: thumbH}, color.RGBA{180, 150, 60, 230}, color.RGBA{220, 190, 100, 240}, 1)
 }
 
 func drawFactionGroupLabelBackdrop(screen *ebiten.Image, label gameui.Rect) {

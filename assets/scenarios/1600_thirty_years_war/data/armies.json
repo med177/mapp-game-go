@@ -1,0 +1,848 @@
+[
+  {
+    "id": "army_ottoman_1_constantinople",
+    "owner_id": "ottoman",
+    "region_id": "constantinople",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 5
+      },
+      {
+        "type_id": "infantry",
+        "count": 8
+      },
+      {
+        "type_id": "cavalry",
+        "count": 4
+      },
+      {
+        "type_id": "cannon",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_ottoman_2_aleppo",
+    "owner_id": "ottoman",
+    "region_id": "aleppo",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 6
+      },
+      {
+        "type_id": "cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_ottoman_3_bursa",
+    "owner_id": "ottoman",
+    "region_id": "bursa",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_castile_kingdom_1_castile",
+    "owner_id": "castile_kingdom",
+    "region_id": "castile",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 7
+      },
+      {
+        "type_id": "cavalry",
+        "count": 4
+      },
+      {
+        "type_id": "cannon",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_castile_kingdom_2_milan",
+    "owner_id": "castile_kingdom",
+    "region_id": "milan",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_castile_kingdom_3_sicily",
+    "owner_id": "castile_kingdom",
+    "region_id": "sicily",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_france_1_paris",
+    "owner_id": "france",
+    "region_id": "paris",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 8
+      },
+      {
+        "type_id": "cavalry",
+        "count": 4
+      },
+      {
+        "type_id": "cannon",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_france_2_normandy",
+    "owner_id": "france",
+    "region_id": "normandy",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_england_1_essex",
+    "owner_id": "england",
+    "region_id": "essex",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 7
+      },
+      {
+        "type_id": "cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_england_2_lancashire",
+    "owner_id": "england",
+    "region_id": "lancashire",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_dutch_republic_1_holland",
+    "owner_id": "dutch_republic",
+    "region_id": "holland",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 6
+      },
+      {
+        "type_id": "cannon",
+        "count": 2
+      },
+      {
+        "type_id": "sappers",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_dutch_republic_2_friesland",
+    "owner_id": "dutch_republic",
+    "region_id": "friesland",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_russia_1_moscow",
+    "owner_id": "russia",
+    "region_id": "moscow",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 8
+      },
+      {
+        "type_id": "cavalry",
+        "count": 4
+      },
+      {
+        "type_id": "cannon",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_russia_2_novgorod",
+    "owner_id": "russia",
+    "region_id": "novgorod",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_polish_lithuania_1_poland",
+    "owner_id": "polish_lithuania",
+    "region_id": "poland",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 7
+      },
+      {
+        "type_id": "cavalry",
+        "count": 5
+      },
+      {
+        "type_id": "heavy_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_polish_lithuania_2_kiev",
+    "owner_id": "polish_lithuania",
+    "region_id": "kiev",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 4
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_austria_duchy_1_austria",
+    "owner_id": "austria_duchy",
+    "region_id": "austria",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 8
+      },
+      {
+        "type_id": "cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "cannon",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_austria_duchy_2_styria",
+    "owner_id": "austria_duchy",
+    "region_id": "styria",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_bohemian_kingdom_1_bohemia",
+    "owner_id": "bohemian_kingdom",
+    "region_id": "bohemia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_hungarian_kingdom_1_slovakia",
+    "owner_id": "hungarian_kingdom",
+    "region_id": "slovakia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_transylvania_principality_1_transylvania",
+    "owner_id": "transylvania_principality",
+    "region_id": "transylvania",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_hre_1_palatinate",
+    "owner_id": "hre",
+    "region_id": "palatinate",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 6
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_hre_2_westphalia",
+    "owner_id": "hre",
+    "region_id": "westphalia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_bavaria_duchy_1_bavaria",
+    "owner_id": "bavaria_duchy",
+    "region_id": "bavaria",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_saxony_duchy_1_saxony",
+    "owner_id": "saxony_duchy",
+    "region_id": "saxony",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_brandenburg_margraviate_1_brandenburg",
+    "owner_id": "brandenburg_margraviate",
+    "region_id": "brandenburg",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 6
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_brandenburg_margraviate_2_konigsberg",
+    "owner_id": "brandenburg_margraviate",
+    "region_id": "konigsberg",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_sweden_kingdom_1_sweden",
+    "owner_id": "sweden_kingdom",
+    "region_id": "sweden",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 6
+      },
+      {
+        "type_id": "cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_sweden_kingdom_2_estonia",
+    "owner_id": "sweden_kingdom",
+    "region_id": "estonia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_denmark_kingdom_1_denmark",
+    "owner_id": "denmark_kingdom",
+    "region_id": "denmark",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_denmark_kingdom_2_norway",
+    "owner_id": "denmark_kingdom",
+    "region_id": "norway",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_venice_1_venice",
+    "owner_id": "venice",
+    "region_id": "venice",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "cannon",
+        "count": 2
+      },
+      {
+        "type_id": "sappers",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_venice_2_crete",
+    "owner_id": "venice",
+    "region_id": "crete",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_genoa_1_genoa",
+    "owner_id": "genoa",
+    "region_id": "genoa",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_papal_states_1_lazio",
+    "owner_id": "papal_states",
+    "region_id": "lazio",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_florence_rep_1_florence",
+    "owner_id": "florence_rep",
+    "region_id": "florence",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_savoy_county_1_savoy",
+    "owner_id": "savoy_county",
+    "region_id": "savoy",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_swiss_confederacy_1_switzerland",
+    "owner_id": "swiss_confederacy",
+    "region_id": "switzerland",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 6
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_safavid_1_isfahan",
+    "owner_id": "safavid",
+    "region_id": "isfahan",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 7
+      },
+      {
+        "type_id": "cavalry",
+        "count": 5
+      },
+      {
+        "type_id": "cannon",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_safavid_2_azerbaijan",
+    "owner_id": "safavid",
+    "region_id": "azerbaijan",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_marinid_sultanate_1_morocco",
+    "owner_id": "marinid_sultanate",
+    "region_id": "morocco",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_crimean_khanate_1_crimea",
+    "owner_id": "crimean_khanate",
+    "region_id": "crimea",
+    "units": [
+      {
+        "type_id": "light_cavalry",
+        "count": 5
+      },
+      {
+        "type_id": "cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_wallachia_prince_1_wallachia",
+    "owner_id": "wallachia_prince",
+    "region_id": "wallachia",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_moldavia_prince_1_moldova",
+    "owner_id": "moldavia_prince",
+    "region_id": "moldova",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "light_cavalry",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_scotland_kingdom_1_scotland",
+    "owner_id": "scotland_kingdom",
+    "region_id": "scotland",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cavalry",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_hospitaller_1_malta",
+    "owner_id": "hospitaller",
+    "region_id": "malta",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "cannon",
+        "count": 1
+      }
+    ]
+  }
+]

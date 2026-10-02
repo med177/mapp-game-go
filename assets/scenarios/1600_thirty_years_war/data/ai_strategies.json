@@ -1,0 +1,1335 @@
+{
+  "difficulty_policy": {
+    "fair_movement": true,
+    "levels": {
+      "1": {
+        "plan_horizon_turns": 2,
+        "plan_target_region_limit": 3,
+        "path_search_depth": 5,
+        "plan_move_bonus_percent": 70,
+        "war_threshold": 82,
+        "min_attack_power_percent": 130,
+        "war_cadence_turns": 4,
+        "max_concurrent_wars": 1
+      },
+      "2": {
+        "plan_horizon_turns": 2,
+        "plan_target_region_limit": 4,
+        "path_search_depth": 8,
+        "plan_move_bonus_percent": 100,
+        "proactive_war": true,
+        "war_threshold": 65,
+        "min_attack_power_percent": 110,
+        "war_cadence_turns": 3,
+        "max_concurrent_wars": 2,
+        "player_target_score_bonus": 2
+      },
+      "3": {
+        "plan_horizon_turns": 3,
+        "plan_target_region_limit": 5,
+        "path_search_depth": 12,
+        "plan_move_bonus_percent": 125,
+        "proactive_war": true,
+        "war_threshold": 62,
+        "min_attack_power_percent": 100,
+        "war_cadence_turns": 2,
+        "max_concurrent_wars": 2,
+        "player_target_score_bonus": 6,
+        "start_gold_buffer": 80,
+        "start_grain_buffer": 30
+      }
+    }
+  },
+  "factions": [
+    {
+      "faction_id": "ottoman",
+      "profile": "ottoman_imperial_frontier",
+      "objectives": [
+        {
+          "id": "secure_balkans",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "constantinople",
+              "value": 100
+            },
+            {
+              "region_id": "thrace",
+              "value": 100
+            },
+            {
+              "region_id": "serbia",
+              "value": 100
+            },
+            {
+              "region_id": "bulgaria",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88
+        },
+        {
+          "id": "contest_habsburg_border",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "hungary",
+              "value": 90
+            },
+            {
+              "region_id": "slovakia",
+              "value": 90
+            },
+            {
+              "region_id": "austria",
+              "value": 90
+            }
+          ],
+          "priority": 90,
+          "commitment": 72,
+          "min_year": 1630,
+          "max_year": 1789
+        },
+        {
+          "id": "control_eastern_mediterranean",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "levant_region",
+              "value": 82
+            },
+            {
+              "region_id": "hejaz",
+              "value": 82
+            }
+          ],
+          "priority": 82,
+          "commitment": 58
+        }
+      ]
+    },
+    {
+      "faction_id": "castile_kingdom",
+      "profile": "spanish_global_monarchy",
+      "objectives": [
+        {
+          "id": "hold_iberian_core",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "castile",
+              "value": 100
+            },
+            {
+              "region_id": "aragon",
+              "value": 100
+            },
+            {
+              "region_id": "catalonia",
+              "value": 100
+            },
+            {
+              "region_id": "sevilla",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "hold_italian_bridgeheads",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "milan",
+              "value": 92
+            },
+            {
+              "region_id": "sicily",
+              "value": 92
+            },
+            {
+              "region_id": "campania",
+              "value": 92
+            }
+          ],
+          "priority": 92,
+          "commitment": 76
+        },
+        {
+          "id": "protect_flanders",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "flanders",
+              "value": 86
+            },
+            {
+              "region_id": "walonia",
+              "value": 86
+            },
+            {
+              "region_id": "franche_comte",
+              "value": 86
+            }
+          ],
+          "priority": 86,
+          "commitment": 64
+        }
+      ]
+    },
+    {
+      "faction_id": "france",
+      "profile": "bourbon_consolidation",
+      "objectives": [
+        {
+          "id": "hold_french_core",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "paris",
+              "value": 100
+            },
+            {
+              "region_id": "normandy",
+              "value": 100
+            },
+            {
+              "region_id": "burgundy",
+              "value": 100
+            },
+            {
+              "region_id": "brittany",
+              "value": 100
+            },
+            {
+              "region_id": "lyon",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 85
+        },
+        {
+          "id": "challenge_habsburg_ring",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "lorraine",
+              "value": 92
+            },
+            {
+              "region_id": "palatinate",
+              "value": 92
+            },
+            {
+              "region_id": "franche_comte",
+              "value": 92
+            },
+            {
+              "region_id": "flanders",
+              "value": 92
+            }
+          ],
+          "priority": 92,
+          "commitment": 72,
+          "min_year": 1635,
+          "max_year": 1789
+        },
+        {
+          "id": "dominate_italian_balance",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "milan",
+              "value": 70
+            },
+            {
+              "region_id": "savoy",
+              "value": 70
+            }
+          ],
+          "priority": 70,
+          "commitment": 45,
+          "min_year": 1700,
+          "max_year": 1789
+        }
+      ]
+    },
+    {
+      "faction_id": "england",
+      "profile": "naval_and_channel_power",
+      "naval_focus": true,
+      "objectives": [
+        {
+          "id": "hold_isles",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "essex",
+              "value": 100
+            },
+            {
+              "region_id": "wessex",
+              "value": 100
+            },
+            {
+              "region_id": "mercia",
+              "value": 100
+            },
+            {
+              "region_id": "yorkshire",
+              "value": 100
+            },
+            {
+              "region_id": "lancashire",
+              "value": 100
+            },
+            {
+              "region_id": "wales",
+              "value": 100
+            },
+            {
+              "region_id": "the_pale",
+              "value": 100
+            },
+            {
+              "region_id": "ulster",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 86
+        },
+        {
+          "id": "protect_channel",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "essex",
+              "value": 86
+            },
+            {
+              "region_id": "normandy",
+              "value": 86
+            }
+          ],
+          "priority": 86,
+          "commitment": 65
+        },
+        {
+          "id": "support_dutch_and_austrian_coalitions",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "flanders",
+              "value": 70
+            }
+          ],
+          "priority": 70,
+          "commitment": 45,
+          "min_year": 1688,
+          "max_year": 1789
+        }
+      ]
+    },
+    {
+      "faction_id": "dutch_republic",
+      "profile": "merchant_republic_survival",
+      "naval_focus": true,
+      "objectives": [
+        {
+          "id": "hold_holland",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "holland",
+              "value": 100
+            },
+            {
+              "region_id": "friesland",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 90
+        },
+        {
+          "id": "defend_flanders_frontier",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "flanders",
+              "value": 94
+            },
+            {
+              "region_id": "walonia",
+              "value": 94
+            }
+          ],
+          "priority": 94,
+          "commitment": 72,
+          "min_year": 1621,
+          "max_year": 1672
+        }
+      ]
+    },
+    {
+      "faction_id": "russia",
+      "profile": "russian_expansion",
+      "objectives": [
+        {
+          "id": "hold_moscow",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "moscow",
+              "value": 100
+            },
+            {
+              "region_id": "nizhny_novgorod",
+              "value": 100
+            },
+            {
+              "region_id": "novgorod",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 90
+        },
+        {
+          "id": "reach_baltic",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "latvia",
+              "value": 90
+            },
+            {
+              "region_id": "estonia",
+              "value": 90
+            }
+          ],
+          "priority": 90,
+          "commitment": 68,
+          "min_year": 1650,
+          "max_year": 1789
+        },
+        {
+          "id": "reach_black_sea",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "kiev",
+              "value": 80
+            },
+            {
+              "region_id": "crimea",
+              "value": 80
+            },
+            {
+              "region_id": "azak_region",
+              "value": 80
+            }
+          ],
+          "priority": 80,
+          "commitment": 55,
+          "min_year": 1680,
+          "max_year": 1789
+        }
+      ]
+    },
+    {
+      "faction_id": "polish_lithuania",
+      "profile": "commonwealth_defense",
+      "objectives": [
+        {
+          "id": "hold_commonwealth",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "poland",
+              "value": 100
+            },
+            {
+              "region_id": "lithuania",
+              "value": 100
+            },
+            {
+              "region_id": "belarus",
+              "value": 100
+            },
+            {
+              "region_id": "kiev",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 86
+        },
+        {
+          "id": "contain_muscovy",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "belarus",
+              "value": 92
+            },
+            {
+              "region_id": "kiev",
+              "value": 92
+            }
+          ],
+          "priority": 92,
+          "commitment": 72
+        },
+        {
+          "id": "protect_steppe",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "ukrainian_steppe",
+              "value": 78
+            }
+          ],
+          "priority": 78,
+          "commitment": 56
+        }
+      ]
+    },
+    {
+      "faction_id": "austria_duchy",
+      "profile": "habsburg_defense",
+      "objectives": [
+        {
+          "id": "hold_vienna",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "austria",
+              "value": 100
+            },
+            {
+              "region_id": "styria",
+              "value": 100
+            },
+            {
+              "region_id": "bohemia",
+              "value": 100
+            },
+            {
+              "region_id": "moravia",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 90
+        },
+        {
+          "id": "contain_ottomans",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "slovakia",
+              "value": 96
+            },
+            {
+              "region_id": "hungary",
+              "value": 96
+            }
+          ],
+          "priority": 96,
+          "commitment": 88
+        },
+        {
+          "id": "restore_imperial_leverage",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "palatinate",
+              "value": 68
+            },
+            {
+              "region_id": "lorraine",
+              "value": 68
+            },
+            {
+              "region_id": "westphalia",
+              "value": 68
+            }
+          ],
+          "priority": 68,
+          "commitment": 44,
+          "min_year": 1648,
+          "max_year": 1789
+        }
+      ]
+    },
+    {
+      "faction_id": "bohemian_kingdom",
+      "profile": "bohemian_estates_survival",
+      "objectives": [
+        {
+          "id": "hold_bohemia",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "bohemia",
+              "value": 100
+            },
+            {
+              "region_id": "moravia",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "preserve_estates",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "bohemia",
+              "value": 92
+            }
+          ],
+          "priority": 92,
+          "commitment": 70
+        }
+      ]
+    },
+    {
+      "faction_id": "hungarian_kingdom",
+      "profile": "royal_hungary_frontier",
+      "objectives": [
+        {
+          "id": "hold_slovakia",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "slovakia",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 84
+        },
+        {
+          "id": "recover_plains",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "hungary",
+              "value": 78
+            },
+            {
+              "region_id": "alfold",
+              "value": 78
+            }
+          ],
+          "priority": 78,
+          "commitment": 52,
+          "min_year": 1660,
+          "max_year": 1710
+        }
+      ]
+    },
+    {
+      "faction_id": "transylvania_principality",
+      "profile": "transylvanian_balance",
+      "objectives": [
+        {
+          "id": "hold_transylvania",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "transylvania",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88
+        },
+        {
+          "id": "pressure_royal_hungary",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "slovakia",
+              "value": 62
+            },
+            {
+              "region_id": "hungary",
+              "value": 62
+            }
+          ],
+          "priority": 62,
+          "commitment": 42,
+          "min_year": 1618,
+          "max_year": 1680
+        }
+      ]
+    },
+    {
+      "faction_id": "hre",
+      "profile": "imperial_balance",
+      "objectives": [
+        {
+          "id": "protect_imperial_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "westphalia",
+              "value": 100
+            },
+            {
+              "region_id": "hessen",
+              "value": 100
+            },
+            {
+              "region_id": "palatinate",
+              "value": 100
+            },
+            {
+              "region_id": "lorraine",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 78
+        },
+        {
+          "id": "contain_religious_war",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "bohemia",
+              "value": 85
+            },
+            {
+              "region_id": "saxony",
+              "value": 85
+            }
+          ],
+          "priority": 85,
+          "commitment": 56,
+          "min_year": 1618,
+          "max_year": 1648
+        }
+      ]
+    },
+    {
+      "faction_id": "bavaria_duchy",
+      "profile": "catholic_electorate",
+      "objectives": [
+        {
+          "id": "hold_bavaria",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "bavaria",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 84
+        },
+        {
+          "id": "support_catholic_league",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "bohemia",
+              "value": 72
+            },
+            {
+              "region_id": "palatinate",
+              "value": 72
+            }
+          ],
+          "priority": 72,
+          "commitment": 46,
+          "min_year": 1618,
+          "max_year": 1629
+        }
+      ]
+    },
+    {
+      "faction_id": "saxony_duchy",
+      "profile": "protestant_electorate",
+      "objectives": [
+        {
+          "id": "hold_saxony",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "saxony",
+              "value": 100
+            },
+            {
+              "region_id": "meissen_margraviate",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 86
+        },
+        {
+          "id": "balance_habsburgs",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "bohemia",
+              "value": 70
+            },
+            {
+              "region_id": "thuringia",
+              "value": 70
+            }
+          ],
+          "priority": 70,
+          "commitment": 48
+        }
+      ]
+    },
+    {
+      "faction_id": "brandenburg_margraviate",
+      "profile": "brandenburg_prussia_rise",
+      "objectives": [
+        {
+          "id": "hold_brandeburg",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "brandenburg",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 86
+        },
+        {
+          "id": "secure_baltic",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "pomerania",
+              "value": 86
+            },
+            {
+              "region_id": "konigsberg",
+              "value": 86
+            }
+          ],
+          "priority": 86,
+          "commitment": 66,
+          "min_year": 1640,
+          "max_year": 1789
+        }
+      ]
+    },
+    {
+      "faction_id": "sweden_kingdom",
+      "profile": "baltic_great_power",
+      "objectives": [
+        {
+          "id": "hold_sweden",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "sweden",
+              "value": 100
+            },
+            {
+              "region_id": "sweden_kalmar",
+              "value": 100
+            },
+            {
+              "region_id": "gotland_island",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 90
+        },
+        {
+          "id": "dominate_baltic",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "estonia",
+              "value": 90
+            },
+            {
+              "region_id": "latvia",
+              "value": 90
+            },
+            {
+              "region_id": "pomerania",
+              "value": 90
+            }
+          ],
+          "priority": 90,
+          "commitment": 68,
+          "min_year": 1611,
+          "max_year": 1721
+        }
+      ]
+    },
+    {
+      "faction_id": "denmark_kingdom",
+      "profile": "sound_control",
+      "objectives": [
+        {
+          "id": "hold_sound",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "denmark",
+              "value": 100
+            },
+            {
+              "region_id": "scania",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88
+        },
+        {
+          "id": "protect_norway",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "norway",
+              "value": 92
+            },
+            {
+              "region_id": "rogaland",
+              "value": 92
+            }
+          ],
+          "priority": 92,
+          "commitment": 78
+        }
+      ]
+    },
+    {
+      "faction_id": "venice",
+      "profile": "adriatic_trade_defense",
+      "naval_focus": true,
+      "objectives": [
+        {
+          "id": "hold_adriatic",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "venice",
+              "value": 100
+            },
+            {
+              "region_id": "dalmatia",
+              "value": 100
+            },
+            {
+              "region_id": "crete",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88
+        },
+        {
+          "id": "contain_ottoman_navy",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "egriboz_island",
+              "value": 84
+            },
+            {
+              "region_id": "crete",
+              "value": 84
+            }
+          ],
+          "priority": 84,
+          "commitment": 64
+        }
+      ]
+    },
+    {
+      "faction_id": "genoa",
+      "profile": "merchant_survival",
+      "naval_focus": true,
+      "objectives": [
+        {
+          "id": "hold_liguria",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "genoa",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "protect_trade",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "genoa",
+              "value": 80
+            },
+            {
+              "region_id": "corsica",
+              "value": 80
+            }
+          ],
+          "priority": 80,
+          "commitment": 50
+        }
+      ]
+    },
+    {
+      "faction_id": "papal_states",
+      "profile": "papal_central_italy",
+      "objectives": [
+        {
+          "id": "hold_papal_core",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "lazio",
+              "value": 100
+            },
+            {
+              "region_id": "marche",
+              "value": 100
+            },
+            {
+              "region_id": "abruzzo",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "balance_french_and_habsburgs",
+          "kind": "defend",
+          "territorial_claims": [],
+          "priority": 75,
+          "commitment": 45
+        }
+      ]
+    },
+    {
+      "faction_id": "florence_rep",
+      "profile": "tuscan_balance",
+      "objectives": [
+        {
+          "id": "hold_tuscany",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "florence",
+              "value": 100
+            },
+            {
+              "region_id": "siena",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82
+        }
+      ]
+    },
+    {
+      "faction_id": "savoy_county",
+      "profile": "alpine_balance",
+      "objectives": [
+        {
+          "id": "hold_savoy",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "savoy",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82
+        },
+        {
+          "id": "play_great_power_against_neighbor",
+          "kind": "expand",
+          "territorial_claims": [],
+          "priority": 60,
+          "commitment": 42,
+          "min_year": 1700,
+          "max_year": 1789
+        }
+      ]
+    },
+    {
+      "faction_id": "swiss_confederacy",
+      "profile": "armed_neutrality",
+      "objectives": [
+        {
+          "id": "hold_alps",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "switzerland",
+              "value": 100
+            },
+            {
+              "region_id": "sch_bern",
+              "value": 100
+            },
+            {
+              "region_id": "sch_zurich",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 92
+        }
+      ]
+    },
+    {
+      "faction_id": "safavid",
+      "profile": "safavid_persian_defense",
+      "objectives": [
+        {
+          "id": "hold_persian_core",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "isfahan",
+              "value": 100
+            },
+            {
+              "region_id": "southern_persia",
+              "value": 100
+            },
+            {
+              "region_id": "azerbaijan",
+              "value": 100
+            },
+            {
+              "region_id": "northern_persia",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88
+        },
+        {
+          "id": "contest_mesopotamia",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "baghdad",
+              "value": 78
+            },
+            {
+              "region_id": "basra",
+              "value": 78
+            },
+            {
+              "region_id": "mosul",
+              "value": 78
+            }
+          ],
+          "priority": 78,
+          "commitment": 54
+        },
+        {
+          "id": "secure_caucasus",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "georgia",
+              "value": 76
+            },
+            {
+              "region_id": "urmiye",
+              "value": 76
+            }
+          ],
+          "priority": 76,
+          "commitment": 60
+        }
+      ]
+    },
+    {
+      "faction_id": "marinid_sultanate",
+      "profile": "moroccan_survival",
+      "objectives": [
+        {
+          "id": "hold_morocco",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "morocco",
+              "value": 100
+            },
+            {
+              "region_id": "magrib",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82
+        }
+      ]
+    },
+    {
+      "faction_id": "crimean_khanate",
+      "profile": "steppe_cavalry_buffer",
+      "objectives": [
+        {
+          "id": "hold_crimea",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "crimea",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88
+        },
+        {
+          "id": "raid_northern_frontier",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "ukrainian_steppe",
+              "value": 68
+            },
+            {
+              "region_id": "lower_ukrainian_steppe",
+              "value": 68
+            }
+          ],
+          "priority": 68,
+          "commitment": 45
+        }
+      ]
+    },
+    {
+      "faction_id": "wallachia_prince",
+      "profile": "danube_buffer",
+      "objectives": [
+        {
+          "id": "hold_wallachia",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "wallachia",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 84
+        }
+      ]
+    },
+    {
+      "faction_id": "moldavia_prince",
+      "profile": "moldavian_buffer",
+      "objectives": [
+        {
+          "id": "hold_moldavia",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "moldova",
+              "value": 100
+            },
+            {
+              "region_id": "bessarabia",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 84
+        }
+      ]
+    },
+    {
+      "faction_id": "scotland_kingdom",
+      "profile": "northern_kingdom",
+      "objectives": [
+        {
+          "id": "hold_scotland",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "scotland",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82
+        }
+      ]
+    },
+    {
+      "faction_id": "hospitaller",
+      "profile": "mediterranean_fortress",
+      "naval_focus": true,
+      "objectives": [
+        {
+          "id": "hold_malta",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "malta",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 90
+        },
+        {
+          "id": "watch_ottoman_navy",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "malta",
+              "value": 80
+            },
+            {
+              "region_id": "rhodes",
+              "value": 80
+            }
+          ],
+          "priority": 80,
+          "commitment": 60
+        }
+      ]
+    },
+    {
+      "faction_id": "ragusa",
+      "profile": "merchant_neutrality",
+      "objectives": [
+        {
+          "id": "hold_ragusa",
+          "kind": "defend",
+          "territorial_claims": [],
+          "priority": 100,
+          "commitment": 90
+        }
+      ]
+    }
+  ]
+}

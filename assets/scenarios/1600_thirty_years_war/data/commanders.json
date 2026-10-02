@@ -1,0 +1,1146 @@
+[
+  {
+    "id": "commander_ottoman_kuyucu_murad_pasha",
+    "owner_id": "ottoman",
+    "name": "Kuyucu Murad Paşa",
+    "portrait_asset": "ottoman_kuyucu_murad_pasha.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "aggressive"
+    ],
+    "start_year": 1600,
+    "end_year": 1611
+  },
+  {
+    "id": "commander_ottoman_halil_pasha",
+    "owner_id": "ottoman",
+    "name": "Damat Halil Paşa",
+    "portrait_asset": "ottoman_halil_pasha.png",
+    "level": 3,
+    "traits": [
+      "administrator",
+      "defender"
+    ],
+    "start_year": 1610,
+    "end_year": 1620
+  },
+  {
+    "id": "commander_ottoman_kose_mihal",
+    "owner_id": "ottoman",
+    "name": "Köprülüzade Mehmed Paşa",
+    "portrait_asset": "ottoman_kose_mihal.png",
+    "level": 5,
+    "traits": [
+      "organizer",
+      "aggressive"
+    ],
+    "start_year": 1656,
+    "end_year": 1661
+  },
+  {
+    "id": "commander_ottoman_fazil_ahmed_pasha",
+    "owner_id": "ottoman",
+    "name": "Köprülüzade Fazıl Ahmed Paşa",
+    "portrait_asset": "ottoman_fazil_ahmed_pasha.png",
+    "level": 5,
+    "traits": [
+      "siege_master",
+      "aggressive"
+    ],
+    "start_year": 1661,
+    "end_year": 1676
+  },
+  {
+    "id": "commander_ottoman_kara_mustafa_pasha",
+    "owner_id": "ottoman",
+    "name": "Merzifonlu Kara Mustafa Paşa",
+    "portrait_asset": "ottoman_kara_mustafa_pasha.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "siege_master"
+    ],
+    "start_year": 1676,
+    "end_year": 1683
+  },
+  {
+    "id": "commander_ottoman_fazil_mustafa_pasha",
+    "owner_id": "ottoman",
+    "name": "Köprülüzade Fazıl Mustafa Paşa",
+    "portrait_asset": "ottoman_fazil_mustafa_pasha.png",
+    "level": 4,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1689,
+    "end_year": 1691
+  },
+  {
+    "id": "commander_ottoman_amcazade_huseyin",
+    "owner_id": "ottoman",
+    "name": "Amcazade Hüseyin Paşa",
+    "portrait_asset": "ottoman_amcazade_huseyin.png",
+    "level": 4,
+    "traits": [
+      "administrator",
+      "defender"
+    ],
+    "start_year": 1697,
+    "end_year": 1702
+  },
+  {
+    "id": "commander_ottoman_baltaci_mehmed",
+    "owner_id": "ottoman",
+    "name": "Baltacı Mehmed Paşa",
+    "portrait_asset": "ottoman_baltaci_mehmed.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1710,
+    "end_year": 1711
+  },
+  {
+    "id": "commander_ottoman_deli_huseyin",
+    "owner_id": "ottoman",
+    "name": "Deli Hüseyin Paşa",
+    "portrait_asset": "ottoman_deli_huseyin.png",
+    "level": 3,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1600,
+    "end_year": 1623
+  },
+  {
+    "id": "commander_ottoman_murtaza_pasha",
+    "owner_id": "ottoman",
+    "name": "Murtaza Paşa",
+    "portrait_asset": "ottoman_murtaza_pasha.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1620,
+    "end_year": 1630
+  },
+  {
+    "id": "commander_castile_kingdom_ambrosio_spinola",
+    "owner_id": "castile_kingdom",
+    "name": "Ambrosio Spinola",
+    "portrait_asset": "castile_kingdom_ambrosio_spinola.png",
+    "level": 5,
+    "traits": [
+      "siege_master",
+      "organizer"
+    ],
+    "start_year": 1600,
+    "end_year": 1630
+  },
+  {
+    "id": "commander_castile_kingdom_juan_jose_austria",
+    "owner_id": "castile_kingdom",
+    "name": "Don Juan José de Austria",
+    "portrait_asset": "castile_kingdom_juan_jose_austria.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1640,
+    "end_year": 1679
+  },
+  {
+    "id": "commander_castile_kingdom_eugenio_savoia",
+    "owner_id": "castile_kingdom",
+    "name": "Eugenio de Baviera",
+    "portrait_asset": "castile_kingdom_eugenio_savoia.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1680,
+    "end_year": 1700
+  },
+  {
+    "id": "commander_castile_kingdom_villadarias",
+    "owner_id": "castile_kingdom",
+    "name": "Marki de Villadarias",
+    "portrait_asset": "castile_kingdom_villadarias.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "siege_master"
+    ],
+    "start_year": 1700,
+    "end_year": 1715
+  },
+  {
+    "id": "commander_castile_kingdom_pavia_commander",
+    "owner_id": "castile_kingdom",
+    "name": "Duc de Berwick",
+    "portrait_asset": "castile_kingdom_pavia_commander.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "aggressive"
+    ],
+    "start_year": 1702,
+    "end_year": 1734
+  },
+  {
+    "id": "commander_france_turenne",
+    "owner_id": "france",
+    "name": "Henri de Turenne",
+    "portrait_asset": "france_turenne.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1643,
+    "end_year": 1675
+  },
+  {
+    "id": "commander_france_conde",
+    "owner_id": "france",
+    "name": "Louis II de Condé",
+    "portrait_asset": "france_conde.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1648,
+    "end_year": 1686
+  },
+  {
+    "id": "commander_france_luxembourg",
+    "owner_id": "france",
+    "name": "François-Henri de Montmorency",
+    "portrait_asset": "france_luxembourg.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "defender"
+    ],
+    "start_year": 1672,
+    "end_year": 1695
+  },
+  {
+    "id": "commander_france_vendome",
+    "owner_id": "france",
+    "name": "Louis Joseph de Vendôme",
+    "portrait_asset": "france_vendome.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1695,
+    "end_year": 1712
+  },
+  {
+    "id": "commander_france_villar",
+    "owner_id": "france",
+    "name": "Claude Louis Hector de Villars",
+    "portrait_asset": "france_villar.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1702,
+    "end_year": 1734
+  },
+  {
+    "id": "commander_france_saxe",
+    "owner_id": "france",
+    "name": "Maurice de Saxe",
+    "portrait_asset": "france_saxe.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1720,
+    "end_year": 1750
+  },
+  {
+    "id": "commander_france_broglie",
+    "owner_id": "france",
+    "name": "Victor François de Broglie",
+    "portrait_asset": "france_broglie.png",
+    "level": 4,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1740,
+    "end_year": 1780
+  },
+  {
+    "id": "commander_england_charles_montagu",
+    "owner_id": "england",
+    "name": "Charles Wriothesley",
+    "portrait_asset": "england_charles_montagu.png",
+    "level": 2,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1600,
+    "end_year": 1610
+  },
+  {
+    "id": "commander_england_cromwell",
+    "owner_id": "england",
+    "name": "Oliver Cromwell",
+    "portrait_asset": "england_cromwell.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1642,
+    "end_year": 1658
+  },
+  {
+    "id": "commander_england_marlborough",
+    "owner_id": "england",
+    "name": "John Churchill, Duke of Marlborough",
+    "portrait_asset": "england_marlborough.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1688,
+    "end_year": 1722
+  },
+  {
+    "id": "commander_england_eugene_dutch",
+    "owner_id": "england",
+    "name": "George Hamilton",
+    "portrait_asset": "england_eugene_dutch.png",
+    "level": 3,
+    "traits": [
+      "cavalry",
+      "defender"
+    ],
+    "start_year": 1690,
+    "end_year": 1710
+  },
+  {
+    "id": "commander_england_cumberland",
+    "owner_id": "england",
+    "name": "Duke of Cumberland",
+    "portrait_asset": "england_cumberland.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "defender"
+    ],
+    "start_year": 1745,
+    "end_year": 1765
+  },
+  {
+    "id": "commander_england_amherst",
+    "owner_id": "england",
+    "name": "Jeffery Amherst",
+    "portrait_asset": "england_amherst.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1750,
+    "end_year": 1775
+  },
+  {
+    "id": "commander_dutch_republic_maurice_nassau",
+    "owner_id": "dutch_republic",
+    "name": "Maurits van Nassau",
+    "portrait_asset": "dutch_republic_maurice_nassau.png",
+    "level": 5,
+    "traits": [
+      "organizer",
+      "siege_master"
+    ],
+    "start_year": 1600,
+    "end_year": 1625
+  },
+  {
+    "id": "commander_dutch_republic_frederick_henry",
+    "owner_id": "dutch_republic",
+    "name": "Frederik Hendrik",
+    "portrait_asset": "dutch_republic_frederick_henry.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "siege_master"
+    ],
+    "start_year": 1625,
+    "end_year": 1647
+  },
+  {
+    "id": "commander_dutch_republic_william_iii",
+    "owner_id": "dutch_republic",
+    "name": "William III of Orange",
+    "portrait_asset": "dutch_republic_william_iii.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1672,
+    "end_year": 1702
+  },
+  {
+    "id": "commander_dutch_republic_heinsius",
+    "owner_id": "dutch_republic",
+    "name": "Hans Willem Bentinck",
+    "portrait_asset": "dutch_republic_heinsius.png",
+    "level": 3,
+    "traits": [
+      "organizer",
+      "diplomat"
+    ],
+    "start_year": 1680,
+    "end_year": 1700
+  },
+  {
+    "id": "commander_russia_sheremetev",
+    "owner_id": "russia",
+    "name": "Boris Sheremetev",
+    "portrait_asset": "russia_sheremetev.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1700,
+    "end_year": 1719
+  },
+  {
+    "id": "commander_russia_menshikov",
+    "owner_id": "russia",
+    "name": "Alexander Menshikov",
+    "portrait_asset": "russia_menshikov.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1700,
+    "end_year": 1727
+  },
+  {
+    "id": "commander_russia_dolgorukov",
+    "owner_id": "russia",
+    "name": "Vasily Dolgorukov",
+    "portrait_asset": "russia_dolgorukov.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "cavalry"
+    ],
+    "start_year": 1730,
+    "end_year": 1740
+  },
+  {
+    "id": "commander_russia_rumyantsev",
+    "owner_id": "russia",
+    "name": "Pyotr Rumyantsev",
+    "portrait_asset": "russia_rumyantsev.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1750,
+    "end_year": 1790
+  },
+  {
+    "id": "commander_russia_suvorov",
+    "owner_id": "russia",
+    "name": "Alexander Suvorov",
+    "portrait_asset": "russia_suvorov.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1770,
+    "end_year": 1800
+  },
+  {
+    "id": "commander_russia_repnin",
+    "owner_id": "russia",
+    "name": "Nikolai Repnin",
+    "portrait_asset": "russia_repnin.png",
+    "level": 4,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1760,
+    "end_year": 1795
+  },
+  {
+    "id": "commander_polish_lithuania_chodkiewicz",
+    "owner_id": "polish_lithuania",
+    "name": "Jan Karol Chodkiewicz",
+    "portrait_asset": "polish_lithuania_chodkiewicz.png",
+    "level": 5,
+    "traits": [
+      "cavalry",
+      "aggressive"
+    ],
+    "start_year": 1600,
+    "end_year": 1621
+  },
+  {
+    "id": "commander_polish_lithuania_zolkiewski",
+    "owner_id": "polish_lithuania",
+    "name": "Stanisław Żółkiewski",
+    "portrait_asset": "polish_lithuania_zolkiewski.png",
+    "level": 5,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1600,
+    "end_year": 1620
+  },
+  {
+    "id": "commander_polish_lithuania_koniecpolski",
+    "owner_id": "polish_lithuania",
+    "name": "Stanisław Koniecpolski",
+    "portrait_asset": "polish_lithuania_koniecpolski.png",
+    "level": 5,
+    "traits": [
+      "cavalry",
+      "defender"
+    ],
+    "start_year": 1620,
+    "end_year": 1646
+  },
+  {
+    "id": "commander_polish_lithuania_sobieski",
+    "owner_id": "polish_lithuania",
+    "name": "Jan III Sobieski",
+    "portrait_asset": "polish_lithuania_sobieski.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1665,
+    "end_year": 1696
+  },
+  {
+    "id": "commander_polish_lithuania_poniatowski",
+    "owner_id": "polish_lithuania",
+    "name": "Józef Poniatowski",
+    "portrait_asset": "polish_lithuania_poniatowski.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1770,
+    "end_year": 1790
+  },
+  {
+    "id": "commander_austria_duchy_buquoy",
+    "owner_id": "austria_duchy",
+    "name": "Charles Bonaventure de Bucquoy",
+    "portrait_asset": "austria_duchy_buquoy.png",
+    "level": 4,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1618,
+    "end_year": 1621
+  },
+  {
+    "id": "commander_austria_duchy_tilly",
+    "owner_id": "austria_duchy",
+    "name": "Johann Tserclaes, Count of Tilly",
+    "portrait_asset": "austria_duchy_tilly.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "defender"
+    ],
+    "start_year": 1610,
+    "end_year": 1632
+  },
+  {
+    "id": "commander_austria_duchy_wallenstein",
+    "owner_id": "austria_duchy",
+    "name": "Albrecht von Wallenstein",
+    "portrait_asset": "austria_duchy_wallenstein.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1618,
+    "end_year": 1634
+  },
+  {
+    "id": "commander_austria_duchy_montecuccoli",
+    "owner_id": "austria_duchy",
+    "name": "Raimondo Montecuccoli",
+    "portrait_asset": "austria_duchy_montecuccoli.png",
+    "level": 5,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1640,
+    "end_year": 1680
+  },
+  {
+    "id": "commander_austria_duchy_eugene_savoy",
+    "owner_id": "austria_duchy",
+    "name": "Prince Eugene of Savoy",
+    "portrait_asset": "austria_duchy_eugene_savoy.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1683,
+    "end_year": 1736
+  },
+  {
+    "id": "commander_austria_duchy_dahun",
+    "owner_id": "austria_duchy",
+    "name": "Leopold Joseph von Daun",
+    "portrait_asset": "austria_duchy_dahun.png",
+    "level": 4,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1740,
+    "end_year": 1766
+  },
+  {
+    "id": "commander_austria_duchy_lorraine_charles",
+    "owner_id": "austria_duchy",
+    "name": "Charles of Lorraine",
+    "portrait_asset": "austria_duchy_lorraine_charles.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "defender"
+    ],
+    "start_year": 1680,
+    "end_year": 1690
+  },
+  {
+    "id": "commander_bohemian_kingdom_thurn",
+    "owner_id": "bohemian_kingdom",
+    "name": "Heinrich Matthias von Thurn",
+    "portrait_asset": "bohemian_kingdom_thurn.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1618,
+    "end_year": 1626
+  },
+  {
+    "id": "commander_hungarian_kingdom_batthyany",
+    "owner_id": "hungarian_kingdom",
+    "name": "Adam Batthyány",
+    "portrait_asset": "hungarian_kingdom_batthyany.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "cavalry"
+    ],
+    "start_year": 1600,
+    "end_year": 1659
+  },
+  {
+    "id": "commander_transylvania_principality_bethlen",
+    "owner_id": "transylvania_principality",
+    "name": "Gabriel Bethlen",
+    "portrait_asset": "transylvania_principality_bethlen.png",
+    "level": 5,
+    "traits": [
+      "organizer",
+      "diplomat"
+    ],
+    "start_year": 1613,
+    "end_year": 1629
+  },
+  {
+    "id": "commander_transylvania_principality_rakoczi",
+    "owner_id": "transylvania_principality",
+    "name": "George I Rákóczi",
+    "portrait_asset": "transylvania_principality_rakoczi.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1630,
+    "end_year": 1648
+  },
+  {
+    "id": "commander_hre_maximilian_i",
+    "owner_id": "hre",
+    "name": "Maximilian I, Elector of Bavaria",
+    "portrait_asset": "hre_maximilian_i.png",
+    "level": 4,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1619,
+    "end_year": 1651
+  },
+  {
+    "id": "commander_hre_tillly_hre",
+    "owner_id": "hre",
+    "name": "Johann Tilly",
+    "portrait_asset": "hre_tillly_hre.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "defender"
+    ],
+    "start_year": 1610,
+    "end_year": 1632
+  },
+  {
+    "id": "commander_bavaria_duchy_maximilian_bavaria",
+    "owner_id": "bavaria_duchy",
+    "name": "Maximilian I of Bavaria",
+    "portrait_asset": "bavaria_duchy_maximilian_bavaria.png",
+    "level": 5,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1600,
+    "end_year": 1651
+  },
+  {
+    "id": "commander_saxony_duchy_john_george",
+    "owner_id": "saxony_duchy",
+    "name": "John George I of Saxony",
+    "portrait_asset": "saxony_duchy_john_george.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1611,
+    "end_year": 1656
+  },
+  {
+    "id": "commander_saxony_duchy_john_george_ii",
+    "owner_id": "saxony_duchy",
+    "name": "John George II of Saxony",
+    "portrait_asset": "saxony_duchy_john_george_ii.png",
+    "level": 3,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1656,
+    "end_year": 1680
+  },
+  {
+    "id": "commander_brandenburg_margraviate_george_william",
+    "owner_id": "brandenburg_margraviate",
+    "name": "George William of Brandenburg",
+    "portrait_asset": "brandenburg_margraviate_george_william.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1619,
+    "end_year": 1640
+  },
+  {
+    "id": "commander_brandenburg_margraviate_great_elector",
+    "owner_id": "brandenburg_margraviate",
+    "name": "Frederick William, Great Elector",
+    "portrait_asset": "brandenburg_margraviate_great_elector.png",
+    "level": 5,
+    "traits": [
+      "organizer",
+      "aggressive"
+    ],
+    "start_year": 1640,
+    "end_year": 1688
+  },
+  {
+    "id": "commander_sweden_kingdom_gustavus_adolphus",
+    "owner_id": "sweden_kingdom",
+    "name": "Gustav II Adolf",
+    "portrait_asset": "sweden_kingdom_gustavus_adolphus.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1611,
+    "end_year": 1632
+  },
+  {
+    "id": "commander_sweden_kingdom_johan_baner",
+    "owner_id": "sweden_kingdom",
+    "name": "Johan Banér",
+    "portrait_asset": "sweden_kingdom_johan_baner.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1630,
+    "end_year": 1641
+  },
+  {
+    "id": "commander_sweden_kingdom_torstensson",
+    "owner_id": "sweden_kingdom",
+    "name": "Lennart Torstensson",
+    "portrait_asset": "sweden_kingdom_torstensson.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "siege_master"
+    ],
+    "start_year": 1641,
+    "end_year": 1648
+  },
+  {
+    "id": "commander_sweden_kingdom_carl_gustav_wrangeln",
+    "owner_id": "sweden_kingdom",
+    "name": "Carl Gustaf Wrangel",
+    "portrait_asset": "sweden_kingdom_carl_gustav_wrangeln.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "defender"
+    ],
+    "start_year": 1645,
+    "end_year": 1676
+  },
+  {
+    "id": "commander_sweden_kingdom_charles_x",
+    "owner_id": "sweden_kingdom",
+    "name": "Charles X Gustav",
+    "portrait_asset": "sweden_kingdom_charles_x.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1654,
+    "end_year": 1660
+  },
+  {
+    "id": "commander_sweden_kingdom_charles_xii",
+    "owner_id": "sweden_kingdom",
+    "name": "Charles XII",
+    "portrait_asset": "sweden_kingdom_charles_xii.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1697,
+    "end_year": 1718
+  },
+  {
+    "id": "commander_denmark_kingdom_christian_iv",
+    "owner_id": "denmark_kingdom",
+    "name": "Christian IV",
+    "portrait_asset": "denmark_kingdom_christian_iv.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1600,
+    "end_year": 1648
+  },
+  {
+    "id": "commander_denmark_kingdom_frederick_iii",
+    "owner_id": "denmark_kingdom",
+    "name": "Frederick III of Denmark",
+    "portrait_asset": "denmark_kingdom_frederick_iii.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1648,
+    "end_year": 1670
+  },
+  {
+    "id": "commander_venice_morosini",
+    "owner_id": "venice",
+    "name": "Francesco Morosini",
+    "portrait_asset": "venice_morosini.png",
+    "level": 5,
+    "traits": [
+      "naval",
+      "siege_master"
+    ],
+    "start_year": 1650,
+    "end_year": 1694
+  },
+  {
+    "id": "commander_venice_pesaro",
+    "owner_id": "venice",
+    "name": "Lodovico Flangini",
+    "portrait_asset": "venice_pesaro.png",
+    "level": 3,
+    "traits": [
+      "naval",
+      "defender"
+    ],
+    "start_year": 1700,
+    "end_year": 1720
+  },
+  {
+    "id": "commander_genoa_doria_late",
+    "owner_id": "genoa",
+    "name": "Andrea Doria of Genoa",
+    "portrait_asset": "genoa_doria_late.png",
+    "level": 3,
+    "traits": [
+      "naval",
+      "diplomat"
+    ],
+    "start_year": 1600,
+    "end_year": 1612
+  },
+  {
+    "id": "commander_papal_states_barberini",
+    "owner_id": "papal_states",
+    "name": "Antonio Barberini",
+    "portrait_asset": "papal_states_barberini.png",
+    "level": 3,
+    "traits": [
+      "diplomat",
+      "organizer"
+    ],
+    "start_year": 1620,
+    "end_year": 1646
+  },
+  {
+    "id": "commander_florence_rep_medici_cosimo",
+    "owner_id": "florence_rep",
+    "name": "Cosimo II de Medici",
+    "portrait_asset": "florence_rep_medici_cosimo.png",
+    "level": 3,
+    "traits": [
+      "administrator",
+      "diplomat"
+    ],
+    "start_year": 1600,
+    "end_year": 1621
+  },
+  {
+    "id": "commander_savoy_county_savoy_eugene",
+    "owner_id": "savoy_county",
+    "name": "Eugene of Savoy",
+    "portrait_asset": "savoy_county_savoy_eugene.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1683,
+    "end_year": 1736
+  },
+  {
+    "id": "commander_swiss_confederacy_salomon_hirzel",
+    "owner_id": "swiss_confederacy",
+    "name": "Salomon Hirzel",
+    "portrait_asset": "swiss_confederacy_salomon_hirzel.png",
+    "level": 2,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1600,
+    "end_year": 1650
+  },
+  {
+    "id": "commander_safavid_allahverdi_khan",
+    "owner_id": "safavid",
+    "name": "Allahverdi Khan",
+    "portrait_asset": "safavid_allahverdi_khan.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "aggressive"
+    ],
+    "start_year": 1600,
+    "end_year": 1613
+  },
+  {
+    "id": "commander_safavid_imam_quli",
+    "owner_id": "safavid",
+    "name": "Imam-Quli Khan",
+    "portrait_asset": "safavid_imam_quli.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "naval"
+    ],
+    "start_year": 1600,
+    "end_year": 1631
+  },
+  {
+    "id": "commander_safavid_shah_abbas",
+    "owner_id": "safavid",
+    "name": "Shah Abbas I",
+    "portrait_asset": "safavid_shah_abbas.png",
+    "level": 5,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1600,
+    "end_year": 1629
+  },
+  {
+    "id": "commander_safavid_naqdikhan",
+    "owner_id": "safavid",
+    "name": "Qarabagh Khan",
+    "portrait_asset": "safavid_naqdikhan.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "cavalry"
+    ],
+    "start_year": 1620,
+    "end_year": 1650
+  },
+  {
+    "id": "commander_marinid_sultanate_ahmad_mansur",
+    "owner_id": "marinid_sultanate",
+    "name": "Ahmad al-Mansur",
+    "portrait_asset": "marinid_sultanate_ahmad_mansur.png",
+    "level": 4,
+    "traits": [
+      "organizer",
+      "aggressive"
+    ],
+    "start_year": 1600,
+    "end_year": 1603
+  },
+  {
+    "id": "commander_marinid_sultanate_moulay_ismaill",
+    "owner_id": "marinid_sultanate",
+    "name": "Moulay Ismail",
+    "portrait_asset": "marinid_sultanate_moulay_ismaill.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "organizer"
+    ],
+    "start_year": 1672,
+    "end_year": 1727
+  },
+  {
+    "id": "commander_crimean_khanate_gazi_giray",
+    "owner_id": "crimean_khanate",
+    "name": "Gazi II Giray",
+    "portrait_asset": "crimean_khanate_gazi_giray.png",
+    "level": 4,
+    "traits": [
+      "cavalry",
+      "aggressive"
+    ],
+    "start_year": 1600,
+    "end_year": 1608
+  },
+  {
+    "id": "commander_crimean_khanate_mehemmed_giray",
+    "owner_id": "crimean_khanate",
+    "name": "Mehmed III Giray",
+    "portrait_asset": "crimean_khanate_mehemmed_giray.png",
+    "level": 3,
+    "traits": [
+      "cavalry",
+      "organizer"
+    ],
+    "start_year": 1623,
+    "end_year": 1628
+  },
+  {
+    "id": "commander_wallachia_prince_michael_brave",
+    "owner_id": "wallachia_prince",
+    "name": "Michael the Brave",
+    "portrait_asset": "wallachia_prince_michael_brave.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1600,
+    "end_year": 1601
+  },
+  {
+    "id": "commander_moldavia_prince_jeremia_movilă",
+    "owner_id": "moldavia_prince",
+    "name": "Jeremias Movilă",
+    "portrait_asset": "moldavia_prince_jeremia_movilă.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "organizer"
+    ],
+    "start_year": 1600,
+    "end_year": 1606
+  },
+  {
+    "id": "commander_scotland_kingdom_montrose",
+    "owner_id": "scotland_kingdom",
+    "name": "James Graham, 1st Marquess of Montrose",
+    "portrait_asset": "scotland_kingdom_montrose.png",
+    "level": 4,
+    "traits": [
+      "aggressive",
+      "cavalry"
+    ],
+    "start_year": 1644,
+    "end_year": 1650
+  },
+  {
+    "id": "commander_hospitaller_de_redin",
+    "owner_id": "hospitaller",
+    "name": "Alof de Wignacourt",
+    "portrait_asset": "hospitaller_de_redin.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "naval"
+    ],
+    "start_year": 1600,
+    "end_year": 1622
+  }
+]

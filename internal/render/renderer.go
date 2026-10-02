@@ -132,7 +132,8 @@ type Renderer struct {
 	scenarioCursor int
 
 	// Fraksiyon seçim ekranı
-	factionCursor int
+	factionCursor       int
+	factionSelectScroll float64
 
 	// Zafer koşulu seçim ekranı kart listesi
 	victorySelectScroll float64
@@ -2147,7 +2148,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// Fraksiyon seçim ekranı
 	if r.gs.Phase == "faction_select" {
-		DrawFactionSelect(screen, r.gs, r.factionCursor)
+		DrawFactionSelect(screen, r.gs, r.factionCursor, r.factionSelectScroll)
 		return
 	}
 

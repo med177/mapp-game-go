@@ -1,0 +1,70 @@
+{
+  "empire_id": "hre",
+  "emperor_id": "austria_duchy",
+  "authority": 54,
+  "next_diet_turn": 8,
+  "election_due_turn": 76,
+  "members": [
+    {
+      "faction_id": "austria_duchy",
+      "status": "elector",
+      "loyalty": 72,
+      "autonomy": 66,
+      "military_commitment": 72,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "bohemian_kingdom",
+      "status": "elector",
+      "loyalty": 58,
+      "autonomy": 72,
+      "military_commitment": 58,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "saxony_duchy",
+      "status": "elector",
+      "loyalty": 52,
+      "autonomy": 80,
+      "military_commitment": 54,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "brandenburg_margraviate",
+      "status": "elector",
+      "loyalty": 55,
+      "autonomy": 78,
+      "military_commitment": 52,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "bavaria_duchy",
+      "status": "elector",
+      "loyalty": 68,
+      "autonomy": 72,
+      "military_commitment": 62,
+      "elector_weight": 2
+    },
+    {
+      "faction_id": "hre",
+      "status": "prince",
+      "loyalty": 65,
+      "autonomy": 80,
+      "military_commitment": 48
+    },
+    {
+      "faction_id": "savoy_county",
+      "status": "prince",
+      "loyalty": 46,
+      "autonomy": 88,
+      "military_commitment": 40
+    },
+    {
+      "faction_id": "swiss_confederacy",
+      "status": "associate",
+      "loyalty": 34,
+      "autonomy": 96,
+      "military_commitment": 20
+    }
+  ]
+}

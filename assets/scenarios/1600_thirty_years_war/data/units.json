@@ -1,0 +1,537 @@
+[
+  {
+    "id": "militia",
+    "name": "Militia",
+    "name_tr": "Milis",
+    "attack": 6,
+    "category": "infantry",
+    "defense": 8,
+    "embarkable": true,
+    "gold_cost": 60,
+    "grain_upkeep": 10,
+    "gold_upkeep": 5,
+    "hp": 100,
+    "morale": 40,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 1
+      }
+    ],
+    "required_tech": [],
+    "tier": 1,
+    "turns_required": 2,
+    "grain_cost": 12,
+    "iron_cost": 1,
+    "timber_cost": 0,
+    "stone_cost": 0,
+    "cloth_cost": 2,
+    "spice_cost": 1,
+    "movement_points": 2
+  },
+  {
+    "id": "infantry",
+    "name": "Infantry",
+    "name_tr": "Piyade",
+    "attack": 12,
+    "category": "infantry",
+    "defense": 14,
+    "embarkable": true,
+    "gold_cost": 120,
+    "grain_upkeep": 10,
+    "gold_upkeep": 8,
+    "hp": 100,
+    "morale": 65,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 1
+      }
+    ],
+    "required_tech": [
+      "iron_weapons"
+    ],
+    "tier": 2,
+    "turns_required": 4,
+    "grain_cost": 18,
+    "iron_cost": 4,
+    "timber_cost": 0,
+    "stone_cost": 0,
+    "cloth_cost": 4,
+    "spice_cost": 2,
+    "movement_points": 3
+  },
+  {
+    "id": "elite_infantry",
+    "name": "Elite Infantry",
+    "name_tr": "Ağır Piyade",
+    "attack": 24,
+    "category": "infantry",
+    "defense": 20,
+    "embarkable": true,
+    "gold_cost": 220,
+    "grain_upkeep": 10,
+    "gold_upkeep": 10,
+    "hp": 100,
+    "morale": 85,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 2
+      },
+      {
+        "id": "forge",
+        "level": 1
+      }
+    ],
+    "required_tech": [
+      "iron_weapons",
+      "steel_blades",
+      "heavy_armor"
+    ],
+    "tier": 3,
+    "turns_required": 6,
+    "grain_cost": 24,
+    "iron_cost": 6,
+    "timber_cost": 0,
+    "stone_cost": 0,
+    "cloth_cost": 6,
+    "spice_cost": 2,
+    "movement_points": 3
+  },
+  {
+    "id": "rifleman",
+    "name": "Rifleman",
+    "name_tr": "Tüfekli Piyade",
+    "attack": 25,
+    "category": "infantry",
+    "defense": 28,
+    "embarkable": true,
+    "gold_cost": 360,
+    "grain_upkeep": 14,
+    "gold_upkeep": 14,
+    "hp": 100,
+    "morale": 90,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 3
+      },
+      {
+        "id": "forge",
+        "level": 2
+      },
+      {
+        "id": "workshop",
+        "level": 1
+      }
+    ],
+    "required_tech": [
+      "iron_weapons",
+      "steel_blades",
+      "heavy_armor",
+      "standing_infantry",
+      "professional_retinues",
+      "infantry_drill",
+      "professional_officer_corps",
+      "engineering_corps",
+      "siege_engines",
+      "gunpowder",
+      "early_firearms"
+    ],
+    "tier": 4,
+    "turns_required": 8,
+    "grain_cost": 32,
+    "iron_cost": 10,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 6,
+    "spice_cost": 2,
+    "movement_points": 2
+  },
+  {
+    "id": "light_cavalry",
+    "name": "Light Cavalry",
+    "name_tr": "Hafif Süvari",
+    "attack": 10,
+    "category": "cavalry",
+    "defense": 16,
+    "embarkable": true,
+    "gold_cost": 150,
+    "grain_upkeep": 20,
+    "gold_upkeep": 10,
+    "hp": 100,
+    "morale": 55,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 1
+      }
+    ],
+    "required_tech": [
+      "horse_breeding"
+    ],
+    "tier": 1,
+    "turns_required": 4,
+    "grain_cost": 20,
+    "iron_cost": 2,
+    "timber_cost": 0,
+    "stone_cost": 0,
+    "cloth_cost": 2,
+    "spice_cost": 1,
+    "movement_points": 3
+  },
+  {
+    "id": "cavalry",
+    "name": "Cavalry",
+    "name_tr": "Süvari",
+    "attack": 24,
+    "category": "cavalry",
+    "defense": 18,
+    "embarkable": true,
+    "gold_cost": 250,
+    "grain_upkeep": 20,
+    "gold_upkeep": 20,
+    "hp": 100,
+    "morale": 70,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 2
+      }
+    ],
+    "required_tech": [
+      "horse_breeding",
+      "cavalry_tactics"
+    ],
+    "tier": 2,
+    "turns_required": 6,
+    "grain_cost": 26,
+    "iron_cost": 4,
+    "timber_cost": 0,
+    "stone_cost": 0,
+    "cloth_cost": 4,
+    "spice_cost": 2,
+    "movement_points": 4
+  },
+  {
+    "id": "heavy_cavalry",
+    "name": "Heavy Cavalry",
+    "name_tr": "Ağır Süvari",
+    "attack": 36,
+    "category": "cavalry",
+    "defense": 24,
+    "embarkable": true,
+    "gold_cost": 400,
+    "grain_upkeep": 22,
+    "gold_upkeep": 25,
+    "hp": 100,
+    "morale": 88,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 3
+      }
+    ],
+    "required_tech": [
+      "iron_weapons",
+      "heavy_armor",
+      "steel_blades",
+      "plate_armor"
+    ],
+    "tier": 3,
+    "turns_required": 8,
+    "grain_cost": 34,
+    "iron_cost": 7,
+    "timber_cost": 0,
+    "stone_cost": 0,
+    "cloth_cost": 8,
+    "spice_cost": 2,
+    "movement_points": 4
+  },
+  {
+    "id": "catapult",
+    "name": "Catapult",
+    "name_tr": "Mancınık",
+    "attack": 30,
+    "category": "siege",
+    "defense": 3,
+    "embarkable": true,
+    "gold_cost": 200,
+    "grain_upkeep": 40,
+    "gold_upkeep": 20,
+    "hp": 100,
+    "morale": 30,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 2
+      }
+    ],
+    "required_tech": [
+      "iron_weapons",
+      "engineering_corps"
+    ],
+    "tier": 1,
+    "turns_required": 6,
+    "grain_cost": 10,
+    "iron_cost": 5,
+    "timber_cost": 20,
+    "stone_cost": 16,
+    "cloth_cost": 2,
+    "spice_cost": 0,
+    "movement_points": 1
+  },
+  {
+    "id": "bombard",
+    "name": "Bombard",
+    "name_tr": "Bombarda",
+    "attack": 45,
+    "category": "siege",
+    "defense": 4,
+    "embarkable": true,
+    "gold_cost": 350,
+    "grain_upkeep": 40,
+    "gold_upkeep": 25,
+    "hp": 100,
+    "morale": 35,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 3
+      }
+    ],
+    "required_tech": [
+      "iron_weapons",
+      "steel_blades",
+      "engineering_corps",
+      "siege_engines",
+      "gunpowder"
+    ],
+    "siege_breach_max_fort_level": 6,
+    "siege_defense_pressure": 4,
+    "tier": 2,
+    "turns_required": 8,
+    "grain_cost": 14,
+    "iron_cost": 9,
+    "timber_cost": 5,
+    "stone_cost": 10,
+    "cloth_cost": 4,
+    "spice_cost": 1,
+    "movement_points": 1
+  },
+  {
+    "id": "cannon",
+    "name": "Cannon",
+    "name_tr": "Top",
+    "attack": 65,
+    "category": "siege",
+    "defense": 5,
+    "embarkable": true,
+    "gold_cost": 600,
+    "grain_upkeep": 40,
+    "gold_upkeep": 30,
+    "hp": 100,
+    "morale": 40,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 3
+      }
+    ],
+    "required_tech": [
+      "iron_weapons",
+      "steel_blades",
+      "engineering_corps",
+      "siege_engines",
+      "gunpowder",
+      "cast_bronze_cannon"
+    ],
+    "siege_breach_multiplier": 1.25,
+    "siege_breach_max_fort_level": 7,
+    "siege_defense_pressure": 2,
+    "tier": 3,
+    "turns_required": 10,
+    "grain_cost": 50,
+    "iron_cost": 12,
+    "timber_cost": 10,
+    "stone_cost": 34,
+    "cloth_cost": 3,
+    "spice_cost": 2,
+    "movement_points": 1
+  },
+  {
+    "id": "sappers",
+    "name": "Sappers",
+    "name_tr": "Lağımcılar",
+    "attack": 5,
+    "category": "siege",
+    "defense": 2,
+    "embarkable": true,
+    "gold_cost": 100,
+    "grain_upkeep": 14,
+    "gold_upkeep": 12,
+    "hp": 100,
+    "morale": 20,
+    "siege_breach_multiplier": 1.1,
+    "siege_breach_max_fort_level": 6,
+    "siege_defense_pressure": 1,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 2
+      }
+    ],
+    "required_tech": [
+      "engineering_corps"
+    ],
+    "tier": 3,
+    "turns_required": 6,
+    "grain_cost": 50,
+    "iron_cost": 4,
+    "timber_cost": 20,
+    "stone_cost": 10,
+    "cloth_cost": 5,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
+    "id": "arsenal",
+    "name": "Field Artillery",
+    "name_tr": "Sahra Topu",
+    "attack": 35,
+    "category": "siege",
+    "defense": 30,
+    "embarkable": true,
+    "gold_cost": 280,
+    "grain_upkeep": 20,
+    "gold_upkeep": 18,
+    "hp": 100,
+    "morale": 45,
+    "siege_breach_multiplier": 1.15,
+    "siege_breach_max_fort_level": 3,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 2
+      },
+      {
+        "id": "workshop",
+        "level": 1
+      }
+    ],
+    "required_tech": [
+      "engineering_corps",
+      "gunpowder"
+    ],
+    "tier": 1,
+    "turns_required": 6,
+    "grain_cost": 28,
+    "iron_cost": 6,
+    "timber_cost": 8,
+    "stone_cost": 12,
+    "cloth_cost": 2,
+    "spice_cost": 1,
+    "movement_points": 2
+  },
+  {
+    "id": "transport",
+    "name": "Transport Ship",
+    "name_tr": "Nakliye Gemisi",
+    "attack": 4,
+    "category": "naval_trans",
+    "defense": 10,
+    "embarkable": false,
+    "carry_capacity": 4,
+    "gold_cost": 200,
+    "grain_upkeep": 10,
+    "gold_upkeep": 10,
+    "hp": 100,
+    "morale": 30,
+    "required_buildings": [
+      {
+        "id": "port",
+        "level": 1
+      }
+    ],
+    "required_tech": [
+      "navigation"
+    ],
+    "tier": 1,
+    "turns_required": 4,
+    "grain_cost": 8,
+    "iron_cost": 3,
+    "timber_cost": 20,
+    "stone_cost": 0,
+    "cloth_cost": 5,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
+    "id": "merchant_ship",
+    "name": "Merchant Ship",
+    "name_tr": "Ticaret Gemisi",
+    "attack": 2,
+    "category": "naval_trade",
+    "defense": 4,
+    "embarkable": false,
+    "gold_cost": 180,
+    "grain_upkeep": 6,
+    "gold_upkeep": 4,
+    "merchant_trade_income": 8,
+    "hp": 100,
+    "morale": 20,
+    "required_buildings": [
+      {
+        "id": "port",
+        "level": 2
+      }
+    ],
+    "required_tech": [
+      "trade_routes",
+      "harbor_administration"
+    ],
+    "tier": 1,
+    "turns_required": 6,
+    "grain_cost": 8,
+    "iron_cost": 4,
+    "timber_cost": 26,
+    "stone_cost": 0,
+    "spice_cost": 2,
+    "cloth_cost": 6,
+    "movement_points": 4
+  },
+  {
+    "id": "warship",
+    "name": "Warship",
+    "name_tr": "Savaş Gemisi",
+    "attack": 30,
+    "category": "naval_war",
+    "defense": 30,
+    "embarkable": false,
+    "gold_cost": 400,
+    "grain_upkeep": 40,
+    "gold_upkeep": 40,
+    "hp": 100,
+    "morale": 60,
+    "required_buildings": [
+      {
+        "id": "port",
+        "level": 3
+      }
+    ],
+    "required_tech": [
+      "navigation",
+      "naval_doctrine"
+    ],
+    "tier": 2,
+    "turns_required": 8,
+    "grain_cost": 8,
+    "iron_cost": 6,
+    "timber_cost": 40,
+    "stone_cost": 0,
+    "cloth_cost": 8,
+    "spice_cost": 8,
+    "movement_points": 2
+  }
+]

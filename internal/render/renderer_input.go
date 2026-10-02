@@ -525,7 +525,7 @@ func (r *Renderer) handleBuildKey() InputAction {
 
 // handleFactionSelectInput fraksiyon seçim ekranındaki tuş ve fare girişlerini işler.
 func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction {
-	factions, _ := selectableFactions(r.gs)
+	factions, historicalCount := selectableFactions(r.gs)
 	n := len(factions)
 	if n == 0 {
 		if r.keyJustPressed(ebiten.KeyEscape) {
@@ -534,11 +534,19 @@ func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction
 		}
 		return InputAction{}
 	}
-	buttons := buildFactionCardButtons(r.gs)
+	viewport := factionGroupLayoutScrolled(n, historicalCount, 3, 350, 138, 30, 12, 70, r.factionSelectScroll).viewport
+	_, wheelY := ebiten.Wheel()
+	if wheelY != 0 && viewport.Hit(input.MouseX, input.MouseY) {
+		layout := factionGroupLayoutScrolled(n, historicalCount, 3, 350, 138, 30, 12, 70, r.factionSelectScroll)
+		r.factionSelectScroll = clampFactionSelectScroll(layout.scroll-wheelY*factionSelectScrollStep, maxFloat64Value(layout.contentHeight-layout.viewport.H))
+		return InputAction{}
+	}
+	buttons := buildFactionCardButtons(r.gs, r.factionSelectScroll)
+	insideViewport := viewport.Hit(input.MouseX, input.MouseY)
 
 	// Hover ile kart vurgusunu güncelle
 	for i, btn := range buttons {
-		if btn.HitTest(input.MouseX, input.MouseY) {
+		if insideViewport && btn.HitTest(input.MouseX, input.MouseY) {
 			r.setMenuCursor(&r.factionCursor, i)
 			break
 		}
@@ -562,6 +570,7 @@ func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction
 	if input.LeftJustPressed {
 		if buildBackButton().HandleInput(input) {
 			r.factionCursor = 0
+			r.factionSelectScroll = 0
 			return InputAction{Kind: ActionBack}
 		}
 		for i, btn := range buttons {
@@ -572,6 +581,7 @@ func (r *Renderer) handleFactionSelectInput(input gameui.InputState) InputAction
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		r.factionCursor = 0
+		r.factionSelectScroll = 0
 		return InputAction{Kind: ActionBack}
 	}
 	return InputAction{}

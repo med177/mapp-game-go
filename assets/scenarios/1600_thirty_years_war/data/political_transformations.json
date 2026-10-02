@@ -1,0 +1,133 @@
+[
+  {
+    "id": "bohemian_revolt_1618",
+    "type": "religious_revolt",
+    "members": [
+      "austria_duchy",
+      "bohemian_kingdom",
+      "bohemian_estates",
+      "palatinate_electorate"
+    ],
+    "result_faction": "austria_duchy",
+    "trigger": {
+      "event_id": "defenestration_of_prague_1618",
+      "year": 1618,
+      "month": 5
+    },
+    "region_assignments": {
+      "bohemia": "bohemian_estates",
+      "moravia": "bohemian_estates",
+      "palatinate": "palatinate_electorate"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "split"
+    },
+    "description_tr": "Bohemya İsyanı ve Pfalz meselesi Habsburglarla doğrudan hesaplaşmaya dönüşür."
+  },
+  {
+    "id": "english_civil_war_1642",
+    "type": "civil_war",
+    "members": [
+      "england",
+      "english_parliament"
+    ],
+    "result_faction": "england",
+    "trigger": {
+      "event_id": "english_civil_war_begins_1642",
+      "year": 1642,
+      "month": 8
+    },
+    "region_assignments": {
+      "east_anglia": "english_parliament",
+      "essex": "english_parliament",
+      "lancashire": "english_parliament",
+      "wessex": "england",
+      "yorkshire": "england"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "split"
+    },
+    "description_tr": "İngiliz İç Savaşı Parlamento ve Kraliyet yanlarını ayırır; savaş sonunda sonuç yine İngiliz tacında birleşir."
+  },
+  {
+    "id": "english_restoration_1660",
+    "type": "reunification",
+    "members": [
+      "england",
+      "english_parliament"
+    ],
+    "result_faction": "england",
+    "trigger": {
+      "event_id": "english_restoration_1660",
+      "year": 1660,
+      "month": 5
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "restore_result_faction"
+    },
+    "description_tr": "Restorasyon monarşiyi yeniden kurar."
+  },
+  {
+    "id": "great_britain_union_1707",
+    "type": "dynastic_union",
+    "members": [
+      "england",
+      "scotland_kingdom"
+    ],
+    "result_faction": "england",
+    "trigger": {
+      "event_id": "act_of_union_1707",
+      "year": 1707,
+      "month": 5
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "İngiltere ve İskoçya parlamentoları birleşerek Büyük Britanya Krallığı’nı oluşturur."
+  },
+  {
+    "id": "polish_partition_1772",
+    "type": "partition",
+    "members": [
+      "polish_lithuania",
+      "austria_duchy",
+      "russia",
+      "brandenburg_margraviate"
+    ],
+    "result_faction": "polish_lithuania",
+    "trigger": {
+      "event_id": "first_partition_of_poland_1772",
+      "year": 1772,
+      "month": 8
+    },
+    "region_assignments": {
+      "silesia": "brandenburg_margraviate",
+      "galicia_volhynia": "austria_duchy",
+      "belarus": "russia"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "split"
+    },
+    "description_tr": "Lehistan’ın ilk paylaşımı Commonwealth topraklarını üç büyük komşunun nüfuzuna açar."
+  }
+]

@@ -1,0 +1,356 @@
+{
+  "id": "1600_thirty_years_war",
+  "name": "30 Yıl Savaşlarına Doğru",
+  "description": "1600 yılı. Habsburglar, Osmanlılar, Safevîler, Fransa, İspanya, İngiltere, Birleşik Eyaletler, İsveç, Danimarka, Rusya ve Polonya-Litvanya Avrupa’nın ve çevre bölgelerin güç dengesini belirliyor. Kampanya 1618 Otuz Yıl Savaşları, 1648 Westphalia, İngiliz İç Savaşı ve Restorasyon, 1688 Şanlı Devrim, 1701 İspanya Veraset Savaşı, 1700 Büyük Kuzey Savaşı, 1756 Yedi Yıl Savaşı, 1772 Lehistan’ın ilk paylaşımı, Amerikan Devrimi ve 1789 Fransız Devrimi’ne kadar uzanır.",
+  "version": 2.0,
+  "author": "Mapp Team",
+  "period": "early_modern",
+  "turn_months": 3,
+  "year": 1600,
+  "month": 1,
+  "privileged_building_max_level": 2,
+  "minor_privilege_protection_turns": 80,
+  "aggressive_expansion_last_turns": 16,
+  "diplomacy": {
+    "relation_improvement_gold_cost": 420,
+    "relation_improvement_bonus": 5,
+    "gift_gold_cost": 3200,
+    "gift_receiver_gold": 1800,
+    "gift_relation_bonus": 15,
+    "incite_revolt_gold_cost": 4200,
+    "incite_revolt_relation_bonus": 10,
+    "incite_revolt_overlord_penalty": 12,
+    "incite_revolt_vassal_threshold": 55,
+    "incite_revolt_owner_threshold": -25,
+    "incite_revolt_satisfaction_penalty": 12
+  },
+  "map": {
+    "shape_set_id": "mediterranean_basin",
+    "world_width": 2892,
+    "world_height": 1440,
+    "shape_offset_x": -530,
+    "shape_offset_y": -180,
+    "shape_scale_x": 2.025,
+    "shape_scale_y": 2.025,
+    "terrain_alpha": 0.45
+  },
+  "music": {
+    "default_playlist": "campaign",
+    "playlists": {
+      "campaign": [
+        {
+          "file": "Cinematic-Ambient-Background.mp3",
+          "weight": 6
+        },
+        {
+          "file": "hitslab-dramatic-war-military-music-427109.mp3",
+          "weight": 1
+        },
+        {
+          "file": "leberch-epic-war-248014.mp3",
+          "weight": 7
+        },
+        {
+          "file": "kornevmusic-epic-war-trailer-428423.mp3",
+          "weight": 2
+        },
+        {
+          "file": "the_mountain-war-481763.mp3",
+          "weight": 3
+        },
+        {
+          "file": "the_mountain-war-opening-145222.mp3",
+          "weight": 4
+        },
+        {
+          "file": "solarflex-epic-war-541542.mp3",
+          "weight": 5
+        },
+        {
+          "file": "the_mountain-ancient-war-141474.mp3",
+          "weight": 8
+        },
+        {
+          "file": "hitslab-war-war-epic-music-480183.mp3",
+          "weight": 9
+        },
+        {
+          "file": "paulyudin-war-493487.mp3",
+          "weight": 2
+        }
+      ]
+    }
+  },
+  "victory_conditions": [
+    {
+      "id": "ottoman_imperial_survival",
+      "title": "Osmanlı İmparatorluğu’nun Avrupa Kapısı",
+      "description": "Viyana, Belgrad, Budin hattı ve Doğu Akdeniz üzerindeki hakimiyeti koruyarak büyük güç statüsünü sürdür.",
+      "detail": "Ana hedefler: Konstantiniyye, Edirne, Belgrad, Budin ve Mısır-Şam hattı",
+      "type": "domination",
+      "target_region_count": 18,
+      "required_regions": [
+        "constantinople",
+        "thrace",
+        "serbia",
+        "hungary",
+        "aleppo",
+        "damascus",
+        "alexandria"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "ottoman"
+      ]
+    },
+    {
+      "id": "habsburg_core",
+      "title": "Habsburg Çekirdeği",
+      "description": "Viyana merkezli hanedan sistemini koru ve Tuna savunmasını ayakta tut.",
+      "detail": "Avusturya, Bohemya, Moravya, Slovakya ve Steiermark",
+      "type": "domination",
+      "target_region_count": 8,
+      "required_regions": [
+        "austria",
+        "bohemia",
+        "moravia",
+        "slovakia",
+        "styria"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "austria_duchy"
+      ]
+    },
+    {
+      "id": "french_rhine_balance",
+      "title": "Ren ve Avrupa Dengesi",
+      "description": "Fransa’nın çekirdek topraklarını korurken Ren sınırında ve Orta Avrupa’da nüfuz kur.",
+      "detail": "Paris, Burgundy, Lorraine, Palatinate ve Flanders çevresinde 14 bölge",
+      "type": "domination",
+      "target_region_count": 14,
+      "required_regions": [
+        "paris",
+        "burgundy",
+        "lorraine",
+        "palatinate"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "france"
+      ]
+    },
+    {
+      "id": "spanish_monarchy",
+      "title": "İspanyol Monarşisinin Omurgası",
+      "description": "İberya, İtalya ve Flandre’deki ana toprakları koruyarak monarşinin Avrupa ağırlığını sürdür.",
+      "detail": "Castile, Aragon, Milan, Naples, Sicilya ve Flandre",
+      "type": "domination",
+      "target_region_count": 18,
+      "required_regions": [
+        "castile",
+        "aragon",
+        "catalonia",
+        "milan",
+        "sicily",
+        "flanders"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "castile_kingdom"
+      ]
+    },
+    {
+      "id": "british_isles",
+      "title": "Adaların ve Denizlerin Gücü",
+      "description": "Britanya Adaları’nın siyasi çekirdeğini ve Manş güvenliğini koru.",
+      "detail": "İngiltere, Galler, İskoçya ve İrlanda’daki 10+ bölge",
+      "type": "domination",
+      "target_region_count": 10,
+      "required_regions": [
+        "essex",
+        "wessex",
+        "yorkshire",
+        "lancashire",
+        "wales",
+        "scotland",
+        "the_pale"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "england"
+      ]
+    },
+    {
+      "id": "dutch_trade",
+      "title": "Amsterdam Ticaret Hâkimiyeti",
+      "description": "Hollanda çekirdeğini koru ve Kuzey Denizi ticaret ağında güçlü bir konum elde et.",
+      "detail": "Holland, Friesland ve 6 ticaret kapasitesi taşıyan bölge",
+      "type": "domination",
+      "target_region_count": 4,
+      "required_regions": [
+        "holland",
+        "friesland"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "dutch_republic"
+      ]
+    },
+    {
+      "id": "swedish_baltic",
+      "title": "Baltık İmparatorluğu",
+      "description": "İsveç’in Baltık kıyılarındaki konumunu koru ve kuzey ticaret yolunu domine et.",
+      "detail": "İsveç, Estonia, Gotland ve Pomeranya çevresinde 8 bölge",
+      "type": "domination",
+      "target_region_count": 8,
+      "required_regions": [
+        "sweden",
+        "estonia",
+        "gotland_island"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "sweden_kingdom"
+      ]
+    },
+    {
+      "id": "russian_expansion",
+      "title": "Rusya’nın Baltık ve Karadeniz’e Çıkışı",
+      "description": "Moskova merkezini koru ve Baltık-Karadeniz istikametinde genişle.",
+      "detail": "Moskova, Novgorod, Kiev, Astrakhan ve Karadeniz hattı",
+      "type": "domination",
+      "target_region_count": 14,
+      "required_regions": [
+        "moscow",
+        "novgorod",
+        "kiev",
+        "astrakhan_region"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "russia"
+      ]
+    },
+    {
+      "id": "commonwealth_survival",
+      "title": "Commonwealth’in Ayakta Kalması",
+      "description": "Lehistan-Litvanya’nın çekirdeğini koru ve 18. yüzyıl paylaşım baskılarına diren.",
+      "detail": "Polonya, Litvanya, Belarus ve Kiev çekirdeği",
+      "type": "domination",
+      "target_region_count": 12,
+      "required_regions": [
+        "poland",
+        "lithuania",
+        "belarus",
+        "kiev"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "polish_lithuania"
+      ]
+    },
+    {
+      "id": "safavid_persia",
+      "title": "Safevî İranı",
+      "description": "İsfahan merkezli Safevî devletinin İran platosunu ve Kafkasya geçitlerini koru.",
+      "detail": "İsfahan, Azerbaycan, Kazvin, Hemedan ve Güney İran",
+      "type": "domination",
+      "target_region_count": 12,
+      "required_regions": [
+        "isfahan",
+        "azerbaijan",
+        "kazvin",
+        "hemedan",
+        "southern_persia"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "safavid"
+      ]
+    },
+    {
+      "id": "venetian_trade",
+      "title": "Venedik’in Akdeniz Ticaret Ağları",
+      "description": "Venedik, Girit ve Adriyatik ticaret merkezlerini koru.",
+      "detail": "Venedik, Dalmaçya, Girit ve 6 ticaret kapasitesi taşıyan bölge",
+      "type": "domination",
+      "target_region_count": 6,
+      "required_regions": [
+        "venice",
+        "dalmatia",
+        "crete"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "venice"
+      ]
+    },
+    {
+      "id": "westphalia_survivor",
+      "title": "İmparatorlukta Hayatta Kalmak",
+      "description": "Kutsal Roma İmparatorluğu içindeki çekirdek toprakları 1648 sonrasındaki güç mücadelesinde koru.",
+      "detail": "Westphalia, Hessen, Thüringen, Pfalz, Lorraine ve Baden hattı",
+      "type": "domination",
+      "target_region_count": 8,
+      "required_regions": [
+        "westphalia",
+        "hessen",
+        "thuringia",
+        "palatinate",
+        "lorraine"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "hre"
+      ]
+    },
+    {
+      "id": "ottoman_safavid_balance",
+      "title": "Doğu’nun İmparatorlukları",
+      "description": "Doğu Akdeniz ile İran platosu arasındaki rekabeti kendi lehine yönet.",
+      "detail": "Hedef bölgelerde toplam 28 bölge",
+      "type": "domination",
+      "target_region_count": 28,
+      "required_regions": [
+        "baghdad",
+        "mosul",
+        "azerbaijan",
+        "isfahan"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "ottoman",
+        "safavid"
+      ]
+    },
+    {
+      "id": "revolution_threshold",
+      "title": "1789 Eşiği",
+      "description": "Kampanyanın tarihsel ufku 1789 Fransız Devrimi’nin başlangıcına ulaştığında senaryonun dönemi tamamlanır.",
+      "detail": "Olay: Fransız Devrimi’nin Başlangıcı (Temmuz 1789)",
+      "type": "conquer_city",
+      "required_regions": [
+        "paris"
+      ],
+      "deadline_year": 1789,
+      "deadline_month": 7,
+      "allowed_factions": [
+        "france"
+      ]
+    }
+  ]
+}

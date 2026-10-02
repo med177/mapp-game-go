@@ -1,0 +1,1844 @@
+[
+  {
+    "id": "end_golden_truce_1600",
+    "name_tr": "1600 Sınır Düzeninin Sonu",
+    "desc_tr": "Doğu Akdeniz ve Orta Avrupa’daki uzun barış döneminin dengesi yeniden kırılganlaşıyor; devletler tahkimata ve daimi ordulara daha fazla kaynak ayırıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1600,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "set_flags": [
+      "early_modern_balance_1600"
+    ],
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 2
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 1
+      }
+    ]
+  },
+  {
+    "id": "treaty_london_1604",
+    "name_tr": "Londra Antlaşması",
+    "desc_tr": "İngiltere ve İspanya uzun savaş dönemini diplomatik bir uzlaşmayla kapatıyor. Manş ve Atlantik ticareti üzerindeki baskı azalıyor.",
+    "probability": 0,
+    "min_turn": 18,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 260,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1604,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "england",
+    "relations": [
+      {
+        "faction_id": "castile_kingdom",
+        "stance": "peace",
+        "score_delta": 30
+      }
+    ],
+    "trade_income_percent": 10,
+    "set_flags": [
+      "anglo_spanish_peace_1604"
+    ]
+  },
+  {
+    "id": "twelve_years_truce_1609",
+    "name_tr": "On İki Yıl Ateşkesi",
+    "desc_tr": "İspanyol Monarşisi ile Birleşik Eyaletler geçici ateşkese gidiyor. Hollanda ticareti rahatlıyor; ancak Flandre sınırı çözülmüş değil.",
+    "probability": 0,
+    "min_turn": 37,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 350,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1609,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "dutch_republic",
+    "relations": [
+      {
+        "faction_id": "castile_kingdom",
+        "stance": "peace",
+        "score_delta": 20
+      }
+    ],
+    "trade_income_percent": 14,
+    "set_flags": [
+      "dutch_truce_1609"
+    ]
+  },
+  {
+    "id": "ulster_consolidation_1603",
+    "name_tr": "İrlanda Seferinin Sonu",
+    "desc_tr": "Dokuz Yıl Savaşı sonrasında İngiliz yönetimi İrlanda’daki garnizon ve vergi düzenini sıkılaştırıyor.",
+    "probability": 0,
+    "min_turn": 14,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 180,
+    "grain_delta": 40,
+    "army_hp_mod": 0,
+    "historical_year": 1603,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "england",
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 2
+      }
+    ],
+    "set_flags": [
+      "ireland_consolidated_1603"
+    ]
+  },
+  {
+    "id": "russian_troubles_begin_1605",
+    "name_tr": "Rusya’da Karışıklıklar Başlıyor",
+    "desc_tr": "Kıtlık, hanedan krizi ve sahte Dmitriler Moskova çevresinde siyasal düzeni sarsıyor.",
+    "probability": 0,
+    "min_turn": 21,
+    "target": "specific_faction",
+    "sat_delta": -14,
+    "gold_delta": -250,
+    "grain_delta": -120,
+    "army_hp_mod": 0.94,
+    "historical_year": 1605,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "russia",
+    "set_flags": [
+      "russian_troubles"
+    ]
+  },
+  {
+    "id": "romanov_election_1613",
+    "name_tr": "Romanov Hanedanının Tahta Çıkışı",
+    "desc_tr": "Zemsky Sobor Mihail Romanov’u çar seçiyor; Rusya’nın merkezî toparlanması yeniden başlıyor.",
+    "probability": 0,
+    "min_turn": 52,
+    "target": "specific_faction",
+    "sat_delta": 20,
+    "gold_delta": 450,
+    "grain_delta": 180,
+    "army_hp_mod": 0,
+    "historical_year": 1613,
+    "historical_month": 3,
+    "one_shot": true,
+    "affected_faction": "russia",
+    "relation_delta_all": 8,
+    "set_flags": [
+      "romanov_dynasty_1613"
+    ],
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 3
+      }
+    ]
+  },
+  {
+    "id": "stolbovo_1617",
+    "name_tr": "Stolbovo Antlaşması",
+    "desc_tr": "İsveç ve Rusya arasındaki savaş, Rusya’nın Baltık’a çıkışını sınırlayan bir antlaşmayla kapanıyor.",
+    "probability": 0,
+    "min_turn": 68,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 220,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1617,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "russia",
+    "relation_delta_all": 4,
+    "set_flags": [
+      "stolbovo_1617"
+    ]
+  },
+  {
+    "id": "defenestration_of_prague_1618",
+    "name_tr": "Prag Pencereden Atma Olayı",
+    "desc_tr": "Bohemya’daki Protestan zümrelerin Habsburg yöneticilerine başkaldırısı açık savaşa dönüşüyor. Otuz Yıl Savaşı’nın fitili ateşleniyor.",
+    "probability": 0,
+    "min_turn": 73,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1618,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "bohemian_kingdom",
+    "relations": [
+      {
+        "faction_id": "austria_duchy",
+        "stance": "war",
+        "score_delta": -80
+      }
+    ],
+    "set_flags": [
+      "thirty_years_war_begun",
+      "bohemian_revolt_active"
+    ],
+    "successor_revivals": [
+      {
+        "faction_id": "bohemian_estates",
+        "regions": [
+          "bohemia",
+          "moravia"
+        ],
+        "mode": "independent",
+        "units": [
+          {
+            "unit_type": "infantry",
+            "unit_count": 8
+          },
+          {
+            "unit_type": "cannon",
+            "unit_count": 2
+          }
+        ],
+        "suppress_relation": true
+      },
+      {
+        "faction_id": "palatinate_electorate",
+        "regions": [
+          "palatinate"
+        ],
+        "mode": "independent",
+        "units": [
+          {
+            "unit_type": "infantry",
+            "unit_count": 5
+          },
+          {
+            "unit_type": "cannon",
+            "unit_count": 1
+          }
+        ],
+        "suppress_relation": true
+      }
+    ],
+    "requires_active_factions": [
+      "austria_duchy",
+      "bohemian_kingdom",
+      "hre"
+    ]
+  },
+  {
+    "id": "catholic_league_1619",
+    "name_tr": "Katolik Birliği Seferberliği",
+    "desc_tr": "Bavyera, Habsburglar ve Katolik müttefikler Bohemya ve Pfalz isyanına karşı ortak askeri blok kuruyor.",
+    "probability": 0,
+    "min_turn": 78,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1619,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "bavaria_duchy",
+    "coalition": {
+      "members": [
+        "austria_duchy",
+        "bavaria_duchy",
+        "hre"
+      ],
+      "opponents": [
+        "bohemian_estates",
+        "palatinate_electorate"
+      ],
+      "member_stance": "allied",
+      "opponent_stance": "war",
+      "member_score_delta": 35,
+      "opponent_score_delta": -25
+    },
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 4
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 1
+      }
+    ],
+    "set_flags": [
+      "catholic_league_1619"
+    ]
+  },
+  {
+    "id": "white_mountain_1620",
+    "name_tr": "Beyaz Dağ Savaşı",
+    "desc_tr": "Habsburg ve Katolik Birliği orduları Prag yakınlarında Bohemya ordusunu yeniyor; imparatorluk karşı devrimi hız kazanıyor.",
+    "probability": 0,
+    "min_turn": 83,
+    "target": "specific_faction",
+    "sat_delta": 15,
+    "gold_delta": 420,
+    "grain_delta": 80,
+    "army_hp_mod": 0,
+    "historical_year": 1620,
+    "historical_month": 11,
+    "one_shot": true,
+    "affected_faction": "austria_duchy",
+    "relations": [
+      {
+        "faction_id": "bohemian_estates",
+        "stance": "war",
+        "score_delta": -60
+      }
+    ],
+    "set_flags": [
+      "white_mountain_victory"
+    ]
+  },
+  {
+    "id": "danish_intervention_1625",
+    "name_tr": "Danimarka Müdahalesi",
+    "desc_tr": "Christian IV Protestan Alman prenslerinin yanında savaşa giriyor. Kuzey Almanya yeniden cephe hattına dönüşüyor.",
+    "probability": 0,
+    "min_turn": 102,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1625,
+    "historical_month": 7,
+    "one_shot": true,
+    "affected_faction": "denmark_kingdom",
+    "relations": [
+      {
+        "faction_id": "austria_duchy",
+        "stance": "war",
+        "score_delta": -50
+      },
+      {
+        "faction_id": "hre",
+        "stance": "war",
+        "score_delta": -40
+      }
+    ],
+    "coalition": {
+      "members": [
+        "denmark_kingdom",
+        "bohemian_estates"
+      ],
+      "opponents": [
+        "austria_duchy",
+        "hre"
+      ],
+      "member_stance": "allied",
+      "opponent_stance": "war",
+      "member_score_delta": 25,
+      "opponent_score_delta": -20
+    },
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 5
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 1
+      }
+    ],
+    "set_flags": [
+      "danish_phase_1625"
+    ]
+  },
+  {
+    "id": "lutter_1626",
+    "name_tr": "Lutter Savaşı",
+    "desc_tr": "Tilly’nin kuvvetleri Danimarka ordusunu yenerek Katolik tarafın kuzey Almanya’daki üstünlüğünü güçlendiriyor.",
+    "probability": 0,
+    "min_turn": 106,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 300,
+    "grain_delta": 0,
+    "army_hp_mod": 1.05,
+    "historical_year": 1626,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "austria_duchy",
+    "set_flags": [
+      "lutter_1626"
+    ]
+  },
+  {
+    "id": "swedish_intervention_1630",
+    "name_tr": "İsveç Müdahalesi",
+    "desc_tr": "Gustav Adolf, Protestan Alman prensleriyle birleşerek İmparatorluk kuvvetlerine karşı yeni bir cephe açıyor.",
+    "probability": 0,
+    "min_turn": 122,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1630,
+    "historical_month": 7,
+    "one_shot": true,
+    "affected_faction": "sweden_kingdom",
+    "relations": [
+      {
+        "faction_id": "austria_duchy",
+        "stance": "war",
+        "score_delta": -70
+      },
+      {
+        "faction_id": "hre",
+        "stance": "war",
+        "score_delta": -50
+      }
+    ],
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 6
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 2
+      }
+    ],
+    "set_flags": [
+      "swedish_phase_1630"
+    ]
+  },
+  {
+    "id": "breitenfeld_1631",
+    "name_tr": "Breitenfeld Savaşı",
+    "desc_tr": "İsveç-Sakson kuvvetlerinin büyük zaferi Protestan kampının moralini ve askerî prestijini artırıyor.",
+    "probability": 0,
+    "min_turn": 126,
+    "target": "specific_faction",
+    "sat_delta": 14,
+    "gold_delta": 460,
+    "grain_delta": 0,
+    "army_hp_mod": 1.1,
+    "historical_year": 1631,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "sweden_kingdom",
+    "relations": [
+      {
+        "faction_id": "saxony_duchy",
+        "stance": "allied",
+        "score_delta": 30
+      }
+    ],
+    "set_flags": [
+      "breitenfeld_1631"
+    ]
+  },
+  {
+    "id": "luetzen_1632",
+    "name_tr": "Lützen Savaşı",
+    "desc_tr": "İsveç zafer kazanıyor ancak Gustav Adolf savaş alanında hayatını kaybediyor; Protestan tarafın komuta dengesi değişiyor.",
+    "probability": 0,
+    "min_turn": 131,
+    "target": "specific_faction",
+    "sat_delta": -6,
+    "gold_delta": 240,
+    "grain_delta": 0,
+    "army_hp_mod": 0.98,
+    "historical_year": 1632,
+    "historical_month": 11,
+    "one_shot": true,
+    "affected_faction": "sweden_kingdom",
+    "set_flags": [
+      "gustavus_dead_1632"
+    ]
+  },
+  {
+    "id": "nordlingen_1634",
+    "name_tr": "Nördlingen Savaşı",
+    "desc_tr": "İmparatorluk ve İspanyol kuvvetleri büyük bir zafer kazanıyor; İsveç-Sakson ilerlemesi geri itiliyor.",
+    "probability": 0,
+    "min_turn": 138,
+    "target": "specific_faction",
+    "sat_delta": 12,
+    "gold_delta": 500,
+    "grain_delta": 0,
+    "army_hp_mod": 1.08,
+    "historical_year": 1634,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "austria_duchy",
+    "set_flags": [
+      "nordlingen_1634"
+    ]
+  },
+  {
+    "id": "france_enters_1635",
+    "name_tr": "Fransa’nın Savaşa Girişi",
+    "desc_tr": "Fransa, Habsburg kuşatmasını kırmak ve İspanyol-Habsburg gücünü sınırlamak için açık savaşa giriyor.",
+    "probability": 0,
+    "min_turn": 141,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1635,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "france",
+    "relations": [
+      {
+        "faction_id": "castile_kingdom",
+        "stance": "war",
+        "score_delta": -80
+      },
+      {
+        "faction_id": "austria_duchy",
+        "stance": "war",
+        "score_delta": -65
+      }
+    ],
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 7
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 2
+      }
+    ],
+    "set_flags": [
+      "france_enters_thirty_years_war"
+    ]
+  },
+  {
+    "id": "rocroi_1643",
+    "name_tr": "Rocroi Savaşı",
+    "desc_tr": "Fransız ordusunun zaferi İspanyol piyadesinin yenilmezlik imajını sarsıyor ve Bourbon Fransası’nın ağırlığını artırıyor.",
+    "probability": 0,
+    "min_turn": 173,
+    "target": "specific_faction",
+    "sat_delta": 16,
+    "gold_delta": 480,
+    "grain_delta": 0,
+    "army_hp_mod": 1.08,
+    "historical_year": 1643,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "france",
+    "set_flags": [
+      "rocroi_1643"
+    ]
+  },
+  {
+    "id": "westphalia_1648",
+    "name_tr": "Westphalia Barışı",
+    "desc_tr": "Otuz Yıl Savaşları sona eriyor. İmparatorluk içindeki mezhepsel ve siyasi özerklik kuralları yeniden düzenleniyor.",
+    "probability": 0,
+    "min_turn": 195,
+    "target": "specific_faction",
+    "sat_delta": 20,
+    "gold_delta": 650,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1648,
+    "historical_month": 10,
+    "one_shot": true,
+    "affected_faction": "hre",
+    "relation_delta_all": 16,
+    "set_flags": [
+      "peace_of_westphalia_1648"
+    ],
+    "relations": [
+      {
+        "faction_id": "france",
+        "stance": "peace",
+        "score_delta": 70
+      },
+      {
+        "faction_id": "sweden_kingdom",
+        "stance": "peace",
+        "score_delta": 50
+      },
+      {
+        "faction_id": "austria_duchy",
+        "stance": "peace",
+        "score_delta": 45
+      }
+    ]
+  },
+  {
+    "id": "english_civil_war_begins_1642",
+    "name_tr": "İngiliz İç Savaşı Başlıyor",
+    "desc_tr": "Parlamento ile kraliyet arasındaki anayasal ve mali anlaşmazlıklar açık savaşa dönüşüyor.",
+    "probability": 0,
+    "min_turn": 170,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1642,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "england",
+    "set_flags": [
+      "english_civil_war"
+    ],
+    "relations": [
+      {
+        "faction_id": "english_parliament",
+        "stance": "war",
+        "score_delta": -80
+      }
+    ],
+    "successor_revival": {
+      "faction_id": "english_parliament",
+      "regions": [
+        "east_anglia",
+        "essex",
+        "lancashire"
+      ],
+      "mode": "independent",
+      "units": [
+        {
+          "unit_type": "infantry",
+          "unit_count": 7
+        },
+        {
+          "unit_type": "cannon",
+          "unit_count": 2
+        }
+      ],
+      "suppress_relation": true
+    }
+  },
+  {
+    "id": "cromwell_new_model_1645",
+    "name_tr": "Yeni Model Ordu",
+    "desc_tr": "Cromwell ve Parlamento kuvvetleri daha disiplinli, eğitimli ve merkezi bir orduya dönüşüyor.",
+    "probability": 0,
+    "min_turn": 180,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1645,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "english_parliament",
+    "complete_techs": [
+      "standing_infantry",
+      "infantry_drill"
+    ],
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 4
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 1
+      }
+    ],
+    "set_flags": [
+      "new_model_army_1645"
+    ]
+  },
+  {
+    "id": "regicide_1649",
+    "name_tr": "Kral I. Charles’ın İnfazı",
+    "desc_tr": "Monarşinin kaldırılmasıyla İngiltere’de Commonwealth dönemi başlıyor; Avrupa sarayları İngiliz gelişmelerini yakından izliyor.",
+    "probability": 0,
+    "min_turn": 196,
+    "target": "specific_faction",
+    "sat_delta": -8,
+    "gold_delta": 280,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1649,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "english_parliament",
+    "relation_delta_all": -6,
+    "set_flags": [
+      "english_commonwealth_1649"
+    ]
+  },
+  {
+    "id": "protectorate_1653",
+    "name_tr": "Protektora Dönemi",
+    "desc_tr": "Oliver Cromwell Lord Protector olarak yönetimi merkezileştiriyor; donanma ve ordu daha düzenli finansman kazanıyor.",
+    "probability": 0,
+    "min_turn": 215,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 520,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1653,
+    "historical_month": 12,
+    "one_shot": true,
+    "affected_faction": "english_parliament",
+    "trade_income_percent": 12,
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 3
+      },
+      {
+        "unit_type": "warship",
+        "unit_count": 1
+      }
+    ],
+    "set_flags": [
+      "protectorate_1653"
+    ]
+  },
+  {
+    "id": "english_restoration_1660",
+    "name_tr": "İngiliz Restorasyonu",
+    "desc_tr": "Charles II’nin dönüşüyle monarşi yeniden kuruluyor. Ticaret ve parlamento arasındaki yeni denge dönemi başlıyor.",
+    "probability": 0,
+    "min_turn": 241,
+    "target": "specific_faction",
+    "sat_delta": 18,
+    "gold_delta": 420,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1660,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "england",
+    "relations": [
+      {
+        "faction_id": "dutch_republic",
+        "stance": "trade",
+        "score_delta": 25
+      }
+    ],
+    "set_flags": [
+      "english_restoration_1660"
+    ]
+  },
+  {
+    "id": "great_plague_1665",
+    "name_tr": "Büyük Veba",
+    "desc_tr": "Londra merkezli veba salgını nüfus ve üretimi ağır biçimde azaltıyor.",
+    "probability": 0,
+    "min_turn": 261,
+    "target": "specific_faction",
+    "sat_delta": -18,
+    "gold_delta": -320,
+    "grain_delta": -120,
+    "army_hp_mod": 0,
+    "historical_year": 1665,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "england",
+    "population_delta": -45,
+    "trade_income_percent": -20,
+    "set_flags": [
+      "great_plague_1665"
+    ]
+  },
+  {
+    "id": "glorious_revolution_1688",
+    "name_tr": "Şanlı Devrim",
+    "desc_tr": "Parlamenter düzen ve taht ilişkisi yeni bir çerçeveye kavuşuyor; Hollanda ile askeri ve mali bağlar güçleniyor.",
+    "probability": 0,
+    "min_turn": 355,
+    "target": "specific_faction",
+    "sat_delta": 8,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1688,
+    "historical_month": 11,
+    "one_shot": true,
+    "affected_faction": "england",
+    "relations": [
+      {
+        "faction_id": "dutch_republic",
+        "stance": "allied",
+        "score_delta": 45
+      },
+      {
+        "faction_id": "france",
+        "stance": "war",
+        "score_delta": -40
+      }
+    ],
+    "set_flags": [
+      "glorious_revolution_1688"
+    ]
+  },
+  {
+    "id": "act_of_union_1707",
+    "name_tr": "Birleşme Yasası",
+    "desc_tr": "İngiltere ve İskoçya parlamentoları birleşiyor; Büyük Britanya Krallığı doğuyor.",
+    "probability": 0,
+    "min_turn": 429,
+    "target": "specific_faction",
+    "sat_delta": 10,
+    "gold_delta": 650,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1707,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "england",
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 3
+      },
+      {
+        "unit_type": "warship",
+        "unit_count": 1
+      }
+    ],
+    "set_flags": [
+      "great_britain_1707"
+    ]
+  },
+  {
+    "id": "south_sea_finance_1720",
+    "name_tr": "Güney Denizi Spekülasyonu",
+    "desc_tr": "Kredi ve hisse fiyatlarıyla oluşan spekülatif balon İngiltere’nin mali sisteminde sarsıntıya yol açıyor.",
+    "probability": 0,
+    "min_turn": 482,
+    "target": "specific_faction",
+    "sat_delta": -8,
+    "gold_delta": -420,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1720,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "england",
+    "trade_income_percent": -14,
+    "set_flags": [
+      "south_sea_bubble_1720"
+    ]
+  },
+  {
+    "id": "seven_years_war_1756",
+    "name_tr": "Yedi Yıl Savaşı Başlıyor",
+    "desc_tr": "Avrupa ittifakları yeniden düzenleniyor. Büyük güçler Avrupa ve denizaşırı ticaret alanlarında aynı anda savaşa giriyor.",
+    "probability": 0,
+    "min_turn": 625,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1756,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "france",
+    "relations": [
+      {
+        "faction_id": "england",
+        "stance": "war",
+        "score_delta": -70
+      },
+      {
+        "faction_id": "austria_duchy",
+        "stance": "allied",
+        "score_delta": 35
+      }
+    ],
+    "coalition": {
+      "members": [
+        "france",
+        "saxony_duchy"
+      ],
+      "opponents": [
+        "england",
+        "brandenburg_margraviate"
+      ],
+      "member_stance": "allied",
+      "opponent_stance": "war",
+      "member_score_delta": 25,
+      "opponent_score_delta": -20
+    },
+    "set_flags": [
+      "seven_years_war_1756"
+    ]
+  },
+  {
+    "id": "great_turkish_war_1683",
+    "name_tr": "Viyana Seferi ve Kutsal İttifak",
+    "desc_tr": "Osmanlı’nın 1683 Viyana kuşatması başarısız oluyor. Habsburg, Polonya-Litvanya ve Venedik çevresinde geniş bir anti-Osmanlı koalisyonu kuruluyor.",
+    "probability": 0,
+    "min_turn": 334,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1683,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "austria_duchy",
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "stance": "war",
+        "score_delta": -80
+      },
+      {
+        "faction_id": "polish_lithuania",
+        "stance": "allied",
+        "score_delta": 35
+      },
+      {
+        "faction_id": "venice",
+        "stance": "allied",
+        "score_delta": 35
+      }
+    ],
+    "coalition": {
+      "members": [
+        "austria_duchy",
+        "polish_lithuania",
+        "venice"
+      ],
+      "opponents": [
+        "ottoman",
+        "crimean_khanate"
+      ],
+      "member_stance": "allied",
+      "opponent_stance": "war",
+      "member_score_delta": 30,
+      "opponent_score_delta": -25
+    },
+    "set_flags": [
+      "great_turkish_war_1683"
+    ]
+  },
+  {
+    "id": "buda_1686",
+    "name_tr": "Buda’nın Fethi",
+    "desc_tr": "Habsburg orduları Buda’yı ele geçirerek Macaristan’daki Osmanlı savunma hattını geri itiyor.",
+    "probability": 0,
+    "min_turn": 346,
+    "target": "specific_faction",
+    "sat_delta": 10,
+    "gold_delta": 520,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1686,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "austria_duchy",
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 4
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 1
+      }
+    ],
+    "set_flags": [
+      "buda_1686"
+    ]
+  },
+  {
+    "id": "karlowitz_1699",
+    "name_tr": "Karlofça Antlaşması",
+    "desc_tr": "Osmanlı, Habsburglar ve müttefikleriyle barış yapıyor; Orta Avrupa’daki güç dengesi kalıcı biçimde değişiyor.",
+    "probability": 0,
+    "min_turn": 396,
+    "target": "specific_faction",
+    "sat_delta": -8,
+    "gold_delta": -260,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1699,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "relation_delta_all": 14,
+    "set_flags": [
+      "karlowitz_1699"
+    ]
+  },
+  {
+    "id": "war_spanish_succession_1701",
+    "name_tr": "İspanya Veraset Savaşı",
+    "desc_tr": "İspanyol tahtının mirası Fransa, Habsburglar, İngiltere ve Birleşik Eyaletler arasında büyük bir savaş doğuruyor.",
+    "probability": 0,
+    "min_turn": 406,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1701,
+    "historical_month": 7,
+    "one_shot": true,
+    "affected_faction": "castile_kingdom",
+    "relations": [
+      {
+        "faction_id": "france",
+        "stance": "allied",
+        "score_delta": 45
+      },
+      {
+        "faction_id": "austria_duchy",
+        "stance": "war",
+        "score_delta": -75
+      },
+      {
+        "faction_id": "england",
+        "stance": "war",
+        "score_delta": -60
+      },
+      {
+        "faction_id": "dutch_republic",
+        "stance": "war",
+        "score_delta": -55
+      }
+    ],
+    "set_flags": [
+      "war_spanish_succession_1701"
+    ]
+  },
+  {
+    "id": "blenheim_1704",
+    "name_tr": "Blenheim Savaşı",
+    "desc_tr": "Müttefik kuvvetler Fransız-Bavyera ordularını yeniyor; savaşın kıtasal dengesi değişiyor.",
+    "probability": 0,
+    "min_turn": 418,
+    "target": "specific_faction",
+    "sat_delta": 12,
+    "gold_delta": 480,
+    "grain_delta": 0,
+    "army_hp_mod": 1.08,
+    "historical_year": 1704,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "england",
+    "set_flags": [
+      "blenheim_1704"
+    ]
+  },
+  {
+    "id": "utrecht_1713",
+    "name_tr": "Utrecht Barışı",
+    "desc_tr": "İspanya Veraset Savaşı’nın ana çatışmaları sona eriyor. Avrupa’da denge siyaseti daha görünür hale geliyor.",
+    "probability": 0,
+    "min_turn": 453,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 600,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1713,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "england",
+    "trade_income_percent": 12,
+    "relation_delta_all": 12,
+    "set_flags": [
+      "utrecht_1713"
+    ]
+  },
+  {
+    "id": "great_northern_war_1700",
+    "name_tr": "Büyük Kuzey Savaşı",
+    "desc_tr": "İsveç, Rusya, Danimarka-Norveç ve Saksonya-Polonya eksenindeki rekabet Baltık’ı uzun süreli bir savaş alanına çeviriyor.",
+    "probability": 0,
+    "min_turn": 400,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1700,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "sweden_kingdom",
+    "relations": [
+      {
+        "faction_id": "russia",
+        "stance": "war",
+        "score_delta": -75
+      },
+      {
+        "faction_id": "denmark_kingdom",
+        "stance": "war",
+        "score_delta": -60
+      },
+      {
+        "faction_id": "polish_lithuania",
+        "stance": "war",
+        "score_delta": -45
+      }
+    ],
+    "set_flags": [
+      "great_northern_war_1700"
+    ]
+  },
+  {
+    "id": "poltava_1709",
+    "name_tr": "Poltava Savaşı",
+    "desc_tr": "Rus ordusu İsveç kuvvetlerini ağır yenilgiye uğratıyor; Baltık güç dengesi Moskova lehine dönüyor.",
+    "probability": 0,
+    "min_turn": 438,
+    "target": "specific_faction",
+    "sat_delta": 12,
+    "gold_delta": 460,
+    "grain_delta": 0,
+    "army_hp_mod": 1.1,
+    "historical_year": 1709,
+    "historical_month": 7,
+    "one_shot": true,
+    "affected_faction": "russia",
+    "set_flags": [
+      "poltava_1709"
+    ]
+  },
+  {
+    "id": "nystad_1721",
+    "name_tr": "Nystad Barışı",
+    "desc_tr": "Büyük Kuzey Savaşı sona eriyor. Rusya Baltık’ta büyük bir güç olarak ortaya çıkarken İsveç’in eski üstünlüğü geriliyor.",
+    "probability": 0,
+    "min_turn": 486,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 700,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1721,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "russia",
+    "trade_income_percent": 14,
+    "set_flags": [
+      "nystad_1721"
+    ]
+  },
+  {
+    "id": "war_polish_succession_1733",
+    "name_tr": "Polonya Veraset Savaşı",
+    "desc_tr": "Lehistan tahtı üzerindeki rekabet Fransa ve İspanya ile Habsburglar arasında yeni bir Avrupa savaşına dönüşüyor.",
+    "probability": 0,
+    "min_turn": 534,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1733,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "polish_lithuania",
+    "relations": [
+      {
+        "faction_id": "france",
+        "stance": "allied",
+        "score_delta": 35
+      },
+      {
+        "faction_id": "austria_duchy",
+        "stance": "war",
+        "score_delta": -55
+      }
+    ],
+    "set_flags": [
+      "war_polish_succession_1733"
+    ]
+  },
+  {
+    "id": "austrian_succession_1740",
+    "name_tr": "Avusturya Veraset Savaşı",
+    "desc_tr": "Maria Theresa’nın mirası üzerindeki tartışma Prusya, Fransa, Bavyera ve Habsburglar arasında büyük güç krizine dönüşüyor.",
+    "probability": 0,
+    "min_turn": 563,
+    "target": "specific_faction",
+    "sat_delta": -6,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1740,
+    "historical_month": 12,
+    "one_shot": true,
+    "affected_faction": "austria_duchy",
+    "relations": [
+      {
+        "faction_id": "bavaria_duchy",
+        "stance": "war",
+        "score_delta": -50
+      },
+      {
+        "faction_id": "france",
+        "stance": "war",
+        "score_delta": -45
+      },
+      {
+        "faction_id": "brandenburg_margraviate",
+        "stance": "war",
+        "score_delta": -60
+      }
+    ],
+    "set_flags": [
+      "war_austrian_succession_1740"
+    ]
+  },
+  {
+    "id": "jacobite_1745",
+    "name_tr": "Jacobite Ayaklanması",
+    "desc_tr": "İskoçya’da Stuart hanedanını geri getirmeyi amaçlayan ayaklanma Büyük Britanya’yı kısa süreli bir iç savaş baskısıyla karşı karşıya bırakıyor.",
+    "probability": 0,
+    "min_turn": 582,
+    "target": "specific_faction",
+    "sat_delta": -10,
+    "gold_delta": -280,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1745,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "england",
+    "relations": [
+      {
+        "faction_id": "scotland_kingdom",
+        "stance": "war",
+        "score_delta": -60
+      }
+    ],
+    "set_flags": [
+      "jacobite_rebellion_1745"
+    ]
+  },
+  {
+    "id": "paris_1763",
+    "name_tr": "Paris Barışı",
+    "desc_tr": "Yedi Yıl Savaşı’nın ana çatışmaları sona eriyor; denizaşırı ticaret dengeleri ve mali yükler yeniden şekilleniyor.",
+    "probability": 0,
+    "min_turn": 652,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 700,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1763,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "england",
+    "trade_income_percent": 16,
+    "relation_delta_all": 10,
+    "set_flags": [
+      "paris_1763"
+    ]
+  },
+  {
+    "id": "russo_turkish_1768",
+    "name_tr": "Rusya-Osmanlı Savaşı",
+    "desc_tr": "Karadeniz ve Balkanlar üzerindeki rekabet yeniden savaşa dönüşüyor; Osmanlı donanması ve Rusya’nın kara ordusu seferber oluyor.",
+    "probability": 0,
+    "min_turn": 675,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1768,
+    "historical_month": 10,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "relations": [
+      {
+        "faction_id": "russia",
+        "stance": "war",
+        "score_delta": -80
+      }
+    ],
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 5
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 2
+      }
+    ],
+    "set_flags": [
+      "russo_turkish_war_1768"
+    ]
+  },
+  {
+    "id": "kucuk_kaynarca_1774",
+    "name_tr": "Küçük Kaynarca Antlaşması",
+    "desc_tr": "Rusya ve Osmanlı arasındaki savaş sona eriyor. Karadeniz’de Rus ticareti güçlenirken Kırım’ın siyasi bağımsızlığı meselesi yeniden şekilleniyor.",
+    "probability": 0,
+    "min_turn": 698,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 580,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1774,
+    "historical_month": 7,
+    "one_shot": true,
+    "affected_faction": "russia",
+    "trade_income_percent": 12,
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "stance": "peace",
+        "score_delta": 60
+      }
+    ],
+    "set_flags": [
+      "kucuk_kaynarca_1774"
+    ]
+  },
+  {
+    "id": "first_partition_of_poland_1772",
+    "name_tr": "Lehistan’ın İlk Paylaşımı",
+    "desc_tr": "Avusturya, Rusya ve Brandenburg-Prusya Commonwealth’in bazı topraklarını paylaşıyor. Lehistan-Litvanya iç siyasal krizle karşı karşıya kalıyor.",
+    "probability": 0,
+    "min_turn": 690,
+    "target": "specific_faction",
+    "sat_delta": -22,
+    "gold_delta": -520,
+    "grain_delta": -160,
+    "army_hp_mod": 0,
+    "historical_year": 1772,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "polish_lithuania",
+    "set_flags": [
+      "polish_partition_1772"
+    ]
+  },
+  {
+    "id": "american_revolution_1775",
+    "name_tr": "Amerikan Bağımsızlık Savaşı",
+    "desc_tr": "Britanya’nın Atlantik ticareti ve maliyesi büyük bir savaş yüküyle karşılaşıyor; Fransa ve rakipler İngiliz gücünü denizaşırı alanlarda zorluyor.",
+    "probability": 0,
+    "min_turn": 701,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": -650,
+    "grain_delta": -180,
+    "army_hp_mod": 0,
+    "historical_year": 1775,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "england",
+    "trade_income_percent": -18,
+    "relations": [
+      {
+        "faction_id": "france",
+        "stance": "war",
+        "score_delta": -65
+      }
+    ],
+    "set_flags": [
+      "american_revolution_1775"
+    ]
+  },
+  {
+    "id": "paris_1783",
+    "name_tr": "1783 Paris Barışı",
+    "desc_tr": "Amerikan savaşı sona eriyor. Britanya yeni bir mali ve ticari denge kurmaya yöneliyor.",
+    "probability": 0,
+    "min_turn": 734,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 520,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1783,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "england",
+    "relation_delta_all": 12,
+    "trade_income_percent": 6,
+    "set_flags": [
+      "paris_1783"
+    ]
+  },
+  {
+    "id": "french_revolution_1789",
+    "name_tr": "Fransız Devrimi’nin Başlangıcı",
+    "desc_tr": "Fransa’da mali kriz, temsil tartışmaları ve siyasal dönüşüm derin bir rejim krizine dönüşüyor. 1600–1789 kampanyasının tarihsel ufku bu olayla sona eriyor.",
+    "probability": 0,
+    "min_turn": 758,
+    "target": "specific_faction",
+    "sat_delta": -30,
+    "gold_delta": -700,
+    "grain_delta": -260,
+    "army_hp_mod": 0,
+    "historical_year": 1789,
+    "historical_month": 7,
+    "one_shot": true,
+    "affected_faction": "france",
+    "relation_delta_all": -12,
+    "set_flags": [
+      "french_revolution_1789"
+    ]
+  },
+  {
+    "id": "dutch_golden_age_1620",
+    "name_tr": "Hollanda Ticaret Altın Çağı",
+    "desc_tr": "Amsterdam ve Hollanda limanları uluslararası kredi, deniz ticareti ve yüksek değerli mallarda olağanüstü büyüme sağlıyor.",
+    "probability": 0,
+    "min_turn": 80,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 650,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1620,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "dutch_republic",
+    "trade_income_percent": 20,
+    "complete_techs": [
+      "banking",
+      "merchant_embassies"
+    ],
+    "set_flags": [
+      "dutch_golden_age"
+    ]
+  },
+  {
+    "id": "scientific_revolution_1640",
+    "name_tr": "Bilimsel Devrimin Kurumsallaşması",
+    "desc_tr": "Gözlem, deney, matematik ve haritacılık askeri mühendislikten denizciliğe kadar birçok alana nüfuz ediyor.",
+    "probability": 0,
+    "min_turn": 160,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 260,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1640,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "hre",
+    "start_research_tech": "cartography",
+    "set_flags": [
+      "scientific_revolution"
+    ]
+  },
+  {
+    "id": "charter_company_1600",
+    "name_tr": "Doğu Hindistan Şirketi Modeli",
+    "desc_tr": "Uzun mesafeli deniz ticareti sermaye ortaklıkları ve ayrıcalıklı şirketler üzerinden kurumsallaşıyor.",
+    "probability": 0,
+    "min_turn": 3,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 420,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1600,
+    "historical_month": 12,
+    "one_shot": true,
+    "affected_faction": "england",
+    "trade_income_percent": 16,
+    "set_flags": [
+      "charter_company_1600"
+    ]
+  },
+  {
+    "id": "safavid_isfahan_1598",
+    "name_tr": "İsfahan’ın Yeni Başkent Olarak Pekişmesi",
+    "desc_tr": "Safevî devletinin merkezi İsfahan’da yoğunlaşıyor; saray, zanaat ve ticaret altyapısı yeni bir ekonomik ağı destekliyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 460,
+    "grain_delta": 120,
+    "army_hp_mod": 0,
+    "historical_year": 1600,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "safavid",
+    "trade_income_percent": 10,
+    "set_flags": [
+      "isfahan_capital"
+    ]
+  },
+  {
+    "id": "ottoman_kopru_lom",
+    "name_tr": "Köprülüler Dönemi Reformları",
+    "desc_tr": "Merkezî otoritenin toparlanması, mali disiplin ve ordu düzenlemeleri Osmanlı’nın uzun savaş kapasitesini artırıyor.",
+    "probability": 0,
+    "min_turn": 226,
+    "target": "specific_faction",
+    "sat_delta": 12,
+    "gold_delta": 520,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1656,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "ottoman",
+    "complete_techs": [
+      "central_divan",
+      "professional_officer_corps"
+    ],
+    "set_flags": [
+      "koprulu_reforms"
+    ]
+  },
+  {
+    "id": "louis_xiv_age_1661",
+    "name_tr": "XIV. Louis ve Mutlak Monarşi",
+    "desc_tr": "Fransa’da kraliyet maliyesi ve sürekli ordu hızla büyüyor; Versailles merkezli siyaset Avrupa güç dengesini etkiliyor.",
+    "probability": 0,
+    "min_turn": 244,
+    "target": "specific_faction",
+    "sat_delta": 10,
+    "gold_delta": 700,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1661,
+    "historical_month": 3,
+    "one_shot": true,
+    "affected_faction": "france",
+    "unit_reinforcements": [
+      {
+        "unit_type": "infantry",
+        "unit_count": 4
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 1
+      }
+    ],
+    "set_flags": [
+      "louis_xiv_era"
+    ]
+  },
+  {
+    "id": "french_famine_1693",
+    "name_tr": "Fransa’da Büyük Kıtlık",
+    "desc_tr": "Kötü hasatlar ve yüksek savaş maliyetleri nüfus ve vergi gelirleri üzerinde baskı oluşturuyor.",
+    "probability": 0,
+    "min_turn": 374,
+    "target": "specific_faction",
+    "sat_delta": -16,
+    "gold_delta": -380,
+    "grain_delta": -220,
+    "army_hp_mod": 0,
+    "historical_year": 1693,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "france",
+    "population_delta": -35,
+    "set_flags": [
+      "french_famine_1693"
+    ]
+  },
+  {
+    "id": "great_fire_london_1666",
+    "name_tr": "Londra Büyük Yangını",
+    "desc_tr": "Şehrin büyük bölümü yanıyor; yeniden inşa, ticaret ve mali kapasite için büyük kaynak gerektiriyor.",
+    "probability": 0,
+    "min_turn": 266,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": -360,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1666,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "england",
+    "population_delta": -18,
+    "trade_income_percent": -10,
+    "set_flags": [
+      "great_fire_london_1666"
+    ]
+  },
+  {
+    "id": "portuguese_restoration_1640",
+    "name_tr": "Portekiz Restorasyonu",
+    "desc_tr": "Portekiz soyluları Habsburg İber Birliği’ne karşı ayaklanarak Braganza hanedanını tahta çıkarıyor.",
+    "probability": 0,
+    "min_turn": 163,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1640,
+    "historical_month": 12,
+    "one_shot": true,
+    "affected_faction": "castile_kingdom",
+    "set_flags": [
+      "portuguese_restoration_1640"
+    ],
+    "successor_revival": {
+      "faction_id": "portugal",
+      "regions": [
+        "portugal",
+        "algarve"
+      ],
+      "mode": "independent",
+      "units": [
+        {
+          "unit_type": "infantry",
+          "unit_count": 5
+        },
+        {
+          "unit_type": "cannon",
+          "unit_count": 1
+        }
+      ],
+      "suppress_relation": true
+    },
+    "relations": [
+      {
+        "faction_id": "castile_kingdom",
+        "stance": "war",
+        "score_delta": -85
+      }
+    ]
+  },
+  {
+    "id": "peace_portugal_1668",
+    "name_tr": "Lizbon Antlaşması",
+    "desc_tr": "İspanya Portekiz’in bağımsızlığını tanıyor; iki devletin ilişkileri yeniden normalleşiyor.",
+    "probability": 0,
+    "min_turn": 272,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 380,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1668,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "portugal",
+    "relations": [
+      {
+        "faction_id": "castile_kingdom",
+        "stance": "peace",
+        "score_delta": 55
+      }
+    ],
+    "trade_income_percent": 10,
+    "set_flags": [
+      "portugal_recognized_1668"
+    ]
+  },
+  {
+    "id": "hormuz_fall_1622",
+    "name_tr": "Hürmüz’ün Düşüşü",
+    "desc_tr": "Safevî ve İngiliz-Pers müttefik kuvvetleri Portekiz’in Hürmüz hakimiyetini kırıyor; Basra Körfezi ticaret dengesi değişiyor.",
+    "probability": 0,
+    "min_turn": 89,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": -420,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1622,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "castile_kingdom",
+    "trade_income_percent": -18,
+    "relations": [
+      {
+        "faction_id": "safavid",
+        "stance": "war",
+        "score_delta": -65
+      }
+    ],
+    "set_flags": [
+      "hormuz_lost_1622"
+    ]
+  },
+  {
+    "id": "safavid_ottoman_peace_1639",
+    "name_tr": "Kasr-ı Şirin Antlaşması",
+    "desc_tr": "Osmanlı ve Safevî devletleri uzun savaşların ardından kalıcı bir sınır düzeni kuruyor; İran-Irak sınırı görece istikrara kavuşuyor.",
+    "probability": 0,
+    "min_turn": 157,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 260,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1639,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "safavid",
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "stance": "peace",
+        "score_delta": 65
+      }
+    ],
+    "set_flags": [
+      "qasr_i_shirin_1639"
+    ]
+  },
+  {
+    "id": "venetian_crete_war_1645",
+    "name_tr": "Girit Savaşı Başlıyor",
+    "desc_tr": "Venedik ve Osmanlı arasında Girit merkezli uzun savaş başlıyor; Doğu Akdeniz ticaretinde deniz gücü kritik hale geliyor.",
+    "probability": 0,
+    "min_turn": 182,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1645,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "venice",
+    "relations": [
+      {
+        "faction_id": "ottoman",
+        "stance": "war",
+        "score_delta": -75
+      }
+    ],
+    "unit_reinforcements": [
+      {
+        "unit_type": "warship",
+        "unit_count": 2
+      },
+      {
+        "unit_type": "cannon",
+        "unit_count": 1
+      }
+    ],
+    "set_flags": [
+      "cretan_war_1645"
+    ]
+  },
+  {
+    "id": "venetian_crete_loss_1669",
+    "name_tr": "Kandiye ve Girit’in Kaybı",
+    "desc_tr": "Uzun savaşın sonunda Venedik Girit üzerindeki ana hakimiyetini kaybediyor; Doğu Akdeniz deniz ticareti yeniden şekilleniyor.",
+    "probability": 0,
+    "min_turn": 278,
+    "target": "specific_faction",
+    "sat_delta": -8,
+    "gold_delta": -460,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 1669,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "venice",
+    "trade_income_percent": -15,
+    "set_flags": [
+      "crete_lost_1669"
+    ]
+  },
+  {
+    "id": "war_weariness_early_modern",
+    "name_tr": "Savaş Yorgunluğu",
+    "desc_tr": "Uzun savaşlar ve ağır vergiler ordunun ve halkın dayanıklılığını azaltıyor.",
+    "probability": 0.026,
+    "min_turn": 18,
+    "target": "player_faction",
+    "sat_delta": -10,
+    "gold_delta": -80,
+    "grain_delta": -20,
+    "army_hp_mod": 1.0,
+    "army_upkeep_percent": 12
+  },
+  {
+    "id": "mercenary_crisis_early_modern",
+    "name_tr": "Paralı Asker Krizi",
+    "desc_tr": "Savaş piyasasındaki maaş ve iaşe baskısı devlet hazinesine ek yük getiriyor.",
+    "probability": 0.018,
+    "min_turn": 24,
+    "target": "player_faction",
+    "sat_delta": -6,
+    "gold_delta": -180,
+    "grain_delta": -40,
+    "army_hp_mod": 0.98
+  },
+  {
+    "id": "merchant_boom_early_modern",
+    "name_tr": "Ticaret Patlaması",
+    "desc_tr": "Yeni ticaret ağları tüccar gelirlerini ve şehir ekonomisini büyütüyor.",
+    "probability": 0.02,
+    "min_turn": 24,
+    "target": "player_faction",
+    "sat_delta": 6,
+    "gold_delta": 260,
+    "trade_income_percent": 10
+  },
+  {
+    "id": "crop_failure_early_modern",
+    "name_tr": "Hasat Kıtlığı",
+    "desc_tr": "Kötü hava koşulları tahıl üretimini azaltarak fiyatları yükseltiyor.",
+    "probability": 0.019,
+    "min_turn": 12,
+    "target": "random_region",
+    "sat_delta": -8,
+    "gold_delta": -60,
+    "grain_delta": -80,
+    "population_delta": -10
+  },
+  {
+    "id": "plague_early_modern",
+    "name_tr": "Salgın Hastalık",
+    "desc_tr": "Limanlar ve yoğun şehirler arasında yayılan salgın üretimi ve nüfusu azaltıyor.",
+    "probability": 0.012,
+    "min_turn": 32,
+    "target": "random_region",
+    "sat_delta": -14,
+    "gold_delta": -100,
+    "grain_delta": -50,
+    "population_delta": -20,
+    "trade_income_percent": -12
+  },
+  {
+    "id": "naval_war_contribution_early_modern",
+    "name_tr": "Deniz Seferberlik Payı",
+    "desc_tr": "Donanma seferleri için tüccarlardan ve kıyı halkından olağanüstü katkı toplanıyor.",
+    "probability": 0.015,
+    "min_turn": 20,
+    "target": "player_faction",
+    "sat_delta": -5,
+    "gold_delta": 160,
+    "trade_income_percent": -5,
+    "army_upkeep_percent": -5
+  }
+]
