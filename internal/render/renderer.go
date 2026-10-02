@@ -1984,25 +1984,31 @@ func (r *Renderer) applyWorldSubImageGeoM(op *ebiten.DrawImageOptions, bounds im
 }
 
 func (r *Renderer) selectedRegionOverlayColor(region *world.Region, mode MapMode) color.RGBA {
-	const overlayAlpha uint8 = 85
+	const earthOverlayAlpha uint8 = 20
+	const seaOverlayAlpha uint8 = 20
 	if region == nil {
-		return color.RGBA{}
+		var whiteColor = rgb(255, 255, 255)
+		return color.RGBA{whiteColor.R, whiteColor.G, whiteColor.B, 255}
 	}
 	if region.IsSea {
-		return color.RGBA{80, 180, 255, 100}
+		var seaColor = rgb(24, 66, 96)
+		return color.RGBA{seaColor.R, seaColor.G, seaColor.B, seaOverlayAlpha}
 	}
 	if mode == MapModeTrade && r.gs != nil && len(r.gs.TradeCenters.Centers) > 0 {
 		if index := nearestTradeCenterIndex(region, r.gs.TradeCenters.Centers, r.gs.Regions, r.gs.Year); index >= 0 && index < len(tradeNodeColors) {
 			col := tradeNodeColors[index]
-			return color.RGBA{col[0], col[1], col[2], uint8(overlayAlpha)}
+			return color.RGBA{col[0], col[1], col[2], earthOverlayAlpha}
 		}
 	}
 	if r.gs != nil {
 		if f := r.gs.Factions[faction.FactionID(region.OwnerID)]; f != nil {
-			return color.RGBA{f.Color[0], f.Color[1], f.Color[2], uint8(overlayAlpha)}
+			var earthColor = rgb(23, 53, 9)
+			//return color.RGBA{f.Color[0], f.Color[1], f.Color[2], earthOverlayAlpha}
+			return color.RGBA{earthColor.R, earthColor.G, earthColor.B, earthOverlayAlpha}
 		}
 	}
-	return color.RGBA{245, 205, 80, uint8(overlayAlpha)}
+	var terrainColor = rgb(69, 59, 28)
+	return color.RGBA{terrainColor.R, terrainColor.G, terrainColor.B, earthOverlayAlpha}
 }
 
 // drawSelectedRegionOverlay, seçim vurgusunu sahiplik rasterından ayırır.

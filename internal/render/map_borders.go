@@ -422,7 +422,7 @@ func (wm *WorldMap) updateBorderStyles(gs *state.GameState, selected world.Regio
 func mapBorderStyleColor(style uint8) color.RGBA {
 	switch style {
 	case mapBorderStyleSelected:
-		return color.RGBA{255, 222, 72, 245}
+		return color.RGBA{224, 194, 112, 185}
 	case mapBorderStylePlayerRealm:
 		return borderColorPlayerRealm
 	case mapBorderStyleAlly:
@@ -452,7 +452,7 @@ func mapBorderStyleColor(style uint8) color.RGBA {
 
 func mapBorderStyleStrokeWidth(style uint8) float32 {
 	if style == mapBorderStyleSelected {
-		return selectedMapBorderStrokeWidth
+		return 2.25
 	}
 	if style == mapBorderStyleTerrainAreaSelected {
 		return 2
