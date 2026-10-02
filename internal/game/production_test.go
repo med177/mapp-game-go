@@ -298,6 +298,13 @@ func TestWriteScenarioRelationsPreservesUnchangedSourceData(t *testing.T) {
     "score_a_to_b": -35,
     "score_b_to_a": -35,
     "stance": "peace"
+  },
+  {
+    "faction_a": "c",
+    "faction_b": "a",
+    "score_a_to_b": 18,
+    "score_b_to_a": -12,
+    "stance": "trade"
   }
 ]
 `)

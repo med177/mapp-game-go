@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"sort"
 	"strings"
@@ -4009,12 +4010,51 @@ func writeScenarioRelations(gs *state.GameState) error {
 		}
 		relations = append(relations, rel)
 	}
+	if unchanged, err := scenarioRelationsMatchExistingFile(path, relations); err != nil {
+		return err
+	} else if unchanged {
+		return nil
+	}
 	data, err := json.MarshalIndent(relations, "", "  ")
 	if err != nil {
 		return err
 	}
 	data = append(data, '\n')
 	return writeScenarioFileIfChanged(path, data)
+}
+
+// scenarioRelationsMatchExistingFile, kaynak dosyada aynı canonical ilişki
+// değerleri zaten varsa true döner. Kaynakta aynı çiftin iki farklı yönde
+// birden fazla kaydı bulunabilir; runtime map'i bunları tek anahtarda tutar.
+// Değerler değişmediyse bu kaydı yeniden biçimlendirmek veya duplicate kaydı
+// düşürmek yerine mevcut dosyayı korumak gerekir.
+func scenarioRelationsMatchExistingFile(path string, relations []*faction.Relation) (bool, error) {
+	existingData, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	var existing []*faction.Relation
+	if err := json.Unmarshal(existingData, &existing); err != nil {
+		// Mevcut yazma yolu bozuk JSON'u geçerli çıktıyla onarabilir.
+		return false, nil
+	}
+
+	return reflect.DeepEqual(relationMapByKey(existing), relationMapByKey(relations)), nil
+}
+
+func relationMapByKey(relations []*faction.Relation) map[string]*faction.Relation {
+	result := make(map[string]*faction.Relation, len(relations))
+	for _, rel := range relations {
+		if rel == nil || rel.FactionA == "" || rel.FactionB == "" || rel.FactionA == rel.FactionB {
+			continue
+		}
+		result[faction.RelationKey(rel.FactionA, rel.FactionB)] = rel
+	}
+	return result
 }
 
 func writeScenarioArmies(gs *state.GameState) error {
