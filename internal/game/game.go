@@ -748,6 +748,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
+		g.renderer.SetScenarioEvents(g.evts)
 		g.renderer.ReloadGameState(res.gs)
 		g.renderer.SetCursor(0)
 		g.refreshEventCodex()
@@ -777,6 +778,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
+		g.renderer.SetScenarioEvents(g.evts)
 		g.renderer.ReloadGameStateWithPreparedMap(res.gs, res.worldMap)
 		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.HasSave = save.AnySlotExists()
@@ -3514,7 +3516,7 @@ func (g *Game) saveScenarioRegions() bool {
 		g.renderer.ShowCombatResult("Senaryo yolu yok; kaydedilemedi.")
 		return false
 	}
-	if err := writeScenarioEditData(g.gs); err != nil {
+	if err := writeScenarioEditData(g.gs, g.evts); err != nil {
 		g.renderer.ShowCombatResult("Senaryo kayıt hatası: " + err.Error())
 		return false
 	}
@@ -3523,7 +3525,7 @@ func (g *Game) saveScenarioRegions() bool {
 	return true
 }
 
-func writeScenarioEditData(gs *state.GameState) error {
+func writeScenarioEditData(gs *state.GameState, eventList []*events.Event) error {
 	if err := writeScenarioRegions(gs); err != nil {
 		return err
 	}
@@ -3540,6 +3542,9 @@ func writeScenarioEditData(gs *state.GameState) error {
 		return err
 	}
 	if err := writeScenarioFactions(gs); err != nil {
+		return err
+	}
+	if err := writeScenarioEvents(gs, eventList); err != nil {
 		return err
 	}
 	if err := writeScenarioAIStrategies(gs); err != nil {
@@ -3559,6 +3564,19 @@ func writeScenarioEditData(gs *state.GameState) error {
 		return err
 	}
 	return nil
+}
+
+func writeScenarioEvents(gs *state.GameState, eventList []*events.Event) error {
+	if gs == nil || eventList == nil {
+		return nil
+	}
+	path := filepath.Join(gs.ScenarioPath, "data", "events.json")
+	data, err := json.MarshalIndent(eventList, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return os.WriteFile(path, data, 0644)
 }
 
 func writeScenarioLandPassages(gs *state.GameState) error {

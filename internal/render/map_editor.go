@@ -11,6 +11,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/scenario"
@@ -3808,6 +3809,17 @@ func (r *Renderer) renameRegionID(oldID, newID world.RegionID) {
 			a.DockedRegionID = newID
 		}
 	}
+	for _, fx := range r.gs.Factions {
+		if fx == nil {
+			continue
+		}
+		for i := range fx.TerritorialClaims {
+			if fx.TerritorialClaims[i].RegionID == string(oldID) {
+				fx.TerritorialClaims[i].RegionID = string(newID)
+			}
+		}
+	}
+	events.RenameRegionIDReferences(r.scenarioEvents, oldID, newID)
 	for factionID, strategy := range r.gs.AIStrategies {
 		for j := range strategy.TerritorialClaims {
 			if strategy.TerritorialClaims[j].RegionID == string(oldID) {

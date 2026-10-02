@@ -18,6 +18,7 @@ import (
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
+	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/scenario"
@@ -87,8 +88,9 @@ var movementTargetHoverColor = color.RGBA{95, 255, 175, 245}
 
 // Renderer kamerayı ve dünya haritasını yönetir.
 type Renderer struct {
-	gs       *state.GameState
-	worldMap *WorldMap
+	gs             *state.GameState
+	worldMap       *WorldMap
+	scenarioEvents []*events.Event
 
 	mapBorderMeshes mapBorderMeshSet
 	mapBorderCache  mapBorderOverlayCache
@@ -460,6 +462,15 @@ type Renderer struct {
 	editFactionForm                   editFactionFormState
 	editRegionForm                    editRegionFormState
 	editBuildingsPanel                bool
+}
+
+// SetScenarioEvents, Edit Mode bölge ID değişikliklerinin aktif senaryo
+// event tanımlarına da uygulanabilmesi için event listesini bağlar.
+func (r *Renderer) SetScenarioEvents(eventList []*events.Event) {
+	if r == nil {
+		return
+	}
+	r.scenarioEvents = eventList
 }
 
 type merchantTradeMainPortRef struct {

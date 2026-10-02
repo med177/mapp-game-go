@@ -3,9 +3,11 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestNormalizeEditID(t *testing.T) {
@@ -20,6 +22,54 @@ func TestAppendFactionFormRuneNormalizesUppercaseID(t *testing.T) {
 
 	if got := r.editFactionForm.id; got != "a" {
 		t.Fatalf("faction ID after uppercase input = %q, want a", got)
+	}
+}
+
+func TestRenameRegionIDUpdatesFactionTerritorialClaims(t *testing.T) {
+	const fid faction.FactionID = "faction"
+	oldID := world.RegionID("old_region")
+	newID := world.RegionID("new_region")
+	r := &Renderer{
+		gs: &state.GameState{
+			Regions: map[world.RegionID]*world.Region{
+				oldID: {ID: oldID},
+			},
+			Factions: map[faction.FactionID]*faction.Faction{
+				fid: {
+					ID: fid,
+					TerritorialClaims: []faction.TerritorialClaim{
+						{RegionID: string(oldID), Value: 80, Core: true},
+						{RegionID: "other_region", Value: 40},
+					},
+				},
+			},
+		},
+		scenarioEvents: []*events.Event{{
+			SuccessorRevival:     &events.SuccessorRevivalEffect{RegionID: string(oldID)},
+			RequiresOwnedRegions: []world.RegionID{oldID},
+			Choices: []events.Choice{{Effect: events.Effect{
+				ArmyDefections: []events.ArmyDefectionEffect{{
+					SourceRegionIDs:     []world.RegionID{oldID},
+					DestinationRegionID: oldID,
+				}},
+			}}},
+		}},
+	}
+
+	r.renameRegionID(oldID, newID)
+
+	claims := r.gs.Factions[fid].TerritorialClaims
+	if claims[0].RegionID != string(newID) || claims[0].Value != 80 || !claims[0].Core {
+		t.Fatalf("territorial claim was not updated without losing metadata: %+v", claims[0])
+	}
+	if claims[1].RegionID != "other_region" {
+		t.Fatalf("unrelated territorial claim changed: %+v", claims[1])
+	}
+	event := r.scenarioEvents[0]
+	if event.SuccessorRevival.RegionID != string(newID) || event.RequiresOwnedRegions[0] != newID ||
+		event.Choices[0].Effect.ArmyDefections[0].SourceRegionIDs[0] != newID ||
+		event.Choices[0].Effect.ArmyDefections[0].DestinationRegionID != newID {
+		t.Fatalf("event region references were not updated: %+v", event)
 	}
 }
 
