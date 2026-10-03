@@ -1,0 +1,17 @@
+[
+  {
+    "from": "new_region_10",
+    "to": "pentos",
+    "type": "strait",
+    "move_cost": 1,
+    "defense_bonus": 20,
+    "start": [
+      1652,
+      3027
+    ],
+    "end": [
+      2000,
+      2827
+    ]
+  }
+]

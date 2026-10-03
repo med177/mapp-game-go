@@ -1,0 +1,66 @@
+{
+  "difficulty_policy": {
+    "fair_movement": true,
+    "levels": {
+      "1": {
+        "plan_horizon_turns": 2,
+        "plan_target_region_limit": 3,
+        "path_search_depth": 5,
+        "plan_move_bonus_percent": 70,
+        "war_threshold": 82,
+        "min_attack_power_percent": 130,
+        "war_cadence_turns": 4,
+        "max_concurrent_wars": 1
+      },
+      "2": {
+        "plan_horizon_turns": 2,
+        "plan_target_region_limit": 4,
+        "path_search_depth": 8,
+        "plan_move_bonus_percent": 100,
+        "proactive_war": true,
+        "war_threshold": 65,
+        "min_attack_power_percent": 110,
+        "war_cadence_turns": 3,
+        "max_concurrent_wars": 2,
+        "player_target_score_bonus": 2
+      },
+      "3": {
+        "plan_horizon_turns": 3,
+        "plan_target_region_limit": 5,
+        "path_search_depth": 12,
+        "plan_move_bonus_percent": 125,
+        "proactive_war": true,
+        "war_threshold": 62,
+        "min_attack_power_percent": 100,
+        "war_cadence_turns": 2,
+        "max_concurrent_wars": 2,
+        "player_target_score_bonus": 6,
+        "start_gold_buffer": 80,
+        "start_grain_buffer": 30
+      }
+    }
+  },
+  "factions": [
+    {
+      "faction_id": "stark",
+      "profile": "northern_king",
+      "objectives": [
+        {
+          "id": "avenge_ned",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "kings_landing",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 90,
+          "readiness_regions": [
+            "winterfell_region"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "faction_a": "stark",
+    "faction_b": "lannister",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "stark",
+    "faction_b": "baratheon_king",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "baratheon_dragonstone",
+    "faction_b": "baratheon_king",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "baratheon_stormsend",
+    "faction_b": "baratheon_king",
+    "score_a_to_b": -80,
+    "score_b_to_a": -80,
+    "stance": "war"
+  },
+  {
+    "faction_a": "tyrell",
+    "faction_b": "baratheon_stormsend",
+    "score_a_to_b": 80,
+    "score_b_to_a": 80,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "nights_watch",
+    "faction_b": "stark",
+    "score_a_to_b": 50,
+    "score_b_to_a": 50,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arryn",
+    "faction_b": "stark",
+    "score_a_to_b": 30,
+    "score_b_to_a": 30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arryn",
+    "faction_b": "tully",
+    "score_a_to_b": 70,
+    "score_b_to_a": 70,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arryn",
+    "faction_b": "lannister",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "arryn",
+    "faction_b": "bolton",
+    "score_a_to_b": -40,
+    "score_b_to_a": -40,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "tully",
+    "faction_b": "stark",
+    "score_a_to_b": 90,
+    "score_b_to_a": 90,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "tully",
+    "faction_b": "lannister",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "tully",
+    "faction_b": "baratheon_king",
+    "score_a_to_b": -60,
+    "score_b_to_a": -60,
+    "stance": "war"
+  },
+  {
+    "faction_a": "tully",
+    "faction_b": "bolton",
+    "score_a_to_b": -80,
+    "score_b_to_a": -80,
+    "stance": "war"
+  },
+  {
+    "faction_a": "free_folk",
+    "faction_b": "nights_watch",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "free_folk",
+    "faction_b": "stark",
+    "score_a_to_b": 20,
+    "score_b_to_a": 20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "free_folk",
+    "faction_b": "bolton",
+    "score_a_to_b": -60,
+    "score_b_to_a": -60,
+    "stance": "war"
+  },
+  {
+    "faction_a": "bolton",
+    "faction_b": "stark",
+    "score_a_to_b": 50,
+    "score_b_to_a": 50,
+    "stance": "peace"
+  }
+]

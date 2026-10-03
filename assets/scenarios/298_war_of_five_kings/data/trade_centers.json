@@ -1,0 +1,52 @@
+{
+  "primary_trade_capacity_bonus": 2,
+  "secondary_trade_capacity_bonus": 1,
+  "primary_trade_income_bonus": 5,
+  "secondary_trade_income_bonus": 2,
+  "primary_merchant_capacity_bonus": 2,
+  "secondary_merchant_capacity_bonus": 1,
+  "primary_merchant_income_bonus": 3,
+  "secondary_merchant_income_bonus": 1,
+  "centers": [
+    {
+      "region_id": "kings_landing",
+      "name_tr": "Kralın Şehri Ticaret Limanı",
+      "links": [
+        {
+          "region_id": "pentos",
+          "type": "sea"
+        }
+      ],
+      "world_x": 650,
+      "world_y": 750,
+      "main_route": true,
+      "source_goods": [
+        {
+          "good": "cloth",
+          "amount_per_turn": 5,
+          "gold_income_per_turn": 20
+        }
+      ]
+    },
+    {
+      "region_id": "pentos",
+      "name_tr": "Pentos Serbest Limanı",
+      "links": [
+        {
+          "region_id": "kings_landing",
+          "type": "sea"
+        }
+      ],
+      "world_x": 1100,
+      "world_y": 700,
+      "main_route": true,
+      "source_goods": [
+        {
+          "good": "spice",
+          "amount_per_turn": 8,
+          "gold_income_per_turn": 30
+        }
+      ]
+    }
+  ]
+}

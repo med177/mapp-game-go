@@ -1,0 +1,85 @@
+[
+  {
+    "id": "army_stark_1",
+    "owner_id": "stark",
+    "region_id": "winterfell_region",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 4
+      },
+      {
+        "type_id": "infantry",
+        "count": 6
+      },
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_lannister_1",
+    "owner_id": "lannister",
+    "region_id": "casterly_rock",
+    "units": [
+      {
+        "type_id": "heavy_cavalry",
+        "count": 5
+      },
+      {
+        "type_id": "elite_infantry",
+        "count": 6
+      },
+      {
+        "type_id": "infantry",
+        "count": 8
+      }
+    ]
+  },
+  {
+    "id": "army_baratheon_king_1",
+    "owner_id": "baratheon_king",
+    "region_id": "kings_landing",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 8
+      },
+      {
+        "type_id": "militia",
+        "count": 10
+      }
+    ]
+  },
+  {
+    "id": "army_stannis_1",
+    "owner_id": "baratheon_dragonstone",
+    "region_id": "dragonstone",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "elite_infantry",
+        "count": 3
+      }
+    ]
+  },
+  {
+    "id": "army_targaryen_1",
+    "owner_id": "targaryen",
+    "region_id": "pentos",
+    "units": [
+      {
+        "type_id": "unsullied",
+        "count": 6
+      },
+      {
+        "type_id": "dragon",
+        "count": 1
+      }
+    ]
+  }
+]

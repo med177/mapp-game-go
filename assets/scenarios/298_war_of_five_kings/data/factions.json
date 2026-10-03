@@ -1,0 +1,609 @@
+[
+  {
+    "id": "stark",
+    "name": "House Stark",
+    "name_tr": "Stark Hanedanı",
+    "historical_changes": [
+      {
+        "year": 299,
+        "flag": "stark_king_in_the_north.png",
+        "name": "Kingdom of the North",
+        "name_tr": "Kuzey Krallığı"
+      }
+    ],
+    "religion": "old_gods",
+    "color": [
+      200,
+      200,
+      210
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "winterfell_main",
+    "gold": 3500,
+    "grain": 4000,
+    "iron": 200,
+    "timber": 300,
+    "stone": 800,
+    "spice": 50,
+    "cloth": 100,
+    "research": {
+      "completed": {
+        "horse_breeding": true,
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 55,
+    "ai_expansion_targets": [
+      "riverrun",
+      "the_twins",
+      "harrenhal"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "winterfell_region",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "the_dreadfort",
+        "value": 90
+      }
+    ]
+  },
+  {
+    "id": "lannister",
+    "name": "House Lannister",
+    "name_tr": "Lannister Hanedanı",
+    "religion": "faith_of_the_seven",
+    "color": [
+      220,
+      20,
+      30
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "casterly_rock_main",
+    "gold": 12000,
+    "grain": 3000,
+    "iron": 500,
+    "timber": 150,
+    "stone": 1200,
+    "spice": 200,
+    "cloth": 300,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "minting": true,
+        "siege_tactics": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 75,
+    "ai_expansion_targets": [
+      "riverlands",
+      "kings_landing"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "casterly_rock",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "lannisport",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "baratheon_king",
+    "name": "House Baratheon of King's Landing",
+    "name_tr": "Kralın Şehri Baratheonları (Joffrey)",
+    "religion": "faith_of_the_seven",
+    "color": [
+      240,
+      190,
+      20
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "kings_landing_main",
+    "gold": 6000,
+    "grain": 2500,
+    "iron": 150,
+    "timber": 200,
+    "stone": 900,
+    "spice": 150,
+    "cloth": 200,
+    "research": {
+      "completed": {
+        "fortifications": true,
+        "tax_reform": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 60,
+    "ai_expansion_targets": [
+      "dragonstone",
+      "storm_end"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "kings_landing",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "baratheon_dragonstone",
+    "name": "House Baratheon of Dragonstone",
+    "name_tr": "Ejderha Kayası Baratheonları (Stannis)",
+    "religion": "lord_of_light",
+    "color": [
+      180,
+      40,
+      20
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "dragonstone_main",
+    "gold": 2500,
+    "grain": 1500,
+    "iron": 100,
+    "timber": 250,
+    "stone": 500,
+    "spice": 50,
+    "cloth": 80,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "naval_tactics": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 80,
+    "ai_expansion_targets": [
+      "kings_landing",
+      "storm_end"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "dragonstone",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "kings_landing",
+        "value": 100
+      }
+    ]
+  },
+  {
+    "id": "baratheon_stormsend",
+    "name": "House Baratheon of Storm's End",
+    "name_tr": "Fırtına Burnu Baratheonları (Renly)",
+    "religion": "faith_of_the_seven",
+    "color": [
+      80,
+      160,
+      60
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "storm_end_main",
+    "gold": 5000,
+    "grain": 4500,
+    "iron": 180,
+    "timber": 200,
+    "stone": 700,
+    "spice": 100,
+    "cloth": 150,
+    "research": {
+      "completed": {
+        "chivalry": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 65,
+    "ai_expansion_targets": [
+      "kings_landing"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "storm_end",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "greyjoy",
+    "name": "House Greyjoy",
+    "name_tr": "Greyjoy Hanedanı (Demirdoğumlular)",
+    "religion": "drowned_god",
+    "color": [
+      50,
+      50,
+      60
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "pyke_main",
+    "gold": 2000,
+    "grain": 1000,
+    "iron": 350,
+    "timber": 400,
+    "stone": 400,
+    "spice": 30,
+    "cloth": 50,
+    "research": {
+      "completed": {
+        "raiding": true,
+        "shipbuilding": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 85,
+    "ai_expansion_targets": [
+      "winterfell_region",
+      "lannisport",
+      "oldtown"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "pyke",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "tyrell",
+    "name": "House Tyrell",
+    "name_tr": "Tyrell Hanedanı",
+    "religion": "faith_of_the_seven",
+    "color": [
+      30,
+      140,
+      50
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "highgarden_main",
+    "gold": 8000,
+    "grain": 10000,
+    "iron": 200,
+    "timber": 300,
+    "stone": 800,
+    "spice": 250,
+    "cloth": 400,
+    "research": {
+      "completed": {
+        "agriculture": true,
+        "trade_contracts": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 40,
+    "ai_expansion_targets": [
+      "kings_landing",
+      "oldtown"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "highgarden",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "martell",
+    "name": "House Martell",
+    "name_tr": "Martell Hanedanı (Dorne)",
+    "religion": "faith_of_the_seven",
+    "color": [
+      230,
+      110,
+      20
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "sunspear_main",
+    "gold": 4000,
+    "grain": 2000,
+    "iron": 120,
+    "timber": 100,
+    "stone": 600,
+    "spice": 300,
+    "cloth": 150,
+    "research": {
+      "completed": {
+        "desert_warfare": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 45,
+    "ai_expansion_targets": [
+      "reach",
+      "stormlands"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "sunspear",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "targaryen",
+    "name": "House Targaryen",
+    "name_tr": "Targaryen Hanedanı",
+    "religion": "valyrian",
+    "color": [
+      180,
+      0,
+      40
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "pentos_main",
+    "gold": 3000,
+    "grain": 2000,
+    "iron": 100,
+    "timber": 150,
+    "stone": 300,
+    "spice": 400,
+    "cloth": 250,
+    "research": {
+      "completed": {
+        "dragon_lore": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 90,
+    "ai_expansion_targets": [
+      "astapor",
+      "yunkai",
+      "meereen",
+      "kings_landing"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "kings_landing",
+        "value": 100
+      }
+    ]
+  },
+  {
+    "id": "nights_watch",
+    "name": "Night's Watch",
+    "name_tr": "Gece Nöbetçileri",
+    "religion": "old_gods",
+    "color": [
+      30,
+      30,
+      35
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "castle_black_main",
+    "gold": 1000,
+    "grain": 1500,
+    "iron": 80,
+    "timber": 300,
+    "stone": 400,
+    "spice": 10,
+    "cloth": 50,
+    "research": {
+      "completed": {
+        "fortified_walls": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 10,
+    "ai_expansion_targets": [
+      "beyond_the_wall"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "the_wall",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "arryn",
+    "name": "House Arryn",
+    "name_tr": "Arryn Hanedanı (Vadi)",
+    "religion": "faith_of_the_seven",
+    "color": [
+      70,
+      150,
+      220
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "the_eyrie_main",
+    "gold": 4500,
+    "grain": 3000,
+    "iron": 150,
+    "timber": 120,
+    "stone": 900,
+    "spice": 80,
+    "cloth": 180,
+    "research": {
+      "completed": {
+        "fortifications": true,
+        "chivalry": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 35,
+    "ai_expansion_targets": [
+      "riverlands",
+      "harrenhal"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "the_eyrie",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "the_mountains_of_the_moon",
+        "value": 90
+      }
+    ]
+  },
+  {
+    "id": "tully",
+    "name": "House Tully",
+    "name_tr": "Tully Hanedanı (Nehir Toprakları)",
+    "religion": "faith_of_the_seven",
+    "color": [
+      100,
+      150,
+      190
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "riverrun_main",
+    "gold": 3500,
+    "grain": 4500,
+    "iron": 180,
+    "timber": 220,
+    "stone": 500,
+    "spice": 60,
+    "cloth": 120,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "fortifications": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 60,
+    "ai_expansion_targets": [
+      "harrenhal",
+      "kings_landing",
+      "casterly_rock"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "riverlands",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "riverrun",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "free_folk",
+    "name": "Free Folk",
+    "name_tr": "Özgür Halk (Yabanıllar)",
+    "religion": "old_gods",
+    "color": [
+      130,
+      100,
+      75
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "hardhome_main",
+    "gold": 800,
+    "grain": 1200,
+    "iron": 100,
+    "timber": 350,
+    "stone": 250,
+    "spice": 10,
+    "cloth": 40,
+    "research": {
+      "completed": {
+        "raiding": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 75,
+    "ai_expansion_targets": [
+      "the_wall",
+      "winterfell_region"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "beyond_the_wall",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "bolton",
+    "name": "House Bolton",
+    "name_tr": "Bolton Hanedanı",
+    "religion": "old_gods",
+    "color": [
+      120,
+      20,
+      35
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "the_dreadfort_main",
+    "gold": 2500,
+    "grain": 2200,
+    "iron": 180,
+    "timber": 180,
+    "stone": 450,
+    "spice": 20,
+    "cloth": 70,
+    "research": {
+      "completed": {
+        "iron_weapons": true,
+        "fortifications": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 80,
+    "ai_expansion_targets": [
+      "winterfell_region",
+      "the_wall",
+      "riverlands"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "the_dreadfort",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "winterfell_region",
+        "value": 80
+      }
+    ]
+  }
+]

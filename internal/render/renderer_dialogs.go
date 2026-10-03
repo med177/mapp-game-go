@@ -1905,6 +1905,28 @@ func (r *Renderer) ShowConfirmDialog(title, message, acceptLabel, declineLabel s
 	}
 }
 
+// ShowMessageDialog, hata ve ayrıntılı bilgilendirme metinlerini kullanıcı
+// kapatana kadar ekranda tutulan tek düğmeli modal olarak gösterir.
+func (r *Renderer) ShowMessageDialog(title, message string) {
+	if r == nil {
+		return
+	}
+	r.clearMovementPreviewFreeze()
+	r.confirmDialog = confirmDialogState{
+		show:        true,
+		spacious:    true,
+		messageOnly: true,
+		title:       title,
+		message:     message,
+		messageLines: wrapTextLines(
+			message,
+			FaceSmall,
+			float64(confirmDialogSpaciousW)-48,
+		),
+		acceptLabel: "Tamam",
+	}
+}
+
 // ShowSortieDecision, AI'nin oyuncu kuşatmasına karşı yaptığı huruçta
 // çatışma veya kuşatmayı kaldırma kararını oyuncuya bırakır.
 func (r *Renderer) ShowSortieDecision(regionName string, attackerID army.ArmyID, defenderID army.ArmyID, target world.RegionID) {
@@ -2210,6 +2232,9 @@ func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
 	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
 	acceptBtn = decorateConfirmDialogButton(acceptBtn, r.confirmDialog.acceptLabel, "accept")
 	drawUIButtonWidget(screen, acceptBtn, confirmDialogActionButtonStyle(r.confirmDialog.acceptLabel))
+	if r.confirmDialog.messageOnly {
+		return
+	}
 	if hasThird {
 		thirdBtn = decorateConfirmDialogButton(thirdBtn, r.confirmDialog.thirdLabel, "third")
 		declineBtn = decorateConfirmDialogButton(declineBtn, r.confirmDialog.declineLabel, "decline")
@@ -2316,6 +2341,9 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 			r.confirmDialog = confirmDialogState{}
 			return action
 		}
+		if r.confirmDialog.messageOnly {
+			return InputAction{}
+		}
 		if hasThird && thirdBtn.Enabled && thirdBtn.HitTest(mx, my) {
 			action := r.confirmDialog.thirdAction
 			r.clearMovementPreviewFreeze()
@@ -2338,6 +2366,11 @@ func (r *Renderer) handleConfirmDialogInput() InputAction {
 		}
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyN) {
+		if r.confirmDialog.messageOnly {
+			r.clearMovementPreviewFreeze()
+			r.confirmDialog = confirmDialogState{}
+			return InputAction{}
+		}
 		if r.confirmDialog.declineActs {
 			return InputAction{}
 		}

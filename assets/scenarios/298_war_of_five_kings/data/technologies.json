@@ -1,0 +1,40 @@
+[
+  {
+    "category": "military",
+    "description_tr": "Kılıç ve zırh kalitesini artırır. Piyade saldırısı +15%",
+    "effects": {
+      "infantry_attack_mod": 0.15
+    },
+    "gold_cost": 200,
+    "id": "iron_weapons",
+    "name_tr": "Demirci Ustaları",
+    "requires": [],
+    "turns_required": 4
+  },
+  {
+    "category": "military",
+    "description_tr": "Şövalye birimlerinin kışlada yetiştirilmesini sağlar.",
+    "effects": {
+      "cavalry_defense_mod": 0.1
+    },
+    "gold_cost": 350,
+    "id": "chivalry",
+    "name_tr": "Şövalyelik Gelenekleri",
+    "requires": [
+      "iron_weapons"
+    ],
+    "turns_required": 6
+  },
+  {
+    "category": "special",
+    "description_tr": "Ejderhaları savaşta yönetme yeteneği.",
+    "effects": {
+      "dragon_attack_mod": 0.25
+    },
+    "gold_cost": 1000,
+    "id": "dragon_lore",
+    "name_tr": "Valyria Ejderha Bilgeliği",
+    "requires": [],
+    "turns_required": 10
+  }
+]

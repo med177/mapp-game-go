@@ -2,7 +2,7 @@
   "id": "1600_thirty_years_war",
   "name": "30 Yıl Savaşlarına Doğru",
   "description": "1600 yılı. Habsburglar, Osmanlılar, Safevîler, Fransa, İspanya, İngiltere, Birleşik Eyaletler, İsveç, Danimarka, Rusya ve Polonya-Litvanya Avrupa’nın ve çevre bölgelerin güç dengesini belirliyor. Kampanya 1618 Otuz Yıl Savaşları, 1648 Westphalia, İngiliz İç Savaşı ve Restorasyon, 1688 Şanlı Devrim, 1701 İspanya Veraset Savaşı, 1700 Büyük Kuzey Savaşı, 1756 Yedi Yıl Savaşı, 1772 Lehistan’ın ilk paylaşımı, Amerikan Devrimi ve 1789 Fransız Devrimi’ne kadar uzanır.",
-  "version": 2.0,
+  "version": "2.0",
   "author": "Mapp Team",
   "period": "early_modern",
   "turn_months": 3,

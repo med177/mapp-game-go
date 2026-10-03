@@ -47,6 +47,7 @@ tmp/
 logs/
 _BUG/
 _PLANS/
+content/
 
 # Save files
 saves/*

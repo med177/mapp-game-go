@@ -1,0 +1,44 @@
+[
+  {
+    "id": "death_of_robert_298",
+    "name_tr": "Kral Robert'ın Ölümü",
+    "desc_tr": "Kral Robert Baratheon av sırasında öldü. Taht üzerinde iddia sahibi krallar kılıçlarını çekti. Beş Kralın Savaşı başlıyor!",
+    "probability": 100,
+    "min_turn": 1,
+    "target": "all_factions",
+    "sat_delta": -10,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "set_flags": [
+      "war_of_five_kings_active"
+    ],
+    "historical_year": 298,
+    "historical_month": 3,
+    "one_shot": true,
+    "affected_faction": "baratheon_king"
+  },
+  {
+    "id": "red_wedding_event",
+    "name_tr": "Kızıl Düğün İhaneti",
+    "desc_tr": "İkizler'de gerçekleşen kanlı iharet Kuzey ordusunun belini büktü. Frey ve Bolton hanedanları kontrolü ele geçirmeye çalışıyor.",
+    "probability": 60,
+    "min_turn": 8,
+    "target": "specific_faction",
+    "sat_delta": -25,
+    "gold_delta": -500,
+    "grain_delta": 0,
+    "army_hp_mod": -30,
+    "set_flags": [
+      "stark_betrayed"
+    ],
+    "historical_year": 299,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "stark",
+    "requires_active_factions": [
+      "stark",
+      "lannister"
+    ]
+  }
+]

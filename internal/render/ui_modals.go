@@ -94,6 +94,11 @@ func buildConfirmDialogButtons(state confirmDialogState) (gameui.Button, gameui.
 			decline,
 			true
 	}
+	if state.messageOnly {
+		okX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - btnW/2
+		return gameui.NewButton(okX, btnY, btnW, float64(confirmDialogBtnH), state.acceptLabel),
+			gameui.Button{}, gameui.Button{}, false
+	}
 	yesX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 - btnW - 10
 	noX := modal.Panel.Rect.X + modal.Panel.Rect.W/2 + 10
 	return gameui.NewButton(yesX, btnY, btnW, float64(confirmDialogBtnH), state.acceptLabel),

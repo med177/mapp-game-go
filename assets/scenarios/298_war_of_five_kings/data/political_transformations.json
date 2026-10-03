@@ -1,0 +1,30 @@
+[
+  {
+    "id": "war_of_the_five_kings_resolution",
+    "type": "dynastic_civil_war",
+    "members": [
+      "stark",
+      "lannister",
+      "baratheon_king",
+      "baratheon_dragonstone",
+      "baratheon_stormsend"
+    ],
+    "result_faction": "lannister",
+    "trigger": {
+      "event_id": "death_of_robert_298",
+      "year": 302,
+      "month": 6
+    },
+    "region_assignments": {
+      "kings_landing": "lannister"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "restore_result_faction"
+    },
+    "description_tr": "Beş Kralın Savaşı'nın galibi Yedi Krallık üzerindeki mutlak hakimiyetini ilan eder."
+  }
+]

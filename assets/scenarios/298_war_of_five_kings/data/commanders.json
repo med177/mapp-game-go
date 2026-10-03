@@ -1,0 +1,196 @@
+[
+  {
+    "id": "cmd_robb_stark",
+    "owner_id": "stark",
+    "name": "Robb Stark",
+    "portrait_asset": "robb_stark.png",
+    "level": 3,
+    "traits": [
+      "tactician",
+      "cavalry_leader"
+    ],
+    "start_year": 298,
+    "end_year": 300
+  },
+  {
+    "id": "cmd_ned_stark",
+    "owner_id": "stark",
+    "name": "Eddard Stark",
+    "portrait_asset": "ned_stark.png",
+    "level": 4,
+    "traits": [
+      "honorable",
+      "defender"
+    ],
+    "start_year": 280,
+    "end_year": 298
+  },
+  {
+    "id": "cmd_tywin_lannister",
+    "owner_id": "lannister",
+    "name": "Tywin Lannister",
+    "portrait_asset": "tywin_lannister.png",
+    "level": 5,
+    "traits": [
+      "mastermind",
+      "wealthy"
+    ],
+    "start_year": 260,
+    "end_year": 301
+  },
+  {
+    "id": "cmd_jaime_lannister",
+    "owner_id": "lannister",
+    "name": "Jaime Lannister",
+    "portrait_asset": "jaime_lannister.png",
+    "level": 4,
+    "traits": [
+      "duelist",
+      "bold"
+    ],
+    "start_year": 281,
+    "end_year": 305
+  },
+  {
+    "id": "cmd_stannis_baratheon",
+    "owner_id": "baratheon_dragonstone",
+    "name": "Stannis Baratheon",
+    "portrait_asset": "stannis.png",
+    "level": 4,
+    "traits": [
+      "unyielding",
+      "naval_commander"
+    ],
+    "start_year": 282,
+    "end_year": 303
+  },
+  {
+    "id": "cmd_renly_baratheon",
+    "owner_id": "baratheon_stormsend",
+    "name": "Renly Baratheon",
+    "portrait_asset": "renly.png",
+    "level": 2,
+    "traits": [
+      "charismatic"
+    ],
+    "start_year": 290,
+    "end_year": 299
+  },
+  {
+    "id": "cmd_daenerys_targaryen",
+    "owner_id": "targaryen",
+    "name": "Daenerys Targaryen",
+    "portrait_asset": "daenerys.png",
+    "level": 3,
+    "traits": [
+      "dragon_rider",
+      "liberator"
+    ],
+    "start_year": 297,
+    "end_year": 305
+  },
+  {
+    "id": "cmd_jon_snow",
+    "owner_id": "nights_watch",
+    "name": "Jon Snow",
+    "portrait_asset": "jon_snow.png",
+    "level": 2,
+    "traits": [
+      "brave",
+      "swordsman"
+    ],
+    "start_year": 298,
+    "end_year": 305
+  },
+  {
+    "id": "cmd_yohn_royce",
+    "owner_id": "arryn",
+    "name": "Yohn Royce",
+    "portrait_asset": "yohn_royce.png",
+    "level": 4,
+    "traits": [
+      "defender",
+      "unyielding"
+    ],
+    "start_year": 298,
+    "end_year": 305
+  },
+  {
+    "id": "cmd_brynden_tully",
+    "owner_id": "tully",
+    "name": "Brynden Tully",
+    "portrait_asset": "brynden_tully.png",
+    "level": 4,
+    "traits": [
+      "tactician",
+      "defender"
+    ],
+    "start_year": 298,
+    "end_year": 301
+  },
+  {
+    "id": "cmd_edmure_tully",
+    "owner_id": "tully",
+    "name": "Edmure Tully",
+    "portrait_asset": "edmure_tully.png",
+    "level": 3,
+    "traits": [
+      "bold",
+      "defender"
+    ],
+    "start_year": 298,
+    "end_year": 303
+  },
+  {
+    "id": "cmd_mance_rayder",
+    "owner_id": "free_folk",
+    "name": "Mance Rayder",
+    "portrait_asset": "mance_rayder.png",
+    "level": 4,
+    "traits": [
+      "charismatic",
+      "tactician"
+    ],
+    "start_year": 298,
+    "end_year": 302
+  },
+  {
+    "id": "cmd_tormund_giantsbane",
+    "owner_id": "free_folk",
+    "name": "Tormund Giantsbane",
+    "portrait_asset": "tormund_giantsbane.png",
+    "level": 3,
+    "traits": [
+      "brave",
+      "bold"
+    ],
+    "start_year": 298,
+    "end_year": 305
+  },
+  {
+    "id": "cmd_roose_bolton",
+    "owner_id": "bolton",
+    "name": "Roose Bolton",
+    "portrait_asset": "roose_bolton.png",
+    "level": 4,
+    "traits": [
+      "mastermind",
+      "defender"
+    ],
+    "start_year": 298,
+    "end_year": 303
+  },
+  {
+    "id": "cmd_ramsay_bolton",
+    "owner_id": "bolton",
+    "name": "Ramsay Snow",
+    "portrait_asset": "ramsay_bolton.png",
+    "level": 3,
+    "traits": [
+      "bold",
+      "duelist"
+    ],
+    "start_year": 298,
+    "end_year": 305
+  }
+]

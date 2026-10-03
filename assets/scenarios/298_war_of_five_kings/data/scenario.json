@@ -1,0 +1,109 @@
+{
+  "id": "298_war_of_five_kings",
+  "name": "Beş Kralın Savaşı",
+  "description": "298 AC. Kral Robert Baratheon'un ölümüyle Yedi Krallık büyük bir iç savaşa sürüklendi. Kuzey Kralı ilan edilen Robb Stark, Demir Taht'ı talep eden Stannis ve Renly Baratheon, Lannisport'un zenginliğini arkasına alan Lannisterlar ve doğuda ejderhalarıyla yükselen Daenerys Targaryen arasındaki taht mücadelesinde Westeros'un kaderini belirleyin.",
+  "version": "1.0",
+  "author": "Mapp Team",
+  "period": "medieval",
+  "turn_months": 3,
+  "year": 298,
+  "month": 1,
+  "privileged_building_max_level": 1,
+  "minor_privilege_protection_turns": 40,
+  "aggressive_expansion_last_turns": 12,
+  "diplomacy": {
+    "relation_improvement_gold_cost": 250,
+    "relation_improvement_bonus": 15,
+    "gift_gold_cost": 500,
+    "gift_receiver_gold": 400,
+    "gift_relation_bonus": 25,
+    "incite_revolt_gold_cost": 1000,
+    "incite_revolt_relation_bonus": -30,
+    "incite_revolt_overlord_penalty": -50,
+    "incite_revolt_vassal_threshold": -20,
+    "incite_revolt_owner_threshold": 40,
+    "incite_revolt_satisfaction_penalty": -25
+  },
+  "map": {
+    "shape_set_id": "westeros_essos_basin",
+    "world_width": 2600,
+    "world_height": 3600,
+    "shape_offset_x": 0,
+    "shape_offset_y": 0,
+    "shape_scale_x": 1.0,
+    "shape_scale_y": 1.0,
+    "terrain_alpha": 0.45
+  },
+  "music": {
+    "default_playlist": "got_main_theme",
+    "playlists": {
+      "got_main_theme": [
+        {
+          "file": "Cinematic-Ambient-Background.mp3",
+          "weight": 6
+        },
+        {
+          "file": "hitslab-dramatic-war-military-music-427109.mp3",
+          "weight": 1
+        },
+        {
+          "file": "leberch-epic-war-248014.mp3",
+          "weight": 7
+        },
+        {
+          "file": "kornevmusic-epic-war-trailer-428423.mp3",
+          "weight": 2
+        },
+        {
+          "file": "the_mountain-war-481763.mp3",
+          "weight": 3
+        },
+        {
+          "file": "the_mountain-war-opening-145222.mp3",
+          "weight": 4
+        },
+        {
+          "file": "solarflex-epic-war-541542.mp3",
+          "weight": 5
+        },
+        {
+          "file": "the_mountain-ancient-war-141474.mp3",
+          "weight": 8
+        },
+        {
+          "file": "hitslab-war-war-epic-music-480183.mp3",
+          "weight": 9
+        },
+        {
+          "file": "paulyudin-war-493487.mp3",
+          "weight": 2
+        }
+      ]
+    }
+  },
+  "victory_conditions": [
+    {
+      "id": "iron_throne_conquest",
+      "title": "Demir Taht'ı Ele Geçir",
+      "description": "Kralın Şehri'ni (King's Landing) ele geçirerek Yedi Krallık üzerindeki hakimiyetini ilan et.",
+      "detail": "Hedef: King's Landing, Casterly Rock, Highgarden ve Winterfell",
+      "type": "conquer_city",
+      "required_regions": [
+        "kings_landing",
+        "casterly_rock",
+        "highgarden",
+        "winterfell"
+      ],
+      "deadline_year": 305,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "stark",
+        "lannister",
+        "baratheon_king",
+        "baratheon_dragonstone",
+        "baratheon_stormsend",
+        "targaryen"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+[
+  {
+    "id": "militia",
+    "name": "Peasant Levy",
+    "name_tr": "Köylü Milisler",
+    "attack": 5,
+    "category": "infantry",
+    "defense": 6,
+    "embarkable": true,
+    "gold_cost": 40,
+    "grain_upkeep": 8,
+    "gold_upkeep": 3,
+    "hp": 80,
+    "morale": 35,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 1
+      }
+    ],
+    "required_tech": [],
+    "tier": 1,
+    "turns_required": 1,
+    "grain_cost": 10,
+    "iron_cost": 0,
+    "timber_cost": 1,
+    "stone_cost": 0,
+    "cloth_cost": 1,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
+    "id": "infantry",
+    "name": "Spearmen",
+    "name_tr": "Mızraklı Piyadeler",
+    "attack": 10,
+    "category": "infantry",
+    "defense": 14,
+    "embarkable": true,
+    "gold_cost": 100,
+    "grain_upkeep": 12,
+    "gold_upkeep": 8,
+    "hp": 110,
+    "morale": 55,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 1
+      }
+    ],
+    "required_tech": [],
+    "tier": 1,
+    "turns_required": 2,
+    "grain_cost": 15,
+    "iron_cost": 3,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 2,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
+    "id": "elite_infantry",
+    "name": "Household Guard",
+    "name_tr": "Hanedan Muhafızları",
+    "attack": 18,
+    "category": "infantry",
+    "defense": 20,
+    "embarkable": true,
+    "gold_cost": 220,
+    "grain_upkeep": 18,
+    "gold_upkeep": 15,
+    "hp": 150,
+    "morale": 80,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 2
+      }
+    ],
+    "required_tech": [
+      "iron_weapons"
+    ],
+    "tier": 2,
+    "turns_required": 3,
+    "grain_cost": 20,
+    "iron_cost": 8,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 4,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
+    "id": "heavy_cavalry",
+    "name": "Knights of Westeros",
+    "name_tr": "Westeros Şövalyeleri",
+    "attack": 26,
+    "category": "cavalry",
+    "defense": 22,
+    "embarkable": true,
+    "gold_cost": 380,
+    "grain_upkeep": 25,
+    "gold_upkeep": 25,
+    "hp": 180,
+    "morale": 90,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 2
+      }
+    ],
+    "required_tech": [
+      "chivalry"
+    ],
+    "tier": 3,
+    "turns_required": 4,
+    "grain_cost": 30,
+    "iron_cost": 12,
+    "timber_cost": 3,
+    "stone_cost": 0,
+    "cloth_cost": 5,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
+    "id": "unsullied",
+    "name": "Unsullied",
+    "name_tr": "Lekesizler",
+    "attack": 22,
+    "category": "infantry",
+    "defense": 28,
+    "embarkable": true,
+    "gold_cost": 300,
+    "grain_upkeep": 10,
+    "gold_upkeep": 12,
+    "hp": 160,
+    "morale": 100,
+    "required_buildings": [
+      {
+        "id": "barracks",
+        "level": 2
+      }
+    ],
+    "required_tech": [],
+    "tier": 3,
+    "turns_required": 3,
+    "grain_cost": 15,
+    "iron_cost": 6,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 3,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
+    "id": "dragon",
+    "name": "Dragon",
+    "name_tr": "Ejderha",
+    "attack": 85,
+    "category": "cavalry",
+    "defense": 65,
+    "embarkable": true,
+    "gold_cost": 1500,
+    "grain_upkeep": 50,
+    "gold_upkeep": 40,
+    "hp": 500,
+    "morale": 100,
+    "required_buildings": [],
+    "required_tech": [
+      "dragon_lore"
+    ],
+    "tier": 4,
+    "turns_required": 8,
+    "grain_cost": 100,
+    "iron_cost": 0,
+    "timber_cost": 0,
+    "stone_cost": 0,
+    "cloth_cost": 0,
+    "spice_cost": 50,
+    "movement_points": 5
+  }
+]

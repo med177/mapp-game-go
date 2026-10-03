@@ -509,6 +509,7 @@ var (
 type confirmDialogState struct {
 	show            bool
 	spacious        bool
+	messageOnly     bool
 	title           string
 	message         string
 	messageLines    []string

@@ -80,7 +80,7 @@ func DrawScenarioSelect(screen *ebiten.Image, scenarios []*scenario.Scenario, cu
 		yearStr := itoa(sc.Year) + " — " + monthName(sc.Month)
 		drawUILabel(screen, gameui.Rect{X: float64(x) + 18, Y: float64(y) + 46}, yearStr, color.RGBA{160, 140, 90, 200}, gameui.TextSmall, gameui.TextAlignStart)
 
-		metadata := fmt.Sprintf("Sürüm: %.1f  •  Yazar: %s  •  Dönem: %s  •  Tur: %d ay", sc.Version, sc.Author, sc.Period, sc.CalendarMonthsPerTurn())
+		metadata := fmt.Sprintf("Sürüm: %s  •  Yazar: %s  •  Dönem: %s  •  Tur: %d ay", sc.Version, sc.Author, sc.Period, sc.CalendarMonthsPerTurn())
 		drawUILabel(screen, gameui.Rect{X: float64(x) + 18, Y: float64(y) + 68}, metadata, color.RGBA{170, 155, 120, 200}, gameui.TextSmall, gameui.TextAlignStart)
 
 		// Açıklamayı kartın gerçek yazı genişliğine göre sar. Sabit karakter

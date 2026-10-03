@@ -1,0 +1,51 @@
+[
+  {
+    "region_id": "new_region_11",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_10",
+    "settlements": null
+  },
+  {
+    "region_id": "winterfell_region",
+    "settlements": [
+      {
+        "id": "test_settlement",
+        "name_tr": "test",
+        "x": 1399,
+        "y": 906,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "kings_landing",
+    "settlements": null
+  },
+  {
+    "region_id": "casterly_rock",
+    "settlements": null
+  },
+  {
+    "region_id": "dragonstone",
+    "settlements": null
+  },
+  {
+    "region_id": "highgarden",
+    "settlements": null
+  },
+  {
+    "region_id": "pyke",
+    "settlements": null
+  },
+  {
+    "region_id": "the_wall",
+    "settlements": null
+  },
+  {
+    "region_id": "pentos",
+    "settlements": null
+  }
+]

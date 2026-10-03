@@ -718,7 +718,8 @@ func (g *Game) pollLoading() {
 func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 	if res.err != nil {
 		g.stopScenarioIntro(g.renderer.LoadingScenarioPath)
-		g.renderer.ShowCombatResult("Yükleme hatası: " + res.err.Error())
+		message := fmt.Sprintf("Senaryo klasörü:\n%s\n\nHata ayrıntısı:\n%s", g.renderer.LoadingScenarioPath, res.err.Error())
+		g.renderer.ShowMessageDialog("Senaryo yüklenemedi", message)
 		if res.fallback == "" {
 			res.fallback = state.PhaseMainMenu
 		}

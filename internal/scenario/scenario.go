@@ -152,14 +152,14 @@ func (p Period) IsValid() bool {
 
 // Scenario oyun başında seçilebilen bir tarihsel senaryoyu tanımlar.
 type Scenario struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Version     float64 `json:"version"`
-	Author      string  `json:"author"`
-	Period      Period  `json:"period"`
-	Year        int     `json:"year"`
-	Month       int     `json:"month"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Version     string `json:"version"`
+	Author      string `json:"author"`
+	Period      Period `json:"period"`
+	Year        int    `json:"year"`
+	Month       int    `json:"month"`
 	// TurnMonths bir stratejik turun temsil ettiği takvim ayı sayısıdır.
 	// 0 değeri eski senaryolar için bir aylık uyumluluk davranışını korur.
 	TurnMonths int `json:"turn_months,omitempty"`
