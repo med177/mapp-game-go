@@ -4726,13 +4726,12 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 
 	// Kara birimi — manpower ve ordu sayısı kontrolü
 	pid := g.gs.PlayerFactionID
-	deployed := g.gs.DeployedLandUnits(pid) + g.pendingLandUnitCount(pid)
-	cap := g.gs.ManpowerCap(pid)
-	if deployed >= cap {
-		g.renderer.ShowCombatResult(fmt.Sprintf("Savaşçı kapasitesi dolu! (%d/%d) — Bölge fethet veya kışla yap.", deployed, cap))
+	availableManpower := g.gs.LandUnitCapacityRemaining(pid)
+	if !g.gs.CanQueueLandUnit(pid) {
+		used := g.gs.DeployedLandUnits(pid) + g.gs.PendingLandUnits(pid)
+		g.renderer.ShowCombatResult(fmt.Sprintf("Savaşçı kapasitesi dolu! (%d/%d) — Bölge fethet veya kışla yap.", used, g.gs.ManpowerCap(pid)))
 		return
 	}
-	availableManpower := cap - deployed
 	if quantity > availableManpower {
 		quantity = availableManpower
 	}

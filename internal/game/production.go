@@ -627,16 +627,7 @@ func (g *Game) queuedBuildingCount(rid world.RegionID, buildingID string) int {
 }
 
 func (g *Game) pendingLandUnitCount(fid faction.FactionID) int {
-	count := 0
-	for _, order := range g.gs.ProductionQueue {
-		if order.Kind != productionKindUnit || order.FactionID != string(fid) {
-			continue
-		}
-		if utype, ok := g.gs.UnitTypes[order.TypeID]; ok && utype.PrimaryBuildingID() != "port" {
-			count++
-		}
-	}
-	return count
+	return g.gs.PendingLandUnits(fid)
 }
 
 func (g *Game) pendingUnitCountByRegion(rid world.RegionID, fid faction.FactionID) int {

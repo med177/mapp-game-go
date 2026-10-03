@@ -861,16 +861,7 @@ func aiQueuedBuildingCount(gs *state.GameState, rid world.RegionID, buildingID s
 }
 
 func aiPendingLandUnitCount(gs *state.GameState, fid faction.FactionID) int {
-	count := 0
-	for _, order := range gs.ProductionQueue {
-		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) {
-			continue
-		}
-		if utype, ok := gs.UnitTypes[order.TypeID]; ok && utype.PrimaryBuildingID() != "port" {
-			count++
-		}
-	}
-	return count
+	return gs.PendingLandUnits(fid)
 }
 
 func aiPendingUnitCountByRegion(gs *state.GameState, rid world.RegionID, fid faction.FactionID) int {
@@ -1206,7 +1197,7 @@ func aiCanQueueLandUnit(gs *state.GameState, fid faction.FactionID, rid world.Re
 	if region == nil || !aiUnitBuildingRequirementsMet(region, unitType) {
 		return false
 	}
-	if gs.DeployedLandUnits(fid)+aiPendingLandUnitCount(gs, fid) >= gs.ManpowerCap(fid) {
+	if !gs.CanQueueLandUnit(fid) {
 		return false
 	}
 	// Yeni kara ordusu açılması artık MaxLandArmies ile sınırlanmaz. Bölge

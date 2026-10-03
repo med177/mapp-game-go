@@ -40,7 +40,9 @@ AI artık oyun başında yüklenen `Game.evts` cache'ini `NewTurnStepperWithEven
 
 Askerî üretim kararı mevcut ordunun sabit altın bakımını da hesaba katar.
 Kara kuvveti hedefi `ManpowerCap`, donanma hedefi `NavalCap` ile sınırlıdır;
-lojistik, üretim hattı, güvenli bölge, teknoloji ve bütçe kontrolleri korunur.
+oyuncu ve AI'nin yeni kara birimi emirleri `GameState.CanQueueLandUnit()` ile
+aynı konuşlandırılmış + bekleyen birim hesabından geçer; lojistik, üretim hattı,
+güvenli bölge, teknoloji ve bütçe kontrolleri korunur.
 1300 bütçesi mevcut ordunun üç turluk `GoldUpkeep` giderini acil rezervde
 tutar; yeni birim seçimi ise peşin `GoldCost` sonrasında aynı üç turluk maaş
 rezervini koruyamıyorsa elenir. Birlik puanlamasında altın bakımı, altın geliri

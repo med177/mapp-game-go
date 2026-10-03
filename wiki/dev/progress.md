@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-10-03: Oyuncu ve AI kara birimi üretim emirleri ortak `GameState`
+  savaşçı kapasitesi helper'ına bağlandı. Konuşlandırılmış ve üretim kuyruğundaki
+  birimler birlikte sayılıyor; AI kontrolündeki oyuncu fraksiyonu da kapasiteyi
+  aşan yeni ordu emirleri üretemiyor. Regression: `internal/state/manpower_test.go`;
+  doğrulama: `go test ./internal/state ./internal/game ./internal/ai -count=1`.
+
 - 2026-10-02: Edit Mode senaryo kaydında runtime'ın din temelli varsayılan
   ilişkileri artık `relations.json` dosyasına yazılmıyor; kaynak ilişkilerin
   sırası ve değişiklik yapılmayan içeriği korunuyor. Regression:

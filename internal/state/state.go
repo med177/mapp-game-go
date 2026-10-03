@@ -3669,13 +3669,61 @@ func (s *GameState) NavalUnitsIncludingQueue(fid faction.FactionID) int {
 
 // DeployedLandUnits bir fraksiyonun aktif kara ordu birim sayısını döner.
 func (s *GameState) DeployedLandUnits(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
 	total := 0
 	for _, a := range s.Armies {
-		if a.OwnerID == string(fid) && !a.IsNaval {
+		if a != nil && a.OwnerID == string(fid) && !a.IsNaval {
 			total += len(a.Units)
 		}
 	}
 	return total
+}
+
+// PendingLandUnits üretim kuyruğunda savaşçı kapasitesini tüketen kara
+// birimlerini döner. Oyuncu ve AI emirleri aynı kuyrukta tutulduğu için bu
+// hesap iki taraf için de ortaktır.
+func (s *GameState) PendingLandUnits(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	total := 0
+	for _, order := range s.ProductionQueue {
+		if order.Kind != "unit" || order.FactionID != string(fid) {
+			continue
+		}
+		unitType := s.UnitTypes[order.TypeID]
+		if unitType == nil || unitType.PrimaryBuildingID() == "port" {
+			continue
+		}
+		switch unitType.Category {
+		case army.CategoryNavalWar, army.CategoryNavalTrans, army.CategoryNavalTrade:
+			continue
+		default:
+			total++
+		}
+	}
+	return total
+}
+
+// LandUnitCapacityRemaining yeni bir kara birimi emrinin kullanabileceği
+// savaşçı kapasitesini, tamamlanmamış üretim emirleri dahil, döner.
+func (s *GameState) LandUnitCapacityRemaining(fid faction.FactionID) int {
+	if s == nil || fid == "" {
+		return 0
+	}
+	remaining := s.ManpowerCap(fid) - s.DeployedLandUnits(fid) - s.PendingLandUnits(fid)
+	if remaining < 0 {
+		return 0
+	}
+	return remaining
+}
+
+// CanQueueLandUnit oyuncu ve AI için yeni bir kara birimi üretim emrinin
+// savaşçı sınırına sığıp sığmadığını bildirir.
+func (s *GameState) CanQueueLandUnit(fid faction.FactionID) bool {
+	return s.LandUnitCapacityRemaining(fid) > 0
 }
 
 // MaxLandArmies bir fraksiyonun sahip olabileceği maksimum kara ordu sayısını döner.
