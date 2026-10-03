@@ -124,5 +124,61 @@
     "score_a_to_b": 50,
     "score_b_to_a": 50,
     "stance": "peace"
+  },
+  {
+    "faction_a": "braavos",
+    "faction_b": "targaryen",
+    "score_a_to_b": 70,
+    "score_b_to_a": 70,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "braavos",
+    "faction_b": "lannister",
+    "score_a_to_b": 30,
+    "score_b_to_a": 30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "braavos",
+    "faction_b": "stark",
+    "score_a_to_b": 20,
+    "score_b_to_a": 20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "brotherhood_without_banners",
+    "faction_b": "lannister",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "brotherhood_without_banners",
+    "faction_b": "baratheon_king",
+    "score_a_to_b": -80,
+    "score_b_to_a": -80,
+    "stance": "war"
+  },
+  {
+    "faction_a": "brotherhood_without_banners",
+    "faction_b": "tully",
+    "score_a_to_b": 60,
+    "score_b_to_a": 60,
+    "stance": "allied"
+  },
+  {
+    "faction_a": "brotherhood_without_banners",
+    "faction_b": "stark",
+    "score_a_to_b": 30,
+    "score_b_to_a": 30,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "brotherhood_without_banners",
+    "faction_b": "bolton",
+    "score_a_to_b": -90,
+    "score_b_to_a": -90,
+    "stance": "war"
   }
 ]

@@ -1,11 +1,29 @@
 [
   {
-    "region_id": "new_region_11",
-    "settlements": null
+    "region_id": "storm_end",
+    "settlements": [
+      {
+        "id": "storm_end_main",
+        "name_tr": "Fırtına Burnu",
+        "x": 1438,
+        "y": 2563,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
   },
   {
-    "region_id": "new_region_10",
-    "settlements": null
+    "region_id": "sunspear",
+    "settlements": [
+      {
+        "id": "sunspear_main",
+        "name_tr": "Güneş Mızrağı",
+        "x": 1146,
+        "y": 3010,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "winterfell_region",
@@ -17,35 +35,228 @@
         "y": 906,
         "type": "port",
         "is_center": true
+      },
+      {
+        "id": "winterfell_main",
+        "name_tr": "Kışyarı",
+        "x": 1312,
+        "y": 834,
+        "type": "city",
+        "is_center": true
       }
     ]
   },
   {
     "region_id": "kings_landing",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "kings_landing_main",
+        "name_tr": "Kralın Şehri",
+        "x": 1376,
+        "y": 2282,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "casterly_rock",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "casterly_rock_main",
+        "name_tr": "Casterly Kayası",
+        "x": 734,
+        "y": 2210,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "dragonstone",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "dragonstone_main",
+        "name_tr": "Ejderha Kayası",
+        "x": 1666,
+        "y": 2152,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "highgarden",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "highgarden_main",
+        "name_tr": "Yüksek Bahçe",
+        "x": 929,
+        "y": 2624,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "pyke",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "pyke_main",
+        "name_tr": "Pyke",
+        "x": 668,
+        "y": 1900,
+        "type": "port",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "the_wall",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "castle_black_main",
+        "name_tr": "Kara Kale",
+        "x": 1290,
+        "y": 604,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "pentos",
+    "settlements": [
+      {
+        "id": "pentos_main",
+        "name_tr": "Pentos",
+        "x": 2203,
+        "y": 2388,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "beyond_the_wall",
+    "settlements": [
+      {
+        "id": "hardhome_main",
+        "name_tr": "Hardhome",
+        "x": 1300,
+        "y": 300,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_hollow_hill",
+    "settlements": [
+      {
+        "id": "hollow_hill_main",
+        "name_tr": "Oyuk Tepe",
+        "x": 1200,
+        "y": 2150,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "riverrun",
+    "settlements": [
+      {
+        "id": "riverrun_main",
+        "name_tr": "Nehir Koşusu",
+        "x": 1050,
+        "y": 2080,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_dreadfort",
+    "settlements": [
+      {
+        "id": "the_dreadfort_main",
+        "name_tr": "Dehşet Kalesi",
+        "x": 1420,
+        "y": 1000,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_eyrie",
+    "settlements": [
+      {
+        "id": "the_eyrie_main",
+        "name_tr": "Kartal Yuvası",
+        "x": 1450,
+        "y": 1850,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "braavos",
+    "settlements": [
+      {
+        "id": "braavos_main",
+        "name_tr": "Braavos",
+        "x": 2150,
+        "y": 1900,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "astapor",
+    "settlements": null
+  },
+  {
+    "region_id": "yunkai",
+    "settlements": null
+  },
+  {
+    "region_id": "meereen",
+    "settlements": null
+  },
+  {
+    "region_id": "the_twins",
+    "settlements": null
+  },
+  {
+    "region_id": "the_mountains_of_the_moon",
+    "settlements": null
+  },
+  {
+    "region_id": "riverlands",
+    "settlements": null
+  },
+  {
+    "region_id": "harrenhal",
+    "settlements": null
+  },
+  {
+    "region_id": "lannisport",
+    "settlements": null
+  },
+  {
+    "region_id": "reach",
+    "settlements": null
+  },
+  {
+    "region_id": "oldtown",
+    "settlements": null
+  },
+  {
+    "region_id": "stormlands",
     "settlements": null
   }
 ]

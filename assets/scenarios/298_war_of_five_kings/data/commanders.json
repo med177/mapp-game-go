@@ -192,5 +192,44 @@
     ],
     "start_year": 298,
     "end_year": 305
+  },
+  {
+    "id": "cmd_sealord_braavos",
+    "owner_id": "braavos",
+    "name": "Sealord of Braavos",
+    "portrait_asset": "sealord_braavos.png",
+    "level": 4,
+    "traits": [
+      "wealthy",
+      "naval_commander"
+    ],
+    "start_year": 298,
+    "end_year": 305
+  },
+  {
+    "id": "cmd_beric_dondarrion",
+    "owner_id": "brotherhood_without_banners",
+    "name": "Beric Dondarrion",
+    "portrait_asset": "beric_dondarrion.png",
+    "level": 4,
+    "traits": [
+      "charismatic",
+      "brave"
+    ],
+    "start_year": 298,
+    "end_year": 302
+  },
+  {
+    "id": "cmd_thoros_of_myr",
+    "owner_id": "brotherhood_without_banners",
+    "name": "Thoros of Myr",
+    "portrait_asset": "thoros_of_myr.png",
+    "level": 3,
+    "traits": [
+      "brave",
+      "liberator"
+    ],
+    "start_year": 298,
+    "end_year": 305
   }
 ]

@@ -605,5 +605,91 @@
         "value": 80
       }
     ]
+  },
+  {
+    "id": "braavos",
+    "name": "Free City of Braavos",
+    "name_tr": "Braavos Özgür Şehri",
+    "religion": "valyrian",
+    "color": [
+      40,
+      90,
+      150
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "braavos_main",
+    "gold": 10000,
+    "grain": 2500,
+    "iron": 120,
+    "timber": 250,
+    "stone": 700,
+    "spice": 500,
+    "cloth": 500,
+    "research": {
+      "completed": {
+        "naval_tactics": true,
+        "trade_contracts": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 25,
+    "ai_expansion_targets": [
+      "pentos",
+      "dragonstone"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "braavos",
+        "value": 100,
+        "core": true
+      }
+    ]
+  },
+  {
+    "id": "brotherhood_without_banners",
+    "name": "Brotherhood Without Banners",
+    "name_tr": "Sancaksız Kardeşlik",
+    "religion": "faith_of_the_seven",
+    "color": [
+      110,
+      70,
+      45
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "capital_settlement_id": "hollow_hill_main",
+    "gold": 700,
+    "grain": 900,
+    "iron": 80,
+    "timber": 150,
+    "stone": 120,
+    "spice": 10,
+    "cloth": 35,
+    "research": {
+      "completed": {
+        "iron_weapons": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 70,
+    "ai_expansion_targets": [
+      "riverlands",
+      "harrenhal",
+      "kings_landing"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "the_hollow_hill",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "riverlands",
+        "value": 70
+      }
+    ]
   }
 ]
