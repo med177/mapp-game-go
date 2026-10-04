@@ -2871,6 +2871,8 @@ func (r *Renderer) mergeShapes(targetID, sourceID string) {
 	r.editShapeMergeMode = false
 	r.editShapeMergeTarget = ""
 	r.editShapeMergeMessage = ""
+	// State değişikliği async harita rebuild'inden önce de kaydedilmemiştir.
+	r.editDirty = true
 	complete := func() {
 		for rid := range affected {
 			visual := r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf[:0])

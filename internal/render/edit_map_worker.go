@@ -192,8 +192,20 @@ func (r *Renderer) requestEditWorldMapRebuildForShape(shapeID string) {
 }
 
 func (r *Renderer) requestEditWorldMapRebuildForShapeWithCompletion(shapeID string, completion func()) bool {
-	if r == nil || r.gs == nil || r.editMapBuildPending {
+	if r == nil || r.gs == nil {
 		return false
+	}
+	if r.editMapBuildPending {
+		// Bekleyen snapshot eski state'i taşıyabilir. Yeni edit işlemini
+		// kaybetmemek için onu iptal edip güncel state ile yeniden başlat.
+		r.editMapBuildGeneration++
+		r.editMapBuildPending = false
+		if r.editMapBuildCancel != nil {
+			r.editMapBuildCancel()
+			r.editMapBuildCancel = nil
+		}
+		r.editMapBuildResult = nil
+		r.editMapBuildCompletion = nil
 	}
 
 	r.editMapBuildGeneration++

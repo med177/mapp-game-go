@@ -136,6 +136,7 @@
       "always_winter",
       "barrowlands",
       "casterly_rock",
+      "cornfield",
       "deepwood_motte",
       "flints_finger",
       "horn_hill",
@@ -218,7 +219,6 @@
     "terrain": "plain",
     "owner_id": "baratheon_stormsend",
     "neighbors": [
-      "casterly_rock",
       "dragonstone",
       "highgarden",
       "kingswood",
@@ -336,7 +336,6 @@
     "owner_id": "baratheon_king",
     "successor_faction_id": "baratheon_king",
     "neighbors": [
-      "casterly_rock",
       "crackclaw_point",
       "crownlands",
       "dragonstone",
@@ -380,15 +379,12 @@
     "owner_id": "lannister",
     "successor_faction_id": "lannister",
     "neighbors": [
-      "kings_landing",
       "lannisport",
       "new_region_54",
       "new_region_55",
       "new_region_56",
       "reach",
       "riverrun",
-      "storm_end",
-      "stormlands",
       "the_hollow_hill"
     ],
     "world_x": 750,
@@ -539,6 +535,7 @@
     "successor_faction_id": "tyrell",
     "neighbors": [
       "blackmont",
+      "cornfield",
       "horn_hill",
       "prince_pass",
       "reach",
@@ -623,7 +620,6 @@
       "karhold",
       "new_region_55",
       "sea",
-      "the_dreadfort",
       "winterfell_region"
     ],
     "world_x": 1356,
@@ -874,7 +870,6 @@
       "karhold",
       "moat_cailin",
       "sea",
-      "the_wall",
       "white_harbor",
       "winterfell_region"
     ],
@@ -1174,9 +1169,9 @@
     "successor_faction_id": "lannister",
     "neighbors": [
       "casterly_rock",
+      "cornfield",
       "new_region_55",
-      "reach",
-      "shield_islands"
+      "reach"
     ],
     "world_x": 712,
     "world_y": 2289,
@@ -1215,6 +1210,7 @@
     "owner_id": "tyrell",
     "neighbors": [
       "casterly_rock",
+      "cornfield",
       "highgarden",
       "lannisport",
       "shield_islands",
@@ -1709,9 +1705,9 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
+      "cornfield",
       "highgarden",
       "horn_hill",
-      "lannisport",
       "new_region_55",
       "oldtown",
       "reach"
@@ -1730,6 +1726,41 @@
     "base_spice_output": 0,
     "base_cloth_output": 0,
     "trade_capacity": 2,
+    "satisfaction": 70,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "faith_of_the_seven",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "cornfield",
+    "name": "Cornfield",
+    "name_tr": "Mısır Tarlası",
+    "terrain": "coast",
+    "owner_id": "",
+    "neighbors": [
+      "highgarden",
+      "lannisport",
+      "new_region_55",
+      "reach",
+      "shield_islands"
+    ],
+    "world_x": 667,
+    "world_y": 2514,
+    "shape_id": "WST_WL",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
     "satisfaction": 70,
     "tax_rate": 45,
     "population": 0,
@@ -2058,7 +2089,6 @@
     "terrain": "plain",
     "owner_id": "baratheon_king",
     "neighbors": [
-      "casterly_rock",
       "kings_landing",
       "narrow_sea",
       "storm_end"
