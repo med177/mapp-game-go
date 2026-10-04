@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"image"
 	"image/color"
+	_ "image/jpeg"
 	_ "image/png"
 	"log"
 	"math"
 	"os"
+	"path/filepath"
 	"sort"
 
 	"mapp-game-go/internal/diplomacy"
@@ -139,7 +141,7 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 	if setProgress != nil {
 		setProgress(5)
 	}
-	// Fallback: düz okyanus mavisi. Senaryo PNG'si varsa aşağıda bunun üstüne yazılır.
+	// Fallback: düz okyanus mavisi. Senaryo arka plan resmi varsa aşağıda bunun üstüne yazılır.
 	const oR, oG, oB byte = 28, 88, 168
 	for i := 0; i < WorldW*WorldH; i++ {
 		wm.basePixels[i*4] = oR
@@ -147,7 +149,7 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 		wm.basePixels[i*4+2] = oB
 		wm.basePixels[i*4+3] = 255
 	}
-	if bgPixels, ok := loadPNGAsBasePixels(gs.ScenarioPath + "/maps/world_map_background.png"); ok {
+	if bgPixels, ok := loadImageAsBasePixels(mapBackgroundPath(gs.ScenarioPath, gs.MapConfig.BackgroundImage)); ok {
 		copy(wm.basePixels, bgPixels)
 		wm.hasBgImage = true
 		// log.Println("Arka plan harita resmi yüklendi")
@@ -215,6 +217,15 @@ func prepareWorldMapData(gs *state.GameState, selected world.RegionID, mode MapM
 		setProgress(100)
 	}
 	return wm
+}
+
+// mapBackgroundPath, senaryo haritasının arka plan dosyasını maps/ altında çözer.
+func mapBackgroundPath(scenarioPath, configured string) string {
+	if configured == "" {
+		configured = "world_map_background.png"
+	}
+	filename := filepath.Base(filepath.FromSlash(configured))
+	return filepath.Join(scenarioPath, "maps", filename)
 }
 
 // captureSeaRegionBaseline, shape düzenlenirken kaldırılan kara piksellerini
@@ -312,9 +323,9 @@ func applyMapConfig(gs *state.GameState) {
 	}
 }
 
-// loadPNGAsBasePixels, arka plan PNG'sini WorldW×WorldH piksel tamponuna yükler.
+// loadImageAsBasePixels, arka plan resmini WorldW×WorldH piksel tamponuna yükler.
 // Shape koordinat uzayı (shapeW×shapeH) üzerinden doğru coğrafi hizalama sağlar.
-func loadPNGAsBasePixels(path string) ([]byte, bool) {
+func loadImageAsBasePixels(path string) ([]byte, bool) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, false
@@ -323,7 +334,7 @@ func loadPNGAsBasePixels(path string) ([]byte, bool) {
 
 	src, _, err := image.Decode(f)
 	if err != nil {
-		log.Printf("arka plan PNG decode hatası: %v", err)
+		log.Printf("arka plan resmi decode hatası: %v", err)
 		return nil, false
 	}
 
@@ -336,8 +347,8 @@ func loadPNGAsBasePixels(path string) ([]byte, bool) {
 		pixels[i*4], pixels[i*4+1], pixels[i*4+2], pixels[i*4+3] = 28, 88, 168, 255
 	}
 	// Hızlı erişim için NRGBA Pix dizisini dene, aksi halde At() kullan
-	type pngGetter func(x, y int) (byte, byte, byte)
-	var getPixel pngGetter
+	type pixelGetter func(x, y int) (byte, byte, byte)
+	var getPixel pixelGetter
 	switch img := src.(type) {
 	case *image.NRGBA:
 		getPixel = func(x, y int) (byte, byte, byte) {
@@ -356,7 +367,7 @@ func loadPNGAsBasePixels(path string) ([]byte, bool) {
 		}
 	}
 
-	// WorldW=PNG genişliği, WorldH=PNG yüksekliği → 1:1 piksel eşleme
+	// WorldW=resim genişliği, WorldH=resim yüksekliği → 1:1 piksel eşleme
 	for gy := 0; gy < WorldH; gy++ {
 		pngY := gy
 		if pngY >= srcH {
@@ -1103,6 +1114,10 @@ func (wm *WorldMap) rebuildShapeRegionAssignments(gs *state.GameState, shapeID s
 	if wm == nil || gs == nil || shapeID == "" || len(wm.baseRegionAt) != len(wm.regionAt) {
 		return false
 	}
+	pixels := wm.shapeRasterPixels[shapeID]
+	if len(pixels) == 0 {
+		return false
+	}
 
 	regions := make([]*world.Region, 0)
 	for _, region := range gs.Regions {
@@ -1116,50 +1131,32 @@ func (wm *WorldMap) rebuildShapeRegionAssignments(gs *state.GameState, shapeID s
 	}
 	sort.Slice(regions, func(i, j int) bool { return regions[i].ID < regions[j].ID })
 
-	oldPixels := wm.shapeRasterPixels[shapeID]
-	if wm.regionPx == nil {
-		wm.regionPx = make(map[world.RegionID][]int)
+	// Shape geometrisi değişmediği için cache'teki aynı pikseller yeni merkezlere
+	// atanır. Diğer shape'ler ve deniz rasterı korunur.
+	for _, pIdx := range pixels {
+		if pIdx >= 0 && pIdx < len(wm.baseRegionAt) {
+			wm.baseRegionAt[pIdx] = 0
+		}
 	}
-	for _, pIdx := range oldPixels {
+	copy(wm.regionAt, wm.baseRegionAt)
+	wm.rebuildRegionPixelsFromAssignments()
+
+	for _, pIdx := range pixels {
 		if pIdx < 0 || pIdx >= len(wm.regionAt) {
 			continue
 		}
-		wm.regionAt[pIdx] = wm.seaRegionAtValue(pIdx)
-		wm.baseRegionAt[pIdx] = wm.regionAt[pIdx]
-		wm.resetBasePixelToSea(pIdx)
-	}
-	rings, shapeExists := gs.ShapeData.Shapes[shapeID]
-	if !shapeExists {
-		// Eski/yalın test fixture'larında geometri bulunmaz; merkez değişikliği
-		// davranışını koru.
-		for _, pIdx := range oldPixels {
-			if pIdx < 0 || pIdx >= len(wm.regionAt) {
-				continue
-			}
-			region := nearestShapeRegion(regions, pIdx%WorldW, pIdx/WorldW)
-			idx := wm.ensureRegionIndex(region.ID)
-			wm.regionAt[pIdx] = idx
-			wm.baseRegionAt[pIdx] = idx
-		}
-	} else {
-		for _, ring := range rings {
-			wm.clearSeaPixelsInsideRing(ring)
-			wm.rasterizeRegionRing(gs, regions, ring)
+		region := nearestShapeRegion(regions, pIdx%WorldW, pIdx/WorldW)
+		idx := wm.ensureRegionIndex(region.ID)
+		wm.regionAt[pIdx] = idx
+		wm.baseRegionAt[pIdx] = idx
+		if !wm.hasBgImage {
+			col := terrainBaseColor(region.Terrain, pIdx%WorldW, pIdx/WorldW, string(region.ID))
+			wm.basePixels[pIdx*4] = col.R
+			wm.basePixels[pIdx*4+1] = col.G
+			wm.basePixels[pIdx*4+2] = col.B
+			wm.basePixels[pIdx*4+3] = 255
 		}
 	}
-
-	newPixels := make([]int, 0, len(oldPixels))
-	for pIdx, regionIdx := range wm.regionAt {
-		if int(regionIdx) >= len(wm.regionIDs) {
-			continue
-		}
-		region := gs.Regions[wm.regionIDs[regionIdx]]
-		if region != nil && region.ShapeID == shapeID && !region.IsSea && !region.IsTerrainArea && !region.IsMinorRegion {
-			newPixels = append(newPixels, pIdx)
-			wm.baseRegionAt[pIdx] = regionIdx
-		}
-	}
-	wm.shapeRasterPixels[shapeID] = newPixels
 	wm.rebuildRegionPixelsFromAssignments()
 	return true
 }

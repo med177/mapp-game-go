@@ -7,35 +7,18 @@
     "owner_id": "",
     "neighbors": [
       "always_winter",
-      "barrowlands",
-      "casterly_rock",
-      "deepwood_motte",
-      "dragonstone",
+      "beyond_the_wall",
+      "braavos",
       "essos_free_cities",
-      "flints_finger",
-      "godsgrace",
-      "horn_hill",
-      "lannisport",
+      "karhold",
+      "moat_cailin",
       "narrow_sea",
-      "oldtown",
-      "pentos",
-      "prince_pass",
-      "pyke",
-      "riverlands",
-      "riverrun",
-      "salt_shore",
-      "sandstone",
-      "shield_islands",
-      "starfall",
-      "stony_shore",
-      "storm_end",
-      "sunspear",
-      "the_arbor",
       "the_dreadfort",
+      "the_eyrie",
+      "the_neck",
       "the_twins",
       "the_wall",
-      "winterfell_region",
-      "yronwood"
+      "white_harbor"
     ],
     "world_x": 2166,
     "world_y": 1316,
@@ -66,6 +49,7 @@
     "owner_id": "",
     "neighbors": [
       "beyond_the_wall",
+      "new_region_55",
       "sea",
       "the_wall"
     ],
@@ -98,8 +82,28 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "astapor",
+      "braavos",
+      "crackclaw_point",
       "dragonstone",
-      "sea"
+      "godsgrace",
+      "harrenhal",
+      "kings_landing",
+      "kingswood",
+      "meereen",
+      "new_region_55",
+      "pentos",
+      "prince_pass",
+      "salt_shore",
+      "sandstone",
+      "sea",
+      "storm_end",
+      "stormlands",
+      "sunspear",
+      "the_eyrie",
+      "the_fingers",
+      "the_mountains_of_the_moon",
+      "yronwood"
     ],
     "world_x": 1900,
     "world_y": 2300,
@@ -123,6 +127,57 @@
     "buildings": null
   },
   {
+    "id": "new_region_55",
+    "name": "New Region 55",
+    "name_tr": "Yeni Bolge 55",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "always_winter",
+      "barrowlands",
+      "casterly_rock",
+      "deepwood_motte",
+      "flints_finger",
+      "horn_hill",
+      "lannisport",
+      "narrow_sea",
+      "new_region_54",
+      "new_region_56",
+      "oldtown",
+      "pyke",
+      "riverlands",
+      "riverrun",
+      "sandstone",
+      "shield_islands",
+      "starfall",
+      "stony_shore",
+      "the_arbor",
+      "the_twins",
+      "the_wall",
+      "winterfell_region"
+    ],
+    "world_x": 265,
+    "world_y": 2281,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "essos_free_cities",
     "name": "Essos Free Cities",
     "name_tr": "Essos Free Cities",
@@ -131,10 +186,11 @@
     "neighbors": [
       "braavos",
       "pentos",
-      "sea"
+      "sea",
+      "yunkai"
     ],
-    "world_x": 2442,
-    "world_y": 2117,
+    "world_x": 2542,
+    "world_y": 2444,
     "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
@@ -162,14 +218,13 @@
     "terrain": "plain",
     "owner_id": "baratheon_stormsend",
     "neighbors": [
-      "blackmont",
       "casterly_rock",
       "dragonstone",
       "highgarden",
       "kingswood",
+      "narrow_sea",
       "prince_pass",
       "reach",
-      "sea",
       "stormlands"
     ],
     "world_x": 1438,
@@ -202,7 +257,8 @@
     "owner_id": "martell",
     "neighbors": [
       "godsgrace",
-      "sea"
+      "narrow_sea",
+      "salt_shore"
     ],
     "world_x": 1646,
     "world_y": 3148,
@@ -234,13 +290,15 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
-      "sea",
+      "barrowlands",
+      "moat_cailin",
+      "new_region_55",
+      "stony_shore",
       "the_dreadfort",
-      "the_twins",
       "the_wall"
     ],
-    "world_x": 1126,
-    "world_y": 1136,
+    "world_x": 1225,
+    "world_y": 1048,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -279,13 +337,14 @@
     "successor_faction_id": "baratheon_king",
     "neighbors": [
       "casterly_rock",
+      "crackclaw_point",
+      "crownlands",
       "dragonstone",
-      "harrenhal",
-      "stormlands",
-      "the_hollow_hill"
+      "narrow_sea",
+      "stormlands"
     ],
-    "world_x": 1430,
-    "world_y": 2350,
+    "world_x": 1408,
+    "world_y": 2359,
     "shape_id": "WST_CL",
     "is_sea": false,
     "is_locked": false,
@@ -323,15 +382,17 @@
     "neighbors": [
       "kings_landing",
       "lannisport",
+      "new_region_54",
+      "new_region_55",
+      "new_region_56",
       "reach",
       "riverrun",
-      "sea",
       "storm_end",
       "stormlands",
       "the_hollow_hill"
     ],
-    "world_x": 720,
-    "world_y": 2224,
+    "world_x": 750,
+    "world_y": 2215,
     "shape_id": "WST_WL",
     "is_sea": false,
     "is_locked": false,
@@ -361,6 +422,74 @@
     ]
   },
   {
+    "id": "new_region_56",
+    "name": "crag2",
+    "name_tr": "crag2",
+    "terrain": "mountain",
+    "owner_id": "lannister",
+    "successor_faction_id": "lannister",
+    "neighbors": [
+      "casterly_rock",
+      "new_region_54",
+      "new_region_55"
+    ],
+    "world_x": 937,
+    "world_y": 2031,
+    "shape_id": "crag",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 90,
+    "tax_rate": 40,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "faith_of_the_seven",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_54",
+    "name": "The Crag",
+    "name_tr": "The Crag",
+    "terrain": "mountain",
+    "owner_id": "lannister",
+    "successor_faction_id": "lannister",
+    "neighbors": [
+      "casterly_rock",
+      "new_region_55",
+      "new_region_56"
+    ],
+    "world_x": 832,
+    "world_y": 2027,
+    "shape_id": "crag",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 90,
+    "tax_rate": 40,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "faith_of_the_seven",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "dragonstone",
     "name": "Dragonstone",
     "name_tr": "Ejderha Kayası",
@@ -368,14 +497,14 @@
     "owner_id": "baratheon_dragonstone",
     "successor_faction_id": "baratheon_dragonstone",
     "neighbors": [
-      "harrenhal",
+      "crackclaw_point",
+      "crownlands",
       "kings_landing",
+      "kingswood",
       "narrow_sea",
-      "sea",
-      "storm_end",
-      "stormlands"
+      "storm_end"
     ],
-    "world_x": 1685,
+    "world_x": 1703,
     "world_y": 2221,
     "shape_id": "WST_DS",
     "is_sea": false,
@@ -411,6 +540,7 @@
     "neighbors": [
       "blackmont",
       "horn_hill",
+      "prince_pass",
       "reach",
       "shield_islands",
       "storm_end"
@@ -452,7 +582,7 @@
     "owner_id": "greyjoy",
     "successor_faction_id": "greyjoy",
     "neighbors": [
-      "sea"
+      "new_region_55"
     ],
     "world_x": 668,
     "world_y": 1900,
@@ -490,6 +620,8 @@
     "neighbors": [
       "always_winter",
       "beyond_the_wall",
+      "karhold",
+      "new_region_55",
       "sea",
       "the_dreadfort",
       "winterfell_region"
@@ -531,9 +663,11 @@
     "owner_id": "targaryen",
     "successor_faction_id": "targaryen",
     "neighbors": [
+      "astapor",
       "braavos",
       "essos_free_cities",
-      "sea"
+      "narrow_sea",
+      "yunkai"
     ],
     "world_x": 2203,
     "world_y": 2388,
@@ -567,9 +701,15 @@
     "name_tr": "Astapor",
     "terrain": "plain",
     "owner_id": "",
-    "neighbors": null,
-    "world_x": 2462,
-    "world_y": 2933,
+    "neighbors": [
+      "meereen",
+      "narrow_sea",
+      "pentos",
+      "yunkai"
+    ],
+    "world_x": 2515,
+    "world_y": 2865,
+    "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
@@ -595,9 +735,14 @@
     "name_tr": "Yunkai",
     "terrain": "plain",
     "owner_id": "",
-    "neighbors": null,
-    "world_x": 2550,
-    "world_y": 2826,
+    "neighbors": [
+      "astapor",
+      "essos_free_cities",
+      "pentos"
+    ],
+    "world_x": 2562,
+    "world_y": 2716,
+    "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
@@ -623,9 +768,13 @@
     "name_tr": "Meereen",
     "terrain": "plain",
     "owner_id": "",
-    "neighbors": null,
-    "world_x": 2555,
-    "world_y": 3007,
+    "neighbors": [
+      "astapor",
+      "narrow_sea"
+    ],
+    "world_x": 2508,
+    "world_y": 3013,
+    "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
@@ -654,7 +803,9 @@
     "successor_faction_id": "braavos",
     "neighbors": [
       "essos_free_cities",
-      "pentos"
+      "narrow_sea",
+      "pentos",
+      "sea"
     ],
     "world_x": 2150,
     "world_y": 1900,
@@ -687,6 +838,7 @@
     "successor_faction_id": "free_folk",
     "neighbors": [
       "always_winter",
+      "sea",
       "the_wall"
     ],
     "world_x": 1259,
@@ -719,12 +871,15 @@
     "owner_id": "bolton",
     "successor_faction_id": "bolton",
     "neighbors": [
+      "karhold",
+      "moat_cailin",
       "sea",
       "the_wall",
+      "white_harbor",
       "winterfell_region"
     ],
-    "world_x": 1420,
-    "world_y": 1000,
+    "world_x": 1459,
+    "world_y": 1057,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -752,12 +907,14 @@
     "terrain": "plain",
     "owner_id": "tully",
     "neighbors": [
+      "deepwood_motte",
+      "new_region_55",
       "riverlands",
       "riverrun",
       "sea",
       "the_eyrie",
       "the_mountains_of_the_moon",
-      "winterfell_region"
+      "the_neck"
     ],
     "world_x": 1150,
     "world_y": 1750,
@@ -789,6 +946,8 @@
     "owner_id": "arryn",
     "successor_faction_id": "arryn",
     "neighbors": [
+      "narrow_sea",
+      "sea",
       "the_mountains_of_the_moon",
       "the_twins"
     ],
@@ -822,6 +981,7 @@
     "owner_id": "arryn",
     "neighbors": [
       "harrenhal",
+      "narrow_sea",
       "riverlands",
       "the_eyrie",
       "the_twins"
@@ -857,8 +1017,8 @@
     "successor_faction_id": "tully",
     "neighbors": [
       "harrenhal",
+      "new_region_55",
       "riverrun",
-      "sea",
       "the_hollow_hill",
       "the_mountains_of_the_moon",
       "the_twins"
@@ -900,8 +1060,8 @@
     "successor_faction_id": "tully",
     "neighbors": [
       "casterly_rock",
+      "new_region_55",
       "riverlands",
-      "sea",
       "the_hollow_hill",
       "the_twins"
     ],
@@ -940,8 +1100,9 @@
     "terrain": "plain",
     "owner_id": "tully",
     "neighbors": [
-      "dragonstone",
-      "kings_landing",
+      "crackclaw_point",
+      "crownlands",
+      "narrow_sea",
       "riverlands",
       "the_hollow_hill",
       "the_mountains_of_the_moon"
@@ -977,8 +1138,8 @@
     "successor_faction_id": "brotherhood_without_banners",
     "neighbors": [
       "casterly_rock",
+      "crownlands",
       "harrenhal",
-      "kings_landing",
       "riverlands",
       "riverrun"
     ],
@@ -1013,12 +1174,12 @@
     "successor_faction_id": "lannister",
     "neighbors": [
       "casterly_rock",
+      "new_region_55",
       "reach",
-      "sea",
       "shield_islands"
     ],
-    "world_x": 691,
-    "world_y": 2298,
+    "world_x": 712,
+    "world_y": 2289,
     "shape_id": "WST_WL",
     "is_sea": false,
     "is_locked": false,
@@ -1091,12 +1252,12 @@
     "neighbors": [
       "blackmont",
       "horn_hill",
-      "sea",
-      "starfall",
-      "the_arbor"
+      "new_region_55",
+      "shield_islands",
+      "starfall"
     ],
-    "world_x": 699,
-    "world_y": 2928,
+    "world_x": 663,
+    "world_y": 3041,
     "shape_id": "WST_RC",
     "is_sea": false,
     "is_locked": false,
@@ -1131,10 +1292,10 @@
     "neighbors": [
       "sea",
       "the_dreadfort",
-      "winterfell_region"
+      "the_wall"
     ],
-    "world_x": 1592,
-    "world_y": 902,
+    "world_x": 1532,
+    "world_y": 870,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -1162,11 +1323,13 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "sea",
+      "barrowlands",
+      "flints_finger",
+      "new_region_55",
       "winterfell_region"
     ],
-    "world_x": 475,
-    "world_y": 1120,
+    "world_x": 632,
+    "world_y": 1327,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -1194,12 +1357,15 @@
     "terrain": "plain",
     "owner_id": "",
     "neighbors": [
-      "sea",
-      "the_neck",
+      "deepwood_motte",
+      "flints_finger",
+      "moat_cailin",
+      "new_region_55",
+      "stony_shore",
       "winterfell_region"
     ],
-    "world_x": 810,
-    "world_y": 1480,
+    "world_x": 907,
+    "world_y": 1426,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -1227,12 +1393,16 @@
     "terrain": "swamp",
     "owner_id": "",
     "neighbors": [
+      "barrowlands",
+      "deepwood_motte",
       "sea",
+      "the_dreadfort",
       "the_neck",
-      "the_twins"
+      "white_harbor",
+      "winterfell_region"
     ],
-    "world_x": 1100,
-    "world_y": 1680,
+    "world_x": 1185,
+    "world_y": 1415,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -1260,12 +1430,13 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
+      "moat_cailin",
       "sea",
       "the_dreadfort",
-      "winterfell_region"
+      "the_neck"
     ],
-    "world_x": 1525,
-    "world_y": 1525,
+    "world_x": 1381,
+    "world_y": 1467,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -1293,11 +1464,13 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "sea",
-      "the_neck"
+      "barrowlands",
+      "deepwood_motte",
+      "new_region_55",
+      "stony_shore"
     ],
-    "world_x": 490,
-    "world_y": 1865,
+    "world_x": 727,
+    "world_y": 1592,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -1325,12 +1498,15 @@
     "terrain": "forest",
     "owner_id": "",
     "neighbors": [
-      "sea",
+      "barrowlands",
+      "flints_finger",
+      "moat_cailin",
+      "new_region_55",
       "the_neck",
-      "winterfell_region"
+      "the_twins"
     ],
-    "world_x": 850,
-    "world_y": 1815,
+    "world_x": 960,
+    "world_y": 1548,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -1358,14 +1534,14 @@
     "terrain": "swamp",
     "owner_id": "",
     "neighbors": [
-      "barrowlands",
-      "flints_finger",
+      "deepwood_motte",
       "moat_cailin",
       "sea",
-      "the_twins"
+      "the_twins",
+      "white_harbor"
     ],
-    "world_x": 1120,
-    "world_y": 1880,
+    "world_x": 1200,
+    "world_y": 1528,
     "shape_id": "WST_N",
     "is_sea": false,
     "is_locked": false,
@@ -1393,6 +1569,7 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
+      "narrow_sea",
       "sea",
       "the_eyrie",
       "the_mountains_of_the_moon"
@@ -1427,14 +1604,14 @@
     "owner_id": "baratheon_king",
     "successor_faction_id": "baratheon_king",
     "neighbors": [
+      "crackclaw_point",
       "dragonstone",
+      "harrenhal",
       "kings_landing",
-      "kingswood",
-      "sea",
-      "stormlands"
+      "the_hollow_hill"
     ],
-    "world_x": 1357,
-    "world_y": 2241,
+    "world_x": 1372,
+    "world_y": 2298,
     "shape_id": "WST_CL",
     "is_sea": false,
     "is_locked": false,
@@ -1463,12 +1640,14 @@
     "owner_id": "",
     "neighbors": [
       "crownlands",
+      "dragonstone",
+      "harrenhal",
       "kings_landing",
-      "sea"
+      "narrow_sea"
     ],
-    "world_x": 1669,
-    "world_y": 2141,
-    "shape_id": "WST_CL",
+    "world_x": 1676,
+    "world_y": 2179,
+    "shape_id": "WST_DS",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
@@ -1495,8 +1674,9 @@
     "terrain": "forest",
     "owner_id": "baratheon_king",
     "neighbors": [
-      "crownlands",
+      "dragonstone",
       "kings_landing",
+      "narrow_sea",
       "storm_end",
       "stormlands"
     ],
@@ -1532,8 +1712,9 @@
       "highgarden",
       "horn_hill",
       "lannisport",
-      "reach",
-      "sea"
+      "new_region_55",
+      "oldtown",
+      "reach"
     ],
     "world_x": 646,
     "world_y": 2663,
@@ -1566,12 +1747,12 @@
     "neighbors": [
       "blackmont",
       "highgarden",
+      "new_region_55",
       "oldtown",
-      "sea",
       "shield_islands"
     ],
-    "world_x": 725,
-    "world_y": 2769,
+    "world_x": 741,
+    "world_y": 2735,
     "shape_id": "WST_RC",
     "is_sea": false,
     "is_locked": false,
@@ -1601,11 +1782,10 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "oldtown",
-      "sea"
+      "new_region_55"
     ],
-    "world_x": 585,
-    "world_y": 3166,
+    "world_x": 564,
+    "world_y": 3158,
     "shape_id": "WST_RC",
     "is_sea": false,
     "is_locked": false,
@@ -1637,9 +1817,7 @@
       "horn_hill",
       "oldtown",
       "prince_pass",
-      "sandstone",
-      "starfall",
-      "storm_end"
+      "starfall"
     ],
     "world_x": 933,
     "world_y": 2935,
@@ -1671,13 +1849,14 @@
     "owner_id": "",
     "neighbors": [
       "blackmont",
-      "sandstone",
-      "sea",
+      "highgarden",
+      "narrow_sea",
+      "starfall",
       "storm_end",
       "yronwood"
     ],
-    "world_x": 1245,
-    "world_y": 2876,
+    "world_x": 1187,
+    "world_y": 2875,
     "shape_id": "dorne",
     "is_sea": false,
     "is_locked": false,
@@ -1706,13 +1885,14 @@
     "owner_id": "",
     "neighbors": [
       "godsgrace",
+      "narrow_sea",
       "prince_pass",
       "salt_shore",
       "sandstone",
-      "sea"
+      "starfall"
     ],
-    "world_x": 1294,
-    "world_y": 2991,
+    "world_x": 1237,
+    "world_y": 3045,
     "shape_id": "dorne",
     "is_sea": false,
     "is_locked": false,
@@ -1740,15 +1920,13 @@
     "terrain": "desert",
     "owner_id": "",
     "neighbors": [
-      "blackmont",
-      "prince_pass",
-      "salt_shore",
-      "sea",
+      "narrow_sea",
+      "new_region_55",
       "starfall",
       "yronwood"
     ],
-    "world_x": 1006,
-    "world_y": 3127,
+    "world_x": 960,
+    "world_y": 3115,
     "shape_id": "dorne",
     "is_sea": false,
     "is_locked": false,
@@ -1776,13 +1954,13 @@
     "terrain": "desert",
     "owner_id": "",
     "neighbors": [
+      "narrow_sea",
       "salt_shore",
-      "sea",
       "sunspear",
       "yronwood"
     ],
-    "world_x": 1554,
-    "world_y": 3066,
+    "world_x": 1473,
+    "world_y": 3069,
     "shape_id": "dorne",
     "is_sea": false,
     "is_locked": false,
@@ -1811,12 +1989,12 @@
     "owner_id": "",
     "neighbors": [
       "godsgrace",
-      "sandstone",
-      "sea",
+      "narrow_sea",
+      "sunspear",
       "yronwood"
     ],
-    "world_x": 1370,
-    "world_y": 3130,
+    "world_x": 1461,
+    "world_y": 3173,
     "shape_id": "dorne",
     "is_sea": false,
     "is_locked": false,
@@ -1845,12 +2023,14 @@
     "owner_id": "",
     "neighbors": [
       "blackmont",
+      "new_region_55",
       "oldtown",
+      "prince_pass",
       "sandstone",
-      "sea"
+      "yronwood"
     ],
-    "world_x": 903,
-    "world_y": 3021,
+    "world_x": 963,
+    "world_y": 3027,
     "shape_id": "dorne",
     "is_sea": false,
     "is_locked": false,
@@ -1880,6 +2060,7 @@
     "neighbors": [
       "casterly_rock",
       "kings_landing",
+      "narrow_sea",
       "storm_end"
     ],
     "world_x": 1398,

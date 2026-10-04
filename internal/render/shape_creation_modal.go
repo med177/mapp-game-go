@@ -61,11 +61,20 @@ func (r *Renderer) drawEditNewShapeModal(screen *ebiten.Image) {
 		func() {
 			stageLabel := "Shape ID"
 			help := "Boşluk kullanılamaz. Enter ile ilerle."
+			title := "YENİ KARA SINIRI"
+			if r.editNewShapeCut {
+				title = "SHAPE KES"
+				help = "Seçili shape içindeki poligon yeni bir shape olur."
+			}
 			if r.editTextTarget == editTextShapeName {
 				stageLabel = "Shape adı"
-				help = "Yeni kara bölgesinin görünen adı."
+				if r.editNewShapeCut {
+					help = "Kesilen yeni shape ve bölgenin görünen adı."
+				} else {
+					help = "Yeni kara bölgesinin görünen adı."
+				}
 			}
-			DrawText(screen, "YENİ KARA SINIRI", rect.X+24, rect.Y+18, FaceLarge, ColorGold)
+			DrawText(screen, title, rect.X+24, rect.Y+18, FaceLarge, ColorGold)
 			DrawText(screen, stageLabel, rect.X+24, rect.Y+64, FaceSmall, ColorGray)
 			box := gameui.NewTextBox(editNewShapeModalInputRect().X, editNewShapeModalInputRect().Y, editNewShapeModalInputRect().W, editNewShapeModalInputRect().H, stageLabel+" girin")
 			box.Value = string(r.editTextRunes)
@@ -157,6 +166,9 @@ func (r *Renderer) closeEditNewShapeModal() {
 	r.editTextError = ""
 	r.editNewShapeID = ""
 	r.editNewShapeRegion = ""
+	r.editNewShapeCut = false
+	r.editShapeCutting = false
+	r.editShapeCutPolygon = nil
 }
 
 func cursorX() float64 {

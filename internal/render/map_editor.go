@@ -934,6 +934,8 @@ const (
 	editButtonShapeBrushMinus
 	editButtonShapeBrushPlus
 	editButtonShapeNew
+	editButtonShapeCut
+	editButtonShapeMerge
 	editButtonLandPassageAdd
 	editButtonLandPassageAdjust
 	editButtonLandPassageDelete
@@ -1053,7 +1055,11 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	case editButtonShapeBrushPlus:
 		return rightRect(2)
 	case editButtonShapeNew:
-		return uiRect{left + bw - 140, float64(y) + 128, 140, bh}
+		return rightRect(5)
+	case editButtonShapeCut:
+		return leftRect(5)
+	case editButtonShapeMerge:
+		return full(6)
 	case editButtonLandPassageAdd:
 		return leftRect(3)
 	case editButtonLandPassageAdjust:
@@ -1259,6 +1265,8 @@ func editShapeInspectorButtonKinds() []editInspectorButton {
 		editButtonShapeBrushMinus,
 		editButtonShapeBrushPlus,
 		editButtonShapeNew,
+		editButtonShapeCut,
+		editButtonShapeMerge,
 		editButtonLandPassageAdd,
 		editButtonLandPassageAdjust,
 		editButtonLandPassageDelete,
@@ -1920,6 +1928,14 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			r.cancelMinorRegionDrawing()
 			return InputAction{}
 		}
+		if r.editShapeCutting {
+			r.cancelShapeCut()
+			return InputAction{}
+		}
+		if r.editShapeMergeMode {
+			r.cancelShapeMerge()
+			return InputAction{}
+		}
 		r.editOwnerDropdown.Close()
 		r.editSuccessorDropdown.Close()
 		r.editTerrainDropdown.Close()
@@ -1994,6 +2010,16 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		r.cancelMinorRegionDrawing()
 		return InputAction{}
 	}
+	if r.editShapeCutting && rightJustPressed && !inspectorOverlayOpen &&
+		!editInspectorHit(fx, fy) && !r.editShapeHelpPanelHit(fx, fy) {
+		r.cancelShapeCut()
+		return InputAction{}
+	}
+	if r.editShapeMergeMode && rightJustPressed && !inspectorOverlayOpen &&
+		!editInspectorHit(fx, fy) && !r.editShapeHelpPanelHit(fx, fy) {
+		r.cancelShapeMerge()
+		return InputAction{}
+	}
 	if !r.editShapePainting && rightJustPressed && !inspectorOverlayOpen && !editInspectorHit(fx, fy) && !r.editShapeHelpPanelHit(fx, fy) {
 		if rid, idx, ok := r.editSettlementAt(fx, fy); ok {
 			r.editOwnerDropdown.Close()
@@ -2023,6 +2049,22 @@ func (r *Renderer) handleEditModeInput() InputAction {
 			} else {
 				r.addMinorRegionPolygonPoint(fx, fy)
 			}
+		}
+		return InputAction{}
+	}
+	if r.editShapeCutting {
+		if !inspectorOverlayOpen && !r.editShapeHelpPanelHit(fx, fy) && leftJustPressed {
+			if r.shapeCutPolygonStartHovered(fx, fy) {
+				r.beginShapeCutCreation()
+			} else {
+				r.addShapeCutPolygonPoint(fx, fy)
+			}
+		}
+		return InputAction{}
+	}
+	if r.editShapeMergeMode {
+		if !inspectorOverlayOpen && !r.editShapeHelpPanelHit(fx, fy) && leftJustPressed {
+			r.mergeShapeAt(fx, fy)
 		}
 		return InputAction{}
 	}
@@ -2380,7 +2422,11 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 	}
 	if r.editGeometryEditPending() {
 		if buildEditInspectorActionButton(editButtonSaveScenario, "").HitTest(fx, fy) {
-			if r.editMinorRegionDrawing {
+			if r.editShapeMergeMode {
+				r.cancelShapeMerge()
+			} else if r.editShapeCutting {
+				r.cancelShapeCut()
+			} else if r.editMinorRegionDrawing {
 				r.cancelMinorRegionDrawing()
 			} else {
 				r.cancelTerrainAreaEdit()
@@ -2721,6 +2767,7 @@ func (r *Renderer) beginNewShapeCreation() {
 		return
 	}
 	r.editRenaming = false
+	r.editNewShapeCut = false
 	r.editNewShapeModal.show = true
 	r.editNewShapeID = ""
 	r.editNewShapeRegion = region.ID
@@ -2728,6 +2775,113 @@ func (r *Renderer) beginNewShapeCreation() {
 	r.editTextError = ""
 	r.editTextRunes = r.editTextRunes[:0]
 	r.editDraggingSettlement = false
+}
+
+func (r *Renderer) beginShapeCutCreation() {
+	region := r.selectedRegionForShapeTools()
+	if region == nil || region.IsSea || region.ShapeID == "" || r.editShapePaintPending || len(r.editShapeCutPolygon) < 3 {
+		return
+	}
+	r.editRenaming = false
+	r.editShapeCutting = false
+	r.editNewShapeCut = true
+	r.editNewShapeModal.show = true
+	r.editNewShapeID = ""
+	r.editNewShapeRegion = region.ID
+	r.editTextTarget = editTextShapeID
+	r.editTextError = ""
+	r.editTextRunes = r.editTextRunes[:0]
+	r.editDraggingSettlement = false
+}
+
+func (r *Renderer) beginShapeMerge() {
+	region := r.selectedRegionForShapeTools()
+	if region == nil || region.IsSea || region.ShapeID == "" || r.editShapePaintPending {
+		return
+	}
+	r.cancelShapeCut()
+	r.editShapeTool = editShapeToolNone
+	r.editShapePainting = false
+	r.editShapeMergeMode = true
+	r.editShapeMergeTarget = region.ShapeID
+	r.editShapeMergeMessage = "İkinci shape'i haritadan seç."
+}
+
+func (r *Renderer) mergeShapeAt(fx, fy float64) {
+	if r == nil || r.worldMap == nil || !r.editShapeMergeMode {
+		return
+	}
+	rid := r.editRegionAt(fx, fy)
+	region := r.gs.Regions[rid]
+	if region == nil || region.IsSea || region.ShapeID == "" {
+		r.editShapeMergeMessage = "İkinci seçim bir kara shape'i olmalı."
+		return
+	}
+	if region.ShapeID == r.editShapeMergeTarget {
+		r.editShapeMergeMessage = "İkinci seçim farklı bir shape olmalı."
+		return
+	}
+	r.mergeShapes(r.editShapeMergeTarget, region.ShapeID)
+}
+
+func (r *Renderer) mergeShapes(targetID, sourceID string) {
+	if r == nil || r.gs == nil || targetID == "" || sourceID == "" || targetID == sourceID {
+		return
+	}
+	if len(r.gs.ShapeData.Shapes[targetID]) == 0 || len(r.gs.ShapeData.Shapes[sourceID]) == 0 {
+		r.editShapeMergeMessage = "Birleştirilecek shape geometrisi bulunamadı."
+		return
+	}
+	targetSession := newShapeEditSession(r.gs, targetID)
+	sourceSession := newShapeEditSession(r.gs, sourceID)
+	mergedSession := newBlankShapeEditSession(r.gs, targetID)
+	if targetSession == nil || sourceSession == nil || mergedSession == nil {
+		r.editShapeMergeMessage = "Shape geometrileri oluşturulamadı."
+		return
+	}
+	for y := mergedSession.MinY; y <= mergedSession.MaxY; y++ {
+		for x := mergedSession.MinX; x <= mergedSession.MaxX; x++ {
+			if targetSession.filled(x, y) || sourceSession.filled(x, y) {
+				mergedSession.Mask[mergedSession.index(x, y)] = 1
+			}
+		}
+	}
+	mergedRings := shapeMaskToFloatRings(mergedSession)
+	if len(mergedRings) == 0 {
+		r.editShapeMergeMessage = "Shape birleşimi boş sonuç üretti."
+		return
+	}
+
+	applyShapeRingsToState(r.gs, targetID, mergedRings)
+	affected := make(map[world.RegionID]struct{})
+	for rid, region := range r.gs.Regions {
+		if region == nil || (region.ShapeID != targetID && region.ShapeID != sourceID) {
+			continue
+		}
+		if region.ShapeID == sourceID {
+			region.ShapeID = targetID
+		}
+		region.Shape = cloneFloatRings(mergedRings)
+		affected[rid] = struct{}{}
+	}
+	delete(r.gs.ShapeData.Shapes, sourceID)
+	delete(r.gs.ShapeData.Names, sourceID)
+	recalculateCountryShapeBounds(&r.gs.ShapeData)
+	r.editShapeSession = nil
+	r.editShapeMergeMode = false
+	r.editShapeMergeTarget = ""
+	r.editShapeMergeMessage = ""
+	complete := func() {
+		for rid := range affected {
+			visual := r.worldMap.VisualNeighbors(rid, r.editVisualNeighborBuf[:0])
+			r.applyVisualNeighbors(rid, visual)
+		}
+		r.editDirty = true
+	}
+	if !r.requestEditWorldMapRebuildWithCompletion(complete) {
+		r.rebuildEditWorldMap()
+		complete()
+	}
 }
 
 func (r *Renderer) handleEditRenameInput() InputAction {
@@ -2865,7 +3019,12 @@ func (r *Renderer) commitEditRename() {
 
 func (r *Renderer) commitNewShapeInput() {
 	source := r.gs.Regions[r.editNewShapeRegion]
-	if source == nil || !source.IsSea {
+	if r.editNewShapeCut {
+		if source == nil || source.IsSea || source.ShapeID == "" {
+			r.editTextError = "Shape kesmek için shape içeren kara bölgesi seçilmeli."
+			return
+		}
+	} else if source == nil || !source.IsSea {
 		r.editTextError = "Yeni Kara Sınırı için deniz bölgesi seçilmeli."
 		return
 	}
@@ -2897,6 +3056,12 @@ func (r *Renderer) commitNewShapeInput() {
 	shapeID := r.editNewShapeID
 	if shapeID == "" {
 		r.editTextError = "Önce Shape ID girilmeli."
+		return
+	}
+	if r.editNewShapeCut {
+		if !r.commitShapeCut(source, shapeID, value) {
+			return
+		}
 		return
 	}
 
@@ -2946,6 +3111,109 @@ func (r *Renderer) commitNewShapeInput() {
 		r.rebuildEditWorldMap()
 		complete()
 	}
+}
+
+func (r *Renderer) commitShapeCut(source *world.Region, shapeID, name string) bool {
+	if r == nil || r.gs == nil || source == nil || len(r.editShapeCutPolygon) < 3 {
+		r.editTextError = "Shape kesim poligonu geçersiz."
+		return false
+	}
+	sourceSession := newShapeEditSession(r.gs, source.ShapeID)
+	cutSession := newBlankShapeEditSession(r.gs, shapeID)
+	if sourceSession == nil || cutSession == nil {
+		r.editTextError = "Shape geometrisi oluşturulamadı."
+		return false
+	}
+
+	minX, minY, maxX, maxY := intPolygonBounds(r.editShapeCutPolygon)
+	minX = maxInt(minX, sourceSession.MinX)
+	minY = maxInt(minY, sourceSession.MinY)
+	maxX = minInt(maxX, sourceSession.MaxX)
+	maxY = minInt(maxY, sourceSession.MaxY)
+	for y := minY; y <= maxY; y++ {
+		for x := minX; x <= maxX; x++ {
+			if !sourceSession.filled(x, y) || !pointInIntPolygon(float64(x)+0.5, float64(y)+0.5, r.editShapeCutPolygon) {
+				continue
+			}
+			cutSession.Mask[cutSession.index(x, y)] = 1
+			sourceSession.Mask[sourceSession.index(x, y)] = 0
+		}
+	}
+
+	cutRings := shapeMaskToFloatRings(cutSession)
+	remainingRings := shapeMaskToFloatRings(sourceSession)
+	if len(cutRings) == 0 {
+		r.editTextError = "Poligon seçili shape alanına değmiyor."
+		return false
+	}
+	if len(remainingRings) == 0 {
+		r.editTextError = "Kesim ana shape'in tamamını silemez."
+		return false
+	}
+
+	applyShapeRingsToState(r.gs, source.ShapeID, remainingRings)
+	if r.gs.ShapeData.Shapes == nil {
+		r.gs.ShapeData.Shapes = make(map[string][][][2]float32)
+	}
+	if r.gs.ShapeData.Names == nil {
+		r.gs.ShapeData.Names = make(map[string]string)
+	}
+	r.gs.ShapeData.Shapes[shapeID] = cloneFloatRings(cutRings)
+	r.gs.ShapeData.Names[shapeID] = name
+
+	newRegionID := nextRegionID(r.gs)
+	newRegionX, newRegionY := source.WorldX, source.WorldY
+	for y := cutSession.MinY; y <= cutSession.MaxY; y++ {
+		found := false
+		for x := cutSession.MinX; x <= cutSession.MaxX; x++ {
+			if !cutSession.filled(x, y) {
+				continue
+			}
+			newRegionX, newRegionY = scenarioCoordsFromWorld(float64(x)+0.5, float64(y)+0.5)
+			found = true
+			break
+		}
+		if found {
+			break
+		}
+	}
+	newRegion := &world.Region{
+		ID:                 newRegionID,
+		Name:               name,
+		NameTR:             name,
+		Terrain:            source.Terrain,
+		OwnerID:            source.OwnerID,
+		SuccessorFactionID: source.SuccessorFactionID,
+		WorldX:             newRegionX,
+		WorldY:             newRegionY,
+		ShapeID:            shapeID,
+		Shape:              cloneFloatRings(cutRings),
+		IsSea:              false,
+		IsLocked:           source.IsLocked,
+		UnlockTurn:         source.UnlockTurn,
+		Satisfaction:       source.Satisfaction,
+		TaxRate:            source.TaxRate,
+		Religion:           source.Religion,
+	}
+	r.gs.Regions[newRegionID] = newRegion
+	r.insertRegionOrderAfter(source.ID, newRegionID)
+	recalculateCountryShapeBounds(&r.gs.ShapeData)
+	r.editSelectedRegion = newRegionID
+	r.editSelectedSettlement = -1
+	r.editShapeSession = nil
+	r.editShapeCutting = false
+	r.editShapeCutPolygon = nil
+	complete := func() {
+		visual := r.worldMap.VisualNeighbors(newRegionID, r.editVisualNeighborBuf[:0])
+		r.applyVisualNeighbors(newRegionID, visual)
+		r.editDirty = true
+		r.closeEditNewShapeModal()
+	}
+	if !r.requestEditWorldMapRebuildWithCompletion(complete) {
+		r.rebuildEditWorldMap()
+		complete()
+	}
+	return true
 }
 
 func (r *Renderer) initialRingsForNewShape(region *world.Region, shapeID string) [][][2]float32 {
@@ -4078,6 +4346,9 @@ func (r *Renderer) restoreWorldSnapshotMode(snapshot editWorldSnapshot, asyncBui
 	r.editNeighborAddMessage = ""
 	r.editShapePainting = false
 	r.editShapePaintPending = false
+	r.editShapeMergeMode = false
+	r.editShapeMergeTarget = ""
+	r.editShapeMergeMessage = ""
 	r.editShapeStrokeBefore = nil
 	r.editShapePendingBefore = nil
 	r.editShapePendingAffectsLandShapes = false

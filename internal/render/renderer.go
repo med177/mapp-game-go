@@ -385,6 +385,7 @@ type Renderer struct {
 	editTextError                     string
 	editNewShapeID                    string
 	editNewShapeRegion                world.RegionID
+	editNewShapeCut                   bool
 	editNewShapeModal                 editNewShapeModalState
 	editSelectedWorldX                int
 	editSelectedWorldY                int
@@ -414,6 +415,11 @@ type Renderer struct {
 	editShapeSession                  *shapeEditSession
 	editShapePainting                 bool
 	editShapePaintPending             bool
+	editShapeCutting                  bool
+	editShapeCutPolygon               [][2]int
+	editShapeMergeMode                bool
+	editShapeMergeTarget              string
+	editShapeMergeMessage             string
 	editPaintPreviewImage             *ebiten.Image
 	editShapeTool                     editShapeTool
 	editTerrainAreaMode               bool

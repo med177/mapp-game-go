@@ -49,6 +49,21 @@ oluşturulur. Yeni bölge hemen `Sınır Boya/Sil` araçlarıyla genişletilebil
 shape, bölge ve bölge sırası değişiklikleri doğrudan runtime state'e yazılır ve
 `Kaydet` ile `country_shapes.json` içine yazılır.
 
+`Shape Kes` aracı, seçili kara shape'inin içinden sol tıkla kapatılan bir poligon
+seçer. Seçim dünya raster hücreleriyle mevcut shape maskesine kısaltılır; seçilen
+hücreler yeni shape'e aktarılır ve ana shape'den çıkarılır. `Shape ID` ve `Shape Adı`
+modalından alınan bilgiler `ShapeData`'ya yazılır. Yeni shape'in haritada
+kullanılabilmesi için kaynak bölgeden türetilen yeni bir kara bölgesi de oluşturulur;
+kesim ana shape'in tamamını kapsıyorsa işlem reddedilir. Poligon, ilk noktaya
+tıklanarak veya `Kes ve Kaydet` düğmesiyle modalı açar; sağ tık/Escape taslağı
+iptal eder.
+
+`Shape Birleştir` aracıyla mevcut seçili kara shape'i birinci/hedef olarak alınır.
+Mod açıldıktan sonra haritadaki ikinci kara shape'e tıklanır. İki shape'in raster
+maskeleri birleşik ring'lere çevrilir; ikinci shape'e bağlı bölgelerin `ShapeID`
+değeri hedef shape'e taşınır ve ikinci shape kaydı silinir. Escape, sağ tık veya
+`Birleştirmeyi İptal` düğmesi seçim modunu kapatır.
+
 `Bolge Boya/Sil` performans notu:
 - Stroke sırasında `regionAt` canlı olarak güncellenir ama ağır `regionPx` dilim bakımı mouse hareketi başına yapılmaz; bu toplu indeks yenilemesi rebuild aşamasına bırakılır.
 - `region_shapes.json` içindeki `minor_polygons` yüklendiğinde world map

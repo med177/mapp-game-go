@@ -2,6 +2,11 @@ package render
 
 import (
 	"bytes"
+	"image"
+	"image/color"
+	"image/jpeg"
+	"image/png"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,6 +15,79 @@ import (
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func TestMapBackgroundPath(t *testing.T) {
+	tests := []struct {
+		name       string
+		configured string
+		want       string
+	}{
+		{name: "default", want: filepath.Join("scenario", "maps", "world_map_background.png")},
+		{name: "simple filename", configured: "world_map_background.jpg", want: filepath.Join("scenario", "maps", "world_map_background.jpg")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := mapBackgroundPath("scenario", tt.configured); got != tt.want {
+				t.Fatalf("mapBackgroundPath(%q) = %q, want %q", tt.configured, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLoadImageAsBasePixelsSupportsPNGAndJPEG(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+	})
+	WorldW, WorldH = 4, 4
+
+	source := image.NewRGBA(image.Rect(0, 0, WorldW, WorldH))
+	for y := 0; y < WorldH; y++ {
+		for x := 0; x < WorldW; x++ {
+			source.Set(x, y, color.RGBA{R: 220, G: 30, B: 40, A: 255})
+		}
+	}
+
+	tests := []struct {
+		name  string
+		ext   string
+		write func(io.Writer, image.Image) error
+	}{
+		{name: "png", ext: ".png", write: png.Encode},
+		{name: "jpeg", ext: ".jpg", write: func(w io.Writer, img image.Image) error {
+			return jpeg.Encode(w, img, &jpeg.Options{Quality: 90})
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "background"+tt.ext)
+			file, err := os.Create(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = tt.write(file, source)
+			closeErr := file.Close()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if closeErr != nil {
+				t.Fatal(closeErr)
+			}
+
+			pixels, ok := loadImageAsBasePixels(path)
+			if !ok {
+				t.Fatalf("%s arka plan resmi yüklenemedi", tt.ext)
+			}
+			if len(pixels) != WorldW*WorldH*4 {
+				t.Fatalf("piksel tamponu boyutu = %d, want %d", len(pixels), WorldW*WorldH*4)
+			}
+			if pixels[0] < 180 || pixels[1] > 90 || pixels[2] > 100 {
+				t.Fatalf("%s ilk pikseli beklenmeyen renk: %v", tt.ext, pixels[:4])
+			}
+		})
+	}
+}
 
 func TestWorldMapSelectionRefreshSkipsOwnershipRaster(t *testing.T) {
 	const (

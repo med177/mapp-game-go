@@ -81,6 +81,11 @@ func (r *Renderer) invalidateShapeEditSession() {
 	r.editMinorRegionDrawing = false
 	r.editMinorRegionPolygon = nil
 	r.editMinorRegionPolygonBefore = nil
+	r.editShapeCutting = false
+	r.editShapeCutPolygon = nil
+	r.editShapeMergeMode = false
+	r.editShapeMergeTarget = ""
+	r.editShapeMergeMessage = ""
 	r.clearEditPaintPreview()
 }
 
@@ -256,7 +261,6 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		ringCount = len(r.gs.ShapeData.Shapes[shapeRegion.ShapeID])
 	}
 	drawEditInspectorLabel(screen, float64(x)+14, ly, "Ring: "+itoa(ringCount), ColorGray, gameui.TextSmall)
-	drawEditInspectorButton(screen, editButtonShapeNew, "Yeni Kara Sınırı", selectedRegion.IsSea && !r.editShapePaintPending)
 	ly += 18
 	toolLabel := "Kapalı"
 	switch r.editShapeTool {
@@ -269,6 +273,9 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		toolLabel = "Shape"
 	case editShapeToolRegion:
 		toolLabel = "Bolge"
+	}
+	if r.editShapeCutting {
+		toolLabel = "Shape Kes"
 	}
 	modeLabel := "Kapalı"
 	if r.editShapeTool != editShapeToolNone && r.editShapeBrushMode == editShapeBrushPaint {
@@ -285,6 +292,10 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	info := "Araç seçilmedi. Shape/Bolge araclarından birini seç."
 	if r.editTerrainAreaMode {
 		info = "Noktaları sol tıkla ekle; yeşil başlangıç noktasına gelerek sol tıkla kapat."
+	} else if r.editShapeCutting {
+		info = "Kesilecek alanı poligonla seç; başlangıç noktasına tıklayarak kapat."
+	} else if r.editShapeMergeMode {
+		info = "İkinci shape'i haritadan seçerek hedef shape'e birleştir."
 	} else if r.editShapeTool != editShapeToolNone {
 		info = "Canli preview acik. Yesil ekler, kirmizi siler. Uygula ile kesinlestir."
 	}
@@ -292,6 +303,9 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		info = "Deniz bolgesinde Bolge Boya/Sil ile alan dagitimi yap."
 	} else if !r.canEditSelectedShape() {
 		info = "Shape ID yoksa yalniz Bolge Boya/Sil kullanilabilir."
+	}
+	if r.editShapeMergeMessage != "" {
+		info = r.editShapeMergeMessage
 	}
 	drawEditInspectorLabel(screen, float64(x)+14, ly, info, ColorGray, gameui.TextSmall)
 	ly += 18
@@ -323,6 +337,21 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > editShapeBrushMinRadius)
 	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < editShapeBrushMaxRadius)
 	r.drawEditShapeLandPassageButtons(screen)
+	cutLabel := "Shape Kes"
+	cutEnabled := r.canEditSelectedShape() && !r.editShapePaintPending
+	if r.editShapeCutting {
+		cutLabel = "Kes ve Kaydet"
+		if len(r.editShapeCutPolygon) < 3 {
+			cutLabel = "Poligon Çiziliyor"
+		}
+	}
+	drawEditInspectorButton(screen, editButtonShapeCut, cutLabel, cutEnabled)
+	drawEditInspectorButton(screen, editButtonShapeNew, "Yeni Kara Sınırı", selectedRegion.IsSea && !r.editShapePaintPending)
+	mergeLabel := "Shape Birleştir"
+	if r.editShapeMergeMode {
+		mergeLabel = "Birleştirmeyi İptal"
+	}
+	drawEditInspectorButton(screen, editButtonShapeMerge, mergeLabel, r.canEditSelectedShape() && !r.editShapePaintPending)
 }
 
 func (r *Renderer) editShapeToolButtonView(kind editInspectorButton, label string, available bool) (string, bool, bool) {
@@ -480,8 +509,16 @@ func (r *Renderer) minorRegionEditPending() bool {
 	return r != nil && r.editMinorRegionDrawing
 }
 
+func (r *Renderer) shapeCutEditPending() bool {
+	return r != nil && r.editShapeCutting
+}
+
+func (r *Renderer) shapeMergeEditPending() bool {
+	return r != nil && r.editShapeMergeMode
+}
+
 func (r *Renderer) editGeometryEditPending() bool {
-	return r.terrainAreaEditPending() || r.minorRegionEditPending()
+	return r.terrainAreaEditPending() || r.minorRegionEditPending() || r.shapeCutEditPending() || r.shapeMergeEditPending()
 }
 
 func (r *Renderer) editGeometrySaveEnabled() bool {
@@ -501,6 +538,23 @@ func (r *Renderer) beginMinorRegionDrawing(before *editWorldSnapshot) {
 	r.editShapePendingBefore = nil
 	r.editSelectedSettlement = -1
 	r.editInspectorTab = editInspectorRegion
+}
+
+func (r *Renderer) cancelShapeCut() {
+	if r == nil {
+		return
+	}
+	r.editShapeCutting = false
+	r.editShapeCutPolygon = nil
+}
+
+func (r *Renderer) cancelShapeMerge() {
+	if r == nil {
+		return
+	}
+	r.editShapeMergeMode = false
+	r.editShapeMergeTarget = ""
+	r.editShapeMergeMessage = ""
 }
 
 func (r *Renderer) cancelMinorRegionDrawing() {
@@ -729,6 +783,20 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 		r.editShapeBrushRadius = increaseEditShapeBrushRadius(r.editShapeBrushRadius)
 	case editButtonShapeNew:
 		r.beginNewShapeCreation()
+	case editButtonShapeCut:
+		if r.editShapeCutting {
+			if len(r.editShapeCutPolygon) >= 3 {
+				r.beginShapeCutCreation()
+			}
+		} else {
+			r.beginShapeCut()
+		}
+	case editButtonShapeMerge:
+		if r.editShapeMergeMode {
+			r.cancelShapeMerge()
+		} else {
+			r.beginShapeMerge()
+		}
 	case editButtonLandPassageAdd:
 		r.toggleEditLandPassageMode()
 	case editButtonLandPassageAdjust:
@@ -1243,6 +1311,10 @@ func (r *Renderer) drawEditShapeOverlay(screen *ebiten.Image) {
 			}
 		}
 	}
+	if r.editShapeCutting || r.editNewShapeCut {
+		r.drawEditPolygonPreview(screen, r.editShapeCutPolygon, color.RGBA{255, 170, 70, 235})
+		return
+	}
 	r.drawEditPaintPreview(screen)
 	switch r.editShapeTool {
 	case editShapeToolTerrainArea:
@@ -1301,6 +1373,9 @@ func (r *Renderer) drawEditPolygonPreview(screen *ebiten.Image, polygon [][2]int
 		px, py := r.worldToScreen(float64(polygon[i-1][0]), float64(polygon[i-1][1]))
 		vector.StrokeLine(screen, float32(px), float32(py), float32(x), float32(y), 2, lineColor, true)
 	}
+	if r.editNewShapeModal.show {
+		return
+	}
 	if len(polygon) >= 3 {
 		mx, my := ebiten.CursorPosition()
 		x, y := r.worldToScreen(float64(polygon[0][0]), float64(polygon[0][1]))
@@ -1328,6 +1403,45 @@ func (r *Renderer) drawTerrainAreaPolygonPreview(screen *ebiten.Image) {
 
 func (r *Renderer) drawMinorRegionPolygonPreview(screen *ebiten.Image) {
 	r.drawEditPolygonPreview(screen, r.editMinorRegionPolygon, color.RGBA{80, 235, 255, 230})
+}
+
+func (r *Renderer) beginShapeCut() {
+	if r == nil || !r.canEditSelectedShape() || r.editShapePaintPending {
+		return
+	}
+	r.cancelShapeMerge()
+	r.editShapeTool = editShapeToolNone
+	r.editShapePainting = false
+	r.editShapeCutting = true
+	r.editShapeCutPolygon = nil
+	r.editNewShapeCut = false
+}
+
+func (r *Renderer) shapeCutPolygonStartHovered(fx, fy float64) bool {
+	if r == nil || len(r.editShapeCutPolygon) < 3 {
+		return false
+	}
+	x, y := r.worldToScreen(float64(r.editShapeCutPolygon[0][0]), float64(r.editShapeCutPolygon[0][1]))
+	dx, dy := fx-x, fy-y
+	return dx*dx+dy*dy <= 14*14
+}
+
+func (r *Renderer) addShapeCutPolygonPoint(fx, fy float64) {
+	if r == nil || r.worldMap == nil || !r.canEditSelectedShape() {
+		return
+	}
+	wx, wy := r.screenToWorld(fx, fy)
+	x, y, ok := terrainAreaPolygonPointFromWorld(wx, wy)
+	if !ok {
+		return
+	}
+	if len(r.editShapeCutPolygon) > 0 {
+		last := r.editShapeCutPolygon[len(r.editShapeCutPolygon)-1]
+		if last[0] == x && last[1] == y {
+			return
+		}
+	}
+	r.editShapeCutPolygon = append(r.editShapeCutPolygon, [2]int{x, y})
 }
 
 func (r *Renderer) terrainAreaPolygonStartHovered(fx, fy float64) bool {
@@ -1515,7 +1629,11 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 	gameui.DrawPanel(screen, panel, shapeHelpPanelStyle)
 	x, y := float32(panel.Rect.X), float32(panel.Rect.Y)
 	mode := "Kapalı"
-	if r.editShapeTool != editShapeToolNone && r.editShapeBrushMode == editShapeBrushPaint {
+	if r.editShapeCutting {
+		mode = "Shape Kes"
+	} else if r.editShapeMergeMode {
+		mode = "Shape Birleştir"
+	} else if r.editShapeTool != editShapeToolNone && r.editShapeBrushMode == editShapeBrushPaint {
 		mode = "Boya"
 	} else if r.editShapeBrushMode == editShapeBrushErase {
 		mode = "Sil"
@@ -1528,7 +1646,11 @@ func (r *Renderer) drawEditShapeHelp(screen *ebiten.Image, session *shapeEditSes
 		selectedLabel = session.ShapeID
 	}
 	actionLabel := "Shape/Bolge butonundan arac sec"
-	if r.editShapeTool != editShapeToolNone {
+	if r.editShapeCutting {
+		actionLabel = "Poligonu başlangıç noktasına tıklayarak kapat"
+	} else if r.editShapeMergeMode {
+		actionLabel = "İkinci shape'i haritadan seç"
+	} else if r.editShapeTool != editShapeToolNone {
 		actionLabel = "Yesil=ekle Kirmizi=sil | Shift+sol=ters"
 	}
 	if region.IsSea {

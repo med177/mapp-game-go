@@ -1,11 +1,26 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-01
+last_updated: 2026-10-04
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-10-04: Edit Mode Shape sekmesine `Shape Kes` aracı eklendi. Seçili kara
+  shape'i içinde sol tıkla kapatılan poligon raster maskesine uygulanıyor;
+  içeride kalan alan ana shape'den ayrılıp girilen `Shape ID` ve adla yeni shape
+  olarak kaydediliyor. Haritada kullanılabilmesi için kaynak bölgeden yeni kara
+  bölgesi oluşturuluyor; ana shape'in tamamını kesme engelleniyor. Doğrulama:
+  `go test ./internal/render -count=1`; kapsam: `internal/render/{map_editor.go,
+  shape_editor.go,shape_creation_modal.go,renderer.go}`.
+
+- 2026-10-04: Edit Mode Shape sekmesine `Shape Birleştir` aracı eklendi. İlk
+  seçilen shape hedef olarak tutuluyor; haritadan seçilen ikinci shape'in maskesi
+  hedef maskeyle birleştiriliyor, ikinci shape'e bağlı bölgeler hedef `ShapeID`'ye
+  taşınıyor ve ikinci shape kaydı kaldırılıyor. Doğrulama:
+  `go test ./internal/render -count=1`; kapsam: `internal/render/{map_editor.go,
+  shape_editor.go,renderer.go}`.
 
 - 2026-10-03: Oyuncu ve AI kara birimi üretim emirleri ortak `GameState`
   savaşçı kapasitesi helper'ına bağlandı. Konuşlandırılmış ve üretim kuyruğundaki
@@ -4163,7 +4178,7 @@ Doğrulama: `go test ./...` WSL ortamında 2026-05-08 tarihinde başarıyla çal
 | Senaryo sistemi | ✅ | `internal/scenario/scenario.go`; `assets/scenarios/scenarios.json` index + bağımsız senaryo klasörleri |
 | Senaryo seçim ekranı | ✅ | `internal/render/scenario_select.go`, `PhaseScenarioSelect` |
 | Harita render | ✅ | `WorldMap` cache, ülke/deniz şekilleri, sahiplik rengi ve seçili bölge vurgusu; normal modda oyuncu+vassal realm dış konturu tek piksel keskin altın, müttefik realm'ler doygun turkuaz-yeşil, savaştaki düşman realm'leri doygun kırmızı çizilir ve tüm tarafların vassalları kendi realm konturuna dahil edilir. Ortak sınırlar iki taraftan üst üste boyanmaz. Bölge/realm içi idari sınırlar aynı tek piksel kalınlıkta fakat araziye düşük oranlı blend ile daha soluktur; diplomasi imzası ittifak/vassallık/savaş değişince cache'i otomatik yeniler |
-| Senaryo bazlı harita hizalama | ✅ | `scenario.json` içindeki `map` alanı `WorldW/WorldH` ve shape offset/scale değerlerini belirler |
+| Senaryo bazlı harita hizalama | ✅ | `scenario.json` içindeki `map` alanı `WorldW/WorldH`, shape offset/scale ve `.png`/`.jpg` arka plan dosyasını belirler |
 | Görsel mevsim değişimi | ✅ | `internal/render/mapgen.go:applyOwnership`; kış/ilkbahar/sonbahar tint |
 | Bölge sistemi | ✅ | JSON'dan yükleme, komşuluk grafı, kilitli bölge alanları |
 | Fraksiyon sistemi | ✅ | 45 fraksiyon, senaryo bazlı oynanabilir roster; 1444 senaryosunda yalnız tarihsel hedefi olan 6 fraksiyon, 1512 senaryosunda ise yalnız tarihsel hedefi olan 5 fraksiyon açılıyor |

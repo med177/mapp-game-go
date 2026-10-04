@@ -26,6 +26,8 @@
   },
   "map": {
     "shape_set_id": "westeros_essos_basin",
+    "background_image": "world_map_background.jpg",
+    "background_mini_map": "mini_map.png",
     "world_width": 2600,
     "world_height": 3600,
     "shape_offset_x": 0,
