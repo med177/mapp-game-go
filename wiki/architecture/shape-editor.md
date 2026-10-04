@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [render, editor, shapes, country-shapes, tooling]
-last_updated: 2026-09-28
+last_updated: 2026-10-04
 related: [architecture/render-pipeline, architecture/state-management, dev/data-format, dev/progress]
 ---
 
@@ -33,6 +33,11 @@ Edit mode inspector içine üçüncü bir `Shape` sekmesi eklenir.
 5. Yeni ring'ler hem `GameState.ShapeData.Shapes[shape_id]` hem ilgili `Region.Shape` alanlarına geri yazılır.
 6. `rebuildEditWorldMap()` ile harita cache'i yeniden üretilir.
 7. Senaryo kaydında `writeScenarioShapes()` ile `data/country_shapes.json` güncellenir.
+
+Shape commit sonrasında worker mevcut harita cache'ini korur; yalnızca hedef
+shape'in eski alanını deniz baseline'ına döndürür ve yeni ring'lerini rasterize
+eder. Böylece her `Uygula` işleminde tüm shape'ler ile deniz BFS'i yeniden
+hesaplanmaz.
 
 `Yeni Kara Sınırı` düğmesi yalnızca seçili deniz bölgesinde aktif olur. Düğme
 küçük bir modal açar; editör modal içinde sırasıyla `Shape ID` ve `Shape Adı`

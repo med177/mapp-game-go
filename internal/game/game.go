@@ -4271,7 +4271,9 @@ func (g *Game) startLoadScenario(scenarioPath string) {
 	difficulty := g.gs.Difficulty
 	editMode := g.editModeRequested && g.renderer.EditModeEnabled
 	g.renderer.SetLoadingScenarioPath(scenarioPath)
-	g.startScenarioIntro(scenarioPath)
+	if !editMode {
+		g.startScenarioIntro(scenarioPath)
+	}
 	g.startLoading(loadingScenario, "Senaryo yükleniyor...", func(setProgress func(int)) loadingResult {
 		gs, evts, err := loadScenarioDataForMode(scenarioPath, difficulty, editMode, setProgress)
 		if err != nil {

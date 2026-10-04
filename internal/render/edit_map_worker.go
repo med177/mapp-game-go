@@ -92,6 +92,7 @@ func cloneWorldMapForEdit(src *WorldMap) *WorldMap {
 	for shapeID, pixels := range src.shapeRasterPixels {
 		dst.shapeRasterPixels[shapeID] = append([]int(nil), pixels...)
 	}
+	dst.seaRegionAt = append([]uint16(nil), src.seaRegionAt...)
 	dst.regionAnchor = make(map[world.RegionID][2]int)
 	dst.settlementAnchor = make(map[settlementAnchorKey][2]int)
 	dst.primarySettlement = make(map[world.RegionID][2]int)

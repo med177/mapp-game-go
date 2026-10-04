@@ -1162,7 +1162,7 @@ func (r *Renderer) applyPendingShapePaint() {
 	if tool == editShapeToolShape && session != nil && session.Dirty {
 		rings := shapeMaskToFloatRings(session)
 		applyShapeRingsToState(r.gs, session.ShapeID, rings)
-		r.requestEditWorldMapRebuild()
+		r.requestEditWorldMapRebuildForShape(session.ShapeID)
 		r.editDirty = true
 		if len(rings) == 0 {
 			r.ShowCombatResult("Shape tamamen silindi.")

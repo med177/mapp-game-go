@@ -2,10 +2,12 @@ package render
 
 import (
 	"image/color"
+	"sort"
 	"strconv"
 	"strings"
 
 	"mapp-game-go/internal/religion"
+	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
@@ -18,6 +20,7 @@ var editRegionFormFields = [...]struct {
 }{
 	{editRegionFieldNameTR, "Ad TR"},
 	{editRegionFieldName, "Ad EN"},
+	{editRegionFieldShapeID, "Shape ID"},
 	{editRegionFieldGold, "Altın geliri"},
 	{editRegionFieldGrain, "Tahıl geliri"},
 	{editRegionFieldIron, "Demir geliri"},
@@ -64,11 +67,44 @@ func editRegionFormReligionButton() gameui.Button {
 	return gameui.NewButton(rect[0], rect[1], rect[2], rect[3], "")
 }
 
+func editRegionFormShapeButton() gameui.Button {
+	rect := editRegionFormFieldRect(editRegionFieldShapeID)
+	return gameui.NewButton(rect[0], rect[1], rect[2], rect[3], "")
+}
+
+func editRegionShapeOptions(gs *state.GameState) []string {
+	options := []string{"(Shape yok)"}
+	if gs == nil {
+		return options
+	}
+	ids := make([]string, 0, len(gs.ShapeData.Shapes))
+	for shapeID := range gs.ShapeData.Shapes {
+		ids = append(ids, shapeID)
+	}
+	sort.Strings(ids)
+	return append(options, ids...)
+}
+
+func editRegionShapeOptionValue(option string) string {
+	if option == "(Shape yok)" {
+		return ""
+	}
+	return option
+}
+
+func editRegionShapeOptionLabel(shapeID string) string {
+	if shapeID == "" {
+		return "(Shape yok)"
+	}
+	return shapeID
+}
+
 func (r *Renderer) editRegionFormInteractiveHit(mx, my float64) bool {
-	if editRegionFormButtonHit(mx, my) || editRegionFormReligionButton().HitTest(mx, my) {
+	if editRegionFormButtonHit(mx, my) || editRegionFormReligionButton().HitTest(mx, my) || editRegionFormShapeButton().HitTest(mx, my) {
 		return true
 	}
-	return r.editRegionReligionDropdown != nil && r.editRegionReligionDropdown.IsOpen() && r.editRegionReligionDropdown.HitTest(mx, my)
+	return (r.editRegionReligionDropdown != nil && r.editRegionReligionDropdown.IsOpen() && r.editRegionReligionDropdown.HitTest(mx, my)) ||
+		(r.editRegionShapeDropdown != nil && r.editRegionShapeDropdown.IsOpen() && r.editRegionShapeDropdown.HitTest(mx, my))
 }
 
 func editRegionFormFieldRect(field editRegionFormField) uiRect {
@@ -116,13 +152,22 @@ func (r *Renderer) drawEditRegionForm(screen *ebiten.Image) {
 	if r.editRegionReligionDropdown != nil {
 		drawUIDropdown(screen, r.editRegionReligionDropdown)
 	}
+	if r.editRegionShapeDropdown != nil {
+		drawUIDropdown(screen, r.editRegionShapeDropdown)
+	}
 }
 
 func (r *Renderer) drawEditRegionFormField(screen *ebiten.Image, field editRegionFormField, label, value string) {
 	rect := editRegionFormFieldRect(field)
-	if field == editRegionFieldReligion {
-		drawUIButtonWidget(screen, editRegionFormReligionButton(), tinyButtonStyle)
-		DrawText(screen, religion.DisplayNameTR(religion.Type(value)), rect[0]+8, rect[1]+7, FaceSmall, ColorWhite)
+	if field == editRegionFieldReligion || field == editRegionFieldShapeID {
+		button := editRegionFormReligionButton()
+		text := religion.DisplayNameTR(religion.Type(value))
+		if field == editRegionFieldShapeID {
+			button = editRegionFormShapeButton()
+			text = editRegionShapeOptionLabel(value)
+		}
+		drawUIButtonWidget(screen, button, tinyButtonStyle)
+		DrawText(screen, text, rect[0]+8, rect[1]+7, FaceSmall, ColorWhite)
 		gameui.NewLabel(rect[0], rect[1]-16, label, ColorGray).Draw(screen, renderText)
 		return
 	}
@@ -155,6 +200,7 @@ func (r *Renderer) openEditRegionForm() {
 	values := [editRegionFormFieldCount]string{}
 	values[editRegionFieldNameTR] = region.NameTR
 	values[editRegionFieldName] = region.Name
+	values[editRegionFieldShapeID] = region.ShapeID
 	values[editRegionFieldGold] = strconv.Itoa(region.BaseGoldIncome)
 	values[editRegionFieldGrain] = strconv.Itoa(region.BaseGrainOutput)
 	values[editRegionFieldIron] = strconv.Itoa(region.BaseIronOutput)
@@ -183,6 +229,9 @@ func (r *Renderer) openEditRegionForm() {
 	}
 	r.editRegionReligionDropdown.SetOptions(displayOptions, religion.DisplayNameTR(religion.Type(region.Religion)))
 	r.editRegionReligionDropdown.Close()
+	shapeOptions := editRegionShapeOptions(r.gs)
+	r.editRegionShapeDropdown.SetOptions(shapeOptions, editRegionShapeOptionLabel(region.ShapeID))
+	r.editRegionShapeDropdown.Close()
 }
 
 func (r *Renderer) handleEditRegionFormInput() InputAction {
@@ -219,6 +268,25 @@ func (r *Renderer) handleEditRegionFormInput() InputAction {
 		}
 		return InputAction{}
 	}
+	if r.editRegionShapeDropdown != nil && r.editRegionShapeDropdown.IsOpen() {
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && r.editRegionShapeDropdown.HitTest(fx, fy) {
+			r.editRegionShapeDropdown.Scroll(wheelY)
+			return InputAction{}
+		}
+		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+			if idx, ok := r.editRegionShapeDropdown.GetSelectedOption(fx, fy); ok {
+				form.values[editRegionFieldShapeID] = editRegionShapeOptionValue(r.editRegionShapeDropdown.OptionAt(idx))
+				r.editRegionShapeDropdown.Close()
+				return InputAction{}
+			}
+			if !r.editRegionShapeDropdown.HitTest(fx, fy) {
+				r.editRegionShapeDropdown.Close()
+				return InputAction{}
+			}
+		}
+		return InputAction{}
+	}
 	if !editRegionFormHit(fx, fy) {
 		return InputAction{}
 	}
@@ -235,6 +303,13 @@ func (r *Renderer) handleEditRegionFormInput() InputAction {
 			rect := editRegionFormFieldRect(editRegionFieldReligion)
 			r.editRegionReligionDropdown.SetPosition(rect[0], rect[1])
 			r.editRegionReligionDropdown.Toggle()
+			form.active = editRegionFieldNone
+			return InputAction{}
+		}
+		if editRegionFormShapeButton().HitTest(fx, fy) {
+			rect := editRegionFormFieldRect(editRegionFieldShapeID)
+			r.editRegionShapeDropdown.SetPosition(rect[0], rect[1])
+			r.editRegionShapeDropdown.Toggle()
 			form.active = editRegionFieldNone
 			return InputAction{}
 		}
@@ -299,6 +374,8 @@ func (r *Renderer) saveEditRegionForm() {
 
 	region.NameTR = form.values[editRegionFieldNameTR]
 	region.Name = form.values[editRegionFieldName]
+	oldShapeID := region.ShapeID
+	region.ShapeID = strings.TrimSpace(form.values[editRegionFieldShapeID])
 	region.BaseGoldIncome = ints[editRegionFieldGold]
 	region.BaseGrainOutput = ints[editRegionFieldGrain]
 	region.BaseIronOutput = ints[editRegionFieldIron]
@@ -317,4 +394,15 @@ func (r *Renderer) saveEditRegionForm() {
 	r.editDirty = true
 	form.show = false
 	r.editRegionReligionDropdown.Close()
+	r.editRegionShapeDropdown.Close()
+	if oldShapeID != region.ShapeID {
+		switch {
+		case oldShapeID == "":
+			r.requestEditWorldMapRebuildForShape(region.ShapeID)
+		case region.ShapeID == "":
+			r.requestEditWorldMapRebuildForShape(oldShapeID)
+		default:
+			r.requestEditWorldMapRebuild()
+		}
+	}
 }

@@ -402,6 +402,7 @@ type Renderer struct {
 	editSettlementTypeDropdown        *gameui.Dropdown
 	editUnitTypeDropdown              *gameui.Dropdown
 	editRegionReligionDropdown        *gameui.Dropdown
+	editRegionShapeDropdown           *gameui.Dropdown
 	editSelectedUnitType              string
 	armyNeighborBuf                   []world.RegionID
 	editVisualNeighborBuf             []world.RegionID
@@ -626,6 +627,7 @@ const (
 	editRegionFieldNone editRegionFormField = iota
 	editRegionFieldNameTR
 	editRegionFieldName
+	editRegionFieldShapeID
 	editRegionFieldGold
 	editRegionFieldGrain
 	editRegionFieldIron
@@ -861,6 +863,7 @@ func New(gs *state.GameState) *Renderer {
 		editSettlementTypeDropdown:  gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Yerlesim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editUnitTypeDropdown:        gameui.NewDropdown(float64(dropX), float64(dropY), float64(dropW), float64(dropH), "Birim Tipi", float64(editOwnerDropdownHeaderH), float64(editOwnerDropdownRowH), editOwnerDropdownVisibleRows),
 		editRegionReligionDropdown:  gameui.NewDropdown(0, 0, 292, 30+24*4+10, "Din seç", 30, 24, 4),
+		editRegionShapeDropdown:     gameui.NewDropdown(0, 0, 292, 30+24*8+10, "Shape ID seç", 30, 24, 8),
 		tradeCorridors:              make([]tradeCorridorInfo, 0, 96),
 		activeWarsBuf:               make([]ActiveWarSummary, 0, 16),
 		activeWarsDirty:             true,
@@ -1457,16 +1460,18 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		armyMarkerSprites = nil
 		armyMarkerSpritesTried = nil
 		preloadArmyMarkerSprites()
-		audio.PreloadScenarioSounds(filepath.Join(gs.ScenarioPath, "audio"), []string{
-			"army_select",
-			"marine_select",
-			"army_move",
-			"marine_move",
-			"army_fight",
-			"marine_fight",
-			"conquered",
-			"victory_success",
-		})
+		if gs.Phase != state.PhaseEditMode {
+			audio.PreloadScenarioSounds(filepath.Join(gs.ScenarioPath, "audio"), []string{
+				"army_select",
+				"marine_select",
+				"army_move",
+				"marine_move",
+				"army_fight",
+				"marine_fight",
+				"conquered",
+				"victory_success",
+			})
+		}
 		settlementImageCache = map[string]*ebiten.Image{}
 		settlementImageLoaded = map[string]bool{}
 		resetFactionFlagCache()

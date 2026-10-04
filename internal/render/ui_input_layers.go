@@ -181,7 +181,8 @@ func (r *Renderer) uiLayerPointerAt(mx, my float64) bool {
 			(r.editTerrainDropdown != nil && r.editTerrainDropdown.IsOpen() && r.editTerrainDropdown.HitTest(mx, my)) ||
 			(r.editSettlementTypeDropdown != nil && r.editSettlementTypeDropdown.IsOpen() && r.editSettlementTypeDropdown.HitTest(mx, my)) ||
 			(r.editUnitTypeDropdown != nil && r.editUnitTypeDropdown.IsOpen() && r.editUnitTypeDropdown.HitTest(mx, my)) ||
-			(r.editRegionReligionDropdown != nil && r.editRegionReligionDropdown.IsOpen() && r.editRegionReligionDropdown.HitTest(mx, my))
+			(r.editRegionReligionDropdown != nil && r.editRegionReligionDropdown.IsOpen() && r.editRegionReligionDropdown.HitTest(mx, my)) ||
+			(r.editRegionShapeDropdown != nil && r.editRegionShapeDropdown.IsOpen() && r.editRegionShapeDropdown.HitTest(mx, my))
 	case uiLayerEditBuildings:
 		return r.editBuildingsPanel && r.editBuildingPanelInteractiveHit(mx, my)
 	case uiLayerModal:
@@ -244,6 +245,9 @@ func (r *Renderer) rebuildUILayers() {
 		}
 		if r.editRegionReligionDropdown != nil && r.editRegionReligionDropdown.IsOpen() {
 			r.addUILayer(uiLayerEditDropdown, r.editRegionReligionDropdown.Bounds())
+		}
+		if r.editRegionShapeDropdown != nil && r.editRegionShapeDropdown.IsOpen() {
+			r.addUILayer(uiLayerEditDropdown, r.editRegionShapeDropdown.Bounds())
 		}
 		if r.editNewShapeModal.show || r.editRenaming {
 			r.addUIScreenLayer(uiLayerModal)

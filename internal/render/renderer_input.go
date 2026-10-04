@@ -2079,7 +2079,7 @@ func (r *Renderer) handleCamera() {
 				r.camScale = minScale
 			}
 		}
-		if isZoomInLoopLevel(r.camScale) {
+		if r.gs.Phase != state.PhaseEditMode && isZoomInLoopLevel(r.camScale) {
 			audio.StartZoomInLoop()
 		} else {
 			audio.StopZoomInLoop()
