@@ -124,6 +124,18 @@ func (r *Renderer) ensureShapeEditSession() *shapeEditSession {
 
 func newShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSession {
 	minX, minY, maxX, maxY := editableShapePixelBounds()
+	return newShapeEditSessionInBounds(gs, shapeID, minX, minY, maxX, maxY)
+}
+
+func newShapeEditSessionInBounds(gs *state.GameState, shapeID string, minX, minY, maxX, maxY int) *shapeEditSession {
+	if gs == nil {
+		return nil
+	}
+	editMinX, editMinY, editMaxX, editMaxY := editableShapePixelBounds()
+	minX = maxInt(minX, editMinX)
+	minY = maxInt(minY, editMinY)
+	maxX = minInt(maxX, editMaxX)
+	maxY = minInt(maxY, editMaxY)
 	if maxX < minX || maxY < minY {
 		return nil
 	}
@@ -159,15 +171,15 @@ func rasterizeFloatRingToMask(session *shapeEditSession, ring [][2]float32) {
 	if session == nil || len(ring) < 3 {
 		return
 	}
-	worldRing := make([][2]float32, len(ring))
+	worldRing := make([][2]int, len(ring))
 	for i, pt := range ring {
 		wx, wy := shapeRasterWorldPoint(pt)
-		worldRing[i] = [2]float32{float32(wx), float32(wy)}
+		worldRing[i] = [2]int{int(wx), int(wy)}
 	}
-	minX, minY := int(worldRing[0][0]), int(worldRing[0][1])
+	minX, minY := worldRing[0][0], worldRing[0][1]
 	maxX, maxY := minX, minY
 	for _, pt := range worldRing[1:] {
-		x, y := int(pt[0]), int(pt[1])
+		x, y := pt[0], pt[1]
 		if x < minX {
 			minX = x
 		}
@@ -193,13 +205,11 @@ func rasterizeFloatRingToMask(session *shapeEditSession, ring [][2]float32) {
 	if maxY > session.MaxY {
 		maxY = session.MaxY
 	}
-	for y := minY; y <= maxY; y++ {
-		for x := minX; x <= maxX; x++ {
-			if pointInFloatPolygon(float64(x)+0.5, float64(y)+0.5, worldRing) {
-				session.Mask[session.index(x, y)] = 1
-			}
+	forEachIntPolygonSpan(worldRing, minX, minY, maxX, maxY, func(y, startX, endX int) {
+		for x := startX; x < endX; x++ {
+			session.Mask[session.index(x, y)] = 1
 		}
-	}
+	})
 }
 
 func pointInFloatPolygon(x, y float64, poly [][2]float32) bool {
@@ -419,6 +429,10 @@ func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
 	drawEditInspectorButton(screen, editButtonLandPassageAdd, addLabel, landPassageAvailable)
 	drawEditInspectorButton(screen, editButtonLandPassageAdjust, adjustLabel, landPassageAvailable)
 	drawEditInspectorButton(screen, editButtonLandPassageDelete, "Geçiş Sil", canDelete)
+	refreshEnabled := r != nil && r.gs != nil && !r.editMapBuildPending &&
+		!r.editShapePainting && !r.editShapePaintPending &&
+		!r.editShapeCutting && !r.editShapeMergeMode
+	drawEditInspectorButton(screen, editButtonRefreshMap, "Haritayı Yenile", refreshEnabled)
 }
 
 func (r *Renderer) drawEditTerrainAreaInspector(screen *ebiten.Image, ly float64) {
@@ -796,6 +810,11 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 			r.cancelShapeMerge()
 		} else {
 			r.beginShapeMerge()
+		}
+	case editButtonRefreshMap:
+		if !r.editMapBuildPending && !r.editShapePainting && !r.editShapePaintPending &&
+			!r.editShapeCutting && !r.editShapeMergeMode {
+			r.rebuildEditWorldMap()
 		}
 	case editButtonLandPassageAdd:
 		r.toggleEditLandPassageMode()
@@ -1230,7 +1249,7 @@ func (r *Renderer) applyPendingShapePaint() {
 	if tool == editShapeToolShape && session != nil && session.Dirty {
 		rings := shapeMaskToFloatRings(session)
 		applyShapeRingsToState(r.gs, session.ShapeID, rings)
-		r.requestEditWorldMapRebuildForShape(session.ShapeID)
+		r.requestEditWorldMapRebuildForShapeGeometry(session.ShapeID)
 		r.editDirty = true
 		if len(rings) == 0 {
 			r.ShowCombatResult("Shape tamamen silindi.")
@@ -2307,10 +2326,19 @@ func syncLandShapesFromWorldMapForIDs(gs *state.GameState, wm *WorldMap, request
 }
 
 func newBlankShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSession {
+	minX, minY, maxX, maxY := editableShapePixelBounds()
+	return newBlankShapeEditSessionInBounds(gs, shapeID, minX, minY, maxX, maxY)
+}
+
+func newBlankShapeEditSessionInBounds(gs *state.GameState, shapeID string, minX, minY, maxX, maxY int) *shapeEditSession {
 	if gs == nil {
 		return nil
 	}
-	minX, minY, maxX, maxY := editableShapePixelBounds()
+	editMinX, editMinY, editMaxX, editMaxY := editableShapePixelBounds()
+	minX = maxInt(minX, editMinX)
+	minY = maxInt(minY, editMinY)
+	maxX = minInt(maxX, editMaxX)
+	maxY = minInt(maxY, editMaxY)
 	if maxX < minX || maxY < minY {
 		return nil
 	}
@@ -2334,7 +2362,42 @@ func newBlankShapeEditSession(gs *state.GameState, shapeID string) *shapeEditSes
 	}
 }
 
+func newShapeEditSessionForShape(gs *state.GameState, shapeID string) *shapeEditSession {
+	if gs == nil {
+		return nil
+	}
+	minX, minY, maxX, maxY, ok := shapeRingsPixelBounds(gs.ShapeData.Shapes[shapeID])
+	if !ok {
+		return nil
+	}
+	return newShapeEditSessionInBounds(gs, shapeID, minX, minY, maxX, maxY)
+}
+
+func shapeRingsPixelBounds(rings [][][2]float32) (minX, minY, maxX, maxY int, ok bool) {
+	for _, ring := range rings {
+		for _, point := range ring {
+			x, y := shapeRasterWorldPoint(point)
+			px, py := int(x), int(y)
+			if !ok {
+				minX, minY, maxX, maxY = px, py, px, py
+				ok = true
+				continue
+			}
+			minX = minInt(minX, px)
+			minY = minInt(minY, py)
+			maxX = maxInt(maxX, px)
+			maxY = maxInt(maxY, py)
+		}
+	}
+	return minX, minY, maxX, maxY, ok
+}
+
 func applyShapeRingsToState(gs *state.GameState, shapeID string, rings [][][2]float32) {
+	applyShapeRingsToStateWithoutBounds(gs, shapeID, rings)
+	recalculateCountryShapeBounds(&gs.ShapeData)
+}
+
+func applyShapeRingsToStateWithoutBounds(gs *state.GameState, shapeID string, rings [][][2]float32) {
 	if gs.ShapeData.Shapes == nil {
 		gs.ShapeData.Shapes = make(map[string][][][2]float32)
 	}
@@ -2345,7 +2408,6 @@ func applyShapeRingsToState(gs *state.GameState, shapeID string, rings [][][2]fl
 	if gs.ShapeData.Names[shapeID] == "" {
 		gs.ShapeData.Names[shapeID] = shapeID
 	}
-	recalculateCountryShapeBounds(&gs.ShapeData)
 	for _, region := range gs.Regions {
 		if region == nil || region.ShapeID != shapeID {
 			continue

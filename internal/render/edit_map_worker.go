@@ -107,6 +107,10 @@ func cloneWorldMapForEdit(src *WorldMap) *WorldMap {
 }
 
 func buildEditMapSnapshot(done <-chan struct{}, gs *state.GameState, overrides map[int]world.RegionID, baseMap *WorldMap, targetShapeID string) (*WorldMap, editMapBuildTiming, error) {
+	return buildEditMapSnapshotWithOptions(done, gs, overrides, baseMap, targetShapeID, false)
+}
+
+func buildEditMapSnapshotWithOptions(done <-chan struct{}, gs *state.GameState, overrides map[int]world.RegionID, baseMap *WorldMap, targetShapeID string, geometryChanged bool) (*WorldMap, editMapBuildTiming, error) {
 	var timing editMapBuildTiming
 	if gs == nil {
 		return nil, timing, fmt.Errorf("harita snapshot state'i nil")
@@ -121,7 +125,13 @@ func buildEditMapSnapshot(done <-chan struct{}, gs *state.GameState, overrides m
 		// baseMap request aşamasında ayrılmış, worker'a özel snapshot'tır.
 		// Burada ikinci kez büyük raster dizilerini kopyalamaya gerek yok.
 		wm = baseMap
-		if !wm.rebuildShapeRegionAssignments(gs, targetShapeID) {
+		rebuilt := false
+		if geometryChanged {
+			rebuilt = wm.rebuildShapeGeometryAssignments(gs, targetShapeID)
+		} else {
+			rebuilt = wm.rebuildShapeRegionAssignments(gs, targetShapeID)
+		}
+		if !rebuilt {
 			wm = nil
 		}
 	}
@@ -180,18 +190,26 @@ func (r *Renderer) cancelEditMapBuild() {
 // thread'ini bloke etmeden hesaplar. Worker sonucu yalnızca aynı generation
 // hâlâ geçerliyse ana döngüde kabul edilir.
 func (r *Renderer) requestEditWorldMapRebuild() {
-	_ = r.requestEditWorldMapRebuildForShapeWithCompletion("", nil)
+	_ = r.requestEditWorldMapRebuildForShapeWithOptions("", false, nil)
 }
 
 func (r *Renderer) requestEditWorldMapRebuildWithCompletion(completion func()) bool {
-	return r.requestEditWorldMapRebuildForShapeWithCompletion("", completion)
+	return r.requestEditWorldMapRebuildForShapeWithOptions("", false, completion)
 }
 
 func (r *Renderer) requestEditWorldMapRebuildForShape(shapeID string) {
-	_ = r.requestEditWorldMapRebuildForShapeWithCompletion(shapeID, nil)
+	_ = r.requestEditWorldMapRebuildForShapeWithOptions(shapeID, false, nil)
 }
 
 func (r *Renderer) requestEditWorldMapRebuildForShapeWithCompletion(shapeID string, completion func()) bool {
+	return r.requestEditWorldMapRebuildForShapeWithOptions(shapeID, false, completion)
+}
+
+func (r *Renderer) requestEditWorldMapRebuildForShapeGeometry(shapeID string) {
+	_ = r.requestEditWorldMapRebuildForShapeWithOptions(shapeID, true, nil)
+}
+
+func (r *Renderer) requestEditWorldMapRebuildForShapeWithOptions(shapeID string, geometryChanged bool, completion func()) bool {
 	if r == nil || r.gs == nil {
 		return false
 	}
@@ -236,7 +254,7 @@ func (r *Renderer) requestEditWorldMapRebuildForShapeWithCompletion(shapeID stri
 					err = fmt.Errorf("harita worker panic: %v", recovered)
 				}
 			}()
-			worldMap, timing, err = buildEditMapSnapshot(cancelCh, snapshot, overrides, baseMap, shapeID)
+			worldMap, timing, err = buildEditMapSnapshotWithOptions(cancelCh, snapshot, overrides, baseMap, shapeID, geometryChanged)
 		}()
 		resultCh <- editMapBuildResult{
 			generation: generation,
@@ -278,6 +296,7 @@ func (r *Renderer) pollEditMapBuild() {
 		r.gs.TerrainAreas = result.snapshot.TerrainAreas
 		r.terrainAreaImageDirty = true
 		r.worldMap = FinalizePreparedWorldMap(result.worldMap)
+		r.invalidateEditMapVisualCaches()
 		r.editMapLastBuildDuration = result.duration
 		r.editMapLastRasterDuration = result.rasterTime
 		r.editMapLastPostProcessDuration = result.postTime

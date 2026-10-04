@@ -1108,8 +1108,9 @@ func (wm *WorldMap) rebuildShapeRasterCache(gs *state.GameState) {
 	wm.shapeRasterPixels = cache
 }
 
-// rebuildShapeRegionAssignments, yalnızca verilen shape'i yeni geometri ve
-// merkezlerle günceller. Diğer shape'ler ve deniz rasterı korunur.
+// rebuildShapeRegionAssignments, geometrisi değişmeyen verilen shape'in
+// bölgelerini yeni merkezlerle günceller. Diğer shape'ler ve deniz rasterı
+// korunur.
 func (wm *WorldMap) rebuildShapeRegionAssignments(gs *state.GameState, shapeID string) bool {
 	if wm == nil || gs == nil || shapeID == "" || len(wm.baseRegionAt) != len(wm.regionAt) {
 		return false
@@ -1161,6 +1162,177 @@ func (wm *WorldMap) rebuildShapeRegionAssignments(gs *state.GameState, shapeID s
 	return true
 }
 
+// rebuildShapeGeometryAssignments, yalnızca verilen shape'in eski rasterını
+// deniz baseline'ına döndürür ve güncel ring'lerini yeniden rasterize eder.
+// Diğer shape'ler ve deniz bölgelerinin BFS sonucu korunur.
+func (wm *WorldMap) rebuildShapeGeometryAssignments(gs *state.GameState, shapeID string) bool {
+	if wm == nil || gs == nil || shapeID == "" || len(wm.baseRegionAt) != len(wm.regionAt) ||
+		len(wm.seaRegionAt) != len(wm.regionAt) {
+		return false
+	}
+
+	oldPixels := wm.shapeRasterPixels[shapeID]
+	for _, pIdx := range oldPixels {
+		if pIdx < 0 || pIdx >= len(wm.regionAt) {
+			continue
+		}
+		wm.regionAt[pIdx] = wm.seaRegionAt[pIdx]
+		wm.baseRegionAt[pIdx] = wm.seaRegionAt[pIdx]
+		if wm.seaRegionAt[pIdx] == 0 {
+			wm.resetBasePixelToSea(pIdx)
+		}
+	}
+	copy(wm.regionAt, wm.baseRegionAt)
+	wm.rebuildRegionPixelsFromAssignments()
+
+	regions := make([]*world.Region, 0)
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.IsMinorRegion || region.ShapeID != shapeID {
+			continue
+		}
+		regions = append(regions, region)
+		delete(wm.regionPx, region.ID)
+	}
+	if len(regions) == 0 {
+		delete(wm.shapeRasterPixels, shapeID)
+		return true
+	}
+	sort.Slice(regions, func(i, j int) bool { return regions[i].ID < regions[j].ID })
+
+	for _, ring := range gs.ShapeData.Shapes[shapeID] {
+		wm.rasterizeRegionRing(gs, regions, ring)
+	}
+
+	copy(wm.baseRegionAt, wm.regionAt)
+	pixels := make([]int, 0)
+	for _, region := range regions {
+		pixels = append(pixels, wm.regionPx[region.ID]...)
+	}
+	sort.Ints(pixels)
+	wm.shapeRasterPixels[shapeID] = pixels
+	return true
+}
+
+// applyShapeCutAssignments, mevcut shape rasterını koruyarak kesilen
+// pikselleri yeni bölgeye aktarır. Shape kesimi diğer shape'leri veya deniz
+// rasterını değiştirmediği için tam shape rasterizasyonu ve deniz BFS'i gerekmez.
+func (wm *WorldMap) applyShapeCutAssignments(gs *state.GameState, sourceShapeID, newShapeID string, newRegionID world.RegionID, cutPixels []int, overrides map[int]world.RegionID) bool {
+	if wm == nil || gs == nil || sourceShapeID == "" || newShapeID == "" || newRegionID == "" || len(cutPixels) == 0 ||
+		len(wm.baseRegionAt) != len(wm.regionAt) {
+		return false
+	}
+	oldPixels, ok := wm.shapeRasterPixels[sourceShapeID]
+	if !ok || len(oldPixels) == 0 {
+		return false
+	}
+
+	cutSet := make(map[int]struct{}, len(cutPixels))
+	for _, pIdx := range cutPixels {
+		if pIdx >= 0 && pIdx < len(wm.regionAt) {
+			cutSet[pIdx] = struct{}{}
+		}
+	}
+	if len(cutSet) == 0 {
+		return false
+	}
+
+	newIdx := wm.ensureRegionIndex(newRegionID)
+	remainingPixels := make([]int, 0, len(oldPixels)-len(cutSet))
+	for _, pIdx := range oldPixels {
+		if _, cut := cutSet[pIdx]; !cut {
+			remainingPixels = append(remainingPixels, pIdx)
+		}
+	}
+	wm.shapeRasterPixels[sourceShapeID] = remainingPixels
+	wm.shapeRasterPixels[newShapeID] = append([]int(nil), cutPixels...)
+
+	for pIdx := range cutSet {
+		wm.baseRegionAt[pIdx] = newIdx
+	}
+	copy(wm.regionAt, wm.baseRegionAt)
+	wm.applyRegionPaintOverridesToWorldMap(overrides)
+	world.SyncTerrainAreaRegions(gs.Regions, gs.TerrainAreas)
+	wm.applyTerrainAreaRegions(gs)
+	wm.RefreshAfterRegionAssignments(gs, "", MapModeNormal)
+	return true
+}
+
+// applyShapeMergeAssignments, iki shape'in mevcut raster piksellerini tek
+// birleşik küme olarak yeniden bölgeleyerek yalnız etkilenen alanı günceller.
+// Deniz rasterı ve diğer shape'ler korunur.
+func (wm *WorldMap) applyShapeMergeAssignments(gs *state.GameState, targetShapeID, sourceShapeID string, overrides map[int]world.RegionID) bool {
+	if wm == nil || gs == nil || targetShapeID == "" || sourceShapeID == "" || targetShapeID == sourceShapeID ||
+		len(wm.baseRegionAt) != len(wm.regionAt) {
+		return false
+	}
+	targetPixels, targetOK := wm.shapeRasterPixels[targetShapeID]
+	sourcePixels, sourceOK := wm.shapeRasterPixels[sourceShapeID]
+	if !targetOK || !sourceOK || len(targetPixels) == 0 || len(sourcePixels) == 0 {
+		return false
+	}
+
+	regions := make([]*world.Region, 0)
+	for _, region := range gs.Regions {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.IsMinorRegion || region.ShapeID != targetShapeID {
+			continue
+		}
+		regions = append(regions, region)
+	}
+	if len(regions) == 0 {
+		return false
+	}
+	sort.Slice(regions, func(i, j int) bool { return regions[i].ID < regions[j].ID })
+
+	mergedPixels := append(append([]int(nil), targetPixels...), sourcePixels...)
+	sort.Ints(mergedPixels)
+	mergedPixels = compactSortedInts(mergedPixels)
+	wm.shapeRasterPixels[targetShapeID] = mergedPixels
+	delete(wm.shapeRasterPixels, sourceShapeID)
+
+	for _, pIdx := range mergedPixels {
+		if pIdx >= 0 && pIdx < len(wm.baseRegionAt) {
+			wm.baseRegionAt[pIdx] = 0
+		}
+	}
+	copy(wm.regionAt, wm.baseRegionAt)
+	for _, pIdx := range mergedPixels {
+		if pIdx < 0 || pIdx >= len(wm.regionAt) {
+			continue
+		}
+		region := nearestShapeRegion(regions, pIdx%WorldW, pIdx/WorldW)
+		idx := wm.ensureRegionIndex(region.ID)
+		wm.regionAt[pIdx] = idx
+		wm.baseRegionAt[pIdx] = idx
+		if !wm.hasBgImage {
+			col := terrainBaseColor(region.Terrain, pIdx%WorldW, pIdx/WorldW, string(region.ID))
+			wm.basePixels[pIdx*4] = col.R
+			wm.basePixels[pIdx*4+1] = col.G
+			wm.basePixels[pIdx*4+2] = col.B
+			wm.basePixels[pIdx*4+3] = 255
+		}
+	}
+	wm.applyRegionPaintOverridesToWorldMap(overrides)
+	world.SyncTerrainAreaRegions(gs.Regions, gs.TerrainAreas)
+	wm.applyTerrainAreaRegions(gs)
+	wm.RefreshAfterRegionAssignments(gs, "", MapModeNormal)
+	return true
+}
+
+func compactSortedInts(values []int) []int {
+	if len(values) < 2 {
+		return values
+	}
+	write := 1
+	for _, value := range values[1:] {
+		if value == values[write-1] {
+			continue
+		}
+		values[write] = value
+		write++
+	}
+	return values[:write]
+}
+
 func (wm *WorldMap) seaRegionAtValue(pIdx int) uint16 {
 	if pIdx >= 0 && pIdx < len(wm.seaRegionAt) {
 		return wm.seaRegionAt[pIdx]
@@ -1201,16 +1373,17 @@ func (wm *WorldMap) clearSeaPixelsInsideRing(ring [][2]float32) {
 	if maxY >= WorldH {
 		maxY = WorldH - 1
 	}
-	for py := minY; py <= maxY; py++ {
-		for px := minX; px <= maxX; px++ {
+	forEachIntPolygonSpan(scaled, minX, minY, maxX, maxY, func(py, startX, endX int) {
+		for px := startX; px < endX; px++ {
 			pIdx := py*WorldW + px
-			if wm.seaRegionAtValue(pIdx) != 0 && pointInIntPolygon(float64(px)+0.5, float64(py)+0.5, scaled) {
-				wm.regionAt[pIdx] = 0
-				wm.baseRegionAt[pIdx] = 0
-				wm.resetBasePixelToSea(pIdx)
+			if wm.seaRegionAtValue(pIdx) == 0 {
+				continue
 			}
+			wm.regionAt[pIdx] = 0
+			wm.baseRegionAt[pIdx] = 0
+			wm.resetBasePixelToSea(pIdx)
 		}
-	}
+	})
 }
 
 func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Region, ring [][2]float32) {
@@ -1238,11 +1411,8 @@ func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Reg
 	if maxY >= WorldH {
 		maxY = WorldH - 1
 	}
-	for py := minY; py <= maxY; py++ {
-		for px := minX; px <= maxX; px++ {
-			if !pointInIntPolygon(float64(px)+0.5, float64(py)+0.5, scaled) {
-				continue
-			}
+	forEachIntPolygonSpan(scaled, minX, minY, maxX, maxY, func(py, startX, endX int) {
+		for px := startX; px < endX; px++ {
 			pIdx := py*WorldW + px
 			if wm.regionAt[pIdx] != 0 {
 				continue
@@ -1268,6 +1438,59 @@ func (wm *WorldMap) rasterizeRegionRing(_ *state.GameState, regions []*world.Reg
 				wm.basePixels[pIdx*4+1] = col.G
 				wm.basePixels[pIdx*4+2] = col.B
 				wm.basePixels[pIdx*4+3] = 255
+			}
+		}
+	})
+}
+
+// forEachIntPolygonSpan, polygonun her satırdaki dolu piksel aralıklarını
+// hesaplar. Her piksel için polygonun tüm kenarlarını tekrar test etmek yerine
+// scanline kesişimleri bir kez hesaplanır.
+func forEachIntPolygonSpan(poly [][2]int, minX, minY, maxX, maxY int, fn func(y, startX, endX int)) {
+	if len(poly) < 3 || fn == nil || minX > maxX || minY > maxY {
+		return
+	}
+	if minX < 0 {
+		minX = 0
+	}
+	if minY < 0 {
+		minY = 0
+	}
+	if maxX >= WorldW {
+		maxX = WorldW - 1
+	}
+	if maxY >= WorldH {
+		maxY = WorldH - 1
+	}
+	if minX > maxX || minY > maxY {
+		return
+	}
+
+	intersections := make([]float64, 0, len(poly))
+	for py := minY; py <= maxY; py++ {
+		scanY := float64(py) + 0.5
+		intersections = intersections[:0]
+		j := len(poly) - 1
+		for i := range poly {
+			xi, yi := float64(poly[i][0]), float64(poly[i][1])
+			xj, yj := float64(poly[j][0]), float64(poly[j][1])
+			if (yi > scanY) != (yj > scanY) {
+				intersections = append(intersections, (xj-xi)*(scanY-yi)/(yj-yi)+xi)
+			}
+			j = i
+		}
+		sort.Float64s(intersections)
+		for i := 0; i+1 < len(intersections); i += 2 {
+			startX := int(math.Ceil(intersections[i] - 0.5))
+			endX := int(math.Ceil(intersections[i+1] - 0.5))
+			if startX < minX {
+				startX = minX
+			}
+			if endX > maxX+1 {
+				endX = maxX + 1
+			}
+			if startX < endX {
+				fn(py, startX, endX)
 			}
 		}
 	}

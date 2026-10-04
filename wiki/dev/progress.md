@@ -1,11 +1,37 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-04
+last_updated: 2026-10-05
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-10-05: Edit Mode Shape sekmesine `Haritayı Yenile` düğmesi eklendi. Düğme tam dünya haritasını yeniden oluşturuyor; eski sınır, seçim, Voronoi ve etiket cache'leri yeni harita kabul edildiğinde temizleniyor.
+
+- 2026-10-05: Edit Mode shape rebuild yolu optimize edildi. Shape geometrisi
+  değiştiğinde yalnız hedef shape'in eski rasterı deniz baseline'ına döndürülüp
+  yeni ring'leri scanline ile rasterize ediliyor; merkez değişikliklerinde mevcut
+  shape raster cache'i korunuyor. Ülke shape ve edit mask rasterizasyonlarında
+  polygon başına piksel içi kenar taraması kaldırıldı. Regression:
+  `TestIntPolygonScanlineMatchesPointContainment` ve
+  `TestRebuildShapeGeometryAssignmentsOnlyTouchesTargetShape`; doğrulama:
+  `go test ./internal/render -count=1`, `go test ./internal/game -count=1`.
+
+- 2026-10-05: Edit Mode `Shape Kes` onayı hızlandırıldı. Kesim artık dünya
+  boyutunda iki tam maske oluşturmuyor; kaynak shape ve kesim maskeleri ilgili
+  raster sınırlarıyla sınırlanıyor. Kesim sonrasında mevcut harita rasterında
+  yalnız kesilen pikseller yeni bölgeye aktarılıyor, tam shape rasterizasyonu
+  ve deniz BFS'i tekrarlanmıyor. Regression:
+  `TestApplyShapeCutAssignmentsKeepsUnrelatedRasterAndShapeCache`;
+  doğrulama: `go test ./internal/render -count=1`.
+
+- 2026-10-05: Edit Mode `Shape Birleştir` onayı hızlandırıldı. İki shape'in
+  maskeleri ilgili raster sınırlarıyla oluşturuluyor; birleşim sonrasında yalnız
+  birleşik piksel kümesi yeniden bölgelendiriliyor. Tam shape rasterizasyonu ve
+  deniz BFS'i tekrarlanmıyor. Regression:
+  `TestApplyShapeMergeAssignmentsKeepsUnrelatedRasterAndMergesShapeCache`;
+  doğrulama: `go test ./internal/render -count=1`.
 
 - 2026-10-04: Edit Mode Shape sekmesine `Shape Kes` aracı eklendi. Seçili kara
   shape'i içinde sol tıkla kapatılan poligon raster maskesine uygulanıyor;

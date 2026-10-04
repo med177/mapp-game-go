@@ -939,6 +939,7 @@ const (
 	editButtonLandPassageAdd
 	editButtonLandPassageAdjust
 	editButtonLandPassageDelete
+	editButtonRefreshMap
 	editButtonAddNeighbor
 	editButtonTerrainArea
 	editButtonTerrainAreaAppend
@@ -1066,6 +1067,8 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return rightRect(3)
 	case editButtonLandPassageDelete:
 		return leftRect(4)
+	case editButtonRefreshMap:
+		return full(7)
 	case editButtonTerrainArea:
 		return leftRect(6)
 	case editButtonTerrainAreaAppend:
@@ -1270,6 +1273,7 @@ func editShapeInspectorButtonKinds() []editInspectorButton {
 		editButtonLandPassageAdd,
 		editButtonLandPassageAdjust,
 		editButtonLandPassageDelete,
+		editButtonRefreshMap,
 	}
 }
 
@@ -1684,6 +1688,25 @@ func (r *Renderer) invalidateEditVisualNeighborCache() {
 	}
 	r.editVisualNeighborWorldMap = nil
 	r.editVisualNeighborRegion = ""
+}
+
+func (r *Renderer) invalidateEditMapVisualCaches() {
+	if r == nil {
+		return
+	}
+	r.mapBorderCache.valid = false
+	r.mapBorderCache.key = mapBorderOverlayKey{}
+	r.mapBorderMeshes.reset()
+	r.selectedRegionOverlay = nil
+	r.selectedRegionOverlayKey = selectedRegionOverlayKey{}
+	r.invalidateRegionLabelStatic()
+	r.editVoronoiDebugWorldMap = nil
+	r.editVoronoiDebugRegion = ""
+	r.editVoronoiDebugBoundaryPixelBuf = r.editVoronoiDebugBoundaryPixelBuf[:0]
+	r.editBoundaryWorldMap = nil
+	r.editBoundaryRegion = ""
+	r.editBoundaryPixelBuf = r.editBoundaryPixelBuf[:0]
+	r.invalidateEditVisualNeighborCache()
 }
 
 func drawEditNeighborArrow(screen *ebiten.Image, x1, y1, x2, y2 float64, col color.RGBA) {
@@ -2832,9 +2855,17 @@ func (r *Renderer) mergeShapes(targetID, sourceID string) {
 		r.editShapeMergeMessage = "Birleştirilecek shape geometrisi bulunamadı."
 		return
 	}
-	targetSession := newShapeEditSession(r.gs, targetID)
-	sourceSession := newShapeEditSession(r.gs, sourceID)
-	mergedSession := newBlankShapeEditSession(r.gs, targetID)
+	targetSession := newShapeEditSessionForShape(r.gs, targetID)
+	sourceSession := newShapeEditSessionForShape(r.gs, sourceID)
+	targetMinX, targetMinY, targetMaxX, targetMaxY, targetBoundsOK := shapeRingsPixelBounds(r.gs.ShapeData.Shapes[targetID])
+	sourceMinX, sourceMinY, sourceMaxX, sourceMaxY, sourceBoundsOK := shapeRingsPixelBounds(r.gs.ShapeData.Shapes[sourceID])
+	if targetBoundsOK && sourceBoundsOK {
+		targetMinX = minInt(targetMinX, sourceMinX)
+		targetMinY = minInt(targetMinY, sourceMinY)
+		targetMaxX = maxInt(targetMaxX, sourceMaxX)
+		targetMaxY = maxInt(targetMaxY, sourceMaxY)
+	}
+	mergedSession := newBlankShapeEditSessionInBounds(r.gs, targetID, targetMinX, targetMinY, targetMaxX, targetMaxY)
 	if targetSession == nil || sourceSession == nil || mergedSession == nil {
 		r.editShapeMergeMessage = "Shape geometrileri oluşturulamadı."
 		return
@@ -2852,7 +2883,7 @@ func (r *Renderer) mergeShapes(targetID, sourceID string) {
 		return
 	}
 
-	applyShapeRingsToState(r.gs, targetID, mergedRings)
+	applyShapeRingsToStateWithoutBounds(r.gs, targetID, mergedRings)
 	affected := make(map[world.RegionID]struct{})
 	for rid, region := range r.gs.Regions {
 		if region == nil || (region.ShapeID != targetID && region.ShapeID != sourceID) {
@@ -2880,7 +2911,9 @@ func (r *Renderer) mergeShapes(targetID, sourceID string) {
 		}
 		r.editDirty = true
 	}
-	if !r.requestEditWorldMapRebuildWithCompletion(complete) {
+	if r.worldMap != nil && r.worldMap.applyShapeMergeAssignments(r.gs, targetID, sourceID, r.editRegionPaintOverrides) {
+		complete()
+	} else if !r.requestEditWorldMapRebuildWithCompletion(complete) {
 		r.rebuildEditWorldMap()
 		complete()
 	}
@@ -3120,18 +3153,19 @@ func (r *Renderer) commitShapeCut(source *world.Region, shapeID, name string) bo
 		r.editTextError = "Shape kesim poligonu geçersiz."
 		return false
 	}
-	sourceSession := newShapeEditSession(r.gs, source.ShapeID)
-	cutSession := newBlankShapeEditSession(r.gs, shapeID)
+	sourceSession := newShapeEditSessionForShape(r.gs, source.ShapeID)
+	minX, minY, maxX, maxY := intPolygonBounds(r.editShapeCutPolygon)
+	cutSession := newBlankShapeEditSessionInBounds(r.gs, shapeID, minX, minY, maxX, maxY)
 	if sourceSession == nil || cutSession == nil {
 		r.editTextError = "Shape geometrisi oluşturulamadı."
 		return false
 	}
 
-	minX, minY, maxX, maxY := intPolygonBounds(r.editShapeCutPolygon)
 	minX = maxInt(minX, sourceSession.MinX)
 	minY = maxInt(minY, sourceSession.MinY)
 	maxX = minInt(maxX, sourceSession.MaxX)
 	maxY = minInt(maxY, sourceSession.MaxY)
+	cutPixels := make([]int, 0)
 	for y := minY; y <= maxY; y++ {
 		for x := minX; x <= maxX; x++ {
 			if !sourceSession.filled(x, y) || !pointInIntPolygon(float64(x)+0.5, float64(y)+0.5, r.editShapeCutPolygon) {
@@ -3139,6 +3173,7 @@ func (r *Renderer) commitShapeCut(source *world.Region, shapeID, name string) bo
 			}
 			cutSession.Mask[cutSession.index(x, y)] = 1
 			sourceSession.Mask[sourceSession.index(x, y)] = 0
+			cutPixels = append(cutPixels, y*WorldW+x)
 		}
 	}
 
@@ -3153,7 +3188,7 @@ func (r *Renderer) commitShapeCut(source *world.Region, shapeID, name string) bo
 		return false
 	}
 
-	applyShapeRingsToState(r.gs, source.ShapeID, remainingRings)
+	applyShapeRingsToStateWithoutBounds(r.gs, source.ShapeID, remainingRings)
 	if r.gs.ShapeData.Shapes == nil {
 		r.gs.ShapeData.Shapes = make(map[string][][][2]float32)
 	}
@@ -3211,7 +3246,9 @@ func (r *Renderer) commitShapeCut(source *world.Region, shapeID, name string) bo
 		r.editDirty = true
 		r.closeEditNewShapeModal()
 	}
-	if !r.requestEditWorldMapRebuildWithCompletion(complete) {
+	if r.worldMap != nil && r.worldMap.applyShapeCutAssignments(r.gs, source.ShapeID, shapeID, newRegionID, cutPixels, r.editRegionPaintOverrides) {
+		complete()
+	} else if !r.requestEditWorldMapRebuildWithCompletion(complete) {
 		r.rebuildEditWorldMap()
 		complete()
 	}
@@ -5618,6 +5655,7 @@ func (r *Renderer) rebuildEditWorldMap() {
 	r.invalidateEditRegionCenterMarkers()
 	r.terrainAreaImageDirty = true
 	r.worldMap = NewWorldMap(r.gs)
+	r.invalidateEditMapVisualCaches()
 	r.buildRegionPaintBaseline()
 	overridesChanged := !regionPaintOverridesEqual(r.editRegionPaintOverrides, r.gs.RegionPaintOverrides)
 	if overridesChanged {

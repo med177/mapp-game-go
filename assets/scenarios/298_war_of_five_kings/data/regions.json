@@ -94,6 +94,8 @@
       "new_region_55",
       "pentos",
       "prince_pass",
+      "riverlands",
+      "riverrun",
       "salt_shore",
       "sandstone",
       "sea",
@@ -102,7 +104,9 @@
       "sunspear",
       "the_eyrie",
       "the_fingers",
+      "the_hollow_hill",
       "the_mountains_of_the_moon",
+      "the_twins",
       "yronwood"
     ],
     "world_x": 1900,
@@ -144,10 +148,9 @@
       "narrow_sea",
       "new_region_54",
       "new_region_56",
+      "new_region_58",
       "oldtown",
       "pyke",
-      "riverlands",
-      "riverrun",
       "sandstone",
       "shield_islands",
       "starfall",
@@ -384,8 +387,7 @@
       "new_region_55",
       "new_region_56",
       "reach",
-      "riverrun",
-      "the_hollow_hill"
+      "riverrun"
     ],
     "world_x": 750,
     "world_y": 2215,
@@ -418,20 +420,58 @@
     ]
   },
   {
+    "id": "new_region_58",
+    "name": "a1",
+    "name_tr": "a1",
+    "terrain": "mountain",
+    "owner_id": "tully",
+    "successor_faction_id": "lannister",
+    "neighbors": [
+      "new_region_55",
+      "new_region_56",
+      "riverlands",
+      "riverrun",
+      "the_twins"
+    ],
+    "world_x": 981,
+    "world_y": 1942,
+    "shape_id": "tully",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 90,
+    "tax_rate": 40,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "faith_of_the_seven",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "new_region_56",
     "name": "crag2",
     "name_tr": "crag2",
     "terrain": "mountain",
-    "owner_id": "lannister",
+    "owner_id": "tully",
     "successor_faction_id": "lannister",
     "neighbors": [
       "casterly_rock",
       "new_region_54",
-      "new_region_55"
+      "new_region_55",
+      "new_region_58",
+      "riverrun"
     ],
     "world_x": 937,
     "world_y": 2031,
-    "shape_id": "crag",
+    "shape_id": "tully",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
@@ -456,7 +496,7 @@
     "name": "The Crag",
     "name_tr": "The Crag",
     "terrain": "mountain",
-    "owner_id": "lannister",
+    "owner_id": "tully",
     "successor_faction_id": "lannister",
     "neighbors": [
       "casterly_rock",
@@ -465,7 +505,7 @@
     ],
     "world_x": 832,
     "world_y": 2027,
-    "shape_id": "crag",
+    "shape_id": "tully",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
@@ -903,12 +943,11 @@
     "owner_id": "tully",
     "neighbors": [
       "deepwood_motte",
+      "narrow_sea",
       "new_region_55",
+      "new_region_58",
       "riverlands",
-      "riverrun",
       "sea",
-      "the_eyrie",
-      "the_mountains_of_the_moon",
       "the_neck"
     ],
     "world_x": 1150,
@@ -943,8 +982,7 @@
     "neighbors": [
       "narrow_sea",
       "sea",
-      "the_mountains_of_the_moon",
-      "the_twins"
+      "the_mountains_of_the_moon"
     ],
     "world_x": 1451,
     "world_y": 1851,
@@ -977,9 +1015,7 @@
     "neighbors": [
       "harrenhal",
       "narrow_sea",
-      "riverlands",
-      "the_eyrie",
-      "the_twins"
+      "the_eyrie"
     ],
     "world_x": 1412,
     "world_y": 1956,
@@ -1012,10 +1048,10 @@
     "successor_faction_id": "tully",
     "neighbors": [
       "harrenhal",
-      "new_region_55",
+      "narrow_sea",
+      "new_region_58",
       "riverrun",
       "the_hollow_hill",
-      "the_mountains_of_the_moon",
       "the_twins"
     ],
     "world_x": 1150,
@@ -1055,10 +1091,11 @@
     "successor_faction_id": "tully",
     "neighbors": [
       "casterly_rock",
-      "new_region_55",
+      "narrow_sea",
+      "new_region_56",
+      "new_region_58",
       "riverlands",
-      "the_hollow_hill",
-      "the_twins"
+      "the_hollow_hill"
     ],
     "world_x": 1050,
     "world_y": 2080,
@@ -1095,8 +1132,6 @@
     "terrain": "plain",
     "owner_id": "tully",
     "neighbors": [
-      "crackclaw_point",
-      "crownlands",
       "narrow_sea",
       "riverlands",
       "the_hollow_hill",
@@ -1132,9 +1167,8 @@
     "owner_id": "brotherhood_without_banners",
     "successor_faction_id": "brotherhood_without_banners",
     "neighbors": [
-      "casterly_rock",
-      "crownlands",
       "harrenhal",
+      "narrow_sea",
       "riverlands",
       "riverrun"
     ],
@@ -1602,9 +1636,7 @@
     "neighbors": [
       "crackclaw_point",
       "dragonstone",
-      "harrenhal",
-      "kings_landing",
-      "the_hollow_hill"
+      "kings_landing"
     ],
     "world_x": 1372,
     "world_y": 2298,
@@ -1637,7 +1669,6 @@
     "neighbors": [
       "crownlands",
       "dragonstone",
-      "harrenhal",
       "kings_landing",
       "narrow_sea"
     ],
@@ -1739,7 +1770,7 @@
     "name": "Cornfield",
     "name_tr": "Mısır Tarlası",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "lannister",
     "neighbors": [
       "highgarden",
       "lannisport",

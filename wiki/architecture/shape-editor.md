@@ -1,11 +1,33 @@
 ---
 type: architecture
 tags: [render, editor, shapes, country-shapes, tooling]
-last_updated: 2026-10-04
+last_updated: 2026-10-05
 related: [architecture/render-pipeline, architecture/state-management, dev/data-format, dev/progress]
 ---
 
 # Shape Editor
+
+`Shape Kes` onayında kesim maskeleri yalnız ilgili shape ve polygon sınırları
+için oluşturulur. Kesilen pikseller mevcut harita raster cache'inde yeni
+bölgeye aktarılır; bu işlem tam shape rasterizasyonunu ve deniz BFS'ini yeniden
+çalıştırmaz.
+
+`Shape Birleştir` onayında iki shape'in mevcut raster cache'leri birleştirilir
+ve yalnız birleşik piksel kümesi yeni ortak shape bölgelerine göre yeniden
+bölgelendirilir. Diğer shape'ler ve deniz rasterı yeniden hesaplanmaz.
+
+Shape boya commit'i de hedef shape için ayrı bir geometri rebuild yolu kullanır:
+eski pikseller deniz baseline'ına döndürülür, yeni ring'ler scanline raster ile
+oluşturulur ve diğer shape'ler korunur. Merkez değişikliklerinde geometri tekrar
+rasterize edilmeden mevcut shape piksel cache'i kullanılır.
+
+Shape sekmesindeki `Haritayı Yenile` düğmesi gerektiğinde tam `WorldMap`
+oluşturur ve eski sınır, seçim, Voronoi ve etiket cache'lerini temizler. Worker
+sonrasında yeni harita kabul edildiğinde aynı cache temizleme akışı otomatik
+uygulanır.
+
+Ülke ring'leri ve shape edit maskeleri scanline span'leriyle doldurulur. Böylece
+her piksel için polygonun tüm kenarlarını tekrar test eden yol kullanılmaz.
 
 `country_shapes.json` artık sadece dış araçlarla değil, oyun içi edit mode üzerinden de düzenlenebilir.
 

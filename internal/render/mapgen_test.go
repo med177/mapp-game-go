@@ -394,6 +394,97 @@ func TestBuildCountryShapesExcludesMinorRegionsFromVoronoiSeeds(t *testing.T) {
 	}
 }
 
+func TestIntPolygonScanlineMatchesPointContainment(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+	})
+	WorldW, WorldH = 12, 10
+
+	polygons := [][][2]int{
+		{{1, 1}, {9, 1}, {9, 7}, {1, 7}},
+		{{1, 1}, {8, 1}, {8, 3}, {5, 3}, {5, 8}, {1, 8}},
+		{{2, 1}, {9, 4}, {7, 8}, {1, 6}},
+	}
+	for polygonIndex, polygon := range polygons {
+		minX, minY, maxX, maxY := intPolygonBounds(polygon)
+		got := make(map[[2]int]bool)
+		forEachIntPolygonSpan(polygon, minX, minY, maxX, maxY, func(y, startX, endX int) {
+			for x := startX; x < endX; x++ {
+				got[[2]int{x, y}] = true
+			}
+		})
+
+		for y := 0; y < WorldH; y++ {
+			for x := 0; x < WorldW; x++ {
+				want := pointInIntPolygon(float64(x)+0.5, float64(y)+0.5, polygon)
+				if got[[2]int{x, y}] != want {
+					t.Fatalf("polygon %d pixel (%d,%d) = %v, want %v", polygonIndex, x, y, got[[2]int{x, y}], want)
+				}
+			}
+		}
+	}
+}
+
+func TestRebuildShapeGeometryAssignmentsOnlyTouchesTargetShape(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY
+	originalShapeScaleX, originalShapeScaleY := shapeScaleX, shapeScaleY
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+		shapeOffX, shapeOffY = originalShapeOffX, originalShapeOffY
+		shapeScaleX, shapeScaleY = originalShapeScaleX, originalShapeScaleY
+	})
+	WorldW, WorldH = 8, 2
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	regions := map[world.RegionID]*world.Region{
+		"target": {ID: "target", ShapeID: "target_shape", WorldX: 2, WorldY: 0},
+		"other":  {ID: "other", ShapeID: "other_shape", WorldX: 6, WorldY: 0},
+	}
+	gs := &state.GameState{
+		Regions: regions,
+		ShapeData: world.CountryShapeJSON{
+			Shapes: map[string][][][2]float32{
+				"target_shape": {{{1, 0}, {5, 0}, {5, 2}, {1, 2}}},
+			},
+		},
+	}
+	oldAssignments := []uint16{
+		1, 1, 1, 1, 1, 2, 2, 2,
+		1, 1, 1, 1, 1, 2, 2, 2,
+	}
+	wm := &WorldMap{
+		basePixels:        make([]byte, WorldW*WorldH*4),
+		baseRegionAt:      append([]uint16(nil), oldAssignments...),
+		regionAt:          append([]uint16(nil), oldAssignments...),
+		regionIDs:         []world.RegionID{"", "target", "other"},
+		regionIdx:         map[world.RegionID]uint16{"target": 1, "other": 2},
+		regionPx:          map[world.RegionID][]int{"target": {0, 1, 2, 3, 4, 8, 9, 10, 11, 12}, "other": {5, 6, 7, 13, 14, 15}},
+		shapeRasterPixels: map[string][]int{"target_shape": {0, 1, 2, 3, 4, 8, 9, 10, 11, 12}},
+		seaRegionAt:       make([]uint16, WorldW*WorldH),
+	}
+
+	if !wm.rebuildShapeGeometryAssignments(gs, "target_shape") {
+		t.Fatal("target shape geometry was not rebuilt")
+	}
+	for y := 0; y < WorldH; y++ {
+		for x := 0; x < WorldW; x++ {
+			want := uint16(0)
+			if x >= 1 && x < 5 {
+				want = 1
+			}
+			if x >= 5 {
+				want = 2
+			}
+			if got := wm.baseRegionAt[y*WorldW+x]; got != want {
+				t.Fatalf("pixel (%d,%d) = region index %d, want %d", x, y, got, want)
+			}
+		}
+	}
+}
+
 func TestFinishMinorRegionPolygonPaintsOnlyInsideParent(t *testing.T) {
 	originalWorldW, originalWorldH := WorldW, WorldH
 	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY
@@ -535,6 +626,97 @@ func TestRebuildShapeRegionAssignmentsOnlyTouchesTargetShape(t *testing.T) {
 		if got := wm.baseRegionAt[i]; got != 3 {
 			t.Fatalf("unrelated pixel %d changed to region index %d", i, got)
 		}
+	}
+}
+
+func TestApplyShapeCutAssignmentsKeepsUnrelatedRasterAndShapeCache(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+	})
+	WorldW, WorldH = 8, 1
+
+	newRegionID := world.RegionID("cut_region")
+	gs := &state.GameState{Regions: map[world.RegionID]*world.Region{
+		"source":    {ID: "source", ShapeID: "source_shape", Terrain: world.TerrainPlain},
+		newRegionID: {ID: newRegionID, ShapeID: "cut_shape", Terrain: world.TerrainPlain},
+		"other":     {ID: "other", ShapeID: "other_shape", Terrain: world.TerrainPlain},
+	}}
+	wm := &WorldMap{
+		basePixels:        make([]byte, WorldW*WorldH*4),
+		dispPixels:        make([]byte, WorldW*WorldH*4),
+		baseRegionAt:      []uint16{1, 1, 1, 1, 3, 3, 3, 3},
+		regionAt:          []uint16{1, 1, 1, 1, 3, 3, 3, 3},
+		regionIDs:         []world.RegionID{"", "source", newRegionID, "other"},
+		regionIdx:         map[world.RegionID]uint16{"source": 1, newRegionID: 2, "other": 3},
+		regionPx:          map[world.RegionID][]int{"source": {0, 1, 2, 3}, "other": {4, 5, 6, 7}},
+		shapeRasterPixels: map[string][]int{"source_shape": {0, 1, 2, 3}},
+		regionAnchor:      make(map[world.RegionID][2]int),
+		settlementAnchor:  make(map[settlementAnchorKey][2]int),
+		primarySettlement: make(map[world.RegionID][2]int),
+		seaIdx:            make(map[uint16]bool),
+	}
+
+	if !wm.applyShapeCutAssignments(gs, "source_shape", "cut_shape", newRegionID, []int{1, 2}, nil) {
+		t.Fatal("shape cut assignments failed")
+	}
+
+	if got := wm.baseRegionAt; got[0] != 1 || got[1] != 2 || got[2] != 2 || got[3] != 1 || got[4] != 3 {
+		t.Fatalf("unexpected base assignments: %v", got)
+	}
+	if got := wm.shapeRasterPixels["source_shape"]; len(got) != 2 || got[0] != 0 || got[1] != 3 {
+		t.Fatalf("source shape cache changed incorrectly: %v", got)
+	}
+	if got := wm.shapeRasterPixels["cut_shape"]; len(got) != 2 || got[0] != 1 || got[1] != 2 {
+		t.Fatalf("cut shape cache missing pixels: %v", got)
+	}
+}
+
+func TestApplyShapeMergeAssignmentsKeepsUnrelatedRasterAndMergesShapeCache(t *testing.T) {
+	originalWorldW, originalWorldH := WorldW, WorldH
+	originalShapeOffX, originalShapeOffY := shapeOffX, shapeOffY
+	originalShapeScaleX, originalShapeScaleY := shapeScaleX, shapeScaleY
+	t.Cleanup(func() {
+		WorldW, WorldH = originalWorldW, originalWorldH
+		shapeOffX, shapeOffY = originalShapeOffX, originalShapeOffY
+		shapeScaleX, shapeScaleY = originalShapeScaleX, originalShapeScaleY
+	})
+	WorldW, WorldH = 8, 1
+	shapeOffX, shapeOffY = 0, 0
+	shapeScaleX, shapeScaleY = 1, 1
+
+	gs := &state.GameState{Regions: map[world.RegionID]*world.Region{
+		"target_region": {ID: "target_region", ShapeID: "target_shape", WorldX: 0, Terrain: world.TerrainPlain},
+		"source_region": {ID: "source_region", ShapeID: "target_shape", WorldX: 3, Terrain: world.TerrainPlain},
+		"other":         {ID: "other", ShapeID: "other_shape", WorldX: 7, Terrain: world.TerrainPlain},
+	}}
+	wm := &WorldMap{
+		basePixels:        make([]byte, WorldW*WorldH*4),
+		dispPixels:        make([]byte, WorldW*WorldH*4),
+		baseRegionAt:      []uint16{1, 1, 2, 2, 3, 3, 3, 3},
+		regionAt:          []uint16{1, 1, 2, 2, 3, 3, 3, 3},
+		regionIDs:         []world.RegionID{"", "target_region", "source_region", "other"},
+		regionIdx:         map[world.RegionID]uint16{"target_region": 1, "source_region": 2, "other": 3},
+		regionPx:          map[world.RegionID][]int{"target_region": {0, 1}, "source_region": {2, 3}, "other": {4, 5, 6, 7}},
+		shapeRasterPixels: map[string][]int{"target_shape": {0, 1}, "source_shape": {2, 3}},
+		regionAnchor:      make(map[world.RegionID][2]int),
+		settlementAnchor:  make(map[settlementAnchorKey][2]int),
+		primarySettlement: make(map[world.RegionID][2]int),
+		seaIdx:            make(map[uint16]bool),
+	}
+
+	if !wm.applyShapeMergeAssignments(gs, "target_shape", "source_shape", nil) {
+		t.Fatal("shape merge assignments failed")
+	}
+
+	if got := wm.baseRegionAt; got[0] != 1 || got[1] != 2 || got[2] != 2 || got[3] != 2 || got[4] != 3 {
+		t.Fatalf("unexpected base assignments: %v", got)
+	}
+	if got := wm.shapeRasterPixels["target_shape"]; len(got) != 4 || got[0] != 0 || got[3] != 3 {
+		t.Fatalf("target shape cache was not merged: %v", got)
+	}
+	if _, exists := wm.shapeRasterPixels["source_shape"]; exists {
+		t.Fatal("source shape cache remained after merge")
 	}
 }
 
