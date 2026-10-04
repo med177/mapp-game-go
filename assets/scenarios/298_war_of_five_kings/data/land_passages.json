@@ -1,7 +1,7 @@
 [
   {
     "from": "sunspear",
-    "to": "pentos",
+    "to": "new_region_65",
     "type": "strait",
     "move_cost": 1,
     "defense_bonus": 20,

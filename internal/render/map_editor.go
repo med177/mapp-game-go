@@ -120,25 +120,25 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	if r.editInspectorTab == editInspectorTerrainArea {
 		r.drawEditTerrainAreaInspector(screen, ly)
 		drawUIDropdown(screen, r.editTerrainDropdown)
-		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
+		r.drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
 	if r.editInspectorTab == editInspectorMap || r.editInspectorTab == editInspectorShape {
 		r.drawEditShapeInspector(screen, ly)
-		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
+		r.drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
 	if r.editInspectorTab == editInspectorData {
 		r.drawEditScenarioDataInspector(screen, ly)
-		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
+		r.drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
 	if r.editInspectorTab == editInspectorFaction {
 		r.drawEditDataInspector(screen, ly)
-		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
+		r.drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
@@ -159,7 +159,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 			// gerekir. Aksi halde Birim Tipi düğmesi listeyi açar, ancak liste
 			// görünmediği için kullanıcı bir seçim yapamaz.
 			drawUIDropdown(screen, r.editUnitTypeDropdown)
-			drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
+			r.drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 			return
 		}
 	}
@@ -167,7 +167,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	if region == nil {
 		drawEditInspectorLabel(screen, float64(x)+14, ly, "Haritadan bir bolge veya yerlesim sec.", ColorGray, gameui.TextSmall)
 		r.drawEditRegionButtons(screen, nil)
-		drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
+		r.drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 		return
 	}
 
@@ -253,7 +253,7 @@ func (r *Renderer) drawEditInspector(screen *ebiten.Image) {
 	drawUIDropdown(screen, r.editTerrainDropdown)
 	drawUIDropdown(screen, r.editSettlementTypeDropdown)
 	drawUIDropdown(screen, r.editUnitTypeDropdown)
-	drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
+	r.drawEditInspectorSaveButton(screen, r.editGeometrySaveEnabled())
 }
 
 func drawEditInspectorLabel(screen *ebiten.Image, x, y float64, text string, col color.Color, variant gameui.TextVariant) {
@@ -579,9 +579,35 @@ func (r *Renderer) changeEditBuildingLevel(buildingID string, delta int) bool {
 	return true
 }
 
-func drawEditInspectorSaveButton(screen *ebiten.Image, enabled bool) {
+func (r *Renderer) drawEditInspectorSaveButton(screen *ebiten.Image, enabled bool) {
 	rect := editInspectorButtonRect(editButtonSaveScenario)
 	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), "Değişiklikleri Kaydet", enabled)
+	r.drawEditInspectorRefreshButton(screen)
+}
+
+func (r *Renderer) drawEditInspectorRefreshButton(screen *ebiten.Image) {
+	refreshEnabled := r != nil && r.gs != nil && !r.editMapBuildPending &&
+		!r.editShapePainting && !r.editShapePaintPending &&
+		!r.editShapeCutting && !r.editShapeMergeMode
+	refreshLabel := "Haritayı Yenile"
+	if r != nil && r.editMapBuildPending {
+		refreshLabel = "Harita yenileniyor..."
+	}
+	rect := editInspectorButtonRect(editButtonRefreshMap)
+	drawTinyPanelButton(screen, float32(rect[0]), float32(rect[1]), float32(rect[2]), float32(rect[3]), refreshLabel, refreshEnabled)
+}
+
+func (r *Renderer) RequestEditWorldMapRefresh() {
+	if r == nil || r.gs == nil || r.editMapBuildPending || r.editShapePainting ||
+		r.editShapePaintPending || r.editShapeCutting || r.editShapeMergeMode {
+		return
+	}
+	r.ShowInfo("Harita yenileniyor...")
+	if !r.requestEditWorldMapRebuildWithCompletion(func() {
+		r.ShowInfo("Harita yenilendi.")
+	}) {
+		r.ShowInfo("Harita yenileme başlatılamadı.")
+	}
 }
 
 func (r *Renderer) drawEditInspectorTab(screen *ebiten.Image, tab editInspectorTab, label string) {
@@ -1036,7 +1062,7 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	case editButtonSetFactionCapital:
 		return leftRect(1)
 	case editButtonSaveScenario:
-		return uiRect{left, float64(y) + float64(h) - 42, bw, 32}
+		return uiRect{left, float64(y) + float64(h) - 42, colW, 32}
 	case editButtonRegionSuccessor:
 		return rightRect(0)
 	case editButtonRegionPrivilege:
@@ -1056,11 +1082,11 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	case editButtonShapeBrushPlus:
 		return rightRect(2)
 	case editButtonShapeNew:
-		return rightRect(5)
+		return full(6)
 	case editButtonShapeCut:
 		return leftRect(5)
 	case editButtonShapeMerge:
-		return full(6)
+		return rightRect(5)
 	case editButtonLandPassageAdd:
 		return leftRect(3)
 	case editButtonLandPassageAdjust:
@@ -1068,7 +1094,7 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 	case editButtonLandPassageDelete:
 		return leftRect(4)
 	case editButtonRefreshMap:
-		return full(7)
+		return uiRect{right, float64(y) + float64(h) - 42, colW, 32}
 	case editButtonTerrainArea:
 		return leftRect(6)
 	case editButtonTerrainAreaAppend:
@@ -2494,6 +2520,10 @@ func (r *Renderer) handleEditInspectorClick(fx, fy float64) (InputAction, bool) 
 			return InputAction{}, true
 		}
 		return InputAction{Kind: ActionSaveScenario}, true
+	}
+	if buildEditInspectorActionButton(editButtonRefreshMap, "").HitTest(fx, fy) {
+		r.RequestEditWorldMapRefresh()
+		return InputAction{}, true
 	}
 	if r.editInspectorTab == editInspectorTerrainArea {
 		return r.handleEditShapeInspectorClick(fx, fy)

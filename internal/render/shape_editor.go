@@ -429,10 +429,6 @@ func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
 	drawEditInspectorButton(screen, editButtonLandPassageAdd, addLabel, landPassageAvailable)
 	drawEditInspectorButton(screen, editButtonLandPassageAdjust, adjustLabel, landPassageAvailable)
 	drawEditInspectorButton(screen, editButtonLandPassageDelete, "Geçiş Sil", canDelete)
-	refreshEnabled := r != nil && r.gs != nil && !r.editMapBuildPending &&
-		!r.editShapePainting && !r.editShapePaintPending &&
-		!r.editShapeCutting && !r.editShapeMergeMode
-	drawEditInspectorButton(screen, editButtonRefreshMap, "Haritayı Yenile", refreshEnabled)
 }
 
 func (r *Renderer) drawEditTerrainAreaInspector(screen *ebiten.Image, ly float64) {
@@ -812,10 +808,7 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 			r.beginShapeMerge()
 		}
 	case editButtonRefreshMap:
-		if !r.editMapBuildPending && !r.editShapePainting && !r.editShapePaintPending &&
-			!r.editShapeCutting && !r.editShapeMergeMode {
-			r.rebuildEditWorldMap()
-		}
+		r.RequestEditWorldMapRefresh()
 	case editButtonLandPassageAdd:
 		r.toggleEditLandPassageMode()
 	case editButtonLandPassageAdjust:

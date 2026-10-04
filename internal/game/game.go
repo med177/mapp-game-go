@@ -648,7 +648,9 @@ func (g *Game) Update() error {
 	case state.PhaseEditMode:
 		switch action.Kind {
 		case render.ActionSaveScenario:
-			g.saveScenarioRegions()
+			if g.saveScenarioRegions() {
+				g.renderer.RequestEditWorldMapRefresh()
+			}
 		case render.ActionSaveScenarioAndGoMainMenu:
 			if g.saveScenarioRegions() {
 				g.resetToNewGame()

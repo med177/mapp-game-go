@@ -13,6 +13,19 @@
     ]
   },
   {
+    "region_id": "new_region_63",
+    "settlements": [
+      {
+        "id": "new_region_63_settlement_1",
+        "name_tr": "Yüzler Kulesi",
+        "x": 1277,
+        "y": 2170,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
     "region_id": "essos_free_cities",
     "settlements": [
       {
@@ -124,6 +137,10 @@
     ]
   },
   {
+    "region_id": "new_region_60",
+    "settlements": null
+  },
+  {
     "region_id": "highgarden",
     "settlements": [
       {
@@ -174,6 +191,14 @@
         "is_center": true
       }
     ]
+  },
+  {
+    "region_id": "new_region_64",
+    "settlements": null
+  },
+  {
+    "region_id": "new_region_65",
+    "settlements": null
   },
   {
     "region_id": "astapor",
@@ -384,6 +409,10 @@
     ]
   },
   {
+    "region_id": "new_region_59",
+    "settlements": null
+  },
+  {
     "region_id": "karhold",
     "settlements": [
       {
@@ -428,8 +457,8 @@
       {
         "id": "moat_cailin_main",
         "name_tr": "Moat Cailin",
-        "x": 1175,
-        "y": 1378,
+        "x": 1190,
+        "y": 1453,
         "type": "fortress",
         "is_center": true
       }
@@ -480,8 +509,8 @@
       {
         "id": "the_neck_main",
         "name_tr": "Boyun",
-        "x": 1147,
-        "y": 1559,
+        "x": 1137,
+        "y": 1608,
         "type": "town",
         "is_center": true
       }
@@ -527,13 +556,17 @@
     ]
   },
   {
+    "region_id": "duskendale",
+    "settlements": null
+  },
+  {
     "region_id": "kingswood",
     "settlements": [
       {
         "id": "kingswood_main",
         "name_tr": "Kral Ormanı",
-        "x": 1430,
-        "y": 2520,
+        "x": 1391,
+        "y": 2438,
         "type": "town",
         "is_center": true
       }
@@ -545,8 +578,8 @@
       {
         "id": "shield_islands_main",
         "name_tr": "Kalkan Adaları",
-        "x": 679,
-        "y": 2682,
+        "x": 646,
+        "y": 2666,
         "type": "port",
         "is_center": true
       }
@@ -575,8 +608,8 @@
       {
         "id": "the_arbor_main",
         "name_tr": "Arbor",
-        "x": 598,
-        "y": 3164,
+        "x": 538,
+        "y": 3102,
         "type": "port",
         "is_center": true
       }
@@ -588,8 +621,8 @@
       {
         "id": "blackmont_main",
         "name_tr": "Blackmont",
-        "x": 942,
-        "y": 2932,
+        "x": 988,
+        "y": 2879,
         "type": "fortress",
         "is_center": true
       }
@@ -614,8 +647,8 @@
       {
         "id": "yronwood_main",
         "name_tr": "Yronwood",
-        "x": 1225,
-        "y": 2968,
+        "x": 1260,
+        "y": 2970,
         "type": "fortress",
         "is_center": true
       }
@@ -653,8 +686,8 @@
       {
         "id": "salt_shore_main",
         "name_tr": "Tuz Kıyısı",
-        "x": 1339,
-        "y": 3165,
+        "x": 1515,
+        "y": 3185,
         "type": "port",
         "is_center": true
       }
@@ -679,8 +712,8 @@
       {
         "id": "stormlands_main",
         "name_tr": "Fırtına Diyarları",
-        "x": 1364,
-        "y": 2449,
+        "x": 1469,
+        "y": 2596,
         "type": "city",
         "is_center": true
       }

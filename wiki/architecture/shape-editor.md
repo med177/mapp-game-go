@@ -21,10 +21,11 @@ eski pikseller deniz baseline'ına döndürülür, yeni ring'ler scanline raster
 oluşturulur ve diğer shape'ler korunur. Merkez değişikliklerinde geometri tekrar
 rasterize edilmeden mevcut shape piksel cache'i kullanılır.
 
-Shape sekmesindeki `Haritayı Yenile` düğmesi gerektiğinde tam `WorldMap`
-oluşturur ve eski sınır, seçim, Voronoi ve etiket cache'lerini temizler. Worker
-sonrasında yeni harita kabul edildiğinde aynı cache temizleme akışı otomatik
-uygulanır.
+Editör footer'ındaki `Haritayı Yenile` düğmesi tüm sekmelerde görünür. Gerektiğinde
+worker üzerinde tam `WorldMap` oluşturur ve eski sınır, seçim, Voronoi ve etiket
+cache'lerini temizler. İşlem sırasında düğme `Harita yenileniyor...` durumuna
+geçer; yeni harita kabul edildiğinde üst bildirimde tamamlanma mesajı gösterilir.
+`Değişiklikleri Kaydet` başarılı olduğunda aynı yenileme akışı otomatik başlatılır.
 
 Ülke ring'leri ve shape edit maskeleri scanline span'leriyle doldurulur. Böylece
 her piksel için polygonun tüm kenarlarını tekrar test eden yol kullanılmaz.
