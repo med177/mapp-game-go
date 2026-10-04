@@ -79,6 +79,7 @@ shape, bölge ve bölge sırası değişiklikleri doğrudan runtime state'e yaz�
 - Fırça yarıçapı inspector'dan artırılıp azaltılır; `1.00` altına iki ince kademe
   (`0.75` ve `0.50`) bulunur. Yarıçap değeri dünya pikseli cinsindendir; bu
   seviyeler bölge ve shape araçlarında aynı fiziksel fırça boyutunu hedefler.
+  Harita editinde `Ctrl+tekerlek` ile de büyütülüp küçültülebilir.
 - Brush stroke sırasında imleç yarıçapı ekranda gösterilir.
 - Stroke sırasında eklenen alanlar yeşil, silinen alanlar kırmızı preview overlay ile gösterilir.
 - Sağ üstte kısa yardım paneli seçili `shape_id`, mod ve kontrol şemasını gösterir.

@@ -1,5 +1,31 @@
 [
   {
+    "region_id": "always_winter",
+    "settlements": [
+      {
+        "id": "always_winter_main",
+        "name_tr": "Always Winter",
+        "x": 793,
+        "y": 215,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "essos_free_cities",
+    "settlements": [
+      {
+        "id": "essos_free_cities_main",
+        "name_tr": "Essos Özgür Şehirleri",
+        "x": 2442,
+        "y": 2117,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
     "region_id": "storm_end",
     "settlements": [
       {
@@ -31,16 +57,16 @@
       {
         "id": "test_settlement",
         "name_tr": "test",
-        "x": 1399,
-        "y": 906,
+        "x": 1052,
+        "y": 841,
         "type": "port",
         "is_center": true
       },
       {
         "id": "winterfell_main",
         "name_tr": "Kışyarı",
-        "x": 1312,
-        "y": 834,
+        "x": 1101,
+        "y": 1149,
         "type": "city",
         "is_center": true
       }
@@ -138,6 +164,58 @@
     ]
   },
   {
+    "region_id": "astapor",
+    "settlements": [
+      {
+        "id": "astapor_main",
+        "name_tr": "Astapor",
+        "x": 2700,
+        "y": 2900,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "yunkai",
+    "settlements": [
+      {
+        "id": "yunkai_main",
+        "name_tr": "Yunkai",
+        "x": 2800,
+        "y": 2800,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "meereen",
+    "settlements": [
+      {
+        "id": "meereen_main",
+        "name_tr": "Meereen",
+        "x": 2900,
+        "y": 2950,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "braavos",
+    "settlements": [
+      {
+        "id": "braavos_main",
+        "name_tr": "Braavos",
+        "x": 2150,
+        "y": 1900,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
     "region_id": "beyond_the_wall",
     "settlements": [
       {
@@ -151,32 +229,6 @@
     ]
   },
   {
-    "region_id": "the_hollow_hill",
-    "settlements": [
-      {
-        "id": "hollow_hill_main",
-        "name_tr": "Oyuk Tepe",
-        "x": 1200,
-        "y": 2150,
-        "type": "fortress",
-        "is_center": true
-      }
-    ]
-  },
-  {
-    "region_id": "riverrun",
-    "settlements": [
-      {
-        "id": "riverrun_main",
-        "name_tr": "Nehir Koşusu",
-        "x": 1050,
-        "y": 2080,
-        "type": "fortress",
-        "is_center": true
-      }
-    ]
-  },
-  {
     "region_id": "the_dreadfort",
     "settlements": [
       {
@@ -184,6 +236,19 @@
         "name_tr": "Dehşet Kalesi",
         "x": 1420,
         "y": 1000,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_twins",
+    "settlements": [
+      {
+        "id": "the_twins_main",
+        "name_tr": "İkizler",
+        "x": 1150,
+        "y": 1750,
         "type": "fortress",
         "is_center": true
       }
@@ -203,60 +268,120 @@
     ]
   },
   {
-    "region_id": "braavos",
+    "region_id": "the_mountains_of_the_moon",
     "settlements": [
       {
-        "id": "braavos_main",
-        "name_tr": "Braavos",
-        "x": 2150,
-        "y": 1900,
-        "type": "port",
+        "id": "the_mountains_of_the_moon_main",
+        "name_tr": "Ay Dağları",
+        "x": 1412,
+        "y": 1956,
+        "type": "fortress",
         "is_center": true
       }
     ]
   },
   {
-    "region_id": "astapor",
-    "settlements": null
-  },
-  {
-    "region_id": "yunkai",
-    "settlements": null
-  },
-  {
-    "region_id": "meereen",
-    "settlements": null
-  },
-  {
-    "region_id": "the_twins",
-    "settlements": null
-  },
-  {
-    "region_id": "the_mountains_of_the_moon",
-    "settlements": null
-  },
-  {
     "region_id": "riverlands",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "riverlands_main",
+        "name_tr": "Nehir Toprakları",
+        "x": 1150,
+        "y": 2000,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "riverrun",
+    "settlements": [
+      {
+        "id": "riverrun_main",
+        "name_tr": "Nehir Koşusu",
+        "x": 1050,
+        "y": 2080,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "harrenhal",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "harrenhal_main",
+        "name_tr": "Harrenhal",
+        "x": 1250,
+        "y": 2100,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_hollow_hill",
+    "settlements": [
+      {
+        "id": "hollow_hill_main",
+        "name_tr": "Oyuk Tepe",
+        "x": 1200,
+        "y": 2150,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "lannisport",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "lannisport_main",
+        "name_tr": "Lannisport",
+        "x": 700,
+        "y": 2250,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "reach",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "reach_main",
+        "name_tr": "Reach",
+        "x": 1000,
+        "y": 2450,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "oldtown",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "oldtown_main",
+        "name_tr": "Oldtown",
+        "x": 800,
+        "y": 2800,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "stormlands",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "stormlands_main",
+        "name_tr": "Fırtına Diyarları",
+        "x": 1398,
+        "y": 2443,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   }
 ]

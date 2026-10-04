@@ -1862,6 +1862,16 @@ func increaseEditShapeBrushRadius(radius float64) float64 {
 	return radius
 }
 
+func adjustEditShapeBrushRadiusByWheel(radius, wheelY float64) float64 {
+	if wheelY > 0 {
+		return increaseEditShapeBrushRadius(radius)
+	}
+	if wheelY < 0 {
+		return decreaseEditShapeBrushRadius(radius)
+	}
+	return radius
+}
+
 func (r *Renderer) applyShapeBrushLine(session *shapeEditSession, x0, y0, x1, y1 int, radius float64, fill bool) bool {
 	steps := maxInt(absInt(x1-x0), absInt(y1-y0))
 	if steps == 0 {
@@ -1900,6 +1910,9 @@ func (r *Renderer) applyShapeBrushCircle(session *shapeEditSession, cx, cy int, 
 			if dx*dx+dy*dy > r2 {
 				continue
 			}
+			if fill && !r.shapeBrushCellBelongsToShape(session, x, y) {
+				continue
+			}
 			idx := session.index(x, y)
 			want := byte(0)
 			if fill {
@@ -1929,6 +1942,30 @@ func (r *Renderer) applyRegionBrushLine(x0, y0, x1, y1 int, radius float64, fill
 		}
 	}
 	return changed
+}
+
+// shapeBrushCellBelongsToShape, fırçanın seçili shape'in sınırını aşarak
+// komşu shape'in içine girmesini engeller. Base raster kullanılır; bölge boya
+// override'ları shape sınırı hesabını değiştirmemelidir.
+func (r *Renderer) shapeBrushCellBelongsToShape(session *shapeEditSession, x, y int) bool {
+	if r == nil || r.worldMap == nil || r.gs == nil || session == nil {
+		return true
+	}
+	if x < 0 || y < 0 || x >= WorldW || y >= WorldH {
+		return false
+	}
+	pIdx := y*WorldW + x
+	regionIdx := uint16(0)
+	if len(r.worldMap.baseRegionAt) == len(r.worldMap.regionAt) {
+		regionIdx = r.worldMap.baseRegionAt[pIdx]
+	} else if pIdx < len(r.worldMap.regionAt) {
+		regionIdx = r.worldMap.regionAt[pIdx]
+	}
+	if regionIdx == 0 || int(regionIdx) >= len(r.worldMap.regionIDs) {
+		return true
+	}
+	region := r.gs.Regions[r.worldMap.regionIDs[regionIdx]]
+	return region == nil || region.ShapeID == "" || region.ShapeID == session.ShapeID
 }
 
 func (r *Renderer) applyRegionBrushCircle(cx, cy int, radius float64, fill bool) bool {

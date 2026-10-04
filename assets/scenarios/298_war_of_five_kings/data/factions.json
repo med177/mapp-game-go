@@ -450,8 +450,8 @@
     "cloth": 180,
     "research": {
       "completed": {
-        "fortifications": true,
-        "chivalry": true
+        "chivalry": true,
+        "fortifications": true
       },
       "active_id": "",
       "turns_left": 0
@@ -495,8 +495,8 @@
     "cloth": 120,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "fortifications": true
+        "fortifications": true,
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
@@ -582,8 +582,8 @@
     "cloth": 70,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "fortifications": true
+        "fortifications": true,
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0

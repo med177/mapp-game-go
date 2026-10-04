@@ -1886,6 +1886,16 @@ func (r *Renderer) handleEditModeInput() InputAction {
 		}
 	}
 
+	if !r.editOwnerDropdown.IsOpen() && !r.editSuccessorDropdown.IsOpen() &&
+		!r.editTerrainDropdown.IsOpen() && !r.editSettlementTypeDropdown.IsOpen() &&
+		!r.editUnitTypeDropdown.IsOpen() && editCtrlPressed() {
+		_, wheelY := ebiten.Wheel()
+		if wheelY != 0 && (r.canEditSelectedShape() || r.canRegionPaintSelected()) && !r.editTerrainAreaMode {
+			r.editShapeBrushRadius = adjustEditShapeBrushRadiusByWheel(r.editShapeBrushRadius, wheelY)
+			return InputAction{}
+		}
+	}
+
 	if !r.editOwnerDropdown.IsOpen() && !r.editSuccessorDropdown.IsOpen() && !r.editTerrainDropdown.IsOpen() && !r.editSettlementTypeDropdown.IsOpen() && !r.editUnitTypeDropdown.IsOpen() {
 		r.handleCamera()
 	}
