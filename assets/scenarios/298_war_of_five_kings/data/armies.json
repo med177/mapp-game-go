@@ -588,9 +588,18 @@
     "owner_id": "free_cities",
     "region_id": "essos_free_cities",
     "units": [
-      { "type_id": "elite_infantry", "count": 1 },
-      { "type_id": "infantry", "count": 4 },
-      { "type_id": "militia", "count": 4 }
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
     ]
   },
   {
@@ -598,9 +607,18 @@
     "owner_id": "free_cities",
     "region_id": "myr_region",
     "units": [
-      { "type_id": "elite_infantry", "count": 1 },
-      { "type_id": "infantry", "count": 3 },
-      { "type_id": "militia", "count": 5 }
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 5
+      }
     ]
   },
   {
@@ -608,9 +626,18 @@
     "owner_id": "free_cities",
     "region_id": "meereen",
     "units": [
-      { "type_id": "elite_infantry", "count": 2 },
-      { "type_id": "infantry", "count": 4 },
-      { "type_id": "militia", "count": 4 }
+      {
+        "type_id": "elite_infantry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
     ]
   }
 ]

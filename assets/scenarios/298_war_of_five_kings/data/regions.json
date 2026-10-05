@@ -688,7 +688,6 @@
     "owner_id": "",
     "neighbors": [
       "cape_kraken",
-      "casterly_rock",
       "crag",
       "deepwood_motte",
       "flints_finger",
@@ -702,8 +701,8 @@
       "riverlands",
       "the_twins"
     ],
-    "world_x": 677,
-    "world_y": 1819,
+    "world_x": 813,
+    "world_y": 1773,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -767,6 +766,7 @@
     "neighbors": [
       "casterly_rock",
       "cornfield",
+      "crag",
       "lannisport",
       "new_region_118",
       "new_region_119",
@@ -1019,8 +1019,8 @@
       "salt_shore",
       "vaith"
     ],
-    "world_x": 1543,
-    "world_y": 3424,
+    "world_x": 1511,
+    "world_y": 3253,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -1342,8 +1342,8 @@
       "new_region_126",
       "new_region_131"
     ],
-    "world_x": 2303,
-    "world_y": 3471,
+    "world_x": 2536,
+    "world_y": 3244,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -1623,8 +1623,7 @@
       "crag",
       "golden_tooth",
       "lannisport",
-      "new_region_115",
-      "new_region_118"
+      "new_region_115"
     ],
     "world_x": 704,
     "world_y": 2261,
@@ -1666,6 +1665,7 @@
     "neighbors": [
       "casterly_rock",
       "golden_tooth",
+      "new_region_115",
       "new_region_118",
       "riverlands"
     ],
@@ -2571,8 +2571,8 @@
       "new_region_115",
       "silver_hill"
     ],
-    "world_x": 703,
-    "world_y": 2294,
+    "world_x": 708,
+    "world_y": 2292,
     "shape_id": "WST_WL",
     "is_sea": false,
     "is_locked": false,
@@ -3596,7 +3596,8 @@
     "religion": "faith_of_the_seven",
     "active_event_id": "",
     "buildings": [
-      "port"
+      "port",
+      "walls"
     ]
   },
   {

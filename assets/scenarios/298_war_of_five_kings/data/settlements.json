@@ -957,16 +957,16 @@
       {
         "id": "salt_shore_main",
         "name_tr": "Tuz Kıyısı",
-        "x": 1515,
-        "y": 3185,
-        "type": "port",
+        "x": 1518,
+        "y": 3165,
+        "type": "fortress",
         "is_center": true
       },
       {
         "id": "planky_town",
         "name_tr": "Planky Town",
-        "x": 1570,
-        "y": 3135,
+        "x": 1520,
+        "y": 3187,
         "type": "port"
       }
     ]

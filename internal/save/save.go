@@ -155,6 +155,9 @@ type SaveSlot struct {
 	GameVersion  string
 	Exists       bool
 	ScenarioName string
+	ScenarioPath string
+	FactionID    faction.FactionID
+	FactionFlag  string
 	FactionName  string
 	Turn         int
 	Year         int
@@ -193,6 +196,9 @@ func ListSlots() []SaveSlot {
 					s.Turn = meta.Turn
 					s.Year = meta.Year
 					s.ScenarioName = scenarioNameFromMetadata(meta.ScenarioID, meta.ScenarioPath)
+					s.ScenarioPath = resolveScenarioPath(meta.ScenarioID, meta.ScenarioPath)
+					s.FactionID = meta.PlayerFactionID
+					s.FactionFlag = factionFlagFromScenario(meta.ScenarioID, meta.ScenarioPath, meta.PlayerFactionID)
 					s.FactionName = meta.FactionName
 					if s.FactionName == "" {
 						s.FactionName = factionNameFromScenario(meta.ScenarioID, meta.ScenarioPath, meta.PlayerFactionID)
@@ -206,6 +212,9 @@ func ListSlots() []SaveSlot {
 							s.Turn = m.Turn
 							s.Year = m.Year
 							s.ScenarioName = scenarioNameFromMetadata(m.ScenarioID, m.ScenarioPath)
+							s.ScenarioPath = resolveScenarioPath(m.ScenarioID, m.ScenarioPath)
+							s.FactionID = faction.FactionID(m.PlayerFactionID)
+							s.FactionFlag = factionFlagFromScenario(m.ScenarioID, m.ScenarioPath, s.FactionID)
 							if f, ok := m.Factions[m.PlayerFactionID]; ok {
 								s.FactionName = f.NameTR
 							}
@@ -759,6 +768,21 @@ func factionNameFromScenario(scenarioID, savedScenarioPath string, factionID fac
 		return fx.NameTR
 	}
 	return ""
+}
+
+func factionFlagFromScenario(scenarioID, savedScenarioPath string, factionID faction.FactionID) string {
+	if factionID == "" {
+		return ""
+	}
+	scenarioPath := resolveScenarioPath(scenarioID, savedScenarioPath)
+	if scenarioPath == "" {
+		return ""
+	}
+	factions, err := faction.LoadFactions(filepath.Join(scenarioPath, "data", "factions.json"))
+	if err != nil || factions[factionID] == nil {
+		return ""
+	}
+	return factions[factionID].Flag
 }
 
 func scenarioNameFromMetadata(scenarioID, savedScenarioPath string) string {

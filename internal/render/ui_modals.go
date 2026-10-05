@@ -315,13 +315,17 @@ func buildHistoricalEventChoiceButtons(count int) []gameui.Button {
 	}
 	modal := buildHistoricalEventModal()
 	const (
-		btnW = 260.0
-		btnH = 36.0
-		gap  = 16.0
+		btnH       = 36.0
+		horizontal = 24.0
+		gap        = 16.0
 	)
+	availableW := modal.Panel.Rect.W - horizontal*2
+	btnW := (availableW - float64(max(0, count-1))*gap) / float64(count)
+	if btnW < 0 {
+		btnW = 0
+	}
 	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 24
-	totalW := float64(count)*btnW + float64(max(0, count-1))*gap
-	startX := modal.Panel.Rect.X + (modal.Panel.Rect.W-totalW)/2
+	startX := modal.Panel.Rect.X + horizontal
 	buttons := make([]gameui.Button, 0, count)
 	for i := 0; i < count; i++ {
 		x := startX + float64(i)*(btnW+gap)

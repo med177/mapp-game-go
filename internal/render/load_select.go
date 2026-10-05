@@ -21,13 +21,14 @@ type slotCardLayout struct {
 }
 
 const (
-	slotCardW                  = 480.0
-	slotCardH                  = 88.0
-	slotCardGapX               = 16.0
-	slotCardGapY               = 14.0
-	slotPendingDeleteNameInset = 18.0
-	slotPendingDeleteNameY     = 12.0
-	slotPendingDeletePromptY   = 36.0
+	slotCardW                = 480.0
+	slotCardH                = 88.0
+	slotCardGapX             = 16.0
+	slotCardGapY             = 14.0
+	slotCardFlagSize         = 54.0
+	slotCardContentX         = 84.0
+	slotPendingDeleteNameY   = 12.0
+	slotPendingDeletePromptY = 36.0
 )
 
 func slotCardsStackRect() gameui.Rect {
@@ -92,6 +93,11 @@ func buildSlotConfirmButtons(pendingSlot string) (gameui.Button, gameui.Button, 
 // DrawSlotSelectScreen yükleme veya kaydetme için slot seçim ekranını çizer.
 // saveMode=true ise kaydetme, false ise yükleme ekranı başlığı gösterilir.
 // pendingDelete dolu ise o slot için onay diyalogu gösterilir.
+func drawSaveSlotFlag(screen *ebiten.Image, slot save.SaveSlot, x, y float64) {
+	flag := factionFlagImageForPath(slot.ScenarioPath, slot.FactionID, slot.FactionFlag)
+	drawFactionFlagBadgeImage(screen, flag, factionInitial(slot.FactionName), x, y, slotCardFlagSize, color.RGBA{70, 58, 34, 255}, color.RGBA{142, 116, 72, 255})
+}
+
 func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendingDelete string) {
 	title := "KAYIT YÜKLE"
 	if saveMode {
@@ -151,18 +157,20 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 			}
 			if isPendingDelete {
 				// Silme onayında başlık ve soru ayrı bantlarda tutulur ki üst üste binmesin.
-				drawUILabel(screen, gameui.Rect{X: cx + slotPendingDeleteNameInset, Y: cy + slotPendingDeleteNameY}, slot.DisplayName, nameCol, gameui.TextMedium, gameui.TextAlignStart)
+				drawSaveSlotFlag(screen, slot, cx+18, cy+17)
+				drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + slotPendingDeleteNameY}, slot.DisplayName, nameCol, gameui.TextMedium, gameui.TextAlignStart)
 				drawUILabel(screen, gameui.Rect{X: cx, Y: cy + slotPendingDeletePromptY, W: slotCardW}, "Silinecek! Emin misiniz?", color.RGBA{255, 100, 100, 255}, gameui.TextMedium, gameui.TextAlignCenter)
 				yesBtn, noBtn, _ := buildSlotConfirmButtons(slot.Name)
 				drawSlotMiniButtonWidget(screen, yesBtn, color.RGBA{130, 35, 35, 230})
 				drawSlotMiniButtonWidget(screen, noBtn, color.RGBA{45, 45, 45, 230})
 			} else {
-				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 14}, prefix+slot.DisplayName, nameCol, gameui.TextLarge, gameui.TextAlignStart)
+				drawSaveSlotFlag(screen, slot, cx+18, cy+17)
+				drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + 14}, prefix+slot.DisplayName, nameCol, gameui.TextLarge, gameui.TextAlignStart)
 				faction := slot.FactionName
 				if faction == "" {
 					faction = "Bilinmiyor"
 				}
-				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 44}, "Devlet: "+faction, detailCol, gameui.TextSmall, gameui.TextAlignStart)
+				drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + 44}, "Devlet: "+faction, detailCol, gameui.TextSmall, gameui.TextAlignStart)
 				drawUILabel(screen, gameui.Rect{X: cx + slotCardW/2, Y: cy + 44}, "Tur: "+itoa(slot.Turn)+"  |  "+itoa(slot.Year), detailCol, gameui.TextSmall, gameui.TextAlignCenter)
 				if !saveMode {
 					scenarioName := slot.ScenarioName
@@ -170,7 +178,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 						scenarioName = "Bilinmiyor"
 					}
 					scenarioLabel := trimTextToWidth("Senaryo: "+scenarioName, FaceSmall, 360)
-					drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 62, W: 360}, scenarioLabel, detailCol, gameui.TextSmall, gameui.TextAlignStart)
+					drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + 62, W: 300}, scenarioLabel, detailCol, gameui.TextSmall, gameui.TextAlignStart)
 				}
 
 				modStr := slot.ModTime.Format("02.01.2006 15:04")

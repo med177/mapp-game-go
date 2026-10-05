@@ -240,10 +240,17 @@ func factionFlagImage(fid faction.FactionID) *ebiten.Image {
 	}
 
 	flagName := factionHistoricalFlagNames[fid]
+	return factionFlagImageForPath(ActiveScenarioPath, fid, flagName)
+}
+
+func factionFlagImageForPath(scenarioPath string, fid faction.FactionID, flagName string) *ebiten.Image {
+	if fid == "" || scenarioPath == "" {
+		return nil
+	}
 	if flagName == "" {
 		flagName = string(fid) + ".png"
 	}
-	path := filepath.Join(ActiveScenarioPath, "sprites", "flags", flagName)
+	path := filepath.Join(scenarioPath, "sprites", "flags", flagName)
 	if img, loaded := factionFlagCache[path]; loaded {
 		return img
 	}
@@ -310,8 +317,12 @@ func syncFactionHistoricalFlagNames(gs *state.GameState) {
 
 // drawFactionFlagBadge kare faction rozetini çizer; asset yoksa baş harfi gösterir.
 func drawFactionFlagBadge(screen *ebiten.Image, fid faction.FactionID, initial string, x, y, size float64, bg, border color.Color) {
+	drawFactionFlagBadgeImage(screen, factionFlagImage(fid), initial, x, y, size, bg, border)
+}
+
+func drawFactionFlagBadgeImage(screen *ebiten.Image, flag *ebiten.Image, initial string, x, y, size float64, bg, border color.Color) {
 	vector.FillRect(screen, float32(x), float32(y), float32(size), float32(size), bg, false)
-	if flag := factionFlagImage(fid); flag != nil {
+	if flag != nil {
 		bounds := flag.Bounds()
 		flagW := float64(bounds.Dx())
 		flagH := float64(bounds.Dy())
@@ -3492,8 +3503,8 @@ func commanderArrivalTraits(commander *army.Commander) string {
 }
 
 func drawHistoricalChoiceInfo(screen *ebiten.Image, btn gameui.Button, choice HistoricalEventChoice) {
-	infoX := btn.X - 6
-	infoW := btn.W + 12
+	infoX := btn.X
+	infoW := btn.W
 	startY := btn.Y - 122
 	if choice.Desc != "" {
 		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: startY, W: infoW}, choice.Desc, color.RGBA{162, 150, 120, 210}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)

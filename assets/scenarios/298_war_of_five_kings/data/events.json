@@ -89,10 +89,6 @@
     "historical_month": 9,
     "one_shot": true,
     "affected_faction": "stark",
-    "requires_active_factions": [
-      "stark",
-      "lannister"
-    ],
     "choice_prompt_tr": "Kuzey'in yönetimi Stark hanedanında mı kalmalı, yoksa Boltonlar kontrolü ele mi geçirmeli?",
     "choices": [
       {
@@ -114,6 +110,10 @@
     "player_choice_factions": [
       "stark",
       "bolton"
+    ],
+    "requires_active_factions": [
+      "stark",
+      "lannister"
     ]
   },
   {
@@ -131,10 +131,6 @@
     "historical_month": 6,
     "one_shot": true,
     "affected_faction": "targaryen",
-    "requires_active_factions": [
-      "targaryen",
-      "baratheon_king"
-    ],
     "choice_prompt_tr": "Targaryen hanedanı Demir Taht'ı geri almak için harekete geçsin mi?",
     "choices": [
       {
@@ -155,6 +151,10 @@
       }
     ],
     "player_choice_factions": [
+      "targaryen",
+      "baratheon_king"
+    ],
+    "requires_active_factions": [
       "targaryen",
       "baratheon_king"
     ]
