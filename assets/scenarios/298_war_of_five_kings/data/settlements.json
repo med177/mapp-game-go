@@ -213,9 +213,9 @@
       {
         "id": "highgarden_main",
         "name_tr": "Yüksek Bahçe",
-        "x": 880,
-        "y": 2720,
-        "type": "city",
+        "x": 872,
+        "y": 2715,
+        "type": "fortress",
         "is_center": true
       }
     ]
@@ -290,6 +290,13 @@
         "x": 2405,
         "y": 2404,
         "type": "fortress"
+      },
+      {
+        "id": "pentos_region_port",
+        "name_tr": "Liman",
+        "x": 2096,
+        "y": 2387,
+        "type": "port"
       }
     ]
   },

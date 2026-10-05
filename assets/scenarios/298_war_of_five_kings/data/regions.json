@@ -836,6 +836,7 @@
     "neighbors": [
       "brightwater_reach",
       "cornfield",
+      "highgarden",
       "new_region_115",
       "new_region_120",
       "new_region_142",
@@ -1778,6 +1779,7 @@
       "brightwater_reach",
       "golden_grove",
       "horn_hill",
+      "new_region_119",
       "old_oak"
     ],
     "world_x": 911,
@@ -1806,7 +1808,8 @@
       "farm",
       "farm",
       "market",
-      "temple"
+      "temple",
+      "walls"
     ]
   },
   {
@@ -3321,8 +3324,8 @@
       "prince_pass",
       "uplands"
     ],
-    "world_x": 892,
-    "world_y": 2822,
+    "world_x": 911,
+    "world_y": 2827,
     "shape_id": "WST_RC",
     "is_sea": false,
     "is_locked": false,
