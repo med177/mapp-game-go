@@ -237,6 +237,13 @@
         "x": 671,
         "y": 1945,
         "type": "port"
+      },
+      {
+        "id": "lordsport",
+        "name_tr": "Lordsport",
+        "x": 650,
+        "y": 1980,
+        "type": "port"
       }
     ]
   },
@@ -245,7 +252,7 @@
     "settlements": [
       {
         "id": "the_wall_west_castle",
-        "name_tr": "Duvar Batı Kalesi",
+        "name_tr": "Shadow Tower",
         "x": 1183,
         "y": 637,
         "type": "fortress",
@@ -258,7 +265,7 @@
     "settlements": [
       {
         "id": "the_wall_east_settlement_1",
-        "name_tr": "Doğu Kalesi",
+        "name_tr": "Eastwatch-by-the-Sea",
         "x": 1464,
         "y": 599,
         "type": "fortress",
@@ -431,7 +438,7 @@
       },
       {
         "id": "the_twins_port",
-        "name_tr": "Liman",
+        "name_tr": "Seagard",
         "x": 916,
         "y": 1850,
         "type": "port"
@@ -546,6 +553,13 @@
         "y": 2441,
         "type": "city",
         "is_center": true
+      },
+      {
+        "id": "bitterbridge",
+        "name_tr": "Bitterbridge",
+        "x": 1195,
+        "y": 2385,
+        "type": "town"
       }
     ]
   },
@@ -724,6 +738,13 @@
         "y": 1608,
         "type": "town",
         "is_center": true
+      },
+      {
+        "id": "greywater_watch",
+        "name_tr": "Greywater Watch",
+        "x": 1080,
+        "y": 1655,
+        "type": "fortress"
       }
     ]
   },
@@ -940,6 +961,13 @@
         "y": 3185,
         "type": "port",
         "is_center": true
+      },
+      {
+        "id": "planky_town",
+        "name_tr": "Planky Town",
+        "x": 1570,
+        "y": 3135,
+        "type": "port"
       }
     ]
   },
@@ -1007,7 +1035,7 @@
     "settlements": [
       {
         "id": "castle_black_main",
-        "name_tr": "Kara Kale",
+        "name_tr": "Castle Black",
         "x": 1368,
         "y": 640,
         "type": "fortress",
@@ -1201,6 +1229,13 @@
         "y": 1880,
         "type": "port",
         "is_center": true
+      },
+      {
+        "id": "ten_towers",
+        "name_tr": "Ten Towers",
+        "x": 835,
+        "y": 1835,
+        "type": "fortress"
       }
     ]
   },

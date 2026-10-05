@@ -29,11 +29,11 @@
     "cloth": 120,
     "research": {
       "completed": {
-        "iron_weapons": true,
         "feudal_levies": true,
-        "ranger_scouting": true,
-        "old_gods_customs": true,
+        "iron_weapons": true,
         "manorial_agriculture": true,
+        "old_gods_customs": true,
+        "ranger_scouting": true,
         "winter_stores": true
       },
       "active_id": "",
@@ -91,13 +91,13 @@
     "cloth": 450,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "feudal_levies": true,
         "castle_steel": true,
-        "siegecraft": true,
+        "feudal_levies": true,
+        "guild_charters": true,
+        "iron_weapons": true,
         "manorial_agriculture": true,
         "royal_mint": true,
-        "guild_charters": true
+        "siegecraft": true
       },
       "active_id": "",
       "turns_left": 0
@@ -155,13 +155,13 @@
     "cloth": 300,
     "research": {
       "completed": {
+        "castle_engineering": true,
+        "castle_steel": true,
         "feudal_levies": true,
         "iron_weapons": true,
-        "castle_steel": true,
-        "siegecraft": true,
-        "castle_engineering": true,
         "manorial_agriculture": true,
-        "royal_mint": true
+        "royal_mint": true,
+        "siegecraft": true
       },
       "active_id": "",
       "turns_left": 0
@@ -210,10 +210,10 @@
     "cloth": 100,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "shipwrights": true,
         "coastal_navigation": true,
-        "drowned_god_rites": true
+        "drowned_god_rites": true,
+        "iron_weapons": true,
+        "shipwrights": true
       },
       "active_id": "",
       "turns_left": 0
@@ -262,11 +262,11 @@
     "cloth": 250,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "feudal_levies": true,
         "battlefield_drills": true,
         "castle_steel": true,
-        "chivalry": true
+        "chivalry": true,
+        "feudal_levies": true,
+        "iron_weapons": true
       },
       "active_id": "",
       "turns_left": 0
@@ -311,10 +311,10 @@
     "cloth": 60,
     "research": {
       "completed": {
-        "shipwrights": true,
         "coastal_navigation": true,
+        "drowned_god_rites": true,
         "longship_raiding": true,
-        "drowned_god_rites": true
+        "shipwrights": true
       },
       "active_id": "",
       "turns_left": 0
@@ -363,10 +363,10 @@
     "cloth": 550,
     "research": {
       "completed": {
-        "manorial_agriculture": true,
-        "watermills": true,
-        "royal_mint": true,
         "guild_charters": true,
+        "manorial_agriculture": true,
+        "royal_mint": true,
+        "watermills": true,
         "winter_stores": true
       },
       "active_id": "",
@@ -416,11 +416,11 @@
     "cloth": 220,
     "research": {
       "completed": {
+        "battlefield_drills": true,
         "feudal_levies": true,
         "iron_weapons": true,
-        "battlefield_drills": true,
-        "ranger_scouting": true,
-        "manorial_agriculture": true
+        "manorial_agriculture": true,
+        "ranger_scouting": true
       },
       "active_id": "",
       "turns_left": 0
@@ -523,13 +523,13 @@
     "cloth": 70,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "feudal_levies": true,
-        "castle_steel": true,
-        "siegecraft": true,
         "castle_engineering": true,
+        "castle_steel": true,
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "old_gods_customs": true,
         "ranger_scouting": true,
-        "old_gods_customs": true
+        "siegecraft": true
       },
       "active_id": "",
       "turns_left": 0
@@ -573,13 +573,13 @@
     "cloth": 240,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "feudal_levies": true,
         "battlefield_drills": true,
+        "castle_engineering": true,
         "castle_steel": true,
         "chivalry": true,
-        "siegecraft": true,
-        "castle_engineering": true
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "siegecraft": true
       },
       "active_id": "",
       "turns_left": 0
@@ -628,13 +628,13 @@
     "cloth": 160,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "feudal_levies": true,
-        "castle_steel": true,
-        "siegecraft": true,
         "castle_engineering": true,
+        "castle_steel": true,
+        "feudal_levies": true,
         "heraldry": true,
-        "raven_network": true
+        "iron_weapons": true,
+        "raven_network": true,
+        "siegecraft": true
       },
       "active_id": "",
       "turns_left": 0
@@ -690,8 +690,8 @@
     "research": {
       "completed": {
         "feudal_levies": true,
-        "ranger_scouting": true,
-        "old_gods_customs": true
+        "old_gods_customs": true,
+        "ranger_scouting": true
       },
       "active_id": "",
       "turns_left": 0
@@ -748,12 +748,12 @@
     "cloth": 70,
     "research": {
       "completed": {
-        "iron_weapons": true,
-        "feudal_levies": true,
-        "castle_steel": true,
-        "siegecraft": true,
         "castle_engineering": true,
-        "ranger_scouting": true
+        "castle_steel": true,
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "ranger_scouting": true,
+        "siegecraft": true
       },
       "active_id": "",
       "turns_left": 0
@@ -806,13 +806,13 @@
     "cloth": 850,
     "research": {
       "completed": {
-        "shipwrights": true,
         "coastal_navigation": true,
-        "longship_raiding": true,
         "fleet_battle_tactics": true,
+        "guild_charters": true,
+        "longship_raiding": true,
         "manorial_agriculture": true,
         "royal_mint": true,
-        "guild_charters": true
+        "shipwrights": true
       },
       "active_id": "",
       "turns_left": 0
@@ -899,20 +899,20 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 12000,
-    "grain": 3000,
-    "iron": 400,
-    "timber": 350,
-    "stone": 200,
-    "spice": 700,
-    "cloth": 600,
+    "gold": 15000,
+    "grain": 4500,
+    "iron": 700,
+    "timber": 550,
+    "stone": 350,
+    "spice": 850,
+    "cloth": 800,
     "research": {
       "completed": {
+        "coastal_navigation": true,
+        "guild_charters": true,
         "manorial_agriculture": true,
         "royal_mint": true,
-        "guild_charters": true,
-        "shipwrights": true,
-        "coastal_navigation": true
+        "shipwrights": true
       },
       "active_id": "",
       "turns_left": 0

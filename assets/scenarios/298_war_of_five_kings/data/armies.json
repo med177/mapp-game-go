@@ -292,9 +292,18 @@
     "owner_id": "stark",
     "region_id": "moat_cailin",
     "units": [
-      { "type_id": "northern_shieldmen", "count": 3 },
-      { "type_id": "infantry", "count": 3 },
-      { "type_id": "militia", "count": 4 }
+      {
+        "type_id": "northern_shieldmen",
+        "count": 3
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
     ]
   },
   {
@@ -302,9 +311,18 @@
     "owner_id": "lannister",
     "region_id": "lannisport",
     "units": [
-      { "type_id": "heavy_cavalry", "count": 2 },
-      { "type_id": "elite_infantry", "count": 3 },
-      { "type_id": "infantry", "count": 5 }
+      {
+        "type_id": "heavy_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "elite_infantry",
+        "count": 3
+      },
+      {
+        "type_id": "infantry",
+        "count": 5
+      }
     ]
   },
   {
@@ -312,9 +330,18 @@
     "owner_id": "baratheon_king",
     "region_id": "crownlands",
     "units": [
-      { "type_id": "elite_infantry", "count": 2 },
-      { "type_id": "infantry", "count": 5 },
-      { "type_id": "militia", "count": 5 }
+      {
+        "type_id": "elite_infantry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "militia",
+        "count": 5
+      }
     ]
   },
   {
@@ -322,9 +349,18 @@
     "owner_id": "baratheon_dragonstone",
     "region_id": "new_region_60",
     "units": [
-      { "type_id": "elite_infantry", "count": 2 },
-      { "type_id": "infantry", "count": 3 },
-      { "type_id": "militia", "count": 2 }
+      {
+        "type_id": "elite_infantry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
     ]
   },
   {
@@ -332,8 +368,14 @@
     "owner_id": "targaryen",
     "region_id": "pentos_region",
     "units": [
-      { "type_id": "unsullied", "count": 3 },
-      { "type_id": "dothraki_horse_lords", "count": 2 }
+      {
+        "type_id": "unsullied",
+        "count": 3
+      },
+      {
+        "type_id": "dothraki_horse_lords",
+        "count": 2
+      }
     ]
   },
   {
@@ -341,9 +383,18 @@
     "owner_id": "greyjoy",
     "region_id": "great_wyk",
     "units": [
-      { "type_id": "ironborn_reavers", "count": 3 },
-      { "type_id": "infantry", "count": 3 },
-      { "type_id": "militia", "count": 3 }
+      {
+        "type_id": "ironborn_reavers",
+        "count": 3
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
     ]
   },
   {
@@ -351,9 +402,18 @@
     "owner_id": "tyrell",
     "region_id": "oldtown",
     "units": [
-      { "type_id": "heavy_cavalry", "count": 2 },
-      { "type_id": "infantry", "count": 4 },
-      { "type_id": "militia", "count": 4 }
+      {
+        "type_id": "heavy_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
     ]
   },
   {
@@ -361,9 +421,18 @@
     "owner_id": "martell",
     "region_id": "yronwood",
     "units": [
-      { "type_id": "heavy_cavalry", "count": 2 },
-      { "type_id": "infantry", "count": 3 },
-      { "type_id": "militia", "count": 4 }
+      {
+        "type_id": "heavy_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
     ]
   },
   {
@@ -371,9 +440,18 @@
     "owner_id": "arryn",
     "region_id": "gulltown",
     "units": [
-      { "type_id": "vale_knights", "count": 2 },
-      { "type_id": "infantry", "count": 4 },
-      { "type_id": "militia", "count": 3 }
+      {
+        "type_id": "vale_knights",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
     ]
   },
   {
@@ -381,9 +459,18 @@
     "owner_id": "tully",
     "region_id": "harrenhal",
     "units": [
-      { "type_id": "elite_infantry", "count": 1 },
-      { "type_id": "infantry", "count": 4 },
-      { "type_id": "militia", "count": 4 }
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
     ]
   },
   {
@@ -391,9 +478,18 @@
     "owner_id": "bolton",
     "region_id": "the_dreadfort",
     "units": [
-      { "type_id": "elite_infantry", "count": 1 },
-      { "type_id": "infantry", "count": 4 },
-      { "type_id": "militia", "count": 3 }
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
     ]
   },
   {
@@ -401,9 +497,18 @@
     "owner_id": "nights_watch",
     "region_id": "the_wall_east",
     "units": [
-      { "type_id": "nights_watch_rangers", "count": 3 },
-      { "type_id": "infantry", "count": 3 },
-      { "type_id": "militia", "count": 2 }
+      {
+        "type_id": "nights_watch_rangers",
+        "count": 3
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
     ]
   },
   {
@@ -411,9 +516,18 @@
     "owner_id": "free_folk",
     "region_id": "beyond_the_wall",
     "units": [
-      { "type_id": "wildling_raiders", "count": 4 },
-      { "type_id": "infantry", "count": 2 },
-      { "type_id": "militia", "count": 2 }
+      {
+        "type_id": "wildling_raiders",
+        "count": 4
+      },
+      {
+        "type_id": "infantry",
+        "count": 2
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
     ]
   },
   {
@@ -421,9 +535,18 @@
     "owner_id": "braavos",
     "region_id": "braavos",
     "units": [
-      { "type_id": "elite_infantry", "count": 1 },
-      { "type_id": "infantry", "count": 3 },
-      { "type_id": "militia", "count": 3 }
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 3
+      }
     ]
   },
   {
@@ -431,8 +554,14 @@
     "owner_id": "brotherhood_without_banners",
     "region_id": "the_hollow_hill",
     "units": [
-      { "type_id": "infantry", "count": 3 },
-      { "type_id": "militia", "count": 4 }
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
     ]
   },
   {
@@ -440,7 +569,46 @@
     "owner_id": "baratheon_stormsend",
     "region_id": "stormlands",
     "units": [
-      { "type_id": "heavy_cavalry", "count": 2 },
+      {
+        "type_id": "heavy_cavalry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_free_cities_1",
+    "owner_id": "free_cities",
+    "region_id": "essos_free_cities",
+    "units": [
+      { "type_id": "elite_infantry", "count": 1 },
+      { "type_id": "infantry", "count": 4 },
+      { "type_id": "militia", "count": 4 }
+    ]
+  },
+  {
+    "id": "army_free_cities_2",
+    "owner_id": "free_cities",
+    "region_id": "myr_region",
+    "units": [
+      { "type_id": "elite_infantry", "count": 1 },
+      { "type_id": "infantry", "count": 3 },
+      { "type_id": "militia", "count": 5 }
+    ]
+  },
+  {
+    "id": "army_free_cities_3",
+    "owner_id": "free_cities",
+    "region_id": "meereen",
+    "units": [
+      { "type_id": "elite_infantry", "count": 2 },
       { "type_id": "infantry", "count": 4 },
       { "type_id": "militia", "count": 4 }
     ]

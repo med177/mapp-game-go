@@ -43,12 +43,63 @@
   "factions": [
     {
       "faction_id": "stark",
-      "profile": "northern_king",
+      "profile": "northern_revenge",
+      "expansion_targets": [
+        "lannister",
+        "bolton",
+        "greyjoy"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "winterfell_region",
+          "value": 100
+        },
+        {
+          "region_id": "the_neck",
+          "value": 95
+        },
+        {
+          "region_id": "moat_cailin",
+          "value": 90
+        },
+        {
+          "region_id": "harrenhal",
+          "value": 80
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 100
+        }
+      ],
       "objectives": [
+        {
+          "id": "hold_the_north",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "winterfell_region",
+              "value": 100
+            },
+            {
+              "region_id": "the_neck",
+              "value": 95
+            }
+          ],
+          "priority": 100,
+          "commitment": 92,
+          "readiness_regions": [
+            "winterfell_region",
+            "moat_cailin"
+          ]
+        },
         {
           "id": "avenge_ned",
           "kind": "expand",
           "territorial_claims": [
+            {
+              "region_id": "harrenhal",
+              "value": 88
+            },
             {
               "region_id": "kings_landing",
               "value": 100
@@ -57,7 +108,1036 @@
           "priority": 100,
           "commitment": 90,
           "readiness_regions": [
-            "winterfell_region"
+            "the_neck",
+            "harrenhal"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "lannister",
+      "profile": "western_throne_power",
+      "expansion_targets": [
+        "tully",
+        "baratheon_king",
+        "tyrell"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "casterly_rock",
+          "value": 100
+        },
+        {
+          "region_id": "lannisport",
+          "value": 100
+        },
+        {
+          "region_id": "harrenhal",
+          "value": 95
+        },
+        {
+          "region_id": "riverrun",
+          "value": 90
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 90
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_the_westerlands",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "casterly_rock",
+              "value": 100
+            },
+            {
+              "region_id": "lannisport",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88,
+          "readiness_regions": [
+            "casterly_rock",
+            "lannisport"
+          ]
+        },
+        {
+          "id": "break_the_riverlands",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "riverrun",
+              "value": 95
+            },
+            {
+              "region_id": "harrenhal",
+              "value": 95
+            }
+          ],
+          "priority": 96,
+          "commitment": 88,
+          "readiness_regions": [
+            "golden_tooth",
+            "harrenhal"
+          ]
+        },
+        {
+          "id": "hold_the_iron_throne",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "kings_landing",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 94,
+          "readiness_regions": [
+            "harrenhal"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "baratheon_king",
+      "profile": "lannister_backed_throne",
+      "expansion_targets": [
+        "stark",
+        "tully",
+        "baratheon_dragonstone"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "kings_landing",
+          "value": 100
+        },
+        {
+          "region_id": "storm_end",
+          "value": 85
+        },
+        {
+          "region_id": "dragonstone",
+          "value": 90
+        }
+      ],
+      "objectives": [
+        {
+          "id": "defend_the_capital",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "kings_landing",
+              "value": 100
+            },
+            {
+              "region_id": "crownlands",
+              "value": 95
+            }
+          ],
+          "priority": 100,
+          "commitment": 96,
+          "readiness_regions": [
+            "kings_landing",
+            "crownlands"
+          ]
+        },
+        {
+          "id": "crush_the_rebellion",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "harrenhal",
+              "value": 78
+            },
+            {
+              "region_id": "winterfell_region",
+              "value": 70
+            }
+          ],
+          "priority": 78,
+          "commitment": 68,
+          "readiness_regions": [
+            "kings_landing",
+            "harrenhal"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "baratheon_dragonstone",
+      "profile": "stannis_claimant",
+      "expansion_targets": [
+        "baratheon_king",
+        "lannister",
+        "baratheon_stormsend"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "dragonstone",
+          "value": 100
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 100
+        },
+        {
+          "region_id": "storm_end",
+          "value": 90
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_dragonstone",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "dragonstone",
+              "value": 100
+            },
+            {
+              "region_id": "crackclaw_point",
+              "value": 85
+            }
+          ],
+          "priority": 96,
+          "commitment": 88,
+          "readiness_regions": [
+            "dragonstone"
+          ]
+        },
+        {
+          "id": "claim_the_throne",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "kings_landing",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 94,
+          "readiness_regions": [
+            "dragonstone",
+            "crownlands"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "baratheon_stormsend",
+      "profile": "stormlands_independence",
+      "expansion_targets": [
+        "baratheon_king",
+        "lannister",
+        "martell"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "storm_end",
+          "value": 100
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 90
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_the_stormlands",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "storm_end",
+              "value": 100
+            },
+            {
+              "region_id": "stormlands",
+              "value": 96
+            }
+          ],
+          "priority": 100,
+          "commitment": 90,
+          "readiness_regions": [
+            "storm_end",
+            "stormlands"
+          ]
+        },
+        {
+          "id": "press_the_capital",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "kings_landing",
+              "value": 82
+            }
+          ],
+          "priority": 76,
+          "commitment": 62,
+          "readiness_regions": [
+            "stormlands",
+            "tumbleton"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "greyjoy",
+      "profile": "ironborn_reaving",
+      "naval_focus": true,
+      "expansion_targets": [
+        "stark",
+        "lannister",
+        "tyrell"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "pyke",
+          "value": 100
+        },
+        {
+          "region_id": "moat_cailin",
+          "value": 85
+        },
+        {
+          "region_id": "lannisport",
+          "value": 75
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_the_iron_islands",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "pyke",
+              "value": 100
+            },
+            {
+              "region_id": "great_wyk",
+              "value": 95
+            }
+          ],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": [
+            "pyke"
+          ]
+        },
+        {
+          "id": "raid_the_north_and_west",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "moat_cailin",
+              "value": 90
+            },
+            {
+              "region_id": "lannisport",
+              "value": 78
+            }
+          ],
+          "priority": 86,
+          "commitment": 70,
+          "readiness_regions": [
+            "pyke",
+            "cape_kraken"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "tyrell",
+      "profile": "reach_power_and_alliance",
+      "expansion_targets": [
+        "baratheon_king",
+        "lannister",
+        "martell"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "highgarden",
+          "value": 100
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 85
+        },
+        {
+          "region_id": "oldtown",
+          "value": 80
+        }
+      ],
+      "objectives": [
+        {
+          "id": "secure_the_reach",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "highgarden",
+              "value": 100
+            },
+            {
+              "region_id": "oldtown",
+              "value": 95
+            }
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "highgarden",
+            "oldtown"
+          ]
+        },
+        {
+          "id": "advance_on_kings_landing",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "kings_landing",
+              "value": 85
+            }
+          ],
+          "priority": 72,
+          "commitment": 54,
+          "readiness_regions": [
+            "highgarden",
+            "reach"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "martell",
+      "profile": "dornish_revenge",
+      "expansion_targets": [
+        "baratheon_stormsend",
+        "tyrell",
+        "baratheon_king"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "sunspear",
+          "value": 100
+        },
+        {
+          "region_id": "the_boneway",
+          "value": 90
+        },
+        {
+          "region_id": "storm_end",
+          "value": 75
+        },
+        {
+          "region_id": "oldtown",
+          "value": 65
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_dorne",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "sunspear",
+              "value": 100
+            },
+            {
+              "region_id": "the_boneway",
+              "value": 95
+            }
+          ],
+          "priority": 100,
+          "commitment": 90,
+          "readiness_regions": [
+            "sunspear",
+            "the_boneway"
+          ]
+        },
+        {
+          "id": "avenge_elia",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "storm_end",
+              "value": 82
+            },
+            {
+              "region_id": "kings_landing",
+              "value": 72
+            }
+          ],
+          "priority": 82,
+          "commitment": 68,
+          "readiness_regions": [
+            "storm_end",
+            "the_boneway"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "targaryen",
+      "profile": "exiled_dragon_restoration",
+      "naval_focus": true,
+      "expansion_targets": [
+        "baratheon_king",
+        "lannister",
+        "free_cities"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "pentos_region",
+          "value": 100
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 100
+        },
+        {
+          "region_id": "dragonstone",
+          "value": 95
+        }
+      ],
+      "objectives": [
+        {
+          "id": "survive_in_exile",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "pentos_region",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": [
+            "pentos_region"
+          ]
+        },
+        {
+          "id": "restore_the_targaryen_throne",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "dragonstone",
+              "value": 95
+            },
+            {
+              "region_id": "kings_landing",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 92,
+          "readiness_regions": [
+            "pentos_region",
+            "dragonstone"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "nights_watch",
+      "profile": "wall_defense",
+      "expansion_targets": [
+        "free_folk"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "the_wall_west",
+          "value": 100
+        },
+        {
+          "region_id": "the_wall_east",
+          "value": 100
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_the_wall",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "the_wall_west",
+              "value": 100
+            },
+            {
+              "region_id": "the_wall_east",
+              "value": 100
+            },
+            {
+              "region_id": "the_gift",
+              "value": 90
+            }
+          ],
+          "priority": 100,
+          "commitment": 100,
+          "readiness_regions": [
+            "the_wall_west",
+            "the_wall_east"
+          ]
+        },
+        {
+          "id": "push_back_the_wildlings",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "beyond_the_wall",
+              "value": 75
+            }
+          ],
+          "priority": 70,
+          "commitment": 48,
+          "readiness_regions": [
+            "the_wall_west",
+            "the_wall_east"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "arryn",
+      "profile": "vale_isolation_and_defense",
+      "expansion_targets": [
+        "tully",
+        "lannister",
+        "baratheon_king"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "the_eyrie",
+          "value": 100
+        },
+        {
+          "region_id": "the_mountains_of_the_moon",
+          "value": 90
+        },
+        {
+          "region_id": "harrenhal",
+          "value": 80
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_the_vale",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "the_eyrie",
+              "value": 100
+            },
+            {
+              "region_id": "the_mountains_of_the_moon",
+              "value": 95
+            }
+          ],
+          "priority": 100,
+          "commitment": 90,
+          "readiness_regions": [
+            "the_eyrie",
+            "the_mountains_of_the_moon"
+          ]
+        },
+        {
+          "id": "protect_the_riverlands",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "harrenhal",
+              "value": 80
+            }
+          ],
+          "priority": 62,
+          "commitment": 42,
+          "readiness_regions": [
+            "the_fingers",
+            "harrenhal"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "tully",
+      "profile": "riverlands_resistance",
+      "expansion_targets": [
+        "lannister",
+        "baratheon_king",
+        "bolton"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "riverlands",
+          "value": 100
+        },
+        {
+          "region_id": "riverrun",
+          "value": 100
+        },
+        {
+          "region_id": "harrenhal",
+          "value": 100
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 70
+        }
+      ],
+      "objectives": [
+        {
+          "id": "defend_the_riverlands",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "riverlands",
+              "value": 100
+            },
+            {
+              "region_id": "riverrun",
+              "value": 100
+            },
+            {
+              "region_id": "the_twins",
+              "value": 90
+            }
+          ],
+          "priority": 100,
+          "commitment": 94,
+          "readiness_regions": [
+            "riverrun",
+            "harrenhal"
+          ]
+        },
+        {
+          "id": "retake_harrenhal",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "harrenhal",
+              "value": 100
+            }
+          ],
+          "priority": 94,
+          "commitment": 86,
+          "readiness_regions": [
+            "riverrun",
+            "the_twins"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "free_folk",
+      "profile": "wildling_invasion",
+      "expansion_targets": [
+        "nights_watch",
+        "stark",
+        "bolton"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "beyond_the_wall",
+          "value": 100
+        },
+        {
+          "region_id": "the_wall_west",
+          "value": 90
+        },
+        {
+          "region_id": "the_wall_east",
+          "value": 90
+        },
+        {
+          "region_id": "winterfell_region",
+          "value": 75
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_beyond_the_wall",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "beyond_the_wall",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 84,
+          "readiness_regions": [
+            "beyond_the_wall"
+          ]
+        },
+        {
+          "id": "break_the_wall",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "the_wall_west",
+              "value": 95
+            },
+            {
+              "region_id": "the_wall_east",
+              "value": 95
+            },
+            {
+              "region_id": "winterfell_region",
+              "value": 78
+            }
+          ],
+          "priority": 92,
+          "commitment": 82,
+          "readiness_regions": [
+            "beyond_the_wall",
+            "the_wall_west"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "bolton",
+      "profile": "dreadfort_opportunist",
+      "expansion_targets": [
+        "stark",
+        "tully",
+        "nights_watch"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "the_dreadfort",
+          "value": 100
+        },
+        {
+          "region_id": "winterfell_region",
+          "value": 80
+        },
+        {
+          "region_id": "the_neck",
+          "value": 85
+        },
+        {
+          "region_id": "harrenhal",
+          "value": 60
+        }
+      ],
+      "objectives": [
+        {
+          "id": "hold_the_dreadfort",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "the_dreadfort",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 86,
+          "readiness_regions": [
+            "the_dreadfort"
+          ]
+        },
+        {
+          "id": "seize_the_north",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "winterfell_region",
+              "value": 92
+            },
+            {
+              "region_id": "the_neck",
+              "value": 88
+            }
+          ],
+          "priority": 90,
+          "commitment": 80,
+          "readiness_regions": [
+            "the_dreadfort",
+            "the_neck"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "braavos",
+      "profile": "braavosi_trade_and_restoration",
+      "naval_focus": true,
+      "expansion_targets": [
+        "targaryen",
+        "free_cities"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "braavos",
+          "value": 100
+        },
+        {
+          "region_id": "pentos_region",
+          "value": 75
+        }
+      ],
+      "objectives": [
+        {
+          "id": "protect_braavos",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "braavos",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 82,
+          "readiness_regions": [
+            "braavos"
+          ]
+        },
+        {
+          "id": "control_narrow_sea_trade",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "pentos_region",
+              "value": 72
+            }
+          ],
+          "priority": 58,
+          "commitment": 38,
+          "readiness_regions": [
+            "braavos"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "brotherhood_without_banners",
+      "profile": "riverlands_peasant_resistance",
+      "expansion_targets": [
+        "lannister",
+        "bolton",
+        "baratheon_king"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "the_hollow_hill",
+          "value": 100
+        },
+        {
+          "region_id": "riverlands",
+          "value": 70
+        },
+        {
+          "region_id": "harrenhal",
+          "value": 80
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 60
+        }
+      ],
+      "objectives": [
+        {
+          "id": "protect_the_brotherhood",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "the_hollow_hill",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 88,
+          "readiness_regions": [
+            "the_hollow_hill"
+          ]
+        },
+        {
+          "id": "harry_the_occupiers",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "harrenhal",
+              "value": 88
+            },
+            {
+              "region_id": "riverlands",
+              "value": 78
+            }
+          ],
+          "priority": 84,
+          "commitment": 68,
+          "readiness_regions": [
+            "the_hollow_hill",
+            "riverlands"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "free_cities",
+      "profile": "free_cities_commercial_consolidation",
+      "naval_focus": true,
+      "territorial_claims": [
+        {
+          "region_id": "essos_free_cities",
+          "value": 100
+        },
+        {
+          "region_id": "norvos",
+          "value": 90
+        },
+        {
+          "region_id": "myr_region",
+          "value": 85
+        }
+      ],
+      "objectives": [
+        {
+          "id": "secure_the_free_cities",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "essos_free_cities",
+              "value": 100
+            },
+            {
+              "region_id": "norvos",
+              "value": 90
+            },
+            {
+              "region_id": "myr_region",
+              "value": 85
+            }
+          ],
+          "priority": 100,
+          "commitment": 80,
+          "readiness_regions": [
+            "essos_free_cities",
+            "norvos",
+            "myr_region"
+          ]
+        },
+        {
+          "id": "protect_eastern_trade",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "braavos",
+              "value": 65
+            },
+            {
+              "region_id": "pentos_region",
+              "value": 60
+            }
+          ],
+          "priority": 54,
+          "commitment": 34,
+          "readiness_regions": [
+            "myr_region",
+            "essos_free_cities"
           ]
         }
       ]
