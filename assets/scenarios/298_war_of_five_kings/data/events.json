@@ -5,7 +5,7 @@
     "desc_tr": "Kral Robert Baratheon av sırasında öldü. Taht üzerinde iddia sahibi krallar kılıçlarını çekti. Beş Kralın Savaşı başlıyor!",
     "probability": 100,
     "min_turn": 1,
-    "target": "all_factions",
+    "target": "specific_faction",
     "sat_delta": -10,
     "gold_delta": 0,
     "grain_delta": 0,
