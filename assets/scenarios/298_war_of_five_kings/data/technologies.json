@@ -266,7 +266,7 @@
     "gold_cost": 1000,
     "id": "dragon_lore",
     "name_tr": "Valyria Ejderha Bilgeliği",
-    "requires": [],
+    "requires": ["heraldry"],
     "turns_required": 10
   }
 ]

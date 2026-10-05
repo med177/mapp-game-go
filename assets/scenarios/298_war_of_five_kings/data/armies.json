@@ -75,10 +75,6 @@
       {
         "type_id": "unsullied",
         "count": 6
-      },
-      {
-        "type_id": "dragon",
-        "count": 1
       }
     ]
   },
@@ -259,12 +255,16 @@
     "region_id": "the_hollow_hill",
     "units": [
       {
+        "type_id": "elite_infantry",
+        "count": 2
+      },
+      {
         "type_id": "infantry",
         "count": 5
       },
       {
         "type_id": "militia",
-        "count": 5
+        "count": 3
       }
     ]
   },
@@ -555,12 +555,16 @@
     "region_id": "the_hollow_hill",
     "units": [
       {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
         "type_id": "infantry",
         "count": 3
       },
       {
         "type_id": "militia",
-        "count": 4
+        "count": 3
       }
     ]
   },

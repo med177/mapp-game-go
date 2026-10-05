@@ -63,7 +63,7 @@
   },
   {
     "id": "elite_infantry",
-    "blocked_factions": ["free_folk", "targaryen", "night's_watch", "greyjoy"],
+    "blocked_factions": ["free_folk", "targaryen", "nights_watch", "greyjoy"],
     "image": "army/household_guard.png",
     "name": "Household Guard",
     "name_tr": "Piyadeler",
@@ -490,6 +490,7 @@
   },
   {
     "id": "transport",
+    "blocked_factions": ["free_folk"],
     "image": "army/ship_transport.png",
     "name": "Transport Ship",
     "name_tr": "Nakliye Gemisi",
@@ -552,6 +553,7 @@
     "movement_points": 4
   },{
     "id": "warship",
+    "blocked_factions": ["targaryen", "free_folk", "nights_watch"],
     "image": "army/ship_war_galley.png",
     "name": "Warship",
     "name_tr": "Savaş Gemisi",

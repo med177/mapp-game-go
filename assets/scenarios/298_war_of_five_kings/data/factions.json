@@ -87,7 +87,7 @@
     "is_eliminated": false,
     "capital_settlement_id": "casterly_rock_main",
     "gold": 15000,
-    "grain": 4200,
+    "grain": 3000,
     "iron": 750,
     "timber": 250,
     "stone": 1400,
@@ -218,8 +218,10 @@
     "cloth": 100,
     "research": {
       "completed": {
+        "castle_steel": true,
         "coastal_navigation": true,
         "drowned_god_rites": true,
+        "chivalry": true,
         "iron_weapons": true,
         "shipwrights": true
       },
@@ -369,7 +371,7 @@
     "is_eliminated": false,
     "capital_settlement_id": "highgarden_main",
     "gold": 9500,
-    "grain": 14000,
+    "grain": 10000,
     "iron": 300,
     "timber": 500,
     "stone": 900,
@@ -377,7 +379,10 @@
     "cloth": 550,
     "research": {
       "completed": {
+        "chivalry": true,
+        "feudal_levies": true,
         "guild_charters": true,
+        "iron_weapons": true,
         "manorial_agriculture": true,
         "royal_mint": true,
         "watermills": true,
@@ -491,7 +496,6 @@
     "cloth": 400,
     "research": {
       "completed": {
-        "dragon_lore": true,
         "heraldry": true,
         "raven_network": true
       },
@@ -888,7 +892,9 @@
     "cloth": 35,
     "research": {
       "completed": {
-        "iron_weapons": true
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "ranger_scouting": true
       },
       "active_id": "",
       "turns_left": 0
