@@ -16,7 +16,60 @@
     "historical_year": 298,
     "historical_month": 3,
     "one_shot": true,
-    "affected_faction": "baratheon_king"
+    "affected_faction": "baratheon_king",
+    "choice_prompt_tr": "Robert'in ölümünden sonra Baratheon hanedanının geleceği nasıl şekillensin?",
+    "choices": [
+      {
+        "id": "support_joffrey_claim",
+        "label_tr": "Joffrey'nin taç iddiasını destekle",
+        "desc_tr": "Kral'ın Şehri'ndeki Baratheon yönetimi Demir Taht'ı korumak için savaşır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_king",
+          "political_transformation_id": "baratheon_claimants_civil_war",
+          "player_faction_id": "baratheon_king",
+          "set_flags": [
+            "baratheon_claimants_war_started"
+          ]
+        }
+      },
+      {
+        "id": "support_stannis_claim",
+        "label_tr": "Stannis'in taç iddiasını destekle",
+        "desc_tr": "Ejderha Kayası filosu ve Stannis'in orduları Demir Taht için harekete geçer.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_dragonstone",
+          "political_transformation_id": "baratheon_claimants_civil_war",
+          "player_faction_id": "baratheon_dragonstone",
+          "set_flags": [
+            "baratheon_claimants_war_started"
+          ]
+        }
+      },
+      {
+        "id": "support_renly_claim",
+        "label_tr": "Renly'nin taç iddiasını destekle",
+        "desc_tr": "Fırtına Burnu ve Tyrell ittifakı güneyden Demir Taht'a yürür.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_stormsend",
+          "political_transformation_id": "baratheon_claimants_civil_war",
+          "player_faction_id": "baratheon_stormsend",
+          "set_flags": [
+            "baratheon_claimants_war_started"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "baratheon_king",
+      "baratheon_dragonstone",
+      "baratheon_stormsend"
+    ]
   },
   {
     "id": "red_wedding_event",
@@ -39,6 +92,71 @@
     "requires_active_factions": [
       "stark",
       "lannister"
+    ],
+    "choice_prompt_tr": "Kuzey'in yönetimi Stark hanedanında mı kalmalı, yoksa Boltonlar kontrolü ele mi geçirmeli?",
+    "choices": [
+      {
+        "id": "bolton_usurpation_of_the_north",
+        "label_tr": "Boltonların Kuzey'i ele geçirmesine izin ver",
+        "desc_tr": "Kızıl Düğün'ün ardından Winterfell, Boyun ve Moat Cailin Boltonların eline geçer.",
+        "ai_weight": 4,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "political_transformation_id": "bolton_usurpation_of_the_north",
+          "player_faction_id": "bolton",
+          "set_flags": [
+            "bolton_usurpation_started"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "stark",
+      "bolton"
+    ]
+  },
+  {
+    "id": "targaryen_return_302",
+    "name_tr": "Targaryenlerin Westeros'a Dönüşü",
+    "desc_tr": "Daenerys Targaryen ejderhalarıyla birlikte Westeros'a döner. Eski hanedan Demir Taht üzerindeki hakkını yeniden ileri sürer.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 302,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "targaryen",
+    "requires_active_factions": [
+      "targaryen",
+      "baratheon_king"
+    ],
+    "choice_prompt_tr": "Targaryen hanedanı Demir Taht'ı geri almak için harekete geçsin mi?",
+    "choices": [
+      {
+        "id": "targaryen_restoration_of_the_iron_throne",
+        "label_tr": "Targaryen restorasyonunu ilan et",
+        "desc_tr": "Targaryen ve Baratheon kuvvetleri tek bir siyasi yapı altında birleşir; Demir Taht Targaryen hanedanına döner.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "targaryen",
+          "political_transformation_id": "targaryen_restoration_of_the_iron_throne",
+          "political_winner_faction_id": "targaryen",
+          "player_faction_id": "targaryen",
+          "set_flags": [
+            "targaryen_restoration_started"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "targaryen",
+      "baratheon_king"
     ]
   }
 ]

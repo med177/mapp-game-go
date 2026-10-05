@@ -26,5 +26,83 @@
       "relations": "restore_result_faction"
     },
     "description_tr": "Beş Kralın Savaşı'nın galibi Yedi Krallık üzerindeki mutlak hakimiyetini ilan eder."
+  },
+  {
+    "id": "baratheon_claimants_civil_war",
+    "type": "dynastic_civil_war",
+    "members": [
+      "baratheon_king",
+      "baratheon_dragonstone",
+      "baratheon_stormsend"
+    ],
+    "result_faction": "baratheon_king",
+    "trigger": {
+      "event_id": "death_of_robert_298",
+      "year": 298,
+      "month": 4
+    },
+    "region_assignments": {
+      "kings_landing": "baratheon_king",
+      "dragonstone": "baratheon_dragonstone",
+      "storm_end": "baratheon_stormsend"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "restore_result_faction"
+    },
+    "description_tr": "Robert Baratheon'un ölümünün ardından Stannis, Renly ve Joffrey aynı taç üzerinde hak iddia eder; Baratheon hanedanı üç rakip krallığa bölünür."
+  },
+  {
+    "id": "bolton_usurpation_of_the_north",
+    "type": "dynastic_civil_war",
+    "members": [
+      "stark",
+      "bolton"
+    ],
+    "result_faction": "stark",
+    "trigger": {
+      "event_id": "red_wedding_event",
+      "year": 299,
+      "month": 9
+    },
+    "region_assignments": {
+      "winterfell_region": "bolton",
+      "the_neck": "bolton",
+      "moat_cailin": "bolton",
+      "the_dreadfort": "bolton"
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "restore_result_faction"
+    },
+    "description_tr": "Kızıl Düğün'ün ardından Boltonlar Kuzey'deki Stark hâkimiyetini gasp eder; Winterfell, Boyun ve Moat Cailin Bolton yönetimine geçer."
+  },
+  {
+    "id": "targaryen_restoration_of_the_iron_throne",
+    "type": "reunification",
+    "members": [
+      "targaryen",
+      "baratheon_king"
+    ],
+    "result_faction": "targaryen",
+    "trigger": {
+      "event_id": "targaryen_return_302",
+      "year": 302,
+      "month": 6
+    },
+    "transfer": {
+      "regions": true,
+      "armies": true,
+      "navies": true,
+      "resources": true,
+      "relations": "merge"
+    },
+    "description_tr": "Targaryen hanedanı Westeros'a döner ve Demir Taht üzerindeki eski hanedan hâkimiyetini yeniden kurar."
   }
 ]

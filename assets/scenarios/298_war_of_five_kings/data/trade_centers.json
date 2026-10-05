@@ -11,41 +11,272 @@
     {
       "region_id": "kings_landing",
       "name_tr": "Kralın Şehri Ticaret Limanı",
+      "tier": "primary",
       "links": [
-        {
-          "region_id": "pentos_region",
-          "type": "sea"
-        }
+        { "region_id": "dragonstone", "type": "sea" },
+        { "region_id": "gulltown", "type": "sea" },
+        { "region_id": "oldtown", "type": "sea" },
+        { "region_id": "pentos_region", "type": "sea" }
       ],
-      "world_x": 650,
-      "world_y": 750,
-      "main_route": true,
       "source_goods": [
-        {
-          "good": "cloth",
-          "amount_per_turn": 5,
-          "gold_income_per_turn": 20
-        }
+        { "good": "cloth", "amount_per_turn": 5, "gold_income_per_turn": 20 }
       ]
     },
     {
       "region_id": "pentos_region",
       "name_tr": "Pentos Serbest Limanı",
+      "tier": "primary",
       "links": [
-        {
-          "region_id": "kings_landing",
-          "type": "sea"
-        }
+        { "region_id": "braavos", "type": "sea" },
+        { "region_id": "dragonstone", "type": "sea" },
+        { "region_id": "kings_landing", "type": "sea" },
+        { "region_id": "myr_region", "type": "sea" }
       ],
-      "world_x": 1100,
-      "world_y": 700,
-      "main_route": true,
       "source_goods": [
-        {
-          "good": "spice",
-          "amount_per_turn": 8,
-          "gold_income_per_turn": 30
-        }
+        { "good": "spice", "amount_per_turn": 8, "gold_income_per_turn": 30 }
+      ]
+    },
+    {
+      "region_id": "braavos",
+      "name_tr": "Braavos Demir Bankası Limanı",
+      "tier": "primary",
+      "links": [
+        { "region_id": "pentos_region", "type": "sea" },
+        { "region_id": "white_harbor", "type": "sea" }
+      ],
+      "source_goods": [
+        { "good": "cloth", "amount_per_turn": 5, "gold_income_per_turn": 18 }
+      ]
+    },
+    {
+      "region_id": "lannisport",
+      "name_tr": "Lannisport",
+      "tier": "primary",
+      "links": [
+        { "region_id": "casterly_rock", "type": "land" },
+        { "region_id": "highgarden", "type": "land" },
+        { "region_id": "oldtown", "type": "sea" },
+        { "region_id": "pyke", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "oldtown",
+      "name_tr": "Eski Şehir",
+      "tier": "primary",
+      "links": [
+        { "region_id": "highgarden", "type": "land" },
+        { "region_id": "kings_landing", "type": "sea" },
+        { "region_id": "lannisport", "type": "sea" },
+        { "region_id": "the_arbor", "type": "sea" }
+      ],
+      "source_goods": [
+        { "good": "spice", "amount_per_turn": 4, "gold_income_per_turn": 15 }
+      ]
+    },
+    {
+      "region_id": "casterly_rock",
+      "name_tr": "Casterly Kayası Hazinesi",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "lannisport", "type": "land" },
+        { "region_id": "highgarden", "type": "land" }
+      ]
+    },
+    {
+      "region_id": "highgarden",
+      "name_tr": "Yüksek Bahçe",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "lannisport", "type": "land" },
+        { "region_id": "oldtown", "type": "land" },
+        { "region_id": "the_arbor", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "the_arbor",
+      "name_tr": "Arbor Şarap Limanı",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "highgarden", "type": "sea" },
+        { "region_id": "oldtown", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "pyke",
+      "name_tr": "Pyke ve Lordsport",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "lannisport", "type": "sea" },
+        { "region_id": "white_harbor", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "dragonstone",
+      "name_tr": "Ejderha Kayası",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "kings_landing", "type": "sea" },
+        { "region_id": "pentos_region", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "gulltown",
+      "name_tr": "Martı Kasabası",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "kings_landing", "type": "sea" },
+        { "region_id": "saltpans", "type": "sea" },
+        { "region_id": "white_harbor", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "white_harbor",
+      "name_tr": "Beyaz Liman",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "braavos", "type": "sea" },
+        { "region_id": "gulltown", "type": "sea" },
+        { "region_id": "pyke", "type": "sea" },
+        { "region_id": "winterfell_region", "type": "land" }
+      ]
+    },
+    {
+      "region_id": "winterfell_region",
+      "name_tr": "Kışyarı",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "white_harbor", "type": "land" }
+      ]
+    },
+    {
+      "region_id": "saltpans",
+      "name_tr": "Tuz Tavaları",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "gulltown", "type": "sea" },
+        { "region_id": "the_twins", "type": "land" }
+      ]
+    },
+    {
+      "region_id": "myr_region",
+      "name_tr": "Myr",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "braavos", "type": "sea" },
+        { "region_id": "pentos_region", "type": "sea" },
+        { "region_id": "astapor", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "astapor",
+      "name_tr": "Astapor Köle Limanı",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "meereen", "type": "sea" },
+        { "region_id": "myr_region", "type": "sea" },
+        { "region_id": "yunkai", "type": "land" }
+      ]
+    },
+    {
+      "region_id": "yunkai",
+      "name_tr": "Yunkai",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "astapor", "type": "land" },
+        { "region_id": "meereen", "type": "land" }
+      ]
+    },
+    {
+      "region_id": "meereen",
+      "name_tr": "Meereen",
+      "tier": "primary",
+      "links": [
+        { "region_id": "astapor", "type": "sea" },
+        { "region_id": "yunkai", "type": "land" }
+      ],
+      "source_goods": [
+        { "good": "spice", "amount_per_turn": 7, "gold_income_per_turn": 24 }
+      ]
+    },
+    {
+      "region_id": "salt_shore",
+      "name_tr": "Tuz Kıyısı ve Planky Town",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "meereen", "type": "sea" },
+        { "region_id": "pentos_region", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "shield_islands",
+      "name_tr": "Kalkan Adaları",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "lannisport", "type": "sea" },
+        { "region_id": "pyke", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "brightwater_reach",
+      "name_tr": "Parlaksu Diyarı",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "highgarden", "type": "land" },
+        { "region_id": "oldtown", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "the_twins",
+      "name_tr": "İkizler Seagard Limanı",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "saltpans", "type": "land" },
+        { "region_id": "white_harbor", "type": "land" }
+      ]
+    },
+    {
+      "region_id": "cape_kraken",
+      "name_tr": "Kraken Burnu",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "pyke", "type": "sea" },
+        { "region_id": "white_harbor", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "harlaw",
+      "name_tr": "Harlaw",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "pyke", "type": "sea" },
+        { "region_id": "white_harbor", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "stony_shore",
+      "name_tr": "Taşlı Kıyı",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "white_harbor", "type": "sea" },
+        { "region_id": "pyke", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "tarth",
+      "name_tr": "Tarth",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "dragonstone", "type": "sea" },
+        { "region_id": "kings_landing", "type": "sea" }
+      ]
+    },
+    {
+      "region_id": "cape_wrath",
+      "name_tr": "Gazap Burnu",
+      "tier": "secondary",
+      "links": [
+        { "region_id": "oldtown", "type": "sea" },
+        { "region_id": "kings_landing", "type": "sea" }
       ]
     }
   ]
