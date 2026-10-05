@@ -44,10 +44,17 @@
       {
         "id": "storm_end_main",
         "name_tr": "Fırtına Burnu",
-        "x": 1585,
-        "y": 2620,
+        "x": 1606,
+        "y": 2633,
         "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "storm_end_port",
+        "name_tr": "Liman",
+        "x": 1567,
+        "y": 2648,
+        "type": "port"
       }
     ]
   },
@@ -57,10 +64,17 @@
       {
         "id": "sunspear_main",
         "name_tr": "Güneş Mızrağı",
-        "x": 1671,
-        "y": 3107,
+        "x": 1691,
+        "y": 3106,
         "type": "city",
         "is_center": true
+      },
+      {
+        "id": "sunspear_port",
+        "name_tr": "Liman",
+        "x": 1670,
+        "y": 3138,
+        "type": "port"
       }
     ]
   },
@@ -70,8 +84,8 @@
       {
         "id": "winterfell_main",
         "name_tr": "Kışyarı",
-        "x": 1117,
-        "y": 1103,
+        "x": 1125,
+        "y": 1111,
         "type": "city",
         "is_center": true
       }
@@ -83,10 +97,24 @@
       {
         "id": "kings_landing_main",
         "name_tr": "Kralın Şehri",
-        "x": 1389,
-        "y": 2371,
-        "type": "city",
+        "x": 1447,
+        "y": 2352,
+        "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "rosby",
+        "name_tr": "Rosby",
+        "x": 1443,
+        "y": 2269,
+        "type": "city"
+      },
+      {
+        "id": "kings_landing_port",
+        "name_tr": "Liman",
+        "x": 1435,
+        "y": 2367,
+        "type": "port"
       }
     ]
   },
@@ -96,8 +124,8 @@
       {
         "id": "casterly_rock_main",
         "name_tr": "Casterly Kayası",
-        "x": 723,
-        "y": 2220,
+        "x": 712,
+        "y": 2237,
         "type": "fortress",
         "is_center": true
       }
@@ -105,7 +133,16 @@
   },
   {
     "region_id": "crag",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "crag_settlement_1",
+        "name_tr": "The Crag",
+        "x": 800,
+        "y": 2074,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "dragonstone",
@@ -113,10 +150,17 @@
       {
         "id": "dragonstone_main",
         "name_tr": "Ejderha Kayası",
-        "x": 1693,
-        "y": 2219,
+        "x": 1639,
+        "y": 2248,
         "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "dragonstone_port",
+        "name_tr": "Liman",
+        "x": 1653,
+        "y": 2249,
+        "type": "port"
       }
     ]
   },
@@ -152,16 +196,45 @@
       {
         "id": "pyke_main",
         "name_tr": "Pyke",
-        "x": 690,
-        "y": 1950,
-        "type": "port",
+        "x": 692,
+        "y": 1942,
+        "type": "fortress",
+        "is_center": true
+      },
+      {
+        "id": "pyke_port",
+        "name_tr": "Liman",
+        "x": 671,
+        "y": 1945,
+        "type": "port"
+      }
+    ]
+  },
+  {
+    "region_id": "the_wall_west",
+    "settlements": [
+      {
+        "id": "the_wall_west_castle",
+        "name_tr": "Duvar Batı Kalesi",
+        "x": 1183,
+        "y": 637,
+        "type": "fortress",
         "is_center": true
       }
     ]
   },
   {
-    "region_id": "the_wall",
-    "settlements": null
+    "region_id": "the_wall_east",
+    "settlements": [
+      {
+        "id": "the_wall_east_settlement_1",
+        "name_tr": "Doğu Kalesi",
+        "x": 1464,
+        "y": 599,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "pentos",
@@ -242,10 +315,17 @@
       {
         "id": "hardhome_main",
         "name_tr": "Hardhome",
-        "x": 1318,
-        "y": 479,
+        "x": 1530,
+        "y": 434,
         "type": "port",
         "is_center": true
+      },
+      {
+        "id": "beyond_the_wall_crasterskeep",
+        "name_tr": "Crasters Keep",
+        "x": 1254,
+        "y": 537,
+        "type": "town"
       }
     ]
   },
@@ -255,10 +335,17 @@
       {
         "id": "the_dreadfort_main",
         "name_tr": "Dehşet Kalesi",
-        "x": 1458,
-        "y": 1038,
+        "x": 1451,
+        "y": 1040,
         "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "the_dreadfort_port",
+        "name_tr": "Liman",
+        "x": 1557,
+        "y": 1061,
+        "type": "port"
       }
     ]
   },
@@ -272,6 +359,13 @@
         "y": 1773,
         "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "the_twins_port",
+        "name_tr": "Liman",
+        "x": 916,
+        "y": 1850,
+        "type": "port"
       }
     ]
   },
@@ -307,8 +401,8 @@
       {
         "id": "riverlands_main",
         "name_tr": "Nehir Toprakları",
-        "x": 1029,
-        "y": 1984,
+        "x": 1059,
+        "y": 1986,
         "type": "city",
         "is_center": true
       }
@@ -334,7 +428,7 @@
         "id": "harrenhal_main",
         "name_tr": "Harrenhal",
         "x": 1258,
-        "y": 2087,
+        "y": 2098,
         "type": "fortress",
         "is_center": true
       }
@@ -346,8 +440,8 @@
       {
         "id": "hollow_hill_main",
         "name_tr": "Oyuk Tepe",
-        "x": 1154,
-        "y": 2132,
+        "x": 1116,
+        "y": 2115,
         "type": "fortress",
         "is_center": true
       }
@@ -359,10 +453,17 @@
       {
         "id": "lannisport_main",
         "name_tr": "Lannisport",
-        "x": 686,
-        "y": 2292,
+        "x": 642,
+        "y": 2348,
         "type": "port",
         "is_center": true
+      },
+      {
+        "id": "lannisport_clagenskeep",
+        "name_tr": "Clagen Kalesi",
+        "x": 709,
+        "y": 2317,
+        "type": "fortress"
       }
     ]
   },
@@ -394,7 +495,16 @@
   },
   {
     "region_id": "new_region_59",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "new_region_59_settlement_1",
+        "name_tr": "Three Towers",
+        "x": 727,
+        "y": 3056,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "karhold",
@@ -402,10 +512,44 @@
       {
         "id": "karhold_main",
         "name_tr": "Karhold",
-        "x": 1645,
-        "y": 912,
+        "x": 1648,
+        "y": 915,
         "type": "fortress",
         "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "skagos",
+    "settlements": [
+      {
+        "id": "skagos_driftwoodhall",
+        "name_tr": "Driftwood Hall",
+        "x": 1634,
+        "y": 608,
+        "type": "fortress",
+        "is_center": true
+      },
+      {
+        "id": "skagos_settlement_2",
+        "name_tr": "Kral Evi",
+        "x": 1714,
+        "y": 627,
+        "type": "town"
+      },
+      {
+        "id": "skagos_deepdown",
+        "name_tr": "Deepdown",
+        "x": 1712,
+        "y": 702,
+        "type": "city"
+      },
+      {
+        "id": "skagos_port",
+        "name_tr": "Liman",
+        "x": 1639,
+        "y": 659,
+        "type": "port"
       }
     ]
   },
@@ -415,9 +559,9 @@
       {
         "id": "stony_shore_main",
         "name_tr": "Taşlı Kıyı",
-        "x": 572,
-        "y": 1282,
-        "type": "town",
+        "x": 548,
+        "y": 1326,
+        "type": "port",
         "is_center": true
       }
     ]
@@ -428,10 +572,17 @@
       {
         "id": "barrowlands_main",
         "name_tr": "Tümülüs Toprakları",
-        "x": 928,
-        "y": 1357,
+        "x": 950,
+        "y": 1337,
         "type": "town",
         "is_center": true
+      },
+      {
+        "id": "barrowlands_barrowton",
+        "name_tr": "Barrowton",
+        "x": 924,
+        "y": 1386,
+        "type": "fortress"
       }
     ]
   },
@@ -454,10 +605,17 @@
       {
         "id": "white_harbor_main",
         "name_tr": "Beyaz Liman",
-        "x": 1384,
-        "y": 1479,
+        "x": 1302,
+        "y": 1413,
         "type": "port",
         "is_center": true
+      },
+      {
+        "id": "white_harbor_ramsgate",
+        "name_tr": "Ramsgate",
+        "x": 1531,
+        "y": 1340,
+        "type": "fortress"
       }
     ]
   },
@@ -532,8 +690,8 @@
       {
         "id": "crackclaw_point_main",
         "name_tr": "Yengeç Pençesi Burnu",
-        "x": 1629,
-        "y": 2172,
+        "x": 1672,
+        "y": 2146,
         "type": "town",
         "is_center": true
       }
@@ -541,7 +699,23 @@
   },
   {
     "region_id": "duskendale",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "duskendale_antlers",
+        "name_tr": "Antlers",
+        "x": 1420,
+        "y": 2215,
+        "type": "fortress",
+        "is_center": true
+      },
+      {
+        "id": "duskendale_settlement_1",
+        "name_tr": "Maidenpool",
+        "x": 1467,
+        "y": 2160,
+        "type": "city"
+      }
+    ]
   },
   {
     "region_id": "kingswood",
@@ -549,8 +723,8 @@
       {
         "id": "kingswood_main",
         "name_tr": "Kral Ormanı",
-        "x": 1456,
-        "y": 2470,
+        "x": 1417,
+        "y": 2501,
         "type": "town",
         "is_center": true
       }
@@ -575,10 +749,17 @@
       {
         "id": "cornfield_settlement_1",
         "name_tr": "Mısır Tarlası",
-        "x": 673,
-        "y": 2449,
+        "x": 742,
+        "y": 2411,
         "type": "city",
         "is_center": true
+      },
+      {
+        "id": "cornfield_crakehall",
+        "name_tr": "Crakehall",
+        "x": 637,
+        "y": 2472,
+        "type": "fortress"
       }
     ]
   },
@@ -588,8 +769,8 @@
       {
         "id": "horn_hill_main",
         "name_tr": "Horn Hill",
-        "x": 889,
-        "y": 2816,
+        "x": 856,
+        "y": 2817,
         "type": "fortress",
         "is_center": true
       }
@@ -601,8 +782,8 @@
       {
         "id": "the_arbor_main",
         "name_tr": "Arbor",
-        "x": 538,
-        "y": 3102,
+        "x": 597,
+        "y": 3155,
         "type": "port",
         "is_center": true
       }
@@ -614,8 +795,8 @@
       {
         "id": "blackmont_main",
         "name_tr": "Blackmont",
-        "x": 957,
-        "y": 2952,
+        "x": 941,
+        "y": 2953,
         "type": "fortress",
         "is_center": true
       }
@@ -631,6 +812,13 @@
         "y": 2878,
         "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "prince_pass_nightsong",
+        "name_tr": "Gece Şarkısı",
+        "x": 1065,
+        "y": 2849,
+        "type": "city"
       }
     ]
   },
@@ -640,8 +828,8 @@
       {
         "id": "yronwood_main",
         "name_tr": "Yronwood",
-        "x": 1313,
-        "y": 3015,
+        "x": 1301,
+        "y": 3017,
         "type": "fortress",
         "is_center": true
       }
@@ -666,8 +854,8 @@
       {
         "id": "godsgrace_main",
         "name_tr": "Godsgrace",
-        "x": 1552,
-        "y": 3077,
+        "x": 1497,
+        "y": 3097,
         "type": "town",
         "is_center": true
       }
@@ -692,8 +880,8 @@
       {
         "id": "starfall_main",
         "name_tr": "Starfall",
-        "x": 957,
-        "y": 3009,
+        "x": 982,
+        "y": 3011,
         "type": "fortress",
         "is_center": true
       }
@@ -705,9 +893,22 @@
       {
         "id": "stormlands_main",
         "name_tr": "Fırtına Diyarları",
-        "x": 1469,
-        "y": 2596,
+        "x": 1433,
+        "y": 2591,
         "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "tumbleton",
+    "settlements": [
+      {
+        "id": "tumbleton_settlement_1",
+        "name_tr": "Tumbleton",
+        "x": 1295,
+        "y": 2478,
+        "type": "fortress",
         "is_center": true
       }
     ]
@@ -718,17 +919,30 @@
       {
         "id": "the_gift_main",
         "name_tr": "Hediye",
-        "x": 1363,
-        "y": 741,
+        "x": 1358,
+        "y": 740,
         "type": "town",
         "is_center": true
       },
       {
+        "id": "the_gift_port",
+        "name_tr": "Liman",
+        "x": 1522,
+        "y": 707,
+        "type": "port"
+      }
+    ]
+  },
+  {
+    "region_id": "brandon_gift",
+    "settlements": [
+      {
         "id": "castle_black_main",
         "name_tr": "Kara Kale",
-        "x": 1367,
-        "y": 635,
-        "type": "fortress"
+        "x": 1368,
+        "y": 640,
+        "type": "fortress",
+        "is_center": true
       }
     ]
   },
@@ -744,10 +958,10 @@
         "is_center": true
       },
       {
-        "id": "test_settlement",
-        "name_tr": "test",
-        "x": 1059,
-        "y": 847,
+        "id": "longlake_port",
+        "name_tr": "Liman",
+        "x": 1041,
+        "y": 757,
         "type": "port"
       }
     ]
@@ -758,8 +972,8 @@
       {
         "id": "the_wolfswood_main",
         "name_tr": "Kurt Ormanı",
-        "x": 912,
-        "y": 1018,
+        "x": 931,
+        "y": 1026,
         "type": "town",
         "is_center": true
       }
@@ -771,8 +985,8 @@
       {
         "id": "dragon_point_main",
         "name_tr": "Ejderha Burnu",
-        "x": 709,
-        "y": 1078,
+        "x": 731,
+        "y": 993,
         "type": "port",
         "is_center": true
       }
@@ -810,8 +1024,8 @@
       {
         "id": "hornwood_main",
         "name_tr": "Hornwood",
-        "x": 1364,
-        "y": 1176,
+        "x": 1402,
+        "y": 1186,
         "type": "fortress",
         "is_center": true
       }
@@ -823,9 +1037,9 @@
       {
         "id": "widows_watch_settlement_1",
         "name_tr": "Denizfeneri Balkonu",
-        "x": 1600,
-        "y": 1268,
-        "type": "city",
+        "x": 1707,
+        "y": 1355,
+        "type": "fortress",
         "is_center": true
       }
     ]
@@ -862,8 +1076,8 @@
       {
         "id": "bear_island_main",
         "name_tr": "Ayı Adası",
-        "x": 872,
-        "y": 783,
+        "x": 911,
+        "y": 794,
         "type": "port",
         "is_center": true
       }
@@ -888,9 +1102,9 @@
       {
         "id": "great_wyk_main",
         "name_tr": "Büyük Wyk",
-        "x": 604,
-        "y": 1889,
-        "type": "port",
+        "x": 610,
+        "y": 1876,
+        "type": "fortress",
         "is_center": true
       }
     ]
@@ -901,9 +1115,9 @@
       {
         "id": "orkmont_main",
         "name_tr": "Orkmont",
-        "x": 729,
-        "y": 1858,
-        "type": "port",
+        "x": 705,
+        "y": 1871,
+        "type": "fortress",
         "is_center": true
       }
     ]
@@ -914,8 +1128,8 @@
       {
         "id": "harlaw_main",
         "name_tr": "Harlaw",
-        "x": 778,
-        "y": 1918,
+        "x": 800,
+        "y": 1880,
         "type": "port",
         "is_center": true
       }
@@ -944,6 +1158,13 @@
         "y": 1954,
         "type": "city",
         "is_center": true
+      },
+      {
+        "id": "gulltown_port",
+        "name_tr": "Liman",
+        "x": 1787,
+        "y": 1954,
+        "type": "port"
       }
     ]
   },
@@ -996,6 +1217,20 @@
         "y": 2154,
         "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "golden_tooth_hornvale",
+        "name_tr": "Hornvale",
+        "x": 925,
+        "y": 2187,
+        "type": "city"
+      },
+      {
+        "id": "golden_tooth_ashemark",
+        "name_tr": "Ashemark",
+        "x": 804,
+        "y": 2140,
+        "type": "city"
       }
     ]
   },
@@ -1005,8 +1240,8 @@
       {
         "id": "stone_sept_main",
         "name_tr": "Taş Septi",
-        "x": 1050,
-        "y": 2300,
+        "x": 1053,
+        "y": 2303,
         "type": "town",
         "is_center": true
       }
@@ -1018,8 +1253,8 @@
       {
         "id": "silver_hill_main",
         "name_tr": "Gümüş Tepe",
-        "x": 932,
-        "y": 2383,
+        "x": 939,
+        "y": 2397,
         "type": "town",
         "is_center": true
       }
@@ -1031,8 +1266,8 @@
       {
         "id": "golden_grove_main",
         "name_tr": "Altın Koruluk",
-        "x": 961,
-        "y": 2541,
+        "x": 925,
+        "y": 2542,
         "type": "town",
         "is_center": true
       }
@@ -1044,8 +1279,8 @@
       {
         "id": "grassy_vale_main",
         "name_tr": "Çimenli Vadi",
-        "x": 1174,
-        "y": 2551,
+        "x": 1192,
+        "y": 2559,
         "type": "town",
         "is_center": true
       }
@@ -1071,7 +1306,7 @@
         "id": "ashford_main",
         "name_tr": "Ashford",
         "x": 1117,
-        "y": 2652,
+        "y": 2647,
         "type": "fortress",
         "is_center": true
       }
@@ -1083,8 +1318,8 @@
       {
         "id": "brightwater_reach_main",
         "name_tr": "Parlaksu Diyarı",
-        "x": 642,
-        "y": 2810,
+        "x": 550,
+        "y": 2860,
         "type": "port",
         "is_center": true
       }
@@ -1096,8 +1331,8 @@
       {
         "id": "blackhaven_main",
         "name_tr": "Karakale",
-        "x": 1150,
-        "y": 2750,
+        "x": 1103,
+        "y": 2776,
         "type": "fortress",
         "is_center": true
       }
@@ -1120,10 +1355,10 @@
     "region_id": "hapstackhall",
     "settlements": [
       {
-        "id": "hapstackhall_settlement_1",
-        "name_tr": "Yeni Bolge 110",
-        "x": 1564,
-        "y": 2547,
+        "id": "hapstackhall_main",
+        "name_tr": "Hapsatch Hall",
+        "x": 1600,
+        "y": 2538,
         "type": "city",
         "is_center": true
       }
@@ -1135,8 +1370,8 @@
       {
         "id": "rainwood_main",
         "name_tr": "Yağmur Ormanı",
-        "x": 1604,
-        "y": 2756,
+        "x": 1621,
+        "y": 2767,
         "type": "town",
         "is_center": true
       }
@@ -1148,8 +1383,8 @@
       {
         "id": "cape_wrath_main",
         "name_tr": "Gazap Burnu",
-        "x": 1727,
-        "y": 2719,
+        "x": 1773,
+        "y": 2718,
         "type": "port",
         "is_center": true
       }
@@ -1161,8 +1396,8 @@
       {
         "id": "mistwood_main",
         "name_tr": "Sis Ormanı",
-        "x": 1609,
-        "y": 2829,
+        "x": 1611,
+        "y": 2808,
         "type": "town",
         "is_center": true
       }
@@ -1174,8 +1409,8 @@
       {
         "id": "griffins_roost_main",
         "name_tr": "Griffin Yuvası",
-        "x": 1453,
-        "y": 2704,
+        "x": 1501,
+        "y": 2690,
         "type": "fortress",
         "is_center": true
       }
@@ -1187,8 +1422,8 @@
       {
         "id": "stonehelm_main",
         "name_tr": "Taş Miğfer",
-        "x": 1469,
-        "y": 2781,
+        "x": 1451,
+        "y": 2780,
         "type": "fortress",
         "is_center": true
       }
@@ -1200,8 +1435,8 @@
       {
         "id": "tarth_main",
         "name_tr": "Tarth",
-        "x": 1766,
-        "y": 2566,
+        "x": 1727,
+        "y": 2638,
         "type": "port",
         "is_center": true
       }
@@ -1213,8 +1448,8 @@
       {
         "id": "uplands_main",
         "name_tr": "Yüksek Topraklar",
-        "x": 787,
-        "y": 2939,
+        "x": 785,
+        "y": 2966,
         "type": "town",
         "is_center": true
       }
@@ -1226,8 +1461,8 @@
       {
         "id": "skyreach_main",
         "name_tr": "Gökyüzü Ulaşımı",
-        "x": 1150,
-        "y": 3000,
+        "x": 1092,
+        "y": 3009,
         "type": "fortress",
         "is_center": true
       }
@@ -1252,8 +1487,8 @@
       {
         "id": "the_tor_main",
         "name_tr": "Tor",
-        "x": 1435,
-        "y": 3020,
+        "x": 1458,
+        "y": 3016,
         "type": "fortress",
         "is_center": true
       }
@@ -1265,8 +1500,8 @@
       {
         "id": "vaith_main",
         "name_tr": "Vaith",
-        "x": 1441,
-        "y": 3084,
+        "x": 1357,
+        "y": 3121,
         "type": "town",
         "is_center": true
       }
@@ -1278,8 +1513,8 @@
       {
         "id": "lemonwood_main",
         "name_tr": "Limon Ormanı",
-        "x": 1593,
-        "y": 3153,
+        "x": 1635,
+        "y": 3152,
         "type": "town",
         "is_center": true
       }
@@ -1291,7 +1526,7 @@
       {
         "id": "ghost_hill_main",
         "name_tr": "Hayalet Tepe",
-        "x": 1680,
+        "x": 1682,
         "y": 3007,
         "type": "fortress",
         "is_center": true
@@ -1304,8 +1539,8 @@
       {
         "id": "sun_house_main",
         "name_tr": "Güneş Evi",
-        "x": 718,
-        "y": 3107,
+        "x": 767,
+        "y": 3118,
         "type": "fortress",
         "is_center": true
       }
@@ -1317,8 +1552,8 @@
       {
         "id": "hellholt_main",
         "name_tr": "Cehennem Kalesi",
-        "x": 1141,
-        "y": 3110,
+        "x": 1139,
+        "y": 3108,
         "type": "fortress",
         "is_center": true
       }
@@ -1330,10 +1565,24 @@
       {
         "id": "the_boneway_main",
         "name_tr": "Kemikyolu",
-        "x": 1191,
-        "y": 2872,
+        "x": 1187,
+        "y": 2870,
         "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "the_boneway_kingsgrave",
+        "name_tr": "Kral Mezarları",
+        "x": 1115,
+        "y": 2910,
+        "type": "city"
+      },
+      {
+        "id": "the_boneway_vulturesroost",
+        "name_tr": "Akbaba Tüneği",
+        "x": 1170,
+        "y": 2849,
+        "type": "fortress"
       }
     ]
   }

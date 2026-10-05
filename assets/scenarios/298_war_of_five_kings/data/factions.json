@@ -422,7 +422,7 @@
     ],
     "territorial_claims": [
       {
-        "region_id": "the_wall",
+        "region_id": "the_wall_west",
         "value": 100,
         "core": true
       }

@@ -7,6 +7,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 # Geliştirme Durumu
 
+- 2026-10-05: Edit Mode isim ve ID alanlarında Ctrl+V ile sistem panosundan metin
+  yapıştırma desteği eklendi. Bölge/devlet formları, yerleşim/bölge yeniden
+  adlandırma ve shape oluşturma modalı mevcut karakter ve uzunluk kurallarını
+  koruyor. Regression: `TestAppendEditTextLimitsPastedText`; doğrulama:
+  `go test ./internal/render -count=1`.
+
 - 2026-10-05: Edit Mode Shape sekmesine `Haritayı Yenile` düğmesi eklendi. Düğme tam dünya haritasını yeniden oluşturuyor; eski sınır, seçim, Voronoi ve etiket cache'leri yeni harita kabul edildiğinde temizleniyor.
 
 - 2026-10-05: Edit Mode shape rebuild yolu optimize edildi. Shape geometrisi

@@ -25,6 +25,13 @@ func TestAppendFactionFormRuneNormalizesUppercaseID(t *testing.T) {
 	}
 }
 
+func TestAppendEditTextLimitsPastedText(t *testing.T) {
+	got := appendEditText([]rune("old"), "new\rvalue\n", 8)
+	if string(got) != "oldnewva" {
+		t.Fatalf("appendEditText() = %q, want %q", string(got), "oldnewva")
+	}
+}
+
 func TestRenameRegionIDUpdatesFactionTerritorialClaims(t *testing.T) {
 	const fid faction.FactionID = "faction"
 	oldID := world.RegionID("old_region")

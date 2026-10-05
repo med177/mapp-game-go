@@ -325,6 +325,16 @@ func (r *Renderer) handleEditRegionFormInput() InputAction {
 	if form.active == editRegionFieldNone {
 		return InputAction{}
 	}
+	if editCtrlPressed() && r.keyJustPressed(ebiten.KeyV) {
+		if text, ok := readEditClipboardText(); ok {
+			limit := 64
+			if form.active >= editRegionFieldGold && form.active <= editRegionFieldUnlockTurn {
+				limit = 12
+			}
+			form.values[form.active] = string(appendEditText([]rune(form.values[form.active]), text, limit))
+		}
+		return InputAction{}
+	}
 	if r.keyJustPressed(ebiten.KeyBackspace) && len(form.values[form.active]) > 0 {
 		form.values[form.active] = trimLastRune(form.values[form.active])
 	}

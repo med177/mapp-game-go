@@ -1879,6 +1879,31 @@ func editCtrlPressed() bool {
 	return ctrl
 }
 
+func readEditClipboardText() (string, bool) {
+	text, ok := readSystemClipboard()
+	if !ok {
+		return "", false
+	}
+	return sanitizeEditClipboardText(text), true
+}
+
+func sanitizeEditClipboardText(text string) string {
+	return strings.Map(func(ch rune) rune {
+		if ch == '\r' || ch == '\n' {
+			return -1
+		}
+		return ch
+	}, text)
+}
+
+func appendEditText(dst []rune, text string, maxLen int) []rune {
+	dst = append(dst, []rune(sanitizeEditClipboardText(text))...)
+	if maxLen > 0 && len(dst) > maxLen {
+		dst = dst[:maxLen]
+	}
+	return dst
+}
+
 func (r *Renderer) handleEditModeInput() InputAction {
 	if r.editBuildingsPanel {
 		return r.handleEditBuildingsPanelInput()
@@ -2967,6 +2992,12 @@ func (r *Renderer) handleEditRenameInput() InputAction {
 	}
 	if (r.editTextTarget == editTextRegionID || r.editTextTarget == editTextSettlementID || r.editTextTarget == editTextShapeID) && r.keyJustPressed(ebiten.KeyA) && editCtrlPressed() {
 		r.editTextRunes = r.editTextRunes[:0]
+		return InputAction{}
+	}
+	if editCtrlPressed() && r.keyJustPressed(ebiten.KeyV) {
+		if text, ok := readEditClipboardText(); ok {
+			r.editTextRunes = appendEditText(r.editTextRunes, text, 64)
+		}
 		return InputAction{}
 	}
 	r.editTextRunes = ebiten.AppendInputChars(r.editTextRunes)
@@ -4988,6 +5019,14 @@ func (r *Renderer) handleEditFactionFormInput() InputAction {
 		}
 	}
 	if r.editFactionForm.active != editFactionFieldNone {
+		if editCtrlPressed() && r.keyJustPressed(ebiten.KeyV) {
+			if text, ok := readEditClipboardText(); ok {
+				for _, ch := range text {
+					r.appendFactionFormRune(ch)
+				}
+			}
+			return InputAction{}
+		}
 		for _, ch := range ebiten.AppendInputChars(nil) {
 			r.appendFactionFormRune(ch)
 		}

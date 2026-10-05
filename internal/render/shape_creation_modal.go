@@ -118,6 +118,12 @@ func (r *Renderer) handleEditNewShapeModalInput() InputAction {
 		r.editTextRunes = r.editTextRunes[:0]
 		return InputAction{}
 	}
+	if editCtrlPressed() && r.keyJustPressed(ebiten.KeyV) {
+		if text, ok := readEditClipboardText(); ok {
+			r.editTextRunes = appendEditText(r.editTextRunes, text, 64)
+		}
+		return InputAction{}
+	}
 	chars := ebiten.AppendInputChars(nil)
 	if len(chars) > 0 {
 		r.editTextRunes = append(r.editTextRunes, chars...)
