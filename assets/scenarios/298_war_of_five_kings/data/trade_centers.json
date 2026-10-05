@@ -13,7 +13,7 @@
       "name_tr": "Kralın Şehri Ticaret Limanı",
       "links": [
         {
-          "region_id": "pentos",
+          "region_id": "pentos_region",
           "type": "sea"
         }
       ],
@@ -29,7 +29,7 @@
       ]
     },
     {
-      "region_id": "pentos",
+      "region_id": "pentos_region",
       "name_tr": "Pentos Serbest Limanı",
       "links": [
         {

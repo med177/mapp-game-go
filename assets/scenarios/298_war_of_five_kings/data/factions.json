@@ -572,6 +572,10 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
+    "overlord_id": "stark",
+    "tribute_rate": 20,
+    "tribute_rate_configured": true,
+    "vassalized_turn": 1,
     "capital_settlement_id": "the_dreadfort_main",
     "gold": 2500,
     "grain": 2200,
@@ -691,5 +695,31 @@
         "value": 70
       }
     ]
+  },
+  {
+    "id": "free_cities",
+    "name": "Free Cities",
+    "name_tr": "Özgür Şehirler",
+    "religion": "pagan",
+    "color": [
+      171,
+      219,
+      183
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "gold": 500,
+    "grain": 100,
+    "iron": 500,
+    "timber": 500,
+    "stone": 0,
+    "spice": 100,
+    "cloth": 200,
+    "research": {
+      "completed": null,
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50
   }
 ]

@@ -13,7 +13,7 @@
     ]
   },
   {
-    "region_id": "new_region_63",
+    "region_id": "isle_faces",
     "settlements": [
       {
         "id": "new_region_63_settlement_1",
@@ -26,14 +26,44 @@
     ]
   },
   {
-    "region_id": "essos_free_cities",
+    "region_id": "lys",
     "settlements": [
       {
-        "id": "essos_free_cities_main",
-        "name_tr": "Essos Özgür Şehirleri",
-        "x": 2545,
-        "y": 2416,
-        "type": "city",
+        "id": "lys_settlement_1",
+        "name_tr": "Lys",
+        "x": 2105,
+        "y": 3159,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "thyrosh",
+    "settlements": [
+      {
+        "id": "thyrosh_settlement_1",
+        "name_tr": "Thyrosh",
+        "x": 1954,
+        "y": 2808,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "essos_free_cities",
+    "settlements": null
+  },
+  {
+    "region_id": "norvos",
+    "settlements": [
+      {
+        "id": "essos_free_cities_norvos",
+        "name_tr": "Norvos",
+        "x": 2540,
+        "y": 2168,
+        "type": "fortress",
         "is_center": true
       }
     ]
@@ -237,7 +267,7 @@
     ]
   },
   {
-    "region_id": "pentos",
+    "region_id": "pentos_region",
     "settlements": [
       {
         "id": "pentos_main",
@@ -246,16 +276,48 @@
         "y": 2367,
         "type": "city",
         "is_center": true
+      },
+      {
+        "id": "pentos_region_goyandrohe",
+        "name_tr": "Goyan Drohe",
+        "x": 2405,
+        "y": 2404,
+        "type": "fortress"
       }
     ]
   },
   {
-    "region_id": "new_region_64",
-    "settlements": null
+    "region_id": "myr_region",
+    "settlements": [
+      {
+        "id": "myr_main",
+        "name_tr": "Myr",
+        "x": 2249,
+        "y": 2751,
+        "type": "fortress",
+        "is_center": true
+      },
+      {
+        "id": "myr_region_port",
+        "name_tr": "Liman",
+        "x": 2231,
+        "y": 2710,
+        "type": "port"
+      }
+    ]
   },
   {
-    "region_id": "new_region_65",
-    "settlements": null
+    "region_id": "disputed_lands",
+    "settlements": [
+      {
+        "id": "disputed_lands_castle",
+        "name_tr": "Üçlü Tac",
+        "x": 2186,
+        "y": 2920,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "astapor",
@@ -263,8 +325,8 @@
       {
         "id": "astapor_main",
         "name_tr": "Astapor",
-        "x": 2507,
-        "y": 2858,
+        "x": 2588,
+        "y": 3036,
         "type": "city",
         "is_center": true
       }
@@ -276,8 +338,8 @@
       {
         "id": "yunkai_main",
         "name_tr": "Yunkai",
-        "x": 2546,
-        "y": 2714,
+        "x": 2586,
+        "y": 2950,
         "type": "city",
         "is_center": true
       }
@@ -289,10 +351,17 @@
       {
         "id": "meereen_main",
         "name_tr": "Meereen",
-        "x": 2518,
-        "y": 3065,
-        "type": "city",
+        "x": 2595,
+        "y": 3161,
+        "type": "fortress",
         "is_center": true
+      },
+      {
+        "id": "meereen_settlement_2",
+        "name_tr": "Liman",
+        "x": 2532,
+        "y": 3111,
+        "type": "port"
       }
     ]
   },

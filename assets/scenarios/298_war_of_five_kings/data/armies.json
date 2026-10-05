@@ -70,7 +70,7 @@
   {
     "id": "army_targaryen_1",
     "owner_id": "targaryen",
-    "region_id": "pentos",
+    "region_id": "pentos_region",
     "units": [
       {
         "type_id": "unsullied",

@@ -63,8 +63,8 @@
     "stance": "peace"
   },
   {
-    "faction_a": "arryn",
-    "faction_b": "bolton",
+    "faction_a": "bolton",
+    "faction_b": "arryn",
     "score_a_to_b": -40,
     "score_b_to_a": -40,
     "stance": "peace"

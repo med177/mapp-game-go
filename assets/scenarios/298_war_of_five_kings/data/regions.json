@@ -115,7 +115,7 @@
       "new_region_129",
       "new_region_130",
       "new_region_133",
-      "pentos"
+      "pentos_region"
     ],
     "world_x": 1918,
     "world_y": 2405,
@@ -408,11 +408,11 @@
     "owner_id": "",
     "neighbors": [
       "braavos",
-      "essos_free_cities",
       "new_region_129",
       "new_region_132",
       "new_region_135",
-      "pentos",
+      "norvos",
+      "pentos_region",
       "sea"
     ],
     "world_x": 2010,
@@ -445,10 +445,10 @@
     "neighbors": [
       "crownlands",
       "harrenhal",
+      "isle_faces",
       "kings_landing",
       "kingswood",
-      "new_region_128",
-      "new_region_63"
+      "new_region_128"
     ],
     "world_x": 1274,
     "world_y": 2192,
@@ -472,11 +472,11 @@
     "buildings": null
   },
   {
-    "id": "new_region_63",
+    "id": "isle_faces",
     "name": "Faces Island",
     "name_tr": "Faces Island",
     "terrain": "plain",
-    "owner_id": "",
+    "owner_id": "baratheon_king",
     "neighbors": [
       "new_region_62"
     ],
@@ -1125,11 +1125,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "disputed_lands",
+      "lys",
       "new_region_124",
       "new_region_125",
       "new_region_126",
-      "new_region_127",
-      "new_region_65"
+      "new_region_127"
     ],
     "world_x": 1992,
     "world_y": 3094,
@@ -1153,19 +1154,53 @@
     "buildings": null
   },
   {
+    "id": "lys",
+    "name": "Lys",
+    "name_tr": "Lys",
+    "terrain": "plain",
+    "owner_id": "",
+    "neighbors": [
+      "new_region_131"
+    ],
+    "world_x": 2097,
+    "world_y": 3168,
+    "shape_id": "lys",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": [
+      "port"
+    ]
+  },
+  {
     "id": "new_region_127",
     "name": "New Region 127",
     "name_tr": "Yeni Bolge 127",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "disputed_lands",
+      "myr_region",
       "new_region_125",
       "new_region_130",
       "new_region_131",
       "new_region_132",
-      "new_region_64",
-      "new_region_65",
-      "pentos"
+      "pentos_region",
+      "thyrosh"
     ],
     "world_x": 1998,
     "world_y": 2767,
@@ -1187,6 +1222,39 @@
     "religion": "",
     "active_event_id": "",
     "buildings": null
+  },
+  {
+    "id": "thyrosh",
+    "name": "Thyrosh",
+    "name_tr": "Thyrosh",
+    "terrain": "plain",
+    "owner_id": "",
+    "neighbors": [
+      "new_region_127"
+    ],
+    "world_x": 1947,
+    "world_y": 2812,
+    "shape_id": "tyrosh",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "new_region_130",
@@ -1269,10 +1337,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "disputed_lands",
       "meereen",
       "new_region_126",
-      "new_region_131",
-      "new_region_65"
+      "new_region_131"
     ],
     "world_x": 2303,
     "world_y": 3471,
@@ -1300,16 +1368,16 @@
     "name": "Essos Free Cities",
     "name_tr": "Essos Free Cities",
     "terrain": "plain",
-    "owner_id": "",
+    "owner_id": "free_cities",
     "neighbors": [
-      "braavos",
-      "new_region_133",
-      "new_region_64",
-      "pentos",
+      "disputed_lands",
+      "myr_region",
+      "norvos",
+      "pentos_region",
       "yunkai"
     ],
-    "world_x": 2542,
-    "world_y": 2444,
+    "world_x": 2571,
+    "world_y": 2869,
     "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
@@ -1328,7 +1396,46 @@
     "rural_population": 0,
     "religion": "",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls"
+    ]
+  },
+  {
+    "id": "norvos",
+    "name": "Norvos",
+    "name_tr": "Norvos",
+    "terrain": "plain",
+    "owner_id": "free_cities",
+    "successor_faction_id": "free_cities",
+    "neighbors": [
+      "braavos",
+      "essos_free_cities",
+      "new_region_133",
+      "pentos_region"
+    ],
+    "world_x": 2508,
+    "world_y": 1922,
+    "shape_id": "ess_fc",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 70,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "storm_end",
@@ -1827,7 +1934,7 @@
     ]
   },
   {
-    "id": "pentos",
+    "id": "pentos_region",
     "name": "Pentos",
     "name_tr": "Pentos (Özgür Şehir)",
     "terrain": "plain",
@@ -1836,10 +1943,11 @@
     "neighbors": [
       "braavos",
       "essos_free_cities",
+      "myr_region",
       "new_region_127",
       "new_region_132",
       "new_region_133",
-      "new_region_64"
+      "norvos"
     ],
     "world_x": 2136,
     "world_y": 2362,
@@ -1864,23 +1972,24 @@
     "buildings": [
       "port",
       "market",
-      "walls"
+      "walls",
+      "barracks",
+      "granary",
+      "temple"
     ]
   },
   {
-    "id": "new_region_64",
+    "id": "myr_region",
     "name": "New Region 64",
     "name_tr": "Yeni Bolge 64",
     "terrain": "plain",
-    "owner_id": "targaryen",
+    "owner_id": "free_cities",
     "successor_faction_id": "targaryen",
     "neighbors": [
-      "astapor",
+      "disputed_lands",
       "essos_free_cities",
       "new_region_127",
-      "new_region_65",
-      "pentos",
-      "yunkai"
+      "pentos_region"
     ],
     "world_x": 2295,
     "world_y": 2797,
@@ -1909,19 +2018,21 @@
     ]
   },
   {
-    "id": "new_region_65",
+    "id": "disputed_lands",
     "name": "New Region 65",
-    "name_tr": "Yeni Bolge 65",
+    "name_tr": "İhtilaflı Topraklar",
     "terrain": "plain",
-    "owner_id": "targaryen",
+    "owner_id": "",
     "successor_faction_id": "targaryen",
     "neighbors": [
       "astapor",
+      "essos_free_cities",
       "meereen",
+      "myr_region",
       "new_region_124",
       "new_region_127",
       "new_region_131",
-      "new_region_64"
+      "yunkai"
     ],
     "world_x": 2275,
     "world_y": 2856,
@@ -1954,15 +2065,14 @@
     "name": "Astapor",
     "name_tr": "Astapor",
     "terrain": "plain",
-    "owner_id": "",
+    "owner_id": "free_cities",
     "neighbors": [
+      "disputed_lands",
       "meereen",
-      "new_region_64",
-      "new_region_65",
       "yunkai"
     ],
-    "world_x": 2515,
-    "world_y": 2865,
+    "world_x": 2574,
+    "world_y": 3027,
     "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
@@ -1988,14 +2098,14 @@
     "name": "Yunkai",
     "name_tr": "Yunkai",
     "terrain": "plain",
-    "owner_id": "",
+    "owner_id": "free_cities",
     "neighbors": [
       "astapor",
-      "essos_free_cities",
-      "new_region_64"
+      "disputed_lands",
+      "essos_free_cities"
     ],
-    "world_x": 2562,
-    "world_y": 2716,
+    "world_x": 2574,
+    "world_y": 2944,
     "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
@@ -2021,14 +2131,15 @@
     "name": "Meereen",
     "name_tr": "Meereen",
     "terrain": "plain",
-    "owner_id": "",
+    "owner_id": "free_cities",
+    "successor_faction_id": "free_cities",
     "neighbors": [
       "astapor",
-      "new_region_124",
-      "new_region_65"
+      "disputed_lands",
+      "new_region_124"
     ],
-    "world_x": 2508,
-    "world_y": 3013,
+    "world_x": 2575,
+    "world_y": 3101,
     "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
@@ -2047,7 +2158,10 @@
     "rural_population": 50,
     "religion": "valyrian",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "walls",
+      "port"
+    ]
   },
   {
     "id": "braavos",
@@ -2057,9 +2171,9 @@
     "owner_id": "braavos",
     "successor_faction_id": "braavos",
     "neighbors": [
-      "essos_free_cities",
       "new_region_133",
-      "pentos"
+      "norvos",
+      "pentos_region"
     ],
     "world_x": 2150,
     "world_y": 1900,
