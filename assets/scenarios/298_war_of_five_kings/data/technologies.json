@@ -1,36 +1,268 @@
 [
   {
     "category": "military",
-    "description_tr": "Kılıç ve zırh kalitesini artırır. Piyade saldırısı +15%",
-    "effects": {
-      "infantry_attack_mod": 0.15
-    },
-    "gold_cost": 200,
+    "description_tr": "Demir kılıçlar, mızrak uçları ve halka zırh üretiminde ustalaşılır. Piyade saldırısı +%8.",
+    "effects": { "infantry_attack_mod": 0.08 },
+    "gold_cost": 180,
     "id": "iron_weapons",
-    "name_tr": "Demirci Ustaları",
+    "name_tr": "Demircilik Gelenekleri",
     "requires": [],
     "turns_required": 4
   },
   {
     "category": "military",
-    "description_tr": "Şövalye birimlerinin kışlada yetiştirilmesini sağlar.",
-    "effects": {
-      "cavalry_defense_mod": 0.1
-    },
-    "gold_cost": 350,
-    "id": "chivalry",
-    "name_tr": "Şövalyelik Gelenekleri",
-    "requires": [
-      "iron_weapons"
-    ],
+    "description_tr": "Köylü vergileri ve sancak çağrıları düzenli bir orduya dönüştürülür. Kara savunması +%5.",
+    "effects": { "land_defense_mod": 0.05 },
+    "gold_cost": 160,
+    "id": "feudal_levies",
+    "name_tr": "Sancak ve Yükümlülük",
+    "requires": [],
+    "turns_required": 3
+  },
+  {
+    "category": "military",
+    "description_tr": "Süvari hücumları, mızrak duvarları ve meydan savaşı talimleri standartlaştırılır. Süvari saldırısı +%8.",
+    "effects": { "cavalry_attack_mod": 0.08 },
+    "gold_cost": 260,
+    "id": "battlefield_drills",
+    "name_tr": "Meydan Muharebesi Talimleri",
+    "requires": ["iron_weapons", "feudal_levies"],
+    "turns_required": 5
+  },
+  {
+    "category": "military",
+    "description_tr": "Soylu hanelerin silahşorları ve zırhlı muhafızları için kaliteli çelik işlenir. Piyade saldırısı +%10.",
+    "effects": { "infantry_attack_mod": 0.1 },
+    "gold_cost": 320,
+    "id": "castle_steel",
+    "name_tr": "Kale Çeliği",
+    "requires": ["iron_weapons"],
     "turns_required": 6
   },
   {
-    "category": "special",
-    "description_tr": "Ejderhaları savaşta yönetme yeteneği.",
-    "effects": {
-      "dragon_attack_mod": 0.25
-    },
+    "category": "military",
+    "description_tr": "Şövalyelik yeminleri, turnuvalar ve atlı savaş eğitimi soylu sınıfın savaş gücünü artırır. Süvari saldırısı +%10, kara savunması +%3.",
+    "effects": { "cavalry_attack_mod": 0.1, "land_defense_mod": 0.03 },
+    "gold_cost": 380,
+    "id": "chivalry",
+    "name_tr": "Şövalyelik Gelenekleri",
+    "requires": ["battlefield_drills", "castle_steel"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Koçbaşları, kuleler ve siperler için kuşatma zanaatları geliştirilir. Kuşatma saldırısı +%12.",
+    "effects": { "siege_attack_mod": 0.12 },
+    "gold_cost": 360,
+    "id": "siegecraft",
+    "name_tr": "Kuşatma Zanaatı",
+    "requires": ["feudal_levies"],
+    "turns_required": 6
+  },
+  {
+    "category": "military",
+    "description_tr": "Mancınık ve büyük arbaletlerin menzili artırılır; kuşatma orduları daha hızlı ilerler. Kuşatma saldırısı +%10, hareket +1.",
+    "effects": { "siege_attack_mod": 0.1, "move_bonus": 1 },
+    "gold_cost": 500,
+    "id": "counterweight_engines",
+    "name_tr": "Karşı Ağırlıklı Makineler",
+    "requires": ["siegecraft"],
+    "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Surlar, hendekler ve ateş kuleleri birlikte tasarlanır. Kara savunması +%12.",
+    "effects": { "land_defense_mod": 0.12 },
+    "gold_cost": 440,
+    "id": "castle_engineering",
+    "name_tr": "Kale Mühendisliği",
+    "requires": ["siegecraft", "castle_steel"],
+    "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Sınır gözcüleri, iz sürücüler ve kuzey keşifçileri düşman hareketlerini önceden haber verir. Düşman gücü açığa çıkar, hareket +1.",
+    "effects": { "reveal_enemy_strength": true, "move_bonus": 1 },
+    "gold_cost": 300,
+    "id": "ranger_scouting",
+    "name_tr": "Korucu Keşifçiliği",
+    "requires": ["feudal_levies"],
+    "turns_required": 6
+  },
+  {
+    "category": "economy",
+    "description_tr": "Köy vergileri, tahıl ambarları ve ekim nöbeti düzenlenir. Tahıl üretimi +%10.",
+    "effects": { "grain_mod": 0.1 },
+    "gold_cost": 150,
+    "id": "manorial_agriculture",
+    "name_tr": "Derebeylik Tarımı",
+    "requires": [],
+    "turns_required": 3
+  },
+  {
+    "category": "economy",
+    "description_tr": "Su değirmenleri ve ortak fırınlar köylü emeğini verimli kullanır. Tahıl üretimi +%12, bölge altını +1.",
+    "effects": { "grain_mod": 0.12, "gold_per_region": 1 },
+    "gold_cost": 280,
+    "id": "watermills",
+    "name_tr": "Su Değirmenleri",
+    "requires": ["manorial_agriculture"],
+    "turns_required": 5
+  },
+  {
+    "category": "economy",
+    "description_tr": "Kralın darphaneleri gümüş sikkeleri tek standarda bağlar. Her bölgeden elde edilen altın +2.",
+    "effects": { "gold_per_region": 2 },
+    "gold_cost": 320,
+    "id": "royal_mint",
+    "name_tr": "Kraliyet Darphanesi",
+    "requires": ["manorial_agriculture"],
+    "turns_required": 6
+  },
+  {
+    "category": "economy",
+    "description_tr": "Loncalar, fuarlar ve ölçü birimleri ticareti düzenler. Pazar geliri +%10, bölge altını +1.",
+    "effects": { "market_gold_mod": 0.1, "gold_per_region": 1 },
+    "gold_cost": 360,
+    "id": "guild_charters",
+    "name_tr": "Lonca Beratları",
+    "requires": ["royal_mint"],
+    "turns_required": 7
+  },
+  {
+    "category": "economy",
+    "description_tr": "Kış erzakları, donmuş limanlar ve uzun seferler için tahıl stokları tutulur. Tahıl üretimi +%8, memnuniyet +1.",
+    "effects": { "grain_mod": 0.08, "satisfaction_bonus": 1 },
+    "gold_cost": 300,
+    "id": "winter_stores",
+    "name_tr": "Uzun Kış Ambarları",
+    "requires": ["manorial_agriculture"],
+    "turns_required": 6
+  },
+  {
+    "category": "naval",
+    "description_tr": "Meşe omurgalar, katran ve yelken beziyle dayanıklı gemiler inşa edilir. Deniz savunması +%8.",
+    "effects": { "naval_defense_mod": 0.08 },
+    "gold_cost": 220,
+    "id": "shipwrights",
+    "name_tr": "Gemi Ustaları",
+    "requires": [],
+    "turns_required": 4
+  },
+  {
+    "category": "naval",
+    "description_tr": "Gelgitler, fenerler ve kıyı rotaları kayda geçirilir. Donanma hareketi +1, deniz savunması +%5.",
+    "effects": { "naval_move_bonus": 1, "naval_defense_mod": 0.05 },
+    "gold_cost": 300,
+    "id": "coastal_navigation",
+    "name_tr": "Kıyı Seyrüseferi",
+    "requires": ["shipwrights"],
+    "turns_required": 5
+  },
+  {
+    "category": "naval",
+    "description_tr": "Uzun gemiler, deniz piyadeleri ve ani kıyı baskınları geliştirilir. Deniz saldırısı +%12, donanma hareketi +1.",
+    "effects": { "naval_attack_mod": 0.12, "naval_move_bonus": 1 },
+    "gold_cost": 420,
+    "id": "longship_raiding",
+    "name_tr": "Uzun Gemi Akıncılığı",
+    "requires": ["coastal_navigation"],
+    "turns_required": 7
+  },
+  {
+    "category": "naval",
+    "description_tr": "Savaş gemileri hat düzeninde savaşır; menzilli silahlar ve yangın gemileri kullanılır. Deniz saldırısı ve savunması +%10.",
+    "effects": { "naval_attack_mod": 0.1, "naval_defense_mod": 0.1 },
+    "gold_cost": 520,
+    "id": "fleet_battle_tactics",
+    "name_tr": "Filo Muharebe Taktikleri",
+    "requires": ["longship_raiding"],
+    "turns_required": 8
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Arma, sancak ve soy kütükleri hanelerin haklarını tanınır kılar. Barış ilişkileri +5.",
+    "effects": { "peace_relation_bonus": 5 },
+    "gold_cost": 180,
+    "id": "heraldry",
+    "name_tr": "Sancak ve Soy Bilgisi",
+    "requires": [],
+    "turns_required": 4
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Kargalar ve yol istasyonları sayesinde lordlar arasındaki haberleşme hızlanır. Barış ilişkileri +8, hareket +1.",
+    "effects": { "peace_relation_bonus": 8, "move_bonus": 1 },
+    "gold_cost": 300,
+    "id": "raven_network",
+    "name_tr": "Karga Haber Ağı",
+    "requires": ["heraldry"],
+    "turns_required": 6
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Evlilikler, rehineler ve himaye anlaşmaları büyük haneleri ortak çıkarlara bağlar. Barış ilişkileri +10, memnuniyet +1.",
+    "effects": { "peace_relation_bonus": 10, "satisfaction_bonus": 1 },
+    "gold_cost": 420,
+    "id": "marriage_alliances",
+    "name_tr": "Evlilik İttifakları",
+    "requires": ["heraldry"],
+    "turns_required": 7
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Fısıltı ustaları limanları, sarayları ve düşman kamplarını gözetler. Düşman gücü açığa çıkar, barış ilişkileri +3.",
+    "effects": { "reveal_enemy_strength": true, "peace_relation_bonus": 3 },
+    "gold_cost": 500,
+    "id": "master_of_whispers",
+    "name_tr": "Fısıltı Ustaları",
+    "requires": ["raven_network", "heraldry"],
+    "turns_required": 8
+  },
+  {
+    "category": "religion",
+    "description_tr": "Kutsal koruluklar ve ataların ruhlarına adanan törenler halkın dayanıklılığını güçlendirir. Memnuniyet +2.",
+    "effects": { "satisfaction_bonus": 2 },
+    "gold_cost": 180,
+    "id": "old_gods_customs",
+    "name_tr": "Eski Tanrılar Gelenekleri",
+    "requires": [],
+    "turns_required": 4
+  },
+  {
+    "category": "religion",
+    "description_tr": "Yedi İnancı'nın septonları eğitim, yardım ve vaaz ağını krallıklara yayar. Dönüştürme hızı +10, memnuniyet +1.",
+    "effects": { "conversion_speed_mod": 10, "satisfaction_bonus": 1 },
+    "gold_cost": 260,
+    "id": "faith_of_the_seven",
+    "name_tr": "Yedi İnancı'nın Teşkilatı",
+    "requires": [],
+    "turns_required": 5
+  },
+  {
+    "category": "religion",
+    "description_tr": "Kızıl rahipler ateş kehanetleri ve karizmatik vaazlarla sadakati pekiştirir. Dönüştürme hızı +15, memnuniyet +2.",
+    "effects": { "conversion_speed_mod": 15, "satisfaction_bonus": 2 },
+    "gold_cost": 420,
+    "id": "red_priesthood",
+    "name_tr": "Kızıl Rahiplik",
+    "requires": ["faith_of_the_seven"],
+    "turns_required": 8
+  },
+  {
+    "category": "religion",
+    "description_tr": "Deniz Tanrısı'nın sert ayinleri denizci toplulukları savaşa hazırlar. Deniz saldırısı +%8, memnuniyet +1.",
+    "effects": { "naval_attack_mod": 0.08, "satisfaction_bonus": 1 },
+    "gold_cost": 360,
+    "id": "drowned_god_rites",
+    "name_tr": "Boğulmuş Tanrı Ayinleri",
+    "requires": ["shipwrights"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Kadim Valyria'dan kalan ejderha eyerleri ve bağ kurma bilgisi yeniden kullanılır. Ejderha saldırısı +%25.",
+    "effects": { "cavalry_attack_mod": 0.25 },
     "gold_cost": 1000,
     "id": "dragon_lore",
     "name_tr": "Valyria Ejderha Bilgeliği",

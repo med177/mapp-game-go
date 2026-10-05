@@ -76,6 +76,10 @@
       {
         "id": "barracks",
         "level": 2
+      },
+      {
+        "id": "forge",
+        "level": 1
       }
     ],
     "required_tech": [
@@ -108,6 +112,10 @@
       {
         "id": "barracks",
         "level": 2
+      },
+      {
+        "id": "forge",
+        "level": 1
       }
     ],
     "required_tech": [
@@ -140,6 +148,10 @@
       {
         "id": "barracks",
         "level": 2
+      },
+      {
+        "id": "forge",
+        "level": 1
       }
     ],
     "required_tech": [],
@@ -179,5 +191,274 @@
     "cloth_cost": 0,
     "spice_cost": 50,
     "movement_points": 5
+  },
+  {
+    "id": "nights_watch_rangers",
+    "name": "Night's Watch Rangers",
+    "name_tr": "Gece Nöbetçileri Korucuları",
+    "attack": 15,
+    "category": "infantry",
+    "defense": 13,
+    "embarkable": true,
+    "gold_cost": 180,
+    "grain_upkeep": 14,
+    "gold_upkeep": 10,
+    "hp": 120,
+    "morale": 75,
+    "required_buildings": [
+      { "id": "barracks", "level": 1 }
+    ],
+    "required_tech": [
+      "ranger_scouting"
+    ],
+    "tier": 2,
+    "turns_required": 3,
+    "grain_cost": 18,
+    "iron_cost": 4,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 3,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
+    "id": "wildling_raiders",
+    "name": "Wildling Raiders",
+    "name_tr": "Yabanıl Akıncılar",
+    "attack": 18,
+    "category": "infantry",
+    "defense": 10,
+    "embarkable": true,
+    "gold_cost": 150,
+    "grain_upkeep": 12,
+    "gold_upkeep": 7,
+    "hp": 115,
+    "morale": 65,
+    "required_buildings": [
+      { "id": "barracks", "level": 1 }
+    ],
+    "required_tech": [
+      "feudal_levies"
+    ],
+    "tier": 2,
+    "turns_required": 2,
+    "grain_cost": 16,
+    "iron_cost": 2,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 1,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
+    "id": "northern_shieldmen",
+    "name": "Northern Shieldmen",
+    "name_tr": "Kuzey Kalkanlıları",
+    "attack": 16,
+    "category": "infantry",
+    "defense": 22,
+    "embarkable": true,
+    "gold_cost": 240,
+    "grain_upkeep": 18,
+    "gold_upkeep": 13,
+    "hp": 145,
+    "morale": 78,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 }
+    ],
+    "required_tech": [
+      "iron_weapons",
+      "feudal_levies"
+    ],
+    "tier": 2,
+    "turns_required": 3,
+    "grain_cost": 22,
+    "iron_cost": 7,
+    "timber_cost": 3,
+    "stone_cost": 0,
+    "cloth_cost": 4,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
+    "id": "ironborn_reavers",
+    "name": "Ironborn Reavers",
+    "name_tr": "Demirdoğumlular Akıncıları",
+    "attack": 21,
+    "category": "infantry",
+    "defense": 12,
+    "embarkable": true,
+    "gold_cost": 260,
+    "grain_upkeep": 16,
+    "gold_upkeep": 15,
+    "hp": 135,
+    "morale": 85,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 },
+      { "id": "port", "level": 1 }
+    ],
+    "required_tech": [
+      "longship_raiding"
+    ],
+    "tier": 3,
+    "turns_required": 4,
+    "grain_cost": 20,
+    "iron_cost": 8,
+    "timber_cost": 4,
+    "stone_cost": 0,
+    "cloth_cost": 3,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
+    "id": "kingsguard",
+    "name": "Kingsguard",
+    "name_tr": "Kral Muhafızları",
+    "attack": 28,
+    "category": "infantry",
+    "defense": 30,
+    "embarkable": true,
+    "gold_cost": 520,
+    "grain_upkeep": 24,
+    "gold_upkeep": 30,
+    "hp": 180,
+    "morale": 100,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 },
+      { "id": "forge", "level": 1 }
+    ],
+    "required_tech": [
+      "castle_steel",
+      "chivalry"
+    ],
+    "tier": 4,
+    "turns_required": 5,
+    "grain_cost": 30,
+    "iron_cost": 15,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 6,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
+    "id": "dothraki_horse_lords",
+    "name": "Dothraki Horse Lords",
+    "name_tr": "Dothraki Atlı Lordları",
+    "attack": 32,
+    "category": "cavalry",
+    "defense": 18,
+    "embarkable": true,
+    "gold_cost": 460,
+    "grain_upkeep": 30,
+    "gold_upkeep": 23,
+    "hp": 175,
+    "morale": 92,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 }
+    ],
+    "required_tech": [
+      "battlefield_drills"
+    ],
+    "tier": 3,
+    "turns_required": 4,
+    "grain_cost": 34,
+    "iron_cost": 8,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 4,
+    "spice_cost": 0,
+    "movement_points": 4
+  },
+  {
+    "id": "vale_knights",
+    "name": "Knights of the Vale",
+    "name_tr": "Vadi Şövalyeleri",
+    "attack": 30,
+    "category": "cavalry",
+    "defense": 26,
+    "embarkable": true,
+    "gold_cost": 500,
+    "grain_upkeep": 28,
+    "gold_upkeep": 28,
+    "hp": 185,
+    "morale": 95,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 },
+      { "id": "forge", "level": 1 }
+    ],
+    "required_tech": [
+      "chivalry"
+    ],
+    "tier": 3,
+    "turns_required": 5,
+    "grain_cost": 32,
+    "iron_cost": 14,
+    "timber_cost": 3,
+    "stone_cost": 0,
+    "cloth_cost": 5,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
+    "id": "scorpion",
+    "name": "Scorpion",
+    "name_tr": "Akrep Mızrağı",
+    "attack": 30,
+    "category": "siege",
+    "defense": 8,
+    "embarkable": true,
+    "gold_cost": 340,
+    "grain_upkeep": 10,
+    "gold_upkeep": 12,
+    "hp": 100,
+    "morale": 55,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 },
+      { "id": "workshop", "level": 1 }
+    ],
+    "required_tech": [
+      "siegecraft"
+    ],
+    "tier": 3,
+    "turns_required": 4,
+    "grain_cost": 16,
+    "iron_cost": 14,
+    "timber_cost": 8,
+    "stone_cost": 2,
+    "cloth_cost": 0,
+    "spice_cost": 0,
+    "movement_points": 1
+  },
+  {
+    "id": "trebuchet",
+    "name": "Trebuchet",
+    "name_tr": "Mancınık",
+    "attack": 42,
+    "category": "siege",
+    "defense": 6,
+    "embarkable": true,
+    "gold_cost": 620,
+    "grain_upkeep": 12,
+    "gold_upkeep": 18,
+    "hp": 110,
+    "morale": 50,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 },
+      { "id": "workshop", "level": 1 }
+    ],
+    "required_tech": [
+      "siegecraft",
+      "counterweight_engines"
+    ],
+    "tier": 4,
+    "turns_required": 6,
+    "grain_cost": 20,
+    "iron_cost": 12,
+    "timber_cost": 18,
+    "stone_cost": 4,
+    "cloth_cost": 0,
+    "spice_cost": 0,
+    "movement_points": 1
   }
 ]

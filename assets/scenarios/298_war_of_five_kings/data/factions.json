@@ -20,26 +20,30 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "winterfell_main",
-    "gold": 3500,
-    "grain": 4000,
-    "iron": 200,
-    "timber": 300,
-    "stone": 800,
-    "spice": 50,
-    "cloth": 100,
+    "gold": 3200,
+    "grain": 5200,
+    "iron": 350,
+    "timber": 900,
+    "stone": 650,
+    "spice": 40,
+    "cloth": 120,
     "research": {
       "completed": {
-        "horse_breeding": true,
-        "iron_weapons": true
+        "iron_weapons": true,
+        "feudal_levies": true,
+        "ranger_scouting": true,
+        "old_gods_customs": true,
+        "manorial_agriculture": true,
+        "winter_stores": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 55,
+    "ai_aggressiveness": 65,
     "ai_expansion_targets": [
-      "riverrun",
-      "the_twins",
-      "harrenhal"
+      "lannister",
+      "bolton",
+      "greyjoy"
     ],
     "territorial_claims": [
       {
@@ -50,6 +54,18 @@
       {
         "region_id": "the_dreadfort",
         "value": 90
+      },
+      {
+        "region_id": "the_twins",
+        "value": 85
+      },
+      {
+        "region_id": "harrenhal",
+        "value": 80
+      },
+      {
+        "region_id": "kings_landing",
+        "value": 100
       }
     ]
   },
@@ -66,26 +82,31 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "casterly_rock_main",
-    "gold": 12000,
-    "grain": 3000,
-    "iron": 500,
-    "timber": 150,
-    "stone": 1200,
-    "spice": 200,
-    "cloth": 300,
+    "gold": 15000,
+    "grain": 4200,
+    "iron": 750,
+    "timber": 250,
+    "stone": 1400,
+    "spice": 250,
+    "cloth": 450,
     "research": {
       "completed": {
         "iron_weapons": true,
-        "minting": true,
-        "siege_tactics": true
+        "feudal_levies": true,
+        "castle_steel": true,
+        "siegecraft": true,
+        "manorial_agriculture": true,
+        "royal_mint": true,
+        "guild_charters": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 75,
     "ai_expansion_targets": [
-      "riverlands",
-      "kings_landing"
+      "tully",
+      "baratheon_king",
+      "tyrell"
     ],
     "territorial_claims": [
       {
@@ -97,6 +118,18 @@
         "region_id": "lannisport",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "harrenhal",
+        "value": 95
+      },
+      {
+        "region_id": "riverrun",
+        "value": 90
+      },
+      {
+        "region_id": "kings_landing",
+        "value": 90
       }
     ]
   },
@@ -113,31 +146,45 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "kings_landing_main",
-    "gold": 6000,
-    "grain": 2500,
-    "iron": 150,
-    "timber": 200,
-    "stone": 900,
-    "spice": 150,
-    "cloth": 200,
+    "gold": 8500,
+    "grain": 3800,
+    "iron": 250,
+    "timber": 350,
+    "stone": 1100,
+    "spice": 180,
+    "cloth": 300,
     "research": {
       "completed": {
-        "fortifications": true,
-        "tax_reform": true
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "castle_steel": true,
+        "siegecraft": true,
+        "castle_engineering": true,
+        "manorial_agriculture": true,
+        "royal_mint": true
       },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 60,
+    "ai_aggressiveness": 70,
     "ai_expansion_targets": [
-      "dragonstone",
-      "storm_end"
+      "baratheon_dragonstone",
+      "baratheon_stormsend",
+      "tully"
     ],
     "territorial_claims": [
       {
         "region_id": "kings_landing",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "dragonstone",
+        "value": 90
+      },
+      {
+        "region_id": "storm_end",
+        "value": 85
       }
     ]
   },
@@ -154,25 +201,28 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "dragonstone_main",
-    "gold": 2500,
-    "grain": 1500,
-    "iron": 100,
-    "timber": 250,
-    "stone": 500,
-    "spice": 50,
-    "cloth": 80,
+    "gold": 3000,
+    "grain": 1800,
+    "iron": 300,
+    "timber": 450,
+    "stone": 750,
+    "spice": 60,
+    "cloth": 100,
     "research": {
       "completed": {
         "iron_weapons": true,
-        "naval_tactics": true
+        "shipwrights": true,
+        "coastal_navigation": true,
+        "drowned_god_rites": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 80,
     "ai_expansion_targets": [
-      "kings_landing",
-      "storm_end"
+      "baratheon_king",
+      "baratheon_stormsend",
+      "lannister"
     ],
     "territorial_claims": [
       {
@@ -183,6 +233,10 @@
       {
         "region_id": "kings_landing",
         "value": 100
+      },
+      {
+        "region_id": "storm_end",
+        "value": 90
       }
     ]
   },
@@ -199,15 +253,19 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "storm_end_main",
-    "gold": 5000,
-    "grain": 4500,
-    "iron": 180,
-    "timber": 200,
-    "stone": 700,
-    "spice": 100,
-    "cloth": 150,
+    "gold": 6500,
+    "grain": 7000,
+    "iron": 220,
+    "timber": 300,
+    "stone": 800,
+    "spice": 150,
+    "cloth": 250,
     "research": {
       "completed": {
+        "iron_weapons": true,
+        "feudal_levies": true,
+        "battlefield_drills": true,
+        "castle_steel": true,
         "chivalry": true
       },
       "active_id": "",
@@ -215,13 +273,19 @@
     },
     "ai_aggressiveness": 65,
     "ai_expansion_targets": [
-      "kings_landing"
+      "baratheon_king",
+      "lannister",
+      "martell"
     ],
     "territorial_claims": [
       {
         "region_id": "storm_end",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "kings_landing",
+        "value": 90
       }
     ]
   },
@@ -238,32 +302,42 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "pyke_main",
-    "gold": 2000,
-    "grain": 1000,
-    "iron": 350,
-    "timber": 400,
-    "stone": 400,
+    "gold": 3000,
+    "grain": 1300,
+    "iron": 700,
+    "timber": 850,
+    "stone": 350,
     "spice": 30,
-    "cloth": 50,
+    "cloth": 60,
     "research": {
       "completed": {
-        "raiding": true,
-        "shipbuilding": true
+        "shipwrights": true,
+        "coastal_navigation": true,
+        "longship_raiding": true,
+        "drowned_god_rites": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 85,
     "ai_expansion_targets": [
-      "winterfell_region",
-      "lannisport",
-      "oldtown"
+      "stark",
+      "lannister",
+      "tyrell"
     ],
     "territorial_claims": [
       {
         "region_id": "pyke",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "moat_cailin",
+        "value": 85
+      },
+      {
+        "region_id": "lannisport",
+        "value": 75
       }
     ]
   },
@@ -280,31 +354,43 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "highgarden_main",
-    "gold": 8000,
-    "grain": 10000,
-    "iron": 200,
-    "timber": 300,
-    "stone": 800,
-    "spice": 250,
-    "cloth": 400,
+    "gold": 9500,
+    "grain": 14000,
+    "iron": 300,
+    "timber": 500,
+    "stone": 900,
+    "spice": 350,
+    "cloth": 550,
     "research": {
       "completed": {
-        "agriculture": true,
-        "trade_contracts": true
+        "manorial_agriculture": true,
+        "watermills": true,
+        "royal_mint": true,
+        "guild_charters": true,
+        "winter_stores": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 40,
     "ai_expansion_targets": [
-      "kings_landing",
-      "oldtown"
+      "baratheon_king",
+      "lannister",
+      "martell"
     ],
     "territorial_claims": [
       {
         "region_id": "highgarden",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "kings_landing",
+        "value": 85
+      },
+      {
+        "region_id": "oldtown",
+        "value": 80
       }
     ]
   },
@@ -321,30 +407,47 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "sunspear_main",
-    "gold": 4000,
-    "grain": 2000,
-    "iron": 120,
-    "timber": 100,
-    "stone": 600,
-    "spice": 300,
-    "cloth": 150,
+    "gold": 5200,
+    "grain": 2600,
+    "iron": 180,
+    "timber": 180,
+    "stone": 900,
+    "spice": 700,
+    "cloth": 220,
     "research": {
       "completed": {
-        "desert_warfare": true
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "battlefield_drills": true,
+        "ranger_scouting": true,
+        "manorial_agriculture": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 45,
     "ai_expansion_targets": [
-      "reach",
-      "stormlands"
+      "baratheon_stormsend",
+      "tyrell",
+      "baratheon_king"
     ],
     "territorial_claims": [
       {
         "region_id": "sunspear",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "the_boneway",
+        "value": 90
+      },
+      {
+        "region_id": "storm_end",
+        "value": 75
+      },
+      {
+        "region_id": "oldtown",
+        "value": 65
       }
     ]
   },
@@ -361,31 +464,40 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "pentos_main",
-    "gold": 3000,
-    "grain": 2000,
-    "iron": 100,
-    "timber": 150,
-    "stone": 300,
-    "spice": 400,
-    "cloth": 250,
+    "gold": 5500,
+    "grain": 2400,
+    "iron": 150,
+    "timber": 220,
+    "stone": 400,
+    "spice": 850,
+    "cloth": 400,
     "research": {
       "completed": {
-        "dragon_lore": true
+        "dragon_lore": true,
+        "heraldry": true,
+        "raven_network": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 90,
     "ai_expansion_targets": [
-      "astapor",
-      "yunkai",
-      "meereen",
-      "kings_landing"
+      "baratheon_king",
+      "lannister",
+      "free_cities"
     ],
     "territorial_claims": [
       {
         "region_id": "kings_landing",
         "value": 100
+      },
+      {
+        "region_id": "dragonstone",
+        "value": 95
+      },
+      {
+        "region_id": "pentos_region",
+        "value": 80
       }
     ]
   },
@@ -402,27 +514,38 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "castle_black_main",
-    "gold": 1000,
-    "grain": 1500,
-    "iron": 80,
-    "timber": 300,
-    "stone": 400,
+    "gold": 2500,
+    "grain": 2200,
+    "iron": 120,
+    "timber": 650,
+    "stone": 600,
     "spice": 10,
-    "cloth": 50,
+    "cloth": 70,
     "research": {
       "completed": {
-        "fortified_walls": true
+        "iron_weapons": true,
+        "feudal_levies": true,
+        "castle_steel": true,
+        "siegecraft": true,
+        "castle_engineering": true,
+        "ranger_scouting": true,
+        "old_gods_customs": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 10,
     "ai_expansion_targets": [
-      "beyond_the_wall"
+      "free_folk"
     ],
     "territorial_claims": [
       {
         "region_id": "the_wall_west",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "the_wall_east",
         "value": 100,
         "core": true
       }
@@ -441,25 +564,31 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "the_eyrie_main",
-    "gold": 4500,
-    "grain": 3000,
-    "iron": 150,
-    "timber": 120,
-    "stone": 900,
-    "spice": 80,
-    "cloth": 180,
+    "gold": 5600,
+    "grain": 3600,
+    "iron": 180,
+    "timber": 220,
+    "stone": 1200,
+    "spice": 100,
+    "cloth": 240,
     "research": {
       "completed": {
+        "iron_weapons": true,
+        "feudal_levies": true,
+        "battlefield_drills": true,
+        "castle_steel": true,
         "chivalry": true,
-        "fortifications": true
+        "siegecraft": true,
+        "castle_engineering": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 35,
     "ai_expansion_targets": [
-      "riverlands",
-      "harrenhal"
+      "tully",
+      "lannister",
+      "baratheon_king"
     ],
     "territorial_claims": [
       {
@@ -470,6 +599,10 @@
       {
         "region_id": "the_mountains_of_the_moon",
         "value": 90
+      },
+      {
+        "region_id": "harrenhal",
+        "value": 80
       }
     ]
   },
@@ -486,26 +619,31 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "riverrun_main",
-    "gold": 3500,
-    "grain": 4500,
-    "iron": 180,
-    "timber": 220,
-    "stone": 500,
-    "spice": 60,
-    "cloth": 120,
+    "gold": 3800,
+    "grain": 6200,
+    "iron": 250,
+    "timber": 450,
+    "stone": 600,
+    "spice": 80,
+    "cloth": 160,
     "research": {
       "completed": {
-        "fortifications": true,
-        "iron_weapons": true
+        "iron_weapons": true,
+        "feudal_levies": true,
+        "castle_steel": true,
+        "siegecraft": true,
+        "castle_engineering": true,
+        "heraldry": true,
+        "raven_network": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 60,
     "ai_expansion_targets": [
-      "harrenhal",
-      "kings_landing",
-      "casterly_rock"
+      "lannister",
+      "baratheon_king",
+      "bolton"
     ],
     "territorial_claims": [
       {
@@ -517,6 +655,15 @@
         "region_id": "riverrun",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "harrenhal",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "kings_landing",
+        "value": 70
       }
     ]
   },
@@ -533,30 +680,45 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "hardhome_main",
-    "gold": 800,
-    "grain": 1200,
-    "iron": 100,
-    "timber": 350,
-    "stone": 250,
+    "gold": 2500,
+    "grain": 1800,
+    "iron": 140,
+    "timber": 800,
+    "stone": 300,
     "spice": 10,
     "cloth": 40,
     "research": {
       "completed": {
-        "raiding": true
+        "feudal_levies": true,
+        "ranger_scouting": true,
+        "old_gods_customs": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 75,
     "ai_expansion_targets": [
-      "the_wall",
-      "winterfell_region"
+      "nights_watch",
+      "stark",
+      "bolton"
     ],
     "territorial_claims": [
       {
         "region_id": "beyond_the_wall",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "the_wall_west",
+        "value": 90
+      },
+      {
+        "region_id": "the_wall_east",
+        "value": 90
+      },
+      {
+        "region_id": "winterfell_region",
+        "value": 75
       }
     ]
   },
@@ -577,26 +739,30 @@
     "tribute_rate_configured": true,
     "vassalized_turn": 1,
     "capital_settlement_id": "the_dreadfort_main",
-    "gold": 2500,
-    "grain": 2200,
-    "iron": 180,
-    "timber": 180,
-    "stone": 450,
+    "gold": 2800,
+    "grain": 2600,
+    "iron": 500,
+    "timber": 250,
+    "stone": 650,
     "spice": 20,
     "cloth": 70,
     "research": {
       "completed": {
-        "fortifications": true,
-        "iron_weapons": true
+        "iron_weapons": true,
+        "feudal_levies": true,
+        "castle_steel": true,
+        "siegecraft": true,
+        "castle_engineering": true,
+        "ranger_scouting": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 80,
     "ai_expansion_targets": [
-      "winterfell_region",
-      "the_wall",
-      "riverlands"
+      "stark",
+      "tully",
+      "nights_watch"
     ],
     "territorial_claims": [
       {
@@ -607,6 +773,14 @@
       {
         "region_id": "winterfell_region",
         "value": 80
+      },
+      {
+        "region_id": "the_neck",
+        "value": 85
+      },
+      {
+        "region_id": "harrenhal",
+        "value": 60
       }
     ]
   },
@@ -623,31 +797,40 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "braavos_main",
-    "gold": 10000,
-    "grain": 2500,
-    "iron": 120,
-    "timber": 250,
-    "stone": 700,
-    "spice": 500,
-    "cloth": 500,
+    "gold": 18000,
+    "grain": 3500,
+    "iron": 180,
+    "timber": 350,
+    "stone": 800,
+    "spice": 900,
+    "cloth": 850,
     "research": {
       "completed": {
-        "naval_tactics": true,
-        "trade_contracts": true
+        "shipwrights": true,
+        "coastal_navigation": true,
+        "longship_raiding": true,
+        "fleet_battle_tactics": true,
+        "manorial_agriculture": true,
+        "royal_mint": true,
+        "guild_charters": true
       },
       "active_id": "",
       "turns_left": 0
     },
     "ai_aggressiveness": 25,
     "ai_expansion_targets": [
-      "pentos",
-      "dragonstone"
+      "targaryen",
+      "free_cities"
     ],
     "territorial_claims": [
       {
         "region_id": "braavos",
         "value": 100,
         "core": true
+      },
+      {
+        "region_id": "pentos_region",
+        "value": 75
       }
     ]
   },
@@ -664,11 +847,11 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "hollow_hill_main",
-    "gold": 700,
-    "grain": 900,
-    "iron": 80,
-    "timber": 150,
-    "stone": 120,
+    "gold": 1300,
+    "grain": 1200,
+    "iron": 120,
+    "timber": 300,
+    "stone": 180,
     "spice": 10,
     "cloth": 35,
     "research": {
@@ -680,9 +863,9 @@
     },
     "ai_aggressiveness": 70,
     "ai_expansion_targets": [
-      "riverlands",
-      "harrenhal",
-      "kings_landing"
+      "lannister",
+      "bolton",
+      "baratheon_king"
     ],
     "territorial_claims": [
       {
@@ -693,6 +876,14 @@
       {
         "region_id": "riverlands",
         "value": 70
+      },
+      {
+        "region_id": "harrenhal",
+        "value": 80
+      },
+      {
+        "region_id": "kings_landing",
+        "value": 60
       }
     ]
   },
@@ -708,18 +899,24 @@
     ],
     "is_playable": true,
     "is_eliminated": false,
-    "gold": 500,
-    "grain": 100,
-    "iron": 500,
-    "timber": 500,
-    "stone": 0,
-    "spice": 100,
-    "cloth": 200,
+    "gold": 12000,
+    "grain": 3000,
+    "iron": 400,
+    "timber": 350,
+    "stone": 200,
+    "spice": 700,
+    "cloth": 600,
     "research": {
-      "completed": null,
+      "completed": {
+        "manorial_agriculture": true,
+        "royal_mint": true,
+        "guild_charters": true,
+        "shipwrights": true,
+        "coastal_navigation": true
+      },
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 50
+    "ai_aggressiveness": 20
   }
 ]
