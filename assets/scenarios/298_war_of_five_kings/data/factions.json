@@ -1,8 +1,8 @@
 [
   {
     "id": "stark",
-    "name": "House Stark",
-    "name_tr": "Stark Hanedanı",
+    "name": "Stark",
+    "name_tr": "Stark",
     "historical_changes": [
       {
         "year": 299,
@@ -71,8 +71,8 @@
   },
   {
     "id": "lannister",
-    "name": "House Lannister",
-    "name_tr": "Lannister Hanedanı",
+    "name": "Lannister",
+    "name_tr": "Lannister",
     "religion": "faith_of_the_seven",
     "color": [
       220,
@@ -135,8 +135,8 @@
   },
   {
     "id": "baratheon_king",
-    "name": "House Baratheon of King's Landing",
-    "name_tr": "Kralın Şehri Baratheonları (Joffrey)",
+    "name": "Baratheon (King's Landing)",
+    "name_tr": "Baratheon (Kralın Şehri)",
     "religion": "faith_of_the_seven",
     "color": [
       240,
@@ -190,8 +190,8 @@
   },
   {
     "id": "baratheon_dragonstone",
-    "name": "House Baratheon of Dragonstone",
-    "name_tr": "Ejderha Kayası Baratheonları (Stannis)",
+    "name": "Baratheon (Dragonstone)",
+    "name_tr": "Baratheon (Ejderha Kayası)",
     "religion": "lord_of_light",
     "color": [
       180,
@@ -242,8 +242,8 @@
   },
   {
     "id": "baratheon_stormsend",
-    "name": "House Baratheon of Storm's End",
-    "name_tr": "Fırtına Burnu Baratheonları (Renly)",
+    "name": "Baratheon (Storm's End)",
+    "name_tr": "Baratheon (Fırtına Burnu)",
     "religion": "faith_of_the_seven",
     "color": [
       80,
@@ -291,8 +291,8 @@
   },
   {
     "id": "greyjoy",
-    "name": "House Greyjoy",
-    "name_tr": "Greyjoy Hanedanı (Demirdoğumlular)",
+    "name": "Greyjoy",
+    "name_tr": "Greyjoy",
     "religion": "drowned_god",
     "color": [
       50,
@@ -343,8 +343,8 @@
   },
   {
     "id": "tyrell",
-    "name": "House Tyrell",
-    "name_tr": "Tyrell Hanedanı",
+    "name": "Tyrell",
+    "name_tr": "Tyrell",
     "religion": "faith_of_the_seven",
     "color": [
       30,
@@ -396,8 +396,8 @@
   },
   {
     "id": "martell",
-    "name": "House Martell",
-    "name_tr": "Martell Hanedanı (Dorne)",
+    "name": "Martell",
+    "name_tr": "Martell",
     "religion": "faith_of_the_seven",
     "color": [
       230,
@@ -453,8 +453,8 @@
   },
   {
     "id": "targaryen",
-    "name": "House Targaryen",
-    "name_tr": "Targaryen Hanedanı",
+    "name": "Targaryen",
+    "name_tr": "Targaryen",
     "religion": "valyrian",
     "color": [
       180,
@@ -504,7 +504,7 @@
   {
     "id": "nights_watch",
     "name": "Night's Watch",
-    "name_tr": "Gece Nöbetçileri",
+    "name_tr": "Gece Nöbeti",
     "religion": "old_gods",
     "color": [
       30,
@@ -553,8 +553,8 @@
   },
   {
     "id": "arryn",
-    "name": "House Arryn",
-    "name_tr": "Arryn Hanedanı (Vadi)",
+    "name": "Arryn",
+    "name_tr": "Arryn",
     "religion": "faith_of_the_seven",
     "color": [
       70,
@@ -608,8 +608,8 @@
   },
   {
     "id": "tully",
-    "name": "House Tully",
-    "name_tr": "Tully Hanedanı (Nehir Toprakları)",
+    "name": "Tully",
+    "name_tr": "Tully",
     "religion": "faith_of_the_seven",
     "color": [
       100,
@@ -670,7 +670,7 @@
   {
     "id": "free_folk",
     "name": "Free Folk",
-    "name_tr": "Özgür Halk (Yabanıllar)",
+    "name_tr": "Özgür Halk",
     "religion": "old_gods",
     "color": [
       130,
@@ -724,8 +724,8 @@
   },
   {
     "id": "bolton",
-    "name": "House Bolton",
-    "name_tr": "Bolton Hanedanı",
+    "name": "Bolton",
+    "name_tr": "Bolton",
     "religion": "old_gods",
     "color": [
       120,
@@ -786,8 +786,8 @@
   },
   {
     "id": "braavos",
-    "name": "Free City of Braavos",
-    "name_tr": "Braavos Özgür Şehri",
+    "name": "Braavos",
+    "name_tr": "Braavos",
     "religion": "valyrian",
     "color": [
       40,
@@ -836,8 +836,8 @@
   },
   {
     "id": "brotherhood_without_banners",
-    "name": "Brotherhood Without Banners",
-    "name_tr": "Sancaksız Kardeşlik",
+    "name": "Brotherhood",
+    "name_tr": "Kardeşlik",
     "religion": "faith_of_the_seven",
     "color": [
       110,

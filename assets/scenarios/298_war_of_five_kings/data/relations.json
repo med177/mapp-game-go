@@ -28,11 +28,18 @@
     "stance": "war"
   },
   {
+    "faction_a": "baratheon_dragonstone",
+    "faction_b": "baratheon_stormsend",
+    "score_a_to_b": -90,
+    "score_b_to_a": -90,
+    "stance": "war"
+  },
+  {
     "faction_a": "tyrell",
     "faction_b": "baratheon_stormsend",
-    "score_a_to_b": 80,
-    "score_b_to_a": 80,
-    "stance": "peace"
+    "score_a_to_b": 90,
+    "score_b_to_a": 90,
+    "stance": "allied"
   },
   {
     "faction_a": "nights_watch",
@@ -93,9 +100,9 @@
   {
     "faction_a": "tully",
     "faction_b": "bolton",
-    "score_a_to_b": -80,
-    "score_b_to_a": -80,
-    "stance": "war"
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
   },
   {
     "faction_a": "free_folk",
@@ -124,6 +131,13 @@
     "score_a_to_b": 50,
     "score_b_to_a": 50,
     "stance": "peace"
+  },
+  {
+    "faction_a": "greyjoy",
+    "faction_b": "stark",
+    "score_a_to_b": -90,
+    "score_b_to_a": -90,
+    "stance": "war"
   },
   {
     "faction_a": "braavos",
