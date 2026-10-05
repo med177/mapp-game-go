@@ -30,7 +30,9 @@ type UnitType struct {
 	Name   string `json:"name"`
 	NameTR string `json:"name_tr"`
 	// AllowedFactions boşsa birim tüm fraksiyonlar tarafından üretilebilir.
-	AllowedFactions []string     `json:"allowed_factions,omitempty"`
+	AllowedFactions []string `json:"allowed_factions,omitempty"`
+	// BlockedFactions, izin listesi boş olduğunda belirli fraksiyonları dışlar.
+	BlockedFactions []string     `json:"blocked_factions,omitempty"`
 	Category        UnitCategory `json:"category"`
 	Tier            UnitTier     `json:"tier"`
 	Image           string       `json:"image,omitempty"`
@@ -85,8 +87,16 @@ type UnitType struct {
 // IsAvailableToFaction birimin verilen fraksiyon tarafından üretilebilir olup
 // olmadığını bildirir. Boş izin listesi geriye dönük olarak herkese açıktır.
 func (t *UnitType) IsAvailableToFaction(factionID string) bool {
-	if t == nil || len(t.AllowedFactions) == 0 {
-		return t != nil
+	if t == nil {
+		return false
+	}
+	for _, blockedFactionID := range t.BlockedFactions {
+		if blockedFactionID == factionID {
+			return false
+		}
+	}
+	if len(t.AllowedFactions) == 0 {
+		return true
 	}
 	for _, allowedFactionID := range t.AllowedFactions {
 		if allowedFactionID == factionID {

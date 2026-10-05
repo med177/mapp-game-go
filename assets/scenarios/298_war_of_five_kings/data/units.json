@@ -63,10 +63,10 @@
   },
   {
     "id": "elite_infantry",
-    "allowed_factions": ["baratheon_king", "baratheon_dragonstone", "baratheon_stormsend"],
+    "blocked_factions": ["free_folk", "targaryen", "night's_watch", "greyjoy"],
     "image": "army/household_guard.png",
     "name": "Household Guard",
-    "name_tr": "Hanedan Muhafızları",
+    "name_tr": "Piyadeler",
     "attack": 18,
     "category": "infantry",
     "defense": 20,
@@ -138,7 +138,7 @@
   },
   {
     "id": "unsullied",
-    "allowed_factions": ["targaryen"],
+    "allowed_factions": ["targaryen", "free_cities", "braavos"],
     "image": "army/unsullied.png",
     "name": "Unsullied",
     "name_tr": "Lekesizler",
@@ -203,7 +203,7 @@
   },
   {
     "id": "nights_watch_rangers",
-    "allowed_factions": ["nights_watch"],
+    "allowed_factions": ["nights_watch", "stark"],
     "image": "army/nightwatch_ranger.png",
     "name": "Night's Watch Rangers",
     "name_tr": "Nöbetçiler",
@@ -265,7 +265,7 @@
   },
   {
     "id": "northern_shieldmen",
-    "allowed_factions": ["stark"],
+    "allowed_factions": ["stark", "bolton"],
     "image": "army/northern_shieldman.png",
     "name": "Northern Shieldmen",
     "name_tr": "Kuzey Kalkanlıları",
@@ -362,7 +362,7 @@
   },
   {
     "id": "dothraki_horse_lords",
-    "allowed_factions": ["targaryen"],
+    "allowed_factions": ["targaryen", "free_cities", "braavos"],
     "image": "army/dothrak.png",
     "name": "Dothraki Horse Lords",
     "name_tr": "Dothraklar",
@@ -393,7 +393,7 @@
   },
   {
     "id": "vale_knights",
-    "allowed_factions": ["arryn"],
+    "allowed_factions": ["arryn", "tully", "tyrell"],
     "image": "army/knight_vale.png",
     "name": "Knights of the Vale",
     "name_tr": "Vadi Şövalyeleri",
@@ -425,6 +425,7 @@
   },
   {
     "id": "scorpion",
+    "blocked_factions": ["free_folk", "targaryen"],
     "image": "army/scorpion.png",
     "name": "Scorpion",
     "name_tr": "Akrep Mızrağı",
@@ -456,6 +457,7 @@
   },
   {
     "id": "trebuchet",
+    "blocked_factions": ["free_folk", "targaryen"],
     "image": "army/trebuchet.png",
     "name": "Trebuchet",
     "name_tr": "Mancınık",

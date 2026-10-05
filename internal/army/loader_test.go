@@ -80,4 +80,13 @@ func TestUnitTypeFactionAvailabilityDefaultsToAllFactions(t *testing.T) {
 	if unit.IsAvailableToFaction("stark") {
 		t.Fatal("listelenmeyen fraksiyon birimi üretememeliydi")
 	}
+
+	unit.AllowedFactions = nil
+	unit.BlockedFactions = []string{"free_folk"}
+	if unit.IsAvailableToFaction("free_folk") {
+		t.Fatal("engellenen fraksiyon birimi üretememeliydi")
+	}
+	if !unit.IsAvailableToFaction("stark") {
+		t.Fatal("engellenmeyen fraksiyon birimi üretebilmeliydi")
+	}
 }
