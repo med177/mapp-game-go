@@ -66,3 +66,18 @@ func TestLoadUnitTypesKeepsPrimaryBuildingFromNewRequirements(t *testing.T) {
 		t.Fatal("yeni listedeki tüm bina şartları korunmalıydı")
 	}
 }
+
+func TestUnitTypeFactionAvailabilityDefaultsToAllFactions(t *testing.T) {
+	unit := &UnitType{}
+	if !unit.IsAvailableToFaction("stark") {
+		t.Fatal("izin listesi olmayan birim tüm fraksiyonlara açık olmalıydı")
+	}
+
+	unit.AllowedFactions = []string{"targaryen", "baratheon_king"}
+	if !unit.IsAvailableToFaction("targaryen") || !unit.IsAvailableToFaction("baratheon_king") {
+		t.Fatal("listelenen fraksiyonlar birimi üretebilmeliydi")
+	}
+	if unit.IsAvailableToFaction("stark") {
+		t.Fatal("listelenmeyen fraksiyon birimi üretememeliydi")
+	}
+}

@@ -26,12 +26,14 @@ type BuildingRequirement struct {
 
 // UnitType bir birim türünü tanımlar (JSON'dan yüklenir).
 type UnitType struct {
-	ID       string       `json:"id"`
-	Name     string       `json:"name"`
-	NameTR   string       `json:"name_tr"`
-	Category UnitCategory `json:"category"`
-	Tier     UnitTier     `json:"tier"`
-	Image    string       `json:"image,omitempty"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	NameTR string `json:"name_tr"`
+	// AllowedFactions boşsa birim tüm fraksiyonlar tarafından üretilebilir.
+	AllowedFactions []string     `json:"allowed_factions,omitempty"`
+	Category        UnitCategory `json:"category"`
+	Tier            UnitTier     `json:"tier"`
+	Image           string       `json:"image,omitempty"`
 
 	// MovementPoints bu birim tipinin tek başına taşıyabileceği tur başı hareket puanıdır.
 	MovementPoints int `json:"movement_points"`
@@ -78,6 +80,20 @@ type UnitType struct {
 	// Denizde taşınabilir mi?
 	Embarkable    bool `json:"embarkable"`
 	CarryCapacity int  `json:"carry_capacity,omitempty"`
+}
+
+// IsAvailableToFaction birimin verilen fraksiyon tarafından üretilebilir olup
+// olmadığını bildirir. Boş izin listesi geriye dönük olarak herkese açıktır.
+func (t *UnitType) IsAvailableToFaction(factionID string) bool {
+	if t == nil || len(t.AllowedFactions) == 0 {
+		return t != nil
+	}
+	for _, allowedFactionID := range t.AllowedFactions {
+		if allowedFactionID == factionID {
+			return true
+		}
+	}
+	return false
 }
 
 // BuildingRequirements, birimin tüm bina şartlarını döndürür.

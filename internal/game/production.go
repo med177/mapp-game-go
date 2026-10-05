@@ -156,6 +156,12 @@ func (g *Game) applyProductionTicks() []productionResult {
 			results = append(results, result)
 		case productionKindUnit:
 			unitType := g.gs.UnitTypes[order.TypeID]
+			if unitType == nil || !unitType.IsAvailableToFaction(order.FactionID) {
+				result.canceled = true
+				result.reason = "bu fraksiyon için birim üretimine izin yok"
+				results = append(results, result)
+				continue
+			}
 			if unitType != nil && !unitType.HasBuildingRequirements(region.BuildingLevels()) {
 				result.canceled = true
 				result.reason = "birim için gerekli binalar eksik"

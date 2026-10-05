@@ -4615,6 +4615,10 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 	if !ok {
 		return
 	}
+	if !utype.IsAvailableToFaction(string(g.gs.PlayerFactionID)) {
+		g.renderer.ShowCombatResult("Bu fraksiyon bu birimi üretemez.")
+		return
+	}
 	f, ok := g.gs.Factions[g.gs.PlayerFactionID]
 	if !ok {
 		return

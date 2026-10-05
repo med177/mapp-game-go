@@ -121,7 +121,7 @@ func aiSelectStrategicLandUnitWithResourceCheck(gs *state.GameState, self *facti
 }
 
 func aiUnitCandidateAvailableForSelection(gs *state.GameState, self *faction.Faction, unitType *army.UnitType, budget *aiBudget, ctx *StrategicContext, requireResources bool) bool {
-	if gs == nil || self == nil || unitType == nil || !unitType.HasAllRequiredTechs(self.Research.Completed) {
+	if gs == nil || self == nil || unitType == nil || !unitType.IsAvailableToFaction(string(self.ID)) || !unitType.HasAllRequiredTechs(self.Research.Completed) {
 		return false
 	}
 	if !requireResources {

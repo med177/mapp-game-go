@@ -34,7 +34,7 @@
     "id": "infantry",
     "image": "army/spearmen.png",
     "name": "Spearmen",
-    "name_tr": "Mızraklı Piyadeler",
+    "name_tr": "Mızraklılar",
     "attack": 10,
     "category": "infantry",
     "defense": 14,
@@ -63,6 +63,7 @@
   },
   {
     "id": "elite_infantry",
+    "allowed_factions": ["baratheon_king", "baratheon_dragonstone", "baratheon_stormsend"],
     "image": "army/household_guard.png",
     "name": "Household Guard",
     "name_tr": "Hanedan Muhafızları",
@@ -102,7 +103,7 @@
     "id": "heavy_cavalry",
     "image": "army/knight_westeros.png",
     "name": "Knights of Westeros",
-    "name_tr": "Westeros Şövalyeleri",
+    "name_tr": "Şövalyeler",
     "attack": 26,
     "category": "cavalry",
     "defense": 22,
@@ -137,6 +138,7 @@
   },
   {
     "id": "unsullied",
+    "allowed_factions": ["targaryen"],
     "image": "army/unsullied.png",
     "name": "Unsullied",
     "name_tr": "Lekesizler",
@@ -172,6 +174,7 @@
   },
   {
     "id": "dragon",
+    "allowed_factions": ["targaryen"],
     "image": "army/dragon.png",
     "name": "Dragon",
     "name_tr": "Ejderha",
@@ -200,9 +203,10 @@
   },
   {
     "id": "nights_watch_rangers",
+    "allowed_factions": ["nights_watch"],
     "image": "army/nightwatch_ranger.png",
     "name": "Night's Watch Rangers",
-    "name_tr": "Gece Nöbetçileri Korucuları",
+    "name_tr": "Nöbetçiler",
     "attack": 15,
     "category": "infantry",
     "defense": 13,
@@ -230,9 +234,10 @@
   },
   {
     "id": "wildling_raiders",
+    "allowed_factions": ["free_folk"],
     "image": "army/wildling_raider.png",
     "name": "Wildling Raiders",
-    "name_tr": "Yabanıl Akıncılar",
+    "name_tr": "Yabani Akıncılar",
     "attack": 18,
     "category": "infantry",
     "defense": 10,
@@ -260,6 +265,7 @@
   },
   {
     "id": "northern_shieldmen",
+    "allowed_factions": ["stark"],
     "image": "army/northern_shieldman.png",
     "name": "Northern Shieldmen",
     "name_tr": "Kuzey Kalkanlıları",
@@ -291,9 +297,10 @@
   },
   {
     "id": "ironborn_reavers",
+    "allowed_factions": ["greyjoy"],
     "image": "army/ironborn_reaver.png",
     "name": "Ironborn Reavers",
-    "name_tr": "Demirdoğumlular Akıncıları",
+    "name_tr": "Demirdoğumlular",
     "attack": 21,
     "category": "infantry",
     "defense": 12,
@@ -322,6 +329,7 @@
   },
   {
     "id": "kingsguard",
+    "allowed_factions": ["baratheon_king"],
     "image": "army/kings_guard.png",
     "name": "Kingsguard",
     "name_tr": "Kral Muhafızları",
@@ -354,9 +362,10 @@
   },
   {
     "id": "dothraki_horse_lords",
+    "allowed_factions": ["targaryen"],
     "image": "army/dothrak.png",
     "name": "Dothraki Horse Lords",
-    "name_tr": "Dothraki Atlı Lordları",
+    "name_tr": "Dothraklar",
     "attack": 32,
     "category": "cavalry",
     "defense": 18,
@@ -384,6 +393,7 @@
   },
   {
     "id": "vale_knights",
+    "allowed_factions": ["arryn"],
     "image": "army/knight_vale.png",
     "name": "Knights of the Vale",
     "name_tr": "Vadi Şövalyeleri",

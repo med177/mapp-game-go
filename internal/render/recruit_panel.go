@@ -849,6 +849,9 @@ func visibleUnitIDs(gs *state.GameState, region *world.Region) []string {
 		if utype == nil {
 			continue
 		}
+		if !utype.IsAvailableToFaction(string(gs.PlayerFactionID)) {
+			continue
+		}
 		if utype.PrimaryBuildingID() == "port" && !showNaval {
 			continue
 		}
