@@ -82,6 +82,13 @@ var slotDefs = []struct {
 	{"slot1", "Kayıt 1", "saves/slot1.json"},
 	{"slot2", "Kayıt 2", "saves/slot2.json"},
 	{"slot3", "Kayıt 3", "saves/slot3.json"},
+	{"slot4", "Kayıt 4", "saves/slot4.json"},
+	{"slot5", "Kayıt 5", "saves/slot5.json"},
+	{"slot6", "Kayıt 6", "saves/slot6.json"},
+	{"slot7", "Kayıt 7", "saves/slot7.json"},
+	{"slot8", "Kayıt 8", "saves/slot8.json"},
+	{"slot9", "Kayıt 9", "saves/slot9.json"},
+	{"slot10", "Kayıt 10", "saves/slot10.json"},
 }
 
 func slotPath(slotName string) (string, bool) {
@@ -99,7 +106,7 @@ func kindForSlotName(slotName string) SaveKind {
 		return SaveKindAuto
 	case "quicksave":
 		return SaveKindQuick
-	case "slot1", "slot2", "slot3":
+	case "slot1", "slot2", "slot3", "slot4", "slot5", "slot6", "slot7", "slot8", "slot9", "slot10":
 		return SaveKindSlot
 	default:
 		return SaveKindAuto
@@ -141,16 +148,17 @@ type saveMetadata struct {
 
 // SaveSlot bir kayıt slotunun metadata'sını taşır.
 type SaveSlot struct {
-	Name        string
-	DisplayName string
-	Path        string
-	Kind        SaveKind
-	GameVersion string
-	Exists      bool
-	FactionName string
-	Turn        int
-	Year        int
-	ModTime     time.Time
+	Name         string
+	DisplayName  string
+	Path         string
+	Kind         SaveKind
+	GameVersion  string
+	Exists       bool
+	ScenarioName string
+	FactionName  string
+	Turn         int
+	Year         int
+	ModTime      time.Time
 }
 
 // metaFields sadece metadata okumak için minimal struct.
@@ -184,6 +192,7 @@ func ListSlots() []SaveSlot {
 					s.GameVersion = version
 					s.Turn = meta.Turn
 					s.Year = meta.Year
+					s.ScenarioName = scenarioNameFromMetadata(meta.ScenarioID, meta.ScenarioPath)
 					s.FactionName = meta.FactionName
 					if s.FactionName == "" {
 						s.FactionName = factionNameFromScenario(meta.ScenarioID, meta.ScenarioPath, meta.PlayerFactionID)
@@ -196,6 +205,7 @@ func ListSlots() []SaveSlot {
 						if json.Unmarshal(payload, &m) == nil {
 							s.Turn = m.Turn
 							s.Year = m.Year
+							s.ScenarioName = scenarioNameFromMetadata(m.ScenarioID, m.ScenarioPath)
 							if f, ok := m.Factions[m.PlayerFactionID]; ok {
 								s.FactionName = f.NameTR
 							}
@@ -749,4 +759,16 @@ func factionNameFromScenario(scenarioID, savedScenarioPath string, factionID fac
 		return fx.NameTR
 	}
 	return ""
+}
+
+func scenarioNameFromMetadata(scenarioID, savedScenarioPath string) string {
+	scenarioPath := resolveScenarioPath(scenarioID, savedScenarioPath)
+	if scenarioPath == "" {
+		return scenarioID
+	}
+	sc, err := loadScenarioDefinition(scenarioPath)
+	if err != nil || sc.Name == "" {
+		return scenarioID
+	}
+	return sc.Name
 }

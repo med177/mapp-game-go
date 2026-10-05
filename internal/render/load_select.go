@@ -23,18 +23,30 @@ type slotCardLayout struct {
 const (
 	slotCardW                  = 480.0
 	slotCardH                  = 88.0
+	slotCardGapX               = 16.0
+	slotCardGapY               = 14.0
 	slotPendingDeleteNameInset = 18.0
 	slotPendingDeleteNameY     = 12.0
 	slotPendingDeletePromptY   = 36.0
 )
 
 func slotCardsStackRect() gameui.Rect {
-	return centeredStackRect(len(SaveSlots), slotCardW, slotCardH, 14, 0)
+	cols := slotGridColumns()
+	rows := (len(SaveSlots) + cols - 1) / cols
+	return centeredGridRect(cols, rows, slotCardW, slotCardH, slotCardGapX, slotCardGapY, 0)
+}
+
+func slotGridColumns() int {
+	if len(SaveSlots) > 6 {
+		return 2
+	}
+	return 1
 }
 
 func slotCardLayoutAt(i int) slotCardLayout {
 	stack := slotCardsStackRect()
-	rect := stackItemRect(stack, 88, 14, i)
+	cols := slotGridColumns()
+	rect := gridCellRect(stack, slotCardW, slotCardH, slotCardGapX, slotCardGapY, i%cols, i/cols)
 	return slotCardLayout{
 		X: rect.X,
 		Y: rect.Y,
@@ -152,6 +164,14 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 				}
 				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 44}, "Devlet: "+faction, detailCol, gameui.TextSmall, gameui.TextAlignStart)
 				drawUILabel(screen, gameui.Rect{X: cx + slotCardW/2, Y: cy + 44}, "Tur: "+itoa(slot.Turn)+"  |  "+itoa(slot.Year), detailCol, gameui.TextSmall, gameui.TextAlignCenter)
+				if !saveMode {
+					scenarioName := slot.ScenarioName
+					if scenarioName == "" {
+						scenarioName = "Bilinmiyor"
+					}
+					scenarioLabel := trimTextToWidth("Senaryo: "+scenarioName, FaceSmall, 360)
+					drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 62, W: 360}, scenarioLabel, detailCol, gameui.TextSmall, gameui.TextAlignStart)
+				}
 
 				modStr := slot.ModTime.Format("02.01.2006 15:04")
 				drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 14, W: slotCardW - 36}, modStr, color.RGBA{110, 100, 70, 200}, gameui.TextSmall, gameui.TextAlignEnd)
@@ -231,7 +251,7 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool, input gameui.InputState)
 	}
 
 	if r.keyJustPressed(ebiten.KeyArrowDown) {
-		next := (r.slotCursor + 1) % n
+		next := (r.slotCursor + slotGridColumns()) % n
 		if !saveMode {
 			for !SaveSlots[next].Exists {
 				next = (next + 1) % n
@@ -240,7 +260,7 @@ func (r *Renderer) handleSlotSelectInput(saveMode bool, input gameui.InputState)
 		r.setMenuCursor(&r.slotCursor, next)
 	}
 	if r.keyJustPressed(ebiten.KeyArrowUp) {
-		next := (r.slotCursor - 1 + n) % n
+		next := (r.slotCursor - slotGridColumns() + n) % n
 		if !saveMode {
 			for !SaveSlots[next].Exists {
 				next = (next - 1 + n) % n
