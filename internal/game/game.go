@@ -1710,6 +1710,9 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 		if idx := events.AutoChoose(evt); idx >= 0 {
 			g.applyHistoricalChoiceWithNotification(evt, idx, false)
 		}
+		if evt.HistoricalYear != 0 {
+			g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, "", nil)
+		}
 		return
 	}
 	g.renderer.ShowCombatResult(baseMsg)

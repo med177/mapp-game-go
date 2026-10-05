@@ -493,7 +493,6 @@ func IsPlayerRelevant(gs *state.GameState, e *Event) bool {
 	if gs == nil || e == nil {
 		return false
 	}
-
 	switch e.Target {
 	case "specific_faction":
 		if e.AffectedFaction == string(gs.PlayerFactionID) {
