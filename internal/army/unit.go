@@ -31,6 +31,7 @@ type UnitType struct {
 	NameTR   string       `json:"name_tr"`
 	Category UnitCategory `json:"category"`
 	Tier     UnitTier     `json:"tier"`
+	Image    string       `json:"image,omitempty"`
 
 	// MovementPoints bu birim tipinin tek başına taşıyabileceği tur başı hareket puanıdır.
 	MovementPoints int `json:"movement_points"`

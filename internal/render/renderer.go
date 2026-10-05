@@ -509,8 +509,10 @@ const (
 )
 
 var (
-	armyMarkerSprites      map[armyMarkerSpriteSet]*ebiten.Image
-	armyMarkerSpritesTried map[armyMarkerSpriteSet]bool
+	armyMarkerSprites            map[armyMarkerSpriteSet]*ebiten.Image
+	armyMarkerSpritesTried       map[armyMarkerSpriteSet]bool
+	armyMarkerSpritesByPath      map[string]*ebiten.Image
+	armyMarkerSpritesByPathTried map[string]bool
 )
 
 type confirmDialogState struct {
@@ -1462,9 +1464,13 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		armySpritesLoaded = false
 		unitSprites = nil
 		legacyUnitSprites = nil
+		explicitUnitSprites = nil
+		explicitUnitSpritesTried = nil
 		legacyArmySheet = nil
 		armyMarkerSprites = nil
 		armyMarkerSpritesTried = nil
+		armyMarkerSpritesByPath = nil
+		armyMarkerSpritesByPathTried = nil
 		preloadArmyMarkerSprites()
 		if gs.Phase != state.PhaseEditMode {
 			audio.PreloadScenarioSounds(filepath.Join(gs.ScenarioPath, "audio"), []string{
@@ -4551,7 +4557,55 @@ func (r *Renderer) armyMovementSpriteFor(aid army.ArmyID, ownerID string, naval 
 	if armySpriteSetForFaction(r.gs, ownerID) == armySpriteSetEastern {
 		set = armyMarkerSpriteEastern
 	}
+	if factionImagePath := factionArmyMarkerImagePath(r.gs, ownerID, naval); factionImagePath != "" {
+		if img := loadArmyMarkerSpritePath(factionImagePath); img != nil {
+			return img
+		}
+	}
 	return loadArmyMarkerSprite(set, naval)
+}
+
+func factionArmyMarkerImagePath(gs *state.GameState, ownerID string, naval bool) string {
+	if gs == nil || ownerID == "" || ActiveScenarioPath == "" {
+		return ""
+	}
+	f := gs.Factions[faction.FactionID(ownerID)]
+	if f == nil {
+		return ""
+	}
+	imagePath := f.ArmyImage
+	if naval {
+		imagePath = f.MarineImage
+	}
+	imagePath = strings.TrimSpace(imagePath)
+	if imagePath == "" {
+		return ""
+	}
+	return filepath.Join(ActiveScenarioPath, "sprites", filepath.FromSlash(imagePath))
+}
+
+func loadArmyMarkerSpritePath(path string) *ebiten.Image {
+	if path == "" {
+		return nil
+	}
+	if armyMarkerSpritesByPath == nil {
+		armyMarkerSpritesByPath = make(map[string]*ebiten.Image)
+	}
+	if armyMarkerSpritesByPathTried == nil {
+		armyMarkerSpritesByPathTried = make(map[string]bool)
+	}
+	if img := armyMarkerSpritesByPath[path]; img != nil {
+		return img
+	}
+	if armyMarkerSpritesByPathTried[path] {
+		return nil
+	}
+	armyMarkerSpritesByPathTried[path] = true
+	img := tryLoadImage(path)
+	if img != nil {
+		armyMarkerSpritesByPath[path] = img
+	}
+	return img
 }
 
 func loadArmyMarkerSprite(set armyMarkerSpriteSet, naval bool) *ebiten.Image {

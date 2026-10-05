@@ -7,7 +7,7 @@
     "level": 3,
     "traits": [
       "tactician",
-      "cavalry_leader"
+      "aggressor"
     ],
     "start_year": 298,
     "end_year": 300
@@ -19,7 +19,7 @@
     "portrait_asset": "ned_stark.png",
     "level": 4,
     "traits": [
-      "honorable",
+      "veteran",
       "defender"
     ],
     "start_year": 280,
@@ -32,8 +32,8 @@
     "portrait_asset": "tywin_lannister.png",
     "level": 5,
     "traits": [
-      "mastermind",
-      "wealthy"
+      "tactician",
+      "veteran"
     ],
     "start_year": 260,
     "end_year": 301
@@ -45,8 +45,8 @@
     "portrait_asset": "jaime_lannister.png",
     "level": 4,
     "traits": [
-      "duelist",
-      "bold"
+      "aggressor",
+      "veteran"
     ],
     "start_year": 281,
     "end_year": 305
@@ -58,8 +58,8 @@
     "portrait_asset": "stannis.png",
     "level": 4,
     "traits": [
-      "unyielding",
-      "naval_commander"
+      "defender",
+      "tactician"
     ],
     "start_year": 282,
     "end_year": 303
@@ -71,7 +71,7 @@
     "portrait_asset": "renly.png",
     "level": 2,
     "traits": [
-      "charismatic"
+      "veteran"
     ],
     "start_year": 290,
     "end_year": 299
@@ -83,8 +83,8 @@
     "portrait_asset": "daenerys.png",
     "level": 3,
     "traits": [
-      "dragon_rider",
-      "liberator"
+      "aggressor",
+      "veteran"
     ],
     "start_year": 297,
     "end_year": 305
@@ -96,8 +96,8 @@
     "portrait_asset": "jon_snow.png",
     "level": 2,
     "traits": [
-      "brave",
-      "swordsman"
+      "veteran",
+      "aggressor"
     ],
     "start_year": 298,
     "end_year": 305
@@ -110,7 +110,7 @@
     "level": 4,
     "traits": [
       "defender",
-      "unyielding"
+      "veteran"
     ],
     "start_year": 298,
     "end_year": 305
@@ -135,7 +135,7 @@
     "portrait_asset": "edmure_tully.png",
     "level": 3,
     "traits": [
-      "bold",
+      "aggressor",
       "defender"
     ],
     "start_year": 298,
@@ -148,7 +148,7 @@
     "portrait_asset": "mance_rayder.png",
     "level": 4,
     "traits": [
-      "charismatic",
+      "veteran",
       "tactician"
     ],
     "start_year": 298,
@@ -161,8 +161,8 @@
     "portrait_asset": "tormund_giantsbane.png",
     "level": 3,
     "traits": [
-      "brave",
-      "bold"
+      "veteran",
+      "aggressor"
     ],
     "start_year": 298,
     "end_year": 305
@@ -174,7 +174,7 @@
     "portrait_asset": "roose_bolton.png",
     "level": 4,
     "traits": [
-      "mastermind",
+      "tactician",
       "defender"
     ],
     "start_year": 298,
@@ -187,8 +187,8 @@
     "portrait_asset": "ramsay_bolton.png",
     "level": 3,
     "traits": [
-      "bold",
-      "duelist"
+      "aggressor",
+      "veteran"
     ],
     "start_year": 298,
     "end_year": 305
@@ -200,8 +200,8 @@
     "portrait_asset": "sealord_braavos.png",
     "level": 4,
     "traits": [
-      "wealthy",
-      "naval_commander"
+      "veteran",
+      "tactician"
     ],
     "start_year": 298,
     "end_year": 305
@@ -213,8 +213,8 @@
     "portrait_asset": "beric_dondarrion.png",
     "level": 4,
     "traits": [
-      "charismatic",
-      "brave"
+      "veteran",
+      "aggressor"
     ],
     "start_year": 298,
     "end_year": 302
@@ -226,8 +226,8 @@
     "portrait_asset": "thoros_of_myr.png",
     "level": 3,
     "traits": [
-      "brave",
-      "liberator"
+      "veteran",
+      "defender"
     ],
     "start_year": 298,
     "end_year": 305

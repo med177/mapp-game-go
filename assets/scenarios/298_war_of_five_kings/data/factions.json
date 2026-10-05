@@ -1,6 +1,8 @@
 [
   {
     "id": "stark",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Stark",
     "name_tr": "Stark",
     "historical_changes": [
@@ -71,6 +73,8 @@
   },
   {
     "id": "lannister",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Lannister",
     "name_tr": "Lannister",
     "religion": "faith_of_the_seven",
@@ -135,6 +139,8 @@
   },
   {
     "id": "baratheon_king",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Baratheon (King's Landing)",
     "name_tr": "Baratheon (Kralın Şehri)",
     "religion": "faith_of_the_seven",
@@ -190,6 +196,8 @@
   },
   {
     "id": "baratheon_dragonstone",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Baratheon (Dragonstone)",
     "name_tr": "Baratheon (Ejderha Kayası)",
     "religion": "lord_of_light",
@@ -242,6 +250,8 @@
   },
   {
     "id": "baratheon_stormsend",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Baratheon (Storm's End)",
     "name_tr": "Baratheon (Fırtına Burnu)",
     "religion": "faith_of_the_seven",
@@ -291,6 +301,8 @@
   },
   {
     "id": "greyjoy",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Greyjoy",
     "name_tr": "Greyjoy",
     "religion": "drowned_god",
@@ -343,6 +355,8 @@
   },
   {
     "id": "tyrell",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Tyrell",
     "name_tr": "Tyrell",
     "religion": "faith_of_the_seven",
@@ -396,6 +410,8 @@
   },
   {
     "id": "martell",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Martell",
     "name_tr": "Martell",
     "religion": "faith_of_the_seven",
@@ -453,6 +469,8 @@
   },
   {
     "id": "targaryen",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Targaryen",
     "name_tr": "Targaryen",
     "religion": "valyrian",
@@ -503,6 +521,8 @@
   },
   {
     "id": "nights_watch",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Night's Watch",
     "name_tr": "Gece Nöbeti",
     "religion": "old_gods",
@@ -553,6 +573,8 @@
   },
   {
     "id": "arryn",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Arryn",
     "name_tr": "Arryn",
     "religion": "faith_of_the_seven",
@@ -608,6 +630,8 @@
   },
   {
     "id": "tully",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Tully",
     "name_tr": "Tully",
     "religion": "faith_of_the_seven",
@@ -669,6 +693,8 @@
   },
   {
     "id": "free_folk",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Free Folk",
     "name_tr": "Özgür Halk",
     "religion": "old_gods",
@@ -724,6 +750,8 @@
   },
   {
     "id": "bolton",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Bolton",
     "name_tr": "Bolton",
     "religion": "old_gods",
@@ -786,6 +814,8 @@
   },
   {
     "id": "braavos",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Braavos",
     "name_tr": "Braavos",
     "religion": "valyrian",
@@ -836,6 +866,8 @@
   },
   {
     "id": "brotherhood_without_banners",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Brotherhood",
     "name_tr": "Kardeşlik",
     "religion": "faith_of_the_seven",
@@ -889,6 +921,8 @@
   },
   {
     "id": "free_cities",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "name": "Free Cities",
     "name_tr": "Özgür Şehirler",
     "religion": "pagan",

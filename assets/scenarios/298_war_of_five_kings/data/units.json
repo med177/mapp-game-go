@@ -1,6 +1,7 @@
 [
   {
     "id": "militia",
+    "image": "army/peasant.png",
     "name": "Peasant Levy",
     "name_tr": "Köylü Milisler",
     "attack": 5,
@@ -31,6 +32,7 @@
   },
   {
     "id": "infantry",
+    "image": "army/spearmen.png",
     "name": "Spearmen",
     "name_tr": "Mızraklı Piyadeler",
     "attack": 10,
@@ -61,6 +63,7 @@
   },
   {
     "id": "elite_infantry",
+    "image": "army/household_guard.png",
     "name": "Household Guard",
     "name_tr": "Hanedan Muhafızları",
     "attack": 18,
@@ -97,6 +100,7 @@
   },
   {
     "id": "heavy_cavalry",
+    "image": "army/knight_westeros.png",
     "name": "Knights of Westeros",
     "name_tr": "Westeros Şövalyeleri",
     "attack": 26,
@@ -133,6 +137,7 @@
   },
   {
     "id": "unsullied",
+    "image": "army/unsullied.png",
     "name": "Unsullied",
     "name_tr": "Lekesizler",
     "attack": 22,
@@ -167,6 +172,7 @@
   },
   {
     "id": "dragon",
+    "image": "army/dragon.png",
     "name": "Dragon",
     "name_tr": "Ejderha",
     "attack": 85,
@@ -194,6 +200,7 @@
   },
   {
     "id": "nights_watch_rangers",
+    "image": "army/nightwatch_ranger.png",
     "name": "Night's Watch Rangers",
     "name_tr": "Gece Nöbetçileri Korucuları",
     "attack": 15,
@@ -223,6 +230,7 @@
   },
   {
     "id": "wildling_raiders",
+    "image": "army/wildling_raider.png",
     "name": "Wildling Raiders",
     "name_tr": "Yabanıl Akıncılar",
     "attack": 18,
@@ -252,6 +260,7 @@
   },
   {
     "id": "northern_shieldmen",
+    "image": "army/northern_shieldman.png",
     "name": "Northern Shieldmen",
     "name_tr": "Kuzey Kalkanlıları",
     "attack": 16,
@@ -282,6 +291,7 @@
   },
   {
     "id": "ironborn_reavers",
+    "image": "army/ironborn_reaver.png",
     "name": "Ironborn Reavers",
     "name_tr": "Demirdoğumlular Akıncıları",
     "attack": 21,
@@ -312,6 +322,7 @@
   },
   {
     "id": "kingsguard",
+    "image": "army/kings_guard.png",
     "name": "Kingsguard",
     "name_tr": "Kral Muhafızları",
     "attack": 28,
@@ -343,6 +354,7 @@
   },
   {
     "id": "dothraki_horse_lords",
+    "image": "army/dothrak.png",
     "name": "Dothraki Horse Lords",
     "name_tr": "Dothraki Atlı Lordları",
     "attack": 32,
@@ -372,6 +384,7 @@
   },
   {
     "id": "vale_knights",
+    "image": "army/knight_vale.png",
     "name": "Knights of the Vale",
     "name_tr": "Vadi Şövalyeleri",
     "attack": 30,
@@ -402,6 +415,7 @@
   },
   {
     "id": "scorpion",
+    "image": "army/scorpion.png",
     "name": "Scorpion",
     "name_tr": "Akrep Mızrağı",
     "attack": 30,
@@ -432,6 +446,7 @@
   },
   {
     "id": "trebuchet",
+    "image": "army/trebuchet.png",
     "name": "Trebuchet",
     "name_tr": "Mancınık",
     "attack": 42,
@@ -460,5 +475,98 @@
     "cloth_cost": 0,
     "spice_cost": 0,
     "movement_points": 1
+  },
+  {
+    "id": "transport",
+    "image": "army/ship_transport.png",
+    "name": "Transport Ship",
+    "name_tr": "Nakliye Gemisi",
+    "attack": 4,
+    "category": "naval_trans",
+    "defense": 10,
+    "embarkable": false,
+    "carry_capacity": 4,
+    "gold_cost": 200,
+    "grain_upkeep": 10,
+    "gold_upkeep": 10,
+    "hp": 100,
+    "morale": 30,
+    "required_buildings": [
+      { "id": "port", "level": 1 }
+    ],
+    "required_tech": [
+      "navigation"
+    ],
+    "tier": 1,
+    "turns_required": 4,
+    "grain_cost": 8,
+    "iron_cost": 3,
+    "timber_cost": 20,
+    "stone_cost": 0,
+    "cloth_cost": 5,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
+    "id": "merchant_ship",
+    "image": "army/ship_merchant.png",
+    "name": "Merchant Ship",
+    "name_tr": "Ticaret Gemisi",
+    "attack": 2,
+    "category": "naval_trade",
+    "defense": 4,
+    "embarkable": false,
+    "gold_cost": 180,
+    "grain_upkeep": 6,
+    "gold_upkeep": 4,
+    "merchant_trade_income": 8,
+    "hp": 100,
+    "morale": 20,
+    "required_buildings": [
+      { "id": "port", "level": 2 }
+    ],
+    "required_tech": [
+      "trade_routes",
+      "harbor_administration"
+    ],
+    "tier": 1,
+    "turns_required": 6,
+    "grain_cost": 8,
+    "iron_cost": 4,
+    "timber_cost": 26,
+    "stone_cost": 0,
+    "spice_cost": 2,
+    "cloth_cost": 6,
+    "movement_points": 4
+  },{
+    "id": "warship",
+    "image": "army/ship_war_galley.png",
+    "name": "Warship",
+    "name_tr": "Savaş Gemisi",
+    "attack": 30,
+    "category": "naval_war",
+    "defense": 30,
+    "embarkable": false,
+    "gold_cost": 400,
+    "grain_upkeep": 40,
+    "gold_upkeep": 40,
+    "hp": 100,
+    "morale": 60,
+    "required_buildings": [
+      { "id": "port", "level": 3 }
+    ],
+    "required_tech": [
+      "navigation",
+      "naval_doctrine"
+    ],
+    "tier": 2,
+    "turns_required": 8,
+    "grain_cost": 8,
+    "iron_cost": 6,
+    "timber_cost": 40,
+    "stone_cost": 0,
+    "cloth_cost": 8,
+    "spice_cost": 8,
+    "movement_points": 2
   }
 ]

@@ -50,6 +50,8 @@ type Faction struct {
 	ID                FactionID          `json:"id"`
 	Name              string             `json:"name"`
 	NameTR            string             `json:"name_tr"`
+	ArmyImage         string             `json:"army_image,omitempty"`
+	MarineImage       string             `json:"marine_image,omitempty"`
 	Flag              string             `json:"flag,omitempty"`
 	HistoricalChanges []HistoricalChange `json:"historical_changes,omitempty"`
 	Religion          religion.Type      `json:"religion"`

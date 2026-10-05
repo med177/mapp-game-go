@@ -7,6 +7,7 @@ import (
 	"math"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
@@ -21,10 +22,12 @@ import (
 )
 
 var (
-	unitSprites       map[unitSpriteKey]*ebiten.Image
-	legacyUnitSprites map[string]*ebiten.Image
-	legacyArmySheet   *ebiten.Image
-	armySpritesLoaded bool
+	unitSprites              map[unitSpriteKey]*ebiten.Image
+	legacyUnitSprites        map[string]*ebiten.Image
+	explicitUnitSprites      map[string]*ebiten.Image
+	explicitUnitSpritesTried map[string]bool
+	legacyArmySheet          *ebiten.Image
+	armySpritesLoaded        bool
 )
 
 const unitSpriteAspectH = float32(360) / float32(210)
@@ -88,6 +91,8 @@ func ensureArmySprites() {
 	armySpritesLoaded = true
 	unitSprites = make(map[unitSpriteKey]*ebiten.Image, len(unitSpriteAssetNames)*2)
 	legacyUnitSprites = make(map[string]*ebiten.Image, len(unitSpriteAssetNames))
+	explicitUnitSprites = make(map[string]*ebiten.Image)
+	explicitUnitSpritesTried = make(map[string]bool)
 	base := filepath.Join(ActiveScenarioPath, "sprites")
 	for _, set := range []struct {
 		kind armySpriteSet
@@ -137,6 +142,20 @@ func armySpriteSetForFaction(gs *state.GameState, ownerID string) armySpriteSet 
 
 func unitSpriteForFaction(gs *state.GameState, ownerID, unitID string) *ebiten.Image {
 	ensureArmySprites()
+	if gs != nil {
+		if unitType := gs.UnitTypes[unitID]; unitType != nil {
+			imagePath := strings.TrimSpace(unitType.Image)
+			if imagePath != "" {
+				if !explicitUnitSpritesTried[imagePath] {
+					explicitUnitSpritesTried[imagePath] = true
+					explicitUnitSprites[imagePath] = tryLoadImage(filepath.Join(ActiveScenarioPath, "sprites", filepath.FromSlash(imagePath)))
+				}
+				if img := explicitUnitSprites[imagePath]; img != nil {
+					return img
+				}
+			}
+		}
+	}
 	set := armySpriteSetForFaction(gs, ownerID)
 	if img := unitSprites[unitSpriteKey{set: set, unitID: unitID}]; img != nil {
 		return img
