@@ -57,8 +57,8 @@
       {
         "id": "sunspear_main",
         "name_tr": "Güneş Mızrağı",
-        "x": 1645,
-        "y": 3143,
+        "x": 1671,
+        "y": 3107,
         "type": "city",
         "is_center": true
       }
@@ -68,18 +68,10 @@
     "region_id": "winterfell_region",
     "settlements": [
       {
-        "id": "test_settlement",
-        "name_tr": "test",
-        "x": 1052,
-        "y": 841,
-        "type": "port",
-        "is_center": true
-      },
-      {
         "id": "winterfell_main",
         "name_tr": "Kışyarı",
-        "x": 1125,
-        "y": 1097,
+        "x": 1117,
+        "y": 1103,
         "type": "city",
         "is_center": true
       }
@@ -112,15 +104,7 @@
     ]
   },
   {
-    "region_id": "new_region_58",
-    "settlements": null
-  },
-  {
-    "region_id": "new_region_56",
-    "settlements": null
-  },
-  {
-    "region_id": "new_region_54",
+    "region_id": "crag",
     "settlements": null
   },
   {
@@ -138,7 +122,16 @@
   },
   {
     "region_id": "new_region_60",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "new_region_60_settlement_1",
+        "name_tr": "Sharp Point",
+        "x": 1616,
+        "y": 2415,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "highgarden",
@@ -159,8 +152,8 @@
       {
         "id": "pyke_main",
         "name_tr": "Pyke",
-        "x": 668,
-        "y": 1900,
+        "x": 690,
+        "y": 1950,
         "type": "port",
         "is_center": true
       }
@@ -168,16 +161,7 @@
   },
   {
     "region_id": "the_wall",
-    "settlements": [
-      {
-        "id": "castle_black_main",
-        "name_tr": "Kara Kale",
-        "x": 1365,
-        "y": 589,
-        "type": "fortress",
-        "is_center": true
-      }
-    ]
+    "settlements": null
   },
   {
     "region_id": "pentos",
@@ -271,8 +255,8 @@
       {
         "id": "the_dreadfort_main",
         "name_tr": "Dehşet Kalesi",
-        "x": 1481,
-        "y": 1056,
+        "x": 1458,
+        "y": 1038,
         "type": "fortress",
         "is_center": true
       }
@@ -284,8 +268,8 @@
       {
         "id": "the_twins_main",
         "name_tr": "İkizler",
-        "x": 1167,
-        "y": 1835,
+        "x": 1076,
+        "y": 1773,
         "type": "fortress",
         "is_center": true
       }
@@ -297,8 +281,8 @@
       {
         "id": "the_eyrie_main",
         "name_tr": "Kartal Yuvası",
-        "x": 1475,
-        "y": 1895,
+        "x": 1500,
+        "y": 1897,
         "type": "fortress",
         "is_center": true
       }
@@ -323,8 +307,8 @@
       {
         "id": "riverlands_main",
         "name_tr": "Nehir Toprakları",
-        "x": 1211,
-        "y": 1919,
+        "x": 1029,
+        "y": 1984,
         "type": "city",
         "is_center": true
       }
@@ -349,8 +333,8 @@
       {
         "id": "harrenhal_main",
         "name_tr": "Harrenhal",
-        "x": 1328,
-        "y": 2100,
+        "x": 1258,
+        "y": 2087,
         "type": "fortress",
         "is_center": true
       }
@@ -362,8 +346,8 @@
       {
         "id": "hollow_hill_main",
         "name_tr": "Oyuk Tepe",
-        "x": 1212,
-        "y": 2169,
+        "x": 1154,
+        "y": 2132,
         "type": "fortress",
         "is_center": true
       }
@@ -388,8 +372,8 @@
       {
         "id": "reach_main",
         "name_tr": "Reach",
-        "x": 1093,
-        "y": 2518,
+        "x": 1146,
+        "y": 2441,
         "type": "city",
         "is_center": true
       }
@@ -401,8 +385,8 @@
       {
         "id": "oldtown_main",
         "name_tr": "Oldtown",
-        "x": 684,
-        "y": 2914,
+        "x": 691,
+        "y": 2916,
         "type": "city",
         "is_center": true
       }
@@ -418,8 +402,8 @@
       {
         "id": "karhold_main",
         "name_tr": "Karhold",
-        "x": 1635,
-        "y": 896,
+        "x": 1645,
+        "y": 912,
         "type": "fortress",
         "is_center": true
       }
@@ -483,8 +467,8 @@
       {
         "id": "flints_finger_main",
         "name_tr": "Flint Parmağı",
-        "x": 735,
-        "y": 1578,
+        "x": 755,
+        "y": 1566,
         "type": "town",
         "is_center": true
       }
@@ -522,8 +506,8 @@
       {
         "id": "the_fingers_main",
         "name_tr": "Parmaklar",
-        "x": 1590,
-        "y": 2075,
+        "x": 1468,
+        "y": 1688,
         "type": "town",
         "is_center": true
       }
@@ -535,8 +519,8 @@
       {
         "id": "crownlands_main",
         "name_tr": "Taç Toprakları",
-        "x": 1353,
-        "y": 2246,
+        "x": 1336,
+        "y": 2273,
         "type": "city",
         "is_center": true
       }
@@ -548,8 +532,8 @@
       {
         "id": "crackclaw_point_main",
         "name_tr": "Yengeç Pençesi Burnu",
-        "x": 1628,
-        "y": 2180,
+        "x": 1629,
+        "y": 2172,
         "type": "town",
         "is_center": true
       }
@@ -565,8 +549,8 @@
       {
         "id": "kingswood_main",
         "name_tr": "Kral Ormanı",
-        "x": 1391,
-        "y": 2438,
+        "x": 1456,
+        "y": 2470,
         "type": "town",
         "is_center": true
       }
@@ -587,7 +571,16 @@
   },
   {
     "region_id": "cornfield",
-    "settlements": null
+    "settlements": [
+      {
+        "id": "cornfield_settlement_1",
+        "name_tr": "Mısır Tarlası",
+        "x": 673,
+        "y": 2449,
+        "type": "city",
+        "is_center": true
+      }
+    ]
   },
   {
     "region_id": "horn_hill",
@@ -595,8 +588,8 @@
       {
         "id": "horn_hill_main",
         "name_tr": "Horn Hill",
-        "x": 733,
-        "y": 2770,
+        "x": 889,
+        "y": 2816,
         "type": "fortress",
         "is_center": true
       }
@@ -621,8 +614,8 @@
       {
         "id": "blackmont_main",
         "name_tr": "Blackmont",
-        "x": 988,
-        "y": 2879,
+        "x": 957,
+        "y": 2952,
         "type": "fortress",
         "is_center": true
       }
@@ -634,8 +627,8 @@
       {
         "id": "prince_pass_main",
         "name_tr": "Prens Geçidi",
-        "x": 1261,
-        "y": 2867,
+        "x": 1004,
+        "y": 2878,
         "type": "fortress",
         "is_center": true
       }
@@ -647,8 +640,8 @@
       {
         "id": "yronwood_main",
         "name_tr": "Yronwood",
-        "x": 1260,
-        "y": 2970,
+        "x": 1313,
+        "y": 3015,
         "type": "fortress",
         "is_center": true
       }
@@ -660,8 +653,8 @@
       {
         "id": "sandstone_main",
         "name_tr": "Sandstone",
-        "x": 1017,
-        "y": 3129,
+        "x": 1005,
+        "y": 3140,
         "type": "fortress",
         "is_center": true
       }
@@ -699,8 +692,8 @@
       {
         "id": "starfall_main",
         "name_tr": "Starfall",
-        "x": 903,
-        "y": 3024,
+        "x": 957,
+        "y": 3009,
         "type": "fortress",
         "is_center": true
       }
@@ -721,50 +714,627 @@
   },
   {
     "region_id": "the_gift",
-    "settlements": [{"id": "the_gift_main", "name_tr": "Hediye", "x": 1320, "y": 790, "type": "town", "is_center": true}]
+    "settlements": [
+      {
+        "id": "the_gift_main",
+        "name_tr": "Hediye",
+        "x": 1363,
+        "y": 741,
+        "type": "town",
+        "is_center": true
+      },
+      {
+        "id": "castle_black_main",
+        "name_tr": "Kara Kale",
+        "x": 1367,
+        "y": 635,
+        "type": "fortress"
+      }
+    ]
   },
-  {"region_id": "long_lake", "settlements": [{"id": "long_lake_main", "name_tr": "Uzun Göl", "x": 1110, "y": 980, "type": "town", "is_center": true}]},
-  {"region_id": "the_wolfswood", "settlements": [{"id": "the_wolfswood_main", "name_tr": "Kurt Ormanı", "x": 900, "y": 1080, "type": "town", "is_center": true}]},
-  {"region_id": "dragon_point", "settlements": [{"id": "dragon_point_main", "name_tr": "Ejderha Burnu", "x": 600, "y": 1120, "type": "port", "is_center": true}]},
-  {"region_id": "torrhens_square", "settlements": [{"id": "torrhens_square_main", "name_tr": "Torrhen Meydanı", "x": 980, "y": 1320, "type": "fortress", "is_center": true}]},
-  {"region_id": "lonely_hills", "settlements": [{"id": "lonely_hills_main", "name_tr": "Yalnız Tepeler", "x": 1470, "y": 980, "type": "fortress", "is_center": true}]},
-  {"region_id": "hornwood", "settlements": [{"id": "hornwood_main", "name_tr": "Hornwood", "x": 1450, "y": 1300, "type": "fortress", "is_center": true}]},
-  {"region_id": "the_rills", "settlements": [{"id": "the_rills_main", "name_tr": "Rills", "x": 620, "y": 1450, "type": "town", "is_center": true}]},
-  {"region_id": "cape_kraken", "settlements": [{"id": "cape_kraken_main", "name_tr": "Kraken Burnu", "x": 750, "y": 1650, "type": "port", "is_center": true}]},
-  {"region_id": "bear_island", "settlements": [{"id": "bear_island_main", "name_tr": "Ayı Adası", "x": 700, "y": 800, "type": "port", "is_center": true}]},
-  {"region_id": "the_grey_cliffs", "settlements": [{"id": "the_grey_cliffs_main", "name_tr": "Gri Kayalıklar", "x": 1800, "y": 980, "type": "fortress", "is_center": true}]},
-  {"region_id": "great_wyk", "settlements": [{"id": "great_wyk_main", "name_tr": "Büyük Wyk", "x": 500, "y": 1830, "type": "port", "is_center": true}]},
-  {"region_id": "orkmont", "settlements": [{"id": "orkmont_main", "name_tr": "Orkmont", "x": 560, "y": 1870, "type": "port", "is_center": true}]},
-  {"region_id": "harlaw", "settlements": [{"id": "harlaw_main", "name_tr": "Harlaw", "x": 760, "y": 1900, "type": "port", "is_center": true}]},
-  {"region_id": "west_vale", "settlements": [{"id": "west_vale_main", "name_tr": "Batı Vadi", "x": 1320, "y": 1800, "type": "town", "is_center": true}]},
-  {"region_id": "gulltown", "settlements": [{"id": "gulltown_main", "name_tr": "Martı Kasabası", "x": 1710, "y": 2100, "type": "city", "is_center": true}]},
-  {"region_id": "saltpans", "settlements": [{"id": "saltpans_main", "name_tr": "Tuz Tavaları", "x": 1600, "y": 2200, "type": "port", "is_center": true}]},
-  {"region_id": "wickenden", "settlements": [{"id": "wickenden_main", "name_tr": "Wickenden", "x": 1680, "y": 2240, "type": "town", "is_center": true}]},
-  {"region_id": "the_trident", "settlements": [{"id": "the_trident_main", "name_tr": "Üç Dişli Mızrak", "x": 1240, "y": 1900, "type": "city", "is_center": true}]},
-  {"region_id": "golden_tooth", "settlements": [{"id": "golden_tooth_main", "name_tr": "Altın Diş", "x": 900, "y": 2200, "type": "fortress", "is_center": true}]},
-  {"region_id": "stone_sept", "settlements": [{"id": "stone_sept_main", "name_tr": "Taş Septi", "x": 1050, "y": 2300, "type": "town", "is_center": true}]},
-  {"region_id": "silver_hill", "settlements": [{"id": "silver_hill_main", "name_tr": "Gümüş Tepe", "x": 1000, "y": 2420, "type": "town", "is_center": true}]},
-  {"region_id": "golden_grove", "settlements": [{"id": "golden_grove_main", "name_tr": "Altın Koruluk", "x": 850, "y": 2700, "type": "town", "is_center": true}]},
-  {"region_id": "grassy_vale", "settlements": [{"id": "grassy_vale_main", "name_tr": "Çimenli Vadi", "x": 1050, "y": 2780, "type": "town", "is_center": true}]},
-  {"region_id": "old_oak", "settlements": [{"id": "old_oak_main", "name_tr": "Eski Meşe", "x": 700, "y": 2700, "type": "town", "is_center": true}]},
-  {"region_id": "ashford", "settlements": [{"id": "ashford_main", "name_tr": "Ashford", "x": 1000, "y": 2850, "type": "fortress", "is_center": true}]},
-  {"region_id": "brightwater_reach", "settlements": [{"id": "brightwater_reach_main", "name_tr": "Parlaksu Diyarı", "x": 500, "y": 2800, "type": "port", "is_center": true}]},
-  {"region_id": "blackhaven", "settlements": [{"id": "blackhaven_main", "name_tr": "Karakale", "x": 1150, "y": 2750, "type": "fortress", "is_center": true}]},
-  {"region_id": "summerhall", "settlements": [{"id": "summerhall_main", "name_tr": "Summerhall", "x": 1250, "y": 2800, "type": "fortress", "is_center": true}]},
-  {"region_id": "rainwood", "settlements": [{"id": "rainwood_main", "name_tr": "Yağmur Ormanı", "x": 1370, "y": 2900, "type": "town", "is_center": true}]},
-  {"region_id": "cape_wrath", "settlements": [{"id": "cape_wrath_main", "name_tr": "Gazap Burnu", "x": 1500, "y": 3000, "type": "port", "is_center": true}]},
-  {"region_id": "mistwood", "settlements": [{"id": "mistwood_main", "name_tr": "Sis Ormanı", "x": 1600, "y": 2950, "type": "town", "is_center": true}]},
-  {"region_id": "griffins_roost", "settlements": [{"id": "griffins_roost_main", "name_tr": "Griffin Yuvası", "x": 1500, "y": 2750, "type": "fortress", "is_center": true}]},
-  {"region_id": "stonehelm", "settlements": [{"id": "stonehelm_main", "name_tr": "Taş Miğfer", "x": 1650, "y": 3050, "type": "fortress", "is_center": true}]},
-  {"region_id": "tarth", "settlements": [{"id": "tarth_main", "name_tr": "Tarth", "x": 1840, "y": 2850, "type": "port", "is_center": true}]},
-  {"region_id": "uplands", "settlements": [{"id": "uplands_main", "name_tr": "Yüksek Topraklar", "x": 750, "y": 2850, "type": "town", "is_center": true}]},
-  {"region_id": "skyreach", "settlements": [{"id": "skyreach_main", "name_tr": "Gökyüzü Ulaşımı", "x": 1150, "y": 3000, "type": "fortress", "is_center": true}]},
-  {"region_id": "wyl", "settlements": [{"id": "wyl_main", "name_tr": "Wyl", "x": 1370, "y": 2950, "type": "fortress", "is_center": true}]},
-  {"region_id": "the_tor", "settlements": [{"id": "the_tor_main", "name_tr": "Tor", "x": 1560, "y": 2960, "type": "fortress", "is_center": true}]},
-  {"region_id": "vaith", "settlements": [{"id": "vaith_main", "name_tr": "Vaith", "x": 1500, "y": 3060, "type": "town", "is_center": true}]},
-  {"region_id": "lemonwood", "settlements": [{"id": "lemonwood_main", "name_tr": "Limon Ormanı", "x": 1670, "y": 3110, "type": "town", "is_center": true}]},
-  {"region_id": "ghost_hill", "settlements": [{"id": "ghost_hill_main", "name_tr": "Hayalet Tepe", "x": 1850, "y": 2960, "type": "fortress", "is_center": true}]},
-  {"region_id": "sun_house", "settlements": [{"id": "sun_house_main", "name_tr": "Güneş Evi", "x": 760, "y": 3150, "type": "fortress", "is_center": true}]},
-  {"region_id": "hellholt", "settlements": [{"id": "hellholt_main", "name_tr": "Cehennem Kalesi", "x": 1200, "y": 3150, "type": "fortress", "is_center": true}]},
-  {"region_id": "the_boneway", "settlements": [{"id": "the_boneway_main", "name_tr": "Kemikyolu", "x": 1300, "y": 2850, "type": "fortress", "is_center": true}]}
+  {
+    "region_id": "long_lake",
+    "settlements": [
+      {
+        "id": "long_lake_main",
+        "name_tr": "Uzun Göl",
+        "x": 1167,
+        "y": 883,
+        "type": "town",
+        "is_center": true
+      },
+      {
+        "id": "test_settlement",
+        "name_tr": "test",
+        "x": 1059,
+        "y": 847,
+        "type": "port"
+      }
+    ]
+  },
+  {
+    "region_id": "the_wolfswood",
+    "settlements": [
+      {
+        "id": "the_wolfswood_main",
+        "name_tr": "Kurt Ormanı",
+        "x": 912,
+        "y": 1018,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "dragon_point",
+    "settlements": [
+      {
+        "id": "dragon_point_main",
+        "name_tr": "Ejderha Burnu",
+        "x": 709,
+        "y": 1078,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "torrhens_square",
+    "settlements": [
+      {
+        "id": "torrhens_square_main",
+        "name_tr": "Torrhen Meydanı",
+        "x": 981,
+        "y": 1207,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "lonely_hills",
+    "settlements": [
+      {
+        "id": "lonely_hills_main",
+        "name_tr": "Yalnız Tepeler",
+        "x": 1432,
+        "y": 947,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "hornwood",
+    "settlements": [
+      {
+        "id": "hornwood_main",
+        "name_tr": "Hornwood",
+        "x": 1364,
+        "y": 1176,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "widows_watch",
+    "settlements": [
+      {
+        "id": "widows_watch_settlement_1",
+        "name_tr": "Denizfeneri Balkonu",
+        "x": 1600,
+        "y": 1268,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_rills",
+    "settlements": [
+      {
+        "id": "the_rills_main",
+        "name_tr": "Rills",
+        "x": 701,
+        "y": 1367,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "cape_kraken",
+    "settlements": [
+      {
+        "id": "cape_kraken_main",
+        "name_tr": "Kraken Burnu",
+        "x": 682,
+        "y": 1585,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "bear_island",
+    "settlements": [
+      {
+        "id": "bear_island_main",
+        "name_tr": "Ayı Adası",
+        "x": 872,
+        "y": 783,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_grey_cliffs",
+    "settlements": [
+      {
+        "id": "the_grey_cliffs_main",
+        "name_tr": "Gri Kayalıklar",
+        "x": 1746,
+        "y": 889,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "great_wyk",
+    "settlements": [
+      {
+        "id": "great_wyk_main",
+        "name_tr": "Büyük Wyk",
+        "x": 604,
+        "y": 1889,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "orkmont",
+    "settlements": [
+      {
+        "id": "orkmont_main",
+        "name_tr": "Orkmont",
+        "x": 729,
+        "y": 1858,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "harlaw",
+    "settlements": [
+      {
+        "id": "harlaw_main",
+        "name_tr": "Harlaw",
+        "x": 778,
+        "y": 1918,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "west_vale",
+    "settlements": [
+      {
+        "id": "west_vale_main",
+        "name_tr": "Batı Vadi",
+        "x": 1244,
+        "y": 1747,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "gulltown",
+    "settlements": [
+      {
+        "id": "gulltown_main",
+        "name_tr": "Martı Kasabası",
+        "x": 1706,
+        "y": 1954,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "saltpans",
+    "settlements": [
+      {
+        "id": "saltpans_main",
+        "name_tr": "Tuz Tavaları",
+        "x": 1463,
+        "y": 2118,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "wickenden",
+    "settlements": [
+      {
+        "id": "wickendon_main",
+        "name_tr": "Wickendon",
+        "x": 1543,
+        "y": 2093,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_trident",
+    "settlements": [
+      {
+        "id": "the_trident_main",
+        "name_tr": "Üç Dişli Mızrak",
+        "x": 1187,
+        "y": 1933,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "golden_tooth",
+    "settlements": [
+      {
+        "id": "golden_tooth_main",
+        "name_tr": "Altın Diş",
+        "x": 920,
+        "y": 2154,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "stone_sept",
+    "settlements": [
+      {
+        "id": "stone_sept_main",
+        "name_tr": "Taş Septi",
+        "x": 1050,
+        "y": 2300,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "silver_hill",
+    "settlements": [
+      {
+        "id": "silver_hill_main",
+        "name_tr": "Gümüş Tepe",
+        "x": 932,
+        "y": 2383,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "golden_grove",
+    "settlements": [
+      {
+        "id": "golden_grove_main",
+        "name_tr": "Altın Koruluk",
+        "x": 961,
+        "y": 2541,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "grassy_vale",
+    "settlements": [
+      {
+        "id": "grassy_vale_main",
+        "name_tr": "Çimenli Vadi",
+        "x": 1174,
+        "y": 2551,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "old_oak",
+    "settlements": [
+      {
+        "id": "old_oak_main",
+        "name_tr": "Eski Meşe",
+        "x": 790,
+        "y": 2600,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "ashford",
+    "settlements": [
+      {
+        "id": "ashford_main",
+        "name_tr": "Ashford",
+        "x": 1117,
+        "y": 2652,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "brightwater_reach",
+    "settlements": [
+      {
+        "id": "brightwater_reach_main",
+        "name_tr": "Parlaksu Diyarı",
+        "x": 642,
+        "y": 2810,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "blackhaven",
+    "settlements": [
+      {
+        "id": "blackhaven_main",
+        "name_tr": "Karakale",
+        "x": 1150,
+        "y": 2750,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "summerhall",
+    "settlements": [
+      {
+        "id": "summerhall_main",
+        "name_tr": "Summerhall",
+        "x": 1305,
+        "y": 2687,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "hapstackhall",
+    "settlements": [
+      {
+        "id": "hapstackhall_settlement_1",
+        "name_tr": "Yeni Bolge 110",
+        "x": 1564,
+        "y": 2547,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "rainwood",
+    "settlements": [
+      {
+        "id": "rainwood_main",
+        "name_tr": "Yağmur Ormanı",
+        "x": 1604,
+        "y": 2756,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "cape_wrath",
+    "settlements": [
+      {
+        "id": "cape_wrath_main",
+        "name_tr": "Gazap Burnu",
+        "x": 1727,
+        "y": 2719,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "mistwood",
+    "settlements": [
+      {
+        "id": "mistwood_main",
+        "name_tr": "Sis Ormanı",
+        "x": 1609,
+        "y": 2829,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "griffins_roost",
+    "settlements": [
+      {
+        "id": "griffins_roost_main",
+        "name_tr": "Griffin Yuvası",
+        "x": 1453,
+        "y": 2704,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "stonehelm",
+    "settlements": [
+      {
+        "id": "stonehelm_main",
+        "name_tr": "Taş Miğfer",
+        "x": 1469,
+        "y": 2781,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "tarth",
+    "settlements": [
+      {
+        "id": "tarth_main",
+        "name_tr": "Tarth",
+        "x": 1766,
+        "y": 2566,
+        "type": "port",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "uplands",
+    "settlements": [
+      {
+        "id": "uplands_main",
+        "name_tr": "Yüksek Topraklar",
+        "x": 787,
+        "y": 2939,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "skyreach",
+    "settlements": [
+      {
+        "id": "skyreach_main",
+        "name_tr": "Gökyüzü Ulaşımı",
+        "x": 1150,
+        "y": 3000,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "wyl",
+    "settlements": [
+      {
+        "id": "wyl_main",
+        "name_tr": "Wyl",
+        "x": 1276,
+        "y": 2862,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_tor",
+    "settlements": [
+      {
+        "id": "the_tor_main",
+        "name_tr": "Tor",
+        "x": 1435,
+        "y": 3020,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "vaith",
+    "settlements": [
+      {
+        "id": "vaith_main",
+        "name_tr": "Vaith",
+        "x": 1441,
+        "y": 3084,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "lemonwood",
+    "settlements": [
+      {
+        "id": "lemonwood_main",
+        "name_tr": "Limon Ormanı",
+        "x": 1593,
+        "y": 3153,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "ghost_hill",
+    "settlements": [
+      {
+        "id": "ghost_hill_main",
+        "name_tr": "Hayalet Tepe",
+        "x": 1680,
+        "y": 3007,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "sun_house",
+    "settlements": [
+      {
+        "id": "sun_house_main",
+        "name_tr": "Güneş Evi",
+        "x": 718,
+        "y": 3107,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "hellholt",
+    "settlements": [
+      {
+        "id": "hellholt_main",
+        "name_tr": "Cehennem Kalesi",
+        "x": 1141,
+        "y": 3110,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_boneway",
+    "settlements": [
+      {
+        "id": "the_boneway_main",
+        "name_tr": "Kemikyolu",
+        "x": 1191,
+        "y": 2872,
+        "type": "fortress",
+        "is_center": true
+      }
+    ]
+  }
 ]
