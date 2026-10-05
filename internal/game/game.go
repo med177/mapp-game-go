@@ -2752,7 +2752,7 @@ func (g *Game) showHistoricalFactionChangeNotifications(reports []state.Historic
 			parts = append(parts, fmt.Sprintf("adı %s oldu", name))
 		}
 		if report.ReligionChanged {
-			parts = append(parts, fmt.Sprintf("dini %s oldu", religion.DisplayNameTR(report.Religion)))
+			parts = append(parts, fmt.Sprintf("dini %s oldu", g.gs.ActiveReligionRegistry().DisplayNameTR(report.Religion)))
 		}
 		if report.FlagChanged {
 			parts = append(parts, "bayrağı güncellendi")
@@ -4334,6 +4334,11 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 
 	dp := func(f string) string { return scenarioPath + "/data/" + f }
 
+	religionRegistry, err := religion.Load(dp("religions.json"))
+	if err != nil {
+		return nil, nil, fmt.Errorf("dinler yüklenemedi: %w", err)
+	}
+
 	regions, regionOrder, err := world.LoadRegionsWithOrder(dp("regions.json"))
 	if err != nil {
 		return nil, nil, fmt.Errorf("bölgeler yüklenemedi: %w", err)
@@ -4364,6 +4369,20 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	if err != nil {
 		return nil, nil, fmt.Errorf("fraksiyonlar yüklenemedi: %w", err)
 	}
+	usedReligions := make([]religion.Type, 0, len(factions)+len(regions))
+	for _, f := range factions {
+		if f != nil {
+			usedReligions = append(usedReligions, f.Religion)
+		}
+	}
+	for _, r := range regions {
+		if r != nil {
+			usedReligions = append(usedReligions, religion.Type(r.Religion))
+		}
+	}
+	if err := religionRegistry.ValidateTypes(usedReligions); err != nil {
+		return nil, nil, fmt.Errorf("senaryo din referansı geçersiz: %w", err)
+	}
 	aiConfig, err := scenario.LoadAIConfig(dp("ai_strategies.json"))
 	if err != nil {
 		return nil, nil, err
@@ -4373,7 +4392,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	}
 	advance()
 	yield()
-	relations, relationOrder, err := faction.LoadRelationsWithOrder(dp("relations.json"), factions)
+	relations, relationOrder, err := faction.LoadRelationsWithOrderForRegistry(dp("relations.json"), factions, religionRegistry)
 	if err != nil {
 		return nil, nil, fmt.Errorf("ilişkiler yüklenemedi: %w", err)
 	}
@@ -4485,6 +4504,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		LandPassages:                  landPassages,
 		TerrainAreas:                  terrainAreas,
 		Factions:                      factions,
+		ReligionRegistry:              religionRegistry,
 		FactionOrder:                  factionOrder,
 		Armies:                        armies,
 		ArmyOrder:                     nil,

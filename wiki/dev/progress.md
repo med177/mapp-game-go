@@ -1,11 +1,17 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-05
+last_updated: 2026-10-06
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 # Geliştirme Durumu
+
+- 2026-10-06: Din sistemi senaryo verisine taşındı. `data/religions.json`
+  din metadata'sını ve din çifti katsayılarını taşır; 1300, 1600 ve 298
+  senaryoları yükleme sırasında registry oluşturur. Başlangıç diplomasi puanı,
+  ittifak uyumu, Edit Mode din listesi, faction/bölge din adları ve birlik
+  sprite grubu aktif registry'den çözülür.
 
 - 2026-10-05: Edit Mode isim ve ID alanlarında Ctrl+V ile sistem panosundan metin
   yapıştırma desteği eklendi. Bölge/devlet formları, yerleşim/bölge yeniden

@@ -16,6 +16,7 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
@@ -45,6 +46,7 @@ var scenarioBaseCacheFiles = []string{
 	"data/settlements.json",
 	"data/country_shapes.json",
 	"data/factions.json",
+	"data/religions.json",
 	"data/ai_strategies.json",
 	"data/relations.json",
 	"data/units.json",
@@ -532,6 +534,11 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 
 	dp := func(f string) string { return filepath.Join(scenarioPath, "data", f) }
 
+	religionRegistry, err := religion.Load(dp("religions.json"))
+	if err != nil {
+		return nil, fmt.Errorf("dinler yüklenemedi: %w", err)
+	}
+
 	regions, regionOrder, err := world.LoadRegionsWithOrder(dp("regions.json"))
 	if err != nil {
 		return nil, err
@@ -558,6 +565,20 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		return nil, err
 	}
+	usedReligions := make([]religion.Type, 0, len(factions)+len(regions))
+	for _, f := range factions {
+		if f != nil {
+			usedReligions = append(usedReligions, f.Religion)
+		}
+	}
+	for _, r := range regions {
+		if r != nil {
+			usedReligions = append(usedReligions, religion.Type(r.Religion))
+		}
+	}
+	if err := religionRegistry.ValidateTypes(usedReligions); err != nil {
+		return nil, fmt.Errorf("senaryo din referansı geçersiz: %w", err)
+	}
 	aiConfig, err := scenario.LoadAIConfig(dp("ai_strategies.json"))
 	if err != nil {
 		return nil, err
@@ -569,7 +590,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		return nil, fmt.Errorf("territorial claim referansları geçersiz: %w", err)
 	}
 	scenario.ApplyInitialTerritorialClaims(regions, factions, aiConfig.Strategies)
-	relations, relationOrder, err := faction.LoadRelationsWithOrder(dp("relations.json"), factions)
+	relations, relationOrder, err := faction.LoadRelationsWithOrderForRegistry(dp("relations.json"), factions, religionRegistry)
 	if err != nil {
 		return nil, err
 	}
@@ -637,6 +658,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		LandPassages:                  landPassages,
 		TerrainAreas:                  terrainAreas,
 		Factions:                      factions,
+		ReligionRegistry:              religionRegistry,
 		FactionOrder:                  factionOrder,
 		Armies:                        armies,
 		ArmyOrder:                     nil,

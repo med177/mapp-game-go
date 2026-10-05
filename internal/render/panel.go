@@ -2716,7 +2716,7 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		}
 	}
 
-	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, region.Terrain.LabelTR()+"  |  "+religion.DisplayNameTR(religion.Type(region.Religion))+stypeStr, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, region.Terrain.LabelTR()+"  |  "+gs.ActiveReligionRegistry().DisplayNameTR(religion.Type(region.Religion))+stypeStr, ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	ly += 16
 	drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, regionPopulationDisplayText(region), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 	ly += 16
@@ -2806,7 +2806,7 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 		if ownerRel, ok := regionConversionReligion(gs, region); ok {
 			rightX := lx + leftW + 10
 			conversionColor := color.RGBA{180, 140, 240, 200}
-			conversionText := "Dönüşüm: " + religion.DisplayNameTR(religion.Type(ownerRel))
+			conversionText := "Dönüşüm: " + gs.ActiveReligionRegistry().DisplayNameTR(religion.Type(ownerRel))
 			const changeIconSize = 18.0
 			const changeIconGap = 4.0
 			textX := rightX + leftW - MeasureText(conversionText, FaceSmall)
@@ -4457,7 +4457,7 @@ func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid facti
 }
 
 func factionPanelSubtitle(gs *state.GameState, fid faction.FactionID, f *faction.Faction) string {
-	parts := []string{religion.DisplayNameTR(f.Religion)}
+	parts := []string{gs.ActiveReligionRegistry().DisplayNameTR(f.Religion)}
 	if fid == gs.PlayerFactionID {
 		parts = append(parts, "Siz")
 	} else if f.IsEliminated {

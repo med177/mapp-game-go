@@ -1,0 +1,77 @@
+{
+  "religions": [
+    {
+      "id": "catholic",
+      "name": "Catholicism",
+      "name_tr": "Katoliklik",
+      "sprite_set": "western"
+    },
+    {
+      "id": "orthodox",
+      "name": "Orthodoxy",
+      "name_tr": "Ortodoksluk",
+      "sprite_set": "western"
+    },
+    {
+      "id": "sunni",
+      "name": "Sunni Islam",
+      "name_tr": "Sünni İslam",
+      "sprite_set": "eastern"
+    },
+    {
+      "id": "shia",
+      "name": "Shia Islam",
+      "name_tr": "Şii İslam",
+      "sprite_set": "eastern"
+    },
+    {
+      "id": "tengri",
+      "name": "Tengrism",
+      "name_tr": "Tengricilik",
+      "sprite_set": "western"
+    },
+    {
+      "id": "pagan",
+      "name": "Paganism",
+      "name_tr": "Paganlık",
+      "sprite_set": "western"
+    },
+    {
+      "id": "protestant",
+      "name": "Protestantism",
+      "name_tr": "Protestanlık",
+      "sprite_set": "western"
+    },
+    {
+      "id": "utraquist",
+      "name": "Utraquism",
+      "name_tr": "Utrakvistlik",
+      "sprite_set": "western"
+    }
+  ],
+  "relations": [
+    {
+      "religion_a": "catholic",
+      "religion_b": "orthodox",
+      "relation_score": -20,
+      "alliance_bonus": 2
+    },
+    {
+      "religion_a": "catholic",
+      "religion_b": "protestant",
+      "relation_score": -20
+    },
+    {
+      "religion_a": "protestant",
+      "religion_b": "utraquist",
+      "relation_score": -20
+    },
+    {
+      "religion_a": "sunni",
+      "religion_b": "shia",
+      "relation_score": -40,
+      "alliance_bonus": -8,
+      "initial_stance": "war"
+    }
+  ]
+}

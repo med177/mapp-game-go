@@ -31,6 +31,14 @@ const RecentFactionExpansionWindowTurns = scenario.DefaultAggressiveExpansionLas
 // ve orta baskı seviyelerini ifade eder.
 const MaxOverextensionScore = 500
 
+// ActiveReligionRegistry aktif senaryonun din registry'sini döner.
+func (s *GameState) ActiveReligionRegistry() *religion.Registry {
+	if s != nil && s.ReligionRegistry != nil {
+		return s.ReligionRegistry
+	}
+	return religion.DefaultRegistry()
+}
+
 // civilianGrainPopulationUnit nüfusun aylık temel tahıl tüketim oranını taşır.
 // 18 nüfus bir tahıl birimi tüketir; 1300 senaryosundaki üretim ve stoklar
 // birlikte değerlendirildiğinde bu oran barışta küçük rezerv, savaşta açık
@@ -379,6 +387,7 @@ type GameState struct {
 	TechTypes                          map[string]*tech.Technology              `json:"-"`
 	CommanderTemplates                 map[string][]*army.Commander             `json:"-"`
 	ScenarioVictories                  []scenario.VictoryOptionDef              `json:"-"`
+	ReligionRegistry                   *religion.Registry                       `json:"-"`
 	PoliticalTransformations           []scenario.PoliticalTransformation       `json:"-"`
 	AvailableVictories                 []scenario.VictoryOptionDef              `json:"-"`
 	RegionLogistics                    map[world.RegionID]RegionLogisticsStatus `json:"-"`

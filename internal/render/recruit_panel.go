@@ -12,7 +12,6 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
-	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
@@ -132,8 +131,8 @@ func armySpriteSetForFaction(gs *state.GameState, ownerID string) armySpriteSet 
 	if f == nil {
 		return armySpriteSetLegacy
 	}
-	switch f.Religion {
-	case religion.Sunni, religion.Shia:
+	switch gs.ActiveReligionRegistry().SpriteSet(f.Religion) {
+	case "eastern":
 		return armySpriteSetEastern
 	default:
 		return armySpriteSetWestern

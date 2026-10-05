@@ -165,6 +165,13 @@ hedefi ise claim edilen bölgenin güncel sahibinden dinamik olarak türetilir.
 
 ## Din Sistemi
 
+Din tanımları senaryo bazında `assets/scenarios/<id>/data/religions.json`
+içinden yüklenir. Dosya din kimliğini, görünen adları, birlik sprite grubunu ve
+varsayılan din çifti katsayılarını taşır. `religion.Registry` aktif state'e
+bağlanır; diplomasi, faction/bölge seçimi ve Edit Mode aynı registry'yi kullanır.
+`relations.json` içindeki faction çifti kayıtları din varsayılanlarını
+değiştiren özel siyasi istisnalardır.
+
 `religion.Type` — `internal/religion/religion.go`
 
 | Din | Sabit | Fraksiyonlar |
@@ -195,7 +202,9 @@ dinle aynı kalan devletlere `-40` uygulanır. Puan `-100..100` aralığında
 tutulur; sonraki tur veya save/load çözümlemesi aynı değişikliği yeniden
 uygulamaz.
 
-Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası artık `internal/religion/religion.go` içindeki metadata üzerinden (`DisplayNameTR`, `All`, `Next`) merkezi olarak yönetilir; render katmanı aynı mapping'i tekrar etmez.
+Dinlerin görünen Türkçe adları ve editörde/UI'da dolaşım sırası aktif
+senaryonun registry'sindeki (`DisplayNameTR`, `All`, `Next`) metadata üzerinden
+merkezi olarak yönetilir; render katmanı aynı mapping'i tekrar etmez.
 
 **Mezhep değişimi:** Ele geçirilen bölge `ConversionTurns` sayacıyla 24 turda yeni sahip dinine geçer, memnuniyet -20 uygular. → [[world/regions]]
 

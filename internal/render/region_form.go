@@ -161,7 +161,7 @@ func (r *Renderer) drawEditRegionFormField(screen *ebiten.Image, field editRegio
 	rect := editRegionFormFieldRect(field)
 	if field == editRegionFieldReligion || field == editRegionFieldShapeID {
 		button := editRegionFormReligionButton()
-		text := religion.DisplayNameTR(religion.Type(value))
+		text := r.gs.ActiveReligionRegistry().DisplayNameTR(religion.Type(value))
 		if field == editRegionFieldShapeID {
 			button = editRegionFormShapeButton()
 			text = editRegionShapeOptionLabel(value)
@@ -222,12 +222,12 @@ func (r *Renderer) openEditRegionForm() {
 		active:   editRegionFieldNameTR,
 		values:   values,
 	}
-	options := religion.All()
+	options := r.gs.ActiveReligionRegistry().All()
 	displayOptions := make([]string, len(options))
 	for i, option := range options {
-		displayOptions[i] = religion.DisplayNameTR(option)
+		displayOptions[i] = r.gs.ActiveReligionRegistry().DisplayNameTR(option)
 	}
-	r.editRegionReligionDropdown.SetOptions(displayOptions, religion.DisplayNameTR(religion.Type(region.Religion)))
+	r.editRegionReligionDropdown.SetOptions(displayOptions, r.gs.ActiveReligionRegistry().DisplayNameTR(religion.Type(region.Religion)))
 	r.editRegionReligionDropdown.Close()
 	shapeOptions := editRegionShapeOptions(r.gs)
 	r.editRegionShapeDropdown.SetOptions(shapeOptions, editRegionShapeOptionLabel(region.ShapeID))
@@ -254,7 +254,7 @@ func (r *Renderer) handleEditRegionFormInput() InputAction {
 		}
 		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
 			if idx, ok := r.editRegionReligionDropdown.GetSelectedOption(fx, fy); ok {
-				options := religion.All()
+				options := r.gs.ActiveReligionRegistry().All()
 				if idx < len(options) {
 					form.values[editRegionFieldReligion] = string(options[idx])
 				}

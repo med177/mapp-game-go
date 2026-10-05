@@ -13,7 +13,6 @@ import (
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
-	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
@@ -732,7 +731,7 @@ func (r *Renderer) drawEditFactionForm(screen *ebiten.Image) {
 
 	drawUISectionLabel(screen, float64(x)+24, float64(y)+326, "DİPLOMASİ")
 	drawUISectionLabel(screen, float64(x)+396, float64(y)+326, "AYARLAR VE RENK")
-	drawEditFactionFormButton(screen, editFactionFormReligion, "Din: "+religion.DisplayNameTR(r.editFactionForm.religion))
+	drawEditFactionFormButton(screen, editFactionFormReligion, "Din: "+r.gs.ActiveReligionRegistry().DisplayNameTR(r.editFactionForm.religion))
 	drawEditFactionFormButton(screen, editFactionFormPlayable, "Playable: "+editBoolLabel(r.editFactionForm.playable))
 	relationTitle := "Iliski: yok"
 	if r.editFactionForm.relationTarget != "" {
@@ -4813,7 +4812,7 @@ func (r *Renderer) openFactionCreateForm() {
 		id:       string(fid),
 		name:     "New Faction",
 		nameTR:   "",
-		religion: religion.Catholic,
+		religion: r.gs.ActiveReligionRegistry().Next(""),
 		color:    editFactionColor(len(r.gs.Factions) + 1),
 		playable: true,
 		gold:     "500",
@@ -5051,7 +5050,7 @@ func (r *Renderer) handleFactionFormClick(fx, fy float64) bool {
 	case buildEditFactionFormButton(editFactionFormCancel, "Iptal").HitTest(fx, fy):
 		r.editFactionForm = editFactionFormState{}
 	case buildEditFactionFormButton(editFactionFormReligion, "").HitTest(fx, fy):
-		r.editFactionForm.religion = nextEditReligion(r.editFactionForm.religion)
+		r.editFactionForm.religion = r.gs.ActiveReligionRegistry().Next(r.editFactionForm.religion)
 	case buildEditFactionFormButton(editFactionFormPlayable, "").HitTest(fx, fy):
 		r.editFactionForm.playable = !r.editFactionForm.playable
 	case buildEditFactionFormButton(editFactionFormRelationTarget, "").HitTest(fx, fy):
@@ -5191,10 +5190,6 @@ func (r *Renderer) adjustFactionFormColor(index int, delta int) {
 	r.editFactionForm.color[index] = uint8(value)
 }
 
-func nextEditReligion(current religion.Type) religion.Type {
-	return religion.Next(current)
-}
-
 func nextEditStance(current faction.DiplomaticStance) faction.DiplomaticStance {
 	return faction.NextDiplomaticStance(current)
 }
@@ -5262,10 +5257,9 @@ func (r *Renderer) setFactionFormRelationTarget(target faction.FactionID) {
 	score := 0
 	stance := faction.StancePeace
 	if targetFaction != nil {
-		score = religion.Relation(r.editFactionForm.religion, targetFaction.Religion)
-		if (r.editFactionForm.religion == religion.Sunni && targetFaction.Religion == religion.Shia) ||
-			(r.editFactionForm.religion == religion.Shia && targetFaction.Religion == religion.Sunni) {
-			stance = faction.StanceWar
+		score = r.gs.ActiveReligionRegistry().Relation(r.editFactionForm.religion, targetFaction.Religion)
+		if initialStance := r.gs.ActiveReligionRegistry().InitialStance(r.editFactionForm.religion, targetFaction.Religion); initialStance != "" {
+			stance = faction.DiplomaticStance(initialStance)
 		}
 	}
 	r.editFactionForm.relationScore = itoa(score)
@@ -5335,10 +5329,9 @@ func (r *Renderer) ensureRelationsForFaction(fid faction.FactionID) {
 		score := 0
 		stance := faction.StancePeace
 		if self != nil {
-			score = religion.Relation(self.Religion, other.Religion)
-			if (self.Religion == religion.Sunni && other.Religion == religion.Shia) ||
-				(self.Religion == religion.Shia && other.Religion == religion.Sunni) {
-				stance = faction.StanceWar
+			score = r.gs.ActiveReligionRegistry().Relation(self.Religion, other.Religion)
+			if initialStance := r.gs.ActiveReligionRegistry().InitialStance(self.Religion, other.Religion); initialStance != "" {
+				stance = faction.DiplomaticStance(initialStance)
 			}
 		}
 		r.gs.Relations[key] = &faction.Relation{FactionA: fid, FactionB: otherID, ScoreAToB: score, ScoreBToA: score, Stance: stance}

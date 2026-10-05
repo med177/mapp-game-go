@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"mapp-game-go/internal/faction"
-	"mapp-game-go/internal/religion"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
@@ -111,7 +110,7 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int, sc
 		drawFactionFlagBadge(body, f.ID, factionInitial(f.NameTR), flagRect.X, flagRect.Y, flagRect.W, fc, panelBorder)
 
 		// Din
-		drawUILabel(body, gameui.Rect{X: float64(x + 16), Y: float64(y + 36)}, religion.DisplayNameTR(f.Religion), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(body, gameui.Rect{X: float64(x + 16), Y: float64(y + 36)}, gs.ActiveReligionRegistry().DisplayNameTR(f.Religion), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 
 		// Bölge sayısı ve başlangıç altını
 		regionCount := len(gs.RegionsVisibleTo(fid))

@@ -930,7 +930,7 @@ func baseRelationScore(gs *state.GameState, a, b faction.FactionID) int {
 	if af == nil || bf == nil {
 		return 0
 	}
-	return religion.Relation(af.Religion, bf.Religion)
+	return gs.ActiveReligionRegistry().Relation(af.Religion, bf.Religion)
 }
 
 func HasDiplomaticContact(gs *state.GameState, a, b faction.FactionID) bool {
@@ -1329,7 +1329,7 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 	if rel.Stance == faction.StanceTrade {
 		chance += 8
 	}
-	chance += allianceReligionAffinityBonus(actorFaction.Religion, targetFaction.Religion)
+	chance += allianceReligionAffinityBonus(gs.ActiveReligionRegistry(), actorFaction.Religion, targetFaction.Religion)
 	if sharesLandBorder {
 		chance += 6
 	}
@@ -1360,20 +1360,11 @@ func AssessAllianceProposal(gs *state.GameState, rel *faction.Relation, actor, t
 	return assessment
 }
 
-func allianceReligionAffinityBonus(a, b religion.Type) int {
+func allianceReligionAffinityBonus(registry *religion.Registry, a, b religion.Type) int {
 	if a == "" || b == "" {
 		return 0
 	}
-	switch {
-	case a == b:
-		return 8
-	case (a == religion.Catholic && b == religion.Orthodox) || (a == religion.Orthodox && b == religion.Catholic):
-		return 2
-	case (a == religion.Sunni && b == religion.Shia) || (a == religion.Shia && b == religion.Sunni):
-		return -8
-	default:
-		return -4
-	}
+	return registry.AllianceBonus(a, b)
 }
 
 func AssessTradeProposal(gs *state.GameState, rel *faction.Relation, actor, target faction.FactionID) TradeProposalAssessment {

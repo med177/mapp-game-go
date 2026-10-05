@@ -1,0 +1,40 @@
+{
+  "religions": [
+    {
+      "id": "old_gods",
+      "name": "Old Gods",
+      "name_tr": "Eski Tanrılar",
+      "sprite_set": "western"
+    },
+    {
+      "id": "faith_of_the_seven",
+      "name": "Faith of the Seven",
+      "name_tr": "Yedi İnancı",
+      "sprite_set": "western"
+    },
+    {
+      "id": "drowned_god",
+      "name": "Drowned God",
+      "name_tr": "Boğulmuş Tanrı",
+      "sprite_set": "western"
+    },
+    {
+      "id": "lord_of_light",
+      "name": "Lord of Light",
+      "name_tr": "Işık Tanrısı",
+      "sprite_set": "western"
+    },
+    {
+      "id": "valyrian",
+      "name": "Valyrian Gods",
+      "name_tr": "Valyria Tanrıları",
+      "sprite_set": "western"
+    },
+    {
+      "id": "pagan",
+      "name": "Paganism",
+      "name_tr": "Paganlık",
+      "sprite_set": "western"
+    }
+  ]
+}

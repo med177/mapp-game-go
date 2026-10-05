@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"sort"
+
+	"mapp-game-go/internal/religion"
 )
 
 type relationDefinition struct {
@@ -56,7 +58,12 @@ func LoadRelations(path string, factions map[FactionID]*Faction) (map[string]*Re
 // LoadRelationsWithOrder ilişkileri JSON'dan yükler ve kaynak dosyadaki geçerli
 // ilişki sırasını ayrıca döner. Edit Mode kaydında bu sıra korunmalıdır.
 func LoadRelationsWithOrder(path string, factions map[FactionID]*Faction) (map[string]*Relation, []string, error) {
-	relations := BuildInitialRelations(factions)
+	return LoadRelationsWithOrderForRegistry(path, factions, religion.DefaultRegistry())
+}
+
+// LoadRelationsWithOrderForRegistry ilişkileri aktif senaryonun din registry'siyle yükler.
+func LoadRelationsWithOrderForRegistry(path string, factions map[FactionID]*Faction, registry *religion.Registry) (map[string]*Relation, []string, error) {
+	relations := BuildInitialRelationsForRegistry(factions, registry)
 	// Varsayılan runtime ilişkileri kaynak ilişkisi değildir. Dosya yoksa veya
 	// dosyada bulunmuyorsa kaydetme sırasında JSON'a yazılmamalıdır.
 	order := make([]string, 0)
@@ -109,6 +116,11 @@ func normalizeStance(stance DiplomaticStance) DiplomaticStance {
 
 // BuildInitialRelations fraksiyonlar arasındaki başlangıç diplomatik ilişkilerini oluşturur.
 func BuildInitialRelations(factions map[FactionID]*Faction) map[string]*Relation {
+	return BuildInitialRelationsForRegistry(factions, religion.DefaultRegistry())
+}
+
+// BuildInitialRelationsForRegistry başlangıç puanlarını senaryo din verisinden üretir.
+func BuildInitialRelationsForRegistry(factions map[FactionID]*Faction, registry *religion.Registry) map[string]*Relation {
 	relations := make(map[string]*Relation)
 
 	ids := make([]FactionID, 0, len(factions))
@@ -126,8 +138,8 @@ func BuildInitialRelations(factions map[FactionID]*Faction) map[string]*Relation
 			relations[key] = &Relation{
 				FactionA:  a.ID,
 				FactionB:  b.ID,
-				ScoreAToB: DefaultRelationScore(a, b),
-				ScoreBToA: DefaultRelationScore(a, b),
+				ScoreAToB: DefaultRelationScoreForRegistry(a, b, registry),
+				ScoreBToA: DefaultRelationScoreForRegistry(a, b, registry),
 				Stance:    StancePeace,
 			}
 		}
@@ -138,8 +150,17 @@ func BuildInitialRelations(factions map[FactionID]*Faction) map[string]*Relation
 // DefaultRelationScore, relations.json içinde kaydı olmayan çiftlerin
 // başlangıç puanını belirler. Özel tarihsel ilişkiler JSON'da açıkça tutulur.
 func DefaultRelationScore(a, b *Faction) int {
+	return DefaultRelationScoreForRegistry(a, b, religion.DefaultRegistry())
+}
+
+// DefaultRelationScoreForRegistry relations.json içinde kaydı olmayan çiftin
+// başlangıç puanını aktif senaryonun din verisinden belirler.
+func DefaultRelationScoreForRegistry(a, b *Faction, registry *religion.Registry) int {
 	if a != nil && b != nil && a.Religion == b.Religion {
 		return 25
 	}
-	return -30
+	if a == nil || b == nil {
+		return -30
+	}
+	return registry.Relation(a.Religion, b.Religion)
 }
