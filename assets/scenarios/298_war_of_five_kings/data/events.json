@@ -1,5 +1,403 @@
 [
   {
+    "id": "crown_debt_crisis_295",
+    "name_tr": "Kraliyet Borçlarının Gölgesi",
+    "desc_tr": "Kral Robert'ın savaş ve turnuva harcamaları kraliyet hazinesini zorluyor. Küçük Konsey, yaklaşan veraset krizinden önce tacın mali itibarının nasıl korunacağını tartışıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 295,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "baratheon_king",
+    "choice_prompt_tr": "Taç, Robert'ın son yıllarında hangi önceliği seçmeli?",
+    "choices": [
+      {
+        "id": "restore_crown_treasury",
+        "label_tr": "Hazineyi düzene sok",
+        "desc_tr": "Harcamaları kısar, kraliyet gelirlerini toparlar ve soyluların güvenini yeniden kazanırsın.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_king",
+          "gold_delta": 120,
+          "sat_delta": 6,
+          "relations": [
+            {
+              "faction_id": "lannister",
+              "score_delta": 8
+            }
+          ]
+        }
+      },
+      {
+        "id": "strengthen_royal_guard",
+        "label_tr": "Kraliyet ordusunu güçlendir",
+        "desc_tr": "Borçları erteleyip başkentin garnizonlarını ve kralın muhafızlarını büyütürsün.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_king",
+          "gold_delta": -90,
+          "sat_delta": -3,
+          "unit_reinforcements": [
+            {
+              "unit_type": "kingsguard",
+              "unit_count": 1
+            },
+            {
+              "unit_type": "infantry",
+              "unit_count": 2
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "baratheon_king"
+    ],
+    "requires_active_factions": [
+      "baratheon_king",
+      "lannister"
+    ]
+  },
+  {
+    "id": "northern_preparations_296",
+    "name_tr": "Kuzeyin Kış Hazırlıkları",
+    "desc_tr": "Kışyarı'nda uzun kışın ve güneydeki taht çekişmelerinin işaretleri tartışılıyor. Stark hanedanı kuzey sınırlarını güçlendirmek veya erzak depolarını doldurmak arasında seçim yapmalı.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 296,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "stark",
+    "choice_prompt_tr": "Stark hanedanı yaklaşan belirsizliğe nasıl hazırlanmalı?",
+    "choices": [
+      {
+        "id": "fortify_northern_border",
+        "label_tr": "Sınırları tahkim et",
+        "desc_tr": "Kuzeyin geçitlerine asker yerleştirir, kaleleri ve yerel savunmayı güçlendirirsin.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "gold_delta": -70,
+          "grain_delta": -20,
+          "combat_defense_percent": 12,
+          "unit_reinforcements": [
+            {
+              "unit_type": "northern_shieldmen",
+              "unit_count": 2
+            }
+          ]
+        }
+      },
+      {
+        "id": "fill_winter_granaries",
+        "label_tr": "Kış depolarını doldur",
+        "desc_tr": "Askerî harcamaları sınırlayıp uzun kış için tahıl ve erzak stoklarsın.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "gold_delta": -40,
+          "grain_delta": 90,
+          "sat_delta": 8,
+          "relations": [
+            {
+              "faction_id": "arryn",
+              "score_delta": 6
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "stark"
+    ],
+    "requires_active_factions": [
+      "stark"
+    ]
+  },
+  {
+    "id": "lannister_gold_and_crown_296",
+    "name_tr": "Lannister Altını ve Tacın Borçları",
+    "desc_tr": "Casterly Rock'ın altını Demir Taht'ın borçlarını kapatabilecek kadar güçlü. Tywin Lannister bu desteği kraliyet üzerindeki nüfuzunu artırmak veya Batı ordusunu hazırlamak için kullanabilir.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 296,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "lannister",
+    "choice_prompt_tr": "Lannister hazinesi gücünü nasıl kullanmalı?",
+    "choices": [
+      {
+        "id": "buy_crown_influence",
+        "label_tr": "Tacın nüfuzunu satın al",
+        "desc_tr": "Kraliyet borçlarını üstlenerek Kral'ın Şehri'nde Lannister sözünü belirleyici hâle getirirsin.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "lannister",
+          "gold_delta": -180,
+          "sat_delta": 8,
+          "relations": [
+            {
+              "faction_id": "baratheon_king",
+              "score_delta": 22
+            }
+          ]
+        }
+      },
+      {
+        "id": "raise_western_host",
+        "label_tr": "Batı ordusunu topla",
+        "desc_tr": "Borçları sonraya bırakır, altını askerî hazırlıklara ve ağır süvarilere harcarsın.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "lannister",
+          "gold_delta": -130,
+          "unit_reinforcements": [
+            {
+              "unit_type": "heavy_cavalry",
+              "unit_count": 2
+            },
+            {
+              "unit_type": "infantry",
+              "unit_count": 2
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "lannister"
+    ],
+    "requires_active_factions": [
+      "lannister",
+      "baratheon_king"
+    ]
+  },
+  {
+    "id": "dragonstone_muster_297",
+    "name_tr": "Ejderha Kayası'nda Seferberlik",
+    "desc_tr": "Stannis Baratheon, Robert'ın sarayındaki gevşekliği güvensizlikle izliyor. Ejderha Kayası'nın filosu ve garnizonları Demir Taht'taki olası veraset krizine hazırlanıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 297,
+    "historical_month": 3,
+    "one_shot": true,
+    "affected_faction": "baratheon_dragonstone",
+    "choice_prompt_tr": "Stannis, yaklaşan veraset krizine hangi kuvvetle hazırlanmalı?",
+    "choices": [
+      {
+        "id": "arm_dragonstone_fleet",
+        "label_tr": "Filoyu silahlandır",
+        "desc_tr": "Dar Deniz'deki geçişleri kontrol etmek için Ejderha Kayası tersanelerine yatırım yaparsın.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_dragonstone",
+          "gold_delta": -110,
+          "unit_reinforcements": [
+            {
+              "unit_type": "warship",
+              "unit_count": 2
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "baratheon_king",
+              "score_delta": -8
+            }
+          ]
+        }
+      },
+      {
+        "id": "garrison_dragonstone",
+        "label_tr": "Garnizonu güçlendir",
+        "desc_tr": "Filoyu büyütmek yerine adanın kalelerini ve sadık piyadeleri güçlendirirsin.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_dragonstone",
+          "gold_delta": -80,
+          "combat_defense_percent": 15,
+          "unit_reinforcements": [
+            {
+              "unit_type": "infantry",
+              "unit_count": 3
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "baratheon_dragonstone"
+    ],
+    "requires_active_factions": [
+      "baratheon_dragonstone"
+    ]
+  },
+  {
+    "id": "renly_southern_alliance_297",
+    "name_tr": "Renly'nin Güneydeki İttifak Arayışı",
+    "desc_tr": "Renly Baratheon, Fırtına Burnu'ndaki nüfuzunu artırmak için güneyli hanelerle bağlarını kuvvetlendiriyor. Tyrellerle kurulacak yakınlık, gelecekteki taht iddiasının temelini oluşturabilir.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 297,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "baratheon_stormsend",
+    "choice_prompt_tr": "Renly güneydeki gücünü hangi yolla büyütmeli?",
+    "choices": [
+      {
+        "id": "court_the_tyrells",
+        "label_tr": "Tyrellerle yakınlaş",
+        "desc_tr": "Güneyin en zengin hanesiyle şölenler ve evlilik görüşmeleri üzerinden siyasi bağ kurarsın.",
+        "ai_weight": 9,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_stormsend",
+          "gold_delta": -90,
+          "sat_delta": 10,
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "stance": "allied",
+              "score_delta": 28
+            }
+          ]
+        }
+      },
+      {
+        "id": "build_stormlands_host",
+        "label_tr": "Fırtına topraklarında ordu kur",
+        "desc_tr": "Saray gösterişini azaltır, fırtına lordlarının askerlerini doğrudan kendi sancağın altında toplarsın.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_stormsend",
+          "gold_delta": -100,
+          "unit_reinforcements": [
+            {
+              "unit_type": "heavy_cavalry",
+              "unit_count": 1
+            },
+            {
+              "unit_type": "infantry",
+              "unit_count": 3
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "baratheon_stormsend"
+    ],
+    "requires_active_factions": [
+      "baratheon_stormsend",
+      "tyrell"
+    ]
+  },
+  {
+    "id": "jon_arryn_investigation_298",
+    "name_tr": "Jon Arryn'in Ölümü ve Şüpheler",
+    "desc_tr": "Jon Arryn'in ölümü Kral Robert'ın sarayını sarsıyor. Ölümün doğal olmadığına dair fısıltılar, kralı hem Kral'ın Şehri'nde soruşturma yapmak hem de Kuzey'e giderek eski dostu Ned Stark'tan yardım istemek arasında bırakıyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": -4,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "baratheon_king",
+    "choice_prompt_tr": "Robert, Jon Arryn'in ölümünden sonra hangi yolu izlemeli?",
+    "choices": [
+      {
+        "id": "investigate_arryn_death",
+        "label_tr": "Ölümü soruştur",
+        "desc_tr": "Sarayın huzurunu riske atarak gerçeğin peşine düşer, Stark hanedanıyla bağlarını güçlendirirsin.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_king",
+          "gold_delta": -80,
+          "sat_delta": -3,
+          "set_flags": [
+            "jon_arryn_investigation_started"
+          ],
+          "relations": [
+            {
+              "faction_id": "stark",
+              "score_delta": 18
+            },
+            {
+              "faction_id": "lannister",
+              "score_delta": -12
+            }
+          ]
+        }
+      },
+      {
+        "id": "travel_to_winterfell",
+        "label_tr": "Kuzey'e git",
+        "desc_tr": "Ned Stark'ı El ilan ederek kraliyet ailesini Kuzey'e götürür, saraydaki gerilimi şimdilik ertelersin.",
+        "ai_weight": 9,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_king",
+          "gold_delta": -60,
+          "sat_delta": 5,
+          "set_flags": [
+            "royal_party_travelling_north"
+          ],
+          "relations": [
+            {
+              "faction_id": "stark",
+              "score_delta": 25
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "baratheon_king"
+    ],
+    "requires_active_factions": [
+      "baratheon_king",
+      "stark"
+    ]
+  },
+  {
     "id": "death_of_robert_298",
     "name_tr": "Kral Robert'ın Ölümü",
     "desc_tr": "Kral Robert Baratheon av sırasında öldü. Taht üzerinde iddia sahibi krallar kılıçlarını çekti. Beş Kralın Savaşı başlıyor!",

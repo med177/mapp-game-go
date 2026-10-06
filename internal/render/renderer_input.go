@@ -45,8 +45,8 @@ func (r *Renderer) dismissInfoPopup() {
 	r.combatLogTimer = 0
 }
 
-func isZoomInLoopLevel(scale float64) bool {
-	finalFiveLevelThreshold := maxCameraZoomScale / (cameraZoomStep * cameraZoomStep * cameraZoomStep * cameraZoomStep)
+func (r *Renderer) isZoomInLoopLevel(scale float64) bool {
+	finalFiveLevelThreshold := r.maxCameraZoomScale() / (cameraZoomStep * cameraZoomStep * cameraZoomStep * cameraZoomStep)
 	return scale >= finalFiveLevelThreshold
 }
 
@@ -2068,10 +2068,11 @@ func (r *Renderer) handleCamera() {
 		}
 		mouseWX, mouseWY := r.screenToWorld(float64(mx), float64(my))
 		minScale := minCameraScale()
-		if dy > 0 && r.camScale < maxCameraZoomScale {
+		maxZoom := r.maxCameraZoomScale()
+		if dy > 0 && r.camScale < maxZoom {
 			r.camScale *= cameraZoomStep
-			if r.camScale > maxCameraZoomScale {
-				r.camScale = maxCameraZoomScale
+			if r.camScale > maxZoom {
+				r.camScale = maxZoom
 			}
 		} else if dy < 0 && r.camScale > minScale {
 			r.camScale /= cameraZoomStep
@@ -2079,7 +2080,7 @@ func (r *Renderer) handleCamera() {
 				r.camScale = minScale
 			}
 		}
-		if r.gs.Phase != state.PhaseEditMode && isZoomInLoopLevel(r.camScale) {
+		if r.gs.Phase != state.PhaseEditMode && r.isZoomInLoopLevel(r.camScale) {
 			audio.StartZoomInLoop()
 		} else {
 			audio.StopZoomInLoop()

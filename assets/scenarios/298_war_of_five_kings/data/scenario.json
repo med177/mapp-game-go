@@ -1,16 +1,16 @@
 {
   "id": "298_war_of_five_kings",
   "name": "Beş Kralın Savaşı (Game of Thrones)",
-  "description": "298 AC. Kral Robert Baratheon'un ölümüyle Yedi Krallık büyük bir iç savaşa sürüklendi. Kuzey Kralı ilan edilen Robb Stark, Demir Taht'ı talep eden Stannis ve Renly Baratheon, Lannisport'un zenginliğini arkasına alan Lannisterlar ve doğuda ejderhalarıyla yükselen Daenerys Targaryen arasındaki taht mücadelesinde Westeros'un kaderini belirleyin.",
+  "description": "295 AC. Kral Robert Baratheon hâlâ Demir Taht'ta oturuyor, ancak Yedi Krallık'ta hanedanlar güçlerini topluyor ve yaklaşan taht krizine hazırlanıyor. Robert'ın ölümüyle patlak verecek Beş Kralın Savaşı'na kadar devletinizi geliştirin; ardından Westeros'un kaderini belirleyin.",
   "version": "1.0",
   "author": "Mapp Team",
   "period": "medieval",
-  "turn_months": 3,
-  "year": 298,
+  "turn_months": 1,
+  "year": 295,
   "month": 1,
   "privileged_building_max_level": 1,
-  "minor_privilege_protection_turns": 40,
-  "aggressive_expansion_last_turns": 12,
+  "minor_privilege_protection_turns": 10,
+  "aggressive_expansion_last_turns": 6,
   "diplomacy": {
     "relation_improvement_gold_cost": 250,
     "relation_improvement_bonus": 15,
@@ -34,7 +34,8 @@
     "shape_offset_y": 0,
     "shape_scale_x": 1.0,
     "shape_scale_y": 1.0,
-    "terrain_alpha": 0.45
+    "terrain_alpha": 0.45,
+    "max_zoom": 3.0
   },
   "music": {
     "default_playlist": "got_main_theme",
@@ -96,7 +97,7 @@
         "highgarden",
         "winterfell"
       ],
-      "deadline_year": 305,
+      "deadline_year": 310,
       "deadline_month": 12,
       "allowed_factions": [
         "stark",

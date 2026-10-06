@@ -231,5 +231,512 @@
     ],
     "start_year": 298,
     "end_year": 305
+  },
+  {
+    "id": "cmd_greatjon_umber",
+    "owner_id": "stark",
+    "name": "Greatjon Umber",
+    "portrait_asset": "greatjon_umber.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 280,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_galbart_glover",
+    "owner_id": "stark",
+    "name": "Galbart Glover",
+    "portrait_asset": "galbart_glover.png",
+    "level": 3,
+    "traits": [
+      "tactician",
+      "defender"
+    ],
+    "start_year": 295,
+    "end_year": 300
+  },
+  {
+    "id": "cmd_rickard_karstark",
+    "owner_id": "stark",
+    "name": "Rickard Karstark",
+    "portrait_asset": "rickard_karstark.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 280,
+    "end_year": 300
+  },
+  {
+    "id": "cmd_maege_mormont",
+    "owner_id": "stark",
+    "name": "Maege Mormont",
+    "portrait_asset": "maege_mormont.png",
+    "level": 3,
+    "traits": [
+      "veteran",
+      "defender"
+    ],
+    "start_year": 295,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_rodrik_cassel",
+    "owner_id": "stark",
+    "name": "Rodrik Cassel",
+    "portrait_asset": "rodrik_cassel.png",
+    "level": 3,
+    "traits": [
+      "veteran",
+      "defender"
+    ],
+    "start_year": 280,
+    "end_year": 300
+  },
+  {
+    "id": "cmd_gregor_clegane",
+    "owner_id": "lannister",
+    "name": "Gregor Clegane",
+    "portrait_asset": "gregor_clegane.png",
+    "level": 5,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 290,
+    "end_year": 301
+  },
+  {
+    "id": "cmd_kevan_lannister",
+    "owner_id": "lannister",
+    "name": "Kevan Lannister",
+    "portrait_asset": "kevan_lannister.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "tactician"
+    ],
+    "start_year": 270,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_addam_marbrand",
+    "owner_id": "lannister",
+    "name": "Addam Marbrand",
+    "portrait_asset": "addam_marbrand.png",
+    "level": 4,
+    "traits": [
+      "tactician",
+      "aggressor"
+    ],
+    "start_year": 295,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_tyrion_lannister",
+    "owner_id": "lannister",
+    "name": "Tyrion Lannister",
+    "portrait_asset": "tyrion_lannister.png",
+    "level": 3,
+    "traits": [
+      "tactician",
+      "defender"
+    ],
+    "start_year": 298,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_sandor_clegane",
+    "owner_id": "baratheon_king",
+    "name": "Sandor Clegane",
+    "portrait_asset": "sandor_clegane.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 298,
+    "end_year": 303
+  },
+  {
+    "id": "cmd_barristan_selmy",
+    "owner_id": "targaryen",
+    "name": "Barristan Selmy",
+    "portrait_asset": "barristan_selmy.png",
+    "level": 5,
+    "traits": [
+      "veteran",
+      "defender"
+    ],
+    "start_year": 298,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_davos_seaworth",
+    "owner_id": "baratheon_dragonstone",
+    "name": "Davos Seaworth",
+    "portrait_asset": "davos_seaworth.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "tactician"
+    ],
+    "start_year": 298,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_salladhor_saan",
+    "owner_id": "baratheon_dragonstone",
+    "name": "Salladhor Saan",
+    "portrait_asset": "salladhor_saan.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 299,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_axell_florent",
+    "owner_id": "baratheon_dragonstone",
+    "name": "Axell Florent",
+    "portrait_asset": "axell_florent.png",
+    "level": 3,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 299,
+    "end_year": 302
+  },
+  {
+    "id": "cmd_rolland_storm",
+    "owner_id": "baratheon_dragonstone",
+    "name": "Rolland Storm",
+    "portrait_asset": "rolland_storm.png",
+    "level": 4,
+    "traits": [
+      "defender",
+      "veteran"
+    ],
+    "start_year": 299,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_loras_tyrell",
+    "owner_id": "tyrell",
+    "name": "Loras Tyrell",
+    "portrait_asset": "loras_tyrell.png",
+    "level": 4,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 298,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_randyll_tarly",
+    "owner_id": "tyrell",
+    "name": "Randyll Tarly",
+    "portrait_asset": "randyll_tarly.png",
+    "level": 5,
+    "traits": [
+      "veteran",
+      "tactician"
+    ],
+    "start_year": 280,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_mace_tyrell",
+    "owner_id": "tyrell",
+    "name": "Mace Tyrell",
+    "portrait_asset": "mace_tyrell.png",
+    "level": 3,
+    "traits": [
+      "veteran",
+      "defender"
+    ],
+    "start_year": 280,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_mathis_rowan",
+    "owner_id": "tyrell",
+    "name": "Mathis Rowan",
+    "portrait_asset": "mathis_rowan.png",
+    "level": 4,
+    "traits": [
+      "tactician",
+      "defender"
+    ],
+    "start_year": 295,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_balon_greyjoy",
+    "owner_id": "greyjoy",
+    "name": "Balon Greyjoy",
+    "portrait_asset": "balon_greyjoy.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "tactician"
+    ],
+    "start_year": 280,
+    "end_year": 300
+  },
+  {
+    "id": "cmd_theon_greyjoy",
+    "owner_id": "greyjoy",
+    "name": "Theon Greyjoy",
+    "portrait_asset": "theon_greyjoy.png",
+    "level": 3,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 298,
+    "end_year": 301
+  },
+  {
+    "id": "cmd_asha_greyjoy",
+    "owner_id": "greyjoy",
+    "name": "Asha Greyjoy",
+    "portrait_asset": "asha_greyjoy.png",
+    "level": 4,
+    "traits": [
+      "tactician",
+      "aggressor"
+    ],
+    "start_year": 298,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_victarion_greyjoy",
+    "owner_id": "greyjoy",
+    "name": "Victarion Greyjoy",
+    "portrait_asset": "victarion_greyjoy.png",
+    "level": 5,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 280,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_rodrik_harlaw",
+    "owner_id": "greyjoy",
+    "name": "Rodrik Harlaw",
+    "portrait_asset": "rodrik_harlaw.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "tactician"
+    ],
+    "start_year": 280,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_dagmer_cleftjaw",
+    "owner_id": "greyjoy",
+    "name": "Dagmer Cleftjaw",
+    "portrait_asset": "dagmer_cleftjaw.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 280,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_oberyn_martell",
+    "owner_id": "martell",
+    "name": "Oberyn Martell",
+    "portrait_asset": "oberyn_martell.png",
+    "level": 5,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 280,
+    "end_year": 301
+  },
+  {
+    "id": "cmd_areo_hotah",
+    "owner_id": "martell",
+    "name": "Areo Hotah",
+    "portrait_asset": "areo_hotah.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "defender"
+    ],
+    "start_year": 290,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_obara_sand",
+    "owner_id": "martell",
+    "name": "Obara Sand",
+    "portrait_asset": "obara_sand.png",
+    "level": 4,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 298,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_lynn_corbray",
+    "owner_id": "arryn",
+    "name": "Lyn Corbray",
+    "portrait_asset": "lyn_corbray.png",
+    "level": 4,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 290,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_vardis_egen",
+    "owner_id": "arryn",
+    "name": "Vardis Egen",
+    "portrait_asset": "vardis_egen.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "defender"
+    ],
+    "start_year": 280,
+    "end_year": 299
+  },
+  {
+    "id": "cmd_jeor_mormont",
+    "owner_id": "nights_watch",
+    "name": "Jeor Mormont",
+    "portrait_asset": "jeor_mormont.png",
+    "level": 5,
+    "traits": [
+      "veteran",
+      "defender"
+    ],
+    "start_year": 288,
+    "end_year": 300
+  },
+  {
+    "id": "cmd_qhorin_halfhand",
+    "owner_id": "nights_watch",
+    "name": "Qhorin Halfhand",
+    "portrait_asset": "qhorin_halfhand.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "tactician"
+    ],
+    "start_year": 290,
+    "end_year": 300
+  },
+  {
+    "id": "cmd_alliser_thorne",
+    "owner_id": "nights_watch",
+    "name": "Alliser Thorne",
+    "portrait_asset": "alliser_thorne.png",
+    "level": 3,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 290,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_rattleshirt",
+    "owner_id": "free_folk",
+    "name": "Rattleshirt",
+    "portrait_asset": "rattleshirt.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 295,
+    "end_year": 302
+  },
+  {
+    "id": "cmd_varamyr_sixskins",
+    "owner_id": "free_folk",
+    "name": "Varamyr Sixskins",
+    "portrait_asset": "varamyr_sixskins.png",
+    "level": 4,
+    "traits": [
+      "tactician",
+      "veteran"
+    ],
+    "start_year": 295,
+    "end_year": 301
+  },
+  {
+    "id": "cmd_styr",
+    "owner_id": "free_folk",
+    "name": "Styr, the Magnar of Thenn",
+    "portrait_asset": "styr.png",
+    "level": 4,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 298,
+    "end_year": 301
+  },
+  {
+    "id": "cmd_jorah_mormont",
+    "owner_id": "targaryen",
+    "name": "Jorah Mormont",
+    "portrait_asset": "jorah_mormont.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "defender"
+    ],
+    "start_year": 295,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_grey_worm",
+    "owner_id": "targaryen",
+    "name": "Grey Worm",
+    "portrait_asset": "grey_worm.png",
+    "level": 4,
+    "traits": [
+      "tactician",
+      "aggressor"
+    ],
+    "start_year": 300,
+    "end_year": 310
+  },
+  {
+    "id": "cmd_daario_naharis",
+    "owner_id": "targaryen",
+    "name": "Daario Naharis",
+    "portrait_asset": "daario_naharis.png",
+    "level": 4,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 300,
+    "end_year": 310
   }
 ]

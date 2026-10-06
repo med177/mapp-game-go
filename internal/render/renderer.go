@@ -916,7 +916,7 @@ func (r *Renderer) ensureWorldMap() {
 func (r *Renderer) resetCamera() {
 	r.navalContactCameraSaved = false
 	audio.StopZoomInLoop()
-	r.camScale = initialCameraScale()
+	r.camScale = r.initialCameraScale()
 	r.camX = float64(WorldW) / 2
 	// Haritanın üst kenarını ekranın üstüne hizala.
 	r.camY = ScreenHeight / (2 * r.camScale * mapPitchY)
@@ -933,10 +933,23 @@ func minCameraScale() float64 {
 	return math.Min(scaleX, scaleY)
 }
 
-func initialCameraScale() float64 {
+func (r *Renderer) maxCameraZoomScale() float64 {
+	maxZoom := float64(maxCameraZoomScale)
+	if r != nil && r.gs != nil && r.gs.MapConfig.MaxZoom != nil && *r.gs.MapConfig.MaxZoom > 0 {
+		maxZoom = *r.gs.MapConfig.MaxZoom
+	}
+	minZoom := minCameraScale()
+	if maxZoom < minZoom {
+		return minZoom
+	}
+	return maxZoom
+}
+
+func (r *Renderer) initialCameraScale() float64 {
 	scale := minCameraScale() * initialCameraZoomFactor
-	if scale > maxCameraZoomScale {
-		return maxCameraZoomScale
+	maxZoom := r.maxCameraZoomScale()
+	if scale > maxZoom {
+		return maxZoom
 	}
 	return scale
 }
@@ -1350,8 +1363,8 @@ func (r *Renderer) RestoreCamera(state CameraState) {
 	if scale < minScale {
 		scale = minScale
 	}
-	if scale > maxCameraZoomScale {
-		scale = maxCameraZoomScale
+	if scale > r.maxCameraZoomScale() {
+		scale = r.maxCameraZoomScale()
 	}
 	r.camX = state.X
 	r.camY = state.Y
