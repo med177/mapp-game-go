@@ -2198,10 +2198,10 @@ func (r *Renderer) mergedTradeRoutes(onlyPlayerRoutes bool) map[string]tradeRout
 // Uzak zoom'da yalnızca oyuncuyla ilgili rotalar gösterilerek çizgi karmaşası azaltılır.
 func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 	r.animationTick += 12
-	if r.camScale < 0.6 {
+	if r.camScale < r.zoomThreshold(0.6) {
 		return
 	}
-	onlyPlayerRoutes := r.camScale < 0.85
+	onlyPlayerRoutes := r.camScale < r.zoomThreshold(0.85)
 	merged := r.mergedTradeRoutes(onlyPlayerRoutes)
 	r.tradeCorridors = r.tradeCorridors[:0]
 	centers := r.buildTradeCenters(len(r.gs.TradeCenters.Centers))
@@ -2358,7 +2358,7 @@ func (r *Renderer) drawTradeRoutes(screen *ebiten.Image) {
 
 	// Başkent -> en yakın ticaret merkezi bağlantıları. Bunlar işlem hacminden
 	// bağımsız, her devlet için sabit ve ince görünür; merkezi grafiği büyütmez.
-	if r.camScale >= 0.95 {
+	if r.camScale >= r.zoomThreshold(0.95) {
 		factionIDs := make([]string, 0, len(r.gs.Factions))
 		for factionID, currentFaction := range r.gs.Factions {
 			if currentFaction != nil && !currentFaction.IsEliminated && !currentFaction.IsVirtual {

@@ -463,8 +463,8 @@ func mapBorderStyleStrokeWidth(style uint8) float32 {
 	return mapBorderStrokeWidth
 }
 
-func shouldDrawMapBorderStyle(style uint8, camScale float64) bool {
-	if camScale >= 0.85 {
+func (r *Renderer) shouldDrawMapBorderStyle(style uint8) bool {
+	if r.camScale >= r.zoomThreshold(0.85) {
 		return true
 	}
 	// Uzak görünümde idari yardımcı çizgiler ve deniz hücresi sınırları
@@ -585,14 +585,14 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 			break
 		}
 		style := r.worldMap.borderStyles[i]
-		if style == mapBorderStyleNone || !shouldDrawMapBorderStyle(style, r.camScale) {
+		if style == mapBorderStyleNone || !r.shouldDrawMapBorderStyle(style) {
 			continue
 		}
 		x1, y1 := r.worldToScreen(float64(segment.x1), float64(segment.y1))
 		x2, y2 := r.worldToScreen(float64(segment.x2), float64(segment.y2))
 		x1, y1 = x1+marginX, y1+marginY
 		x2, y2 = x2+marginX, y2+marginY
-		if r.camScale < 1 && math.Hypot(x2-x1, y2-y1) < 0.85 {
+		if r.camScale < r.zoomThreshold(1) && math.Hypot(x2-x1, y2-y1) < 0.85 {
 			continue
 		}
 		if math.Max(x1, x2) < -2 || math.Min(x1, x2) > cacheWidthF+2 ||

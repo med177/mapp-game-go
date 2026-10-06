@@ -1779,14 +1779,14 @@ func (r *Renderer) drawEditVoronoiLegendOverlay(screen *ebiten.Image) {
 
 func (r *Renderer) drawEditVoronoiBoundary(screen *ebiten.Image, pixels []int) {
 	step := 1
-	if r.camScale < 0.8 {
+	if r.camScale < r.zoomThreshold(0.8) {
 		step = 2
 	}
-	if r.camScale < 0.45 {
+	if r.camScale < r.zoomThreshold(0.45) {
 		step = 4
 	}
 	size := float32(2)
-	if r.camScale >= 1.25 {
+	if r.camScale >= r.zoomThreshold(1.25) {
 		size = 3
 	}
 	col := color.RGBA{80, 210, 255, 215}

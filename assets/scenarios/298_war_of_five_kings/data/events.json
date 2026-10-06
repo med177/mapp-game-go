@@ -401,7 +401,7 @@
     "id": "death_of_robert_298",
     "name_tr": "Kral Robert'ın Ölümü",
     "desc_tr": "Kral Robert Baratheon av sırasında öldü. Taht üzerinde iddia sahibi krallar kılıçlarını çekti. Beş Kralın Savaşı başlıyor!",
-    "probability": 100,
+    "probability": 0,
     "min_turn": 1,
     "target": "specific_faction",
     "sat_delta": -10,

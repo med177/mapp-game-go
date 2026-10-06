@@ -945,6 +945,24 @@ func (r *Renderer) maxCameraZoomScale() float64 {
 	return maxZoom
 }
 
+// zoomThreshold, eski varsayılan üst sınıra göre tanımlanan görünürlük
+// eşiklerini aktif senaryonun minimum-maksimum zoom aralığına taşır.
+func (r *Renderer) zoomThreshold(base float64) float64 {
+	minZoom := minCameraScale()
+	maxZoom := r.maxCameraZoomScale()
+	defaultMaxZoom := float64(maxCameraZoomScale)
+	if maxZoom == defaultMaxZoom {
+		return base
+	}
+	if base <= minZoom {
+		return minZoom
+	}
+	if base >= defaultMaxZoom {
+		return maxZoom
+	}
+	return minZoom + (base-minZoom)*(maxZoom-minZoom)/(defaultMaxZoom-minZoom)
+}
+
 func (r *Renderer) initialCameraScale() float64 {
 	scale := minCameraScale() * initialCameraZoomFactor
 	maxZoom := r.maxCameraZoomScale()
@@ -4074,7 +4092,7 @@ func (r *Renderer) armyVisibleAtCurrentZoom(a *army.Army) bool {
 	if r == nil || r.gs == nil || r.mapMode == MapModeTrade || r.gs.Phase == state.PhaseEditMode {
 		return true
 	}
-	if r.camScale >= armyAllFactionsZoomScale {
+	if r.camScale >= r.zoomThreshold(armyAllFactionsZoomScale) {
 		return true
 	}
 	return armyIsRelatedToPlayer(r.gs, a.OwnerID)
@@ -5264,7 +5282,7 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 
 		if drawLabel || forceLabel {
 			variant := gameui.TextSmall
-			if r.camScale >= 1.0 {
+			if r.camScale >= r.zoomThreshold(1.0) {
 				variant = gameui.TextMedium
 			}
 			if item.CapitalIcon {
@@ -5401,7 +5419,7 @@ func (r *Renderer) appendTradeCenterSettlementDraws(region *world.Region) {
 
 func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text string, sx, sy float64, drawLabel bool, priority int, capitalIcon bool) {
 	face := FaceSmall
-	if r.camScale >= 1.0 {
+	if r.camScale >= r.zoomThreshold(1.0) {
 		face = FaceMed
 	}
 
@@ -5476,11 +5494,11 @@ func (r *Renderer) shouldDrawSettlementAtZoom(settlement world.Settlement, isFac
 		return true
 	}
 	// Uzak görünümde harita gürültüsünü başkentler ve kaleler oluşturmaz.
-	if r.camScale < settlementMediumZoomScale {
+	if r.camScale < r.zoomThreshold(settlementMediumZoomScale) {
 		return isFactionCapital || settlement.IsCenter || settlement.Type == world.SettlementFortress
 	}
 	// Orta görünümde limanlar ve şehirler de stratejik işaret olarak açılır.
-	if r.camScale < settlementCloseZoomScale {
+	if r.camScale < r.zoomThreshold(settlementCloseZoomScale) {
 		return isFactionCapital || settlement.IsCenter ||
 			settlement.Type == world.SettlementFortress ||
 			settlement.Type == world.SettlementPort ||
@@ -5913,7 +5931,7 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 	if r.gs == nil || len(r.gs.ActiveRegionEvents) == 0 {
 		return
 	}
-	if r.camScale < 0.6 {
+	if r.camScale < r.zoomThreshold(0.6) {
 		return
 	}
 
@@ -5984,7 +6002,7 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 			screen.DrawImage(img, op)
 
 			// Yüksek zoomda kısa etiket
-			if r.camScale >= 1.05 && evt.LabelTR != "" {
+			if r.camScale >= r.zoomThreshold(1.05) && evt.LabelTR != "" {
 				labelText := evt.LabelTR
 				if len(labelText) > 18 {
 					labelText = labelText[:18] + "..."
@@ -6004,7 +6022,7 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 }
 
 func (r *Renderer) activeRegionEventHitAt(mx, my float64) (int, bool) {
-	if r == nil || r.gs == nil || len(r.gs.ActiveRegionEvents) == 0 || r.camScale < 0.6 {
+	if r == nil || r.gs == nil || len(r.gs.ActiveRegionEvents) == 0 || r.camScale < r.zoomThreshold(0.6) {
 		return -1, false
 	}
 
