@@ -11,6 +11,14 @@
   "privileged_building_max_level": 1,
   "minor_privilege_protection_turns": 10,
   "aggressive_expansion_last_turns": 6,
+  "undead_mechanics": {
+    "faction_id": "others",
+    "raised_unit_type": "wight",
+    "fallen_to_raised_percent": 50,
+    "minimum_raised_units": 1,
+    "maximum_raised_units": 6,
+    "requires_event_flag": "others_awakened"
+  },
   "diplomacy": {
     "relation_improvement_gold_cost": 250,
     "relation_improvement_bonus": 15,
@@ -38,16 +46,37 @@
     "max_zoom": 2.5
   },
   "music": {
-    "default_playlist": "got_main_theme",
+    "default_playlist": "campaign",
+    "faction_playlists": {
+      "stark": "north",
+      "nights_watch": "north",
+      "free_folk": "north",
+      "lannister": "lannister",
+      "targaryen": "targaryen",
+      "greyjoy": "greyjoy",
+      "baratheon_king": "diplomacy",
+      "baratheon_dragonstone": "diplomacy",
+      "baratheon_stormsend": "diplomacy",
+      "tyrell": "diplomacy",
+      "martell": "diplomacy",
+      "arryn": "diplomacy",
+      "tully": "diplomacy",
+      "bolton": "north",
+      "braavos": "diplomacy",
+      "brotherhood_without_banners": "diplomacy",
+      "free_cities": "diplomacy",
+      "others": "winter"
+    },
+    "context_playlists": {
+      "war": "war",
+      "winter": "winter",
+      "undead": "undead"
+    },
     "playlists": {
-      "got_main_theme": [
+      "campaign": [
         {
           "file": "Cinematic-Ambient-Background.mp3",
           "weight": 6
-        },
-        {
-          "file": "blood-and-honor-roman-arena-heroic-tension.mp3",
-          "weight": 1
         },
         {
           "file": "ancient-kingdom-likely-game-of-thrones.mp3",
@@ -58,28 +87,128 @@
           "weight": 2
         },
         {
-          "file": "eternal-legion-roman-empire-epic-army.mp3",
-          "weight": 3
-        },
-        {
           "file": "game-of-thrones-211870.mp3",
           "weight": 4
         },
         {
-          "file": "solarflex-epic-war-541542.mp3",
+          "file": "blood-and-honor-roman-arena-heroic-tension.mp3",
+          "weight": 2
+        }
+      ],
+      "north": [
+        {
+          "file": "Cinematic-Ambient-Background.mp3",
+          "weight": 8
+        },
+        {
+          "file": "echoes-of-the-colosseum-suspenseful-ancient-rome.mp3",
           "weight": 5
         },
+        {
+          "file": "ancient-kingdom-likely-game-of-thrones.mp3",
+          "weight": 4
+        }
+      ],
+      "lannister": [
         {
           "file": "rise-of-the-imperium-empire-theme-cinematic-power.mp3",
           "weight": 8
         },
         {
+          "file": "eternal-legion-roman-empire-epic-army.mp3",
+          "weight": 6
+        },
+        {
+          "file": "blood-and-honor-roman-arena-heroic-tension.mp3",
+          "weight": 4
+        }
+      ],
+      "targaryen": [
+        {
+          "file": "ancient-kingdom-likely-game-of-thrones.mp3",
+          "weight": 8
+        },
+        {
+          "file": "game-of-thrones-211870.mp3",
+          "weight": 6
+        },
+        {
+          "file": "Cinematic-Ambient-Background.mp3",
+          "weight": 4
+        }
+      ],
+      "greyjoy": [
+        {
+          "file": "solarflex-epic-war-541542.mp3",
+          "weight": 8
+        },
+        {
+          "file": "paulyudin-war-493487.mp3",
+          "weight": 6
+        },
+        {
+          "file": "hitslab-war-war-epic-music-480183.mp3",
+          "weight": 4
+        }
+      ],
+      "war": [
+        {
           "file": "hitslab-war-war-epic-music-480183.mp3",
           "weight": 9
         },
         {
+          "file": "solarflex-epic-war-541542.mp3",
+          "weight": 7
+        },
+        {
+          "file": "paulyudin-war-493487.mp3",
+          "weight": 5
+        },
+        {
+          "file": "eternal-legion-roman-empire-epic-army.mp3",
+          "weight": 4
+        }
+      ],
+      "winter": [
+        {
+          "file": "Cinematic-Ambient-Background.mp3",
+          "weight": 9
+        },
+        {
+          "file": "echoes-of-the-colosseum-suspenseful-ancient-rome.mp3",
+          "weight": 7
+        },
+        {
+          "file": "game-of-thrones-211870.mp3",
+          "weight": 3
+        }
+      ],
+      "undead": [
+        {
+          "file": "echoes-of-the-colosseum-suspenseful-ancient-rome.mp3",
+          "weight": 8
+        },
+        {
+          "file": "Cinematic-Ambient-Background.mp3",
+          "weight": 6
+        },
+        {
           "file": "paulyudin-war-493487.mp3",
           "weight": 2
+        }
+      ],
+      "diplomacy": [
+        {
+          "file": "blood-and-honor-roman-arena-heroic-tension.mp3",
+          "weight": 7
+        },
+        {
+          "file": "game-of-thrones-211870.mp3",
+          "weight": 5
+        },
+        {
+          "file": "Cinematic-Ambient-Background.mp3",
+          "weight": 3
         }
       ]
     }
@@ -95,7 +224,7 @@
         "kings_landing",
         "casterly_rock",
         "highgarden",
-        "winterfell"
+        "winterfell_region"
       ],
       "deadline_year": 310,
       "deadline_month": 12,
@@ -106,6 +235,201 @@
         "baratheon_dragonstone",
         "baratheon_stormsend",
         "targaryen"
+      ]
+    },
+    {
+      "id": "king_in_the_north",
+      "title": "Kuzey Kralı'nın Tahtı",
+      "description": "Kuzey'in bağımsızlığını ilan et ve Demir Taht üzerinde söz sahibi ol.",
+      "detail": "Hedef: Winterfell, The Neck, King's Landing ve en az 22 kara bölgesi",
+      "type": "domination",
+      "target_region_count": 22,
+      "required_regions": [
+        "winterfell_region",
+        "the_neck",
+        "kings_landing"
+      ],
+      "required_event_flags": [
+        "king_in_the_north"
+      ],
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "stark"
+      ]
+    },
+    {
+      "id": "lannister_rule_of_the_realm",
+      "title": "Altın ve Taç",
+      "description": "Batı'nın zenginliğini kullanarak Demir Taht'ı ve büyük hanedan merkezlerini kontrol et.",
+      "detail": "Hedef: King's Landing, Casterly Rock ve Highgarden",
+      "type": "conquer_city",
+      "required_regions": [
+        "kings_landing",
+        "casterly_rock",
+        "highgarden"
+      ],
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "lannister"
+      ]
+    },
+    {
+      "id": "baratheon_king_restoration",
+      "title": "Baratheon Tacını Birleştir",
+      "description": "Kralın Şehri'ni ve rakip Baratheon merkezlerini tek bir taç altında topla.",
+      "detail": "Hedef: King's Landing, Dragonstone ve Storm's End",
+      "type": "conquer_city",
+      "required_regions": [
+        "kings_landing",
+        "dragonstone",
+        "storm_end"
+      ],
+      "deadline_year": 305,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "baratheon_king",
+        "baratheon_dragonstone",
+        "baratheon_stormsend"
+      ]
+    },
+    {
+      "id": "greyjoy_rule_of_the_seas",
+      "title": "Denizden Gelen Taç",
+      "description": "Demir Adalar'dan yükselerek Westeros'un önemli kıyı ve kraliyet merkezlerini ele geçir.",
+      "detail": "Hedef: Pyke, King's Landing ve en az 18 kara bölgesi",
+      "type": "domination",
+      "target_region_count": 18,
+      "required_regions": [
+        "pyke",
+        "kings_landing"
+      ],
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "greyjoy"
+      ]
+    },
+    {
+      "id": "tyrell_grain_and_alliance",
+      "title": "Güneyin Hâkimiyeti",
+      "description": "Highgarden'ın tahıl ve nüfus gücüyle krallıkların kaderini belirle.",
+      "detail": "Hedef: Tur başına en az 900 altın gelirini 8 tur boyunca koru",
+      "type": "economic",
+      "target_gold_income": 900,
+      "gold_hold_turns": 8,
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "tyrell"
+      ]
+    },
+    {
+      "id": "martell_dornish_independence",
+      "title": "Dorne'un Bağımsızlığı",
+      "description": "Dorne'u koru ve Güneş Mızrağı'nın iradesini Westeros'a kabul ettir.",
+      "detail": "Hedef: Sunspear, King's Landing ve Dorne çevresindeki bölgeler",
+      "type": "conquer_city",
+      "required_regions": [
+        "sunspear",
+        "kings_landing"
+      ],
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "martell"
+      ]
+    },
+    {
+      "id": "targaryen_return_to_the_throne",
+      "title": "Ejderhaların Dönüşü",
+      "description": "Doğudaki gücünü Westeros'a taşı ve Targaryen hanedanını Demir Taht'a döndür.",
+      "detail": "Hedef: Targaryen restorasyonunu ilan et; King's Landing, Dragonstone ve Meereen'i kontrol et",
+      "type": "conquer_city",
+      "required_regions": [
+        "kings_landing",
+        "dragonstone",
+        "meereen"
+      ],
+      "required_event_flags": [
+        "targaryen_restoration_started"
+      ],
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "targaryen"
+      ]
+    },
+    {
+      "id": "night_watch_hold_the_wall",
+      "title": "Duvar'ı Koru",
+      "description": "Gece Nöbeti olarak Duvar'ı savun ve krallıkların kuzey sınırını ayakta tut.",
+      "detail": "Duvar savunmasını hazırla ve 168 tur boyunca hayatta kal",
+      "type": "survive_turns",
+      "turns": 168,
+      "required_event_flags": [
+        "wall_defense_prepared"
+      ],
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "nights_watch"
+      ]
+    },
+    {
+      "id": "free_folk_crossing",
+      "title": "Duvarın Ötesinden",
+      "description": "Özgür Halkı birleştir ve Duvar'ın ötesinden Westeros'a geçiş yolunu aç.",
+      "detail": "Mance'ın istilasını başlat; Beyond the Wall ve The Wall bölgelerini kontrol et",
+      "type": "conquer_city",
+      "required_regions": [
+        "beyond_the_wall",
+        "the_wall_west"
+      ],
+      "required_event_flags": [
+        "mance_invasion_started"
+      ],
+      "deadline_year": 305,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "free_folk"
+      ]
+    },
+    {
+      "id": "last_watch_against_the_dead",
+      "title": "Ölüler Ordusunu Durdur",
+      "description": "Akgezenlerin uyanışından sonra Duvar'ı geri al ve kuzey sınırını yeniden güvenceye al.",
+      "detail": "Hedef: Always Winter bölgesini ele geçir ve Akgezen tehdidini sona erdir",
+      "type": "conquer_city",
+      "required_regions": [
+        "always_winter"
+      ],
+      "required_event_flags": [
+        "others_awakened"
+      ],
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "nights_watch",
+        "stark"
+      ]
+    },
+    {
+      "id": "brotherhood_liberation",
+      "title": "Halkın Adaleti",
+      "description": "Soyluların savaşından sağ çık ve Nehir Toprakları'nda halkın gücünü kur.",
+      "detail": "En az 16 kara bölgesini kontrol et",
+      "type": "domination",
+      "target_region_count": 16,
+      "required_regions": [
+        "harrenhal",
+        "riverrun"
+      ],
+      "deadline_year": 310,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "brotherhood_without_banners"
       ]
     }
   ]

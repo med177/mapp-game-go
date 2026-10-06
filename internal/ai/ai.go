@@ -2364,6 +2364,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 			gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
 			gs.IsCoreRegion(faction.FactionID(defOwnerID), targetRegion.ID))
+		defMods.DefenseMod += gs.LandPassageDefenseBonus(fromRegion, target)
 		if ambushDefender != nil {
 			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
 			ambushDefender.InAmbush = false
@@ -2373,6 +2374,11 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			contactContext = combat.BattleContextNaval
 		}
 		result := combat.ResolveBattleWithContactDefense(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, contactContext, combat.BattleStanceBalanced, contactAttackerHolding, contactDefenderHolding)
+		if result.AttackerWins {
+			raiseWightsAfterVictory(gs, a.OwnerID, target, result.DefenderLost)
+		} else {
+			raiseWightsAfterVictory(gs, defForBattle.OwnerID, target, result.AttackerLost)
+		}
 		defenderDestroyed := len(defForBattle.Units) == 0
 		gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, defForBattle.IsNaval, len(a.Units) == 0, defenderDestroyed)
 		recordCommanderBattle(gs, a, defForBattle, defSourceIDs, result.AttackerWins)

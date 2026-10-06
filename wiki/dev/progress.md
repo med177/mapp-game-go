@@ -5,6 +5,21 @@ last_updated: 2026-10-06
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-06: 298 senaryosunda uzun kış eventinin tahıl üretimi, talebi, ticaret
+  ve ordu ikmal etkileri JSON'daki `effect_duration_turns` alanıyla 36 tur
+  sürdürülecek şekilde yapılandırıldı. Etki süresi artık Go koduna gömülü değil.
+
+- 2026-10-06: 298 senaryosunda tüm faction'lar mevcut ses dosyalarından faction
+  playlist'lerine bağlandı. Yeni müzik veya görsel asset eklenmedi; savaş, kış
+  ve Akgezen durum playlist'leri faction müziğine göre öncelikli kalıyor.
+
+- 2026-10-06: 298 senaryosuna NPC Akgezen faction'i, wight ve white walker
+  birlikleri, Always Winter baslangic ordusu, kademeli uyanis/Duvar event zinciri,
+  AI istilasi ve Gece Nobeti/Stark icin Akgezen zafer kosulu eklendi. Akgezen
+  zaferlerinden sonra kayip birliklerin bir bolumu wight ordusu olarak diriliyor.
+  Dogrulama: `go test ./internal/faction ./internal/scenario ./internal/events
+  ./internal/state ./internal/ai ./internal/game -count=1`.
+
 # Geliştirme Durumu
 
 - 2026-10-06: Din sistemi senaryo verisine taşındı. `data/religions.json`

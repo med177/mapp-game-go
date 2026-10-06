@@ -637,6 +637,10 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		return nil, err
 	}
+	factionLore, settlementLore, err := scenario.LoadLore(scenarioPath)
+	if err != nil {
+		return nil, err
+	}
 
 	gs := &state.GameState{
 		Turn:                          1,
@@ -652,6 +656,9 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		MinorPrivilegeProtectionTurns: sc.MinorPrivilegeProtectionTurns,
 		AggressiveExpansionLastTurns:  sc.AggressiveExpansionLastTurns,
 		DiplomacyConfig:               sc.Diplomacy.WithDefaults(),
+		UndeadMechanics:               sc.UndeadMechanics.WithDefaults(),
+		FactionLore:                   factionLore,
+		SettlementLore:                settlementLore,
 		BaseGoldValues:                baseGoldValues,
 		Regions:                       regions,
 		RegionOrder:                   regionOrder,

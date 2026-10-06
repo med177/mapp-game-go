@@ -164,6 +164,7 @@ Base event etkisi eski alanlarla (`target`, `sat_delta`, `gold_delta`, `grain_de
 
 - `grain_production_percent`: bölgenin efektif tahıl üretimine eklenen yüzde puan
 - `grain_demand_percent`: sivil tahıl talebine eklenen yüzde puan
+- `effect_duration_turns`: aktif bölge etkisinin kaç tur süreceği; belirtilmezse varsayılan süre kullanılır
 
 Bu alanlar `ActiveRegionEvents` içindeki `RegionEventStatus` kaydına kopyalanır. `GameState.RegionProductionSummary()`, ekonomi tick'i, bölgesel ordu lojistiği ve AI aynı aktif kayıtları okur; `TurnsLeft` sıfırlandığında etki kendiliğinden kalkar. Böylece olayın anlık `grain_delta` etkisi ile birkaç tur süren üretim/tüketim baskısı birbirinden ayrılır. `drought`, `bad_harvest`, `famine` ve `harvest` adlandırmaları event ikon tipine otomatik bağlanır.
 

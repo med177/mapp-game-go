@@ -51,6 +51,20 @@ func (s *GameState) LandRegionEntryCost(from world.RegionID, target *world.Regio
 	return cost, true
 }
 
+// LandPassageDefenseBonus, özel geçitten hedef bölgeye giren saldırıya
+// uygulanacak savunma çarpanını döner. Değer JSON'da yüzde olarak tutulur;
+// savaş sistemiyle uyumlu olmak için 0.15 biçimine çevrilir.
+func (s *GameState) LandPassageDefenseBonus(from, target world.RegionID) float64 {
+	if s == nil {
+		return 0
+	}
+	passage := world.LandPassageBetween(s.LandPassages, from, target)
+	if passage == nil || passage.DefenseBonus <= 0 {
+		return 0
+	}
+	return float64(passage.DefenseBonus) / 100.0
+}
+
 func terrainAreaCostForID(area world.TerrainArea) (int, bool) {
 	if area.MoveCost == 0 {
 		return 0, true

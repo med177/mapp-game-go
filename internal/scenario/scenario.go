@@ -15,6 +15,50 @@ const DefaultMinorPrivilegeProtectionTurns = 30
 // süresi eksikse kullanılan geriye dönük uyumluluk varsayılanıdır.
 const DefaultAggressiveExpansionLastTurns = 6
 
+// UndeadMechanics senaryoya bagli dirilme kurallarini tanimlar. Alanlar
+// eksikse WithDefaults mevcut Akgezen davranisini korur.
+type UndeadMechanics struct {
+	FactionID             string `json:"faction_id,omitempty"`
+	RaisedUnitType        string `json:"raised_unit_type,omitempty"`
+	FallenToRaisedPercent int    `json:"fallen_to_raised_percent,omitempty"`
+	MinimumRaisedUnits    int    `json:"minimum_raised_units,omitempty"`
+	MaximumRaisedUnits    int    `json:"maximum_raised_units,omitempty"`
+	RequiresEventFlag     string `json:"requires_event_flag,omitempty"`
+}
+
+func DefaultUndeadMechanics() UndeadMechanics {
+	return UndeadMechanics{
+		FactionID:             "others",
+		RaisedUnitType:        "wight",
+		FallenToRaisedPercent: 50,
+		MinimumRaisedUnits:    1,
+		MaximumRaisedUnits:    6,
+	}
+}
+
+func (m UndeadMechanics) WithDefaults() UndeadMechanics {
+	d := DefaultUndeadMechanics()
+	if m.FactionID != "" {
+		d.FactionID = m.FactionID
+	}
+	if m.RaisedUnitType != "" {
+		d.RaisedUnitType = m.RaisedUnitType
+	}
+	if m.FallenToRaisedPercent > 0 {
+		d.FallenToRaisedPercent = m.FallenToRaisedPercent
+	}
+	if m.MinimumRaisedUnits > 0 {
+		d.MinimumRaisedUnits = m.MinimumRaisedUnits
+	}
+	if m.MaximumRaisedUnits > 0 {
+		d.MaximumRaisedUnits = m.MaximumRaisedUnits
+	}
+	if m.RequiresEventFlag != "" {
+		d.RequiresEventFlag = m.RequiresEventFlag
+	}
+	return d
+}
+
 // VictoryOptionDef bir senaryo için tek bir kazanma koşulunu tanımlar.
 // UI metni (Title, Description, Detail) ve oyun mekaniği değerlerini (Type, hedefler) bir arada tutar.
 type VictoryOptionDef struct {
@@ -112,8 +156,10 @@ type MusicTrackDef struct {
 
 // MusicConfig senaryo bazlı müzik playlistlerini tanımlar.
 type MusicConfig struct {
-	DefaultPlaylist string                     `json:"default_playlist"`
-	Playlists       map[string][]MusicTrackDef `json:"playlists"`
+	DefaultPlaylist  string                     `json:"default_playlist"`
+	Playlists        map[string][]MusicTrackDef `json:"playlists"`
+	FactionPlaylists map[string]string          `json:"faction_playlists,omitempty"`
+	ContextPlaylists map[string]string          `json:"context_playlists,omitempty"`
 }
 
 // Period senaryonun tarihsel/teknolojik çağ profilini tanımlar.
@@ -175,7 +221,8 @@ type Scenario struct {
 	// baskısına katkısının kademeli olarak azalacağı tur sayısıdır.
 	AggressiveExpansionLastTurns int `json:"aggressive_expansion_last_turns,omitempty"`
 
-	Diplomacy DiplomacyConfig `json:"diplomacy,omitempty"`
+	Diplomacy       DiplomacyConfig `json:"diplomacy,omitempty"`
+	UndeadMechanics UndeadMechanics `json:"undead_mechanics,omitempty"`
 
 	MapConfig         MapConfig          `json:"map"`
 	Music             MusicConfig        `json:"music"`

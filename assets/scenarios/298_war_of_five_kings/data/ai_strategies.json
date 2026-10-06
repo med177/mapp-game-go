@@ -107,6 +107,9 @@
           ],
           "priority": 100,
           "commitment": 90,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "the_neck",
             "harrenhal"
@@ -180,6 +183,9 @@
           ],
           "priority": 96,
           "commitment": 88,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "golden_tooth",
             "harrenhal"
@@ -196,6 +202,9 @@
           ],
           "priority": 100,
           "commitment": 94,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "harrenhal"
           ]
@@ -260,6 +269,9 @@
           ],
           "priority": 78,
           "commitment": 68,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "kings_landing",
             "harrenhal"
@@ -320,6 +332,9 @@
           ],
           "priority": 100,
           "commitment": 94,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "dragonstone",
             "crownlands"
@@ -377,6 +392,9 @@
           ],
           "priority": 76,
           "commitment": 62,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "stormlands",
             "tumbleton"
@@ -442,6 +460,9 @@
           ],
           "priority": 86,
           "commitment": 70,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "pyke",
             "cape_kraken"
@@ -503,6 +524,9 @@
           ],
           "priority": 72,
           "commitment": 54,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "highgarden",
             "reach"
@@ -572,6 +596,9 @@
           ],
           "priority": 82,
           "commitment": 68,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "storm_end",
             "the_boneway"
@@ -619,6 +646,30 @@
           ]
         },
         {
+          "id": "secure_meereen_and_dragons",
+          "kind": "consolidate",
+          "territorial_claims": [
+            {
+              "region_id": "meereen",
+              "value": 100
+            },
+            {
+              "region_id": "dragonstone",
+              "value": 95
+            }
+          ],
+          "priority": 96,
+          "commitment": 88,
+          "min_year": 301,
+          "required_event_flags": [
+            "targaryen_return_ready"
+          ],
+          "readiness_regions": [
+            "meereen",
+            "pentos_region"
+          ]
+        },
+        {
           "id": "restore_the_targaryen_throne",
           "kind": "expand",
           "territorial_claims": [
@@ -633,6 +684,11 @@
           ],
           "priority": 100,
           "commitment": 92,
+          "min_year": 301,
+          "required_event_flags": [
+            "war_of_five_kings_resolved",
+            "targaryen_return_ready"
+          ],
           "readiness_regions": [
             "pentos_region",
             "dragonstone"
@@ -692,6 +748,9 @@
           ],
           "priority": 70,
           "commitment": 48,
+          "required_event_flags": [
+            "mance_invasion_started"
+          ],
           "readiness_regions": [
             "the_wall_west",
             "the_wall_east"
@@ -753,6 +812,9 @@
           ],
           "priority": 62,
           "commitment": 42,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "the_fingers",
             "harrenhal"
@@ -822,6 +884,9 @@
           ],
           "priority": 94,
           "commitment": 86,
+          "required_event_flags": [
+            "war_of_five_kings_active"
+          ],
           "readiness_regions": [
             "riverrun",
             "the_twins"
@@ -890,6 +955,9 @@
           ],
           "priority": 92,
           "commitment": 82,
+          "required_event_flags": [
+            "mance_invasion_started"
+          ],
           "readiness_regions": [
             "beyond_the_wall",
             "the_wall_west"
@@ -954,6 +1022,9 @@
           ],
           "priority": 90,
           "commitment": 80,
+          "required_event_flags": [
+            "northern_independence_declared"
+          ],
           "readiness_regions": [
             "the_dreadfort",
             "the_neck"
@@ -1138,6 +1209,102 @@
           "readiness_regions": [
             "myr_region",
             "essos_free_cities"
+          ]
+        }
+      ]
+    },
+    {
+      "faction_id": "others",
+      "profile": "undead_winter_invasion",
+      "expansion_targets": [
+        "nights_watch",
+        "free_folk",
+        "stark"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "always_winter",
+          "value": 100
+        },
+        {
+          "region_id": "the_wall_west",
+          "value": 100
+        },
+        {
+          "region_id": "the_wall_east",
+          "value": 100
+        },
+        {
+          "region_id": "beyond_the_wall",
+          "value": 90
+        }
+      ],
+      "objectives": [
+        {
+          "id": "awaken_the_dead",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "always_winter",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 100,
+          "min_year": 300,
+          "required_event_flags": [
+            "others_awakened"
+          ],
+          "readiness_regions": [
+            "always_winter"
+          ]
+        },
+        {
+          "id": "break_the_wall",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "the_wall_west",
+              "value": 100
+            },
+            {
+              "region_id": "the_wall_east",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 95,
+          "min_year": 300,
+          "required_event_flags": [
+            "others_awakened"
+          ],
+          "readiness_regions": [
+            "always_winter",
+            "beyond_the_wall"
+          ]
+        },
+        {
+          "id": "descend_into_the_north",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "winterfell_region",
+              "value": 90
+            },
+            {
+              "region_id": "the_neck",
+              "value": 75
+            }
+          ],
+          "priority": 70,
+          "commitment": 90,
+          "min_year": 301,
+          "required_event_flags": [
+            "wall_breached"
+          ],
+          "readiness_regions": [
+            "the_wall_west",
+            "the_wall_east"
           ]
         }
       ]

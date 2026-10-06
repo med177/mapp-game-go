@@ -1517,6 +1517,8 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		}
 		settlementImageCache = map[string]*ebiten.Image{}
 		settlementImageLoaded = map[string]bool{}
+		loreImageCache = map[string]*ebiten.Image{}
+		loreImageLoaded = map[string]bool{}
 		resetFactionFlagCache()
 		resetCommanderPortraitCache()
 	}

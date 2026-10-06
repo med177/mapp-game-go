@@ -1,1 +1,37 @@
-null
+[
+  {
+    "from": "the_neck",
+    "to": "moat_cailin",
+    "type": "fortified_crossing",
+    "move_cost": 2,
+    "defense_bonus": 35
+  },
+  {
+    "from": "the_twins",
+    "to": "riverlands",
+    "type": "fortified_crossing",
+    "move_cost": 2,
+    "defense_bonus": 30
+  },
+  {
+    "from": "golden_tooth",
+    "to": "riverlands",
+    "type": "mountain_pass",
+    "move_cost": 2,
+    "defense_bonus": 25
+  },
+  {
+    "from": "the_wall_west",
+    "to": "beyond_the_wall",
+    "type": "fortified_crossing",
+    "move_cost": 2,
+    "defense_bonus": 40
+  },
+  {
+    "from": "the_wall_east",
+    "to": "beyond_the_wall",
+    "type": "fortified_crossing",
+    "move_cost": 2,
+    "defense_bonus": 40
+  }
+]

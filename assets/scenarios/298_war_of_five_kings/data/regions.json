@@ -6,10 +6,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "braavos_channel",
       "bay_of_crabs",
-      "shivering_sea",
-      "bay_of_seals"
+      "bay_of_seals",
+      "braavos_channel",
+      "shivering_sea"
     ],
     "world_x": 2166,
     "world_y": 1316,
@@ -37,10 +37,10 @@
     "name": "Always Winter",
     "name_tr": "Always Winter",
     "terrain": "mountain",
-    "owner_id": "",
+    "owner_id": "others",
     "neighbors": [
-      "beyond_the_wall",
       "bay_of_ice",
+      "beyond_the_wall",
       "eastwatch_sea",
       "far_north_sea",
       "frozen_coast_sea",
@@ -75,12 +75,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "hapstackhall",
-      "the_gullet",
       "gulltown_bay",
-      "shipbreaker_bay",
+      "hapstackhall",
       "pentos_bay",
-      "sharp_point"
+      "sharp_point",
+      "shipbreaker_bay",
+      "the_gullet"
     ],
     "world_x": 1808,
     "world_y": 2383,
@@ -110,12 +110,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "narrow_sea",
-      "myr_bay",
-      "gulltown_bay",
-      "shipbreaker_bay",
       "braavos_channel",
-      "pentos_region"
+      "gulltown_bay",
+      "myr_bay",
+      "narrow_sea",
+      "pentos_region",
+      "shipbreaker_bay"
     ],
     "world_x": 1918,
     "world_y": 2405,
@@ -145,16 +145,16 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "blackwater_bay",
       "crackclaw_point",
       "dragonstone",
       "duskendale",
+      "gulltown_bay",
       "hapstackhall",
       "kings_landing",
       "kingswood",
       "narrow_sea",
-      "gulltown_bay",
-      "sharp_point",
-      "blackwater_bay"
+      "sharp_point"
     ],
     "world_x": 1655,
     "world_y": 2300,
@@ -184,17 +184,17 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "bay_of_crabs",
+      "braavos_channel",
       "crackclaw_point",
       "duskendale",
       "gulltown",
       "narrow_sea",
-      "the_gullet",
       "pentos_bay",
-      "braavos_channel",
-      "bay_of_crabs",
       "saltpans",
       "the_eyrie",
       "the_fingers",
+      "the_gullet",
       "wickenden"
     ],
     "world_x": 1881,
@@ -225,8 +225,8 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "moat_cailin",
       "bay_of_crabs",
+      "moat_cailin",
       "shivering_sea",
       "the_fingers",
       "the_neck",
@@ -262,11 +262,11 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "gulltown_bay",
       "braavos_channel",
-      "the_bite",
-      "shivering_sea",
+      "gulltown_bay",
       "sea",
+      "shivering_sea",
+      "the_bite",
       "the_fingers"
     ],
     "world_x": 1945,
@@ -297,14 +297,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "bay_of_crabs",
+      "bay_of_seals",
+      "eastwatch_sea",
       "karhold",
       "lonely_hills",
-      "the_bite",
-      "bay_of_crabs",
-      "eastwatch_sea",
-      "bay_of_seals",
       "sea",
       "skagos",
+      "the_bite",
       "the_dreadfort",
       "the_gift",
       "the_grey_cliffs",
@@ -339,10 +339,10 @@
     "owner_id": "",
     "neighbors": [
       "always_winter",
+      "bay_of_seals",
       "beyond_the_wall",
       "brandon_gift",
       "shivering_sea",
-      "bay_of_seals",
       "skagos",
       "the_gift",
       "the_wall_east"
@@ -375,9 +375,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "shivering_sea",
       "eastwatch_sea",
-      "sea"
+      "sea",
+      "shivering_sea"
     ],
     "world_x": 1966,
     "world_y": 296,
@@ -407,11 +407,11 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "bay_of_crabs",
       "braavos",
       "gulltown_bay",
-      "pentos_bay",
-      "bay_of_crabs",
       "norvos",
+      "pentos_bay",
       "pentos_region",
       "sea"
     ],
@@ -579,11 +579,11 @@
       "bear_island",
       "brandon_gift",
       "dragon_point",
-      "long_lake",
-      "ironman_bay",
-      "sunset_sea",
       "frozen_coast_sea",
+      "ironman_bay",
+      "long_lake",
       "stony_shore",
+      "sunset_sea",
       "the_wall_west",
       "the_wolfswood"
     ],
@@ -616,15 +616,15 @@
     "owner_id": "",
     "neighbors": [
       "barrowlands",
+      "bay_of_ice",
       "cape_kraken",
       "deepwood_motte",
       "flints_finger",
-      "bay_of_ice",
       "ironmans_bay",
-      "sunset_sea",
-      "western_ironman_sea",
       "stony_shore",
-      "the_rills"
+      "sunset_sea",
+      "the_rills",
+      "western_ironman_sea"
     ],
     "world_x": 562,
     "world_y": 1514,
@@ -655,9 +655,9 @@
     "owner_id": "",
     "neighbors": [
       "bay_of_ice",
+      "frozen_coast_sea",
       "ironman_bay",
-      "western_ironman_sea",
-      "frozen_coast_sea"
+      "western_ironman_sea"
     ],
     "world_x": 101,
     "world_y": 1330,
@@ -691,15 +691,15 @@
       "crag",
       "deepwood_motte",
       "flints_finger",
+      "golden_sound",
       "great_wyk",
       "harlaw",
-      "golden_sound",
       "ironman_bay",
-      "western_ironman_sea",
       "orkmont",
       "pyke",
       "riverlands",
-      "the_twins"
+      "the_twins",
+      "western_ironman_sea"
     ],
     "world_x": 813,
     "world_y": 1773,
@@ -729,8 +729,8 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "great_wyk",
       "golden_sound",
+      "great_wyk",
       "ironman_bay",
       "ironmans_bay",
       "sunset_sea",
@@ -767,8 +767,8 @@
       "casterly_rock",
       "cornfield",
       "crag",
-      "lannisport",
       "ironmans_bay",
+      "lannisport",
       "redwyne_strait",
       "western_ironman_sea",
       "western_sunset_sea"
@@ -803,8 +803,8 @@
     "neighbors": [
       "golden_sound",
       "redwyne_strait",
-      "western_ironman_sea",
-      "southern_sunset_sea"
+      "southern_sunset_sea",
+      "western_ironman_sea"
     ],
     "world_x": 228,
     "world_y": 2283,
@@ -836,13 +836,13 @@
     "neighbors": [
       "brightwater_reach",
       "cornfield",
-      "highgarden",
       "golden_sound",
-      "summer_sea",
-      "western_sunset_sea",
-      "southern_sunset_sea",
+      "highgarden",
       "old_oak",
-      "shield_islands"
+      "shield_islands",
+      "southern_sunset_sea",
+      "summer_sea",
+      "western_sunset_sea"
     ],
     "world_x": 547,
     "world_y": 2638,
@@ -874,8 +874,8 @@
     "neighbors": [
       "redwyne_strait",
       "summer_sea",
-      "western_sunset_sea",
-      "western_summer_sea"
+      "western_summer_sea",
+      "western_sunset_sea"
     ],
     "world_x": 183,
     "world_y": 2659,
@@ -906,17 +906,17 @@
     "owner_id": "",
     "neighbors": [
       "brightwater_reach",
-      "redwyne_strait",
       "eastern_summer_sea",
-      "southern_sunset_sea",
-      "western_summer_sea",
-      "three_towers",
       "oldtown",
+      "redwyne_strait",
       "sandstone",
+      "southern_sunset_sea",
       "starfall",
       "sun_house",
       "the_arbor",
-      "uplands"
+      "three_towers",
+      "uplands",
+      "western_summer_sea"
     ],
     "world_x": 545,
     "world_y": 3070,
@@ -946,9 +946,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "summer_sea",
       "eastern_summer_sea",
-      "southern_sunset_sea"
+      "southern_sunset_sea",
+      "summer_sea"
     ],
     "world_x": 272,
     "world_y": 3318,
@@ -979,10 +979,10 @@
     "owner_id": "",
     "neighbors": [
       "hellholt",
-      "summer_sea",
+      "sandstone",
       "sea_of_dorne",
-      "western_summer_sea",
-      "sandstone"
+      "summer_sea",
+      "western_summer_sea"
     ],
     "world_x": 947,
     "world_y": 3468,
@@ -1012,12 +1012,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "eastern_summer_sea",
       "hellholt",
       "lemonwood",
-      "eastern_summer_sea",
-      "sunspear_strait",
-      "slavers_bay",
       "salt_shore",
+      "slavers_bay",
+      "sunspear_strait",
       "vaith"
     ],
     "world_x": 1511,
@@ -1051,10 +1051,10 @@
       "ghost_hill",
       "godsgrace",
       "mistwood",
-      "sunspear_strait",
       "shipbreaker_bay",
       "stonehelm",
       "summerhall",
+      "sunspear_strait",
       "the_boneway",
       "the_tor",
       "wyl",
@@ -1088,13 +1088,13 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "dornish_coast_sea",
       "ghost_hill",
       "lemonwood",
-      "sea_of_dorne",
-      "dornish_coast_sea",
-      "slavers_bay",
       "myr_bay",
+      "sea_of_dorne",
       "shipbreaker_bay",
+      "slavers_bay",
       "stepstones_sea",
       "sunspear"
     ],
@@ -1129,9 +1129,9 @@
       "disputed_lands",
       "lys",
       "meereen_gulf",
-      "sunspear_strait",
+      "myr_bay",
       "slavers_bay",
-      "myr_bay"
+      "sunspear_strait"
     ],
     "world_x": 1992,
     "world_y": 3094,
@@ -1196,11 +1196,11 @@
     "neighbors": [
       "disputed_lands",
       "myr_region",
-      "sunspear_strait",
-      "shipbreaker_bay",
-      "stepstones_sea",
       "pentos_bay",
       "pentos_region",
+      "shipbreaker_bay",
+      "stepstones_sea",
+      "sunspear_strait",
       "thyrosh"
     ],
     "world_x": 1998,
@@ -1265,16 +1265,16 @@
     "owner_id": "",
     "neighbors": [
       "cape_wrath",
+      "dornish_coast_sea",
       "griffins_roost",
       "hapstackhall",
       "mistwood",
-      "narrow_sea",
-      "dornish_coast_sea",
-      "sunspear_strait",
       "myr_bay",
+      "narrow_sea",
       "pentos_bay",
       "rainwood",
       "storm_end",
+      "sunspear_strait",
       "tarth"
     ],
     "world_x": 1712,
@@ -1305,10 +1305,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "sea_of_dorne",
       "meereen_gulf",
-      "sunspear_strait",
-      "stepstones_sea"
+      "sea_of_dorne",
+      "stepstones_sea",
+      "sunspear_strait"
     ],
     "world_x": 1915,
     "world_y": 3466,
@@ -1410,8 +1410,8 @@
     "successor_faction_id": "free_cities",
     "neighbors": [
       "braavos",
-      "essos_free_cities",
       "braavos_channel",
+      "essos_free_cities",
       "pentos_region"
     ],
     "world_x": 2508,
@@ -1577,11 +1577,11 @@
     "owner_id": "baratheon_king",
     "successor_faction_id": "baratheon_king",
     "neighbors": [
+      "blackwater_bay",
       "crownlands",
       "duskendale",
       "kingswood",
-      "the_gullet",
-      "blackwater_bay"
+      "the_gullet"
     ],
     "world_x": 1443,
     "world_y": 2302,
@@ -1622,9 +1622,9 @@
     "successor_faction_id": "lannister",
     "neighbors": [
       "crag",
+      "golden_sound",
       "golden_tooth",
-      "lannisport",
-      "golden_sound"
+      "lannisport"
     ],
     "world_x": 704,
     "world_y": 2261,
@@ -1665,8 +1665,8 @@
     "successor_faction_id": "tully",
     "neighbors": [
       "casterly_rock",
-      "golden_tooth",
       "golden_sound",
+      "golden_tooth",
       "ironmans_bay",
       "riverlands"
     ],
@@ -1779,8 +1779,8 @@
       "brightwater_reach",
       "golden_grove",
       "horn_hill",
-      "redwyne_strait",
-      "old_oak"
+      "old_oak",
+      "redwyne_strait"
     ],
     "world_x": 911,
     "world_y": 2720,
@@ -1860,9 +1860,9 @@
     "successor_faction_id": "nights_watch",
     "neighbors": [
       "always_winter",
+      "bay_of_ice",
       "beyond_the_wall",
       "brandon_gift",
-      "bay_of_ice",
       "the_wall_east"
     ],
     "world_x": 1200,
@@ -1945,12 +1945,12 @@
     "successor_faction_id": "targaryen",
     "neighbors": [
       "braavos",
-      "essos_free_cities",
-      "myr_region",
-      "myr_bay",
-      "pentos_bay",
       "braavos_channel",
-      "norvos"
+      "essos_free_cities",
+      "myr_bay",
+      "myr_region",
+      "norvos",
+      "pentos_bay"
     ],
     "world_x": 2136,
     "world_y": 2362,
@@ -2031,9 +2031,9 @@
       "astapor",
       "essos_free_cities",
       "meereen",
-      "myr_region",
       "meereen_gulf",
       "myr_bay",
+      "myr_region",
       "stepstones_sea",
       "yunkai"
     ],
@@ -2491,9 +2491,9 @@
     "owner_id": "tully",
     "successor_faction_id": "tully",
     "neighbors": [
+      "blackwater_bay",
       "crownlands",
       "duskendale",
-      "blackwater_bay",
       "saltpans",
       "the_hollow_hill",
       "the_mountains_of_the_moon",
@@ -2570,8 +2570,8 @@
       "casterly_rock",
       "cornfield",
       "golden_grove",
-      "golden_tooth",
       "golden_sound",
+      "golden_tooth",
       "silver_hill"
     ],
     "world_x": 708,
@@ -2687,9 +2687,9 @@
     "owner_id": "martell",
     "successor_faction_id": "martell",
     "neighbors": [
-      "summer_sea",
       "sandstone",
       "starfall",
+      "summer_sea",
       "sun_house",
       "uplands"
     ],
@@ -2759,8 +2759,8 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
-      "shivering_sea",
-      "eastwatch_sea"
+      "eastwatch_sea",
+      "shivering_sea"
     ],
     "world_x": 1696,
     "world_y": 643,
@@ -2794,8 +2794,8 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "dragon_point",
       "bay_of_ice",
+      "dragon_point",
       "ironman_bay",
       "the_rills"
     ],
@@ -2832,8 +2832,8 @@
     "successor_faction_id": "stark",
     "neighbors": [
       "deepwood_motte",
-      "moat_cailin",
       "ironman_bay",
+      "moat_cailin",
       "the_rills",
       "torrhens_square"
     ],
@@ -2986,9 +2986,9 @@
       "barrowlands",
       "cape_kraken",
       "flints_finger",
-      "moat_cailin",
       "ironman_bay",
       "ironmans_bay",
+      "moat_cailin",
       "the_neck",
       "the_twins"
     ],
@@ -3056,9 +3056,9 @@
     "terrain": "coast",
     "owner_id": "arryn",
     "neighbors": [
+      "bay_of_crabs",
       "gulltown_bay",
       "the_bite",
-      "bay_of_crabs",
       "the_eyrie",
       "the_mountains_of_the_moon",
       "west_vale"
@@ -3093,11 +3093,11 @@
     "owner_id": "baratheon_king",
     "successor_faction_id": "baratheon_king",
     "neighbors": [
+      "blackwater_bay",
       "duskendale",
       "harrenhal",
       "kings_landing",
       "kingswood",
-      "blackwater_bay",
       "reach",
       "stone_sept",
       "the_hollow_hill"
@@ -3133,8 +3133,8 @@
     "successor_faction_id": "baratheon_dragonstone",
     "neighbors": [
       "duskendale",
-      "the_gullet",
-      "gulltown_bay"
+      "gulltown_bay",
+      "the_gullet"
     ],
     "world_x": 1647,
     "world_y": 2177,
@@ -3168,11 +3168,11 @@
     "neighbors": [
       "crackclaw_point",
       "crownlands",
+      "gulltown_bay",
       "harrenhal",
       "kings_landing",
-      "the_gullet",
-      "gulltown_bay",
-      "saltpans"
+      "saltpans",
+      "the_gullet"
     ],
     "world_x": 1450,
     "world_y": 2202,
@@ -3206,14 +3206,14 @@
     "owner_id": "baratheon_king",
     "successor_faction_id": "baratheon_king",
     "neighbors": [
+      "blackwater_bay",
       "crownlands",
       "hapstackhall",
       "kings_landing",
-      "the_gullet",
-      "sharp_point",
-      "blackwater_bay",
       "reach",
+      "sharp_point",
       "stormlands",
+      "the_gullet",
       "tumbleton"
     ],
     "world_x": 1416,
@@ -3280,10 +3280,10 @@
     "successor_faction_id": "lannister",
     "neighbors": [
       "golden_grove",
-      "lannisport",
       "golden_sound",
-      "redwyne_strait",
-      "old_oak"
+      "lannisport",
+      "old_oak",
+      "redwyne_strait"
     ],
     "world_x": 661,
     "world_y": 2500,
@@ -3463,8 +3463,8 @@
     "terrain": "desert",
     "owner_id": "martell",
     "neighbors": [
-      "hellholt",
       "dornish_coast_sea",
+      "hellholt",
       "skyreach",
       "the_boneway",
       "the_tor",
@@ -3499,12 +3499,12 @@
     "terrain": "desert",
     "owner_id": "martell",
     "neighbors": [
-      "hellholt",
-      "summer_sea",
       "eastern_summer_sea",
-      "three_towers",
+      "hellholt",
       "starfall",
-      "sun_house"
+      "summer_sea",
+      "sun_house",
+      "three_towers"
     ],
     "world_x": 945,
     "world_y": 3124,
@@ -3535,9 +3535,9 @@
     "terrain": "desert",
     "owner_id": "martell",
     "neighbors": [
+      "dornish_coast_sea",
       "ghost_hill",
       "lemonwood",
-      "dornish_coast_sea",
       "salt_shore",
       "sunspear",
       "the_tor",
@@ -3612,10 +3612,10 @@
     "neighbors": [
       "blackmont",
       "hellholt",
-      "summer_sea",
-      "three_towers",
       "sandstone",
       "skyreach",
+      "summer_sea",
+      "three_towers",
       "uplands"
     ],
     "world_x": 979,
@@ -3725,11 +3725,11 @@
     "successor_faction_id": "nights_watch",
     "neighbors": [
       "brandon_gift",
+      "eastwatch_sea",
       "karhold",
       "lonely_hills",
       "long_lake",
-      "shivering_sea",
-      "eastwatch_sea"
+      "shivering_sea"
     ],
     "world_x": 1323,
     "world_y": 723,
@@ -3768,9 +3768,9 @@
     "owner_id": "nights_watch",
     "successor_faction_id": "nights_watch",
     "neighbors": [
-      "long_lake",
       "bay_of_ice",
       "eastwatch_sea",
+      "long_lake",
       "the_gift",
       "the_wall_east",
       "the_wall_west"
@@ -3812,9 +3812,9 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
+      "bay_of_ice",
       "brandon_gift",
       "lonely_hills",
-      "bay_of_ice",
       "the_gift",
       "the_wolfswood",
       "winterfell_region"
@@ -3851,9 +3851,9 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
+      "bay_of_ice",
       "dragon_point",
       "long_lake",
-      "bay_of_ice",
       "torrhens_square",
       "winterfell_region"
     ],
@@ -4034,8 +4034,8 @@
     "neighbors": [
       "hornwood",
       "karhold",
-      "the_bite",
       "shivering_sea",
+      "the_bite",
       "the_dreadfort",
       "white_harbor"
     ],
@@ -4386,8 +4386,8 @@
     "successor_faction_id": "arryn",
     "neighbors": [
       "duskendale",
-      "harrenhal",
       "gulltown_bay",
+      "harrenhal",
       "the_eyrie",
       "the_mountains_of_the_moon",
       "wickenden"
@@ -4760,10 +4760,10 @@
     "neighbors": [
       "highgarden",
       "horn_hill",
-      "redwyne_strait",
-      "summer_sea",
       "old_oak",
-      "oldtown"
+      "oldtown",
+      "redwyne_strait",
+      "summer_sea"
     ],
     "world_x": 699,
     "world_y": 2813,
@@ -4838,8 +4838,8 @@
     "neighbors": [
       "ashford",
       "blackhaven",
-      "grassy_vale",
       "dornish_coast_sea",
+      "grassy_vale",
       "stonehelm",
       "stormlands",
       "tumbleton",
@@ -4877,11 +4877,11 @@
     "neighbors": [
       "kingswood",
       "narrow_sea",
-      "the_gullet",
-      "shipbreaker_bay",
       "sharp_point",
+      "shipbreaker_bay",
       "storm_end",
-      "stormlands"
+      "stormlands",
+      "the_gullet"
     ],
     "world_x": 1564,
     "world_y": 2547,
@@ -4950,8 +4950,8 @@
     "successor_faction_id": "baratheon_stormsend",
     "neighbors": [
       "mistwood",
-      "shipbreaker_bay",
-      "rainwood"
+      "rainwood",
+      "shipbreaker_bay"
     ],
     "world_x": 1692,
     "world_y": 2750,
@@ -4985,8 +4985,8 @@
     "neighbors": [
       "cape_wrath",
       "dornish_coast_sea",
-      "shipbreaker_bay",
       "rainwood",
+      "shipbreaker_bay",
       "stonehelm"
     ],
     "world_x": 1650,
@@ -5019,8 +5019,8 @@
     "owner_id": "baratheon_stormsend",
     "successor_faction_id": "baratheon_stormsend",
     "neighbors": [
-      "shipbreaker_bay",
       "rainwood",
+      "shipbreaker_bay",
       "stonehelm",
       "storm_end",
       "stormlands"
@@ -5055,9 +5055,9 @@
     "owner_id": "baratheon_stormsend",
     "successor_faction_id": "baratheon_stormsend",
     "neighbors": [
+      "dornish_coast_sea",
       "griffins_roost",
       "mistwood",
-      "dornish_coast_sea",
       "rainwood",
       "stormlands",
       "summerhall"
@@ -5126,11 +5126,11 @@
     "neighbors": [
       "blackmont",
       "horn_hill",
-      "summer_sea",
-      "three_towers",
       "oldtown",
       "prince_pass",
-      "starfall"
+      "starfall",
+      "summer_sea",
+      "three_towers"
     ],
     "world_x": 788,
     "world_y": 2916,
@@ -5234,8 +5234,8 @@
     "owner_id": "martell",
     "successor_faction_id": "martell",
     "neighbors": [
-      "godsgrace",
       "dornish_coast_sea",
+      "godsgrace",
       "vaith",
       "yronwood"
     ],
@@ -5271,8 +5271,8 @@
     "neighbors": [
       "godsgrace",
       "hellholt",
-      "sea_of_dorne",
       "salt_shore",
+      "sea_of_dorne",
       "the_tor",
       "yronwood"
     ],
@@ -5307,10 +5307,10 @@
     "successor_faction_id": "martell",
     "neighbors": [
       "godsgrace",
-      "sea_of_dorne",
-      "sunspear_strait",
       "salt_shore",
-      "sunspear"
+      "sea_of_dorne",
+      "sunspear",
+      "sunspear_strait"
     ],
     "world_x": 1606,
     "world_y": 3153,
@@ -5342,10 +5342,10 @@
     "owner_id": "martell",
     "successor_faction_id": "martell",
     "neighbors": [
-      "godsgrace",
       "dornish_coast_sea",
-      "sunspear_strait",
-      "sunspear"
+      "godsgrace",
+      "sunspear",
+      "sunspear_strait"
     ],
     "world_x": 1691,
     "world_y": 3009,
@@ -5377,9 +5377,9 @@
     "owner_id": "martell",
     "successor_faction_id": "martell",
     "neighbors": [
+      "sandstone",
       "summer_sea",
-      "three_towers",
-      "sandstone"
+      "three_towers"
     ],
     "world_x": 741,
     "world_y": 3101,
@@ -5412,8 +5412,8 @@
     "successor_faction_id": "martell",
     "neighbors": [
       "eastern_summer_sea",
-      "sea_of_dorne",
       "sandstone",
+      "sea_of_dorne",
       "skyreach",
       "starfall",
       "vaith",

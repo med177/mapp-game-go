@@ -1,10 +1,10 @@
 [
   {
     "id": "stark",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Stark",
     "name_tr": "Stark",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "historical_changes": [
       {
         "year": 299,
@@ -73,10 +73,10 @@
   },
   {
     "id": "lannister",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Lannister",
     "name_tr": "Lannister",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
       220,
@@ -139,10 +139,10 @@
   },
   {
     "id": "baratheon_king",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Baratheon (King's Landing)",
     "name_tr": "Baratheon (Kralın Şehri)",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
       240,
@@ -196,10 +196,10 @@
   },
   {
     "id": "baratheon_dragonstone",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Baratheon (Dragonstone)",
     "name_tr": "Baratheon (Ejderha Kayası)",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "lord_of_light",
     "color": [
       180,
@@ -219,9 +219,9 @@
     "research": {
       "completed": {
         "castle_steel": true,
+        "chivalry": true,
         "coastal_navigation": true,
         "drowned_god_rites": true,
-        "chivalry": true,
         "iron_weapons": true,
         "shipwrights": true
       },
@@ -252,10 +252,10 @@
   },
   {
     "id": "baratheon_stormsend",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Baratheon (Storm's End)",
     "name_tr": "Baratheon (Fırtına Burnu)",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
       80,
@@ -303,10 +303,10 @@
   },
   {
     "id": "greyjoy",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Greyjoy",
     "name_tr": "Greyjoy",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "drowned_god",
     "color": [
       50,
@@ -357,10 +357,10 @@
   },
   {
     "id": "tyrell",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Tyrell",
     "name_tr": "Tyrell",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
       30,
@@ -415,10 +415,10 @@
   },
   {
     "id": "martell",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Martell",
     "name_tr": "Martell",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
       230,
@@ -474,10 +474,10 @@
   },
   {
     "id": "targaryen",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Targaryen",
     "name_tr": "Targaryen",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "valyrian",
     "color": [
       180,
@@ -525,10 +525,10 @@
   },
   {
     "id": "nights_watch",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Night's Watch",
     "name_tr": "Gece Nöbeti",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "old_gods",
     "color": [
       30,
@@ -577,10 +577,10 @@
   },
   {
     "id": "arryn",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Arryn",
     "name_tr": "Arryn",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
       70,
@@ -634,10 +634,10 @@
   },
   {
     "id": "tully",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Tully",
     "name_tr": "Tully",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
       100,
@@ -697,10 +697,10 @@
   },
   {
     "id": "free_folk",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Free Folk",
     "name_tr": "Özgür Halk",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "old_gods",
     "color": [
       130,
@@ -753,11 +753,64 @@
     ]
   },
   {
-    "id": "bolton",
+    "id": "others",
+    "name": "The Others",
+    "name_tr": "Akgezenler",
     "army_image": "army/army.png",
     "marine_image": "army/marine.png",
+    "religion": "pagan",
+    "color": [
+      155,
+      205,
+      225
+    ],
+    "is_playable": false,
+    "is_eliminated": false,
+    "capital_settlement_id": "always_winter_main",
+    "gold": 0,
+    "grain": 900,
+    "iron": 0,
+    "timber": 0,
+    "stone": 0,
+    "spice": 0,
+    "cloth": 0,
+    "research": {
+      "completed": {},
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 100,
+    "ai_expansion_targets": [
+      "nights_watch",
+      "free_folk",
+      "stark"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "always_winter",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "the_wall_west",
+        "value": 100
+      },
+      {
+        "region_id": "the_wall_east",
+        "value": 100
+      },
+      {
+        "region_id": "beyond_the_wall",
+        "value": 90
+      }
+    ]
+  },
+  {
+    "id": "bolton",
     "name": "Bolton",
     "name_tr": "Bolton",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "old_gods",
     "color": [
       120,
@@ -818,10 +871,10 @@
   },
   {
     "id": "braavos",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Braavos",
     "name_tr": "Braavos",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "valyrian",
     "color": [
       40,
@@ -870,10 +923,10 @@
   },
   {
     "id": "brotherhood_without_banners",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Brotherhood",
     "name_tr": "Kardeşlik",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
       110,
@@ -927,10 +980,10 @@
   },
   {
     "id": "free_cities",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
     "name": "Free Cities",
     "name_tr": "Özgür Şehirler",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
     "religion": "pagan",
     "color": [
       171,

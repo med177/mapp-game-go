@@ -142,6 +142,7 @@ type Effect struct {
 	TradeIncomePercent        int                          `json:"trade_income_percent,omitempty"`       // aktif olay süresince ticaret geliri etkisi
 	RegionGoldIncomePercent   int                          `json:"region_gold_income_percent,omitempty"` // aktif olay süresince vergi geliri etkisi
 	ArmyUpkeepPercent         int                          `json:"army_upkeep_percent,omitempty"`        // aktif bölgede ordu ikmal etkisi
+	EffectDurationTurns       int                          `json:"effect_duration_turns,omitempty"`      // bölgesel etkinin süresi
 	PopulationDelta           int                          `json:"population_delta,omitempty"`           // anlık bölge nüfusu etkisi
 	BuildingEfficiencyPercent int                          `json:"building_efficiency_percent,omitempty"`
 	CombatAttackPercent       int                          `json:"combat_attack_percent,omitempty"`
@@ -196,6 +197,7 @@ type Event struct {
 	TradeIncomePercent        int                          `json:"trade_income_percent,omitempty"`
 	RegionGoldIncomePercent   int                          `json:"region_gold_income_percent,omitempty"`
 	ArmyUpkeepPercent         int                          `json:"army_upkeep_percent,omitempty"`
+	EffectDurationTurns       int                          `json:"effect_duration_turns,omitempty"`
 	PopulationDelta           int                          `json:"population_delta,omitempty"`
 	BuildingEfficiencyPercent int                          `json:"building_efficiency_percent,omitempty"`
 	CombatAttackPercent       int                          `json:"combat_attack_percent,omitempty"`
@@ -441,6 +443,7 @@ func (e *Event) BaseEffect() Effect {
 		TradeIncomePercent:        e.TradeIncomePercent,
 		RegionGoldIncomePercent:   e.RegionGoldIncomePercent,
 		ArmyUpkeepPercent:         e.ArmyUpkeepPercent,
+		EffectDurationTurns:       e.EffectDurationTurns,
 		PopulationDelta:           e.PopulationDelta,
 		BuildingEfficiencyPercent: e.BuildingEfficiencyPercent,
 		CombatAttackPercent:       e.CombatAttackPercent,
@@ -1639,6 +1642,9 @@ func addRegionEventStatus(gs *state.GameState, e *Event, choice *Choice, targetR
 
 	// Her etkilenen bölge için status kaydı ekle (3-6 tur görünür)
 	turnsVisible := 4
+	if effect.EffectDurationTurns > 0 {
+		turnsVisible = effect.EffectDurationTurns
+	}
 	if eventType == "blessing" {
 		turnsVisible = 3 // pozitif olaylar daha kısa görünür
 	} else if eventType == "plague" || eventType == "revolt" {

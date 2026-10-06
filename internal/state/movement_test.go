@@ -57,6 +57,24 @@ func TestLandRegionEntryCostRejectsLockedOrBlockedTerrain(t *testing.T) {
 	}
 }
 
+func TestLandPassageDefenseBonusUsesPercentAndDirectionIndependence(t *testing.T) {
+	gs := &GameState{
+		LandPassages: []world.LandPassage{{
+			From:         "north",
+			To:           "south",
+			Type:         world.LandPassageFortifiedCrossing,
+			DefenseBonus: 25,
+		}},
+	}
+
+	if got := gs.LandPassageDefenseBonus("south", "north"); got != 0.25 {
+		t.Fatalf("expected 0.25 passage defense bonus, got %v", got)
+	}
+	if got := gs.LandPassageDefenseBonus("west", "north"); got != 0 {
+		t.Fatalf("unexpected passage defense bonus for unrelated regions: %v", got)
+	}
+}
+
 func TestRepairArmiesInBlockedTerrainMovesArmyToOwnedPassableNeighbor(t *testing.T) {
 	blocked := &world.Region{ID: "blocked", OwnerID: "f", IsTerrainArea: true, TerrainAreaID: "area", Neighbors: []world.RegionID{"safe"}}
 	safe := &world.Region{ID: "safe", OwnerID: "f"}

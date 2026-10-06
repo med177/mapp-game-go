@@ -336,6 +336,10 @@ type GameState struct {
 	DiplomacyConfig               scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
 	BaseGoldValues                map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
 
+	UndeadMechanics scenario.UndeadMechanics           `json:"-"`
+	FactionLore     map[string]scenario.FactionLore    `json:"-"`
+	SettlementLore  map[string]scenario.SettlementLore `json:"-"`
+
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
 	AutoGrainExport bool              `json:"auto_grain_export,omitempty"`

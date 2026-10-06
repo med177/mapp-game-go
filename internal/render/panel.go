@@ -186,6 +186,8 @@ var (
 
 	settlementImageCache  = map[string]*ebiten.Image{}
 	settlementImageLoaded = map[string]bool{}
+	loreImageCache        = map[string]*ebiten.Image{}
+	loreImageLoaded       = map[string]bool{}
 
 	// factionFlagCache senaryo bayraklarını faction ID'siyle eşleştirir.
 	// nil değerler de cache'lenir; böylece eksik asset her frame diskten aranmaz.
@@ -4280,7 +4282,11 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	imgW := pw - float32(panelPad*2)
 	imgH := float32(170)
 	drawUICardRect(screen, gameui.Rect{X: float64(imgX), Y: float64(imgY), W: float64(imgW), H: float64(imgH)}, panelBg2, panelBorder, 1)
-	if sImg := loadSettlementImage(region, settlement); sImg != nil {
+	var loreImage *ebiten.Image
+	if lore, ok := gs.SettlementLore[settlement.ID]; ok {
+		loreImage = loadLoreImage(lore.Image)
+	}
+	if sImg := firstImage(loreImage, loadSettlementImage(region, settlement)); sImg != nil {
 		b := sImg.Bounds()
 		sw := float64(b.Dx())
 		sh := float64(b.Dy())
@@ -4304,8 +4310,19 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	ly += 10
 	drawUISectionLabel(screen, lx, ly, "Tarihçe")
 	ly += 18
-	DrawText(screen, "Bu alan daha sonra metinsel içerikle doldurulacak.", lx, ly, FaceSmall, ColorGray)
-	ly += 32
+	if lore, ok := gs.SettlementLore[settlement.ID]; ok {
+		if lore.HistoryTR != "" {
+			drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(imgW)}, lore.HistoryTR, ColorGray, gameui.TextSmall, 16, 4)
+			ly += 64
+		}
+		if lore.ImportanceTR != "" {
+			drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(imgW)}, "Önem: "+lore.ImportanceTR, ColorWhite, gameui.TextSmall, 16, 3)
+			ly += 48
+		}
+	} else {
+		DrawText(screen, "Bu yerleşim için tarihçe bulunmuyor.", lx, ly, FaceSmall, ColorGray)
+		ly += 32
+	}
 
 	if region.OwnerID == string(gs.PlayerFactionID) {
 		drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+imgW, 1, panelBorder)
@@ -4840,6 +4857,9 @@ func buildFactionDiplomacySummary(gs *state.GameState, fid faction.FactionID) fa
 
 func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *faction.Faction, summary factionDiplomacySummary, width float64) float64 {
 	y := 0.0
+	if _, ok := gs.FactionLore[string(fid)]; ok {
+		y += factionPanelSectionH + 92
+	}
 	y += factionPanelSectionH
 	y += 24
 	y += factionPanelRowH * 5
@@ -4898,6 +4918,21 @@ func factionPanelContentHeight(gs *state.GameState, fid faction.FactionID, f *fa
 
 func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid faction.FactionID, f *faction.Faction, summary factionDiplomacySummary, width float64, scroll float64) {
 	y := -scroll
+	if lore, ok := gs.FactionLore[string(fid)]; ok {
+		drawUISectionLabel(screen, 0, y, "Tarihçe")
+		y += factionPanelSectionH
+		if loreImage := loadLoreImage(lore.Image); loreImage != nil {
+			drawLoreImage(screen, loreImage, 0, y, 96, 72)
+			drawUIWrappedLabel(screen, gameui.Rect{X: 108, Y: y, W: width - 108}, lore.HistoryTR, ColorGray, gameui.TextSmall, 15, 4)
+		} else {
+			drawUIWrappedLabel(screen, gameui.Rect{X: 0, Y: y, W: width}, lore.HistoryTR, ColorGray, gameui.TextSmall, 15, 4)
+		}
+		y += 64
+		if lore.ImportanceTR != "" {
+			drawUIWrappedLabel(screen, gameui.Rect{X: 0, Y: y, W: width}, "Önem: "+lore.ImportanceTR, ColorWhite, gameui.TextSmall, 15, 2)
+		}
+		y += 28
+	}
 
 	drawUISectionLabel(screen, 0, y, "Durum")
 	y += factionPanelSectionH
@@ -5231,6 +5266,50 @@ func loadSettlementImage(region *world.Region, settlement *world.Settlement) *eb
 	settlementImageLoaded[cacheKey] = true
 	settlementImageCache[cacheKey] = nil
 	return nil
+}
+
+func firstImage(primary, fallback *ebiten.Image) *ebiten.Image {
+	if primary != nil {
+		return primary
+	}
+	return fallback
+}
+
+func loadLoreImage(asset string) *ebiten.Image {
+	asset = strings.TrimSpace(asset)
+	if asset == "" || ActiveScenarioPath == "" {
+		return nil
+	}
+	clean := filepath.Clean(filepath.FromSlash(asset))
+	slash := filepath.ToSlash(clean)
+	if clean == "." || filepath.IsAbs(clean) || slash == ".." || strings.HasPrefix(slash, "../") {
+		return nil
+	}
+	// Lore görselleri senaryonun opsiyonel wiki bölümünde tutulur. JSON'daki
+	// yol, wiki köküne göre yazılır; böylece görsel asset'leri ana sprite
+	// klasörleriyle karışmaz.
+	clean = filepath.Join("wiki", clean)
+	path := filepath.Join(ActiveScenarioPath, clean)
+	if loreImageLoaded[path] {
+		return loreImageCache[path]
+	}
+	loreImageLoaded[path] = true
+	loreImageCache[path] = tryLoadImage(path)
+	return loreImageCache[path]
+}
+
+func drawLoreImage(screen *ebiten.Image, img *ebiten.Image, x, y, w, h float64) {
+	drawUICardRect(screen, gameui.Rect{X: x, Y: y, W: w, H: h}, panelBg2, panelBorder, 1)
+	if img == nil || img.Bounds().Dx() <= 0 || img.Bounds().Dy() <= 0 {
+		return
+	}
+	scale := minFloat64(w/float64(img.Bounds().Dx()), h/float64(img.Bounds().Dy()))
+	dw := float64(img.Bounds().Dx()) * scale
+	dh := float64(img.Bounds().Dy()) * scale
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(scale, scale)
+	op.GeoM.Translate(x+(w-dw)/2, y+(h-dh)/2)
+	screen.DrawImage(img, op)
 }
 
 func settlementImageCandidates(region *world.Region, settlement *world.Settlement) []string {

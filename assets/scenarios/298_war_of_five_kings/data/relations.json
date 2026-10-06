@@ -1,5 +1,26 @@
 [
   {
+    "faction_a": "others",
+    "faction_b": "nights_watch",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "free_folk",
+    "score_a_to_b": -90,
+    "score_b_to_a": -90,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "stark",
+    "score_a_to_b": -80,
+    "score_b_to_a": -80,
+    "stance": "peace"
+  },
+  {
     "faction_a": "stark",
     "faction_b": "lannister",
     "score_a_to_b": -45,
@@ -65,8 +86,8 @@
   {
     "faction_a": "arryn",
     "faction_b": "lannister",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
+    "score_a_to_b": -30,
+    "score_b_to_a": -30,
     "stance": "peace"
   },
   {
@@ -128,15 +149,15 @@
   {
     "faction_a": "bolton",
     "faction_b": "stark",
-    "score_a_to_b": 15,
-    "score_b_to_a": 15,
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
     "stance": "peace"
   },
   {
     "faction_a": "greyjoy",
     "faction_b": "stark",
-    "score_a_to_b": -65,
-    "score_b_to_a": -65,
+    "score_a_to_b": -75,
+    "score_b_to_a": -75,
     "stance": "peace"
   },
   {
@@ -144,6 +165,13 @@
     "faction_b": "targaryen",
     "score_a_to_b": 70,
     "score_b_to_a": 70,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "targaryen",
+    "faction_b": "free_cities",
+    "score_a_to_b": 25,
+    "score_b_to_a": 25,
     "stance": "peace"
   },
   {
@@ -163,15 +191,15 @@
   {
     "faction_a": "brotherhood_without_banners",
     "faction_b": "lannister",
-    "score_a_to_b": -35,
-    "score_b_to_a": -35,
+    "score_a_to_b": -45,
+    "score_b_to_a": -45,
     "stance": "peace"
   },
   {
     "faction_a": "brotherhood_without_banners",
     "faction_b": "baratheon_king",
-    "score_a_to_b": -20,
-    "score_b_to_a": -20,
+    "score_a_to_b": -30,
+    "score_b_to_a": -30,
     "stance": "peace"
   },
   {
@@ -191,8 +219,43 @@
   {
     "faction_a": "brotherhood_without_banners",
     "faction_b": "bolton",
-    "score_a_to_b": -30,
-    "score_b_to_a": -30,
+    "score_a_to_b": -45,
+    "score_b_to_a": -45,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "martell",
+    "faction_b": "lannister",
+    "score_a_to_b": -45,
+    "score_b_to_a": -45,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "martell",
+    "faction_b": "baratheon_king",
+    "score_a_to_b": -20,
+    "score_b_to_a": -20,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "martell",
+    "faction_b": "tyrell",
+    "score_a_to_b": -25,
+    "score_b_to_a": -25,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "greyjoy",
+    "faction_b": "lannister",
+    "score_a_to_b": -35,
+    "score_b_to_a": -35,
+    "stance": "peace"
+  },
+  {
+    "faction_a": "greyjoy",
+    "faction_b": "baratheon_king",
+    "score_a_to_b": -15,
+    "score_b_to_a": -15,
     "stance": "peace"
   }
 ]

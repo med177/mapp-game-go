@@ -59,6 +59,7 @@ type Game struct {
 	loadSelectReturnPhase             state.Phase
 	lastLandUnitID                    string
 	lastNavalUnitID                   string
+	currentMusicPlaylist              string
 }
 
 type pendingSortieState struct {
@@ -1450,6 +1451,7 @@ func (g *Game) resolveTurn() {
 	// değişebilir. Marker önizlemesini her frame yerine tur sonunda bir kez
 	// güncelle.
 	g.renderer.RefreshAllArmyLogisticsBadges()
+	g.syncScenarioMusic(g.gs.ScenarioPath)
 	if losses := g.gs.TakeTurnCombatLosses(); len(losses) > 0 {
 		entries := make([]render.CombatSummaryEntry, 0, len(losses))
 		for _, loss := range losses {
@@ -4240,6 +4242,11 @@ func (g *Game) resetToScenarioSelect(editMode bool) {
 }
 
 func (g *Game) startScenarioMusic(scenarioPath string) {
+	g.currentMusicPlaylist = ""
+	g.syncScenarioMusic(scenarioPath)
+}
+
+func (g *Game) syncScenarioMusic(scenarioPath string) {
 	sc := scenarioByPath(scenarioPath)
 	if sc == nil {
 		audio.StopMusic()
@@ -4249,9 +4256,31 @@ func (g *Game) startScenarioMusic(scenarioPath string) {
 	if playlistName == "" {
 		playlistName = "campaign"
 	}
+	if g != nil && g.gs != nil {
+		context := ""
+		switch {
+		case g.gs.FiredEventIDs["flag:wall_breached"] || g.gs.FiredEventIDs["flag:others_awakened"]:
+			context = "undead"
+		case g.gs.FiredEventIDs["flag:long_winter_begun"]:
+			context = "winter"
+		case factionAtWar(g.gs, g.gs.PlayerFactionID):
+			context = "war"
+		}
+		if context != "" {
+			if candidate := sc.Music.ContextPlaylists[context]; candidate != "" {
+				playlistName = candidate
+			}
+		} else if candidate := sc.Music.FactionPlaylists[string(g.gs.PlayerFactionID)]; candidate != "" {
+			playlistName = candidate
+		}
+	}
+	if playlistName == g.currentMusicPlaylist {
+		return
+	}
 	defs := sc.Music.Playlists[playlistName]
 	if len(defs) == 0 {
 		audio.StopMusic()
+		g.currentMusicPlaylist = playlistName
 		return
 	}
 	tracks := make([]audio.MusicTrack, 0, len(defs))
@@ -4265,6 +4294,20 @@ func (g *Game) startScenarioMusic(scenarioPath string) {
 		})
 	}
 	audio.StartMusicPlaylist(filepath.Join(scenarioPath, "musics"), tracks)
+	g.currentMusicPlaylist = playlistName
+}
+
+func factionAtWar(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || fid == "" {
+		return false
+	}
+	for _, relation := range gs.Relations {
+		if relation != nil && relation.Stance == faction.StanceWar &&
+			(relation.FactionA == fid || relation.FactionB == fid) {
+			return true
+		}
+	}
+	return false
 }
 
 // loadScenario seçilen senaryo klasöründen tüm oyun verilerini yükler.
@@ -4436,6 +4479,10 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	if err != nil {
 		log.Printf("Olaylar yüklenemedi: %v", err)
 	}
+	factionLore, settlementLore, err := scenario.LoadLore(scenarioPath)
+	if err != nil {
+		return nil, nil, err
+	}
 	advance()
 	yield()
 	armies, armyOrder, err := army.LoadArmiesWithOrder(dp("armies.json"), unitTypes)
@@ -4502,6 +4549,9 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		MinorPrivilegeProtectionTurns: minorPrivilegeProtectionTurns,
 		AggressiveExpansionLastTurns:  aggressiveExpansionLastTurns,
 		DiplomacyConfig:               diplomacyConfig,
+		UndeadMechanics:               sc.UndeadMechanics.WithDefaults(),
+		FactionLore:                   factionLore,
+		SettlementLore:                settlementLore,
 		Regions:                       regions,
 		RegionOrder:                   regionOrder,
 		LandPassages:                  landPassages,

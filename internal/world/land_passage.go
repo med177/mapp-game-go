@@ -12,8 +12,29 @@ import (
 type LandPassageType string
 
 const (
-	LandPassageStrait LandPassageType = "strait"
+	LandPassageStrait            LandPassageType = "strait"
+	LandPassageBridge            LandPassageType = "bridge"
+	LandPassageMountainPass      LandPassageType = "mountain_pass"
+	LandPassageFortifiedCrossing LandPassageType = "fortified_crossing"
 )
+
+func normalizeLandPassageType(value LandPassageType) LandPassageType {
+	switch value {
+	case LandPassageBridge, LandPassageMountainPass, LandPassageFortifiedCrossing, LandPassageStrait:
+		return value
+	default:
+		return LandPassageStrait
+	}
+}
+
+func defaultLandPassageMoveCost(value LandPassageType) int {
+	switch value {
+	case LandPassageMountainPass, LandPassageFortifiedCrossing:
+		return 2
+	default:
+		return 1
+	}
+}
 
 // LandPassage iki kara bölgesi arasındaki, haritada doğrudan sınır paylaşmasa
 // bile kullanılabilen özel karasal bağlantıyı temsil eder.
@@ -61,11 +82,9 @@ func LoadLandPassages(path string, regions map[RegionID]*Region) ([]LandPassage,
 			passage.From == "" || passage.To == "" || passage.From == passage.To {
 			continue
 		}
-		if passage.Type == "" {
-			passage.Type = LandPassageStrait
-		}
+		passage.Type = normalizeLandPassageType(passage.Type)
 		if passage.MoveCost <= 0 {
-			passage.MoveCost = 1
+			passage.MoveCost = defaultLandPassageMoveCost(passage.Type)
 		}
 		key := undirectedLandPassageKey(passage.From, passage.To)
 		if seen[key] {

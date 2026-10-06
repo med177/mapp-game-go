@@ -1,5 +1,20 @@
 [
   {
+    "id": "army_others_1",
+    "owner_id": "others",
+    "region_id": "always_winter",
+    "units": [
+      {
+        "type_id": "white_walker",
+        "count": 2
+      },
+      {
+        "type_id": "wight",
+        "count": 8
+      }
+    ]
+  },
+  {
     "id": "army_stark_1",
     "owner_id": "stark",
     "region_id": "winterfell_region",
