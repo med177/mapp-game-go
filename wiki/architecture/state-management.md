@@ -426,8 +426,9 @@ araştırma ve ordu üretimi yine tur bazında birer adım ilerler.
 `SyncTimedRegionUnlocks() []RegionID` — `is_locked=true` ve `unlock_turn>0` olan bölgelerde aktif tur `unlock_turn` değerine ulaştıysa kilidi kaldırır; save/load ve tur ilerlemesinde senkron için kullanılır
 
 `LandPassages` senaryo verisinden yüklenen, iki kara bölgesi arasındaki özel
-geçiş kayıtlarını taşır. Bu fazda render ve edit mode tarafından kullanılır;
-oyuncu hareketi ile savaş çözümü henüz bu alanı tüketmez. Senaryo yüklemesinde
+geçiş kayıtlarını taşır. Render ve edit mode çizgiyi/etiketi gösterir; oyuncu
+hareketi geçişin `move_cost` değerini, kara teması savunması ise
+`defense_bonus` değerini kullanır. Senaryo yüklemesinde
 `data/land_passages.json`, edit mode kaydında aynı dosya kullanılır; normal
 save/load ise alanı campaign state içinde korur.
 

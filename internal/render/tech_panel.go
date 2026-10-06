@@ -86,6 +86,8 @@ var techCategoryColors = map[tech.Category]color.RGBA{
 
 type techNode struct {
 	t               *tech.Technology
+	effectiveCost   int
+	effectiveTurns  int
 	unlocked        bool
 	done            bool
 	requirementText string
@@ -206,6 +208,7 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 			regionNames[string(id)] = region.NameTR
 		}
 	}
+	researchEffects := tech.ComputeEffects(f.Research.Completed, r.gs.TechTypes)
 
 	for _, t := range r.gs.TechTypes {
 		level := r.getTechLevel(t, r.gs.TechTypes)
@@ -214,7 +217,9 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 		}
 		node := techNode{
 			t:               t,
-			unlocked:        tech.IsUnlockedForContext(&f.Research, t, r.gs.Year, ownedRegions),
+			effectiveCost:   tech.EffectiveResearchGoldCost(t, researchEffects.ResearchCostMod),
+			effectiveTurns:  tech.EffectiveTurnsRequired(t, researchEffects.ResearchSpeedMod),
+			unlocked:        tech.IsUnlockedForFactionContext(&f.Research, t, string(f.ID), r.gs.Year, ownedRegions),
 			done:            f.Research.Completed[t.ID],
 			requirementText: techRequirementSummary(t, r.gs.Year, ownedRegions, regionNames),
 			level:           level,
@@ -825,7 +830,7 @@ func (r *Renderer) drawTechHoverTooltip(screen *ebiten.Image, levels [][]techNod
 			drawTooltipBox(screen, x, y, w, h)
 			drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 10, W: w - 24}, node.t.NameTR, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 			drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 36, W: w - 24}, "Etki: "+techEffectSummary(node.t), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
-			drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 54, W: w - 24}, fmt.Sprintf("Maliyet: %d altın  •  Süre: %d tur", node.t.GoldCost, node.t.TurnsRequired), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 54, W: w - 24}, fmt.Sprintf("Maliyet: %d altın  •  Süre: %d tur", node.effectiveCost, node.effectiveTurns), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 			if node.requirementText != "" {
 				drawUIWrappedLabelAligned(screen, gameui.Rect{X: x + 12, Y: y + 74, W: w - 24, H: 48}, "Önkoşul: "+node.requirementText, techTextCostLocked, gameui.TextSmall, 16, 3, gameui.TextAlignStart)
 			} else if len(node.t.Requires) > 0 {

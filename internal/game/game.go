@@ -1500,7 +1500,8 @@ func (g *Game) autoStartResearchIfIdle() bool {
 	for _, region := range g.gs.LandRegionsOwnedBy(f.ID) {
 		ownedRegions[string(region.ID)] = true
 	}
-	techID, ok := tech.NextResearchableTechIDForContext(&selectionState, g.gs.TechTypes, f.Gold, g.gs.Year, ownedRegions)
+	researchEffects := tech.ComputeEffects(f.Research.Completed, g.gs.TechTypes)
+	techID, ok := tech.NextResearchableTechIDForFactionContextWithModifiers(&selectionState, g.gs.TechTypes, string(f.ID), f.Gold, g.gs.Year, ownedRegions, researchEffects.ResearchCostMod)
 	if !ok {
 		return false
 	}
@@ -2688,7 +2689,7 @@ func (g *Game) playerHasResearchableTechs() bool {
 		if completed != nil && completed[techID] {
 			continue
 		}
-		if tech.IsUnlockedForContext(&f.Research, t, g.gs.Year, ownedRegions) {
+		if tech.IsUnlockedForFactionContext(&f.Research, t, string(f.ID), g.gs.Year, ownedRegions) {
 			return true
 		}
 	}
@@ -7207,22 +7208,24 @@ func (g *Game) startResearch(techID string) {
 	for _, region := range g.gs.LandRegionsOwnedBy(f.ID) {
 		ownedRegions[string(region.ID)] = true
 	}
-	if !tech.IsUnlockedForContext(&f.Research, t, g.gs.Year, ownedRegions) || (f.Research.Completed != nil && f.Research.Completed[techID]) {
+	if !tech.IsUnlockedForFactionContext(&f.Research, t, string(f.ID), g.gs.Year, ownedRegions) || (f.Research.Completed != nil && f.Research.Completed[techID]) {
 		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")
 		return
 	}
-	if !canResume && f.Gold < t.GoldCost {
+	researchEffects := tech.ComputeEffects(f.Research.Completed, g.gs.TechTypes)
+	researchCost := tech.EffectiveResearchGoldCost(t, researchEffects.ResearchCostMod)
+	if !canResume && f.Gold < researchCost {
 		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")
 		return
 	}
 	if f.Research.ActiveID != "" {
 		tech.PauseResearch(&f.Research)
 	}
-	if tech.StartResearch(&f.Research, t, &f.Gold) {
+	if tech.StartResearchWithModifiers(&f.Research, t, &f.Gold, researchEffects.ResearchSpeedMod, researchEffects.ResearchCostMod) {
 		if canResume {
 			g.renderer.ShowCombatResult(t.NameTR + " araştırması kaldığı yerden devam ediyor! (" + fmt.Sprintf("%d tur kaldı", f.Research.TurnsLeft) + ")")
 		} else {
-			g.renderer.ShowCombatResult(t.NameTR + " araştırması başladı! (" + fmt.Sprintf("%d tur", t.TurnsRequired) + ")")
+			g.renderer.ShowCombatResult(t.NameTR + " araştırması başladı! (" + fmt.Sprintf("%d tur", f.Research.TurnsLeft) + ")")
 		}
 	} else {
 		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")

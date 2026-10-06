@@ -2671,6 +2671,10 @@ func (s *GameState) EffectiveArmyGoldUpkeep(a *army.Army) int {
 		return 0
 	}
 	upkeep := a.TotalGoldUpkeep(s.UnitTypes)
+	if owner := s.Factions[faction.FactionID(a.OwnerID)]; owner != nil && s.TechTypes != nil {
+		effects := tech.ComputeEffects(owner.Research.Completed, s.TechTypes)
+		upkeep = applyUpkeepReduction(upkeep, effects.GoldUpkeepMod)
+	}
 	modifier := s.RegionArmyUpkeepModifier(a.RegionID)
 	upkeep = upkeep * (100 + modifier) / 100
 	if upkeep < 0 {
@@ -2804,10 +2808,24 @@ func (s *GameState) armyGrainUpkeep(a *army.Army, includeRegionalSupply, externa
 	}
 
 	upkeep := base * percent / 100
+	if owner := s.Factions[faction.FactionID(a.OwnerID)]; owner != nil && s.TechTypes != nil {
+		effects := tech.ComputeEffects(owner.Research.Completed, s.TechTypes)
+		upkeep = applyUpkeepReduction(upkeep, effects.GrainUpkeepMod)
+	}
 	if upkeep < 1 {
 		return 1
 	}
 	return upkeep
+}
+
+func applyUpkeepReduction(upkeep int, reduction float64) int {
+	if upkeep <= 0 || reduction <= 0 {
+		return upkeep
+	}
+	if reduction > 1 {
+		reduction = 1
+	}
+	return int(float64(upkeep) * (1 - reduction))
 }
 
 // HasOwnedLandSupplyBorder hedef kara bölgesinin, belirtilen devlete ait bir

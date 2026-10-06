@@ -963,6 +963,7 @@ const (
 	editButtonShapeMerge
 	editButtonLandPassageAdd
 	editButtonLandPassageAdjust
+	editButtonLandPassageProperties
 	editButtonLandPassageDelete
 	editButtonRefreshMap
 	editButtonAddNeighbor
@@ -1090,6 +1091,8 @@ func editInspectorButtonRect(kind editInspectorButton) uiRect {
 		return leftRect(3)
 	case editButtonLandPassageAdjust:
 		return rightRect(3)
+	case editButtonLandPassageProperties:
+		return rightRect(4)
 	case editButtonLandPassageDelete:
 		return leftRect(4)
 	case editButtonRefreshMap:
@@ -1148,11 +1151,21 @@ func editInspectorGridRect(column, index int) uiRect {
 }
 
 func editTerrainAreaInspectorButtonRect(kind editInspectorButton) uiRect {
+	switch kind {
+	case editButtonLandPassageAdd:
+		return editInspectorGridRect(0, 0)
+	case editButtonLandPassageAdjust:
+		return editInspectorGridRect(1, 0)
+	case editButtonLandPassageProperties:
+		return editInspectorGridRect(0, 1)
+	case editButtonLandPassageDelete:
+		return editInspectorGridRect(1, 1)
+	}
 	if kind == editButtonRegionNameTR {
 		// Arazi adı, arazi sekmesindeki gerçek kontrollerin hemen üstünde
 		// yer alır. Bölge sekmesinin genel Ad TR düğmesi kendi rect'ini
 		// kullanmaya devam eder.
-		return editInspectorGridRect(0, 4)
+		return editInspectorGridRect(0, 2)
 	}
 	return editInspectorButtonRect(kind)
 }
@@ -1295,9 +1308,6 @@ func editShapeInspectorButtonKinds() []editInspectorButton {
 		editButtonShapeNew,
 		editButtonShapeCut,
 		editButtonShapeMerge,
-		editButtonLandPassageAdd,
-		editButtonLandPassageAdjust,
-		editButtonLandPassageDelete,
 		editButtonRefreshMap,
 	}
 }
@@ -1312,6 +1322,10 @@ func editTerrainAreaInspectorButtonKinds() []editInspectorButton {
 		editButtonTerrainAreaAttrition,
 		editButtonTerrainAreaDelete,
 		editButtonTerrainAreaCancel,
+		editButtonLandPassageAdd,
+		editButtonLandPassageAdjust,
+		editButtonLandPassageProperties,
+		editButtonLandPassageDelete,
 	}
 }
 
@@ -1912,6 +1926,9 @@ func (r *Renderer) handleEditModeInput() InputAction {
 	}
 	if r.editNewShapeModal.show {
 		return r.handleEditNewShapeModalInput()
+	}
+	if r.editLandPassageForm.show {
+		return r.handleLandPassageFormInput()
 	}
 	if r.editFactionForm.show {
 		return r.handleEditFactionFormInput()

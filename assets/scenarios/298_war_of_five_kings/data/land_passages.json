@@ -2,36 +2,81 @@
   {
     "from": "the_neck",
     "to": "moat_cailin",
+    "name": "Moat Cailin Geçidi",
     "type": "fortified_crossing",
     "move_cost": 2,
-    "defense_bonus": 35
+    "defense_bonus": 35,
+    "start": [
+      1142,
+      1615
+    ],
+    "end": [
+      1155,
+      1507
+    ]
   },
   {
     "from": "the_twins",
     "to": "riverlands",
+    "name": "İkizler Köprüsü",
     "type": "fortified_crossing",
     "move_cost": 2,
-    "defense_bonus": 30
+    "defense_bonus": 30,
+    "start": [
+      1080,
+      1860
+    ],
+    "end": [
+      1076,
+      1937
+    ]
   },
   {
     "from": "golden_tooth",
     "to": "riverlands",
+    "name": "Altın Diş Geçidi",
     "type": "mountain_pass",
     "move_cost": 2,
-    "defense_bonus": 25
+    "defense_bonus": 25,
+    "start": [
+      924,
+      2122
+    ],
+    "end": [
+      1002,
+      1997
+    ]
   },
   {
     "from": "the_wall_west",
     "to": "beyond_the_wall",
+    "name": "Duvar Batı Geçidi",
     "type": "fortified_crossing",
     "move_cost": 2,
-    "defense_bonus": 40
+    "defense_bonus": 40,
+    "start": [
+      1244,
+      613
+    ],
+    "end": [
+      1194,
+      568
+    ]
   },
   {
     "from": "the_wall_east",
     "to": "beyond_the_wall",
+    "name": "Duvar Doğu Geçidi",
     "type": "fortified_crossing",
     "move_cost": 2,
-    "defense_bonus": 40
+    "defense_bonus": 40,
+    "start": [
+      1442,
+      601
+    ],
+    "end": [
+      1470,
+      543
+    ]
   }
 ]

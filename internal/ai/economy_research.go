@@ -31,9 +31,11 @@ func aiResearchWithStrategicContextAndSteps(gs *state.GameState, fid faction.Fac
 	if best == nil {
 		return
 	}
-	if tech.StartResearch(&f.Research, best, &f.Gold) {
+	researchEffects := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
+	researchCost := tech.EffectiveResearchGoldCost(best, researchEffects.ResearchCostMod)
+	if tech.StartResearchWithModifiers(&f.Research, best, &f.Gold, researchEffects.ResearchSpeedMod, researchEffects.ResearchCostMod) {
 		if budget != nil {
-			budget.consume(aiBudgetResearch, best.GoldCost)
+			budget.consume(aiBudgetResearch, researchCost)
 		}
 		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepResearch, Message: turnFactionName(gs, fid) + " " + best.NameTR + " araştırmasını başlattı."})
 	}

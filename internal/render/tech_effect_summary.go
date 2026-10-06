@@ -119,6 +119,18 @@ func techEffectsSummary(e tech.Effects, fallback string) string {
 	if e.ConversionSpeedMod > 0 {
 		parts = append(parts, "Dönüşüm +"+itoa(int(e.ConversionSpeedMod)))
 	}
+	if e.GoldUpkeepMod > 0 {
+		parts = append(parts, "Altın bakımı -%"+itoa(int(e.GoldUpkeepMod*100)))
+	}
+	if e.GrainUpkeepMod > 0 {
+		parts = append(parts, "Tahıl bakımı -%"+itoa(int(e.GrainUpkeepMod*100)))
+	}
+	if e.ResearchSpeedMod > 0 {
+		parts = append(parts, "Araştırma hızı +%"+itoa(int(e.ResearchSpeedMod*100)))
+	}
+	if e.ResearchCostMod > 0 {
+		parts = append(parts, "Araştırma maliyeti -%"+itoa(int(e.ResearchCostMod*100)))
+	}
 	if e.RevealEnemyStrength {
 		parts = append(parts, "Tam istihbarat")
 	}

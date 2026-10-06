@@ -373,6 +373,7 @@ type Renderer struct {
 	editLandPassageDragEndpoint       int
 	editLandPassageDragChanged        bool
 	editLandPassageMessage            string
+	editLandPassageForm               landPassageFormState
 	editNeighborAddMode               bool
 	editNeighborAddFrom               world.RegionID
 	editNeighborAddTargets            []world.RegionID
@@ -2373,6 +2374,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
 		drawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab, r.armyPanelTooltipActive())
+		r.drawLandPassageHoverTooltip(screen)
 		r.drawArmyTaskStatusHoverTooltip(screen)
 		r.drawNavalMissionBonusHoverTooltip(screen)
 		r.drawMerchantTradeBonusHoverTooltip(screen)
@@ -2389,6 +2391,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawEditFactionForm(screen)
 		r.drawEditRegionForm(screen)
 		r.drawEditNewShapeModal(screen)
+		r.drawLandPassageForm(screen)
+		r.drawLandPassageHoverTooltip(screen)
 		r.drawEditBuildingsPanel(screen)
 	}
 

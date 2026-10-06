@@ -41,6 +41,7 @@ func defaultLandPassageMoveCost(value LandPassageType) int {
 type LandPassage struct {
 	From         RegionID        `json:"from"`
 	To           RegionID        `json:"to"`
+	Name         string          `json:"name,omitempty"`
 	Type         LandPassageType `json:"type"`
 	MoveCost     int             `json:"move_cost"`
 	DefenseBonus int             `json:"defense_bonus"`

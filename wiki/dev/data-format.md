@@ -197,10 +197,12 @@ karasal geçiş olarak göstermek için kullanılır. Dosya doğrudan bir listed
 ]
 ```
 
-`from` ve `to` mevcut, deniz olmayan region ID'leri olmalıdır. Loader aynı iki
-region arasındaki ters yönlü yinelenen kaydı tek kayda indirir. `type` şu anda
-`strait` ile sınırlıdır; `move_cost` ve `defense_bonus` runtime state'te
-korunur, hareket/savaş hesabına bağlanması sonraki fazdır. `start` ve `end`,
+`from` ve `to` mevcut, deniz olmayan region ID'leri olmalıdır. `name` isteğe
+bağlı harita etiketidir. Loader aynı iki region arasındaki ters yönlü yinelenen
+kaydı tek kayda indirir. `type` `strait`, `bridge`, `mountain_pass` veya
+`fortified_crossing` olabilir. `move_cost` geçişten giriş hareket maliyetidir;
+`defense_bonus` geçiş üzerinden yapılan kara temasında savunmacıya yüzde bonus
+verir. `start` ve `end`,
 senaryo koordinatlarında çizginin tam `[x,y]` uçlarıdır; verilmezse eski kayıtlar
 bölge/yerleşim anchor'ına geri döner. Edit mode `Shape` sekmesindeki `Geçiş Ekle`
 butonu veya `P` ile ekleme modu açılır; önce başlangıç kara noktasına, sonra
@@ -555,6 +557,18 @@ Kuşatma birimleri için opsiyonel `siege_breach_multiplier`, `siege_breach_max_
   "effects": { "infantry_attack_mod": 0.10 }
 }
 ```
+
+`allowed_factions` opsiyoneldir. Doluysa teknoloji yalnızca listedeki faction
+ID'leri tarafından araştırılabilir; boş veya eksikse tüm faction'lara açıktır.
+`min_year` opsiyonel tarih kilididir. Faction, belirtilen yıldan önce teknolojiye
+başlayamaz. Bu iki alan oyuncu, AI ve event kaynaklı araştırma başlatma
+akışlarında uygulanır.
+
+Teknoloji `effects` alanında `gold_upkeep_mod` ve `grain_upkeep_mod` pozitif
+oranlar olarak ordu bakımını azaltır. `research_speed_mod` pozitif oranı
+araştırma başlatılırken gereken tur sayısını, `research_cost_mod` pozitif oranı
+ise altın maliyetini azaltır; devam eden araştırmanın kayıtlı `turns_left` değeri
+değiştirilmez.
 
 ---
 

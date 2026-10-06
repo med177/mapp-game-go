@@ -112,10 +112,12 @@ func aiSelectLegacyResearchTechnology(gs *state.GameState, self *faction.Faction
 }
 
 func aiResearchCandidateAvailable(gs *state.GameState, self *faction.Faction, technology *tech.Technology, budget *aiBudget, ownedRegions map[string]bool) bool {
-	if gs == nil || self == nil || technology == nil || self.Research.Completed[technology.ID] || !tech.IsUnlockedForContext(&self.Research, technology, gs.Year, ownedRegions) {
+	if gs == nil || self == nil || technology == nil || self.Research.Completed[technology.ID] || !tech.IsUnlockedForFactionContext(&self.Research, technology, string(self.ID), gs.Year, ownedRegions) {
 		return false
 	}
-	return aiCanAffordForBudget(self, economy.ResourceCost{Gold: technology.GoldCost}, budget, aiBudgetResearch)
+	researchEffects := tech.ComputeEffects(self.Research.Completed, gs.TechTypes)
+	researchCost := tech.EffectiveResearchGoldCost(technology, researchEffects.ResearchCostMod)
+	return aiCanAffordForBudget(self, economy.ResourceCost{Gold: researchCost}, budget, aiBudgetResearch)
 }
 
 func aiOwnedRegionSet(gs *state.GameState, fid faction.FactionID) map[string]bool {
@@ -146,7 +148,10 @@ func aiScoreResearchCandidate(gs *state.GameState, self *faction.Faction, techno
 			}
 		}
 	}
-	durationCost := maxInt(1, technology.TurnsRequired)*5 + technology.GoldCost/4
+	researchEffects := tech.ComputeEffects(self.Research.Completed, gs.TechTypes)
+	researchCost := tech.EffectiveResearchGoldCost(technology, researchEffects.ResearchCostMod)
+	researchTurns := tech.EffectiveTurnsRequired(technology, researchEffects.ResearchSpeedMod)
+	durationCost := maxInt(1, researchTurns)*5 + researchCost/4
 	return aiResearchCandidate{
 		Technology:    technology,
 		Score:         categoryScore + effectScore + unlockScore + futureScore - durationCost,
@@ -155,7 +160,7 @@ func aiScoreResearchCandidate(gs *state.GameState, self *faction.Faction, techno
 		UnlockScore:   unlockScore,
 		FutureScore:   futureScore,
 		DurationCost:  durationCost,
-		GoldCost:      technology.GoldCost,
+		GoldCost:      researchCost,
 	}
 }
 

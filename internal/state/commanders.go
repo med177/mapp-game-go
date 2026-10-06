@@ -104,7 +104,34 @@ func (s *GameState) RemoveArmy(armyID army.ArmyID) *army.Army {
 		}
 	}
 	delete(s.Armies, armyID)
+	if current.Commander != nil && current.Commander.IsBoss {
+		s.defeatBossFaction(current.OwnerID, current.Commander.ID)
+	} else if current.EmbarkedCommander != nil && current.EmbarkedCommander.IsBoss {
+		s.defeatBossFaction(current.OwnerID, current.EmbarkedCommander.ID)
+	}
 	return current
+}
+
+// defeatBossFaction, boss komutanın ordusu yok edildiğinde aynı fraksiyonun
+// kalan ordularını temizler ve fraksiyonu yeniden ordu üretemeyecek duruma alır.
+func (s *GameState) defeatBossFaction(ownerID, commanderID string) {
+	if s == nil || ownerID == "" {
+		return
+	}
+	if f := s.Factions[faction.FactionID(ownerID)]; f != nil {
+		f.IsEliminated = true
+	}
+	for id, current := range s.Armies {
+		if current != nil && current.OwnerID == ownerID {
+			s.RemoveArmy(id)
+		}
+	}
+	if s.FiredEventIDs == nil {
+		s.FiredEventIDs = make(map[string]bool)
+	}
+	if commanderID != "" {
+		s.FiredEventIDs["flag:boss_defeated:"+commanderID] = true
+	}
 }
 
 // TransferEmbarkedArmy, birleşme sırasında kaynak filonun taşıdığı kara

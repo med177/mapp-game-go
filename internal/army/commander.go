@@ -12,6 +12,7 @@ const (
 
 const (
 	CommanderStartingLevel = 1
+	CommanderBossLevel     = 10
 	CommanderWinXP         = 100
 	CommanderLossXP        = 40
 	CommanderLevel2XP      = 100
@@ -49,6 +50,7 @@ type Commander struct {
 	Name           string           `json:"name"`
 	PortraitAsset  string           `json:"portrait_asset,omitempty"`
 	Level          int              `json:"level"`
+	IsBoss         bool             `json:"is_boss,omitempty"`
 	Experience     int              `json:"experience"`
 	Battles        int              `json:"battles"`
 	Victories      int              `json:"victories"`
@@ -192,6 +194,14 @@ func (c *Commander) Effects() CommanderEffects {
 		effects.SiegeProgressBonus++
 		effects.SiegeBreachBonus++
 	}
+	if c.IsBoss {
+		effects.AttackMod += 0.25
+		effects.DefenseMod += 0.25
+		effects.MoraleMod += 0.20
+		effects.MoveBonus += 2
+		effects.SiegeProgressBonus += 2
+		effects.SiegeBreachBonus += 2
+	}
 	return effects
 }
 
@@ -215,7 +225,9 @@ func (c *Commander) syncProgression(existing []CommanderTrait) []CommanderTrait 
 	if c == nil {
 		return nil
 	}
-	if c.Experience >= CommanderLevel5XP {
+	if c.IsBoss {
+		c.Level = CommanderBossLevel
+	} else if c.Experience >= CommanderLevel5XP {
 		c.Level = 5
 	} else if c.Experience >= CommanderLevel4XP {
 		c.Level = 4

@@ -426,7 +426,7 @@
   {
     "id": "wight",
     "allowed_factions": ["others"],
-    "image": "army/army.png",
+    "image": "army/wight.png",
     "name": "Wight",
     "name_tr": "Akgezen Ordusu",
     "attack": 16,
@@ -453,7 +453,7 @@
   {
     "id": "white_walker",
     "allowed_factions": ["others"],
-    "image": "army/army.png",
+    "image": "army/white_walker.png",
     "name": "White Walker",
     "name_tr": "Akgezen",
     "attack": 38,
@@ -479,7 +479,7 @@
   },
   {
     "id": "scorpion",
-    "blocked_factions": ["free_folk", "targaryen"],
+    "blocked_factions": ["free_folk", "targaryen", "others"],
     "image": "army/scorpion.png",
     "name": "Scorpion",
     "name_tr": "Akrep Mızrağı",
@@ -511,7 +511,7 @@
   },
   {
     "id": "trebuchet",
-    "blocked_factions": ["free_folk", "targaryen"],
+    "blocked_factions": ["free_folk", "targaryen", "others"],
     "image": "army/trebuchet.png",
     "name": "Trebuchet",
     "name_tr": "Mancınık",
@@ -544,7 +544,7 @@
   },
   {
     "id": "transport",
-    "blocked_factions": ["free_folk"],
+    "blocked_factions": ["free_folk", "others"],
     "image": "army/ship_transport.png",
     "name": "Transport Ship",
     "name_tr": "Nakliye Gemisi",

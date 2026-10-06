@@ -1,9 +1,11 @@
 package render
 
 import (
+	"fmt"
 	"image/color"
 	"math"
 
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -11,12 +13,31 @@ import (
 )
 
 const (
-	landPassageLineWidth = float32(3)
-	landPassageDash      = float64(12)
-	landPassageGap       = float64(8)
+	landPassageLineWidth       = float32(3)
+	landPassageDash            = float64(12)
+	landPassageGap             = float64(8)
+	landPassageLabelZoomOffset = 0.3
 )
 
-var landPassageColor = color.RGBA{255, 204, 82, 235}
+type landPassageVisualStyle struct {
+	width float32
+	dash  float64
+	gap   float64
+	color color.RGBA
+}
+
+func landPassageStyle(passageType world.LandPassageType) landPassageVisualStyle {
+	switch passageType {
+	case world.LandPassageBridge:
+		return landPassageVisualStyle{width: 5, color: color.RGBA{92, 205, 126, 240}}
+	case world.LandPassageMountainPass:
+		return landPassageVisualStyle{width: 4, dash: 5, gap: 7, color: color.RGBA{238, 157, 62, 240}}
+	case world.LandPassageFortifiedCrossing:
+		return landPassageVisualStyle{width: 5, dash: 13, gap: 5, color: color.RGBA{211, 91, 81, 245}}
+	default:
+		return landPassageVisualStyle{width: 3, dash: 8, gap: 10, color: color.RGBA{86, 194, 220, 235}}
+	}
+}
 
 // drawLandPassages özel karasal geçişleri kalın kesikli çizgi olarak gösterir.
 // start/end verilmişse çizgi doğrudan bu senaryo koordinatları arasında çizilir;
@@ -33,15 +54,19 @@ func (r *Renderer) drawLandPassages(screen *ebiten.Image) {
 			continue
 		}
 		x1, y1, x2, y2 := r.landPassageScreenEndpoints(passage, from, to)
-		drawDashedLandPassage(screen, x1, y1, x2, y2, landPassageLineWidth, landPassageColor)
+		style := landPassageStyle(passage.Type)
+		drawLandPassageLine(screen, x1, y1, x2, y2, style)
+		if passage.Name != "" && r.camScale >= r.landPassageLabelZoomThreshold() {
+			drawLandPassageLabel(screen, passage.Name, (x1+x2)/2, (y1+y2)/2)
+		}
 		if r.editLandPassageAdjustMode && i == r.editLandPassageSelected {
 			selectedColor := color.RGBA{90, 240, 255, 220}
 			drawDashedLandPassage(screen, x1, y1, x2, y2, landPassageLineWidth+2, selectedColor)
 			vector.StrokeCircle(screen, float32(x1), float32(y1), 8, 2, selectedColor, true)
 			vector.StrokeCircle(screen, float32(x2), float32(y2), 8, 2, selectedColor, true)
 		}
-		vector.FillCircle(screen, float32(x1), float32(y1), 3.5, landPassageColor, true)
-		vector.FillCircle(screen, float32(x2), float32(y2), 3.5, landPassageColor, true)
+		vector.FillCircle(screen, float32(x1), float32(y1), 3.5, style.color, true)
+		vector.FillCircle(screen, float32(x2), float32(y2), 3.5, style.color, true)
 	}
 
 	if !r.editLandPassageMode || r.editLandPassageFrom == "" {
@@ -64,6 +89,108 @@ func (r *Renderer) drawLandPassages(screen *ebiten.Image) {
 	}
 	drawDashedLandPassage(screen, startX, startY, float64(mx), float64(my), 2.5, color.RGBA{90, 240, 255, 220})
 	vector.StrokeCircle(screen, float32(startX), float32(startY), 8, 2, color.RGBA{90, 240, 255, 220}, true)
+}
+
+func (r *Renderer) landPassageHoverAt(fx, fy float64) int {
+	if r == nil || r.gs == nil {
+		return -1
+	}
+	for i := range r.gs.LandPassages {
+		passage := &r.gs.LandPassages[i]
+		from := r.gs.Regions[passage.From]
+		to := r.gs.Regions[passage.To]
+		if from == nil || to == nil || from.IsSea || to.IsSea {
+			continue
+		}
+		x1, y1, x2, y2 := r.landPassageScreenEndpoints(passage, from, to)
+		if pointSegmentDistanceSquared(fx, fy, x1, y1, x2, y2) <= 12*12 {
+			return i
+		}
+		if passage.Name != "" && r.camScale >= r.landPassageLabelZoomThreshold() {
+			if landPassageLabelRect(passage.Name, (x1+x2)/2, (y1+y2)/2).Hit(fx, fy) {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+func (r *Renderer) landPassageLabelZoomThreshold() float64 {
+	threshold := r.maxCameraZoomScale() - landPassageLabelZoomOffset
+	minZoom := minCameraScale()
+	if threshold < minZoom {
+		return minZoom
+	}
+	return threshold
+}
+
+func drawLandPassageLabel(screen *ebiten.Image, name string, centerX, centerY float64) {
+	rect := landPassageLabelRect(name, centerX, centerY)
+	vector.FillRect(screen, float32(rect.X), float32(rect.Y), float32(rect.W), float32(rect.H), color.RGBA{18, 22, 28, 220}, true)
+	vector.StrokeRect(screen, float32(rect.X), float32(rect.Y), float32(rect.W), float32(rect.H), 1.2, color.RGBA{255, 204, 82, 225}, true)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 6, Y: rect.Y + 5, W: rect.W - 12, H: rect.H - 8}, trimTextToWidth(name, FaceSmall, rect.W-12), ColorGold, gameui.TextSmall, gameui.TextAlignCenter)
+}
+
+func landPassageLabelRect(name string, centerX, centerY float64) gameui.Rect {
+	const (
+		labelMinW = 64.0
+		labelMaxW = 260.0
+		labelH    = 28.0
+	)
+	labelW := MeasureText(name, FaceSmall) + 20
+	if labelW < labelMinW {
+		labelW = labelMinW
+	}
+	if labelW > labelMaxW {
+		labelW = labelMaxW
+	}
+	return gameui.Rect{X: centerX - labelW/2, Y: centerY - labelH/2, W: labelW, H: labelH}
+}
+
+func (r *Renderer) drawLandPassageHoverTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.editLandPassageForm.show {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	index := r.landPassageHoverAt(float64(mx), float64(my))
+	if index < 0 || index >= len(r.gs.LandPassages) {
+		return
+	}
+	passage := r.gs.LandPassages[index]
+	from := r.gs.Regions[passage.From]
+	to := r.gs.Regions[passage.To]
+	if from == nil || to == nil {
+		return
+	}
+	name := passage.Name
+	if name == "" {
+		name = landPassageTypeLabel(passage.Type)
+	}
+	const (
+		width  = 330.0
+		height = 154.0
+	)
+	x, y, w, h := tooltipRect(float64(mx), float64(my), width, height)
+	drawTooltipBox(screen, x, y, w, h)
+	DrawText(screen, trimTextToWidth(name, FaceMed, w-20), x+10, y+10, FaceMed, ColorGold)
+	DrawText(screen, "Güzergâh: "+landPassageRegionName(from), x+10, y+36, FaceSmall, ColorWhite)
+	DrawText(screen, "→ "+landPassageRegionName(to), x+10, y+54, FaceSmall, ColorWhite)
+	DrawText(screen, fmt.Sprintf("Tip: %s", landPassageTypeLabel(passage.Type)), x+10, y+78, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Hareket maliyeti: %d", passage.MoveCost), x+10, y+98, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Savunma bonusu: +%d%%", passage.DefenseBonus), x+10, y+118, FaceSmall, ColorGray)
+}
+
+func landPassageRegionName(region *world.Region) string {
+	if region == nil {
+		return "-"
+	}
+	if region.NameTR != "" {
+		return region.NameTR
+	}
+	if region.Name != "" {
+		return region.Name
+	}
+	return string(region.ID)
 }
 
 func (r *Renderer) landPassageScreenEndpoints(passage *world.LandPassage, from, to *world.Region) (float64, float64, float64, float64) {
@@ -140,6 +267,29 @@ func drawDashedLandPassage(screen *ebiten.Image, x1, y1, x2, y2 float64, width f
 			float32(x1+ux*end), float32(y1+uy*end),
 			width, col, true,
 		)
+	}
+}
+
+func drawLandPassageLine(screen *ebiten.Image, x1, y1, x2, y2 float64, style landPassageVisualStyle) {
+	if style.dash <= 0 || style.gap <= 0 {
+		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), style.width, style.color, true)
+		return
+	}
+	drawDashedLandPassageWithPattern(screen, x1, y1, x2, y2, style.width, style.color, style.dash, style.gap)
+}
+
+func drawDashedLandPassageWithPattern(screen *ebiten.Image, x1, y1, x2, y2 float64, width float32, col color.RGBA, dash, gap float64) {
+	dx := x2 - x1
+	dy := y2 - y1
+	distance := math.Hypot(dx, dy)
+	if distance <= 0.01 {
+		return
+	}
+	ux := dx / distance
+	uy := dy / distance
+	for offset := float64(0); offset < distance; offset += dash + gap {
+		end := math.Min(offset+dash, distance)
+		vector.StrokeLine(screen, float32(x1+ux*offset), float32(y1+uy*offset), float32(x1+ux*end), float32(y1+uy*end), width, col, true)
 	}
 }
 
@@ -353,17 +503,8 @@ func (r *Renderer) handleEditLandPassageClick(fx, fy float64) {
 
 	wx, wy := r.screenToWorld(fx, fy)
 	endX, endY := scenarioCoordsFromWorld(wx, wy)
-	r.gs.LandPassages = append(r.gs.LandPassages, world.LandPassage{
-		From:         from,
-		To:           rid,
-		Type:         world.LandPassageStrait,
-		MoveCost:     1,
-		DefenseBonus: 15,
-		Start:        &start,
-		End:          &[2]int{endX, endY},
-	})
-	r.editDirty = true
-	r.editLandPassageMessage = "geçiş eklendi"
+	r.openNewLandPassageForm(from, rid, start, [2]int{endX, endY})
+	r.editLandPassageMessage = "özellikleri gir"
 }
 
 func cloneLandPassages(src []world.LandPassage) []world.LandPassage {

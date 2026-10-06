@@ -2,6 +2,7 @@ package tech
 
 import (
 	"encoding/json"
+	"math"
 	"os"
 	"sort"
 
@@ -41,6 +42,10 @@ type Effects struct {
 	MoveBonus           int     `json:"move_bonus"`
 	SatisfactionBonus   int     `json:"satisfaction_bonus"`
 	ConversionSpeedMod  float64 `json:"conversion_speed_mod"`
+	GoldUpkeepMod       float64 `json:"gold_upkeep_mod"`
+	GrainUpkeepMod      float64 `json:"grain_upkeep_mod"`
+	ResearchSpeedMod    float64 `json:"research_speed_mod"`
+	ResearchCostMod     float64 `json:"research_cost_mod"`
 }
 
 // Technology bir araştırılabilir teknolojiyi tanımlar.
@@ -53,8 +58,23 @@ type Technology struct {
 	TurnsRequired   int      `json:"turns_required"`
 	Requires        []string `json:"requires"`
 	RequiredRegions []string `json:"required_regions,omitempty"`
+	AllowedFactions []string `json:"allowed_factions,omitempty"`
 	MinYear         int      `json:"min_year,omitempty"`
 	Effects         Effects  `json:"effects"`
+}
+
+// IsAvailableToFaction teknolojiye hangi fraksiyonların erişebileceğini kontrol eder.
+// allowed_factions boşsa teknoloji tüm fraksiyonlar için kullanılabilir.
+func (t *Technology) IsAvailableToFaction(factionID string) bool {
+	if t == nil || len(t.AllowedFactions) == 0 || factionID == "" {
+		return true
+	}
+	for _, allowedFactionID := range t.AllowedFactions {
+		if allowedFactionID == factionID {
+			return true
+		}
+	}
+	return false
 }
 
 // IsUnlocked tüm gereksinimlerin tamamlanıp tamamlanmadığını kontrol eder.
@@ -73,7 +93,15 @@ func IsUnlocked(rs *faction.ResearchState, t *Technology) bool {
 // IsUnlockedForContext checks both the technology tree and campaign context.
 // ownedRegions contains region IDs controlled by the researching faction.
 func IsUnlockedForContext(rs *faction.ResearchState, t *Technology, year int, ownedRegions map[string]bool) bool {
+	return IsUnlockedForFactionContext(rs, t, "", year, ownedRegions)
+}
+
+// IsUnlockedForFactionContext checks technology, faction, date, and region requirements.
+func IsUnlockedForFactionContext(rs *faction.ResearchState, t *Technology, factionID string, year int, ownedRegions map[string]bool) bool {
 	if t == nil {
+		return false
+	}
+	if !t.IsAvailableToFaction(factionID) {
 		return false
 	}
 	if !IsUnlocked(rs, t) {
@@ -91,6 +119,11 @@ func IsUnlockedForContext(rs *faction.ResearchState, t *Technology, year int, ow
 }
 
 func CanStartResearch(rs *faction.ResearchState, t *Technology, gold int) bool {
+	return CanStartResearchWithCost(rs, t, gold, 0)
+}
+
+// CanStartResearchWithCost araştırmanın indirimli maliyetini de hesaba katar.
+func CanStartResearchWithCost(rs *faction.ResearchState, t *Technology, gold int, researchCostMod float64) bool {
 	if !IsUnlocked(rs, t) || (rs.Completed != nil && rs.Completed[t.ID]) {
 		return false
 	}
@@ -100,7 +133,7 @@ func CanStartResearch(rs *faction.ResearchState, t *Technology, gold int) bool {
 	if rs.PausedTurns != nil && rs.PausedTurns[t.ID] > 0 {
 		return true
 	}
-	return gold >= t.GoldCost
+	return gold >= EffectiveResearchGoldCost(t, researchCostMod)
 }
 
 func PauseResearch(rs *faction.ResearchState) {
@@ -117,6 +150,16 @@ func PauseResearch(rs *faction.ResearchState) {
 
 // StartResearch araştırmayı başlatır; başarısızsa false döner.
 func StartResearch(rs *faction.ResearchState, t *Technology, gold *int) bool {
+	return StartResearchWithSpeed(rs, t, gold, 0)
+}
+
+// StartResearchWithSpeed araştırmayı tamamlanması gereken efektif tur sayısıyla başlatır.
+func StartResearchWithSpeed(rs *faction.ResearchState, t *Technology, gold *int, researchSpeedMod float64) bool {
+	return StartResearchWithModifiers(rs, t, gold, researchSpeedMod, 0)
+}
+
+// StartResearchWithModifiers araştırma süresi ve altın maliyeti bonuslarını uygular.
+func StartResearchWithModifiers(rs *faction.ResearchState, t *Technology, gold *int, researchSpeedMod, researchCostMod float64) bool {
 	if !IsUnlocked(rs, t) || (rs.Completed != nil && rs.Completed[t.ID]) {
 		return false
 	}
@@ -134,13 +177,43 @@ func StartResearch(rs *faction.ResearchState, t *Technology, gold *int) bool {
 			return true
 		}
 	}
-	if *gold < t.GoldCost {
+	cost := EffectiveResearchGoldCost(t, researchCostMod)
+	if *gold < cost {
 		return false
 	}
-	*gold -= t.GoldCost
+	*gold -= cost
 	rs.ActiveID = t.ID
-	rs.TurnsLeft = t.TurnsRequired
+	rs.TurnsLeft = EffectiveTurnsRequired(t, researchSpeedMod)
 	return true
+}
+
+// EffectiveTurnsRequired araştırma hız bonusunu teknoloji süresine uygular.
+func EffectiveTurnsRequired(t *Technology, researchSpeedMod float64) int {
+	if t == nil || t.TurnsRequired <= 0 {
+		return 0
+	}
+	if researchSpeedMod <= 0 {
+		return t.TurnsRequired
+	}
+	turns := int(math.Ceil(float64(t.TurnsRequired) / (1 + researchSpeedMod)))
+	if turns < 1 {
+		return 1
+	}
+	return turns
+}
+
+// EffectiveResearchGoldCost araştırma maliyet indirimini altın maliyetine uygular.
+func EffectiveResearchGoldCost(t *Technology, researchCostMod float64) int {
+	if t == nil || t.GoldCost <= 0 {
+		return 0
+	}
+	if researchCostMod <= 0 {
+		return t.GoldCost
+	}
+	if researchCostMod > 1 {
+		researchCostMod = 1
+	}
+	return int(math.Ceil(float64(t.GoldCost) * (1 - researchCostMod)))
 }
 
 // Tick aktif araştırmayı ilerletir; tamamlanırsa tech ID'sini döner.
@@ -171,6 +244,17 @@ func NextResearchableTechID(rs *faction.ResearchState, allTechs map[string]*Tech
 // NextResearchableTechIDForContext selects the first affordable technology
 // whose tree, date, and owned-region requirements are satisfied.
 func NextResearchableTechIDForContext(rs *faction.ResearchState, allTechs map[string]*Technology, gold, year int, ownedRegions map[string]bool) (string, bool) {
+	return NextResearchableTechIDForFactionContext(rs, allTechs, "", gold, year, ownedRegions)
+}
+
+// NextResearchableTechIDForFactionContext selects the first affordable technology
+// available to the faction whose requirements are satisfied.
+func NextResearchableTechIDForFactionContext(rs *faction.ResearchState, allTechs map[string]*Technology, factionID string, gold, year int, ownedRegions map[string]bool) (string, bool) {
+	return NextResearchableTechIDForFactionContextWithModifiers(rs, allTechs, factionID, gold, year, ownedRegions, 0)
+}
+
+// NextResearchableTechIDForFactionContextWithModifiers indirimli maliyeti de hesaba katar.
+func NextResearchableTechIDForFactionContextWithModifiers(rs *faction.ResearchState, allTechs map[string]*Technology, factionID string, gold, year int, ownedRegions map[string]bool, researchCostMod float64) (string, bool) {
 	if rs == nil || allTechs == nil || len(rs.PausedTurns) > 0 {
 		return "", false
 	}
@@ -183,10 +267,10 @@ func NextResearchableTechIDForContext(rs *faction.ResearchState, allTechs map[st
 		if rs.Completed != nil && rs.Completed[id] {
 			continue
 		}
-		if !IsUnlockedForContext(rs, t, year, ownedRegions) {
+		if !IsUnlockedForFactionContext(rs, t, factionID, year, ownedRegions) {
 			continue
 		}
-		if gold < t.GoldCost {
+		if gold < EffectiveResearchGoldCost(t, researchCostMod) {
 			continue
 		}
 		candidates = append(candidates, id)
@@ -278,6 +362,10 @@ func ComputeEffects(completed map[string]bool, allTechs map[string]*Technology) 
 		total.MoveBonus += e.MoveBonus
 		total.SatisfactionBonus += e.SatisfactionBonus
 		total.ConversionSpeedMod += e.ConversionSpeedMod
+		total.GoldUpkeepMod += e.GoldUpkeepMod
+		total.GrainUpkeepMod += e.GrainUpkeepMod
+		total.ResearchSpeedMod += e.ResearchSpeedMod
+		total.ResearchCostMod += e.ResearchCostMod
 	}
 	return total
 }

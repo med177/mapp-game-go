@@ -192,6 +192,12 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 			}
 			return ebiten.CursorShapeDefault
 		}
+		if r.gs.Phase == state.PhaseEditMode && r.editLandPassageForm.show {
+			if landPassageFormRect().Hit(fx, fy) {
+				return ebiten.CursorShapePointer
+			}
+			return ebiten.CursorShapeDefault
+		}
 		if r.gs.Phase == state.PhaseEditMode && r.editRegionForm.show {
 			if r.editRegionFormInteractiveHit(fx, fy) {
 				return ebiten.CursorShapePointer
@@ -203,6 +209,9 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 				return ebiten.CursorShapePointer
 			}
 			return ebiten.CursorShapeDefault
+		}
+		if r.landPassageHoverAt(fx, fy) >= 0 {
+			return ebiten.CursorShapePointer
 		}
 		if r.uiLayers.BlocksAt(fx, fy) {
 			if r.uiLayerPointerAt(fx, fy) {

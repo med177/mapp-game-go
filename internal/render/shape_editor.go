@@ -238,7 +238,6 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 		drawEditInspectorButton(screen, editButtonShapeRegionErase, "Bolge Sil", false)
 		drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", false)
 		drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", false)
-		r.drawEditShapeLandPassageButtons(screen)
 		return
 	}
 	session := r.editShapeSession
@@ -346,7 +345,6 @@ func (r *Renderer) drawEditShapeInspector(screen *ebiten.Image, ly float64) {
 	}
 	drawEditInspectorButton(screen, editButtonShapeBrushMinus, "Firca -", canAdjustBrush && r.editShapeBrushRadius > editShapeBrushMinRadius)
 	drawEditInspectorButton(screen, editButtonShapeBrushPlus, "Firca +", canAdjustBrush && r.editShapeBrushRadius < editShapeBrushMaxRadius)
-	r.drawEditShapeLandPassageButtons(screen)
 	cutLabel := "Shape Kes"
 	cutEnabled := r.canEditSelectedShape() && !r.editShapePaintPending
 	if r.editShapeCutting {
@@ -414,23 +412,6 @@ func isEditShapeToolButton(kind editInspectorButton) bool {
 	}
 }
 
-func (r *Renderer) drawEditShapeLandPassageButtons(screen *ebiten.Image) {
-	addLabel := "Geçiş Ekle"
-	if r.editLandPassageMode {
-		addLabel = "> Geçiş Ekle"
-	}
-	adjustLabel := "Geçiş Düzenle"
-	if r.editLandPassageAdjustMode {
-		adjustLabel = "> Geçiş Düzenle"
-	}
-	// Arazi alanı araçları ayrı sekmede tutulur.
-	landPassageAvailable := !r.editTerrainAreaMode
-	canDelete := landPassageAvailable && r.editLandPassageSelected >= 0 && r.editLandPassageSelected < len(r.gs.LandPassages)
-	drawEditInspectorButton(screen, editButtonLandPassageAdd, addLabel, landPassageAvailable)
-	drawEditInspectorButton(screen, editButtonLandPassageAdjust, adjustLabel, landPassageAvailable)
-	drawEditInspectorButton(screen, editButtonLandPassageDelete, "Geçiş Sil", canDelete)
-}
-
 func (r *Renderer) drawEditTerrainAreaInspector(screen *ebiten.Image, ly float64) {
 	x, _, _, _ := editInspectorRect()
 	region := r.gs.Regions[r.editSelectedRegion]
@@ -454,6 +435,9 @@ func (r *Renderer) drawEditTerrainAreaInspector(screen *ebiten.Image, ly float64
 }
 
 func (r *Renderer) drawEditTerrainAreaButtons(screen *ebiten.Image) {
+	r.drawEditTerrainLandPassageButtons(screen, !r.editTerrainAreaMode ||
+		(!r.editShapePaintPending && len(r.editTerrainAreaPolygon) == 0))
+
 	terrainPending := r.editTerrainAreaMode && r.editShapePaintPending
 	terrainDraft := r.editTerrainAreaMode && len(r.editTerrainAreaPolygon) > 0 && !terrainPending
 	region := r.gs.Regions[r.editSelectedRegion]
@@ -503,6 +487,32 @@ func (r *Renderer) drawEditTerrainAreaButtons(screen *ebiten.Image) {
 	drawTerrainAreaInspectorButton(screen, editButtonTerrainAreaAttrition, "Yıpranma: %"+itoa(attritionLabel), attritionControlsAvailable)
 	canDeleteArea := areaControlsAvailable && !terrainPending && r.editTerrainAreaSelected >= 0 && r.editTerrainAreaSelected < len(r.gs.TerrainAreas)
 	drawTerrainAreaInspectorButton(screen, editButtonTerrainAreaDelete, "Arazi Alanını Sil", canDeleteArea)
+}
+
+func (r *Renderer) drawEditTerrainLandPassageButtons(screen *ebiten.Image, available bool) {
+	addLabel := "Geçiş Ekle"
+	if r.editLandPassageMode {
+		addLabel = "> Geçiş Ekle"
+	}
+	drawTerrainAreaInspectorButton(screen, editButtonLandPassageAdd, addLabel, available)
+
+	adjustLabel := "Geçiş Düzenle"
+	if r.editLandPassageAdjustMode {
+		adjustLabel = "Uygula"
+	}
+	if r.editLandPassageAdjustMode {
+		rect := editTerrainAreaInspectorButtonRect(editButtonLandPassageAdjust)
+		drawUIButton(screen, rect[0], rect[1], rect[2], rect[3], adjustLabel, true, applyTinyButtonStyle)
+	} else {
+		drawTerrainAreaInspectorButton(screen, editButtonLandPassageAdjust, adjustLabel, available)
+	}
+	canDelete := available && r.editLandPassageSelected >= 0 && r.editLandPassageSelected < len(r.gs.LandPassages)
+	canProperties := canDelete && !r.editLandPassageMode
+	drawTerrainAreaInspectorButton(screen, editButtonLandPassageProperties, "Geçiş Özellikleri", canProperties)
+	drawTerrainAreaInspectorButton(screen, editButtonLandPassageDelete, "Geçiş Sil", canDelete)
+	x, _, w, _ := editInspectorRect()
+	separatorY := editInspectorGridRect(0, 2)[1] - 4
+	vector.StrokeLine(screen, x+14, float32(separatorY), x+w-14, float32(separatorY), 1, color.RGBA{100, 80, 45, 190}, false)
 }
 
 func drawTerrainAreaInspectorButton(screen *ebiten.Image, kind editInspectorButton, label string, active bool) {
@@ -760,7 +770,7 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 		}
 	}
 	// Arazi alanı boyama ile geçiş ekleme/düzenleme birbirini dışlar.
-	if r.editTerrainAreaMode && (kind == editButtonLandPassageAdd || kind == editButtonLandPassageAdjust) {
+	if r.editTerrainAreaMode && (kind == editButtonLandPassageAdd || kind == editButtonLandPassageAdjust || kind == editButtonLandPassageProperties) {
 		return InputAction{}, true
 	}
 	if (r.editLandPassageMode || r.editLandPassageAdjustMode) && kind == editButtonTerrainArea {
@@ -813,6 +823,8 @@ func (r *Renderer) handleEditShapeInspectorClick(fx, fy float64) (InputAction, b
 		r.toggleEditLandPassageMode()
 	case editButtonLandPassageAdjust:
 		r.toggleEditLandPassageAdjustMode()
+	case editButtonLandPassageProperties:
+		r.openSelectedLandPassageForm()
 	case editButtonLandPassageDelete:
 		r.deleteSelectedLandPassage()
 	case editButtonAddNeighbor:
@@ -1618,8 +1630,8 @@ func (r *Renderer) newTerrainAreaPolygonID(parentID world.RegionID) string {
 }
 
 func buildEditShapeHelpPanel() gameui.Panel {
-	const panelW, panelH = float64(290), float64(92)
-	return gameui.NewPanel(float64(ScreenWidth)-panelW-18, 140, panelW, panelH)
+	const panelW, panelH = float64(360), float64(92)
+	return gameui.NewPanel(float64(ScreenWidth)-panelW-18, float64(ScreenHeight)-panelH-18, panelW, panelH)
 }
 
 func (r *Renderer) editShapeHelpPanelHit(mx, my float64) bool {

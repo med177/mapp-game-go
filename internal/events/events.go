@@ -1529,14 +1529,15 @@ func applyStartedResearch(gs *state.GameState, fid faction.FactionID, techID str
 	for _, region := range gs.LandRegionsOwnedBy(fid) {
 		ownedRegions[string(region.ID)] = true
 	}
-	if !tech.IsUnlockedForContext(&f.Research, t, gs.Year, ownedRegions) {
+	if !tech.IsUnlockedForFactionContext(&f.Research, t, string(fid), gs.Year, ownedRegions) {
 		return
 	}
 	if f.Research.Completed == nil {
 		f.Research.Completed = make(map[string]bool)
 	}
 	f.Research.ActiveID = techID
-	f.Research.TurnsLeft = t.TurnsRequired
+	researchEffects := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
+	f.Research.TurnsLeft = tech.EffectiveTurnsRequired(t, researchEffects.ResearchSpeedMod)
 }
 
 func applyRelationEffects(gs *state.GameState, fid faction.FactionID, rels []RelationEffect) {

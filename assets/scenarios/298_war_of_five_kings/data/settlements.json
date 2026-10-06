@@ -252,7 +252,7 @@
     "settlements": [
       {
         "id": "the_wall_west_castle",
-        "name_tr": "Shadow Tower",
+        "name_tr": "Gölge Kulesi",
         "x": 1183,
         "y": 637,
         "type": "fortress",
@@ -265,7 +265,7 @@
     "settlements": [
       {
         "id": "the_wall_east_settlement_1",
-        "name_tr": "Eastwatch-by-the-Sea",
+        "name_tr": "Doğu Gözlem Kulesi",
         "x": 1464,
         "y": 599,
         "type": "fortress",
@@ -741,8 +741,8 @@
       {
         "id": "the_neck_main",
         "name_tr": "Boyun",
-        "x": 1137,
-        "y": 1608,
+        "x": 1127,
+        "y": 1616,
         "type": "town",
         "is_center": true
       },
@@ -1042,7 +1042,7 @@
     "settlements": [
       {
         "id": "castle_black_main",
-        "name_tr": "Castle Black",
+        "name_tr": "Kara Kale",
         "x": 1368,
         "y": 640,
         "type": "fortress",

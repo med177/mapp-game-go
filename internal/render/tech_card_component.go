@@ -41,7 +41,7 @@ func newTechCardComponent(node techNode, rect gameui.Rect, activeResearchID stri
 		Title:           node.t.NameTR,
 		Summary:         techEffectSummary(node.t),
 		RequirementText: node.requirementText,
-		CostText:        fmt.Sprintf("%d altın  •  %d tur", node.t.GoldCost, node.t.TurnsRequired),
+		CostText:        fmt.Sprintf("%d altın  •  %d tur", node.effectiveCost, node.effectiveTurns),
 		NameColor:       techCardNameColor(node.unlocked, node.done),
 		CostColor:       techTextCost,
 		CategoryColor:   techCardCategoryColor(node.t.Category, node.unlocked || node.done),

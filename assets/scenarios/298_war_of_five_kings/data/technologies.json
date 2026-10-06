@@ -7,7 +7,7 @@
     "id": "iron_weapons",
     "name_tr": "Demircilik Gelenekleri",
     "requires": [],
-    "turns_required": 4
+    "turns_required": 3
   },
   {
     "category": "military",
@@ -27,7 +27,7 @@
     "id": "battlefield_drills",
     "name_tr": "Meydan Muharebesi Talimleri",
     "requires": ["iron_weapons", "feudal_levies"],
-    "turns_required": 5
+    "turns_required": 4
   },
   {
     "category": "military",
@@ -37,7 +37,7 @@
     "id": "castle_steel",
     "name_tr": "Kale Çeliği",
     "requires": ["iron_weapons"],
-    "turns_required": 6
+    "turns_required": 5
   },
   {
     "category": "military",
@@ -47,7 +47,7 @@
     "id": "chivalry",
     "name_tr": "Şövalyelik Gelenekleri",
     "requires": ["battlefield_drills", "castle_steel"],
-    "turns_required": 7
+    "turns_required": 6
   },
   {
     "category": "military",
@@ -57,7 +57,7 @@
     "id": "siegecraft",
     "name_tr": "Kuşatma Zanaatı",
     "requires": ["feudal_levies"],
-    "turns_required": 6
+    "turns_required": 5
   },
   {
     "category": "military",
@@ -67,7 +67,7 @@
     "id": "counterweight_engines",
     "name_tr": "Karşı Ağırlıklı Makineler",
     "requires": ["siegecraft"],
-    "turns_required": 8
+    "turns_required": 7
   },
   {
     "category": "military",
@@ -77,7 +77,7 @@
     "id": "castle_engineering",
     "name_tr": "Kale Mühendisliği",
     "requires": ["siegecraft", "castle_steel"],
-    "turns_required": 8
+    "turns_required": 7
   },
   {
     "category": "military",
@@ -87,7 +87,7 @@
     "id": "ranger_scouting",
     "name_tr": "Korucu Keşifçiliği",
     "requires": ["feudal_levies"],
-    "turns_required": 6
+    "turns_required": 5
   },
   {
     "category": "economy",
@@ -107,7 +107,7 @@
     "id": "watermills",
     "name_tr": "Su Değirmenleri",
     "requires": ["manorial_agriculture"],
-    "turns_required": 5
+    "turns_required": 4
   },
   {
     "category": "economy",
@@ -117,7 +117,7 @@
     "id": "royal_mint",
     "name_tr": "Kraliyet Darphanesi",
     "requires": ["manorial_agriculture"],
-    "turns_required": 6
+    "turns_required": 5
   },
   {
     "category": "economy",
@@ -127,7 +127,7 @@
     "id": "guild_charters",
     "name_tr": "Lonca Beratları",
     "requires": ["royal_mint"],
-    "turns_required": 7
+    "turns_required": 6
   },
   {
     "category": "economy",
@@ -137,7 +137,7 @@
     "id": "winter_stores",
     "name_tr": "Uzun Kış Ambarları",
     "requires": ["manorial_agriculture"],
-    "turns_required": 6
+    "turns_required": 5
   },
   {
     "category": "naval",
@@ -147,7 +147,7 @@
     "id": "shipwrights",
     "name_tr": "Gemi Ustaları",
     "requires": [],
-    "turns_required": 4
+    "turns_required": 3
   },
   {
     "category": "naval",
@@ -157,7 +157,7 @@
     "id": "coastal_navigation",
     "name_tr": "Kıyı Seyrüseferi",
     "requires": ["shipwrights"],
-    "turns_required": 5
+    "turns_required": 4
   },
   {
     "category": "naval",
@@ -167,7 +167,7 @@
     "id": "longship_raiding",
     "name_tr": "Uzun Gemi Akıncılığı",
     "requires": ["coastal_navigation"],
-    "turns_required": 7
+    "turns_required": 6
   },
   {
     "category": "naval",
@@ -177,7 +177,7 @@
     "id": "fleet_battle_tactics",
     "name_tr": "Filo Muharebe Taktikleri",
     "requires": ["longship_raiding"],
-    "turns_required": 8
+    "turns_required": 7
   },
   {
     "category": "diplomacy",
@@ -187,7 +187,7 @@
     "id": "heraldry",
     "name_tr": "Sancak ve Soy Bilgisi",
     "requires": [],
-    "turns_required": 4
+    "turns_required": 3
   },
   {
     "category": "diplomacy",
@@ -197,7 +197,7 @@
     "id": "raven_network",
     "name_tr": "Karga Haber Ağı",
     "requires": ["heraldry"],
-    "turns_required": 6
+    "turns_required": 5
   },
   {
     "category": "diplomacy",
@@ -207,7 +207,7 @@
     "id": "marriage_alliances",
     "name_tr": "Evlilik İttifakları",
     "requires": ["heraldry"],
-    "turns_required": 7
+    "turns_required": 6
   },
   {
     "category": "diplomacy",
@@ -217,7 +217,7 @@
     "id": "master_of_whispers",
     "name_tr": "Fısıltı Ustaları",
     "requires": ["raven_network", "heraldry"],
-    "turns_required": 8
+    "turns_required": 7
   },
   {
     "category": "religion",
@@ -227,7 +227,7 @@
     "id": "old_gods_customs",
     "name_tr": "Eski Tanrılar Gelenekleri",
     "requires": [],
-    "turns_required": 4
+    "turns_required": 3
   },
   {
     "category": "religion",
@@ -237,7 +237,7 @@
     "id": "faith_of_the_seven",
     "name_tr": "Yedi İnancı'nın Teşkilatı",
     "requires": [],
-    "turns_required": 5
+    "turns_required": 4
   },
   {
     "category": "religion",
@@ -245,9 +245,10 @@
     "effects": { "conversion_speed_mod": 15, "satisfaction_bonus": 2 },
     "gold_cost": 420,
     "id": "red_priesthood",
+    "allowed_factions": ["baratheon_dragonstone"],
     "name_tr": "Kızıl Rahiplik",
     "requires": ["faith_of_the_seven"],
-    "turns_required": 8
+    "turns_required": 7
   },
   {
     "category": "religion",
@@ -255,9 +256,10 @@
     "effects": { "naval_attack_mod": 0.08, "satisfaction_bonus": 1 },
     "gold_cost": 360,
     "id": "drowned_god_rites",
+    "allowed_factions": ["greyjoy"],
     "name_tr": "Boğulmuş Tanrı Ayinleri",
     "requires": ["shipwrights"],
-    "turns_required": 7
+    "turns_required": 6
   },
   {
     "category": "military",
@@ -265,8 +267,242 @@
     "effects": { "cavalry_attack_mod": 0.25 },
     "gold_cost": 1000,
     "id": "dragon_lore",
+    "allowed_factions": ["targaryen"],
+    "min_year": 300,
     "name_tr": "Valyria Ejderha Bilgeliği",
     "requires": ["heraldry"],
-    "turns_required": 10
+    "turns_required": 9
+  },
+  {
+    "category": "naval",
+    "description_tr": "Demirdoğumluların Eski Yol'u, uzun gemi akınlarını ve deniz piyadelerini daha saldırgan hale getirir. Deniz saldırısı +%15, hareket +1.",
+    "effects": { "naval_attack_mod": 0.15, "naval_move_bonus": 1 },
+    "gold_cost": 620,
+    "id": "ironborn_old_way",
+    "allowed_factions": ["greyjoy"],
+    "name_tr": "Demirdoğumluların Eski Yolu",
+    "requires": ["longship_raiding"],
+    "turns_required": 7
+  },
+  {
+    "category": "economy",
+    "description_tr": "Reach'in geniş tahıl ambarları ve verimli tarlaları uzun seferleri besler. Tahıl üretimi +%15.",
+    "effects": { "grain_mod": 0.15 },
+    "gold_cost": 460,
+    "id": "reach_granaries",
+    "allowed_factions": ["tyrell"],
+    "name_tr": "Reach Tahıl Ambarları",
+    "requires": ["manorial_agriculture"],
+    "turns_required": 6
+  },
+  {
+    "category": "economy",
+    "description_tr": "Lannister madenleri ve darphaneleri altın akışını merkezileştirir. Her bölgeden elde edilen altın +15.",
+    "effects": { "gold_per_region": 15, "gold_upkeep_mod": 0.1 },
+    "gold_cost": 560,
+    "id": "lannister_goldsmiths",
+    "allowed_factions": ["lannister"],
+    "name_tr": "Lannister Altın Ustaları",
+    "requires": ["royal_mint"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Dorne'un hızlı birlikleri sıcak iklimde ve açık arazide savunma hatlarını korur. Kara savunması +%10, hareket +1.",
+    "effects": { "land_defense_mod": 0.1, "move_bonus": 1 },
+    "gold_cost": 480,
+    "id": "dornish_sand_warfare",
+    "allowed_factions": ["martell"],
+    "name_tr": "Dornlu Kum Savaşı",
+    "requires": ["ranger_scouting"],
+    "turns_required": 6
+  },
+  {
+    "category": "military",
+    "description_tr": "Gece Nöbeti yeminleri, sınır savunmasını ve Duvar'daki disiplinli nöbet düzenini güçlendirir. Kara savunması +%15.",
+    "effects": { "land_defense_mod": 0.15, "grain_upkeep_mod": 0.15 },
+    "gold_cost": 440,
+    "id": "night_watch_oaths",
+    "allowed_factions": ["nights_watch"],
+    "name_tr": "Gece Nöbeti Yeminleri",
+    "requires": ["ranger_scouting", "old_gods_customs"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Özgür Halk'ın dağınık savaşçıları ortak bir savaş düzeni içinde toplanır. Piyade saldırısı +%15, hareket +1.",
+    "effects": { "infantry_attack_mod": 0.15, "move_bonus": 1 },
+    "gold_cost": 500,
+    "id": "wildling_warbands",
+    "allowed_factions": ["free_folk"],
+    "name_tr": "Özgür Halk Savaş Kolları",
+    "requires": ["old_gods_customs"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Kızıl rahiplerin kehanetleri ve gölge suikastları düşman kalelerini zayıflatır. Kuşatma saldırısı +%10.",
+    "effects": { "siege_attack_mod": 0.1 },
+    "gold_cost": 580,
+    "id": "shadow_assassins",
+    "allowed_factions": ["baratheon_dragonstone"],
+    "name_tr": "Gölge Suikastçıları",
+    "requires": ["red_priesthood"],
+    "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Vadi'nin şövalye tarikatları ağır süvari hücumlarını daha düzenli ve yıkıcı hale getirir. Süvari saldırısı +%12.",
+    "effects": { "cavalry_attack_mod": 0.12 },
+    "gold_cost": 520,
+    "id": "vale_knightly_orders",
+    "allowed_factions": ["arryn"],
+    "name_tr": "Vadi Şövalye Tarikatları",
+    "requires": ["chivalry"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Nehir lordlarının hızlı sancak çağrıları, dağınık kuvvetleri kısa sürede bir araya getirir. Piyade saldırısı +%8, kara savunması +%5.",
+    "effects": { "infantry_attack_mod": 0.08, "land_defense_mod": 0.05 },
+    "gold_cost": 420,
+    "id": "riverlord_levies",
+    "allowed_factions": ["tully"],
+    "name_tr": "Nehir Lordu Sancakları",
+    "requires": ["feudal_levies"],
+    "turns_required": 6
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Yüzsüz Adamlar ve Braavos'un gizli ağları, anlaşmaları zorla kabul ettirir ve haberleşmeyi hızlandırır. Barış ilişkileri +15, hareket +1.",
+    "effects": { "peace_relation_bonus": 15, "move_bonus": 1 },
+    "gold_cost": 680,
+    "id": "faceless_contracts",
+    "allowed_factions": ["braavos"],
+    "name_tr": "Yüzsüzlerin Sözleşmeleri",
+    "requires": ["master_of_whispers"],
+    "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Kardeşlik, küçük savaş kollarını ortak adalet yemini altında birleştirir. Piyade saldırısı +%10.",
+    "effects": { "infantry_attack_mod": 0.1, "gold_upkeep_mod": 0.1, "grain_upkeep_mod": 0.1 },
+    "gold_cost": 460,
+    "id": "brotherhood_justice",
+    "allowed_factions": ["brotherhood_without_banners"],
+    "name_tr": "Kardeşliğin Adaleti",
+    "requires": ["ranger_scouting"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Stark orduları kurt sürüsü gibi kanatlardan saldırır ve kuzey yollarını hızla aşar. Piyade saldırısı +%10, hareket +1.",
+    "effects": { "infantry_attack_mod": 0.1, "move_bonus": 1 },
+    "gold_cost": 520,
+    "id": "wolf_pack_tactics",
+    "allowed_factions": ["stark"],
+    "name_tr": "Kurt Sürüsü Taktikleri",
+    "requires": ["ranger_scouting", "battlefield_drills"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Fırtına Toprakları'nın kaleleri ve garnizonları kıyı saldırılarına karşı güçlendirilir. Kara savunması +%12.",
+    "effects": { "land_defense_mod": 0.12 },
+    "gold_cost": 480,
+    "id": "stormland_garrisons",
+    "allowed_factions": ["baratheon_stormsend"],
+    "name_tr": "Fırtına Toprakları Garnizonları",
+    "requires": ["castle_engineering"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Kraliyet ordusu şövalye sancaklarını tek bir komuta altında toplar. Süvari saldırısı +%10, kara savunması +%5.",
+    "effects": { "cavalry_attack_mod": 0.1, "land_defense_mod": 0.05 },
+    "gold_cost": 560,
+    "id": "royal_host_organization",
+    "allowed_factions": ["baratheon_king"],
+    "name_tr": "Kraliyet Ordusu Düzeni",
+    "requires": ["chivalry"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Bolton kumandanları korku ve katı disiplinle piyadeyi saldırıya zorlar. Piyade saldırısı +%10.",
+    "effects": { "infantry_attack_mod": 0.1 },
+    "gold_cost": 500,
+    "id": "bolton_flaying_discipline",
+    "allowed_factions": ["bolton"],
+    "name_tr": "Bolton Deri Yüzme Disiplini",
+    "requires": ["castle_steel"],
+    "turns_required": 7
+  },
+  {
+    "category": "economy",
+    "description_tr": "Özgür Şehirlerin bankerleri kredi, faiz ve ticaret sözleşmelerini tek bir ağda toplar. Bölge altını +5, pazar geliri +%5.",
+    "effects": { "gold_per_region": 5, "market_gold_mod": 0.05 },
+    "gold_cost": 620,
+    "id": "free_cities_banking",
+    "allowed_factions": ["free_cities"],
+    "name_tr": "Özgür Şehirler Bankacılığı",
+    "requires": ["guild_charters"],
+    "turns_required": 8
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Braavos'un kredi ağları ve gizli garantileri uzak haneleri anlaşmalara bağlar. Barış ilişkileri +10, bölge altını +5.",
+    "effects": { "peace_relation_bonus": 10, "gold_per_region": 5 },
+    "gold_cost": 600,
+    "id": "braavosi_loan_network",
+    "allowed_factions": ["braavos"],
+    "name_tr": "Braavos Borç Ağı",
+    "requires": ["faceless_contracts"],
+    "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Ejderha binicileri büyüyen ejderhaları savaş düzenine ve hava saldırılarına alıştırır. Süvari saldırısı +%10, hareket +1.",
+    "effects": { "cavalry_attack_mod": 0.1, "move_bonus": 1 },
+    "gold_cost": 700,
+    "id": "targaryen_dragon_command",
+    "allowed_factions": ["targaryen"],
+    "min_year": 301,
+    "name_tr": "Targaryen Ejderha Komutası",
+    "requires": ["dragon_lore"],
+    "turns_required": 8
+  },
+  {
+    "category": "military",
+    "description_tr": "Demir Adalar'ın kayalık kaleleri ve kıyı gözetleme kuleleri istilalara karşı güçlendirilir. Kara savunması +%10.",
+    "effects": { "land_defense_mod": 0.1 },
+    "gold_cost": 500,
+    "id": "iron_island_fortresses",
+    "allowed_factions": ["greyjoy"],
+    "name_tr": "Demir Adalar Kaleleri",
+    "requires": ["castle_engineering"],
+    "turns_required": 7
+  },
+  {
+    "category": "military",
+    "description_tr": "Dornlu mızraklı süvariler çöl geçitlerinde ve açık arazide hızlı hücumlar düzenler. Süvari saldırısı +%10.",
+    "effects": { "cavalry_attack_mod": 0.1 },
+    "gold_cost": 520,
+    "id": "dornish_sand_riders",
+    "allowed_factions": ["martell"],
+    "name_tr": "Dornlu Kum Süvarileri",
+    "requires": ["dornish_sand_warfare"],
+    "turns_required": 7
+  },
+  {
+    "category": "diplomacy",
+    "description_tr": "Oldtown bilginleri ve Citadel üstatları araştırma yöntemlerini sistemleştirir. Araştırma hızı +%15, araştırma maliyeti -%10.",
+    "effects": { "research_speed_mod": 0.15, "research_cost_mod": 0.1 },
+    "gold_cost": 560,
+    "id": "oldtown_scholars",
+    "allowed_factions": ["tyrell"],
+    "name_tr": "Oldtown Bilginleri",
+    "requires": ["guild_charters"],
+    "turns_required": 7
   }
 ]

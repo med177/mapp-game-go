@@ -249,7 +249,7 @@ func (r *Renderer) rebuildUILayers() {
 		if r.editRegionShapeDropdown != nil && r.editRegionShapeDropdown.IsOpen() {
 			r.addUILayer(uiLayerEditDropdown, r.editRegionShapeDropdown.Bounds())
 		}
-		if r.editNewShapeModal.show || r.editRenaming {
+		if r.editNewShapeModal.show || r.editLandPassageForm.show || r.editRenaming {
 			r.addUIScreenLayer(uiLayerModal)
 		}
 		if r.editBuildingsPanel {

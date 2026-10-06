@@ -243,7 +243,7 @@
       "aggressor"
     ],
     "start_year": 280,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_galbart_glover",
@@ -282,7 +282,7 @@
       "defender"
     ],
     "start_year": 295,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_rodrik_cassel",
@@ -321,7 +321,7 @@
       "tactician"
     ],
     "start_year": 270,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_addam_marbrand",
@@ -334,7 +334,7 @@
       "aggressor"
     ],
     "start_year": 295,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_tyrion_lannister",
@@ -347,7 +347,7 @@
       "defender"
     ],
     "start_year": 298,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_sandor_clegane",
@@ -373,7 +373,7 @@
       "defender"
     ],
     "start_year": 298,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_davos_seaworth",
@@ -386,7 +386,7 @@
       "tactician"
     ],
     "start_year": 298,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_salladhor_saan",
@@ -399,7 +399,7 @@
       "aggressor"
     ],
     "start_year": 299,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_axell_florent",
@@ -425,7 +425,7 @@
       "veteran"
     ],
     "start_year": 299,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_loras_tyrell",
@@ -438,7 +438,7 @@
       "veteran"
     ],
     "start_year": 298,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_randyll_tarly",
@@ -451,7 +451,7 @@
       "tactician"
     ],
     "start_year": 280,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_mace_tyrell",
@@ -464,7 +464,7 @@
       "defender"
     ],
     "start_year": 280,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_mathis_rowan",
@@ -477,7 +477,7 @@
       "defender"
     ],
     "start_year": 295,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_balon_greyjoy",
@@ -516,7 +516,7 @@
       "aggressor"
     ],
     "start_year": 298,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_victarion_greyjoy",
@@ -529,7 +529,7 @@
       "aggressor"
     ],
     "start_year": 280,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_rodrik_harlaw",
@@ -542,7 +542,7 @@
       "tactician"
     ],
     "start_year": 280,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_dagmer_cleftjaw",
@@ -555,7 +555,7 @@
       "aggressor"
     ],
     "start_year": 280,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_oberyn_martell",
@@ -581,7 +581,7 @@
       "defender"
     ],
     "start_year": 290,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_obara_sand",
@@ -594,7 +594,7 @@
       "veteran"
     ],
     "start_year": 298,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_lynn_corbray",
@@ -607,7 +607,7 @@
       "veteran"
     ],
     "start_year": 290,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_vardis_egen",
@@ -659,7 +659,7 @@
       "aggressor"
     ],
     "start_year": 290,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_rattleshirt",
@@ -711,7 +711,7 @@
       "defender"
     ],
     "start_year": 295,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_grey_worm",
@@ -724,7 +724,7 @@
       "aggressor"
     ],
     "start_year": 300,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_daario_naharis",
@@ -737,7 +737,7 @@
       "veteran"
     ],
     "start_year": 300,
-    "end_year": 310
+    "end_year": 330
   },
   {
     "id": "cmd_robert_baratheon",
@@ -751,5 +751,19 @@
     ],
     "start_year": 277,
     "end_year": 298
+  },
+  {
+    "id": "cmd_night_king",
+    "owner_id": "others",
+    "name": "The Night King",
+    "portrait_asset": "night_king.png",
+    "level": 10,
+    "is_boss": true,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 300,
+    "end_year": 330
   }
 ]

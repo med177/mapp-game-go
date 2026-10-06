@@ -1865,8 +1865,8 @@
       "brandon_gift",
       "the_wall_east"
     ],
-    "world_x": 1200,
-    "world_y": 634,
+    "world_x": 1213,
+    "world_y": 626,
     "shape_id": "WST_WL",
     "is_sea": false,
     "is_locked": false,
@@ -1907,7 +1907,7 @@
       "eastwatch_sea",
       "the_wall_west"
     ],
-    "world_x": 1464,
+    "world_x": 1433,
     "world_y": 599,
     "shape_id": "WST_WL",
     "is_sea": false,
