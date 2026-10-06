@@ -738,5 +738,18 @@
     ],
     "start_year": 300,
     "end_year": 310
+  },
+  {
+    "id": "cmd_robert_baratheon",
+    "owner_id": "baratheon_king",
+    "name": "Robert Baratheon",
+    "portrait_asset": "robert_baratheon.png",
+    "level": 5,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 277,
+    "end_year": 298
   }
 ]

@@ -35,7 +35,7 @@
     "shape_scale_x": 1.0,
     "shape_scale_y": 1.0,
     "terrain_alpha": 0.45,
-    "max_zoom": 3.0
+    "max_zoom": 2.5
   },
   "music": {
     "default_playlist": "got_main_theme",
@@ -46,23 +46,23 @@
           "weight": 6
         },
         {
-          "file": "hitslab-dramatic-war-military-music-427109.mp3",
+          "file": "blood-and-honor-roman-arena-heroic-tension.mp3",
           "weight": 1
         },
         {
-          "file": "leberch-epic-war-248014.mp3",
+          "file": "ancient-kingdom-likely-game-of-thrones.mp3",
           "weight": 7
         },
         {
-          "file": "kornevmusic-epic-war-trailer-428423.mp3",
+          "file": "echoes-of-the-colosseum-suspenseful-ancient-rome.mp3",
           "weight": 2
         },
         {
-          "file": "the_mountain-war-481763.mp3",
+          "file": "eternal-legion-roman-empire-epic-army.mp3",
           "weight": 3
         },
         {
-          "file": "the_mountain-war-opening-145222.mp3",
+          "file": "game-of-thrones-211870.mp3",
           "weight": 4
         },
         {
@@ -70,7 +70,7 @@
           "weight": 5
         },
         {
-          "file": "the_mountain-ancient-war-141474.mp3",
+          "file": "rise-of-the-imperium-empire-theme-cinematic-power.mp3",
           "weight": 8
         },
         {
