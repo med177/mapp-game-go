@@ -13,6 +13,14 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   playlist'lerine bağlandı. Yeni müzik veya görsel asset eklenmedi; savaş, kış
   ve Akgezen durum playlist'leri faction müziğine göre öncelikli kalıyor.
 
+- 2026-10-06: Yerleşim lore paneli doğrudan `settlement_id` eşleşmesine geçirildi.
+  Eksik kayıtlar yanlış bir ana yerleşim lore'una yönlendirilmiyor; görsel
+  bulunması zorunlu değil.
+
+- 2026-10-06: Yerleşim lore görseli yoksa boş görsel alanı gizleniyor ve tarihçe
+  yukarı taşınıyor. Faction panelinde lore önemi ile durum bölümü arasına bir
+  satır boşluk eklendi.
+
 - 2026-10-06: 298 senaryosuna NPC Akgezen faction'i, wight ve white walker
   birlikleri, Always Winter baslangic ordusu, kademeli uyanis/Duvar event zinciri,
   AI istilasi ve Gece Nobeti/Stark icin Akgezen zafer kosulu eklendi. Akgezen

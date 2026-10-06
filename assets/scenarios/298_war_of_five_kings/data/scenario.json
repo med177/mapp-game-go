@@ -79,16 +79,8 @@
           "weight": 6
         },
         {
-          "file": "ancient-kingdom-likely-game-of-thrones.mp3",
-          "weight": 7
-        },
-        {
           "file": "echoes-of-the-colosseum-suspenseful-ancient-rome.mp3",
           "weight": 2
-        },
-        {
-          "file": "game-of-thrones-211870.mp3",
-          "weight": 4
         },
         {
           "file": "blood-and-honor-roman-arena-heroic-tension.mp3",
@@ -103,10 +95,6 @@
         {
           "file": "echoes-of-the-colosseum-suspenseful-ancient-rome.mp3",
           "weight": 5
-        },
-        {
-          "file": "ancient-kingdom-likely-game-of-thrones.mp3",
-          "weight": 4
         }
       ],
       "lannister": [
@@ -124,14 +112,6 @@
         }
       ],
       "targaryen": [
-        {
-          "file": "ancient-kingdom-likely-game-of-thrones.mp3",
-          "weight": 8
-        },
-        {
-          "file": "game-of-thrones-211870.mp3",
-          "weight": 6
-        },
         {
           "file": "Cinematic-Ambient-Background.mp3",
           "weight": 4
@@ -177,10 +157,6 @@
         {
           "file": "echoes-of-the-colosseum-suspenseful-ancient-rome.mp3",
           "weight": 7
-        },
-        {
-          "file": "game-of-thrones-211870.mp3",
-          "weight": 3
         }
       ],
       "undead": [
@@ -201,10 +177,6 @@
         {
           "file": "blood-and-honor-roman-arena-heroic-tension.mp3",
           "weight": 7
-        },
-        {
-          "file": "game-of-thrones-211870.mp3",
-          "weight": 5
         },
         {
           "file": "Cinematic-Ambient-Background.mp3",

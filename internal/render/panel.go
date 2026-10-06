@@ -4276,17 +4276,19 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 	drawUIKeyValueRow(screen, lx, ly, float64(pw)-panelPad*2, "Koordinat", itoa(settlement.X)+","+itoa(settlement.Y), ColorGray, ColorWhite)
 	ly += 20
 
-	// Üst görsel alanı (asset varsa göster, yoksa placeholder).
+	// Üst görsel alanı yalnızca gerçek bir asset varsa oluşturulur.
 	imgX := float32(lx)
 	imgY := float32(ly)
 	imgW := pw - float32(panelPad*2)
 	imgH := float32(170)
-	drawUICardRect(screen, gameui.Rect{X: float64(imgX), Y: float64(imgY), W: float64(imgW), H: float64(imgH)}, panelBg2, panelBorder, 1)
 	var loreImage *ebiten.Image
-	if lore, ok := gs.SettlementLore[settlement.ID]; ok {
+	lore, hasLore := gs.SettlementLore[settlement.ID]
+	if hasLore {
 		loreImage = loadLoreImage(lore.Image)
 	}
-	if sImg := firstImage(loreImage, loadSettlementImage(region, settlement)); sImg != nil {
+	sImg := firstImage(loreImage, loadSettlementImage(region, settlement))
+	if sImg != nil {
+		drawUICardRect(screen, gameui.Rect{X: float64(imgX), Y: float64(imgY), W: float64(imgW), H: float64(imgH)}, panelBg2, panelBorder, 1)
 		b := sImg.Bounds()
 		sw := float64(b.Dx())
 		sh := float64(b.Dy())
@@ -4299,18 +4301,14 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 			op.GeoM.Translate(float64(imgX)+(float64(imgW)-dw)/2, float64(imgY)+(float64(imgH)-dh)/2)
 			screen.DrawImage(sImg, op)
 		}
-	} else {
-		phText := "Yerleşim Görseli"
-		tw := MeasureText(phText, FaceMed)
-		DrawText(screen, phText, float64(imgX)+float64(imgW)/2-tw/2, float64(imgY)+72, FaceMed, ColorGray)
+		ly += float64(imgH) + 16
 	}
 
-	ly += float64(imgH) + 16
 	drawUISeparator(screen, float32(lx), float32(ly), float32(lx)+imgW, 1, panelBorder)
 	ly += 10
 	drawUISectionLabel(screen, lx, ly, "Tarihçe")
 	ly += 18
-	if lore, ok := gs.SettlementLore[settlement.ID]; ok {
+	if hasLore {
 		if lore.HistoryTR != "" {
 			drawUIWrappedLabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(imgW)}, lore.HistoryTR, ColorGray, gameui.TextSmall, 16, 4)
 			ly += 64
@@ -4931,7 +4929,7 @@ func drawFactionDetailBody(screen *ebiten.Image, gs *state.GameState, fid factio
 		if lore.ImportanceTR != "" {
 			drawUIWrappedLabel(screen, gameui.Rect{X: 0, Y: y, W: width}, "Önem: "+lore.ImportanceTR, ColorWhite, gameui.TextSmall, 15, 2)
 		}
-		y += 28
+		y += 28 + factionPanelRowH
 	}
 
 	drawUISectionLabel(screen, 0, y, "Durum")
