@@ -562,7 +562,7 @@
       { "id": "port", "level": 1 }
     ],
     "required_tech": [
-      "navigation"
+      "shipwrights"
     ],
     "tier": 1,
     "turns_required": 4,
@@ -593,8 +593,8 @@
       { "id": "port", "level": 2 }
     ],
     "required_tech": [
-      "trade_routes",
-      "harbor_administration"
+      "shipwrights",
+      "coastal_navigation"
     ],
     "tier": 1,
     "turns_required": 6,
@@ -624,8 +624,8 @@
       { "id": "port", "level": 3 }
     ],
     "required_tech": [
-      "navigation",
-      "naval_doctrine"
+      "coastal_navigation",
+      "fleet_battle_tactics"
     ],
     "tier": 2,
     "turns_required": 8,

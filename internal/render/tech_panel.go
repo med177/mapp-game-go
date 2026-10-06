@@ -211,6 +211,9 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 	researchEffects := tech.ComputeEffects(f.Research.Completed, r.gs.TechTypes)
 
 	for _, t := range r.gs.TechTypes {
+		if t == nil || !t.IsAvailableToFaction(string(f.ID)) {
+			continue
+		}
 		level := r.getTechLevel(t, r.gs.TechTypes)
 		if level > maxLevel {
 			maxLevel = level
@@ -506,7 +509,7 @@ func countTechByCategory(f *faction.Faction, cat tech.Category, allTechs map[str
 		return 0, 0
 	}
 	for _, t := range allTechs {
-		if t == nil || t.Category != cat {
+		if t == nil || t.Category != cat || !t.IsAvailableToFaction(string(f.ID)) {
 			continue
 		}
 		total++
