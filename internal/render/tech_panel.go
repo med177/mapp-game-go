@@ -119,10 +119,10 @@ const (
 	techFilterTabMinW = 88.0
 
 	// Teknoloji panelindeki kategori ikonları küçük çözünürlükte de net kalmalı.
-	techFilterTabIconSize = 22.0
-	techFilterTabIconX    = 8.0
-	techFilterTabIconY    = 7.0
-	techFilterTabLabelX   = 36.0
+	techFilterTabIconSize = 28.0
+	techFilterTabIconX    = 6.0
+	techFilterTabIconY    = 4.0
+	techFilterTabLabelX   = 40.0
 )
 
 type techConnectorStyle struct {

@@ -129,12 +129,12 @@ func (c techCardComponent) drawGlow(screen *ebiten.Image) {
 
 func (c techCardComponent) drawContent(screen *ebiten.Image) {
 	if c.Model.IconID != gameui.IconNone {
-		gameui.DrawIcon(screen, c.Model.IconID, c.Rect.X+10, c.Rect.Y+5, 20, c.Model.IconColor)
+		gameui.DrawIcon(screen, c.Model.IconID, c.Rect.X+8, c.Rect.Y+3, 28, c.Model.IconColor)
 	}
 
 	nameOffsetX := 0.0
 	if c.Model.IconID != gameui.IconNone {
-		nameOffsetX = 19
+		nameOffsetX = 26
 	}
 	nameRightInset := 12.0
 	if c.Model.IsDone {
