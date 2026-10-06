@@ -6,6 +6,7 @@ import (
 
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -128,6 +129,39 @@ func TestDeclareWarOnVassalDoesNotRequireOverlordDiplomacy(t *testing.T) {
 	}
 	if !IsWar(gs, "outside", "overlord") {
 		t.Fatal("vassala savaş ilanı realm üst devletiyle savaş ilişkisi oluşturmadı")
+	}
+}
+
+func TestDeclareWarRequiresScenarioEventFlag(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"actor":          {ID: "actor", NameTR: "Saldıran"},
+			"blocked_target": {ID: "blocked_target", NameTR: "Barış Bloğu Hedefi"},
+			"outsider":       {ID: "outsider", NameTR: "Dış Devlet"},
+		},
+		DiplomacyConfig: scenario.DiplomacyConfig{
+			PeacePeriods: []scenario.PeacePeriod{{
+				MinTurns:                        10,
+				WarDeclarationRequiresEventFlag: "war_started",
+				BlockedFactions:                 []string{"actor", "blocked_target"},
+			}},
+		},
+		FiredEventIDs: map[string]bool{},
+	}
+
+	if reason := ActionBlockReason(gs, "actor", "blocked_target", ActionDeclareWar); reason == "" {
+		t.Fatal("event flag açılmadan savaş ilanı engellenmedi")
+	}
+	gs.Turn = 11
+	gs.FiredEventIDs["flag:war_started"] = true
+	if reason := ActionBlockReason(gs, "actor", "blocked_target", ActionDeclareWar); reason != "" {
+		t.Fatalf("barış flag'i açıldıktan sonra blok içi savaş engellendi: %s", reason)
+	}
+	if reason := ActionBlockReason(gs, "actor", "outsider", ActionDeclareWar); reason != "" {
+		t.Fatalf("blok dışı hedefe savaş ilanı engellendi: %s", reason)
+	}
+	if reason := ActionBlockReason(gs, "outsider", "actor", ActionDeclareWar); reason != "" {
+		t.Fatalf("blok dışı aktörün blok içindeki devlete savaş ilanı engellendi: %s", reason)
 	}
 }
 

@@ -20,6 +20,26 @@
     "requires_event_flag": "others_awakened"
   },
   "diplomacy": {
+    "peace_periods": [
+      {
+        "min_turns": 10,
+        "war_declaration_requires_event_flag": "war_of_five_kings_active",
+        "blocked_factions": [
+          "stark",
+          "lannister",
+          "baratheon_king",
+          "baratheon_dragonstone",
+          "baratheon_stormsend",
+          "greyjoy",
+          "tyrell",
+          "martell",
+          "nights_watch",
+          "arryn",
+          "tully",
+          "bolton"
+        ]
+      }
+    ],
     "relation_improvement_gold_cost": 250,
     "relation_improvement_bonus": 15,
     "gift_gold_cost": 500,

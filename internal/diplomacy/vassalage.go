@@ -328,6 +328,9 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	if actorFaction.IsEliminated || targetFaction.IsEliminated {
 		return "Elenmiş fraksiyonlarla diplomasi kurulamaz."
 	}
+	if action == ActionDeclareWar && warDeclarationBlockedByScenario(gs, actor, target) {
+		return "Bu senaryoda büyük savaş dönemi henüz başlamadı."
+	}
 	// Sanal isyancı devletlerle yalnız savaş ilan edilebilir; ticaret, ittifak,
 	// hediye, vassallık gibi her türlü diplomatik ilişki kapalıdır.
 	if action != ActionDeclareWar && (actorFaction.IsVirtual || targetFaction.IsVirtual) {
@@ -487,6 +490,35 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		}
 	}
 	return ""
+}
+
+func warDeclarationBlockedByScenario(gs *state.GameState, actor, target faction.FactionID) bool {
+	if gs == nil || actor == "" || target == "" {
+		return false
+	}
+	for _, period := range gs.DiplomacyConfig.PeacePeriods {
+		actorBlocked := false
+		targetBlocked := false
+		for _, factionID := range period.BlockedFactions {
+			switch factionID {
+			case string(actor):
+				actorBlocked = true
+			case string(target):
+				targetBlocked = true
+			}
+		}
+		if !actorBlocked || !targetBlocked {
+			continue
+		}
+		if period.MinTurns > 0 && gs.Turn <= period.MinTurns {
+			return true
+		}
+		if period.WarDeclarationRequiresEventFlag != "" &&
+			!gs.FiredEventIDs["flag:"+period.WarDeclarationRequiresEventFlag] {
+			return true
+		}
+	}
+	return false
 }
 
 func hasExternalWar(gs *state.GameState, fid, ignored faction.FactionID) bool {

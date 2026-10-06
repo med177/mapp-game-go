@@ -488,9 +488,6 @@
       "baratheon_king",
       "baratheon_dragonstone",
       "baratheon_stormsend"
-    ],
-    "requires_owned_regions": [
-      "kings_landing"
     ]
   },
   {
@@ -1452,8 +1449,8 @@
   },
   {
     "id": "winter_storms_299",
-    "name_tr": "Kuzeyde KÄ±ÅŸ SertleÅŸiyor",
-    "desc_tr": "Kuzeydeki uzun kÄ±ÅŸ yollarÄ± kapatÄ±yor, ambarlarÄ± zorluyor ve ordularÄ±n ikmal ihtiyacÄ±nÄ± artÄ±rÄ±yor. Westeros artÄ±k savaÅŸtan Ã¶nce de hazÄ±rlÄ±k bedeli Ã¶dÃ¼yor.",
+    "name_tr": "Kuzeyde Kış Sertleşiyor",
+    "desc_tr": "Kuzeydeki uzun kış yolları kapatıyor, ambarları zorluyor ve orduların ikmal ihtiyacını artırıyor. Westeros artık savaştan önce de hazırlık bedeli ödüyor.",
     "probability": 0,
     "min_turn": 1,
     "target": "all_factions",

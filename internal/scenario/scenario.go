@@ -236,17 +236,26 @@ type Scenario struct {
 // ve etkilerini tanımlar. Alanları eksik eski senaryolar varsayılan değerlere
 // tamamlanır.
 type DiplomacyConfig struct {
-	RelationImprovementGoldCost     int `json:"relation_improvement_gold_cost,omitempty"`
-	RelationImprovementBonus        int `json:"relation_improvement_bonus,omitempty"`
-	GiftGoldCost                    int `json:"gift_gold_cost,omitempty"`
-	GiftReceiverGold                int `json:"gift_receiver_gold,omitempty"`
-	GiftRelationBonus               int `json:"gift_relation_bonus,omitempty"`
-	InciteRevoltGoldCost            int `json:"incite_revolt_gold_cost,omitempty"`
-	InciteRevoltRelationBonus       int `json:"incite_revolt_relation_bonus,omitempty"`
-	InciteRevoltOverlordPenalty     int `json:"incite_revolt_overlord_penalty,omitempty"`
-	InciteRevoltVassalThreshold     int `json:"incite_revolt_vassal_threshold,omitempty"`
-	InciteRevoltOwnerThreshold      int `json:"incite_revolt_owner_threshold,omitempty"`
-	InciteRevoltSatisfactionPenalty int `json:"incite_revolt_satisfaction_penalty,omitempty"`
+	PeacePeriods                    []PeacePeriod `json:"peace_periods,omitempty"`
+	RelationImprovementGoldCost     int           `json:"relation_improvement_gold_cost,omitempty"`
+	RelationImprovementBonus        int           `json:"relation_improvement_bonus,omitempty"`
+	GiftGoldCost                    int           `json:"gift_gold_cost,omitempty"`
+	GiftReceiverGold                int           `json:"gift_receiver_gold,omitempty"`
+	GiftRelationBonus               int           `json:"gift_relation_bonus,omitempty"`
+	InciteRevoltGoldCost            int           `json:"incite_revolt_gold_cost,omitempty"`
+	InciteRevoltRelationBonus       int           `json:"incite_revolt_relation_bonus,omitempty"`
+	InciteRevoltOverlordPenalty     int           `json:"incite_revolt_overlord_penalty,omitempty"`
+	InciteRevoltVassalThreshold     int           `json:"incite_revolt_vassal_threshold,omitempty"`
+	InciteRevoltOwnerThreshold      int           `json:"incite_revolt_owner_threshold,omitempty"`
+	InciteRevoltSatisfactionPenalty int           `json:"incite_revolt_satisfaction_penalty,omitempty"`
+}
+
+// PeacePeriod, belirli faction'ların senaryonun hazırlık döneminde savaş ilan
+// etmesini sınırlar. Süre ve event flag'i birlikte dönem kilidini oluşturur.
+type PeacePeriod struct {
+	MinTurns                        int      `json:"min_turns,omitempty"`
+	WarDeclarationRequiresEventFlag string   `json:"war_declaration_requires_event_flag,omitempty"`
+	BlockedFactions                 []string `json:"blocked_factions,omitempty"`
 }
 
 func DefaultDiplomacyConfig() DiplomacyConfig {
