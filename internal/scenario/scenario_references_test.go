@@ -64,7 +64,7 @@ func walkScenarioReferenceValues(
 			switch key {
 			case "region_id", "destination_region_id":
 				checkScenarioRegionReference(t, fileName, childPath, child, regions)
-			case "regions", "region_ids", "requires_owned_regions", "requires_unowned_regions", "source_region_ids", "target_regions", "readiness_regions":
+			case "regions", "region_ids", "requires_owned_regions", "requires_owned_regions_any", "requires_unowned_regions", "source_region_ids", "target_regions", "readiness_regions":
 				checkScenarioRegionList(t, fileName, childPath, child, regions)
 			case "capital_settlement_id", "blocks_capital_settlement_id":
 				checkScenarioSettlementReference(t, fileName, childPath, child, settlements)

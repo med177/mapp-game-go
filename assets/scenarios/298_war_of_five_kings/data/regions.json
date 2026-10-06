@@ -6,10 +6,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "new_region_133",
-      "new_region_135",
-      "new_region_136",
-      "new_region_138"
+      "braavos_channel",
+      "bay_of_crabs",
+      "shivering_sea",
+      "bay_of_seals"
     ],
     "world_x": 2166,
     "world_y": 1316,
@@ -40,10 +40,10 @@
     "owner_id": "",
     "neighbors": [
       "beyond_the_wall",
-      "new_region_116",
-      "new_region_137",
-      "new_region_139",
-      "new_region_55",
+      "bay_of_ice",
+      "eastwatch_sea",
+      "far_north_sea",
+      "frozen_coast_sea",
       "the_wall_west"
     ],
     "world_x": 978,
@@ -76,11 +76,11 @@
     "owner_id": "",
     "neighbors": [
       "hapstackhall",
-      "new_region_128",
-      "new_region_129",
-      "new_region_130",
-      "new_region_132",
-      "new_region_60"
+      "the_gullet",
+      "gulltown_bay",
+      "shipbreaker_bay",
+      "pentos_bay",
+      "sharp_point"
     ],
     "world_x": 1808,
     "world_y": 2383,
@@ -104,17 +104,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_132",
-    "name": "New Region 132",
-    "name_tr": "Yeni Bolge 132",
+    "id": "pentos_bay",
+    "name": "Pentos Bay",
+    "name_tr": "Pentos Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "narrow_sea",
-      "new_region_127",
-      "new_region_129",
-      "new_region_130",
-      "new_region_133",
+      "myr_bay",
+      "gulltown_bay",
+      "shipbreaker_bay",
+      "braavos_channel",
       "pentos_region"
     ],
     "world_x": 1918,
@@ -139,9 +139,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_128",
-    "name": "New Region 128",
-    "name_tr": "Yeni Bolge 128",
+    "id": "the_gullet",
+    "name": "The Gullet",
+    "name_tr": "Boğaz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -152,9 +152,9 @@
       "kings_landing",
       "kingswood",
       "narrow_sea",
-      "new_region_129",
-      "new_region_60",
-      "new_region_62"
+      "gulltown_bay",
+      "sharp_point",
+      "blackwater_bay"
     ],
     "world_x": 1655,
     "world_y": 2300,
@@ -178,9 +178,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_129",
-    "name": "New Region 129",
-    "name_tr": "Yeni Bolge 129",
+    "id": "gulltown_bay",
+    "name": "Gulltown Bay",
+    "name_tr": "Gulltown Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -188,10 +188,10 @@
       "duskendale",
       "gulltown",
       "narrow_sea",
-      "new_region_128",
-      "new_region_132",
-      "new_region_133",
-      "new_region_135",
+      "the_gullet",
+      "pentos_bay",
+      "braavos_channel",
+      "bay_of_crabs",
       "saltpans",
       "the_eyrie",
       "the_fingers",
@@ -219,15 +219,15 @@
     "buildings": null
   },
   {
-    "id": "new_region_134",
-    "name": "New Region 134",
-    "name_tr": "Yeni Bolge 134",
+    "id": "the_bite",
+    "name": "The Bite",
+    "name_tr": "Isırık Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "moat_cailin",
-      "new_region_135",
-      "new_region_136",
+      "bay_of_crabs",
+      "shivering_sea",
       "the_fingers",
       "the_neck",
       "west_vale",
@@ -256,16 +256,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_135",
-    "name": "New Region 135",
-    "name_tr": "Yeni Bolge 135",
+    "id": "bay_of_crabs",
+    "name": "The Bay of Crabs",
+    "name_tr": "Yengeçler Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "new_region_129",
-      "new_region_133",
-      "new_region_134",
-      "new_region_136",
+      "gulltown_bay",
+      "braavos_channel",
+      "the_bite",
+      "shivering_sea",
       "sea",
       "the_fingers"
     ],
@@ -291,18 +291,18 @@
     "buildings": null
   },
   {
-    "id": "new_region_136",
-    "name": "New Region 136",
-    "name_tr": "Yeni Bolge 136",
+    "id": "shivering_sea",
+    "name": "The Shivering Sea",
+    "name_tr": "Titreyen Deniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "karhold",
       "lonely_hills",
-      "new_region_134",
-      "new_region_135",
-      "new_region_137",
-      "new_region_138",
+      "the_bite",
+      "bay_of_crabs",
+      "eastwatch_sea",
+      "bay_of_seals",
       "sea",
       "skagos",
       "the_dreadfort",
@@ -332,17 +332,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_137",
-    "name": "New Region 137",
-    "name_tr": "Yeni Bolge 137",
+    "id": "eastwatch_sea",
+    "name": "Eastwatch Sea",
+    "name_tr": "Doğu Gözcüsü Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "always_winter",
       "beyond_the_wall",
       "brandon_gift",
-      "new_region_136",
-      "new_region_138",
+      "shivering_sea",
+      "bay_of_seals",
       "skagos",
       "the_gift",
       "the_wall_east"
@@ -369,14 +369,14 @@
     "buildings": null
   },
   {
-    "id": "new_region_138",
-    "name": "New Region 138",
-    "name_tr": "Yeni Bolge 138",
+    "id": "bay_of_seals",
+    "name": "Bay of Seals",
+    "name_tr": "Foklar Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "new_region_136",
-      "new_region_137",
+      "shivering_sea",
+      "eastwatch_sea",
       "sea"
     ],
     "world_x": 1966,
@@ -401,16 +401,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_133",
-    "name": "New Region 133",
-    "name_tr": "Yeni Bolge 133",
+    "id": "braavos_channel",
+    "name": "Braavos Channel",
+    "name_tr": "Braavos Kanalı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "braavos",
-      "new_region_129",
-      "new_region_132",
-      "new_region_135",
+      "gulltown_bay",
+      "pentos_bay",
+      "bay_of_crabs",
       "norvos",
       "pentos_region",
       "sea"
@@ -437,9 +437,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_62",
-    "name": "New Region 62",
-    "name_tr": "Yeni Bolge 62",
+    "id": "blackwater_bay",
+    "name": "Blackwater Bay",
+    "name_tr": "Karasu Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -448,7 +448,7 @@
       "isle_faces",
       "kings_landing",
       "kingswood",
-      "new_region_128"
+      "the_gullet"
     ],
     "world_x": 1274,
     "world_y": 2192,
@@ -478,7 +478,7 @@
     "terrain": "forest",
     "owner_id": "baratheon_king",
     "neighbors": [
-      "new_region_62"
+      "blackwater_bay"
     ],
     "world_x": 1275,
     "world_y": 2173,
@@ -505,16 +505,16 @@
     ]
   },
   {
-    "id": "new_region_55",
-    "name": "New Region 55",
-    "name_tr": "Yeni Bolge 55",
+    "id": "frozen_coast_sea",
+    "name": "Frozen Coast Sea",
+    "name_tr": "Donmuş Kıyı Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "always_winter",
-      "new_region_116",
-      "new_region_139",
-      "new_region_140"
+      "bay_of_ice",
+      "far_north_sea",
+      "sunset_sea"
     ],
     "world_x": 345,
     "world_y": 463,
@@ -538,14 +538,14 @@
     "buildings": null
   },
   {
-    "id": "new_region_139",
-    "name": "New Region 139",
-    "name_tr": "Yeni Bolge 139",
+    "id": "far_north_sea",
+    "name": "The Far North Sea",
+    "name_tr": "Uzak Kuzey Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "always_winter",
-      "new_region_55"
+      "frozen_coast_sea"
     ],
     "world_x": 331,
     "world_y": 350,
@@ -569,9 +569,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_116",
-    "name": "New Region 116",
-    "name_tr": "Yeni Bolge 116",
+    "id": "bay_of_ice",
+    "name": "Bay of Ice",
+    "name_tr": "Buz Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -580,9 +580,9 @@
       "brandon_gift",
       "dragon_point",
       "long_lake",
-      "new_region_117",
-      "new_region_140",
-      "new_region_55",
+      "ironman_bay",
+      "sunset_sea",
+      "frozen_coast_sea",
       "stony_shore",
       "the_wall_west",
       "the_wolfswood"
@@ -609,9 +609,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_117",
-    "name": "New Region 117",
-    "name_tr": "Yeni Bolge 117",
+    "id": "ironman_bay",
+    "name": "Ironman Bay",
+    "name_tr": "Demirköylü Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -619,10 +619,10 @@
       "cape_kraken",
       "deepwood_motte",
       "flints_finger",
-      "new_region_116",
-      "new_region_118",
-      "new_region_140",
-      "new_region_141",
+      "bay_of_ice",
+      "ironmans_bay",
+      "sunset_sea",
+      "western_ironman_sea",
       "stony_shore",
       "the_rills"
     ],
@@ -648,16 +648,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_140",
-    "name": "New Region 140",
-    "name_tr": "Yeni Bolge 140",
+    "id": "sunset_sea",
+    "name": "The Sunset Sea",
+    "name_tr": "Günbatımı Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "new_region_116",
-      "new_region_117",
-      "new_region_141",
-      "new_region_55"
+      "bay_of_ice",
+      "ironman_bay",
+      "western_ironman_sea",
+      "frozen_coast_sea"
     ],
     "world_x": 101,
     "world_y": 1330,
@@ -681,9 +681,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_118",
-    "name": "New Region 118",
-    "name_tr": "Yeni Bolge 118",
+    "id": "ironmans_bay",
+    "name": "Ironman's Bay",
+    "name_tr": "Demirköylü Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -693,9 +693,9 @@
       "flints_finger",
       "great_wyk",
       "harlaw",
-      "new_region_115",
-      "new_region_117",
-      "new_region_141",
+      "golden_sound",
+      "ironman_bay",
+      "western_ironman_sea",
       "orkmont",
       "pyke",
       "riverlands",
@@ -723,18 +723,18 @@
     "buildings": null
   },
   {
-    "id": "new_region_141",
-    "name": "New Region 141",
-    "name_tr": "Yeni Bolge 141",
+    "id": "western_ironman_sea",
+    "name": "Western Ironman Sea",
+    "name_tr": "Batı Demirköylü Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "great_wyk",
-      "new_region_115",
-      "new_region_117",
-      "new_region_118",
-      "new_region_140",
-      "new_region_142"
+      "golden_sound",
+      "ironman_bay",
+      "ironmans_bay",
+      "sunset_sea",
+      "western_sunset_sea"
     ],
     "world_x": 177,
     "world_y": 1861,
@@ -758,9 +758,9 @@
     "buildings": null
   },
   {
-    "id": "new_region_115",
-    "name": "New Region 115",
-    "name_tr": "Yeni Bolge 115",
+    "id": "golden_sound",
+    "name": "The Golden Sound",
+    "name_tr": "Altın Ses",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -768,10 +768,10 @@
       "cornfield",
       "crag",
       "lannisport",
-      "new_region_118",
-      "new_region_119",
-      "new_region_141",
-      "new_region_142"
+      "ironmans_bay",
+      "redwyne_strait",
+      "western_ironman_sea",
+      "western_sunset_sea"
     ],
     "world_x": 472,
     "world_y": 2272,
@@ -795,16 +795,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_142",
-    "name": "New Region 142",
-    "name_tr": "Yeni Bolge 142",
+    "id": "western_sunset_sea",
+    "name": "Western Sunset Sea",
+    "name_tr": "Batı Günbatımı Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "new_region_115",
-      "new_region_119",
-      "new_region_141",
-      "new_region_143"
+      "golden_sound",
+      "redwyne_strait",
+      "western_ironman_sea",
+      "southern_sunset_sea"
     ],
     "world_x": 228,
     "world_y": 2283,
@@ -828,19 +828,19 @@
     "buildings": null
   },
   {
-    "id": "new_region_119",
-    "name": "New Region 119",
-    "name_tr": "Yeni Bolge 119",
+    "id": "redwyne_strait",
+    "name": "Redwyne Strait",
+    "name_tr": "Redwyne Boğazı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "brightwater_reach",
       "cornfield",
       "highgarden",
-      "new_region_115",
-      "new_region_120",
-      "new_region_142",
-      "new_region_143",
+      "golden_sound",
+      "summer_sea",
+      "western_sunset_sea",
+      "southern_sunset_sea",
       "old_oak",
       "shield_islands"
     ],
@@ -866,16 +866,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_143",
-    "name": "New Region 143",
-    "name_tr": "Yeni Bolge 143",
+    "id": "southern_sunset_sea",
+    "name": "Southern Sunset Sea",
+    "name_tr": "Güney Günbatımı Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "new_region_119",
-      "new_region_120",
-      "new_region_142",
-      "new_region_144"
+      "redwyne_strait",
+      "summer_sea",
+      "western_sunset_sea",
+      "western_summer_sea"
     ],
     "world_x": 183,
     "world_y": 2659,
@@ -899,18 +899,18 @@
     "buildings": null
   },
   {
-    "id": "new_region_120",
-    "name": "New Region 120",
-    "name_tr": "Yeni Bolge 120",
+    "id": "summer_sea",
+    "name": "The Summer Sea",
+    "name_tr": "Yaz Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "brightwater_reach",
-      "new_region_119",
-      "new_region_121",
-      "new_region_143",
-      "new_region_144",
-      "new_region_59",
+      "redwyne_strait",
+      "eastern_summer_sea",
+      "southern_sunset_sea",
+      "western_summer_sea",
+      "three_towers",
       "oldtown",
       "sandstone",
       "starfall",
@@ -940,15 +940,15 @@
     "buildings": null
   },
   {
-    "id": "new_region_144",
-    "name": "New Region 144",
-    "name_tr": "Yeni Bolge 144",
+    "id": "western_summer_sea",
+    "name": "Western Summer Sea",
+    "name_tr": "Batı Yaz Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "new_region_120",
-      "new_region_121",
-      "new_region_143"
+      "summer_sea",
+      "eastern_summer_sea",
+      "southern_sunset_sea"
     ],
     "world_x": 272,
     "world_y": 3318,
@@ -972,16 +972,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_121",
-    "name": "New Region 121",
-    "name_tr": "Yeni Bolge 121",
+    "id": "eastern_summer_sea",
+    "name": "Eastern Summer Sea",
+    "name_tr": "Doğu Yaz Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "hellholt",
-      "new_region_120",
-      "new_region_122",
-      "new_region_144",
+      "summer_sea",
+      "sea_of_dorne",
+      "western_summer_sea",
       "sandstone"
     ],
     "world_x": 947,
@@ -1006,17 +1006,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_122",
-    "name": "New Region 122",
-    "name_tr": "Yeni Bolge 122",
+    "id": "sea_of_dorne",
+    "name": "Sea of Dorne",
+    "name_tr": "Dorne Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "hellholt",
       "lemonwood",
-      "new_region_121",
-      "new_region_125",
-      "new_region_126",
+      "eastern_summer_sea",
+      "sunspear_strait",
+      "slavers_bay",
       "salt_shore",
       "vaith"
     ],
@@ -1042,17 +1042,17 @@
     "buildings": null
   },
   {
-    "id": "new_region_123",
-    "name": "New Region 123",
-    "name_tr": "Yeni Bolge 123",
+    "id": "dornish_coast_sea",
+    "name": "Dornish Coast Sea",
+    "name_tr": "Dorne Kıyı Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "ghost_hill",
       "godsgrace",
       "mistwood",
-      "new_region_125",
-      "new_region_130",
+      "sunspear_strait",
+      "shipbreaker_bay",
       "stonehelm",
       "summerhall",
       "the_boneway",
@@ -1082,20 +1082,20 @@
     "buildings": null
   },
   {
-    "id": "new_region_125",
-    "name": "New Region 125",
-    "name_tr": "Yeni Bolge 125",
+    "id": "sunspear_strait",
+    "name": "Sunspear Strait",
+    "name_tr": "Sunspear Boğazı",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "ghost_hill",
       "lemonwood",
-      "new_region_122",
-      "new_region_123",
-      "new_region_126",
-      "new_region_127",
-      "new_region_130",
-      "new_region_131",
+      "sea_of_dorne",
+      "dornish_coast_sea",
+      "slavers_bay",
+      "myr_bay",
+      "shipbreaker_bay",
+      "stepstones_sea",
       "sunspear"
     ],
     "world_x": 1865,
@@ -1120,18 +1120,18 @@
     "buildings": null
   },
   {
-    "id": "new_region_131",
-    "name": "New Region 131",
-    "name_tr": "Yeni Bolge 131",
+    "id": "stepstones_sea",
+    "name": "Stepstones Sea",
+    "name_tr": "Basamaktaşları Denizi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "disputed_lands",
       "lys",
-      "new_region_124",
-      "new_region_125",
-      "new_region_126",
-      "new_region_127"
+      "meereen_gulf",
+      "sunspear_strait",
+      "slavers_bay",
+      "myr_bay"
     ],
     "world_x": 1992,
     "world_y": 3094,
@@ -1161,7 +1161,7 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "new_region_131"
+      "stepstones_sea"
     ],
     "world_x": 2097,
     "world_y": 3168,
@@ -1188,18 +1188,18 @@
     ]
   },
   {
-    "id": "new_region_127",
-    "name": "New Region 127",
-    "name_tr": "Yeni Bolge 127",
+    "id": "myr_bay",
+    "name": "Myr Bay",
+    "name_tr": "Myr Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "disputed_lands",
       "myr_region",
-      "new_region_125",
-      "new_region_130",
-      "new_region_131",
-      "new_region_132",
+      "sunspear_strait",
+      "shipbreaker_bay",
+      "stepstones_sea",
+      "pentos_bay",
       "pentos_region",
       "thyrosh"
     ],
@@ -1231,7 +1231,7 @@
     "terrain": "coast",
     "owner_id": "",
     "neighbors": [
-      "new_region_127"
+      "myr_bay"
     ],
     "world_x": 1947,
     "world_y": 2812,
@@ -1258,9 +1258,9 @@
     ]
   },
   {
-    "id": "new_region_130",
-    "name": "New Region 130",
-    "name_tr": "Yeni Bolge 130",
+    "id": "shipbreaker_bay",
+    "name": "Shipbreaker Bay",
+    "name_tr": "Gemi Kıran Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -1269,10 +1269,10 @@
       "hapstackhall",
       "mistwood",
       "narrow_sea",
-      "new_region_123",
-      "new_region_125",
-      "new_region_127",
-      "new_region_132",
+      "dornish_coast_sea",
+      "sunspear_strait",
+      "myr_bay",
+      "pentos_bay",
       "rainwood",
       "storm_end",
       "tarth"
@@ -1299,16 +1299,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_126",
-    "name": "New Region 126",
-    "name_tr": "Yeni Bolge 126",
+    "id": "slavers_bay",
+    "name": "Slaver's Bay",
+    "name_tr": "Köle Tüccarları Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "new_region_122",
-      "new_region_124",
-      "new_region_125",
-      "new_region_131"
+      "sea_of_dorne",
+      "meereen_gulf",
+      "sunspear_strait",
+      "stepstones_sea"
     ],
     "world_x": 1915,
     "world_y": 3466,
@@ -1332,16 +1332,16 @@
     "buildings": null
   },
   {
-    "id": "new_region_124",
-    "name": "New Region 124",
-    "name_tr": "Yeni Bolge 124",
+    "id": "meereen_gulf",
+    "name": "Meereen Gulf",
+    "name_tr": "Meereen Körfezi",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
       "disputed_lands",
       "meereen",
-      "new_region_126",
-      "new_region_131"
+      "slavers_bay",
+      "stepstones_sea"
     ],
     "world_x": 2536,
     "world_y": 3244,
@@ -1411,7 +1411,7 @@
     "neighbors": [
       "braavos",
       "essos_free_cities",
-      "new_region_133",
+      "braavos_channel",
       "pentos_region"
     ],
     "world_x": 2508,
@@ -1448,7 +1448,7 @@
     "neighbors": [
       "griffins_roost",
       "hapstackhall",
-      "new_region_130",
+      "shipbreaker_bay",
       "stormlands"
     ],
     "world_x": 1543,
@@ -1491,7 +1491,7 @@
       "ghost_hill",
       "godsgrace",
       "lemonwood",
-      "new_region_125"
+      "sunspear_strait"
     ],
     "world_x": 1685,
     "world_y": 3097,
@@ -1580,8 +1580,8 @@
       "crownlands",
       "duskendale",
       "kingswood",
-      "new_region_128",
-      "new_region_62"
+      "the_gullet",
+      "blackwater_bay"
     ],
     "world_x": 1443,
     "world_y": 2302,
@@ -1624,7 +1624,7 @@
       "crag",
       "golden_tooth",
       "lannisport",
-      "new_region_115"
+      "golden_sound"
     ],
     "world_x": 704,
     "world_y": 2261,
@@ -1666,8 +1666,8 @@
     "neighbors": [
       "casterly_rock",
       "golden_tooth",
-      "new_region_115",
-      "new_region_118",
+      "golden_sound",
+      "ironmans_bay",
       "riverlands"
     ],
     "world_x": 819,
@@ -1700,7 +1700,7 @@
     "owner_id": "baratheon_dragonstone",
     "successor_faction_id": "baratheon_dragonstone",
     "neighbors": [
-      "new_region_128"
+      "the_gullet"
     ],
     "world_x": 1661,
     "world_y": 2243,
@@ -1732,7 +1732,7 @@
     ]
   },
   {
-    "id": "new_region_60",
+    "id": "sharp_point",
     "name": "Sharp Point",
     "name_tr": "Sharp Point",
     "terrain": "coast",
@@ -1742,7 +1742,7 @@
       "hapstackhall",
       "kingswood",
       "narrow_sea",
-      "new_region_128"
+      "the_gullet"
     ],
     "world_x": 1616,
     "world_y": 2415,
@@ -1779,7 +1779,7 @@
       "brightwater_reach",
       "golden_grove",
       "horn_hill",
-      "new_region_119",
+      "redwyne_strait",
       "old_oak"
     ],
     "world_x": 911,
@@ -1820,7 +1820,7 @@
     "owner_id": "greyjoy",
     "successor_faction_id": "greyjoy",
     "neighbors": [
-      "new_region_118"
+      "ironmans_bay"
     ],
     "world_x": 704,
     "world_y": 1938,
@@ -1862,7 +1862,7 @@
       "always_winter",
       "beyond_the_wall",
       "brandon_gift",
-      "new_region_116",
+      "bay_of_ice",
       "the_wall_east"
     ],
     "world_x": 1200,
@@ -1904,7 +1904,7 @@
     "neighbors": [
       "beyond_the_wall",
       "brandon_gift",
-      "new_region_137",
+      "eastwatch_sea",
       "the_wall_west"
     ],
     "world_x": 1464,
@@ -1947,9 +1947,9 @@
       "braavos",
       "essos_free_cities",
       "myr_region",
-      "new_region_127",
-      "new_region_132",
-      "new_region_133",
+      "myr_bay",
+      "pentos_bay",
+      "braavos_channel",
       "norvos"
     ],
     "world_x": 2136,
@@ -1991,7 +1991,7 @@
     "neighbors": [
       "disputed_lands",
       "essos_free_cities",
-      "new_region_127",
+      "myr_bay",
       "pentos_region"
     ],
     "world_x": 2295,
@@ -2032,9 +2032,9 @@
       "essos_free_cities",
       "meereen",
       "myr_region",
-      "new_region_124",
-      "new_region_127",
-      "new_region_131",
+      "meereen_gulf",
+      "myr_bay",
+      "stepstones_sea",
       "yunkai"
     ],
     "world_x": 2275,
@@ -2139,7 +2139,7 @@
     "neighbors": [
       "astapor",
       "disputed_lands",
-      "new_region_124"
+      "meereen_gulf"
     ],
     "world_x": 2575,
     "world_y": 3101,
@@ -2174,7 +2174,7 @@
     "owner_id": "braavos",
     "successor_faction_id": "braavos",
     "neighbors": [
-      "new_region_133",
+      "braavos_channel",
       "norvos",
       "pentos_region"
     ],
@@ -2209,7 +2209,7 @@
     "successor_faction_id": "free_folk",
     "neighbors": [
       "always_winter",
-      "new_region_137",
+      "eastwatch_sea",
       "the_wall_east",
       "the_wall_west"
     ],
@@ -2252,7 +2252,7 @@
       "hornwood",
       "karhold",
       "lonely_hills",
-      "new_region_136",
+      "shivering_sea",
       "widows_watch",
       "winterfell_region"
     ],
@@ -2294,7 +2294,7 @@
     "successor_faction_id": "tully",
     "neighbors": [
       "deepwood_motte",
-      "new_region_118",
+      "ironmans_bay",
       "riverlands",
       "the_neck",
       "the_trident",
@@ -2334,7 +2334,7 @@
     "successor_faction_id": "arryn",
     "neighbors": [
       "gulltown",
-      "new_region_129",
+      "gulltown_bay",
       "saltpans",
       "the_fingers",
       "the_mountains_of_the_moon",
@@ -2408,7 +2408,7 @@
     "neighbors": [
       "crag",
       "golden_tooth",
-      "new_region_118",
+      "ironmans_bay",
       "riverrun",
       "the_trident",
       "the_twins"
@@ -2493,7 +2493,7 @@
     "neighbors": [
       "crownlands",
       "duskendale",
-      "new_region_62",
+      "blackwater_bay",
       "saltpans",
       "the_hollow_hill",
       "the_mountains_of_the_moon",
@@ -2571,7 +2571,7 @@
       "cornfield",
       "golden_grove",
       "golden_tooth",
-      "new_region_115",
+      "golden_sound",
       "silver_hill"
     ],
     "world_x": 708,
@@ -2649,7 +2649,7 @@
     "neighbors": [
       "brightwater_reach",
       "horn_hill",
-      "new_region_120",
+      "summer_sea",
       "uplands"
     ],
     "world_x": 717,
@@ -2680,14 +2680,14 @@
     ]
   },
   {
-    "id": "new_region_59",
+    "id": "three_towers",
     "name": "Three Towers",
     "name_tr": "Three Towers",
     "terrain": "plain",
     "owner_id": "martell",
     "successor_faction_id": "martell",
     "neighbors": [
-      "new_region_120",
+      "summer_sea",
       "sandstone",
       "starfall",
       "sun_house",
@@ -2723,7 +2723,7 @@
     "owner_id": "stark",
     "neighbors": [
       "lonely_hills",
-      "new_region_136",
+      "shivering_sea",
       "the_dreadfort",
       "the_gift",
       "the_grey_cliffs",
@@ -2759,8 +2759,8 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
-      "new_region_136",
-      "new_region_137"
+      "shivering_sea",
+      "eastwatch_sea"
     ],
     "world_x": 1696,
     "world_y": 643,
@@ -2795,8 +2795,8 @@
     "owner_id": "",
     "neighbors": [
       "dragon_point",
-      "new_region_116",
-      "new_region_117",
+      "bay_of_ice",
+      "ironman_bay",
       "the_rills"
     ],
     "world_x": 591,
@@ -2833,7 +2833,7 @@
     "neighbors": [
       "deepwood_motte",
       "moat_cailin",
-      "new_region_117",
+      "ironman_bay",
       "the_rills",
       "torrhens_square"
     ],
@@ -2870,7 +2870,7 @@
     "neighbors": [
       "barrowlands",
       "deepwood_motte",
-      "new_region_134",
+      "the_bite",
       "the_neck",
       "torrhens_square",
       "white_harbor",
@@ -2910,7 +2910,7 @@
     "neighbors": [
       "hornwood",
       "moat_cailin",
-      "new_region_134",
+      "the_bite",
       "widows_watch",
       "winterfell_region"
     ],
@@ -2949,8 +2949,8 @@
     "neighbors": [
       "cape_kraken",
       "deepwood_motte",
-      "new_region_117",
-      "new_region_118"
+      "ironman_bay",
+      "ironmans_bay"
     ],
     "world_x": 796,
     "world_y": 1601,
@@ -2987,8 +2987,8 @@
       "cape_kraken",
       "flints_finger",
       "moat_cailin",
-      "new_region_117",
-      "new_region_118",
+      "ironman_bay",
+      "ironmans_bay",
       "the_neck",
       "the_twins"
     ],
@@ -3023,7 +3023,7 @@
     "neighbors": [
       "deepwood_motte",
       "moat_cailin",
-      "new_region_134",
+      "the_bite",
       "the_twins",
       "west_vale"
     ],
@@ -3056,9 +3056,9 @@
     "terrain": "coast",
     "owner_id": "arryn",
     "neighbors": [
-      "new_region_129",
-      "new_region_134",
-      "new_region_135",
+      "gulltown_bay",
+      "the_bite",
+      "bay_of_crabs",
       "the_eyrie",
       "the_mountains_of_the_moon",
       "west_vale"
@@ -3097,7 +3097,7 @@
       "harrenhal",
       "kings_landing",
       "kingswood",
-      "new_region_62",
+      "blackwater_bay",
       "reach",
       "stone_sept",
       "the_hollow_hill"
@@ -3133,8 +3133,8 @@
     "successor_faction_id": "baratheon_dragonstone",
     "neighbors": [
       "duskendale",
-      "new_region_128",
-      "new_region_129"
+      "the_gullet",
+      "gulltown_bay"
     ],
     "world_x": 1647,
     "world_y": 2177,
@@ -3170,8 +3170,8 @@
       "crownlands",
       "harrenhal",
       "kings_landing",
-      "new_region_128",
-      "new_region_129",
+      "the_gullet",
+      "gulltown_bay",
       "saltpans"
     ],
     "world_x": 1450,
@@ -3209,9 +3209,9 @@
       "crownlands",
       "hapstackhall",
       "kings_landing",
-      "new_region_128",
-      "new_region_60",
-      "new_region_62",
+      "the_gullet",
+      "sharp_point",
+      "blackwater_bay",
       "reach",
       "stormlands",
       "tumbleton"
@@ -3245,7 +3245,7 @@
     "terrain": "coast",
     "owner_id": "tyrell",
     "neighbors": [
-      "new_region_119"
+      "redwyne_strait"
     ],
     "world_x": 678,
     "world_y": 2682,
@@ -3281,8 +3281,8 @@
     "neighbors": [
       "golden_grove",
       "lannisport",
-      "new_region_115",
-      "new_region_119",
+      "golden_sound",
+      "redwyne_strait",
       "old_oak"
     ],
     "world_x": 661,
@@ -3356,7 +3356,7 @@
     "terrain": "coast",
     "owner_id": "martell",
     "neighbors": [
-      "new_region_120"
+      "summer_sea"
     ],
     "world_x": 556,
     "world_y": 3158,
@@ -3464,7 +3464,7 @@
     "owner_id": "martell",
     "neighbors": [
       "hellholt",
-      "new_region_123",
+      "dornish_coast_sea",
       "skyreach",
       "the_boneway",
       "the_tor",
@@ -3500,9 +3500,9 @@
     "owner_id": "martell",
     "neighbors": [
       "hellholt",
-      "new_region_120",
-      "new_region_121",
-      "new_region_59",
+      "summer_sea",
+      "eastern_summer_sea",
+      "three_towers",
       "starfall",
       "sun_house"
     ],
@@ -3537,7 +3537,7 @@
     "neighbors": [
       "ghost_hill",
       "lemonwood",
-      "new_region_123",
+      "dornish_coast_sea",
       "salt_shore",
       "sunspear",
       "the_tor",
@@ -3575,7 +3575,7 @@
     "neighbors": [
       "godsgrace",
       "lemonwood",
-      "new_region_122",
+      "sea_of_dorne",
       "vaith"
     ],
     "world_x": 1513,
@@ -3612,8 +3612,8 @@
     "neighbors": [
       "blackmont",
       "hellholt",
-      "new_region_120",
-      "new_region_59",
+      "summer_sea",
+      "three_towers",
       "sandstone",
       "skyreach",
       "uplands"
@@ -3728,8 +3728,8 @@
       "karhold",
       "lonely_hills",
       "long_lake",
-      "new_region_136",
-      "new_region_137"
+      "shivering_sea",
+      "eastwatch_sea"
     ],
     "world_x": 1323,
     "world_y": 723,
@@ -3769,8 +3769,8 @@
     "successor_faction_id": "nights_watch",
     "neighbors": [
       "long_lake",
-      "new_region_116",
-      "new_region_137",
+      "bay_of_ice",
+      "eastwatch_sea",
       "the_gift",
       "the_wall_east",
       "the_wall_west"
@@ -3814,7 +3814,7 @@
     "neighbors": [
       "brandon_gift",
       "lonely_hills",
-      "new_region_116",
+      "bay_of_ice",
       "the_gift",
       "the_wolfswood",
       "winterfell_region"
@@ -3853,7 +3853,7 @@
     "neighbors": [
       "dragon_point",
       "long_lake",
-      "new_region_116",
+      "bay_of_ice",
       "torrhens_square",
       "winterfell_region"
     ],
@@ -3887,7 +3887,7 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
-      "new_region_116",
+      "bay_of_ice",
       "stony_shore",
       "the_rills",
       "the_wolfswood",
@@ -3962,7 +3962,7 @@
     "neighbors": [
       "karhold",
       "long_lake",
-      "new_region_136",
+      "shivering_sea",
       "the_dreadfort",
       "the_gift",
       "winterfell_region"
@@ -4034,8 +4034,8 @@
     "neighbors": [
       "hornwood",
       "karhold",
-      "new_region_134",
-      "new_region_136",
+      "the_bite",
+      "shivering_sea",
       "the_dreadfort",
       "white_harbor"
     ],
@@ -4073,7 +4073,7 @@
     "neighbors": [
       "barrowlands",
       "dragon_point",
-      "new_region_117",
+      "ironman_bay",
       "stony_shore",
       "torrhens_square"
     ],
@@ -4109,8 +4109,8 @@
     "neighbors": [
       "deepwood_motte",
       "flints_finger",
-      "new_region_117",
-      "new_region_118"
+      "ironman_bay",
+      "ironmans_bay"
     ],
     "world_x": 770,
     "world_y": 1642,
@@ -4144,7 +4144,7 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
-      "new_region_116"
+      "bay_of_ice"
     ],
     "world_x": 859,
     "world_y": 773,
@@ -4177,7 +4177,7 @@
     "successor_faction_id": "stark",
     "neighbors": [
       "karhold",
-      "new_region_136"
+      "shivering_sea"
     ],
     "world_x": 1744,
     "world_y": 905,
@@ -4209,8 +4209,8 @@
     "owner_id": "greyjoy",
     "successor_faction_id": "greyjoy",
     "neighbors": [
-      "new_region_118",
-      "new_region_141"
+      "ironmans_bay",
+      "western_ironman_sea"
     ],
     "world_x": 669,
     "world_y": 1902,
@@ -4245,7 +4245,7 @@
     "successor_faction_id": "greyjoy",
     "neighbors": [
       "harlaw",
-      "new_region_118"
+      "ironmans_bay"
     ],
     "world_x": 726,
     "world_y": 1864,
@@ -4279,7 +4279,7 @@
     "owner_id": "greyjoy",
     "successor_faction_id": "greyjoy",
     "neighbors": [
-      "new_region_118",
+      "ironmans_bay",
       "orkmont"
     ],
     "world_x": 767,
@@ -4312,7 +4312,7 @@
     "owner_id": "arryn",
     "successor_faction_id": "arryn",
     "neighbors": [
-      "new_region_134",
+      "the_bite",
       "the_fingers",
       "the_mountains_of_the_moon",
       "the_neck",
@@ -4349,7 +4349,7 @@
     "owner_id": "arryn",
     "successor_faction_id": "arryn",
     "neighbors": [
-      "new_region_129",
+      "gulltown_bay",
       "the_eyrie",
       "wickenden"
     ],
@@ -4387,7 +4387,7 @@
     "neighbors": [
       "duskendale",
       "harrenhal",
-      "new_region_129",
+      "gulltown_bay",
       "the_eyrie",
       "the_mountains_of_the_moon",
       "wickenden"
@@ -4425,7 +4425,7 @@
     "successor_faction_id": "arryn",
     "neighbors": [
       "gulltown",
-      "new_region_129",
+      "gulltown_bay",
       "saltpans",
       "the_eyrie"
     ],
@@ -4690,7 +4690,7 @@
       "cornfield",
       "golden_grove",
       "highgarden",
-      "new_region_119"
+      "redwyne_strait"
     ],
     "world_x": 790,
     "world_y": 2604,
@@ -4760,8 +4760,8 @@
     "neighbors": [
       "highgarden",
       "horn_hill",
-      "new_region_119",
-      "new_region_120",
+      "redwyne_strait",
+      "summer_sea",
       "old_oak",
       "oldtown"
     ],
@@ -4839,7 +4839,7 @@
       "ashford",
       "blackhaven",
       "grassy_vale",
-      "new_region_123",
+      "dornish_coast_sea",
       "stonehelm",
       "stormlands",
       "tumbleton",
@@ -4877,9 +4877,9 @@
     "neighbors": [
       "kingswood",
       "narrow_sea",
-      "new_region_128",
-      "new_region_130",
-      "new_region_60",
+      "the_gullet",
+      "shipbreaker_bay",
+      "sharp_point",
       "storm_end",
       "stormlands"
     ],
@@ -4916,7 +4916,7 @@
       "cape_wrath",
       "griffins_roost",
       "mistwood",
-      "new_region_130",
+      "shipbreaker_bay",
       "stonehelm"
     ],
     "world_x": 1640,
@@ -4950,7 +4950,7 @@
     "successor_faction_id": "baratheon_stormsend",
     "neighbors": [
       "mistwood",
-      "new_region_130",
+      "shipbreaker_bay",
       "rainwood"
     ],
     "world_x": 1692,
@@ -4984,8 +4984,8 @@
     "successor_faction_id": "baratheon_stormsend",
     "neighbors": [
       "cape_wrath",
-      "new_region_123",
-      "new_region_130",
+      "dornish_coast_sea",
+      "shipbreaker_bay",
       "rainwood",
       "stonehelm"
     ],
@@ -5019,7 +5019,7 @@
     "owner_id": "baratheon_stormsend",
     "successor_faction_id": "baratheon_stormsend",
     "neighbors": [
-      "new_region_130",
+      "shipbreaker_bay",
       "rainwood",
       "stonehelm",
       "storm_end",
@@ -5057,7 +5057,7 @@
     "neighbors": [
       "griffins_roost",
       "mistwood",
-      "new_region_123",
+      "dornish_coast_sea",
       "rainwood",
       "stormlands",
       "summerhall"
@@ -5092,7 +5092,7 @@
     "owner_id": "baratheon_stormsend",
     "successor_faction_id": "baratheon_stormsend",
     "neighbors": [
-      "new_region_130"
+      "shipbreaker_bay"
     ],
     "world_x": 1732,
     "world_y": 2600,
@@ -5126,8 +5126,8 @@
     "neighbors": [
       "blackmont",
       "horn_hill",
-      "new_region_120",
-      "new_region_59",
+      "summer_sea",
+      "three_towers",
       "oldtown",
       "prince_pass",
       "starfall"
@@ -5200,7 +5200,7 @@
     "successor_faction_id": "martell",
     "neighbors": [
       "blackhaven",
-      "new_region_123",
+      "dornish_coast_sea",
       "summerhall",
       "the_boneway"
     ],
@@ -5235,7 +5235,7 @@
     "successor_faction_id": "martell",
     "neighbors": [
       "godsgrace",
-      "new_region_123",
+      "dornish_coast_sea",
       "vaith",
       "yronwood"
     ],
@@ -5271,7 +5271,7 @@
     "neighbors": [
       "godsgrace",
       "hellholt",
-      "new_region_122",
+      "sea_of_dorne",
       "salt_shore",
       "the_tor",
       "yronwood"
@@ -5307,8 +5307,8 @@
     "successor_faction_id": "martell",
     "neighbors": [
       "godsgrace",
-      "new_region_122",
-      "new_region_125",
+      "sea_of_dorne",
+      "sunspear_strait",
       "salt_shore",
       "sunspear"
     ],
@@ -5343,8 +5343,8 @@
     "successor_faction_id": "martell",
     "neighbors": [
       "godsgrace",
-      "new_region_123",
-      "new_region_125",
+      "dornish_coast_sea",
+      "sunspear_strait",
       "sunspear"
     ],
     "world_x": 1691,
@@ -5377,8 +5377,8 @@
     "owner_id": "martell",
     "successor_faction_id": "martell",
     "neighbors": [
-      "new_region_120",
-      "new_region_59",
+      "summer_sea",
+      "three_towers",
       "sandstone"
     ],
     "world_x": 741,
@@ -5411,8 +5411,8 @@
     "owner_id": "martell",
     "successor_faction_id": "martell",
     "neighbors": [
-      "new_region_121",
-      "new_region_122",
+      "eastern_summer_sea",
+      "sea_of_dorne",
       "sandstone",
       "skyreach",
       "starfall",
@@ -5450,7 +5450,7 @@
     "successor_faction_id": "martell",
     "neighbors": [
       "blackhaven",
-      "new_region_123",
+      "dornish_coast_sea",
       "prince_pass",
       "skyreach",
       "wyl",

@@ -18,6 +18,7 @@ func RenameRegionIDReferences(eventList []*Event, oldID, newID world.RegionID) {
 
 func renameEventRegionReferences(event *Event, oldID, newID world.RegionID) {
 	renameRegionIDSlice(event.RequiresOwnedRegions, oldID, newID)
+	renameRegionIDSlice(event.RequiresOwnedRegionsAny, oldID, newID)
 	renameRegionIDSlice(event.RequiresUnownedRegions, oldID, newID)
 	renameSuccessorRevival(event.SuccessorRevival, oldID, newID)
 	for i := range event.SuccessorRevivals {

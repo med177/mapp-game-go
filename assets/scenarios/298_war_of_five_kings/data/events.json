@@ -63,6 +63,9 @@
     "requires_active_factions": [
       "baratheon_king",
       "lannister"
+    ],
+    "requires_owned_regions": [
+      "kings_landing"
     ]
   },
   {
@@ -126,6 +129,9 @@
     ],
     "requires_active_factions": [
       "stark"
+    ],
+    "requires_owned_regions": [
+      "winterfell_region"
     ]
   },
   {
@@ -191,6 +197,9 @@
     "requires_active_factions": [
       "lannister",
       "baratheon_king"
+    ],
+    "requires_owned_regions": [
+      "casterly_rock"
     ]
   },
   {
@@ -257,6 +266,9 @@
     ],
     "requires_active_factions": [
       "baratheon_dragonstone"
+    ],
+    "requires_owned_regions": [
+      "dragonstone"
     ]
   },
   {
@@ -323,6 +335,9 @@
     "requires_active_factions": [
       "baratheon_stormsend",
       "tyrell"
+    ],
+    "requires_owned_regions": [
+      "storm_end"
     ]
   },
   {
@@ -395,6 +410,9 @@
     "requires_active_factions": [
       "baratheon_king",
       "stark"
+    ],
+    "requires_owned_regions": [
+      "kings_landing"
     ]
   },
   {
@@ -415,6 +433,9 @@
     "historical_month": 3,
     "one_shot": true,
     "affected_faction": "baratheon_king",
+    "requires_owned_regions": [
+      "kings_landing"
+    ],
     "choice_prompt_tr": "Robert'in ölümünden sonra Baratheon hanedanının geleceği nasıl şekillensin?",
     "choices": [
       {
@@ -470,6 +491,423 @@
     ]
   },
   {
+    "id": "robb_king_in_the_north_299",
+    "name_tr": "Robb'un Kuzey Kralı İlanı",
+    "desc_tr": "Kuzey lordları Robb Stark'ı Kral ilan etmek istiyor. Stark hanedanı bağımsızlık ile Demir Taht'a bağlılık arasında karar vermeli.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 299,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "stark",
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_owned_regions": [
+      "winterfell_region",
+      "the_neck",
+      "moat_cailin"
+    ],
+    "requires_active_factions": [
+      "stark",
+      "tully",
+      "lannister"
+    ],
+    "choice_prompt_tr": "Robb Stark, Kuzey'in bağımsızlığını ilan etmeli mi?",
+    "choices": [
+      {
+        "id": "declare_king_in_the_north",
+        "label_tr": "Kuzey'in bağımsızlığını ilan et",
+        "desc_tr": "Robb Stark kral ilan edilir; Kuzey ve Nehir Toprakları Demir Taht'a karşı birleşir.",
+        "ai_weight": 9,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "set_flags": [
+            "king_in_the_north",
+            "northern_independence_declared"
+          ],
+          "relations": [
+            {
+              "faction_id": "lannister",
+              "score_delta": -35,
+              "stance": "war"
+            },
+            {
+              "faction_id": "baratheon_king",
+              "score_delta": -25
+            }
+          ],
+          "combat_attack_percent": 8
+        }
+      },
+      {
+        "id": "remain_loyal_to_the_throne",
+        "label_tr": "Demir Taht'a bağlı kal",
+        "desc_tr": "Robb, babasının intikamını almakla yetinir ve krallık iddiasını açıkça ilan etmez.",
+        "ai_weight": 2,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "set_flags": [
+            "robb_loyal_to_throne"
+          ],
+          "relations": [
+            {
+              "faction_id": "baratheon_king",
+              "score_delta": 10
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "stark",
+      "tully"
+    ]
+  },
+  {
+    "id": "jaime_captured_299",
+    "name_tr": "Jaime Lannister Esir Alındı",
+    "desc_tr": "Nehir Toprakları'ndaki savaşlarda Jaime Lannister esir düştü. Bu esaret Lannisterların savaş planlarını ve diplomatik pazarlıklarını etkiliyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 299,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "stark",
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_active_factions": [
+      "stark",
+      "lannister",
+      "tully"
+    ],
+    "choice_prompt_tr": "Jaime Lannister'ın esareti nasıl kullanılmalı?",
+    "choices": [
+      {
+        "id": "keep_jaime_as_hostage",
+        "label_tr": "Jaime'yi rehin tut",
+        "desc_tr": "Jaime savaş boyunca elde tutulur; Lannisterlar üzerindeki baskı artırılır.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "set_flags": [
+            "jaime_captured"
+          ],
+          "relations": [
+            {
+              "faction_id": "lannister",
+              "score_delta": -30
+            }
+          ],
+          "combat_defense_percent": 6
+        }
+      },
+      {
+        "id": "use_jaime_for_negotiation",
+        "label_tr": "Jaime'yi pazarlık kozu yap",
+        "desc_tr": "Esir, Stark ve Lannister arasındaki görüşmelerde siyasi bir koz olarak kullanılır.",
+        "ai_weight": 6,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "set_flags": [
+            "jaime_captured",
+            "jaime_negotiation_started"
+          ],
+          "relations": [
+            {
+              "faction_id": "lannister",
+              "score_delta": -15
+            },
+            {
+              "faction_id": "tully",
+              "score_delta": 8
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "stark",
+      "tully",
+      "lannister"
+    ]
+  },
+  {
+    "id": "renly_shadow_assassination_299",
+    "name_tr": "Renly'nin Gölgeyle Öldürülmesi",
+    "desc_tr": "Renly Baratheon, Stannis'in ordusu ile karşı karşıya gelmeden önce gizemli bir saldırıda öldürüldü. Güney ittifakı parçalanıyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 299,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "baratheon_stormsend",
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_owned_regions": [
+      "storm_end"
+    ],
+    "requires_active_factions": [
+      "baratheon_stormsend",
+      "baratheon_dragonstone",
+      "tyrell"
+    ],
+    "choice_prompt_tr": "Renly'nin ölümünden sonra güney nasıl hareket etmeli?",
+    "choices": [
+      {
+        "id": "swear_to_stannis",
+        "label_tr": "Stannis'e boyun eğ",
+        "desc_tr": "Renly'nin ordusu Stannis'in taht iddiasına katılır.",
+        "ai_weight": 6,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_dragonstone",
+          "set_flags": [
+            "renly_dead",
+            "renly_host_joined_stannis"
+          ],
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "score_delta": -20
+            }
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "heavy_cavalry",
+              "unit_count": 2
+            }
+          ]
+        }
+      },
+      {
+        "id": "join_the_tyrells",
+        "label_tr": "Tyrellerle geri çekil",
+        "desc_tr": "Renly'nin destekçileri Stannis'i reddeder ve Tyrellerle birlikte yeni bir siyasi blok kurar.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_stormsend",
+          "set_flags": [
+            "renly_dead",
+            "renly_host_joined_tyrell"
+          ],
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "stance": "allied",
+              "score_delta": 35
+            },
+            {
+              "faction_id": "baratheon_dragonstone",
+              "stance": "war",
+              "score_delta": -25
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "baratheon_stormsend",
+      "baratheon_dragonstone",
+      "tyrell"
+    ]
+  },
+  {
+    "id": "battle_of_the_blackwater_299",
+    "name_tr": "Kara Su Savaşı",
+    "desc_tr": "Stannis Baratheon'un ordusu Kral'ın Şehri'ne saldırdı. Şehrin savunması, yabani ateş ve Lannister takviyeleri savaşın sonucunu belirleyecek.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 299,
+    "historical_month": 7,
+    "one_shot": true,
+    "affected_faction": "baratheon_king",
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_owned_regions": [
+      "kings_landing"
+    ],
+    "requires_active_factions": [
+      "baratheon_king",
+      "lannister",
+      "baratheon_dragonstone"
+    ],
+    "choice_prompt_tr": "Kara Su Savaşı'nda hangi strateji uygulanmalı?",
+    "choices": [
+      {
+        "id": "defend_kings_landing",
+        "label_tr": "Kral'ın Şehri'ni savun",
+        "desc_tr": "Lannister filosu ve şehir savunması güçlendirilir.",
+        "ai_weight": 9,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_king",
+          "set_flags": [
+            "blackwater_lannister_victory"
+          ],
+          "combat_defense_percent": 15,
+          "unit_reinforcements": [
+            {
+              "unit_type": "kingsguard",
+              "unit_count": 1
+            },
+            {
+              "unit_type": "infantry",
+              "unit_count": 3
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "lannister",
+              "score_delta": 20
+            },
+            {
+              "faction_id": "baratheon_dragonstone",
+              "score_delta": -30
+            }
+          ]
+        }
+      },
+      {
+        "id": "commit_to_stannis_assault",
+        "label_tr": "Stannis'in saldırısını destekle",
+        "desc_tr": "Stannis'in donanmasına yardım edilir; Kral'ın Şehri'ndeki savunma çözülürse rejim değişebilir.",
+        "ai_weight": 4,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_dragonstone",
+          "set_flags": [
+            "blackwater_stannis_assault"
+          ],
+          "combat_attack_percent": 12,
+          "unit_reinforcements": [
+            {
+              "unit_type": "warship",
+              "unit_count": 2
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "baratheon_king",
+              "stance": "war",
+              "score_delta": -35
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "baratheon_king",
+      "lannister",
+      "baratheon_dragonstone"
+    ]
+  },
+  {
+    "id": "greyjoy_rebellion_299",
+    "name_tr": "Greyjoy İsyanı",
+    "desc_tr": "Balon Greyjoy, anakaradaki krallıkların savaşla meşgul olmasını fırsat bilerek Demir Adalar'ın bağımsızlığını yeniden ilan ediyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 299,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "greyjoy",
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_owned_regions": [
+      "pyke"
+    ],
+    "requires_active_factions": [
+      "greyjoy",
+      "stark",
+      "lannister"
+    ],
+    "choice_prompt_tr": "Greyjoylar isyanı nasıl yürütmeli?",
+    "choices": [
+      {
+        "id": "raid_the_north",
+        "label_tr": "Kuzey'e baskın yap",
+        "desc_tr": "Greyjoy donanması Kuzey kıyılarına saldırır ve Stark savunmasını böler.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "greyjoy",
+          "set_flags": [
+            "greyjoy_rebellion_started",
+            "greyjoy_raids_north"
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "ironborn_reavers",
+              "unit_count": 3
+            },
+            {
+              "unit_type": "warship",
+              "unit_count": 2
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "stark",
+              "stance": "war",
+              "score_delta": -40
+            }
+          ]
+        }
+      },
+      {
+        "id": "raid_the_west",
+        "label_tr": "Batı kıyılarına saldır",
+        "desc_tr": "Greyjoy donanması Lannister limanlarını hedef alır ve Batı'nın zenginliğini yağmalar.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "greyjoy",
+          "set_flags": [
+            "greyjoy_rebellion_started",
+            "greyjoy_raids_west"
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "ironborn_reavers",
+              "unit_count": 2
+            },
+            {
+              "unit_type": "warship",
+              "unit_count": 3
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "lannister",
+              "stance": "war",
+              "score_delta": -40
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "greyjoy",
+      "stark",
+      "lannister"
+    ]
+  },
+  {
     "id": "red_wedding_event",
     "name_tr": "Kızıl Düğün İhaneti",
     "desc_tr": "İkizler'de gerçekleşen kanlı iharet Kuzey ordusunun belini büktü. Frey ve Bolton hanedanları kontrolü ele geçirmeye çalışıyor.",
@@ -482,6 +920,14 @@
     "army_hp_mod": -30,
     "set_flags": [
       "stark_betrayed"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_owned_regions": [
+      "winterfell_region",
+      "the_neck",
+      "moat_cailin"
     ],
     "historical_year": 299,
     "historical_month": 9,
@@ -511,7 +957,324 @@
     ],
     "requires_active_factions": [
       "stark",
+      "bolton",
       "lannister"
+    ]
+  },
+  {
+    "id": "purple_wedding_300",
+    "name_tr": "Mor Düğün",
+    "desc_tr": "Kral'ın Şehri'ndeki düğün şöleni zehir ve ihanetle sonuçlandı. Joffrey'nin ölümü krallığın ittifaklarını sarsıyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 300,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "lannister",
+    "requires_flags": [
+      "stark_betrayed"
+    ],
+    "requires_owned_regions": [
+      "kings_landing"
+    ],
+    "requires_active_factions": [
+      "lannister",
+      "tyrell",
+      "baratheon_king"
+    ],
+    "choice_prompt_tr": "Joffrey'nin ölümünden sonra ittifaklar nasıl korunmalı?",
+    "choices": [
+      {
+        "id": "blame_tyrion",
+        "label_tr": "Suçu Tyrion'a yükle",
+        "desc_tr": "Lannister hanedanı iç birliği korumak için Tyrion'u suçlar ve Tyrell ittifakını sıkılaştırır.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "lannister",
+          "set_flags": [
+            "purple_wedding_completed",
+            "tyrion_on_trial"
+          ],
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "stance": "allied",
+              "score_delta": 20
+            },
+            {
+              "faction_id": "targaryen",
+              "score_delta": 5
+            }
+          ]
+        }
+      },
+      {
+        "id": "protect_the_tyrell_alliance",
+        "label_tr": "Tyrell ittifakını koru",
+        "desc_tr": "Cinayetin sorumluluğu açıkça ilan edilmez; Tyrellerle ittifak bozulmadan tutulur.",
+        "ai_weight": 6,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "lannister",
+          "set_flags": [
+            "purple_wedding_completed",
+            "tyrell_alliance_preserved"
+          ],
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "stance": "allied",
+              "score_delta": 30
+            }
+          ],
+          "sat_delta": 5
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "lannister",
+      "tyrell",
+      "baratheon_king"
+    ]
+  },
+  {
+    "id": "tywin_death_300",
+    "name_tr": "Tywin Lannister'ın Ölümü",
+    "desc_tr": "Tywin Lannister'ın ölümü Batı'nın siyasi dengesini sarstı. Cersei, Jaime ve Tyrion arasındaki miras kavgası Lannister gücünü bölüyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 300,
+    "historical_month": 8,
+    "one_shot": true,
+    "affected_faction": "lannister",
+    "requires_flags": [
+      "purple_wedding_completed"
+    ],
+    "requires_owned_regions": [
+      "casterly_rock"
+    ],
+    "requires_active_factions": [
+      "lannister"
+    ],
+    "choice_prompt_tr": "Tywin'in ölümünden sonra Lannister hanedanı nasıl yönetilmeli?",
+    "choices": [
+      {
+        "id": "cersei_consolidates_power",
+        "label_tr": "Cersei'nin gücünü pekiştir",
+        "desc_tr": "Kraliyet üzerindeki Lannister etkisi korunur, ancak hanedan içindeki gerilim artar.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "lannister",
+          "set_flags": [
+            "tywin_dead",
+            "cersei_controls_lannisters"
+          ],
+          "combat_defense_percent": 5,
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "score_delta": -12
+            }
+          ]
+        }
+      },
+      {
+        "id": "secure_western_lands",
+        "label_tr": "Batı topraklarını güvenceye al",
+        "desc_tr": "Saray entrikaları yerine Casterly Rock ve Batı ordusunun sadakati önceliklendirilir.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "lannister",
+          "set_flags": [
+            "tywin_dead",
+            "western_lands_secured"
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "heavy_cavalry",
+              "unit_count": 2
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "score_delta": -5
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "lannister"
+    ]
+  },
+  {
+    "id": "mance_rayder_invasion_300",
+    "name_tr": "Mance Rayder'ın Yürüyüşü",
+    "desc_tr": "Mance Rayder, Duvar'ın ötesindeki halkları bir araya getirerek güneye yürümeye hazırlanıyor. Gece Nöbeti ve Kuzey yeni bir tehdit karşısında.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 300,
+    "historical_month": 10,
+    "one_shot": true,
+    "affected_faction": "free_folk",
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_owned_regions": [
+      "beyond_the_wall"
+    ],
+    "requires_active_factions": [
+      "free_folk",
+      "nights_watch",
+      "stark"
+    ],
+    "choice_prompt_tr": "Mance Rayder'ın yürüyüşüne nasıl karşılık verilmeli?",
+    "choices": [
+      {
+        "id": "unite_free_folk",
+        "label_tr": "Özgür Halkı birleştir",
+        "desc_tr": "Mance, dağınık kabileleri tek bir ordu altında toplayarak Duvar'a yönelir.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "free_folk",
+          "set_flags": [
+            "mance_invasion_started"
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "wildling_raiders",
+              "unit_count": 4
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "nights_watch",
+              "stance": "war",
+              "score_delta": -40
+            }
+          ]
+        }
+      },
+      {
+        "id": "defend_the_wall",
+        "label_tr": "Duvar'ı savun",
+        "desc_tr": "Gece Nöbeti kuzey geçitlerini kapatır ve Starklardan destek ister.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "nights_watch",
+          "set_flags": [
+            "mance_invasion_started",
+            "wall_defense_prepared"
+          ],
+          "combat_defense_percent": 15,
+          "unit_reinforcements": [
+            {
+              "unit_type": "nights_watch_rangers",
+              "unit_count": 3
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "stark",
+              "score_delta": 15
+            },
+            {
+              "faction_id": "free_folk",
+              "stance": "war",
+              "score_delta": -30
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "free_folk",
+      "nights_watch",
+      "stark"
+    ]
+  },
+  {
+    "id": "daenerys_meereen_campaign_301",
+    "name_tr": "Daenerys'in Meereen Seferi",
+    "desc_tr": "Daenerys, Körfez'deki köle şehirlerine karşı yürüyüşünü Meereen'e yönlendiriyor. Targaryen hanedanının doğudaki gücü artık Westeros'a dönme ihtimalini taşıyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "historical_year": 301,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "targaryen",
+    "requires_owned_regions": [
+      "pentos_region"
+    ],
+    "requires_active_factions": [
+      "targaryen",
+      "free_cities"
+    ],
+    "choice_prompt_tr": "Daenerys Meereen seferini nasıl yürütmeli?",
+    "choices": [
+      {
+        "id": "march_on_meereen",
+        "label_tr": "Meereen'e yürü",
+        "desc_tr": "Targaryen ordusu Meereen seferini başlatır; ejderhalar ve doğu orduları güç kazanır.",
+        "ai_weight": 10,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "targaryen",
+          "set_flags": [
+            "meereen_campaign_started",
+            "targaryen_dragons_grown"
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "unsullied",
+              "unit_count": 3
+            },
+            {
+              "unit_type": "dothraki_horse_lords",
+              "unit_count": 3
+            }
+          ],
+          "relations": [
+            {
+              "faction_id": "free_cities",
+              "score_delta": -25
+            }
+          ]
+        }
+      },
+      {
+        "id": "secure_eastern_allies",
+        "label_tr": "Doğudaki müttefikleri güvenceye al",
+        "desc_tr": "Meereen seferi ertelenir; Targaryen önce doğu şehirleriyle kaynak ve destek anlaşmaları kurar.",
+        "ai_weight": 5,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "targaryen",
+          "set_flags": [
+            "eastern_allies_secured"
+          ],
+          "gold_delta": 250,
+          "relations": [
+            {
+              "faction_id": "free_cities",
+              "score_delta": 15
+            }
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "targaryen"
     ]
   },
   {
@@ -529,6 +1292,10 @@
     "historical_month": 6,
     "one_shot": true,
     "affected_faction": "targaryen",
+    "requires_owned_regions": [
+      "dragonstone",
+      "meereen"
+    ],
     "choice_prompt_tr": "Targaryen hanedanı Demir Taht'ı geri almak için harekete geçsin mi?",
     "choices": [
       {

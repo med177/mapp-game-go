@@ -195,10 +195,10 @@
     ]
   },
   {
-    "region_id": "new_region_60",
+    "region_id": "sharp_point",
     "settlements": [
       {
-        "id": "new_region_60_settlement_1",
+        "id": "sharp_point_settlement_1",
         "name_tr": "Sharp Point",
         "x": 1616,
         "y": 2415,
@@ -584,10 +584,10 @@
     ]
   },
   {
-    "region_id": "new_region_59",
+    "region_id": "three_towers",
     "settlements": [
       {
-        "id": "new_region_59_settlement_1",
+        "id": "three_towers_settlement_1",
         "name_tr": "Three Towers",
         "x": 727,
         "y": 3056,

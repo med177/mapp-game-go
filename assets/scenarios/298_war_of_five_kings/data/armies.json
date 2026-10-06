@@ -347,7 +347,7 @@
   {
     "id": "army_stannis_2",
     "owner_id": "baratheon_dragonstone",
-    "region_id": "new_region_60",
+    "region_id": "sharp_point",
     "units": [
       {
         "type_id": "elite_infantry",

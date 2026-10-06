@@ -230,6 +230,7 @@ type Event struct {
 	RequiresTechs             []string                   `json:"requires_techs,omitempty"`
 	BlocksTechs               []string                   `json:"blocks_techs,omitempty"`
 	RequiresOwnedRegions      []world.RegionID           `json:"requires_owned_regions,omitempty"`
+	RequiresOwnedRegionsAny   []world.RegionID           `json:"requires_owned_regions_any,omitempty"`
 	RequiresUnownedRegions    []world.RegionID           `json:"requires_unowned_regions,omitempty"`
 	RequiresActiveFactions    []string                   `json:"requires_active_factions,omitempty"`
 	RelationRequirements      []RelationRequirement      `json:"relation_requirements,omitempty"`
@@ -772,6 +773,14 @@ func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 			}
 		}
 	}
+	if len(e.RequiresOwnedRegionsAny) > 0 {
+		fid := eventConditionFactionID(gs, e)
+		if fid == "" {
+			reasons = append(reasons, "herhangi bir sahip olunan bölge koşulu için fraksiyon yok")
+		} else if !anyOwnedRegionSatisfied(gs, fid, e.RequiresOwnedRegionsAny) {
+			reasons = append(reasons, "gerekli bölgelerden en az biri sahiplenilmeli")
+		}
+	}
 	if len(e.RequiresUnownedRegions) > 0 {
 		fid := eventConditionFactionID(gs, e)
 		if fid == "" {
@@ -842,6 +851,12 @@ func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 			}
 		}
 	}
+	if len(e.RequiresOwnedRegionsAny) > 0 {
+		fid := eventConditionFactionID(gs, e)
+		if fid == "" || !anyOwnedRegionSatisfied(gs, fid, e.RequiresOwnedRegionsAny) {
+			return false
+		}
+	}
 	if len(e.RequiresUnownedRegions) > 0 {
 		fid := eventConditionFactionID(gs, e)
 		if fid == "" {
@@ -867,6 +882,19 @@ func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 		return false
 	}
 	return true
+}
+
+func anyOwnedRegionSatisfied(gs *state.GameState, fid faction.FactionID, regionIDs []world.RegionID) bool {
+	if gs == nil || fid == "" {
+		return false
+	}
+	for _, rid := range regionIDs {
+		r := gs.Regions[rid]
+		if r != nil && !r.IsSea && !r.IsTerrainArea && r.OwnerID == string(fid) {
+			return true
+		}
+	}
+	return false
 }
 
 func firstInactiveRequiredFaction(gs *state.GameState, factionIDs []string) string {
