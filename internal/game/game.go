@@ -2766,8 +2766,12 @@ func (g *Game) showHistoricalFactionChangeNotifications(reports []state.Historic
 		if len(parts) == 0 {
 			continue
 		}
-		detail := name + ": " + strings.Join(parts, ", ") + "."
-		g.renderer.AddEventDetail("[TARİHSEL] "+name, detail)
+		displayName := name
+		if report.PreviousNameTR != "" && report.PreviousNameTR != name {
+			displayName = report.PreviousNameTR
+		}
+		detail := displayName + ": " + strings.Join(parts, ", ") + "."
+		g.renderer.AddEventDetail("[TARİHSEL] "+displayName, detail)
 		if len(popupLines) < 3 {
 			popupLines = append(popupLines, detail)
 		}
