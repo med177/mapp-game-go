@@ -3,7 +3,7 @@
   "Fullscreen": false,
   "FastAITurns": true,
   "MusicOn": false,
-  "MusicVolume": 10,
+  "MusicVolume": 5,
   "SoundOn": true,
-  "SoundVolume": 100
+  "SoundVolume": 10
 }
