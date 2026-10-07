@@ -1862,9 +1862,9 @@
     ]
   },
   {
-    "id": "war_of_five_kings_resolution_302",
-    "name_tr": "Beş Kralın Savaşı'nın Sonucu",
-    "desc_tr": "Yıllar süren savaşın ardından Westeros'un hanedanları son bir hüküm vermek zorunda. Savaşın galibi, Demir Taht'ın çevresindeki krallıkları yeniden birleştirecek.",
+    "id": "war_of_five_kings_resolution_lannister",
+    "name_tr": "Beş Kralın Savaşı: Lannister Zaferi",
+    "desc_tr": "Lannisterlar Casterly Kayası'nı korurken Kral'ın Şehri'ni ve savaşın kilit bölgelerini ele geçirdi. Demir Taht üzerindeki Lannister destekli düzen savaşı sona erdiriyor.",
     "probability": 0,
     "min_turn": 0,
     "target": "all_factions",
@@ -1872,65 +1872,204 @@
     "gold_delta": 0,
     "grain_delta": 0,
     "army_hp_mod": 0,
-    "historical_year": 302,
-    "historical_month": 6,
+    "historical_year": 298,
+    "historical_month": 3,
     "one_shot": true,
-    "choice_prompt_tr": "Beş Kralın Savaşı hangi hanedanın zaferiyle sonuçlansın?",
-    "choices": [
-      {
-        "id": "resolve_five_kings_for_lannister",
-        "label_tr": "Lannister zaferini ilan et",
-        "desc_tr": "Casterly Rock'ın altını ve Batı ordularının gücü Demir Taht çevresindeki hanedanları yeniden birleştirir.",
-        "ai_weight": 7,
-        "effect": {
-          "target": "all_factions",
-          "political_transformation_id": "war_of_the_five_kings_resolution",
-          "political_winner_faction_id": "lannister",
-          "set_flags": [
-            "war_of_five_kings_resolved"
-          ],
-          "clear_flags": [
-            "war_of_five_kings_active"
-          ]
-        }
-      },
-      {
-        "id": "resolve_five_kings_for_stark",
-        "label_tr": "Stark zaferini ilan et",
-        "desc_tr": "Kuzey orduları ve Nehir Toprakları'nın direnişi Demir Taht'ı Stark yönetiminde yeniden şekillendirir.",
-        "ai_weight": 5,
-        "effect": {
-          "target": "all_factions",
-          "political_transformation_id": "war_of_the_five_kings_resolution_stark",
-          "political_winner_faction_id": "stark",
-          "set_flags": [
-            "war_of_five_kings_resolved"
-          ],
-          "clear_flags": [
-            "war_of_five_kings_active"
-          ]
-        }
-      },
-      {
-        "id": "resolve_five_kings_for_baratheon",
-        "label_tr": "Baratheon zaferini ilan et",
-        "desc_tr": "Baratheon hanedanının kalan gücü rakip taht iddialarını bastırır ve krallığı yeniden tek taç altında toplar.",
-        "ai_weight": 4,
-        "effect": {
-          "target": "all_factions",
-          "political_transformation_id": "war_of_the_five_kings_resolution_baratheon",
-          "political_winner_faction_id": "baratheon_king",
-          "set_flags": [
-            "war_of_five_kings_resolved"
-          ],
-          "clear_flags": [
-            "war_of_five_kings_active"
-          ]
-        }
-      }
+    "set_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_winner_lannister"
+    ],
+    "clear_flags": [
+      "war_of_five_kings_active"
     ],
     "requires_flags": [
       "war_of_five_kings_active"
+    ],
+    "victory_conditions": [
+      {
+        "faction_id": "lannister",
+        "required_owned_regions": [
+          "casterly_rock",
+          "kings_landing"
+        ],
+        "minimum_owned_regions": 15
+      }
+    ]
+  },
+  {
+    "id": "war_of_five_kings_resolution_stark",
+    "name_tr": "Beş Kralın Savaşı: Stark Zaferi",
+    "desc_tr": "Starklar Kışyarı ve Boyun'u korurken Kral'ın Şehri'ni ele geçirdi. Kuzey'in bağımsızlığı savaş meydanında kesinleşiyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "all_factions",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 3,
+    "one_shot": true,
+    "set_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_winner_stark"
+    ],
+    "clear_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "victory_conditions": [
+      {
+        "faction_id": "stark",
+        "required_owned_regions": [
+          "winterfell_region",
+          "the_neck",
+          "moat_cailin",
+          "kings_landing"
+        ],
+        "minimum_owned_regions": 20
+      }
+    ]
+  },
+  {
+    "id": "war_of_five_kings_resolution_baratheon_king",
+    "name_tr": "Beş Kralın Savaşı: Kralın Şehri Zaferi",
+    "desc_tr": "Kral'ın Şehri'ndeki Baratheon yönetimi rakip taht iddialarını bastırdı ve başkent çevresindeki krallıkları yeniden denetim altına aldı.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "all_factions",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 3,
+    "one_shot": true,
+    "set_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_winner_baratheon_king"
+    ],
+    "clear_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "victory_conditions": [
+      {
+        "faction_id": "baratheon_king",
+        "required_owned_regions": [
+          "kings_landing"
+        ],
+        "minimum_owned_regions": 12
+      }
+    ]
+  },
+  {
+    "id": "war_of_five_kings_resolution_stannis",
+    "name_tr": "Beş Kralın Savaşı: Stannis Zaferi",
+    "desc_tr": "Stannis Kral'ın Şehri'ni ele geçirerek Ejderha Kayası'nın deniz gücünü Demir Taht üzerinde kesin bir üstünlüğe dönüştürdü.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "all_factions",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 3,
+    "one_shot": true,
+    "set_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_winner_baratheon_dragonstone"
+    ],
+    "clear_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "victory_conditions": [
+      {
+        "faction_id": "baratheon_dragonstone",
+        "required_owned_regions": [
+          "dragonstone",
+          "kings_landing"
+        ],
+        "minimum_owned_regions": 10
+      }
+    ]
+  },
+  {
+    "id": "war_of_five_kings_resolution_renly",
+    "name_tr": "Beş Kralın Savaşı: Renly Zaferi",
+    "desc_tr": "Fırtına Burnu kuvvetleri Kral'ın Şehri'ni ve savaşın güney cephesini denetim altına alarak Renly'nin taht iddiasını kesinleştirdi.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "all_factions",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 3,
+    "one_shot": true,
+    "set_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_winner_baratheon_stormsend"
+    ],
+    "clear_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "victory_conditions": [
+      {
+        "faction_id": "baratheon_stormsend",
+        "required_owned_regions": [
+          "storm_end",
+          "kings_landing"
+        ],
+        "minimum_owned_regions": 14
+      }
+    ]
+  },
+  {
+    "id": "war_of_five_kings_resolution_greyjoy",
+    "name_tr": "Beş Kralın Savaşı: Greyjoy Ayrılığı",
+    "desc_tr": "Greyjoylar Pyke'ı ve Kuzey geçitlerini koruyarak Demir Adalar'ın bağımsızlığını kabul ettirecek güce ulaştı. Bu sonuç Westeros'un tamamını birleştirmez.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "all_factions",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 3,
+    "one_shot": true,
+    "set_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_winner_greyjoy"
+    ],
+    "clear_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ],
+    "victory_conditions": [
+      {
+        "faction_id": "greyjoy",
+        "required_owned_regions": [
+          "pyke",
+          "moat_cailin"
+        ],
+        "minimum_owned_regions": 12
+      }
     ]
   },
   {

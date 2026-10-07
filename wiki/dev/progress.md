@@ -9,6 +9,12 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `cannot_reproduce` seçeneği eklendi. Aktif oyuncu/AI üretimi, üretim kuyruğu ve
   tamamlanmış üretim geçmişi save/load akışında aynı state kontrolünü kullanıyor.
 
+- 2026-10-07: 298 senaryosundaki Beş Kral Savaşı sonucu, oyuncuya küresel bir
+  hanedan seçtiren ve faction'ları birleştiren event'ten çıkarıldı. Lannister,
+  Stark, üç Baratheon claimant'ı ve Greyjoy için kilit bölge + minimum bölge
+  sayısı koşullu zafer event'leri eklendi; başarı yalnız savaş flag'lerini
+  kapatıyor. Targaryen bu savaş sonucuna zorunlu olarak dahil edilmiyor.
+
 - 2026-10-06: 298 senaryosunda uzun kış eventinin tahıl üretimi, talebi, ticaret
   ve ordu ikmal etkileri JSON'daki `effect_duration_turns` alanıyla 36 tur
   sürdürülecek şekilde yapılandırıldı. Etki süresi artık Go koduna gömülü değil.

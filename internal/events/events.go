@@ -130,6 +130,14 @@ type FactionSubjugationTrigger struct {
 	RequirePlayerActor bool     `json:"require_player_actor,omitempty"`
 }
 
+// FactionVictoryCondition, bir savaşın siyasi birleşme olmadan sona ermesi
+// için bir faction'ın sağlaması gereken bölgesel üstünlüğü tanımlar.
+type FactionVictoryCondition struct {
+	FactionID            string           `json:"faction_id"`
+	RequiredOwnedRegions []world.RegionID `json:"required_owned_regions,omitempty"`
+	MinimumOwnedRegions  int              `json:"minimum_owned_regions,omitempty"`
+}
+
 type Effect struct {
 	Target                    string                       `json:"target,omitempty"` // boşsa event target'ı kullanılır
 	SatDelta                  int                          `json:"sat_delta,omitempty"`
@@ -237,6 +245,7 @@ type Event struct {
 	RequiresActiveFactions    []string                   `json:"requires_active_factions,omitempty"`
 	RelationRequirements      []RelationRequirement      `json:"relation_requirements,omitempty"`
 	FactionSubjugationTrigger *FactionSubjugationTrigger `json:"faction_subjugation_trigger,omitempty"`
+	VictoryConditions         []FactionVictoryCondition  `json:"victory_conditions,omitempty"`
 }
 
 // LoadEvents olayları JSON'dan yükler.
@@ -399,7 +408,8 @@ func historicalEventHasStateTrigger(e *Event) bool {
 		len(e.RequiresOwnedRegions) > 0 ||
 		len(e.RequiresUnownedRegions) > 0 ||
 		len(e.RelationRequirements) > 0 ||
-		e.FactionSubjugationTrigger != nil
+		e.FactionSubjugationTrigger != nil ||
+		len(e.VictoryConditions) > 0
 }
 
 // HasStateTrigger, Kodex gibi dış tüketicilerin tarihi geçmiş olsa bile state
@@ -881,8 +891,38 @@ func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 	if !eventRelationsSatisfied(gs, e) {
 		return false
 	}
+	if !victoryConditionsSatisfied(gs, e) {
+		return false
+	}
 	if !factionSubjugationTriggerSatisfied(gs, e, gs.LastSubjugationActorID, gs.LastSubjugatedFactionID) {
 		return false
+	}
+	return true
+}
+
+func victoryConditionsSatisfied(gs *state.GameState, e *Event) bool {
+	if gs == nil || e == nil || len(e.VictoryConditions) == 0 {
+		return true
+	}
+	for _, condition := range e.VictoryConditions {
+		if condition.FactionID == "" {
+			return false
+		}
+		owned := 0
+		for _, region := range gs.Regions {
+			if region != nil && !region.IsSea && !region.IsTerrainArea && region.OwnerID == condition.FactionID {
+				owned++
+			}
+		}
+		if condition.MinimumOwnedRegions > 0 && owned < condition.MinimumOwnedRegions {
+			return false
+		}
+		for _, regionID := range condition.RequiredOwnedRegions {
+			region := gs.Regions[regionID]
+			if region == nil || region.OwnerID != condition.FactionID {
+				return false
+			}
+		}
 	}
 	return true
 }

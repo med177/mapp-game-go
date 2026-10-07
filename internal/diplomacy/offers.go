@@ -341,6 +341,9 @@ func resolveAcceptedTradeOffer(gs *state.GameState, offer state.DiplomaticOffer)
 	if !offerPartiesExist(gs, offer) {
 		return Result{Message: "Ticaret teklifi artık geçerli değil."}
 	}
+	if !gs.Factions[offer.FromFactionID].CanTrade() || !gs.Factions[offer.ToFactionID].CanTrade() {
+		return Result{Message: "Bu fraksiyonla ticaret yapılamaz."}
+	}
 	rel := EnsureRelation(gs, offer.FromFactionID, offer.ToFactionID)
 	if rel.Stance == faction.StanceWar {
 		return Result{Message: "Savaş halindeyken ticaret kurulamaz."}

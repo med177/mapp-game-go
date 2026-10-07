@@ -1808,11 +1808,19 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	if !ok {
 		return moveOutcome{survived: true}
 	}
+	airborne := a.UsesAirMovement(gs.UnitTypes)
+	if targetRegion.IsLocked && !(airborne && targetRegion.IsTerrainArea) {
+		return moveOutcome{survived: true}
+	}
 	fromRegion := a.RegionID
 	landMoveCost := 1
-	if !a.IsNaval && target != fromRegion && !targetRegion.IsSea {
+	if !a.IsNaval && target != fromRegion && (airborne || !targetRegion.IsSea) {
 		var allowed bool
-		landMoveCost, allowed = gs.LandRegionEntryCost(fromRegion, targetRegion)
+		if airborne {
+			landMoveCost, allowed = 1, true
+		} else {
+			landMoveCost, allowed = gs.LandRegionEntryCost(fromRegion, targetRegion)
+		}
 		if !allowed || a.MovePoints < landMoveCost {
 			return moveOutcome{survived: true}
 		}
@@ -2151,7 +2159,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			},
 		}
 	}
-	if !a.IsNaval && targetRegion.IsSea {
+	if !a.IsNaval && targetRegion.IsSea && !airborne {
 		if !aiCanEmbarkArmy(gs, a) {
 			return moveOutcome{survived: true}
 		}

@@ -257,6 +257,22 @@ func (a *Army) BaseMovePoints(types map[string]*UnitType) int {
 	return minPoints
 }
 
+// UsesAirMovement, ordudaki tüm birimler uçan birimse true döner. Karma ordular
+// kara hareketini korur; böylece uçan birim tek başına veya aynı hareket modeline
+// sahip birliklerle kullanılabilir.
+func (a *Army) UsesAirMovement(types map[string]*UnitType) bool {
+	if a == nil || a.IsNaval || len(a.Units) == 0 {
+		return false
+	}
+	for _, unit := range a.Units {
+		unitType := types[unit.TypeID]
+		if unitType == nil || !unitType.UsesAirMovement() {
+			return false
+		}
+	}
+	return true
+}
+
 // CountsTowardArmyLimit ordu kara saha ordusu limitine dahil mi?
 func (a *Army) CountsTowardArmyLimit() bool {
 	return a != nil && !a.IsNaval && !a.IsGarrison && len(a.Units) > 0

@@ -12,6 +12,14 @@ const (
 	CategoryNavalTrade UnitCategory = "naval_trade"
 )
 
+// UnitMovementType birimin haritada hangi hareket modelini kullandığını belirtir.
+type UnitMovementType string
+
+const (
+	MovementTypeLand UnitMovementType = "land"
+	MovementTypeAir  UnitMovementType = "air"
+)
+
 // UnitTier birimin seviyesi (1=temel, 2=orta, 3=elit, 4=ileri).
 type UnitTier int
 
@@ -35,11 +43,12 @@ type UnitType struct {
 	BlockedFactions []string `json:"blocked_factions,omitempty"`
 	// MaxPerFaction sıfırsa üretim sınırsızdır. CannotReproduce aktifse limit,
 	// yok edilen birimlerin yerine yenisinin üretilmesini de engeller.
-	MaxPerFaction   int          `json:"max_per_faction,omitempty"`
-	CannotReproduce bool         `json:"cannot_reproduce,omitempty"`
-	Category        UnitCategory `json:"category"`
-	Tier            UnitTier     `json:"tier"`
-	Image           string       `json:"image,omitempty"`
+	MaxPerFaction   int              `json:"max_per_faction,omitempty"`
+	CannotReproduce bool             `json:"cannot_reproduce,omitempty"`
+	Category        UnitCategory     `json:"category"`
+	MovementType    UnitMovementType `json:"movement_type,omitempty"`
+	Tier            UnitTier         `json:"tier"`
+	Image           string           `json:"image,omitempty"`
 
 	// MovementPoints bu birim tipinin tek başına taşıyabileceği tur başı hareket puanıdır.
 	MovementPoints int `json:"movement_points"`
@@ -86,6 +95,11 @@ type UnitType struct {
 	// Denizde taşınabilir mi?
 	Embarkable    bool `json:"embarkable"`
 	CarryCapacity int  `json:"carry_capacity,omitempty"`
+}
+
+// UsesAirMovement, hareket türü alanı eksik eski birimleri kara birimi kabul eder.
+func (t *UnitType) UsesAirMovement() bool {
+	return t != nil && t.MovementType == MovementTypeAir
 }
 
 // IsAvailableToFaction birimin verilen fraksiyon tarafından üretilebilir olup

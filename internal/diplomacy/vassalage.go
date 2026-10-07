@@ -417,6 +417,9 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 			return "Bu devletle aktif bir ittifak yok."
 		}
 	case ActionProposeTrade:
+		if actorFaction.TradeDisabled || targetFaction.TradeDisabled {
+			return "Bu fraksiyonla ticaret yapılamaz."
+		}
 		if stance == faction.StanceWar {
 			return "Savaş halindeyken ticaret yapılamaz."
 		}

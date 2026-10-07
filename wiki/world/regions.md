@@ -252,6 +252,16 @@ Ordu hareketi bu listeyle kısıtlanır: sadece direkt komşuya hareket.
 
 ---
 
+## Uçan Birim Hareketi
+
+Uçan birimler `units.json` içinde `movement_type: "air"` ile tanımlanır.
+`category` savaş rolünü korur; hareket modeli ayrı bir veri sözleşmesidir.
+Uçan birimlerden oluşan ordular kara ve deniz komşuları arasında hareket
+edebilir. Boyalı arazi alanlarının kilit ve ek hareket maliyetlerini,
+`land_passages.json` geçiş maliyetlerini yok sayar; normal hareket puanı ve
+komşuluk grafiği yine uygulanır. Alanı olmayan eski birimlerde varsayılan
+hareket modeli `land`dir.
+
 ## Kilit Sistemi
 
 `IsLocked = true` olan bölgeler haritada görünmez/girilemez. `checkRegionUnlocks()` belirli koşullarda (bölge yakınlaşması, teknoloji, tarih) `IsLocked = false` yapar.

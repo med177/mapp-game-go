@@ -182,6 +182,7 @@
     "name_tr": "Ejderha",
     "attack": 85,
     "category": "siege",
+    "movement_type": "air",
     "defense": 65,
     "embarkable": true,
     "gold_cost": 1500,

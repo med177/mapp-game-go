@@ -60,8 +60,11 @@ type Faction struct {
 	IsEliminated      bool               `json:"is_eliminated"`
 	// IsVirtual, isyan sırasında otomatik oluşturulan; diplomasi ve ticarete
 	// kapalı, yalnız askeri hedef olarak var olan sanal isyancı devleti işaretler.
-	IsVirtual  bool      `json:"is_virtual,omitempty"`
-	OverlordID FactionID `json:"overlord_id,omitempty"`
+	IsVirtual bool `json:"is_virtual,omitempty"`
+	// TradeDisabled, fraksiyonun diğer fraksiyonlarla mal ve ticaret rotası
+	// işlemlerine kapalı olduğunu belirtir.
+	TradeDisabled bool      `json:"trade_disabled,omitempty"`
+	OverlordID    FactionID `json:"overlord_id,omitempty"`
 	// TributeRate, vassalın overlord'a ödediği gelir payıdır (0-50).
 	TributeRate           int  `json:"tribute_rate,omitempty"`
 	TributeRateConfigured bool `json:"tribute_rate_configured,omitempty"`
@@ -99,6 +102,11 @@ type Faction struct {
 	AIAggressiveness   int                `json:"ai_aggressiveness"`
 	AIExpansionTargets []FactionID        `json:"ai_expansion_targets,omitempty"`
 	TerritorialClaims  []TerritorialClaim `json:"territorial_claims,omitempty"`
+}
+
+// CanTrade, fraksiyonun ticaret işlemlerine açık olup olmadığını döner.
+func (f *Faction) CanTrade() bool {
+	return f != nil && !f.IsEliminated && !f.IsVirtual && !f.TradeDisabled
 }
 
 // OtherIncomePeriodAt, verilen tarihte geçerli olan gelir aralığını döner.

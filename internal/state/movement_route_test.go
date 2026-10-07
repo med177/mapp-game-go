@@ -126,3 +126,36 @@ func TestNavalMovementRouteCanLeaveSeaWithEnemyFleet(t *testing.T) {
 		t.Fatalf("expected route through a foreign fleet without war, got %v", route)
 	}
 }
+
+func TestAirMovementRouteCrossesSeaAndBlockedTerrain(t *testing.T) {
+	const (
+		start  = world.RegionID("start")
+		sea    = world.RegionID("sea")
+		target = world.RegionID("blocked_terrain")
+	)
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			start:  {ID: start, OwnerID: "player", Neighbors: []world.RegionID{sea}},
+			sea:    {ID: sea, IsSea: true, Neighbors: []world.RegionID{start, target}},
+			target: {ID: target, IsTerrainArea: true, IsLocked: true, TerrainAreaID: "blocked", Neighbors: []world.RegionID{sea}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"dragon": {ID: "dragon", MovementType: army.MovementTypeAir},
+		},
+	}
+	a := &army.Army{
+		ID:         "dragon_army",
+		OwnerID:    "player",
+		RegionID:   start,
+		MovePoints: 2,
+		Units:      []army.Unit{{TypeID: "dragon"}},
+	}
+
+	route := gs.MovementRouteForArmy(a, target)
+	if len(route) != 3 || route[1] != sea || route[2] != target {
+		t.Fatalf("air route = %v, want start,sea,blocked_terrain", route)
+	}
+	if got := gs.MovementReachableForArmy(a).Nodes[target].Cost; got != 2 {
+		t.Fatalf("air terrain cost = %d, want 2", got)
+	}
+}

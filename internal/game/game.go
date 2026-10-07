@@ -3293,11 +3293,11 @@ func canPlayerOneTimeTradeWith(gs *state.GameState, targetID faction.FactionID) 
 	if gs == nil || targetID == "" || targetID == gs.PlayerFactionID {
 		return false
 	}
-	if gs.Factions[gs.PlayerFactionID] == nil {
+	if !gs.Factions[gs.PlayerFactionID].CanTrade() {
 		return false
 	}
 	target := gs.Factions[targetID]
-	if target == nil || target.IsEliminated || target.IsVirtual {
+	if target == nil || !target.CanTrade() {
 		return false
 	}
 	return !diplomacy.IsWar(gs, gs.PlayerFactionID, targetID)
@@ -6510,14 +6510,22 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		return
 	}
 	targetOwnerID := g.gs.SovereignOwnerID(targetRegion)
+	airborne := a.UsesAirMovement(g.gs.UnitTypes)
+	if targetRegion.IsLocked && !(airborne && targetRegion.IsTerrainArea) {
+		return
+	}
 	// Arazi alanları devlet toprağı değildir. OwnerID kalıntısı bulunsa bile
 	// normal hareketi savaş/işgal akışına sokma; yalnız hedefteki gerçek düşman
 	// ordu SelectBattleDefender üzerinden temas başlatabilsin.
 	neutralTerrainArea := targetRegion.IsTerrainArea
 	landMoveCost := 1
-	if !a.IsNaval && target != a.RegionID && !targetRegion.IsSea {
+	if !a.IsNaval && target != a.RegionID && (airborne || !targetRegion.IsSea) {
 		var allowed bool
-		landMoveCost, allowed = g.gs.LandRegionEntryCost(a.RegionID, targetRegion)
+		if airborne {
+			landMoveCost, allowed = 1, true
+		} else {
+			landMoveCost, allowed = g.gs.LandRegionEntryCost(a.RegionID, targetRegion)
+		}
 		if !allowed {
 			if targetRegion.IsTerrainArea {
 				g.renderer.ShowCombatResult("Bu boyalı arazi alanı geçilemez.")
@@ -6573,7 +6581,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 			g.renderer.ShowCombatResult("Deniz ordusu sadece deniz bölgelerine gidebilir!")
 			return
 		}
-	} else {
+	} else if !airborne {
 		if targetRegion.CanNavalEnter() {
 			if !g.canEmbarkLandArmy(a) {
 				g.renderer.ShowCombatResult(g.embarkBlockedMessage(a))

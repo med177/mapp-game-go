@@ -128,8 +128,15 @@ func movementRouteNodeBetter(cost int, previous world.RegionID, existing Movemen
 }
 
 func (s *GameState) movementEntryCost(a *army.Army, from world.RegionID, target *world.Region) (int, bool) {
-	if s == nil || a == nil || target == nil || target.IsLocked {
+	if s == nil || a == nil || target == nil {
 		return 0, false
+	}
+	airborne := a.UsesAirMovement(s.UnitTypes)
+	if target.IsLocked && !(airborne && target.IsTerrainArea) {
+		return 0, false
+	}
+	if airborne {
+		return 1, true
 	}
 	if a.IsNaval {
 		if target.CanNavalEnter() {
@@ -147,10 +154,14 @@ func (s *GameState) movementEntryCost(a *army.Army, from world.RegionID, target 
 }
 
 func (s *GameState) movementRegionCanTransit(a *army.Army, region *world.Region) bool {
-	if s == nil || a == nil || region == nil || region.IsLocked {
+	if s == nil || a == nil || region == nil {
 		return false
 	}
-	if a.IsNaval {
+	airborne := a.UsesAirMovement(s.UnitTypes)
+	if region.IsLocked && !(airborne && region.IsTerrainArea) {
+		return false
+	}
+	if !airborne && a.IsNaval {
 		if !region.IsSea {
 			return false
 		}
@@ -168,7 +179,7 @@ func (s *GameState) movementRegionCanTransit(a *army.Army, region *world.Region)
 		}
 		return true
 	}
-	if region.IsSea {
+	if !airborne && region.IsSea {
 		return false
 	}
 	regionOwnerID := s.SovereignOwnerID(region)

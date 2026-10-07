@@ -348,7 +348,7 @@ func ApplyTradeRoutesWithTransfersAndCustoms(factions map[faction.FactionID]*fac
 		if srcFaction == nil || dstFaction == nil {
 			continue
 		}
-		if srcFaction.IsEliminated || dstFaction.IsEliminated {
+		if !srcFaction.CanTrade() || !dstFaction.CanTrade() {
 			continue
 		}
 
@@ -429,7 +429,7 @@ func TransferGoods(
 ) bool {
 	src := factions[fromID]
 	dst := factions[toID]
-	if src == nil || dst == nil {
+	if !src.CanTrade() || !dst.CanTrade() {
 		return false
 	}
 
@@ -452,7 +452,7 @@ func TransferGoodsAtUnitPrice(
 ) bool {
 	src := factions[fromID]
 	dst := factions[toID]
-	if src == nil || dst == nil || amount <= 0 || price <= 0 {
+	if !src.CanTrade() || !dst.CanTrade() || amount <= 0 || price <= 0 {
 		return false
 	}
 	totalCost := amount * price

@@ -130,6 +130,10 @@ Tetikleme kriterleri:
   kontrol etmesini, `requires_unowned_regions` ise bu faction'ın bölgeyi
   henüz kontrol etmemesini ister. Örneğin Bursa Osmanlı'ya erken geçtiyse,
   Bursa seferberliği event'i artık destek göndermez.
+- **Faction zaferi:** `victory_conditions`, siyasi birleşme yapmadan bir
+  savaşın sona ermesi için faction'ın kilit bölgeleri ve minimum toplam bölge
+  sayısını tanımlar. Koşulları sağlayan tarihsel event doğrudan flag etkisini
+  uygular; diğer faction'lar pasif veya elenmiş duruma zorlanmaz.
 - **Rastgele olay:** `probability > 0` ve `min_turn` eşiği
 - **Tek seferlik olay:** `one_shot=true` ise tekrar tetiklenmez
 

@@ -788,7 +788,7 @@ func privilegedMinorTradePairs(gs *state.GameState) map[string]privilegedMinorTr
 		}
 		sovereign := gs.Factions[sovereignID]
 		operator := gs.Factions[operatorID]
-		if sovereign == nil || operator == nil || sovereign.IsEliminated || operator.IsEliminated {
+		if !sovereign.CanTrade() || !operator.CanTrade() {
 			continue
 		}
 		key, left, right := tradeAgreementKey(sovereignID, operatorID)
@@ -812,7 +812,7 @@ func SanitizeTradeRoutes(gs *state.GameState) {
 		toID := faction.FactionID(route.ToFactionID)
 		fromFaction := gs.Factions[fromID]
 		toFaction := gs.Factions[toID]
-		if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
+		if !fromFaction.CanTrade() || !toFaction.CanTrade() {
 			continue
 		}
 		key, _, _ := tradeAgreementKey(fromID, toID)
@@ -959,6 +959,9 @@ func HasDiplomaticContact(gs *state.GameState, a, b faction.FactionID) bool {
 
 func CanEstablishTradeRoute(gs *state.GameState, a, b faction.FactionID) bool {
 	if gs == nil || a == "" || b == "" || a == b {
+		return false
+	}
+	if !gs.Factions[a].CanTrade() || !gs.Factions[b].CanTrade() {
 		return false
 	}
 	if SameRealm(gs, a, b) {
@@ -1464,7 +1467,7 @@ func ensureTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
 // tarafından gönderilmiş ve oyuncu tarafından onaylanmıştır; rota hacmi daha
 // sonra RebalanceTradeRouteCapacities ile dengelenir.
 func ensureAcceptedTradeRoutesBetween(gs *state.GameState, a, b faction.FactionID) {
-	if gs == nil || a == "" || b == "" || a == b {
+	if gs == nil || a == "" || b == "" || a == b || !gs.Factions[a].CanTrade() || !gs.Factions[b].CanTrade() {
 		return
 	}
 	if hasPrivilegedMinorTradeRouteBetween(gs, a, b) {
@@ -1640,7 +1643,10 @@ func ActiveTradePartnerCount(gs *state.GameState, fid faction.FactionID) int {
 
 func canMaintainOrAddTradePartner(gs *state.GameState, a, b faction.FactionID) bool {
 	if gs == nil || a == "" || b == "" || a == b || SameRealm(gs, a, b) {
-		return gs != nil && a != "" && b != "" && a != b
+		return gs != nil && a != "" && b != "" && a != b && gs.Factions[a].CanTrade() && gs.Factions[b].CanTrade()
+	}
+	if !gs.Factions[a].CanTrade() || !gs.Factions[b].CanTrade() {
+		return false
 	}
 	if hasTradeRouteRecordBetween(gs, a, b) {
 		return true
