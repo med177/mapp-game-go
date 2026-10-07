@@ -47,17 +47,19 @@ type OtherIncomePeriod struct {
 
 // Faction oyundaki bir fraksiyonu temsil eder.
 type Faction struct {
-	ID                FactionID          `json:"id"`
-	Name              string             `json:"name"`
-	NameTR            string             `json:"name_tr"`
-	ArmyImage         string             `json:"army_image,omitempty"`
-	MarineImage       string             `json:"marine_image,omitempty"`
-	Flag              string             `json:"flag,omitempty"`
-	HistoricalChanges []HistoricalChange `json:"historical_changes,omitempty"`
-	Religion          religion.Type      `json:"religion"`
-	Color             [3]uint8           `json:"color"`
-	IsPlayable        bool               `json:"is_playable"`
-	IsEliminated      bool               `json:"is_eliminated"`
+	ID                          FactionID          `json:"id"`
+	Name                        string             `json:"name"`
+	NameTR                      string             `json:"name_tr"`
+	ArmyImage                   string             `json:"army_image,omitempty"`
+	MarineImage                 string             `json:"marine_image,omitempty"`
+	Flag                        string             `json:"flag,omitempty"`
+	HistoricalChanges           []HistoricalChange `json:"historical_changes,omitempty"`
+	Religion                    religion.Type      `json:"religion"`
+	Color                       [3]uint8           `json:"color"`
+	IsPlayable                  bool               `json:"is_playable"`
+	RecommendedPlayable         bool               `json:"recommended_playable,omitempty"`
+	RecommendedPlayableReasonTR string             `json:"recommended_playable_reason_tr,omitempty"`
+	IsEliminated                bool               `json:"is_eliminated"`
 	// IsVirtual, isyan sırasında otomatik oluşturulan; diplomasi ve ticarete
 	// kapalı, yalnız askeri hedef olarak var olan sanal isyancı devleti işaretler.
 	IsVirtual bool `json:"is_virtual,omitempty"`

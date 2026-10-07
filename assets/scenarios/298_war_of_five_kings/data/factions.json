@@ -20,6 +20,8 @@
       210
     ],
     "is_playable": true,
+    "recommended_playable": true,
+    "recommended_playable_reason_tr": "Ana hikâyenin merkezindeki Kuzey gücü; savunma, bağımsızlık ve Beş Kral Savaşı rotalarını birlikte sunar.",
     "is_eliminated": false,
     "capital_settlement_id": "winterfell_main",
     "gold": 3200,
@@ -84,6 +86,8 @@
       30
     ],
     "is_playable": true,
+    "recommended_playable": true,
+    "recommended_playable_reason_tr": "Kraliyet, ekonomi ve ittifak kararlarını aynı anda yöneten güçlü ama çok cepheli başlangıç.",
     "is_eliminated": false,
     "capital_settlement_id": "casterly_rock_main",
     "gold": 12500,
@@ -150,6 +154,8 @@
       20
     ],
     "is_playable": true,
+    "recommended_playable": true,
+    "recommended_playable_reason_tr": "Kral'ın Şehri, kraliyet savunması ve Demir Taht üzerindeki doğrudan mücadele için merkezî başlangıç.",
     "is_eliminated": false,
     "capital_settlement_id": "kings_landing_main",
     "gold": 8500,
@@ -368,6 +374,8 @@
       50
     ],
     "is_playable": true,
+    "recommended_playable": true,
+    "recommended_playable_reason_tr": "Güneyin güçlü ekonomisi ve Margaery-Joffrey ittifakı üzerinden farklı siyasi yollar sunar.",
     "is_eliminated": false,
     "capital_settlement_id": "highgarden_main",
     "gold": 9500,
@@ -485,6 +493,8 @@
       40
     ],
     "is_playable": true,
+    "recommended_playable": true,
+    "recommended_playable_reason_tr": "Sürgünden dönüş ve Demir Taht'ı geri alma üzerine kurulu yüksek riskli başlangıç. Güçlenmesi zaman alır, ancak başarıldığında en farklı kampanya rotalarından birini sunar.",
     "is_eliminated": false,
     "capital_settlement_id": "pentos_main",
     "gold": 5500,

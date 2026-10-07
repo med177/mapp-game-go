@@ -29,6 +29,7 @@ const (
 var (
 	factionSelectBackgroundPath string
 	factionSelectBackground     *ebiten.Image
+	factionRecommendationStar   *ebiten.Image
 )
 
 func buildFactionCardButtons(gs *state.GameState, scroll float64) []gameui.Button {
@@ -101,12 +102,17 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int, sc
 		// Renk şeridi
 		drawUICardAccent(body, cell, 8, fc)
 
-		// İsim
+		// İsim ve önerilen başlangıç işareti
 		nameCol := ColorWhite
 		if i == cursor {
 			nameCol = ColorYellow
 		}
-		drawUILabel(body, gameui.Rect{X: float64(x + 16), Y: float64(y + 12)}, f.NameTR, nameCol, gameui.TextLarge, gameui.TextAlignStart)
+		nameX := x + 16
+		if f.RecommendedPlayable {
+			drawFactionRecommendationStar(body, float64(nameX), float64(y+10))
+			nameX += 28
+		}
+		drawUILabel(body, gameui.Rect{X: float64(nameX), Y: float64(y + 12)}, f.NameTR, nameCol, gameui.TextLarge, gameui.TextAlignStart)
 		drawFactionFlagBadge(body, f.ID, factionInitial(f.NameTR), flagRect.X, flagRect.Y, flagRect.W, fc, panelBorder)
 
 		// Din
@@ -130,6 +136,12 @@ func DrawFactionSelect(screen *ebiten.Image, gs *state.GameState, cursor int, sc
 		}
 	}
 	drawFactionSelectScrollbar(screen, layout)
+	if cursor >= 0 && cursor < len(factions) {
+		if f := gs.Factions[factions[cursor]]; f != nil && f.RecommendedPlayable {
+			cell := factionCardRectScrolled(cursor, historicalCount, len(factions), cols, float64(cardW), float64(cardH), 30, 12, headerH, layout.scroll)
+			drawRecommendedFactionTooltip(screen, f, cell)
+		}
+	}
 }
 
 func factionCardFlagRect(card gameui.Rect) gameui.Rect {
@@ -204,21 +216,31 @@ func selectableFactions(gs *state.GameState) ([]faction.FactionID, int) {
 		orderedPlayable = append(orderedPlayable, fid)
 	}
 
-	var historicalFids []faction.FactionID
-	var generalOnlyFids []faction.FactionID
+	var recommendedHistorical []faction.FactionID
+	var otherHistorical []faction.FactionID
+	var recommendedGeneral []faction.FactionID
+	var otherGeneral []faction.FactionID
 	for _, fid := range orderedPlayable {
 		_, historical, _, _ := factionVictorySummary(gs, fid)
-		if historical > 0 {
-			historicalFids = append(historicalFids, fid)
+		f := gs.Factions[fid]
+		if historical > 0 && f.RecommendedPlayable {
+			recommendedHistorical = append(recommendedHistorical, fid)
+		} else if historical > 0 {
+			otherHistorical = append(otherHistorical, fid)
+		} else if f.RecommendedPlayable {
+			recommendedGeneral = append(recommendedGeneral, fid)
 		} else {
-			generalOnlyFids = append(generalOnlyFids, fid)
+			otherGeneral = append(otherGeneral, fid)
 		}
 	}
 
-	ordered := make([]faction.FactionID, 0, len(historicalFids)+len(generalOnlyFids))
-	ordered = append(ordered, historicalFids...)
-	ordered = append(ordered, generalOnlyFids...)
-	return ordered, len(historicalFids)
+	ordered := make([]faction.FactionID, 0, len(orderedPlayable))
+	ordered = append(ordered, recommendedHistorical...)
+	ordered = append(ordered, otherHistorical...)
+	historicalCount := len(ordered)
+	ordered = append(ordered, recommendedGeneral...)
+	ordered = append(ordered, otherGeneral...)
+	return ordered, historicalCount
 }
 
 func factionCardRect(index, historicalCount, total, cols int, cardW, cardH, padX, padY, headerH float64) gameui.Rect {
@@ -329,6 +351,41 @@ func drawFactionGroupLabels(screen *ebiten.Image, layout factionSelectLayout, to
 		drawFactionGroupLabelBackdrop(screen, layout.generalLabel)
 		drawUIOutlinedLabel(screen, layout.generalLabel, "Genel Hedefi Olan Devletler", ColorGold, ownerLabelOutlineColor(ColorGold), gameui.TextMedium, gameui.TextAlignCenter)
 	}
+}
+
+func drawFactionRecommendationStar(screen *ebiten.Image, x, y float64) {
+	if factionRecommendationStar == nil {
+		factionRecommendationStar = tryLoadImage(filepath.Join("assets", "ui", "star.png"))
+	}
+	if factionRecommendationStar == nil {
+		return
+	}
+	bounds := factionRecommendationStar.Bounds()
+	maxDim := bounds.Dx()
+	if bounds.Dy() > maxDim {
+		maxDim = bounds.Dy()
+	}
+	if maxDim <= 0 {
+		return
+	}
+	const size = 22.0
+	op := &ebiten.DrawImageOptions{}
+	scale := size / float64(maxDim)
+	op.GeoM.Scale(scale, scale)
+	op.GeoM.Translate(x, y)
+	screen.DrawImage(factionRecommendationStar, op)
+}
+
+func drawRecommendedFactionTooltip(screen *ebiten.Image, f *faction.Faction, card gameui.Rect) {
+	if f == nil || !f.RecommendedPlayable || f.RecommendedPlayableReasonTR == "" {
+		return
+	}
+	const width = 360.0
+	const height = 116.0
+	x, y, w, h := tooltipRect(card.X+card.W, card.Y, width, height)
+	drawTooltipBox(screen, x, y, w, h)
+	drawUILabel(screen, gameui.Rect{X: x + 14, Y: y + 12, W: w - 28}, "Önerilen başlangıç", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + 14, Y: y + 40, W: w - 28, H: h - 50}, f.RecommendedPlayableReasonTR, ColorWhite, gameui.TextSmall, 16, 4)
 }
 
 func clampFactionSelectScroll(scroll, maxScroll float64) float64 {
