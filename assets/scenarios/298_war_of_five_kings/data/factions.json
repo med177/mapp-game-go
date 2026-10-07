@@ -994,7 +994,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
-    "gold": 15000,
+    "gold": 12000,
     "grain": 4500,
     "iron": 700,
     "timber": 550,
@@ -1012,6 +1012,6 @@
       "active_id": "",
       "turns_left": 0
     },
-    "ai_aggressiveness": 20
+    "ai_aggressiveness": 10
   }
 ]

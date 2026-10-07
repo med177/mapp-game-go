@@ -1208,8 +1208,8 @@
               "value": 60
             }
           ],
-          "priority": 54,
-          "commitment": 34,
+          "priority": 35,
+          "commitment": 22,
           "readiness_regions": [
             "myr_region",
             "essos_free_cities"

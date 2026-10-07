@@ -234,6 +234,120 @@
     ]
   },
   {
+    "id": "lannister_war_exhaustion_300",
+    "name_tr": "Lannister Savaş Yıpranması",
+    "desc_tr": "Nehir Toprakları seferi uzadıkça Lannister orduları Batı'dan uzaklaşıyor; savaşın maliyeti zafer ihtimalini değil, sürdürülebilirliğini zorluyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -5,
+    "gold_delta": -600,
+    "grain_delta": -800,
+    "army_hp_mod": 0,
+    "army_upkeep_percent": 20,
+    "effect_duration_turns": 24,
+    "historical_year": 300,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "lannister",
+    "set_flags": [
+      "lannister_war_exhausted"
+    ],
+    "requires_flags": [
+      "lannister_riverlands_burden"
+    ],
+    "requires_owned_regions": [
+      "casterly_rock"
+    ],
+    "requires_active_factions": [
+      "lannister"
+    ]
+  },
+  {
+    "id": "free_cities_nonintervention_299",
+    "name_tr": "Özgür Şehirlerin Tarafsızlığı",
+    "desc_tr": "Westeros'taki savaş uzarken Özgür Şehirler ticaret yollarını korumaya ve pahalı kara ordusu seferlerinden uzak durmaya çalışıyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": -400,
+    "grain_delta": -500,
+    "army_hp_mod": 0,
+    "trade_income_percent": -10,
+    "army_upkeep_percent": 20,
+    "effect_duration_turns": 60,
+    "historical_year": 299,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "free_cities",
+    "set_flags": [
+      "free_cities_nonintervention"
+    ],
+    "requires_active_factions": [
+      "free_cities"
+    ]
+  },
+  {
+    "id": "crownlands_postwar_exhaustion_300",
+    "name_tr": "Taç Topraklarının Savaş Yorgunluğu",
+    "desc_tr": "Beş Kral Savaşı sona erse bile Kral'ın Şehri'nin hazinesi ve garnizonları uzun savaşın yükünü taşımaya devam ediyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -4,
+    "gold_delta": -500,
+    "grain_delta": -700,
+    "army_hp_mod": 0,
+    "army_upkeep_percent": 15,
+    "effect_duration_turns": 36,
+    "historical_year": 300,
+    "historical_month": 3,
+    "one_shot": true,
+    "affected_faction": "baratheon_king",
+    "set_flags": [
+      "crownlands_postwar_exhausted"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_resolved"
+    ],
+    "requires_active_factions": [
+      "baratheon_king"
+    ]
+  },
+  {
+    "id": "tyrell_postwar_consolidation_301",
+    "name_tr": "Reach'in Savaş Sonrası Konsolidasyonu",
+    "desc_tr": "Savaş sona erdikten sonra Tyreller fetih hızını düşürüp Reach'i yeniden düzenlemek zorunda. Güneyin zenginliği sınırsız asker üretimine dönüşmüyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -3,
+    "gold_delta": -600,
+    "grain_delta": -1000,
+    "army_hp_mod": 0,
+    "grain_production_percent": -15,
+    "trade_income_percent": -10,
+    "army_upkeep_percent": 25,
+    "effect_duration_turns": 48,
+    "historical_year": 301,
+    "historical_month": 1,
+    "one_shot": true,
+    "affected_faction": "tyrell",
+    "set_flags": [
+      "tyrell_postwar_consolidation"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_resolved"
+    ],
+    "requires_owned_regions": [
+      "highgarden"
+    ],
+    "requires_active_factions": [
+      "tyrell"
+    ]
+  },
+  {
     "id": "dragonstone_muster_297",
     "name_tr": "Ejderha Kayası'nda Seferberlik",
     "desc_tr": "Stannis Baratheon, Robert'ın sarayındaki gevşekliği güvensizlikle izliyor. Ejderha Kayası'nın filosu ve garnizonları Demir Taht'taki olası veraset krizine hazırlanıyor.",
@@ -741,6 +855,9 @@
           "combat_attack_percent": 6,
           "combat_defense_percent": 12,
           "affected_faction": "tully",
+          "grain_production_percent": 10,
+          "army_upkeep_percent": -15,
+          "effect_duration_turns": 48,
           "unit_reinforcements": [
             {
               "unit_type": "infantry",
@@ -2712,6 +2829,37 @@
     ]
   },
   {
+    "id": "tyrell_war_mobilization_cost_300",
+    "name_tr": "Reach Savaş Seferberliği",
+    "desc_tr": "Tyrell orduları savaşa yayıldıkça Reach'in bereketi cephe ikmaline dönüşüyor. Güneyin zenginliği artık sınırsız bir askerî büyüme sağlayamıyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -3,
+    "gold_delta": -500,
+    "grain_delta": -1000,
+    "army_hp_mod": 0,
+    "grain_production_percent": -10,
+    "army_upkeep_percent": 18,
+    "effect_duration_turns": 24,
+    "historical_year": 300,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "tyrell",
+    "set_flags": [
+      "tyrell_war_mobilized"
+    ],
+    "requires_flags": [
+      "highgarden_joined_war"
+    ],
+    "requires_owned_regions": [
+      "highgarden"
+    ],
+    "requires_active_factions": [
+      "tyrell"
+    ]
+  },
+  {
     "id": "lannister_tyrell_alliance_war_cost_299",
     "name_tr": "İttifakın Savaş Bedeli",
     "desc_tr": "Tyrell orduları savaşa katılsa da Lannisterlar artık daha geniş bir ittifakın ikmalini karşılamak zorunda. Zafer kadar borç da büyüyor.",
@@ -2768,6 +2916,11 @@
         "ai_weight": 8,
         "effect": {
           "target": "specific_faction",
+          "gold_delta": -300,
+          "grain_delta": -600,
+          "grain_production_percent": -10,
+          "army_upkeep_percent": 10,
+          "effect_duration_turns": 36,
           "affected_faction": "tyrell",
           "relations": [
             {
@@ -2955,6 +3108,88 @@
       "lannister",
       "tyrell",
       "baratheon_king"
+    ]
+  },
+  {
+    "id": "tyrell_lannister_tension_300",
+    "name_tr": "Batı İttifakının Çatlağı",
+    "desc_tr": "Tywin'in ölümünden sonra Lannisterlar ile Tyreller arasındaki ortaklık artık yalnızca savaşın zorunluluğuyla ayakta duruyor.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -3,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "state_triggered": true,
+    "state_trigger_priority": 8,
+    "one_shot": true,
+    "affected_faction": "lannister",
+    "choice_prompt_tr": "Tywin'in ölümünden sonra ittifak korunmalı mı?",
+    "choices": [
+      {
+        "id": "preserve_the_wartime_alliance",
+        "label_tr": "Savaş ittifakını koru",
+        "desc_tr": "Lannisterlar ve Tyreller açık bir kopuşu erteler; ortak düşmanlara karşı birlikte hareket eder.",
+        "ai_weight": 6,
+        "effect": {
+          "target": "specific_faction",
+          "gold_delta": -300,
+          "grain_delta": -500,
+          "affected_faction": "lannister",
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "stance": "allied",
+              "score_delta": 10
+            }
+          ],
+          "set_flags": [
+            "tyrell_alliance_preserved"
+          ]
+        }
+      },
+      {
+        "id": "break_the_wartime_alliance",
+        "label_tr": "İttifakı sona erdir",
+        "desc_tr": "Lannisterlar Batı'yı kendi kaynaklarıyla savunur; Tyreller artık güvenilir ortak değil, yeni bir rakiptir.",
+        "ai_weight": 5,
+        "effect": {
+          "target": "specific_faction",
+          "gold_delta": -200,
+          "grain_delta": -300,
+          "affected_faction": "lannister",
+          "relations": [
+            {
+              "faction_id": "tyrell",
+              "stance": "war",
+              "score_delta": -60
+            }
+          ],
+          "set_flags": [
+            "tyrell_alliance_broken"
+          ],
+          "clear_flags": [
+            "tyrell_lannister_alliance",
+            "tyrell_alliance_preserved"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "lannister",
+      "tyrell"
+    ],
+    "requires_flags": [
+      "tyrell_lannister_alliance",
+      "tywin_dead"
+    ],
+    "requires_owned_regions": [
+      "casterly_rock"
+    ],
+    "requires_active_factions": [
+      "lannister",
+      "tyrell"
     ]
   },
   {
