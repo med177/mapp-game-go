@@ -183,7 +183,7 @@
     "attack": 85,
     "category": "dragon",
     "defense": 65,
-    "embarkable": true,
+    "embarkable": false,
     "carry_capacity": 1,
     "gold_cost": 1500,
     "grain_upkeep": 50,

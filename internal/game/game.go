@@ -6108,12 +6108,14 @@ func (g *Game) startPlayerMovement(action render.InputAction) {
 	}
 	g.pendingAirAttackArmyID = action.TargetArmyID
 	route := g.gs.MovementRouteForArmy(a, action.TargetRegion)
+	if len(route) >= 2 {
+		g.gs.BeginAirSortie(a, action.TargetRegion)
+	}
 	if len(route) < 2 {
 		g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed, action.ContactAttackerHolding, action.ContactDefenderHolding)
 		g.pendingAirAttackArmyID = ""
 		return
 	}
-	g.gs.BeginAirSortie(a, action.TargetRegion)
 	g.pendingPlayerMovement = &pendingPlayerMovement{
 		armyID:             action.ArmyID,
 		steps:              append([]world.RegionID(nil), route[1:]...),
