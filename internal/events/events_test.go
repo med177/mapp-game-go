@@ -3,6 +3,7 @@ package events
 import (
 	"testing"
 
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -35,5 +36,76 @@ func TestVictoryConditionsRequireKeyRegionsAndMinimumOwnership(t *testing.T) {
 	gs.Regions["lannisport"] = &world.Region{OwnerID: "lannister"}
 	if !eventConditionsSatisfied(gs, e) {
 		t.Fatal("kilit bölgeler ve minimum sahiplik sağlandığında zafer koşulu başarısız oldu")
+	}
+}
+
+func TestStateTriggeredVictoryEventIgnoresCalendarDate(t *testing.T) {
+	gs := &state.GameState{
+		Year:  320,
+		Month: 6,
+		FiredEventIDs: map[string]bool{
+			"flag:war_of_five_kings_active": true,
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"kings_landing": {OwnerID: "lannister"},
+		},
+	}
+	e := &Event{
+		ID:             "war_resolution_state_triggered",
+		Target:         "all_factions",
+		StateTriggered: true,
+		OneShot:        true,
+		RequiresFlags:  []string{"war_of_five_kings_active"},
+		VictoryConditions: []FactionVictoryCondition{{
+			FactionID:            "lannister",
+			RequiredOwnedRegions: []world.RegionID{"kings_landing"},
+		}},
+	}
+
+	if got := Tick(gs, []*Event{e}); got != e {
+		t.Fatal("state koşullu zafer eventi takvim tarihi olmadan tetiklenmedi")
+	}
+	if !gs.FiredEventIDs[e.ID] {
+		t.Fatal("tek seferlik state koşullu event işaretlenmedi")
+	}
+}
+
+func TestStateTriggeredEventUsesPriorityForSameTurnCandidates(t *testing.T) {
+	gs := &state.GameState{}
+	low := &Event{
+		ID:                   "resolution_low",
+		Target:               "all_factions",
+		StateTriggered:       true,
+		StateTriggerGroup:    "war_resolution",
+		StateTriggerPriority: 10,
+		VictoryConditions:    []FactionVictoryCondition{{FactionID: "lannister", MinimumOwnedRegions: 0}},
+	}
+	high := &Event{
+		ID:                   "resolution_high",
+		Target:               "all_factions",
+		StateTriggered:       true,
+		StateTriggerGroup:    "war_resolution",
+		StateTriggerPriority: 20,
+		VictoryConditions:    []FactionVictoryCondition{{FactionID: "stark", MinimumOwnedRegions: 0}},
+	}
+
+	if got := Tick(gs, []*Event{low, high}); got != high {
+		t.Fatalf("state event önceliği kullanılmadı: got %v, want %v", got.ID, high.ID)
+	}
+}
+
+func TestRequiresInactiveFaction(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"free_folk": {IsEliminated: false},
+		},
+	}
+	e := &Event{Target: "all_factions", RequiresInactiveFactions: []string{"free_folk"}}
+	if eventConditionsSatisfied(gs, e) {
+		t.Fatal("aktif Özgür Halk varken eliminasyon koşulu sağlandı")
+	}
+	gs.Factions["free_folk"].IsEliminated = true
+	if !eventConditionsSatisfied(gs, e) {
+		t.Fatal("Özgür Halk elendiğinde eliminasyon koşulu sağlanmadı")
 	}
 }

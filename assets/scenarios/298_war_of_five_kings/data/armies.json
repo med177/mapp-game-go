@@ -40,11 +40,11 @@
     "units": [
       {
         "type_id": "heavy_cavalry",
-        "count": 5
+        "count": 4
       },
       {
         "type_id": "elite_infantry",
-        "count": 6
+        "count": 5
       },
       {
         "type_id": "infantry",
@@ -180,11 +180,11 @@
       },
       {
         "type_id": "infantry",
-        "count": 5
+        "count": 6
       },
       {
         "type_id": "militia",
-        "count": 5
+        "count": 6
       }
     ]
   },
@@ -294,7 +294,7 @@
       },
       {
         "type_id": "infantry",
-        "count": 5
+        "count": 6
       },
       {
         "type_id": "militia",
@@ -332,7 +332,7 @@
       },
       {
         "type_id": "elite_infantry",
-        "count": 3
+        "count": 2
       },
       {
         "type_id": "infantry",
@@ -472,7 +472,7 @@
   {
     "id": "army_tully_2",
     "owner_id": "tully",
-    "region_id": "harrenhal",
+    "region_id": "riverrun",
     "units": [
       {
         "type_id": "elite_infantry",

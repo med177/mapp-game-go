@@ -65,7 +65,7 @@
     "result_faction": "targaryen",
     "trigger": {
       "event_id": "targaryen_return_302",
-      "year": 302,
+      "year": 305,
       "month": 9
     },
     "transfer": {

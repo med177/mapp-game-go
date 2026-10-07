@@ -1,9 +1,34 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-07
+last_updated: 2026-10-08
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-08: 298 senaryosunun güç dengesi asimetrik hâle getirildi. Lannister'ın
+  başlangıç altını ve elit ordusu azaltıldı; Riverlands savaş yükü ve Tyrell
+  ittifak maliyeti eklendi. Tyrell genişlemesi evlilik ittifakına bağlandı.
+  Renly'nin ölümünde Stormsend orduları Stannis veya Tyrell'e aktarılabiliyor;
+  Tully orduları Riverrun'da toplandı ve Blackfish direnişi güçlendirildi.
+
+- 2026-10-08: Gece Nöbeti'nin `wall_defense_prepared` zafer bayrağı, Mance
+  seçimine bağımlı olmaktan çıkarıldı. 300/8 bağımsız Duvar hazırlığı, Özgür
+  Halkın elenmesi sonrası state-triggered alternatif ve Akgezenlere karşı 301/5
+  savunma olayı eklendi; zafer açıklaması bu yolları belirtiyor.
+
+- 2026-10-08: 298 senaryosunda Özgür Halk oyuncu seçimine kapatıldı ve
+  `free_folk_crossing` victory condition'ı kaldırıldı. Özgür Halk AI fraksiyonu
+  olarak Mance event zincirinde kalıyor; Gece Nöbeti'nin `wall_defense_prepared`
+  hedefi korunuyor.
+
+- 2026-10-08: 298 senaryosundaki Beş Kral Savaşı çözüm event'leri sabit 298/3
+  takviminden çıkarıldı. Victory condition'ları sağlandığında tetiklenen
+  `state_triggered` event akışı eklendi. Aynı turdaki çakışmalar veriyle
+  tanımlı öncelikle çözülüyor; kazanan faction için savaş sonrası diplomasi
+  event'i çalışıyor ve Event Codex bu olayları "Zafer koşuluna bağlı" gösteriyor.
+  `internal/events/events.go`,
+  `internal/game/game.go` ve `assets/scenarios/298_war_of_five_kings/data/events.json`
+  güncellendi.
 
 - 2026-10-07: `dragon` ve `airborne` kategorisindeki uçan ordular için deniz ve
   yerleşilemeyen kara hedeflerinde yarım menzilli sortie hareketi eklendi.

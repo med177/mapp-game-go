@@ -1946,7 +1946,9 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 	for _, entry := range entries {
 		evt := entry.evt
 		dateLabel := fmt.Sprintf("%d", evt.HistoricalYear)
-		if evt.HistoricalMonth > 0 {
+		if evt.StateTriggered {
+			dateLabel = "Zafer koşuluna bağlı"
+		} else if evt.HistoricalMonth > 0 {
 			dateLabel = fmt.Sprintf("%d/%02d", evt.HistoricalYear, evt.HistoricalMonth)
 		}
 		detail := make([]string, 0, 8)
@@ -2006,7 +2008,7 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 func (g *Game) collectEventCodexEntries(filter string) []eventCodexEntry {
 	entries := make([]eventCodexEntry, 0, len(g.evts))
 	for _, evt := range g.evts {
-		if evt == nil || evt.HistoricalYear == 0 {
+		if evt == nil || (evt.HistoricalYear == 0 && !evt.StateTriggered) {
 			continue
 		}
 		past := filter == "past"

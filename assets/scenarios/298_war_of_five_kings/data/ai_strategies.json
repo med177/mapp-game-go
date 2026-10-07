@@ -181,8 +181,8 @@
               "value": 95
             }
           ],
-          "priority": 96,
-          "commitment": 88,
+          "priority": 82,
+          "commitment": 70,
           "required_event_flags": [
             "war_of_five_kings_active"
           ],
@@ -200,8 +200,8 @@
               "value": 100
             }
           ],
-          "priority": 100,
-          "commitment": 94,
+          "priority": 92,
+          "commitment": 82,
           "required_event_flags": [
             "war_of_five_kings_active"
           ],
@@ -390,8 +390,8 @@
               "value": 82
             }
           ],
-          "priority": 76,
-          "commitment": 62,
+          "priority": 64,
+          "commitment": 52,
           "required_event_flags": [
             "war_of_five_kings_active"
           ],
@@ -522,10 +522,12 @@
               "value": 85
             }
           ],
-          "priority": 72,
-          "commitment": 54,
+          "priority": 60,
+          "commitment": 42,
+          "min_year": 299,
           "required_event_flags": [
-            "war_of_five_kings_active"
+            "war_of_five_kings_active",
+            "highgarden_joined_war"
           ],
           "readiness_regions": [
             "highgarden",
@@ -594,8 +596,9 @@
               "value": 72
             }
           ],
-          "priority": 82,
-          "commitment": 68,
+          "priority": 68,
+          "commitment": 52,
+          "min_year": 300,
           "required_event_flags": [
             "war_of_five_kings_active"
           ],
@@ -882,8 +885,9 @@
               "value": 100
             }
           ],
-          "priority": 94,
-          "commitment": 86,
+          "priority": 76,
+          "commitment": 68,
+          "min_year": 299,
           "required_event_flags": [
             "war_of_five_kings_active"
           ],

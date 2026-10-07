@@ -228,6 +228,9 @@ type Event struct {
 	HistoricalYear       int    `json:"historical_year,omitempty"`        // 0 = tarihsel değil
 	HistoricalMonth      int    `json:"historical_month,omitempty"`       // 0 = yılın herhangi bir ayı
 	HistoricalDateStrict bool   `json:"historical_date_strict,omitempty"` // tarihsel zincirin state görünürlük işareti
+	StateTriggered       bool   `json:"state_triggered,omitempty"`        // tarih yerine state koşulları sağlandığında tetiklenir
+	StateTriggerGroup    string `json:"state_trigger_group,omitempty"`    // aynı state zincirinde tek event seçilmesini sağlar
+	StateTriggerPriority int    `json:"state_trigger_priority,omitempty"` // aynı grupta yüksek değer kazanır
 	OneShot              bool   `json:"one_shot,omitempty"`               // true = yalnızca bir kez tetiklenir
 	AffectedFaction      string `json:"affected_faction,omitempty"`       // belirli fraksiyonu hedefle
 
@@ -243,6 +246,7 @@ type Event struct {
 	RequiresOwnedRegionsAny   []world.RegionID           `json:"requires_owned_regions_any,omitempty"`
 	RequiresUnownedRegions    []world.RegionID           `json:"requires_unowned_regions,omitempty"`
 	RequiresActiveFactions    []string                   `json:"requires_active_factions,omitempty"`
+	RequiresInactiveFactions  []string                   `json:"requires_inactive_factions,omitempty"`
 	RelationRequirements      []RelationRequirement      `json:"relation_requirements,omitempty"`
 	FactionSubjugationTrigger *FactionSubjugationTrigger `json:"faction_subjugation_trigger,omitempty"`
 	VictoryConditions         []FactionVictoryCondition  `json:"victory_conditions,omitempty"`
@@ -301,6 +305,27 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		}
 		delete(gs.FiredEventIDs, pendingHistoricalEventKey(e.ID))
 		return e
+	}
+
+	// State koşullu olaylarda aynı turda birden fazla aday varsa veriyle
+	// tanımlanan öncelik en yüksek olanı seçilir; JSON sırası tie-breaker'dır.
+	var stateTriggeredEvent *Event
+	for _, e := range evts {
+		if e == nil || !e.StateTriggered || e.HistoricalYear != 0 || gs.FiredEventIDs[e.ID] {
+			continue
+		}
+		if !eventConditionsSatisfied(gs, e) {
+			continue
+		}
+		if stateTriggeredEvent == nil || e.StateTriggerPriority > stateTriggeredEvent.StateTriggerPriority {
+			stateTriggeredEvent = e
+		}
+	}
+	if stateTriggeredEvent != nil {
+		if stateTriggeredEvent.OneShot {
+			gs.FiredEventIDs[stateTriggeredEvent.ID] = true
+		}
+		return stateTriggeredEvent
 	}
 
 	// Önce tarihsel olayları kontrol et (kesinlikle tetiklenir)
@@ -399,6 +424,9 @@ func historicalEventDueThisTurn(gs *state.GameState, e *Event) bool {
 func historicalEventHasStateTrigger(e *Event) bool {
 	if e == nil {
 		return false
+	}
+	if e.StateTriggered {
+		return true
 	}
 	if e.HistoricalDateStrict {
 		return false
@@ -810,6 +838,9 @@ func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 	if failedFaction := firstInactiveRequiredFaction(gs, e.RequiresActiveFactions); failedFaction != "" {
 		reasons = append(reasons, "aktif faction gerekli: "+failedFaction)
 	}
+	if activeFaction := firstActiveRequiredFaction(gs, e.RequiresInactiveFactions); activeFaction != "" {
+		reasons = append(reasons, "eliminasyon gerekli: "+activeFaction)
+	}
 	if blockedSettlement := blockedCapitalSettlementID(gs, e); blockedSettlement != "" {
 		reasons = append(reasons, "zaten hedef başkent: "+blockedSettlement)
 	}
@@ -885,6 +916,9 @@ func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 	if firstInactiveRequiredFaction(gs, e.RequiresActiveFactions) != "" {
 		return false
 	}
+	if firstActiveRequiredFaction(gs, e.RequiresInactiveFactions) != "" {
+		return false
+	}
 	if blockedCapitalSettlementID(gs, e) != "" {
 		return false
 	}
@@ -950,6 +984,22 @@ func firstInactiveRequiredFaction(gs *state.GameState, factionIDs []string) stri
 		}
 		f := gs.Factions[faction.FactionID(id)]
 		if f == nil || f.IsEliminated {
+			return id
+		}
+	}
+	return ""
+}
+
+func firstActiveRequiredFaction(gs *state.GameState, factionIDs []string) string {
+	if gs == nil || len(factionIDs) == 0 {
+		return ""
+	}
+	for _, id := range factionIDs {
+		if id == "" {
+			continue
+		}
+		f := gs.Factions[faction.FactionID(id)]
+		if f != nil && !f.IsEliminated {
 			return id
 		}
 	}

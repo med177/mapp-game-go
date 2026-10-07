@@ -86,7 +86,7 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "casterly_rock_main",
-    "gold": 15000,
+    "gold": 12500,
     "grain": 3000,
     "iron": 750,
     "timber": 250,
@@ -707,7 +707,7 @@
       100,
       75
     ],
-    "is_playable": true,
+    "is_playable": false,
     "is_eliminated": false,
     "trade_disabled": true,
     "capital_settlement_id": "hardhome_main",
