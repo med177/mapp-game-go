@@ -175,6 +175,8 @@
   {
     "id": "dragon",
     "allowed_factions": ["targaryen"],
+    "max_per_faction": 3,
+    "cannot_reproduce": true,
     "image": "army/dragon.png",
     "name": "Dragon",
     "name_tr": "Ejderha",

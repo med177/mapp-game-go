@@ -1,9 +1,13 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-06
+last_updated: 2026-10-07
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-07: Birim tanımlarına faction başına `max_per_faction` üretim sınırı ve
+  `cannot_reproduce` seçeneği eklendi. Aktif oyuncu/AI üretimi, üretim kuyruğu ve
+  tamamlanmış üretim geçmişi save/load akışında aynı state kontrolünü kullanıyor.
 
 - 2026-10-06: 298 senaryosunda uzun kış eventinin tahıl üretimi, talebi, ticaret
   ve ordu ikmal etkileri JSON'daki `effect_duration_turns` alanıyla 36 tur

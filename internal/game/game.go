@@ -4697,6 +4697,10 @@ func (g *Game) recruitSpecific(rid world.RegionID, unitTypeID string, quantity i
 		g.renderer.ShowCombatResult("Bu fraksiyon bu birimi üretemez.")
 		return
 	}
+	if !g.gs.CanQueueUnit(g.gs.PlayerFactionID, unitTypeID, quantity) {
+		g.renderer.ShowCombatResult("Bu birim için faction başına üretim sınırı dolu.")
+		return
+	}
 	f, ok := g.gs.Factions[g.gs.PlayerFactionID]
 	if !ok {
 		return

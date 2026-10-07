@@ -709,7 +709,7 @@ func aiExecuteNavalMissionProduction(gs *state.GameState, fid faction.FactionID,
 		if currentUnits+aiPendingNavalUnitCount(gs, mission.EmbarkSeaRegionID, fid) >= army.MaxArmySize {
 			break
 		}
-		if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(self, transportType, budget, aiBudgetNaval) {
+		if !aiCanQueueNavalUnit(gs, fid, transportType.ID) || !aiApplyUnitCostForBudget(self, transportType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, embarkRegion.ID, "transport", transportType.TurnsRequired)
@@ -785,7 +785,7 @@ func aiProduceMissionEscortIfNeeded(gs *state.GameState, fid faction.FactionID, 
 		if currentUnits+aiPendingNavalUnitCount(gs, mission.EmbarkSeaRegionID, fid) >= army.MaxArmySize {
 			break
 		}
-		if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
+		if !aiCanQueueNavalUnit(gs, fid, warshipType.ID) || !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, embarkRegion.ID, warshipType.ID, warshipType.TurnsRequired)

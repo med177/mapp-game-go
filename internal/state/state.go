@@ -488,6 +488,9 @@ type GameState struct {
 	// Devam eden üretimler
 	ProductionQueue   []ProductionOrder `json:"production_queue"`
 	NextProductionSeq int               `json:"next_production_seq"`
+	// Faction başına tamamlanmış birim üretimi. Özel birimlerin yok edilmesi
+	// sonrasında yeniden üretilmemesi kuralı için save'de korunur.
+	CompletedUnitProductions map[string]map[string]int `json:"completed_unit_productions,omitempty"`
 
 	// Sıradaki ordu ID üretmek için sayaç
 	NextArmySeq      int `json:"next_army_seq"`
@@ -3755,6 +3758,67 @@ func (s *GameState) LandUnitCapacityRemaining(fid faction.FactionID) int {
 // savaşçı sınırına sığıp sığmadığını bildirir.
 func (s *GameState) CanQueueLandUnit(fid faction.FactionID) bool {
 	return s.LandUnitCapacityRemaining(fid) > 0
+}
+
+// CanQueueUnit, birim türünün faction başına üretim sınırını ve bekleyen
+// emirleri birlikte kontrol eder.
+func (s *GameState) CanQueueUnit(fid faction.FactionID, typeID string, quantity int) bool {
+	if s == nil || fid == "" || quantity < 0 {
+		return false
+	}
+	unitType := s.UnitTypes[typeID]
+	if unitType == nil || unitType.MaxPerFaction <= 0 {
+		return true
+	}
+	active := 0
+	for _, a := range s.Armies {
+		if a == nil || a.OwnerID != string(fid) {
+			continue
+		}
+		for _, unit := range a.Units {
+			if unit.TypeID == typeID {
+				active++
+			}
+		}
+		for _, unit := range a.EmbarkedUnits {
+			if unit.TypeID == typeID {
+				active++
+			}
+		}
+	}
+	queued := 0
+	for _, order := range s.ProductionQueue {
+		if order.Kind == "unit" && order.FactionID == string(fid) && order.TypeID == typeID {
+			queued++
+		}
+	}
+	used := active
+	if unitType.CannotReproduce {
+		completed := 0
+		if byType := s.CompletedUnitProductions[string(fid)]; byType != nil {
+			completed = byType[typeID]
+		}
+		if completed > used {
+			used = completed
+		}
+	}
+	return used+queued+quantity <= unitType.MaxPerFaction
+}
+
+// RecordCompletedUnitProduction, başarıyla tamamlanan üretimi geçmişe yazar.
+func (s *GameState) RecordCompletedUnitProduction(fid faction.FactionID, typeID string) {
+	if s == nil || fid == "" || typeID == "" {
+		return
+	}
+	if s.CompletedUnitProductions == nil {
+		s.CompletedUnitProductions = make(map[string]map[string]int)
+	}
+	byType := s.CompletedUnitProductions[string(fid)]
+	if byType == nil {
+		byType = make(map[string]int)
+		s.CompletedUnitProductions[string(fid)] = byType
+	}
+	byType[typeID]++
 }
 
 // MaxLandArmies bir fraksiyonun sahip olabileceği maksimum kara ordu sayısını döner.

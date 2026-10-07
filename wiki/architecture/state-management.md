@@ -200,6 +200,7 @@ type GameState struct {
 
     ProductionQueue []ProductionOrder // devam eden bina/birim üretimleri
     NextProductionSeq int             // üretim ID sayacı
+	CompletedUnitProductions map[string]map[string]int // faction başına tamamlanan özel birim üretimi
     NextArmySeq int                   // ordu ID üretici sayaç
     NextCommanderSeq int              // komutan ID üretici sayaç
 
@@ -220,6 +221,8 @@ oyuncu kararını zorunlu kılmak ve save/load sonrasında modalı geri kurmak i
 AI kontrollü HRE'de pending state oluşturulmaz; otomatik siyasi çözüm korunur.
 
 `ProductionOrder`, bina ve birim üretimlerini kayıt dosyasına yazılan tur bazlı kuyruk olarak saklar. `kind` alanı `building` veya `unit`, `type_id` ise bina ID'si veya birim tipi ID'sidir. `turns_left` her tur çözümlemede azalır; bina emirlerindeki `building_level` ise peşin ödenen hedef seviyeyi taşır ve bileşik maliyetli iptal iadesini doğru seviyeye bağlar. Eski kayıtlarda bu alan yoksa iptal akışı mevcut tamamlanmış ve bekleyen seviyelerden geriye dönük hedef seviyeyi çıkarır. Bölge aktif kuşatma altındaysa bina ve birim emirleri duraklatılır, kuşatma kalkınca aynı sayaçtan devam eder; bölge el değiştirirse o bölgedeki üretim emirleri kuyruktan silinir; sıfırlandığında üretim uygulanır.
+
+`UnitType.max_per_faction` sıfırdan büyükse birim türünün faction başına aktif ve kuyruktaki toplam üretimi bu sayıyı aşamaz. `cannot_reproduce: true` ile birlikte kullanıldığında tamamlanmış üretim geçmişi compact ve legacy save'lerde korunur; yok edilen birimin yerine yeni üretim yapılamaz. Örnek: `"max_per_faction": 3, "cannot_reproduce": true`.
 
 `GameState.CollectDefenders()` birleşik savunmaya katılan gerçek orduları `ArmyID` sırasıyla toplar. Böylece 20 birim sınırına giren kompozisyon, kaynak ordu ID listesi ve sonrasındaki kayıp dağıtımı map iterasyon sırasından bağımsızdır; aynı state ve aynı savaş zarı aynı sonucu üretir.
 

@@ -820,6 +820,9 @@ func aiRegionStrategicValue(gs *state.GameState, region *world.Region) int {
 }
 
 func aiEnqueueProduction(gs *state.GameState, fid faction.FactionID, kind string, rid world.RegionID, typeID string, turns int) state.ProductionOrder {
+	if kind == aiProductionKindUnit && !gs.CanQueueUnit(fid, typeID, 1) {
+		return state.ProductionOrder{}
+	}
 	if turns < 1 {
 		turns = 1
 	}
@@ -846,8 +849,11 @@ func aiEnqueueProduction(gs *state.GameState, fid faction.FactionID, kind string
 // aiCanQueueNavalUnit, oyuncu üretimiyle aynı toplam donanma kapasitesini
 // kullanır. Farklı AI görevleri aynı turda ayrı ayrı karar verdiği için bu
 // kontrol her deniz emrinden hemen önce yapılmalıdır.
-func aiCanQueueNavalUnit(gs *state.GameState, fid faction.FactionID) bool {
-	return gs != nil && gs.NavalUnitsIncludingQueue(fid) < gs.NavalCap(fid)
+func aiCanQueueNavalUnit(gs *state.GameState, fid faction.FactionID, typeIDs ...string) bool {
+	if gs == nil || gs.NavalUnitsIncludingQueue(fid) >= gs.NavalCap(fid) {
+		return false
+	}
+	return len(typeIDs) == 0 || gs.CanQueueUnit(fid, typeIDs[0], 1)
 }
 
 func aiQueuedBuildingCount(gs *state.GameState, rid world.RegionID, buildingID string, fid faction.FactionID) int {
@@ -2688,7 +2694,7 @@ func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid factio
 	}
 
 	// Altın kontrolü
-	if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(f, transportType, budget, aiBudgetNaval) {
+	if !aiCanQueueNavalUnit(gs, fid, transportType.ID) || !aiApplyUnitCostForBudget(f, transportType, budget, aiBudgetNaval) {
 		return
 	}
 	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "transport", transportType.TurnsRequired)
@@ -2792,7 +2798,7 @@ func aiProduceNavalDefenseAtThreatenedPort(gs *state.GameState, fid faction.Fact
 		if aiPendingUnitCountByRegion(gs, threatenedPort.ID, fid) >= aiMaxRegionQueue || aiLaneRemainingCapacity(gs, threatenedPort.ID, fid, warshipType) <= 0 {
 			break
 		}
-		if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
+		if !aiCanQueueNavalUnit(gs, fid, warshipType.ID) || !aiApplyUnitCostForBudget(self, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, threatenedPort.ID, warshipType.ID, warshipType.TurnsRequired)
@@ -2906,7 +2912,7 @@ func aiProduceEscortIfNeeded(gs *state.GameState, fid faction.FactionID, coastal
 		if currentWarshipUnits+aiPendingNavalUnitCount(gs, candidate.seaID, fid) >= army.MaxArmySize {
 			continue
 		}
-		if !aiCanQueueNavalUnit(gs, fid) || !aiApplyUnitCostForBudget(f, warshipType, budget, aiBudgetNaval) {
+		if !aiCanQueueNavalUnit(gs, fid, warshipType.ID) || !aiApplyUnitCostForBudget(f, warshipType, budget, aiBudgetNaval) {
 			break
 		}
 		aiEnqueueProduction(gs, fid, aiProductionKindUnit, candidate.region.ID, "warship", warshipType.TurnsRequired)

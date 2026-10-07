@@ -32,7 +32,11 @@ type UnitType struct {
 	// AllowedFactions boşsa birim tüm fraksiyonlar tarafından üretilebilir.
 	AllowedFactions []string `json:"allowed_factions,omitempty"`
 	// BlockedFactions, izin listesi boş olduğunda belirli fraksiyonları dışlar.
-	BlockedFactions []string     `json:"blocked_factions,omitempty"`
+	BlockedFactions []string `json:"blocked_factions,omitempty"`
+	// MaxPerFaction sıfırsa üretim sınırsızdır. CannotReproduce aktifse limit,
+	// yok edilen birimlerin yerine yenisinin üretilmesini de engeller.
+	MaxPerFaction   int          `json:"max_per_faction,omitempty"`
+	CannotReproduce bool         `json:"cannot_reproduce,omitempty"`
 	Category        UnitCategory `json:"category"`
 	Tier            UnitTier     `json:"tier"`
 	Image           string       `json:"image,omitempty"`

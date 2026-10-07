@@ -176,7 +176,7 @@ func aiPrepareNavalSupplyMission(gs *state.GameState, fid faction.FactionID, bud
 
 	fleet := gs.Armies[mission.FleetID]
 	if fleet == nil {
-		if !aiCanQueueNavalUnit(gs, fid) || !aiRegionHasPortBuilding(capital) || !transportType.HasAllRequiredTechs(self.Research.Completed) || aiPendingTransportAtRegion(gs, fid, capital.ID) > 0 || !aiCanApplySupplyTransportCost(self, transportType, budget) {
+		if !aiCanQueueNavalUnit(gs, fid, transportType.ID) || !aiRegionHasPortBuilding(capital) || !transportType.HasAllRequiredTechs(self.Research.Completed) || aiPendingTransportAtRegion(gs, fid, capital.ID) > 0 || !aiCanApplySupplyTransportCost(self, transportType, budget) {
 			return
 		}
 		if !aiApplyUnitCostForBudget(self, transportType, budget, aiBudgetNaval) {

@@ -162,6 +162,12 @@ func (g *Game) applyProductionTicks() []productionResult {
 				results = append(results, result)
 				continue
 			}
+			if !g.gs.CanQueueUnit(faction.FactionID(order.FactionID), order.TypeID, 0) {
+				result.canceled = true
+				result.reason = "faction başına birim üretim sınırı dolu"
+				results = append(results, result)
+				continue
+			}
 			if unitType != nil && !unitType.HasBuildingRequirements(region.BuildingLevels()) {
 				result.canceled = true
 				result.reason = "birim için gerekli binalar eksik"
@@ -194,6 +200,8 @@ func (g *Game) applyProductionTicks() []productionResult {
 				remaining = append(remaining, order)
 				result.delayed = true
 				result.reason = reason
+			} else {
+				g.gs.RecordCompletedUnitProduction(faction.FactionID(order.FactionID), order.TypeID)
 			}
 			results = append(results, result)
 		default:

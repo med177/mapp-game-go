@@ -165,6 +165,7 @@ type campaignSaveState struct {
 	Raids                    map[world.RegionID]*state.RaidState                `json:"rd,omitempty"`
 	ProductionQueue          []state.ProductionOrder                            `json:"pq,omitempty"`
 	NextProductionSeq        int                                                `json:"np,omitempty"`
+	CompletedUnitProductions map[string]map[string]int                          `json:"cup,omitempty"`
 	NextArmySeq              int                                                `json:"na,omitempty"`
 	NextCommanderSeq         int                                                `json:"nc,omitempty"`
 	Phase                    state.Phase                                        `json:"ph,omitempty"`
@@ -256,6 +257,7 @@ type legacyCampaignSaveState struct {
 	Raids                    map[world.RegionID]*state.RaidState                `json:"raids,omitempty"`
 	ProductionQueue          []state.ProductionOrder                            `json:"production_queue"`
 	NextProductionSeq        int                                                `json:"next_production_seq"`
+	CompletedUnitProductions map[string]map[string]int                          `json:"completed_unit_productions,omitempty"`
 	NextArmySeq              int                                                `json:"next_army_seq"`
 	NextCommanderSeq         int                                                `json:"next_commander_seq,omitempty"`
 	Phase                    state.Phase                                        `json:"phase"`
@@ -426,6 +428,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		Raids:                    cloneRaids(legacy.Raids),
 		ProductionQueue:          append([]state.ProductionOrder(nil), legacy.ProductionQueue...),
 		NextProductionSeq:        legacy.NextProductionSeq,
+		CompletedUnitProductions: cloneUnitProductionCounts(legacy.CompletedUnitProductions),
 		NextArmySeq:              legacy.NextArmySeq,
 		NextCommanderSeq:         legacy.NextCommanderSeq,
 		Phase:                    legacy.Phase,
@@ -567,6 +570,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		Raids:                    cloneRaids(gs.Raids),
 		ProductionQueue:          append([]state.ProductionOrder(nil), gs.ProductionQueue...),
 		NextProductionSeq:        gs.NextProductionSeq,
+		CompletedUnitProductions: cloneUnitProductionCounts(gs.CompletedUnitProductions),
 		NextArmySeq:              gs.NextArmySeq,
 		NextCommanderSeq:         gs.NextCommanderSeq,
 		Phase:                    gs.Phase,
@@ -673,6 +677,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		Raids:                    cloneRaids(gs.Raids),
 		ProductionQueue:          append([]state.ProductionOrder(nil), gs.ProductionQueue...),
 		NextProductionSeq:        gs.NextProductionSeq,
+		CompletedUnitProductions: cloneUnitProductionCounts(gs.CompletedUnitProductions),
 		NextArmySeq:              gs.NextArmySeq,
 		NextCommanderSeq:         gs.NextCommanderSeq,
 		Phase:                    gs.Phase,
@@ -770,6 +775,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.Raids = cloneRaids(saved.Raids)
 	gs.ProductionQueue = append([]state.ProductionOrder(nil), saved.ProductionQueue...)
 	gs.NextProductionSeq = saved.NextProductionSeq
+	gs.CompletedUnitProductions = cloneUnitProductionCounts(saved.CompletedUnitProductions)
 	gs.NextArmySeq = saved.NextArmySeq
 	if saved.Phase != "" {
 		gs.Phase = saved.Phase
@@ -1776,6 +1782,20 @@ func cloneStringIntMap(src map[string]int) map[string]int {
 	out := make(map[string]int, len(src))
 	for key, value := range src {
 		out[key] = value
+	}
+	return out
+}
+
+func cloneUnitProductionCounts(src map[string]map[string]int) map[string]map[string]int {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[string]map[string]int, len(src))
+	for factionID, counts := range src {
+		if len(counts) == 0 {
+			continue
+		}
+		out[factionID] = cloneStringIntMap(counts)
 	}
 	return out
 }
