@@ -656,6 +656,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		MinorPrivilegeProtectionTurns: sc.MinorPrivilegeProtectionTurns,
 		AggressiveExpansionLastTurns:  sc.AggressiveExpansionLastTurns,
 		DiplomacyConfig:               sc.Diplomacy.WithDefaults(),
+		AirspaceEnabled:               sc.Airspace.Enabled,
 		UndeadMechanics:               sc.UndeadMechanics.WithDefaults(),
 		FactionLore:                   factionLore,
 		SettlementLore:                settlementLore,

@@ -475,7 +475,7 @@ func (s *GameState) armyNeedsCommander(currentArmy *army.Army) bool {
 			continue
 		}
 		switch unitType.Category {
-		case army.CategoryInfantry, army.CategoryCavalry, army.CategorySiege:
+		case army.CategoryInfantry, army.CategoryCavalry, army.CategorySiege, army.CategoryDragon, army.CategoryAirborne:
 			return true
 		}
 	}

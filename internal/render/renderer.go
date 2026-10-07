@@ -2891,6 +2891,64 @@ func armyHasMovementForEmbark(a *army.Army) bool {
 	return a != nil && !a.IsNaval && a.MovePoints > 0
 }
 
+// carrierEmbarkLabel, taşıyıcı birimin görünen adına göre modal başlığını üretir.
+func carrierEmbarkLabel(gs *state.GameState, carrier *army.Army) string {
+	name := "Taşıyıcı"
+	if carrier != nil && carrier.IsNaval {
+		name = "Gemi"
+	} else if gs != nil && carrier != nil {
+		for _, unit := range carrier.Units {
+			unitType := gs.UnitTypes[unit.TypeID]
+			if unitType == nil || unitType.CarryCapacity <= 0 {
+				continue
+			}
+			if unitType.NameTR != "" {
+				name = unitType.NameTR
+			} else if unitType.Name != "" {
+				name = unitType.Name
+			}
+			break
+		}
+	}
+	return turkishDative(name) + " Bin"
+}
+
+func turkishDative(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return "Taşıyıcıya"
+	}
+	runes := []rune(name)
+	last := runes[len(runes)-1]
+	lastLower := strings.ToLower(string(last))
+	lastVowel := lastTurkishVowel(runes)
+	suffix := "a"
+	if strings.ContainsRune("eiöü", lastVowel) {
+		suffix = "e"
+	}
+	if strings.ContainsRune("aeıioöuü", []rune(lastLower)[0]) {
+		if strings.ContainsRune("eiöü", lastVowel) {
+			return name + "ye"
+		}
+		return name + "ya"
+	}
+	softened := map[rune]rune{'p': 'b', 'P': 'B', 'ç': 'c', 'Ç': 'C', 't': 'd', 'T': 'D', 'k': 'ğ', 'K': 'Ğ'}
+	if replacement, ok := softened[last]; ok {
+		runes[len(runes)-1] = replacement
+		name = string(runes)
+	}
+	return name + suffix
+}
+
+func lastTurkishVowel(runes []rune) rune {
+	for index := len(runes) - 1; index >= 0; index-- {
+		if strings.ContainsRune("aeıioöuüAEİIİOÖUÜ", runes[index]) {
+			return []rune(strings.ToLower(string(runes[index])))[0]
+		}
+	}
+	return 'a'
+}
+
 func findFriendlyEmbarkFleet(gs *state.GameState, ownerID string, seaRegionID world.RegionID, unitCount int) *army.Army {
 	return findFriendlyEmbarkFleetFromRegion(gs, ownerID, "", seaRegionID, unitCount)
 }
@@ -3004,6 +3062,9 @@ func armyRegionIsFriendly(gs *state.GameState, attacker *army.Army, target *worl
 }
 
 func shouldPromptWarConfirmForMove(gs *state.GameState, attacker *army.Army, target *world.Region) bool {
+	if gs != nil && attacker != nil && attacker.UsesAirMovement(gs.UnitTypes) && !gs.AirspaceEnabled {
+		return false
+	}
 	targetOwnerID := ""
 	if gs != nil {
 		targetOwnerID = gs.SovereignOwnerID(target)
@@ -3108,14 +3169,21 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 				_, settlementID, _ = r.navalLandMoveTargetAt(float64(mx), float64(my), a)
 			}
 			x, y := r.movementRegionScreenPos(route[index], settlementID)
-			vector.StrokeLine(screen, previousX, previousY, x, y, 7, color.RGBA{30, 70, 105, 85}, true)
-			vector.StrokeLine(screen, previousX, previousY, x, y, 2.5, color.RGBA{100, 220, 255, 215}, true)
+			if a.UsesAirMovement(r.gs.UnitTypes) {
+				drawDashedMovementLine(screen, previousX, previousY, x, y)
+			} else {
+				vector.StrokeLine(screen, previousX, previousY, x, y, 7, color.RGBA{30, 70, 105, 85}, true)
+				vector.StrokeLine(screen, previousX, previousY, x, y, 2.5, color.RGBA{100, 220, 255, 215}, true)
+			}
 			previousX, previousY = x, y
 		}
 	}
 
 	r.movementRegionBuf = r.movementRegionBuf[:0]
 	for regionID := range reachability.Nodes {
+		if !r.gs.AirSortieAllowed(a, regionID, reachability) {
+			continue
+		}
 		if regionID != a.RegionID || (a.IsNaval && a.IsDocked()) {
 			r.movementRegionBuf = append(r.movementRegionBuf, regionID)
 		}
@@ -3170,7 +3238,7 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			vector.StrokeCircle(screen, float32(sx), float32(sy), terrainAreaMoveTargetRadius, 2, terrainColor, true)
 			continue
 		}
-		if !a.IsNaval && nRegion.IsSea {
+		if !a.IsNaval && nRegion.IsSea && !a.UsesAirMovement(r.gs.UnitTypes) {
 			// Kara ordusu için deniz bölgesinin merkezini hareket hedefi
 			// olarak gösterme. Nakliye varsa gerçek hedef, aşağıdaki filo
 			// marker'ıdır; deniz merkez halkası bu hedefi anlamsız biçimde
@@ -3201,7 +3269,8 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 				col = color.RGBA{80, 160, 255, 160}
 			}
 			// Baris halindeki dusman bolgeye savas isareti
-			if nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID {
+			if nRegion.OwnerID != "" && nRegion.OwnerID != a.OwnerID &&
+				(!a.UsesAirMovement(r.gs.UnitTypes) || r.gs.AirspaceEnabled) {
 				key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(nRegion.OwnerID))
 				rel, exists := r.gs.Relations[key]
 				if !exists || rel.Stance != faction.StanceWar {
@@ -3215,7 +3284,48 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 
 		vector.StrokeCircle(screen, float32(sx), float32(sy), 18, 3, col, true)
 	}
+	if a.UsesAirMovement(r.gs.UnitTypes) {
+		for _, position := range r.armyIconPositions() {
+			targetArmy := r.gs.Armies[position.ArmyID]
+			if targetArmy == nil || targetArmy.ID == a.ID || targetArmy.OwnerID == a.OwnerID || airAttackMarkerIsFriendly(r.gs, a, targetArmy) {
+				continue
+			}
+			if _, reachable := reachability.Nodes[targetArmy.RegionID]; !reachable || !r.gs.AirSortieAllowed(a, targetArmy.RegionID, reachability) {
+				continue
+			}
+			dx := float64(mx) - float64(position.X)
+			dy := float64(my) - float64(position.Y)
+			targetColor := color.RGBA{255, 90, 70, 230}
+			if dx*dx+dy*dy <= 28*28 {
+				targetColor = movementTargetHoverColor
+			}
+			vector.StrokeCircle(screen, position.X, position.Y, 28, 3, targetColor, true)
+		}
+	}
 
+}
+
+// drawDashedMovementLine, hava hareketini kara ve deniz hareketinden ayıran
+// parlak kesikli rota çizgisini çizer.
+func drawDashedMovementLine(screen *ebiten.Image, x1, y1, x2, y2 float32) {
+	dx := float64(x2 - x1)
+	dy := float64(y2 - y1)
+	distance := math.Hypot(dx, dy)
+	if distance <= 0 {
+		return
+	}
+	ux, uy := dx/distance, dy/distance
+	const dashLength = 3.0
+	const gapLength = 4.0
+	for offset := 0.0; offset < distance; offset += dashLength + gapLength {
+		end := math.Min(offset+dashLength, distance)
+		startX := float32(float64(x1) + ux*offset)
+		startY := float32(float64(y1) + uy*offset)
+		endX := float32(float64(x1) + ux*end)
+		endY := float32(float64(y1) + uy*end)
+		vector.StrokeLine(screen, startX, startY, endX, endY, 7, color.RGBA{30, 70, 105, 85}, true)
+		vector.StrokeLine(screen, startX, startY, endX, endY, 2.5, color.RGBA{100, 220, 255, 215}, true)
+	}
 }
 
 func (r *Renderer) movementRouteForCursor(a *army.Army, reachability state.MovementReachability, mx, my float64) []world.RegionID {
@@ -3300,6 +3410,9 @@ func (r *Renderer) armyMovementTargetAt(mx, my float64, armyUnit *army.Army, rea
 	var bestRegion world.RegionID
 	for regionID := range reachability.Nodes {
 		if regionID == armyUnit.RegionID {
+			continue
+		}
+		if !r.gs.AirSortieAllowed(armyUnit, regionID, reachability) {
 			continue
 		}
 		region := r.gs.Regions[regionID]
@@ -3417,7 +3530,7 @@ func (r *Renderer) movementCursorTarget(a *army.Army, reachability state.Movemen
 			}
 		}
 		isDockedUndock := a.IsNaval && a.IsDocked() && targetID == a.RegionID
-		if _, ok := reachability.Nodes[targetID]; ok && (targetID != a.RegionID || isDockedUndock) {
+		if _, ok := reachability.Nodes[targetID]; ok && r.gs.AirSortieAllowed(a, targetID, reachability) && (targetID != a.RegionID || isDockedUndock) {
 			return targetID, "", true
 		}
 	}
@@ -3428,6 +3541,9 @@ func (r *Renderer) movementCursorTarget(a *army.Army, reachability state.Movemen
 	bestDistance := math.MaxFloat64
 	for regionID := range reachability.Nodes {
 		if regionID == a.RegionID {
+			continue
+		}
+		if !r.gs.AirSortieAllowed(a, regionID, reachability) {
 			continue
 		}
 		if a.IsNaval {
@@ -4447,6 +4563,14 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 	// Oyuncu portresi yabancı markerların üstünde kalır; markerın sol/sağ
 	// rozetleri ise portrenin üstünde görünmelidir.
 	drawCommanderLayer(true)
+	for _, pos := range positions {
+		a := r.gs.Armies[pos.ArmyID]
+		if a == nil || !a.IsTransportCarrier(r.gs.UnitTypes) || len(a.EmbarkedUnits) == 0 {
+			continue
+		}
+		detailsVisible := playerCanSeeArmyDetails(r.gs, a) || enemyArmyInPlayerMoveRange(r.gs, a)
+		r.drawEmbarkedArmyBadge(screen, a, pos.X, pos.Y, detailsVisible)
+	}
 	// Normal oyuncu markerında gövdeyle birlikte çizilmeyen kuşatma/hasar
 	// rozetlerini portreden sonra çiz; hareket sprite'ı kullanan markerlar bu
 	// rozetleri aşağıdaki sprite-rozet geçişinde alır.
@@ -4589,6 +4713,16 @@ func armyMarkerSpritePath(set armyMarkerSpriteSet, naval bool) string {
 func (r *Renderer) armyMovementSpriteFor(aid army.ArmyID, ownerID string, naval bool) *ebiten.Image {
 	if r == nil || r.gs == nil || aid == "" || ownerID == "" || ActiveScenarioPath == "" {
 		return nil
+	}
+	if selectedArmy := r.gs.Armies[aid]; selectedArmy != nil && len(selectedArmy.Units) > 0 {
+		if unitType := r.gs.UnitTypes[selectedArmy.Units[0].TypeID]; unitType != nil {
+			if unitType.UsesCategoryMarker() {
+				path := filepath.Join(ActiveScenarioPath, "sprites", "army", string(unitType.Category)+".png")
+				if img := loadArmyMarkerSpritePath(path); img != nil {
+					return img
+				}
+			}
+		}
 	}
 	set := armyMarkerSpriteWestern
 	if armySpriteSetForFaction(r.gs, ownerID) == armySpriteSetEastern {
@@ -4788,19 +4922,17 @@ func (r *Renderer) drawArmyIcon(screen *ebiten.Image, aid army.ArmyID, ownerID s
 	ty := float64(cy) - 5
 	textCol, shadowCol := armyIconCountColors(col)
 	drawUIOutlinedLabel(screen, gameui.Rect{X: tx, Y: ty}, countStr, textCol, shadowCol, gameui.TextSmall, gameui.TextAlignStart)
-	if isNaval {
-		if a != nil && len(a.EmbarkedUnits) > 0 {
-			badgeRect := navalEmbarkedArmyBadgeRect(cx, cy)
-			badgeX := float32(badgeRect.X)
-			badgeY := float32(badgeRect.Y)
-			badgeW := float32(badgeRect.W)
-			// Taşınan ordu rozeti yalnızca tek sarı bir çerçeve taşımalı;
-			// siyah alan çerçevenin iç dolgusu olarak kalır.
-			vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{8, 8, 8, 245}, true)
-			vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1, color.RGBA{244, 195, 52, 255}, true)
-			embarkedStr := navalEmbarkedArmyBadgeText(a, unitCount >= 0)
-			drawMarkerBadgeText(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2), float64(badgeW), ColorWhite)
-		}
+	if a != nil && a.IsTransportCarrier(r.gs.UnitTypes) && len(a.EmbarkedUnits) > 0 {
+		badgeRect := navalEmbarkedArmyBadgeRect(cx, cy)
+		badgeX := float32(badgeRect.X)
+		badgeY := float32(badgeRect.Y)
+		badgeW := float32(badgeRect.W)
+		// Taşınan ordu rozeti yalnızca tek sarı bir çerçeve taşımalı;
+		// siyah alan çerçevenin iç dolgusu olarak kalır.
+		vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{8, 8, 8, 245}, true)
+		vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1, color.RGBA{244, 195, 52, 255}, true)
+		embarkedStr := navalEmbarkedArmyBadgeText(a, unitCount >= 0)
+		drawMarkerBadgeText(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2), float64(badgeW), ColorWhite)
 	}
 	if drawSideBadges {
 		r.drawArmySideBadges(screen, aid, cx, cy, siegeBadgeX)
@@ -4817,6 +4949,20 @@ func (r *Renderer) drawArmySideBadges(screen *ebiten.Image, aid army.ArmyID, cx,
 		vector.FillCircle(screen, badgeX, badgeY, 5, color.RGBA{175, 48, 48, 240}, false)
 		DrawTextCentered(screen, "!", float64(badgeX), float64(badgeY)-4, FaceSmall, color.RGBA{255, 244, 232, 255})
 	}
+}
+
+func (r *Renderer) drawEmbarkedArmyBadge(screen *ebiten.Image, a *army.Army, cx, cy float32, detailsVisible bool) {
+	if r == nil || r.gs == nil || a == nil || !a.IsTransportCarrier(r.gs.UnitTypes) || len(a.EmbarkedUnits) == 0 {
+		return
+	}
+	badgeRect := navalEmbarkedArmyBadgeRect(cx, cy)
+	badgeX := float32(badgeRect.X)
+	badgeY := float32(badgeRect.Y)
+	badgeW := float32(badgeRect.W)
+	vector.FillRect(screen, badgeX, badgeY, badgeW, badgeW, color.RGBA{8, 8, 8, 245}, true)
+	vector.StrokeRect(screen, badgeX, badgeY, badgeW, badgeW, 1, color.RGBA{244, 195, 52, 255}, true)
+	embarkedStr := navalEmbarkedArmyBadgeText(a, detailsVisible)
+	drawMarkerBadgeText(screen, embarkedStr, float64(badgeX+badgeW/2), float64(badgeY+badgeW/2), float64(badgeW), ColorWhite)
 }
 
 // RefreshArmyLogisticsBadge, bir orduyu etkileyen lojistik state değişiminde

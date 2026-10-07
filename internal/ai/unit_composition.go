@@ -195,7 +195,7 @@ func aiScoreLandUnitCandidate(gs *state.GameState, self *faction.Faction, unitTy
 	}
 	qualityScore := combatValue + efficiency*efficiencyWeight + sustainedCombat*sustainedCombatWeight/8 - resourcePenalty - unitType.GrainUpkeep*upkeepMultiplier - unitType.GoldUpkeep*goldUpkeepMultiplier - turns*8
 	score := compositionNeed*4 + qualityScore
-	if unitType.Category == army.CategorySiege && needs.FortifiedTarget {
+	if unitType.IsSiegeUnit() && needs.FortifiedTarget {
 		if needs.SiegeShortfall > 0 {
 			score += 1200
 		} else {
@@ -223,7 +223,7 @@ func aiCategoryCompositionNeed(target aiCompositionTarget, composition aiLandCom
 	case army.CategoryCavalry:
 		targetPercent = target.Cavalry
 		current = composition.Cavalry
-	case army.CategorySiege:
+	case army.CategorySiege, army.CategoryDragon:
 		targetPercent = target.Siege
 		current = composition.Siege
 	default:
@@ -247,7 +247,7 @@ func aiFactionLandComposition(gs *state.GameState, fid faction.FactionID) aiLand
 			composition.Infantry++
 		case army.CategoryCavalry:
 			composition.Cavalry++
-		case army.CategorySiege:
+		case army.CategorySiege, army.CategoryDragon:
 			composition.Siege++
 		default:
 			return
@@ -370,7 +370,7 @@ func aiOffensiveSiegeShortfall(gs *state.GameState, fid faction.FactionID, ctx *
 			continue
 		}
 		for _, unit := range armyRef.Units {
-			if unitType := gs.UnitTypes[unit.TypeID]; unitType != nil && unitType.Category == army.CategorySiege {
+			if unitType := gs.UnitTypes[unit.TypeID]; unitType != nil && unitType.IsSiegeUnit() {
 				activeSiegeUnits++
 			}
 		}
@@ -401,7 +401,7 @@ func aiOffensiveSiegeShortfall(gs *state.GameState, fid faction.FactionID, ctx *
 			break
 		}
 		unitType := gs.UnitTypes[order.TypeID]
-		if order.Kind == aiProductionKindUnit && order.FactionID == string(fid) && unitType != nil && unitType.Category == army.CategorySiege {
+		if order.Kind == aiProductionKindUnit && order.FactionID == string(fid) && unitType != nil && unitType.IsSiegeUnit() {
 			missing--
 		}
 	}
@@ -521,7 +521,8 @@ func aiUnitResourceCost(unitType *army.UnitType) economy.ResourceCost {
 }
 
 func aiLandUnitCategory(category army.UnitCategory) bool {
-	return category == army.CategoryInfantry || category == army.CategoryCavalry || category == army.CategorySiege
+	return category == army.CategoryInfantry || category == army.CategoryCavalry ||
+		category == army.CategorySiege || category == army.CategoryDragon || category == army.CategoryAirborne
 }
 
 func aiUnitCandidateBetter(candidate, best aiUnitCandidate) bool {

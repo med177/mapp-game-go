@@ -120,7 +120,110 @@ func (s *GameState) MovementRouteForArmy(a *army.Army, target world.RegionID) []
 	if s == nil || a == nil || target == "" {
 		return nil
 	}
-	return s.MovementReachableForArmy(a).PathTo(target)
+	reachability := s.MovementReachableForArmy(a)
+	if !s.AirSortieAllowed(a, target, reachability) {
+		return nil
+	}
+	return reachability.PathTo(target)
+}
+
+// AirSortieRequired, uçan ordunun hedef bölgede kalamayacağı hareketleri
+// sortie olarak işaretler. Bu hedeflerde ordu hareket puanının yarısıyla gider
+// ve hareket çözümlemesi tamamlandığında başlangıç bölgesine döner.
+func (s *GameState) AirSortieRequired(a *army.Army, targetID world.RegionID) bool {
+	if s == nil || a == nil || !a.UsesAirMovement(s.UnitTypes) {
+		return false
+	}
+	target := s.Regions[targetID]
+	if target == nil || target.IsSea {
+		return true
+	}
+	ownerID := s.SovereignOwnerID(target)
+	return ownerID == "" || (ownerID != a.OwnerID && !s.movementOwnerCanTransit(a.OwnerID, ownerID))
+}
+
+// AirSortieBudget, yerleşilemeyen hava hedefleri için tek yön menzilini döner.
+func (s *GameState) AirSortieBudget(a *army.Army) int {
+	if s == nil || a == nil || a.MovePoints <= 0 {
+		return 0
+	}
+	budget := a.MovePoints / 2
+	if budget == 0 {
+		budget = 1
+	}
+	return budget
+}
+
+// AirSortieAllowed, hedefin normal hava hareketi veya yarım menzilli sortie
+// olarak seçilebilir olup olmadığını doğrular.
+func (s *GameState) AirSortieAllowed(a *army.Army, targetID world.RegionID, reachability MovementReachability) bool {
+	node, ok := reachability.Nodes[targetID]
+	if !ok || !s.AirSortieRequired(a, targetID) {
+		return ok
+	}
+	return node.Cost <= s.AirSortieBudget(a)
+}
+
+// BeginAirSortie, yerleşilemeyen hava hedefi için dönüş bağlamını başlatır.
+func (s *GameState) BeginAirSortie(a *army.Army, targetID world.RegionID) bool {
+	if s == nil || a == nil || !s.AirSortieRequired(a, targetID) {
+		return false
+	}
+	if a.AirSortieOriginID == "" {
+		a.AirSortieOriginID = a.RegionID
+		a.AirSortieTargetID = targetID
+		a.AirSortieOutboundCost = 0
+	}
+	return a.AirSortieOriginID != "" && a.AirSortieTargetID == targetID
+}
+
+// RecordAirSortieStep, sortie rotasının tükettiği tek yön hareket puanını
+// kaydeder.
+func (s *GameState) RecordAirSortieStep(a *army.Army, cost int) {
+	if s == nil || a == nil || a.AirSortieOriginID == "" || cost <= 0 {
+		return
+	}
+	a.AirSortieOutboundCost += cost
+}
+
+// FinishAirSortie, uçan ordu hedefe ulaştığında onu başlangıç bölgesine döner.
+func (s *GameState) FinishAirSortie(a *army.Army, targetID world.RegionID) bool {
+	if !s.QueueAirSortieReturn(a, targetID) {
+		return false
+	}
+	return s.CompleteAirSortieReturn(a)
+}
+
+// QueueAirSortieReturn, sortie hedefindeki çözümleme tamamlandıktan sonra
+// dönüşün görsel hareket animasyonuyla yapılması için dönüşü beklemeye alır.
+func (s *GameState) QueueAirSortieReturn(a *army.Army, targetID world.RegionID) bool {
+	if s == nil || a == nil || a.AirSortieOriginID == "" || a.AirSortieTargetID != targetID {
+		return false
+	}
+	a.AirSortieReturnPending = true
+	return true
+}
+
+// CompleteAirSortieReturn, bekleyen sortie dönüşünü state üzerinde tamamlar.
+func (s *GameState) CompleteAirSortieReturn(a *army.Army) bool {
+	if s == nil || a == nil || !a.AirSortieReturnPending || a.AirSortieOriginID == "" {
+		return false
+	}
+	origin := a.AirSortieOriginID
+	returnCost := a.AirSortieOutboundCost
+	a.PreviousRegionID = a.RegionID
+	a.RegionID = origin
+	a.DockedRegionID = ""
+	a.DockedSettlementID = ""
+	a.MovePoints -= returnCost
+	if a.MovePoints < 0 {
+		a.MovePoints = 0
+	}
+	a.AirSortieOriginID = ""
+	a.AirSortieTargetID = ""
+	a.AirSortieOutboundCost = 0
+	a.AirSortieReturnPending = false
+	return true
 }
 
 func movementRouteNodeBetter(cost int, previous world.RegionID, existing MovementRouteNode) bool {
@@ -183,7 +286,8 @@ func (s *GameState) movementRegionCanTransit(a *army.Army, region *world.Region)
 		return false
 	}
 	regionOwnerID := s.SovereignOwnerID(region)
-	if regionOwnerID != "" && regionOwnerID != a.OwnerID && !s.movementOwnerCanTransit(a.OwnerID, regionOwnerID) {
+	if regionOwnerID != "" && regionOwnerID != a.OwnerID &&
+		(!airborne || s.AirspaceEnabled) && !s.movementOwnerCanTransit(a.OwnerID, regionOwnerID) {
 		return false
 	}
 	// Başka bir ordunun bulunduğu bölge, rota için güvenli bir transit noktası

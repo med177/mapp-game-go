@@ -45,15 +45,21 @@ type Army struct {
 	// PreviousRegionID, ordunun son kara hareketinden önce bulunduğu bölgedir.
 	// Eski kayıtlar için boş bırakılabilir; yalnızca geri çekilme gibi bağlamlarda
 	// güvenilir bir hedef olarak kullanılır.
-	PreviousRegionID   world.RegionID `json:"previous_region_id,omitempty"`
-	DockedRegionID     world.RegionID `json:"docked_region_id,omitempty"`
-	DockedSettlementID string         `json:"docked_settlement_id,omitempty"`
-	Units              []Unit         `json:"units"`
-	EmbarkedUnits      []Unit         `json:"embarked_units,omitempty"` // filo içindeki kara birimleri
-	MovePoints         int            `json:"move_points"`              // bu turda kalan hareket puanı
-	MaxMovePoints      int            `json:"max_move_points"`
-	IsNaval            bool           `json:"is_naval"` // deniz ordusu mu?
-	IsGarrison         bool           `json:"is_garrison,omitempty"`
+	PreviousRegionID world.RegionID `json:"previous_region_id,omitempty"`
+	// AirSortie... uçan ordunun yerleşemediği hedefe gidip başlangıç bölgesine
+	// dönmesi için hareket emri boyunca tutulan geçici kayıt bilgisidir.
+	AirSortieOriginID      world.RegionID `json:"air_sortie_origin_id,omitempty"`
+	AirSortieTargetID      world.RegionID `json:"air_sortie_target_id,omitempty"`
+	AirSortieOutboundCost  int            `json:"air_sortie_outbound_cost,omitempty"`
+	AirSortieReturnPending bool           `json:"air_sortie_return_pending,omitempty"`
+	DockedRegionID         world.RegionID `json:"docked_region_id,omitempty"`
+	DockedSettlementID     string         `json:"docked_settlement_id,omitempty"`
+	Units                  []Unit         `json:"units"`
+	EmbarkedUnits          []Unit         `json:"embarked_units,omitempty"` // filo içindeki kara birimleri
+	MovePoints             int            `json:"move_points"`              // bu turda kalan hareket puanı
+	MaxMovePoints          int            `json:"max_move_points"`
+	IsNaval                bool           `json:"is_naval"` // deniz ordusu mu?
+	IsGarrison             bool           `json:"is_garrison,omitempty"`
 	// Morale ordunun mevcut ikmal/komuta dayanıklılığını temsil eder.
 	// Eski save'lerde alan bulunmadığı için 0, CurrentMorale tarafından 100
 	// başlangıç morali olarak yorumlanır.
@@ -273,6 +279,12 @@ func (a *Army) UsesAirMovement(types map[string]*UnitType) bool {
 	return true
 }
 
+// CanCaptureLand, ordunun kara bÃ¶lgesini fetih sonrasÄ± elinde tutup tutamayacaÄŸÄ±nÄ± bildirir.
+// Tamamen uÃ§an birliklerden oluÅŸan ordular kara iÅŸgali yapamaz.
+func (a *Army) CanCaptureLand(types map[string]*UnitType) bool {
+	return a != nil && !a.IsNaval && !a.UsesAirMovement(types)
+}
+
 // CountsTowardArmyLimit ordu kara saha ordusu limitine dahil mi?
 func (a *Army) CountsTowardArmyLimit() bool {
 	return a != nil && !a.IsNaval && !a.IsGarrison && len(a.Units) > 0
@@ -336,15 +348,15 @@ func (a *Army) CanSplit() bool {
 	return a != nil && len(a.Units) >= 2 && len(a.EmbarkedUnits) == 0
 }
 
-// TransportCapacity filodaki nakliye gemilerinin toplam kapasitesini döner.
+// TransportCapacity ordunun taşıyıcı birimlerinin toplam kapasitesini döner.
 func (a *Army) TransportCapacity(types map[string]*UnitType) int {
-	if a == nil || !a.IsNaval {
+	if a == nil {
 		return 0
 	}
 	total := 0
 	for _, u := range a.Units {
 		t, ok := types[u.TypeID]
-		if !ok || t == nil || t.Category != CategoryNavalTrans || t.CarryCapacity <= 0 {
+		if !ok || t == nil || t.CarryCapacity <= 0 {
 			continue
 		}
 		total += t.CarryCapacity
@@ -353,6 +365,12 @@ func (a *Army) TransportCapacity(types map[string]*UnitType) int {
 		total = MaxArmySize
 	}
 	return total
+}
+
+// IsTransportCarrier, taşıma kapasitesi bulunan herhangi bir orduyu bildirir.
+// Taşıyıcının deniz, hava veya başka bir hareket kategorisinde olması önemli değildir.
+func (a *Army) IsTransportCarrier(types map[string]*UnitType) bool {
+	return a != nil && a.TransportCapacity(types) > 0
 }
 
 // AvailableTransportCapacity filoda kalan taşıma slotunu döner.
@@ -449,7 +467,7 @@ func (a *Army) SiegeUnitScore(types map[string]*UnitType) int {
 	score := 0
 	for _, u := range a.Units {
 		t, ok := types[u.TypeID]
-		if !ok || t == nil || t.Category != CategorySiege {
+		if !ok || t == nil || !t.IsSiegeUnit() {
 			continue
 		}
 		score += 2 + int(t.Tier)
@@ -464,7 +482,7 @@ func (a *Army) HighestSiegeTier(types map[string]*UnitType) int {
 	best := 0
 	for _, u := range a.Units {
 		t, ok := types[u.TypeID]
-		if !ok || t == nil || t.Category != CategorySiege {
+		if !ok || t == nil || !t.IsSiegeUnit() {
 			continue
 		}
 		if tier := int(t.Tier); tier > best {
@@ -483,7 +501,7 @@ func (a *Army) HighestSiegeBreachFortLevel(types map[string]*UnitType) int {
 	best := 0
 	for _, u := range a.Units {
 		t, ok := types[u.TypeID]
-		if !ok || t == nil || t.Category != CategorySiege {
+		if !ok || t == nil || !t.IsSiegeUnit() {
 			continue
 		}
 		maxFortLevel := int(t.Tier) + 2

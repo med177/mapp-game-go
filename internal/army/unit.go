@@ -7,6 +7,8 @@ const (
 	CategoryInfantry   UnitCategory = "infantry"
 	CategoryCavalry    UnitCategory = "cavalry"
 	CategorySiege      UnitCategory = "siege"
+	CategoryDragon     UnitCategory = "dragon"
+	CategoryAirborne   UnitCategory = "airborne"
 	CategoryNavalWar   UnitCategory = "naval_war"
 	CategoryNavalTrans UnitCategory = "naval_trans"
 	CategoryNavalTrade UnitCategory = "naval_trade"
@@ -99,7 +101,29 @@ type UnitType struct {
 
 // UsesAirMovement, hareket türü alanı eksik eski birimleri kara birimi kabul eder.
 func (t *UnitType) UsesAirMovement() bool {
-	return t != nil && t.MovementType == MovementTypeAir
+	if t == nil {
+		return false
+	}
+	if t.Category == CategoryDragon || t.Category == CategoryAirborne {
+		return true
+	}
+	return t.MovementType == MovementTypeAir
+}
+
+// UsesCategoryMarker, birimin standart army/marine marker'Ä± yerine kategori
+// adÄ±yla Ã¶zel bir marker kullanÄ±p kullanmayacaÄŸÄ±nÄ± bildirir.
+func (t *UnitType) UsesCategoryMarker() bool {
+	return t != nil && (t.Category == CategoryDragon || t.Category == CategoryAirborne)
+}
+
+// IsSiegeUnit, kategori farklÄ± olsa da kuÅŸatma alanlarÄ± tanÄ±mlanmÄ±ÅŸ Ã¶zel
+// birimlerin kuÅŸatma ekipmanÄ± olarak kullanÄ±labilmesini saÄŸlar.
+func (t *UnitType) IsSiegeUnit() bool {
+	if t == nil {
+		return false
+	}
+	return t.Category == CategorySiege || t.SiegeBreachMultiplier != 0 ||
+		t.SiegeBreachMaxFortLevel != 0 || t.SiegeDefensePressure != 0
 }
 
 // IsAvailableToFaction birimin verilen fraksiyon tarafından üretilebilir olup

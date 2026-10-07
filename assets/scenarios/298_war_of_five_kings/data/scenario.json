@@ -5,6 +5,9 @@
   "version": "1.0",
   "author": "Mapp Team",
   "period": "medieval",
+  "airspace": {
+    "enabled": false
+  },
   "turn_months": 1,
   "year": 295,
   "month": 1,

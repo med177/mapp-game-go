@@ -3,6 +3,7 @@ package render
 import (
 	"image"
 	"image/color"
+	"sort"
 	"strings"
 
 	"mapp-game-go/internal/scenario"
@@ -232,6 +233,36 @@ func regionDisplayNames(gs *state.GameState, regionTargets []string) []string {
 	return regionNames
 }
 
+func localizeVictoryText(gs *state.GameState, text string, regionTargets []string) string {
+	if gs == nil || text == "" {
+		return text
+	}
+	type regionNamePair struct {
+		name   string
+		nameTR string
+	}
+	regionNames := make([]regionNamePair, 0, len(regionTargets))
+	seen := make(map[string]struct{}, len(regionTargets))
+	for _, regionID := range regionTargets {
+		region, ok := gs.Regions[world.RegionID(regionID)]
+		if !ok || region == nil || region.Name == "" || region.NameTR == "" || region.Name == region.NameTR {
+			continue
+		}
+		if _, ok := seen[region.Name]; ok {
+			continue
+		}
+		seen[region.Name] = struct{}{}
+		regionNames = append(regionNames, regionNamePair{name: region.Name, nameTR: region.NameTR})
+	}
+	sort.SliceStable(regionNames, func(i, j int) bool {
+		return len(regionNames[i].name) > len(regionNames[j].name)
+	})
+	for _, regionName := range regionNames {
+		text = strings.ReplaceAll(text, regionName.name, regionName.nameTR)
+	}
+	return text
+}
+
 func formatVictoryDeadline(year, month int) string {
 	if year <= 0 {
 		return ""
@@ -269,7 +300,7 @@ func victoryTargetSummary(gs *state.GameState, opt scenario.VictoryOptionDef) st
 		if len(parts) > 0 {
 			return strings.Join(parts, "  |  ")
 		}
-		return opt.Detail
+		return localizeVictoryText(gs, opt.Detail, opt.RegionTargets())
 	}
 
 	switch opt.Type {
@@ -315,9 +346,9 @@ func victoryTargetSummary(gs *state.GameState, opt scenario.VictoryOptionDef) st
 	}
 
 	if deadline != "" {
-		return appendDeadline([]string{opt.Detail})
+		return appendDeadline([]string{localizeVictoryText(gs, opt.Detail, opt.RegionTargets())})
 	}
-	return opt.Detail
+	return localizeVictoryText(gs, opt.Detail, opt.RegionTargets())
 }
 
 func currentVictoryOption(gs *state.GameState) (scenario.VictoryOptionDef, bool) {
@@ -438,7 +469,8 @@ func DrawVictorySelect(screen *ebiten.Image, gs *state.GameState, cursor int, sc
 			titleMaxW := badgeRect.X - rect.X - 34
 			title := trimTextToWidth(opt.Title, FaceMed, titleMaxW)
 			drawUILabel(body, gameui.Rect{X: rect.X + 18, Y: y + 14, W: titleMaxW}, title, titleCol, gameui.TextLarge, gameui.TextAlignStart)
-			drawUIWrappedLabel(body, gameui.Rect{X: rect.X + 18, Y: y + 42, W: rect.W - 36}, opt.Description, ColorGray, gameui.TextMedium, 19, 2)
+			description := localizeVictoryText(gs, opt.Description, opt.RegionTargets())
+			drawUIWrappedLabel(body, gameui.Rect{X: rect.X + 18, Y: y + 42, W: rect.W - 36}, description, ColorGray, gameui.TextMedium, 19, 2)
 			targetSummary := victoryTargetSummary(gs, opt)
 			drawUIWrappedLabel(body, gameui.Rect{X: rect.X + 18, Y: y + 84, W: rect.W - 36}, targetSummary, color.RGBA{140, 120, 80, 220}, gameui.TextSmall, 16, 2)
 		}

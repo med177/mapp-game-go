@@ -1688,7 +1688,7 @@ func buildVictoryDetailContentLines(gs *state.GameState) victoryDetailContent {
 	targetSummary := activeVictoryTargetSummary(gs)
 	longSummary := targetSummary
 	if hasOpt {
-		desc = opt.Description
+		desc = localizeVictoryText(gs, opt.Description, opt.RegionTargets())
 		if sum := victoryTargetSummary(gs, opt); sum != "" {
 			longSummary = sum
 		}
@@ -1775,7 +1775,7 @@ func buildVictoryDetailContentLines(gs *state.GameState) victoryDetailContent {
 		addGap(14)
 		appendSectionLabel("Not")
 		addGap(18)
-		appendWrapped(opt.Detail, FaceSmall, color.RGBA{168, 154, 126, 220}, gameui.TextSmall, 17)
+		appendWrapped(localizeVictoryText(gs, opt.Detail, opt.RegionTargets()), FaceSmall, color.RGBA{168, 154, 126, 220}, gameui.TextSmall, 17)
 	}
 
 	return victoryDetailContent{

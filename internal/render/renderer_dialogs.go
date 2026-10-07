@@ -920,6 +920,7 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 		Kind:          ActionDeclareWar,
 		TargetFaction: faction.FactionID(wc.factionID),
 		WarAllies:     selectedWarAlliesFromState(wc),
+		TargetArmyID:  wc.pendingEnemy,
 	}
 	if wc.pendingArmy == "" || wc.pendingDest == "" {
 		return action

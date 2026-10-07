@@ -320,7 +320,7 @@ func aiResearchUnitUnlockScore(gs *state.GameState, self *faction.Faction, techn
 			need := aiCategoryCompositionNeed(signals.CompositionTarget, signals.Composition, unitType.Category)
 			needPercent := need / maxInt(1, signals.Composition.Total+1)
 			unlockValue += minInt(180, needPercent*4)
-			if unitType.Category == army.CategorySiege && signals.BattleNeeds.FortifiedTarget && signals.BattleNeeds.SiegeShortfall > 0 {
+			if unitType.IsSiegeUnit() && signals.BattleNeeds.FortifiedTarget && signals.BattleNeeds.SiegeShortfall > 0 {
 				unlockValue += 220
 			}
 			if !aiFactionHasUnitBuildingLevel(gs, self.ID, unitType) {

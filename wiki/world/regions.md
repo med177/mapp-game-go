@@ -254,13 +254,32 @@ Ordu hareketi bu listeyle kısıtlanır: sadece direkt komşuya hareket.
 
 ## Uçan Birim Hareketi
 
-Uçan birimler `units.json` içinde `movement_type: "air"` ile tanımlanır.
-`category` savaş rolünü korur; hareket modeli ayrı bir veri sözleşmesidir.
+Uçan birimler `units.json` içinde `category: "dragon"` veya
+`category: "airborne"` ile tanımlanır. Eski `movement_type: "air"` alanı
+geriye dönük uyumluluk için desteklenir.
 Uçan birimlerden oluşan ordular kara ve deniz komşuları arasında hareket
 edebilir. Boyalı arazi alanlarının kilit ve ek hareket maliyetlerini,
 `land_passages.json` geçiş maliyetlerini yok sayar; normal hareket puanı ve
 komşuluk grafiği yine uygulanır. Alanı olmayan eski birimlerde varsayılan
 hareket modeli `land`dir.
+
+Senaryo `scenario.json` içindeki `airspace.enabled` alanıyla uçuş erişimini
+belirler. `false` olduğunda uçan birlik yabancı hava sahasından diplomasi
+gerektirmeden geçer ve yabancı kara bölgesini ele geçirmez. `true` olduğunda
+hava sahası için aynı realm/vassal, müttefik veya savaş koşulları kara hareketi
+ile aynıdır.
+
+Uçan ordunun kendi, aynı realm/vassal veya müttefik kara bölgesine yerleşmesi
+normal hareket bütçesini kullanır. Deniz, düşman veya sahipsiz kara hedefleri
+yerleşilemeyen sortie hedefidir; tek yön menzili mevcut hareket puanının yarısı
+ile sınırlanır ve hedef çözümlemesinden sonra ordu çıkış bölgesine döner. Bu
+ordular kara bölgesi fethedemez. Marker seçimi `dragon` ve `airborne`
+kategorileri için sırasıyla `sprites/army/dragon.png` ve
+`sprites/army/airborne.png` dosyalarını kullanır.
+
+`carry_capacity` alanı pozitif olan her kategori taşıyıcı kabul edilir. Uygun
+kara orduları aynı taşıyıcıya yüklenebilir; taşıma durumu `EmbarkedUnits` içinde
+tutulur ve taşıyıcı rozet/panel arayüzünde taşınan birlik listesi gösterilir.
 
 ## Kilit Sistemi
 

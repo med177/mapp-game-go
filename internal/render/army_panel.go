@@ -419,7 +419,8 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 		return
 	}
 	fleet := gs.Armies[fleetID]
-	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 || !playerCanSeeArmyDetails(gs, fleet) {
+	if fleet == nil || !fleet.IsTransportCarrier(gs.UnitTypes) ||
+		len(fleet.EmbarkedUnits) == 0 || !playerCanSeeArmyDetails(gs, fleet) {
 		return
 	}
 
@@ -696,7 +697,7 @@ func scoutedEnemyArmyStrength(gs *state.GameState, a *army.Army, fullIntel bool,
 }
 
 func armyTransportFooterText(gs *state.GameState, a *army.Army) string {
-	if gs == nil || a == nil || !a.IsNaval {
+	if gs == nil || a == nil || !a.IsTransportCarrier(gs.UnitTypes) {
 		return ""
 	}
 	capacity := a.TransportCapacity(gs.UnitTypes)
@@ -755,7 +756,7 @@ func drawArmyPowerFooter(screen *ebiten.Image, gs *state.GameState, a *army.Army
 }
 
 func transportInfoButtonStyleFor(a *army.Army) gameui.ButtonStyle {
-	if a != nil && a.IsNaval && len(a.EmbarkedUnits) > 0 {
+	if a != nil && len(a.EmbarkedUnits) > 0 {
 		return transportInfoButtonLoadedStyle
 	}
 	return transportInfoButtonStyle
@@ -782,7 +783,7 @@ func armyTransportInfoButtonRect(gs *state.GameState, aid army.ArmyID) (gameui.R
 		return gameui.Rect{}, false
 	}
 	a := gs.Armies[aid]
-	if a == nil || !a.IsNaval || armyTransportFooterText(gs, a) == "" {
+	if a == nil || !a.IsTransportCarrier(gs.UnitTypes) || armyTransportFooterText(gs, a) == "" {
 		return gameui.Rect{}, false
 	}
 	footer := armyPanelFooterLayoutFor(gs, a, armyPanelGeometry())
@@ -1046,7 +1047,7 @@ func armyPanelUnitCategoryRank(unitTypes map[string]*army.UnitType, typeID strin
 		return 0
 	case army.CategoryCavalry:
 		return 1
-	case army.CategorySiege:
+	case army.CategorySiege, army.CategoryDragon:
 		return 2
 	default:
 		return 3

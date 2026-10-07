@@ -5,6 +5,13 @@ last_updated: 2026-10-07
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-07: `dragon` ve `airborne` kategorisindeki uçan ordular için deniz ve
+  yerleşilemeyen kara hedeflerinde yarım menzilli sortie hareketi eklendi.
+  Hedefe varıştan sonra ordu çıkış bölgesine döner; kendi, aynı realm/vassal veya
+  müttefik kara bölgelerine normal menzille yerleşebilir. Uçan ordular kara
+  fethedemez. Kapsam: `internal/{army,state,game,ai,render}`; doğrulama:
+  `go test ./internal/army ./internal/state ./internal/render ./internal/game ./internal/ai`.
+
 - 2026-10-07: Birim tanımlarına faction başına `max_per_faction` üretim sınırı ve
   `cannot_reproduce` seçeneği eklendi. Aktif oyuncu/AI üretimi, üretim kuyruğu ve
   tamamlanmış üretim geçmişi save/load akışında aynı state kontrolünü kullanıyor.

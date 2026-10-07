@@ -324,7 +324,7 @@ func merchantTradeBonusTooltipText(gs *state.GameState, fleet *army.Army) (strin
 }
 
 func navalEmbarkedArmyTooltipText(fleet *army.Army) (string, string, bool) {
-	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+	if fleet == nil || len(fleet.EmbarkedUnits) == 0 {
 		return "", "", false
 	}
 	return "Nakliye Görevi", "Taşınan ordu " + itoa(len(fleet.EmbarkedUnits)) + " birim", true

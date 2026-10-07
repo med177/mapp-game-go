@@ -188,13 +188,13 @@ func siegeForceForArmy(gs *state.GameState, attacker *army.Army, fortLevel int) 
 	for _, unit := range attacker.Units {
 		unitType := gs.UnitTypes[unit.TypeID]
 		maxFortLevel := 0
-		if unitType != nil && unitType.Category == army.CategorySiege {
+		if unitType != nil && unitType.IsSiegeUnit() {
 			maxFortLevel = int(unitType.Tier) + 2
 			if unitType.SiegeBreachMaxFortLevel > maxFortLevel {
 				maxFortLevel = unitType.SiegeBreachMaxFortLevel
 			}
 		}
-		if unitType == nil || unitType.Category != army.CategorySiege || fortLevel > maxFortLevel {
+		if unitType == nil || !unitType.IsSiegeUnit() || fortLevel > maxFortLevel {
 			continue
 		}
 		hp := unit.CurrentHP

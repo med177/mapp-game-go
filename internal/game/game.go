@@ -55,6 +55,7 @@ type Game struct {
 	supplyFollowDepth                 int
 	pendingWarFollowUp                *render.InputAction
 	pendingPlayerMovement             *pendingPlayerMovement
+	pendingAirAttackArmyID            army.ArmyID
 	warDeclarationContinuationPending bool
 	loadSelectReturnPhase             state.Phase
 	lastLandUnitID                    string
@@ -74,10 +75,13 @@ type pendingSortieState struct {
 }
 
 type pendingPlayerMovement struct {
-	armyID             army.ArmyID
-	steps              []world.RegionID
-	targetSettlementID string
-	forceDisembark     bool
+	armyID                 army.ArmyID
+	steps                  []world.RegionID
+	targetSettlementID     string
+	targetArmyID           army.ArmyID
+	airSortieReturn        bool
+	returnAnimationStarted bool
+	forceDisembark         bool
 }
 
 type aiTurnState struct {
@@ -4558,6 +4562,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		MinorPrivilegeProtectionTurns: minorPrivilegeProtectionTurns,
 		AggressiveExpansionLastTurns:  aggressiveExpansionLastTurns,
 		DiplomacyConfig:               diplomacyConfig,
+		AirspaceEnabled:               sc.Airspace.Enabled,
 		UndeadMechanics:               sc.UndeadMechanics.WithDefaults(),
 		FactionLore:                   factionLore,
 		SettlementLore:                settlementLore,
@@ -4969,7 +4974,7 @@ func (g *Game) productionCapacityReason(unitTypeID string) string {
 }
 
 func (g *Game) fleetHasTransportCapacity(fleet *army.Army, unitCount int) bool {
-	if g == nil || g.gs == nil || fleet == nil || !fleet.IsNaval {
+	if g == nil || g.gs == nil || fleet == nil || !fleet.IsTransportCarrier(g.gs.UnitTypes) {
 		return false
 	}
 	return fleet.CanEmbarkUnits(g.gs.UnitTypes, unitCount)
@@ -5050,14 +5055,18 @@ func (g *Game) embarkArmyOntoFleet(armyID, fleetID army.ArmyID) {
 		return
 	}
 	fleet := g.gs.Armies[fleetID]
-	if fleet == nil || !fleet.IsNaval || fleet.OwnerID != a.OwnerID {
+	if fleet == nil || !fleet.IsTransportCarrier(g.gs.UnitTypes) || fleet.OwnerID != a.OwnerID {
 		return
 	}
 	if !g.canEmbarkLandArmy(a) {
 		g.renderer.ShowCombatResult(g.embarkBlockedMessage(a))
 		return
 	}
-	if !g.fleetCanEmbarkFromRegion(fleet, a.RegionID) {
+	if fleet.IsNaval && !g.fleetCanEmbarkFromRegion(fleet, a.RegionID) {
+		g.renderer.ShowCombatResult("Bu filo bu bölgeden yükleme menzilinde değil.")
+		return
+	}
+	if !fleet.IsNaval && fleet.RegionID != a.RegionID {
 		g.renderer.ShowCombatResult("Bu filo bu bölgeden yükleme menzilinde değil.")
 		return
 	}
@@ -5070,7 +5079,7 @@ func (g *Game) embarkArmyOntoFleet(armyID, fleetID army.ArmyID) {
 	g.gs.MoveCommanderIntoFleet(armyID, fleetID)
 	g.gs.RemoveArmy(armyID)
 	g.renderer.SelectedArmy = fleet.ID
-	g.renderer.ShowCombatResult(fmt.Sprintf("Ordu nakliye filosuna bindi. Kalan kapasite: %d.", fleet.AvailableTransportCapacity(g.gs.UnitTypes)))
+	g.renderer.ShowCombatResult(fmt.Sprintf("Ordu taşıyıcı birime bindi. Kalan kapasite: %d.", fleet.AvailableTransportCapacity(g.gs.UnitTypes)))
 }
 
 // assignMerchantTradeRoute oyuncunun merchant filosuna aktif bir ticaret
@@ -5284,7 +5293,7 @@ func armyHasMerchantShip(gs *state.GameState, fleet *army.Army) bool {
 }
 
 func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) *army.Army {
-	if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 {
+	if fleet == nil || (!fleet.IsNaval && !fleet.UsesAirMovement(g.gs.UnitTypes)) || len(fleet.EmbarkedUnits) == 0 {
 		return nil
 	}
 	units := make([]army.Unit, len(fleet.EmbarkedUnits))
@@ -5295,6 +5304,49 @@ func (g *Game) disembarkFleet(fleet *army.Army, target world.RegionID) *army.Arm
 		g.gs.MoveEmbarkedCommanderToArmy(fleet.ID, landed.ID)
 	}
 	return landed
+}
+
+func (g *Game) disembarkAirCarrier(carrier *army.Army, target world.RegionID) bool {
+	if g == nil || g.gs == nil || carrier == nil || !carrier.UsesAirMovement(g.gs.UnitTypes) ||
+		len(carrier.EmbarkedUnits) == 0 || carrier.RegionID != target {
+		return false
+	}
+	region := g.gs.Regions[target]
+	if region == nil || !region.CanLandEnter() {
+		return false
+	}
+	if !g.canDisembarkToAirLanding(carrier, region) {
+		if g.renderer != nil {
+			g.renderer.ShowCombatResult("Hava taşıyıcısı bu bölgeye birlik bırakamaz.")
+		}
+		return true
+	}
+	landed := g.disembarkFleet(carrier, target)
+	if landed == nil {
+		return true
+	}
+	carrier.MovePoints = max(0, carrier.MovePoints-1)
+	if g.renderer != nil {
+		g.renderer.MarkMapDirty()
+		g.renderer.SelectedArmy = landed.ID
+		g.renderer.ShowCombatResult("Birlikler hava taşıyıcısından indirildi.")
+	}
+	return true
+}
+
+func (g *Game) canDisembarkToAirLanding(carrier *army.Army, target *world.Region) bool {
+	if g == nil || g.gs == nil || carrier == nil || target == nil {
+		return false
+	}
+	ownerID := g.gs.SovereignOwnerID(target)
+	if ownerID == "" || ownerID == carrier.OwnerID {
+		return true
+	}
+	if diplomacy.SameRealm(g.gs, faction.FactionID(carrier.OwnerID), faction.FactionID(ownerID)) {
+		return true
+	}
+	rel, ok := g.gs.Relations[faction.RelationKey(faction.FactionID(carrier.OwnerID), faction.FactionID(ownerID))]
+	return ok && rel.Stance == faction.StanceAllied
 }
 
 func (g *Game) spawnDisembarkedArmy(ownerID string, target world.RegionID, units []army.Unit) *army.Army {
@@ -5552,6 +5604,23 @@ func (g *Game) forceDisembarkFleetWithStance(aid army.ArmyID, target world.Regio
 	}
 	targetRegion, ok := g.gs.Regions[target]
 	if !ok {
+		return
+	}
+	if fleet.UsesAirMovement(g.gs.UnitTypes) {
+		if target == fleet.RegionID {
+			g.disembarkAirCarrier(fleet, target)
+			return
+		}
+		if g.pendingPlayerMovement == nil {
+			if route := g.gs.MovementRouteForArmy(fleet, target); len(route) >= 2 {
+				g.pendingPlayerMovement = &pendingPlayerMovement{
+					armyID:         aid,
+					steps:          append([]world.RegionID(nil), route[1:]...),
+					forceDisembark: true,
+				}
+				g.advancePendingPlayerMovement()
+			}
+		}
 		return
 	}
 	if g.pendingPlayerMovement == nil {
@@ -6022,6 +6091,9 @@ func (g *Game) startPlayerMovement(action render.InputAction) {
 	// Savaş/temas modalından dönen hareket, daha önce onaylanmış tek bir
 	// adımdır. Bu akışı rota kuyruğuna yeniden sokmak aynı savaşı tekrarlatır.
 	if action.ContactResolved || action.NavalAttack {
+		if action.TargetArmyID != "" {
+			g.pendingAirAttackArmyID = action.TargetArmyID
+		}
 		if a := g.gs.Armies[action.ArmyID]; a != nil {
 			if route := g.gs.MovementRouteForArmy(a, action.TargetRegion); len(route) >= 2 {
 				g.renderer.StartArmyMovementAnimation(a.ID, action.TargetRegion, action.TargetSettlementID, true)
@@ -6034,15 +6106,19 @@ func (g *Game) startPlayerMovement(action render.InputAction) {
 	if a == nil || action.TargetRegion == "" {
 		return
 	}
+	g.pendingAirAttackArmyID = action.TargetArmyID
 	route := g.gs.MovementRouteForArmy(a, action.TargetRegion)
 	if len(route) < 2 {
 		g.moveArmyToSettlementWithStanceAndNavalAttack(action.ArmyID, action.TargetRegion, action.TargetSettlementID, action.BattleStance, action.NavalAttack, action.ContactResolved, action.ContactMovementConsumed, action.ContactAttackerHolding, action.ContactDefenderHolding)
+		g.pendingAirAttackArmyID = ""
 		return
 	}
+	g.gs.BeginAirSortie(a, action.TargetRegion)
 	g.pendingPlayerMovement = &pendingPlayerMovement{
 		armyID:             action.ArmyID,
 		steps:              append([]world.RegionID(nil), route[1:]...),
 		targetSettlementID: action.TargetSettlementID,
+		targetArmyID:       action.TargetArmyID,
 	}
 	g.advancePendingPlayerMovement()
 }
@@ -6062,6 +6138,23 @@ func (g *Game) advancePendingPlayerMovement() {
 		return
 	}
 	pending := g.pendingPlayerMovement
+	if pending.airSortieReturn {
+		a := g.gs.Armies[pending.armyID]
+		if a == nil {
+			g.pendingPlayerMovement = nil
+			g.pendingAirAttackArmyID = ""
+			return
+		}
+		if !pending.returnAnimationStarted {
+			g.renderer.StartArmyMovementAnimation(a.ID, a.AirSortieOriginID, "", true)
+			pending.returnAnimationStarted = true
+			return
+		}
+		g.gs.CompleteAirSortieReturn(a)
+		g.pendingPlayerMovement = nil
+		g.pendingAirAttackArmyID = ""
+		return
+	}
 	if len(pending.steps) == 0 {
 		g.pendingPlayerMovement = nil
 		return
@@ -6085,14 +6178,24 @@ func (g *Game) advancePendingPlayerMovement() {
 	fromRegion := a.RegionID
 	g.renderer.StartArmyMovementAnimation(a.ID, next, settlementID, finalStep)
 	if pending.forceDisembark && finalStep {
-		g.forceDisembarkFleetWithStance(a.ID, next, combat.BattleStanceBalanced)
+		if a.UsesAirMovement(g.gs.UnitTypes) {
+			g.pendingAirAttackArmyID = ""
+			g.moveArmyToSettlementWithStance(a.ID, next, settlementID, combat.BattleStanceBalanced)
+			if updated := g.gs.Armies[a.ID]; updated != nil && updated.RegionID == next {
+				g.disembarkAirCarrier(updated, next)
+			}
+		} else {
+			g.forceDisembarkFleetWithStance(a.ID, next, combat.BattleStanceBalanced)
+		}
 	} else {
+		g.pendingAirAttackArmyID = pending.targetArmyID
 		g.moveArmyToSettlementWithStance(a.ID, next, settlementID, combat.BattleStanceBalanced)
 	}
 
 	updated := g.gs.Armies[pending.armyID]
 	if updated == nil {
 		g.pendingPlayerMovement = nil
+		g.pendingAirAttackArmyID = ""
 		g.renderer.CancelArmyMovementAnimation()
 		return
 	}
@@ -6100,18 +6203,51 @@ func (g *Game) advancePendingPlayerMovement() {
 		// Hedef adım bir savaş/karar modalı açtı veya geçerliliğini kaybetti.
 		// Modal, mevcut tek-adımlı hareket sözleşmesiyle devam eder.
 		g.pendingPlayerMovement = nil
+		if g.gs.PendingNavalContact == nil && g.gs.PendingLandContact == nil {
+			g.pendingAirAttackArmyID = ""
+		}
 		g.renderer.CancelArmyMovementAnimation()
+		return
+	}
+	if updated.AirSortieReturnPending {
+		pending.steps = nil
+		pending.airSortieReturn = true
+		pending.returnAnimationStarted = false
 		return
 	}
 	if fromRegion == updated.RegionID {
 		g.pendingPlayerMovement = nil
+		g.pendingAirAttackArmyID = ""
 		g.renderer.CancelArmyMovementAnimation()
 		return
 	}
 	pending.steps = pending.steps[1:]
 	if len(pending.steps) == 0 {
 		g.pendingPlayerMovement = nil
+		g.pendingAirAttackArmyID = ""
 	}
+}
+
+func (g *Game) finishAirSortieMovement(a *army.Army, target world.RegionID) {
+	if g == nil || g.gs == nil || a == nil {
+		return
+	}
+	if g.renderer != nil && g.renderer.IsArmyMovementAnimating() {
+		g.gs.QueueAirSortieReturn(a, target)
+		return
+	}
+	g.gs.FinishAirSortie(a, target)
+}
+
+func airAttackTargetIsEnemy(gs *state.GameState, attacker, target *army.Army) bool {
+	if gs == nil || attacker == nil || target == nil || target.OwnerID == "" || attacker.OwnerID == target.OwnerID {
+		return false
+	}
+	if diplomacy.SameRealm(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID)) {
+		return false
+	}
+	relation := diplomacy.Relation(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
+	return relation != nil && relation.Stance == faction.StanceWar
 }
 
 // moveArmy oyuncu ordusunu hedef bölgeye taşır; gerekirse savaş başlatır.
@@ -6540,7 +6676,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		}
 	}
 	navalSeaMove := a.IsNaval && targetRegion.CanNavalEnter()
-	if !isNeighbor && !(resolved && target == a.RegionID) {
+	directAirAttack := airborne && g.pendingAirAttackArmyID != ""
+	if !isNeighbor && !(resolved && target == a.RegionID) && !directAirAttack {
 		return
 	}
 	if navalSeaMove && a.IsDocked() {
@@ -6613,7 +6750,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	// zincirinde askeri geçiş hakkı gerekir.
 	// Donanma-deniz hareketinde bu kural uygulanmaz; denizde serbest dolaşım var.
 	isAlliedRegion := neutralTerrainArea
-	if !neutralTerrainArea && !navalSeaMove && targetOwnerID != "" && targetOwnerID != a.OwnerID {
+	if !neutralTerrainArea && !navalSeaMove && targetOwnerID != "" && targetOwnerID != a.OwnerID &&
+		(!airborne || g.gs.AirspaceEnabled) {
 		if diplomacy.SameRealm(g.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetOwnerID)) {
 			isAlliedRegion = true
 		}
@@ -6626,6 +6764,12 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		if exists && rel.Stance == faction.StanceAllied {
 			isAlliedRegion = true
 		}
+	}
+	if airborne && !g.gs.AirspaceEnabled && targetOwnerID != "" && targetOwnerID != a.OwnerID {
+		isAlliedRegion = true
+	}
+	if !targetRegion.IsSea && !a.CanCaptureLand(g.gs.UnitTypes) {
+		isAlliedRegion = true
 	}
 	if !a.IsNaval && g.resolveSortieMovement(a, targetRegion, battleStance) {
 		return
@@ -6650,6 +6794,12 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 	if !a.IsNaval && !resolved && g.gs.SiegeAt(target) == nil && enemyArmy != nil {
 		if g.beginLandContact(a, enemyArmy, target, a.RegionID, state.LandContactMovement, true) {
 			return
+		}
+	}
+	if airborne && g.pendingAirAttackArmyID != "" {
+		if directTarget := g.gs.Armies[g.pendingAirAttackArmyID]; directTarget != nil &&
+			directTarget.ID != a.ID && directTarget.RegionID == target && airAttackTargetIsEnemy(g.gs, a, directTarget) {
+			enemyArmy = directTarget
 		}
 	}
 	targetSiege := g.gs.SiegeAt(target)
@@ -6770,6 +6920,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 				}
 				g.gs.ApplyLandRegionEntryAttrition(a)
 				g.consolidateMerchantTradeFleetAfterArrival(a.ID)
+				g.gs.RecordAirSortieStep(a, landMoveCost)
+				g.finishAirSortieMovement(a, target)
 				if neutralTerrainArea {
 					outcomeDetail = "Düşman ordu yenildi; tarafsız arazi alanında hareket devam etti."
 				} else if isAlliedRegion {
@@ -6853,6 +7005,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		a.MovePoints -= landMoveCost
 		g.gs.ApplyLandRegionEntryAttrition(a)
 		g.consolidateMerchantTradeFleetAfterArrival(a.ID)
+		g.gs.RecordAirSortieStep(a, landMoveCost)
+		g.finishAirSortieMovement(a, target)
 		if allyJoiningSiege {
 			// Kuşatmaya katılım: bölge fethedilmez; destek ordusu ayrı kalır.
 			g.renderer.ShowCombatResult("Ordu kuşatmaya ayrı bir destek gücü olarak katıldı.")

@@ -346,6 +346,7 @@ type GameState struct {
 	BaseGoldValues                map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
 
 	UndeadMechanics scenario.UndeadMechanics           `json:"-"`
+	AirspaceEnabled bool                               `json:"-"`
 	FactionLore     map[string]scenario.FactionLore    `json:"-"`
 	SettlementLore  map[string]scenario.SettlementLore `json:"-"`
 

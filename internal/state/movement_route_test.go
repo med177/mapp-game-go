@@ -147,7 +147,7 @@ func TestAirMovementRouteCrossesSeaAndBlockedTerrain(t *testing.T) {
 		ID:         "dragon_army",
 		OwnerID:    "player",
 		RegionID:   start,
-		MovePoints: 2,
+		MovePoints: 4,
 		Units:      []army.Unit{{TypeID: "dragon"}},
 	}
 
@@ -157,5 +157,78 @@ func TestAirMovementRouteCrossesSeaAndBlockedTerrain(t *testing.T) {
 	}
 	if got := gs.MovementReachableForArmy(a).Nodes[target].Cost; got != 2 {
 		t.Fatalf("air terrain cost = %d, want 2", got)
+	}
+}
+
+func TestAirMovementRouteUsesScenarioAirspaceDiplomacyRule(t *testing.T) {
+	regions := map[world.RegionID]*world.Region{
+		"start":   {ID: "start", OwnerID: "player", Neighbors: []world.RegionID{"foreign"}},
+		"foreign": {ID: "foreign", OwnerID: "enemy", Neighbors: []world.RegionID{"start", "beyond"}},
+		"beyond":  {ID: "beyond", OwnerID: "enemy", Neighbors: []world.RegionID{"foreign"}},
+	}
+	a := &army.Army{
+		ID:         "dragon_army",
+		OwnerID:    "player",
+		RegionID:   "start",
+		MovePoints: 4,
+		Units:      []army.Unit{{TypeID: "dragon"}},
+	}
+	base := GameState{
+		Regions:   regions,
+		UnitTypes: map[string]*army.UnitType{"dragon": {ID: "dragon", MovementType: army.MovementTypeAir}},
+		Armies:    map[army.ArmyID]*army.Army{a.ID: a},
+	}
+
+	if route := base.MovementRouteForArmy(a, "beyond"); len(route) != 3 {
+		t.Fatalf("unrestricted airspace route = %v, want route through foreign region", route)
+	}
+	base.AirspaceEnabled = true
+	if route := base.MovementRouteForArmy(a, "beyond"); route != nil {
+		t.Fatalf("restricted airspace route = %v, want blocked transit", route)
+	}
+}
+
+func TestAirSortieUsesHalfRangeAndReturnsToOrigin(t *testing.T) {
+	start := world.RegionID("start")
+	sea := world.RegionID("sea")
+	target := world.RegionID("target")
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			start:    {ID: start, OwnerID: "player", Neighbors: []world.RegionID{sea}},
+			sea:      {ID: sea, IsSea: true, Neighbors: []world.RegionID{start, "middle"}},
+			"middle": {ID: "middle", IsSea: true, Neighbors: []world.RegionID{sea, target}},
+			target:   {ID: target, IsSea: true, Neighbors: []world.RegionID{"middle"}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"dragon": {ID: "dragon", Category: army.CategoryDragon},
+		},
+	}
+	a := &army.Army{
+		ID:         "dragon_army",
+		OwnerID:    "player",
+		RegionID:   start,
+		MovePoints: 5,
+		Units:      []army.Unit{{TypeID: "dragon"}},
+	}
+	reachability := gs.MovementReachableForArmy(a)
+	if gs.AirSortieAllowed(a, target, reachability) {
+		t.Fatalf("three-step sortie should exceed half-range")
+	}
+	if gs.AirSortieBudget(a) != 2 {
+		t.Fatalf("sortie budget = %d, want 2", gs.AirSortieBudget(a))
+	}
+
+	shortTarget := sea
+	if !gs.AirSortieAllowed(a, shortTarget, reachability) {
+		t.Fatalf("one-step sortie should be allowed")
+	}
+	if !gs.BeginAirSortie(a, shortTarget) {
+		t.Fatal("expected sortie to start")
+	}
+	a.RegionID = shortTarget
+	a.MovePoints -= 1
+	gs.RecordAirSortieStep(a, 1)
+	if !gs.FinishAirSortie(a, shortTarget) || a.RegionID != start || a.MovePoints != 3 {
+		t.Fatalf("sortie state = region %q, points %d; want start, 3", a.RegionID, a.MovePoints)
 	}
 }

@@ -24,7 +24,7 @@ func SiegeDefensePressureForArmy(types map[string]*army.UnitType, attacker *army
 	pressure := 0.0
 	for _, unit := range attacker.Units {
 		unitType := types[unit.TypeID]
-		if unitType == nil || unitType.Category != army.CategorySiege {
+		if unitType == nil || !unitType.IsSiegeUnit() {
 			continue
 		}
 		maxFortLevel := int(unitType.Tier) + 2
@@ -128,7 +128,7 @@ func siegeBreachPowerPreview(s *GameState, attacker *army.Army, fortLevel int) (
 	}
 	for _, unit := range attacker.Units {
 		unitType := s.UnitTypes[unit.TypeID]
-		if unitType == nil || unitType.Category != army.CategorySiege {
+		if unitType == nil || !unitType.IsSiegeUnit() {
 			continue
 		}
 		maxFortLevel := int(unitType.Tier) + 2

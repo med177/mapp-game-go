@@ -195,7 +195,7 @@ func aiRecruitmentRegionAnchor(gs *state.GameState, fid faction.FactionID, unitT
 		return ctx.RallyRegionID
 	}
 	plan := gs.AIPlans[fid]
-	if unitType != nil && unitType.Category == army.CategorySiege {
+	if unitType != nil && unitType.IsSiegeUnit() {
 		if anchor := aiMissingSiegeSupportAnchor(gs, fid, ctx); anchor != "" {
 			return anchor
 		}

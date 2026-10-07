@@ -1571,7 +1571,8 @@ func (r *Renderer) embarkedArmyHitAt(mx, my float64) (army.ArmyID, bool) {
 	for i := len(armyPositions) - 1; i >= 0; i-- {
 		pos := armyPositions[i]
 		fleet := r.gs.Armies[pos.ArmyID]
-		if fleet == nil || !fleet.IsNaval || len(fleet.EmbarkedUnits) == 0 || !playerCanSeeArmyDetails(r.gs, fleet) {
+		if fleet == nil || !fleet.IsTransportCarrier(r.gs.UnitTypes) ||
+			len(fleet.EmbarkedUnits) == 0 || !playerCanSeeArmyDetails(r.gs, fleet) {
 			continue
 		}
 		if navalEmbarkedArmyBadgeRect(pos.X, pos.Y).Hit(mx, my) {
@@ -1717,14 +1718,45 @@ func (r *Renderer) handleRightClick() InputAction {
 	rid := r.worldMap.RegionAt(int(wx), int(wy))
 	clickedRegionID := rid
 	if clickedID, hit := r.armyHitAt(fx, fy); hit {
+		if !a.IsNaval && a.UsesAirMovement(r.gs.UnitTypes) && clickedID != a.ID {
+			if targetArmy := r.gs.Armies[clickedID]; targetArmy != nil && targetArmy.OwnerID != a.OwnerID {
+				if airAttackMarkerIsFriendly(r.gs, a, targetArmy) {
+					return InputAction{}
+				}
+				relation := diplomacy.Relation(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetArmy.OwnerID))
+				if relation == nil || relation.Stance != faction.StanceWar {
+					name := targetArmy.OwnerID
+					if targetFaction := r.gs.Factions[faction.FactionID(targetArmy.OwnerID)]; targetFaction != nil && targetFaction.NameTR != "" {
+						name = targetFaction.NameTR
+					}
+					r.openWarConfirm(faction.FactionID(targetArmy.OwnerID), name, a.ID, targetArmy.RegionID, targetArmy.ID, false, ActionMoveArmy, combat.BattleContextLand)
+					return InputAction{}
+				}
+				reachability := r.movementReachabilityForArmy(a)
+				if _, reachable := reachability.Nodes[targetArmy.RegionID]; reachable &&
+					r.gs.AirSortieAllowed(a, targetArmy.RegionID, reachability) {
+					return r.prepareArmyMovementAction(InputAction{
+						Kind:         ActionMoveArmy,
+						ArmyID:       a.ID,
+						TargetArmyID: targetArmy.ID,
+						TargetRegion: targetArmy.RegionID,
+					})
+				}
+			}
+		}
 		if a.IsNaval && clickedID != a.ID {
 			if fleet := r.gs.Armies[clickedID]; fleet != nil && fleet.IsAtSea() &&
 				fleet.OwnerID != a.OwnerID && fleet.RegionID == a.RegionID && a.MovePoints > 0 {
 				return InputAction{Kind: ActionEngageNavalFleet, ArmyID: a.ID, TargetArmyID: fleet.ID}
 			}
 		}
-		if fleet := r.gs.Armies[clickedID]; fleet != nil && !a.IsNaval && fleet.OwnerID == a.OwnerID && fleet.IsNaval {
-			if fleetCanEmbarkFromRegion(r.gs, fleet, a.RegionID) {
+		if fleet := r.gs.Armies[clickedID]; fleet != nil && !a.IsNaval && fleet.OwnerID == a.OwnerID &&
+			fleet.IsTransportCarrier(r.gs.UnitTypes) {
+			inRange := fleet.RegionID == a.RegionID
+			if fleet.IsNaval {
+				inRange = fleetCanEmbarkFromRegion(r.gs, fleet, a.RegionID)
+			}
+			if inRange {
 				if !armyHasMovementForEmbark(a) {
 					return InputAction{}
 				}
@@ -1736,16 +1768,32 @@ func (r *Renderer) handleRightClick() InputAction {
 					r.ShowCombatResult("Seçilen filoda yeterli nakliye kapasitesi yok.")
 					return InputAction{}
 				}
+				embarkLabel := carrierEmbarkLabel(r.gs, fleet)
 				r.ShowConfirmDialog(
-					"Gemiye Bin",
-					"Seçili ordu bu nakliye filosuna binsin mi?",
-					"Gemiye Bin",
+					embarkLabel,
+					"Seçili ordu bu taşıyıcıya binsin mi?",
+					embarkLabel,
 					"Iptal",
 					InputAction{Kind: ActionEmbarkArmy, ArmyID: r.SelectedArmy, TargetArmyID: fleet.ID},
 					nil,
 				)
 				return InputAction{}
 			}
+		}
+		if carrier := r.gs.Armies[clickedID]; carrier != nil && a.IsTransportCarrier(r.gs.UnitTypes) &&
+			carrier.OwnerID == a.OwnerID && !carrier.IsNaval && carrier.RegionID == a.RegionID &&
+			carrier.ID != a.ID && armyHasMovementForEmbark(carrier) && armyCanEmbark(r.gs, carrier) &&
+			a.CanEmbarkUnits(r.gs.UnitTypes, len(carrier.Units)) {
+			embarkLabel := carrierEmbarkLabel(r.gs, a)
+			r.ShowConfirmDialog(
+				embarkLabel,
+				"Seçili kara ordusu bu hava taşıyıcısına yüklensin mi?",
+				embarkLabel,
+				"Iptal",
+				InputAction{Kind: ActionEmbarkArmy, ArmyID: carrier.ID, TargetArmyID: a.ID},
+				nil,
+			)
+			return InputAction{}
 		}
 	}
 	navalTargetSettlementID := ""
@@ -1795,6 +1843,23 @@ func (r *Renderer) handleRightClick() InputAction {
 	}
 	if a.IsNaval && r.openNavalCoastalTargetDialog(a, r.gs.Regions[rid], rid, navalTargetSettlementID) {
 		return InputAction{}
+	}
+	if a.UsesAirMovement(r.gs.UnitTypes) && r.openAirForeignRegionWarConfirm(a, rid) {
+		return InputAction{}
+	}
+	if a.UsesAirMovement(r.gs.UnitTypes) && len(a.EmbarkedUnits) > 0 {
+		target := r.gs.Regions[rid]
+		if target != nil && target.CanLandEnter() && armyRegionIsFriendly(r.gs, a, target) {
+			r.ShowConfirmDialog(
+				"Birlikleri İndir",
+				"Taşınan birlikler bu dost bölgeye indirilsin mi?",
+				"İndir",
+				"İptal",
+				InputAction{Kind: ActionDisembarkArmy, ArmyID: a.ID, TargetRegion: rid},
+				nil,
+			)
+			return InputAction{}
+		}
 	}
 	// Hedef doğrudan komşu değilse renderer yalnızca son hedefi taşır; oyun
 	// katmanı aynı ortak route hesabıyla ara adımları sırayla çözer. Böylece
@@ -1890,6 +1955,41 @@ func (r *Renderer) handleRightClick() InputAction {
 		return r.prepareArmyMovementAction(InputAction{Kind: ActionMoveArmy, ArmyID: r.SelectedArmy, TargetRegion: rid, TargetSettlementID: navalTargetSettlementID})
 	}
 	return InputAction{}
+}
+
+func airAttackMarkerIsFriendly(gs *state.GameState, attacker, target *army.Army) bool {
+	if gs == nil || attacker == nil || target == nil || target.OwnerID == "" || attacker.OwnerID == target.OwnerID {
+		return true
+	}
+	if diplomacy.SameRealm(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID)) {
+		return true
+	}
+	relation := diplomacy.Relation(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
+	return relation != nil && relation.Stance == faction.StanceAllied
+}
+
+func (r *Renderer) openAirForeignRegionWarConfirm(attacker *army.Army, regionID world.RegionID) bool {
+	if r == nil || r.gs == nil || attacker == nil || regionID == "" {
+		return false
+	}
+	target := r.gs.Regions[regionID]
+	if target == nil || target.IsSea {
+		return false
+	}
+	targetOwnerID := r.gs.SovereignOwnerID(target)
+	if targetOwnerID == "" || targetOwnerID == attacker.OwnerID || armyRegionIsFriendly(r.gs, attacker, target) {
+		return false
+	}
+	relation := diplomacy.Relation(r.gs, faction.FactionID(attacker.OwnerID), faction.FactionID(targetOwnerID))
+	if relation != nil && relation.Stance == faction.StanceWar {
+		return false
+	}
+	name := targetOwnerID
+	if targetFaction := r.gs.Factions[faction.FactionID(targetOwnerID)]; targetFaction != nil && targetFaction.NameTR != "" {
+		name = targetFaction.NameTR
+	}
+	r.openWarConfirm(faction.FactionID(targetOwnerID), name, attacker.ID, regionID, "", false, ActionMoveArmy, combat.BattleContextLand)
+	return true
 }
 
 // openNavalCoastalTargetDialog, taşıyan filonun kıyı settlement hedefindeki

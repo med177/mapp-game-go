@@ -148,6 +148,11 @@ type MapConfig struct {
 	MaxZoom         *float64 `json:"max_zoom,omitempty"`
 }
 
+// AirspaceConfig senaryoda uçan birimlerin yabancı hava sahasına giriş kuralını tanımlar.
+type AirspaceConfig struct {
+	Enabled bool `json:"enabled,omitempty"`
+}
+
 // MusicTrackDef senaryo musics/ klasöründeki bir playlist parçasını tanımlar.
 type MusicTrackDef struct {
 	File   string `json:"file"`
@@ -222,6 +227,7 @@ type Scenario struct {
 	AggressiveExpansionLastTurns int `json:"aggressive_expansion_last_turns,omitempty"`
 
 	Diplomacy       DiplomacyConfig `json:"diplomacy,omitempty"`
+	Airspace        AirspaceConfig  `json:"airspace,omitempty"`
 	UndeadMechanics UndeadMechanics `json:"undead_mechanics,omitempty"`
 
 	MapConfig         MapConfig          `json:"map"`
