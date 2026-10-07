@@ -4568,6 +4568,9 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		if a == nil || !a.IsTransportCarrier(r.gs.UnitTypes) || len(a.EmbarkedUnits) == 0 {
 			continue
 		}
+		if (pos.ArmyID == r.SelectedArmy && a.MovePoints > 0) || r.armyMovementVisualActiveFor(a.ID) {
+			continue
+		}
 		detailsVisible := playerCanSeeArmyDetails(r.gs, a) || enemyArmyInPlayerMoveRange(r.gs, a)
 		r.drawEmbarkedArmyBadge(screen, a, pos.X, pos.Y, detailsVisible)
 	}
