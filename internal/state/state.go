@@ -198,6 +198,15 @@ type DiplomaticOfferHistoryEntry struct {
 	WarEnemyFactionID    faction.FactionID `json:"war_enemy_faction_id,omitempty"`
 }
 
+// PendingConquestDecision, fetih veya teslimiyet sonrasındaki siyasi düzen
+// seçiminin save/load arasında korunmasını sağlar.
+type PendingConquestDecision struct {
+	RegionID           world.RegionID    `json:"region_id"`
+	AttackerFactionID  faction.FactionID `json:"attacker_faction_id"`
+	DefenderFactionID  faction.FactionID `json:"defender_faction_id"`
+	SuccessorFactionID faction.FactionID `json:"successor_faction_id,omitempty"`
+}
+
 type SiegeState struct {
 	RegionID             world.RegionID `json:"region_id"`
 	AttackerArmyID       army.ArmyID    `json:"attacker_army_id"`
@@ -450,6 +459,9 @@ type GameState struct {
 	AIDiagnosticCaptureTurnsRemain int                        `json:"-"`
 	// Bekleyen diplomatik teklifler (ör. AI barış teklifi)
 	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
+	// PendingConquestDecisions, teslimiyet sonrası ardıl devlet kararlarını
+	// oyun nesnesi yeniden oluşturulsa da korur.
+	PendingConquestDecisions []PendingConquestDecision `json:"pending_conquest_decisions,omitempty"`
 	// Çözümlenmiş diplomatik tekliflerin kısa geçmişi.
 	DiplomaticOfferHistory []DiplomaticOfferHistoryEntry `json:"diplomatic_offer_history,omitempty"`
 	// Turn içinde devlet başına gönderilen diplomasi teklif sayacı.

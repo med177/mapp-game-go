@@ -156,6 +156,7 @@ type campaignSaveState struct {
 	LastSubjugatedFactionID  faction.FactionID                                  `json:"lst,omitempty"`
 	Relations                map[string]relationSaveState                       `json:"rl,omitempty"`
 	DiplomaticOffers         []state.DiplomaticOffer                            `json:"do,omitempty"`
+	PendingConquestDecisions []state.PendingConquestDecision                    `json:"pcd,omitempty"`
 	DiplomaticOfferHistory   []state.DiplomaticOfferHistoryEntry                `json:"dh,omitempty"`
 	DiplomacyOfferCounts     map[faction.FactionID]int                          `json:"dq,omitempty"`
 	OfferRejectionTurns      map[string]int                                     `json:"dr,omitempty"`
@@ -248,6 +249,7 @@ type legacyCampaignSaveState struct {
 	FiredEventIDs            map[string]bool                                    `json:"fired_event_ids"`
 	Relations                map[string]*faction.Relation                       `json:"relations"`
 	DiplomaticOffers         []state.DiplomaticOffer                            `json:"diplomatic_offers,omitempty"`
+	PendingConquestDecisions []state.PendingConquestDecision                    `json:"pending_conquest_decisions,omitempty"`
 	DiplomaticOfferHistory   []state.DiplomaticOfferHistoryEntry                `json:"diplomatic_offer_history,omitempty"`
 	DiplomacyOfferCounts     map[faction.FactionID]int                          `json:"diplomacy_offer_counts,omitempty"`
 	OfferRejectionTurns      map[string]int                                     `json:"diplomatic_offer_last_rejected_turns,omitempty"`
@@ -419,6 +421,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		FiredEventIDs:            firedEventIDsToSlice(legacy.FiredEventIDs),
 		Relations:                makeLegacyRelationState(legacy.Relations),
 		DiplomaticOffers:         append([]state.DiplomaticOffer(nil), legacy.DiplomaticOffers...),
+		PendingConquestDecisions: append([]state.PendingConquestDecision(nil), legacy.PendingConquestDecisions...),
 		DiplomaticOfferHistory:   append([]state.DiplomaticOfferHistoryEntry(nil), legacy.DiplomaticOfferHistory...),
 		DiplomacyOfferCounts:     cloneFactionIntMap(legacy.DiplomacyOfferCounts),
 		OfferRejectionTurns:      cloneStringIntMap(legacy.OfferRejectionTurns),
@@ -561,6 +564,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		LastSubjugatedFactionID:  gs.LastSubjugatedFactionID,
 		Relations:                makeRelationDelta(gs.Relations, base.Relations),
 		DiplomaticOffers:         append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
+		PendingConquestDecisions: append([]state.PendingConquestDecision(nil), gs.PendingConquestDecisions...),
 		DiplomaticOfferHistory:   append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
 		DiplomacyOfferCounts:     cloneFactionIntMap(gs.DiplomacyOfferCounts),
 		OfferRejectionTurns:      cloneStringIntMap(gs.OfferRejectionTurns),
@@ -668,6 +672,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		FiredEventIDs:            firedEventIDsFromSlice(firedEventIDsToSlice(gs.FiredEventIDs)),
 		Relations:                cloneRelations(gs.Relations),
 		DiplomaticOffers:         append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
+		PendingConquestDecisions: append([]state.PendingConquestDecision(nil), gs.PendingConquestDecisions...),
 		DiplomaticOfferHistory:   append([]state.DiplomaticOfferHistoryEntry(nil), gs.DiplomaticOfferHistory...),
 		DiplomacyOfferCounts:     cloneFactionIntMap(gs.DiplomacyOfferCounts),
 		OfferRejectionTurns:      cloneStringIntMap(gs.OfferRejectionTurns),
@@ -761,6 +766,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.LastSubjugationActorID = saved.LastSubjugationActorID
 	gs.LastSubjugatedFactionID = saved.LastSubjugatedFactionID
 	gs.DiplomaticOffers = append([]state.DiplomaticOffer(nil), saved.DiplomaticOffers...)
+	gs.PendingConquestDecisions = append([]state.PendingConquestDecision(nil), saved.PendingConquestDecisions...)
 	gs.DiplomaticOfferHistory = append([]state.DiplomaticOfferHistoryEntry(nil), saved.DiplomaticOfferHistory...)
 	gs.DiplomacyOfferCounts = cloneFactionIntMap(saved.DiplomacyOfferCounts)
 	gs.OfferRejectionTurns = cloneStringIntMap(saved.OfferRejectionTurns)

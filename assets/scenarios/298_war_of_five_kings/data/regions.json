@@ -1382,7 +1382,7 @@
     "shape_id": "ess_fc",
     "is_sea": false,
     "is_locked": false,
-    "unlock_turn": 0,
+    "unlock_turn": 180,
     "base_gold_income": 60,
     "base_grain_output": 13,
     "base_iron_output": 2,

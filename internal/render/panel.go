@@ -3507,18 +3507,20 @@ func commanderArrivalTraits(commander *army.Commander) string {
 func drawHistoricalChoiceInfo(screen *ebiten.Image, btn gameui.Button, choice HistoricalEventChoice) {
 	infoX := btn.X
 	infoW := btn.W
-	startY := btn.Y - 122
+	// Her bilgi satırına iki satırlık alan ayır. Sabit aralıklar, uzun
+	// açıklamaların bir sonraki satırın veya butonun üzerine binmesini önler.
+	startY := btn.Y - 138
 	if choice.Desc != "" {
 		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: startY, W: infoW}, choice.Desc, color.RGBA{162, 150, 120, 210}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
 	}
 	if choice.Effect != "" {
-		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 74, W: infoW}, choice.Effect, color.RGBA{190, 176, 142, 220}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
+		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 90, W: infoW}, choice.Effect, color.RGBA{190, 176, 142, 220}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
 	}
 	if choice.FollowUp != "" {
-		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 42, W: infoW}, choice.FollowUp, color.RGBA{232, 196, 112, 230}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
+		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 58, W: infoW}, choice.FollowUp, color.RGBA{232, 196, 112, 230}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
 	}
 	if choice.Conditions != "" {
-		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 10, W: infoW}, choice.Conditions, color.RGBA{144, 138, 126, 220}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
+		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 26, W: infoW}, choice.Conditions, color.RGBA{144, 138, 126, 220}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
 	}
 }
 

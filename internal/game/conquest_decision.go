@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/render"
+	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
 
@@ -15,6 +16,85 @@ type pendingConquestDecision struct {
 	AttackerFactionID  faction.FactionID
 	DefenderFactionID  faction.FactionID
 	SuccessorFactionID faction.FactionID
+}
+
+func (g *Game) syncPendingConquestDecisionsToState() {
+	if g == nil || g.gs == nil {
+		return
+	}
+	decisions := make([]state.PendingConquestDecision, 0, len(g.pendingConquestDecisions))
+	for _, decision := range g.pendingConquestDecisions {
+		decisions = append(decisions, state.PendingConquestDecision{
+			RegionID:           decision.RegionID,
+			AttackerFactionID:  decision.AttackerFactionID,
+			DefenderFactionID:  decision.DefenderFactionID,
+			SuccessorFactionID: decision.SuccessorFactionID,
+		})
+	}
+	g.gs.PendingConquestDecisions = decisions
+}
+
+func (g *Game) restorePendingConquestDecisions() {
+	if g == nil || g.gs == nil {
+		return
+	}
+	if len(g.gs.PendingConquestDecisions) == 0 {
+		g.recoverPendingConquestDecisionFromHistory()
+	}
+	g.pendingConquestDecisions = make([]pendingConquestDecision, 0, len(g.gs.PendingConquestDecisions))
+	for _, decision := range g.gs.PendingConquestDecisions {
+		g.pendingConquestDecisions = append(g.pendingConquestDecisions, pendingConquestDecision{
+			RegionID:           decision.RegionID,
+			AttackerFactionID:  decision.AttackerFactionID,
+			DefenderFactionID:  decision.DefenderFactionID,
+			SuccessorFactionID: decision.SuccessorFactionID,
+		})
+	}
+}
+
+// recoverPendingConquestDecisionFromHistory, karar alanı eklenmeden önce
+// kaydedilmiş teslimiyet save'lerinde kaybolan ardıl kararını geri kurar.
+func (g *Game) recoverPendingConquestDecisionFromHistory() {
+	if g == nil || g.gs == nil || len(g.gs.DiplomaticOfferHistory) == 0 {
+		return
+	}
+	for i := len(g.gs.DiplomaticOfferHistory) - 1; i >= 0; i-- {
+		history := g.gs.DiplomaticOfferHistory[i]
+		if history.Action != string(diplomacy.ActionProposeSurrender) || !history.Accepted || !history.Applied || history.RegionID == "" {
+			continue
+		}
+		region := g.gs.Regions[history.RegionID]
+		if region == nil || region.OwnerID != string(history.FromFactionID) || region.SuccessorFactionID == "" {
+			continue
+		}
+		successorID := faction.FactionID(region.SuccessorFactionID)
+		successor := g.gs.Factions[successorID]
+		if successor == nil || !successor.IsEliminated || len(g.gs.LandRegionsOwnedBy(successorID)) != 0 {
+			continue
+		}
+		attacker := g.gs.Factions[history.ToFactionID]
+		if attacker == nil || attacker.IsEliminated || history.ToFactionID == history.FromFactionID {
+			continue
+		}
+		g.gs.PendingConquestDecisions = []state.PendingConquestDecision{{
+			RegionID:           region.ID,
+			AttackerFactionID:  history.ToFactionID,
+			DefenderFactionID:  history.FromFactionID,
+			SuccessorFactionID: successorID,
+		}}
+		if g.gs.Sieges != nil {
+			delete(g.gs.Sieges, region.ID)
+		}
+		return
+	}
+}
+
+func (g *Game) enqueuePendingConquestDecision(decision pendingConquestDecision) {
+	if g == nil {
+		return
+	}
+	g.pendingConquestDecisions = append(g.pendingConquestDecisions, decision)
+	g.syncPendingConquestDecisionsToState()
 }
 
 type successorDecisionOutcome uint8
@@ -68,7 +148,7 @@ func (g *Game) queueConquestDecision(attackerID faction.FactionID, targetRegion 
 		return false
 	}
 	if g.shouldOfferSuccessorDecision(attackerID, defenderID, successorID, targetRegion) {
-		g.pendingConquestDecisions = append(g.pendingConquestDecisions, pendingConquestDecision{
+		g.enqueuePendingConquestDecision(pendingConquestDecision{
 			RegionID:           targetRegion.ID,
 			AttackerFactionID:  attackerID,
 			DefenderFactionID:  defenderID,
@@ -82,7 +162,7 @@ func (g *Game) queueConquestDecision(attackerID faction.FactionID, targetRegion 
 	if !g.shouldOfferPostWarVassalization(attackerID, defenderID, targetRegion) {
 		return false
 	}
-	g.pendingConquestDecisions = append(g.pendingConquestDecisions, pendingConquestDecision{
+	g.enqueuePendingConquestDecision(pendingConquestDecision{
 		RegionID:          targetRegion.ID,
 		AttackerFactionID: attackerID,
 		DefenderFactionID: defenderID,
@@ -185,6 +265,7 @@ func (g *Game) resolvePendingSuccessorDecision(outcome successorDecisionOutcome)
 		return
 	}
 	g.pendingConquestDecisions = g.pendingConquestDecisions[1:]
+	g.syncPendingConquestDecisionsToState()
 	region := g.gs.Regions[decision.RegionID]
 	if region == nil || region.OwnerID != string(decision.DefenderFactionID) {
 		if g.renderer != nil {
@@ -270,6 +351,7 @@ func (g *Game) resolvePendingConquestDecision(vassalize bool) {
 	}
 	decision := g.pendingConquestDecisions[0]
 	g.pendingConquestDecisions = g.pendingConquestDecisions[1:]
+	g.syncPendingConquestDecisionsToState()
 
 	region := g.gs.Regions[decision.RegionID]
 	if region == nil {

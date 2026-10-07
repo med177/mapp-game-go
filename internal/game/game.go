@@ -750,6 +750,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.gs.AIDiagnosticCaptureTurnsRemain = 0
 		g.aiDiagnosticReportSaved = false
 		g.pendingConquestDecisions = nil
+		g.gs.PendingConquestDecisions = nil
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
@@ -779,12 +780,15 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 			g.gs.AIDiagnosticCaptureTurnsRemain = 5
 		}
 		g.aiDiagnosticReportSaved = false
-		g.pendingConquestDecisions = nil
+		g.restorePendingConquestDecisions()
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
 		g.renderer.SetScenarioEvents(g.evts)
 		g.renderer.ReloadGameStateWithPreparedMap(res.gs, res.worldMap)
+		if len(g.pendingConquestDecisions) > 0 {
+			g.showPendingConquestDecision(false)
+		}
 		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.HasSave = save.AnySlotExists()
 		g.renderer.HasAutoSave = save.ContinueSaveExists()
