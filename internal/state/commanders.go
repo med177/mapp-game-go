@@ -119,7 +119,10 @@ func (s *GameState) defeatBossFaction(ownerID, commanderID string) {
 		return
 	}
 	if f := s.Factions[faction.FactionID(ownerID)]; f != nil {
-		f.IsEliminated = true
+		// Bölge sahibi olan fraksiyon, boss ordusu yenilse de elenmiş
+		// sayılamaz; aksi halde bölge haritada bu devlete ait kalırken
+		// diplomasi hedefi elenmiş kabul edilir.
+		f.IsEliminated = len(s.LandRegionsOwnedBy(faction.FactionID(ownerID))) == 0
 	}
 	for id, current := range s.Armies {
 		if current != nil && current.OwnerID == ownerID {
