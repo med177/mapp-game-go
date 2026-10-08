@@ -2649,6 +2649,10 @@ func (r *Renderer) BattleReportVisible() bool {
 	return r != nil && r.battleReport.show
 }
 
+func (r *Renderer) HistoricalEventVisible() bool {
+	return r != nil && r.showHistoricalEvent
+}
+
 func (r *Renderer) CombatSummaryVisible() bool {
 	return r != nil && r.combatSummary.show
 }

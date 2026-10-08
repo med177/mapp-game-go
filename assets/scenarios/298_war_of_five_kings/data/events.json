@@ -932,13 +932,14 @@
       }
     ],
     "player_choice_factions": [
-      "tully",
       "stark",
       "arryn"
     ],
     "requires_flags": [],
     "requires_active_factions": [
-      "tully"
+      "tully",
+      "arryn",
+      "lannister"
     ]
   },
   {
@@ -956,6 +957,12 @@
     "historical_month": 4,
     "one_shot": true,
     "affected_faction": "tully",
+    "relation_requirements": [
+      {
+        "faction_id": "lannister",
+        "stance": "war"
+      }
+    ],
     "choice_prompt_tr": "Riverrun, Lannister saldırısına nasıl karşı koymalı?",
     "choices": [
       {
@@ -1022,15 +1029,13 @@
       }
     ],
     "player_choice_factions": [
-      "tully",
-      "stark",
-      "lannister"
+      "tully"
     ],
     "requires_flags": [
       "war_of_five_kings_active"
     ],
     "requires_active_factions": [
-      "tully"
+      "tully", "lannister"
     ]
   },
   {

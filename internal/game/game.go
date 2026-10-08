@@ -45,6 +45,8 @@ type Game struct {
 	editModeRequested                 bool
 	evts                              []*events.Event
 	pendingHistoricalEvt              *events.Event
+	queuedHistoricalEvt               *events.Event
+	resolvingTurn                     bool
 	pendingSortie                     *pendingSortieState
 	pendingConquestDecisions          []pendingConquestDecision
 	pendingCaptiveDecisions           []state.PendingCaptiveDecision
@@ -690,6 +692,7 @@ func (g *Game) Update() error {
 		}
 	}
 
+	g.presentQueuedHistoricalEvent()
 	g.resumeWarDeclarationFlow()
 
 	if action.Kind != render.ActionNone {
@@ -1347,6 +1350,11 @@ func (g *Game) suppressQuickTurnRelationshipNotifications() {
 }
 
 func (g *Game) resolveTurn() {
+	g.resolvingTurn = true
+	defer func() {
+		g.resolvingTurn = false
+		g.presentQueuedHistoricalEvent()
+	}()
 	g.sanitizeOccupiedNeutralRegions()
 	g.sanitizeDockedFleets()
 	// Başkent taşıması tamamlanan turda ekonomi yeni başkent üzerinden
@@ -1733,6 +1741,17 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 	if evt == nil {
 		return
 	}
+	if g.resolvingTurn || g.pendingPlayerDecisionBeforeHistoricalEvent() {
+		g.queuedHistoricalEvt = evt
+		return
+	}
+	g.presentHistoricalEvent(evt)
+}
+
+func (g *Game) presentHistoricalEvent(evt *events.Event) {
+	if evt == nil {
+		return
+	}
 	baseMsg := "OLAY: " + evt.NameTR + ": " + evt.DescTR
 	eventDescription := evt.DescTR
 	if len(evt.Choices) == 0 {
@@ -1763,6 +1782,30 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 	}
 	g.pendingHistoricalEvt = evt
 	g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, evt.ChoicePromptTR, g.historicalChoiceViews(evt))
+}
+
+func (g *Game) pendingPlayerDecisionBeforeHistoricalEvent() bool {
+	if g == nil || g.renderer == nil {
+		return false
+	}
+	return len(g.pendingConquestDecisions) > 0 ||
+		len(g.pendingCaptiveDecisions) > 0 ||
+		(g.gs != nil && g.gs.Imperial != nil && g.gs.Imperial.PendingDecision != nil &&
+			g.gs.Imperial.EmpireID == g.gs.PlayerFactionID) ||
+		g.renderer.ConfirmDialogVisible() ||
+		g.renderer.BattleReportVisible() ||
+		g.renderer.CombatSummaryVisible() ||
+		g.renderer.HistoricalEventVisible()
+}
+
+func (g *Game) presentQueuedHistoricalEvent() {
+	if g == nil || g.queuedHistoricalEvt == nil || g.pendingHistoricalEvt != nil ||
+		g.resolvingTurn || g.pendingPlayerDecisionBeforeHistoricalEvent() {
+		return
+	}
+	evt := g.queuedHistoricalEvt
+	g.queuedHistoricalEvt = nil
+	g.presentHistoricalEvent(evt)
 }
 
 func (g *Game) showCommanderArrivals(arrivals []*army.Commander) {

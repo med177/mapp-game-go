@@ -148,6 +148,11 @@ oluşturduğu diplomasi penceresi açıksa özet kuyruğa alınır; ilgili pence
 kapandıktan sonra gösterilir. Oyuncu `Tamam` demeden harita etkileşimi başlamaz.
 Bu kayıtlar save'e yazılmaz ve özet açılırken tüketilir.
 
+Tur çözümlemesi sırasında tetiklenen tarihsel event'ler doğrudan gösterilmez;
+savaş sonrası düzen, tutsak, temas, imparatorluk ve savaş özeti gibi oyuncu
+kararları tamamlanana kadar bekleyen event kuyruğunda tutulur. Son karar
+penceresi kapandıktan sonra event gösterilir.
+
 Askerî geçiş izni için ayrı diplomasi state'i henüz yoktur. Eklendiğinde tur sonu
 erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir.
 

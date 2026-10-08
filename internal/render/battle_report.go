@@ -211,6 +211,8 @@ func battleReportHeaderRects() (gameui.Rect, gameui.Rect, gameui.Rect, gameui.Bo
 	box := gameui.BoxFromRect(panelRect).Inset(20)
 	headerRect, rest := box.CutTop(42, 16)
 	closeRect, titleBox := gameui.BoxFromRect(headerRect).CutRight(30, 12)
+	closeRect.Y += (closeRect.H - 30) / 2
+	closeRect.H = 30
 	return panelRect, titleBox.Rect, closeRect, rest
 }
 
