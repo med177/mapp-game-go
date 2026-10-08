@@ -101,6 +101,26 @@
     "playlists": {
       "campaign": [
         {
+          "file": "Game-Of-Thrones-Jon-Daenerys.mp3",
+          "weight": 6
+        },
+        {
+          "file": "joelfazhari-determination-fantasy-courage-8611.mp3",
+          "weight": 5
+        },
+        {
+          "file": "Game-Of-Thrones-The-Army-Of-The-Dead.mp3",
+          "weight": 3
+        },
+        {
+          "file": "Game-Of-Thrones-Truth.mp3",
+          "weight": 6
+        },
+        {
+          "file": "Game-Of-Thrones-Intro.mp3",
+          "weight": 2
+        },
+        {
           "file": "Cinematic-Ambient-Background.mp3",
           "weight": 6
         },
