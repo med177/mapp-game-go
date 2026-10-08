@@ -2,6 +2,7 @@ package audio
 
 import (
 	"bytes"
+	"encoding/binary"
 	"io"
 	"log"
 	"math/rand"
@@ -17,6 +18,8 @@ import (
 )
 
 const sampleRate = 44100
+
+const scenarioLoopFadeDuration = 300 * time.Millisecond
 
 var (
 	audioContext         *audio.Context
@@ -213,6 +216,41 @@ func playGlobalSound(name string, loop bool) {
 	player.Play()
 }
 
+// fadeScenarioLoopBoundary, döngünün başını ve sonunu kısa bir rampayla
+// birbirine yaklaştırır. Böylece sonsuz döngü sınırında ani örnek sıçraması
+// oluşmaz.
+func fadeScenarioLoopBoundary(pcmData []byte) []byte {
+	const bytesPerFrame = 4 // 16-bit stereo PCM
+	frameCount := len(pcmData) / bytesPerFrame
+	if frameCount < 2 {
+		return pcmData
+	}
+
+	fadeFrames := int(scenarioLoopFadeDuration * sampleRate / time.Second)
+	if fadeFrames > frameCount/2 {
+		fadeFrames = frameCount / 2
+	}
+	if fadeFrames < 2 {
+		return pcmData
+	}
+
+	result := append([]byte(nil), pcmData...)
+	denominator := int64(fadeFrames - 1)
+	for i := 0; i < fadeFrames; i++ {
+		fadeInGain := int64(i)
+		fadeOutGain := denominator - fadeInGain
+		start := i * bytesPerFrame
+		end := (frameCount - fadeFrames + i) * bytesPerFrame
+		for offset := 0; offset < bytesPerFrame; offset += 2 {
+			startSample := int64(int16(binary.LittleEndian.Uint16(result[start+offset:])))
+			endSample := int64(int16(binary.LittleEndian.Uint16(result[end+offset:])))
+			binary.LittleEndian.PutUint16(result[start+offset:], uint16(startSample*fadeInGain/denominator))
+			binary.LittleEndian.PutUint16(result[end+offset:], uint16(endSample*fadeOutGain/denominator))
+		}
+	}
+	return result
+}
+
 // StopGlobalSound, takip edilen global efektin oynatımını durdurur.
 func StopGlobalSound(name string) {
 	if player := globalSoundPlayers[name]; player != nil {
@@ -281,7 +319,8 @@ func playScenarioSound(audioDir, name string, loop bool) {
 	var player *audio.Player
 	if loop {
 		var err error
-		player, err = audioContext.NewPlayer(audio.NewInfiniteLoop(bytes.NewReader(pcmData), int64(len(pcmData))))
+		loopData := fadeScenarioLoopBoundary(pcmData)
+		player, err = audioContext.NewPlayer(audio.NewInfiniteLoop(bytes.NewReader(loopData), int64(len(loopData))))
 		if err != nil {
 			return
 		}

@@ -2,7 +2,9 @@ package audio
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -84,13 +86,18 @@ func TestPlayScenarioSoundLoopTracksScenarioIntro(t *testing.T) {
 
 func TestNewMusicPlayerCreatesStreamingScenarioPlaylistTracks(t *testing.T) {
 	musicDir := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "musics")
-	tracks := []string{
-		"Cinematic-Ambient-Background.mp3",
-		"ottoman/Osmanli-Muzikleri-Artar-Cihadla-Sanimiz.mp3",
-		"ottoman/Osmanli-Muzikleri-Devlet-Marsi.mp3",
-		"ottoman/Osmanli-Muzikleri-Estergon-Kalas.mp3",
-		"ottoman/Osmanli-Muzikleri-Gafil-Ne-Bilir.mp3",
-		"ottoman/Osmanli-Muzikleri-Tarihi-Cevir.mp3",
+	entries, err := os.ReadDir(musicDir)
+	if err != nil {
+		t.Fatalf("senaryo müzik dizini okunamadı: %v", err)
+	}
+	var tracks []string
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.EqualFold(filepath.Ext(entry.Name()), ".mp3") {
+			tracks = append(tracks, entry.Name())
+		}
+	}
+	if len(tracks) == 0 {
+		t.Fatal("senaryo müzik dizininde test edilecek parça bulunamadı")
 	}
 
 	for _, track := range tracks {
@@ -106,7 +113,7 @@ func TestNewMusicPlayerCreatesStreamingScenarioPlaylistTracks(t *testing.T) {
 }
 
 func TestNewMusicPlayerDefersTrackDecode(t *testing.T) {
-	path := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "musics", "ottoman", "Cerkes-Muzikleri-Aglatan-Cerkes-Muzigi.mp3")
+	path := filepath.Join("..", "..", "assets", "scenarios", "1300_ottoman_rise", "musics", "the_mountain-war-opening-145222.mp3")
 	player, err := newMusicPlayer(path)
 	if err != nil {
 		t.Fatalf("stream oynatıcısı decode tamamlanmadan oluşturulamadı: %v", err)
