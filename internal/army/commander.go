@@ -32,6 +32,15 @@ type CommanderProgress struct {
 	NewTraits     []CommanderTrait
 }
 
+// CommanderUnavailableStatus, komutanın event flag'i aktifken neden pasif
+// olduğunu ve UI'da hangi metnin gösterileceğini tanımlar.
+type CommanderUnavailableStatus struct {
+	Flag           string `json:"flag"`
+	ReasonTR       string `json:"reason_tr"`
+	HideFromRoster bool   `json:"hide_from_roster,omitempty"`
+	Permanent      bool   `json:"permanent,omitempty"`
+}
+
 // CommanderEffects komutanın orduya verdiği tüm hesap etkilerini tek yerde toplar.
 type CommanderEffects struct {
 	AttackMod          float64
@@ -44,19 +53,26 @@ type CommanderEffects struct {
 
 // Commander bir orduya atanmış komutanın kalıcı kariyer state'idir.
 type Commander struct {
-	ID             string           `json:"id"`
-	OwnerID        string           `json:"owner_id"`
-	AssignedArmyID ArmyID           `json:"assigned_army_id,omitempty"`
-	Name           string           `json:"name"`
-	PortraitAsset  string           `json:"portrait_asset,omitempty"`
-	Level          int              `json:"level"`
-	IsBoss         bool             `json:"is_boss,omitempty"`
-	Experience     int              `json:"experience"`
-	Battles        int              `json:"battles"`
-	Victories      int              `json:"victories"`
-	Traits         []CommanderTrait `json:"traits,omitempty"`
-	StartYear      int              `json:"start_year,omitempty"`
-	EndYear        int              `json:"end_year,omitempty"`
+	ID                          string                       `json:"id"`
+	OwnerID                     string                       `json:"owner_id"`
+	AssignedArmyID              ArmyID                       `json:"assigned_army_id,omitempty"`
+	Name                        string                       `json:"name"`
+	PortraitAsset               string                       `json:"portrait_asset,omitempty"`
+	Level                       int                          `json:"level"`
+	IsBoss                      bool                         `json:"is_boss,omitempty"`
+	Experience                  int                          `json:"experience"`
+	Battles                     int                          `json:"battles"`
+	Victories                   int                          `json:"victories"`
+	Traits                      []CommanderTrait             `json:"traits,omitempty"`
+	UnavailableStatuses         []CommanderUnavailableStatus `json:"unavailable_statuses,omitempty"`
+	InjuryTurnsOnDefeat         int                          `json:"injury_turns_on_defeat,omitempty"`
+	UnavailableUntilTurn        int                          `json:"unavailable_until_turn,omitempty"`
+	UnavailableReasonTR         string                       `json:"unavailable_reason_tr,omitempty"`
+	CaptiveAtSettlementID       string                       `json:"captive_at_settlement_id,omitempty"`
+	CaptivityReleaseFlags       []string                     `json:"captivity_release_flags,omitempty"`
+	CaptivityKeepPenaltyApplied bool                         `json:"captivity_keep_penalty_applied,omitempty"`
+	StartYear                   int                          `json:"start_year,omitempty"`
+	EndYear                     int                          `json:"end_year,omitempty"`
 }
 
 // ActiveInYear, senaryo komutanının verilen yılda tarihsel olarak görevde

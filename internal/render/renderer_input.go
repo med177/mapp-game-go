@@ -332,10 +332,13 @@ func (r *Renderer) HandleInput() InputAction {
 	// Diplomasi paneli açıkken ayrı input
 	if r.showDiplomacy {
 		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyTab) {
-			if r.diplomacyTargetFaction != "" {
+			if r.showCaptivePanel {
+				r.showCaptivePanel = false
+			} else if r.diplomacyTargetFaction != "" {
 				r.diplomacyTargetFaction = ""
 			} else {
 				r.showDiplomacy = false
+				r.showCaptivePanel = false
 			}
 			return InputAction{}
 		}
@@ -805,6 +808,9 @@ func (r *Renderer) handleLeftClick() InputAction {
 	}
 	if r.uiLayerAllowsAt(fx, fy, uiLayerBottom) && bottomButtons[3].HitTest(fx, fy) {
 		r.showDiplomacy = !r.showDiplomacy
+		if !r.showDiplomacy {
+			r.showCaptivePanel = false
+		}
 		r.showRecruitPanel = false
 		r.showTech = false
 		r.diplomacyFocus = 0
@@ -1294,6 +1300,7 @@ func (r *Renderer) openDiplomacyPanel() {
 	}
 	r.invalidateDiplomacyCache()
 	r.showDiplomacy = true
+	r.showCaptivePanel = false
 	r.showTrade = false
 	r.showTech = false
 	r.diplomacyFocus = 0

@@ -138,6 +138,14 @@ type FactionVictoryCondition struct {
 	MinimumOwnedRegions  int              `json:"minimum_owned_regions,omitempty"`
 }
 
+// CommanderCaptureEffect, bir event seçiminin komutanı belirli bir
+// yerleşimde tutuklu hale getirmesini tanımlar.
+type CommanderCaptureEffect struct {
+	CommanderID         string   `json:"commander_id"`
+	HoldingSettlementID string   `json:"holding_settlement_id"`
+	ReleaseFlags        []string `json:"release_flags,omitempty"`
+}
+
 type Effect struct {
 	Target                    string                       `json:"target,omitempty"` // boşsa event target'ı kullanılır
 	SatDelta                  int                          `json:"sat_delta,omitempty"`
@@ -177,6 +185,8 @@ type Effect struct {
 	ClearFlags                []string                     `json:"clear_flags,omitempty"`
 	CapitalSettlementID       string                       `json:"capital_settlement_id,omitempty"`
 	CapitalMoveTurns          int                          `json:"capital_move_turns,omitempty"`
+	CommanderCaptures         []CommanderCaptureEffect     `json:"commander_captures,omitempty"`
+	CommanderReleases         []string                     `json:"commander_releases,omitempty"`
 }
 
 type Choice struct {
@@ -502,6 +512,8 @@ func (e *Event) BaseEffect() Effect {
 		DynasticSettlement:        e.DynasticSettlement,
 		CapitalSettlementID:       "",
 		CapitalMoveTurns:          0,
+		CommanderCaptures:         nil,
+		CommanderReleases:         nil,
 	}
 }
 
@@ -1301,6 +1313,15 @@ func applyEffect(gs *state.GameState, eff Effect) world.RegionID {
 	applyCoalition(gs, eff.Coalition)
 	applyTradeNetworkModifiers(gs, eff.TradeNetworkModifiers)
 	applyFlags(gs, eff)
+	for _, capture := range eff.CommanderCaptures {
+		gs.CaptureCommanderAtSettlement(capture.CommanderID, capture.HoldingSettlementID, capture.ReleaseFlags)
+	}
+	for _, commanderID := range eff.CommanderReleases {
+		gs.ReleaseCommanderCaptivity(commanderID)
+	}
+	if len(eff.CommanderReleases) > 0 {
+		gs.SyncCommanderLinks()
+	}
 	return targetRegionID
 }
 
@@ -1567,6 +1588,8 @@ func applyFlags(gs *state.GameState, eff Effect) {
 		}
 		delete(gs.FiredEventIDs, eventFlagKey(flag))
 	}
+	gs.RemovePermanentlyUnavailableCommanders()
+	gs.SyncCommanderLinks()
 }
 
 func applyCompletedTechs(gs *state.GameState, fid faction.FactionID, techIDs []string) {

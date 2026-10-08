@@ -47,6 +47,7 @@ type Game struct {
 	pendingHistoricalEvt              *events.Event
 	pendingSortie                     *pendingSortieState
 	pendingConquestDecisions          []pendingConquestDecision
+	pendingCaptiveDecisions           []state.PendingCaptiveDecision
 	lastCommanderProgress             []render.BattleReportCommanderProgress
 	loading                           *loadingJob
 	aiTurn                            *aiTurnState
@@ -530,6 +531,24 @@ func (g *Game) Update() error {
 			g.resolvePendingSuccessorDecision(successorDecisionAnnex)
 		case render.ActionReleaseSuccessor:
 			g.resolvePendingSuccessorDecision(successorDecisionRelease)
+		case render.ActionReleaseCaptiveCommander:
+			g.resolvePendingCaptiveDecision(captiveDecisionRelease)
+		case render.ActionKeepCaptiveCommander:
+			g.resolvePendingCaptiveDecision(captiveDecisionKeep)
+		case render.ActionExecuteCaptiveCommander:
+			g.resolvePendingCaptiveDecision(captiveDecisionExecute)
+		case render.ActionRansomCaptiveCommander:
+			g.resolvePendingCaptiveDecision(captiveDecisionRansom)
+		case render.ActionReleaseHeldCaptive:
+			g.resolveHeldCaptiveDecision(action.CommanderID, captiveDecisionRelease)
+		case render.ActionKeepHeldCaptive:
+			g.resolveHeldCaptiveDecision(action.CommanderID, captiveDecisionKeep)
+		case render.ActionExecuteHeldCaptive:
+			g.resolveHeldCaptiveDecision(action.CommanderID, captiveDecisionExecute)
+		case render.ActionRansomHeldCaptive:
+			g.resolveHeldCaptiveDecision(action.CommanderID, captiveDecisionRansom)
+		case render.ActionOfferCommanderRansom:
+			g.offerCommanderRansom(action.CommanderID)
 		case render.ActionVassalizeSuccessor:
 			g.resolvePendingSuccessorDecision(successorDecisionVassalize)
 		case render.ActionRespondDiplomacyOffer:
@@ -754,7 +773,9 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.gs.AIDiagnosticCaptureTurnsRemain = 0
 		g.aiDiagnosticReportSaved = false
 		g.pendingConquestDecisions = nil
+		g.pendingCaptiveDecisions = nil
 		g.gs.PendingConquestDecisions = nil
+		g.gs.PendingCaptiveDecisions = nil
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
@@ -785,6 +806,7 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		}
 		g.aiDiagnosticReportSaved = false
 		g.restorePendingConquestDecisions()
+		g.restorePendingCaptiveDecisions()
 		g.sanitizeOccupiedNeutralRegions()
 		g.sanitizeDockedFleets()
 		g.evts = res.evts
@@ -792,6 +814,8 @@ func (g *Game) finishLoading(kind loadingKind, res loadingResult) {
 		g.renderer.ReloadGameStateWithPreparedMap(res.gs, res.worldMap)
 		if len(g.pendingConquestDecisions) > 0 {
 			g.showPendingConquestDecision(false)
+		} else if len(g.pendingCaptiveDecisions) > 0 {
+			g.showPendingCaptiveDecision(false)
 		}
 		g.startScenarioMusic(res.gs.ScenarioPath)
 		g.renderer.HasSave = save.AnySlotExists()
@@ -4533,6 +4557,9 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	privilegedBuildingMaxLevel := 0
 	minorPrivilegeProtectionTurns := scenario.DefaultMinorPrivilegeProtectionTurns
 	aggressiveExpansionLastTurns := scenario.DefaultAggressiveExpansionLastTurns
+	commanderInjuryTurnsOnDefeat := state.DefaultCommanderInjuryTurnsOnDefeat
+	commanderCaptureChanceOnDefeat := state.DefaultCommanderCaptureChanceOnDefeat
+	commanderRansomGold := state.DefaultCommanderRansomGold
 	var victoryOpts []scenario.VictoryOptionDef
 	if sc != nil {
 		year = sc.Year
@@ -4542,60 +4569,72 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		privilegedBuildingMaxLevel = sc.PrivilegedBuildingMaxLevel
 		minorPrivilegeProtectionTurns = sc.MinorPrivilegeProtectionTurns
 		aggressiveExpansionLastTurns = sc.AggressiveExpansionLastTurns
+		if sc.CommanderInjuryTurnsOnDefeat > 0 {
+			commanderInjuryTurnsOnDefeat = sc.CommanderInjuryTurnsOnDefeat
+		}
+		if sc.CommanderCaptureChanceOnDefeat > 0 {
+			commanderCaptureChanceOnDefeat = sc.CommanderCaptureChanceOnDefeat
+		}
+		if sc.CommanderRansomGold > 0 {
+			commanderRansomGold = sc.CommanderRansomGold
+		}
 		diplomacyConfig = sc.Diplomacy.WithDefaults()
 		victoryOpts = sc.VictoryConditions
 	}
 
 	gs := &state.GameState{
-		Turn:                          1,
-		DecisionSeed:                  uint64(time.Now().UnixNano()),
-		Year:                          year,
-		Month:                         month,
-		MonthsPerTurn:                 monthsPerTurn,
-		StartYear:                     year,
-		Phase:                         state.PhaseFactionSelect,
-		Difficulty:                    difficulty,
-		DevelopmentMode:               devMode,
-		EditMode:                      editMode,
-		ScenarioID:                    scenarioIDFromPath(scenarioPath),
-		ScenarioPath:                  scenarioPath,
-		MapConfig:                     mapConfig,
-		PrivilegedBuildingMaxLevel:    privilegedBuildingMaxLevel,
-		MinorPrivilegeProtectionTurns: minorPrivilegeProtectionTurns,
-		AggressiveExpansionLastTurns:  aggressiveExpansionLastTurns,
-		DiplomacyConfig:               diplomacyConfig,
-		AirspaceEnabled:               sc.Airspace.Enabled,
-		UndeadMechanics:               sc.UndeadMechanics.WithDefaults(),
-		FactionLore:                   factionLore,
-		SettlementLore:                settlementLore,
-		Regions:                       regions,
-		RegionOrder:                   regionOrder,
-		LandPassages:                  landPassages,
-		TerrainAreas:                  terrainAreas,
-		Factions:                      factions,
-		ReligionRegistry:              religionRegistry,
-		FactionOrder:                  factionOrder,
-		Armies:                        armies,
-		ArmyOrder:                     nil,
-		RelationOrder:                 relationOrder,
-		AIStrategies:                  aiConfig.Strategies,
-		AIStrategyOrder:               append([]string(nil), aiConfig.StrategyOrder...),
-		AIDifficultyPolicy:            aiConfig.DifficultyPolicy,
-		ShapeData:                     shapeData,
-		UnitTypes:                     unitTypes,
-		UnitTypeOrder:                 unitTypeOrder,
-		CommanderTemplates:            commanderTemplates,
-		BuildingTypes:                 buildingTypes,
-		BuildingOrder:                 buildingOrder,
-		TechTypes:                     techTypes,
-		ScenarioVictories:             victoryOpts,
-		PoliticalTransformations:      politicalTransformations,
-		AvailableVictories:            scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
-		Relations:                     relations,
-		Imperial:                      imperialState,
-		TradeCenters:                  tradeCenters,
-		NextArmySeq:                   len(armies),
-		FiredEventIDs:                 map[string]bool{},
+		Turn:                           1,
+		DecisionSeed:                   uint64(time.Now().UnixNano()),
+		Year:                           year,
+		Month:                          month,
+		MonthsPerTurn:                  monthsPerTurn,
+		StartYear:                      year,
+		Phase:                          state.PhaseFactionSelect,
+		Difficulty:                     difficulty,
+		DevelopmentMode:                devMode,
+		EditMode:                       editMode,
+		ScenarioID:                     scenarioIDFromPath(scenarioPath),
+		ScenarioPath:                   scenarioPath,
+		MapConfig:                      mapConfig,
+		PrivilegedBuildingMaxLevel:     privilegedBuildingMaxLevel,
+		MinorPrivilegeProtectionTurns:  minorPrivilegeProtectionTurns,
+		AggressiveExpansionLastTurns:   aggressiveExpansionLastTurns,
+		CommanderInjuryTurnsOnDefeat:   commanderInjuryTurnsOnDefeat,
+		CommanderCaptureChanceOnDefeat: commanderCaptureChanceOnDefeat,
+		CommanderRansomGold:            commanderRansomGold,
+		DiplomacyConfig:                diplomacyConfig,
+		AirspaceEnabled:                sc.Airspace.Enabled,
+		UndeadMechanics:                sc.UndeadMechanics.WithDefaults(),
+		FactionLore:                    factionLore,
+		SettlementLore:                 settlementLore,
+		Regions:                        regions,
+		RegionOrder:                    regionOrder,
+		LandPassages:                   landPassages,
+		TerrainAreas:                   terrainAreas,
+		Factions:                       factions,
+		ReligionRegistry:               religionRegistry,
+		FactionOrder:                   factionOrder,
+		Armies:                         armies,
+		ArmyOrder:                      nil,
+		RelationOrder:                  relationOrder,
+		AIStrategies:                   aiConfig.Strategies,
+		AIStrategyOrder:                append([]string(nil), aiConfig.StrategyOrder...),
+		AIDifficultyPolicy:             aiConfig.DifficultyPolicy,
+		ShapeData:                      shapeData,
+		UnitTypes:                      unitTypes,
+		UnitTypeOrder:                  unitTypeOrder,
+		CommanderTemplates:             commanderTemplates,
+		BuildingTypes:                  buildingTypes,
+		BuildingOrder:                  buildingOrder,
+		TechTypes:                      techTypes,
+		ScenarioVictories:              victoryOpts,
+		PoliticalTransformations:       politicalTransformations,
+		AvailableVictories:             scenario.FilterVictoryOptionsForFaction(victoryOpts, ""),
+		Relations:                      relations,
+		Imperial:                       imperialState,
+		TradeCenters:                   tradeCenters,
+		NextArmySeq:                    len(armies),
+		FiredEventIDs:                  map[string]bool{},
 	}
 	if editMode {
 		gs.ArmyOrder = armyOrder
@@ -5732,6 +5771,8 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	g.gs.RecordFactionRegionAttackAgainst(faction.FactionID(newOwnerID), faction.FactionID(prevOwnerID))
 	g.gs.RecordWarRegionCapture(faction.FactionID(newOwnerID), faction.FactionID(prevOwnerID))
 	targetRegion.ApplyConquest(newOwnerID, attackerReligion)
+	g.gs.ReleaseCaptivesInOwnedSettlements()
+	g.queueCaptiveDecisionsForRegion(targetRegion, newOwnerID)
 	g.gs.ClearProductionOrdersForRegion(targetRegion.ID)
 	if newOwnerID == string(g.gs.PlayerFactionID) && prevOwnerID != newOwnerID {
 		audio.PlayScenarioSound(filepath.Join(g.gs.ScenarioPath, "audio"), "conquered")

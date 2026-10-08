@@ -346,6 +346,22 @@
       "tactician",
       "defender"
     ],
+    "unavailable_statuses": [
+      {
+        "flag": "tyrion_captured",
+        "reason_tr": "Tutsak"
+      },
+      {
+        "flag": "tyrion_exiled_to_essos",
+        "reason_tr": "Sürgünde"
+      },
+      {
+        "flag": "tyrion_executed",
+        "reason_tr": "İnfaz edildi",
+        "hide_from_roster": true,
+        "permanent": true
+      }
+    ],
     "start_year": 298,
     "end_year": 330
   },
@@ -755,7 +771,7 @@
   {
     "id": "cmd_night_king",
     "owner_id": "others",
-    "name": "The Night King",
+    "name": "Gece Kralı",
     "portrait_asset": "night_king.png",
     "level": 10,
     "is_boss": true,

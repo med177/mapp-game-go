@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/world"
 )
 
 func TestDismissCommanderRemovesAssignedCommanderFromState(t *testing.T) {
@@ -25,6 +27,154 @@ func TestDismissCommanderRemovesAssignedCommanderFromState(t *testing.T) {
 	}
 	if _, exists := gs.Commanders[commander.ID]; exists {
 		t.Fatal("dismissed commander remained in the canonical commander pool")
+	}
+}
+
+func TestPayCommanderRansomTransfersGoldAndReleases(t *testing.T) {
+	commander := &army.Commander{ID: "cmd_ransom", OwnerID: "captive_owner", CaptiveAtSettlementID: "holding_main"}
+	gs := &GameState{
+		CommanderRansomGold: 250,
+		Commanders:          map[string]*army.Commander{commander.ID: commander},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"captive_owner": {ID: "captive_owner", Gold: 500},
+			"captor":        {ID: "captor", Gold: 100},
+		},
+	}
+	if !gs.PayCommanderRansom(commander.ID, "captor") {
+		t.Fatal("fidye ödemesi uygulanamadı")
+	}
+	if commander.CaptiveAtSettlementID != "" {
+		t.Fatal("komutan fidye sonrası tutsak kaldı")
+	}
+	if got := gs.Factions["captive_owner"].Gold; got != 250 {
+		t.Fatalf("ödeyen altını = %d, want 250", got)
+	}
+	if got := gs.Factions["captor"].Gold; got != 350 {
+		t.Fatalf("tutsak sahibi altını = %d, want 350", got)
+	}
+}
+
+func TestCommanderCaptiveIsReleasedWhenOwnerCapturesHoldingRegion(t *testing.T) {
+	commander := &army.Commander{ID: "cmd_captive", OwnerID: "lannister", Name: "Tutsak Komutan"}
+	gs := &GameState{
+		FiredEventIDs: map[string]bool{"flag:commander_captured": true},
+		Commanders:    map[string]*army.Commander{commander.ID: commander},
+		Regions: map[world.RegionID]*world.Region{
+			"holding": {
+				ID:          "holding",
+				OwnerID:     "arryn",
+				Settlements: []world.Settlement{{ID: "holding_main", IsCenter: true}},
+			},
+		},
+	}
+	if !gs.CaptureCommanderAtSettlement(commander.ID, "holding_main", []string{"commander_captured"}) {
+		t.Fatal("komutan tutsak olarak kaydedilemedi")
+	}
+	if got := gs.CommanderUnavailableReason(commander); got != "Tutsak" {
+		t.Fatalf("tutsak komutan nedeni = %q, want %q", got, "Tutsak")
+	}
+	commander.CaptivityKeepPenaltyApplied = true
+	gs.Regions["holding"].OwnerID = "lannister"
+	if released := gs.ReleaseCaptivesInOwnedSettlements(); len(released) != 1 || released[0] != commander.ID {
+		t.Fatalf("tutsak otomatik serbest bırakılmadı: %#v", released)
+	}
+	if commander.CaptiveAtSettlementID != "" || commander.CaptivityKeepPenaltyApplied || gs.FiredEventIDs["flag:commander_captured"] {
+		t.Fatal("tutsaklık state'i temizlenmedi")
+	}
+	if got := gs.CommanderUnavailableReason(commander); got != "" {
+		t.Fatalf("serbest komutan hâlâ pasif: %q", got)
+	}
+}
+
+func TestCommanderUnavailableFlagUnassignsAndBlocksAssignment(t *testing.T) {
+	commander := &army.Commander{
+		ID:      "cmd_tyrion",
+		OwnerID: "lannister",
+		Name:    "Tyrion Lannister",
+		UnavailableStatuses: []army.CommanderUnavailableStatus{
+			{Flag: "tyrion_captured", ReasonTR: "Tutsak"},
+			{Flag: "tyrion_executed", ReasonTR: "İnfaz edildi", HideFromRoster: true, Permanent: true},
+		},
+	}
+	assignedArmy := &army.Army{ID: "army_assigned", OwnerID: "lannister", Commander: commander}
+	targetArmy := &army.Army{ID: "army_target", OwnerID: "lannister"}
+	commander.AssignedArmyID = assignedArmy.ID
+	gs := &GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			assignedArmy.ID: assignedArmy,
+			targetArmy.ID:   targetArmy,
+		},
+		Commanders:         map[string]*army.Commander{commander.ID: commander},
+		CommanderTemplates: map[string][]*army.Commander{"lannister": {commander}},
+		FiredEventIDs:      map[string]bool{"flag:tyrion_captured": true},
+	}
+
+	gs.SyncCommanderLinks()
+	if got := gs.CommanderUnavailableReason(commander); got != "Tutsak" {
+		t.Fatalf("pasif komutan nedeni = %q, want %q", got, "Tutsak")
+	}
+	if assignedArmy.Commander != nil || commander.AssignedArmyID != "" {
+		t.Fatal("pasif komutan mevcut ordudan ayrılmadı")
+	}
+	if len(gs.AvailableCommanders("lannister")) != 0 {
+		t.Fatal("pasif komutan atanabilirler listesinde kaldı")
+	}
+	if gs.AssignCommanderToArmy(commander.ID, targetArmy.ID) {
+		t.Fatal("pasif komutan yeni orduya atanabildi")
+	}
+	if len(gs.CommanderRoster("lannister")) != 1 {
+		t.Fatal("pasif komutan roster'dan kaldırıldı")
+	}
+
+	delete(gs.FiredEventIDs, "flag:tyrion_captured")
+	if !gs.AssignCommanderToArmy(commander.ID, targetArmy.ID) {
+		t.Fatal("flag temizlendikten sonra komutan atanamadı")
+	}
+	if gs.CommanderHiddenFromRoster(commander) {
+		t.Fatal("tutsak komutan roster'dan gizlendi")
+	}
+	gs.FiredEventIDs["flag:tyrion_executed"] = true
+	gs.RemovePermanentlyUnavailableCommanders()
+	gs.SyncCommanderLinks()
+	if _, exists := gs.Commanders[commander.ID]; exists || !gs.DismissedCommanderIDs[commander.ID] || len(gs.CommanderRoster("lannister")) != 0 {
+		t.Fatal("infaz edilen komutan roster'dan çıkarılmadı")
+	}
+}
+
+func TestCommanderInjuryExpiresByTurn(t *testing.T) {
+	commander := &army.Commander{ID: "cmd_injured", OwnerID: "player", Name: "Yaralı Komutan"}
+	currentArmy := &army.Army{ID: "army_current", OwnerID: "player", Commander: commander}
+	targetArmy := &army.Army{ID: "army_target", OwnerID: "player"}
+	commander.AssignedArmyID = currentArmy.ID
+	gs := &GameState{
+		Turn:                         10,
+		CommanderInjuryTurnsOnDefeat: 2,
+		Armies: map[army.ArmyID]*army.Army{
+			currentArmy.ID: currentArmy,
+			targetArmy.ID:  targetArmy,
+		},
+		Commanders: map[string]*army.Commander{commander.ID: commander},
+	}
+
+	if !gs.InjureCommander(commander.ID, gs.CommanderInjuryDuration(commander), "Yaralı") {
+		t.Fatal("komutan yaralanma durumu yazılamadı")
+	}
+	if currentArmy.Commander != nil || commander.AssignedArmyID != "" {
+		t.Fatal("yaralanan komutan ordudan ayrılmadı")
+	}
+	if got := gs.CommanderUnavailableReason(commander); got != "Yaralı" {
+		t.Fatalf("yaralı komutan nedeni = %q, want %q", got, "Yaralı")
+	}
+	if gs.AssignCommanderToArmy(commander.ID, targetArmy.ID) {
+		t.Fatal("yaralı komutan atanabildi")
+	}
+
+	gs.Turn = 12
+	if got := gs.CommanderUnavailableReason(commander); got != "" {
+		t.Fatalf("iyileşen komutan nedeni = %q, want boş", got)
+	}
+	if !gs.AssignCommanderToArmy(commander.ID, targetArmy.ID) {
+		t.Fatal("iyileşen komutan atanamadı")
 	}
 }
 

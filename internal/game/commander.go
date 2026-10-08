@@ -1,6 +1,8 @@
 package game
 
 import (
+	"math/rand"
+
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/render"
 )
@@ -13,27 +15,49 @@ func (g *Game) recordCommanderBattle(attacker *army.Army, defender *army.Army, d
 		g.lastCommanderProgress = nil
 	}
 	if attacker != nil {
-		g.recordCommanderProgress("Saldıran", attacker, attackerWon)
+		captorID := ""
+		if !attackerWon && defender != nil {
+			captorID = defender.OwnerID
+		}
+		g.recordCommanderProgress("Saldıran", attacker, attackerWon, captorID)
 	}
 	if len(defenderIDs) > 0 && g != nil && g.gs != nil {
+		captorID := ""
+		if attacker != nil {
+			captorID = attacker.OwnerID
+		}
 		for _, defenderID := range defenderIDs {
 			if source := g.gs.Armies[defenderID]; source != nil {
-				g.recordCommanderProgress("Savunan", source, !attackerWon)
+				g.recordCommanderProgress("Savunan", source, !attackerWon, captorID)
 			}
 		}
 		return
 	}
 	if defender != nil {
-		g.recordCommanderProgress("Savunan", defender, !attackerWon)
+		captorID := ""
+		if attackerWon && attacker != nil {
+			captorID = attacker.OwnerID
+		}
+		g.recordCommanderProgress("Savunan", defender, !attackerWon, captorID)
 	}
 }
 
-func (g *Game) recordCommanderProgress(side string, currentArmy *army.Army, won bool) {
+func (g *Game) recordCommanderProgress(side string, currentArmy *army.Army, won bool, captorID string) {
 	if g == nil || currentArmy == nil || currentArmy.Commander == nil {
 		return
 	}
 	commander := currentArmy.Commander
 	progress := currentArmy.RecordBattle(won)
+	if !won && g.gs != nil {
+		captureChance := g.gs.CommanderCaptureChanceOnDefeat
+		if captureChance > 0 && rand.Intn(100) < captureChance && g.gs.CaptureCommanderAtRegion(commander.ID, currentArmy.RegionID) {
+			if captorID == string(g.gs.PlayerFactionID) {
+				g.queueCapturedCommanderDecision(commander.ID, commander.CaptiveAtSettlementID, captorID, true)
+			}
+		} else {
+			g.gs.InjureCommander(commander.ID, g.gs.CommanderInjuryDuration(commander), "Yaralı")
+		}
+	}
 	entry := render.BattleReportCommanderProgress{
 		SideLabel:     side,
 		Name:          commander.Name,

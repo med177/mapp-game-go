@@ -224,11 +224,12 @@ func buildSelectedSiegeButtonsWithSurrenderLabel(surrenderLabel string) (gameui.
 	panel := buildSelectedSiegePanel()
 	btnY := panel.Rect.Y + panel.Rect.H - selectedSiegeButtonH - 14
 	gap := 8.0
-	totalW := selectedAttackerSiegeButtonW*3 + gap*2
+	totalW := selectedAttackerSiegeAssaultButtonW + selectedAttackerSiegeLiftButtonW + selectedAttackerSiegeSurrenderButtonW + gap*2
 	startX := panel.Rect.X + (panel.Rect.W-totalW)/2
-	assaultBtn := gameui.NewButton(startX, btnY, selectedAttackerSiegeButtonW, selectedSiegeButtonH, "Genel Hücum").WithIcon(gameui.IconSword)
-	liftBtn := gameui.NewButton(startX+selectedAttackerSiegeButtonW+gap, btnY, selectedAttackerSiegeButtonW, selectedSiegeButtonH, "Kuşatmayı Kaldır").WithIcon(gameui.IconExit)
-	surrenderBtn := gameui.NewButton(startX+(selectedAttackerSiegeButtonW+gap)*2, btnY, selectedAttackerSiegeButtonW, selectedSiegeButtonH, surrenderLabel).WithIcon(gameui.IconSend)
+	assaultBtn := gameui.NewButton(startX, btnY, selectedAttackerSiegeAssaultButtonW, selectedSiegeButtonH, "Genel Hücum").WithIcon(gameui.IconSword)
+	liftBtnX := startX + selectedAttackerSiegeAssaultButtonW + gap
+	liftBtn := gameui.NewButton(liftBtnX, btnY, selectedAttackerSiegeLiftButtonW, selectedSiegeButtonH, "Kuşatmayı Kaldır").WithIcon(gameui.IconExit)
+	surrenderBtn := gameui.NewButton(liftBtnX+selectedAttackerSiegeLiftButtonW+gap, btnY, selectedAttackerSiegeSurrenderButtonW, selectedSiegeButtonH, surrenderLabel).WithIcon(gameui.IconSend)
 	return assaultBtn, liftBtn, surrenderBtn
 }
 
@@ -2000,6 +2001,17 @@ func (r *Renderer) ShowThreeChoiceDialog(title, message, acceptLabel, thirdLabel
 	r.showThreeChoiceDialog(title, message, acceptLabel, thirdLabel, declineLabel, acceptAction, thirdAction, declineAction, false)
 }
 
+func (r *Renderer) ShowFourChoiceDialog(title, message, firstLabel, secondLabel, thirdLabel, fourthLabel string, firstAction, secondAction, thirdAction, fourthAction InputAction) {
+	if r == nil {
+		return
+	}
+	r.confirmDialog = confirmDialogState{show: true, title: title, message: message,
+		messageLines: wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
+		acceptLabel:  firstLabel, secondLabel: secondLabel, thirdLabel: thirdLabel, fourthLabel: fourthLabel,
+		pendingAction: firstAction, secondAction: secondAction, thirdAction: thirdAction, fourthAction: fourthAction,
+		declineActs: true}
+}
+
 // ShowThreeChoiceDialogWithThirdEnabled, üçlü modalın üçüncü seçeneğini
 // bağlama göre pasif göstermek için kullanılır.
 func (r *Renderer) ShowThreeChoiceDialogWithThirdEnabled(title, message, acceptLabel, thirdLabel, declineLabel string, acceptAction, thirdAction, declineAction InputAction, thirdEnabled bool) {
@@ -2103,6 +2115,17 @@ func (r *Renderer) QueueThreeChoiceDialogAfterBattleReport(title, message, accep
 		declineAction: declineAction,
 		declineActs:   true,
 	}
+}
+
+func (r *Renderer) QueueFourChoiceDialogAfterBattleReport(title, message, firstLabel, secondLabel, thirdLabel, fourthLabel string, firstAction, secondAction, thirdAction, fourthAction InputAction) {
+	if r == nil {
+		return
+	}
+	r.queuedConfirmDialog = confirmDialogState{show: true, title: title, message: message,
+		messageLines: wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
+		acceptLabel:  firstLabel, secondLabel: secondLabel, thirdLabel: thirdLabel, fourthLabel: fourthLabel,
+		pendingAction: firstAction, secondAction: secondAction, thirdAction: thirdAction, fourthAction: fourthAction,
+		declineActs: true}
 }
 
 func (r *Renderer) showEditExitConfirm() {
@@ -2230,6 +2253,21 @@ func navalContactDecisionLabelTR(decision state.NavalContactDecision) string {
 }
 
 func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
+	if r.confirmDialog.secondLabel != "" && r.confirmDialog.fourthLabel != "" {
+		buttons := buildConfirmDialogFourButtons(r.confirmDialog)
+		labels := []string{r.confirmDialog.acceptLabel, r.confirmDialog.secondLabel, r.confirmDialog.thirdLabel, r.confirmDialog.fourthLabel}
+		styles := []gameui.ButtonStyle{
+			solidButtonStyle(color.RGBA{145, 105, 40, 235}, color.RGBA{210, 165, 75, 255}, ColorWhite, 8),
+			solidButtonStyle(color.RGBA{55, 120, 70, 235}, color.RGBA{105, 175, 115, 255}, ColorWhite, 8),
+			solidButtonStyle(color.RGBA{110, 80, 45, 235}, color.RGBA{175, 130, 75, 255}, ColorWhite, 8),
+			solidButtonStyle(color.RGBA{145, 45, 40, 235}, color.RGBA{220, 100, 90, 255}, ColorWhite, 8),
+		}
+		for i := range buttons {
+			buttons[i] = decorateConfirmDialogButton(buttons[i], labels[i], "accept")
+			drawUIButtonWidget(screen, buttons[i], styles[i])
+		}
+		return
+	}
 	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
 	acceptBtn = decorateConfirmDialogButton(acceptBtn, r.confirmDialog.acceptLabel, "accept")
 	drawUIButtonWidget(screen, acceptBtn, confirmDialogActionButtonStyle(r.confirmDialog.acceptLabel))
@@ -2333,6 +2371,28 @@ func confirmDialogThreeButtonXs(cx float32, btnW, modalW float64) (float32, floa
 func (r *Renderer) handleConfirmDialogInput() InputAction {
 	mxi, myi := ebiten.CursorPosition()
 	mx, my := float64(mxi), float64(myi)
+	if r.confirmDialog.secondLabel != "" && r.confirmDialog.fourthLabel != "" {
+		buttons := buildConfirmDialogFourButtons(r.confirmDialog)
+		actions := [4]InputAction{r.confirmDialog.pendingAction, r.confirmDialog.secondAction, r.confirmDialog.thirdAction, r.confirmDialog.fourthAction}
+		if r.mouseJustPressed(ebiten.MouseButtonLeft) {
+			for i, button := range buttons {
+				if button.Enabled && button.HitTest(mx, my) {
+					r.clearMovementPreviewFreeze()
+					r.confirmDialog = confirmDialogState{}
+					return actions[i]
+				}
+			}
+		}
+		if r.keyJustPressed(ebiten.KeyEscape) || r.keyJustPressed(ebiten.KeyN) {
+			return InputAction{}
+		}
+		if r.keyJustPressed(ebiten.KeyY) || r.keyJustPressed(ebiten.KeyEnter) {
+			r.clearMovementPreviewFreeze()
+			r.confirmDialog = confirmDialogState{}
+			return actions[0]
+		}
+		return InputAction{}
+	}
 	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
 
 	if r.mouseJustPressed(ebiten.MouseButtonLeft) {

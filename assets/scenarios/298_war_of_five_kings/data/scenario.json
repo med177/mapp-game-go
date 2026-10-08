@@ -9,6 +9,9 @@
     "enabled": false
   },
   "turn_months": 1,
+  "commander_injury_turns_on_defeat": 2,
+  "commander_capture_chance_on_defeat": 15,
+  "commander_ransom_gold": 250,
   "year": 295,
   "month": 1,
   "privileged_building_max_level": 1,

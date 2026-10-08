@@ -455,12 +455,12 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 	drawUIButtonWidget(screen, commanderPanelRecruitButton(r.gs), applyTinyButtonStyle)
 
 	vector.StrokeLine(screen, float32(panel.X+commanderPanelListW+48), float32(panel.Y+84), float32(panel.X+commanderPanelListW+48), float32(panel.Y+panel.H-24), 1, panelBorder, false)
-	available := r.gs.AvailableCommanders(current.OwnerID)
+	roster := r.gs.CommanderRoster(current.OwnerID)
 	viewport := commanderPanelListViewport(r.gs, current.ID)
-	r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll, len(available), viewport)
+	r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll, len(roster), viewport)
 	if !canAssign {
 		DrawText(screen, "Filo komutanı atanamaz.", panel.X+24, panel.Y+82, FaceMed, ColorGold)
-	} else if len(available) == 0 {
+	} else if len(roster) == 0 {
 		DrawText(screen, "Boşta komutan yok.", panel.X+24, panel.Y+122, FaceSmall, ColorGray)
 	} else {
 		left := int(viewport.X)
@@ -471,15 +471,17 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 			body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
 			visibleRows := commanderPanelVisibleRows(viewport)
 			end := r.commanderPanelScroll + visibleRows
-			if end > len(available) {
-				end = len(available)
+			if end > len(roster) {
+				end = len(roster)
 			}
 			for i := r.commanderPanelScroll; i < end; i++ {
-				commander := available[i]
+				commander := roster[i]
+				unavailableReason := r.gs.CommanderUnavailableReason(commander)
+				unavailable := unavailableReason != ""
 				row := commanderPanelRow(i, r.commanderPanelScroll)
 				rowBG := color.RGBA{35, 26, 14, 210}
 				rowBorder := color.RGBA{100, 75, 30, 180}
-				if i == r.commanderPanelFocus {
+				if i == r.commanderPanelFocus && !unavailable {
 					rowBG = color.RGBA{75, 54, 20, 235}
 					rowBorder = ColorGold
 				}
@@ -487,12 +489,20 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 				vector.StrokeRect(body, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), 1, rowBorder, false)
 				drawCommanderPortrait(body, commander, row.X+8, row.Y+8, 64, 64)
 				textX := row.X + 84
-				DrawText(body, commander.Name, textX, row.Y+12, FaceSmall, ColorWhite)
-				DrawText(body, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), textX, row.Y+36, FaceSmall, ColorGray)
-				drawCommanderTraitBadges(body, commander, textX, row.Y+56, row.W-(textX-row.X)-12, commanderTraitBadgeOptions{MaxRows: 1})
+				nameColor := ColorWhite
+				if unavailable {
+					nameColor = ColorGray
+				}
+				DrawText(body, commander.Name, textX, row.Y+12, FaceSmall, nameColor)
+				if unavailable {
+					DrawText(body, unavailableReason+" — atanamaz", textX, row.Y+36, FaceSmall, ColorRed)
+				} else {
+					DrawText(body, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), textX, row.Y+36, FaceSmall, ColorGray)
+					drawCommanderTraitBadges(body, commander, textX, row.Y+56, row.W-(textX-row.X)-12, commanderTraitBadgeOptions{MaxRows: 1})
+				}
 			}
 		}
-		drawCommanderPanelScrollbar(screen, viewport, len(available), r.commanderPanelScroll)
+		drawCommanderPanelScrollbar(screen, viewport, len(roster), r.commanderPanelScroll)
 	}
 
 	r.drawCommanderDetail(screen, current)
@@ -763,39 +773,54 @@ func (r *Renderer) handleCommanderPanelInput() InputAction {
 	if !r.gs.CanAssignCommanderToArmy(current.ID) {
 		return InputAction{}
 	}
-	available := r.gs.AvailableCommanders(current.OwnerID)
+	roster := r.gs.CommanderRoster(current.OwnerID)
 	viewport := commanderPanelListViewport(r.gs, current.ID)
 	if _, wheelY := ebiten.Wheel(); wheelY != 0 && viewport.Hit(fx, fy) {
-		r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll-int(wheelY), len(available), viewport)
+		r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll-int(wheelY), len(roster), viewport)
 		return InputAction{}
 	}
-	r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll, len(available), viewport)
-	if r.keyJustPressed(ebiten.KeyArrowDown) && len(available) > 0 {
-		r.commanderPanelFocus = (r.commanderPanelFocus + 1) % len(available)
-		r.ensureCommanderPanelFocusVisible(len(available), viewport)
+	r.commanderPanelScroll = clampCommanderPanelScroll(r.commanderPanelScroll, len(roster), viewport)
+	if r.keyJustPressed(ebiten.KeyArrowDown) && len(roster) > 0 {
+		r.commanderPanelFocus = nextAssignableCommanderIndex(roster, r.commanderPanelFocus, 1, r.gs)
+		r.ensureCommanderPanelFocusVisible(len(roster), viewport)
 		return InputAction{}
 	}
-	if r.keyJustPressed(ebiten.KeyArrowUp) && len(available) > 0 {
-		r.commanderPanelFocus--
-		if r.commanderPanelFocus < 0 {
-			r.commanderPanelFocus = len(available) - 1
+	if r.keyJustPressed(ebiten.KeyArrowUp) && len(roster) > 0 {
+		r.commanderPanelFocus = nextAssignableCommanderIndex(roster, r.commanderPanelFocus, -1, r.gs)
+		r.ensureCommanderPanelFocusVisible(len(roster), viewport)
+		return InputAction{}
+	}
+	if (r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace)) && len(roster) > 0 {
+		if r.commanderPanelFocus >= len(roster) {
+			r.commanderPanelFocus = len(roster) - 1
 		}
-		r.ensureCommanderPanelFocusVisible(len(available), viewport)
-		return InputAction{}
-	}
-	if (r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace)) && len(available) > 0 {
-		if r.commanderPanelFocus >= len(available) {
-			r.commanderPanelFocus = len(available) - 1
+		if !r.gs.CommanderUnavailable(roster[r.commanderPanelFocus]) {
+			return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: roster[r.commanderPanelFocus].ID}
 		}
-		return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: available[r.commanderPanelFocus].ID}
 	}
 	if leftJustPressed {
-		if i := commanderPanelRowAt(fx, fy, len(available), r.commanderPanelScroll, viewport); i >= 0 {
+		if i := commanderPanelRowAt(fx, fy, len(roster), r.commanderPanelScroll, viewport); i >= 0 && !r.gs.CommanderUnavailable(roster[i]) {
 			r.commanderPanelFocus = i
-			return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: available[i].ID}
+			return InputAction{Kind: ActionAssignCommander, ArmyID: current.ID, CommanderID: roster[i].ID}
 		}
 	}
 	return InputAction{}
+}
+
+func nextAssignableCommanderIndex(roster []*army.Commander, current, direction int, gs *state.GameState) int {
+	if len(roster) == 0 {
+		return 0
+	}
+	for step := 1; step <= len(roster); step++ {
+		index := (current + direction*step) % len(roster)
+		if index < 0 {
+			index += len(roster)
+		}
+		if !gs.CommanderUnavailable(roster[index]) {
+			return index
+		}
+	}
+	return current
 }
 
 func (r *Renderer) handleCommanderRecruitInput() InputAction {
@@ -896,10 +921,10 @@ func (r *Renderer) commanderPanelHovering(fx, fy float64) bool {
 	if !r.gs.CanAssignCommanderToArmy(current.ID) {
 		return false
 	}
-	available := r.gs.AvailableCommanders(current.OwnerID)
+	roster := r.gs.CommanderRoster(current.OwnerID)
 	viewport := commanderPanelListViewport(r.gs, current.ID)
-	if commanderPanelRowAt(fx, fy, len(available), r.commanderPanelScroll, viewport) >= 0 {
-		return true
+	if i := commanderPanelRowAt(fx, fy, len(roster), r.commanderPanelScroll, viewport); i >= 0 {
+		return !r.gs.CommanderUnavailable(roster[i])
 	}
 	return false
 }

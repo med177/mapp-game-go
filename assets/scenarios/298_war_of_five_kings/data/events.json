@@ -533,7 +533,9 @@
             }
           ],
           "set_flags": [
-            "jon_arryn_investigation_started"
+            "jon_arryn_investigation_started",
+            "royal_party_travelling_north",
+            "jon_arryn_path_chosen"
           ]
         }
       },
@@ -554,7 +556,8 @@
             }
           ],
           "set_flags": [
-            "royal_party_travelling_north"
+            "royal_party_travelling_north",
+            "jon_arryn_path_chosen"
           ]
         }
       }
@@ -571,6 +574,201 @@
     ]
   },
   {
+    "id": "ned_stark_named_hand_298",
+    "name_tr": "Eddard Stark Kral Eli Oluyor",
+    "desc_tr": "Kral Robert, Jon Arryn'in ölümünden sonra Kuzey'e ulaşır ve eski dostu Eddard Stark'tan Kral Eli olmasını ister.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -2,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "baratheon_king",
+    "choice_prompt_tr": "Eddard Stark, Kral Eli görevini kabul etmeli mi?",
+    "choices": [
+      {
+        "id": "appoint_ned_as_hand",
+        "label_tr": "Ned'i Kral Eli yap",
+        "desc_tr": "Eddard Stark görevi kabul eder ve kraliyet ailesiyle birlikte Kral'ın Şehri'ne gider.",
+        "ai_weight": 9,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_king",
+          "relations": [{"faction_id": "stark", "score_delta": 25}],
+          "set_flags": ["ned_stark_named_hand"]
+        }
+      },
+      {
+        "id": "refuse_ned_as_hand",
+        "label_tr": "Ned'in görevi reddetmesine izin ver",
+        "desc_tr": "Ned Kuzey'de kalır; kraliyet soruşturması ve saray krizi başka bir yola evrilir.",
+        "ai_weight": 1,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "baratheon_king",
+          "relations": [{"faction_id": "stark", "score_delta": -10}],
+          "set_flags": ["ned_stark_hand_refused"]
+        }
+      }
+    ],
+    "player_choice_factions": ["baratheon_king", "stark"],
+    "requires_flags": ["royal_party_travelling_north", "jon_arryn_path_chosen"],
+    "requires_active_factions": ["baratheon_king", "stark"]
+  },
+  {
+    "id": "sansa_joffrey_betrothal_298",
+    "name_tr": "Sansa ve Joffrey'nin Nişanı",
+    "desc_tr": "Ned Stark'ın Kral Eli olmasıyla Stark hanedanı saraya bağlanır. Robert, Sansa Stark ile Joffrey Baratheon'un nişanlanmasını ister.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -2,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "stark",
+    "choice_prompt_tr": "Sansa Stark ile Joffrey Baratheon'un nişanı kabul edilsin mi?",
+    "choices": [
+      {
+        "id": "accept_sansa_joffrey_betrothal",
+        "label_tr": "Nişanı kabul et",
+        "desc_tr": "Sansa, Demir Taht ile Stark hanedanı arasında siyasi bir bağ kurmak için Joffrey ile nişanlanır.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "relations": [
+            {"faction_id": "baratheon_king", "score_delta": 20},
+            {"faction_id": "lannister", "score_delta": 10}
+          ],
+          "set_flags": ["sansa_joffrey_betrothal"]
+        }
+      },
+      {
+        "id": "refuse_sansa_joffrey_betrothal",
+        "label_tr": "Nişanı reddet",
+        "desc_tr": "Stark hanedanı sarayla bağını zayıflatır ve Robert'ın ölümünden sonra daha kırılgan bir konuma düşer.",
+        "ai_weight": 2,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "relations": [
+            {"faction_id": "baratheon_king", "score_delta": -18},
+            {"faction_id": "lannister", "score_delta": -10}
+          ],
+          "set_flags": ["sansa_joffrey_betrothal_refused"]
+        }
+      }
+    ],
+    "player_choice_factions": ["stark", "baratheon_king", "lannister"],
+    "requires_flags": ["ned_stark_named_hand"],
+    "requires_active_factions": ["stark", "baratheon_king", "lannister"]
+  },
+  {
+    "id": "ned_arrested_after_robert_298",
+    "name_tr": "Ned Stark'ın Tutuklanması",
+    "desc_tr": "Robert'ın ölümüyle saray Lannisterların kontrolüne geçer. Ned Stark, Joffrey'nin meşruiyetine karşı çıktığı için Kral'ın Şehri'nde tutuklanır.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -8,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "stark",
+    "choice_prompt_tr": "Ned Stark tutuklandığında Stark hanedanı nasıl karşılık vermeli?",
+    "choices": [
+      {
+        "id": "ned_calls_for_city_watch",
+        "label_tr": "Şehir Muhafızlarına güven",
+        "desc_tr": "Ned, Robert'ın vasiyetine dayanarak düzeni korumaya çalışır; ancak Altın Pelerinliler onu tutuklar.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "relations": [{"faction_id": "lannister", "score_delta": -25}],
+          "set_flags": ["ned_arrested", "ned_betrayed"]
+        }
+      },
+      {
+        "id": "ned_submits_to_crown",
+        "label_tr": "Taç karşısında teslim ol",
+        "desc_tr": "Ned, kızlarının güvenliği için geri adım atar ve tutuklanmayı kabul eder.",
+        "ai_weight": 4,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "relations": [{"faction_id": "lannister", "score_delta": -15}],
+          "set_flags": ["ned_arrested"]
+        }
+      }
+    ],
+    "player_choice_factions": ["stark", "lannister", "baratheon_king"],
+    "requires_flags": ["war_of_five_kings_active", "ned_stark_named_hand"],
+    "requires_active_factions": ["stark", "lannister"]
+  },
+  {
+    "id": "ned_execution_298",
+    "name_tr": "Ned Stark'ın Kaderi",
+    "desc_tr": "Ned Stark, Kral'ın Şehri'nde tutuklu. Joffrey'nin kararı Stark hanedanı ile Demir Taht arasındaki savaşı geri dönülmez hâle getirebilir.",
+    "probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": -12,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 298,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "baratheon_king",
+    "choice_prompt_tr": "Ned Stark'ın kaderi nasıl belirlensin?",
+    "choices": [
+      {
+        "id": "execute_ned_stark",
+        "label_tr": "Ned'i infaz et",
+        "desc_tr": "Ned Stark idam edilir. Kuzey, Robb Stark'ın önderliğinde Demir Taht'a karşı ayaklanır.",
+        "ai_weight": 8,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "relations": [
+            {"faction_id": "lannister", "score_delta": -40, "stance": "war"},
+            {"faction_id": "tully", "score_delta": -35, "stance": "war"}
+          ],
+          "set_flags": ["ned_executed"],
+          "clear_flags": ["ned_arrested"]
+        }
+      },
+      {
+        "id": "spare_ned_stark",
+        "label_tr": "Ned'i sürgüne gönder",
+        "desc_tr": "Ned'in hayatı bağışlanır ve Gece Nöbeti'ne gönderilmesi kararlaştırılır; savaşın patlaması gecikebilir.",
+        "ai_weight": 2,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "stark",
+          "relations": [{"faction_id": "stark", "score_delta": 10}],
+          "set_flags": ["ned_exiled"],
+          "clear_flags": ["ned_arrested"]
+        }
+      }
+    ],
+    "player_choice_factions": ["baratheon_king", "lannister", "stark"],
+    "requires_flags": ["ned_arrested"],
+    "requires_active_factions": ["stark", "lannister"]
+  },
+  {
     "id": "death_of_robert_298",
     "name_tr": "Kral Robert'ın Ölümü",
     "desc_tr": "Kral Robert Baratheon av sırasında öldü. Taht üzerinde iddia sahibi krallar kılıçlarını çekti. Beş Kralın Savaşı başlıyor!",
@@ -582,7 +780,8 @@
     "grain_delta": 0,
     "army_hp_mod": 0,
     "set_flags": [
-      "war_of_five_kings_active"
+      "war_of_five_kings_active",
+      "robert_dead"
     ],
     "historical_year": 298,
     "historical_month": 3,
@@ -643,7 +842,8 @@
       "baratheon_king",
       "baratheon_dragonstone",
       "baratheon_stormsend"
-    ]
+    ],
+    "requires_flags": []
   },
   {
     "id": "catelyn_captures_tyrion_298",
@@ -657,7 +857,7 @@
     "grain_delta": 0,
     "army_hp_mod": 0,
     "historical_year": 298,
-    "historical_month": 5,
+    "historical_month": 2,
     "one_shot": true,
     "affected_faction": "tully",
     "choice_prompt_tr": "Tyrion Lannister'ın esareti nasıl kullanılmalı?",
@@ -683,8 +883,18 @@
             }
           ],
           "set_flags": [
+            "tyrion_captured",
             "tyrion_delivered_to_the_eyrie",
             "tully_lannister_conflict_escalated"
+          ],
+          "commander_captures": [
+            {
+              "commander_id": "cmd_tyrion_lannister",
+              "holding_settlement_id": "the_eyrie_main",
+              "release_flags": [
+                "tyrion_captured"
+              ]
+            }
           ]
         }
       },
@@ -707,7 +917,17 @@
             }
           ],
           "set_flags": [
+            "tyrion_captured",
             "tyrion_handed_to_the_crown"
+          ],
+          "commander_captures": [
+            {
+              "commander_id": "cmd_tyrion_lannister",
+              "holding_settlement_id": "kings_landing_main",
+              "release_flags": [
+                "tyrion_captured"
+              ]
+            }
           ]
         }
       }
@@ -715,20 +935,11 @@
     "player_choice_factions": [
       "tully",
       "stark",
-      "arryn",
-      "lannister"
-    ],
-    "requires_flags": [
-      "war_of_five_kings_active"
-    ],
-    "requires_owned_regions": [
-      "riverlands"
-    ],
-    "requires_active_factions": [
-      "tully",
-      "stark",
-      "lannister",
       "arryn"
+    ],
+    "requires_flags": [],
+    "requires_active_factions": [
+      "tully"
     ]
   },
   {
@@ -819,13 +1030,8 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
-    "requires_owned_regions": [
-      "riverrun"
-    ],
     "requires_active_factions": [
-      "tully",
-      "stark",
-      "lannister"
+      "tully"
     ]
   },
   {
@@ -925,12 +1131,8 @@
       "war_of_five_kings_active",
       "stark_betrayed"
     ],
-    "requires_owned_regions": [
-      "riverrun"
-    ],
     "requires_active_factions": [
-      "tully",
-      "lannister"
+      "tully"
     ]
   },
   {
@@ -1049,12 +1251,8 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
-    "requires_owned_regions": [
-      "the_eyrie"
-    ],
     "requires_active_factions": [
-      "arryn",
-      "stark"
+      "arryn"
     ]
   },
   {
@@ -1133,15 +1331,8 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
-    "requires_owned_regions": [
-      "winterfell_region",
-      "the_neck",
-      "moat_cailin"
-    ],
     "requires_active_factions": [
-      "stark",
-      "tully",
-      "lannister"
+      "stark"
     ]
   },
   {
@@ -1217,9 +1408,7 @@
       "northern_independence_declared"
     ],
     "requires_active_factions": [
-      "stark",
-      "lannister",
-      "tully"
+      "stark"
     ]
   },
   {
@@ -1306,9 +1495,6 @@
     ],
     "requires_flags": [
       "jaime_negotiation_started"
-    ],
-    "requires_owned_regions": [
-      "riverrun"
     ],
     "requires_active_factions": [
       "tully",
@@ -2171,15 +2357,8 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
-    "requires_owned_regions": [
-      "the_twins",
-      "riverrun"
-    ],
     "requires_active_factions": [
-      "tully",
-      "stark",
-      "lannister",
-      "bolton"
+      "tully"
     ]
   },
   {
@@ -2250,18 +2429,10 @@
       "bolton"
     ],
     "requires_flags": [
-      "war_of_five_kings_active",
-      "northern_independence_declared"
-    ],
-    "requires_owned_regions": [
-      "winterfell_region",
-      "the_neck",
-      "moat_cailin"
+      "war_of_five_kings_active"
     ],
     "requires_active_factions": [
-      "stark",
-      "bolton",
-      "lannister"
+      "stark"
     ]
   },
   {
@@ -2342,9 +2513,6 @@
     "requires_flags": [
       "war_of_five_kings_active",
       "riverrun_siege_started"
-    ],
-    "requires_owned_regions": [
-      "riverrun"
     ],
     "requires_active_factions": [
       "tully",
@@ -2427,9 +2595,6 @@
     "requires_flags": [
       "war_of_five_kings_active",
       "blackfish_resistance"
-    ],
-    "requires_owned_regions": [
-      "riverrun"
     ],
     "requires_active_factions": [
       "tully"
@@ -2579,12 +2744,8 @@
       "stark_betrayed",
       "arryn_neutrality_declared"
     ],
-    "requires_owned_regions": [
-      "the_eyrie"
-    ],
     "requires_active_factions": [
-      "arryn",
-      "stark"
+      "arryn"
     ]
   },
   {
@@ -2648,12 +2809,8 @@
       "stark_betrayed",
       "arryn_supports_stark"
     ],
-    "requires_owned_regions": [
-      "the_eyrie"
-    ],
     "requires_active_factions": [
-      "arryn",
-      "stark"
+      "arryn"
     ]
   },
   {
@@ -2711,13 +2868,8 @@
       "stark_betrayed",
       "arryn_supports_crown"
     ],
-    "requires_owned_regions": [
-      "the_eyrie"
-    ],
     "requires_active_factions": [
-      "arryn",
-      "lannister",
-      "baratheon_king"
+      "arryn"
     ]
   },
   {
@@ -2821,9 +2973,6 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
-    "requires_owned_regions": [
-      "the_eyrie"
-    ],
     "requires_active_factions": [
       "arryn"
     ]
@@ -2851,9 +3000,6 @@
     ],
     "requires_flags": [
       "highgarden_joined_war"
-    ],
-    "requires_owned_regions": [
-      "highgarden"
     ],
     "requires_active_factions": [
       "tyrell"
@@ -2991,13 +3137,8 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
-    "requires_owned_regions": [
-      "highgarden"
-    ],
     "requires_active_factions": [
-      "tyrell",
-      "lannister",
-      "baratheon_king"
+      "tyrell"
     ]
   },
   {
@@ -3101,13 +3242,9 @@
       "stark_betrayed",
       "margaery_joffrey_married"
     ],
-    "requires_owned_regions": [
-      "kings_landing"
-    ],
     "requires_active_factions": [
       "lannister",
-      "tyrell",
-      "baratheon_king"
+      "tyrell"
     ]
   },
   {
@@ -3265,9 +3402,6 @@
     "requires_flags": [
       "purple_wedding_completed"
     ],
-    "requires_owned_regions": [
-      "casterly_rock"
-    ],
     "requires_active_factions": [
       "lannister"
     ]
@@ -3313,7 +3447,37 @@
             "tyrion_exiled_to_essos"
           ],
           "clear_flags": [
+            "tyrion_captured",
             "tyrion_on_trial"
+          ],
+          "commander_releases": [
+            "cmd_tyrion_lannister"
+          ]
+        }
+      },
+      {
+        "id": "release_tyrion",
+        "label_tr": "Tyrion'u serbest bırak",
+        "desc_tr": "Tyrion üzerindeki suçlamalar geri çekilir; Lannister hanedanı küçük kardeşini yeniden kendi hizmetine alır.",
+        "ai_weight": 2,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "lannister",
+          "relations": [
+            {
+              "faction_id": "tully",
+              "score_delta": 12
+            }
+          ],
+          "set_flags": [
+            "tyrion_released"
+          ],
+          "clear_flags": [
+            "tyrion_captured",
+            "tyrion_on_trial"
+          ],
+          "commander_releases": [
+            "cmd_tyrion_lannister"
           ]
         }
       },
@@ -3340,7 +3504,11 @@
             "tyrion_executed"
           ],
           "clear_flags": [
+            "tyrion_captured",
             "tyrion_on_trial"
+          ],
+          "commander_releases": [
+            "cmd_tyrion_lannister"
           ]
         }
       }
@@ -3351,10 +3519,8 @@
     "requires_flags": [
       "purple_wedding_completed",
       "tyrion_on_trial",
+      "tyrion_captured",
       "tywin_dead"
-    ],
-    "requires_owned_regions": [
-      "casterly_rock"
     ],
     "requires_active_factions": [
       "lannister"
@@ -3432,10 +3598,6 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
-    "requires_owned_regions_any": [
-      "the_wall_west",
-      "the_wall_east"
-    ],
     "requires_active_factions": [
       "nights_watch"
     ]
@@ -3483,10 +3645,6 @@
     ],
     "requires_flags": [
       "war_of_five_kings_active"
-    ],
-    "requires_owned_regions_any": [
-      "the_wall_west",
-      "the_wall_east"
     ],
     "requires_active_factions": [
       "nights_watch"
@@ -3579,13 +3737,9 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
-    "requires_owned_regions": [
-      "beyond_the_wall"
-    ],
     "requires_active_factions": [
       "free_folk",
-      "nights_watch",
-      "stark"
+      "nights_watch"
     ]
   },
   {
@@ -3707,10 +3861,6 @@
     "requires_flags": [
       "mance_invasion_started"
     ],
-    "requires_owned_regions_any": [
-      "the_wall_west",
-      "the_wall_east"
-    ],
     "requires_active_factions": [
       "free_folk",
       "nights_watch"
@@ -3783,9 +3933,6 @@
     "affected_faction": "others",
     "requires_flags": [
       "white_walkers_stirring"
-    ],
-    "requires_owned_regions": [
-      "always_winter"
     ],
     "requires_active_factions": [
       "others",
@@ -3864,10 +4011,6 @@
     "requires_flags": [
       "others_awakened"
     ],
-    "requires_owned_regions_any": [
-      "the_wall_west",
-      "the_wall_east"
-    ],
     "requires_active_factions": [
       "others",
       "nights_watch"
@@ -3905,13 +4048,8 @@
       "others_awakened",
       "wall_assault_started"
     ],
-    "requires_owned_regions_any": [
-      "the_wall_west",
-      "the_wall_east"
-    ],
     "requires_active_factions": [
-      "others",
-      "stark"
+      "others"
     ]
   },
   {
@@ -3950,13 +4088,8 @@
     "blocks_flags": [
       "wall_breached"
     ],
-    "requires_owned_regions_any": [
-      "the_wall_west",
-      "the_wall_east"
-    ],
     "requires_active_factions": [
-      "others",
-      "stark"
+      "others"
     ]
   },
   {
@@ -3995,13 +4128,8 @@
     "blocks_flags": [
       "wall_breached"
     ],
-    "requires_owned_regions_any": [
-      "the_wall_west",
-      "the_wall_east"
-    ],
     "requires_active_factions": [
-      "others",
-      "stark"
+      "others"
     ]
   },
   {
@@ -4077,12 +4205,8 @@
     "player_choice_factions": [
       "targaryen"
     ],
-    "requires_owned_regions": [
-      "pentos_region"
-    ],
     "requires_active_factions": [
-      "targaryen",
-      "free_cities"
+      "targaryen"
     ]
   },
   {
@@ -4303,6 +4427,31 @@
     ]
   },
   {
+    "id": "war_of_five_kings_resolution_stalemate",
+    "name_tr": "Beş Kralın Savaşı: Yıpratma Sonucu",
+    "desc_tr": "Hiçbir taht iddiası kesin zafer koşullarını sağlayamadı. Savaş yıpratma ve bölgesel uzlaşma sonucunda sona eriyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "all_factions",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 310,
+    "historical_month": 12,
+    "one_shot": true,
+    "set_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_winner_stalemate"
+    ],
+    "clear_flags": [
+      "war_of_five_kings_active"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_active"
+    ]
+  },
+  {
     "id": "postwar_settlement_lannister",
     "name_tr": "Lannister Zaferinin Düzeni",
     "desc_tr": "Savaşın sonucu Lannisterların lehine kesinleşti. Kral'ın Şehri merkezli düzen yeniden kurulur; rakip taht iddiaları bastırılır.",
@@ -4504,6 +4653,30 @@
     ]
   },
   {
+    "id": "postwar_settlement_stalemate",
+    "name_tr": "Yıpratma Sonrası Bölgesel Uzlaşma",
+    "desc_tr": "Kesin bir galip çıkmadı. Hanedanlar savaştan yıpranmış halde yeni sınırları ve geçici düzeni kabul ediyor.",
+    "probability": 0,
+    "min_turn": 0,
+    "target": "all_factions",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "state_triggered": true,
+    "state_trigger_group": "war_of_five_kings_settlement",
+    "state_trigger_priority": 1,
+    "one_shot": true,
+    "set_flags": [
+      "war_of_five_kings_settlement_complete",
+      "postwar_stalemate_order"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_winner_stalemate"
+    ]
+  },
+  {
     "id": "targaryen_return_302",
     "name_tr": "Targaryenlerin Westeros'a Dönüşü",
     "desc_tr": "Daenerys Targaryen ejderhalarıyla birlikte Westeros'a döner. Eski hanedan Demir Taht üzerindeki hakkını yeniden ileri sürer.",
@@ -4545,10 +4718,6 @@
       "war_of_five_kings_resolved",
       "war_of_five_kings_settlement_complete",
       "targaryen_return_ready"
-    ],
-    "requires_owned_regions": [
-      "dragonstone",
-      "meereen"
     ],
     "requires_active_factions": [
       "targaryen"

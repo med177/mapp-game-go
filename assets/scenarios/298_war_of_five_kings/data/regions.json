@@ -2371,7 +2371,18 @@
     "rural_population": 50,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": [
+      "barracks",
+      "barracks",
+      "walls",
+      "walls",
+      "walls",
+      "walls",
+      "granary",
+      "granary",
+      "temple",
+      "market"
+    ]
   },
   {
     "id": "the_mountains_of_the_moon",

@@ -26,6 +26,18 @@ const DiplomaticOfferRetryCooldownTurns = 3
 // AggressiveExpansionLastTurns değerini kullanır.
 const RecentFactionExpansionWindowTurns = scenario.DefaultAggressiveExpansionLastTurns
 
+const DefaultCommanderInjuryTurnsOnDefeat = 2
+
+const DefaultCommanderCaptureChanceOnDefeat = 15
+const DefaultCommanderRansomGold = 250
+
+const (
+	CommanderReleaseRelationDelta = 10
+	CommanderKeepRelationDelta    = -5
+	CommanderExecuteRelationDelta = -20
+	CommanderRansomRelationDelta  = 5
+)
+
 // MaxOverextensionScore, aşırı genişleme değerinin diplomatik baskı ve HUD
 // için kullanılabilecek üst sınırıdır. Eski 0-100 aralığı artık yalnızca düşük
 // ve orta baskı seviyelerini ifade eder.
@@ -207,6 +219,14 @@ type PendingConquestDecision struct {
 	SuccessorFactionID faction.FactionID `json:"successor_faction_id,omitempty"`
 }
 
+// PendingCaptiveDecision, fethedilen yerleşimde bulunan başka faction
+// komutanları için oyuncunun vereceği kararı save/load arasında korur.
+type PendingCaptiveDecision struct {
+	CommanderID     string            `json:"commander_id"`
+	SettlementID    string            `json:"settlement_id"`
+	CaptorFactionID faction.FactionID `json:"captor_faction_id"`
+}
+
 type SiegeState struct {
 	RegionID             world.RegionID `json:"region_id"`
 	AttackerArmyID       army.ArmyID    `json:"attacker_army_id"`
@@ -336,19 +356,22 @@ type GameState struct {
 	DecisionSeed uint64 `json:"decision_seed,omitempty"`
 
 	// Senaryo
-	ScenarioID                    string                   `json:"scenario_id"`   // aktif senaryo ID'si
-	ScenarioPath                  string                   `json:"scenario_path"` // aktif senaryo klasörü
-	MapConfig                     scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
-	PrivilegedBuildingMaxLevel    int                      `json:"-"`             // aktif senaryonun imtiyazlı minor bina tavanı
-	MinorPrivilegeProtectionTurns int                      `json:"-"`             // aktif senaryonun yeni imtiyaz koruma süresi
-	AggressiveExpansionLastTurns  int                      `json:"-"`             // aktif senaryonun aşırı genişleme baskı süresi
-	DiplomacyConfig               scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
-	BaseGoldValues                map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
+	ScenarioID                     string                   `json:"scenario_id"`   // aktif senaryo ID'si
+	ScenarioPath                   string                   `json:"scenario_path"` // aktif senaryo klasörü
+	MapConfig                      scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
+	PrivilegedBuildingMaxLevel     int                      `json:"-"`             // aktif senaryonun imtiyazlı minor bina tavanı
+	MinorPrivilegeProtectionTurns  int                      `json:"-"`             // aktif senaryonun yeni imtiyaz koruma süresi
+	AggressiveExpansionLastTurns   int                      `json:"-"`             // aktif senaryonun aşırı genişleme baskı süresi
+	CommanderInjuryTurnsOnDefeat   int                      `json:"-"`             // yenilen komutanın iyileşme süresi
+	CommanderCaptureChanceOnDefeat int                      `json:"-"`             // yenilen komutanın tutsak edilme olasılığı
+	DiplomacyConfig                scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
+	BaseGoldValues                 map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
 
-	UndeadMechanics scenario.UndeadMechanics           `json:"-"`
-	AirspaceEnabled bool                               `json:"-"`
-	FactionLore     map[string]scenario.FactionLore    `json:"-"`
-	SettlementLore  map[string]scenario.SettlementLore `json:"-"`
+	CommanderRansomGold int                                `json:"-"`
+	UndeadMechanics     scenario.UndeadMechanics           `json:"-"`
+	AirspaceEnabled     bool                               `json:"-"`
+	FactionLore         map[string]scenario.FactionLore    `json:"-"`
+	SettlementLore      map[string]scenario.SettlementLore `json:"-"`
 
 	// Oyuncu
 	PlayerFactionID faction.FactionID `json:"player_faction_id"`
@@ -463,6 +486,7 @@ type GameState struct {
 	// PendingConquestDecisions, teslimiyet sonrası ardıl devlet kararlarını
 	// oyun nesnesi yeniden oluşturulsa da korur.
 	PendingConquestDecisions []PendingConquestDecision `json:"pending_conquest_decisions,omitempty"`
+	PendingCaptiveDecisions  []PendingCaptiveDecision  `json:"pending_captive_decisions,omitempty"`
 	// Çözümlenmiş diplomatik tekliflerin kısa geçmişi.
 	DiplomaticOfferHistory []DiplomaticOfferHistoryEntry `json:"diplomatic_offer_history,omitempty"`
 	// Turn içinde devlet başına gönderilen diplomasi teklif sayacı.

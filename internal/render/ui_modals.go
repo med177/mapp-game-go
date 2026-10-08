@@ -49,6 +49,9 @@ func buildConfirmDialogModal() gameui.Modal {
 func buildConfirmDialogModalFor(state confirmDialogState) gameui.Modal {
 	modalW := float64(confirmDialogW)
 	modalH := float64(confirmDialogH)
+	if state.secondLabel != "" && state.fourthLabel != "" {
+		modalW = float64(confirmDialogFourChoiceW)
+	}
 	if state.spacious {
 		modalW = float64(confirmDialogSpaciousW)
 		modalH = float64(confirmDialogSpaciousH)
@@ -105,6 +108,23 @@ func buildConfirmDialogButtons(state confirmDialogState) (gameui.Button, gameui.
 		gameui.Button{},
 		gameui.NewButton(noX, btnY, btnW, float64(confirmDialogBtnH), state.declineLabel),
 		false
+}
+
+func buildConfirmDialogFourButtons(state confirmDialogState) [4]gameui.Button {
+	modal := buildConfirmDialogModalFor(state)
+	btnW := (modal.Panel.Rect.W - 48) / 4
+	gap := 8.0
+	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - 18
+	startX := modal.Panel.Rect.X + (modal.Panel.Rect.W-(btnW*4+gap*3))/2
+	labels := [4]string{state.acceptLabel, state.secondLabel, state.thirdLabel, state.fourthLabel}
+	buttons := [4]gameui.Button{}
+	for i, label := range labels {
+		buttons[i] = gameui.NewButton(startX+float64(i)*(btnW+gap), btnY, btnW, float64(confirmDialogBtnH), label)
+	}
+	buttons[1].Enabled = !state.secondDisabled
+	buttons[2].Enabled = !state.thirdDisabled
+	buttons[3].Enabled = !state.fourthDisabled
+	return buttons
 }
 
 func buildWarConfirmModal() gameui.Modal {

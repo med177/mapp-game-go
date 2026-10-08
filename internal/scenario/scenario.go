@@ -224,7 +224,11 @@ type Scenario struct {
 	MinorPrivilegeProtectionTurns int `json:"minor_privilege_protection_turns,omitempty"`
 	// AggressiveExpansionLastTurns, bir bölge kazanımının aşırı genişleme
 	// baskısına katkısının kademeli olarak azalacağı tur sayısıdır.
-	AggressiveExpansionLastTurns int `json:"aggressive_expansion_last_turns,omitempty"`
+	AggressiveExpansionLastTurns   int `json:"aggressive_expansion_last_turns,omitempty"`
+	CommanderInjuryTurnsOnDefeat   int `json:"commander_injury_turns_on_defeat,omitempty"`
+	CommanderCaptureChanceOnDefeat int `json:"commander_capture_chance_on_defeat,omitempty"`
+
+	CommanderRansomGold int `json:"commander_ransom_gold,omitempty"`
 
 	Diplomacy       DiplomacyConfig `json:"diplomacy,omitempty"`
 	Airspace        AirspaceConfig  `json:"airspace,omitempty"`

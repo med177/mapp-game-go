@@ -39,38 +39,41 @@ var (
 )
 
 const (
-	confirmDialogW               = float32(460)
-	confirmDialogH               = float32(166)
-	confirmDialogSpaciousW       = float32(620)
-	confirmDialogSpaciousH       = float32(304)
-	navalContactDialogW          = float32(720)
-	navalContactDialogH          = float32(380)
-	confirmDialogBtnW            = float32(120)
-	confirmDialogBtnH            = float32(36)
-	confirmDialogSpaciousBtnW    = float32(176)
-	selectedSiegePanelW          = 520.0
-	selectedSiegePanelH          = 298.0
-	selectedSiegeButtonW         = 224.0
-	selectedAttackerSiegeButtonW = 160.0
-	selectedSiegeButtonH         = 38.0
-	initialCameraZoomFactor      = 2.50
-	cameraZoomStep               = 1.12
-	maxCameraZoomScale           = 10
-	settlementMediumZoomScale    = 1.25
-	settlementCloseZoomScale     = 1.8
-	armyAllFactionsZoomScale     = 1.5
-	activeEventIconSize          = float32(22)
-	activeEventIconSpacingY      = float32(24)
-	activeEventIconLiftY         = float32(48)
-	settlementMarkerSpriteSize   = float32(26)
-	settlementPortMarkerSize     = float32(22)
-	tradeSettlementMarkerScale   = float32(0.5)
-	capitalLabelIconSmallSize    = float32(18)
-	capitalLabelIconMediumSize   = float32(20)
-	navalDockTargetRadius        = float32(18)
-	embarkTargetMarkerRadius     = float32(24)
-	terrainAreaMoveTargetRadius  = float32(11)
-	terrainAreaMoveTargetFillRad = float32(8)
+	confirmDialogW                        = float32(460)
+	confirmDialogH                        = float32(166)
+	confirmDialogFourChoiceW              = float32(720)
+	confirmDialogSpaciousW                = float32(620)
+	confirmDialogSpaciousH                = float32(304)
+	navalContactDialogW                   = float32(720)
+	navalContactDialogH                   = float32(380)
+	confirmDialogBtnW                     = float32(120)
+	confirmDialogBtnH                     = float32(36)
+	confirmDialogSpaciousBtnW             = float32(176)
+	selectedSiegePanelW                   = 520.0
+	selectedSiegePanelH                   = 298.0
+	selectedSiegeButtonW                  = 224.0
+	selectedAttackerSiegeAssaultButtonW   = 145.0
+	selectedAttackerSiegeLiftButtonW      = 190.0
+	selectedAttackerSiegeSurrenderButtonW = 145.0
+	selectedSiegeButtonH                  = 38.0
+	initialCameraZoomFactor               = 2.50
+	cameraZoomStep                        = 1.12
+	maxCameraZoomScale                    = 10
+	settlementMediumZoomScale             = 1.25
+	settlementCloseZoomScale              = 1.8
+	armyAllFactionsZoomScale              = 1.5
+	activeEventIconSize                   = float32(22)
+	activeEventIconSpacingY               = float32(24)
+	activeEventIconLiftY                  = float32(48)
+	settlementMarkerSpriteSize            = float32(26)
+	settlementPortMarkerSize              = float32(22)
+	tradeSettlementMarkerScale            = float32(0.5)
+	capitalLabelIconSmallSize             = float32(18)
+	capitalLabelIconMediumSize            = float32(20)
+	navalDockTargetRadius                 = float32(18)
+	embarkTargetMarkerRadius              = float32(24)
+	terrainAreaMoveTargetRadius           = float32(11)
+	terrainAreaMoveTargetFillRad          = float32(8)
 )
 
 var navalDockTargetColor = color.RGBA{24, 72, 145, 235}
@@ -155,6 +158,9 @@ type Renderer struct {
 	diplomacyNotificationOffer       state.DiplomaticOffer
 	diplomacyNotificationFrames      int
 	diplomacyNotificationTimerActive bool
+	showCaptivePanel                 bool
+	captivePanelFocus                int
+	captivePanelScroll               int
 
 	// HRE / imparatorluk paneli
 	showImperialPanel bool
@@ -524,14 +530,20 @@ type confirmDialogState struct {
 	message         string
 	messageLines    []string
 	acceptLabel     string
+	secondLabel     string
 	declineLabel    string
 	thirdLabel      string
 	pendingAction   InputAction
+	secondAction    InputAction
 	declineAction   InputAction
 	declineActs     bool
 	thirdAction     InputAction
 	thirdDisabled   bool
 	declineDisabled bool
+	secondDisabled  bool
+	fourthLabel     string
+	fourthAction    InputAction
+	fourthDisabled  bool
 	declineHook     func()
 	navalContact    *navalContactDialogState
 }
@@ -2399,6 +2411,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// 7. Diplomasi paneli (üst katman)
 	if r.showDiplomacy {
 		r.drawDiplomacyPanelWithSortAndRelationScroll(screen, r.gs, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyActionFocus, r.diplomacyTargetFaction, r.diplomacyOfferHistoryBrowse, r.diplomacyHistoryVisible, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter, r.diplomacyListSort, r.diplomacyRelationScroll)
+		if r.showCaptivePanel {
+			r.drawCaptivePanel(screen)
+		}
 	}
 
 	// 8. Teknoloji paneli (üst katman)

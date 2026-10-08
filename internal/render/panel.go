@@ -3332,7 +3332,8 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 		return
 	}
 
-	promptY := float64(by) + 210
+	// Seçim başlığı, seçeneklerin açıklama alanına girmemeli.
+	promptY := float64(by) + 180
 	if prompt != "" {
 		drawUILabel(screen, gameui.Rect{X: 0, Y: promptY, W: ScreenWidth}, prompt, color.RGBA{230, 214, 175, 240}, gameui.TextMedium, gameui.TextAlignCenter)
 	}

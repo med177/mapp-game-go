@@ -5,6 +5,33 @@ last_updated: 2026-10-08
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-08: 298 senaryosunun Tully, Vale, Kuzey, Tyrell, Akgezen ve Targaryen
+  alt event zincirlerindeki gereksiz ortak faction ve bölge sahipliği kapıları
+  kaldırıldı. Hedef faction aktif kaldığı sürece zincir flag'leri ilerliyor.
+  `assets/scenarios/298_war_of_five_kings/data/events.json`.
+
+- 2026-10-08: 298 event akışında zorunlu önkoşullar gevşetildi. Robert ölümü Ned seçimine, Robb ve Kızıl Düğün üç bölgenin tamamına bağlı değil. Targaryen dönüşü için alternatif dayanak bölgeleri kabul ediliyor. Savaş ve settlement için düşük öncelikli yıpratma fallback eventleri eklendi. `assets/scenarios/298_war_of_five_kings/data/events.json`.
+
+- 2026-10-08: Tutsak komutanlar için fidye akışı eklendi. Oyuncu ve AI fidye
+  isteyebiliyor; ödeme esir komutanın sahibinden yapılınca komutan serbest
+  kalıyor, altın transferi ve ilişki değişimi uygulanıyor. Savaş sonrası ve
+  diplomasi tutsak modalları dört seçenekli ortak geometriyi kullanıyor.
+  Fidye bedeli senaryo `commander_ransom_gold` alanından ayarlanabiliyor.
+  `internal/state/commanders.go`, `internal/game/conquest_decision.go`,
+  `internal/render/renderer_dialogs.go`, `internal/ai/commander.go`.
+
+- 2026-10-08: Komutan yaşam döngüsüne event ve savaş kaynaklı tutsaklık eklendi.
+  Tutsak komutanın tutulduğu yerleşim ID'si commander state'inde ve compact/legacy
+  save'lerde korunuyor. Komutan sahibi faction yerleşimin bölgesini ele geçirince
+  kendi komutanı otomatik serbest kalıyor; oyuncu savaş raporu sonrasında aynı
+  yerdeki yabancı tutsaklar için serbest bırakma, tutsak tutma veya infaz modalı
+  görüyor. Diplomasi ekranındaki `Tutsaklar (N)` düğmesi hapsedilen komutanları
+  tekrar yönetiyor; düğme önce komutan listesi panelini açıyor, seçilen komutanın
+  kararı ayrı modalda veriliyor. Savaş yenilgilerinde senaryo ayarlı tutsaklık zarı başarısızsa
+  komutan yaralanıyor. Kapsam:
+  `internal/state/commanders.go`, `internal/game/conquest_decision.go`,
+  `internal/save/compact.go`, `assets/scenarios/298_war_of_five_kings/data/scenario.json`.
+
 - 2026-10-08: 298 senaryosunun güç dengesi asimetrik hâle getirildi. Lannister'ın
   başlangıç altını ve elit ordusu azaltıldı; Riverlands savaş yükü ve Tyrell
   ittifak maliyeti eklendi. Tyrell genişlemesi evlilik ittifakına bağlandı.

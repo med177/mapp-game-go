@@ -1,20 +1,24 @@
 package render
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"sort"
 	"strconv"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/victory"
+	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
@@ -209,6 +213,258 @@ type diplomacyListLayout struct {
 	listRect    gameui.Rect
 	historyRect gameui.Rect
 	footerRect  gameui.Rect
+}
+
+func buildDiplomacyCaptiveButton(layout diplomacyListLayout, count int) gameui.Button {
+	button := gameui.NewButton(layout.footerRect.X+layout.footerRect.W-170, layout.footerRect.Y-2, 170, layout.footerRect.H+4, "Tutsaklar ("+itoa(count)+")")
+	button.Enabled = count > 0
+	return button
+}
+
+const (
+	captivePanelW       = 760.0
+	captivePanelH       = 500.0
+	captivePanelRowH    = 88.0
+	captivePanelListW   = 330.0
+	captivePanelListTop = 104.0
+)
+
+func captivePanelRect() gameui.Rect {
+	return gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, captivePanelW, captivePanelH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+}
+
+func captivePanelCloseButton() gameui.Button {
+	p := captivePanelRect()
+	return gameui.NewCloseButton(p.X+p.W-44, p.Y+12, 30, 30)
+}
+
+func captivePanelDecisionButton() gameui.Button {
+	p := captivePanelRect()
+	return gameui.NewButton(p.X+p.W-178, p.Y+p.H-54, 140, 34, "Karar ver").WithIcon(gameui.IconCheck)
+}
+
+func captivePanelViewport() gameui.Rect {
+	p := captivePanelRect()
+	return gameui.Rect{X: p.X + 24, Y: p.Y + captivePanelListTop, W: captivePanelListW, H: p.H - captivePanelListTop - 24}
+}
+
+func captivePanelVisibleRows(viewport gameui.Rect) int {
+	return maxInt(1, int(viewport.H/captivePanelRowH))
+}
+
+func clampCaptivePanelScroll(scroll, count int, viewport gameui.Rect) int {
+	maxScroll := count - captivePanelVisibleRows(viewport)
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if scroll < 0 {
+		return 0
+	}
+	if scroll > maxScroll {
+		return maxScroll
+	}
+	return scroll
+}
+
+func captivePanelRowAt(x, y float64, scroll int, viewport gameui.Rect, count int) int {
+	if !viewport.Hit(x, y) {
+		return -1
+	}
+	index := scroll + int((y-viewport.Y)/captivePanelRowH)
+	if index < 0 || index >= count {
+		return -1
+	}
+	return index
+}
+
+func heldCaptiveCommanders(gs *state.GameState) []*army.Commander {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return nil
+	}
+	commanders := make([]*army.Commander, 0)
+	for _, commander := range gs.Commanders {
+		if commander != nil && commander.CaptiveAtSettlementID != "" {
+			regionID := regionForCommanderSettlement(gs, commander.CaptiveAtSettlementID)
+			if region := gs.Regions[regionID]; region != nil && region.OwnerID == string(gs.PlayerFactionID) {
+				commanders = append(commanders, commander)
+			}
+		}
+	}
+	sort.Slice(commanders, func(i, j int) bool { return commanders[i].ID < commanders[j].ID })
+	return commanders
+}
+
+func diplomacyCaptiveCommanders(gs *state.GameState) []*army.Commander {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return nil
+	}
+	commanders := make([]*army.Commander, 0)
+	for _, commander := range gs.Commanders {
+		if commander == nil || commander.CaptiveAtSettlementID == "" {
+			continue
+		}
+		regionID := regionForCommanderSettlement(gs, commander.CaptiveAtSettlementID)
+		region := gs.Regions[regionID]
+		if region == nil {
+			continue
+		}
+		if region.OwnerID == string(gs.PlayerFactionID) || commander.OwnerID == string(gs.PlayerFactionID) {
+			commanders = append(commanders, commander)
+		}
+	}
+	sort.Slice(commanders, func(i, j int) bool { return commanders[i].ID < commanders[j].ID })
+	return commanders
+}
+
+func regionForCommanderSettlement(gs *state.GameState, settlementID string) world.RegionID {
+	if gs == nil || settlementID == "" {
+		return ""
+	}
+	for regionID, region := range gs.Regions {
+		if region == nil {
+			continue
+		}
+		for _, settlement := range region.Settlements {
+			if settlement.ID == settlementID {
+				return regionID
+			}
+		}
+	}
+	return ""
+}
+
+// ShowHeldCaptiveDecision, diplomasi penceresinden oyuncunun elindeki ilk
+// tutsak için karar modalını açar.
+func (r *Renderer) ShowHeldCaptiveDecision() {
+	if r == nil || r.gs == nil {
+		return
+	}
+	commanders := diplomacyCaptiveCommanders(r.gs)
+	if len(commanders) == 0 {
+		return
+	}
+	commander := commanders[0]
+	if r.showCaptivePanel && r.captivePanelFocus >= 0 && r.captivePanelFocus < len(commanders) {
+		commander = commanders[r.captivePanelFocus]
+	}
+	ownerName := factionDisplayName(r.gs, commander.OwnerID)
+	message := commander.Name + " (%s) tutsak durumda. Karar ver."
+	message = fmt.Sprintf(message, ownerName)
+	amount := r.gs.CommanderRansomGold
+	if amount <= 0 {
+		amount = state.DefaultCommanderRansomGold
+	}
+	if commander.OwnerID == string(r.gs.PlayerFactionID) {
+		r.ShowChoiceDialog(
+			"Komutanı Geri İste",
+			message+fmt.Sprintf(" Fidye bedeli: %d altın. Tutsak eden factiona teklif gönderilsin mi? Kabul edilirse komutan serbest kalır.", amount),
+			"Fidye teklif et",
+			"Kapat",
+			InputAction{Kind: ActionOfferCommanderRansom, CommanderID: commander.ID},
+			InputAction{},
+		)
+		return
+	}
+	message += fmt.Sprintf(" Fidye bedeli: %d altın.", amount)
+	r.ShowFourChoiceDialog(
+		"Tutsak Yönetimi",
+		message,
+		"Fidye iste",
+		"Serbest bırak",
+		"Hapsetmeye devam et",
+		"İnfaz et",
+		InputAction{Kind: ActionRansomHeldCaptive, CommanderID: commander.ID},
+		InputAction{Kind: ActionReleaseHeldCaptive, CommanderID: commander.ID},
+		InputAction{Kind: ActionKeepHeldCaptive, CommanderID: commander.ID},
+		InputAction{Kind: ActionExecuteHeldCaptive, CommanderID: commander.ID},
+	)
+}
+
+func (r *Renderer) drawCaptivePanel(screen *ebiten.Image) {
+	if r == nil || !r.showCaptivePanel || r.gs == nil {
+		return
+	}
+	commanders := diplomacyCaptiveCommanders(r.gs)
+	if len(commanders) == 0 {
+		r.showCaptivePanel = false
+		return
+	}
+	p := captivePanelRect()
+	vector.FillRect(screen, 0, 0, float32(ScreenWidth), float32(ScreenHeight), color.RGBA{0, 0, 0, 185}, false)
+	vector.FillRect(screen, float32(p.X), float32(p.Y), float32(p.W), float32(p.H), panelBg, false)
+	drawPanelBorder(screen, float32(p.X), float32(p.Y), float32(p.W), float32(p.H))
+	vector.FillRect(screen, float32(p.X), float32(p.Y), float32(p.W), 3, panelBorder, false)
+	DrawText(screen, "Tutsaklar", p.X+24, p.Y+20, FaceLarge, ColorYellow)
+	DrawText(screen, "Soldan bir tutsak seç; sağda bilgilerini incele.", p.X+24, p.Y+48, FaceSmall, ColorGray)
+	drawCloseButton(screen, captivePanelCloseButton())
+	vector.StrokeLine(screen, float32(p.X+captivePanelListW+48), float32(p.Y+84), float32(p.X+captivePanelListW+48), float32(p.Y+p.H-24), 1, panelBorder, false)
+	viewport := captivePanelViewport()
+	r.captivePanelScroll = clampCaptivePanelScroll(r.captivePanelScroll, len(commanders), viewport)
+	if r.captivePanelFocus >= len(commanders) {
+		r.captivePanelFocus = len(commanders) - 1
+	}
+	for i := r.captivePanelScroll; i < len(commanders) && i < r.captivePanelScroll+captivePanelVisibleRows(viewport); i++ {
+		row := gameui.Rect{X: viewport.X, Y: viewport.Y + float64(i-r.captivePanelScroll)*captivePanelRowH, W: viewport.W, H: captivePanelRowH - 6}
+		bg, border := color.RGBA{35, 26, 14, 210}, color.RGBA{100, 75, 30, 180}
+		if i == r.captivePanelFocus {
+			bg, border = color.RGBA{75, 54, 20, 235}, ColorGold
+		}
+		vector.FillRect(screen, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), bg, false)
+		vector.StrokeRect(screen, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), 1, border, false)
+		commander := commanders[i]
+		drawCommanderPortrait(screen, commander, row.X+8, row.Y+8, 64, 64)
+		DrawText(screen, commander.Name, row.X+84, row.Y+14, FaceSmall, ColorWhite)
+		DrawText(screen, factionDisplayName(r.gs, commander.OwnerID), row.X+84, row.Y+40, FaceSmall, ColorGray)
+		DrawText(screen, "Tutsak", row.X+84, row.Y+62, FaceSmall, ColorRed)
+	}
+	commander := commanders[r.captivePanelFocus]
+	x := p.X + captivePanelListW + 78
+	DrawText(screen, "Seçili Tutsak", x, p.Y+82, FaceMed, ColorGold)
+	drawCommanderPortrait(screen, commander, p.X+p.W-132, p.Y+92, 96, 96)
+	DrawText(screen, commander.Name, x, p.Y+122, FaceLarge, ColorWhite)
+	DrawText(screen, "Sahibi: "+factionDisplayName(r.gs, commander.OwnerID), x, p.Y+156, FaceSmall, ColorGray)
+	DrawText(screen, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), x, p.Y+182, FaceSmall, ColorGray)
+	DrawText(screen, "Bu komutan oyuncu topraklarında tutsak.", x, p.Y+222, FaceSmall, ColorGold)
+	drawUIButtonWidget(screen, captivePanelDecisionButton(), applyTinyButtonStyle)
+}
+
+func (r *Renderer) handleCaptivePanelInput(input gameui.InputState) bool {
+	if r == nil || !r.showCaptivePanel {
+		return false
+	}
+	commanders := diplomacyCaptiveCommanders(r.gs)
+	if len(commanders) == 0 {
+		r.showCaptivePanel = false
+		return true
+	}
+	if r.keyJustPressed(ebiten.KeyEscape) || captivePanelCloseButton().HandleInput(input) {
+		r.showCaptivePanel = false
+		return true
+	}
+	viewport := captivePanelViewport()
+	if input.WheelY != 0 && viewport.Hit(input.MouseX, input.MouseY) {
+		r.captivePanelScroll = clampCaptivePanelScroll(r.captivePanelScroll-wheelToDiplomStep(input.WheelY), len(commanders), viewport)
+		return true
+	}
+	if input.LeftJustPressed {
+		if i := captivePanelRowAt(input.MouseX, input.MouseY, r.captivePanelScroll, viewport, len(commanders)); i >= 0 {
+			r.captivePanelFocus = i
+			return true
+		}
+		if captivePanelDecisionButton().HandleInput(input) {
+			r.ShowHeldCaptiveDecision()
+			return true
+		}
+	}
+	if r.keyJustPressed(ebiten.KeyArrowDown) && r.captivePanelFocus < len(commanders)-1 {
+		r.captivePanelFocus++
+	} else if r.keyJustPressed(ebiten.KeyArrowUp) && r.captivePanelFocus > 0 {
+		r.captivePanelFocus--
+	}
+	if r.keyJustPressed(ebiten.KeyEnter) || r.keyJustPressed(ebiten.KeySpace) {
+		r.ShowHeldCaptiveDecision()
+	}
+	return true
 }
 
 type diplomacyOfferLayout struct {
@@ -1109,6 +1365,15 @@ func drawDiplomacyListPage(screen *ebiten.Image, gs *state.GameState, factions [
 		hintText += " | " + diplomacyHistoryBrowseLabelTR()
 	}
 	drawUIMutedText(screen, layout.titleRect.X, layout.titleRect.Y+22, hintText)
+	captiveCount := len(diplomacyCaptiveCommanders(gs))
+	captiveButton := buildDiplomacyCaptiveButton(layout, captiveCount)
+	captiveBG := color.RGBA{104, 70, 36, 235}
+	captiveBorder := color.RGBA{194, 148, 76, 255}
+	if captiveCount == 0 {
+		captiveBG = color.RGBA{48, 43, 36, 210}
+		captiveBorder = color.RGBA{100, 92, 76, 190}
+	}
+	drawDiplomacyButton(screen, captiveButton, captiveBG, captiveBorder, FaceSmall, 5)
 	for _, btn := range buildDiplomacyListSortButtons(layout) {
 		drawDiplomacyListSortButton(screen, btn, btn.Sort == sortMode)
 	}
@@ -1621,6 +1886,10 @@ func drawDiplomacyRelationsScrollbar(screen *ebiten.Image, viewport gameui.Rect,
 
 // handleDiplomacyInput diplomasi paneli klavye ve fare girişini işler.
 func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
+	if r.showCaptivePanel {
+		r.handleCaptivePanelInput(input)
+		return InputAction{}
+	}
 	factions := r.cachedDiplomacyFactions(r.diplomacyListSort)
 	n := len(factions)
 	if n == 0 {
@@ -1631,6 +1900,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	r.diplomacyActionFocus = clampDiplomFocus(r.diplomacyActionFocus, 0, len(diplomActions)-1)
 	if input.LeftJustPressed && !r.diplomacyPanelPointerHit(input.MouseX, input.MouseY, r.diplomacyFocus, r.diplomacyScroll, r.diplomacyTargetFaction, r.diplomacyHistoryDirectionFilter, r.diplomacyHistoryActionFilter) {
 		r.showDiplomacy = false
+		r.showCaptivePanel = false
 		r.diplomacyTargetFaction = ""
 		r.privilegeOfferRegion = ""
 		r.diplomacyOfferHistoryBrowse = ""
@@ -1639,6 +1909,7 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	}
 	if buildDiplomacyCloseButton().HandleInput(input) {
 		r.showDiplomacy = false
+		r.showCaptivePanel = false
 		r.diplomacyTargetFaction = ""
 		r.privilegeOfferRegion = ""
 		r.diplomacyOfferHistoryBrowse = ""
@@ -1647,6 +1918,12 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 	}
 	if r.diplomacyTargetFaction == "" {
 		layout := diplomacyListLayoutForScreen()
+		if captiveCount := len(diplomacyCaptiveCommanders(r.gs)); captiveCount > 0 && buildDiplomacyCaptiveButton(layout, captiveCount).HandleInput(input) {
+			r.showCaptivePanel = true
+			r.captivePanelFocus = 0
+			r.captivePanelScroll = 0
+			return InputAction{}
+		}
 		if input.LeftJustPressed {
 			if sortMode, ok := diplomacyListSortHit(layout, input.MouseX, input.MouseY); ok {
 				r.diplomacyListSort = sortMode

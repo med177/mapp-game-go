@@ -18,6 +18,250 @@ type pendingConquestDecision struct {
 	SuccessorFactionID faction.FactionID
 }
 
+type captiveDecisionOutcome uint8
+
+const (
+	captiveDecisionRelease captiveDecisionOutcome = iota
+	captiveDecisionKeep
+	captiveDecisionExecute
+	captiveDecisionRansom
+)
+
+func (g *Game) syncPendingCaptiveDecisionsToState() {
+	if g == nil || g.gs == nil {
+		return
+	}
+	g.gs.PendingCaptiveDecisions = append([]state.PendingCaptiveDecision(nil), g.pendingCaptiveDecisions...)
+}
+
+func (g *Game) restorePendingCaptiveDecisions() {
+	if g == nil || g.gs == nil {
+		return
+	}
+	g.pendingCaptiveDecisions = append([]state.PendingCaptiveDecision(nil), g.gs.PendingCaptiveDecisions...)
+}
+
+func (g *Game) queueCaptiveDecisionsForRegion(region *world.Region, newOwnerID string) {
+	if g == nil || g.gs == nil || region == nil || newOwnerID == "" || g.gs.PlayerFactionID != faction.FactionID(newOwnerID) {
+		return
+	}
+	pending := make(map[string]bool, len(g.pendingCaptiveDecisions))
+	for _, decision := range g.pendingCaptiveDecisions {
+		pending[decision.CommanderID] = true
+	}
+	settlements := make(map[string]bool, len(region.Settlements))
+	for _, settlement := range region.Settlements {
+		settlements[settlement.ID] = true
+	}
+	for _, commander := range g.gs.Commanders {
+		if commander == nil || commander.CaptiveAtSettlementID == "" || commander.OwnerID == newOwnerID || pending[commander.ID] || !settlements[commander.CaptiveAtSettlementID] {
+			continue
+		}
+		g.pendingCaptiveDecisions = append(g.pendingCaptiveDecisions, state.PendingCaptiveDecision{
+			CommanderID:     commander.ID,
+			SettlementID:    commander.CaptiveAtSettlementID,
+			CaptorFactionID: faction.FactionID(newOwnerID),
+		})
+	}
+	g.syncPendingCaptiveDecisionsToState()
+	if len(g.pendingCaptiveDecisions) == 1 {
+		g.showPendingCaptiveDecision(false)
+	}
+}
+
+func (g *Game) queueCapturedCommanderDecision(commanderID, settlementID, captorID string, afterBattleReport bool) {
+	if g == nil || g.gs == nil || commanderID == "" || settlementID == "" || captorID == "" || g.gs.PlayerFactionID != faction.FactionID(captorID) {
+		return
+	}
+	for _, decision := range g.pendingCaptiveDecisions {
+		if decision.CommanderID == commanderID {
+			return
+		}
+	}
+	g.pendingCaptiveDecisions = append(g.pendingCaptiveDecisions, state.PendingCaptiveDecision{
+		CommanderID:     commanderID,
+		SettlementID:    settlementID,
+		CaptorFactionID: faction.FactionID(captorID),
+	})
+	g.syncPendingCaptiveDecisionsToState()
+	if len(g.pendingCaptiveDecisions) == 1 {
+		g.showPendingCaptiveDecision(afterBattleReport)
+	}
+}
+
+func (g *Game) showPendingCaptiveDecision(afterBattleReport bool) {
+	if g == nil || g.gs == nil || g.renderer == nil || len(g.pendingCaptiveDecisions) == 0 {
+		return
+	}
+	decision := g.pendingCaptiveDecisions[0]
+	commander := g.gs.Commanders[decision.CommanderID]
+	if commander == nil {
+		g.pendingCaptiveDecisions = g.pendingCaptiveDecisions[1:]
+		g.syncPendingCaptiveDecisionsToState()
+		g.showPendingCaptiveDecision(afterBattleReport)
+		return
+	}
+	name := commander.Name
+	if name == "" {
+		name = commander.ID
+	}
+	regionID := regionForSettlement(g.gs, decision.SettlementID)
+	regionName := string(regionID)
+	if region := g.gs.Regions[regionID]; region != nil && region.NameTR != "" {
+		regionName = region.NameTR
+	}
+	message := fmt.Sprintf("%s bölgesinde %s adlı %s komutanı tutsak edildi. Karar ver.", regionName, name, g.factionNameTR(commander.OwnerID))
+	amount := g.gs.CommanderRansomGold
+	if amount <= 0 {
+		amount = state.DefaultCommanderRansomGold
+	}
+	message += fmt.Sprintf(" Fidye bedeli: %d altın.", amount)
+	ransomAction := render.InputAction{Kind: render.ActionRansomCaptiveCommander}
+	acceptAction := render.InputAction{Kind: render.ActionReleaseCaptiveCommander}
+	keepAction := render.InputAction{Kind: render.ActionKeepCaptiveCommander}
+	executeAction := render.InputAction{Kind: render.ActionExecuteCaptiveCommander}
+	if afterBattleReport {
+		g.renderer.QueueFourChoiceDialogAfterBattleReport("Tutsak Kararı", message, "Fidye iste", "Serbest bırak", "Tutsak tut", "İnfaz et", ransomAction, acceptAction, keepAction, executeAction)
+		return
+	}
+	g.renderer.ShowFourChoiceDialog("Tutsak Kararı", message, "Fidye iste", "Serbest bırak", "Tutsak tut", "İnfaz et", ransomAction, acceptAction, keepAction, executeAction)
+}
+
+func (g *Game) resolvePendingCaptiveDecision(outcome captiveDecisionOutcome) {
+	if g == nil || g.gs == nil || len(g.pendingCaptiveDecisions) == 0 {
+		return
+	}
+	decision := g.pendingCaptiveDecisions[0]
+	g.pendingCaptiveDecisions = g.pendingCaptiveDecisions[1:]
+	g.syncPendingCaptiveDecisionsToState()
+	commander := g.gs.Commanders[decision.CommanderID]
+	regionID := regionForSettlement(g.gs, decision.SettlementID)
+	region := g.gs.Regions[regionID]
+	valid := commander != nil && commander.CaptiveAtSettlementID == decision.SettlementID && region != nil && region.OwnerID == string(decision.CaptorFactionID)
+	if valid {
+		switch outcome {
+		case captiveDecisionRansom:
+			if !g.gs.PayCommanderRansom(commander.ID, decision.CaptorFactionID) {
+				g.pendingCaptiveDecisions = append([]state.PendingCaptiveDecision{decision}, g.pendingCaptiveDecisions...)
+				g.syncPendingCaptiveDecisionsToState()
+				if g.renderer != nil {
+					g.renderer.ShowCombatResult("Fidye ödenemedi: komutanın sahibinin yeterli altını yok.")
+					g.showPendingCaptiveDecision(false)
+				}
+				return
+			}
+			diplomacy.AddRelationScoreBoth(g.gs, decision.CaptorFactionID, faction.FactionID(commander.OwnerID), state.CommanderRansomRelationDelta)
+		case captiveDecisionRelease:
+			g.gs.ReleaseCommanderCaptivity(commander.ID)
+			diplomacy.AddRelationScoreBoth(g.gs, decision.CaptorFactionID, faction.FactionID(commander.OwnerID), state.CommanderReleaseRelationDelta)
+		case captiveDecisionExecute:
+			g.gs.DismissCommander(commander.ID)
+			diplomacy.AddRelationScoreBoth(g.gs, decision.CaptorFactionID, faction.FactionID(commander.OwnerID), state.CommanderExecuteRelationDelta)
+		case captiveDecisionKeep:
+			if !commander.CaptivityKeepPenaltyApplied {
+				diplomacy.AddRelationScoreBoth(g.gs, decision.CaptorFactionID, faction.FactionID(commander.OwnerID), state.CommanderKeepRelationDelta)
+				commander.CaptivityKeepPenaltyApplied = true
+			}
+		}
+	}
+	if g.renderer != nil && valid {
+		g.renderer.ShowCombatResult("Tutsak kararı uygulandı.")
+	}
+	if len(g.pendingCaptiveDecisions) > 0 {
+		g.showPendingCaptiveDecision(false)
+	}
+}
+
+func (g *Game) resolveHeldCaptiveDecision(commanderID string, outcome captiveDecisionOutcome) {
+	if g == nil || g.gs == nil || commanderID == "" {
+		return
+	}
+	commander := g.gs.Commanders[commanderID]
+	if commander == nil || commander.CaptiveAtSettlementID == "" {
+		return
+	}
+	regionID := regionForSettlement(g.gs, commander.CaptiveAtSettlementID)
+	region := g.gs.Regions[regionID]
+	if region == nil || region.OwnerID != string(g.gs.PlayerFactionID) {
+		return
+	}
+	captiveOwner := faction.FactionID(commander.OwnerID)
+	switch outcome {
+	case captiveDecisionRansom:
+		if !g.gs.PayCommanderRansom(commanderID, g.gs.PlayerFactionID) {
+			if g.renderer != nil {
+				g.renderer.ShowCombatResult("Fidye ödenemedi: yeterli altın yok.")
+			}
+			return
+		}
+		diplomacy.AddRelationScoreBoth(g.gs, g.gs.PlayerFactionID, captiveOwner, state.CommanderRansomRelationDelta)
+	case captiveDecisionRelease:
+		g.gs.ReleaseCommanderCaptivity(commanderID)
+		diplomacy.AddRelationScoreBoth(g.gs, g.gs.PlayerFactionID, captiveOwner, state.CommanderReleaseRelationDelta)
+	case captiveDecisionKeep:
+		if !commander.CaptivityKeepPenaltyApplied {
+			diplomacy.AddRelationScoreBoth(g.gs, g.gs.PlayerFactionID, captiveOwner, state.CommanderKeepRelationDelta)
+			commander.CaptivityKeepPenaltyApplied = true
+		}
+	case captiveDecisionExecute:
+		g.gs.DismissCommander(commanderID)
+		diplomacy.AddRelationScoreBoth(g.gs, g.gs.PlayerFactionID, captiveOwner, state.CommanderExecuteRelationDelta)
+	}
+	if g.renderer != nil {
+		g.renderer.ShowCombatResult("Tutsak kararı uygulandı.")
+	}
+}
+
+func (g *Game) offerCommanderRansom(commanderID string) {
+	if g == nil || g.gs == nil || commanderID == "" {
+		return
+	}
+	commander := g.gs.Commanders[commanderID]
+	if commander == nil || commander.OwnerID != string(g.gs.PlayerFactionID) || commander.CaptiveAtSettlementID == "" {
+		return
+	}
+	regionID := regionForSettlement(g.gs, commander.CaptiveAtSettlementID)
+	region := g.gs.Regions[regionID]
+	if region == nil || region.OwnerID == string(g.gs.PlayerFactionID) {
+		return
+	}
+	captorID := faction.FactionID(region.OwnerID)
+	accepted := !diplomacy.IsWar(g.gs, g.gs.PlayerFactionID, captorID) && diplomacy.RelationScore(g.gs, g.gs.PlayerFactionID, captorID) >= -25
+	if !accepted {
+		if g.renderer != nil {
+			g.renderer.ShowCombatResult("Fidye teklifi reddedildi.")
+		}
+		return
+	}
+	if !g.gs.PayCommanderRansom(commanderID, captorID) {
+		if g.renderer != nil {
+			g.renderer.ShowCombatResult("Fidye ödenemedi: yeterli altın yok.")
+		}
+		return
+	}
+	diplomacy.AddRelationScoreBoth(g.gs, g.gs.PlayerFactionID, captorID, state.CommanderRansomRelationDelta)
+	if g.renderer != nil {
+		g.renderer.ShowCombatResult("Fidye kabul edildi. Komutan serbest bırakıldı.")
+	}
+}
+
+func regionForSettlement(gs *state.GameState, settlementID string) world.RegionID {
+	if gs == nil || settlementID == "" {
+		return ""
+	}
+	for regionID, region := range gs.Regions {
+		if region == nil {
+			continue
+		}
+		for _, settlement := range region.Settlements {
+			if settlement.ID == settlementID {
+				return regionID
+			}
+		}
+	}
+	return ""
+}
+
 func (g *Game) syncPendingConquestDecisionsToState() {
 	if g == nil || g.gs == nil {
 		return

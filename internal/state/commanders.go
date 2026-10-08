@@ -9,6 +9,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/world"
 )
 
 const InitialPlayerCommanderPool = 3
@@ -51,7 +52,7 @@ func (s *GameState) syncCommanderPointer(currentArmy *army.Army, aid army.ArmyID
 	if currentArmy == nil || commander == nil {
 		return
 	}
-	if !commander.ActiveInYear(s.Year) {
+	if !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
 		if embarked {
 			currentArmy.EmbarkedCommander = nil
 		} else {
@@ -87,6 +88,268 @@ func (s *GameState) syncCommanderPointer(currentArmy *army.Army, aid army.ArmyID
 		s.Commanders[commander.ID] = commander
 	}
 	commander.AssignedArmyID = aid
+}
+
+// CommanderUnavailable, senaryo event flag'lerine göre komutanın atamaya
+// kapalı olup olmadığını bildirir.
+func (s *GameState) CommanderUnavailable(commander *army.Commander) bool {
+	return s.CommanderUnavailableReason(commander) != ""
+}
+
+// CommanderInjuryDuration, komutan veya senaryo özel bir süre tanımlamıyorsa
+// ortak varsayılan iyileşme süresini döner.
+func (s *GameState) CommanderInjuryDuration(commander *army.Commander) int {
+	if commander != nil && commander.InjuryTurnsOnDefeat > 0 {
+		return commander.InjuryTurnsOnDefeat
+	}
+	if s != nil && s.CommanderInjuryTurnsOnDefeat > 0 {
+		return s.CommanderInjuryTurnsOnDefeat
+	}
+	return DefaultCommanderInjuryTurnsOnDefeat
+}
+
+// InjureCommander, komutanı belirli tur boyunca roster'da pasif bırakır.
+func (s *GameState) InjureCommander(commanderID string, duration int, reason string) bool {
+	if s == nil || commanderID == "" || s.Commanders == nil || duration <= 0 {
+		return false
+	}
+	commander := s.Commanders[commanderID]
+	if commander == nil {
+		return false
+	}
+	until := s.Turn + duration
+	if commander.UnavailableUntilTurn < until {
+		commander.UnavailableUntilTurn = until
+		commander.UnavailableReasonTR = reason
+	}
+	s.SyncCommanderLinks()
+	return true
+}
+
+// CaptureCommanderAtSettlement, komutanın tutulduğu yerleşimi save state'ine
+// yazar ve komutanı bağlı olduğu ordudan ayırır.
+func (s *GameState) CaptureCommanderAtSettlement(commanderID, settlementID string, releaseFlags []string) bool {
+	if s == nil || commanderID == "" || settlementID == "" || s.Commanders == nil {
+		return false
+	}
+	commander := s.Commanders[commanderID]
+	if commander == nil {
+		return false
+	}
+	commander.CaptiveAtSettlementID = settlementID
+	commander.CaptivityReleaseFlags = append([]string(nil), releaseFlags...)
+	commander.CaptivityKeepPenaltyApplied = false
+	s.SyncCommanderLinks()
+	return true
+}
+
+// CaptureCommanderAtRegion, savaş sonucunda yakalanan komutanı bölgenin
+// merkez yerleşiminde tutuklu olarak kaydeder.
+func (s *GameState) CaptureCommanderAtRegion(commanderID string, regionID world.RegionID) bool {
+	if s == nil || regionID == "" {
+		return false
+	}
+	region := s.Regions[regionID]
+	if region == nil {
+		return false
+	}
+	settlementID := ""
+	for _, settlement := range region.Settlements {
+		if settlement.IsCenter {
+			settlementID = settlement.ID
+			break
+		}
+		if settlementID == "" {
+			settlementID = settlement.ID
+		}
+	}
+	return s.CaptureCommanderAtSettlement(commanderID, settlementID, nil)
+}
+
+// ReleaseCommanderCaptivity, event veya oyuncu kararıyla tutsaklığı kaldırır.
+func (s *GameState) ReleaseCommanderCaptivity(commanderID string) bool {
+	if s == nil || s.Commanders == nil {
+		return false
+	}
+	commander := s.Commanders[commanderID]
+	if commander == nil || commander.CaptiveAtSettlementID == "" {
+		return false
+	}
+	for _, flag := range commander.CaptivityReleaseFlags {
+		key := flag
+		if key != "" && !strings.HasPrefix(key, "flag:") {
+			key = "flag:" + key
+		}
+		if key != "" {
+			delete(s.FiredEventIDs, key)
+		}
+	}
+	commander.CaptiveAtSettlementID = ""
+	commander.CaptivityReleaseFlags = nil
+	commander.CaptivityKeepPenaltyApplied = false
+	s.SyncCommanderLinks()
+	return true
+}
+
+// PayCommanderRansom, komutanÄ±n sahibinden fidyeyi alÄ±p tutsaklÄ±ÄŸÄ± kaldÄ±rÄ±r.
+func (s *GameState) PayCommanderRansom(commanderID string, captorID faction.FactionID) bool {
+	if s == nil || commanderID == "" || captorID == "" || s.Commanders == nil {
+		return false
+	}
+	commander := s.Commanders[commanderID]
+	if commander == nil || commander.CaptiveAtSettlementID == "" || commander.OwnerID == string(captorID) {
+		return false
+	}
+	amount := s.CommanderRansomGold
+	if amount <= 0 {
+		amount = DefaultCommanderRansomGold
+	}
+	payer := s.Factions[faction.FactionID(commander.OwnerID)]
+	receiver := s.Factions[captorID]
+	if payer == nil || receiver == nil || payer.Gold < amount {
+		return false
+	}
+	payer.Gold -= amount
+	receiver.Gold += amount
+	return s.ReleaseCommanderCaptivity(commanderID)
+}
+
+// ReleaseCaptivesInOwnedSettlements, komutanın sahibi tutsaklığın bulunduğu
+// yerleşimin bölgesini ele geçirdiğinde tutsaklığı kaldırır.
+func (s *GameState) ReleaseCaptivesInOwnedSettlements() []string {
+	if s == nil || len(s.Commanders) == 0 {
+		return nil
+	}
+	released := make([]string, 0)
+	for _, commander := range s.Commanders {
+		if commander == nil || commander.CaptiveAtSettlementID == "" || commander.OwnerID == "" {
+			continue
+		}
+		for _, region := range s.Regions {
+			if region == nil || region.OwnerID != commander.OwnerID {
+				continue
+			}
+			containsSettlement := false
+			for _, settlement := range region.Settlements {
+				if settlement.ID == commander.CaptiveAtSettlementID {
+					containsSettlement = true
+					break
+				}
+			}
+			if !containsSettlement {
+				continue
+			}
+			for _, flag := range commander.CaptivityReleaseFlags {
+				if flag == "" {
+					continue
+				}
+				key := flag
+				if !strings.HasPrefix(key, "flag:") {
+					key = "flag:" + key
+				}
+				delete(s.FiredEventIDs, key)
+			}
+			commander.CaptiveAtSettlementID = ""
+			commander.CaptivityReleaseFlags = nil
+			commander.CaptivityKeepPenaltyApplied = false
+			released = append(released, commander.ID)
+			break
+		}
+	}
+	if len(released) > 0 {
+		s.SyncCommanderLinks()
+	}
+	return released
+}
+
+// CommanderHiddenFromRoster, kalıcı kayıp gibi durumlarda komutanın UI
+// roster'ından tamamen çıkarılması gerekip gerekmediğini bildirir.
+func (s *GameState) CommanderHiddenFromRoster(commander *army.Commander) bool {
+	status, ok := s.activeCommanderUnavailableStatus(commander)
+	return ok && status.HideFromRoster
+}
+
+// RemovePermanentlyUnavailableCommanders, infaz gibi kalıcı durumlara giren
+// senaryo komutanlarının hem aktif ordudan hem de yeniden üretilecek template
+// roster'ından çıkarılmasını sağlar.
+func (s *GameState) RemovePermanentlyUnavailableCommanders() {
+	if s == nil {
+		return
+	}
+	if s.DismissedCommanderIDs == nil {
+		s.DismissedCommanderIDs = make(map[string]bool)
+	}
+	for id, commander := range s.Commanders {
+		status, ok := s.activeCommanderUnavailableStatus(commander)
+		if !ok || !status.HideFromRoster || !status.Permanent {
+			continue
+		}
+		s.DismissCommander(id)
+	}
+	for _, templates := range s.CommanderTemplates {
+		for _, template := range templates {
+			if template == nil {
+				continue
+			}
+			status, ok := s.activeCommanderUnavailableStatus(template)
+			if ok && status.HideFromRoster && status.Permanent {
+				s.DismissedCommanderIDs[template.ID] = true
+			}
+		}
+	}
+}
+
+// CommanderUnavailableReason, aktif kısıtın oyuncuya gösterilecek nedenini
+// döner. Eski save'lerdeki runtime komutanı yeni alanı taşımıyorsa senaryo
+// şablonundaki tanım kullanılır.
+func (s *GameState) CommanderUnavailableReason(commander *army.Commander) string {
+	if commander != nil && commander.CaptiveAtSettlementID != "" {
+		return "Tutsak"
+	}
+	status, ok := s.activeCommanderUnavailableStatus(commander)
+	if !ok {
+		return ""
+	}
+	if status.ReasonTR != "" {
+		return status.ReasonTR
+	}
+	return "Kullanılamıyor"
+}
+
+func (s *GameState) activeCommanderUnavailableStatus(commander *army.Commander) (army.CommanderUnavailableStatus, bool) {
+	if s == nil || commander == nil {
+		return army.CommanderUnavailableStatus{}, false
+	}
+	statuses := commander.UnavailableStatuses
+	if len(statuses) == 0 {
+		for _, template := range s.CommanderTemplates[commander.OwnerID] {
+			if template != nil && template.ID == commander.ID {
+				statuses = template.UnavailableStatuses
+				break
+			}
+		}
+	}
+	for _, status := range statuses {
+		flag := status.Flag
+		if flag == "" {
+			continue
+		}
+		key := flag
+		if !strings.HasPrefix(key, "flag:") {
+			key = "flag:" + key
+		}
+		if s.FiredEventIDs[key] {
+			return status, true
+		}
+	}
+	if commander.UnavailableUntilTurn > s.Turn {
+		reason := commander.UnavailableReasonTR
+		if reason == "" {
+			reason = "Yaralı"
+		}
+		return army.CommanderUnavailableStatus{ReasonTR: reason}, true
+	}
+	return army.CommanderUnavailableStatus{}, false
 }
 
 // RemoveArmy komutan bağlantılarını serbest bırakıp orduyu state'ten kaldırır.
@@ -621,13 +884,26 @@ func (s *GameState) EnsureFactionCommanders(ownerID string) {
 
 // AvailableCommanders boşta olan komutanları deterministik sırada döner.
 func (s *GameState) AvailableCommanders(ownerID string) []*army.Commander {
+	roster := s.CommanderRoster(ownerID)
+	available := make([]*army.Commander, 0, len(roster))
+	for _, commander := range roster {
+		if !s.CommanderUnavailable(commander) {
+			available = append(available, commander)
+		}
+	}
+	return available
+}
+
+// CommanderRoster, atanabilir ve event nedeniyle pasif olan boş komutanları
+// birlikte döner. UI pasif komutanları gösterebilir.
+func (s *GameState) CommanderRoster(ownerID string) []*army.Commander {
 	if s == nil || ownerID == "" {
 		return nil
 	}
 	s.SyncCommanderLinks()
 	available := make([]*army.Commander, 0, len(s.Commanders))
 	for _, commander := range s.Commanders {
-		if commander == nil || commander.OwnerID != ownerID || commander.AssignedArmyID != "" || !commander.ActiveInYear(s.Year) {
+		if commander == nil || commander.OwnerID != ownerID || commander.AssignedArmyID != "" || !commander.ActiveInYear(s.Year) || s.CommanderHiddenFromRoster(commander) {
 			continue
 		}
 		available = append(available, commander)
@@ -656,7 +932,7 @@ func (s *GameState) AssignStrongestCommanderToArmy(armyID army.ArmyID) bool {
 	s.SyncCommanderLinks()
 	candidates := make([]*army.Commander, 0)
 	for _, commander := range s.Commanders {
-		if commander == nil || commander.OwnerID != currentArmy.OwnerID || commander.AssignedArmyID != "" || !commander.ActiveInYear(s.Year) {
+		if commander == nil || commander.OwnerID != currentArmy.OwnerID || commander.AssignedArmyID != "" || !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
 			continue
 		}
 		candidates = append(candidates, commander)
@@ -688,7 +964,7 @@ func (s *GameState) AssignCommanderToArmy(commanderID string, armyID army.ArmyID
 	s.SyncCommanderLinks()
 	currentArmy := s.Armies[armyID]
 	commander := s.Commanders[commanderID]
-	if currentArmy == nil || commander == nil || commander.OwnerID != currentArmy.OwnerID || !commander.ActiveInYear(s.Year) {
+	if currentArmy == nil || commander == nil || commander.OwnerID != currentArmy.OwnerID || !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
 		return false
 	}
 	if !s.CanAssignCommanderToArmy(armyID) {

@@ -94,6 +94,62 @@ func TestStateTriggeredEventUsesPriorityForSameTurnCandidates(t *testing.T) {
 	}
 }
 
+func TestStateTriggeredFallbackRunsWhenVictoryCandidatesFail(t *testing.T) {
+	gs := &state.GameState{
+		FiredEventIDs: map[string]bool{
+			"flag:war_of_five_kings_active": true,
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"kings_landing": {OwnerID: "stark"},
+		},
+	}
+	winner := &Event{
+		ID:                   "resolution_winner",
+		Target:               "all_factions",
+		StateTriggered:       true,
+		StateTriggerGroup:    "war_resolution",
+		StateTriggerPriority: 60,
+		RequiresFlags:        []string{"war_of_five_kings_active"},
+		VictoryConditions: []FactionVictoryCondition{{
+			FactionID:            "lannister",
+			RequiredOwnedRegions: []world.RegionID{"kings_landing"},
+		}},
+	}
+	fallback := &Event{
+		ID:                   "resolution_stalemate",
+		Target:               "all_factions",
+		StateTriggered:       true,
+		StateTriggerGroup:    "war_resolution",
+		StateTriggerPriority: 1,
+		RequiresFlags:        []string{"war_of_five_kings_active"},
+	}
+
+	if got := Tick(gs, []*Event{winner, fallback}); got != fallback {
+		t.Fatalf("fallback event seçilmedi: got %v, want %v", got.ID, fallback.ID)
+	}
+}
+
+func TestRequiresOwnedRegionsAnyAcceptsRemainingAnchor(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"stark": {IsEliminated: false},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"winterfell_region": {OwnerID: "bolton"},
+			"the_neck":          {OwnerID: "stark"},
+			"moat_cailin":       {OwnerID: "bolton"},
+		},
+	}
+	e := &Event{
+		Target:                  "specific_faction",
+		AffectedFaction:         "stark",
+		RequiresOwnedRegionsAny: []world.RegionID{"winterfell_region", "the_neck", "moat_cailin"},
+	}
+	if !eventConditionsSatisfied(gs, e) {
+		t.Fatal("kalan tek kuzey dayanağı event koşulunu sağlamadı")
+	}
+}
+
 func TestRequiresInactiveFaction(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
