@@ -1034,6 +1034,9 @@
     "requires_flags": [
       "war_of_five_kings_active"
     ],
+    "requires_owned_regions": [
+      "riverrun"
+    ],
     "requires_active_factions": [
       "tully", "lannister"
     ]
