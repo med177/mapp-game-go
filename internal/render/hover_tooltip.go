@@ -140,7 +140,7 @@ func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 				}
 			}
 			if unit, unitCount, ok := armyPanelUnitHover(fx, fy, gs, aid); ok {
-				drawArmyUnitTooltip(screen, gs, a, unit, unitCount, fx, fy)
+				drawArmyUnitTooltip(screen, gs, a, unit, unitCount, playerCanSeeArmyDetails(gs, a), fx, fy)
 				return
 			}
 		}
@@ -609,7 +609,7 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 // gerçek birim örneğinin bilgilerini gösterir. Üretim maliyetleri ve
 // gereksinimler bu bağlamda anlamlı olmadığı için yalnız adet, tur başı bakım,
 // savaş değerleri ve anlık can çizilir.
-func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army, unit army.Unit, unitCount int, mx, my float64) {
+func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army, unit army.Unit, unitCount int, showCurrentHP bool, mx, my float64) {
 	if gs == nil || a == nil {
 		return
 	}
@@ -646,14 +646,18 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 	statY += 16
 	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), textX, statY, FaceSmall, ColorGray)
 	statY += 16
-	currentHP := unit.CurrentHP
-	if currentHP < 0 {
-		currentHP = 0
+	if showCurrentHP {
+		currentHP := unit.CurrentHP
+		if currentHP < 0 {
+			currentHP = 0
+		}
+		if currentHP > army.MaxUnitHP {
+			currentHP = army.MaxUnitHP
+		}
+		DrawText(screen, fmt.Sprintf("Can: %d", currentHP), textX, statY, FaceSmall, ColorGray)
+	} else {
+		DrawText(screen, "Can: ~", textX, statY, FaceSmall, ColorGray)
 	}
-	if currentHP > army.MaxUnitHP {
-		currentHP = army.MaxUnitHP
-	}
-	DrawText(screen, fmt.Sprintf("Can: %d", currentHP), textX, statY, FaceSmall, ColorGray)
 
 	if sprite != nil {
 		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})

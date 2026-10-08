@@ -1512,14 +1512,14 @@ func armyPanelUnitHover(mx, my float64, gs *state.GameState, aid army.ArmyID) (a
 		return army.Unit{}, 0, false
 	}
 	a := gs.Armies[aid]
-	if !playerCanSeeArmyDetails(gs, a) {
+	if a == nil {
 		return army.Unit{}, 0, false
 	}
 
 	layout := armyPanelGeometry()
 	for displayIndex := 0; displayIndex < army.MaxArmySize; displayIndex++ {
 		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
-		if unitIndex < 0 {
+		if unitIndex < 0 || !armyPanelUnitVisible(gs, a, displayIndex) {
 			continue
 		}
 		cx, cy := armyPanelUnitPosition(layout, displayIndex)
@@ -1578,13 +1578,13 @@ func armyPanelUnitIndexAt(mx, my float64, gs *state.GameState, aid army.ArmyID) 
 		return -1, false
 	}
 	a := gs.Armies[aid]
-	if !playerCanSeeArmyDetails(gs, a) {
+	if a == nil {
 		return -1, false
 	}
 	layout := armyPanelGeometry()
 	for displayIndex := 0; displayIndex < army.MaxArmySize; displayIndex++ {
 		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
-		if unitIndex < 0 {
+		if unitIndex < 0 || !armyPanelUnitVisible(gs, a, displayIndex) {
 			continue
 		}
 		cx, cy := armyPanelUnitPosition(layout, displayIndex)
@@ -1594,4 +1594,26 @@ func armyPanelUnitIndexAt(mx, my float64, gs *state.GameState, aid army.ArmyID) 
 		}
 	}
 	return -1, false
+}
+
+// armyPanelUnitVisible, panelde çizilmiş düşman kartları ile hover/hit-test
+// alanlarını aynı istihbarat kuralına bağlar. Bilinmeyen kartlar yalnızca görsel
+// olarak yer tutar; tooltip veya tıklama hedefi değildir.
+func armyPanelUnitVisible(gs *state.GameState, a *army.Army, displayIndex int) bool {
+	if gs == nil || a == nil || displayIndex < 0 || displayIndex >= len(a.Units) {
+		return false
+	}
+	if playerCanSeeArmyDetails(gs, a) {
+		return true
+	}
+	fullIntel := playerHasRevealEnemyStrength(gs)
+	siegeIntel := enemyUnderPlayerSiege(gs, a)
+	if !fullIntel && !enemyArmyInPlayerMoveRange(gs, a) && !siegeIntel {
+		return false
+	}
+	revealRatio := 0.50
+	if siegeIntel {
+		revealRatio = 0.75
+	}
+	return displayIndex < scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 }
