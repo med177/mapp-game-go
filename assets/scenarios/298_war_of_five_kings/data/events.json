@@ -1374,6 +1374,15 @@
           "set_flags": [
             "jaime_captured",
             "jaime_hostage_held"
+          ],
+          "commander_captures": [
+            {
+              "commander_id": "cmd_jaime_lannister",
+              "holding_settlement_id": "riverrun_main",
+              "release_flags": [
+                "jaime_captured"
+              ]
+            }
           ]
         }
       },
@@ -1398,21 +1407,29 @@
           "set_flags": [
             "jaime_captured",
             "jaime_negotiation_started"
+          ],
+          "commander_captures": [
+            {
+              "commander_id": "cmd_jaime_lannister",
+              "holding_settlement_id": "moat_cailin_main",
+              "release_flags": [
+                "jaime_captured"
+              ]
+            }
           ]
         }
       }
     ],
     "player_choice_factions": [
-      "stark",
-      "tully",
-      "lannister"
+      "stark"
     ],
     "requires_flags": [
       "war_of_five_kings_active",
       "northern_independence_declared"
     ],
     "requires_active_factions": [
-      "stark"
+      "stark",
+      "lannister"
     ]
   },
   {
@@ -1884,9 +1901,7 @@
       }
     ],
     "player_choice_factions": [
-      "greyjoy",
-      "stark",
-      "lannister"
+      "greyjoy"
     ],
     "requires_flags": [
       "war_of_five_kings_active"

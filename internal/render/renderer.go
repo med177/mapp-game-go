@@ -2903,7 +2903,7 @@ func (r *Renderer) movementPreviewCursorOverPanel(x, y float64) bool {
 			if buildCommanderArrivalModal().Panel.Rect.Hit(x, y) {
 				return true
 			}
-		} else if historicalEventPopupHit(x, y) {
+		} else if historicalEventPopupHit(x, y, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices) {
 			return true
 		}
 	}

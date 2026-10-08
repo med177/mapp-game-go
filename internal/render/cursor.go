@@ -322,9 +322,9 @@ func (r *Renderer) historicalEventHovering(fx, fy float64) bool {
 		if len(r.commanderArrivals) > 0 {
 			return buildCommanderArrivalModal().Panel.Rect.Hit(fx, fy)
 		}
-		return historicalEventPopupHit(fx, fy)
+		return historicalEventPopupHit(fx, fy, r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices)
 	}
-	for _, btn := range buildHistoricalEventChoiceButtons(len(r.historicalEventChoices)) {
+	for _, btn := range buildHistoricalEventChoiceButtons(r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices) {
 		if btn.HitTest(fx, fy) {
 			return true
 		}
@@ -332,8 +332,8 @@ func (r *Renderer) historicalEventHovering(fx, fy float64) bool {
 	return false
 }
 
-func historicalEventPopupHit(fx, fy float64) bool {
-	modal := buildHistoricalEventModal()
+func historicalEventPopupHit(fx, fy float64, title, desc, prompt string, choices []HistoricalEventChoice) bool {
+	modal := buildHistoricalEventModal(title, desc, prompt, choices)
 	return modal.Panel.Rect.Hit(fx, fy)
 }
 

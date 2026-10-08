@@ -1786,7 +1786,7 @@ func (r *Renderer) handleHistoricalEventInput() InputAction {
 		return InputAction{}
 	}
 
-	buttons := buildHistoricalEventChoiceButtons(len(r.historicalEventChoices))
+	buttons := buildHistoricalEventChoiceButtons(r.historicalEventTitle, r.historicalEventDesc, r.historicalEventPrompt, r.historicalEventChoices)
 	if r.keyJustPressed(ebiten.KeyLeft) || r.keyJustPressed(ebiten.KeyUp) {
 		r.historicalEventFocus = (r.historicalEventFocus + len(r.historicalEventChoices) - 1) % len(r.historicalEventChoices)
 	}

@@ -3309,7 +3309,8 @@ func drawGameOver(screen *ebiten.Image, gs *state.GameState) {
 
 // drawHistoricalEventPopup büyük tarihsel olayları dramatik bir tam ekran katmanıyla gösterir.
 func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, choices []HistoricalEventChoice, focus int) {
-	modal := buildHistoricalEventModal()
+	layout := buildHistoricalEventLayout(title, desc, prompt, choices)
+	modal := layout.modal
 	gameui.DrawModal(screen, modal, historicalEventModalStyle, nil, nil)
 
 	bx, by, bw, bh := float32(modal.Panel.Rect.X), float32(modal.Panel.Rect.Y), float32(modal.Panel.Rect.W), float32(modal.Panel.Rect.H)
@@ -3321,10 +3322,12 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 	cy := float64(by) + 28
 	drawUILabel(screen, gameui.Rect{X: 0, Y: cy, W: ScreenWidth}, "- TARIHSEL OLAY -", color.RGBA{180, 140, 50, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 	cy += 26
-	drawUILabel(screen, gameui.Rect{X: 0, Y: cy, W: ScreenWidth}, title, color.RGBA{255, 220, 80, 255}, gameui.TextLarge, gameui.TextAlignCenter)
-	cy += 30
+	titleRect := gameui.Rect{X: float64(bx) + 30, Y: cy, W: float64(bw) - 60}
+	drawUIWrappedLabelAligned(screen, titleRect, title, color.RGBA{255, 220, 80, 255}, gameui.TextLarge, 30, 0, gameui.TextAlignCenter)
+	titleLines := gameui.WrappedLineCount(renderText, title, titleRect.W, gameui.TextLarge)
+	cy += float64(max(1, titleLines)) * 30
 
-	drawUIWrappedLabel(screen, gameui.Rect{X: float64(bx) + 30, Y: cy, W: float64(bw - 60)}, desc, color.RGBA{210, 200, 180, 230}, gameui.TextMedium, 22, 0)
+	drawUIWrappedLabel(screen, layout.descRect, desc, color.RGBA{210, 200, 180, 230}, gameui.TextMedium, 22, 0)
 
 	if len(choices) == 0 {
 		cy = float64(by) + float64(bh) - 28
@@ -3332,18 +3335,15 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 		return
 	}
 
-	// Seçim başlığı, seçeneklerin açıklama alanına girmemeli.
-	promptY := float64(by) + 180
 	if prompt != "" {
-		drawUILabel(screen, gameui.Rect{X: 0, Y: promptY, W: ScreenWidth}, prompt, color.RGBA{230, 214, 175, 240}, gameui.TextMedium, gameui.TextAlignCenter)
+		drawUIWrappedLabelAligned(screen, layout.promptRect, prompt, color.RGBA{230, 214, 175, 240}, gameui.TextMedium, 20, 0, gameui.TextAlignCenter)
 	}
 
-	buttons := buildHistoricalEventChoiceButtons(len(choices))
 	for i, choice := range choices {
-		if i >= len(buttons) {
+		if i >= len(layout.buttons) || i >= len(layout.infoRects) {
 			break
 		}
-		btn := buttons[i]
+		btn := layout.buttons[i]
 		active := i == focus
 		bg := color.RGBA{78, 62, 36, 235}
 		border := color.RGBA{150, 120, 68, 255}
@@ -3353,7 +3353,7 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 			border = color.RGBA{226, 182, 92, 255}
 		}
 		drawUIButton(screen, btn.X, btn.Y, btn.W, btn.H, choice.Label, true, solidButtonStyle(bg, border, textCol, 10))
-		drawHistoricalChoiceInfo(screen, btn, choice)
+		drawHistoricalChoiceInfo(screen, layout.infoRects[i], choice)
 	}
 }
 
@@ -3505,23 +3505,23 @@ func commanderArrivalTraits(commander *army.Commander) string {
 	return "Özellik: " + strings.Join(labels, ", ")
 }
 
-func drawHistoricalChoiceInfo(screen *ebiten.Image, btn gameui.Button, choice HistoricalEventChoice) {
-	infoX := btn.X
-	infoW := btn.W
-	// Her bilgi satırına iki satırlık alan ayır. Sabit aralıklar, uzun
-	// açıklamaların bir sonraki satırın veya butonun üzerine binmesini önler.
-	startY := btn.Y - 138
-	if choice.Desc != "" {
-		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: startY, W: infoW}, choice.Desc, color.RGBA{162, 150, 120, 210}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
-	}
-	if choice.Effect != "" {
-		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 90, W: infoW}, choice.Effect, color.RGBA{190, 176, 142, 220}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
-	}
-	if choice.FollowUp != "" {
-		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 58, W: infoW}, choice.FollowUp, color.RGBA{232, 196, 112, 230}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
-	}
-	if choice.Conditions != "" {
-		drawUIWrappedLabelAligned(screen, gameui.Rect{X: infoX, Y: btn.Y - 26, W: infoW}, choice.Conditions, color.RGBA{144, 138, 126, 220}, gameui.TextSmall, 16, 2, gameui.TextAlignCenter)
+func drawHistoricalChoiceInfo(screen *ebiten.Image, rect gameui.Rect, choice HistoricalEventChoice) {
+	y := rect.Y
+	for _, item := range []struct {
+		text  string
+		color color.RGBA
+	}{
+		{choice.Desc, color.RGBA{162, 150, 120, 210}},
+		{choice.Effect, color.RGBA{190, 176, 142, 220}},
+		{choice.FollowUp, color.RGBA{232, 196, 112, 230}},
+		{choice.Conditions, color.RGBA{144, 138, 126, 220}},
+	} {
+		if item.text == "" {
+			continue
+		}
+		lines := gameui.WrappedLineCount(renderText, item.text, rect.W, gameui.TextSmall)
+		drawUIWrappedLabelAligned(screen, gameui.Rect{X: rect.X, Y: y, W: rect.W}, item.text, item.color, gameui.TextSmall, 16, 0, gameui.TextAlignCenter)
+		y += float64(lines) * 16
 	}
 }
 

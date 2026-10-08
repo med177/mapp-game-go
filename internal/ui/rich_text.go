@@ -75,6 +75,14 @@ func NewWrappedLabel(rect Rect, text string, col color.Color, variant TextVarian
 	}
 }
 
+// WrappedLineCount, metnin mevcut sarma kurallarına göre kaç satır kapladığını döndürür.
+func WrappedLineCount(textRenderer TextRenderer, value string, maxWidth float64, variant TextVariant) int {
+	if value == "" || maxWidth <= 0 {
+		return 0
+	}
+	return len(wrapLines(textRenderer, value, maxWidth, variant))
+}
+
 func (w WrappedLabel) HitTest(_, _ float64) bool     { return false }
 func (w WrappedLabel) HandleInput(_ InputState) bool { return false }
 

@@ -326,10 +326,101 @@ func buildEventCodexFilterButtons() []gameui.Button {
 	return buttons
 }
 
-func buildHistoricalEventModal() gameui.Modal {
-	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, 760, 420, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+type historicalEventLayout struct {
+	modal      gameui.Modal
+	descRect   gameui.Rect
+	promptRect gameui.Rect
+	infoRects  []gameui.Rect
+	buttons    []gameui.Button
+}
+
+func buildHistoricalEventLayout(title, desc, prompt string, choices []HistoricalEventChoice) historicalEventLayout {
+	const (
+		minW       = 760.0
+		maxW       = 1100.0
+		horizontal = 30.0
+		choiceGap  = 16.0
+		buttonH    = 44.0
+	)
+
+	panelW := maxF(minW, minF(maxW, ScreenWidth-80))
+	contentW := panelW - horizontal*2
+	titleLines := gameui.WrappedLineCount(renderText, title, contentW, gameui.TextLarge)
+	if titleLines < 1 {
+		titleLines = 1
+	}
+	descLines := gameui.WrappedLineCount(renderText, desc, contentW, gameui.TextMedium)
+	if descLines < 1 {
+		descLines = 1
+	}
+
+	contentY := 28.0 + 26.0 + float64(titleLines)*30.0 + 12.0 + float64(descLines)*22.0
+	layout := historicalEventLayout{descRect: gameui.Rect{X: horizontal, Y: contentY - float64(descLines)*22.0, W: contentW}}
+	if len(choices) > 0 {
+		promptLines := gameui.WrappedLineCount(renderText, prompt, contentW, gameui.TextMedium)
+		if promptLines < 1 {
+			promptLines = 1
+		}
+		contentY += 18
+		layout.promptRect = gameui.Rect{X: horizontal, Y: contentY, W: contentW}
+		contentY += float64(promptLines)*20.0 + 20.0
+
+		choiceW := (contentW - choiceGap*float64(len(choices)-1)) / float64(len(choices))
+		maxInfoH := 0.0
+		layout.infoRects = make([]gameui.Rect, len(choices))
+		for i, choice := range choices {
+			infoLines := historicalChoiceInfoLineCount(choice, choiceW)
+			infoH := float64(infoLines) * 16.0
+			if infoH > maxInfoH {
+				maxInfoH = infoH
+			}
+			layout.infoRects[i] = gameui.Rect{X: horizontal + float64(i)*(choiceW+choiceGap), Y: contentY, W: choiceW, H: infoH}
+		}
+		contentY += maxInfoH + 16.0
+		buttonY := contentY
+		btnW := choiceW
+		layout.buttons = make([]gameui.Button, len(choices))
+		for i := range choices {
+			layout.buttons[i] = gameui.NewButton(horizontal+float64(i)*(btnW+choiceGap), buttonY, btnW, buttonH, "")
+		}
+		contentY += buttonH + 24.0
+	} else {
+		contentY += 24.0
+	}
+
+	panelH := maxF(260, contentY)
+	panelH = minF(panelH, ScreenHeight-32)
+	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, panelW, panelH, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
-	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
+	layout.modal = gameui.NewModal(ScreenWidth, ScreenHeight, panel)
+	for i := range layout.buttons {
+		layout.buttons[i].X += rect.X
+		layout.buttons[i].Y += rect.Y
+	}
+	layout.descRect.X += rect.X
+	layout.descRect.Y += rect.Y
+	layout.promptRect.X += rect.X
+	layout.promptRect.Y += rect.Y
+	for i := range layout.infoRects {
+		layout.infoRects[i].X += rect.X
+		layout.infoRects[i].Y += rect.Y
+	}
+	return layout
+}
+
+func historicalChoiceInfoLineCount(choice HistoricalEventChoice, width float64) int {
+	count := 0
+	for _, value := range []string{choice.Desc, choice.Effect, choice.FollowUp, choice.Conditions} {
+		if value == "" {
+			continue
+		}
+		count += gameui.WrappedLineCount(renderText, value, width, gameui.TextSmall)
+	}
+	return count
+}
+
+func buildHistoricalEventModal(title, desc, prompt string, choices []HistoricalEventChoice) gameui.Modal {
+	return buildHistoricalEventLayout(title, desc, prompt, choices).modal
 }
 
 func buildCommanderArrivalModal() gameui.Modal {
@@ -338,29 +429,8 @@ func buildCommanderArrivalModal() gameui.Modal {
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }
 
-func buildHistoricalEventChoiceButtons(count int) []gameui.Button {
-	if count <= 0 {
-		return nil
-	}
-	modal := buildHistoricalEventModal()
-	const (
-		btnH       = 36.0
-		horizontal = 24.0
-		gap        = 16.0
-	)
-	availableW := modal.Panel.Rect.W - horizontal*2
-	btnW := (availableW - float64(max(0, count-1))*gap) / float64(count)
-	if btnW < 0 {
-		btnW = 0
-	}
-	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - btnH - 24
-	startX := modal.Panel.Rect.X + horizontal
-	buttons := make([]gameui.Button, 0, count)
-	for i := 0; i < count; i++ {
-		x := startX + float64(i)*(btnW+gap)
-		buttons = append(buttons, gameui.NewButton(x, btnY, btnW, btnH, ""))
-	}
-	return buttons
+func buildHistoricalEventChoiceButtons(title, desc, prompt string, choices []HistoricalEventChoice) []gameui.Button {
+	return buildHistoricalEventLayout(title, desc, prompt, choices).buttons
 }
 
 func buildDiplomacyOfferModal() gameui.Modal {
