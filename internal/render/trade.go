@@ -945,7 +945,7 @@ func sortedFactionsForTradeAgreements(gs *state.GameState) []tradeAgreementCandi
 	playerRouteCapacityUsed := diplomacy.TradeRouteCapacityUsage(gs, gs.PlayerFactionID)
 	list := make([]tradeAgreementCandidate, 0, len(gs.Factions))
 	for fid, f := range gs.Factions {
-		if fid == gs.PlayerFactionID || f == nil || f.IsEliminated || f.IsVirtual {
+		if fid == gs.PlayerFactionID || f == nil || !f.CanTrade() {
 			continue
 		}
 		rel := relationForTrade(gs, gs.PlayerFactionID, fid)
@@ -1004,7 +1004,7 @@ func sortedFactionsForMarket(gs *state.GameState, focusGood int, listFilter Trad
 	}
 	list := make([]candidate, 0, len(gs.Factions))
 	for fid, f := range gs.Factions {
-		if fid == gs.PlayerFactionID || f == nil || f.IsEliminated || f.IsVirtual {
+		if fid == gs.PlayerFactionID || f == nil || !f.CanTrade() {
 			continue
 		}
 		if diplomacy.IsWar(gs, gs.PlayerFactionID, fid) {

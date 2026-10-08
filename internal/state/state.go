@@ -623,6 +623,9 @@ func (s *GameState) MarketSellOffer(fid faction.FactionID, good economy.GoodType
 	if s == nil || fid == "" || good == "" {
 		return 0
 	}
+	if f := s.Factions[fid]; f != nil && !f.CanTrade() {
+		return 0
+	}
 	offers := s.MarketOrders.SellOffers[fid]
 	offer := offers[good]
 	if offer <= 0 {
@@ -674,6 +677,9 @@ func (s *GameState) MarketBuyOrder(fid faction.FactionID, good economy.GoodType,
 	if s == nil || fid == "" || good == "" || price <= 0 {
 		return 0
 	}
+	if f := s.Factions[fid]; f != nil && !f.CanTrade() {
+		return 0
+	}
 	orders := s.MarketOrders.BuyOrders[fid]
 	order := orders[good]
 	if order <= 0 {
@@ -694,6 +700,9 @@ func (s *GameState) SetMarketSellOffer(fid faction.FactionID, good economy.GoodT
 	if s == nil || fid == "" || good == "" {
 		return
 	}
+	if f := s.Factions[fid]; f != nil && !f.CanTrade() {
+		amount = 0
+	}
 	if s.MarketOrders.SellOffers == nil {
 		s.MarketOrders.SellOffers = make(map[faction.FactionID]map[economy.GoodType]int)
 	}
@@ -710,6 +719,9 @@ func (s *GameState) SetMarketSellOffer(fid faction.FactionID, good economy.GoodT
 func (s *GameState) SetMarketBuyOrder(fid faction.FactionID, good economy.GoodType, amount int) {
 	if s == nil || fid == "" || good == "" {
 		return
+	}
+	if f := s.Factions[fid]; f != nil && !f.CanTrade() {
+		amount = 0
 	}
 	if s.MarketOrders.BuyOrders == nil {
 		s.MarketOrders.BuyOrders = make(map[faction.FactionID]map[economy.GoodType]int)
@@ -1834,7 +1846,10 @@ func (s *GameState) AutoExportSurplus(fid faction.FactionID, good economy.GoodTy
 // AI alım emirlerine satar. Alıcı ve mal sırası deterministiktir.
 func (s *GameState) ApplyAutomaticExports() map[economy.GoodType]AutoExportResult {
 	results := make(map[economy.GoodType]AutoExportResult)
-	if s == nil || s.PlayerFactionID == "" {
+	if s == nil || s.PlayerFactionID == "" || s.Factions[s.PlayerFactionID] == nil || !s.Factions[s.PlayerFactionID].CanTrade() {
+		if s != nil {
+			s.AutoExportResults = results
+		}
 		return results
 	}
 	for _, good := range economy.TradeGoods() {

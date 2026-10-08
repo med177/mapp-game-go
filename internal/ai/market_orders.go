@@ -49,7 +49,7 @@ func NewMarketOrderPreparation(gs *state.GameState, eventDefs []*gameevents.Even
 			continue
 		}
 		f := gs.Factions[fid]
-		if f == nil || f.IsEliminated {
+		if f == nil || !f.CanTrade() {
 			continue
 		}
 		preparation.factionIDs = append(preparation.factionIDs, fid)
@@ -96,7 +96,7 @@ func refreshFactionMarketOrdersWithEvents(gs *state.GameState, fid faction.Facti
 		return nil
 	}
 	f := gs.Factions[fid]
-	if f == nil || f.IsEliminated {
+	if f == nil || !f.CanTrade() {
 		return nil
 	}
 	ctx := prepareStrategicContextWithEvents(gs, fid, eventDefs)
@@ -232,7 +232,7 @@ func aiMarketPurchaseFromOrders(gs *state.GameState, buyer faction.FactionID, go
 		if supplierID == buyer || diplomacy.IsWar(gs, buyer, supplierID) {
 			continue
 		}
-		if supplier := gs.Factions[supplierID]; supplier == nil || supplier.IsEliminated {
+		if supplier := gs.Factions[supplierID]; supplier == nil || !supplier.CanTrade() {
 			continue
 		}
 		surplus := gs.MarketSellOffer(supplierID, good)

@@ -61,3 +61,32 @@ func TestAutoExportReserveUsesTwoTurnsOfProductionForOtherGoods(t *testing.T) {
 		t.Fatalf("demir fazlasi rezerv sonrasi 300 olmaliydi, got=%d", got)
 	}
 }
+
+func TestTradeDisabledFactionHasNoMarketOrdersOrAutomaticExports(t *testing.T) {
+	fid := faction.FactionID("closed")
+	buyerID := faction.FactionID("buyer")
+	gs := &GameState{
+		PlayerFactionID: fid,
+		Factions: map[faction.FactionID]*faction.Faction{
+			fid:     {ID: fid, TradeDisabled: true, Iron: 500},
+			buyerID: {ID: buyerID, Gold: 1000},
+		},
+		MarketPrices: economy.CurrentMarketPrice{economy.GoodIron: 5},
+		MarketOrders: MarketOrderBook{
+			BuyOrders: map[faction.FactionID]map[economy.GoodType]int{
+				buyerID: {economy.GoodIron: 100},
+			},
+		},
+		AutoExportPolicies: map[economy.GoodType]AutoExportPolicy{
+			economy.GoodIron: {Enabled: true, Percent: 100},
+		},
+	}
+
+	gs.SetMarketSellOffer(fid, economy.GoodIron, 100)
+	if got := gs.MarketSellOffer(fid, economy.GoodIron); got != 0 {
+		t.Fatalf("ticareti kapalı faction için satış arzı = %d, 0 bekleniyordu", got)
+	}
+	if got := gs.ApplyAutomaticExports()[economy.GoodIron].Sold; got != 0 {
+		t.Fatalf("ticareti kapalı faction otomatik satış yaptı: %d", got)
+	}
+}

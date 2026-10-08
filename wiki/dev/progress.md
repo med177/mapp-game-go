@@ -5,6 +5,11 @@ last_updated: 2026-10-08
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-08: `TradeDisabled` fraksiyonlarının açık pazar satış/alım emirleri,
+  pazar listesi ve otomatik ihracatı kapatıldı. Eski save emirleri de state
+  helper'larında görünmez. `internal/state/state.go`,
+  `internal/ai/market_orders.go`, `internal/render/trade.go`.
+
 - 2026-10-08: 298 senaryosunun Tully, Vale, Kuzey, Tyrell, Akgezen ve Targaryen
   alt event zincirlerindeki gereksiz ortak faction ve bölge sahipliği kapıları
   kaldırıldı. Hedef faction aktif kaldığı sürece zincir flag'leri ilerliyor.

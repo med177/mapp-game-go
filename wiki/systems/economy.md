@@ -309,6 +309,8 @@ varsayılan ekonomi fiyatlarıyla geriye dönük uyumluluk korunur.
 satış fazlasıdır; `BuyOrders` ise eksik hammaddeyi üretim/askerî hedeflerine
 tamamlamak için istediği miktardır. Alım talebi, `aiMinGoldReserve` korunduktan
 sonra güncel altınla karşılanabilecek miktarı aşamaz (`internal/ai/market_orders.go`).
+`CanTrade()` sonucu false olan fraksiyonlar satış veya alım kotası üretemez;
+save'den kalan emirler de market state helper'larında görünmez.
 
 Pazar işlemleri ham stok üzerinden sınırsız çalışmaz. Oyuncunun alımı satıcının
 kalan `SellOffers` kotasıyla, satışı hedefin kalan `BuyOrders` kotasıyla
@@ -522,6 +524,7 @@ Müttefik/vassal sınır ikmali ücretsiz değildir. Destekçi devletin tur sonu
 - Bölge panelindeki `Tahıl Yardımı` aksiyonu kendi bölgesine 12 tahıl aktararak memnuniyeti +10 artırır; bölge başına turda bir kez kullanılabilir. Kuşatma altındaki, oyuncuya ait olmayan, zaten yüksek memnuniyetli veya yetersiz stoklu bölgeler yardım alamaz. Tur ilerlediğinde yardım kullanım kilidi runtime olarak sıfırlanır.
 - Pazar ekranındaki `ACİL TAHIL SAT` aksiyonu ticaret partneri gerektirmez. Yalnızca fraksiyonun `StorageCapacity` üstündeki tahıl satılabilir; satış fiyatı güncel tahıl piyasa fiyatının %70'idir ve minimum 1 altın/tahıl olarak hesaplanır. Ancak bu satışın bir turdaki toplam altın getirisi, kuşatma dışı temel vergi gelirinin %100'ü ile sınırlıdır; `GrainSaleGoldUsed` runtime haritası tur sonunda sıfırlanır. Böylece tahıl acil nakit sağlayabilir ama verginin yerini alamaz.
 - Pazar sekmesindeki otomatik ihracat düğmesi seçili malın ayrı politikasını `%0`–`%100` arasında değiştirir. Ekonomi tick'i mevcut stoktan üretim-tüketim sonrası korunacak rezervi ayırır; yalnız rezerv üstü fazlanın seçilen yüzdesi açık pazardaki, savaşta olmayan AI alım emirlerine faction ID sırasıyla satılır. Tahıl rezervi gerçek ambar kapasitesidir; diğer mallarda en az 20 ve iki tur üretimlik güvenlik rezervi korunur. Tahıl satışı acil/manuel tahıl satışıyla aynı temel vergi bütçesini paylaşır. Politikalar `AutoExportPolicies` olarak save'e yazılır; eski `AutoGrainExport` kayıtları tahıl için `%100` politikaya göç eder.
+- `TradeDisabled` işaretli fraksiyonlar açık pazarda mal satamaz veya alamaz; otomatik ihracatları da çalışmaz. Pazar listesi bu fraksiyonları göstermez.
 - Üretim emri iptalinde altınla birlikte diğer kaynaklar da iade edilir.
 
 ## Bölge Uzmanlaşması
