@@ -2209,7 +2209,7 @@
     "rural_population": 50,
     "religion": "valyrian",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["port"]
   },
   {
     "id": "beyond_the_wall",
@@ -2418,7 +2418,7 @@
     "rural_population": 50,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "riverlands",
@@ -2579,7 +2579,7 @@
     "rural_population": 50,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "lannisport",
@@ -2771,7 +2771,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "skagos",
@@ -3034,7 +3034,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "the_neck",
@@ -3069,7 +3069,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "the_fingers",
@@ -3400,7 +3400,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["port"]
   },
   {
     "id": "blackmont",
@@ -3512,7 +3512,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "sandstone",
@@ -3548,7 +3548,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "godsgrace",
@@ -3660,7 +3660,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "stormlands",
@@ -3698,7 +3698,7 @@
     "rural_population": 25,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "tumbleton",
@@ -3935,7 +3935,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["port"]
   },
   {
     "id": "torrhens_square",
@@ -3972,7 +3972,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "lonely_hills",
@@ -4009,7 +4009,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "hornwood",
@@ -4044,7 +4044,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "widows_watch",
@@ -4188,7 +4188,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["port"]
   },
   {
     "id": "the_grey_cliffs",
@@ -4221,7 +4221,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "great_wyk",
@@ -4324,7 +4324,7 @@
     "rural_population": 0,
     "religion": "drowned_god",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls", "port"]
   },
   {
     "id": "west_vale",
@@ -4361,7 +4361,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "gulltown",
@@ -4770,7 +4770,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "brightwater_reach",
@@ -4848,7 +4848,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "summerhall",
@@ -4887,7 +4887,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "hapstackhall",
@@ -4995,7 +4995,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["port"]
   },
   {
     "id": "mistwood",
@@ -5067,7 +5067,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "stonehelm",
@@ -5104,7 +5104,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "tarth",
@@ -5136,7 +5136,7 @@
     "rural_population": 0,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["port"]
   },
   {
     "id": "uplands",
@@ -5211,7 +5211,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "wyl",
@@ -5246,7 +5246,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "the_tor",
@@ -5281,7 +5281,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "vaith",
@@ -5389,7 +5389,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "sun_house",
@@ -5423,7 +5423,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "hellholt",
@@ -5461,7 +5461,7 @@
     "rural_population": 0,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": null
+    "buildings": ["walls"]
   },
   {
     "id": "the_boneway",

@@ -3567,6 +3567,9 @@ func (g *Game) saveScenarioRegions() bool {
 		g.renderer.ShowCombatResult("Senaryo yolu yok; kaydedilemedi.")
 		return false
 	}
+	for _, region := range g.gs.Regions {
+		world.EnsureRequiredSettlementBuildings(region, false)
+	}
 	if err := writeScenarioEditData(g.gs, g.evts); err != nil {
 		g.renderer.ShowCombatResult("Senaryo kayıt hatası: " + err.Error())
 		return false

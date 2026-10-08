@@ -536,7 +536,7 @@
   {
     "id": "nights_watch",
     "name": "Night's Watch",
-    "name_tr": "Gece Nöbeti",
+    "name_tr": "Gece Nöbetçileri",
     "army_image": "army/army.png",
     "marine_image": "army/marine.png",
     "religion": "old_gods",
