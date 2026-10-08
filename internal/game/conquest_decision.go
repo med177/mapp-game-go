@@ -441,6 +441,7 @@ func (g *Game) captureUnfortifiedRegion(aid army.ArmyID, targetID world.RegionID
 		message := fmt.Sprintf("%s ele geçirildi.", target.NameTR)
 		g.renderer.ShowCombatResult(message)
 		g.renderer.AddEventDetail("[FETİH] "+message, fmt.Sprintf("%s tahkimli olmadığı için bölge doğrudan %s yönetimine katıldı.", target.NameTR, g.factionNameTR(attacker.OwnerID)))
+		g.showPendingCaptiveReleaseNotification()
 	}
 	g.announceElimination(collapse)
 }

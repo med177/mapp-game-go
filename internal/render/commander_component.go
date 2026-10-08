@@ -320,9 +320,9 @@ func drawCommanderCompactStrip(screen *ebiten.Image, x, y, w, h float64, opts co
 	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1, color.RGBA{90, 72, 42, 255}, false)
 
 	portraitX := x + 8
-	portraitY := y + 4
-	portraitW := 44.0
-	portraitH := 54.0
+	portraitY := y + 5
+	portraitW := 56.0
+	portraitH := 56.0
 	drawCommanderPortraitAsset(screen, opts.PortraitAsset, portraitX, portraitY, portraitW, portraitH)
 
 	name := strings.TrimSpace(opts.Name)

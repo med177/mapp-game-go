@@ -713,7 +713,7 @@
         }
       }
     ],
-    "player_choice_factions": ["stark", "lannister", "baratheon_king"],
+    "player_choice_factions": ["stark"],
     "requires_flags": ["war_of_five_kings_active", "ned_stark_named_hand"],
     "requires_active_factions": ["stark", "lannister"]
   },

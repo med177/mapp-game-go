@@ -2376,6 +2376,9 @@ func confirmDialogActionButtonStyle(label string) gameui.ButtonStyle {
 
 func decorateConfirmDialogButton(btn gameui.Button, label string, role string) gameui.Button {
 	btn.Label = label
+	if label == "Kuşatmayı Kaldır" {
+		btn.IconGap = 8
+	}
 	switch role {
 	case "accept":
 		if label == "Kuşatma Başlat" {

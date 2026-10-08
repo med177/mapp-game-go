@@ -62,6 +62,7 @@ type Game struct {
 	lastLandUnitID                    string
 	lastNavalUnitID                   string
 	currentMusicPlaylist              string
+	pendingCaptiveReleaseNotification string
 }
 
 type pendingSortieState struct {
@@ -5560,6 +5561,7 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 				enemyArmy,
 			))
 			g.announceElimination(collapse)
+			g.showPendingCaptiveReleaseNotification()
 			return true
 		}
 
@@ -5625,6 +5627,7 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 			battleArmySnapshot{},
 		))
 		g.announceElimination(collapse)
+		g.showPendingCaptiveReleaseNotification()
 		return true
 	}
 	if isAlliedDisembark {
@@ -5787,7 +5790,7 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 			names = append(names, name)
 		}
 		message := "Tutsak " + strings.Join(names, ", ") + " kurtarıldı."
-		g.renderer.ShowCombatResult(message)
+		g.pendingCaptiveReleaseNotification = message
 		g.renderer.AddEvent("[TUTSAK] " + message)
 	}
 	g.gs.ClearProductionOrdersForRegion(targetRegion.ID)
@@ -5809,6 +5812,14 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	g.retreatArmiesFromCapturedRegion(targetRegion.ID, newOwnerID)
 	g.evictDockedFleetsFromCapturedPort(targetRegion.ID, newOwnerID)
 	return eliminationResult{}
+}
+
+func (g *Game) showPendingCaptiveReleaseNotification() {
+	if g == nil || g.renderer == nil || g.pendingCaptiveReleaseNotification == "" {
+		return
+	}
+	g.renderer.ShowCombatResult(g.pendingCaptiveReleaseNotification)
+	g.pendingCaptiveReleaseNotification = ""
 }
 
 const (
@@ -6462,6 +6473,7 @@ func (g *Game) applySurrenderOffer(offer state.DiplomaticOffer) diplomacy.Result
 		return diplomacy.Result{Accepted: true, Applied: true, Message: target.NameTR + " teslim oldu; savaş sonrası düzen kararı bekleniyor."}
 	}
 	g.announceElimination(collapse)
+	g.showPendingCaptiveReleaseNotification()
 	return diplomacy.Result{Accepted: true, Applied: true, Message: target.NameTR + " teslim oldu; kuşatma sona erdi."}
 }
 
@@ -6574,6 +6586,7 @@ func (g *Game) surrenderSiege(defenderID army.ArmyID, regionID world.RegionID) b
 		g.renderer.AddEvent("[KUSATMA] " + msg)
 	}
 	g.announceElimination(collapse)
+	g.showPendingCaptiveReleaseNotification()
 	return true
 }
 
@@ -7053,6 +7066,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 			combinedDef,
 		))
 		g.announceElimination(collapse)
+		g.showPendingCaptiveReleaseNotification()
 
 	} else {
 		// --- Savaşsız hareket ve bölge ele geçirme ---
@@ -7102,6 +7116,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 				battleArmySnapshot{},
 			))
 			g.announceElimination(collapse)
+			g.showPendingCaptiveReleaseNotification()
 		}
 	}
 }

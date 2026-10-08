@@ -91,6 +91,9 @@ func buildConfirmDialogButtons(state confirmDialogState) (gameui.Button, gameui.
 	if state.spacious {
 		btnW = float64(confirmDialogSpaciousBtnW)
 	}
+	if state.declineAction.Kind == ActionLiftSiege {
+		btnW = 160
+	}
 	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - 18
 	if state.thirdLabel != "" {
 		saveX, discardX, cancelX := confirmDialogThreeButtonXs(float32(modal.Panel.Rect.X), btnW, modal.Panel.Rect.W)

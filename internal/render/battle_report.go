@@ -358,7 +358,7 @@ func drawBattleReportSideCard(screen *ebiten.Image, rect gameui.Rect, accent col
 	boxX := rect.X + 14
 	boxY := rect.Y + 72
 	boxW := rect.W - 28
-	boxH := 62.0
+	boxH := 66.0
 	drawCommanderCompactStrip(screen, boxX, boxY, boxW, boxH, commanderCompactStripOptions{
 		PortraitAsset:      side.CommanderPortraitAsset,
 		Name:               battleReportCommanderNameText(side),
@@ -369,8 +369,8 @@ func drawBattleReportSideCard(screen *ebiten.Image, rect gameui.Rect, accent col
 		EmptyOperational:   "Operasyon: katkı yok.",
 	})
 	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 146, W: rect.W - 36}, "Güç: "+battleReportStrengthText(side), color.RGBA{228, 224, 214, 255}, gameui.TextMedium, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 174, W: rect.W - 36}, "Birim: "+battleReportUnitsText(side), color.RGBA{228, 224, 214, 255}, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 198, W: rect.W - 36}, "HP: "+battleReportHPText(side), color.RGBA{206, 198, 180, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 172, W: rect.W - 36}, "Birim: "+battleReportUnitsText(side), color.RGBA{228, 224, 214, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 18, Y: rect.Y + 194, W: rect.W - 36}, "HP: "+battleReportHPText(side), color.RGBA{206, 198, 180, 255}, gameui.TextSmall, gameui.TextAlignStart)
 }
 
 func drawBattleReportCommanderProgress(screen *ebiten.Image, rect gameui.Rect, progress []BattleReportCommanderProgress) {
