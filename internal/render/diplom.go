@@ -333,6 +333,23 @@ func regionForCommanderSettlement(gs *state.GameState, settlementID string) worl
 	return ""
 }
 
+func captiveLocation(gs *state.GameState, settlementID string) (*world.Region, *world.Settlement) {
+	if gs == nil || settlementID == "" {
+		return nil, nil
+	}
+	for _, region := range gs.Regions {
+		if region == nil {
+			continue
+		}
+		for i := range region.Settlements {
+			if region.Settlements[i].ID == settlementID {
+				return region, &region.Settlements[i]
+			}
+		}
+	}
+	return nil, nil
+}
+
 // ShowHeldCaptiveDecision, diplomasi penceresinden oyuncunun elindeki ilk
 // tutsak için karar modalını açar.
 func (r *Renderer) ShowHeldCaptiveDecision() {
@@ -424,7 +441,29 @@ func (r *Renderer) drawCaptivePanel(screen *ebiten.Image) {
 	DrawText(screen, commander.Name, x, p.Y+122, FaceLarge, ColorWhite)
 	DrawText(screen, "Sahibi: "+factionDisplayName(r.gs, commander.OwnerID), x, p.Y+156, FaceSmall, ColorGray)
 	DrawText(screen, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), x, p.Y+182, FaceSmall, ColorGray)
-	DrawText(screen, "Bu komutan oyuncu topraklarında tutsak.", x, p.Y+222, FaceSmall, ColorGold)
+	region, settlement := captiveLocation(r.gs, commander.CaptiveAtSettlementID)
+	captorName := "Bilinmiyor"
+	locationName := "Bilinmiyor"
+	if region != nil {
+		captorName = factionDisplayName(r.gs, region.OwnerID)
+		regionName := region.NameTR
+		if regionName == "" {
+			regionName = string(region.ID)
+		}
+		settlementName := commander.CaptiveAtSettlementID
+		if settlement != nil {
+			settlementName = settlement.NameTR
+			if settlementName == "" {
+				settlementName = settlement.Name
+			}
+			if settlementName == "" {
+				settlementName = settlement.ID
+			}
+		}
+		locationName = regionName + " • " + settlementName
+	}
+	drawUIKeyValueRow(screen, x, p.Y+214, p.W-captivePanelListW-102, "Tutsak eden", trimTextToWidth(captorName, FaceSmall, p.W-captivePanelListW-210), ColorGray, ColorGold)
+	drawUIKeyValueRow(screen, x, p.Y+240, p.W-captivePanelListW-102, "Konum", trimTextToWidth(locationName, FaceSmall, p.W-captivePanelListW-210), ColorGray, ColorGold)
 	drawUIButtonWidget(screen, captivePanelDecisionButton(), applyTinyButtonStyle)
 }
 

@@ -2053,6 +2053,32 @@ func (r *Renderer) ShowNavalContactDialog(playerID, opponentID army.ArmyID, seaI
 	}
 }
 
+// ShowLandContactDialog, kara temasında karar alanını haritanın altına sabitler;
+// temas bölgesi ve iki ordunun gücü modalın üstündeki görünür alanda kalır.
+func (r *Renderer) ShowLandContactDialog(playerID, opponentID army.ArmyID, landID world.RegionID, message, acceptLabel, thirdLabel, declineLabel string, acceptAction, thirdAction, declineAction InputAction, thirdEnabled bool) {
+	if r == nil {
+		return
+	}
+	r.confirmDialog = confirmDialogState{
+		show:          true,
+		title:         "Düşman Ordusu Tespit Edildi",
+		message:       message,
+		acceptLabel:   acceptLabel,
+		thirdLabel:    thirdLabel,
+		declineLabel:  declineLabel,
+		pendingAction: acceptAction,
+		thirdAction:   thirdAction,
+		thirdDisabled: !thirdEnabled,
+		declineAction: declineAction,
+		declineActs:   true,
+		landContact: &landContactDialogState{
+			playerArmyID:   playerID,
+			opponentArmyID: opponentID,
+			landID:         landID,
+		},
+	}
+}
+
 // SetPendingContactHoldDisabled, pusu temasında Pozisyonu Koru düğmesini
 // ortak modalın mevcut disabled sözleşmesiyle pasifleştirir.
 func (r *Renderer) SetPendingContactHoldDisabled() {
@@ -2147,6 +2173,10 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 		r.drawNavalContactDialog(screen)
 		return
 	}
+	if r.confirmDialog.landContact != nil {
+		r.drawLandContactDialog(screen)
+		return
+	}
 	modal := buildConfirmDialogModalFor(r.confirmDialog)
 	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
 
@@ -2163,6 +2193,46 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 		drawUIWrappedLabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 58, W: modal.Panel.Rect.W - 40}, r.confirmDialog.message, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, 17, 3)
 	}
 	r.drawConfirmDialogButtons(screen)
+}
+
+func (r *Renderer) drawLandContactDialog(screen *ebiten.Image) {
+	contact := r.confirmDialog.landContact
+	if contact == nil {
+		return
+	}
+	modal := buildConfirmDialogModalFor(r.confirmDialog)
+	gameui.DrawModal(screen, modal, standardModalStyle, nil, nil)
+	panel := modal.Panel.Rect
+	drawUILabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 16, W: panel.W - 48}, r.confirmDialog.title, color.RGBA{255, 220, 100, 255}, gameui.TextLarge, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: panel.X + 24, Y: panel.Y + 49, W: panel.W - 48, H: 38}, r.confirmDialog.message, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, 17, 2)
+
+	cardY := panel.Y + 94
+	cardH := 118.0
+	gap := 16.0
+	cardW := (panel.W - 48 - gap) / 2
+	playerCard := gameui.Rect{X: panel.X + 24, Y: cardY, W: cardW, H: cardH}
+	opponentCard := gameui.Rect{X: playerCard.X + cardW + gap, Y: cardY, W: cardW, H: cardH}
+	r.drawLandContactArmyCard(screen, playerCard, "SENİN ORDUN", contact.playerArmyID, color.RGBA{104, 164, 222, 255})
+	r.drawLandContactArmyCard(screen, opponentCard, "TESPİT EDİLEN ORDU", contact.opponentArmyID, color.RGBA{218, 116, 101, 255})
+	r.drawConfirmDialogButtons(screen)
+}
+
+func (r *Renderer) drawLandContactArmyCard(screen *ebiten.Image, rect gameui.Rect, header string, armyID army.ArmyID, accent color.RGBA) {
+	drawUICardRect(screen, rect, color.RGBA{22, 19, 15, 242}, color.RGBA{91, 74, 45, 230}, 1)
+	drawUILabel(screen, gameui.Rect{X: rect.X + 14, Y: rect.Y + 10, W: rect.W - 28}, header, accent, gameui.TextSmall, gameui.TextAlignStart)
+	if r.gs == nil {
+		return
+	}
+	armyRef := r.gs.Armies[armyID]
+	if armyRef == nil {
+		return
+	}
+	attack, attackExact := state.ArmyPowerEstimate(r.gs, r.gs.PlayerFactionID, armyRef)
+	defense, defenseExact := state.ArmyDefenseEstimate(r.gs, r.gs.PlayerFactionID, armyRef)
+	factionName := factionDisplayName(r.gs, armyRef.OwnerID)
+	drawUIKeyValueRow(screen, rect.X+14, rect.Y+40, rect.W-28, "Devlet", trimTextToWidth(factionName, FaceSmall, rect.W-112), ColorGray, ColorWhite)
+	drawUIKeyValueRow(screen, rect.X+14, rect.Y+64, rect.W-28, "Saldırı gücü", perceivedPowerText(attack, attackExact), ColorGray, ColorWhite)
+	drawUIKeyValueRow(screen, rect.X+14, rect.Y+88, rect.W-28, "Savunma gücü", perceivedPowerText(defense, defenseExact), ColorGray, ColorWhite)
 }
 
 func (r *Renderer) drawNavalContactDialog(screen *ebiten.Image) {
@@ -2330,6 +2400,9 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 	case "third":
 		if label == "Genel Hücum" {
 			return btn.WithIcon(gameui.IconSword)
+		}
+		if label == "Geri Çekil" {
+			return btn.WithIcon(gameui.IconBack)
 		}
 		if label == "Çıkış" {
 			return btn.WithIcon(gameui.IconExit)

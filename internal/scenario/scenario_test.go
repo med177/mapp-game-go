@@ -63,6 +63,19 @@ func TestLoadReadsPrivilegedBuildingMaxLevel(t *testing.T) {
 	}
 }
 
+func TestDiplomacyWithDefaultsPreservesPeacePeriods(t *testing.T) {
+	periods := []PeacePeriod{{
+		MinTurns:                        10,
+		WarDeclarationRequiresEventFlag: "war_started",
+		BlockedFactions:                 []string{"a", "b"},
+	}}
+
+	got := (DiplomacyConfig{PeacePeriods: periods}).WithDefaults()
+	if len(got.PeacePeriods) != 1 || got.PeacePeriods[0].WarDeclarationRequiresEventFlag != "war_started" {
+		t.Fatalf("barış dönemleri varsayılanlarla kayboldu: %+v", got.PeacePeriods)
+	}
+}
+
 func TestLoadPoliticalTransformationsValidatesUnionMetadata(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "political_transformations.json")

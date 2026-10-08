@@ -5774,8 +5774,22 @@ func (g *Game) applyConquestWithNavalEviction(targetRegion *world.Region, newOwn
 	g.gs.RecordFactionRegionAttackAgainst(faction.FactionID(newOwnerID), faction.FactionID(prevOwnerID))
 	g.gs.RecordWarRegionCapture(faction.FactionID(newOwnerID), faction.FactionID(prevOwnerID))
 	targetRegion.ApplyConquest(newOwnerID, attackerReligion)
-	g.gs.ReleaseCaptivesInOwnedSettlements()
+	releasedCaptiveIDs := g.gs.ReleaseCaptivesInOwnedSettlements()
 	g.queueCaptiveDecisionsForRegion(targetRegion, newOwnerID)
+	if newOwnerID == string(g.gs.PlayerFactionID) && len(releasedCaptiveIDs) > 0 && g.renderer != nil {
+		names := make([]string, 0, len(releasedCaptiveIDs))
+		for _, commanderID := range releasedCaptiveIDs {
+			commander := g.gs.Commanders[commanderID]
+			name := commanderID
+			if commander != nil && commander.Name != "" {
+				name = commander.Name
+			}
+			names = append(names, name)
+		}
+		message := "Tutsak " + strings.Join(names, ", ") + " kurtarıldı."
+		g.renderer.ShowCombatResult(message)
+		g.renderer.AddEvent("[TUTSAK] " + message)
+	}
 	g.gs.ClearProductionOrdersForRegion(targetRegion.ID)
 	if newOwnerID == string(g.gs.PlayerFactionID) && prevOwnerID != newOwnerID {
 		audio.PlayScenarioSound(filepath.Join(g.gs.ScenarioPath, "audio"), "conquered")

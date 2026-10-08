@@ -72,8 +72,10 @@ func (g *Game) presentPendingLandContact() {
 		thirdEnabled = contact.PlayerArmyID == contact.DefenderArmyID && g.gs.LandContactHasSafeWithdrawal(contact)
 	}
 	contact.Prompted = true
-	g.renderer.ShowThreeChoiceDialogWithThirdEnabled(
-		"Düşman Ordusu Tespit Edildi",
+	g.renderer.ShowLandContactDialog(
+		contact.PlayerArmyID,
+		opponentID,
+		contact.LandRegionID,
 		message,
 		"Çatış",
 		"Geri Çekil",

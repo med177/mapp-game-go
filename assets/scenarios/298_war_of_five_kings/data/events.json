@@ -159,7 +159,7 @@
         "effect": {
           "target": "specific_faction",
           "sat_delta": 8,
-          "gold_delta": -180,
+          "gold_delta": -2200,
           "affected_faction": "lannister",
           "relations": [
             {
@@ -176,16 +176,16 @@
         "ai_weight": 7,
         "effect": {
           "target": "specific_faction",
-          "gold_delta": -130,
+          "gold_delta": -1300,
           "affected_faction": "lannister",
           "unit_reinforcements": [
             {
               "unit_type": "heavy_cavalry",
-              "unit_count": 2
+              "unit_count": 3
             },
             {
               "unit_type": "infantry",
-              "unit_count": 2
+              "unit_count": 5
             }
           ]
         }
@@ -667,7 +667,7 @@
         }
       }
     ],
-    "player_choice_factions": ["stark", "baratheon_king", "lannister"],
+    "player_choice_factions": ["stark"],
     "requires_flags": ["ned_stark_named_hand"],
     "requires_active_factions": ["stark", "baratheon_king", "lannister"]
   },
@@ -878,7 +878,6 @@
             },
             {
               "faction_id": "lannister",
-              "stance": "war",
               "score_delta": -35
             }
           ],

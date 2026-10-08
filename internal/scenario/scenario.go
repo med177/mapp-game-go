@@ -286,6 +286,7 @@ func DefaultDiplomacyConfig() DiplomacyConfig {
 
 func (c DiplomacyConfig) WithDefaults() DiplomacyConfig {
 	d := DefaultDiplomacyConfig()
+	d.PeacePeriods = append([]PeacePeriod(nil), c.PeacePeriods...)
 	if c.RelationImprovementGoldCost > 0 {
 		d.RelationImprovementGoldCost = c.RelationImprovementGoldCost
 	}

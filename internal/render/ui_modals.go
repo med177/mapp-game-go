@@ -75,6 +75,12 @@ func buildConfirmDialogModalFor(state confirmDialogState) gameui.Modal {
 		}
 		rect.Y = y
 	}
+	if state.landContact != nil {
+		modalW = float64(landContactDialogW)
+		modalH = float64(landContactDialogH)
+		_, hudY, _, _ := bottomActionHudRect()
+		rect = gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, modalW, modalH, gameui.AnchorCenter, gameui.AnchorTop, 0, float64(hudY)-20-modalH)
+	}
 	panel := gameui.NewPanel(rect.X, rect.Y, rect.W, rect.H)
 	return gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 }

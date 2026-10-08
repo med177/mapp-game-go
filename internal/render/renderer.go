@@ -46,6 +46,8 @@ const (
 	confirmDialogSpaciousH                = float32(304)
 	navalContactDialogW                   = float32(720)
 	navalContactDialogH                   = float32(380)
+	landContactDialogW                    = float32(720)
+	landContactDialogH                    = float32(366)
 	confirmDialogBtnW                     = float32(120)
 	confirmDialogBtnH                     = float32(36)
 	confirmDialogSpaciousBtnW             = float32(176)
@@ -103,6 +105,8 @@ type Renderer struct {
 	camScale                 float64
 	navalContactCameraBefore CameraState
 	navalContactCameraSaved  bool
+	landContactCameraBefore  CameraState
+	landContactCameraSaved   bool
 
 	// Sürükleme takibi
 	lastMX, lastMY int
@@ -546,6 +550,7 @@ type confirmDialogState struct {
 	fourthDisabled  bool
 	declineHook     func()
 	navalContact    *navalContactDialogState
+	landContact     *landContactDialogState
 }
 
 type navalContactDialogState struct {
@@ -553,6 +558,12 @@ type navalContactDialogState struct {
 	opponentArmyID   army.ArmyID
 	seaID            world.RegionID
 	opponentDecision state.NavalContactDecision
+}
+
+type landContactDialogState struct {
+	playerArmyID   army.ArmyID
+	opponentArmyID army.ArmyID
+	landID         world.RegionID
 }
 
 type regionTaskDialogState struct {
@@ -1054,6 +1065,40 @@ func (r *Renderer) updateNavalContactCamera() {
 	}
 	targetY := navalContactCameraTargetY(ScreenHeight, modalY+modalH)
 	_, anchorY := r.regionWorldPos(sea)
+	currentY := (anchorY-r.camY)*r.camScale*mapPitchY + ScreenHeight/2
+	r.camY += (currentY - targetY) / (r.camScale * mapPitchY)
+	r.camX, r.camY = clampCameraCenter(r.camX, r.camY, r.camScale)
+}
+
+func (r *Renderer) updateLandContactCamera() {
+	if r == nil || r.gs == nil {
+		return
+	}
+	contact := r.gs.PendingLandContact
+	land := (*world.Region)(nil)
+	if contact != nil {
+		land = r.gs.Regions[contact.LandRegionID]
+	}
+	if contact == nil || land == nil || land.IsSea || r.camScale <= 0 {
+		if r.landContactCameraSaved {
+			r.camX = r.landContactCameraBefore.X
+			r.camY = r.landContactCameraBefore.Y
+			r.camScale = r.landContactCameraBefore.Scale
+			r.landContactCameraSaved = false
+		}
+		return
+	}
+	if !r.landContactCameraSaved {
+		r.landContactCameraBefore = r.CameraSnapshot()
+		r.landContactCameraSaved = true
+	}
+
+	modal := buildConfirmDialogModalFor(r.confirmDialog)
+	targetY := modal.Panel.Rect.Y - 58
+	if targetY < 90 {
+		targetY = 90
+	}
+	_, anchorY := r.regionWorldPos(land)
 	currentY := (anchorY-r.camY)*r.camScale*mapPitchY + ScreenHeight/2
 	r.camY += (currentY - targetY) / (r.camScale * mapPitchY)
 	r.camX, r.camY = clampCameraCenter(r.camX, r.camY, r.camScale)
@@ -2254,6 +2299,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	r.ensureWorldMap()
 	r.updateNavalContactCamera()
+	r.updateLandContactCamera()
 
 	// Seçili bölge, atanmış merchant rotasının hedef denizi veya donanmanın
 	// mevcut deniz bölgesini vurgula. Rota hedefi, oyuncu başka bir bölge
@@ -2261,6 +2307,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	highlightRegion := world.RegionID(r.SelectedRegion)
 	if contact := r.gs.PendingNavalContact; contact != nil && r.gs.Regions[contact.SeaRegionID] != nil {
 		highlightRegion = contact.SeaRegionID
+	} else if contact := r.gs.PendingLandContact; contact != nil && r.gs.Regions[contact.LandRegionID] != nil {
+		highlightRegion = contact.LandRegionID
 	} else if r.merchantRouteHighlight != "" && r.gs.Regions[r.merchantRouteHighlight] != nil {
 		highlightRegion = r.merchantRouteHighlight
 	} else if r.SelectedArmy != "" {
@@ -2323,6 +2371,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.mapMode != MapModeTrade {
 		r.drawArmies(screen, armyPositions)
 		r.drawPendingNavalContactHighlight(screen, armyPositions)
+		r.drawPendingLandContactHighlight(screen, armyPositions)
 		r.drawCurrentRegionArmyTaskTarget(screen, armyPositions)
 		r.drawArmyTaskStatusBadges(screen, armyPositions)
 		// Seçim çerçevesi en üstte kalır; görev ve deniz rozetleri seçili
@@ -5109,6 +5158,35 @@ func (r *Renderer) drawPendingNavalContactHighlight(screen *ebiten.Image, positi
 	vector.FillCircle(screen, float32(seaX), float32(seaY), 25, color.RGBA{214, 70, 54, 42}, true)
 	vector.StrokeCircle(screen, float32(seaX), float32(seaY), 31, 2.5, color.RGBA{255, 205, 78, 245}, true)
 	vector.StrokeCircle(screen, float32(seaX), float32(seaY), 39, 1.5, color.RGBA{214, 70, 54, 180}, true)
+}
+
+// drawPendingLandContactHighlight, kara temasında karar modalı açıkken temas
+// bölgesini ve temas eden iki orduyu deniz temasıyla aynı hedef halkalarıyla
+// görünür tutar.
+func (r *Renderer) drawPendingLandContactHighlight(screen *ebiten.Image, positions []armyIconPos) {
+	if r == nil || r.gs == nil || r.gs.PendingLandContact == nil {
+		return
+	}
+	contact := r.gs.PendingLandContact
+	land := r.gs.Regions[contact.LandRegionID]
+	if land == nil || land.IsSea {
+		return
+	}
+	landX, landY := r.regionScreenPos(land)
+
+	for _, pos := range positions {
+		if pos.ArmyID != contact.PlayerArmyID && pos.ArmyID != contact.AttackerArmyID && pos.ArmyID != contact.DefenderArmyID {
+			continue
+		}
+		col := color.RGBA{112, 190, 244, 230}
+		if pos.ArmyID != contact.PlayerArmyID {
+			col = color.RGBA{238, 112, 96, 230}
+		}
+		vector.StrokeCircle(screen, pos.X, pos.Y, 19, 2, col, true)
+	}
+	vector.FillCircle(screen, float32(landX), float32(landY), 25, color.RGBA{214, 70, 54, 42}, true)
+	vector.StrokeCircle(screen, float32(landX), float32(landY), 31, 2.5, color.RGBA{255, 205, 78, 245}, true)
+	vector.StrokeCircle(screen, float32(landX), float32(landY), 39, 1.5, color.RGBA{214, 70, 54, 180}, true)
 }
 
 // drawNavalPriorityBadges, tüm filo marker'larından sonra çağrılan ön-plan
