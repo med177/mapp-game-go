@@ -8,8 +8,11 @@ import (
 )
 
 const (
-	aiRelationshipRepairChancePercent = 60
-	aiRelationshipRepairCooldownTurns = 4
+	aiRelationshipRepairChancePercent    = 60
+	aiRelationshipRepairCooldownTurns    = 4
+	aiNegotiationMinimumResourceReserve  = 10
+	aiNegotiationMaxTransferSharePercent = 25
+	aiNegotiationMaxPremiumPercent       = 25
 	// Hediye, ilişki bakımının pahalı ve seyrek kullanılan biçimidir. AI'nin
 	// küçük/orta hazinesinin tek seferde büyük bölümünü tüketmesini engeller.
 	aiGiftMaxTreasuryPercent = 25
@@ -159,6 +162,182 @@ func aiHandleDiplomacyWithStepsMode(gs *state.GameState, fid faction.FactionID, 
 	aiHandleSiegeSurrenderOffersWithSteps(gs, fid, steps)
 
 	aiEvaluateWarOpportunitiesWithSteps(gs, fid, steps)
+}
+
+type aiResourceNegotiationCandidate struct {
+	target    faction.FactionID
+	requested []state.DiplomaticTransfer
+	offered   []state.DiplomaticTransfer
+	chance    int
+	netValue  int
+}
+
+// aiHandleResourceNegotiationWithSteps trades only to address a strategic
+// resource shortfall. The AI retains its planned costs and safety reserve,
+// while limiting each transfer to a quarter of the available surplus.
+func aiHandleResourceNegotiationWithSteps(gs *state.GameState, fid faction.FactionID, demand economy.ResourceCost, steps *[]TurnStep) bool {
+	if gs == nil || fid == "" || gs.DiplomacyOfferQuotaRemaining(fid) <= 0 {
+		return false
+	}
+	self := gs.Factions[fid]
+	if self == nil || self.IsEliminated || diplomacy.DirectOverlord(gs, fid) != "" {
+		return false
+	}
+
+	best := aiResourceNegotiationCandidate{}
+	for _, targetID := range aiSortedFactionIDs(gs) {
+		if targetID == fid || diplomacy.SameRealm(gs, fid, targetID) {
+			continue
+		}
+		target := gs.Factions[targetID]
+		if target == nil || target.IsEliminated {
+			continue
+		}
+		if overlord := diplomacy.DirectOverlord(gs, targetID); overlord != "" && overlord != fid {
+			continue
+		}
+		if rel := diplomacy.Relation(gs, fid, targetID); rel != nil && rel.Stance == faction.StanceWar {
+			continue
+		}
+		if !aiDiplomacyOfferRetryAllowed(gs, fid, targetID, diplomacy.ActionProposeTransfer) || aiTransferOfferPending(gs, fid, targetID) {
+			continue
+		}
+		candidate, ok := aiBestResourceNegotiationForTarget(gs, fid, targetID, demand)
+		if !ok {
+			continue
+		}
+		if best.target == "" || candidate.netValue > best.netValue ||
+			(candidate.netValue == best.netValue && candidate.chance > best.chance) {
+			best = candidate
+		}
+	}
+	if best.target == "" {
+		return false
+	}
+
+	if best.target == gs.PlayerFactionID {
+		if !diplomacy.QueueTransferOffer(gs, fid, best.target, best.requested, best.offered, 50, "stratejik kaynak açığını kapatma") {
+			return false
+		}
+		addTurnStep(steps, TurnStep{
+			FactionID:     fid,
+			Kind:          TurnStepDiplomacy,
+			TargetFaction: best.target,
+			Message:       turnFactionName(gs, fid) + " kaynak açığını kapatmak için sana diplomatik pazarlık önerdi.",
+		})
+		return true
+	}
+
+	result := diplomacy.ExecuteTransferOffer(gs, fid, best.target, best.requested, best.offered)
+	if result.Applied || result.Accepted {
+		addTurnStep(steps, TurnStep{
+			FactionID:     fid,
+			Kind:          TurnStepDiplomacy,
+			TargetFaction: best.target,
+			Message:       turnFactionName(gs, fid) + " ile " + turnFactionName(gs, best.target) + " kaynak pazarlığı yaptı: " + result.Message,
+		})
+		return true
+	}
+	return false
+}
+
+func aiBestResourceNegotiationForTarget(gs *state.GameState, fid, targetID faction.FactionID, demand economy.ResourceCost) (aiResourceNegotiationCandidate, bool) {
+	self := gs.Factions[fid]
+	target := gs.Factions[targetID]
+	if self == nil || target == nil {
+		return aiResourceNegotiationCandidate{}, false
+	}
+
+	best := aiResourceNegotiationCandidate{}
+	for _, requestedKind := range economy.CostResourceKinds() {
+		required := demand.Amount(requestedKind)
+		if requestedKind == economy.ResourceGrain {
+			required = maxInt(required, maxInt(100, aiFactionGrainDemand(gs, fid)*aiGrainReserveMonths))
+		}
+		if requestedKind == economy.ResourceGold {
+			required = maxInt(required, aiMinGoldReserve)
+		}
+		shortfall := required - economy.FactionResourceAmount(self, requestedKind)
+		if shortfall <= 0 {
+			continue
+		}
+
+		targetAmount := economy.FactionResourceAmount(target, requestedKind)
+		requestLimit := minInt(shortfall, targetAmount*aiNegotiationMaxTransferSharePercent/100)
+		if requestLimit <= 0 {
+			continue
+		}
+		requested := []state.DiplomaticTransfer{{Kind: "resource", ID: string(requestedKind), Amount: requestLimit}}
+		requestedValue := diplomacy.TransferListValue(gs, targetID, requested)
+		if requestedValue <= 0 {
+			continue
+		}
+
+		for _, offeredKind := range economy.CostResourceKinds() {
+			if offeredKind == requestedKind {
+				continue
+			}
+			reserve := maxInt(demand.Amount(offeredKind), aiNegotiationMinimumResourceReserve)
+			if offeredKind == economy.ResourceGold {
+				reserve = maxInt(reserve, aiMinGoldReserve)
+			}
+			if offeredKind == economy.ResourceGrain {
+				reserve = maxInt(reserve, maxInt(100, aiFactionGrainDemand(gs, fid)*aiGrainReserveMonths))
+			}
+			surplus := economy.FactionResourceAmount(self, offeredKind) - reserve
+			maxOffer := surplus * aiNegotiationMaxTransferSharePercent / 100
+			if maxOffer <= 0 {
+				continue
+			}
+
+			offered := []state.DiplomaticTransfer{{Kind: "resource", ID: string(offeredKind)}}
+			low, high := 1, maxOffer
+			for low < high {
+				mid := low + (high-low)/2
+				offered[0].Amount = mid
+				accepted, _ := diplomacy.AssessTransferOffer(gs, fid, targetID, requested, offered)
+				if accepted {
+					high = mid
+				} else {
+					low = mid + 1
+				}
+			}
+			offered[0].Amount = low
+			accepted, chance := diplomacy.AssessTransferOffer(gs, fid, targetID, requested, offered)
+			if !accepted {
+				continue
+			}
+			offeredValue := diplomacy.TransferListValue(gs, fid, offered)
+			if offeredValue*100 > requestedValue*(100+aiNegotiationMaxPremiumPercent) {
+				continue
+			}
+
+			candidate := aiResourceNegotiationCandidate{
+				target:    targetID,
+				requested: append([]state.DiplomaticTransfer(nil), requested...),
+				offered:   append([]state.DiplomaticTransfer(nil), offered...),
+				chance:    chance,
+				netValue:  requestedValue - offeredValue,
+			}
+			if best.target == "" || candidate.netValue > best.netValue ||
+				(candidate.netValue == best.netValue && candidate.chance > best.chance) {
+				best = candidate
+			}
+		}
+	}
+	return best, best.target != ""
+}
+
+func aiTransferOfferPending(gs *state.GameState, from, to faction.FactionID) bool {
+	if gs == nil {
+		return false
+	}
+	for _, offer := range gs.DiplomaticOffers {
+		if offer.Action == string(diplomacy.ActionProposeTransfer) && offer.FromFactionID == from && offer.ToFactionID == to {
+			return true
+		}
+	}
+	return false
 }
 
 // aiOfferMinorPrivilegeWithSteps, egemen AI'nin henüz imtiyaz verilmemiş bir

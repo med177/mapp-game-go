@@ -92,6 +92,13 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
    doğrula. Veri değişikliklerinde ilgili lint ve yükleme testini de çalıştır.
 6. Sonuçta değişen dosyaları, test kapsamını ve doğrulanamayan noktaları açıkça
    bildir.
+7. İlgili dosyalarda değişiklikten sonra VS Code Problems
+  tanılarını `get_errors` aracıyla al (bu oturumda Problems paneline erişen araç
+  budur; `#read/problems` ile aynı işlevi görür). Kullanıcı uyarı gördüğünü
+  söylediğinde satır/mesaj istemeden önce `get_errors` ile aktif uyarı ve hataları
+  kendin oku. Görevle ilgili uyarı/hataları incele; gerçek olanları gider,
+  yalnızca yanlış pozitif veya kapsam dışı olanları gerekçesiyle ayır.
+  Testlerin geçmesi Problems tanılarını kontrol etmenin yerine geçmez.
 
 ## Senaryo, save ve test ilkeleri
 

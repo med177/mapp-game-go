@@ -200,7 +200,7 @@ func aiStrategicResourceDemand(gs *state.GameState, fid faction.FactionID, ctx *
 			demand = aiMaxResourceCost(demand, aiUnitResourceCost(transportType))
 		}
 	}
-	if navalReserveCost := aiNavalReserveProcurementCostWithRequirement(gs, fid, ctx, requirement); navalReserveCost != (economy.ResourceCost{}) {
+	if navalReserveCost := aiNavalReserveProcurementCostWithRequirement(gs, fid, requirement); navalReserveCost != (economy.ResourceCost{}) {
 		demand = aiMaxResourceCost(demand, navalReserveCost)
 	}
 	if reserve := aiMerchantTradeResourceReserve(gs, fid); reserve != (economy.ResourceCost{}) {

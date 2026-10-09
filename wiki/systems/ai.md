@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-10-01
+last_updated: 2026-10-09
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -168,6 +168,14 @@ defterine yazar. Satış arzı stratejik rezerv ve mevcut hedef maliyetleri
 üzerindeki stok fazlasıdır; alım talebi eksik hammaddeyi ve üç aylık tahıl
 rezerv açığını taşır. AI tedariki bu emirleri tükettiği için panelde görünen
 arz/talep ile gerçek alım üst sınırı aynı state değeridir.
+
+AI, pazar alımı ve öncelikli üretim harcamaları sonrasında hâlâ stratejik kaynak
+açığı varsa diplomasi kotası elverdiğinde kaynak pazarlığı da deneyebilir. Teklif,
+hedefin elindeki kaynağın en fazla dörtte birini ister; AI kendi plan maliyetini,
+altın/tahıl rezervlerini ve pazarlık değerlerini koruyarak stok fazlasından ödeme
+yapar. Hedef oyuncuysa teklif normal diplomasi karar kuyruğunda sunulur; AI-AI
+pazarlığı mevcut `AssessTransferOffer()` kabul hesabıyla aynı turda çözülür.
+Reddedilen teklif aynı hedefe üç tur boyunca yeniden gönderilmez.
 
 AI ordusu düşman toprağında görünür savunucu yoksa mevcut bölge görevi seçebilir.
 Ana fetih planındaki hedef bölge görevle geciktirilmez; AI normal taarruz/kuşatma

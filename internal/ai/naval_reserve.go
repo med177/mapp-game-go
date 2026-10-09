@@ -92,10 +92,10 @@ func aiFindWarshipReserveProductionPort(gs *state.GameState, fid faction.Faction
 // to the common trade-network procurement chain: first a port level, then a
 // warship recipe. It never fabricates resources without a real production path.
 func aiNavalReserveProcurementCost(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext) economy.ResourceCost {
-	return aiNavalReserveProcurementCostWithRequirement(gs, fid, ctx, aiForceRequirements(gs, fid, ctx))
+	return aiNavalReserveProcurementCostWithRequirement(gs, fid, aiForceRequirements(gs, fid, ctx))
 }
 
-func aiNavalReserveProcurementCostWithRequirement(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext, requirement aiForceRequirement) economy.ResourceCost {
+func aiNavalReserveProcurementCostWithRequirement(gs *state.GameState, fid faction.FactionID, requirement aiForceRequirement) economy.ResourceCost {
 	if gs == nil || requirement.WarshipTarget-requirement.WarshipsPresent-requirement.WarshipsPending <= 0 || gs.UnitTypes == nil || gs.BuildingTypes == nil {
 		return economy.ResourceCost{}
 	}

@@ -74,8 +74,8 @@ func AssessTransferOffer(gs *state.GameState, from, to faction.FactionID, reques
 	if gs == nil || from == "" || to == "" {
 		return false, 0
 	}
-	requestedValue := transferListValue(gs, to, requested)
-	offeredValue := transferListValue(gs, from, offered)
+	requestedValue := TransferListValue(gs, to, requested)
+	offeredValue := TransferListValue(gs, from, offered)
 	score := RelationScore(gs, to, from)
 	chance := 50 + score/2
 	if requestedValue == 0 {
@@ -246,7 +246,9 @@ func unitCountForFaction(gs *state.GameState, owner faction.FactionID, unitTypeI
 	return count
 }
 
-func transferListValue(gs *state.GameState, owner faction.FactionID, transfers []state.DiplomaticTransfer) int {
+// TransferListValue returns the shared diplomatic value estimate for a list
+// of resources, regions, or army units owned by the specified faction.
+func TransferListValue(gs *state.GameState, owner faction.FactionID, transfers []state.DiplomaticTransfer) int {
 	value := 0
 	for _, transfer := range transfers {
 		switch transfer.Kind {

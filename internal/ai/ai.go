@@ -133,7 +133,8 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 			Message:   turnFactionName(gs, fid) + " stratejik tahıl rezervini açık pazardan tamamlıyor.",
 		})
 	}
-	if purchased := aiProcureStrategicResources(gs, fid, planningContext); purchased != (economy.ResourceCost{}) {
+	strategicResourceDemand := aiStrategicResourceDemand(gs, fid, planningContext)
+	if purchased := aiProcureMissingResources(gs, fid, strategicResourceDemand); purchased != (economy.ResourceCost{}) {
 		addTurnStep(steps, TurnStep{
 			FactionID: fid,
 			Kind:      TurnStepInfo,
@@ -164,6 +165,9 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 		}
 	}
 	aiHandleRelationshipRepairsAfterBudget(gs, fid, budget)
+	if gs.DiplomacyOfferQuotaRemaining(fid) > 0 {
+		aiHandleResourceNegotiationWithSteps(gs, fid, strategicResourceDemand, steps)
+	}
 
 	// Aynı bölgede olan orduları konsolide et (önceki turlardan veya yeni alımlardan kalan)
 	aiConsolidateArmies(gs, fid)
@@ -2592,159 +2596,16 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 }
 
 func aiNavalStrategyWithStrategicContextAndSteps(gs *state.GameState, fid faction.FactionID, budget *aiBudget, strategicContext *StrategicContext, steps *[]TurnStep) {
-	if gs != nil {
-		if strategicContext == nil {
-			strategicContext = prepareStrategicContext(gs, fid)
-		}
-		aiPrepareNavalSupplyMission(gs, fid, budget, strategicContext, steps)
-		aiExecuteNavalMissionProduction(gs, fid, budget, strategicContext, steps)
-		aiProduceNavalDefenseAtThreatenedPort(gs, fid, budget, strategicContext, steps)
-		aiExecuteMerchantTradeStrategy(gs, fid, budget, strategicContext, steps)
-		aiProduceNavalReserve(gs, fid, budget, strategicContext, steps)
+	if gs == nil {
 		return
 	}
-	f := gs.Factions[fid]
-	if f.IsEliminated || gs.BuildingTypes == nil || gs.UnitTypes == nil {
-		return
+	if strategicContext == nil {
+		strategicContext = prepareStrategicContext(gs, fid)
 	}
-
-	// Kıyı bölgesi var mı?
-	var coastalRegions []*world.Region
-	for _, r := range aiSortedRegions(gs) {
-		if r.OwnerID == string(fid) && !r.IsSea && r.IsCoastal(gs.Regions) {
-			coastalRegions = append(coastalRegions, r)
-		}
-	}
-	if len(coastalRegions) == 0 {
-		return
-	}
-
-	// Liman tipi var mı?
-	portType, hasPort := gs.BuildingTypes["port"]
-	if !hasPort {
-		return
-	}
-	transportType, hasTransport := gs.UnitTypes["transport"]
-	if !hasTransport {
-		return
-	}
-
-	// Liman inşası (en az bir liman olsun)
-	for _, r := range coastalRegions {
-		queued := aiQueuedBuildingCount(gs, r.ID, "port", fid)
-		targetLevel := aiBuildingLevel(r, "port") + queued + 1
-		portCost := aiBuildingResourceCostAtLevel(portType, targetLevel)
-		portMaxLevel := gs.BuildingLevelCap(r, "port")
-		if aiBuildingLevel(r, "port")+queued < portMaxLevel &&
-			aiBuildingAllowed(gs, r, "port", portType.RequiredTerrain) &&
-			aiCanAffordForBudget(f, portCost, budget, aiBudgetNaval) {
-			if !aiApplyBudgetedCost(f, portCost, budget, aiBudgetNaval) {
-				continue
-			}
-			turns := aiBuildingTurnsRequired(r, "port", portType.TurnsRequired, queued)
-			aiEnqueueProduction(gs, fid, aiProductionKindBuilding, r.ID, "port", turns)
-			addTurnStep(steps, TurnStep{
-				FactionID:    fid,
-				Kind:         TurnStepBuild,
-				TargetRegion: r.ID,
-				FocusRegion:  r.ID,
-				Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, r.ID) + " kıyısında liman kuruyor.",
-			})
-			break // Bir liman yeter bu tur
-		}
-	}
-
-	// Gemi alımı (liman olan bölgelerden)
-	fleetLimit := 1
-	if len(coastalRegions) >= 3 {
-		fleetLimit++
-	}
-	if aiFactionAtWar(gs, string(fid)) {
-		fleetLimit++
-	}
-	if fleetLimit > 3 {
-		fleetLimit = 3
-	}
-	fleetCount := 0
-	for _, a := range gs.Armies {
-		if a.OwnerID == string(fid) && a.IsNaval {
-			fleetCount++
-		}
-	}
-	fleetCount += aiPendingNavalFleetCount(gs, fid)
-	if fleetCount >= fleetLimit {
-		return
-	}
-
-	bestScore := -1
-	var bestRegion *world.Region
-	var bestSeaRegion world.RegionID
-	for _, r := range coastalRegions {
-		// Liman var mı?
-		hasPortBldg := false
-		for _, bid := range r.Buildings {
-			if bid == "port" {
-				hasPortBldg = true
-				break
-			}
-		}
-		if !hasPortBldg {
-			continue
-		}
-
-		// Komşu deniz bölgesi bul
-		var seaRegion world.RegionID
-		for _, nid := range r.Neighbors {
-			if n, ok := gs.Regions[nid]; ok && n.IsSea {
-				seaRegion = nid
-				break
-			}
-		}
-		if seaRegion == "" {
-			continue
-		}
-		if aiPendingUnitCountByRegion(gs, r.ID, fid) >= aiMaxRegionQueue {
-			continue
-		}
-		if aiLaneRemainingCapacity(gs, r.ID, fid, transportType) <= 0 {
-			continue
-		}
-		currentUnits := 0
-		for _, a := range aiSortedArmies(gs) {
-			if a.RegionID == seaRegion && a.OwnerID == string(fid) && a.IsNaval {
-				currentUnits = len(a.Units)
-				break
-			}
-		}
-		if currentUnits+aiPendingNavalUnitCount(gs, seaRegion, fid) >= army.MaxArmySize {
-			continue
-		}
-		score := aiSeaPressure(gs, string(fid), seaRegion)
-		if score > bestScore {
-			bestScore = score
-			bestRegion = r
-			bestSeaRegion = seaRegion
-		}
-	}
-	if bestRegion == nil || bestSeaRegion == "" {
-		return
-	}
-
-	// Altın kontrolü
-	if !aiCanQueueNavalUnit(gs, fid, transportType.ID) || !aiApplyUnitCostForBudget(f, transportType, budget, aiBudgetNaval) {
-		return
-	}
-	aiEnqueueProduction(gs, fid, aiProductionKindUnit, bestRegion.ID, "transport", transportType.TurnsRequired)
-	addTurnStep(steps, TurnStep{
-		FactionID:    fid,
-		Kind:         TurnStepRecruit,
-		TargetRegion: bestRegion.ID,
-		FocusRegion:  bestSeaRegion,
-		Message:      turnFactionName(gs, fid) + " " + turnRegionName(gs, bestRegion.ID) + " limanında nakliye gemisi hazırlıyor.",
-	})
-
-	// Escort savaş gemisi üretimi — transport varsa ve savaş halinde veya deniz baskısı yüksekse
-	aiProduceEscortIfNeeded(gs, fid, coastalRegions, budget, steps)
+	aiPrepareNavalSupplyMission(gs, fid, budget, strategicContext, steps)
+	aiExecuteNavalMissionProduction(gs, fid, budget, strategicContext, steps)
+	aiProduceNavalDefenseAtThreatenedPort(gs, fid, budget, strategicContext, steps)
+	aiExecuteMerchantTradeStrategy(gs, fid, budget, strategicContext, steps)
 	aiProduceNavalReserve(gs, fid, budget, strategicContext, steps)
 }
 
