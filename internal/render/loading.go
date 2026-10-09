@@ -67,7 +67,7 @@ func loadingBackgroundImage(scenarioPath string) *ebiten.Image {
 	loadingBackgroundPath = scenarioPath
 	loadingBackground = nil
 	if scenarioPath != "" {
-		loadingBackground = tryLoadImage(filepath.Join(scenarioPath, "scenario_bg.png"))
+		loadingBackground = tryLoadImage(filepath.Join(scenarioPath, "scenario_bg.jpg"))
 	}
 	return loadingBackground
 }

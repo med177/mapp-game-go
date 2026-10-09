@@ -308,7 +308,7 @@ metni ortak bir alt-orta içerik grubunda çizilir; grubun dikey referansı ekra
 altından sabit bir pay bırakacak şekilde hesaplanır. Böylece yükleme geri bildirimi
 ekran merkezini kaplamaz (`internal/render/loading.go`).
 
-Fraksiyon seçim ekranı, yüklenen senaryonun kök dizinindeki `scenario_bg.png`
+Fraksiyon seçim ekranı, yüklenen senaryonun kök dizinindeki `scenario_bg.jpg`
 dosyasını `GameState.ScenarioPath` üzerinden çözüp cover ölçekleme ile arka plana
 yerleştirir. Görsel bulunamazsa ekranın koyu fallback arka planı korunur; üstteki
 başlık, çerçeve ve kart okunabilirliği ortak UI chrome/overlay helper'larıyla
@@ -319,7 +319,7 @@ bayrak alanı bulunur; bayraklar ortak `drawFactionFlagBadge` helper'ı ve senar
 
 Senaryo yükleme ekranı, yeni senaryo akışında seçilen senaryo yolunu; devam et veya
 kayıt slotundan yükleme akışında ise kayıt metadata'sından çözülen senaryo yolunu
-geçici renderer loading state'inde taşır ve aynı kök dizindeki `scenario_bg.png`
+geçici renderer loading state'inde taşır ve aynı kök dizindeki `scenario_bg.jpg`
 görselini arka plan olarak kullanır. Yükleme başarısız olursa düz koyu arka plan
 fallback'i korunur (`internal/render/loading.go`, `renderer.go`, `game.go`,
 `internal/save/save.go`).

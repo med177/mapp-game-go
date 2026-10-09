@@ -156,7 +156,7 @@ func factionCardFlagRect(card gameui.Rect) gameui.Rect {
 func factionSelectBackgroundImage(gs *state.GameState) *ebiten.Image {
 	path := ""
 	if gs != nil && gs.ScenarioPath != "" {
-		path = filepath.Join(gs.ScenarioPath, "scenario_bg.png")
+		path = filepath.Join(gs.ScenarioPath, "scenario_bg.jpg")
 	}
 	if path == factionSelectBackgroundPath {
 		return factionSelectBackground
