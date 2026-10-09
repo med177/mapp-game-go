@@ -1057,22 +1057,13 @@ func (r *Renderer) updateNavalContactCamera() {
 		r.navalContactCameraSaved = true
 	}
 
-	modalY, modalH := 0.0, 0.0
-	if r.confirmDialog.navalContact != nil {
-		modal := buildConfirmDialogModalFor(r.confirmDialog)
-		modalY = modal.Panel.Rect.Y
-		modalH = modal.Panel.Rect.H
-	}
-	targetY := navalContactCameraTargetY(ScreenHeight, modalY+modalH)
-	anchorX, _, anchorOK := r.navalContactFleetMarkerWorldPos(contact)
+	targetY := float64(ScreenHeight) / 2
+	anchorX, anchorY, anchorOK := r.navalContactFleetMarkerWorldPos(contact)
 	if !anchorOK {
-		anchorX, _ = r.regionWorldPos(sea)
+		anchorX, anchorY = r.regionWorldPos(sea)
 	}
 	r.camX = anchorX
-	_, anchorY := r.regionWorldPos(sea)
-	currentY := (anchorY-r.camY)*r.camScale*mapPitchY + ScreenHeight/2
-	r.camY += (currentY - targetY) / (r.camScale * mapPitchY)
-	r.camX, r.camY = clampCameraCenter(r.camX, r.camY, r.camScale)
+	r.camY = anchorY - (targetY-float64(ScreenHeight)/2)/(r.camScale*mapPitchY)
 }
 
 func (r *Renderer) updateLandContactCamera() {
@@ -1149,17 +1140,6 @@ func (r *Renderer) navalContactFleetMarkerWorldPos(contact *state.NavalContact) 
 		return worldX, worldY, true
 	}
 	return 0, 0, false
-}
-
-func navalContactCameraTargetY(screenH, modalBottom float64) float64 {
-	targetY := screenH * 0.72
-	if targetY < modalBottom+40 {
-		targetY = modalBottom + 40
-	}
-	if targetY > screenH-40 {
-		targetY = screenH - 40
-	}
-	return targetY
 }
 
 // SetCursor menü veya ekran imlecini sıfırlar.
