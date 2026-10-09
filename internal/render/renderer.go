@@ -1035,25 +1035,9 @@ func (r *Renderer) updateNavalContactCamera() {
 	if r == nil || r.gs == nil {
 		return
 	}
-	if r.CurrentSettings.FastAITurns && r.gs.Phase == state.PhaseAITurn {
-		return
-	}
-	contact := r.gs.PendingNavalContact
-	var dialogContact state.NavalContact
-	if contact == nil && r.confirmDialog.navalContact != nil {
-		dialogContact = state.NavalContact{
-			AttackerArmyID: r.confirmDialog.navalContact.opponentArmyID,
-			DefenderArmyID: r.confirmDialog.navalContact.playerArmyID,
-			PlayerArmyID:   r.confirmDialog.navalContact.playerArmyID,
-			SeaRegionID:    r.confirmDialog.navalContact.seaID,
-		}
-		contact = &dialogContact
-	}
-	sea := (*world.Region)(nil)
-	if contact != nil {
-		sea = r.gs.Regions[contact.SeaRegionID]
-	}
-	if contact == nil || sea == nil || !sea.IsSea || r.camScale <= 0 {
+	playerID, opponentID, seaID, contactOK := r.navalContactDisplayIDs()
+	sea := r.gs.Regions[seaID]
+	if !contactOK || sea == nil || !sea.IsSea || r.camScale <= 0 {
 		if r.navalContactCameraSaved {
 			r.camX = r.navalContactCameraBefore.X
 			r.camY = r.navalContactCameraBefore.Y
@@ -1068,15 +1052,12 @@ func (r *Renderer) updateNavalContactCamera() {
 	}
 
 	targetY := float64(ScreenHeight) / 2
-	anchorX, anchorY, anchorOK := r.contactArmyMarkerWorldPos(contact.PlayerArmyID, contact.AttackerArmyID, contact.DefenderArmyID)
+	anchorX, anchorY, anchorOK := r.contactArmyMarkerWorldPos(playerID, opponentID, "")
 	if !anchorOK {
-		opponentID := contact.AttackerArmyID
-		if opponentID == contact.PlayerArmyID {
-			opponentID = contact.DefenderArmyID
-		}
 		if opponent := r.gs.Armies[opponentID]; opponent != nil {
-			if opponentRegion := r.gs.Regions[opponent.RegionID]; opponentRegion != nil {
-				anchorX, anchorY = r.regionWorldPos(opponentRegion)
+			_, markerX, markerY, markerOK := r.armyDisplayGroup(opponent)
+			if markerOK {
+				anchorX, anchorY = r.screenToWorld(float64(markerX), float64(markerY))
 				anchorOK = true
 			}
 		}
@@ -1086,6 +1067,26 @@ func (r *Renderer) updateNavalContactCamera() {
 	}
 	r.camX = anchorX
 	r.camY = anchorY - (targetY-float64(ScreenHeight)/2)/(r.camScale*mapPitchY)
+}
+
+// navalContactDisplayIDs, temas state'i çözülmüş olsa bile açık modalın
+// doğrudan tuttuğu kimlikleri kullanır. Kamera ve temas halkası aynı hedefi
+// kullanmalıdır.
+func (r *Renderer) navalContactDisplayIDs() (army.ArmyID, army.ArmyID, world.RegionID, bool) {
+	if r == nil || r.gs == nil {
+		return "", "", "", false
+	}
+	if contact := r.gs.PendingNavalContact; contact != nil {
+		opponentID := contact.AttackerArmyID
+		if opponentID == contact.PlayerArmyID {
+			opponentID = contact.DefenderArmyID
+		}
+		return contact.PlayerArmyID, opponentID, contact.SeaRegionID, true
+	}
+	if contact := r.confirmDialog.navalContact; contact != nil {
+		return contact.playerArmyID, contact.opponentArmyID, contact.seaID, true
+	}
+	return "", "", "", false
 }
 
 func (r *Renderer) updateLandContactCamera() {
@@ -1142,6 +1143,15 @@ func (r *Renderer) contactArmyMarkerWorldPos(playerID, attackerID, defenderID ar
 		}
 		worldX, worldY := r.screenToWorld(float64(marker.X), float64(marker.Y))
 		return worldX, worldY, true
+	}
+	// Marker görünürlük filtresine takılsa bile temas modalı açılmışsa filo için
+	// normal çizim anchor'ını kullan. Böylece kamera bölge merkezine kaçmaz.
+	if opponent := r.gs.Armies[opponentID]; opponent != nil {
+		_, markerX, markerY, ok := r.armyDisplayGroup(opponent)
+		if ok {
+			worldX, worldY := r.screenToWorld(float64(markerX), float64(markerY))
+			return worldX, worldY, true
+		}
 	}
 	return 0, 0, false
 }
@@ -2336,8 +2346,8 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	// mevcut deniz bölgesini vurgula. Rota hedefi, oyuncu başka bir bölge
 	// seçene kadar seçili bölgeden önceliklidir.
 	highlightRegion := world.RegionID(r.SelectedRegion)
-	if contact := r.gs.PendingNavalContact; contact != nil && r.gs.Regions[contact.SeaRegionID] != nil {
-		highlightRegion = contact.SeaRegionID
+	if _, _, seaID, ok := r.navalContactDisplayIDs(); ok && r.gs.Regions[seaID] != nil {
+		highlightRegion = seaID
 	} else if contact := r.gs.PendingLandContact; contact != nil && r.gs.Regions[contact.LandRegionID] != nil {
 		highlightRegion = contact.LandRegionID
 	} else if r.merchantRouteHighlight != "" && r.gs.Regions[r.merchantRouteHighlight] != nil {
@@ -5170,22 +5180,25 @@ func (r *Renderer) drawArmyCommanderPortrait(screen *ebiten.Image, a *army.Army,
 // anchor'da üst üste gruplanmışsa bile iki temas tarafı ayrı halkalarla
 // görünür kalır.
 func (r *Renderer) drawPendingNavalContactHighlight(screen *ebiten.Image, positions []armyIconPos) {
-	if r == nil || r.gs == nil || r.gs.PendingNavalContact == nil {
+	if r == nil || r.gs == nil {
 		return
 	}
-	contact := r.gs.PendingNavalContact
-	sea := r.gs.Regions[contact.SeaRegionID]
+	playerID, opponentID, seaID, ok := r.navalContactDisplayIDs()
+	if !ok {
+		return
+	}
+	sea := r.gs.Regions[seaID]
 	if sea == nil || !sea.IsSea {
 		return
 	}
 	seaX, seaY := r.regionScreenPos(sea)
 
 	for _, pos := range positions {
-		if pos.ArmyID != contact.PlayerArmyID && pos.ArmyID != contact.AttackerArmyID && pos.ArmyID != contact.DefenderArmyID {
+		if pos.ArmyID != playerID && pos.ArmyID != opponentID {
 			continue
 		}
 		col := color.RGBA{112, 190, 244, 230}
-		if pos.ArmyID != contact.PlayerArmyID {
+		if pos.ArmyID != playerID {
 			col = color.RGBA{238, 112, 96, 230}
 		}
 		vector.StrokeCircle(screen, pos.X, pos.Y, 19, 2, col, true)
