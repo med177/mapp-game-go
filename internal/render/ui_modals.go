@@ -60,24 +60,14 @@ func buildConfirmDialogModalFor(state confirmDialogState) gameui.Modal {
 	if state.navalContact != nil {
 		modalW = float64(navalContactDialogW)
 		modalH = float64(navalContactDialogH)
-		anchor = gameui.AnchorTop
 	}
 	rect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, modalW, modalH, gameui.AnchorCenter, anchor, 0, 0)
-	if state.navalContact != nil {
-		// Üst HUD/"Hamleler" kartının altında kalır; temas denizi modalın
-		// altında görünür ve merkezdeki map marker'ı kapatılmaz.
-		_, hudY, _, hudH := turnTechHudRect()
-		// `drawAITurnOverlay` HAMLELER kartı HUD'ın altında 40 px boşlukla
-		// başlar ve 180 px sürer; temas modalı bu kartın altına yerleşir.
-		y := float64(hudY + hudH + 40 + 180 + 12)
-		if y+modalH > ScreenHeight-24 {
-			y = ScreenHeight - modalH - 24
+	if state.navalContact != nil || state.landContact != nil {
+		// Kara ve deniz teması aynı alt eylem HUD anchor'ını kullanır.
+		if state.landContact != nil {
+			modalW = float64(landContactDialogW)
+			modalH = float64(landContactDialogH)
 		}
-		rect.Y = y
-	}
-	if state.landContact != nil {
-		modalW = float64(landContactDialogW)
-		modalH = float64(landContactDialogH)
 		_, hudY, _, _ := bottomActionHudRect()
 		rect = gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, modalW, modalH, gameui.AnchorCenter, gameui.AnchorTop, 0, float64(hudY)-20-modalH)
 	}

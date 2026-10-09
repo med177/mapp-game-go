@@ -45,7 +45,7 @@ const (
 	confirmDialogSpaciousW                = float32(620)
 	confirmDialogSpaciousH                = float32(304)
 	navalContactDialogW                   = float32(720)
-	navalContactDialogH                   = float32(380)
+	navalContactDialogH                   = float32(366)
 	landContactDialogW                    = float32(720)
 	landContactDialogH                    = float32(366)
 	confirmDialogBtnW                     = float32(120)
