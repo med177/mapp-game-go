@@ -1093,15 +1093,55 @@ func (r *Renderer) updateLandContactCamera() {
 		r.landContactCameraSaved = true
 	}
 
-	modal := buildConfirmDialogModalFor(r.confirmDialog)
-	targetY := modal.Panel.Rect.Y - 58
-	if targetY < 90 {
-		targetY = 90
+	// Kara temasında hedef bölgeyi modalın hemen üstüne değil, ekranın orta
+	// bölümüne taşı. Böylece temas orduları modal açıldığında görünür kalır.
+	targetY := float64(ScreenHeight) * 0.4
+	anchorX, anchorY, ok := r.landContactArmyMarkerWorldPos(contact)
+	if !ok {
+		anchorIX, anchorIY, anchorOK := r.landArmyAnchor(land)
+		anchorX, anchorY = float64(anchorIX), float64(anchorIY)
+		ok = anchorOK
 	}
-	_, anchorY := r.regionWorldPos(land)
+	if !ok {
+		anchorX, anchorY = r.regionWorldPos(land)
+	}
 	currentY := (anchorY-r.camY)*r.camScale*mapPitchY + ScreenHeight/2
 	r.camY += (currentY - targetY) / (r.camScale * mapPitchY)
+	// Harita yatay eksende eğimli çizildiği için camX hedefi camY'ye
+	// bağlıdır. Anchor'ı ekranın yatay merkezine taşı.
+	r.camX = anchorX + (anchorY-r.camY)*mapShearX
 	r.camX, r.camY = clampCameraCenter(r.camX, r.camY, r.camScale)
+}
+
+// landContactArmyMarkerWorldPos, temas ordularının çizilmiş marker merkezini
+// döndürür. Bölge veya yerleşim anchor'ı yerine gerçek marker konumu kullanılır.
+func (r *Renderer) landContactArmyMarkerWorldPos(contact *state.LandContact) (float64, float64, bool) {
+	if r == nil || contact == nil {
+		return 0, 0, false
+	}
+	opponentID := contact.AttackerArmyID
+	if opponentID == contact.PlayerArmyID {
+		opponentID = contact.DefenderArmyID
+	}
+	markerIDs := map[army.ArmyID]struct{}{
+		contact.PlayerArmyID: {},
+		opponentID:           {},
+	}
+	var sumX, sumY float64
+	count := 0
+	for _, marker := range r.armyIconPositions() {
+		if _, ok := markerIDs[marker.ArmyID]; !ok {
+			continue
+		}
+		worldX, worldY := r.screenToWorld(float64(marker.X), float64(marker.Y))
+		sumX += worldX
+		sumY += worldY
+		count++
+	}
+	if count == 0 {
+		return 0, 0, false
+	}
+	return sumX / float64(count), sumY / float64(count), true
 }
 
 func navalContactCameraTargetY(screenH, modalBottom float64) float64 {
