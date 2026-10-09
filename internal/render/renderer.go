@@ -1104,12 +1104,8 @@ func (r *Renderer) updateLandContactCamera() {
 	if !ok {
 		anchorX, anchorY = r.regionWorldPos(land)
 	}
-	currentY := (anchorY-r.camY)*r.camScale*mapPitchY + ScreenHeight/2
-	r.camY += (currentY - targetY) / (r.camScale * mapPitchY)
-	// Harita yatay eksende eğimli çizildiği için camX hedefi camY'ye
-	// bağlıdır. Anchor'ı ekranın yatay merkezine taşı.
-	r.camX = anchorX + (anchorY-r.camY)*mapShearX
-	r.camX, r.camY = clampCameraCenter(r.camX, r.camY, r.camScale)
+	r.camX = anchorX
+	r.camY = anchorY - (targetY-float64(ScreenHeight)/2)/(r.camScale*mapPitchY)
 }
 
 // landContactArmyMarkerWorldPos, temas ordularının çizilmiş marker merkezini
