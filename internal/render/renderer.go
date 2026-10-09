@@ -1064,6 +1064,11 @@ func (r *Renderer) updateNavalContactCamera() {
 		modalH = modal.Panel.Rect.H
 	}
 	targetY := navalContactCameraTargetY(ScreenHeight, modalY+modalH)
+	anchorX, _, anchorOK := r.navalContactFleetMarkerWorldPos(contact)
+	if !anchorOK {
+		anchorX, _ = r.regionWorldPos(sea)
+	}
+	r.camX = anchorX
 	_, anchorY := r.regionWorldPos(sea)
 	currentY := (anchorY-r.camY)*r.camScale*mapPitchY + ScreenHeight/2
 	r.camY += (currentY - targetY) / (r.camScale * mapPitchY)
@@ -1111,6 +1116,24 @@ func (r *Renderer) updateLandContactCamera() {
 // landContactArmyMarkerWorldPos, temas ordularının çizilmiş marker merkezini
 // döndürür. Bölge veya yerleşim anchor'ı yerine gerçek marker konumu kullanılır.
 func (r *Renderer) landContactArmyMarkerWorldPos(contact *state.LandContact) (float64, float64, bool) {
+	if r == nil || contact == nil {
+		return 0, 0, false
+	}
+	opponentID := contact.AttackerArmyID
+	if opponentID == contact.PlayerArmyID {
+		opponentID = contact.DefenderArmyID
+	}
+	for _, marker := range r.armyIconPositions() {
+		if marker.ArmyID != opponentID {
+			continue
+		}
+		worldX, worldY := r.screenToWorld(float64(marker.X), float64(marker.Y))
+		return worldX, worldY, true
+	}
+	return 0, 0, false
+}
+
+func (r *Renderer) navalContactFleetMarkerWorldPos(contact *state.NavalContact) (float64, float64, bool) {
 	if r == nil || contact == nil {
 		return 0, 0, false
 	}

@@ -2301,7 +2301,7 @@ func (r *Renderer) drawNavalContactFleetCard(screen *ebiten.Image, rect gameui.R
 	}
 
 	power := attackPower
-	powerY := rect.Y + rect.H - 54
+	powerY := rect.Y + rect.H - 40
 	drawUISeparator(screen, float32(rect.X+12), float32(powerY-9), float32(rect.X+rect.W-12), 1, color.RGBA{112, 88, 48, 220})
 	powerLabel := "GÜÇ"
 	if !attackExact {
