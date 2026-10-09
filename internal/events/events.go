@@ -168,6 +168,7 @@ type Effect struct {
 	CompleteTechs             []string                     `json:"complete_techs,omitempty"`
 	StartResearchTech         string                       `json:"start_research_tech,omitempty"`
 	Relations                 []RelationEffect             `json:"relations,omitempty"`
+	VassalRevolts             []string                     `json:"vassal_revolts,omitempty"`
 	Coalition                 *CoalitionEffect             `json:"coalition,omitempty"`
 	DiplomaticOffers          []DiplomaticOfferEffect      `json:"diplomatic_offers,omitempty"`
 	PoliticalTransformationID string                       `json:"political_transformation_id,omitempty"`
@@ -225,6 +226,7 @@ type Event struct {
 	CompleteTechs             []string                     `json:"complete_techs,omitempty"`
 	StartResearchTech         string                       `json:"start_research_tech,omitempty"`
 	Relations                 []RelationEffect             `json:"relations,omitempty"`
+	VassalRevolts             []string                     `json:"vassal_revolts,omitempty"`
 	Coalition                 *CoalitionEffect             `json:"coalition,omitempty"`
 	SetFlags                  []string                     `json:"set_flags,omitempty"`
 	SuccessorRevival          *SuccessorRevivalEffect      `json:"successor_revival,omitempty"`
@@ -502,6 +504,7 @@ func (e *Event) BaseEffect() Effect {
 		CompleteTechs:             e.CompleteTechs,
 		StartResearchTech:         e.StartResearchTech,
 		Relations:                 e.Relations,
+		VassalRevolts:             e.VassalRevolts,
 		Coalition:                 e.Coalition,
 		SetFlags:                  e.SetFlags,
 		ClearFlags:                e.ClearFlags,
@@ -1351,6 +1354,7 @@ func applyEffect(gs *state.GameState, eff Effect) world.RegionID {
 		}
 	}
 	applyCoalition(gs, eff.Coalition)
+	applyVassalRevolts(gs, eff.VassalRevolts)
 	applyTradeNetworkModifiers(gs, eff.TradeNetworkModifiers)
 	applyFlags(gs, eff)
 	for _, capture := range eff.CommanderCaptures {
@@ -1363,6 +1367,29 @@ func applyEffect(gs *state.GameState, eff Effect) world.RegionID {
 		gs.SyncCommanderLinks()
 	}
 	return targetRegionID
+}
+
+// applyVassalRevolts, belirtilen vassalları overlord bağından çıkarır ve
+// eski overlordlarıyla savaşa sokar.
+func applyVassalRevolts(gs *state.GameState, factionIDs []string) {
+	if gs == nil || len(factionIDs) == 0 {
+		return
+	}
+	for _, factionID := range factionIDs {
+		vassalID := faction.FactionID(factionID)
+		vassal := gs.Factions[vassalID]
+		if vassal == nil || vassal.OverlordID == "" {
+			continue
+		}
+		overlordID := vassal.OverlordID
+		vassal.OverlordID = ""
+		vassal.VassalizedTurn = 0
+		vassal.TributeRate = 0
+		vassal.TributeRateConfigured = false
+		if gs.Factions[overlordID] != nil {
+			diplomacy.ForceRelation(gs, vassalID, overlordID, faction.StanceWar, -100)
+		}
+	}
 }
 
 func applyDynasticSettlement(gs *state.GameState, settlement *DynasticSettlementEffect) {

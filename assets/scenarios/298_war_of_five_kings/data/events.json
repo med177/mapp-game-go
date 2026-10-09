@@ -2386,6 +2386,9 @@
     "historical_month": 9,
     "one_shot": true,
     "affected_faction": "stark",
+    "vassal_revolts": [
+      "bolton"
+    ],
     "choice_prompt_tr": "Kuzey'in yönetimi Stark hanedanında mı kalmalı, yoksa Boltonlar kontrolü ele mi geçirmeli?",
     "choices": [
       {
