@@ -615,7 +615,7 @@
         }
       }
     ],
-    "player_choice_factions": ["baratheon_king", "stark"],
+    "player_choice_factions": ["baratheon_king"],
     "requires_flags": ["royal_party_travelling_north", "jon_arryn_path_chosen"],
     "requires_active_factions": ["baratheon_king", "stark"]
   },
@@ -764,7 +764,7 @@
         }
       }
     ],
-    "player_choice_factions": ["baratheon_king", "lannister", "stark"],
+    "player_choice_factions": ["baratheon_king"],
     "requires_flags": ["ned_arrested"],
     "requires_active_factions": ["stark", "lannister"]
   },
@@ -1130,9 +1130,7 @@
       }
     ],
     "player_choice_factions": [
-      "tully",
-      "stark",
-      "lannister"
+      "tully"
     ],
     "requires_flags": [
       "war_of_five_kings_active",
@@ -1332,8 +1330,7 @@
       }
     ],
     "player_choice_factions": [
-      "stark",
-      "tully"
+      "stark"
     ],
     "requires_flags": [
       "war_of_five_kings_active"
@@ -1513,9 +1510,7 @@
       }
     ],
     "player_choice_factions": [
-      "tully",
-      "stark",
-      "lannister"
+      "tully"
     ],
     "requires_flags": [
       "jaime_negotiation_started"
@@ -1600,9 +1595,7 @@
       }
     ],
     "player_choice_factions": [
-      "stark",
-      "tully",
-      "lannister"
+      "stark"
     ],
     "requires_flags": [
       "jaime_captured"
@@ -1708,9 +1701,7 @@
       }
     ],
     "player_choice_factions": [
-      "baratheon_stormsend",
-      "baratheon_dragonstone",
-      "tyrell"
+      "baratheon_stormsend"
     ],
     "requires_flags": [
       "war_of_five_kings_active",
@@ -1806,7 +1797,6 @@
     ],
     "player_choice_factions": [
       "baratheon_king",
-      "lannister",
       "baratheon_dragonstone"
     ],
     "requires_flags": [
@@ -1980,8 +1970,7 @@
       }
     ],
     "player_choice_factions": [
-      "greyjoy",
-      "stark"
+      "greyjoy"
     ],
     "requires_flags": [
       "war_of_five_kings_active",
@@ -2057,8 +2046,7 @@
       }
     ],
     "player_choice_factions": [
-      "greyjoy",
-      "lannister"
+      "greyjoy"
     ],
     "requires_flags": [
       "war_of_five_kings_active",
@@ -2219,8 +2207,7 @@
       }
     ],
     "player_choice_factions": [
-      "greyjoy",
-      "stark"
+      "greyjoy"
     ],
     "requires_flags": [
       "war_of_five_kings_active",
@@ -2372,8 +2359,7 @@
       }
     ],
     "player_choice_factions": [
-      "tully",
-      "stark"
+      "tully"
     ],
     "requires_flags": [
       "war_of_five_kings_active"
@@ -2407,6 +2393,7 @@
         "label_tr": "Boltonların Kuzey'i ele geçirmesine izin ver",
         "desc_tr": "Kızıl Düğün'ün ardından Winterfell, Boyun ve Moat Cailin Boltonların eline geçer.",
         "ai_weight": 4,
+        "available_to_factions": ["bolton"],
         "effect": {
           "target": "specific_faction",
           "affected_faction": "stark",
@@ -2422,6 +2409,7 @@
         "label_tr": "Kuzey direnişini sürdür",
         "desc_tr": "Stark hanedanı ihaneti kabul etmez; ağır kayıplara rağmen Winterfell ve Kuzey üzerindeki hâkimiyetini korumaya çalışır.",
         "ai_weight": 6,
+        "available_to_factions": ["stark"],
         "effect": {
           "target": "specific_faction",
           "combat_defense_percent": 10,
@@ -2527,9 +2515,7 @@
       }
     ],
     "player_choice_factions": [
-      "tully",
-      "stark",
-      "lannister"
+      "tully"
     ],
     "requires_flags": [
       "war_of_five_kings_active",
@@ -2610,8 +2596,7 @@
       }
     ],
     "player_choice_factions": [
-      "tully",
-      "stark"
+      "tully"
     ],
     "requires_flags": [
       "war_of_five_kings_active",
@@ -2706,8 +2691,7 @@
       }
     ],
     "player_choice_factions": [
-      "tully",
-      "stark"
+      "tully"
     ],
     "requires_flags": [
       "war_of_five_kings_active"
@@ -3253,9 +3237,7 @@
       }
     ],
     "player_choice_factions": [
-      "lannister",
-      "tyrell",
-      "baratheon_king"
+      "lannister"
     ],
     "requires_flags": [
       "stark_betrayed",
@@ -3333,8 +3315,7 @@
       }
     ],
     "player_choice_factions": [
-      "lannister",
-      "tyrell"
+      "lannister"
     ],
     "requires_flags": [
       "tyrell_lannister_alliance",
@@ -3611,8 +3592,7 @@
       }
     ],
     "player_choice_factions": [
-      "nights_watch",
-      "stark"
+      "nights_watch"
     ],
     "requires_flags": [
       "war_of_five_kings_active"
@@ -3750,8 +3730,7 @@
     ],
     "player_choice_factions": [
       "free_folk",
-      "nights_watch",
-      "stark"
+      "nights_watch"
     ],
     "requires_flags": [
       "war_of_five_kings_active"
@@ -3807,6 +3786,7 @@
         "label_tr": "Duvar'a saldır",
         "desc_tr": "Özgür Halk büyük bir saldırıyla geçitleri zorlar.",
         "ai_weight": 8,
+        "available_to_factions": ["free_folk"],
         "effect": {
           "target": "specific_faction",
           "combat_attack_percent": 10,
@@ -3827,6 +3807,7 @@
         "label_tr": "Duvar'ı tut",
         "desc_tr": "Gece Nöbeti savunma hatlarını sıkılaştırır ve geçitleri kapatır.",
         "ai_weight": 8,
+        "available_to_factions": ["nights_watch"],
         "effect": {
           "target": "specific_faction",
           "combat_defense_percent": 12,
@@ -3848,6 +3829,7 @@
         "label_tr": "Kuzeyden yardım gönder",
         "desc_tr": "Stark hanedanı Duvar'a tahıl ve asker göndererek savunmayı ayakta tutar.",
         "ai_weight": 6,
+        "available_to_factions": ["stark"],
         "effect": {
           "target": "specific_faction",
           "gold_delta": -60,
@@ -4024,8 +4006,7 @@
       }
     ],
     "player_choice_factions": [
-      "nights_watch",
-      "stark"
+      "nights_watch"
     ],
     "requires_flags": [
       "others_awakened"
@@ -4730,8 +4711,7 @@
       }
     ],
     "player_choice_factions": [
-      "targaryen",
-      "baratheon_king"
+      "targaryen"
     ],
     "requires_flags": [
       "war_of_five_kings_resolved",

@@ -8,6 +8,27 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestChoiceIndicesForFactionFiltersOnlyRestrictedChoices(t *testing.T) {
+	e := &Event{Choices: []Choice{
+		{ID: "bolton", AvailableToFactions: []string{"bolton"}},
+		{ID: "stark", AvailableToFactions: []string{"stark"}},
+		{ID: "shared"},
+	}}
+
+	got := ChoiceIndicesForFaction(e, "stark")
+	want := []int{1, 2}
+	if len(got) != len(want) || got[0] != want[0] || got[1] != want[1] {
+		t.Fatalf("stark seçimleri yanlış filtrelendi: got %v, want %v", got, want)
+	}
+
+	if got := AutoChooseForFaction(&Event{Choices: []Choice{
+		{AIWeight: 10, AvailableToFactions: []string{"bolton"}},
+		{AIWeight: 2, AvailableToFactions: []string{"stark"}},
+	}}, "stark"); got != 1 {
+		t.Fatalf("faction seçimi AI ağırlığıyla filtrelenmedi: got %d, want 1", got)
+	}
+}
+
 func TestVictoryConditionsRequireKeyRegionsAndMinimumOwnership(t *testing.T) {
 	gs := &state.GameState{
 		FiredEventIDs: map[string]bool{

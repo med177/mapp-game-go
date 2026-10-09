@@ -266,12 +266,17 @@ func RunHeadlessSimulation(options HeadlessSimulationOptions) (*HeadlessSimulati
 
 		g.resolveTurn()
 		if g.pendingHistoricalEvt != nil {
-			choice := events.AutoChoose(g.pendingHistoricalEvt)
-			if choice < 0 && len(g.pendingHistoricalEvt.Choices) > 0 {
-				choice = 0
+			originalChoice := events.AutoChooseForFaction(g.pendingHistoricalEvt, string(gs.PlayerFactionID))
+			visibleChoices := events.ChoiceIndicesForFaction(g.pendingHistoricalEvt, string(gs.PlayerFactionID))
+			visibleChoice := -1
+			for i, choiceIndex := range visibleChoices {
+				if choiceIndex == originalChoice {
+					visibleChoice = i
+					break
+				}
 			}
-			if choice >= 0 {
-				g.resolveHistoricalChoice(choice)
+			if visibleChoice >= 0 {
+				g.resolveHistoricalChoice(visibleChoice)
 			}
 		}
 		resolveHeadlessContacts(gs)

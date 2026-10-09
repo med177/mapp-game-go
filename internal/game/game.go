@@ -1825,7 +1825,11 @@ func (g *Game) resolveHistoricalChoice(idx int) {
 		g.renderer.HideHistoricalEvent()
 		return
 	}
-	g.applyHistoricalChoice(g.pendingHistoricalEvt, idx)
+	visibleChoices := events.ChoiceIndicesForFaction(g.pendingHistoricalEvt, string(g.gs.PlayerFactionID))
+	if idx < 0 || idx >= len(visibleChoices) {
+		return
+	}
+	g.applyHistoricalChoice(g.pendingHistoricalEvt, visibleChoices[idx])
 	g.pendingHistoricalEvt = nil
 	g.renderer.HideHistoricalEvent()
 }
@@ -1973,8 +1977,10 @@ func (g *Game) historicalChoiceViews(evt *events.Event) []render.HistoricalEvent
 	if evt == nil || len(evt.Choices) == 0 {
 		return nil
 	}
-	views := make([]render.HistoricalEventChoice, 0, len(evt.Choices))
-	for _, choice := range evt.Choices {
+	choiceIndices := events.ChoiceIndicesForFaction(evt, string(g.gs.PlayerFactionID))
+	views := make([]render.HistoricalEventChoice, 0, len(choiceIndices))
+	for _, choiceIndex := range choiceIndices {
+		choice := evt.Choices[choiceIndex]
 		followUp, conditions := g.historicalChoiceFollowUpSummary(evt, choice)
 		views = append(views, render.HistoricalEventChoice{
 			Label:      choice.LabelTR,

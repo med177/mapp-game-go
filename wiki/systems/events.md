@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-09-30
+last_updated: 2026-10-09
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -109,6 +109,15 @@ ve fetih istatistiklerini değiştirmez; birlik yüzdesi deterministik olarak or
 kimlik sırasından seçilir ve filolar kapsam dışıdır.
 
 ---
+
+## Factiona Özel Seçenekler
+
+Bir seçeneğe isteğe bağlı `available_to_factions` alanı eklenebilir. Alan doluysa
+seçenek yalnızca belirtilen oyuncu factionlarına gösterilir. Alan eksik veya boşsa
+eski davranış korunur ve seçenek ilgili tüm factionlara açık kalır. Runtime,
+filtrelenmiş görsel listedeki indeksi event içindeki gerçek choice indeksine eşler.
+Headless akışta da oyuncu factionına açık seçenekler arasından AI ağırlığıyla karar
+verilir.
 
 ## Tetikleme Koşulları
 

@@ -190,11 +190,12 @@ type Effect struct {
 }
 
 type Choice struct {
-	ID       string `json:"id,omitempty"`
-	LabelTR  string `json:"label_tr"`
-	DescTR   string `json:"desc_tr"`
-	AIWeight int    `json:"ai_weight,omitempty"`
-	Effect   Effect `json:"effect"`
+	ID                  string   `json:"id,omitempty"`
+	LabelTR             string   `json:"label_tr"`
+	DescTR              string   `json:"desc_tr"`
+	AIWeight            int      `json:"ai_weight,omitempty"`
+	AvailableToFactions []string `json:"available_to_factions,omitempty"`
+	Effect              Effect   `json:"effect"`
 }
 
 // Event bir tarihsel olayı tanımlar.
@@ -1231,6 +1232,45 @@ func AutoChoose(e *Event) int {
 		}
 	}
 	return bestIdx
+}
+
+// ChoiceIndicesForFaction, oyuncunun görebileceği seçimlerin özgün indekslerini döner.
+// Alan boş bırakılırsa seçim eski davranışla tüm factionlara açıktır.
+func ChoiceIndicesForFaction(e *Event, factionID string) []int {
+	if e == nil {
+		return nil
+	}
+	indices := make([]int, 0, len(e.Choices))
+	for i, choice := range e.Choices {
+		if len(choice.AvailableToFactions) == 0 || containsFaction(choice.AvailableToFactions, factionID) {
+			indices = append(indices, i)
+		}
+	}
+	return indices
+}
+
+// AutoChooseForFaction, factiona atanmış seçim varsa onu AI ağırlığıyla seçer.
+func AutoChooseForFaction(e *Event, factionID string) int {
+	indices := ChoiceIndicesForFaction(e, factionID)
+	if len(indices) == 0 {
+		return AutoChoose(e)
+	}
+	bestIdx := indices[0]
+	for _, idx := range indices[1:] {
+		if e.Choices[idx].AIWeight > e.Choices[bestIdx].AIWeight {
+			bestIdx = idx
+		}
+	}
+	return bestIdx
+}
+
+func containsFaction(factions []string, factionID string) bool {
+	for _, candidate := range factions {
+		if candidate == factionID {
+			return true
+		}
+	}
+	return false
 }
 
 func choiceEffect(e *Event, c Choice) Effect {
