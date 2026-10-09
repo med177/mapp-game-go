@@ -168,7 +168,7 @@ func (g *Game) applyProductionTicks() []productionResult {
 				results = append(results, result)
 				continue
 			}
-			if unitType != nil && !unitType.HasBuildingRequirements(region.BuildingLevels()) {
+			if !unitType.HasBuildingRequirements(region.BuildingLevels()) {
 				result.canceled = true
 				result.reason = "birim için gerekli binalar eksik"
 				results = append(results, result)

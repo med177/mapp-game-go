@@ -849,6 +849,7 @@ func diplomacyHistoryFilterHit(panelRect gameui.Rect, dirFilter diplomacyHistory
 // boş durum mesajının başlangıç noktası olarak kullanır. Filtre satırlarının
 // yüksekliği değiştiğinde bu içeriklerin düğmelerin üzerine binmesini önler.
 func diplomacyHistoryResultsY(panelRect gameui.Rect) float64 {
+	const resultsGap = 8.0
 	buttons := buildDiplomacyHistoryFilterButtons(panelRect, diplomacyHistoryDirectionAll, ActionNone)
 	bottom := panelRect.Y
 	for _, btn := range buttons {
@@ -856,7 +857,7 @@ func diplomacyHistoryResultsY(panelRect gameui.Rect) float64 {
 			bottom = y
 		}
 	}
-	return bottom
+	return bottom + resultsGap
 }
 
 func (r *Renderer) applyDiplomacyHistoryFilterHit(panelRect gameui.Rect, mx, my float64) bool {

@@ -1,7 +1,7 @@
 ---
 name: mapp-scenario-data-guidelines
 description: Mapp senaryo JSON'u, veri yükleyicisi ve veri araçlarını değiştirirken geriye dönük uyumluluk ve senaryo kaynak kurallarını uygula.
-applyTo: "assets/scenarios/**/*.json,internal/scenario/**/*.go,tools/**/*.go"
+applyTo: "assets/scenarios/**/*.json,internal/scenario/**/*.go,tools/**/*.py,tools/regionidsync/**/*.go,tools/regionlint/**/*.go"
 ---
 
 # Senaryo ve veri kuralları
