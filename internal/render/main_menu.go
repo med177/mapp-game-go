@@ -102,7 +102,7 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 
 func mainMenuBackgroundImage() *ebiten.Image {
 	mainMenuBackgroundOnce.Do(func() {
-		mainMenuBackground = tryLoadImage("assets/images/main_menu_bg.png")
+		mainMenuBackground = tryLoadImage("assets/images/main_menu_bg.jpg")
 	})
 	return mainMenuBackground
 }

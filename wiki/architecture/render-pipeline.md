@@ -294,7 +294,7 @@ Teklifi`, kuşatılan oyuncu tarafta `Vassallığı Kabul Et` görünür. Geomet
 hit-test ve aktiflik aynı ortak button helper'ından gelir; modal metni bölgenin
 korunacağını, savaşın ve kuşatmanın biteceğini açıklar (`internal/render/renderer_dialogs.go`).
 
-Ana menü ve senaryo seçim ekranı ilk çizimde `assets/images/main_menu_bg.png`
+Ana menü ve senaryo seçim ekranı ilk çizimde `assets/images/main_menu_bg.jpg`
 görselini bir kez cache'leyip ekran oranını koruyarak arka plana yerleştirir; görsel
 ekranı kaplayacak şekilde kenarlardan kırpılır. Görselin canlılığını korumak için
 genel karartma uygulanmaz; ana menü ekseninde merkezde koyu, kenarlara doğru
