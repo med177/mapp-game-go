@@ -27,6 +27,11 @@ const (
 	buildingTooltipWidth     = 450.0
 	unitTooltipImageExtraH   = 50.0
 	unitTooltipWidth         = 400.0
+	armySummaryTileWidth     = 60.0
+	armySummaryTileHeight    = 120.0
+	armySummaryTileGap       = 6.0
+	armySummaryTooltipPad    = 10.0
+	armySummaryColumns       = 4
 )
 
 type unitTooltipLayout struct {
@@ -301,20 +306,12 @@ func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState,
 		return
 	}
 	rows := armyMarkerSummaryRows(gs, a)
-	const (
-		tooltipWidth   = 278.0
-		tileWidth      = 60.0
-		tileHeight     = 120.0
-		tileGap        = 6.0
-		tooltipPadding = 10.0
-	)
-	columns := 4
-	rowLines := (len(rows) + columns - 1) / columns
-	tooltipHeight := 40.0 + float64(rowLines)*tileHeight + float64(maxInt(rowLines-1, 0))*tileGap + tooltipPadding
+	rowLines := armySummaryRowCount(len(rows))
+	tooltipHeight := 40.0 + armySummaryGridHeight(rowLines) + armySummaryTooltipPad
 	if len(rows) == 0 {
 		tooltipHeight = 54
 	}
-	x, y, w, h := tooltipRect(mx, my, tooltipWidth, tooltipHeight)
+	x, y, w, h := tooltipRect(mx, my, armySummaryTooltipWidth(), tooltipHeight)
 	drawTooltipBox(screen, x, y, w, h)
 	label := "Ordu"
 	if a.IsNaval {
@@ -326,20 +323,46 @@ func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState,
 	}
 	DrawText(screen, header, x+10, y+10, FaceSmall, ColorGold)
 
+	drawArmyUnitSummaryTiles(screen, gs, a.OwnerID, rows, x+armySummaryTooltipPad, y+32)
+}
+
+func armySummaryTooltipWidth() float64 {
+	return armySummaryTooltipPad*2 + armySummaryColumns*armySummaryTileWidth + (armySummaryColumns-1)*armySummaryTileGap
+}
+
+func armySummaryRowCount(itemCount int) int {
+	if itemCount <= 0 {
+		return 0
+	}
+	return (itemCount + armySummaryColumns - 1) / armySummaryColumns
+}
+
+func armySummaryGridHeight(rowCount int) float64 {
+	if rowCount <= 0 {
+		return 0
+	}
+	return float64(rowCount)*armySummaryTileHeight + float64(rowCount-1)*armySummaryTileGap
+}
+
+// drawArmyUnitSummaryTiles, marker ve birleştirme popup'larının ortak kart
+// geometrisini ve görsel katmanlarını üretir.
+func drawArmyUnitSummaryTiles(screen *ebiten.Image, gs *state.GameState, ownerID string, rows []armyMergePreviewRow, startX, startY float64) {
 	for index, row := range rows {
-		column := index % columns
-		line := index / columns
-		tileX := x + tooltipPadding + float64(column)*(tileWidth+tileGap)
-		tileY := y + 32 + float64(line)*(tileHeight+tileGap)
-		vector.FillRect(screen, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight), color.RGBA{248, 246, 238, 235}, false)
-		if sprite := unitSpriteForFaction(gs, a.OwnerID, row.typeID); sprite != nil {
-			drawArmyMarkerUnitImage(screen, sprite, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight))
+		column := index % armySummaryColumns
+		line := index / armySummaryColumns
+		tileX := startX + float64(column)*(armySummaryTileWidth+armySummaryTileGap)
+		tileY := startY + float64(line)*(armySummaryTileHeight+armySummaryTileGap)
+		vector.FillRect(screen, float32(tileX), float32(tileY), float32(armySummaryTileWidth), float32(armySummaryTileHeight), color.RGBA{248, 246, 238, 235}, false)
+		if sprite := unitSpriteForFaction(gs, ownerID, row.typeID); sprite != nil {
+			drawArmyMarkerUnitImage(screen, sprite, float32(tileX), float32(tileY), float32(armySummaryTileWidth), float32(armySummaryTileHeight))
 		}
-		countY := tileY + tileHeight - 26
-		vector.FillRect(screen, float32(tileX), float32(countY), float32(tileWidth), 26, color.RGBA{25, 20, 15, 175}, false)
-		vector.StrokeRect(screen, float32(tileX), float32(countY), float32(tileWidth), 26, 1, color.RGBA{190, 160, 90, 190}, false)
-		DrawTextCentered(screen, "x"+itoa(row.count), tileX+tileWidth/2, countY+5, FaceMed, ColorGold)
-		vector.StrokeRect(screen, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight), 1, color.RGBA{150, 125, 72, 220}, false)
+		countY := tileY + armySummaryTileHeight - 26
+		vector.FillRect(screen, float32(tileX), float32(countY), float32(armySummaryTileWidth), 26, color.RGBA{25, 20, 15, 175}, false)
+		vector.StrokeRect(screen, float32(tileX), float32(countY), float32(armySummaryTileWidth), 26, 1, color.RGBA{190, 160, 90, 190}, false)
+		drawUIOutlinedLabel(screen,
+			gameui.Rect{X: tileX, Y: countY + 5, W: armySummaryTileWidth, H: 18},
+			"x"+itoa(row.count), ColorGold, ColorWhite, gameui.TextMedium, gameui.TextAlignCenter)
+		vector.StrokeRect(screen, float32(tileX), float32(tileY), float32(armySummaryTileWidth), float32(armySummaryTileHeight), 1, color.RGBA{150, 125, 72, 220}, false)
 	}
 }
 
@@ -388,35 +411,15 @@ func drawArmyMergePreviewTooltip(screen *ebiten.Image, gs *state.GameState, sour
 		}
 	}
 
-	const (
-		previewWidth   = 326.0
-		tileWidth      = 76.0
-		tileHeight     = 72.0
-		tileGap        = 4.0
-		previewPadding = 8.0
-	)
-	columns := 4
-	rowLines := (rowCount + columns - 1) / columns
-	previewHeight := 52.0 + float64(rowLines)*tileHeight + float64(maxInt(rowLines-1, 0))*tileGap + previewPadding
-	x, y, w, h := tooltipRect(mx, my, previewWidth, previewHeight)
+	summaryRows := rows[:rowCount]
+	rowLines := armySummaryRowCount(rowCount)
+	previewHeight := 58.0 + armySummaryGridHeight(rowLines) + armySummaryTooltipPad
+	x, y, w, h := tooltipRect(mx, my, armySummaryTooltipWidth(), previewHeight)
 	drawTooltipBox(screen, x, y, w, h)
 
 	DrawText(screen, "Hedef ordu: "+itoa(len(target.Units))+" birim", x+10, y+10, FaceSmall, ColorGold)
 	DrawText(screen, "Birleşince: "+itoa(mergeResultUnitCount(source, target)), x+10, y+27, FaceSmall, ColorWhite)
-
-	for index := 0; index < rowCount; index++ {
-		column := index % columns
-		line := index / columns
-		tileX := x + previewPadding + float64(column)*(tileWidth+tileGap)
-		tileY := y + 46 + float64(line)*(tileHeight+tileGap)
-		vector.FillRect(screen, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight), color.RGBA{248, 246, 238, 235}, false)
-		vector.StrokeRect(screen, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight), 1, color.RGBA{150, 125, 72, 220}, false)
-
-		if sprite := unitSpriteForFaction(gs, target.OwnerID, rows[index].typeID); sprite != nil {
-			drawUnitSpriteCard(screen, sprite, float32(tileX+(tileWidth-30)/2), float32(tileY+3), 30, [3]float32{1, 1, 1})
-		}
-		DrawTextCentered(screen, "x"+itoa(rows[index].count), tileX+tileWidth/2, tileY+57, FaceMed, color.RGBA{115, 80, 20, 255})
-	}
+	drawArmyUnitSummaryTiles(screen, gs, target.OwnerID, summaryRows, x+armySummaryTooltipPad, y+46)
 }
 
 func BuildingGridHoverIDForTab(mx, my float64, gs *state.GameState, rid world.RegionID, activeTab regionPanelTab) string {
