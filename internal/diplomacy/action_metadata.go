@@ -22,6 +22,7 @@ var actionDefs = []ActionDef{
 	{Action: ActionInciteRevolt, LabelTR: "İsyana Teşvik"},
 	{Action: ActionOfferMinorPrivilege, LabelTR: "İmtiyaz"},
 	{Action: ActionOfferVassalization, LabelTR: "Vassallık"},
+	{Action: ActionProposeTransfer, LabelTR: "Pazarlık"},
 	{Action: ActionReleaseVassal, LabelTR: "Vasallığı Bitir", Contextual: true},
 	{Action: ActionAnnexVassal, LabelTR: "İlhak Et", Contextual: true},
 }

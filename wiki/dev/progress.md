@@ -1,9 +1,18 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-08
+last_updated: 2026-10-09
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-09: Diplomasiye iki taraflı transfer pazarlığı eklendi. Oyuncu hedef
+  devletten bölge, kaynak/hammadde veya komutan taşımayan ordu birimi isteyip
+  karşılığında kalem sunabiliyor; kabulde sahiplik/ekonomi/ordu transferi ve
+  yönlü ilişki bonusu uygulanıyor. Gelen teklifler kabul, ret veya karşı teklif
+  ile cevaplanabiliyor. Bölge seçimi kaydırılabilir listeye alındı; devir sonrası
+  yabancı ordular tahliye ediliyor ve harita sahiplik cache'i yenileniyor.
+  `internal/diplomacy/negotiation.go`, `internal/render/diplomacy_negotiation.go`,
+  `internal/game/game.go`.
 
 - 2026-10-08: `TradeDisabled` fraksiyonlarının açık pazar satış/alım emirleri,
   pazar listesi ve otomatik ihracatı kapatıldı. Eski save emirleri de state

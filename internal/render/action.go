@@ -4,6 +4,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
 
@@ -49,6 +50,7 @@ const (
 	ActionRevokeMinorPrivilege     ActionKind = "revoke_minor_privilege"
 	ActionOfferMinorPrivilege      ActionKind = "offer_minor_privilege"
 	ActionOfferVassalization       ActionKind = "offer_vassalization"
+	ActionNegotiateTransfer        ActionKind = "negotiate_transfer"
 	ActionReleaseVassal            ActionKind = "release_vassal"
 	ActionAnnexVassal              ActionKind = "annex_vassal"
 	ActionSave                     ActionKind = "save"
@@ -130,6 +132,7 @@ const (
 	ActionTradeScroll           ActionKind = "trade_scroll"         // Delta: +1/-1
 	ActionTradeTabSwitch        ActionKind = "trade_tab_switch"     // Delta: hangi sekme
 	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
+	ActionCounterDiplomacyOffer ActionKind = "counter_diplomacy_offer"
 	ActionChooseHistoricalEvent ActionKind = "choose_historical_event"
 	ActionOpenEventCodex        ActionKind = "open_event_codex"
 	ActionScheduleCapitalMove   ActionKind = "schedule_capital_move"
@@ -153,15 +156,18 @@ type InputAction struct {
 	TargetRegion  world.RegionID
 	// TargetSettlementID, denizden kara hedefinde liman ile merkez yerleşimi
 	// ayırır. Boş bırakıldığında bölge tabanlı eski hareket semantiği korunur.
-	TargetSettlementID string
-	BuildingID         string
-	Quantity           int
-	TargetFaction      faction.FactionID
-	WarAllies          []faction.FactionID
-	Delta              int // AdjustTax için: +5 veya -5
-	OfferIndex         int
-	OfferAccepted      bool
-	ChoiceIndex        int
+	TargetSettlementID   string
+	BuildingID           string
+	Quantity             int
+	TargetFaction        faction.FactionID
+	WarAllies            []faction.FactionID
+	Delta                int // AdjustTax için: +5 veya -5
+	OfferIndex           int
+	OfferAccepted        bool
+	CounterOffer         bool
+	NegotiationRequested []state.DiplomaticTransfer
+	NegotiationOffered   []state.DiplomaticTransfer
+	ChoiceIndex          int
 	// ChoiceIndex, temas kararında 0=Çatış, 1=Geri çekil, 2=Pozisyonu koru.
 	BattleStance combat.BattleStance
 	// NavalAttack yalnız savaş planından onaylanan açık filo saldırısında

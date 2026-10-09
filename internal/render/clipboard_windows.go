@@ -3,6 +3,7 @@
 package render
 
 import (
+	"runtime"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
@@ -18,6 +19,8 @@ var (
 	getClipboardData  = clipboardUser32.NewProc("GetClipboardData")
 	globalLock        = clipboardKernel32.NewProc("GlobalLock")
 	globalUnlock      = clipboardKernel32.NewProc("GlobalUnlock")
+	globalSize        = clipboardKernel32.NewProc("GlobalSize")
+	copyMemory        = clipboardKernel32.NewProc("RtlMoveMemory")
 )
 
 func readSystemClipboard() (string, bool) {
@@ -36,13 +39,18 @@ func readSystemClipboard() (string, bool) {
 	}
 	defer globalUnlock.Call(handle)
 
-	text := make([]uint16, 0, 64)
-	for i := uintptr(0); i < 1<<20; i++ {
-		value := *(*uint16)(unsafe.Pointer(data + i*unsafe.Sizeof(uint16(0))))
+	size, _, _ := globalSize.Call(handle)
+	if size < 2 {
+		return "", false
+	}
+	buffer := make([]uint16, int(size/2))
+	copyMemory.Call(uintptr(unsafe.Pointer(&buffer[0])), data, uintptr(len(buffer))*2)
+	runtime.KeepAlive(buffer)
+	for i, value := range buffer {
 		if value == 0 {
+			buffer = buffer[:i]
 			break
 		}
-		text = append(text, value)
 	}
-	return string(utf16.Decode(text)), true
+	return string(utf16.Decode(buffer)), true
 }

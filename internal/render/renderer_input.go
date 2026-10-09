@@ -127,6 +127,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.battlePlan.show {
 		return r.handleBattlePlanInput()
 	}
+	if r.negotiation.show {
+		return r.handleDiplomacyNegotiationInput()
+	}
 	if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
 		return r.handleDiplomacyOfferInput(offerIdx)
 	}

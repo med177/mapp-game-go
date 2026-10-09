@@ -30,7 +30,7 @@ const (
 	diplomHistoryPanelW             = 286.0
 	diplomHistoryPanelGap           = 12.0
 	diplomOfferMainW                = 430.0
-	diplomHistoryPanelH             = 324.0
+	diplomHistoryPanelH             = 400.0
 	diplomActionButtonH             = 50.0
 	diplomActionGap                 = 8.0
 	diplomActionDetailBottomPadding = 18.0
@@ -110,13 +110,15 @@ var diplomActions = []diplomAction{
 	{diplomacy.ActionLabelTR(diplomacy.ActionSendGift), color.RGBA{182, 120, 58, 220}, ActionSendGift},
 	{diplomacy.ActionLabelTR(diplomacy.ActionInciteRevolt), color.RGBA{142, 72, 48, 220}, ActionInciteRevolt},
 	{diplomacy.ActionLabelTR(diplomacy.ActionOfferVassalization), color.RGBA{86, 132, 68, 220}, ActionOfferVassalization},
+	{diplomacy.ActionLabelTR(diplomacy.ActionProposeTransfer), color.RGBA{116, 100, 166, 220}, ActionNegotiateTransfer},
 }
 
-var diplomacyHistoryActions = [4]diplomacyHistoryActionMeta{
+var diplomacyHistoryActions = [5]diplomacyHistoryActionMeta{
 	{Action: ActionProposePeace, Label: "Barış", Icon: gameui.IconCheck, Color: color.RGBA{54, 118, 176, 220}},
 	{Action: ActionProposeTrade, Label: "Ticaret", Icon: gameui.IconSend, Color: color.RGBA{164, 128, 44, 220}},
 	{Action: ActionProposeAlliance, Label: "İttifak", Icon: gameui.IconBook, Color: color.RGBA{52, 146, 74, 220}},
 	{Action: ActionDeclareWar, Label: "Savaş", Icon: gameui.IconSword, Color: color.RGBA{170, 58, 58, 220}},
+	{Action: ActionNegotiateTransfer, Label: "Pazarlık", Icon: gameui.IconSend, Color: color.RGBA{116, 100, 166, 220}},
 }
 
 func actionKindForDiplomacyAction(action diplomacy.Action) ActionKind {
@@ -139,6 +141,8 @@ func actionKindForDiplomacyAction(action diplomacy.Action) ActionKind {
 		return ActionInciteRevolt
 	case diplomacy.ActionOfferVassalization:
 		return ActionOfferVassalization
+	case diplomacy.ActionProposeTransfer:
+		return ActionNegotiateTransfer
 	default:
 		return ActionNone
 	}
@@ -146,6 +150,18 @@ func actionKindForDiplomacyAction(action diplomacy.Action) ActionKind {
 
 func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID, action ActionKind) string {
 	if gs == nil || target == "" {
+		return ""
+	}
+	if action == ActionNegotiateTransfer {
+		if target == gs.PlayerFactionID {
+			return "Kendi devletinizle pazarlık yapılamaz."
+		}
+		if relation := diplomacy.Relation(gs, gs.PlayerFactionID, target); relation != nil && relation.Stance == faction.StanceWar {
+			return "Savaş halindeyken diplomatik pazarlık yapılamaz."
+		}
+		if !gs.CanSpendDiplomacyOfferQuota(gs.PlayerFactionID) {
+			return "Bu tur için elçi hakkı kalmadı."
+		}
 		return ""
 	}
 	var actionValue diplomacy.Action
@@ -649,6 +665,8 @@ func diplomacyHistoryActionLabelTR(action ActionKind) string {
 		return "İttifak"
 	case ActionDeclareWar:
 		return "Savaş"
+	case ActionNegotiateTransfer:
+		return "Pazarlık"
 	default:
 		return "Tümü"
 	}
@@ -668,6 +686,8 @@ func diplomacyHistoryActionIcon(action ActionKind) gameui.IconID {
 		return gameui.IconBook
 	case ActionDeclareWar:
 		return gameui.IconSword
+	case ActionNegotiateTransfer:
+		return gameui.IconSend
 	default:
 		return gameui.IconNone
 	}
@@ -683,6 +703,8 @@ func diplomacyHistoryActionColor(action ActionKind) color.RGBA {
 		return color.RGBA{52, 146, 74, 220}
 	case ActionDeclareWar:
 		return color.RGBA{170, 58, 58, 220}
+	case ActionNegotiateTransfer:
+		return color.RGBA{116, 100, 166, 220}
 	default:
 		return color.RGBA{96, 88, 68, 220}
 	}
@@ -756,8 +778,8 @@ func diplomacyHistoryFilterButtonStyle(active bool, accent color.RGBA) gameui.Bu
 	return style
 }
 
-func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, _ diplomacyHistoryDirectionFilter, _ ActionKind) [7]diplomacyHistoryFilterButton {
-	var buttons [7]diplomacyHistoryFilterButton
+func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, _ diplomacyHistoryDirectionFilter, _ ActionKind) [8]diplomacyHistoryFilterButton {
+	var buttons [8]diplomacyHistoryFilterButton
 	if panelRect.W <= 0 || panelRect.H <= 0 {
 		return buttons
 	}
@@ -769,7 +791,8 @@ func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, _ diplomacyHistor
 		row2Y = 120.0
 	)
 	dirBtnW := (panelRect.W - padX*2 - gap*2) / 3
-	actionBtnW := (panelRect.W - padX*2 - gap*3) / 4
+	const actionColumns = 3
+	actionBtnW := (panelRect.W - padX*2 - gap*float64(actionColumns-1)) / float64(actionColumns)
 	dirLabels := [3]struct {
 		filter diplomacyHistoryDirectionFilter
 		label  string
@@ -787,8 +810,16 @@ func buildDiplomacyHistoryFilterButtons(panelRect gameui.Rect, _ diplomacyHistor
 		}
 	}
 	for i, meta := range diplomacyHistoryActions {
-		x := panelRect.X + padX + float64(i)*(actionBtnW+gap)
-		btn := gameui.NewButton(x, panelRect.Y+row2Y, actionBtnW, rowH, meta.Label).WithIcon(meta.Icon)
+		column := i % actionColumns
+		row := i / actionColumns
+		rowCount := actionColumns
+		if row == 1 {
+			rowCount = len(diplomacyHistoryActions) - actionColumns
+		}
+		rowW := float64(rowCount)*actionBtnW + float64(rowCount-1)*gap
+		rowOffset := (panelRect.W - rowW) / 2
+		x := panelRect.X + rowOffset + float64(column)*(actionBtnW+gap)
+		btn := gameui.NewButton(x, panelRect.Y+row2Y+float64(row)*(rowH+gap), actionBtnW, rowH, meta.Label).WithIcon(meta.Icon)
 		btn.IconSize = 15
 		btn.IconGap = 4
 		buttons[3+i] = diplomacyHistoryFilterButton{
@@ -857,8 +888,32 @@ func diplomacyOfferHistoryCardRect(panelRect gameui.Rect, drawn int) gameui.Rect
 	}
 }
 
+func diplomacyHistoryVisibleEntries(panelRect gameui.Rect, maxEntries int) int {
+	if maxEntries <= 0 || panelRect.W <= 0 || panelRect.H <= 0 {
+		return 0
+	}
+	const (
+		cardH       = 38.0
+		cardStep    = 44.0
+		bottomInset = 8.0
+	)
+	availableH := panelRect.Y + panelRect.H - bottomInset - diplomacyHistoryResultsY(panelRect)
+	if availableH < cardH {
+		return 0
+	}
+	visible := 1 + int((availableH-cardH)/cardStep)
+	if visible > maxEntries {
+		return maxEntries
+	}
+	return visible
+}
+
 func diplomacyOfferHistorySelection(gs *state.GameState, panelRect gameui.Rect, mx, my float64, maxEntries int, dirFilter diplomacyHistoryDirectionFilter, actionFilter ActionKind) (faction.FactionID, int, bool) {
-	if gs == nil || maxEntries <= 0 {
+	if gs == nil {
+		return "", 0, false
+	}
+	maxEntries = diplomacyHistoryVisibleEntries(panelRect, maxEntries)
+	if maxEntries <= 0 {
 		return "", 0, false
 	}
 	drawn := 0
@@ -2131,6 +2186,10 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		if buildDiplomacySendButton().HandleInput(input) {
 			target := r.diplomacyTargetFaction
 			action := diplomacyActionForTarget(r.gs, target, r.diplomacyActionFocus)
+			if action == ActionNegotiateTransfer {
+				r.openDiplomacyNegotiation(target)
+				return InputAction{}
+			}
 			if reason := diplomacyActionDisabledReason(r.gs, target, action); reason != "" {
 				r.ShowCombatResult(reason)
 				return InputAction{}
@@ -2187,6 +2246,10 @@ func (r *Renderer) handleDiplomacyInput(input gameui.InputState) InputAction {
 		} else {
 			target := r.diplomacyTargetFaction
 			action := diplomacyActionForTarget(r.gs, target, r.diplomacyActionFocus)
+			if action == ActionNegotiateTransfer {
+				r.openDiplomacyNegotiation(target)
+				return InputAction{}
+			}
 			if reason := diplomacyActionDisabledReason(r.gs, target, action); reason != "" {
 				r.ShowCombatResult(reason)
 				return InputAction{}
@@ -2393,6 +2456,7 @@ func (r *Renderer) CloseDiplomacyPanel() {
 	}
 	r.showDiplomacy = false
 	r.diplomacyTargetFaction = ""
+	r.negotiation = negotiationPanelState{}
 	r.privilegeOfferRegion = ""
 	r.diplomacyRelationScroll = 0
 	r.diplomacyOfferHistoryBrowse = ""

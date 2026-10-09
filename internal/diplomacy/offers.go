@@ -303,6 +303,8 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		return OfferMinorPrivilege(gs, offer.FromFactionID, offer.ToFactionID, offer.RegionID)
 	case ActionOfferVassalization:
 		return applyVassalization(gs, offer.FromFactionID, offer.ToFactionID)
+	case ActionProposeTransfer:
+		return resolveAcceptedTransferOffer(gs, offer)
 	}
 	return Result{Message: "Teklif artık geçerli değil."}
 }

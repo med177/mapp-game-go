@@ -274,7 +274,7 @@ func factionGroupLayout(total, historicalCount, cols int, cardW, cardH, padX, pa
 	return factionGroupLayoutScrolled(total, historicalCount, cols, cardW, cardH, padX, padY, headerH, 0)
 }
 
-func factionGroupLayoutScrolled(total, historicalCount, cols int, cardW, cardH, padX, padY, headerH, scroll float64) factionSelectLayout {
+func factionGroupLayoutScrolled(total, historicalCount, cols int, cardW, cardH, padX, padY, _, scroll float64) factionSelectLayout {
 	generalCount := total - historicalCount
 	historicalRows := 0
 	if historicalCount > 0 {

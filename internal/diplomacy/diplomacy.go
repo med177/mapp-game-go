@@ -28,6 +28,7 @@ const (
 	ActionInciteRevolt              Action = "incite_revolt"
 	ActionOfferMinorPrivilege       Action = "offer_minor_privilege"
 	ActionOfferVassalization        Action = "offer_vassalization"
+	ActionProposeTransfer           Action = "propose_transfer"
 	ActionReleaseVassal             Action = "release_vassal"
 	ActionAnnexVassal               Action = "annex_vassal"
 )

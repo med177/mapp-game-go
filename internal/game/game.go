@@ -522,6 +522,12 @@ func (g *Game) Update() error {
 			g.cancelTrade(action.TargetFaction)
 		case render.ActionOfferVassalization:
 			g.offerVassalization(action.TargetFaction)
+		case render.ActionNegotiateTransfer:
+			counterIndex := -1
+			if action.CounterOffer {
+				counterIndex = action.OfferIndex
+			}
+			g.submitTransferNegotiation(action.TargetFaction, action.NegotiationRequested, action.NegotiationOffered, counterIndex)
 		case render.ActionReleaseVassal:
 			g.releaseVassal(action.TargetFaction)
 		case render.ActionAnnexVassal:
@@ -556,6 +562,10 @@ func (g *Game) Update() error {
 			g.resolvePendingSuccessorDecision(successorDecisionVassalize)
 		case render.ActionRespondDiplomacyOffer:
 			g.respondDiplomacyOffer(action.OfferIndex, action.OfferAccepted)
+		case render.ActionCounterDiplomacyOffer:
+			if g.renderer != nil {
+				g.renderer.OpenDiplomacyCounterOffer(action.OfferIndex)
+			}
 		case render.ActionCreateTradeRoute:
 			g.proposeTrade(action.TargetFaction)
 		case render.ActionOneTimeTrade:
@@ -3067,6 +3077,51 @@ func (g *Game) proposeTrade(targetID faction.FactionID) {
 	g.renderer.ShowCombatResult(result.Message)
 }
 
+func (g *Game) submitTransferNegotiation(targetID faction.FactionID, requested, offered []state.DiplomaticTransfer, counterIndex int) {
+	if g == nil || g.gs == nil || targetID == "" {
+		return
+	}
+	if counterIndex >= 0 {
+		if counterIndex >= len(g.gs.DiplomaticOffers) || g.gs.DiplomaticOffers[counterIndex].ToFactionID != g.gs.PlayerFactionID {
+			if g.renderer != nil {
+				g.renderer.ShowCombatResult("Karşı teklifin dayandığı teklif artık geçerli değil.")
+			}
+			return
+		}
+		original := g.gs.DiplomaticOffers[counterIndex]
+		g.gs.DiplomaticOffers = append(g.gs.DiplomaticOffers[:counterIndex], g.gs.DiplomaticOffers[counterIndex+1:]...)
+		g.appendDiplomacyOfferHistory(original, false, diplomacy.Result{Message: "Karşı teklif gönderildi."})
+	}
+	result := diplomacy.ExecuteTransferOffer(g.gs, g.gs.PlayerFactionID, targetID, requested, offered)
+	if targetID != g.gs.PlayerFactionID && result.Message != "Pazarlık teklifi geçerli değil veya teklif hakkı yok." {
+		offer := state.DiplomaticOffer{
+			FromFactionID:      g.gs.PlayerFactionID,
+			ToFactionID:        targetID,
+			Action:             string(diplomacy.ActionProposeTransfer),
+			RequestedTransfers: append([]state.DiplomaticTransfer(nil), requested...),
+			OfferedTransfers:   append([]state.DiplomaticTransfer(nil), offered...),
+			CreatedTurn:        g.gs.Turn,
+		}
+		g.appendDiplomacyOfferHistory(offer, result.Accepted, result)
+	}
+	if g.renderer != nil {
+		g.renderer.CloseDiplomacyNegotiation()
+		if result.Applied {
+			g.renderer.MarkMapDirty()
+			if g.renderer.SelectedArmy != "" {
+				selected := g.gs.Armies[g.renderer.SelectedArmy]
+				if selected == nil || selected.OwnerID != string(g.gs.PlayerFactionID) {
+					g.renderer.SelectedArmy = ""
+				}
+			}
+		}
+		g.renderer.ShowCombatResult(result.Message)
+		if result.Applied {
+			g.renderer.AddEvent("[DİPLOMASİ] " + result.Message)
+		}
+	}
+}
+
 func (g *Game) cancelAlliance(targetID faction.FactionID) {
 	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionCancelAlliance)
 	g.renderer.ShowCombatResult(result.Message)
@@ -3411,6 +3466,13 @@ func (g *Game) respondDiplomacyOffer(index int, accepted bool) {
 	_, result, _ := g.resolveDiplomacyOffer(index, accepted)
 	g.renderer.ShowCombatResult(result.Message)
 	if accepted && result.Applied {
+		g.renderer.MarkMapDirty()
+		if g.renderer.SelectedArmy != "" {
+			selected := g.gs.Armies[g.renderer.SelectedArmy]
+			if selected == nil || selected.OwnerID != string(g.gs.PlayerFactionID) {
+				g.renderer.SelectedArmy = ""
+			}
+		}
 		g.renderer.AddEvent("[DIPLOMASI] " + result.Message)
 	}
 }

@@ -182,15 +182,26 @@ func VictoryConditionFromOption(opt scenario.VictoryOptionDef) VictoryCondition 
 
 // DiplomaticOffer AI/oyuncu arasında bekleyen diplomatik teklif kaydıdır.
 type DiplomaticOffer struct {
-	FromFactionID        faction.FactionID `json:"from_faction_id"`
-	ToFactionID          faction.FactionID `json:"to_faction_id"`
-	Action               string            `json:"action"`
-	RegionID             world.RegionID    `json:"region_id,omitempty"`
-	CreatedTurn          int               `json:"created_turn"`
-	Priority             int               `json:"priority,omitempty"`
-	PriorityReason       string            `json:"priority_reason,omitempty"`
-	WarDeclarerFactionID faction.FactionID `json:"war_declarer_faction_id,omitempty"`
-	WarEnemyFactionID    faction.FactionID `json:"war_enemy_faction_id,omitempty"`
+	FromFactionID        faction.FactionID    `json:"from_faction_id"`
+	ToFactionID          faction.FactionID    `json:"to_faction_id"`
+	Action               string               `json:"action"`
+	RegionID             world.RegionID       `json:"region_id,omitempty"`
+	RequestedTransfers   []DiplomaticTransfer `json:"requested_transfers,omitempty"`
+	OfferedTransfers     []DiplomaticTransfer `json:"offered_transfers,omitempty"`
+	CreatedTurn          int                  `json:"created_turn"`
+	Priority             int                  `json:"priority,omitempty"`
+	PriorityReason       string               `json:"priority_reason,omitempty"`
+	WarDeclarerFactionID faction.FactionID    `json:"war_declarer_faction_id,omitempty"`
+	WarEnemyFactionID    faction.FactionID    `json:"war_enemy_faction_id,omitempty"`
+}
+
+// DiplomaticTransfer, iki devlet arasındaki pazarlıkta tek bir malzeme veya
+// asker kalemini tanımlar. Requested gönderenin hedef devletten istediği,
+// Offered ise hedef devlete vermeyi taahhüt ettiği kalemlerdir.
+type DiplomaticTransfer struct {
+	Kind   string `json:"kind"` // region, resource, army
+	ID     string `json:"id"`
+	Amount int    `json:"amount"`
 }
 
 // DiplomaticOfferHistoryEntry çözümlenmiş diplomatik tekliflerin kısa geçmiş kaydıdır.

@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-09-30
+last_updated: 2026-10-09
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -188,6 +188,7 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | İttifak kur | `proposeAlliance()` | Savaşta değil + tüm senaryolarda `Score >= 40`; iki tarafın doğrudan müttefikleriyle mevcut savaş çakışması varsa oyuncu ve AI için teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Vassala doğrudan teklif edilebilir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
 | Minor imtiyazı teklif et | `offerMinorPrivilege()` | Oyuncunun egemen olduğu imtiyazsız minor bölge seçilir; hedef devlet seçildikten sonra teklif kuyruğa girer. Kabulde kullanım hakkı, otomatik imtiyaz rotası ve karşılıklı ilişki bonusu uygulanır |
+| Pazarlık | `proposeTransfer` | Savaşta olmayan hedef devlete iki kolonlu teklif panelinden bölge, kaynak/hammadde veya komutan taşımayan ordu birimi istenir ve karşılığında aynı türlerden verilebilir. Kabulde transfer uygulanır ve ilgili veren devletin ilişki puanı `+10` artar |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
 | Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse, hedef başka devlete bağlı değilse ve hedefin en fazla 3 kara bölgesi varsa; savaş duruşu teklifi göndermeyi engellemez, barışta mevcut `Score >= 55` ve askerî ön koşullar korunur |
@@ -224,6 +225,26 @@ yanlışlıkla uygulanamamasını önler. İlgili uygulama seam'leri
 `internal/diplomacy/offers.go:ResolveOffer()` ve `internal/diplomacy/diplomacy.go:execute()`
 ile regression testleri `TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice` ve
 `TestResolveQueuedAllianceOfferKeepsTermsAfterStrategicStateChanges`'dır.
+
+### Karşılıklı Transfer Pazarlığı
+
+`state.DiplomaticTransfer`, `region`, `resource` ve `army` kalemlerini taşır.
+`internal/render/diplomacy_negotiation.go` ve `internal/ui.ListView` iki taraflı panelde sol kolonda
+`Talep Edilen`, sağ kolonda `Verilen` kalemlerini gösterir. Oyuncu kendi
+topraklarını doğrudan kaydırılabilir bölge listesinden, mevcut kaynaklarını veya
+komutan taşımayan kara ordusu birimlerini seçip miktar belirleyebilir. Bölge
+transferinde üretim emirleri temizlenir, başkentler yeniden normalize edilir ve
+devredilen bölgedeki eski sahip orduları geçerli kara toprağına tahliye edilir;
+ordu transferi hedef devletin kara bölgesine yeni bir ordu olarak eklenir.
+Kabul sonrası renderer sahiplik rasterını ve ordu/etiket cache'lerini kirli
+işaretleyerek haritayı aynı dönüşte yeniler.
+
+Oyuncuya gelen `propose_transfer` teklifleri mevcut teklif modalında `Kabul Et`,
+`Reddet` ve `Karşı Teklif` seçeneklerini kullanır. Karşı teklif aynı iki kolonlu
+editörü açar. Kabul edilen talep kalemleri için talep edilen devletin teklif
+sahibine, verilen kalemleri için diğer yönde ilişki puanı `+10` uygulanır.
+`internal/diplomacy/negotiation.go` geçerlilik, atomik uygulama ve deterministik
+AI kabul değerlendirmesini merkezileştirir.
 
 Savaş sırasında aynı oyuncuya hem barış hem de kuşatma teslimiyeti teklifi bekliyorsa
 `BestOfferIndex()` barış teklifini teslimiyetten önce seçer; teslimiyetin daha yüksek
@@ -537,7 +558,7 @@ AI savaş ilanı sırasında oyuncu tarafında aktif bir ittifak varsa aynı kuy
 
 ## Eksik / Planlanan
 
-- [ ] Bekleyen diplomatik teklif kuyruğu / çok adımlı müzakere
+- [x] Bekleyen diplomatik teklif kuyruğu / iki taraflı transfer pazarlığı
 - [ ] İttifak için ortak geçiş hakkı veya askeri bonuslar
 - [ ] Ticaret için dinamik piyasa / rota pathfinding
 - [x] `internal/religion` paketi ayrıştırıldı

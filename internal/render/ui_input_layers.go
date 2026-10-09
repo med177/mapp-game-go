@@ -386,6 +386,9 @@ func (r *Renderer) rebuildUILayers() {
 	if r.battlePlan.show {
 		r.addUIScreenLayer(uiLayerBattlePlan)
 	}
+	if r.negotiation.show {
+		r.addUIScreenLayer(uiLayerDiplomacyOffer)
+	}
 	if r.battleReport.show {
 		r.addUIScreenLayer(uiLayerBattleReport)
 	}

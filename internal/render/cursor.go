@@ -84,6 +84,12 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 		}
 		return ebiten.CursorShapeDefault
 	}
+	if r.negotiation.show {
+		if r.diplomacyNegotiationPointerHit(fx, fy) {
+			return ebiten.CursorShapePointer
+		}
+		return ebiten.CursorShapeDefault
+	}
 	if _, ok := r.playerDiplomacyOfferIndex(); ok {
 		if r.diplomacyOfferHovering(fx, fy) {
 			return ebiten.CursorShapePointer

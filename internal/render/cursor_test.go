@@ -36,6 +36,76 @@ func TestCursorShapeAtUsesSharedEditModeUILayer(t *testing.T) {
 	}
 }
 
+func TestDiplomacyNegotiationCursorOnlyTargetsInteractiveControls(t *testing.T) {
+	originalWidth, originalHeight := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = originalWidth, originalHeight
+	}()
+	ScreenWidth, ScreenHeight = 1280, 900
+
+	targetRegion := world.RegionID("target-region")
+	playerRegion := world.RegionID("player-region")
+	gs := &state.GameState{
+		Phase:           state.PhasePlayerTurn,
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			targetRegion: {ID: targetRegion, OwnerID: "target", NameTR: "Hedef Bölgesi"},
+			playerRegion: {ID: playerRegion, OwnerID: "player", NameTR: "Oyuncu Bölgesi"},
+		},
+	}
+	r := &Renderer{
+		gs:            gs,
+		showDiplomacy: true,
+		negotiation: negotiationPanelState{
+			show:   true,
+			target: "target",
+			requested: negotiationSideState{
+				kind:   negotiationKindRegion,
+				amount: 1,
+			},
+			offered: negotiationSideState{
+				kind:   negotiationKindRegion,
+				amount: 1,
+			},
+		},
+	}
+	layout := buildNegotiationLayout()
+
+	assertPointer := func(name string, x, y float64, want ebiten.CursorShapeType) {
+		t.Helper()
+		if got := r.cursorShapeAt(x, y); got != want {
+			t.Errorf("%s cursor şekli = %v, want %v", name, got, want)
+		}
+	}
+	assertPointer("Tür düğmesi", layout.left.kind.X+layout.left.kind.W/2, layout.left.kind.Y+layout.left.kind.H/2, ebiten.CursorShapePointer)
+	assertPointer("Bölge seçim düğmesi", layout.left.option.X+layout.left.option.W/2, layout.left.option.Y+layout.left.option.H/2, ebiten.CursorShapePointer)
+	assertPointer("Bölge türündeki devre dışı miktar düğmesi", layout.left.minus.X+layout.left.minus.W/2, layout.left.minus.Y+layout.left.minus.H/2, ebiten.CursorShapeDefault)
+	assertPointer("Boş gönder düğmesi", layout.submit.X+layout.submit.W/2, layout.submit.Y+layout.submit.H/2, ebiten.CursorShapeDefault)
+	assertPointer("Kapat düğmesi", layout.cancel.X+layout.cancel.W/2, layout.cancel.Y+layout.cancel.H/2, ebiten.CursorShapePointer)
+	assertPointer("Panel boş alanı", layout.left.panel.X+layout.left.panel.W/2, layout.left.panel.Y+layout.left.panel.H/2, ebiten.CursorShapeDefault)
+
+	dropdown := negotiationRegionDropdown(gs, "target", &r.negotiation.requested, layout.left.panel)
+	if dropdown == nil {
+		t.Fatal("bölge dropdown'ı oluşturulmadı")
+	}
+	dropdown.Toggle()
+	listRect := negotiationRegionDropdownRect(layout.left.panel)
+	assertPointer("Açık dropdown seçeneği", listRect.X+12, listRect.Y+34, ebiten.CursorShapePointer)
+
+	r.negotiation.requested.items = []state.DiplomaticTransfer{{Kind: "region", ID: string(targetRegion), Amount: 1}}
+	selectedItems := negotiationSelectedItemsListRect(layout.left.panel)
+	assertPointer("Seçili kalem satırı", selectedItems.X+8, selectedItems.Y+10, ebiten.CursorShapePointer)
+}
+
+func TestNegotiationSelectedItemsListIsInsetFromFrame(t *testing.T) {
+	panel := buildNegotiationLayout().left.panel
+	frame := negotiationSelectedItemsFrameRect(panel)
+	list := negotiationSelectedItemsListRect(panel)
+	if list.X <= frame.X || list.Y <= frame.Y || list.X+list.W >= frame.X+frame.W || list.Y+list.H >= frame.Y+frame.H {
+		t.Fatalf("seçili kalem listesi çerçevenin içinde değil: frame=%+v list=%+v", frame, list)
+	}
+}
+
 func TestInGameHoveringIgnoresHiddenRecruitPanelCards(t *testing.T) {
 	rid := world.RegionID("owned")
 	gs := &state.GameState{

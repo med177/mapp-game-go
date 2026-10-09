@@ -162,6 +162,7 @@ type Renderer struct {
 	diplomacyNotificationOffer       state.DiplomaticOffer
 	diplomacyNotificationFrames      int
 	diplomacyNotificationTimerActive bool
+	negotiation                      negotiationPanelState
 	showCaptivePanel                 bool
 	captivePanelFocus                int
 	captivePanelScroll               int
@@ -2512,6 +2513,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.showCaptivePanel {
 			r.drawCaptivePanel(screen)
 		}
+	}
+	if r.negotiation.show {
+		r.drawDiplomacyNegotiation(screen)
 	}
 
 	// 8. Teknoloji paneli (üst katman)

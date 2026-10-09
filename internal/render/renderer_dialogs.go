@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"image/color"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -1219,6 +1220,8 @@ func diplomacyOfferActionLabelTR(action string) string {
 		return "teslimiyet"
 	case "propose_siege_vassalization":
 		return "kuşatma vassallığı"
+	case string(diplomacy.ActionProposeTransfer):
+		return "karşılıklı pazarlık"
 	default:
 		return "teklif"
 	}
@@ -1246,6 +1249,9 @@ func diplomacyOfferTitleTR(offer state.DiplomaticOffer) string {
 	}
 	if offer.Action == string(diplomacy.ActionSendGift) {
 		return "Diplomatik Hediye"
+	}
+	if offer.Action == string(diplomacy.ActionProposeTransfer) {
+		return "Diplomatik Pazarlık"
 	}
 	return "Anlaşma Teklifi"
 }
@@ -1297,6 +1303,9 @@ func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) s
 	if offer.Action == string(diplomacy.ActionSendGift) {
 		return fromName + " devleti size hediye gönderdi. İlişkiniz +" + strconv.Itoa(diplomacy.GiftRelationBonusFor(gs)) + " artacak ve hazinenize " + strconv.Itoa(diplomacy.GiftReceiverGoldFor(gs)) + " altın eklenecek."
 	}
+	if offer.Action == string(diplomacy.ActionProposeTransfer) {
+		return fromName + " devletiyle karşılıklı pazarlık önerisi. Talep edilen: " + diplomacyTransferSummaryTR(gs, offer.RequestedTransfers) + ". Verilen: " + diplomacyTransferSummaryTR(gs, offer.OfferedTransfers) + "."
+	}
 	if offer.Action != string(diplomacy.ActionJoinWarCall) {
 		return fromName + " devleti size " + diplomacyOfferActionLabelTR(offer.Action) + " teklif etti."
 	}
@@ -1313,6 +1322,21 @@ func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) s
 		return declarerName + " devleti " + enemyName + " devletine savaş ilan etti. Müttefikinizin tarafında yer alacak mısınız?"
 	}
 	return declarerName + " devleti " + fromName + " devletine savaş ilan etti. Müttefikiniz sizi kendi safında savaşa çağırıyor."
+}
+
+func diplomacyTransferSummaryTR(gs *state.GameState, items []state.DiplomaticTransfer) string {
+	if len(items) == 0 {
+		return "Yok"
+	}
+	parts := make([]string, 0, len(items))
+	for _, item := range items {
+		label := negotiationItemLabel(gs, item)
+		if item.Kind != "region" {
+			label += " x" + strconv.Itoa(item.Amount)
+		}
+		parts = append(parts, label)
+	}
+	return strings.Join(parts, ", ")
 }
 
 func diplomacyOfferReasonTextTR(offer state.DiplomaticOffer) string {
@@ -1362,6 +1386,7 @@ func drawDiplomacyOfferHistoryPanelRect(screen *ebiten.Image, gs *state.GameStat
 	if maxEntries <= 0 {
 		maxEntries = 3
 	}
+	maxEntries = diplomacyHistoryVisibleEntries(panelRect, maxEntries)
 	drawUIPanelFrame(screen, panelRect, color.RGBA{18, 14, 10, 228}, color.RGBA{88, 72, 40, 180}, 1, 3)
 
 	drawUILabel(screen, gameui.Rect{X: panelRect.X + 14, Y: panelRect.Y + 10, W: panelRect.W - 28}, "Geçmiş", color.RGBA{255, 220, 100, 255}, gameui.TextMedium, gameui.TextAlignStart)
@@ -1688,6 +1713,10 @@ func (r *Renderer) drawDiplomacyOfferDialog(screen *ebiten.Image, offerIdx int) 
 			solidButtonStyle(color.RGBA{70, 140, 70, 240}, color.RGBA{120, 180, 120, 255}, ColorWhite, 10))
 		drawUIButtonWidget(screen, rejectBtn,
 			solidButtonStyle(color.RGBA{140, 70, 70, 240}, color.RGBA{190, 110, 110, 255}, ColorWhite, 10))
+		if offer.Action == string(diplomacy.ActionProposeTransfer) {
+			drawUIButtonWidget(screen, buildDiplomacyOfferCounterButton(),
+				solidButtonStyle(color.RGBA{76, 94, 142, 240}, color.RGBA{122, 148, 196, 255}, ColorWhite, 10))
+		}
 	}
 }
 
@@ -1711,7 +1740,7 @@ func (r *Renderer) diplomacyNotificationAutoCloseReady(offer state.DiplomaticOff
 	if r == nil || !diplomacyOfferIsNotification(offer) {
 		return false
 	}
-	if !r.diplomacyNotificationTimerActive || r.diplomacyNotificationOffer != offer {
+	if !r.diplomacyNotificationTimerActive || !reflect.DeepEqual(r.diplomacyNotificationOffer, offer) {
 		r.diplomacyNotificationOffer = offer
 		r.diplomacyNotificationFrames = 0
 		r.diplomacyNotificationTimerActive = true
@@ -1749,6 +1778,9 @@ func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.Inp
 	}
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	if input.LeftJustPressed {
+		if offer.Action == string(diplomacy.ActionProposeTransfer) && buildDiplomacyOfferCounterButton().HitTest(input.MouseX, input.MouseY) {
+			return InputAction{Kind: ActionCounterDiplomacyOffer, OfferIndex: offerIdx}
+		}
 		if acceptBtn.HitTest(input.MouseX, input.MouseY) {
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}
 		}
