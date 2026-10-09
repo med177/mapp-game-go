@@ -1039,6 +1039,16 @@ func (r *Renderer) updateNavalContactCamera() {
 		return
 	}
 	contact := r.gs.PendingNavalContact
+	var dialogContact state.NavalContact
+	if contact == nil && r.confirmDialog.navalContact != nil {
+		dialogContact = state.NavalContact{
+			AttackerArmyID: r.confirmDialog.navalContact.opponentArmyID,
+			DefenderArmyID: r.confirmDialog.navalContact.playerArmyID,
+			PlayerArmyID:   r.confirmDialog.navalContact.playerArmyID,
+			SeaRegionID:    r.confirmDialog.navalContact.seaID,
+		}
+		contact = &dialogContact
+	}
 	sea := (*world.Region)(nil)
 	if contact != nil {
 		sea = r.gs.Regions[contact.SeaRegionID]
@@ -1059,6 +1069,18 @@ func (r *Renderer) updateNavalContactCamera() {
 
 	targetY := float64(ScreenHeight) / 2
 	anchorX, anchorY, anchorOK := r.contactArmyMarkerWorldPos(contact.PlayerArmyID, contact.AttackerArmyID, contact.DefenderArmyID)
+	if !anchorOK {
+		opponentID := contact.AttackerArmyID
+		if opponentID == contact.PlayerArmyID {
+			opponentID = contact.DefenderArmyID
+		}
+		if opponent := r.gs.Armies[opponentID]; opponent != nil {
+			if opponentRegion := r.gs.Regions[opponent.RegionID]; opponentRegion != nil {
+				anchorX, anchorY = r.regionWorldPos(opponentRegion)
+				anchorOK = true
+			}
+		}
+	}
 	if !anchorOK {
 		anchorX, anchorY = r.regionWorldPos(sea)
 	}
