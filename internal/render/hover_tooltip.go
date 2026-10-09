@@ -213,6 +213,153 @@ type armyMergePreviewRow struct {
 	count  int
 }
 
+// drawArmyMarkerHoverTooltip, detay paneli kapalıyken harita marker'ının
+// birim bileşimini gösterir. Görünürlük kontrolü, yabancı orduların gizli
+// istihbaratını popup üzerinden açığa çıkarmamasını sağlar.
+func (r *Renderer) drawArmyMarkerHoverTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.mapMode == MapModeTrade || r.worldInputLockedByPhase() {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	fx, fy := float64(mx), float64(my)
+	if _, ok := r.uiLayers.TopAt(fx, fy); ok {
+		return
+	}
+	aid, ok := r.armyHitAt(fx, fy)
+	if !ok {
+		return
+	}
+	a := r.gs.Armies[aid]
+	if a == nil {
+		return
+	}
+	if !playerCanSeeArmyDetails(r.gs, a) && !enemyArmyInPlayerMoveRange(r.gs, a) &&
+		!enemyUnderPlayerSiege(r.gs, a) && !playerHasRevealEnemyStrength(r.gs) {
+		drawHiddenArmyMarkerTooltip(screen, a, fx, fy)
+		return
+	}
+	drawArmyMarkerUnitSummaryTooltip(screen, r.gs, a, fx, fy)
+}
+
+func drawHiddenArmyMarkerTooltip(screen *ebiten.Image, a *army.Army, mx, my float64) {
+	if a == nil {
+		return
+	}
+	const tooltipWidth = 260.0
+	const tooltipHeight = 54.0
+	x, y, w, h := tooltipRect(mx, my, tooltipWidth, tooltipHeight)
+	drawTooltipBox(screen, x, y, w, h)
+	label := "Ordu"
+	if a.IsNaval {
+		label = "Filo"
+	}
+	DrawText(screen, label+": birim detayları gizli", x+10, y+12, FaceSmall, ColorGold)
+	DrawText(screen, "İstihbarat yetersiz", x+10, y+31, FaceSmall, ColorGray)
+}
+
+func armyMarkerSummaryRows(gs *state.GameState, a *army.Army) []armyMergePreviewRow {
+	if gs == nil || a == nil {
+		return nil
+	}
+	units := a.Units
+	if !playerCanSeeArmyDetails(gs, a) {
+		fullIntel := playerHasRevealEnemyStrength(gs)
+		revealRatio := 0.50
+		if enemyUnderPlayerSiege(gs, a) {
+			revealRatio = 0.75
+		}
+		revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
+		units = make([]army.Unit, 0, revealed)
+		for displayIndex := 0; displayIndex < revealed; displayIndex++ {
+			unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+			if unitIndex < 0 {
+				break
+			}
+			units = append(units, a.Units[unitIndex])
+		}
+	}
+	rows := make([]armyMergePreviewRow, 0, len(units))
+	for _, unit := range units {
+		rowIndex := -1
+		for i := range rows {
+			if rows[i].typeID == unit.TypeID {
+				rowIndex = i
+				break
+			}
+		}
+		if rowIndex < 0 {
+			rows = append(rows, armyMergePreviewRow{typeID: unit.TypeID, count: 1})
+		} else {
+			rows[rowIndex].count++
+		}
+	}
+	return rows
+}
+
+func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army, mx, my float64) {
+	if gs == nil || a == nil {
+		return
+	}
+	rows := armyMarkerSummaryRows(gs, a)
+	const (
+		tooltipWidth   = 278.0
+		tileWidth      = 60.0
+		tileHeight     = 120.0
+		tileGap        = 6.0
+		tooltipPadding = 10.0
+	)
+	columns := 4
+	rowLines := (len(rows) + columns - 1) / columns
+	tooltipHeight := 40.0 + float64(rowLines)*tileHeight + float64(maxInt(rowLines-1, 0))*tileGap + tooltipPadding
+	if len(rows) == 0 {
+		tooltipHeight = 54
+	}
+	x, y, w, h := tooltipRect(mx, my, tooltipWidth, tooltipHeight)
+	drawTooltipBox(screen, x, y, w, h)
+	label := "Ordu"
+	if a.IsNaval {
+		label = "Filo"
+	}
+	header := label + ": " + itoa(len(a.Units)) + " birim"
+	if !playerCanSeeArmyDetails(gs, a) && !playerHasRevealEnemyStrength(gs) {
+		header = label + ": kısmi istihbarat"
+	}
+	DrawText(screen, header, x+10, y+10, FaceSmall, ColorGold)
+
+	for index, row := range rows {
+		column := index % columns
+		line := index / columns
+		tileX := x + tooltipPadding + float64(column)*(tileWidth+tileGap)
+		tileY := y + 32 + float64(line)*(tileHeight+tileGap)
+		vector.FillRect(screen, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight), color.RGBA{248, 246, 238, 235}, false)
+		if sprite := unitSpriteForFaction(gs, a.OwnerID, row.typeID); sprite != nil {
+			drawArmyMarkerUnitImage(screen, sprite, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight))
+		}
+		countY := tileY + tileHeight - 26
+		vector.FillRect(screen, float32(tileX), float32(countY), float32(tileWidth), 26, color.RGBA{25, 20, 15, 175}, false)
+		vector.StrokeRect(screen, float32(tileX), float32(countY), float32(tileWidth), 26, 1, color.RGBA{190, 160, 90, 190}, false)
+		DrawTextCentered(screen, "x"+itoa(row.count), tileX+tileWidth/2, countY+5, FaceMed, ColorGold)
+		vector.StrokeRect(screen, float32(tileX), float32(tileY), float32(tileWidth), float32(tileHeight), 1, color.RGBA{150, 125, 72, 220}, false)
+	}
+}
+
+// drawArmyMarkerUnitImage görseli kartın tamamına yayar; marker popup'ındaki
+// kartlar kaynak görselin dikey oranına göre boşluk bırakmaz.
+func drawArmyMarkerUnitImage(screen *ebiten.Image, sprite *ebiten.Image, x, y, width, height float32) bool {
+	if screen == nil || sprite == nil || width <= 0 || height <= 0 {
+		return false
+	}
+	bounds := sprite.Bounds()
+	if bounds.Dx() <= 0 || bounds.Dy() <= 0 {
+		return false
+	}
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(float64(width)/float64(bounds.Dx()), float64(height)/float64(bounds.Dy()))
+	op.GeoM.Translate(float64(x), float64(y))
+	screen.DrawImage(sprite, op)
+	return true
+}
+
 // drawArmyMergePreviewTooltip hedef ordunun birim kompozisyonunu küçük kartlar
 // halinde gösterir. Butonun etiketiyle aynı target state'i kullanır; böylece
 // hover önizlemesi tıklanacak ordudan farklı bir orduyu anlatamaz.

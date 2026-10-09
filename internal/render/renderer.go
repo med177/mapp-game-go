@@ -2475,6 +2475,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 	if r.gs.Phase != state.PhaseEditMode {
 		DrawEventLog(screen, r.eventLog, r.eventLogCollapsed, r.eventLogScroll, r.HasEventCodex())
+		if !r.showArmyDetailPanel {
+			r.drawArmyMarkerHoverTooltip(screen)
+		}
 		drawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab, r.armyPanelTooltipActive())
 		r.drawLandPassageHoverTooltip(screen)
 		r.drawArmyTaskStatusHoverTooltip(screen)
