@@ -361,7 +361,7 @@ func drawArmyUnitSummaryTiles(screen *ebiten.Image, gs *state.GameState, ownerID
 		vector.StrokeRect(screen, float32(tileX), float32(countY), float32(armySummaryTileWidth), 26, 1, color.RGBA{190, 160, 90, 190}, false)
 		drawUIOutlinedLabel(screen,
 			gameui.Rect{X: tileX, Y: countY + 5, W: armySummaryTileWidth, H: 18},
-			"x"+itoa(row.count), ColorGold, ColorWhite, gameui.TextMedium, gameui.TextAlignCenter)
+			"x"+itoa(row.count), color.White, color.Black, gameui.TextMedium, gameui.TextAlignCenter)
 		vector.StrokeRect(screen, float32(tileX), float32(tileY), float32(armySummaryTileWidth), float32(armySummaryTileHeight), 1, color.RGBA{150, 125, 72, 220}, false)
 	}
 }

@@ -45,8 +45,12 @@ const (
 	actionHudGap        = float32(5)
 	actionHudGroupGap   = float32(216)
 
-	minimapW = float32(240)
-	minimapH = float32(165)
+	mapModeHudW       = float32(230)
+	mapModeHudH       = float32(30)
+	minimapMapModeGap = float32(6)
+	minimapMinW       = mapModeHudW
+	minimapMaxW       = float32(240)
+	minimapFallbackH  = float32(165)
 
 	evLogW               = float32(255)
 	evLogH               = float32(520)
@@ -146,9 +150,11 @@ const (
 	regionPanelTabEvents
 )
 
-func bottomBarTop() float32     { return float32(ScreenHeight) - bottomBarH }
-func minimapX() float32         { return float32(ScreenWidth) - minimapW - 5 }
-func minimapY() float32         { return float32(ScreenHeight) - minimapH }
+func bottomBarTop() float32 { return float32(ScreenHeight) - bottomBarH }
+func minimapX() float32     { return float32(ScreenWidth) - minimapW - 5 }
+func minimapY() float32 {
+	return float32(ScreenHeight) - mapModeHudH - minimapMapModeGap - minimapH
+}
 func evLogX() float32           { return float32(ScreenWidth) - evLogW }
 func evLogY() float32           { return topDateHudH + 8 }
 func infoPanelX() float32       { return 0 }
@@ -170,9 +176,12 @@ var (
 		return img
 	}()
 
-	// miniMapBg minimap arka plan görseli (assets/maps/mini-map.png)
-	miniMapBg     *ebiten.Image
-	miniMapLoaded bool
+	// miniMapBg aktif senaryonun minimap arka plan görselidir.
+	miniMapBg        *ebiten.Image
+	miniMapLoaded    bool
+	miniMapAssetPath string
+	minimapW         = minimapMinW
+	minimapH         = minimapFallbackH
 
 	factionPanelBodyBuffer = func() *ebiten.Image {
 		w, h := factionPanelBodyCanvasSize()
@@ -226,12 +235,62 @@ func resetBuildingSpriteCache() {
 	buildingSpriteCache = map[string]*ebiten.Image{}
 }
 
-func ensureMiniMapBg() {
-	if miniMapLoaded {
+func resetMiniMapLayout() {
+	minimapW = minimapMinW
+	minimapH = minimapFallbackH
+}
+
+func updateMiniMapLayout(img *ebiten.Image) {
+	resetMiniMapLayout()
+	if img == nil {
 		return
 	}
+
+	bounds := img.Bounds()
+	if bounds.Dx() <= 0 || bounds.Dy() <= 0 {
+		return
+	}
+
+	imageRatio := float32(bounds.Dx()) / float32(bounds.Dy())
+	minimapW = minimapMaxW
+	minimapH = minimapW / imageRatio
+}
+
+func resetMiniMapCache() {
+	miniMapBg = nil
+	miniMapLoaded = false
+	miniMapAssetPath = ""
+	resetMiniMapLayout()
+}
+
+func loadMiniMapCache(gs *state.GameState) {
+	if gs == nil || ActiveScenarioPath == "" {
+		resetMiniMapCache()
+		return
+	}
+
+	configured := "mini_map.png"
+	if gs.MapConfig.BackgroundMiniMap != "" {
+		configured = gs.MapConfig.BackgroundMiniMap
+	}
+	filename := filepath.Base(filepath.FromSlash(configured))
+	path := filepath.Join(ActiveScenarioPath, "maps", filename)
+	if miniMapLoaded && miniMapAssetPath == path {
+		return
+	}
+
 	miniMapLoaded = true
-	miniMapBg = tryLoadImage(ActiveScenarioPath + "/maps/mini-map.png")
+	miniMapAssetPath = path
+	miniMapBg = tryLoadImage(path)
+	// Eski senaryo verilerinde alan mini_map.png olarak tanımlı, asset ise
+	// mini-map.png adıyla bulunuyor. Eksik görselde poligon fallback'ine düşme.
+	if miniMapBg == nil && filename == "mini_map.png" {
+		legacyPath := filepath.Join(ActiveScenarioPath, "maps", "mini-map.png")
+		if legacyPath != path {
+			miniMapBg = tryLoadImage(legacyPath)
+		}
+	}
+	updateMiniMapLayout(miniMapBg)
 }
 
 // factionFlagImage faction ID'sine karşılık gelen senaryo bayrağını döner.
@@ -444,12 +503,12 @@ func bottomActionHudRect() (x, y, w, h float32) {
 }
 
 func mapModeHudRect() (x, y, w, h float32) {
-	w = 230
-	h = 30
+	w = mapModeHudW
+	h = mapModeHudH
 	// Harita modu düğmeleri minimap'in hemen üstünde, onunla aynı yatay
 	// eksende durur.
 	x = minimapX() + minimapW/2 - w/2
-	y = minimapY() - h - 6
+	y = minimapY() + minimapH + minimapMapModeGap
 	if x < 0 {
 		x = 0
 	}
@@ -1172,7 +1231,7 @@ func playerMilitaryPowerStanding(gs *state.GameState) (power, rank, factionCount
 
 func drawMapModeHud(screen *ebiten.Image, mapMode MapMode) {
 	x, y, w, h := mapModeHudRect()
-	drawUICardRect(screen, gameui.Rect{X: float64(x), Y: float64(y), W: float64(w), H: float64(h)}, color.RGBA{14, 14, 18, 220}, panelBorder, 1.2)
+	drawRoundedHUDFrame(screen, [4]float32{x, y, w, h}, 7, 1.2, color.RGBA{14, 14, 18, 220}, panelBorder)
 	buttons := buildMapModeButtons()
 	for i, btn := range buttons {
 		active := (i == 0 && mapMode == MapModeNormal) || (i == 1 && mapMode == MapModeTrade)
@@ -2362,8 +2421,6 @@ func drawInfoPopupAt(screen *ebiten.Image, message string, alpha uint8, rect gam
 // DrawMinimap küçük ölçekli dünya haritasını, fraksiyon sahipliğini ve
 // kamera viewport dikdörtgenini çizer.
 func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale float64) {
-	ensureMiniMapBg()
-
 	mx := minimapX()
 	my := minimapY()
 

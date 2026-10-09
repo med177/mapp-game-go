@@ -136,16 +136,17 @@ func FilterVictoryOptionsForFaction(options []VictoryOptionDef, factionID string
 
 // MapConfig senaryonun arka plan ve shape hizalama ayarlarını tanımlar.
 type MapConfig struct {
-	WorldWidth      *int     `json:"world_width,omitempty"`
-	WorldHeight     *int     `json:"world_height,omitempty"`
-	BackgroundImage string   `json:"background_image,omitempty"`
-	ShapeSetID      string   `json:"shape_set_id,omitempty"`
-	ShapeOffsetX    *float64 `json:"shape_offset_x,omitempty"`
-	ShapeOffsetY    *float64 `json:"shape_offset_y,omitempty"`
-	ShapeScaleX     *float64 `json:"shape_scale_x,omitempty"`
-	ShapeScaleY     *float64 `json:"shape_scale_y,omitempty"`
-	TerrainAlpha    *float64 `json:"terrain_alpha,omitempty"`
-	MaxZoom         *float64 `json:"max_zoom,omitempty"`
+	WorldWidth        *int     `json:"world_width,omitempty"`
+	WorldHeight       *int     `json:"world_height,omitempty"`
+	BackgroundImage   string   `json:"background_image,omitempty"`
+	BackgroundMiniMap string   `json:"background_mini_map,omitempty"`
+	ShapeSetID        string   `json:"shape_set_id,omitempty"`
+	ShapeOffsetX      *float64 `json:"shape_offset_x,omitempty"`
+	ShapeOffsetY      *float64 `json:"shape_offset_y,omitempty"`
+	ShapeScaleX       *float64 `json:"shape_scale_x,omitempty"`
+	ShapeScaleY       *float64 `json:"shape_scale_y,omitempty"`
+	TerrainAlpha      *float64 `json:"terrain_alpha,omitempty"`
+	MaxZoom           *float64 `json:"max_zoom,omitempty"`
 }
 
 // AirspaceConfig senaryoda uçan birimlerin yabancı hava sahasına giriş kuralını tanımlar.

@@ -24,6 +24,7 @@ var tinyButtonStyle = gameui.ButtonStyle{
 	DisabledBorder: color.RGBA{45, 38, 25, 160},
 	DisabledText:   color.RGBA{85, 78, 62, 190},
 	BorderWidth:    1,
+	CornerRadius:   5,
 }
 
 var closeButtonStyle = tinyButtonStyle
@@ -164,6 +165,7 @@ func mapModeButtonStyle(active bool) gameui.ButtonStyle {
 		DisabledBorder: color.RGBA{120, 96, 54, 210},
 		DisabledText:   txt,
 		BorderWidth:    1,
+		CornerRadius:   6,
 	}
 }
 
@@ -175,6 +177,7 @@ var dateMenuButtonStyle = gameui.ButtonStyle{
 	DisabledBorder: panelBorder,
 	DisabledText:   ColorWhite,
 	BorderWidth:    1.5,
+	CornerRadius:   6,
 }
 
 func eventLogButtonStyle(text color.RGBA) gameui.ButtonStyle {
@@ -186,6 +189,7 @@ func eventLogButtonStyle(text color.RGBA) gameui.ButtonStyle {
 		DisabledBorder: panelBorder,
 		DisabledText:   text,
 		BorderWidth:    1,
+		CornerRadius:   5,
 	}
 }
 

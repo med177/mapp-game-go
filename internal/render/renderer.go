@@ -1590,7 +1590,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		ActiveScenarioPath = gs.ScenarioPath
 		// Senaryo değişince asset cache'lerini sıfırla
 		resetBuildingSpriteCache()
-		miniMapLoaded = false
+		loadMiniMapCache(gs)
 		armySpritesLoaded = false
 		unitSprites = nil
 		legacyUnitSprites = nil
@@ -1620,6 +1620,8 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 		loreImageLoaded = map[string]bool{}
 		resetFactionFlagCache()
 		resetCommanderPortraitCache()
+	} else {
+		resetMiniMapCache()
 	}
 	if prepared != nil {
 		r.worldMap = FinalizePreparedWorldMap(prepared)
@@ -1757,10 +1759,13 @@ func (r *Renderer) openEventCodexAt(target *EventCodexEntry) {
 }
 
 func (r *Renderer) nearestEventCodexEntry() (EventCodexEntry, bool) {
-	if r == nil || len(r.eventCodexEntries) <= int(EventCodexAll) {
+	if r == nil || len(r.eventCodexEntries) <= int(EventCodexPlayer) {
 		return EventCodexEntry{}, false
 	}
-	entries := r.eventCodexEntries[int(EventCodexAll)]
+	// HUD yalnızca oyuncunun karar verebileceği veya doğrudan etkileneceği
+	// event'leri göstermeli; diğer faction'ların bekleyen zincirleri oyuncunun
+	// üst durumunda yaklaşan event gibi görünmemeli.
+	entries := r.eventCodexEntries[int(EventCodexPlayer)]
 	var nearest EventCodexEntry
 	found := false
 	for _, entry := range entries {
