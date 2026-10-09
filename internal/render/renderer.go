@@ -1058,7 +1058,7 @@ func (r *Renderer) updateNavalContactCamera() {
 	}
 
 	targetY := float64(ScreenHeight) / 2
-	anchorX, anchorY, anchorOK := r.navalContactFleetMarkerWorldPos(contact)
+	anchorX, anchorY, anchorOK := r.contactArmyMarkerWorldPos(contact.PlayerArmyID, contact.AttackerArmyID, contact.DefenderArmyID)
 	if !anchorOK {
 		anchorX, anchorY = r.regionWorldPos(sea)
 	}
@@ -1091,7 +1091,7 @@ func (r *Renderer) updateLandContactCamera() {
 
 	// Temas edilen düşman markerını görünen ekranın tam merkezine taşı.
 	targetY := float64(ScreenHeight) / 2
-	anchorX, anchorY, ok := r.landContactArmyMarkerWorldPos(contact)
+	anchorX, anchorY, ok := r.contactArmyMarkerWorldPos(contact.PlayerArmyID, contact.AttackerArmyID, contact.DefenderArmyID)
 	if !ok {
 		anchorIX, anchorIY, anchorOK := r.landArmyAnchor(land)
 		anchorX, anchorY = float64(anchorIX), float64(anchorIY)
@@ -1104,33 +1104,15 @@ func (r *Renderer) updateLandContactCamera() {
 	r.camY = anchorY - (targetY-float64(ScreenHeight)/2)/(r.camScale*mapPitchY)
 }
 
-// landContactArmyMarkerWorldPos, temas ordularının çizilmiş marker merkezini
-// döndürür. Bölge veya yerleşim anchor'ı yerine gerçek marker konumu kullanılır.
-func (r *Renderer) landContactArmyMarkerWorldPos(contact *state.LandContact) (float64, float64, bool) {
-	if r == nil || contact == nil {
+// contactArmyMarkerWorldPos, temas ordusunun çizilmiş marker merkezini döndürür.
+// Kara ve deniz teması aynı marker konumunu kullanır.
+func (r *Renderer) contactArmyMarkerWorldPos(playerID, attackerID, defenderID army.ArmyID) (float64, float64, bool) {
+	if r == nil {
 		return 0, 0, false
 	}
-	opponentID := contact.AttackerArmyID
-	if opponentID == contact.PlayerArmyID {
-		opponentID = contact.DefenderArmyID
-	}
-	for _, marker := range r.armyIconPositions() {
-		if marker.ArmyID != opponentID {
-			continue
-		}
-		worldX, worldY := r.screenToWorld(float64(marker.X), float64(marker.Y))
-		return worldX, worldY, true
-	}
-	return 0, 0, false
-}
-
-func (r *Renderer) navalContactFleetMarkerWorldPos(contact *state.NavalContact) (float64, float64, bool) {
-	if r == nil || contact == nil {
-		return 0, 0, false
-	}
-	opponentID := contact.AttackerArmyID
-	if opponentID == contact.PlayerArmyID {
-		opponentID = contact.DefenderArmyID
+	opponentID := attackerID
+	if opponentID == playerID {
+		opponentID = defenderID
 	}
 	for _, marker := range r.armyIconPositions() {
 		if marker.ArmyID != opponentID {
