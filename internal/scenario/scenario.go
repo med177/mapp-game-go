@@ -262,11 +262,14 @@ type DiplomacyConfig struct {
 }
 
 // PeacePeriod, belirli faction'ların senaryonun hazırlık döneminde savaş ilan
-// etmesini sınırlar. Süre ve event flag'i birlikte dönem kilidini oluşturur.
+// etmesini sınırlar. RequiresEvent, bir kez gerçekleşmesi gereken kalıcı event
+// kaydını kontrol eder; event flag alanları geçici durum flag'lerini kontrol eder.
 type PeacePeriod struct {
-	MinTurns                        int      `json:"min_turns,omitempty"`
-	WarDeclarationRequiresEventFlag string   `json:"war_declaration_requires_event_flag,omitempty"`
-	BlockedFactions                 []string `json:"blocked_factions,omitempty"`
+	MinTurns                           int      `json:"min_turns,omitempty"`
+	WarDeclarationRequiresEvent        string   `json:"war_declaration_requires_event,omitempty"`
+	WarDeclarationRequiresEventFlag    string   `json:"war_declaration_requires_event_flag,omitempty"`
+	WarDeclarationUnblockedByEventFlag string   `json:"war_declaration_unblocked_by_event_flag,omitempty"`
+	BlockedFactions                    []string `json:"blocked_factions,omitempty"`
 }
 
 func DefaultDiplomacyConfig() DiplomacyConfig {

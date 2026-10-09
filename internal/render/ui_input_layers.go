@@ -9,49 +9,50 @@ import (
 )
 
 const (
-	uiLayerMainMenu       = "main-menu"
-	uiLayerScreenMenu     = "screen-menu"
-	uiLayerPauseMenu      = "pause-menu"
-	uiLayerTopStatus      = "hud-top-status"
-	uiLayerTopDate        = "hud-top-date"
-	uiLayerTurnTech       = "hud-turn-tech"
-	uiLayerMusic          = "hud-music"
-	uiLayerBottom         = "hud-bottom"
-	uiLayerEventLog       = "event-log"
-	uiLayerMinimap        = "minimap"
-	uiLayerRegion         = "region-panel"
-	uiLayerSettlement     = "settlement-panel"
-	uiLayerFaction        = "faction-panel"
-	uiLayerRecruit        = "recruit-panel"
-	uiLayerArmy           = "army-panel"
-	uiLayerSiege          = "siege-panel"
-	uiLayerActiveWars     = "active-wars-panel"
-	uiLayerMerchantRoute  = "merchant-route-panel"
-	uiLayerNavalMission   = "naval-mission-panel"
-	uiLayerDiplomacy      = "diplomacy-panel"
-	uiLayerTech           = "tech-panel"
-	uiLayerTrade          = "trade-panel"
-	uiLayerImperial       = "imperial-panel"
-	uiLayerAIDiagnostic   = "ai-diagnostic"
-	uiLayerCommander      = "commander-panel"
-	uiLayerShortcuts      = "shortcuts"
-	uiLayerPopup          = "popup"
-	uiLayerModal          = "modal"
-	uiLayerHistorical     = "historical-event"
-	uiLayerEventCodex     = "event-codex"
-	uiLayerEventDetail    = "event-detail"
-	uiLayerVictoryDetail  = "victory-detail"
-	uiLayerBattleReport   = "battle-report"
-	uiLayerCombatSummary  = "combat-summary"
-	uiLayerWarSummary     = "war-summary"
-	uiLayerBattlePlan     = "battle-plan"
-	uiLayerConfirm        = "confirm-dialog"
-	uiLayerRegionTask     = "region-task-dialog"
-	uiLayerDiplomacyOffer = "diplomacy-offer"
-	uiLayerEditInspector  = "edit-inspector"
-	uiLayerEditForm       = "edit-form"
-	uiLayerEditDropdown   = "edit-dropdown"
-	uiLayerEditBuildings  = "edit-buildings"
+	uiLayerMainMenu             = "main-menu"
+	uiLayerScreenMenu           = "screen-menu"
+	uiLayerPauseMenu            = "pause-menu"
+	uiLayerTopStatus            = "hud-top-status"
+	uiLayerTopDate              = "hud-top-date"
+	uiLayerTurnTech             = "hud-turn-tech"
+	uiLayerMusic                = "hud-music"
+	uiLayerBottom               = "hud-bottom"
+	uiLayerEventLog             = "event-log"
+	uiLayerMinimap              = "minimap"
+	uiLayerRegion               = "region-panel"
+	uiLayerSettlement           = "settlement-panel"
+	uiLayerFaction              = "faction-panel"
+	uiLayerRecruit              = "recruit-panel"
+	uiLayerArmy                 = "army-panel"
+	uiLayerSiege                = "siege-panel"
+	uiLayerActiveWars           = "active-wars-panel"
+	uiLayerMerchantRoute        = "merchant-route-panel"
+	uiLayerNavalMission         = "naval-mission-panel"
+	uiLayerDiplomacy            = "diplomacy-panel"
+	uiLayerTech                 = "tech-panel"
+	uiLayerTrade                = "trade-panel"
+	uiLayerImperial             = "imperial-panel"
+	uiLayerAIDiagnostic         = "ai-diagnostic"
+	uiLayerCommander            = "commander-panel"
+	uiLayerShortcuts            = "shortcuts"
+	uiLayerPopup                = "popup"
+	uiLayerModal                = "modal"
+	uiLayerHistorical           = "historical-event"
+	uiLayerEventCodex           = "event-codex"
+	uiLayerEventDetail          = "event-detail"
+	uiLayerVictoryDetail        = "victory-detail"
+	uiLayerBattleReport         = "battle-report"
+	uiLayerCombatSummary        = "combat-summary"
+	uiLayerWarSummary           = "war-summary"
+	uiLayerBattlePlan           = "battle-plan"
+	uiLayerConfirm              = "confirm-dialog"
+	uiLayerRegionTask           = "region-task-dialog"
+	uiLayerDiplomacyOffer       = "diplomacy-offer"
+	uiLayerDiplomacyNegotiation = "diplomacy-negotiation"
+	uiLayerEditInspector        = "edit-inspector"
+	uiLayerEditForm             = "edit-form"
+	uiLayerEditDropdown         = "edit-dropdown"
+	uiLayerEditBuildings        = "edit-buildings"
 )
 
 func uiLayerRect(x, y, w, h float64) gameui.Rect {
@@ -386,9 +387,6 @@ func (r *Renderer) rebuildUILayers() {
 	if r.battlePlan.show {
 		r.addUIScreenLayer(uiLayerBattlePlan)
 	}
-	if r.negotiation.show {
-		r.addUIScreenLayer(uiLayerDiplomacyOffer)
-	}
 	if r.battleReport.show {
 		r.addUIScreenLayer(uiLayerBattleReport)
 	}
@@ -421,6 +419,9 @@ func (r *Renderer) rebuildUILayers() {
 	}
 	if r.showShortcuts {
 		r.addUIScreenLayer(uiLayerShortcuts)
+	}
+	if r.negotiation.show {
+		r.addUIScreenLayer(uiLayerDiplomacyNegotiation)
 	}
 }
 

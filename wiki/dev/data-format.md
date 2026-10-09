@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-10-02
+last_updated: 2026-10-09
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -61,6 +61,22 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
 `map` alanı opsiyoneldir. Verilmeyen alanlar renderer'ın geriye dönük uyumlu varsayılanlarıyla tamamlanır. `background_image`, senaryonun `maps/` klasöründeki arka plan dosyasının yalnızca dosya adını belirtir; `.png`, `.jpg` ve `.jpeg` desteklenir. Alan verilmezse `world_map_background.png` kullanılır. `world_width` / `world_height` arka plan resminin dünya boyutunu, `shape_offset_*` ve `shape_scale_*` ise `country_shapes.json` koordinatlarının world pikseline dönüşümünü belirler.
 
 `music` alanı opsiyoneldir. `default_playlist` senaryo yüklendikten sonra başlatılacak listeyi belirtir; `playlists` içindeki dosya adları senaryonun `musics/` klasörüne göre çözülür. Desteklenen formatlar: `.ogg`, `.mp3`, `.wav`. `weight` eksik veya `0` ise `1` kabul edilir. Paylaşılan tıklama/uyarı efektleri bu alanın parçası değildir; `assets/sounds/` altından yüklenir.
+
+`diplomacy.peace_periods` belirli fraksiyon çiftleri arasında savaş ilanını kısıtlar. `min_turns` varsa bu asgari tur eşiği geçilmelidir. `war_declaration_requires_event`, gerçekleşmesi beklenen event'in **ID** değeridir; `FiredEventIDs[event_id]` kaydı kalıcıdır ve event'in `clear_flags` etkilerinden etkilenmez. `war_declaration_requires_event_flag` ve `war_declaration_unblocked_by_event_flag` ise değişebilir `flag:<id>` durumlarını kontrol eder; flag'ler sonradan temizlenebilir. Bu nedenle tek seferlik tarihsel açılışlar için event ID alanı tercih edilmelidir. Tüm alanlar opsiyoneldir.
+
+```json
+{
+  "diplomacy": {
+    "peace_periods": [
+      {
+        "min_turns": 10,
+        "war_declaration_requires_event": "major_war_started_event",
+        "blocked_factions": ["faction_a", "faction_b"]
+      }
+    ]
+  }
+}
+```
 
 ---
 

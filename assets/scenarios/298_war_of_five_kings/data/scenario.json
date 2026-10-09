@@ -29,7 +29,7 @@
     "peace_periods": [
       {
         "min_turns": 10,
-        "war_declaration_requires_event_flag": "war_of_five_kings_active",
+        "war_declaration_requires_event": "death_of_robert_298",
         "blocked_factions": [
           "stark",
           "lannister",

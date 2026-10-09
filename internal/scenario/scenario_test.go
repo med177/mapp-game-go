@@ -63,15 +63,41 @@ func TestLoadReadsPrivilegedBuildingMaxLevel(t *testing.T) {
 	}
 }
 
+func TestLoadReadsPeacePeriodRequiredEvent(t *testing.T) {
+	dir := t.TempDir()
+	dataDir := filepath.Join(dir, "data")
+	if err := os.Mkdir(dataDir, 0o700); err != nil {
+		t.Fatalf("data klasörü oluşturulamadı: %v", err)
+	}
+	content := []byte(`{"id":"test","name":"Test","period":"medieval","diplomacy":{"peace_periods":[{"war_declaration_requires_event":"death_of_robert_298"}]}}`)
+	if err := os.WriteFile(filepath.Join(dataDir, "scenario.json"), content, 0o600); err != nil {
+		t.Fatalf("scenario.json yazılamadı: %v", err)
+	}
+
+	definition, err := Load(dir)
+	if err != nil {
+		t.Fatalf("Load() hatası: %v", err)
+	}
+	if len(definition.Diplomacy.PeacePeriods) != 1 ||
+		definition.Diplomacy.PeacePeriods[0].WarDeclarationRequiresEvent != "death_of_robert_298" {
+		t.Fatalf("barış dönemi kalıcı event ID'sini yüklemedi: %+v", definition.Diplomacy.PeacePeriods)
+	}
+}
+
 func TestDiplomacyWithDefaultsPreservesPeacePeriods(t *testing.T) {
 	periods := []PeacePeriod{{
-		MinTurns:                        10,
-		WarDeclarationRequiresEventFlag: "war_started",
-		BlockedFactions:                 []string{"a", "b"},
+		MinTurns:                           10,
+		WarDeclarationRequiresEvent:        "death_of_robert_298",
+		WarDeclarationRequiresEventFlag:    "war_started",
+		WarDeclarationUnblockedByEventFlag: "war_resolved",
+		BlockedFactions:                    []string{"a", "b"},
 	}}
 
 	got := (DiplomacyConfig{PeacePeriods: periods}).WithDefaults()
-	if len(got.PeacePeriods) != 1 || got.PeacePeriods[0].WarDeclarationRequiresEventFlag != "war_started" {
+	if len(got.PeacePeriods) != 1 ||
+		got.PeacePeriods[0].WarDeclarationRequiresEvent != "death_of_robert_298" ||
+		got.PeacePeriods[0].WarDeclarationRequiresEventFlag != "war_started" ||
+		got.PeacePeriods[0].WarDeclarationUnblockedByEventFlag != "war_resolved" {
 		t.Fatalf("barış dönemleri varsayılanlarla kayboldu: %+v", got.PeacePeriods)
 	}
 }

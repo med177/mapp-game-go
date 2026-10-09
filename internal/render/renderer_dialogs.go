@@ -1193,7 +1193,7 @@ func (r *Renderer) handleBattlePlanInput() InputAction {
 }
 
 func (r *Renderer) playerDiplomacyOfferIndex() (int, bool) {
-	if r.gs == nil || len(r.gs.DiplomaticOffers) == 0 || r.diplomacyOfferHistoryBrowse != "" {
+	if r.gs == nil || r.negotiation.show || len(r.gs.DiplomaticOffers) == 0 || r.diplomacyOfferHistoryBrowse != "" {
 		return 0, false
 	}
 	if offerIdx, ok := diplomacy.BestOfferIndex(r.gs, r.gs.PlayerFactionID); ok {
@@ -1779,7 +1779,8 @@ func (r *Renderer) handleDiplomacyOfferInputState(offerIdx int, input gameui.Inp
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
 	if input.LeftJustPressed {
 		if offer.Action == string(diplomacy.ActionProposeTransfer) && buildDiplomacyOfferCounterButton().HitTest(input.MouseX, input.MouseY) {
-			return InputAction{Kind: ActionCounterDiplomacyOffer, OfferIndex: offerIdx}
+			r.OpenDiplomacyCounterOffer(offerIdx)
+			return InputAction{}
 		}
 		if acceptBtn.HitTest(input.MouseX, input.MouseY) {
 			return InputAction{Kind: ActionRespondDiplomacyOffer, OfferIndex: offerIdx, OfferAccepted: true}

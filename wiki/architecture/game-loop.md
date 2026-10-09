@@ -205,7 +205,7 @@ kararıyla çözülür.
    aynı fraksiyondan kalan uygun orduya devredilir veya kaldırılır; bu işlem ayrı ve
    görünür bir `TurnStep` üretir.
 7. Hareket safhasında ordular tek adım ilerler; her adım arasında kısa bekleme bırakılır.
-8. Oyuncuya bekleyen diplomasi teklifi düşerse AI sıra makinesi durur ve oyuncu cevabı gelene kadar yeni step çözmez. Hızlı turda yalnız oyuncu kararı isteyen teklifler korunur; heyet/hediye gibi bilgi bildirimleri kuyruğa alınmaz/gösterilmez. Bölge bağlı kuşatma tekliflerinde `RegionID` üzerinden kamera da kuşatılan bölgeye odaklanır; bu odak bekleyen teklif save'den yüklenmiş olsa da uygulanır. Hızlı tur bu otomatik odağı kapatır.
+8. Oyuncuya bekleyen diplomasi teklifi düşerse AI sıra makinesi durur ve oyuncu cevabı gelene kadar yeni step çözmez. `propose_transfer` teklifine verilen karşı teklif de `PhaseAITurn` içinde işlenir; AI kabul ederse teklif sahibi fraksiyonun kalan sırası kapanır, reddedip yeni karşı teklif oluşturursa sıra yeni oyuncu yanıtı gelene kadar bekler. Hızlı turda yalnız oyuncu kararı isteyen teklifler korunur; heyet/hediye gibi bilgi bildirimleri kuyruğa alınmaz/gösterilmez. Bölge bağlı kuşatma tekliflerinde `RegionID` üzerinden kamera da kuşatılan bölgeye odaklanır; bu odak bekleyen teklif save'den yüklenmiş olsa da uygulanır. Hızlı tur bu otomatik odağı kapatır.
 9. Oyuncu bölgelerine veya oyuncu ordularına graph mesafesi `<= 3` olan hamlelerde kamera ilgili bölgeye odaklanır ve popup gösterilir.
 10. Uzak hamlelerde sadece AI overlay akmaya devam eder; kamera yerinde kalır.
 11. Bekleyen teklif kabul edilirse, teklif sahibi aktif AI fraksiyonunun kalan turu kapatılır; aynı tur içinde yeni saldırı veya ileri hareket yapmaz.

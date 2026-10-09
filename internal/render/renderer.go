@@ -2265,6 +2265,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		if r.confirmDialog.show {
 			r.drawConfirmDialog(screen)
 		}
+		if r.negotiation.show {
+			r.drawDiplomacyNegotiation(screen)
+		}
 	}()
 
 	// İlk frame'de Layout() zaten gerçek pencere boyutunu güncellemiştir;
@@ -2514,9 +2517,6 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 			r.drawCaptivePanel(screen)
 		}
 	}
-	if r.negotiation.show {
-		r.drawDiplomacyNegotiation(screen)
-	}
 
 	// 8. Teknoloji paneli (üst katman)
 	if r.showTech {
@@ -2530,6 +2530,14 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase == state.PhaseAITurn && r.aiTurnActor != "" {
 		r.drawAITurnOverlay(screen)
 	}
+
+	if tradeOverlayVisible && !r.showTrade {
+		r.drawTradeHoverTooltip(screen)
+	}
+	if r.showTrade {
+		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeRouteFilter, r.tradeListFilter, r.tradeListSort)
+	}
+	r.drawOverlayPanels(screen)
 
 	// 9. Onay diyalogu (diğer popupların altında kalmaması için üst katman)
 	if r.regionTaskDialog.show {
@@ -2564,19 +2572,6 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		drawCombatSummaryDialog(screen, r.gs, r.combatSummary)
 	}
 
-	// 12. Ticaret koridor tooltip'i (en üst katman, trade panel hariç)
-	if tradeOverlayVisible && !r.showTrade {
-		r.drawTradeHoverTooltip(screen)
-	}
-
-	// 13. Ticaret paneli (üst katman)
-	if r.showTrade {
-		DrawTradePanel(screen, r.gs, r.tradeTab, r.tradeFactionFocus, r.tradeGoodFocus, r.tradeScroll, r.tradeAmount, r.tradeRouteFilter, r.tradeListFilter, r.tradeListSort)
-	}
-
-	r.drawOverlayPanels(screen)
-
-	// 14. Bildirim mesajı (panellerin üstünde görünmeli)
 	if r.combatLogTimer > 0 {
 		alpha := uint8(255)
 		if r.combatLogTimer < 60 {

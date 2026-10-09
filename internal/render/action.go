@@ -132,7 +132,6 @@ const (
 	ActionTradeScroll           ActionKind = "trade_scroll"         // Delta: +1/-1
 	ActionTradeTabSwitch        ActionKind = "trade_tab_switch"     // Delta: hangi sekme
 	ActionRespondDiplomacyOffer ActionKind = "respond_diplomacy_offer"
-	ActionCounterDiplomacyOffer ActionKind = "counter_diplomacy_offer"
 	ActionChooseHistoricalEvent ActionKind = "choose_historical_event"
 	ActionOpenEventCodex        ActionKind = "open_event_codex"
 	ActionScheduleCapitalMove   ActionKind = "schedule_capital_move"

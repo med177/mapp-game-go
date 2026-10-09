@@ -86,6 +86,9 @@ func (r *Renderer) HandleInput() InputAction {
 	r.updateEditDropdownPositions()
 	r.promoteQueuedCombatSummary()
 
+	if r.negotiation.show {
+		return r.handleDiplomacyNegotiationInput()
+	}
 	if r.showShortcuts {
 		return r.handleShortcutsInput()
 	}
@@ -106,15 +109,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.navalMissionTargeting {
 		return r.handleNavalMissionPanelInput()
 	}
-	if action, handled := r.handleOverlayPanelInput(); handled {
-		return action
-	}
-
-	// Bölge görevi modalı açıkken normal input engellenir.
 	if r.regionTaskDialog.show {
 		return r.handleRegionTaskDialogInput()
 	}
-	// Onay diyaloğu açıkken normal input engellenir
 	if r.confirmDialog.show {
 		return r.handleConfirmDialogInput()
 	}
@@ -127,11 +124,11 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.battlePlan.show {
 		return r.handleBattlePlanInput()
 	}
-	if r.negotiation.show {
-		return r.handleDiplomacyNegotiationInput()
-	}
 	if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok {
 		return r.handleDiplomacyOfferInput(offerIdx)
+	}
+	if action, handled := r.handleOverlayPanelInput(); handled {
+		return action
 	}
 	if r.battleReport.show {
 		mx, my := ebiten.CursorPosition()

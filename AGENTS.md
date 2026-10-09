@@ -52,6 +52,11 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 - `Update` ve `Draw` döngülerinde gereksiz allocation, görüntü oluşturma veya
   pahalı tekrar hesaplardan kaçın. Asset'leri cache'le ve statik hesapları
   uygun yerde önceden üret.
+- Kullanıcının istediği akışı engelleyebilecek faz, state, görünürlük veya
+  erişim kontrollerini varsayımla ekleme. Kontrol mevcut ve belgelenmiş bir
+  invariant ya da zorunlu güvenlik/doğruluk koşulu değilse, önce gerekçesini
+  ve davranışa etkisini açıkla; uygulamadan önce kullanıcıya seçenek sunup
+  onayını al.
 - Kullanıcının mevcut değişikliklerini koru; ilgisiz dosyaları geri alma,
   destructive git komutları veya geniş kapsamlı otomatik dönüşüm kullanma.
 

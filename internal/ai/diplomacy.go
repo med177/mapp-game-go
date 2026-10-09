@@ -1,18 +1,22 @@
 package ai
 
 import (
+	"sort"
+
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 const (
-	aiRelationshipRepairChancePercent    = 60
-	aiRelationshipRepairCooldownTurns    = 4
-	aiNegotiationMinimumResourceReserve  = 10
-	aiNegotiationMaxTransferSharePercent = 25
-	aiNegotiationMaxPremiumPercent       = 25
+	aiRelationshipRepairChancePercent      = 60
+	aiRelationshipRepairCooldownTurns      = 4
+	aiNegotiationMinimumResourceReserve    = 10
+	aiNegotiationMaxTransferSharePercent   = 25
+	aiNegotiationMinimumMarketValuePercent = 90
+	aiMercenaryPurchaseCostPercent         = 80
 	// Hediye, ilişki bakımının pahalı ve seyrek kullanılan biçimidir. AI'nin
 	// küçük/orta hazinesinin tek seferde büyük bölümünü tüketmesini engeller.
 	aiGiftMaxTreasuryPercent = 25
@@ -183,6 +187,15 @@ func aiHandleResourceNegotiationWithSteps(gs *state.GameState, fid faction.Facti
 	if self == nil || self.IsEliminated || diplomacy.DirectOverlord(gs, fid) != "" {
 		return false
 	}
+	if candidate, ok := aiBestStrategicRegionPurchase(gs, fid); ok {
+		return aiSubmitStrategicTransfer(gs, fid, candidate, steps)
+	}
+	if candidate, ok := aiBestMercenaryPurchase(gs, fid); ok {
+		return aiSubmitStrategicTransfer(gs, fid, candidate, steps)
+	}
+	if candidate, ok := aiBestMercenaryOffer(gs, fid); ok {
+		return aiSubmitStrategicTransfer(gs, fid, candidate, steps)
+	}
 
 	best := aiResourceNegotiationCandidate{}
 	for _, targetID := range aiSortedFactionIDs(gs) {
@@ -241,6 +254,487 @@ func aiHandleResourceNegotiationWithSteps(gs *state.GameState, fid faction.Facti
 	return false
 }
 
+type aiStrategicTransferCandidate struct {
+	target    faction.FactionID
+	regionID  world.RegionID
+	requested []state.DiplomaticTransfer
+	offered   []state.DiplomaticTransfer
+	priority  int
+	reason    string
+}
+
+func aiBestStrategicRegionPurchase(gs *state.GameState, fid faction.FactionID) (aiStrategicTransferCandidate, bool) {
+	if gs == nil || fid == "" {
+		return aiStrategicTransferCandidate{}, false
+	}
+	self := gs.Factions[fid]
+	if self == nil {
+		return aiStrategicTransferCandidate{}, false
+	}
+	var best aiStrategicTransferCandidate
+	bestScore := -1
+	for _, region := range aiSortedRegions(gs) {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID == "" || region.OwnerID == string(fid) {
+			continue
+		}
+		claimValue := aiStrategicRegionClaimValue(gs, fid, region.ID)
+		if claimValue <= 0 {
+			continue
+		}
+		targetID := faction.FactionID(region.OwnerID)
+		if !aiStrategicTradeTargetAllowed(gs, fid, targetID) {
+			continue
+		}
+		rel := diplomacy.Relation(gs, fid, targetID)
+		if rel != nil && rel.Stance == faction.StanceWar {
+			continue
+		}
+		if !aiDiplomacyOfferRetryAllowed(gs, fid, targetID, diplomacy.ActionProposeTransfer) || aiTransferOfferPending(gs, fid, targetID) {
+			continue
+		}
+		requested := []state.DiplomaticTransfer{{Kind: "region", ID: string(region.ID), Amount: 1}}
+		regionValue := diplomacy.RegionTenTurnEconomicValue(gs, region.ID)
+		if regionValue <= 0 {
+			continue
+		}
+		if payment, ok := aiBestPaymentForTransferAtLeastPercent(gs, fid, targetID, fid, regionValue, requested, nil, 100); ok {
+			score := claimValue*10000 + regionValue
+			candidate := aiStrategicTransferCandidate{
+				target:    targetID,
+				regionID:  region.ID,
+				requested: requested,
+				offered:   payment,
+				priority:  70 + claimValue,
+				reason:    "stratejik bölge hedefi karşılığında adil ödeme",
+			}
+			if score > bestScore {
+				best, bestScore = candidate, score
+			}
+		}
+		for _, paymentRegion := range aiTradableRegions(gs, fid) {
+			offered := []state.DiplomaticTransfer{{Kind: "region", ID: string(paymentRegion.ID), Amount: 1}}
+			value := diplomacy.TransferListValue(gs, fid, offered)
+			if !aiAssetValueAtLeastInNegotiationRange(value, regionValue) {
+				continue
+			}
+			if accepted, _ := diplomacy.AssessTransferOffer(gs, fid, targetID, requested, offered); !accepted {
+				continue
+			}
+			score := claimValue*10000 + regionValue - value
+			candidate := aiStrategicTransferCandidate{
+				target:    targetID,
+				regionID:  region.ID,
+				requested: requested,
+				offered:   offered,
+				priority:  70 + claimValue,
+				reason:    "stratejik bölge için bölge takası",
+			}
+			if score > bestScore {
+				best, bestScore = candidate, score
+			}
+		}
+	}
+	return best, best.target != ""
+}
+
+func aiBestMercenaryOffer(gs *state.GameState, fid faction.FactionID) (aiStrategicTransferCandidate, bool) {
+	if gs == nil || fid == "" || aiFactionAtWar(gs, string(fid)) {
+		return aiStrategicTransferCandidate{}, false
+	}
+	self := gs.Factions[fid]
+	if self == nil || self.IsEliminated {
+		return aiStrategicTransferCandidate{}, false
+	}
+	selfContext := prepareStrategicContext(gs, fid)
+	if selfContext.CriticalThreat {
+		return aiStrategicTransferCandidate{}, false
+	}
+	if plan := gs.AIPlans[fid]; plan != nil && plan.Kind == state.AIObjectiveExpand {
+		return aiStrategicTransferCandidate{}, false
+	}
+	selfRequirement := aiForceRequirements(gs, fid, selfContext)
+	selfReserve := maxInt(1, selfRequirement.LandPresent*75/100)
+	surplus := selfRequirement.LandPresent - selfReserve
+	if surplus <= 0 {
+		return aiStrategicTransferCandidate{}, false
+	}
+	maxUnitsToSell := minInt(surplus, maxInt(1, selfRequirement.LandPresent/4))
+	type unitCandidate struct {
+		id    string
+		value int
+		count int
+	}
+	unitTypes := make([]string, 0, len(gs.UnitTypes))
+	for id, unitType := range gs.UnitTypes {
+		if unitType != nil && aiLandUnitCategory(unitType.Category) {
+			unitTypes = append(unitTypes, id)
+		}
+	}
+	sort.Strings(unitTypes)
+	units := make([]unitCandidate, 0, len(unitTypes))
+	for _, id := range unitTypes {
+		count := aiTransferableLandUnitCount(gs, fid, id)
+		if count <= 0 {
+			continue
+		}
+		units = append(units, unitCandidate{id: id, count: count, value: diplomacy.TransferListValue(gs, fid, []state.DiplomaticTransfer{{Kind: "army", ID: id, Amount: 1}})})
+	}
+	if len(units) == 0 {
+		return aiStrategicTransferCandidate{}, false
+	}
+
+	var best aiStrategicTransferCandidate
+	bestScore := -1
+	for _, targetID := range aiSortedFactionIDs(gs) {
+		if !aiStrategicTradeTargetAllowed(gs, fid, targetID) || targetID == fid {
+			continue
+		}
+		target := gs.Factions[targetID]
+		if target == nil || target.IsEliminated || aiFactionAtWar(gs, string(targetID)) {
+			continue
+		}
+		rel := diplomacy.Relation(gs, fid, targetID)
+		if rel != nil && rel.Stance == faction.StanceWar {
+			continue
+		}
+		if !aiDiplomacyOfferRetryAllowed(gs, fid, targetID, diplomacy.ActionProposeTransfer) || aiTransferOfferPending(gs, fid, targetID) {
+			continue
+		}
+		targetContext := prepareStrategicContext(gs, targetID)
+		targetRequirement := aiForceRequirements(gs, targetID, targetContext)
+		need := targetRequirement.LandTarget - targetRequirement.LandPresent - targetRequirement.LandPending
+		if need <= 0 {
+			continue
+		}
+		for _, unit := range units {
+			amount := minInt(unit.count, minInt(need, maxUnitsToSell))
+			if amount <= 0 {
+				continue
+			}
+			offered := []state.DiplomaticTransfer{{Kind: "army", ID: unit.id, Amount: amount}}
+			value := diplomacy.TransferListValue(gs, fid, offered)
+			if value <= 0 {
+				continue
+			}
+			if payment, ok := aiBestPaymentForTransfer(gs, fid, targetID, targetID, value, nil, offered); ok {
+				score := minInt(need, amount)*100 + unit.value
+				candidate := aiStrategicTransferCandidate{
+					target:    targetID,
+					requested: payment,
+					offered:   offered,
+					priority:  60 + minInt(need, 20),
+					reason:    "askerî kuvvet açığı için paralı asker teklifi",
+				}
+				if score > bestScore {
+					best, bestScore = candidate, score
+				}
+			}
+		}
+	}
+	return best, best.target != ""
+}
+
+func aiBestMercenaryPurchase(gs *state.GameState, fid faction.FactionID) (aiStrategicTransferCandidate, bool) {
+	if gs == nil || fid == "" {
+		return aiStrategicTransferCandidate{}, false
+	}
+	self := gs.Factions[fid]
+	if self == nil || self.IsEliminated {
+		return aiStrategicTransferCandidate{}, false
+	}
+	selfContext := prepareStrategicContext(gs, fid)
+	selfRequirement := aiForceRequirements(gs, fid, selfContext)
+	need := selfRequirement.LandTarget - selfRequirement.LandPresent - selfRequirement.LandPending
+	if need <= 0 {
+		return aiStrategicTransferCandidate{}, false
+	}
+	type unitCandidate struct {
+		id    string
+		value int
+		count int
+	}
+	unitTypes := make([]string, 0, len(gs.UnitTypes))
+	for id, unitType := range gs.UnitTypes {
+		if unitType != nil && aiLandUnitCategory(unitType.Category) {
+			unitTypes = append(unitTypes, id)
+		}
+	}
+	sort.Strings(unitTypes)
+	var best aiStrategicTransferCandidate
+	bestScore := -1
+	for _, targetID := range aiSortedFactionIDs(gs) {
+		if targetID == fid || !aiStrategicTradeTargetAllowed(gs, fid, targetID) {
+			continue
+		}
+		target := gs.Factions[targetID]
+		if target == nil || aiFactionAtWar(gs, string(targetID)) {
+			continue
+		}
+		rel := diplomacy.Relation(gs, fid, targetID)
+		if rel != nil && rel.Stance == faction.StanceWar {
+			continue
+		}
+		if !aiDiplomacyOfferRetryAllowed(gs, fid, targetID, diplomacy.ActionProposeTransfer) || aiTransferOfferPending(gs, fid, targetID) {
+			continue
+		}
+		targetContext := prepareStrategicContext(gs, targetID)
+		if targetContext.CriticalThreat {
+			continue
+		}
+		if plan := gs.AIPlans[targetID]; plan != nil && plan.Kind == state.AIObjectiveExpand {
+			continue
+		}
+		targetRequirement := aiForceRequirements(gs, targetID, targetContext)
+		targetReserve := maxInt(1, targetRequirement.LandPresent*75/100)
+		targetSurplus := targetRequirement.LandPresent - targetReserve
+		maxUnitsToBuy := minInt(targetSurplus, maxInt(1, targetRequirement.LandPresent/4))
+		if maxUnitsToBuy <= 0 {
+			continue
+		}
+		for _, unitTypeID := range unitTypes {
+			count := aiTransferableLandUnitCount(gs, targetID, unitTypeID)
+			amount := minInt(need, minInt(count, maxUnitsToBuy))
+			if amount <= 0 {
+				continue
+			}
+			unitType := gs.UnitTypes[unitTypeID]
+			unitProductionCost := aiGoldEquivalentCost(gs, aiUnitResourceCost(unitType))
+			if unitProductionCost <= 0 {
+				continue
+			}
+			requested := []state.DiplomaticTransfer{{Kind: "army", ID: unitTypeID, Amount: amount}}
+			value := diplomacy.TransferListValue(gs, targetID, requested)
+			if value <= 0 {
+				continue
+			}
+			maximumPayment := unitProductionCost * amount * aiMercenaryPurchaseCostPercent / 100
+			if payment, ok := aiBestMercenaryPurchasePayment(gs, fid, targetID, requested, maximumPayment); ok {
+				score := amount*100 + diplomacy.RelationScore(gs, fid, targetID)
+				candidate := aiStrategicTransferCandidate{
+					target:    targetID,
+					requested: requested,
+					offered:   payment,
+					priority:  65 + minInt(need, 20),
+					reason:    "askerî kuvvet açığını kapatmak için paralı asker satın alma",
+				}
+				if score > bestScore {
+					best, bestScore = candidate, score
+				}
+			}
+		}
+	}
+	return best, best.target != ""
+}
+
+func aiBestMercenaryPurchasePayment(gs *state.GameState, buyer, seller faction.FactionID, requested []state.DiplomaticTransfer, maximumValue int) ([]state.DiplomaticTransfer, bool) {
+	if gs == nil || buyer == "" || seller == "" || maximumValue <= 0 || len(requested) == 0 {
+		return nil, false
+	}
+	var best []state.DiplomaticTransfer
+	bestValue := 0
+	for _, kind := range economy.CostResourceKinds() {
+		price := aiResourceMarketValue(gs, kind)
+		if price <= 0 {
+			continue
+		}
+		available := economy.FactionResourceAmount(gs.Factions[buyer], kind) - aiNegotiationPaymentReserve(gs, buyer, kind)
+		maxAmount := minInt(available*aiNegotiationMaxTransferSharePercent/100, maximumValue/price)
+		if maxAmount <= 0 {
+			continue
+		}
+		payment := []state.DiplomaticTransfer{{Kind: "resource", ID: string(kind), Amount: maxAmount}}
+		accepted, _ := diplomacy.AssessTransferOffer(gs, buyer, seller, requested, payment)
+		paymentValue := diplomacy.TransferListValue(gs, buyer, payment)
+		if !accepted || paymentValue > maximumValue || paymentValue <= bestValue {
+			continue
+		}
+		best = payment
+		bestValue = paymentValue
+	}
+	return best, best != nil
+}
+
+func aiSubmitStrategicTransfer(gs *state.GameState, fid faction.FactionID, candidate aiStrategicTransferCandidate, steps *[]TurnStep) bool {
+	if candidate.target == "" {
+		return false
+	}
+	message := turnFactionName(gs, fid) + " " + candidate.reason + " teklif etti."
+	if candidate.regionID != "" {
+		message = turnFactionName(gs, fid) + " " + turnRegionName(gs, candidate.regionID) + " bölgesini stratejik hedefi olarak istiyor ve karşılığında takas teklif etti."
+	}
+	if candidate.target == gs.PlayerFactionID {
+		if !diplomacy.QueueTransferOffer(gs, fid, candidate.target, candidate.requested, candidate.offered, candidate.priority, candidate.reason) {
+			return false
+		}
+		addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: candidate.target, TargetRegion: candidate.regionID, FocusRegion: candidate.regionID, Message: message})
+		return true
+	}
+	result := diplomacy.ExecuteTransferOffer(gs, fid, candidate.target, candidate.requested, candidate.offered)
+	if result.Message != "" {
+		message += " " + result.Message
+	}
+	addTurnStep(steps, TurnStep{FactionID: fid, Kind: TurnStepDiplomacy, TargetFaction: candidate.target, TargetRegion: candidate.regionID, FocusRegion: candidate.regionID, Message: message})
+	return true
+}
+
+func aiBestPaymentForTransfer(gs *state.GameState, from, to, payer faction.FactionID, assetValue int, requestedAsset, offeredAsset []state.DiplomaticTransfer) ([]state.DiplomaticTransfer, bool) {
+	return aiBestPaymentForTransferAtLeastPercent(gs, from, to, payer, assetValue, requestedAsset, offeredAsset, aiNegotiationMinimumMarketValuePercent)
+}
+
+func aiBestPaymentForTransferAtLeastPercent(gs *state.GameState, from, to, payer faction.FactionID, assetValue int, requestedAsset, offeredAsset []state.DiplomaticTransfer, minimumValuePercent int) ([]state.DiplomaticTransfer, bool) {
+	if assetValue <= 0 || (requestedAsset == nil && offeredAsset == nil) {
+		return nil, false
+	}
+	var best []state.DiplomaticTransfer
+	bestValue := int(^uint(0) >> 1)
+	for _, kind := range economy.CostResourceKinds() {
+		price := aiResourceMarketValue(gs, kind)
+		if price <= 0 {
+			continue
+		}
+		available := economy.FactionResourceAmount(gs.Factions[payer], kind) - aiNegotiationPaymentReserve(gs, payer, kind)
+		maxAmount := available * aiNegotiationMaxTransferSharePercent / 100
+		minAmount := (assetValue*minimumValuePercent + 100*price - 1) / (100 * price)
+		maxValue := assetValue * 125 / 100
+		maxMarketAmount := maxValue / price
+		if maxAmount > maxMarketAmount {
+			maxAmount = maxMarketAmount
+		}
+		if minAmount <= 0 || minAmount > maxAmount {
+			continue
+		}
+		low, high := minAmount, maxAmount
+		for low < high {
+			mid := low + (high-low)/2
+			payment := []state.DiplomaticTransfer{{Kind: "resource", ID: string(kind), Amount: mid}}
+			requested, offered := payment, offeredAsset
+			if payer == from {
+				requested, offered = requestedAsset, payment
+			}
+			accepted, _ := diplomacy.AssessTransferOffer(gs, from, to, requested, offered)
+			if accepted {
+				high = mid
+			} else {
+				low = mid + 1
+			}
+		}
+		payment := []state.DiplomaticTransfer{{Kind: "resource", ID: string(kind), Amount: low}}
+		requested, offered := payment, offeredAsset
+		if payer == from {
+			requested, offered = requestedAsset, payment
+		}
+		accepted, _ := diplomacy.AssessTransferOffer(gs, from, to, requested, offered)
+		value := diplomacy.TransferListValue(gs, payer, payment)
+		if !accepted || value*100 < assetValue*minimumValuePercent || value*100 > assetValue*125 || value >= bestValue {
+			continue
+		}
+		best = payment
+		bestValue = value
+	}
+	return best, best != nil
+}
+
+func aiNegotiationPaymentReserve(gs *state.GameState, payer faction.FactionID, kind economy.ResourceKind) int {
+	if kind == economy.ResourceGold {
+		return aiMinGoldReserve
+	}
+	if kind == economy.ResourceGrain {
+		return maxInt(100, aiFactionGrainDemand(gs, payer)*aiGrainReserveMonths)
+	}
+	return aiNegotiationMinimumResourceReserve
+}
+
+func aiAssetValueInNegotiationRange(paymentValue, assetValue int) bool {
+	return paymentValue*100 >= assetValue*aiNegotiationMinimumMarketValuePercent && paymentValue*100 <= assetValue*125
+}
+
+func aiAssetValueAtLeastInNegotiationRange(paymentValue, assetValue int) bool {
+	return paymentValue >= assetValue && paymentValue*100 <= assetValue*125
+}
+
+func aiStrategicTradeTargetAllowed(gs *state.GameState, fid, targetID faction.FactionID) bool {
+	if gs == nil || fid == "" || targetID == "" || fid == targetID || diplomacy.SameRealm(gs, fid, targetID) {
+		return false
+	}
+	target := gs.Factions[targetID]
+	if target == nil || target.IsEliminated {
+		return false
+	}
+	if overlord := diplomacy.DirectOverlord(gs, targetID); overlord != "" && overlord != fid {
+		return false
+	}
+	return diplomacy.DirectOverlord(gs, fid) == ""
+}
+
+func aiStrategicRegionClaimValue(gs *state.GameState, fid faction.FactionID, regionID world.RegionID) int {
+	self := gs.Factions[fid]
+	if self == nil || regionID == "" {
+		return 0
+	}
+	value := 0
+	for _, claim := range self.TerritorialClaims {
+		if claim.RegionID == string(regionID) && claim.Value > value {
+			value = claim.Value
+		}
+	}
+	if plan := gs.AIPlans[fid]; plan != nil && plan.Kind == state.AIObjectiveExpand {
+		for index, targetRegionID := range plan.TargetRegionIDs {
+			if targetRegionID == regionID {
+				value = maxInt(value, maxInt(30, 100-index*5))
+				break
+			}
+		}
+	}
+	return value
+}
+
+func aiTradableRegions(gs *state.GameState, owner faction.FactionID) []*world.Region {
+	regions := make([]*world.Region, 0)
+	self := gs.Factions[owner]
+	if self == nil || len(gs.LandRegionsOwnedBy(owner)) <= 1 {
+		return regions
+	}
+	for _, region := range aiSortedRegions(gs) {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID != string(owner) || aiRegionIsCapital(gs, self, region) {
+			continue
+		}
+		claimed := false
+		for _, claim := range self.TerritorialClaims {
+			if claim.RegionID == string(region.ID) {
+				claimed = true
+				break
+			}
+		}
+		if !claimed {
+			regions = append(regions, region)
+		}
+	}
+	return regions
+}
+
+func aiRegionIsCapital(gs *state.GameState, owner *faction.Faction, region *world.Region) bool {
+	if gs == nil || owner == nil || region == nil || owner.CapitalSettlementID == "" {
+		return false
+	}
+	capitalRegion, _, _, ok := gs.FindSettlementByID(owner.CapitalSettlementID)
+	return ok && capitalRegion != nil && capitalRegion.ID == region.ID
+}
+
+func aiTransferableLandUnitCount(gs *state.GameState, owner faction.FactionID, unitTypeID string) int {
+	count := 0
+	for _, current := range aiSortedArmies(gs) {
+		if current == nil || current.OwnerID != string(owner) || current.IsNaval || current.IsGarrison || current.Commander != nil || current.EmbarkedCommander != nil {
+			continue
+		}
+		for _, unit := range current.Units {
+			if unit.TypeID == unitTypeID {
+				count++
+			}
+		}
+	}
+	return count
+}
+
 func aiBestResourceNegotiationForTarget(gs *state.GameState, fid, targetID faction.FactionID, demand economy.ResourceCost) (aiResourceNegotiationCandidate, bool) {
 	self := gs.Factions[fid]
 	target := gs.Factions[targetID]
@@ -277,6 +771,10 @@ func aiBestResourceNegotiationForTarget(gs *state.GameState, fid, targetID facti
 			if offeredKind == requestedKind {
 				continue
 			}
+			targetNeed := aiNegotiationTargetResourceNeed(gs, targetID, offeredKind)
+			if targetNeed <= 0 {
+				continue
+			}
 			reserve := maxInt(demand.Amount(offeredKind), aiNegotiationMinimumResourceReserve)
 			if offeredKind == economy.ResourceGold {
 				reserve = maxInt(reserve, aiMinGoldReserve)
@@ -285,13 +783,30 @@ func aiBestResourceNegotiationForTarget(gs *state.GameState, fid, targetID facti
 				reserve = maxInt(reserve, maxInt(100, aiFactionGrainDemand(gs, fid)*aiGrainReserveMonths))
 			}
 			surplus := economy.FactionResourceAmount(self, offeredKind) - reserve
-			maxOffer := surplus * aiNegotiationMaxTransferSharePercent / 100
+			maxOffer := minInt(surplus*aiNegotiationMaxTransferSharePercent/100, targetNeed)
 			if maxOffer <= 0 {
 				continue
 			}
 
+			offeredUnitValue := aiResourceMarketValue(gs, offeredKind)
+			if offeredUnitValue <= 0 {
+				continue
+			}
+			minimumOfferValue := (requestedValue*aiNegotiationMinimumMarketValuePercent + 99) / 100
+			minimumOfferAmount := (minimumOfferValue + offeredUnitValue - 1) / offeredUnitValue
+			maximumMarketOfferAmount := requestedValue / offeredUnitValue
+			if minimumOfferAmount > maximumMarketOfferAmount {
+				continue
+			}
+			if maximumMarketOfferAmount < maxOffer {
+				maxOffer = maximumMarketOfferAmount
+			}
+			if maxOffer < minimumOfferAmount {
+				continue
+			}
+
 			offered := []state.DiplomaticTransfer{{Kind: "resource", ID: string(offeredKind)}}
-			low, high := 1, maxOffer
+			low, high := minimumOfferAmount, maxOffer
 			for low < high {
 				mid := low + (high-low)/2
 				offered[0].Amount = mid
@@ -308,7 +823,7 @@ func aiBestResourceNegotiationForTarget(gs *state.GameState, fid, targetID facti
 				continue
 			}
 			offeredValue := diplomacy.TransferListValue(gs, fid, offered)
-			if offeredValue*100 > requestedValue*(100+aiNegotiationMaxPremiumPercent) {
+			if offeredValue*100 < requestedValue*aiNegotiationMinimumMarketValuePercent || offeredValue > requestedValue {
 				continue
 			}
 
@@ -326,6 +841,32 @@ func aiBestResourceNegotiationForTarget(gs *state.GameState, fid, targetID facti
 		}
 	}
 	return best, best.target != ""
+}
+
+func aiNegotiationTargetResourceNeed(gs *state.GameState, targetID faction.FactionID, kind economy.ResourceKind) int {
+	target := gs.Factions[targetID]
+	if target == nil {
+		return 0
+	}
+	stock := economy.FactionResourceAmount(target, kind)
+	switch kind {
+	case economy.ResourceGold:
+		return maxInt(0, aiMinGoldReserve-stock)
+	case economy.ResourceGrain:
+		reserve := maxInt(100, aiFactionGrainDemand(gs, targetID)*aiGrainReserveMonths)
+		return maxInt(0, reserve-stock)
+	default:
+		good := economy.ResourceDefByKind(kind).TradeGood
+		return gs.MarketBuyOrder(targetID, good, aiResourcePrice(gs, good))
+	}
+}
+
+func aiResourceMarketValue(gs *state.GameState, kind economy.ResourceKind) int {
+	if kind == economy.ResourceGold {
+		return 1
+	}
+	good := economy.ResourceDefByKind(kind).TradeGood
+	return aiResourcePrice(gs, good)
 }
 
 func aiTransferOfferPending(gs *state.GameState, from, to faction.FactionID) bool {

@@ -83,3 +83,43 @@ func TestQueueTransferOfferRejectsUnavailableRequestedResource(t *testing.T) {
 		t.Fatal("mevcut olmayan kaynakla pazarlık kuyruğa girdi")
 	}
 }
+
+func TestExecutePlayerTransferOfferReturnsAIResourceCounterOffer(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai":     {ID: "ai", Grain: 100},
+			"player": {ID: "player", Gold: 100},
+		},
+	}
+	EnsureRelation(gs, "ai", "player")
+	requested := []state.DiplomaticTransfer{{Kind: transferKindResource, ID: "grain", Amount: 2}}
+	offered := []state.DiplomaticTransfer{{Kind: transferKindResource, ID: "gold", Amount: 1}}
+	if accepted, _ := AssessTransferOffer(gs, "player", "ai", requested, offered); accepted {
+		t.Fatal("ilk şartların reddedilmesi gerekiyordu")
+	}
+
+	result := ExecuteTransferOffer(gs, "player", "ai", requested, offered)
+	if result.Applied || result.Accepted {
+		t.Fatalf("AI karşı teklifi transferleri hemen uygulamamalı: %+v", result)
+	}
+	if len(gs.DiplomaticOffers) != 1 {
+		t.Fatalf("bekleyen karşı teklif sayısı = %d, want 1", len(gs.DiplomaticOffers))
+	}
+	counter := gs.DiplomaticOffers[0]
+	if counter.FromFactionID != "ai" || counter.ToFactionID != "player" || counter.PriorityReason != "AI karşı teklifi" {
+		t.Fatalf("AI karşı teklifi yanlış yön/metadata ile oluşturuldu: %+v", counter)
+	}
+	if len(counter.RequestedTransfers) != 1 || counter.RequestedTransfers[0].ID != "gold" || counter.RequestedTransfers[0].Amount <= offered[0].Amount {
+		t.Fatalf("AI karşı teklifi oyuncudan daha fazla altın istemeli: %+v", counter.RequestedTransfers)
+	}
+	if len(counter.OfferedTransfers) != 1 || counter.OfferedTransfers[0].ID != "grain" || counter.OfferedTransfers[0].Amount > requested[0].Amount {
+		t.Fatalf("AI karşı teklifi oyuncunun istediğinden fazla tahıl sunmamalı: %+v", counter.OfferedTransfers)
+	}
+	if accepted, _ := AssessTransferOffer(gs, "player", "ai", counter.OfferedTransfers, counter.RequestedTransfers); !accepted {
+		t.Fatalf("AI kendi karşı teklifini kabul etmiyor: %+v", counter)
+	}
+	if gs.Factions["ai"].Grain != 100 || gs.Factions["player"].Gold != 100 {
+		t.Fatal("karşı teklif gönderilirken kaynak aktarımı erken uygulandı")
+	}
+}

@@ -61,11 +61,107 @@ func ExecuteTransferOffer(gs *state.GameState, from, to faction.FactionID, reque
 		return Result{Message: factionLabel(gs, to) + " devletine pazarlık teklifi gönderildi."}
 	}
 	accepted, chance := AssessTransferOffer(gs, from, to, requested, offered)
+	if !accepted && from == gs.PlayerFactionID {
+		counterRequested, counterOffered, ok := acceptedTransferCounterOffer(gs, to, from, requested, offered)
+		if ok && QueueTransferOffer(gs, to, from, counterRequested, counterOffered, 50, "AI karşı teklifi") {
+			gs.DiplomaticOffers = append(gs.DiplomaticOffers[:idx], gs.DiplomaticOffers[idx+1:]...)
+			return Result{Message: factionLabel(gs, to) + " pazarlığı kabul etmedi ve karşı teklif gönderdi."}
+		}
+	}
 	result := ResolveOffer(gs, idx, accepted)
 	if !accepted && result.Message == "" {
 		result.Message = fmt.Sprintf("Pazarlık reddedildi (%d%% kabul olasılığı).", chance)
 	}
 	return result
+}
+
+func acceptedTransferCounterOffer(gs *state.GameState, ai, player faction.FactionID, requested, offered []state.DiplomaticTransfer) ([]state.DiplomaticTransfer, []state.DiplomaticTransfer, bool) {
+	counterRequested := cloneTransfers(offered)
+	counterOffered := cloneTransfers(requested)
+	if len(counterRequested) == 0 || len(counterOffered) == 0 {
+		return nil, nil, false
+	}
+	accepted := func() bool {
+		ok, _ := AssessTransferOffer(gs, player, ai, counterOffered, counterRequested)
+		return ok
+	}
+	if accepted() {
+		return counterRequested, counterOffered, true
+	}
+
+	for i := 0; i < len(counterOffered); i++ {
+		transfer := counterOffered[i]
+		switch transfer.Kind {
+		case transferKindRegion:
+			if len(counterOffered) == 1 {
+				continue
+			}
+			counterOffered = append(counterOffered[:i], counterOffered[i+1:]...)
+			i--
+			if accepted() {
+				return counterRequested, counterOffered, true
+			}
+		case transferKindResource, transferKindArmy:
+			if transfer.Amount <= 1 {
+				continue
+			}
+			low, high, best := 1, transfer.Amount-1, 0
+			for low <= high {
+				mid := low + (high-low)/2
+				counterOffered[i].Amount = mid
+				if accepted() {
+					best = mid
+					low = mid + 1
+				} else {
+					high = mid - 1
+				}
+			}
+			if best > 0 {
+				counterOffered[i].Amount = best
+				return counterRequested, counterOffered, true
+			}
+			counterOffered[i].Amount = 1
+		}
+	}
+	if accepted() {
+		return counterRequested, counterOffered, true
+	}
+
+	for i := range counterRequested {
+		transfer := counterRequested[i]
+		maxAmount := 0
+		switch transfer.Kind {
+		case transferKindResource:
+			maxAmount = economy.FactionResourceAmount(gs.Factions[player], economy.ResourceKind(transfer.ID))
+		case transferKindArmy:
+			maxAmount = unitCountForFaction(gs, player, transfer.ID)
+		default:
+			continue
+		}
+		if maxAmount <= transfer.Amount {
+			continue
+		}
+		low, high, best := transfer.Amount+1, maxAmount, 0
+		for low <= high {
+			mid := low + (high-low)/2
+			counterRequested[i].Amount = mid
+			if accepted() {
+				best = mid
+				high = mid - 1
+			} else {
+				low = mid + 1
+			}
+		}
+		if best > 0 {
+			counterRequested[i].Amount = best
+			return counterRequested, counterOffered, true
+		}
+		counterRequested[i].Amount = maxAmount
+	}
+	if accepted() {
+		return counterRequested, counterOffered, true
+	}
+	return nil, nil, false
 }
 
 // AssessTransferOffer, AI'nin pazarlığın maddi dengesini ve ilişki puanını
@@ -253,16 +349,19 @@ func TransferListValue(gs *state.GameState, owner faction.FactionID, transfers [
 	for _, transfer := range transfers {
 		switch transfer.Kind {
 		case transferKindRegion:
-			region := gs.Regions[world.RegionID(transfer.ID)]
-			if region != nil {
-				value += 100 + region.BaseGoldIncome*2 + region.Population/1000
-			}
+			value += RegionTenTurnEconomicValue(gs, world.RegionID(transfer.ID))
 		case transferKindResource:
-			weights := map[economy.ResourceKind]int{
-				economy.ResourceGold: 1, economy.ResourceGrain: 2, economy.ResourceIron: 4,
-				economy.ResourceTimber: 3, economy.ResourceStone: 3, economy.ResourceSpice: 5, economy.ResourceCloth: 4,
+			kind := economy.ResourceKind(transfer.ID)
+			unitValue := 1
+			if kind != economy.ResourceGold {
+				good := economy.ResourceDefByKind(kind).TradeGood
+				if gs.MarketPrices != nil && gs.MarketPrices[good] > 0 {
+					unitValue = gs.MarketPrices[good]
+				} else if price := gs.BasePrice(good); price > 0 {
+					unitValue = price
+				}
 			}
-			value += transfer.Amount * weights[economy.ResourceKind(transfer.ID)]
+			value += transfer.Amount * unitValue
 		case transferKindArmy:
 			unitType := gs.UnitTypes[transfer.ID]
 			unitValue := 10
@@ -273,6 +372,46 @@ func TransferListValue(gs *state.GameState, owner faction.FactionID, transfers [
 		}
 	}
 	return value
+}
+
+// RegionTenTurnEconomicValue bir bölgenin mevcut efektif altın ve kaynak
+// üretimini güncel pazar fiyatlarıyla altın eşdeğerine çevirip on turla çarpar.
+// Bölge alım/satım teklifleri, üretim değerinden bağımsız sabit bir etiket
+// kullanmak yerine bu alt sınırı gözetir.
+func RegionTenTurnEconomicValue(gs *state.GameState, regionID world.RegionID) int {
+	if gs == nil || regionID == "" {
+		return 0
+	}
+	region := gs.Regions[regionID]
+	if region == nil || region.IsSea || region.IsTerrainArea || gs.SiegeAt(regionID) != nil {
+		return 0
+	}
+	production := gs.RegionProductionSummary(region)
+	valuePerTurn := production.Gold
+	resources := economy.ResourceCost{
+		Grain: production.Grain, Iron: production.Iron, Timber: production.Timber,
+		Stone: production.Stone, Spice: production.Spice, Cloth: production.Cloth,
+	}
+	for _, kind := range economy.CostResourceKinds() {
+		if kind == economy.ResourceGold {
+			continue
+		}
+		good := economy.ResourceDefByKind(kind).TradeGood
+		price := 0
+		if gs.MarketPrices != nil {
+			price = gs.MarketPrices[good]
+		}
+		if price <= 0 {
+			price = gs.BasePrice(good)
+		}
+		if price > 0 {
+			valuePerTurn += resources.Amount(kind) * price
+		}
+	}
+	if valuePerTurn <= 0 {
+		return 0
+	}
+	return valuePerTurn * 10
 }
 
 func validResourceKind(id string) bool {

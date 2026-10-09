@@ -261,11 +261,9 @@ func (c *Commander) syncProgression(existing []CommanderTrait) []CommanderTrait 
 			return
 		}
 		c.Traits = append(c.Traits, trait)
-		if existing != nil {
-			for _, old := range existing {
-				if old == trait {
-					return
-				}
+		for _, old := range existing {
+			if old == trait {
+				return
 			}
 		}
 		newTraits = append(newTraits, trait)

@@ -141,9 +141,10 @@ func TestDeclareWarRequiresScenarioEventFlag(t *testing.T) {
 		},
 		DiplomacyConfig: scenario.DiplomacyConfig{
 			PeacePeriods: []scenario.PeacePeriod{{
-				MinTurns:                        10,
-				WarDeclarationRequiresEventFlag: "war_started",
-				BlockedFactions:                 []string{"actor", "blocked_target"},
+				MinTurns:                           10,
+				WarDeclarationRequiresEventFlag:    "war_started",
+				WarDeclarationUnblockedByEventFlag: "war_resolved",
+				BlockedFactions:                    []string{"actor", "blocked_target"},
 			}},
 		},
 		FiredEventIDs: map[string]bool{},
@@ -157,11 +158,44 @@ func TestDeclareWarRequiresScenarioEventFlag(t *testing.T) {
 	if reason := ActionBlockReason(gs, "actor", "blocked_target", ActionDeclareWar); reason != "" {
 		t.Fatalf("barış flag'i açıldıktan sonra blok içi savaş engellendi: %s", reason)
 	}
+	delete(gs.FiredEventIDs, "flag:war_started")
+	gs.FiredEventIDs["flag:war_resolved"] = true
+	if reason := ActionBlockReason(gs, "actor", "blocked_target", ActionDeclareWar); reason != "" {
+		t.Fatalf("barış dönemi sonu flag'i açıldıktan sonra blok içi savaş engellendi: %s", reason)
+	}
 	if reason := ActionBlockReason(gs, "actor", "outsider", ActionDeclareWar); reason != "" {
 		t.Fatalf("blok dışı hedefe savaş ilanı engellendi: %s", reason)
 	}
 	if reason := ActionBlockReason(gs, "outsider", "actor", ActionDeclareWar); reason != "" {
 		t.Fatalf("blok dışı aktörün blok içindeki devlete savaş ilanı engellendi: %s", reason)
+	}
+}
+
+func TestDeclareWarRequiresOccurredScenarioEvent(t *testing.T) {
+	gs := &state.GameState{
+		Turn: 120,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"actor":          {ID: "actor", NameTR: "Saldıran"},
+			"blocked_target": {ID: "blocked_target", NameTR: "Barış Bloğu Hedefi"},
+		},
+		DiplomacyConfig: scenario.DiplomacyConfig{
+			PeacePeriods: []scenario.PeacePeriod{{
+				MinTurns:                    10,
+				WarDeclarationRequiresEvent: "death_of_robert_298",
+				BlockedFactions:             []string{"actor", "blocked_target"},
+			}},
+		},
+		FiredEventIDs: map[string]bool{
+			"flag:war_of_five_kings_resolved": true,
+		},
+	}
+
+	if reason := ActionBlockReason(gs, "actor", "blocked_target", ActionDeclareWar); reason == "" {
+		t.Fatal("tarihsel event gerçekleşmeden savaş ilanı engellenmedi")
+	}
+	gs.FiredEventIDs["death_of_robert_298"] = true
+	if reason := ActionBlockReason(gs, "actor", "blocked_target", ActionDeclareWar); reason != "" {
+		t.Fatalf("event ID kaydedildikten sonra, aktif savaş flag'i temizlenmiş olsa da savaş engellendi: %s", reason)
 	}
 }
 

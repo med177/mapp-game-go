@@ -1,6 +1,7 @@
 package render
 
 import (
+	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/state"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -445,11 +446,19 @@ func (r *Renderer) battleReportHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
-	if offerIdx, ok := r.playerDiplomacyOfferIndex(); ok && diplomacyOfferIsNotification(r.gs.DiplomaticOffers[offerIdx]) {
+	offerIdx, ok := r.playerDiplomacyOfferIndex()
+	if !ok {
+		return false
+	}
+	offer := r.gs.DiplomaticOffers[offerIdx]
+	if diplomacyOfferIsNotification(offer) {
 		return buildDiplomacyOfferNoticeButton().HitTest(fx, fy)
 	}
 	acceptBtn, rejectBtn := buildDiplomacyOfferButtons()
-	return acceptBtn.HitTest(fx, fy) || rejectBtn.HitTest(fx, fy)
+	if acceptBtn.HitTest(fx, fy) || rejectBtn.HitTest(fx, fy) {
+		return true
+	}
+	return offer.Action == string(diplomacy.ActionProposeTransfer) && buildDiplomacyOfferCounterButton().HitTest(fx, fy)
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {

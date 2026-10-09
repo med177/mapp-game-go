@@ -4,11 +4,76 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
 	"mapp-game-go/internal/world"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+func TestDiplomacyCounterOfferButtonIsClickableAndShowsPointer(t *testing.T) {
+	originalWidth, originalHeight := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = originalWidth, originalHeight
+	}()
+	ScreenWidth, ScreenHeight = 1280, 900
+
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai":     {ID: "ai"},
+			"player": {ID: "player"},
+		},
+		DiplomaticOffers: []state.DiplomaticOffer{{
+			FromFactionID:      "ai",
+			ToFactionID:        "player",
+			Action:             string(diplomacy.ActionProposeTransfer),
+			RequestedTransfers: []state.DiplomaticTransfer{{Kind: "resource", ID: "gold", Amount: 15}},
+			OfferedTransfers:   []state.DiplomaticTransfer{{Kind: "resource", ID: "grain", Amount: 1}},
+		}},
+	}
+	r := &Renderer{gs: gs, showDiplomacy: true}
+	r.rebuildUILayers()
+	counterBtn := buildDiplomacyOfferCounterButton()
+	centerX := counterBtn.X + counterBtn.W/2
+	centerY := counterBtn.Y + counterBtn.H/2
+
+	if layer, ok := r.uiLayers.TopAt(centerX, centerY); !ok || layer.ID != uiLayerDiplomacyOffer {
+		t.Fatalf("Karşı Teklif düğmesindeki üst UI katmanı = %+v, want %q", layer, uiLayerDiplomacyOffer)
+	}
+	if got := r.cursorShapeAt(centerX, centerY); got != ebiten.CursorShapePointer {
+		t.Fatalf("Karşı Teklif düğmesi cursor şekli = %v, want pointer", got)
+	}
+	r.handleDiplomacyOfferInputState(0, gameui.InputState{
+		MouseX:          centerX,
+		MouseY:          centerY,
+		LeftJustPressed: true,
+	})
+	if !r.negotiation.show || r.negotiation.target != "ai" || r.negotiation.counterIndex != 0 {
+		t.Fatalf("Karşı Teklif tıklaması pazarlık ekranını açmadı: %+v", r.negotiation)
+	}
+	if r.showDiplomacy {
+		t.Fatal("Karşı teklif açılırken diplomasi paneli arkada açık kaldı")
+	}
+	if _, ok := r.playerDiplomacyOfferIndex(); ok {
+		t.Fatal("karşı teklif düzenlenirken gelen teklif penceresi yeniden gösteriliyor")
+	}
+	r.rebuildUILayers()
+	layout := buildNegotiationLayout()
+	panelCenterX := layout.modal.Panel.Rect.X + layout.modal.Panel.Rect.W/2
+	panelCenterY := layout.modal.Panel.Rect.Y + layout.modal.Panel.Rect.H/2
+	if layer, ok := r.uiLayers.TopAt(panelCenterX, panelCenterY); !ok || layer.ID != uiLayerDiplomacyNegotiation {
+		t.Fatalf("Pazarlık panelindeki üst UI katmanı = %+v, want %q", layer, uiLayerDiplomacyNegotiation)
+	}
+	if got := r.negotiation.requested.items; len(got) != 1 || got[0].ID != "grain" || got[0].Amount != 1 {
+		t.Fatalf("Karşı teklif talep kalemleri = %+v, want offered grain transfer", got)
+	}
+	if got := r.negotiation.offered.items; len(got) != 1 || got[0].ID != "gold" || got[0].Amount != 15 {
+		t.Fatalf("Karşı teklif verilen kalemleri = %+v, want requested gold transfer", got)
+	}
+}
 
 func TestCursorShapeAtUsesSharedEditModeUILayer(t *testing.T) {
 	originalHeight := ScreenHeight

@@ -244,7 +244,14 @@ Oyuncuya gelen `propose_transfer` teklifleri mevcut teklif modalında `Kabul Et`
 editörü açar. Kabul edilen talep kalemleri için talep edilen devletin teklif
 sahibine, verilen kalemleri için diğer yönde ilişki puanı `+10` uygulanır.
 `internal/diplomacy/negotiation.go` geçerlilik, atomik uygulama ve deterministik
-AI kabul değerlendirmesini merkezileştirir.
+AI kabul değerlendirmesini merkezileştirir. Oyuncunun AI'ye gönderdiği teklif
+reddedilecekse AI, kendi kabul eşiğine ulaşan en yakın kaynak/birim miktarı
+değişikliğini karşı teklif olarak kuyruğa alır; kabul edilebilir karşı teklif
+oluşturulamıyorsa teklifi reddeder. Karşı teklif geldiğinde aktarım uygulanmaz;
+oyuncu yeni teklifi ayrıca yanıtlar.
+Karşı teklif düzenleyicisi diplomasi penceresine bağlı değildir; haritanın
+üzerinde ortalanmış modal olarak açılır. Düzenleme süresince gelen teklif
+modalı gizlenir ve pazarlık paneli input/çizim z-order'ında en üstte kalır.
 
 Savaş sırasında aynı oyuncuya hem barış hem de kuşatma teslimiyeti teklifi bekliyorsa
 `BestOfferIndex()` barış teklifini teslimiyetten önce seçer; teslimiyetin daha yüksek

@@ -33,7 +33,10 @@
           "GOARCH": "amd64"
         }
       },
-      "problemMatcher": ["$go"]
+      "problemMatcher": [
+        "$go"
+      ],
+      "inAgents": true
     }
   ]
 }

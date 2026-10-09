@@ -516,9 +516,16 @@ func warDeclarationBlockedByScenario(gs *state.GameState, actor, target faction.
 		if period.MinTurns > 0 && gs.Turn <= period.MinTurns {
 			return true
 		}
+		if period.WarDeclarationRequiresEvent != "" &&
+			!gs.FiredEventIDs[period.WarDeclarationRequiresEvent] {
+			return true
+		}
 		if period.WarDeclarationRequiresEventFlag != "" &&
 			!gs.FiredEventIDs["flag:"+period.WarDeclarationRequiresEventFlag] {
-			return true
+			if period.WarDeclarationUnblockedByEventFlag == "" ||
+				!gs.FiredEventIDs["flag:"+period.WarDeclarationUnblockedByEventFlag] {
+				return true
+			}
 		}
 	}
 	return false

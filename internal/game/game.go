@@ -523,11 +523,7 @@ func (g *Game) Update() error {
 		case render.ActionOfferVassalization:
 			g.offerVassalization(action.TargetFaction)
 		case render.ActionNegotiateTransfer:
-			counterIndex := -1
-			if action.CounterOffer {
-				counterIndex = action.OfferIndex
-			}
-			g.submitTransferNegotiation(action.TargetFaction, action.NegotiationRequested, action.NegotiationOffered, counterIndex)
+			g.handleTransferNegotiationAction(action)
 		case render.ActionReleaseVassal:
 			g.releaseVassal(action.TargetFaction)
 		case render.ActionAnnexVassal:
@@ -562,10 +558,6 @@ func (g *Game) Update() error {
 			g.resolvePendingSuccessorDecision(successorDecisionVassalize)
 		case render.ActionRespondDiplomacyOffer:
 			g.respondDiplomacyOffer(action.OfferIndex, action.OfferAccepted)
-		case render.ActionCounterDiplomacyOffer:
-			if g.renderer != nil {
-				g.renderer.OpenDiplomacyCounterOffer(action.OfferIndex)
-			}
 		case render.ActionCreateTradeRoute:
 			g.proposeTrade(action.TargetFaction)
 		case render.ActionOneTimeTrade:
@@ -607,6 +599,9 @@ func (g *Game) Update() error {
 			g.resolveLandContactChoice(action.ChoiceIndex)
 		case render.ActionRespondDiplomacyOffer:
 			g.handleAITurnOfferResponse(action.OfferIndex, action.OfferAccepted)
+		case render.ActionNegotiateTransfer:
+			g.handleTransferNegotiationAction(action)
+			return nil
 		}
 		if contact := g.gs.PendingNavalContact; contact != nil && contact.PlayerArmyID == "" {
 			// AI-AI temasları oyuncu modalı açamaz; savaş/geri çekilme
@@ -2224,6 +2219,9 @@ func (g *Game) codexReasonLabel(reason string, _ *events.Event) string {
 	key, value := parts[0], parts[1]
 	switch key {
 	case "flag bekleniyor":
+		if clearedBy := g.eventNameClearingFlag(value); clearedBy != "" {
+			return "etkin olmayan flag: " + value + " (gerçekleşen event temizledi: " + clearedBy + ")"
+		}
 		return "beklenen event: " + g.eventNameForFlag(value)
 	case "bloklayan flag":
 		return "bloklayan event: " + g.eventNameForFlag(value)
@@ -2250,6 +2248,27 @@ func (g *Game) eventNameForFlag(flag string) string {
 		}
 	}
 	return flag
+}
+
+func (g *Game) eventNameClearingFlag(flag string) string {
+	if g == nil || g.gs == nil || flag == "" {
+		return ""
+	}
+	for _, evt := range g.evts {
+		if evt == nil || evt.ID == "" || !g.gs.FiredEventIDs[evt.ID] {
+			continue
+		}
+		for _, clearedFlag := range evt.BaseEffect().ClearFlags {
+			if clearedFlag != flag {
+				continue
+			}
+			if evt.NameTR != "" {
+				return evt.NameTR
+			}
+			return evt.ID
+		}
+	}
+	return ""
 }
 
 func (g *Game) eventCodexContextLines(evt *events.Event) []string {
@@ -3077,22 +3096,39 @@ func (g *Game) proposeTrade(targetID faction.FactionID) {
 	g.renderer.ShowCombatResult(result.Message)
 }
 
+func (g *Game) handleTransferNegotiationAction(action render.InputAction) {
+	counterIndex := -1
+	if action.CounterOffer {
+		counterIndex = action.OfferIndex
+	}
+	g.submitTransferNegotiation(action.TargetFaction, action.NegotiationRequested, action.NegotiationOffered, counterIndex)
+}
+
 func (g *Game) submitTransferNegotiation(targetID faction.FactionID, requested, offered []state.DiplomaticTransfer, counterIndex int) {
 	if g == nil || g.gs == nil || targetID == "" {
 		return
 	}
+	var counteredOffer state.DiplomaticOffer
 	if counterIndex >= 0 {
 		if counterIndex >= len(g.gs.DiplomaticOffers) || g.gs.DiplomaticOffers[counterIndex].ToFactionID != g.gs.PlayerFactionID {
 			if g.renderer != nil {
+				g.renderer.CloseDiplomacyNegotiation()
 				g.renderer.ShowCombatResult("Karşı teklifin dayandığı teklif artık geçerli değil.")
 			}
 			return
 		}
-		original := g.gs.DiplomaticOffers[counterIndex]
+		counteredOffer = g.gs.DiplomaticOffers[counterIndex]
 		g.gs.DiplomaticOffers = append(g.gs.DiplomaticOffers[:counterIndex], g.gs.DiplomaticOffers[counterIndex+1:]...)
-		g.appendDiplomacyOfferHistory(original, false, diplomacy.Result{Message: "Karşı teklif gönderildi."})
+		g.appendDiplomacyOfferHistory(counteredOffer, false, diplomacy.Result{Message: "Karşı teklif gönderildi."})
 	}
 	result := diplomacy.ExecuteTransferOffer(g.gs, g.gs.PlayerFactionID, targetID, requested, offered)
+	if result.Applied && counterIndex >= 0 && g.gs.Phase == state.PhaseAITurn {
+		if currentFID, ok := g.currentAITurnFactionID(); ok && offerEndsCurrentAITurn(counteredOffer, currentFID) && g.aiTurn != nil {
+			g.aiTurn.index++
+			g.aiTurn.stepper = nil
+			g.aiTurn.waitFrames = 0
+		}
+	}
 	if targetID != g.gs.PlayerFactionID && result.Message != "Pazarlık teklifi geçerli değil veya teklif hakkı yok." {
 		offer := state.DiplomaticOffer{
 			FromFactionID:      g.gs.PlayerFactionID,

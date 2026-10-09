@@ -702,7 +702,9 @@ func aiGoldEquivalentCost(gs *state.GameState, cost economy.ResourceCost) int {
 		cost.Grain*aiResourcePrice(gs, economy.GoodGrain) +
 		cost.Iron*aiResourcePrice(gs, economy.GoodIron) +
 		cost.Timber*aiResourcePrice(gs, economy.GoodTimber) +
-		cost.Stone*aiResourcePrice(gs, economy.GoodStone)
+		cost.Stone*aiResourcePrice(gs, economy.GoodStone) +
+		cost.Spice*aiResourcePrice(gs, economy.GoodSpice) +
+		cost.Cloth*aiResourcePrice(gs, economy.GoodCloth)
 }
 
 func aiResourcePrice(gs *state.GameState, good economy.GoodType) int {

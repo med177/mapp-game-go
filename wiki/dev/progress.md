@@ -9,8 +9,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   devletten bölge, kaynak/hammadde veya komutan taşımayan ordu birimi isteyip
   karşılığında kalem sunabiliyor; kabulde sahiplik/ekonomi/ordu transferi ve
   yönlü ilişki bonusu uygulanıyor. Gelen teklifler kabul, ret veya karşı teklif
-  ile cevaplanabiliyor. Bölge seçimi kaydırılabilir listeye alındı; devir sonrası
-  yabancı ordular tahliye ediliyor ve harita sahiplik cache'i yenileniyor.
+  ile cevaplanabiliyor; editör harita üstünde modal açılıyor ve AI reddettiği
+  oyuncu pazarlığına kabul edilebilir miktar değişikliği varsa karşı teklif
+  gönderiyor. Bölge seçimi kaydırılabilir listeye alındı; devir sonrası yabancı
+  ordular tahliye ediliyor ve harita sahiplik cache'i yenileniyor.
   `internal/diplomacy/negotiation.go`, `internal/render/diplomacy_negotiation.go`,
   `internal/game/game.go`.
 
