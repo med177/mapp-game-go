@@ -1093,9 +1093,8 @@ func (r *Renderer) updateLandContactCamera() {
 		r.landContactCameraSaved = true
 	}
 
-	// Kara temasında hedef bölgeyi modalın hemen üstüne değil, ekranın orta
-	// bölümüne taşı. Böylece temas orduları modal açıldığında görünür kalır.
-	targetY := float64(ScreenHeight) * 0.4
+	// Temas edilen düşman markerını görünen ekranın tam merkezine taşı.
+	targetY := float64(ScreenHeight) / 2
 	anchorX, anchorY, ok := r.landContactArmyMarkerWorldPos(contact)
 	if !ok {
 		anchorIX, anchorIY, anchorOK := r.landArmyAnchor(land)
@@ -1123,25 +1122,14 @@ func (r *Renderer) landContactArmyMarkerWorldPos(contact *state.LandContact) (fl
 	if opponentID == contact.PlayerArmyID {
 		opponentID = contact.DefenderArmyID
 	}
-	markerIDs := map[army.ArmyID]struct{}{
-		contact.PlayerArmyID: {},
-		opponentID:           {},
-	}
-	var sumX, sumY float64
-	count := 0
 	for _, marker := range r.armyIconPositions() {
-		if _, ok := markerIDs[marker.ArmyID]; !ok {
+		if marker.ArmyID != opponentID {
 			continue
 		}
 		worldX, worldY := r.screenToWorld(float64(marker.X), float64(marker.Y))
-		sumX += worldX
-		sumY += worldY
-		count++
+		return worldX, worldY, true
 	}
-	if count == 0 {
-		return 0, 0, false
-	}
-	return sumX / float64(count), sumY / float64(count), true
+	return 0, 0, false
 }
 
 func navalContactCameraTargetY(screenH, modalBottom float64) float64 {
