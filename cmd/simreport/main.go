@@ -174,6 +174,13 @@ func renderMarkdown(report *game.HeadlessSimulationReport) string {
 		for _, event := range report.Events {
 			fmt.Fprintf(&b, "- %d. tur: **%s** (`%s`)\n", event.Turn, md(event.NameTR), event.ID)
 		}
+		b.WriteString("\n")
+	}
+	if len(report.Flags) > 0 {
+		b.WriteString("## Set edilen flag'ler\n\n")
+		for _, flag := range report.Flags {
+			fmt.Fprintf(&b, "- %d. tur: `%s`\n", flag.Turn, flag.Flag)
+		}
 	}
 	return b.String()
 }

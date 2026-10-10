@@ -1711,14 +1711,6 @@
     "player_choice_factions": [
       "baratheon_stormsend"
     ],
-    "requires_flags": [
-      "robert_dead",
-      "northern_independence_declared"
-    ],
-    "requires_owned_regions_any": [
-      "storm_end",
-      "stormlands"
-    ],
     "requires_active_factions": [
       "baratheon_stormsend",
       "baratheon_dragonstone",

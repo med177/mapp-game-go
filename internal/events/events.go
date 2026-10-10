@@ -302,53 +302,59 @@ func LoadEvents(path string) ([]*Event, error) {
 	return list, nil
 }
 
-// Tick her tur sonunda olayları kontrol eder ve tetiklenen ilk olayı döner.
-func Tick(gs *state.GameState, evts []*Event) *Event {
+func eventTurnKey(turn int, eventID string) string {
+	return fmt.Sprintf("turn:%d:event:%s", turn, eventID)
+}
+
+func nextEligibleEvent(gs *state.GameState, evts []*Event, seen map[string]bool) *Event {
+	if gs == nil {
+		return nil
+	}
 	if gs.FiredEventIDs == nil {
 		gs.FiredEventIDs = make(map[string]bool)
 	}
+	turnKey := func(e *Event) bool {
+		if e == nil {
+			return false
+		}
+		if seen[e.ID] {
+			return true
+		}
+		if gs.FiredEventIDs[eventTurnKey(gs.Turn, e.ID)] {
+			return true
+		}
+		if gs.FiredEventIDs[e.ID] {
+			return true
+		}
+		return false
+	}
 
-	// Önce aynı turda oluşan siyasi üstünlüğe bağlı event'leri kontrol et.
-	// Böylece oyuncu rakip hanedanı elediğinde veya vassal yaptığında 1485'i
-	// beklemek zorunda kalmaz.
 	actor, target := gs.LastSubjugationActorID, gs.LastSubjugatedFactionID
 	if actor != "" || target != "" {
 		for _, e := range evts {
-			if e == nil || e.FactionSubjugationTrigger == nil || gs.FiredEventIDs[e.ID] ||
+			if e == nil || e.FactionSubjugationTrigger == nil || turnKey(e) ||
 				!eventConditionsSatisfied(gs, e) || !factionSubjugationTriggerSatisfied(gs, e, actor, target) {
 				continue
 			}
-			if e.OneShot {
-				gs.FiredEventIDs[e.ID] = true
-			}
-			gs.ConsumeFactionSubjugation()
 			return e
 		}
 		gs.ConsumeFactionSubjugation()
 	}
 
-	// Aynı takvim penceresinde birden fazla tarihsel olay varsa, önceki turda
-	// ertelenen olayları normal tarih taramasından önce sıraya al.
 	for _, e := range evts {
-		if e == nil || e.HistoricalYear == 0 || gs.FiredEventIDs[e.ID] ||
+		if e == nil || e.HistoricalYear == 0 || turnKey(e) ||
 			!gs.FiredEventIDs[pendingHistoricalEventKey(e.ID)] {
 			continue
 		}
 		if !eventConditionsSatisfied(gs, e) {
 			continue
 		}
-		if e.OneShot {
-			gs.FiredEventIDs[e.ID] = true
-		}
-		delete(gs.FiredEventIDs, pendingHistoricalEventKey(e.ID))
 		return e
 	}
 
-	// State koşullu olaylarda aynı turda birden fazla aday varsa veriyle
-	// tanımlanan öncelik en yüksek olanı seçilir; JSON sırası tie-breaker'dır.
 	var stateTriggeredEvent *Event
 	for _, e := range evts {
-		if e == nil || !e.StateTriggered || e.HistoricalYear != 0 || gs.FiredEventIDs[e.ID] {
+		if e == nil || !e.StateTriggered || e.HistoricalYear != 0 || turnKey(e) {
 			continue
 		}
 		if !eventConditionsSatisfied(gs, e) {
@@ -359,18 +365,11 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		}
 	}
 	if stateTriggeredEvent != nil {
-		if stateTriggeredEvent.OneShot {
-			gs.FiredEventIDs[stateTriggeredEvent.ID] = true
-		}
 		return stateTriggeredEvent
 	}
 
-	// Önce tarihsel olayları kontrol et (kesinlikle tetiklenir)
 	for _, e := range evts {
-		if e.HistoricalYear == 0 {
-			continue
-		}
-		if gs.FiredEventIDs[e.ID] {
+		if e == nil || e.HistoricalYear == 0 || turnKey(e) {
 			continue
 		}
 		if !eventConditionsSatisfied(gs, e) {
@@ -379,19 +378,11 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if !historicalEventDueThisTurn(gs, e) {
 			continue
 		}
-		queueHistoricalEventsSharingDate(gs, evts, e)
-		if e.OneShot {
-			gs.FiredEventIDs[e.ID] = true
-		}
 		return e
 	}
 
-	// Rastgele olaylar
 	for _, e := range evts {
-		if e.RandomProbability <= 0 {
-			continue
-		}
-		if e.OneShot && gs.FiredEventIDs[e.ID] {
+		if e == nil || e.RandomProbability <= 0 || turnKey(e) {
 			continue
 		}
 		if !eventConditionsSatisfied(gs, e) {
@@ -403,12 +394,49 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if rand.Float64() > e.RandomProbability {
 			continue
 		}
-		if e.OneShot {
-			gs.FiredEventIDs[e.ID] = true
-		}
 		return e
 	}
 	return nil
+}
+
+// TickAll her tur sonunda uygun olan olayları sırayla döner.
+func TickAll(gs *state.GameState, evts []*Event) []*Event {
+	if gs == nil {
+		return nil
+	}
+	if gs.FiredEventIDs == nil {
+		gs.FiredEventIDs = make(map[string]bool)
+	}
+	seen := make(map[string]bool)
+	result := make([]*Event, 0)
+	for {
+		next := nextEligibleEvent(gs, evts, seen)
+		if next == nil {
+			break
+		}
+		if next.OneShot {
+			gs.FiredEventIDs[next.ID] = true
+		}
+		gs.FiredEventIDs[eventTurnKey(gs.Turn, next.ID)] = true
+		if gs.FiredEventIDs[pendingHistoricalEventKey(next.ID)] {
+			delete(gs.FiredEventIDs, pendingHistoricalEventKey(next.ID))
+		}
+		seen[next.ID] = true
+		result = append(result, next)
+		if next.HistoricalYear != 0 {
+			queueHistoricalEventsSharingDate(gs, evts, next)
+		}
+	}
+	return result
+}
+
+// Tick her tur sonunda olayları kontrol eder ve tetiklenen ilk olayı döner.
+func Tick(gs *state.GameState, evts []*Event) *Event {
+	triggered := TickAll(gs, evts)
+	if len(triggered) == 0 {
+		return nil
+	}
+	return triggered[0]
 }
 
 // TickOpeningHistoricalEvent yeni oyun açılırken başlangıç tarihine denk gelen
@@ -1308,7 +1336,34 @@ func choiceEffect(e *Event, c Choice) Effect {
 	if eff.AffectedFaction == "" {
 		eff.AffectedFaction = e.AffectedFaction
 	}
+	eff.SetFlags, eff.ClearFlags = mergeRootFlags(e.SetFlags, eff.SetFlags, eff.ClearFlags)
 	return eff
+}
+
+// mergeRootFlags, event kökündeki set_flags'i her seçimde garanti eder ve
+// seçimin clear_flags'inin bunları silmesini engeller.
+func mergeRootFlags(root, set, clear []string) ([]string, []string) {
+	if len(root) == 0 {
+		return set, clear
+	}
+	rootSet := make(map[string]bool, len(root))
+	merged := make([]string, 0, len(root)+len(set))
+	for _, flag := range root {
+		rootSet[flag] = true
+		merged = append(merged, flag)
+	}
+	for _, flag := range set {
+		if !rootSet[flag] {
+			merged = append(merged, flag)
+		}
+	}
+	var filtered []string
+	for _, flag := range clear {
+		if !rootSet[flag] {
+			filtered = append(filtered, flag)
+		}
+	}
+	return merged, filtered
 }
 
 func effectiveEventEffect(e *Event, choice *Choice) Effect {

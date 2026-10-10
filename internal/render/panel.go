@@ -5911,7 +5911,7 @@ func regionPanelLogisticsStatus(gs *state.GameState, region *world.Region) (stat
 	}
 	if status, ok := gs.RegionLogistics[region.ID]; ok {
 		status.Demand = regionPanelCurrentArmyDemand(gs, region)
-		status.LocalProduction = regionPanelCurrentLocalProduction(gs, region)
+		status.LocalProduction = regionPanelCurrentLocalProduction(gs, region, status.OwnerID)
 		status.Capacity = status.LocalProduction + status.SettlementBuffer + status.GranarySupport + status.ReserveSupport + status.NavalSupplyGrainSpent
 		status.Overload = status.Demand - status.Capacity
 		if status.Overload < 0 {
@@ -5945,16 +5945,15 @@ func regionPanelCurrentArmyDemand(gs *state.GameState, region *world.Region) int
 	return demand
 }
 
-func regionPanelCurrentLocalProduction(gs *state.GameState, region *world.Region) int {
-	if gs == nil || region == nil {
+// armyOwnerID çözümleme snapshot'ındaki ordu sahibidir; gs.Armies map sırasına
+// bağlı seçim panelin kare kare titremesine yol açar.
+func regionPanelCurrentLocalProduction(gs *state.GameState, region *world.Region, armyOwnerID string) int {
+	if gs == nil || region == nil || region.OwnerID != armyOwnerID {
 		return 0
 	}
 	for _, currentArmy := range gs.Armies {
 		if currentArmy == nil || currentArmy.IsNaval || currentArmy.RegionID != region.ID || len(currentArmy.Units) == 0 {
 			continue
-		}
-		if region.OwnerID != currentArmy.OwnerID {
-			return 0
 		}
 		return gs.RegionMilitaryGrainProduction(region)
 	}

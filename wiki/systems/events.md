@@ -119,6 +119,11 @@ filtrelenmiş görsel listedeki indeksi event içindeki gerçek choice indeksine
 Headless akışta da oyuncu factionına açık seçenekler arasından AI ağırlığıyla karar
 verilir.
 
+Seçimli event uygulanırken yalnızca seçilen seçeneğin `effect` nesnesi uygulanır;
+event kökündeki efekt alanları seçenek efektine otomatik eklenmez. Her seçimde
+ortak olması gereken `set_flags` gibi etkiler bu nedenle her seçeneğin `effect`
+içinde ayrıca tanımlanmalıdır.
+
 ## Tetikleme Koşulları
 
 `events.Tick(gs, evts)` — tur çözümleme sırasında çağrılır.

@@ -46,6 +46,7 @@ type Game struct {
 	evts                              []*events.Event
 	pendingHistoricalEvt              *events.Event
 	queuedHistoricalEvt               *events.Event
+	pendingTurnEventQueueSummary      string
 	resolvingTurn                     bool
 	pendingSortie                     *pendingSortieState
 	pendingConquestDecisions          []pendingConquestDecision
@@ -1451,11 +1452,9 @@ func (g *Game) resolveTurn() {
 	g.showEmbarkedVoyageAlerts(navalVoyageAlerts)
 	g.handleCapitalMoveProgress(capitalMoveUpdates)
 
-	// Olaylar
-	if evt := events.Tick(g.gs, g.evts); evt != nil {
-		events.Apply(g.gs, evt)
-		g.handleTriggeredEvent(evt)
-	}
+	// Olaylar: aynı turda birden fazla eşleşen olay sırayla işlenir; seçimli
+	// olaylar kullanıcı kararına kadar bekletilir ve ardından zincir devam eder.
+	g.processPendingTurnEvents()
 	imperialReport := diplomacy.AdvanceImperialPolitics(g.gs)
 	if imperialReport.Message != "" {
 		g.renderer.AddEvent("[İMPARATORLUK] " + imperialReport.Message)
@@ -1742,6 +1741,65 @@ func (g *Game) showEmbarkedVoyageAlerts(alerts []navalVoyageAlert) {
 	}
 }
 
+func (g *Game) processPendingTurnEvents() bool {
+	if g == nil || g.gs == nil {
+		return false
+	}
+	for {
+		if g.pendingHistoricalEvt != nil || g.pendingPlayerDecisionBeforeHistoricalEvent() {
+			return true
+		}
+		due := events.TickAll(g.gs, g.evts)
+		if len(due) == 0 {
+			g.pendingTurnEventQueueSummary = ""
+			return false
+		}
+		g.pendingTurnEventQueueSummary = describeTurnEventQueue(due)
+		for _, evt := range due {
+			events.Apply(g.gs, evt)
+			g.handleTriggeredEvent(evt)
+			if g.pendingHistoricalEvt != nil || g.pendingPlayerDecisionBeforeHistoricalEvent() {
+				return true
+			}
+		}
+		g.pendingTurnEventQueueSummary = ""
+	}
+}
+
+func describeTurnEventQueue(due []*events.Event) string {
+	if len(due) <= 1 {
+		return ""
+	}
+	parts := make([]string, 0, len(due)-1)
+	for _, evt := range due[1:] {
+		if evt == nil || evt.NameTR == "" {
+			continue
+		}
+		parts = append(parts, evt.NameTR)
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	if len(parts) == 1 {
+		return "Sonraki olay: " + parts[0]
+	}
+	return "Sonraki olaylar: " + strings.Join(parts[:minValue(len(parts), 2)], ", ") + maybeMoreSuffix(len(parts))
+}
+
+func minValue(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func maybeMoreSuffix(count int) string {
+	if count > 2 {
+		return ", ..."
+	}
+	return ""
+}
+
 func (g *Game) handleTriggeredEvent(evt *events.Event) {
 	if evt == nil {
 		return
@@ -1759,6 +1817,10 @@ func (g *Game) presentHistoricalEvent(evt *events.Event) {
 	}
 	baseMsg := "OLAY: " + evt.NameTR + ": " + evt.DescTR
 	eventDescription := evt.DescTR
+	if g.pendingTurnEventQueueSummary != "" && len(evt.Choices) > 0 {
+		eventDescription += "\n\n" + g.pendingTurnEventQueueSummary
+		baseMsg += "\n\n" + g.pendingTurnEventQueueSummary
+	}
 	if len(evt.Choices) == 0 {
 		if effect := historicalChoiceEffectSummary(g.gs, evt.BaseEffect()); effect != "" {
 			baseMsg += " Etki: " + effect
@@ -1771,8 +1833,9 @@ func (g *Game) presentHistoricalEvent(evt *events.Event) {
 			g.applyHistoricalChoiceWithNotification(evt, idx, false)
 		}
 		if evt.HistoricalYear != 0 {
-			g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, "", nil)
+			g.renderer.ShowHistoricalEvent(evt.NameTR, eventDescription, "", nil)
 		}
+		g.pendingTurnEventQueueSummary = ""
 		return
 	}
 	g.renderer.ShowCombatResult(baseMsg)
@@ -1783,10 +1846,11 @@ func (g *Game) presentHistoricalEvent(evt *events.Event) {
 		if evt.HistoricalYear != 0 {
 			g.renderer.ShowHistoricalEvent(evt.NameTR, eventDescription, "", nil)
 		}
+		g.pendingTurnEventQueueSummary = ""
 		return
 	}
 	g.pendingHistoricalEvt = evt
-	g.renderer.ShowHistoricalEvent(evt.NameTR, evt.DescTR, evt.ChoicePromptTR, g.historicalChoiceViews(evt))
+	g.renderer.ShowHistoricalEvent(evt.NameTR, eventDescription, evt.ChoicePromptTR, g.historicalChoiceViews(evt))
 }
 
 func (g *Game) pendingPlayerDecisionBeforeHistoricalEvent() bool {
@@ -1836,7 +1900,9 @@ func (g *Game) resolveHistoricalChoice(idx int) {
 	}
 	g.applyHistoricalChoice(g.pendingHistoricalEvt, visibleChoices[idx])
 	g.pendingHistoricalEvt = nil
+	g.pendingTurnEventQueueSummary = ""
 	g.renderer.HideHistoricalEvent()
+	g.processPendingTurnEvents()
 }
 
 func (g *Game) applyHistoricalChoice(evt *events.Event, idx int) {
@@ -2455,8 +2521,8 @@ func (g *Game) historicalChoiceFollowUpSummary(evt *events.Event, choice events.
 	if eff.AffectedFaction == "" {
 		eff.AffectedFaction = evt.AffectedFaction
 	}
-	flagSet := make(map[string]bool, len(eff.SetFlags))
-	for _, flag := range eff.SetFlags {
+	flagSet := make(map[string]bool, len(eff.SetFlags)+len(evt.SetFlags))
+	for _, flag := range append(append([]string{}, evt.SetFlags...), eff.SetFlags...) {
 		if flag != "" {
 			flagSet[flag] = true
 		}

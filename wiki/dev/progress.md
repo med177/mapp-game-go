@@ -1,9 +1,16 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-09
+last_updated: 2026-10-10
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-10: 298 senaryosunda Robert'ın ölüm event'inin her claimant seçeneğinde
+  `robert_dead` ve `war_of_five_kings_active` flag'lerini set etmesi sağlandı.
+  Renly'nin 299/05 ölümü artık Robb'un bağımsızlık seçimine veya Stormsend'in
+  belirli bölgeleri elinde tutmasına bağlı değil; Stormsend ve diğer gerekli
+  taraflar aktif kaldığı sürece tarihsel olay tetikleniyor.
+  `assets/scenarios/298_war_of_five_kings/data/events.json`.
 
 - 2026-10-09: Diplomasiye iki taraflı transfer pazarlığı eklendi. Oyuncu hedef
   devletten bölge, kaynak/hammadde veya komutan taşımayan ordu birimi isteyip

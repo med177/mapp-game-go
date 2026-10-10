@@ -48,6 +48,20 @@ func TestRandomProbabilityOneTriggersEvent(t *testing.T) {
 	}
 }
 
+func TestTickAllReturnsMultipleEligibleEventsInOrder(t *testing.T) {
+	gs := &state.GameState{Turn: 1, FiredEventIDs: map[string]bool{}}
+	first := &Event{ID: "event_a", RandomProbability: 1, MinTurn: 1, OneShot: true}
+	second := &Event{ID: "event_b", RandomProbability: 1, MinTurn: 1, OneShot: true}
+
+	got := TickAll(gs, []*Event{first, second})
+	if len(got) != 2 {
+		t.Fatalf("uygun olay sayısı yanlış: got %d, want 2", len(got))
+	}
+	if got[0] != first || got[1] != second {
+		t.Fatalf("olay sırası yanlış: got %v, want [%v %v]", []string{got[0].ID, got[1].ID}, first.ID, second.ID)
+	}
+}
+
 func TestChoiceIndicesForFactionFiltersOnlyRestrictedChoices(t *testing.T) {
 	e := &Event{Choices: []Choice{
 		{ID: "bolton", AvailableToFactions: []string{"bolton"}},

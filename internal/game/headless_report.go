@@ -53,6 +53,7 @@ type HeadlessSimulationReport struct {
 	AllianceChanges []HeadlessDiplomacyEvent `json:"alliance_changes"`
 	Eliminations    []HeadlessElimination    `json:"eliminations"`
 	Events          []HeadlessEvent          `json:"events"`
+	Flags           []HeadlessFlag           `json:"flags"`
 	Checkpoints     []HeadlessCheckpoint     `json:"checkpoints"`
 }
 
@@ -111,6 +112,11 @@ type HeadlessEvent struct {
 	Turn   int    `json:"turn"`
 	ID     string `json:"id"`
 	NameTR string `json:"name_tr"`
+}
+
+type HeadlessFlag struct {
+	Turn int    `json:"turn"`
+	Flag string `json:"flag"`
 }
 
 type HeadlessCheckpoint struct {
@@ -289,6 +295,12 @@ func RunHeadlessSimulation(options HeadlessSimulationOptions) (*HeadlessSimulati
 				seenEvents[id] = true
 			}
 		}
+		for key, set := range gs.FiredEventIDs {
+			if flag, ok := strings.CutPrefix(key, "flag:"); ok && set && !seenEvents[key] {
+				report.Flags = append(report.Flags, HeadlessFlag{Turn: turn, Flag: flag})
+				seenEvents[key] = true
+			}
+		}
 		recordHeadlessRegionChanges(report, gs, previousRegions, turn)
 		recordHeadlessEliminations(report, gs, initial, turn)
 		previousRegions = captureRegionOwners(gs)
@@ -319,6 +331,12 @@ func RunHeadlessSimulation(options HeadlessSimulationOptions) (*HeadlessSimulati
 			return report.Events[i].Turn < report.Events[j].Turn
 		}
 		return report.Events[i].ID < report.Events[j].ID
+	})
+	sort.Slice(report.Flags, func(i, j int) bool {
+		if report.Flags[i].Turn != report.Flags[j].Turn {
+			return report.Flags[i].Turn < report.Flags[j].Turn
+		}
+		return report.Flags[i].Flag < report.Flags[j].Flag
 	})
 	sort.Slice(report.TradeChanges, func(i, j int) bool {
 		return headlessDiplomacyEventLess(report.TradeChanges[i], report.TradeChanges[j])
