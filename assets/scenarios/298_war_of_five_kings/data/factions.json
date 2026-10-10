@@ -215,13 +215,13 @@
     "is_playable": true,
     "is_eliminated": false,
     "capital_settlement_id": "dragonstone_main",
-    "gold": 3000,
-    "grain": 1800,
+    "gold": 5000,
+    "grain": 2800,
     "iron": 300,
     "timber": 450,
-    "stone": 750,
+    "stone": 2750,
     "spice": 60,
-    "cloth": 100,
+    "cloth": 300,
     "research": {
       "completed": {
         "castle_steel": true,
@@ -248,6 +248,10 @@
       },
       {
         "region_id": "kings_landing",
+        "value": 90
+      },
+      {
+        "region_id": "crownlands",
         "value": 100
       },
       {
@@ -304,6 +308,10 @@
       {
         "region_id": "kings_landing",
         "value": 90
+      },
+      {
+        "region_id": "crownlands",
+        "value": 100
       }
     ]
   },

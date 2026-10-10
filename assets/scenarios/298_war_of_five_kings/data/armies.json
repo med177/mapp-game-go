@@ -74,11 +74,19 @@
     "units": [
       {
         "type_id": "infantry",
-        "count": 5
+        "count": 3
       },
       {
         "type_id": "elite_infantry",
-        "count": 3
+        "count": 8
+      },
+      {
+        "type_id": "trebuchet",
+        "count": 4
+      },
+      {
+        "type_id": "heavy_cavalry",
+        "count": 2
       }
     ]
   },
@@ -195,15 +203,11 @@
     "units": [
       {
         "type_id": "elite_infantry",
-        "count": 2
-      },
-      {
-        "type_id": "infantry",
         "count": 5
       },
       {
-        "type_id": "militia",
-        "count": 4
+        "type_id": "infantry",
+        "count": 7
       }
     ]
   },
@@ -290,15 +294,11 @@
     "units": [
       {
         "type_id": "heavy_cavalry",
-        "count": 3
-      },
-      {
-        "type_id": "infantry",
         "count": 6
       },
       {
-        "type_id": "militia",
-        "count": 4
+        "type_id": "infantry",
+        "count": 12
       }
     ]
   },
@@ -365,16 +365,12 @@
     "region_id": "sharp_point",
     "units": [
       {
+        "type_id": "elite_cavalry",
+        "count": 2
+      },
+      {
         "type_id": "elite_infantry",
-        "count": 2
-      },
-      {
-        "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "militia",
-        "count": 2
+        "count": 7
       }
     ]
   },
@@ -385,11 +381,11 @@
     "units": [
       {
         "type_id": "unsullied",
-        "count": 3
+        "count": 4
       },
       {
         "type_id": "dothraki_horse_lords",
-        "count": 2
+        "count": 4
       }
     ]
   },

@@ -1826,9 +1826,10 @@ func addRegionEventStatus(gs *state.GameState, e *Event, choice *Choice, targetR
 	if effect.EffectDurationTurns > 0 {
 		turnsVisible = effect.EffectDurationTurns
 	}
-	if eventType == "blessing" {
+	switch eventType {
+	case "blessing":
 		turnsVisible = 3 // pozitif olaylar daha kısa görünür
-	} else if eventType == "plague" || eventType == "revolt" {
+	case "plague", "revolt":
 		turnsVisible = 6 // negatif olaylar daha uzun görünür
 	}
 

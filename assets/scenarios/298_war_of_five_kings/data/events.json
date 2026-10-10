@@ -598,8 +598,8 @@
         "effect": {
           "target": "specific_faction",
           "affected_faction": "baratheon_king",
-          "relations": [{"faction_id": "stark", "score_delta": 25}],
-          "set_flags": ["ned_stark_named_hand"]
+          "relations": [ { "faction_id": "stark", "score_delta": 25 } ],
+          "set_flags": [ "ned_stark_named_hand" ]
         }
       },
       {
@@ -610,14 +610,14 @@
         "effect": {
           "target": "specific_faction",
           "affected_faction": "baratheon_king",
-          "relations": [{"faction_id": "stark", "score_delta": -10}],
-          "set_flags": ["ned_stark_hand_refused"]
+          "relations": [ { "faction_id": "stark", "score_delta": -10 } ],
+          "set_flags": [ "ned_stark_hand_refused" ]
         }
       }
     ],
-    "player_choice_factions": ["baratheon_king"],
-    "requires_flags": ["royal_party_travelling_north", "jon_arryn_path_chosen"],
-    "requires_active_factions": ["baratheon_king", "stark"]
+    "player_choice_factions": [ "baratheon_king" ],
+    "requires_flags": [ "royal_party_travelling_north", "jon_arryn_path_chosen" ],
+    "requires_active_factions": [ "baratheon_king", "stark" ]
   },
   {
     "id": "sansa_joffrey_betrothal_298",
@@ -645,10 +645,10 @@
           "target": "specific_faction",
           "affected_faction": "stark",
           "relations": [
-            {"faction_id": "baratheon_king", "score_delta": 20},
-            {"faction_id": "lannister", "score_delta": 10}
+            { "faction_id": "baratheon_king", "score_delta": 20 },
+            { "faction_id": "lannister", "score_delta": 10 }
           ],
-          "set_flags": ["sansa_joffrey_betrothal"]
+          "set_flags": [ "sansa_joffrey_betrothal" ]
         }
       },
       {
@@ -660,16 +660,16 @@
           "target": "specific_faction",
           "affected_faction": "stark",
           "relations": [
-            {"faction_id": "baratheon_king", "score_delta": -18},
-            {"faction_id": "lannister", "score_delta": -10}
+            { "faction_id": "baratheon_king", "score_delta": -18 },
+            { "faction_id": "lannister", "score_delta": -10 }
           ],
-          "set_flags": ["sansa_joffrey_betrothal_refused"]
+          "set_flags": [ "sansa_joffrey_betrothal_refused" ]
         }
       }
     ],
-    "player_choice_factions": ["stark"],
-    "requires_flags": ["ned_stark_named_hand"],
-    "requires_active_factions": ["stark", "baratheon_king", "lannister"]
+    "player_choice_factions": [ "stark" ],
+    "requires_flags": [ "ned_stark_named_hand" ],
+    "requires_active_factions": [ "stark", "baratheon_king", "lannister" ]
   },
   {
     "id": "ned_arrested_after_robert_298",
@@ -696,8 +696,8 @@
         "effect": {
           "target": "specific_faction",
           "affected_faction": "stark",
-          "relations": [{"faction_id": "lannister", "score_delta": -25}],
-          "set_flags": ["ned_arrested", "ned_betrayed"]
+          "relations": [ { "faction_id": "lannister", "score_delta": -25 } ],
+          "set_flags": [ "ned_arrested", "ned_betrayed" ]
         }
       },
       {
@@ -708,14 +708,14 @@
         "effect": {
           "target": "specific_faction",
           "affected_faction": "stark",
-          "relations": [{"faction_id": "lannister", "score_delta": -15}],
-          "set_flags": ["ned_arrested"]
+          "relations": [ { "faction_id": "lannister", "score_delta": -15 } ],
+          "set_flags": [ "ned_arrested" ]
         }
       }
     ],
-    "player_choice_factions": ["stark"],
-    "requires_flags": ["war_of_five_kings_active", "ned_stark_named_hand"],
-    "requires_active_factions": ["stark", "lannister"]
+    "player_choice_factions": [ "stark" ],
+    "requires_flags": [ "war_of_five_kings_active", "ned_stark_named_hand" ],
+    "requires_active_factions": [ "stark", "lannister" ]
   },
   {
     "id": "ned_execution_298",
@@ -743,11 +743,11 @@
           "target": "specific_faction",
           "affected_faction": "stark",
           "relations": [
-            {"faction_id": "lannister", "score_delta": -40, "stance": "war"},
-            {"faction_id": "tully", "score_delta": -35, "stance": "war"}
+            { "faction_id": "lannister", "score_delta": -40, "stance": "war" },
+            { "faction_id": "tully", "score_delta": -35, "stance": "war" }
           ],
-          "set_flags": ["ned_executed"],
-          "clear_flags": ["ned_arrested"]
+          "set_flags": [ "ned_executed" ],
+          "clear_flags": [ "ned_arrested" ]
         }
       },
       {
@@ -758,15 +758,15 @@
         "effect": {
           "target": "specific_faction",
           "affected_faction": "stark",
-          "relations": [{"faction_id": "stark", "score_delta": 10}],
-          "set_flags": ["ned_exiled"],
-          "clear_flags": ["ned_arrested"]
+          "relations": [ { "faction_id": "stark", "score_delta": 10 } ],
+          "set_flags": [ "ned_exiled" ],
+          "clear_flags": [ "ned_arrested" ]
         }
       }
     ],
-    "player_choice_factions": ["baratheon_king"],
-    "requires_flags": ["ned_arrested"],
-    "requires_active_factions": ["stark", "lannister"]
+    "player_choice_factions": [ "baratheon_king" ],
+    "requires_flags": [ "ned_arrested" ],
+    "requires_active_factions": [ "stark", "lannister" ]
   },
   {
     "id": "death_of_robert_298",
@@ -843,7 +843,7 @@
       "baratheon_dragonstone",
       "baratheon_stormsend"
     ],
-    "requires_flags": []
+    "requires_flags": [ ]
   },
   {
     "id": "catelyn_captures_tyrion_298",
@@ -935,7 +935,7 @@
       "stark",
       "arryn"
     ],
-    "requires_flags": [],
+    "requires_flags": [ ],
     "requires_active_factions": [
       "tully",
       "arryn",
@@ -1627,7 +1627,7 @@
         "id": "swear_to_stannis",
         "label_tr": "Stannis'e boyun eğ",
         "desc_tr": "Renly'nin ordusu Stannis'in taht iddiasına katılır.",
-        "ai_weight": 6,
+        "ai_weight": 9,
         "effect": {
           "target": "specific_faction",
           "affected_faction": "baratheon_dragonstone",
@@ -1655,6 +1655,14 @@
               "army_percent": 100
             }
           ],
+          "dynastic_settlement": {
+            "source_faction_id": "baratheon_stormsend",
+            "recipient_faction_id": "baratheon_dragonstone",
+            "region_ids": [
+              "storm_end",
+              "stormlands"
+            ]
+          },
           "set_flags": [
             "renly_dead",
             "renly_host_joined_stannis"
@@ -1665,7 +1673,7 @@
         "id": "join_the_tyrells",
         "label_tr": "Tyrellerle geri çekil",
         "desc_tr": "Renly'nin destekçileri Stannis'i reddeder ve Tyrellerle birlikte yeni bir siyasi blok kurar.",
-        "ai_weight": 8,
+        "ai_weight": 4,
         "effect": {
           "target": "specific_faction",
           "affected_faction": "baratheon_stormsend",
@@ -1704,11 +1712,12 @@
       "baratheon_stormsend"
     ],
     "requires_flags": [
-      "war_of_five_kings_active",
+      "robert_dead",
       "northern_independence_declared"
     ],
-    "requires_owned_regions": [
-      "storm_end"
+    "requires_owned_regions_any": [
+      "storm_end",
+      "stormlands"
     ],
     "requires_active_factions": [
       "baratheon_stormsend",
@@ -2365,7 +2374,7 @@
       "war_of_five_kings_active"
     ],
     "requires_active_factions": [
-      "tully","lannister","stark"
+      "tully", "lannister", "stark"
     ]
   },
   {
@@ -2396,7 +2405,7 @@
         "label_tr": "Boltonların Kuzey'i ele geçirmesine izin ver",
         "desc_tr": "Kızıl Düğün'ün ardından Winterfell, Boyun ve Moat Cailin Boltonların eline geçer.",
         "ai_weight": 4,
-        "available_to_factions": ["bolton"],
+        "available_to_factions": [ "bolton" ],
         "effect": {
           "target": "specific_faction",
           "affected_faction": "stark",
@@ -2412,7 +2421,7 @@
         "label_tr": "Kuzey direnişini sürdür",
         "desc_tr": "Stark hanedanı ihaneti kabul etmez; ağır kayıplara rağmen Winterfell ve Kuzey üzerindeki hâkimiyetini korumaya çalışır.",
         "ai_weight": 6,
-        "available_to_factions": ["stark"],
+        "available_to_factions": [ "stark" ],
         "effect": {
           "target": "specific_faction",
           "combat_defense_percent": 10,
@@ -3144,7 +3153,7 @@
       "war_of_five_kings_active"
     ],
     "requires_active_factions": [
-      "tyrell","baratheon_king"
+      "tyrell", "baratheon_king"
     ]
   },
   {
@@ -3789,7 +3798,7 @@
         "label_tr": "Duvar'a saldır",
         "desc_tr": "Özgür Halk büyük bir saldırıyla geçitleri zorlar.",
         "ai_weight": 8,
-        "available_to_factions": ["free_folk"],
+        "available_to_factions": [ "free_folk" ],
         "effect": {
           "target": "specific_faction",
           "combat_attack_percent": 10,
@@ -3810,7 +3819,7 @@
         "label_tr": "Duvar'ı tut",
         "desc_tr": "Gece Nöbeti savunma hatlarını sıkılaştırır ve geçitleri kapatır.",
         "ai_weight": 8,
-        "available_to_factions": ["nights_watch"],
+        "available_to_factions": [ "nights_watch" ],
         "effect": {
           "target": "specific_faction",
           "combat_defense_percent": 12,
@@ -3832,7 +3841,7 @@
         "label_tr": "Kuzeyden yardım gönder",
         "desc_tr": "Stark hanedanı Duvar'a tahıl ve asker göndererek savunmayı ayakta tutar.",
         "ai_weight": 6,
-        "available_to_factions": ["stark"],
+        "available_to_factions": [ "stark" ],
         "effect": {
           "target": "specific_faction",
           "gold_delta": -60,
@@ -4467,9 +4476,9 @@
     "state_trigger_priority": 100,
     "one_shot": true,
     "relations": [
-      {"faction_id": "baratheon_king", "stance": "allied", "score_delta": 20},
-      {"faction_id": "stark", "score_delta": -20},
-      {"faction_id": "tully", "score_delta": -15}
+      { "faction_id": "baratheon_king", "stance": "allied", "score_delta": 20 },
+      { "faction_id": "stark", "score_delta": -20 },
+      { "faction_id": "tully", "score_delta": -15 }
     ],
     "set_flags": [
       "war_of_five_kings_settlement_complete",
@@ -4501,9 +4510,9 @@
     "state_trigger_priority": 100,
     "one_shot": true,
     "relations": [
-      {"faction_id": "tully", "stance": "allied", "score_delta": 25},
-      {"faction_id": "arryn", "score_delta": 15},
-      {"faction_id": "lannister", "stance": "war", "score_delta": -25}
+      { "faction_id": "tully", "stance": "allied", "score_delta": 25 },
+      { "faction_id": "arryn", "score_delta": 15 },
+      { "faction_id": "lannister", "stance": "war", "score_delta": -25 }
     ],
     "set_flags": [
       "war_of_five_kings_settlement_complete",
@@ -4535,10 +4544,10 @@
     "state_trigger_priority": 100,
     "one_shot": true,
     "relations": [
-      {"faction_id": "lannister", "stance": "allied", "score_delta": 25},
-      {"faction_id": "stark", "score_delta": -15},
-      {"faction_id": "baratheon_dragonstone", "stance": "war", "score_delta": -20},
-      {"faction_id": "baratheon_stormsend", "stance": "war", "score_delta": -20}
+      { "faction_id": "lannister", "stance": "allied", "score_delta": 25 },
+      { "faction_id": "stark", "score_delta": -15 },
+      { "faction_id": "baratheon_dragonstone", "stance": "war", "score_delta": -20 },
+      { "faction_id": "baratheon_stormsend", "stance": "war", "score_delta": -20 }
     ],
     "set_flags": [
       "war_of_five_kings_settlement_complete",
@@ -4570,9 +4579,9 @@
     "state_trigger_priority": 100,
     "one_shot": true,
     "relations": [
-      {"faction_id": "baratheon_king", "stance": "war", "score_delta": -25},
-      {"faction_id": "lannister", "stance": "war", "score_delta": -25},
-      {"faction_id": "stark", "score_delta": -10}
+      { "faction_id": "baratheon_king", "stance": "war", "score_delta": -25 },
+      { "faction_id": "lannister", "stance": "war", "score_delta": -25 },
+      { "faction_id": "stark", "score_delta": -10 }
     ],
     "set_flags": [
       "war_of_five_kings_settlement_complete",
@@ -4603,9 +4612,9 @@
     "state_trigger_priority": 100,
     "one_shot": true,
     "relations": [
-      {"faction_id": "tyrell", "stance": "allied", "score_delta": 25},
-      {"faction_id": "baratheon_king", "stance": "war", "score_delta": -25},
-      {"faction_id": "lannister", "stance": "war", "score_delta": -20}
+      { "faction_id": "tyrell", "stance": "allied", "score_delta": 25 },
+      { "faction_id": "baratheon_king", "stance": "war", "score_delta": -25 },
+      { "faction_id": "lannister", "stance": "war", "score_delta": -20 }
     ],
     "set_flags": [
       "war_of_five_kings_settlement_complete",
@@ -4636,9 +4645,9 @@
     "state_trigger_priority": 100,
     "one_shot": true,
     "relations": [
-      {"faction_id": "stark", "stance": "war", "score_delta": -25},
-      {"faction_id": "lannister", "stance": "war", "score_delta": -25},
-      {"faction_id": "baratheon_king", "stance": "war", "score_delta": -20}
+      { "faction_id": "stark", "stance": "war", "score_delta": -25 },
+      { "faction_id": "lannister", "stance": "war", "score_delta": -25 },
+      { "faction_id": "baratheon_king", "stance": "war", "score_delta": -20 }
     ],
     "set_flags": [
       "war_of_five_kings_settlement_complete",

@@ -22,7 +22,7 @@
       "output": "${workspaceFolder}/bin/release/mapp-game"
     },
     {
-      "name": "Debug Headless Simulation",
+      "name": "Simulation 1300",
       "type": "go",
       "request": "launch",
       "mode": "debug",
@@ -39,11 +39,37 @@
         "-seed",
         "${input:simulationSeed}",
         "-difficulty",
-        "2",
+        "3",
         "-format",
         "markdown",
         "-out",
-        "reports/headless_seed_${input:simulationSeed}_turn_report.md"
+        "reports/1300_ottoman_rise_headless_seed_${input:simulationSeed}_turn_report.md"
+      ],
+      "output": "${workspaceFolder}/bin/simreport-debug"
+    },
+    {
+      "name": "Simulation 298",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd/simreport",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "args": [
+        "-scenario",
+        "assets/scenarios/298_war_of_five_kings",
+        "-turns",
+        "${input:simulationTurns}",
+        "-player",
+        "nights_watch",
+        "-seed",
+        "${input:simulationSeed}",
+        "-difficulty",
+        "3",
+        "-format",
+        "markdown",
+        "-out",
+        "reports/298_war_of_five_kings_headless_seed_${input:simulationSeed}_turn_report.md"
       ],
       "output": "${workspaceFolder}/bin/simreport-debug"
     },
