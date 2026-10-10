@@ -204,9 +204,9 @@ type Event struct {
 	ID                        string                       `json:"id"`
 	NameTR                    string                       `json:"name_tr"`
 	DescTR                    string                       `json:"desc_tr"`
-	Probability               float64                      `json:"probability"` // 0 = sadece tarihsel tetiklenme
-	MinTurn                   int                          `json:"min_turn"`    // en erken tur (rastgele olaylar için)
-	Target                    string                       `json:"target"`      // "player_faction"|"random_region"|"all_armies"|"all_factions"
+	RandomProbability         float64                      `json:"random_probability"` // 0 = rastgele tetiklenme kapalı
+	MinTurn                   int                          `json:"min_turn"`           // en erken tur (rastgele olaylar için)
+	Target                    string                       `json:"target"`             // "player_faction"|"random_region"|"all_armies"|"all_factions"
 	SatDelta                  int                          `json:"sat_delta"`
 	GoldDelta                 int                          `json:"gold_delta"`
 	OtherIncomeDelta          int                          `json:"other_income_delta,omitempty"`
@@ -263,6 +263,30 @@ type Event struct {
 	RelationRequirements      []RelationRequirement      `json:"relation_requirements,omitempty"`
 	FactionSubjugationTrigger *FactionSubjugationTrigger `json:"faction_subjugation_trigger,omitempty"`
 	VictoryConditions         []FactionVictoryCondition  `json:"victory_conditions,omitempty"`
+}
+
+// UnmarshalJSON eski senaryolardaki "probability" alanını da okumaya devam
+// eder. Yeni kayıtlar MarshalJSON ile yalnızca "random_probability" yazar.
+func (e *Event) UnmarshalJSON(data []byte) error {
+	type eventAlias Event
+	var decoded eventAlias
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return err
+	}
+
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return err
+	}
+	if _, hasNewName := fields["random_probability"]; !hasNewName {
+		if legacyValue, hasLegacyName := fields["probability"]; hasLegacyName {
+			if err := json.Unmarshal(legacyValue, &decoded.RandomProbability); err != nil {
+				return fmt.Errorf("eski probability alanı okunamadı: %w", err)
+			}
+		}
+	}
+	*e = Event(decoded)
+	return nil
 }
 
 // LoadEvents olayları JSON'dan yükler.
@@ -364,7 +388,7 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 
 	// Rastgele olaylar
 	for _, e := range evts {
-		if e.Probability <= 0 {
+		if e.RandomProbability <= 0 {
 			continue
 		}
 		if e.OneShot && gs.FiredEventIDs[e.ID] {
@@ -376,7 +400,7 @@ func Tick(gs *state.GameState, evts []*Event) *Event {
 		if gs.Turn < e.MinTurn {
 			continue
 		}
-		if rand.Float64() > e.Probability {
+		if rand.Float64() > e.RandomProbability {
 			continue
 		}
 		if e.OneShot {

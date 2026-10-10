@@ -593,6 +593,11 @@ değiştirilmez.
 
 ## events.json
 
+Olaylardaki rastgele tetiklenme oranı `random_probability` alanında tutulur.
+`0` rastgele tetiklenmeyi kapatır; tarih veya state koşullu tetiklenmeleri
+engellemez. Eski senaryo dosyalarındaki `probability` alanı geriye dönük olarak
+okunur; yeni kayıtlar `random_probability` yazar.
+
 ```json
 {
   "id": "black_death_1347",

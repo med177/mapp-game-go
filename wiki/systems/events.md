@@ -143,7 +143,11 @@ Tetikleme kriterleri:
   savaşın sona ermesi için faction'ın kilit bölgeleri ve minimum toplam bölge
   sayısını tanımlar. Koşulları sağlayan tarihsel event doğrudan flag etkisini
   uygular; diğer faction'lar pasif veya elenmiş duruma zorlanmaz.
-- **Rastgele olay:** `probability > 0` ve `min_turn` eşiği
+- **Rastgele olay:** `random_probability > 0` ve `min_turn` eşiği. `random_probability: 0`
+  yalnızca rastgele tetiklenmeyi kapatır; `historical_year`, `state_triggered` veya
+  siyasi üstünlük tetikleyicisi olan olaylar kendi koşullarıyla yine çalışabilir.
+- **Eski veri uyumluluğu:** `probability` adı eski senaryolarda okunur; yeni
+  kaydedilen event JSON'ları `random_probability` adını kullanır.
 - **Tek seferlik olay:** `one_shot=true` ise tekrar tetiklenmez
 
 Siyasi dönüşümler anlık state sonucu ile de tetiklenebilir. Event içindeki

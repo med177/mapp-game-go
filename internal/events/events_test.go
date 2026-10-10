@@ -1,12 +1,52 @@
 package events
 
 import (
+	"encoding/json"
 	"testing"
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func TestEventRandomProbabilitySupportsLegacyJSONName(t *testing.T) {
+	var events []*Event
+	if err := json.Unmarshal([]byte(`[
+		{"random_probability": 0.25},
+		{"probability": 0.5},
+		{"random_probability": 0, "probability": 0.75}
+	]`), &events); err != nil {
+		t.Fatalf("event JSON parse edilemedi: %v", err)
+	}
+	if len(events) != 3 {
+		t.Fatalf("event sayısı yanlış: got %d, want 3", len(events))
+	}
+	if events[0].RandomProbability != 0.25 || events[1].RandomProbability != 0.5 || events[2].RandomProbability != 0 {
+		t.Fatalf("yeni/eski alanlar beklenmedik çözümlendi: %v, %v, %v", events[0].RandomProbability, events[1].RandomProbability, events[2].RandomProbability)
+	}
+
+	data, err := json.Marshal(events[1])
+	if err != nil {
+		t.Fatalf("event JSON'a yazılamadı: %v", err)
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		t.Fatalf("yazılan event JSON parse edilemedi: %v", err)
+	}
+	if _, ok := fields["random_probability"]; !ok {
+		t.Fatal("yazılan JSON'da random_probability alanı yok")
+	}
+	if _, ok := fields["probability"]; ok {
+		t.Fatal("yazılan JSON'da eski probability alanı var")
+	}
+}
+
+func TestRandomProbabilityOneTriggersEvent(t *testing.T) {
+	e := &Event{ID: "certain_random_event", RandomProbability: 1}
+	if got := Tick(&state.GameState{}, []*Event{e}); got != e {
+		t.Fatal("random_probability=1 olan event tetiklenmedi")
+	}
+}
 
 func TestChoiceIndicesForFactionFiltersOnlyRestrictedChoices(t *testing.T) {
 	e := &Event{Choices: []Choice{

@@ -1,6 +1,6 @@
-# 298_war_of_five_kings — 100 Tur Simülasyon Raporu
+# 298_war_of_five_kings — 120 Tur Simülasyon Raporu
 
-- Tarih: 295/01 → 303/05
+- Tarih: 295/01 → 305/01
 - Oyuncu devleti: Gece Nöbetçileri
 - Seed: `298111`
 - Zorluk: 3
@@ -10,45 +10,45 @@
 
 | Devlet | Bölge | Ordu | Kara birimi | Donanma birimi | Üretim emri | Bina emri | Bina | Teknoloji | Altın | Tahıl | Durum |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Kuzey Krallığı | 23 (+4) | 13 | 220 | 0 | 166 | 135 | 29→180 | +11 | 842 | 18269 | ayakta |
-| Martell | 22 (+2) | 6 | 64 | 13 | 209 | 219 | 20→251 | +15 | 963 | 15175 | ayakta |
-| Lannister | 12 (+7) | 18 | 189 | 28 | 264 | 150 | 16→294 | +11 | 2673 | 20671 | ayakta |
-| Tyrell | 11 (-1) | 9 | 85 | 32 | 202 | 251 | 18→246 | +13 | 592 | 44247 | ayakta |
-| Baratheon (Fırtına Burnu) | 10 (-1) | 1 | 16 | 0 | 4 | 25 | 13→29 | +2 | 0 | 2447 | ayakta |
-| Arryn | 7 (+0) | 5 | 53 | 2 | 112 | 98 | 14→112 | +6 | 568 | 6363 | ayakta |
-| Braavos | 6 (+5) | 8 | 103 | 30 | 112 | 116 | 8→156 | +17 | 738 | 10206 | ayakta |
-| Baratheon (Kralın Şehri) | 4 (-1) | 4 | 60 | 1 | 133 | 101 | 16→79 | +9 | 0 | 9188 | ayakta |
-| Gece Nöbetçileri | 4 (+0) | 3 | 52 | 0 | 12 | 6 | 37→43 | +12 | 0 | 586 | ayakta |
-| Greyjoy | 4 (-1) | 3 | 5 | 9 | 32 | 21 | 11→28 | +5 | 70 | 86 | ayakta |
-| Baratheon (Ejderha Kayası) | 2 (-1) | 6 | 50 | 4 | 212 | 63 | 16→56 | +9 | 2470 | 1110 | ayakta |
-| Targaryen | 2 (+1) | 4 | 40 | 10 | 210 | 29 | 9→58 | +20 | 1150 | 5747 | ayakta |
-| Akgezenler | 2 (+1) | 1 | 6 | 0 | 0 | 0 | 0→11 | +4 | 126 | 460 | ayakta |
-| Tully | 1 (-5) | 1 | 9 | 0 | 63 | 116 | 13→15 | +13 | 504 | 4290 | ayakta |
-| Bolton | 0 (-1) | 0 | 0 | 0 | 2 | 5 | 8→0 | +2 | 65 | 543 | ELENDİ |
+| Martell | 23 (+3) | 9 | 113 | 17 | 245 | 244 | 20→276 | +17 | 550 | 14323 | ayakta |
+| Kuzey Krallığı | 18 (-1) | 10 | 91 | 1 | 155 | 139 | 29→175 | +11 | 534 | 14143 | ayakta |
+| Tyrell | 12 (+0) | 12 | 100 | 40 | 231 | 276 | 18→278 | +14 | 205 | 60723 | ayakta |
+| Arryn | 10 (+3) | 10 | 125 | 2 | 109 | 119 | 14→141 | +8 | 470 | 7271 | ayakta |
+| Baratheon (Fırtına Burnu) | 10 (-1) | 4 | 32 | 0 | 4 | 25 | 13→29 | +2 | 0 | 521 | ayakta |
+| Tully | 8 (+2) | 7 | 60 | 39 | 304 | 195 | 13→219 | +18 | 17806 | 57286 | ayakta |
+| Braavos | 7 (+6) | 11 | 117 | 33 | 155 | 119 | 8→184 | +17 | 710 | 13604 | ayakta |
+| Baratheon (Ejderha Kayası) | 6 (+3) | 9 | 52 | 26 | 392 | 81 | 16→174 | +17 | 4778 | 7612 | ayakta |
+| Lannister | 5 (+0) | 10 | 135 | 23 | 110 | 130 | 16→144 | +17 | 20871 | 10077 | ayakta |
+| Gece Nöbetçileri | 4 (+0) | 1 | 20 | 0 | 12 | 6 | 37→43 | +14 | 308 | 3360 | ayakta |
+| Greyjoy | 3 (-2) | 2 | 38 | 0 | 63 | 23 | 11→23 | +8 | 260 | 568 | ayakta |
+| Targaryen | 2 (+1) | 5 | 50 | 14 | 212 | 31 | 9→60 | +23 | 31688 | 8906 | ayakta |
+| Akgezenler | 2 (+1) | 1 | 6 | 0 | 2 | 0 | 0→11 | +4 | 153 | 584 | ayakta |
+| Bolton | 0 (-1) | 0 | 0 | 0 | 2 | 6 | 8→0 | +7 | 10 | 981 | ELENDİ |
 | Özgür Halk | 0 (-1) | 0 | 0 | 0 | 0 | 6 | 5→0 | +2 | 127 | 124 | ELENDİ |
-| Özgür Şehirler | 0 (-6) | 0 | 0 | 0 | 5 | 51 | 11→0 | +12 | 6992 | 4509 | ELENDİ |
+| Özgür Şehirler | 0 (-6) | 0 | 0 | 0 | 6 | 51 | 11→0 | +11 | 6849 | 4455 | ELENDİ |
 | Kardeşlik | 0 (-1) | 0 | 0 | 0 | 0 | 6 | 1→0 | +4 | 74 | 890 | ELENDİ |
+| Baratheon (Kralın Şehri) | 0 (-5) | 0 | 0 | 0 | 255 | 126 | 16→0 | +10 | 156 | 4519 | ELENDİ |
 
 Not: “Üretim emri”, simülasyon boyunca AI'nin kuyruğa aldığı birim üretim emirlerini; mevcut birim sayısı ise kayıp ve takviyeler sonrası nihai aktif birlikleri gösterir.
 
 ## Toprak değişimleri
 
-- **Kuzey Krallığı**: +Taşlı Kıyı, Kraken Burnu, İkizler, Nehir Toprakları, The Crag, Üç Dişli Mızrak, Nehir Koşusu, Dehşet Kalesi, Harrenhal, Kralın Şehri; -The Crag, Nehir Toprakları, Nehir Koşusu, Harrenhal, Kralın Şehri, Üç Dişli Mızrak
-- **Martell**: +Stoms End, Oldtown, Kral Ormanı; -Oldtown, Kral Ormanı
-- **Lannister**: +Taç Toprakları, Duskendale, Kralın Şehri, Nehir Koşusu, Harrenhal, Üç Dişli Mızrak, Yengeç Pençesi Burnu; -Taç Toprakları, Kralın Şehri
-- **Tyrell**: +Oldtown; -Oldtown
+- **Martell**: +Stoms End, Oldtown, Moat Cailin, Kraken Burnu; -Oldtown, Moat Cailin
+- **Kuzey Krallığı**: +Taşlı Kıyı, Dehşet Kalesi, Tümülüs Toprakları, Moat Cailin, Flint Parmağı; -Boyun, Moat Cailin, Tümülüs Toprakları, Flint Parmağı, Deepwood Motte
+- **Tyrell**: +Oldtown, Büyük Wyk; -Oldtown
+- **Arryn**: +Boyun, Moat Cailin, Tümülüs Toprakları, Üç Dişli Mızrak, Deepwood Motte; -Moat Cailin, Tümülüs Toprakları, Üç Dişli Mızrak
 - **Baratheon (Fırtına Burnu)**: +Taç Toprakları; -Taç Toprakları, Stoms End
-- **Braavos**: +Norvos, Myr, Essos Free Cities, Yunkai, İhtilaflı Topraklar; -Yunkai
-- **Baratheon (Kralın Şehri)**: +Taç Toprakları, Oyuk Tepe, Kral Ormanı, Kralın Şehri, Nehir Toprakları; -Taç Toprakları, Duskendale, Kral Ormanı, Kralın Şehri
-- **Greyjoy**: +—; -Kraken Burnu
-- **Baratheon (Ejderha Kayası)**: +Kral Ormanı; -Kral Ormanı, Yengeç Pençesi Burnu
+- **Tully**: +Oyuk Tepe, Flint Parmağı, Üç Dişli Mızrak, Taç Toprakları, Harrenhal; -Üç Dişli Mızrak, Harrenhal, Flint Parmağı
+- **Braavos**: +Norvos, Myr, Essos Free Cities, İhtilaflı Topraklar, Yunkai, Sharp Point; -—
+- **Baratheon (Ejderha Kayası)**: +Yengeç Pençesi Burnu, Duskendale, Kralın Şehri, Kral Ormanı, Faces Island; -Yengeç Pençesi Burnu, Sharp Point
+- **Greyjoy**: +Moat Cailin; -Moat Cailin, Kraken Burnu, Büyük Wyk
 - **Targaryen**: +Meereen; -—
 - **Akgezenler**: +Duvar'ın Ötesi; -—
-- **Tully**: +Oyuk Tepe, Üç Dişli Mızrak, The Crag; -İkizler, Nehir Toprakları, The Crag, Üç Dişli Mızrak, Nehir Koşusu, Oyuk Tepe, Harrenhal
 - **Bolton**: +—; -Dehşet Kalesi
 - **Özgür Halk**: +—; -Duvar'ın Ötesi
-- **Özgür Şehirler**: +İhtilaflı Topraklar; -Astapor, Norvos, Myr, Essos Free Cities, Yunkai, İhtilaflı Topraklar, Meereen
+- **Özgür Şehirler**: +İhtilaflı Topraklar; -Astapor, Norvos, Myr, Essos Free Cities, İhtilaflı Topraklar, Yunkai, Meereen
 - **Kardeşlik**: +—; -Oyuk Tepe
+- **Baratheon (Kralın Şehri)**: +Taç Toprakları, Harrenhal, Yengeç Pençesi Burnu, Sharp Point; -Taç Toprakları, Harrenhal, Duskendale, Kralın Şehri, Sharp Point, Kral Ormanı, Faces Island
 
 ## Savaşlar
 
@@ -59,33 +59,41 @@ Not: “Üretim emri”, simülasyon boyunca AI'nin kuyruğa aldığı birim ür
 | Braavos — Özgür Şehirler | 2 | 6. tur | bitti | 0 / 0 | 0 / 0 |
 | Braavos — Özgür Şehirler | 12 | 19. tur | bitti | 0 / 0 | 0 / 0 |
 | Özgür Halk — Akgezenler | 13 | 25. tur | bitti | 0 / 0 | 0 / 0 |
-| Braavos — Özgür Şehirler | 24 | 29. tur | bitti | 0 / 0 | 0 / 0 |
-| Arryn — Bolton | 41 | 60. tur | bitti | 0 / 0 | 0 / 0 |
-| Arryn — Kuzey Krallığı | 41 | 66. tur | bitti | 0 / 0 | 0 / 0 |
-| Baratheon (Ejderha Kayası) — Greyjoy | 41 | 45. tur | bitti | 0 / 0 | 0 / 0 |
-| Bolton — Greyjoy | 41 | 52. tur | bitti | 0 / 0 | 0 / 0 |
+| Braavos — Özgür Şehirler | 24 | 28. tur | bitti | 0 / 0 | 0 / 0 |
+| Gece Nöbetçileri — Akgezenler | 39 | 43. tur | aktif | 0 / 0 | 0 / 0 |
+| Arryn — Bolton | 41 | 59. tur | bitti | 0 / 0 | 0 / 0 |
+| Arryn — Kuzey Krallığı | 41 | 59. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Fırtına Burnu) — Bolton | 41 | 45. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Fırtına Burnu) — Kuzey Krallığı | 41 | 45. tur | bitti | 0 / 0 | 0 / 0 |
+| Bolton — Greyjoy | 41 | 59. tur | bitti | 0 / 0 | 0 / 0 |
 | Bolton — Tully | 41 | 60. tur | bitti | 0 / 0 | 0 / 0 |
 | Greyjoy — Gece Nöbetçileri | 41 | 45. tur | bitti | 0 / 0 | 0 / 0 |
-| Greyjoy — Kuzey Krallığı | 41 | 52. tur | bitti | 0 / 0 | 0 / 0 |
-| Kuzey Krallığı — Tully | 41 | 76. tur | bitti | 0 / 0 | 0 / 0 |
+| Greyjoy — Kuzey Krallığı | 41 | 59. tur | bitti | 0 / 0 | 0 / 0 |
+| Kuzey Krallığı — Tully | 41 | 64. tur | bitti | 0 / 0 | 0 / 0 |
 | Arryn — Akgezenler | 57 | 61. tur | bitti | 0 / 0 | 0 / 0 |
-| Baratheon (Fırtına Burnu) — Akgezenler | 57 | 61. tur | bitti | 0 / 0 | 0 / 0 |
 | Bolton — Akgezenler | 57 | 61. tur | bitti | 0 / 0 | 0 / 0 |
 | Gece Nöbetçileri — Akgezenler | 57 | 61. tur | bitti | 0 / 0 | 0 / 0 |
 | Akgezenler — Kuzey Krallığı | 57 | 61. tur | bitti | 0 / 0 | 0 / 0 |
 | Akgezenler — Tully | 57 | 61. tur | bitti | 0 / 0 | 0 / 0 |
-| Arryn — Baratheon (Kralın Şehri) | 64 | 68. tur | bitti | 0 / 0 | 0 / 0 |
-| Baratheon (Kralın Şehri) — Lannister | 64 | 76. tur | bitti | 0 / 0 | 0 / 0 |
-| Baratheon (Kralın Şehri) — Martell | 64 | 68. tur | bitti | 0 / 0 | 0 / 0 |
-| Baratheon (Kralın Şehri) — Tully | 64 | 68. tur | bitti | 0 / 0 | 0 / 0 |
-| Lannister — Akgezenler | 64 | 68. tur | bitti | 0 / 0 | 0 / 0 |
-| Arryn — Baratheon (Ejderha Kayası) | 67 | 71. tur | bitti | 0 / 0 | 0 / 0 |
-| Baratheon (Ejderha Kayası) — Lannister | 67 | 88. tur | bitti | 0 / 0 | 0 / 0 |
-| Baratheon (Ejderha Kayası) — Martell | 67 | 74. tur | bitti | 0 / 0 | 0 / 0 |
-| Baratheon (Ejderha Kayası) — Tully | 67 | 71. tur | bitti | 0 / 0 | 0 / 0 |
-| Lannister — Kuzey Krallığı | 67 | 84. tur | bitti | 0 / 0 | 0 / 0 |
-| Lannister — Tully | 76 | 84. tur | bitti | 0 / 0 | 0 / 0 |
-| Gece Nöbetçileri — Akgezenler | 95 | 99. tur | bitti | 0 / 0 | 0 / 0 |
+| Gece Nöbetçileri — Akgezenler | 71 | 77. tur | bitti | 0 / 0 | 0 / 0 |
+| Arryn — Tully | 74 | 78. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Ejderha Kayası) — Baratheon (Kralın Şehri) | 74 | 107. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Kralın Şehri) — Gece Nöbetçileri | 74 | 78. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Kralın Şehri) — Tully | 74 | 107. tur | bitti | 0 / 0 | 0 / 0 |
+| Kuzey Krallığı — Tully | 74 | 93. tur | bitti | 0 / 0 | 0 / 0 |
+| Arryn — Kuzey Krallığı | 85 | 99. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Fırtına Burnu) — Kuzey Krallığı | 85 | 89. tur | bitti | 0 / 0 | 0 / 0 |
+| Braavos — Greyjoy | 85 | 89. tur | bitti | 0 / 0 | 0 / 0 |
+| Greyjoy — Martell | 85 | 90. tur | bitti | 0 / 0 | 0 / 0 |
+| Greyjoy — Gece Nöbetçileri | 85 | 89. tur | bitti | 0 / 0 | 0 / 0 |
+| Greyjoy — Kuzey Krallığı | 85 | 90. tur | bitti | 0 / 0 | 0 / 0 |
+| Greyjoy — Tyrell | 85 | 91. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Kralın Şehri) — Braavos | 105 | 107. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Kralın Şehri) — Kuzey Krallığı | 105 | 107. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Kralın Şehri) — Targaryen | 105 | 107. tur | bitti | 0 / 0 | 0 / 0 |
+| Baratheon (Kralın Şehri) — Tyrell | 105 | 107. tur | bitti | 0 / 0 | 0 / 0 |
+| Gece Nöbetçileri — Akgezenler | 107 | 112. tur | bitti | 0 / 0 | 0 / 0 |
+| Gece Nöbetçileri — Akgezenler | 117 | devam ediyor | bitti | 0 / 0 | 0 / 0 |
 
 ## Ticaret ve ittifak hareketleri
 
@@ -123,40 +131,120 @@ Not: “Üretim emri”, simülasyon boyunca AI'nin kuyruğa aldığı birim ür
 - 28. tur: **başladı** — Targaryen ↔ Braavos (spice)
 - 29. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
 - 29. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
-- 35. tur: **başladı** — Özgür Şehirler ↔ Gece Nöbetçileri (spice)
-- 35. tur: **başladı** — Gece Nöbetçileri ↔ Özgür Şehirler (cloth)
-- 37. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (spice)
-- 37. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
-- 39. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
-- 39. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
+- 35. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Greyjoy (spice)
+- 35. tur: **başladı** — Greyjoy ↔ Baratheon (Ejderha Kayası) (iron)
+- 36. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Greyjoy (spice)
+- 36. tur: **başladı** — Greyjoy ↔ Baratheon (Ejderha Kayası) (iron)
+- 38. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
+- 38. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
+- 40. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (spice)
+- 40. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 41. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Greyjoy (spice)
+- 41. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
+- 41. tur: **başladı** — Greyjoy ↔ Baratheon (Ejderha Kayası) (iron)
+- 41. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
 - 41. tur: **bitti** — Greyjoy ↔ Gece Nöbetçileri (iron)
 - 41. tur: **bitti** — Gece Nöbetçileri ↔ Greyjoy (grain)
-- 42. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
-- 42. tur: **başladı** — Braavos ↔ Kuzey Krallığı (spice)
-- 42. tur: **başladı** — Kuzey Krallığı ↔ Braavos (iron)
-- 42. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
-- 43. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (spice)
-- 43. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
-- 47. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
-- 47. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
+- 44. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (spice)
+- 44. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 45. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Greyjoy (spice)
+- 45. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
+- 45. tur: **başladı** — Özgür Şehirler ↔ Gece Nöbetçileri (grain)
+- 45. tur: **başladı** — Greyjoy ↔ Baratheon (Ejderha Kayası) (iron)
+- 45. tur: **başladı** — Gece Nöbetçileri ↔ Özgür Şehirler (cloth)
+- 45. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
 - 48. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (spice)
 - 48. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
-- 55. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Özgür Şehirler (spice)
-- 55. tur: **başladı** — Özgür Şehirler ↔ Baratheon (Ejderha Kayası) (spice)
-- 57. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Özgür Şehirler (spice)
-- 57. tur: **başladı** — Özgür Şehirler ↔ Baratheon (Ejderha Kayası) (spice)
-- 61. tur: **başladı** — Arryn ↔ Tyrell (iron)
-- 61. tur: **başladı** — Tyrell ↔ Arryn (spice)
-- 64. tur: **başladı** — Martell ↔ Gece Nöbetçileri (spice)
-- 64. tur: **başladı** — Gece Nöbetçileri ↔ Martell (cloth)
-- 64. tur: **bitti** — Baratheon (Kralın Şehri) ↔ Martell (grain)
-- 64. tur: **bitti** — Martell ↔ Baratheon (Kralın Şehri) (spice)
-- 66. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Baratheon (Kralın Şehri) (spice)
-- 66. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Baratheon (Ejderha Kayası) (grain)
-- 68. tur: **başladı** — Gece Nöbetçileri ↔ Targaryen (cloth)
-- 68. tur: **başladı** — Targaryen ↔ Gece Nöbetçileri (spice)
-- 76. tur: **başladı** — Kuzey Krallığı ↔ Tully (iron)
-- 76. tur: **başladı** — Tully ↔ Kuzey Krallığı (grain)
+- 50. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
+- 50. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
+- 54. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (spice)
+- 54. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 58. tur: **başladı** — Arryn ↔ Tyrell (iron)
+- 58. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Greyjoy (spice)
+- 58. tur: **başladı** — Greyjoy ↔ Baratheon (Ejderha Kayası) (iron)
+- 58. tur: **başladı** — Tyrell ↔ Arryn (spice)
+- 60. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (spice)
+- 60. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 61. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Greyjoy (spice)
+- 61. tur: **başladı** — Greyjoy ↔ Baratheon (Ejderha Kayası) (iron)
+- 64. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (grain)
+- 64. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 65. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Kuzey Krallığı (spice)
+- 65. tur: **başladı** — Kuzey Krallığı ↔ Baratheon (Ejderha Kayası) (grain)
+- 66. tur: **başladı** — Arryn ↔ Tyrell (iron)
+- 66. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Kuzey Krallığı (spice)
+- 66. tur: **başladı** — Gece Nöbetçileri ↔ Targaryen (cloth)
+- 66. tur: **başladı** — Kuzey Krallığı ↔ Baratheon (Ejderha Kayası) (grain)
+- 66. tur: **başladı** — Targaryen ↔ Gece Nöbetçileri (spice)
+- 66. tur: **başladı** — Tyrell ↔ Arryn (spice)
+- 70. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (grain)
+- 70. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 71. tur: **başladı** — Arryn ↔ Tyrell (spice)
+- 71. tur: **başladı** — Tyrell ↔ Arryn (spice)
+- 72. tur: **başladı** — Baratheon (Fırtına Burnu) ↔ Gece Nöbetçileri (cloth)
+- 72. tur: **başladı** — Martell ↔ Kuzey Krallığı (spice)
+- 72. tur: **başladı** — Gece Nöbetçileri ↔ Baratheon (Fırtına Burnu) (cloth)
+- 72. tur: **başladı** — Kuzey Krallığı ↔ Martell (iron)
+- 73. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
+- 73. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (grain)
+- 73. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 73. tur: **başladı** — Martell ↔ Tully (spice)
+- 73. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
+- 73. tur: **başladı** — Tully ↔ Martell (grain)
+- 75. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Targaryen (spice)
+- 75. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (grain)
+- 75. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 75. tur: **başladı** — Martell ↔ Tully (spice)
+- 75. tur: **başladı** — Targaryen ↔ Baratheon (Ejderha Kayası) (spice)
+- 75. tur: **başladı** — Tully ↔ Martell (grain)
+- 76. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Tyrell (cloth)
+- 76. tur: **başladı** — Tyrell ↔ Baratheon (Kralın Şehri) (spice)
+- 78. tur: **başladı** — Arryn ↔ Lannister (spice)
+- 78. tur: **başladı** — Lannister ↔ Arryn (iron)
+- 79. tur: **başladı** — Arryn ↔ Lannister (spice)
+- 79. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Kuzey Krallığı (spice)
+- 79. tur: **başladı** — Lannister ↔ Arryn (iron)
+- 79. tur: **başladı** — Martell ↔ Tully (spice)
+- 79. tur: **başladı** — Kuzey Krallığı ↔ Baratheon (Ejderha Kayası) (grain)
+- 79. tur: **başladı** — Tully ↔ Martell (grain)
+- 80. tur: **başladı** — Arryn ↔ Lannister (spice)
+- 80. tur: **başladı** — Lannister ↔ Arryn (iron)
+- 81. tur: **başladı** — Arryn ↔ Lannister (spice)
+- 81. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Greyjoy (spice)
+- 81. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Kuzey Krallığı (spice)
+- 81. tur: **başladı** — Greyjoy ↔ Baratheon (Ejderha Kayası) (iron)
+- 81. tur: **başladı** — Lannister ↔ Arryn (iron)
+- 81. tur: **başladı** — Kuzey Krallığı ↔ Baratheon (Ejderha Kayası) (grain)
+- 83. tur: **başladı** — Arryn ↔ Lannister (spice)
+- 83. tur: **başladı** — Lannister ↔ Arryn (iron)
+- 83. tur: **başladı** — Martell ↔ Tully (spice)
+- 83. tur: **başladı** — Tully ↔ Martell (grain)
+- 86. tur: **başladı** — Braavos ↔ Lannister (grain)
+- 86. tur: **başladı** — Lannister ↔ Braavos (iron)
+- 88. tur: **başladı** — Arryn ↔ Lannister (spice)
+- 88. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Kuzey Krallığı (spice)
+- 88. tur: **başladı** — Lannister ↔ Arryn (iron)
+- 88. tur: **başladı** — Kuzey Krallığı ↔ Baratheon (Ejderha Kayası) (grain)
+- 89. tur: **başladı** — Braavos ↔ Lannister (grain)
+- 89. tur: **başladı** — Lannister ↔ Braavos (iron)
+- 92. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Greyjoy (spice)
+- 92. tur: **başladı** — Greyjoy ↔ Baratheon (Ejderha Kayası) (iron)
+- 94. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (grain)
+- 94. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 94. tur: **başladı** — Kuzey Krallığı ↔ Targaryen (iron)
+- 94. tur: **başladı** — Targaryen ↔ Kuzey Krallığı (cloth)
+- 99. tur: **başladı** — Gece Nöbetçileri ↔ Tully (cloth)
+- 99. tur: **başladı** — Tully ↔ Gece Nöbetçileri (grain)
+- 100. tur: **başladı** — Lannister ↔ Tyrell (cloth)
+- 100. tur: **başladı** — Tyrell ↔ Lannister (spice)
+- 102. tur: **başladı** — Baratheon (Kralın Şehri) ↔ Greyjoy (grain)
+- 102. tur: **başladı** — Greyjoy ↔ Baratheon (Kralın Şehri) (iron)
+- 105. tur: **bitti** — Baratheon (Kralın Şehri) ↔ Tyrell (cloth)
+- 105. tur: **bitti** — Tyrell ↔ Baratheon (Kralın Şehri) (spice)
+- 112. tur: **başladı** — Baratheon (Ejderha Kayası) ↔ Kuzey Krallığı (spice)
+- 112. tur: **başladı** — Kuzey Krallığı ↔ Baratheon (Ejderha Kayası) (iron)
+- 118. tur: **başladı** — Martell ↔ Tyrell (spice)
+- 118. tur: **başladı** — Tyrell ↔ Martell (spice)
 - 1. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Kuzey Krallığı
 - 1. tur: **ittifak bitti** — Kuzey Krallığı ↔ Tully
 - 1. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Lannister
@@ -164,13 +252,11 @@ Not: “Üretim emri”, simülasyon boyunca AI'nin kuyruğa aldığı birim ür
 - 1. tur: **ittifak kuruldu** — Gece Nöbetçileri ↔ Kuzey Krallığı
 - 2. tur: **ittifak kuruldu** — Özgür Şehirler ↔ Targaryen
 - 3. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Tully
-- 4. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Tully
 - 4. tur: **ittifak bitti** — Özgür Şehirler ↔ Targaryen
 - 4. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Martell
 - 6. tur: **ittifak bitti** — Baratheon (Fırtına Burnu) ↔ Martell
 - 6. tur: **ittifak kuruldu** — Arryn ↔ Kardeşlik
 - 7. tur: **ittifak bitti** — Arryn ↔ Kuzey Krallığı
-- 7. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Tully
 - 7. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Martell
 - 7. tur: **ittifak kuruldu** — Kuzey Krallığı ↔ Tully
 - 10. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Tyrell
@@ -201,82 +287,85 @@ Not: “Üretim emri”, simülasyon boyunca AI'nin kuyruğa aldığı birim ür
 - 29. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Tully
 - 31. tur: **ittifak bitti** — Arryn ↔ Kuzey Krallığı
 - 31. tur: **ittifak kuruldu** — Kuzey Krallığı ↔ Tully
-- 37. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Kuzey Krallığı
-- 38. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Tyrell
+- 35. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Lannister
+- 35. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Greyjoy
+- 36. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Tyrell
+- 37. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Lannister
+- 37. tur: **ittifak bitti** — Kuzey Krallığı ↔ Tully
+- 37. tur: **ittifak kuruldu** — Arryn ↔ Kuzey Krallığı
+- 38. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
 - 40. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Baratheon (Fırtına Burnu)
-- 40. tur: **ittifak bitti** — Kuzey Krallığı ↔ Tully
 - 40. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Martell
+- 41. tur: **ittifak bitti** — Arryn ↔ Kuzey Krallığı
+- 42. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
 - 43. tur: **ittifak bitti** — Baratheon (Fırtına Burnu) ↔ Martell
-- 44. tur: **ittifak kuruldu** — Arryn ↔ Baratheon (Kralın Şehri)
-- 45. tur: **ittifak bitti** — Arryn ↔ Baratheon (Kralın Şehri)
-- 50. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Martell
-- 52. tur: **ittifak bitti** — Baratheon (Fırtına Burnu) ↔ Martell
-- 53. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Martell
-- 54. tur: **ittifak bitti** — Baratheon (Fırtına Burnu) ↔ Martell
-- 54. tur: **ittifak kuruldu** — Arryn ↔ Baratheon (Kralın Şehri)
-- 55. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Lannister
-- 55. tur: **ittifak kuruldu** — Lannister ↔ Tully
-- 56. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 56. tur: **ittifak bitti** — Lannister ↔ Tully
-- 56. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Gece Nöbetçileri
-- 57. tur: **ittifak bitti** — Arryn ↔ Baratheon (Kralın Şehri)
-- 57. tur: **ittifak kuruldu** — Arryn ↔ Lannister
-- 57. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 57. tur: **ittifak kuruldu** — Lannister ↔ Tully
+- 46. tur: **ittifak kuruldu** — Arryn ↔ Baratheon (Kralın Şehri)
+- 47. tur: **ittifak bitti** — Arryn ↔ Baratheon (Kralın Şehri)
+- 48. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Martell
+- 50. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
+- 51. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
+- 53. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
+- 56. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
+- 58. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Lannister
 - 58. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Akgezenler
-- 59. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 59. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Tully
-- 59. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Martell
-- 60. tur: **ittifak bitti** — Özgür Şehirler ↔ Targaryen
-- 61. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Bolton
-- 62. tur: **ittifak bitti** — Baratheon (Fırtına Burnu) ↔ Bolton
-- 62. tur: **ittifak bitti** — Baratheon (Fırtına Burnu) ↔ Gece Nöbetçileri
-- 62. tur: **ittifak kuruldu** — Arryn ↔ Baratheon (Kralın Şehri)
-- 62. tur: **ittifak kuruldu** — Braavos ↔ Gece Nöbetçileri
-- 63. tur: **ittifak bitti** — Arryn ↔ Baratheon (Kralın Şehri)
-- 67. tur: **ittifak bitti** — Arryn ↔ Baratheon (Ejderha Kayası)
-- 67. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Akgezenler
-- 67. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Kuzey Krallığı
-- 68. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Akgezenler
-- 68. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Akgezenler
-- 69. tur: **ittifak bitti** — Lannister ↔ Martell
-- 70. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Targaryen
-- 70. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Baratheon (Fırtına Burnu)
+- 58. tur: **ittifak kuruldu** — Lannister ↔ Tully
+- 61. tur: **ittifak bitti** — Özgür Şehirler ↔ Targaryen
+- 62. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
+- 63. tur: **ittifak kuruldu** — Braavos ↔ Gece Nöbetçileri
+- 64. tur: **ittifak bitti** — Lannister ↔ Tully
+- 68. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Kuzey Krallığı
+- 68. tur: **ittifak kuruldu** — Lannister ↔ Tully
+- 71. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Akgezenler
+- 71. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
 - 71. tur: **ittifak kuruldu** — Braavos ↔ Kuzey Krallığı
-- 73. tur: **ittifak kuruldu** — Kuzey Krallığı ↔ Tyrell
-- 75. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Baratheon (Fırtına Burnu)
-- 75. tur: **ittifak kuruldu** — Lannister ↔ Martell
-- 76. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Kuzey Krallığı
-- 76. tur: **ittifak bitti** — Greyjoy ↔ Tully
-- 76. tur: **ittifak bitti** — Lannister ↔ Tully
-- 76. tur: **ittifak bitti** — Gece Nöbetçileri ↔ Tully
-- 76. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Baratheon (Fırtına Burnu)
-- 76. tur: **ittifak kuruldu** — Kuzey Krallığı ↔ Tully
-- 77. tur: **ittifak bitti** — Arryn ↔ Greyjoy
-- 77. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Baratheon (Fırtına Burnu)
-- 77. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Kuzey Krallığı
-- 79. tur: **ittifak kuruldu** — Arryn ↔ Greyjoy
-- 83. tur: **ittifak bitti** — Arryn ↔ Lannister
-- 84. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 89. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 90. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 91. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 93. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 94. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 94. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Gece Nöbetçileri
-- 95. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Tyrell
-- 96. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Tyrell
-- 97. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 99. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
-- 99. tur: **ittifak bitti** — Baratheon (Fırtına Burnu) ↔ Gece Nöbetçileri
-- 100. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Gece Nöbetçileri
+- 72. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
+- 72. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Lannister
+- 73. tur: **ittifak kuruldu** — Martell ↔ Kuzey Krallığı
+- 74. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Tyrell
+- 74. tur: **ittifak bitti** — Greyjoy ↔ Tully
+- 74. tur: **ittifak bitti** — Lannister ↔ Tully
+- 74. tur: **ittifak kuruldu** — Arryn ↔ Baratheon (Kralın Şehri)
+- 74. tur: **ittifak kuruldu** — Arryn ↔ Lannister
+- 74. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
+- 74. tur: **ittifak kuruldu** — Kuzey Krallığı ↔ Tyrell
+- 75. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Akgezenler
+- 76. tur: **ittifak bitti** — Arryn ↔ Lannister
+- 76. tur: **ittifak kuruldu** — Lannister ↔ Tully
+- 77. tur: **ittifak bitti** — Arryn ↔ Baratheon (Kralın Şehri)
+- 77. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Kuzey Krallığı
+- 78. tur: **ittifak kuruldu** — Greyjoy ↔ Tully
+- 79. tur: **ittifak kuruldu** — Baratheon (Ejderha Kayası) ↔ Targaryen
+- 85. tur: **ittifak kuruldu** — Martell ↔ Tyrell
+- 90. tur: **ittifak bitti** — Martell ↔ Tyrell
+- 91. tur: **ittifak bitti** — Gece Nöbetçileri ↔ Kuzey Krallığı
+- 94. tur: **ittifak bitti** — Lannister ↔ Tully
+- 94. tur: **ittifak bitti** — Gece Nöbetçileri ↔ Tully
+- 95. tur: **ittifak kuruldu** — Kuzey Krallığı ↔ Targaryen
+- 96. tur: **ittifak kuruldu** — Baratheon (Kralın Şehri) ↔ Lannister
+- 99. tur: **ittifak kuruldu** — Arryn ↔ Tyrell
+- 99. tur: **ittifak kuruldu** — Martell ↔ Tully
+- 100. tur: **ittifak kuruldu** — Arryn ↔ Tully
+- 102. tur: **ittifak bitti** — Arryn ↔ Tully
+- 103. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Lannister
+- 103. tur: **ittifak kuruldu** — Lannister ↔ Tully
+- 105. tur: **ittifak bitti** — Baratheon (Ejderha Kayası) ↔ Baratheon (Fırtına Burnu)
+- 105. tur: **ittifak bitti** — Baratheon (Kralın Şehri) ↔ Akgezenler
+- 105. tur: **ittifak bitti** — Lannister ↔ Tully
+- 105. tur: **ittifak bitti** — Martell ↔ Kuzey Krallığı
+- 105. tur: **ittifak kuruldu** — Baratheon (Fırtına Burnu) ↔ Targaryen
+- 108. tur: **ittifak kuruldu** — Lannister ↔ Tully
+- 114. tur: **ittifak bitti** — Lannister ↔ Tully
+- 116. tur: **ittifak bitti** — Baratheon (Fırtına Burnu) ↔ Martell
+- 116. tur: **ittifak kuruldu** — Tully ↔ Tyrell
+- 117. tur: **ittifak kuruldu** — Lannister ↔ Tully
 
 ## Elenen devletler
 
 - 17. tur: **Kardeşlik**
 - 25. tur: **Özgür Halk**
-- 60. tur: **Özgür Şehirler**
-- 67. tur: **Bolton**
+- 61. tur: **Özgür Şehirler**
+- 82. tur: **Bolton**
+- 107. tur: **Baratheon (Kralın Şehri)**
 
 ## Tur checkpoint'leri
 
@@ -298,7 +387,7 @@ Not: “Üretim emri”, simülasyon boyunca AI'nin kuyruğa aldığı birim ür
 
 ### 29. tur (297/06)
 
-1. Martell — 21 bölge, 5 ordu, 39 kara birimi, güç 396
+1. Martell — 21 bölge, 4 ordu, 38 kara birimi, güç 388
 2. Stark — 19 bölge, 5 ordu, 79 kara birimi, güç 810
 3. Tyrell — 12 bölge, 5 ordu, 43 kara birimi, güç 746
 4. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 31 kara birimi, güç 288
@@ -306,67 +395,83 @@ Not: “Üretim emri”, simülasyon boyunca AI'nin kuyruğa aldığı birim ür
 
 ### 39. tur (298/04)
 
-1. Martell — 22 bölge, 6 ordu, 41 kara birimi, güç 507
-2. Stark — 19 bölge, 7 ordu, 99 kara birimi, güç 679
-3. Tyrell — 11 bölge, 8 ordu, 47 kara birimi, güç 756
-4. Baratheon (Fırtına Burnu) — 10 bölge, 3 ordu, 34 kara birimi, güç 312
-5. Arryn — 7 bölge, 3 ordu, 21 kara birimi, güç 303
+1. Martell — 22 bölge, 6 ordu, 41 kara birimi, güç 504
+2. Stark — 19 bölge, 8 ordu, 103 kara birimi, güç 801
+3. Tyrell — 11 bölge, 8 ordu, 45 kara birimi, güç 731
+4. Baratheon (Fırtına Burnu) — 10 bölge, 3 ordu, 34 kara birimi, güç 230
+5. Arryn — 7 bölge, 2 ordu, 20 kara birimi, güç 274
 
 ### 49. tur (299/02)
 
-1. Kuzey Krallığı — 22 bölge, 6 ordu, 76 kara birimi, güç 533
-2. Martell — 22 bölge, 7 ordu, 41 kara birimi, güç 528
-3. Tyrell — 11 bölge, 5 ordu, 46 kara birimi, güç 667
-4. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 35 kara birimi, güç 367
-5. Arryn — 7 bölge, 2 ordu, 11 kara birimi, güç 130
+1. Martell — 22 bölge, 7 ordu, 42 kara birimi, güç 582
+2. Kuzey Krallığı — 19 bölge, 6 ordu, 73 kara birimi, güç 695
+3. Tyrell — 11 bölge, 5 ordu, 48 kara birimi, güç 761
+4. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 34 kara birimi, güç 267
+5. Arryn — 8 bölge, 5 ordu, 47 kara birimi, güç 412
 
 ### 59. tur (299/12)
 
-1. Kuzey Krallığı — 25 bölge, 7 ordu, 87 kara birimi, güç 1199
-2. Martell — 22 bölge, 7 ordu, 40 kara birimi, güç 709
-3. Tyrell — 11 bölge, 6 ordu, 50 kara birimi, güç 982
-4. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 35 kara birimi, güç 245
-5. Arryn — 7 bölge, 4 ordu, 31 kara birimi, güç 393
+1. Martell — 22 bölge, 7 ordu, 42 kara birimi, güç 779
+2. Kuzey Krallığı — 17 bölge, 6 ordu, 74 kara birimi, güç 1011
+3. Tyrell — 11 bölge, 6 ordu, 50 kara birimi, güç 1031
+4. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 34 kara birimi, güç 407
+5. Arryn — 9 bölge, 4 ordu, 51 kara birimi, güç 862
 
 ### 69. tur (300/10)
 
-1. Kuzey Krallığı — 26 bölge, 7 ordu, 93 kara birimi, güç 1251
-2. Martell — 23 bölge, 6 ordu, 43 kara birimi, güç 706
-3. Tyrell — 11 bölge, 7 ordu, 61 kara birimi, güç 1341
-4. Baratheon (Fırtına Burnu) — 10 bölge, 0 ordu, 0 kara birimi, güç 0
-5. Lannister — 8 bölge, 14 ordu, 149 kara birimi, güç 1925
+1. Martell — 22 bölge, 7 ordu, 41 kara birimi, güç 812
+2. Kuzey Krallığı — 16 bölge, 4 ordu, 61 kara birimi, güç 847
+3. Tyrell — 11 bölge, 8 ordu, 59 kara birimi, güç 1474
+4. Baratheon (Fırtına Burnu) — 10 bölge, 1 ordu, 14 kara birimi, güç 105
+5. Arryn — 9 bölge, 4 ordu, 60 kara birimi, güç 1001
 
 ### 79. tur (301/08)
 
-1. Kuzey Krallığı — 27 bölge, 6 ordu, 117 kara birimi, güç 1536
-2. Martell — 22 bölge, 6 ordu, 46 kara birimi, güç 809
-3. Tyrell — 11 bölge, 7 ordu, 64 kara birimi, güç 1545
-4. Baratheon (Fırtına Burnu) — 10 bölge, 1 ordu, 1 kara birimi, güç 8
-5. Lannister — 7 bölge, 12 ordu, 140 kara birimi, güç 1900
+1. Martell — 21 bölge, 6 ordu, 49 kara birimi, güç 831
+2. Kuzey Krallığı — 16 bölge, 7 ordu, 89 kara birimi, güç 1056
+3. Tyrell — 11 bölge, 7 ordu, 61 kara birimi, güç 1736
+4. Arryn — 10 bölge, 5 ordu, 69 kara birimi, güç 1103
+5. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 22 kara birimi, güç 274
 
 ### 89. tur (302/06)
 
-1. Kuzey Krallığı — 23 bölge, 9 ordu, 168 kara birimi, güç 1447
-2. Martell — 22 bölge, 7 ordu, 58 kara birimi, güç 946
-3. Lannister — 12 bölge, 13 ordu, 163 kara birimi, güç 2347
-4. Tyrell — 11 bölge, 9 ordu, 69 kara birimi, güç 1648
-5. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 7 kara birimi, güç 98
+1. Martell — 22 bölge, 7 ordu, 61 kara birimi, güç 1078
+2. Kuzey Krallığı — 18 bölge, 10 ordu, 102 kara birimi, güç 1218
+3. Tyrell — 11 bölge, 7 ordu, 71 kara birimi, güç 1589
+4. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 26 kara birimi, güç 362
+5. Arryn — 9 bölge, 5 ordu, 75 kara birimi, güç 1298
 
 ### 99. tur (303/04)
 
-1. Kuzey Krallığı — 23 bölge, 11 ordu, 212 kara birimi, güç 1474
-2. Martell — 22 bölge, 9 ordu, 67 kara birimi, güç 849
-3. Lannister — 12 bölge, 17 ordu, 182 kara birimi, güç 2072
-4. Tyrell — 11 bölge, 8 ordu, 81 kara birimi, güç 1643
-5. Baratheon (Fırtına Burnu) — 10 bölge, 1 ordu, 15 kara birimi, güç 129
+1. Martell — 22 bölge, 10 ordu, 74 kara birimi, güç 1135
+2. Kuzey Krallığı — 18 bölge, 2 ordu, 17 kara birimi, güç 120
+3. Tyrell — 12 bölge, 7 ordu, 78 kara birimi, güç 1734
+4. Arryn — 11 bölge, 6 ordu, 103 kara birimi, güç 1373
+5. Baratheon (Fırtına Burnu) — 10 bölge, 2 ordu, 29 kara birimi, güç 444
 
-### 100. tur (303/05)
+### 109. tur (304/02)
 
-1. Kuzey Krallığı — 23 bölge, 13 ordu, 220 kara birimi, güç 1524
-2. Martell — 22 bölge, 6 ordu, 64 kara birimi, güç 1020
-3. Lannister — 12 bölge, 18 ordu, 189 kara birimi, güç 2190
-4. Tyrell — 11 bölge, 9 ordu, 85 kara birimi, güç 1635
-5. Baratheon (Fırtına Burnu) — 10 bölge, 1 ordu, 16 kara birimi, güç 178
+1. Martell — 22 bölge, 11 ordu, 96 kara birimi, güç 1263
+2. Kuzey Krallığı — 18 bölge, 4 ordu, 45 kara birimi, güç 568
+3. Tyrell — 12 bölge, 9 ordu, 95 kara birimi, güç 1742
+4. Arryn — 10 bölge, 7 ordu, 112 kara birimi, güç 1478
+5. Baratheon (Fırtına Burnu) — 10 bölge, 3 ordu, 32 kara birimi, güç 297
+
+### 119. tur (304/12)
+
+1. Martell — 22 bölge, 10 ordu, 113 kara birimi, güç 1930
+2. Kuzey Krallığı — 18 bölge, 11 ordu, 82 kara birimi, güç 1261
+3. Tyrell — 12 bölge, 11 ordu, 104 kara birimi, güç 1917
+4. Arryn — 10 bölge, 10 ordu, 122 kara birimi, güç 1540
+5. Baratheon (Fırtına Burnu) — 10 bölge, 4 ordu, 32 kara birimi, güç 389
+
+### 120. tur (305/01)
+
+1. Martell — 23 bölge, 9 ordu, 113 kara birimi, güç 1712
+2. Kuzey Krallığı — 18 bölge, 10 ordu, 91 kara birimi, güç 1113
+3. Tyrell — 12 bölge, 12 ordu, 100 kara birimi, güç 1546
+4. Arryn — 10 bölge, 10 ordu, 125 kara birimi, güç 1540
+5. Baratheon (Fırtına Burnu) — 10 bölge, 4 ordu, 32 kara birimi, güç 325
 
 ## Tetiklenen olaylar
 
@@ -393,9 +498,7 @@ Not: “Üretim emri”, simülasyon boyunca AI'nin kuyruğa aldığı birim ür
 - 62. tur: **Buzun Altındaki Ordu** (`others_awaken_300`)
 - 65. tur: **Lannister Savaş Yıpranması** (`lannister_war_exhaustion_300`)
 - 66. tur: **Vadi'de Veraset Krizi** (`vale_succession_crisis_300`)
-- 68. tur: **Gece Nöbeti'nin Duvar Hazırlıkları** (`night_watch_wall_preparations_300`)
-- 76. tur: **Beş Kralın Savaşı: Stark Zaferi** (`war_of_five_kings_resolution_stark`)
-- 77. tur: **Kuzey Zaferinin Düzeni** (`postwar_settlement_stark`)
-- 78. tur: **Taç Topraklarının Savaş Yorgunluğu** (`crownlands_postwar_exhaustion_300`)
-- 79. tur: **Reach'in Savaş Sonrası Konsolidasyonu** (`tyrell_postwar_consolidation_301`)
-- 80. tur: **Akgezenlere Karşı Son Hazırlık** (`night_watch_against_others_301`)
+- 68. tur: **Nehir Toprakları'nın Savaş Bedeli** (`riverlands_war_burden_300`)
+- 69. tur: **Gece Nöbeti'nin Duvar Hazırlıkları** (`night_watch_wall_preparations_300`)
+- 77. tur: **Akgezenlere Karşı Son Hazırlık** (`night_watch_against_others_301`)
+- 114. tur: **Daenerys'in Meereen Seferi** (`daenerys_meereen_campaign_301`)
