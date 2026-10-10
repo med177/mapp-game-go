@@ -430,6 +430,38 @@
       "allowed_factions": [
         "brotherhood_without_banners"
       ]
+    },
+    {
+      "id": "universal_territorial_dominion",
+      "title": "Kıtaların Hâkimi",
+      "description": "Kökenin ne olursa olsun, geniş toprakları tek bir yönetim altında birleştir.",
+      "detail": "En az 55 kara bölgesini kontrol et",
+      "type": "domination",
+      "target_region_count": 55,
+      "deadline_year": 330,
+      "deadline_month": 12
+    },
+    {
+      "id": "universal_economic_power",
+      "title": "Altın Çağı",
+      "description": "Ticaret ve üretim ağını büyüterek krallıkların en güçlü ekonomisine ulaş.",
+      "detail": "Tur başına en az 1.200 altın gelirini 8 tur boyunca koru",
+      "type": "economic",
+      "target_gold_income": 1200,
+      "gold_hold_turns": 8,
+      "deadline_year": 330,
+      "deadline_month": 12
+    },
+    {
+      "id": "universal_military_supremacy",
+      "title": "Rakipsiz Ordu",
+      "description": "Ordunu büyüt ve rakip güçleri yenerek kıtaların askerî üstünlüğünü kur.",
+      "detail": "En az 600 ordu gücüne ulaş ve 4 faction'ı saf dışı bırak",
+      "type": "military",
+      "target_army_strength": 600,
+      "target_defeated": 4,
+      "deadline_year": 330,
+      "deadline_month": 12
     }
   ]
 }

@@ -56,6 +56,23 @@ func slotCardLayoutAt(i int) slotCardLayout {
 	}
 }
 
+func slotCardDetailsRowRects(card slotCardLayout) (gameui.Rect, gameui.Rect) {
+	turnWidth := 150.0
+	turnX := card.X + card.W - 18 - turnWidth
+	y := card.Y + 40
+	left := gameui.Rect{
+		X: card.X + slotCardContentX,
+		Y: y,
+		W: turnX - card.X - slotCardContentX - 12,
+	}
+	right := gameui.Rect{
+		X: turnX,
+		Y: y,
+		W: turnWidth,
+	}
+	return left, right
+}
+
 func buildSlotBackButton() gameui.Button {
 	r := backButtonRect()
 	return gameui.NewButton(r[0], r[1], r[2], r[3], "Geri").WithIcon(gameui.IconBack)
@@ -165,20 +182,21 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 				drawSlotMiniButtonWidget(screen, noBtn, color.RGBA{45, 45, 45, 230})
 			} else {
 				drawSaveSlotFlag(screen, slot, cx+18, cy+17)
-				drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + 14}, prefix+slot.DisplayName, nameCol, gameui.TextLarge, gameui.TextAlignStart)
+				drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + 12}, prefix+slot.DisplayName, nameCol, gameui.TextMedium, gameui.TextAlignStart)
 				faction := slot.FactionName
 				if faction == "" {
 					faction = "Bilinmiyor"
 				}
-				drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + 44}, "Devlet: "+faction, detailCol, gameui.TextSmall, gameui.TextAlignStart)
-				drawUILabel(screen, gameui.Rect{X: cx + slotCardW/2, Y: cy + 44}, "Tur: "+itoa(slot.Turn)+"  |  "+itoa(slot.Year), detailCol, gameui.TextSmall, gameui.TextAlignCenter)
+				factionRect, turnRect := slotCardDetailsRowRects(card)
+				drawUILabel(screen, factionRect, "Devlet: "+faction, detailCol, gameui.TextSmall, gameui.TextAlignStart)
+				drawUILabel(screen, turnRect, "Tur: "+itoa(slot.Turn)+"  |  "+itoa(slot.Year), detailCol, gameui.TextSmall, gameui.TextAlignEnd)
 				if !saveMode {
 					scenarioName := slot.ScenarioName
 					if scenarioName == "" {
 						scenarioName = "Bilinmiyor"
 					}
 					scenarioLabel := trimTextToWidth("Senaryo: "+scenarioName, FaceSmall, 360)
-					drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + 62, W: 300}, scenarioLabel, detailCol, gameui.TextSmall, gameui.TextAlignStart)
+					drawUILabel(screen, gameui.Rect{X: cx + slotCardContentX, Y: cy + 56, W: 300}, scenarioLabel, detailCol, gameui.TextSmall, gameui.TextAlignStart)
 				}
 
 				modStr := slot.ModTime.Format("02.01.2006 15:04")
@@ -194,7 +212,7 @@ func DrawSlotSelectScreen(screen *ebiten.Image, cursor int, saveMode bool, pendi
 			if saveMode && isSelected {
 				emptyCol = color.RGBA{140, 160, 80, 220}
 			}
-			drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 14}, prefix+slot.DisplayName, nameCol, gameui.TextLarge, gameui.TextAlignStart)
+			drawUILabel(screen, gameui.Rect{X: cx + 18, Y: cy + 12}, prefix+slot.DisplayName, nameCol, gameui.TextMedium, gameui.TextAlignStart)
 			drawUILabel(screen, gameui.Rect{X: cx, Y: cy + slotCardH/2 - 8, W: slotCardW}, "- Bos Slot -", emptyCol, gameui.TextMedium, gameui.TextAlignCenter)
 		}
 	}
@@ -334,7 +352,7 @@ func drawSlotMiniButtonWidget(screen *ebiten.Image, btn gameui.Button, bg color.
 }
 
 func slotDeleteButtonRect(cx, cy float64) slotRect {
-	return slotRect{cx + 396, cy + 50, 58, 24}
+	return slotRect{cx + 396, cy + 60, 58, 24}
 }
 
 func slotDeleteConfirmRects(cx, cy float64) (slotRect, slotRect) {
