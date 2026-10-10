@@ -85,7 +85,7 @@ func IndependentWarSatisfactionPenalties(gs *state.GameState) map[faction.Factio
 
 	warOpponents := make(map[faction.FactionID]map[faction.FactionID]struct{})
 	for _, relation := range gs.Relations {
-		if relation == nil || relation.Stance != faction.StanceWar {
+		if relation == nil || relation.Stance != faction.StanceWar || warFatigueExemptRelation(gs, relation) {
 			continue
 		}
 		first := resolveRealm(relation.FactionA)
@@ -187,7 +187,7 @@ func independentWarRealms(gs *state.GameState, realm faction.FactionID) map[fact
 		return opponents
 	}
 	for _, relation := range gs.Relations {
-		if relation == nil || relation.Stance != faction.StanceWar {
+		if relation == nil || relation.Stance != faction.StanceWar || warFatigueExemptRelation(gs, relation) {
 			continue
 		}
 		realmA := RealmRoot(gs, relation.FactionA)
@@ -209,6 +209,15 @@ func independentWarRealms(gs *state.GameState, realm faction.FactionID) map[fact
 		}
 	}
 	return opponents
+}
+
+func warFatigueExemptRelation(gs *state.GameState, relation *faction.Relation) bool {
+	if gs == nil || relation == nil {
+		return false
+	}
+	first := gs.Factions[relation.FactionA]
+	second := gs.Factions[relation.FactionB]
+	return (first != nil && first.WarFatigueExempt) || (second != nil && second.WarFatigueExempt)
 }
 
 func realmsShareLandBorder(gs *state.GameState, first, second faction.FactionID) bool {

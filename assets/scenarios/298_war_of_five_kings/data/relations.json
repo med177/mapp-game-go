@@ -4,21 +4,119 @@
     "faction_b": "nights_watch",
     "score_a_to_b": -100,
     "score_b_to_a": -100,
-    "stance": "peace"
+    "stance": "war"
   },
   {
     "faction_a": "others",
     "faction_b": "free_folk",
-    "score_a_to_b": -90,
-    "score_b_to_a": -90,
-    "stance": "peace"
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
   },
   {
     "faction_a": "others",
     "faction_b": "stark",
-    "score_a_to_b": -80,
-    "score_b_to_a": -80,
-    "stance": "peace"
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "lannister",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "baratheon_king",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "baratheon_dragonstone",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "baratheon_stormsend",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "tyrell",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "arryn",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "bolton",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "tully",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "greyjoy",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "braavos",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "targaryen",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "free_cities",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "brotherhood_without_banners",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
+  },
+  {
+    "faction_a": "others",
+    "faction_b": "martell",
+    "score_a_to_b": -100,
+    "score_b_to_a": -100,
+    "stance": "war"
   },
   {
     "faction_a": "stark",

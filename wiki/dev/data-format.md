@@ -341,6 +341,11 @@ yerde taşır; bölgenin güncel sahibi dinamik hedef devlettir. Bu üretim yeni
 ve save/load base state'inde aynıdır;
 fetih sonrası mevcut sahiplik değişikliği core listesini geriye dönük değiştirmez.
 
+`trade_disabled` ve `war_fatigue_exempt` opsiyonel boolean alanlardır.
+`trade_disabled`, fraksiyonun ticaret işlemlerini kapatır. `war_fatigue_exempt`
+ise bu fraksiyonun taraf olduğu savaşları her iki tarafın memnuniyet savaş
+yorgunluğu cezası hesabından çıkarır; diğer savaşlar normal hesaplanır.
+
 `research.completed` teknoloji ID'lerini anahtar, tamamlanma durumunu `true` değer
 olarak taşıyan bir nesnedir. Dizi biçimi desteklenmez; bu sözleşme yükleme sırasında
 `faction.ResearchState.Completed map[string]bool` alanına doğrudan eşlenir.
@@ -597,6 +602,11 @@ Olaylardaki rastgele tetiklenme oranı `random_probability` alanında tutulur.
 `0` rastgele tetiklenmeyi kapatır; tarih veya state koşullu tetiklenmeleri
 engellemez. Eski senaryo dosyalarındaki `probability` alanı geriye dönük olarak
 okunur; yeni kayıtlar `random_probability` yazar.
+
+`specific_faction` event veya choice etkisinde opsiyonel `trade_disabled`
+boolean alanı hedef fraksiyonun ticaret kilidini değiştirir. `false`, ticareti
+açar; alanın bulunmaması mevcut durumu değiştirmez. Değişiklik kompakt ve debug
+kayıtlarında saklanır; eski kayıtlarda alan yoksa senaryo varsayılanı korunur.
 
 ```json
 {

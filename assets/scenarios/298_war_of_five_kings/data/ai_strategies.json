@@ -920,6 +920,14 @@
           "value": 90
         },
         {
+          "region_id": "brandon_gift",
+          "value": 100
+        },
+        {
+          "region_id": "the_gift",
+          "value": 100
+        },
+        {
           "region_id": "winterfell_region",
           "value": 75
         }
@@ -951,6 +959,14 @@
             {
               "region_id": "the_wall_east",
               "value": 95
+            },
+            {
+              "region_id": "brandon_gift",
+              "value": 100
+            },
+            {
+              "region_id": "the_gift",
+              "value": 100
             },
             {
               "region_id": "winterfell_region",

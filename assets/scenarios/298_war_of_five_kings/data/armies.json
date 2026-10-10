@@ -6,11 +6,11 @@
     "units": [
       {
         "type_id": "white_walker",
-        "count": 2
+        "count": 4
       },
       {
         "type_id": "wight",
-        "count": 8
+        "count": 18
       }
     ]
   },
@@ -237,16 +237,13 @@
     "units": [
       {
         "type_id": "wildling_raiders",
-        "count": 5
+        "count": 6
       },
       {
-        "type_id": "infantry",
-        "count": 4
-      },
-      {
-        "type_id": "militia",
-        "count": 3
+        "type_id": "giant",
+        "count": 1
       }
+
     ]
   },
   {
@@ -529,15 +526,7 @@
     "units": [
       {
         "type_id": "wildling_raiders",
-        "count": 4
-      },
-      {
-        "type_id": "infantry",
-        "count": 2
-      },
-      {
-        "type_id": "militia",
-        "count": 2
+        "count": 8
       }
     ]
   },

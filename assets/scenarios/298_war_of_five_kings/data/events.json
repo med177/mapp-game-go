@@ -3678,6 +3678,7 @@
         "label_tr": "Özgür Halkı birleştir",
         "desc_tr": "Mance, dağınık kabileleri tek bir ordu altında toplayarak Duvar'a yönelir.",
         "ai_weight": 8,
+        "available_to_factions": [ "free_folk" ],
         "effect": {
           "target": "specific_faction",
           "affected_faction": "free_folk",
@@ -3704,6 +3705,7 @@
         "label_tr": "Duvar'ı savun",
         "desc_tr": "Gece Nöbeti kuzey geçitlerini kapatır ve Starklardan destek ister.",
         "ai_weight": 8,
+        "available_to_factions": [ "nights_watch" ],
         "effect": {
           "target": "specific_faction",
           "combat_defense_percent": 15,
@@ -3771,7 +3773,7 @@
   {
     "id": "wall_pressure_301",
     "name_tr": "Duvar Savaşının Eşiğinde",
-    "desc_tr": "Mance'in yürüyüşü Duvar'ın kapılarına dayandı. Özgür Halk saldırıya hazırlanırken Gece Nöbeti ve Kuzey son savunma kararlarını vermeli.",
+    "desc_tr": "Mance'in yürüyüşü Duvar'ın kapılarına dayandı. Özgür Halk Duvar'a saldırabilir; Gece Nöbeti ise geçitleri savunmak ya da Gift'te yeni bir yurt kurulmasına izin vermek arasında karar vermeli.",
     "random_probability": 0,
     "min_turn": 1,
     "target": "specific_faction",
@@ -3785,6 +3787,60 @@
     "affected_faction": "nights_watch",
     "choice_prompt_tr": "Duvar'ın kaderi için son hazırlık ne olacak?",
     "choices": [
+      {
+        "id": "grant_free_folk_settlement",
+        "label_tr": "Özgür Halk'a Gift'te yerleşim hakkı tanı",
+        "desc_tr": "Akgezenler yaklaşırken Gece Nöbeti, Özgür Halkın Brandon's Gift ve The Gift'e yerleşmesine izin verir; iki halk ortak tehdide karşı savaşı durdurur.",
+        "ai_weight": 5,
+        "available_to_factions": [ "nights_watch" ],
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "free_folk",
+          "trade_disabled": false,
+          "dynastic_settlement": {
+            "source_faction_id": "nights_watch",
+            "recipient_faction_id": "free_folk",
+            "region_ids": [
+              "brandon_gift",
+              "the_gift"
+            ],
+            "relation_stance": "allied",
+            "relation_score_delta": 35
+          },
+          "set_flags": [
+            "free_folk_south_settlement",
+            "wall_defense_prepared",
+            "wall_defense_hardened"
+          ]
+        }
+      },
+      {
+        "id": "accept_gift_settlement",
+        "label_tr": "Savaşı bırak, Gift'te yerleşmeyi kabul et",
+        "desc_tr": "Özgür Halk, Duvar'a saldırmaktan vazgeçer. Gece Nöbeti geçişe izin verir ve iki Gift bölgesini yeni yurt olarak bırakır.",
+        "ai_weight": 10,
+        "available_to_factions": [ "free_folk" ],
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "free_folk",
+          "trade_disabled": false,
+          "dynastic_settlement": {
+            "source_faction_id": "nights_watch",
+            "recipient_faction_id": "free_folk",
+            "region_ids": [
+              "brandon_gift",
+              "the_gift"
+            ],
+            "relation_stance": "allied",
+            "relation_score_delta": 35
+          },
+          "set_flags": [
+            "free_folk_south_settlement",
+            "wall_defense_prepared",
+            "wall_defense_hardened"
+          ]
+        }
+      },
       {
         "id": "wall_assault",
         "label_tr": "Duvar'a saldır",
@@ -3869,6 +3925,38 @@
     "requires_active_factions": [
       "free_folk",
       "nights_watch"
+    ]
+  },
+  {
+    "id": "free_folk_establish_southern_settlement",
+    "name_tr": "Gift'te Yeni Bir Yurt",
+    "desc_tr": "Özgür Halk, Duvar'ı savaşarak aşmış ve Brandon's Gift ile The Gift'te kalıcı bir yerleşim kurmuştur.",
+    "random_probability": 0,
+    "min_turn": 1,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "state_triggered": true,
+    "one_shot": true,
+    "affected_faction": "free_folk",
+    "trade_disabled": false,
+    "set_flags": [
+      "free_folk_south_settlement"
+    ],
+    "requires_flags": [
+      "mance_invasion_started"
+    ],
+    "blocks_flags": [
+      "free_folk_south_settlement"
+    ],
+    "requires_owned_regions": [
+      "brandon_gift",
+      "the_gift"
+    ],
+    "requires_active_factions": [
+      "free_folk"
     ]
   },
   {

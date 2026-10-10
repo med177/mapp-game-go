@@ -23,6 +23,14 @@ const saveStateEncodingZstdBase64 = "zstd+base64"
 
 type stringList []string
 
+func cloneOptionalBoolPtr(v *bool) *bool {
+	if v == nil {
+		return nil
+	}
+	copy := *v
+	return &copy
+}
+
 type settlementPatch struct {
 	Replace []world.Settlement `json:"r,omitempty"`
 	Order   []string           `json:"o,omitempty"`
@@ -50,6 +58,7 @@ type regionSaveState struct {
 
 type factionSaveState struct {
 	IsVirtual                  *bool                  `json:"v,omitempty"`
+	TradeDisabled              *bool                  `json:"td,omitempty"`
 	IsEliminated               *bool                  `json:"el,omitempty"`
 	OverlordID                 *faction.FactionID     `json:"ov,omitempty"`
 	TributeRate                *int                   `json:"tr,omitempty"`
@@ -192,6 +201,7 @@ type legacyRegionSaveState struct {
 
 type legacyFactionSaveState struct {
 	IsVirtual                  bool                  `json:"is_virtual,omitempty"`
+	TradeDisabled              *bool                 `json:"trade_disabled,omitempty"`
 	IsEliminated               bool                  `json:"is_eliminated"`
 	OverlordID                 faction.FactionID     `json:"overlord_id,omitempty"`
 	TributeRate                int                   `json:"tribute_rate,omitempty"`
@@ -364,6 +374,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		factionCopy := fx
 		savedFactions[fid] = factionSaveState{
 			IsVirtual:                  cloneBoolPtr(factionCopy.IsVirtual),
+			TradeDisabled:              cloneOptionalBoolPtr(factionCopy.TradeDisabled),
 			IsEliminated:               cloneBoolPtr(factionCopy.IsEliminated),
 			OverlordID:                 cloneFactionIDPtr(factionCopy.OverlordID),
 			TributeRate:                cloneIntPtr(factionCopy.TributeRate),
@@ -619,6 +630,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		}
 		factions[fid] = legacyFactionSaveState{
 			IsVirtual:                  fx.IsVirtual,
+			TradeDisabled:              cloneBoolPtr(fx.TradeDisabled),
 			IsEliminated:               fx.IsEliminated,
 			OverlordID:                 fx.OverlordID,
 			TributeRate:                fx.TributeRate,
@@ -975,6 +987,9 @@ func makeFactionSaveState(current, base *faction.Faction) (factionSaveState, boo
 	if base == nil || current.IsVirtual != base.IsVirtual {
 		out.IsVirtual = cloneBoolPtr(current.IsVirtual)
 	}
+	if base == nil || current.TradeDisabled != base.TradeDisabled {
+		out.TradeDisabled = cloneBoolPtr(current.TradeDisabled)
+	}
 	if base == nil || current.OverlordID != base.OverlordID {
 		out.OverlordID = cloneFactionIDPtr(current.OverlordID)
 	}
@@ -1032,6 +1047,9 @@ func applyFactionSaveState(fx *faction.Faction, saved factionSaveState) {
 	}
 	if saved.IsVirtual != nil {
 		fx.IsVirtual = *saved.IsVirtual
+	}
+	if saved.TradeDisabled != nil {
+		fx.TradeDisabled = *saved.TradeDisabled
 	}
 	if saved.IsEliminated != nil {
 		fx.IsEliminated = *saved.IsEliminated
@@ -1971,6 +1989,7 @@ func isZeroRegionSaveState(saved regionSaveState) bool {
 
 func isZeroFactionSaveState(saved factionSaveState) bool {
 	return saved.IsVirtual == nil &&
+		saved.TradeDisabled == nil &&
 		saved.IsEliminated == nil &&
 		saved.OverlordID == nil &&
 		saved.TributeRate == nil &&

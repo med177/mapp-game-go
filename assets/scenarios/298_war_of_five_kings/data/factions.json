@@ -744,7 +744,9 @@
       100,
       75
     ],
-    "is_playable": false,
+    "is_playable": true,
+    "recommended_playable": true,
+    "recommended_playable_reason_tr": "Akgezenlerden kaçarken Duvar'ı aş, Gece Nöbeti'yle anlaş ya da savaş ve Özgür Halk için güneyde yeni bir yurt kur.",
     "is_eliminated": false,
     "trade_disabled": true,
     "capital_settlement_id": "hardhome_main",
@@ -805,14 +807,15 @@
     "is_playable": false,
     "is_eliminated": false,
     "trade_disabled": true,
+    "war_fatigue_exempt": true,
     "capital_settlement_id": "always_winter_main",
-    "gold": 0,
-    "grain": 900,
-    "iron": 0,
-    "timber": 0,
-    "stone": 0,
+    "gold": 250,
+    "grain": 1600,
+    "iron": 180,
+    "timber": 220,
+    "stone": 120,
     "spice": 0,
-    "cloth": 0,
+    "cloth": 120,
     "research": {
       "completed": {},
       "active_id": "",
@@ -822,7 +825,9 @@
     "ai_expansion_targets": [
       "nights_watch",
       "free_folk",
-      "stark"
+      "stark",
+      "bolton",
+      "arryn"
     ],
     "territorial_claims": [
       {
@@ -840,7 +845,19 @@
       },
       {
         "region_id": "beyond_the_wall",
+        "value": 95
+      },
+      {
+        "region_id": "winterfell_region",
+        "value": 80
+      },
+      {
+        "region_id": "brandon_gift",
         "value": 90
+      },
+      {
+        "region_id": "the_gift",
+        "value": 100
       }
     ]
   },

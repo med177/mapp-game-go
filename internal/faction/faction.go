@@ -65,8 +65,11 @@ type Faction struct {
 	IsVirtual bool `json:"is_virtual,omitempty"`
 	// TradeDisabled, fraksiyonun diğer fraksiyonlarla mal ve ticaret rotası
 	// işlemlerine kapalı olduğunu belirtir.
-	TradeDisabled bool      `json:"trade_disabled,omitempty"`
-	OverlordID    FactionID `json:"overlord_id,omitempty"`
+	TradeDisabled bool `json:"trade_disabled,omitempty"`
+	// WarFatigueExempt, bu fraksiyonun dahil olduğu savaşların her iki taraf
+	// için de memnuniyet savaş yorgunluğu cezası oluşturmamasını sağlar.
+	WarFatigueExempt bool      `json:"war_fatigue_exempt,omitempty"`
+	OverlordID       FactionID `json:"overlord_id,omitempty"`
 	// TributeRate, vassalın overlord'a ödediği gelir payıdır (0-50).
 	TributeRate           int  `json:"tribute_rate,omitempty"`
 	TributeRateConfigured bool `json:"tribute_rate_configured,omitempty"`

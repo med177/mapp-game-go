@@ -1148,7 +1148,7 @@ func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent, ne
 	textY := alert.Y + (alert.H-FaceSmall.Size)/2
 	overextension := topAlertOverextensionRect(gs)
 	DrawText(screen, text, overextension.X, textY, FaceSmall, textColor)
-	drawTopAlertEvent(screen, topAlertPlayerEventRect(gs), nearestEvent, "Yaklaşan:", textY)
+	drawTopAlertEvent(screen, topAlertPlayerEventRect(gs), nearestEvent, "Özel:", textY)
 	drawTopAlertEvent(screen, topAlertGeneralEventRect(gs), nearestGeneralEvent, "Genel:", textY)
 }
 

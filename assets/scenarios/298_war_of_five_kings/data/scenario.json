@@ -396,6 +396,28 @@
       ]
     },
     {
+      "id": "free_folk_new_home",
+      "title": "Özgür Halk'a Yeni Bir Yurt",
+      "description": "Akgezenlerin Duvar'ı aşmasının ardından Özgür Halk olarak Gift ve Brandon's Gift'te kalıcı bir yurt kur ve topraklarını koru.",
+      "detail": "Hedef: Özgür Halkın güneyde yerleşim kurduğunu ilan et; The Gift ve Brandon's Gift'i, Duvar yarıldıktan sonra elinde tut ve en az 3 kara bölgesini kontrol et.",
+      "type": "domination",
+      "target_region_count": 3,
+      "required_regions": [
+        "the_gift",
+        "brandon_gift"
+      ],
+      "required_event_flags": [
+        "free_folk_south_settlement",
+        "others_awakened",
+        "wall_breached"
+      ],
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "free_folk"
+      ]
+    },
+    {
       "id": "last_watch_against_the_dead",
       "title": "Ölüler Ordusunu Durdur",
       "description": "Akgezenlerin uyanışından sonra Duvar'ı geri al ve kuzey sınırını yeniden güvenceye al.",

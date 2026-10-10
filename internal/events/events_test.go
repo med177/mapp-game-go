@@ -83,6 +83,47 @@ func TestChoiceIndicesForFactionFiltersOnlyRestrictedChoices(t *testing.T) {
 	}
 }
 
+func TestAutoChooseForEventFactionRespectsChoiceAudience(t *testing.T) {
+	e := &Event{
+		Target:          "specific_faction",
+		AffectedFaction: "nights_watch",
+		Choices: []Choice{
+			{ID: "free_folk_offer", AIWeight: 10, AvailableToFactions: []string{"free_folk"}},
+			{ID: "watch_acceptance", AIWeight: 5, AvailableToFactions: []string{"nights_watch"}},
+		},
+	}
+
+	if got := AutoChooseForEventFaction(e); got != 1 {
+		t.Fatalf("hedef fraksiyon kendi seçimine göre karar vermedi: got %d, want 1", got)
+	}
+}
+
+func TestChoiceCanEnableFactionTrade(t *testing.T) {
+	tradeDisabled := true
+	canTrade := false
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"free_folk": {ID: "free_folk", TradeDisabled: tradeDisabled},
+		},
+	}
+	e := &Event{
+		Target:          "specific_faction",
+		AffectedFaction: "free_folk",
+		Choices: []Choice{{Effect: Effect{
+			Target:          "specific_faction",
+			AffectedFaction: "free_folk",
+			TradeDisabled:   &canTrade,
+		}}},
+	}
+
+	if _, ok := ApplyChoice(gs, e, 0); !ok {
+		t.Fatal("yerleşim seçimi uygulanmadı")
+	}
+	if gs.Factions["free_folk"].TradeDisabled {
+		t.Fatal("yerleşimden sonra Free Folk'un ticareti hâlâ kapalı")
+	}
+}
+
 func TestVictoryConditionsRequireKeyRegionsAndMinimumOwnership(t *testing.T) {
 	gs := &state.GameState{
 		FiredEventIDs: map[string]bool{

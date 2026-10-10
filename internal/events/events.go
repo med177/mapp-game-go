@@ -163,6 +163,7 @@ type Effect struct {
 	BuildingEfficiencyPercent int                          `json:"building_efficiency_percent,omitempty"`
 	CombatAttackPercent       int                          `json:"combat_attack_percent,omitempty"`
 	CombatDefensePercent      int                          `json:"combat_defense_percent,omitempty"`
+	TradeDisabled             *bool                        `json:"trade_disabled,omitempty"`
 	AffectedFaction           string                       `json:"affected_faction,omitempty"`   // specific_faction için
 	RelationDeltaAll          int                          `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
 	CompleteTechs             []string                     `json:"complete_techs,omitempty"`
@@ -222,6 +223,7 @@ type Event struct {
 	BuildingEfficiencyPercent int                          `json:"building_efficiency_percent,omitempty"`
 	CombatAttackPercent       int                          `json:"combat_attack_percent,omitempty"`
 	CombatDefensePercent      int                          `json:"combat_defense_percent,omitempty"`
+	TradeDisabled             *bool                        `json:"trade_disabled,omitempty"`
 	RelationDeltaAll          int                          `json:"relation_delta_all,omitempty"`
 	CompleteTechs             []string                     `json:"complete_techs,omitempty"`
 	StartResearchTech         string                       `json:"start_research_tech,omitempty"`
@@ -551,6 +553,7 @@ func (e *Event) BaseEffect() Effect {
 		BuildingEfficiencyPercent: e.BuildingEfficiencyPercent,
 		CombatAttackPercent:       e.CombatAttackPercent,
 		CombatDefensePercent:      e.CombatDefensePercent,
+		TradeDisabled:             e.TradeDisabled,
 		AffectedFaction:           e.AffectedFaction,
 		RelationDeltaAll:          e.RelationDeltaAll,
 		CompleteTechs:             e.CompleteTechs,
@@ -1319,6 +1322,15 @@ func AutoChooseForFaction(e *Event, factionID string) int {
 	return bestIdx
 }
 
+// AutoChooseForEventFaction respects the audience restriction of historical
+// choices when a targeted faction is controlled by the AI.
+func AutoChooseForEventFaction(e *Event) int {
+	if e != nil && e.Target == "specific_faction" && e.AffectedFaction != "" {
+		return AutoChooseForFaction(e, e.AffectedFaction)
+	}
+	return AutoChoose(e)
+}
+
 func containsFaction(factions []string, factionID string) bool {
 	for _, candidate := range factions {
 		if candidate == factionID {
@@ -1615,6 +1627,9 @@ func applyToFaction(gs *state.GameState, fid string, eff Effect) {
 		f.Gold = max0(f.Gold + eff.GoldDelta)
 		f.OtherIncomeDelta += eff.OtherIncomeDelta
 		f.Grain = max0(f.Grain + eff.GrainDelta)
+		if eff.TradeDisabled != nil {
+			f.TradeDisabled = *eff.TradeDisabled
+		}
 	}
 	if eff.ArmyHPMod > 0 && eff.ArmyHPMod < 1.0 {
 		for _, a := range gs.Armies {

@@ -48,6 +48,7 @@ type Game struct {
 	queuedHistoricalEvt               *events.Event
 	pendingTurnEventQueueSummary      string
 	resolvingTurn                     bool
+	headlessSimulation                bool
 	pendingSortie                     *pendingSortieState
 	pendingConquestDecisions          []pendingConquestDecision
 	pendingCaptiveDecisions           []state.PendingCaptiveDecision
@@ -1804,11 +1805,28 @@ func (g *Game) handleTriggeredEvent(evt *events.Event) {
 	if evt == nil {
 		return
 	}
+	if g.headlessSimulation {
+		g.resolveHeadlessTriggeredEvent(evt)
+		return
+	}
 	if g.resolvingTurn || g.pendingPlayerDecisionBeforeHistoricalEvent() {
 		g.queuedHistoricalEvt = evt
 		return
 	}
 	g.presentHistoricalEvent(evt)
+}
+
+func (g *Game) resolveHeadlessTriggeredEvent(evt *events.Event) {
+	if g == nil || g.gs == nil || evt == nil {
+		return
+	}
+	choiceIndex := events.AutoChooseForEventFaction(evt)
+	if events.IsPlayerRelevant(g.gs, evt) && events.RequiresPlayerChoice(g.gs, evt) {
+		choiceIndex = events.AutoChooseForFaction(evt, string(g.gs.PlayerFactionID))
+	}
+	if choiceIndex >= 0 {
+		g.applyHistoricalChoiceWithNotification(evt, choiceIndex, false)
+	}
 }
 
 func (g *Game) presentHistoricalEvent(evt *events.Event) {
@@ -1829,7 +1847,7 @@ func (g *Game) presentHistoricalEvent(evt *events.Event) {
 	}
 	g.renderer.AddEventDetail("[OLAY] "+evt.NameTR, g.historicalEventDetail(evt))
 	if !events.IsPlayerRelevant(g.gs, evt) {
-		if idx := events.AutoChoose(evt); idx >= 0 {
+		if idx := events.AutoChooseForEventFaction(evt); idx >= 0 {
 			g.applyHistoricalChoiceWithNotification(evt, idx, false)
 		}
 		if evt.HistoricalYear != 0 {
@@ -1840,7 +1858,7 @@ func (g *Game) presentHistoricalEvent(evt *events.Event) {
 	}
 	g.renderer.ShowCombatResult(baseMsg)
 	if !events.RequiresPlayerChoice(g.gs, evt) {
-		if idx := events.AutoChoose(evt); idx >= 0 {
+		if idx := events.AutoChooseForEventFaction(evt); idx >= 0 {
 			g.applyHistoricalChoiceWithNotification(evt, idx, true)
 		}
 		if evt.HistoricalYear != 0 {
@@ -1855,6 +1873,9 @@ func (g *Game) presentHistoricalEvent(evt *events.Event) {
 
 func (g *Game) pendingPlayerDecisionBeforeHistoricalEvent() bool {
 	if g == nil || g.renderer == nil {
+		return false
+	}
+	if g.headlessSimulation {
 		return false
 	}
 	return len(g.pendingConquestDecisions) > 0 ||

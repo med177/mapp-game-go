@@ -87,6 +87,40 @@ func TestIndependentWarSatisfactionPenaltiesIgnoresInternalRealmWar(t *testing.T
 	}
 }
 
+func TestIndependentWarSatisfactionPenaltiesExemptsWarsWithConfiguredFaction(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a":      {ID: "a"},
+			"b":      {ID: "b"},
+			"others": {ID: "others", WarFatigueExempt: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"a_land": {ID: "a_land", OwnerID: "a", Neighbors: []world.RegionID{"b_land"}},
+			"b_land": {ID: "b_land", OwnerID: "b", Neighbors: []world.RegionID{"a_land"}},
+		},
+		Relations: map[string]*faction.Relation{
+			"a|others": {FactionA: "a", FactionB: "others", Stance: faction.StanceWar},
+			"b|others": {FactionA: "b", FactionB: "others", Stance: faction.StanceWar},
+			"a|b":      {FactionA: "a", FactionB: "b", Stance: faction.StanceWar},
+		},
+	}
+
+	penalties := IndependentWarSatisfactionPenalties(gs)
+	for _, fid := range []faction.FactionID{"a", "b"} {
+		if got, want := penalties[fid], WarFatigueSatisfactionPenalty; got != want {
+			t.Errorf("Akgezenler dışındaki savaş cezası korunmalı fid=%s: got=%d want=%d", fid, got, want)
+		}
+	}
+	if got := penalties["others"]; got != 0 {
+		t.Errorf("muaf fraksiyonun savaşları yorgunluk cezası oluşturmamalı: got=%d", got)
+	}
+	for _, fid := range []faction.FactionID{"a", "b", "others"} {
+		if got, want := IndependentWarSatisfactionPenalty(gs, fid), penalties[fid]; got != want {
+			t.Errorf("tekil/toplu savaş yorgunluğu ayrıştı fid=%s: got=%d want=%d", fid, got, want)
+		}
+	}
+}
+
 func TestSharedMajorThreatsMatchesPairwiseHelper(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

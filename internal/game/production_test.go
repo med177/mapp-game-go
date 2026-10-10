@@ -2,6 +2,7 @@ package game
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,7 +10,9 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/events"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/render"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -455,5 +458,86 @@ func privilegeRevocationFixture(includeOtherLand bool) *state.GameState {
 			},
 		},
 		ProductionQueue: []state.ProductionOrder{{ID: "build_galata", RegionID: "galata", FactionID: "genoa"}},
+	}
+}
+
+func TestHeadlessPendingEventsAutoResolveAndContinue(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            1,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", NameTR: "Oyuncu"},
+		},
+		FiredEventIDs: map[string]bool{},
+	}
+	eventA := &events.Event{
+		ID:                "event_a",
+		NameTR:            "Olay A",
+		Target:            "player_faction",
+		RandomProbability: 1,
+		OneShot:           true,
+		Choices: []events.Choice{{
+			ID:       "choose_a",
+			AIWeight: 1,
+			Effect:   events.Effect{SetFlags: []string{"choice_a_applied"}},
+		}},
+	}
+	eventB := &events.Event{
+		ID:                "event_b",
+		NameTR:            "Olay B",
+		Target:            "player_faction",
+		RandomProbability: 1,
+		OneShot:           true,
+		Choices: []events.Choice{{
+			ID:       "choose_b",
+			AIWeight: 1,
+			Effect:   events.Effect{SetFlags: []string{"choice_b_applied"}},
+		}},
+	}
+	g := &Game{
+		gs:                 gs,
+		evts:               []*events.Event{eventA, eventB},
+		renderer:           render.New(gs),
+		headlessSimulation: true,
+	}
+
+	if blocked := g.processPendingTurnEvents(); blocked {
+		t.Fatal("headless olay kuyruğu bir oyuncu modalı bekleyerek durdu")
+	}
+	for _, flag := range []string{"flag:choice_a_applied", "flag:choice_b_applied"} {
+		if !gs.FiredEventIDs[flag] {
+			t.Errorf("otomatik olay seçimi flag'i uygulamadı: %s", flag)
+		}
+	}
+}
+
+func TestRecordHeadlessEventsIncludesPerTurnEvents(t *testing.T) {
+	gs := &state.GameState{FiredEventIDs: map[string]bool{
+		"one_shot":                true,
+		"turn:1:event:one_shot":   true,
+		"turn:1:event:repeatable": true,
+		"turn:2:event:repeatable": true,
+	}}
+	eventDefs := []*events.Event{
+		{ID: "one_shot", NameTR: "Tek seferlik"},
+		{ID: "repeatable", NameTR: "Tekrarlanabilir"},
+	}
+	report := &HeadlessSimulationReport{}
+	seen := map[string]bool{}
+
+	recordHeadlessEvents(report, gs, eventDefs, 1, seen)
+	recordHeadlessEvents(report, gs, eventDefs, 2, seen)
+
+	if len(report.Events) != 3 {
+		t.Fatalf("rapor olay sayısı = %d, 3 bekleniyordu: %+v", len(report.Events), report.Events)
+	}
+	got := make(map[string]bool, len(report.Events))
+	for _, event := range report.Events {
+		got[fmt.Sprintf("%d:%s", event.Turn, event.ID)] = true
+	}
+	for _, key := range []string{"1:one_shot", "1:repeatable", "2:repeatable"} {
+		if !got[key] {
+			t.Errorf("rapor event kaydını içermiyor: %s (got %v)", key, got)
+		}
 	}
 }

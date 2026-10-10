@@ -199,9 +199,10 @@ func RunHeadlessSimulation(options HeadlessSimulationOptions) (*HeadlessSimulati
 	// Renderer yalnızca çözümleme sırasında kullanılan olay/uyarı state'ini
 	// taşır; burada Draw veya Ebitengine penceresi çalıştırılmaz.
 	g := &Game{
-		gs:       gs,
-		evts:     eventDefs,
-		renderer: render.New(gs),
+		gs:                 gs,
+		evts:               eventDefs,
+		renderer:           render.New(gs),
+		headlessSimulation: true,
 	}
 	audio.SetSoundEnabled(false)
 	refreshMarketOrdersAndPricesWithEvents(gs, eventDefs)
@@ -289,12 +290,7 @@ func RunHeadlessSimulation(options HeadlessSimulationOptions) (*HeadlessSimulati
 		resolveHeadlessOffers(g)
 		closeHeadlessWarChanges(report, gs, turn)
 
-		for id, evt := range eventDefinitionsByID(eventDefs) {
-			if gs.FiredEventIDs[id] && !seenEvents[id] {
-				report.Events = append(report.Events, HeadlessEvent{Turn: turn, ID: id, NameTR: evt.NameTR})
-				seenEvents[id] = true
-			}
-		}
+		recordHeadlessEvents(report, gs, eventDefs, turn, seenEvents)
 		for key, set := range gs.FiredEventIDs {
 			if flag, ok := strings.CutPrefix(key, "flag:"); ok && set && !seenEvents[key] {
 				report.Flags = append(report.Flags, HeadlessFlag{Turn: turn, Flag: flag})
@@ -361,6 +357,25 @@ func headlessDiplomacyEventLess(left, right HeadlessDiplomacyEvent) bool {
 		return left.FactionB < right.FactionB
 	}
 	return left.Good < right.Good
+}
+
+func recordHeadlessEvents(report *HeadlessSimulationReport, gs *state.GameState, eventDefs []*events.Event, turn int, seen map[string]bool) {
+	if report == nil || gs == nil || gs.FiredEventIDs == nil {
+		return
+	}
+	for id, evt := range eventDefinitionsByID(eventDefs) {
+		turnKey := fmt.Sprintf("turn:%d:event:%s", turn, id)
+		firedThisTurn := gs.FiredEventIDs[turnKey]
+		newOneShotEvent := gs.FiredEventIDs[id] && !seen[id]
+		if (!firedThisTurn && !newOneShotEvent) || (firedThisTurn && seen[turnKey]) {
+			continue
+		}
+		report.Events = append(report.Events, HeadlessEvent{Turn: turn, ID: id, NameTR: evt.NameTR})
+		seen[turnKey] = true
+		if gs.FiredEventIDs[id] {
+			seen[id] = true
+		}
+	}
 }
 
 func firstPlayableFaction(gs *state.GameState) faction.FactionID {

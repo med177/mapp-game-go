@@ -22,7 +22,7 @@
       "output": "${workspaceFolder}/bin/release/mapp-game"
     },
     {
-      "name": "Simulation 1300",
+      "name": "Simulation Headless",
       "type": "go",
       "request": "launch",
       "mode": "debug",
@@ -31,45 +31,19 @@
       "console": "integratedTerminal",
       "args": [
         "-scenario",
-        "assets/scenarios/1300_ottoman_rise",
+        "${input:simulationScenario}",
         "-turns",
         "${input:simulationTurns}",
         "-player",
-        "ottoman",
+        "${input:simulationPlayer}",
         "-seed",
         "${input:simulationSeed}",
         "-difficulty",
-        "3",
+        "${input:simulationDifficulty}",
         "-format",
         "markdown",
         "-out",
-        "reports/1300_ottoman_rise_headless_seed_${input:simulationSeed}_turn_report.md"
-      ],
-      "output": "${workspaceFolder}/bin/simreport-debug"
-    },
-    {
-      "name": "Simulation 298",
-      "type": "go",
-      "request": "launch",
-      "mode": "debug",
-      "program": "${workspaceFolder}/cmd/simreport",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "args": [
-        "-scenario",
-        "assets/scenarios/298_war_of_five_kings",
-        "-turns",
-        "${input:simulationTurns}",
-        "-player",
-        "nights_watch",
-        "-seed",
-        "${input:simulationSeed}",
-        "-difficulty",
-        "3",
-        "-format",
-        "markdown",
-        "-out",
-        "reports/298_war_of_five_kings_headless_seed_${input:simulationSeed}_turn_report.md"
+        "reports/${input:simulationScenario}_${input:simulationTurns}_${input:simulationSeed}.md"
       ],
       "output": "${workspaceFolder}/bin/simreport-debug"
     },
@@ -83,16 +57,44 @@
   ],
   "inputs": [
     {
+      "id": "simulationScenario",
+      "type": "pickString",
+      "description": "Simülasyon senaryosu ?",
+      "options": [
+        "assets/scenarios/298_war_of_five_kings",
+        "assets/scenarios/1300_ottoman_rise",
+        "assets/scenarios/1600_thirty_years_war"
+      ],
+      "default": "assets/scenarios/298_war_of_five_kings"
+    },
+    {
+      "id": "simulationPlayer",
+      "type": "pickString",
+      "description": "Simülasyon oyuncusu ?",
+      "options": [
+        "nights_watch",
+        "ottoman",
+        "habsburg"
+      ],
+      "default": "nights_watch"
+    },
+    {
       "id": "simulationTurns",
       "type": "promptString",
-      "description": "Kaç tur simüle edilsin?",
+      "description": "Kaç tur simüle edilsin ?",
       "default": "100"
     },
     {
       "id": "simulationSeed",
       "type": "promptString",
-      "description": "Simülasyon seed'i?",
-      "default": "13100301"
+      "description": "Simülasyon seed'i ?",
+      "default": "${random:uuid}"
+    },
+    {
+      "id": "simulationDifficulty",
+      "type": "promptString",
+      "description": "Simülasyon zorluk seviyesi ?",
+      "default": "3"
     }
   ]
 }
