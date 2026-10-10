@@ -294,9 +294,10 @@ Olay tetiklendiğinde:
 - Kodex artık iki kolonlu çalışır:
   - solda seçilebilir zincir listesi
   - sağda seçilen zincirin tam açıklaması, kalan süre ve eksik koşul dökümü
-- Üst HUD altındaki `Aşırı Genişleme` bilgi paneli, Kodex'in `Tümü` listesindeki
-  kalan turu en az olan event başlığını `(N tur)` biçiminde gösterir. Panel
-  tıklanınca aynı event kimliğiyle Kodex satırını seçerek açar. Hover popup'ı
+- Üst HUD altındaki `Aşırı Genişleme` bilgi panelinin yanında, oyuncuyla ilgili
+  en yakın olay `Yaklaşan:`; oyuncu filtresinde bulunmayan en yakın olay ise
+  `Genel:` etiketiyle yan yana gösterilir. İki olay alanına tıklanınca Kodex
+  aynı event kimliğinin seçili olduğu `Tümü` sayfasıyla açılır. Hover popup'ı
   event tarihi, kalan tur, koşul durumu ve getirileri kısa biçimde gösterir.
 
 ---

@@ -1766,11 +1766,26 @@ func (r *Renderer) nearestEventCodexEntry() (EventCodexEntry, bool) {
 	// HUD yalnızca oyuncunun karar verebileceği veya doğrudan etkileneceği
 	// event'leri göstermeli; diğer faction'ların bekleyen zincirleri oyuncunun
 	// üst durumunda yaklaşan event gibi görünmemeli.
-	entries := r.eventCodexEntries[int(EventCodexPlayer)]
+	return nearestUpcomingEventEntry(r.eventCodexEntries[int(EventCodexPlayer)], nil)
+}
+
+func (r *Renderer) nearestGeneralEventCodexEntry() (EventCodexEntry, bool) {
+	if r == nil || len(r.eventCodexEntries) <= int(EventCodexPlayer) {
+		return EventCodexEntry{}, false
+	}
+	return nearestUpcomingEventEntry(r.eventCodexEntries[int(EventCodexAll)], r.eventCodexEntries[int(EventCodexPlayer)])
+}
+
+func nearestUpcomingEventEntry(entries, excluded []EventCodexEntry) (EventCodexEntry, bool) {
 	var nearest EventCodexEntry
 	found := false
 	for _, entry := range entries {
-		if entry.Title == "" || entry.Status == "Gerçekleşti" {
+		// Koşulları kilitli state/event zincirleri takvim tarihi taşımayabilir
+		// ve TurnsUntil=0 ile görünebilir. Bunları yaklaşan olay sayma.
+		if entry.Title == "" || (entry.Status != "Hazir" && entry.Status != "Takvim") {
+			continue
+		}
+		if eventCodexEntryExcluded(entry, excluded) {
 			continue
 		}
 		if !found || entry.TurnsUntil < nearest.TurnsUntil ||
@@ -1782,8 +1797,26 @@ func (r *Renderer) nearestEventCodexEntry() (EventCodexEntry, bool) {
 	return nearest, found
 }
 
+func eventCodexEntryExcluded(entry EventCodexEntry, excluded []EventCodexEntry) bool {
+	for _, candidate := range excluded {
+		if candidate.EventID != "" && candidate.EventID == entry.EventID {
+			return true
+		}
+	}
+	return false
+}
+
 func (r *Renderer) openNearestEventCodex() bool {
 	entry, ok := r.nearestEventCodexEntry()
+	if !ok {
+		return false
+	}
+	r.openEventCodexAt(&entry)
+	return r.showEventCodex
+}
+
+func (r *Renderer) openNearestGeneralEventCodex() bool {
+	entry, ok := r.nearestGeneralEventCodexEntry()
 	if !ok {
 		return false
 	}
@@ -2455,17 +2488,23 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 			}
 		}
 		nearestEvent, hasNearestEvent := r.nearestEventCodexEntry()
+		nearestGeneralEvent, hasNearestGeneralEvent := r.nearestGeneralEventCodexEntry()
 		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showImperialPanel, r.showActiveWars, r.AIControlsPlayerFaction, r.AIControlsPlayerEconomy, r.mapMode)
 		var nearestEventPtr *EventCodexEntry
 		if hasNearestEvent {
 			nearestEventPtr = &nearestEvent
 		}
-		drawTopAlertHud(screen, r.gs, nearestEventPtr)
+		var nearestGeneralEventPtr *EventCodexEntry
+		if hasNearestGeneralEvent {
+			nearestGeneralEventPtr = &nearestGeneralEvent
+		}
+		drawTopAlertHud(screen, r.gs, nearestEventPtr, nearestGeneralEventPtr)
 		r.drawGrainEconomyPopup(screen)
 		r.drawGoldIncomePopup(screen)
 		r.drawArmyOrganizationPopup(screen)
 		r.drawOverextensionPopup(screen)
 		r.drawNearestEventPopup(screen)
+		r.drawNearestGeneralEventPopup(screen)
 		DrawRegionPanelExpandedScrolledWithTab(screen, r.gs, r.SelectedRegion, r.devNeighborListExpanded, r.regionPanelTab, r.regionPanelScroll)
 		if region, settlement, ok := r.selectedSettlement(); ok && region.ID == r.SelectedRegion {
 			DrawSettlementPanel(screen, r.gs, region, settlement)

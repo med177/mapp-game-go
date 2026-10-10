@@ -11,12 +11,13 @@ import (
 )
 
 const (
-	aiRelationshipRepairChancePercent      = 60
-	aiRelationshipRepairCooldownTurns      = 4
-	aiNegotiationMinimumResourceReserve    = 10
-	aiNegotiationMaxTransferSharePercent   = 25
-	aiNegotiationMinimumMarketValuePercent = 90
-	aiMercenaryPurchaseCostPercent         = 80
+	aiRelationshipRepairChancePercent        = 60
+	aiRelationshipRepairCooldownTurns        = 4
+	aiNegotiationMinimumResourceReserve      = 10
+	aiNegotiationMaxTransferSharePercent     = 25
+	aiNegotiationMinimumMarketValuePercent   = 90
+	aiMercenaryPurchaseCostPercent           = 80
+	aiResourceNegotiationPlayerChancePercent = 10
 	// Hediye, ilişki bakımının pahalı ve seyrek kullanılan biçimidir. AI'nin
 	// küçük/orta hazinesinin tek seferde büyük bölümünü tüketmesini engeller.
 	aiGiftMaxTreasuryPercent = 25
@@ -206,6 +207,9 @@ func aiHandleResourceNegotiationWithSteps(gs *state.GameState, fid faction.Facti
 		if target == nil || target.IsEliminated {
 			continue
 		}
+		if targetID == gs.PlayerFactionID && !aiPlayerResourceNegotiationAllowed(gs, fid) {
+			continue
+		}
 		if overlord := diplomacy.DirectOverlord(gs, targetID); overlord != "" && overlord != fid {
 			continue
 		}
@@ -252,6 +256,13 @@ func aiHandleResourceNegotiationWithSteps(gs *state.GameState, fid faction.Facti
 		return true
 	}
 	return false
+}
+
+func aiPlayerResourceNegotiationAllowed(gs *state.GameState, fid faction.FactionID) bool {
+	if gs == nil || fid == "" || gs.PlayerFactionID == "" {
+		return false
+	}
+	return aiDecisionRoll(gs, fid, gs.PlayerFactionID, "resource_negotiation") < aiResourceNegotiationPlayerChancePercent
 }
 
 type aiStrategicTransferCandidate struct {

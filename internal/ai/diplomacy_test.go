@@ -99,6 +99,15 @@ func resourceNegotiationTestState(relationScore int) *state.GameState {
 
 func TestAIResourceNegotiationQueuesOfferForPlayer(t *testing.T) {
 	gs := resourceNegotiationTestState(20)
+	for seed := uint64(0); seed < 1000; seed++ {
+		gs.DecisionSeed = seed
+		if aiPlayerResourceNegotiationAllowed(gs, "actor") {
+			break
+		}
+	}
+	if !aiPlayerResourceNegotiationAllowed(gs, "actor") {
+		t.Fatal("oyuncuya kaynak pazarlığı için izin veren deterministik zar bulunamadı")
+	}
 	gs.MarketPrices = economy.CurrentMarketPrice{
 		economy.GoodGrain: 6,
 		economy.GoodIron:  10,
@@ -130,6 +139,33 @@ func TestAIResourceNegotiationQueuesOfferForPlayer(t *testing.T) {
 	}
 	if len(steps) != 1 || steps[0].Kind != TurnStepDiplomacy {
 		t.Fatalf("oyuncuya pazarlık turn step'i bildirilmedi: %+v", steps)
+	}
+}
+
+func TestAIResourceNegotiationSkipsPlayerForRareRoll(t *testing.T) {
+	gs := resourceNegotiationTestState(20)
+	gs.Factions["target"].IsEliminated = true
+	for seed := uint64(0); seed < 1000; seed++ {
+		gs.DecisionSeed = seed
+		if !aiPlayerResourceNegotiationAllowed(gs, "actor") {
+			break
+		}
+	}
+	if aiPlayerResourceNegotiationAllowed(gs, "actor") {
+		t.Fatal("oyuncuya kaynak pazarlığı için engelleyici deterministik zar bulunamadı")
+	}
+	gs.MarketPrices = economy.CurrentMarketPrice{
+		economy.GoodGrain: 6,
+		economy.GoodIron:  10,
+	}
+	gs.Factions["player"].Iron = 100
+	var steps []TurnStep
+
+	if aiHandleResourceNegotiationWithSteps(gs, "actor", economy.ResourceCost{Iron: 20}, &steps) {
+		t.Fatal("düşük olasılıklı oyuncu kaynak pazarlığı engellenmeliydi")
+	}
+	if len(gs.DiplomaticOffers) != 0 || len(steps) != 0 {
+		t.Fatalf("engellenen mal pazarlığı oyuncuya teklif olarak çıktı: offers=%+v steps=%+v", gs.DiplomaticOffers, steps)
 	}
 }
 

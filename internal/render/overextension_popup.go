@@ -28,7 +28,15 @@ func (r *Renderer) nearestEventHUDHovering(fx, fy float64) bool {
 		return false
 	}
 	_, ok := r.nearestEventCodexEntry()
-	return ok && topAlertEventRect(r.gs).Hit(fx, fy)
+	return ok && topAlertPlayerEventRect(r.gs).Hit(fx, fy)
+}
+
+func (r *Renderer) nearestGeneralEventHUDHovering(fx, fy float64) bool {
+	if r == nil || r.gs == nil || r.gs.PlayerFactionID == "" {
+		return false
+	}
+	_, ok := r.nearestGeneralEventCodexEntry()
+	return ok && topAlertGeneralEventRect(r.gs).Hit(fx, fy)
 }
 
 func overextensionPopupRect(mx, my float64) gameui.Rect {
@@ -101,6 +109,25 @@ func (r *Renderer) drawNearestEventPopup(screen *ebiten.Image) {
 	if !ok {
 		return
 	}
+	r.drawEventAlertPopup(screen, event)
+}
+
+func (r *Renderer) drawNearestGeneralEventPopup(screen *ebiten.Image) {
+	if r == nil {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	if !r.nearestGeneralEventHUDHovering(float64(mx), float64(my)) {
+		return
+	}
+	event, ok := r.nearestGeneralEventCodexEntry()
+	if !ok {
+		return
+	}
+	r.drawEventAlertPopup(screen, event)
+}
+
+func (r *Renderer) drawEventAlertPopup(screen *ebiten.Image, event EventCodexEntry) {
 	mx, my := ebiten.CursorPosition()
 	popup := eventAlertPopupRect(float64(mx), float64(my))
 	drawTooltipBox(screen, popup.X, popup.Y, popup.W, popup.H)

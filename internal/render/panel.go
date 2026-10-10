@@ -1139,7 +1139,7 @@ func DrawBottomPanel(screen *ebiten.Image, gs *state.GameState, selectedArmyID a
 // drawTopAlertHud, üst durum kartının altındaki ince uyarı panelini çizer.
 // Metin ve panel, ileride birden fazla uyarı eklendiğinde aynı yüzey altında
 // genişletilebilecek şekilde ayrı tutulur.
-func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent *EventCodexEntry) {
+func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent, nearestGeneralEvent *EventCodexEntry) {
 	alert := topAlertHudRect()
 	drawRoundedHUDFrame(screen, [4]float32{
 		float32(alert.X), float32(alert.Y), float32(alert.W), float32(alert.H),
@@ -1148,22 +1148,21 @@ func drawTopAlertHud(screen *ebiten.Image, gs *state.GameState, nearestEvent *Ev
 	textY := alert.Y + (alert.H-FaceSmall.Size)/2
 	overextension := topAlertOverextensionRect(gs)
 	DrawText(screen, text, overextension.X, textY, FaceSmall, textColor)
-	if nearestEvent == nil || nearestEvent.Title == "" {
+	drawTopAlertEvent(screen, topAlertPlayerEventRect(gs), nearestEvent, "Yaklaşan:", textY)
+	drawTopAlertEvent(screen, topAlertGeneralEventRect(gs), nearestGeneralEvent, "Genel:", textY)
+}
+
+func drawTopAlertEvent(screen *ebiten.Image, rect gameui.Rect, event *EventCodexEntry, label string, textY float64) {
+	if event == nil || event.Title == "" || rect.W <= 0 {
 		return
 	}
-	eventRect := topAlertEventRect(gs)
-	separatorX := eventRect.X
-	remaining := "(" + itoa(nearestEvent.TurnsUntil) + " tur)"
-	maxTitleW := eventRect.W - MeasureText("Yaklaşan: "+remaining, FaceSmall) - 4
+	remaining := "(" + itoa(event.TurnsUntil) + " tur)"
+	maxTitleW := rect.W - MeasureText(label+" "+remaining, FaceSmall) - 4
 	if maxTitleW <= 0 {
 		return
 	}
-	title := trimTextToWidth(nearestEvent.Title, FaceSmall, maxTitleW)
-	DrawText(screen, nearestEventHUDLabel(title, nearestEvent.TurnsUntil), separatorX, textY, FaceSmall, ColorGold)
-}
-
-func nearestEventHUDLabel(title string, turnsUntil int) string {
-	return "Yaklaşan: " + title + " (" + itoa(turnsUntil) + " tur)"
+	title := trimTextToWidth(event.Title, FaceSmall, maxTitleW)
+	DrawText(screen, label+" "+title+" "+remaining, rect.X, textY, FaceSmall, ColorGold)
 }
 
 func topAlertOverextensionRect(gs *state.GameState) gameui.Rect {
@@ -1177,16 +1176,26 @@ func topAlertOverextensionRect(gs *state.GameState) gameui.Rect {
 	}
 }
 
-func topAlertEventRect(gs *state.GameState) gameui.Rect {
+func topAlertEventRects(gs *state.GameState) (gameui.Rect, gameui.Rect) {
 	alert := topAlertHudRect()
 	overextension := topAlertOverextensionRect(gs)
 	x := overextension.X + overextension.W + 16
-	return gameui.Rect{
-		X: x,
-		Y: alert.Y,
-		W: max(0, alert.X+alert.W-10-x),
-		H: alert.H,
-	}
+	availableW := max(0, alert.X+alert.W-10-x)
+	gap := min(12.0, availableW)
+	playerW := max(0, (availableW-gap)/2)
+	player := gameui.Rect{X: x, Y: alert.Y, W: playerW, H: alert.H}
+	general := gameui.Rect{X: x + playerW + gap, Y: alert.Y, W: max(0, availableW-playerW-gap), H: alert.H}
+	return player, general
+}
+
+func topAlertPlayerEventRect(gs *state.GameState) gameui.Rect {
+	player, _ := topAlertEventRects(gs)
+	return player
+}
+
+func topAlertGeneralEventRect(gs *state.GameState) gameui.Rect {
+	_, general := topAlertEventRects(gs)
+	return general
 }
 
 // factionMilitaryPowerStanding seçili devletin askeri gücünü ve aktif devletler

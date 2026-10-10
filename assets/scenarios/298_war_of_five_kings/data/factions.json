@@ -549,12 +549,21 @@
     "is_eliminated": false,
     "capital_settlement_id": "castle_black_main",
     "gold": 2500,
-    "grain": 2200,
-    "iron": 120,
+    "other_income_periods": [
+      {
+        "start_year": 295,
+        "end_year": 310,
+        "end_month": 12,
+        "amount": 100,
+        "description": "Duvarı Koruma Geliri"
+      }
+    ],
+    "grain": 5200,
+    "iron": 320,
     "timber": 650,
     "stone": 600,
-    "spice": 10,
-    "cloth": 70,
+    "spice": 40,
+    "cloth": 150,
     "research": {
       "completed": {
         "castle_engineering": true,
@@ -581,6 +590,16 @@
       {
         "region_id": "the_wall_east",
         "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "brandon_gift",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "the_gift",
+        "value": 80,
         "core": true
       }
     ]
