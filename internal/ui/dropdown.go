@@ -26,6 +26,7 @@ type Dropdown struct {
 	open        bool
 	scroll      int
 	options     []string
+	disabled    []bool
 	selected    string
 	x, y, w, h  float64
 	title       string
@@ -52,8 +53,23 @@ func (d *Dropdown) SetPosition(x, y float64) { d.x, d.y = x, y }
 func (d *Dropdown) SetOptions(options []string, selected string) {
 	d.options = make([]string, len(options))
 	copy(d.options, options)
+	d.disabled = nil
 	d.selected = selected
 	d.scroll = 0
+}
+
+// SetDisabledOptions işaretlenen satırları görünür tutar, ancak devre dışı
+// olduklarını çizim ve seçim yapan bileşene bildirir.
+func (d *Dropdown) SetDisabledOptions(disabled []bool) {
+	if d == nil {
+		return
+	}
+	d.disabled = make([]bool, len(d.options))
+	copy(d.disabled, disabled)
+}
+
+func (d *Dropdown) OptionDisabled(index int) bool {
+	return d != nil && index >= 0 && index < len(d.disabled) && d.disabled[index]
 }
 
 func (d *Dropdown) Toggle() {
@@ -148,7 +164,9 @@ func DrawDropdown(screen *ebiten.Image, d *Dropdown, style DropdownStyle, text T
 		oy := rowY + float64(i)*d.rowH
 		bg := style.RowBG
 		txt := style.RowText
-		if option == d.selected {
+		if d.OptionDisabled(optionIndex) {
+			txt = style.MutedText
+		} else if option == d.selected {
 			bg = style.SelectedRowBG
 			txt = style.SelectedText
 		}

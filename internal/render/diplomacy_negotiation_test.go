@@ -111,3 +111,90 @@ func TestNegotiationArmyDropdownSelectsUnitTypeAndDefaultAmount(t *testing.T) {
 		t.Fatal("asker türü seçildikten sonra dropdown açık kaldı")
 	}
 }
+
+func TestNegotiationArmyDropdownShowsCommanderBoundTypesAsDisabled(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"army_free": {
+				ID:      "army_free",
+				OwnerID: "player",
+				Units:   []army.Unit{{TypeID: "archer"}},
+			},
+			"army_commanded": {
+				ID:        "army_commanded",
+				OwnerID:   "player",
+				Commander: &army.Commander{ID: "commander"},
+				Units:     []army.Unit{{TypeID: "cavalry"}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"archer":  {ID: "archer", NameTR: "Okçu"},
+			"cavalry": {ID: "cavalry", NameTR: "Akıncılar"},
+		},
+	}
+	side := &negotiationSideState{kind: negotiationKindArmy, amount: 1}
+	options := negotiationOptionsForSide(gs, "player", side, negotiationKindArmy)
+	if len(options) != 2 {
+		t.Fatalf("asker türü seçeneği sayısı = %d, want 2", len(options))
+	}
+	if options[0].id != "archer" || options[0].disabled {
+		t.Fatalf("aktarılabilir asker seçeneği hatalı: %+v", options[0])
+	}
+	if options[1].id != "cavalry" || !options[1].disabled || options[1].label != "Akıncılar (Komutana Bağlı)" {
+		t.Fatalf("komutana bağlı asker seçeneği pasif açıklamayla gösterilmedi: %+v", options[1])
+	}
+
+	panel := gameui.Rect{X: 10, Y: 20, W: 400, H: 500}
+	dropdown := negotiationOptionDropdown(gs, "player", side, panel)
+	if dropdown == nil || !dropdown.OptionDisabled(1) {
+		t.Fatal("komutana bağlı asker türü dropdown'da pasif değil")
+	}
+	dropdown.Toggle()
+	rect := negotiationOptionDropdownRect(panel)
+	input := gameui.InputState{
+		MouseX:          rect.X + 12,
+		MouseY:          rect.Y + 28 + 28 + 1,
+		LeftJustPressed: true,
+	}
+	if !handleNegotiationOptionDropdownInput(input, dropdown, gs, "player", side) {
+		t.Fatal("pasif satır tıklaması dropdown tarafından tüketilmedi")
+	}
+	if side.option != 0 || len(side.items) != 0 || !dropdown.IsOpen() {
+		t.Fatalf("pasif asker tipi seçilebilir hale geldi: option=%d items=%v open=%t", side.option, side.items, dropdown.IsOpen())
+	}
+
+	side.option = 1
+	addNegotiationItem(gs, "player", side)
+	if len(side.items) != 0 {
+		t.Fatalf("komutana bağlı asker kalemi pazarlığa eklendi: %+v", side.items)
+	}
+}
+
+func TestNegotiationArmyDropdownRemainsOpenableWhenOnlyCommanderBoundTypesExist(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"army_commanded": {
+				ID:        "army_commanded",
+				OwnerID:   "player",
+				Commander: &army.Commander{ID: "commander"},
+				Units:     []army.Unit{{TypeID: "cavalry"}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"cavalry": {ID: "cavalry", NameTR: "Akıncılar"},
+		},
+	}
+	side := &negotiationSideState{kind: negotiationKindArmy, amount: 1}
+	layout := negotiationSideLayout{
+		option: gameui.Button{Enabled: true},
+		add:    gameui.Button{Enabled: true},
+	}
+
+	configureNegotiationSideControls(gs, "player", side, &layout)
+	if !layout.option.Enabled || layout.add.Enabled {
+		t.Fatalf("yalnız komutanlı birlik varken seçim/ekleme durumu yanlış: option=%t add=%t", layout.option.Enabled, layout.add.Enabled)
+	}
+	if dropdown := negotiationOptionDropdown(gs, "player", side, gameui.Rect{X: 10, Y: 20, W: 400, H: 500}); dropdown == nil || len(dropdown.Options()) != 1 {
+		t.Fatal("yalnız komutanlı birlikler için açıklama dropdown'da gösterilmedi")
+	}
+}

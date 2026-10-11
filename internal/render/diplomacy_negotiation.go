@@ -45,6 +45,7 @@ type negotiationOption struct {
 	label    string
 	max      int
 	isRegion bool
+	disabled bool
 }
 
 type negotiationSideLayout struct {
@@ -157,13 +158,18 @@ func configureNegotiationSideControls(gs *state.GameState, owner faction.Faction
 		return
 	}
 	hasOptions := negotiationHasOptions(gs, owner, side.kind)
+	canAdd := hasOptions
 	if side.kind == negotiationKindRegion {
 		hasOptions = len(negotiationOptionsForSide(gs, owner, side, side.kind)) > 0
+		canAdd = hasOptions
+	} else if side.kind == negotiationKindArmy {
+		hasOptions = len(negotiationOptionsForSide(gs, owner, side, side.kind)) > 0
+		_, canAdd = negotiationCurrentOption(gs, owner, side)
 	}
 	layout.option.Enabled = hasOptions
-	layout.minus.Enabled = hasOptions && side.kind != negotiationKindRegion
-	layout.plus.Enabled = hasOptions && side.kind != negotiationKindRegion
-	layout.add.Enabled = hasOptions
+	layout.minus.Enabled = canAdd && side.kind != negotiationKindRegion
+	layout.plus.Enabled = canAdd && side.kind != negotiationKindRegion
+	layout.add.Enabled = canAdd && len(side.items) < 6
 }
 
 func negotiationSelectedItemHit(side *negotiationSideState, panel gameui.Rect, mx, my float64) bool {
@@ -209,7 +215,7 @@ func negotiationSidePointerHit(gs *state.GameState, owner faction.FactionID, sid
 		return true
 	}
 	if side != nil && side.optionDropdown != nil && side.optionDropdown.IsOpen() {
-		if _, ok := side.optionDropdown.GetSelectedOption(mx, my); ok {
+		if index, ok := side.optionDropdown.GetSelectedOption(mx, my); ok && !side.optionDropdown.OptionDisabled(index) {
 			return true
 		}
 	}
@@ -315,20 +321,46 @@ func negotiationOptions(gs *state.GameState, owner faction.FactionID, kind int) 
 		}
 	case negotiationKindArmy:
 		counts := make(map[string]int)
+		unavailableReasons := make(map[string]string)
 		for _, current := range gs.Armies {
-			if current == nil || current.OwnerID != string(owner) || current.IsNaval || current.Commander != nil || current.EmbarkedCommander != nil {
+			if current == nil || current.OwnerID != string(owner) {
 				continue
 			}
+			reason := ""
+			if current.Commander != nil || current.EmbarkedCommander != nil {
+				reason = "Komutana Bağlı"
+			} else if current.IsNaval {
+				reason = "Deniz Ordusunda"
+			}
 			for _, unit := range current.Units {
-				counts[unit.TypeID]++
+				if unit.TypeID == "" {
+					continue
+				}
+				if reason == "" {
+					counts[unit.TypeID]++
+				} else if reason == "Komutana Bağlı" || unavailableReasons[unit.TypeID] == "" {
+					unavailableReasons[unit.TypeID] = reason
+				}
 			}
 		}
-		for id, count := range counts {
+		ids := make(map[string]struct{}, len(counts)+len(unavailableReasons))
+		for id := range counts {
+			ids[id] = struct{}{}
+		}
+		for id := range unavailableReasons {
+			ids[id] = struct{}{}
+		}
+		for id := range ids {
 			label := id
 			if unitType := gs.UnitTypes[id]; unitType != nil && unitType.NameTR != "" {
 				label = unitType.NameTR
 			}
-			options = append(options, negotiationOption{id: id, label: label, max: count})
+			count := counts[id]
+			disabled := count == 0
+			if disabled {
+				label += " (" + unavailableReasons[id] + ")"
+			}
+			options = append(options, negotiationOption{id: id, label: label, max: count, disabled: disabled})
 		}
 		sort.Slice(options, func(i, j int) bool { return options[i].id < options[j].id })
 	}
@@ -368,6 +400,9 @@ func negotiationCurrentOption(gs *state.GameState, owner faction.FactionID, side
 		side.option = len(options) - 1
 	}
 	option := options[side.option]
+	if option.disabled {
+		return option, false
+	}
 	if side.amount <= 0 {
 		side.amount = negotiationDefaultAmount(side.kind, option.max)
 	}
@@ -404,10 +439,16 @@ func cycleNegotiationPicker(gs *state.GameState, owner faction.FactionID, side *
 			continue
 		}
 		side.option = 0
+		for i, option := range options {
+			if !option.disabled {
+				side.option = i
+				break
+			}
+		}
 		if side.optionDropdown != nil {
 			side.optionDropdown.Close()
 		}
-		side.amount = negotiationDefaultAmount(side.kind, options[0].max)
+		side.amount = negotiationDefaultAmount(side.kind, options[side.option].max)
 		return
 	}
 	side.option = 0
@@ -567,8 +608,10 @@ func negotiationOptionDropdown(gs *state.GameState, owner faction.FactionID, sid
 	}
 	options := negotiationOptionsForSide(gs, owner, side, side.kind)
 	labels := make([]string, 0, len(options))
-	for _, option := range options {
+	disabled := make([]bool, len(options))
+	for i, option := range options {
 		labels = append(labels, option.label)
+		disabled[i] = option.disabled
 	}
 	if len(labels) == 0 {
 		if side.optionDropdown != nil {
@@ -597,6 +640,7 @@ func negotiationOptionDropdown(gs *state.GameState, owner faction.FactionID, sid
 	side.optionDropdown.SetPosition(rect.X, rect.Y)
 	if !side.optionDropdown.IsOpen() {
 		side.optionDropdown.SetOptions(labels, selected)
+		side.optionDropdown.SetDisabledOptions(disabled)
 	}
 	return side.optionDropdown
 }
@@ -659,12 +703,12 @@ func drawNegotiationSide(screen *ebiten.Image, gs *state.GameState, layout negot
 	}
 	option, ok := negotiationCurrentOption(gs, owner, side)
 	kindLabel := negotiationKindLabel(side.kind)
-	if !ok {
+	if len(negotiationOptionsForSide(gs, owner, side, side.kind)) == 0 {
 		kindLabel += " (uygun kalem yok)"
 	}
 	layout.kind.Label = "Tür: " + kindLabel
 	layout.option.Label = "Seçim: " + option.label
-	if !ok {
+	if option.id == "" {
 		layout.option.Label = "Seçim: Yok"
 	}
 	layout.option.Label = trimTextToWidth(layout.option.Label, FaceSmall, layout.option.W-18)
@@ -718,6 +762,9 @@ func handleNegotiationOptionDropdownInput(input gameui.InputState, dropdown *gam
 		return dropdown.HitTest(input.MouseX, input.MouseY)
 	}
 	if index, ok := dropdown.GetSelectedOption(input.MouseX, input.MouseY); ok {
+		if dropdown.OptionDisabled(index) {
+			return true
+		}
 		options := negotiationOptionsForSide(gs, owner, side, side.kind)
 		if index >= len(options) {
 			dropdown.Close()
