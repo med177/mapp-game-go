@@ -27,7 +27,7 @@ type negotiationSideState struct {
 	kind           int
 	option         int
 	amount         int
-	regionDropdown *gameui.Dropdown
+	optionDropdown *gameui.Dropdown
 	selectedList   gameui.ListView
 	items          []state.DiplomaticTransfer
 }
@@ -157,6 +157,9 @@ func configureNegotiationSideControls(gs *state.GameState, owner faction.Faction
 		return
 	}
 	hasOptions := negotiationHasOptions(gs, owner, side.kind)
+	if side.kind == negotiationKindRegion {
+		hasOptions = len(negotiationOptionsForSide(gs, owner, side, side.kind)) > 0
+	}
 	layout.option.Enabled = hasOptions
 	layout.minus.Enabled = hasOptions && side.kind != negotiationKindRegion
 	layout.plus.Enabled = hasOptions && side.kind != negotiationKindRegion
@@ -205,8 +208,8 @@ func negotiationSidePointerHit(gs *state.GameState, owner faction.FactionID, sid
 		negotiationSelectedItemHit(side, layout.panel, mx, my) {
 		return true
 	}
-	if side != nil && side.regionDropdown != nil && side.regionDropdown.IsOpen() {
-		if _, ok := side.regionDropdown.GetSelectedOption(mx, my); ok {
+	if side != nil && side.optionDropdown != nil && side.optionDropdown.IsOpen() {
+		if _, ok := side.optionDropdown.GetSelectedOption(mx, my); ok {
 			return true
 		}
 	}
@@ -332,8 +335,29 @@ func negotiationOptions(gs *state.GameState, owner faction.FactionID, kind int) 
 	return options
 }
 
+func negotiationOptionsForSide(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, kind int) []negotiationOption {
+	options := negotiationOptions(gs, owner, kind)
+	if kind != negotiationKindRegion || side == nil || len(side.items) == 0 {
+		return options
+	}
+
+	selected := make(map[string]struct{}, len(side.items))
+	for _, item := range side.items {
+		if item.Kind == "region" {
+			selected[item.ID] = struct{}{}
+		}
+	}
+	available := options[:0]
+	for _, option := range options {
+		if _, exists := selected[option.id]; !exists {
+			available = append(available, option)
+		}
+	}
+	return available
+}
+
 func negotiationCurrentOption(gs *state.GameState, owner faction.FactionID, side *negotiationSideState) (negotiationOption, bool) {
-	options := negotiationOptions(gs, owner, side.kind)
+	options := negotiationOptionsForSide(gs, owner, side, side.kind)
 	if len(options) == 0 {
 		return negotiationOption{}, false
 	}
@@ -375,13 +399,13 @@ func cycleNegotiationPicker(gs *state.GameState, owner faction.FactionID, side *
 	}
 	for step := 0; step < 3; step++ {
 		side.kind = (side.kind + kindDelta + 3) % 3
-		options := negotiationOptions(gs, owner, side.kind)
+		options := negotiationOptionsForSide(gs, owner, side, side.kind)
 		if len(options) == 0 {
 			continue
 		}
 		side.option = 0
-		if side.regionDropdown != nil {
-			side.regionDropdown.Close()
+		if side.optionDropdown != nil {
+			side.optionDropdown.Close()
 		}
 		side.amount = negotiationDefaultAmount(side.kind, options[0].max)
 		return
@@ -394,7 +418,7 @@ func cycleNegotiationOption(gs *state.GameState, owner faction.FactionID, side *
 	if side == nil {
 		return
 	}
-	options := negotiationOptions(gs, owner, side.kind)
+	options := negotiationOptionsForSide(gs, owner, side, side.kind)
 	if len(options) == 0 {
 		return
 	}
@@ -513,7 +537,7 @@ func negotiationSelectedItemsList(gs *state.GameState, side *negotiationSideStat
 	return list
 }
 
-func negotiationRegionDropdownRect(panel gameui.Rect) gameui.Rect {
+func negotiationOptionDropdownRect(panel gameui.Rect) gameui.Rect {
 	topBound := panel.Y + 56
 	maxBottom := negotiationControlY(panel) - 8
 	availableH := maxBottom - topBound
@@ -533,16 +557,23 @@ func negotiationRegionDropdownRect(panel gameui.Rect) gameui.Rect {
 	}
 }
 
-func negotiationRegionDropdown(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, panel gameui.Rect) *gameui.Dropdown {
-	if gs == nil || side == nil {
+func negotiationUsesDropdown(kind int) bool {
+	return kind == negotiationKindRegion || kind == negotiationKindArmy
+}
+
+func negotiationOptionDropdown(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, panel gameui.Rect) *gameui.Dropdown {
+	if gs == nil || side == nil || !negotiationUsesDropdown(side.kind) {
 		return nil
 	}
-	options := negotiationOptions(gs, owner, negotiationKindRegion)
+	options := negotiationOptionsForSide(gs, owner, side, side.kind)
 	labels := make([]string, 0, len(options))
 	for _, option := range options {
 		labels = append(labels, option.label)
 	}
 	if len(labels) == 0 {
+		if side.optionDropdown != nil {
+			side.optionDropdown.Close()
+		}
 		return nil
 	}
 	if side.option < 0 {
@@ -555,19 +586,19 @@ func negotiationRegionDropdown(gs *state.GameState, owner faction.FactionID, sid
 	if side.option >= 0 && side.option < len(labels) {
 		selected = labels[side.option]
 	}
-	rect := negotiationRegionDropdownRect(panel)
+	rect := negotiationOptionDropdownRect(panel)
 	visibleRows := int((rect.H - 38) / 28)
 	if visibleRows < 1 {
 		visibleRows = 1
 	}
-	if side.regionDropdown == nil {
-		side.regionDropdown = gameui.NewDropdown(rect.X, rect.Y, rect.W, rect.H, "Bölgeler — seçmek için tıklayın", 28, 28, visibleRows)
+	if side.optionDropdown == nil {
+		side.optionDropdown = gameui.NewDropdown(rect.X, rect.Y, rect.W, rect.H, "Seçenek seçmek için tıklayın", 28, 28, visibleRows)
 	}
-	side.regionDropdown.SetPosition(rect.X, rect.Y)
-	if !side.regionDropdown.IsOpen() {
-		side.regionDropdown.SetOptions(labels, selected)
+	side.optionDropdown.SetPosition(rect.X, rect.Y)
+	if !side.optionDropdown.IsOpen() {
+		side.optionDropdown.SetOptions(labels, selected)
 	}
-	return side.regionDropdown
+	return side.optionDropdown
 }
 
 func negotiationRegionListStyle() gameui.ListViewStyle {
@@ -637,9 +668,9 @@ func drawNegotiationSide(screen *ebiten.Image, gs *state.GameState, layout negot
 		layout.option.Label = "Seçim: Yok"
 	}
 	layout.option.Label = trimTextToWidth(layout.option.Label, FaceSmall, layout.option.W-18)
-	var regionDropdown *gameui.Dropdown
-	if side.kind == negotiationKindRegion {
-		regionDropdown = negotiationRegionDropdown(gs, owner, side, layout.panel)
+	var optionDropdown *gameui.Dropdown
+	if negotiationUsesDropdown(side.kind) {
+		optionDropdown = negotiationOptionDropdown(gs, owner, side, layout.panel)
 	}
 	configureNegotiationSideControls(gs, owner, side, &layout)
 	layout.minus.Enabled = ok && !option.isRegion
@@ -655,8 +686,8 @@ func drawNegotiationSide(screen *ebiten.Image, gs *state.GameState, layout negot
 	drawUICardRect(screen, layout.amount, color.RGBA{31, 25, 17, 230}, color.RGBA{83, 67, 39, 210}, 1)
 	drawUILabel(screen, gameui.Rect{X: layout.amount.X, Y: layout.amount.Y + 9, W: layout.amount.W}, amountLabel, ColorWhite, gameui.TextSmall, gameui.TextAlignCenter)
 	drawUIButtonWidget(screen, layout.add, applyTinyButtonStyle)
-	if regionDropdown != nil && regionDropdown.IsOpen() {
-		gameui.DrawDropdown(screen, regionDropdown, dropdownStyle, renderText)
+	if optionDropdown != nil && optionDropdown.IsOpen() {
+		gameui.DrawDropdown(screen, optionDropdown, dropdownStyle, renderText)
 	}
 }
 
@@ -675,7 +706,7 @@ func (r *Renderer) drawDiplomacyNegotiation(screen *ebiten.Image) {
 	drawUIButtonWidget(screen, layout.cancel, solidButtonStyle(color.RGBA{78, 68, 56, 240}, color.RGBA{132, 114, 88, 255}, ColorWhite, 9))
 }
 
-func handleNegotiationRegionDropdownInput(input gameui.InputState, dropdown *gameui.Dropdown, side *negotiationSideState) bool {
+func handleNegotiationOptionDropdownInput(input gameui.InputState, dropdown *gameui.Dropdown, gs *state.GameState, owner faction.FactionID, side *negotiationSideState) bool {
 	if dropdown == nil || !dropdown.IsOpen() {
 		return false
 	}
@@ -687,8 +718,13 @@ func handleNegotiationRegionDropdownInput(input gameui.InputState, dropdown *gam
 		return dropdown.HitTest(input.MouseX, input.MouseY)
 	}
 	if index, ok := dropdown.GetSelectedOption(input.MouseX, input.MouseY); ok {
+		options := negotiationOptionsForSide(gs, owner, side, side.kind)
+		if index >= len(options) {
+			dropdown.Close()
+			return true
+		}
 		side.option = index
-		side.amount = 1
+		side.amount = negotiationDefaultAmount(side.kind, options[index].max)
 		dropdown.Close()
 		return true
 	}
@@ -718,12 +754,12 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 		WheelY:           wheelY,
 	}
 	if r.keyJustPressed(ebiten.KeyEscape) {
-		if r.negotiation.requested.regionDropdown != nil && r.negotiation.requested.regionDropdown.IsOpen() {
-			r.negotiation.requested.regionDropdown.Close()
+		if r.negotiation.requested.optionDropdown != nil && r.negotiation.requested.optionDropdown.IsOpen() {
+			r.negotiation.requested.optionDropdown.Close()
 			return InputAction{}
 		}
-		if r.negotiation.offered.regionDropdown != nil && r.negotiation.offered.regionDropdown.IsOpen() {
-			r.negotiation.offered.regionDropdown.Close()
+		if r.negotiation.offered.optionDropdown != nil && r.negotiation.offered.optionDropdown.IsOpen() {
+			r.negotiation.offered.optionDropdown.Close()
 			return InputAction{}
 		}
 		r.negotiation = negotiationPanelState{}
@@ -772,13 +808,13 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 			return InputAction{}
 		}
 	}
-	if r.negotiation.requested.kind == negotiationKindRegion {
-		if dropdown := negotiationRegionDropdown(r.gs, requestOwner, &r.negotiation.requested, layout.left.panel); handleNegotiationRegionDropdownInput(input, dropdown, &r.negotiation.requested) {
+	if negotiationUsesDropdown(r.negotiation.requested.kind) {
+		if dropdown := negotiationOptionDropdown(r.gs, requestOwner, &r.negotiation.requested, layout.left.panel); handleNegotiationOptionDropdownInput(input, dropdown, r.gs, requestOwner, &r.negotiation.requested) {
 			return InputAction{}
 		}
 	}
-	if r.negotiation.offered.kind == negotiationKindRegion {
-		if dropdown := negotiationRegionDropdown(r.gs, offerOwner, &r.negotiation.offered, layout.right.panel); handleNegotiationRegionDropdownInput(input, dropdown, &r.negotiation.offered) {
+	if negotiationUsesDropdown(r.negotiation.offered.kind) {
+		if dropdown := negotiationOptionDropdown(r.gs, offerOwner, &r.negotiation.offered, layout.right.panel); handleNegotiationOptionDropdownInput(input, dropdown, r.gs, offerOwner, &r.negotiation.offered) {
 			return InputAction{}
 		}
 	}
@@ -787,8 +823,8 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 		return InputAction{}
 	}
 	if layout.left.option.HandleInput(input) {
-		if r.negotiation.requested.kind == negotiationKindRegion {
-			if dropdown := negotiationRegionDropdown(r.gs, requestOwner, &r.negotiation.requested, layout.left.panel); dropdown != nil {
+		if negotiationUsesDropdown(r.negotiation.requested.kind) {
+			if dropdown := negotiationOptionDropdown(r.gs, requestOwner, &r.negotiation.requested, layout.left.panel); dropdown != nil {
 				dropdown.Toggle()
 			}
 		} else {
@@ -813,8 +849,8 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 		return InputAction{}
 	}
 	if layout.right.option.HandleInput(input) {
-		if r.negotiation.offered.kind == negotiationKindRegion {
-			if dropdown := negotiationRegionDropdown(r.gs, offerOwner, &r.negotiation.offered, layout.right.panel); dropdown != nil {
+		if negotiationUsesDropdown(r.negotiation.offered.kind) {
+			if dropdown := negotiationOptionDropdown(r.gs, offerOwner, &r.negotiation.offered, layout.right.panel); dropdown != nil {
 				dropdown.Toggle()
 			}
 		} else {

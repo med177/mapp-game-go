@@ -1,0 +1,113 @@
+package render
+
+import (
+	"testing"
+
+	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/state"
+	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/world"
+)
+
+func TestNegotiationRegionOptionsExcludeAddedItemsAndRestoreRemovedItems(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"region_a": {ID: "region_a", OwnerID: "player", NameTR: "Bölge A"},
+			"region_b": {ID: "region_b", OwnerID: "player", NameTR: "Bölge B"},
+			"region_c": {ID: "region_c", OwnerID: "player", NameTR: "Bölge C"},
+		},
+	}
+	side := &negotiationSideState{
+		items: []state.DiplomaticTransfer{{Kind: "region", ID: "region_b", Amount: 1}},
+	}
+
+	options := negotiationOptionsForSide(gs, faction.FactionID("player"), side, negotiationKindRegion)
+	if len(options) != 2 {
+		t.Fatalf("eklenmiş bölge çıkarılınca seçenek sayısı = %d, want 2", len(options))
+	}
+	for _, option := range options {
+		if option.id == "region_b" {
+			t.Fatal("eklenmiş bölge dropdown seçeneklerinde kaldı")
+		}
+	}
+
+	side.items = nil
+	options = negotiationOptionsForSide(gs, faction.FactionID("player"), side, negotiationKindRegion)
+	if len(options) != 3 {
+		t.Fatalf("kalem kaldırılınca seçenek sayısı = %d, want 3", len(options))
+	}
+	for _, option := range options {
+		if option.id == "region_b" {
+			return
+		}
+	}
+	t.Fatal("kaldırılan bölge dropdown seçeneklerine geri dönmedi")
+}
+
+func TestNegotiationRegionControlsDisableWhenAllRegionsAreAdded(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"region_a": {ID: "region_a", OwnerID: "player", NameTR: "Bölge A"},
+		},
+	}
+	side := &negotiationSideState{
+		kind:  negotiationKindRegion,
+		items: []state.DiplomaticTransfer{{Kind: "region", ID: "region_a", Amount: 1}},
+	}
+	layout := negotiationSideLayout{
+		option: gameui.NewButton(0, 0, 10, 10, "Seçim"),
+		add:    gameui.NewButton(0, 0, 10, 10, "Ekle"),
+	}
+
+	configureNegotiationSideControls(gs, faction.FactionID("player"), side, &layout)
+	if layout.option.Enabled || layout.add.Enabled {
+		t.Fatalf("bütün bölgeler ekliyken kontroller etkin: option=%t add=%t", layout.option.Enabled, layout.add.Enabled)
+	}
+}
+
+func TestNegotiationArmyDropdownSelectsUnitTypeAndDefaultAmount(t *testing.T) {
+	gs := &state.GameState{
+		Armies: map[army.ArmyID]*army.Army{
+			"army_a": {
+				ID:      "army_a",
+				OwnerID: "player",
+				Units: []army.Unit{
+					{TypeID: "archer"},
+					{TypeID: "swordsman"},
+					{TypeID: "swordsman"},
+				},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"archer":    {ID: "archer", NameTR: "Okçu"},
+			"swordsman": {ID: "swordsman", NameTR: "Kılıçlı"},
+		},
+	}
+	side := &negotiationSideState{kind: negotiationKindArmy, amount: 1}
+	panel := gameui.Rect{X: 10, Y: 20, W: 400, H: 500}
+	dropdown := negotiationOptionDropdown(gs, "player", side, panel)
+	if dropdown == nil {
+		t.Fatal("asker türleri dropdown'ı oluşturulmadı")
+	}
+	if got := dropdown.Options(); len(got) != 2 || got[0] != "Okçu" || got[1] != "Kılıçlı" {
+		t.Fatalf("asker türü seçenekleri = %v, want [Okçu Kılıçlı]", got)
+	}
+
+	dropdown.Toggle()
+	rect := negotiationOptionDropdownRect(panel)
+	input := gameui.InputState{
+		MouseX:          rect.X + 12,
+		MouseY:          rect.Y + 28 + 28 + 1,
+		LeftJustPressed: true,
+	}
+	if !handleNegotiationOptionDropdownInput(input, dropdown, gs, "player", side) {
+		t.Fatal("asker türü seçimi dropdown input'u tarafından işlenmedi")
+	}
+	if side.option != 1 || side.amount != 2 {
+		t.Fatalf("asker seçimi/miktarı = %d/%d, want 1/2", side.option, side.amount)
+	}
+	if dropdown.IsOpen() {
+		t.Fatal("asker türü seçildikten sonra dropdown açık kaldı")
+	}
+}

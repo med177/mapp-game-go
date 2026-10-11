@@ -149,12 +149,12 @@ func TestDiplomacyNegotiationCursorOnlyTargetsInteractiveControls(t *testing.T) 
 	assertPointer("Kapat düğmesi", layout.cancel.X+layout.cancel.W/2, layout.cancel.Y+layout.cancel.H/2, ebiten.CursorShapePointer)
 	assertPointer("Panel boş alanı", layout.left.panel.X+layout.left.panel.W/2, layout.left.panel.Y+layout.left.panel.H/2, ebiten.CursorShapeDefault)
 
-	dropdown := negotiationRegionDropdown(gs, "target", &r.negotiation.requested, layout.left.panel)
+	dropdown := negotiationOptionDropdown(gs, "target", &r.negotiation.requested, layout.left.panel)
 	if dropdown == nil {
 		t.Fatal("bölge dropdown'ı oluşturulmadı")
 	}
 	dropdown.Toggle()
-	listRect := negotiationRegionDropdownRect(layout.left.panel)
+	listRect := negotiationOptionDropdownRect(layout.left.panel)
 	assertPointer("Açık dropdown seçeneği", listRect.X+12, listRect.Y+34, ebiten.CursorShapePointer)
 
 	r.negotiation.requested.items = []state.DiplomaticTransfer{{Kind: "region", ID: string(targetRegion), Amount: 1}}
