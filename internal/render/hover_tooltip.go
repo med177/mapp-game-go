@@ -6,6 +6,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
+	"mapp-game-go/internal/combat"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
@@ -211,6 +212,138 @@ func drawHoverTooltipWithTab(screen *ebiten.Image, gs *state.GameState, rid worl
 			drawUnitTooltip(screen, gs, rid, uid, fx, fy)
 		}
 	}
+}
+
+func (r *Renderer) drawArmyPowerHoverTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || !r.showArmyDetailPanel || r.SelectedArmy == "" {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	embarked := r.SelectedEmbarkedArmyFleet != "" && r.SelectedEmbarkedArmyFleet == r.SelectedArmy
+	if !armyPanelPowerFooterHit(float64(mx), float64(my), r.gs, r.SelectedArmy, embarked) {
+		return
+	}
+	drawArmyPowerTooltip(screen, r.gs, r.SelectedArmy, embarked, float64(mx), float64(my))
+}
+
+func armyPanelCombatView(gs *state.GameState, a *army.Army, embarked bool) (army.Army, combat.BattleContext, bool, bool) {
+	if gs == nil || a == nil {
+		return army.Army{}, combat.BattleContextLand, false, false
+	}
+	view := *a
+	intelLimited := false
+	context := combat.BattleContextLand
+	if embarked {
+		if !a.IsTransportCarrier(gs.UnitTypes) || len(a.EmbarkedUnits) == 0 {
+			return army.Army{}, context, false, false
+		}
+		view.IsNaval = false
+		view.Units = a.EmbarkedUnits
+		view.EmbarkedUnits = nil
+		view.Commander = a.EmbarkedCommander
+		view.EmbarkedCommander = nil
+		context = combat.BattleContextAmphibious
+		return view, context, false, true
+	}
+	if a.IsNaval {
+		context = combat.BattleContextNaval
+	}
+	if playerCanSeeArmyDetails(gs, a) {
+		return view, context, false, true
+	}
+
+	fullIntel := playerHasRevealEnemyStrength(gs)
+	siegeIntel := enemyUnderPlayerSiege(gs, a)
+	if !fullIntel && !enemyArmyInPlayerMoveRange(gs, a) && !siegeIntel {
+		return army.Army{}, context, false, false
+	}
+	revealRatio := 0.50
+	if siegeIntel {
+		revealRatio = 0.75
+	}
+	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
+	view.Units = make([]army.Unit, 0, revealed)
+	for displayIndex := 0; displayIndex < revealed; displayIndex++ {
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+		if unitIndex < 0 {
+			break
+		}
+		view.Units = append(view.Units, a.Units[unitIndex])
+	}
+	// Düşman ordusunun toplam morali ve teknoloji bilgisi istihbaratla açılmıyorsa
+	// gizli state'i kullanma; görünür birlikleri nötr moral ile sınırla.
+	view.Morale = army.DefaultArmyMorale
+	intelLimited = true
+	return view, context, intelLimited, true
+}
+
+func drawArmyPowerTooltip(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID, embarked bool, mx, my float64) {
+	if gs == nil || aid == "" {
+		return
+	}
+	a := gs.Armies[aid]
+	view, context, intelLimited, ok := armyPanelCombatView(gs, a, embarked)
+	if !ok {
+		return
+	}
+
+	mods := combat.TechMods{}
+	if !intelLimited {
+		mods = combat.TechModsFor(gs, view.OwnerID)
+		if context == combat.BattleContextLand {
+			if region := gs.Regions[view.RegionID]; region != nil && !region.IsSea &&
+				gs.IsCoreRegion(faction.FactionID(view.OwnerID), region.ID) {
+				combat.ApplyCoreCombatBonuses(nil, &mods, false, true)
+			}
+		}
+	}
+	terrain := world.TerrainPlain
+	if region := gs.Regions[view.RegionID]; region != nil && !region.IsSea {
+		terrain = region.Terrain
+	}
+	attack := combat.ArmyStrengthBreakdown(&view, terrain, gs.UnitTypes, mods, context, combat.BattleStanceBalanced, true, false)
+	defense := combat.ArmyStrengthBreakdown(&view, terrain, gs.UnitTypes, mods, context, combat.BattleStanceBalanced, false, false)
+
+	const (
+		popupWidth  = 440.0
+		popupHeight = 226.0
+		pad         = 12.0
+	)
+	x, y, w, h := tooltipRect(mx, my, popupWidth, popupHeight)
+	drawTooltipBox(screen, x, y, w, h)
+	drawUILabel(screen, gameui.Rect{X: x + pad, Y: y + 8, W: w - pad*2, H: 20}, "Muharebe gücü hesabı", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: x + pad, Y: y + 31, W: w - pad*2, H: 18},
+		fmt.Sprintf("Birim tabanı (HP, deneyim ve ordu morali): %d", attack.BaseStrength), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	commanderText := fmt.Sprintf("Komutan: saldırı %s  •  savunma %s  •  moral %s",
+		combatPercent(attack.CommanderAttackModifier), combatPercent(defense.CommanderDefenseModifier), combatPercent(attack.CommanderMoraleModifier))
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + pad, Y: y + 50, W: w - pad*2, H: 30}, commanderText, color.RGBA{155, 215, 165, 255}, gameui.TextSmall, 15, 2)
+
+	attackFormula := fmt.Sprintf("Saldırı: taban × (1 + teknoloji %s + organizasyon %s + komutan %s + moral %s + duruş %s + core %s)",
+		combatPercent(attack.TechnologyModifier), combatPercent(attack.OrganizationModifier), combatPercent(attack.CommanderAttackModifier),
+		combatPercent(attack.CommanderMoraleModifier), combatPercent(attack.StanceModifier), combatPercent(attack.CoreModifier))
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + pad, Y: y + 82, W: w - pad*2, H: 34}, attackFormula, ColorGray, gameui.TextSmall, 15, 2)
+	drawUILabel(screen, gameui.Rect{X: x + pad, Y: y + 116, W: w - pad*2, H: 18},
+		fmt.Sprintf("Muharebede saldırı gücü: %.1f", attack.FinalStrength), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+
+	defenseFormula := fmt.Sprintf("Savunma: taban × arazi %.2f × (1 + teknoloji %s + organizasyon %s + komutan %s + moral %s + core %s)",
+		defense.TerrainMultiplier, combatPercent(defense.TechnologyModifier), combatPercent(defense.OrganizationModifier),
+		combatPercent(defense.CommanderDefenseModifier), combatPercent(defense.CommanderMoraleModifier), combatPercent(defense.CoreModifier))
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + pad, Y: y + 136, W: w - pad*2, H: 34}, defenseFormula, ColorGray, gameui.TextSmall, 15, 2)
+	drawUILabel(screen, gameui.Rect{X: x + pad, Y: y + 170, W: w - pad*2, H: 18},
+		fmt.Sprintf("Muharebede savunma gücü: %.1f", defense.FinalStrength), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+
+	note := "Dengeli duruş ve mevcut konum arazisi kullanıldı. Hedef arazi, core, temas ve seçilen duruş gerçek çatışma değerini değiştirebilir."
+	if context == combat.BattleContextAmphibious {
+		note = "Çıkarma bağlamı ve dengeli duruş kullanıldı. Hedef kıyı arazisi, core, temas ve seçilen duruş gerçek çatışma değerini değiştirebilir."
+	}
+	if intelLimited {
+		note = "Rakip hesabı yalnız görünen birlikleri kapsar; gizli birlik, teknoloji ve ordu morali gerçek çatışmada toplamı değiştirebilir."
+	}
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + pad, Y: y + 190, W: w - pad*2, H: h - 198}, note, color.RGBA{205, 180, 125, 255}, gameui.TextSmall, 15, 2)
+}
+
+func combatPercent(value float64) string {
+	return fmt.Sprintf("%+.0f%%", value*100)
 }
 
 type armyMergePreviewRow struct {

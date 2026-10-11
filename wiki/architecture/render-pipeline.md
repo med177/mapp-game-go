@@ -3,7 +3,7 @@ Not: Teknoloji panelinde aktif araştırma için `İptal Et • İade` düğmesi
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-10-01
+last_updated: 2026-10-12
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -897,7 +897,7 @@ Aktif kuşatmada harita ikonları kuşatan ordu karesi, aradaki yuvarlak kılı�
 
 Komutan portresi haritadaki deniz ikonlarında da gösterilir. Filo komutanı, filo komutanı yoksa taşınan kara komutanı kullanılır; nakliye filosundaki `EmbarkedUnits` rozeti varsa komutan portresi onun üstüne taşınarak iki rozetin çakışması önlenir (`internal/render/renderer.go`, `army_panel.go`).
 
-Ordu detay panelinin birim ızgarası altındaki sağ bilgi bandı seçili oyuncu ordusu için mevcut HP'ye göre `Güç: saldırı / savunma` değerini gösterir. Düşman ordularında aynı alan yalnız istihbaratla açılan birim tiplerinden hesaplanan `Görünen güç` değerini taşır; gizli birimlerin gücü toplama dahil edilmez (`internal/render/army_panel.go`).
+Ordu detay panelinin birim ızgarası altındaki sağ bilgi bandı seçili oyuncu ordusu için mevcut HP'ye göre `Güç: saldırı / savunma` değerini gösterir. Güç metninin hover alanı pointer cursor üretir ve tooltip içinde gerçek muharebe formülüyle hesaplanan saldırı/savunma breakdown'ını, komutan/teknoloji/organizasyon etkilerini gösterir; varsayılan olarak dengeli duruş ve mevcut arazi kullanılır, hedef bölge, core ve temas bonusları çarpışma bağlamında değişebilir. Düşman ordularında istihbaratla açılan kartlar da güncel HP oranını renkli can çubuğuyla gösterir; `Görünen güç` ve tooltip hesabı yalnız açığa çıkan birlikleri kullanır, gizli birlik, teknoloji ve ordu morali tam çatışma gücünü değiştirebilir (`internal/render/army_panel.go`, `hover_tooltip.go`, `internal/combat/combat.go`).
 
 Nakliye kapasitesi olan oyuncu filolarında aynı alt bilgi bandında güç değerinin solunda `Taşıma: dolu/kapasite` gösterilir. Doluluk `Army.EmbarkedCount()`, kapasite ise `Army.TransportCapacity()` üzerinden okunur; savaş ve merchant filolarında nakliye kapasitesi yoksa bu metin çizilmez (`internal/render/army_panel.go`, `internal/army/army.go`).
 

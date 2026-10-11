@@ -486,7 +486,7 @@ func (r *Renderer) inGameHovering(fx, fy float64) bool {
 	}
 	if r.showArmyDetailPanel && r.SelectedArmy != "" && ArmyPanelBoundsHit(fx, fy, r.gs, r.SelectedArmy) {
 		if r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
-			return buildArmyPanelCloseButton().HitTest(fx, fy)
+			return buildArmyPanelCloseButton().HitTest(fx, fy) || armyPanelPowerFooterHit(fx, fy, r.gs, r.SelectedArmy, true)
 		}
 		return ArmyPanelInteractiveHit(fx, fy, r.gs, r.SelectedArmy, r.splitSelectedUnits)
 	}

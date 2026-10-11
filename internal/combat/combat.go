@@ -64,6 +64,22 @@ type TechMods struct {
 	CoreDefenseMod      float64 // savunucunun kendi core bölgesindeki muharebe bonusu
 }
 
+// StrengthBreakdown tek bir ordunun muharebe gücünü oluşturan çarpanları taşır.
+// ArmyStrengthBreakdown gerçek savaş çözümlemesinin kullandığı formüle bağlıdır.
+type StrengthBreakdown struct {
+	BaseStrength             int
+	TechnologyModifier       float64
+	OrganizationModifier     float64
+	CommanderAttackModifier  float64
+	CommanderDefenseModifier float64
+	CommanderMoraleModifier  float64
+	StanceModifier           float64
+	CoreModifier             float64
+	TerrainMultiplier        float64
+	ContactMultiplier        float64
+	FinalStrength            float64
+}
+
 const (
 	CoreAttackBonus  = 0.05
 	CoreDefenseBonus = 0.10
@@ -393,37 +409,64 @@ func battleStrengths(atk, def *army.Army, terrain world.TerrainType, types map[s
 }
 
 func battleStrengthsWithContactDefense(atk, def *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, atkMods, defMods TechMods, context BattleContext, stance BattleStance, attackerHolding, defenderHolding bool) (float64, float64) {
-	atkAttackMod := atkMods.AttackMod
-	defDefenseMod := defMods.DefenseMod
-	commanderAttackMod, _ := atk.CommanderModifiers()
-	_, commanderDefenseMod := def.CommanderModifiers()
-	attackerMoraleMod := atk.CommanderMoraleModifier()
-	defenderMoraleMod := def.CommanderMoraleModifier()
-	if atk.IsNaval {
-		atkAttackMod = atkMods.NavalAttackMod
-		defDefenseMod = defMods.NavalDefenseMod
+	atkBreakdown := ArmyStrengthBreakdown(atk, world.TerrainPlain, types, atkMods, context, stance, true, attackerHolding)
+	defBreakdown := ArmyStrengthBreakdown(def, terrain, types, defMods, context, stance, false, defenderHolding)
+	return atkBreakdown.FinalStrength, defBreakdown.FinalStrength
+}
+
+// ArmyStrengthBreakdown saldıran ya da savunan rolündeki tek ordunun efektif
+// muharebe gücünü, savaş çözümlemesinde uygulanan çarpanları ayrı ayrı döndürür.
+// Böylece UI önizlemeleri ve gerçek çatışma aynı formül yolunu kullanır.
+func ArmyStrengthBreakdown(a *army.Army, terrain world.TerrainType, types map[string]*army.UnitType, mods TechMods, context BattleContext, stance BattleStance, attacker, holding bool) StrengthBreakdown {
+	if a == nil {
+		return StrengthBreakdown{TerrainMultiplier: 1, ContactMultiplier: 1, FinalStrength: 1}
+	}
+	context = NormalizeBattleContext(context)
+	stance = NormalizeBattleStance(stance)
+
+	attackCommander, defenseCommander := a.CommanderModifiers()
+	breakdown := StrengthBreakdown{
+		BaseStrength:             a.TotalStrength(types),
+		CommanderAttackModifier:  attackCommander,
+		CommanderDefenseModifier: defenseCommander,
+		CommanderMoraleModifier:  a.CommanderMoraleModifier(),
+		TerrainMultiplier:        1,
+		ContactMultiplier:        1,
+	}
+	if attacker {
+		breakdown.TechnologyModifier = mods.AttackMod
+		if a.IsNaval {
+			breakdown.TechnologyModifier = mods.NavalAttackMod
+		} else {
+			breakdown.OrganizationModifier = mods.LandOrganizationMod
+		}
+		breakdown.StanceModifier = battleStanceSpec(context, stance).AttackMod
+		breakdown.CoreModifier = mods.CoreAttackMod
+		modifier := breakdown.TechnologyModifier + breakdown.OrganizationModifier +
+			breakdown.CommanderAttackModifier + breakdown.CommanderMoraleModifier +
+			breakdown.StanceModifier + breakdown.CoreModifier
+		breakdown.FinalStrength = float64(breakdown.BaseStrength) * (1 + modifier)
 	} else {
-		atkAttackMod += atkMods.LandOrganizationMod
+		breakdown.TechnologyModifier = mods.DefenseMod
+		if a.IsNaval {
+			breakdown.TechnologyModifier = mods.NavalDefenseMod
+		} else {
+			breakdown.OrganizationModifier = mods.LandOrganizationMod
+		}
+		breakdown.CoreModifier = mods.CoreDefenseMod
+		breakdown.TerrainMultiplier = terrainBonus(terrain)
+		modifier := breakdown.TechnologyModifier + breakdown.OrganizationModifier +
+			breakdown.CommanderDefenseModifier + breakdown.CommanderMoraleModifier + breakdown.CoreModifier
+		breakdown.FinalStrength = float64(breakdown.BaseStrength) * breakdown.TerrainMultiplier * (1 + modifier)
 	}
-	if !def.IsNaval {
-		defDefenseMod += defMods.LandOrganizationMod
+	if holding {
+		breakdown.ContactMultiplier = 1 + ContactHoldDefenseBonus(context)
+		breakdown.FinalStrength *= breakdown.ContactMultiplier
 	}
-	cfg := battleStanceSpec(context, stance)
-	atkStr := float64(atk.TotalStrength(types)) * (1.0 + atkAttackMod + cfg.AttackMod + commanderAttackMod + attackerMoraleMod + atkMods.CoreAttackMod)
-	defStr := float64(def.TotalStrength(types)) * terrainBonus(terrain) * (1.0 + defDefenseMod + commanderDefenseMod + defenderMoraleMod + defMods.CoreDefenseMod)
-	if attackerHolding {
-		atkStr *= 1 + ContactHoldDefenseBonus(context)
+	if breakdown.FinalStrength < 1 {
+		breakdown.FinalStrength = 1
 	}
-	if defenderHolding {
-		defStr *= 1 + ContactHoldDefenseBonus(context)
-	}
-	if atkStr < 1 {
-		atkStr = 1
-	}
-	if defStr < 1 {
-		defStr = 1
-	}
-	return atkStr, defStr
+	return breakdown
 }
 
 // ContactHoldDefenseBonus, temas sırasında yerini koruyan tarafın muharebe

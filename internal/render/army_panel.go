@@ -650,9 +650,8 @@ func scoutedEnemyRevealCount(total int, fullIntel bool, revealRatio float64) int
 }
 
 // armyPanelStrength birimlerin panelde gösterilecek saldırı/savunma gücünü
-// hesaplar. Düşman ordusunda HP bilgisi istihbaratla açılmadığı için bu helper
-// kısmi istihbaratta birimleri tam HP kabul eder; böylece gizli hasar bilgisi
-// güç metninden sızmaz.
+// hesaplar. Düşman orduları için çağrılırken yalnızca istihbaratla görünen
+// birlikler toplama katılır; bu birliklerin güncel HP'si güçlerine yansır.
 func armyPanelStrength(units []army.Unit, unitTypes map[string]*army.UnitType, useCurrentHP bool) (attack, defense int) {
 	for _, unit := range units {
 		unitType := unitTypes[unit.TypeID]
@@ -689,7 +688,7 @@ func scoutedEnemyArmyStrength(gs *state.GameState, a *army.Army, fullIntel bool,
 		if unitIndex < 0 {
 			break
 		}
-		unitAttack, unitDefense := armyPanelStrength(a.Units[unitIndex:unitIndex+1], gs.UnitTypes, false)
+		unitAttack, unitDefense := armyPanelStrength(a.Units[unitIndex:unitIndex+1], gs.UnitTypes, true)
 		attack += unitAttack
 		defense += unitDefense
 	}
@@ -939,6 +938,63 @@ func drawEnemyArmyFooterText(screen *ebiten.Image, layout armyPanelLayout, leftT
 	drawArmyPanelFooterRight(screen, layout, rightText, color.RGBA{220, 190, 100, 235})
 }
 
+func armyPanelPowerFooterRect(gs *state.GameState, aid army.ArmyID, embarked bool) (gameui.Rect, bool) {
+	if gs == nil || aid == "" {
+		return gameui.Rect{}, false
+	}
+	a := gs.Armies[aid]
+	if a == nil {
+		return gameui.Rect{}, false
+	}
+	layout := armyPanelGeometry()
+	footerY := layout.panelY + layout.panelH - siegeFooterH
+	if embarked {
+		if !a.IsTransportCarrier(gs.UnitTypes) || len(a.EmbarkedUnits) == 0 || !playerCanSeeArmyDetails(gs, a) {
+			return gameui.Rect{}, false
+		}
+		displayArmy := *a
+		displayArmy.IsNaval = false
+		displayArmy.Units = a.EmbarkedUnits
+		displayArmy.EmbarkedUnits = nil
+		displayArmy.Commander = a.EmbarkedCommander
+		displayArmy.EmbarkedCommander = nil
+		text := "Güç: " + itoa(displayArmy.TotalStrength(gs.UnitTypes)) + " / " + itoa(displayArmy.TotalDefense(gs.UnitTypes))
+		footer := armyPanelFooterLayoutFor(nil, nil, layout)
+		footer.powerText = text
+		footer.recalculateRightAnchoredText()
+		return gameui.Rect{X: float64(footer.powerX), Y: float64(footerY), W: MeasureText(text, FaceSmall), H: float64(siegeFooterH)}, true
+	}
+
+	if playerCanSeeArmyDetails(gs, a) {
+		footer := armyPanelFooterLayoutFor(gs, a, layout)
+		text := "Güç: " + itoa(a.TotalStrength(gs.UnitTypes)) + " / " + itoa(a.TotalDefense(gs.UnitTypes))
+		footer.powerText = text
+		footer.transportText = armyTransportFooterText(gs, a)
+		footer.recalculateRightAnchoredText()
+		return gameui.Rect{X: float64(footer.powerX), Y: float64(footerY), W: MeasureText(text, FaceSmall), H: float64(siegeFooterH)}, true
+	}
+
+	fullIntel := playerHasRevealEnemyStrength(gs)
+	siegeIntel := enemyUnderPlayerSiege(gs, a)
+	if !fullIntel && !enemyArmyInPlayerMoveRange(gs, a) && !siegeIntel {
+		return gameui.Rect{}, false
+	}
+	revealRatio := 0.50
+	if siegeIntel {
+		revealRatio = 0.75
+	}
+	attack, defense := scoutedEnemyArmyStrength(gs, a, fullIntel, revealRatio)
+	text := "Görünen güç: " + itoa(attack) + " / " + itoa(defense)
+	textW := MeasureText(text, FaceSmall)
+	x := float64(layout.panelX+layout.panelW-2*armyPanelPadX) - textW
+	return gameui.Rect{X: x, Y: float64(footerY), W: textW, H: float64(siegeFooterH)}, true
+}
+
+func armyPanelPowerFooterHit(fx, fy float64, gs *state.GameState, aid army.ArmyID, embarked bool) bool {
+	rect, ok := armyPanelPowerFooterRect(gs, aid, embarked)
+	return ok && rect.Hit(fx, fy)
+}
+
 func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army.Army, fullIntel bool, revealRatio float64) {
 	ensureArmySprites()
 
@@ -1080,7 +1136,15 @@ func drawScoutedEnemyUnitCard(screen *ebiten.Image, gs *state.GameState, ownerID
 		float64(cx)+float64(cardW)/2,
 		float64(cy)+float64(cardH)-float64(unitCardNameOffset),
 		FaceSmall, color.RGBA{25, 25, 25, 235})
-	drawBar(screen, cx+1, cy+cardH-hpBarH-2, cardW-2, hpBarH-1, 1, color.RGBA{120, 110, 85, 210})
+
+	hpPct := u.HPPercent()
+	hpCol := color.RGBA{55, 195, 55, 255}
+	if hpPct <= 0.33 {
+		hpCol = color.RGBA{210, 55, 55, 255}
+	} else if hpPct <= 0.66 {
+		hpCol = color.RGBA{215, 175, 35, 255}
+	}
+	drawBar(screen, cx+1, cy+cardH-hpBarH-2, cardW-2, hpBarH-1, hpPct, hpCol)
 }
 
 const (
@@ -1539,6 +1603,9 @@ func armyPanelUnitHover(mx, my float64, gs *state.GameState, aid army.ArmyID) (a
 }
 
 func ArmyPanelInteractiveHit(fx, fy float64, gs *state.GameState, aid army.ArmyID, selectedUnitMaps ...map[int]bool) bool {
+	if armyPanelPowerFooterHit(fx, fy, gs, aid, false) {
+		return true
+	}
 	if buildArmyPanelCloseButton().HitTest(fx, fy) {
 		return true
 	}

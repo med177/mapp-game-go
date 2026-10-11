@@ -158,7 +158,13 @@ func (r *Renderer) uiLayerPointerAt(mx, my float64) bool {
 	case uiLayerRecruit:
 		return RecruitPanelInteractiveHit(mx, my, r.gs, r.SelectedRegion)
 	case uiLayerArmy:
-		return r.showArmyDetailPanel && r.SelectedArmy != "" && ArmyPanelInteractiveHit(mx, my, r.gs, r.SelectedArmy, r.splitSelectedUnits)
+		if !r.showArmyDetailPanel || r.SelectedArmy == "" {
+			return false
+		}
+		if r.SelectedEmbarkedArmyFleet != "" && r.SelectedEmbarkedArmyFleet == r.SelectedArmy {
+			return buildArmyPanelCloseButton().HitTest(mx, my) || armyPanelPowerFooterHit(mx, my, r.gs, r.SelectedArmy, true)
+		}
+		return ArmyPanelInteractiveHit(mx, my, r.gs, r.SelectedArmy, r.splitSelectedUnits)
 	case uiLayerSiege:
 		return r.selectedSiegePanelHovering(mx, my)
 	case uiLayerImperial:

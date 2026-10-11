@@ -2527,6 +2527,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 			r.drawArmyMarkerHoverTooltip(screen)
 		}
 		drawHoverTooltipWithTab(screen, r.gs, r.SelectedRegion, r.SelectedArmy, r.showRecruitPanel, r.regionPanelTab, r.armyPanelTooltipActive())
+		r.drawArmyPowerHoverTooltip(screen)
 		r.drawLandPassageHoverTooltip(screen)
 		r.drawArmyTaskStatusHoverTooltip(screen)
 		r.drawNavalMissionBonusHoverTooltip(screen)
