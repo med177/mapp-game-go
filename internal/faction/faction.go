@@ -67,8 +67,8 @@ type Faction struct {
 	// IsVirtual, isyan sırasında otomatik oluşturulan; diplomasi ve ticarete
 	// kapalı, yalnız askeri hedef olarak var olan sanal isyancı devleti işaretler.
 	IsVirtual bool `json:"is_virtual,omitempty"`
-	// DiplomacyDisabled, bu fraksiyonla normal diplomasi aksiyonlarını kapatır.
-	// Savaşlar da dahil olmak üzere ilişki değişiklikleri yalnız senaryo event'leriyle yapılabilir.
+	// DiplomacyDisabled, bu fraksiyonla normal diplomasi aksiyonlarını kapatır;
+	// senaryo event'leri bu kilidi oyun sırasında değiştirebilir.
 	DiplomacyDisabled bool `json:"diplomacy_disabled,omitempty"`
 	// TradeDisabled, fraksiyonun diğer fraksiyonlarla mal ve ticaret rotası
 	// işlemlerine kapalı olduğunu belirtir.

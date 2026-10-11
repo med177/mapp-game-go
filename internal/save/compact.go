@@ -58,6 +58,7 @@ type regionSaveState struct {
 
 type factionSaveState struct {
 	IsVirtual                  *bool                  `json:"v,omitempty"`
+	DiplomacyDisabled          *bool                  `json:"dd,omitempty"`
 	TradeDisabled              *bool                  `json:"td,omitempty"`
 	IsEliminated               *bool                  `json:"el,omitempty"`
 	OverlordID                 *faction.FactionID     `json:"ov,omitempty"`
@@ -201,6 +202,7 @@ type legacyRegionSaveState struct {
 
 type legacyFactionSaveState struct {
 	IsVirtual                  bool                  `json:"is_virtual,omitempty"`
+	DiplomacyDisabled          *bool                 `json:"diplomacy_disabled,omitempty"`
 	TradeDisabled              *bool                 `json:"trade_disabled,omitempty"`
 	IsEliminated               bool                  `json:"is_eliminated"`
 	OverlordID                 faction.FactionID     `json:"overlord_id,omitempty"`
@@ -374,6 +376,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		factionCopy := fx
 		savedFactions[fid] = factionSaveState{
 			IsVirtual:                  cloneBoolPtr(factionCopy.IsVirtual),
+			DiplomacyDisabled:          cloneOptionalBoolPtr(factionCopy.DiplomacyDisabled),
 			TradeDisabled:              cloneOptionalBoolPtr(factionCopy.TradeDisabled),
 			IsEliminated:               cloneBoolPtr(factionCopy.IsEliminated),
 			OverlordID:                 cloneFactionIDPtr(factionCopy.OverlordID),
@@ -630,6 +633,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		}
 		factions[fid] = legacyFactionSaveState{
 			IsVirtual:                  fx.IsVirtual,
+			DiplomacyDisabled:          cloneBoolPtr(fx.DiplomacyDisabled),
 			TradeDisabled:              cloneBoolPtr(fx.TradeDisabled),
 			IsEliminated:               fx.IsEliminated,
 			OverlordID:                 fx.OverlordID,
@@ -987,6 +991,9 @@ func makeFactionSaveState(current, base *faction.Faction) (factionSaveState, boo
 	if base == nil || current.IsVirtual != base.IsVirtual {
 		out.IsVirtual = cloneBoolPtr(current.IsVirtual)
 	}
+	if base == nil || current.DiplomacyDisabled != base.DiplomacyDisabled {
+		out.DiplomacyDisabled = cloneBoolPtr(current.DiplomacyDisabled)
+	}
 	if base == nil || current.TradeDisabled != base.TradeDisabled {
 		out.TradeDisabled = cloneBoolPtr(current.TradeDisabled)
 	}
@@ -1047,6 +1054,9 @@ func applyFactionSaveState(fx *faction.Faction, saved factionSaveState) {
 	}
 	if saved.IsVirtual != nil {
 		fx.IsVirtual = *saved.IsVirtual
+	}
+	if saved.DiplomacyDisabled != nil {
+		fx.DiplomacyDisabled = *saved.DiplomacyDisabled
 	}
 	if saved.TradeDisabled != nil {
 		fx.TradeDisabled = *saved.TradeDisabled
@@ -1993,6 +2003,7 @@ func isZeroRegionSaveState(saved regionSaveState) bool {
 
 func isZeroFactionSaveState(saved factionSaveState) bool {
 	return saved.IsVirtual == nil &&
+		saved.DiplomacyDisabled == nil &&
 		saved.TradeDisabled == nil &&
 		saved.IsEliminated == nil &&
 		saved.OverlordID == nil &&

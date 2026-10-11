@@ -124,6 +124,45 @@ func TestChoiceCanEnableFactionTrade(t *testing.T) {
 	}
 }
 
+func TestEventCanToggleFactionDiplomacyDisabled(t *testing.T) {
+	var enableDiplomacy Event
+	if err := json.Unmarshal([]byte(`{
+		"target":"specific_faction",
+		"affected_faction":"others",
+		"diplomacy_disabled":false
+	}`), &enableDiplomacy); err != nil {
+		t.Fatalf("event JSON'u çözülemedi: %v", err)
+	}
+	if enableDiplomacy.DiplomacyDisabled == nil || *enableDiplomacy.DiplomacyDisabled {
+		t.Fatal("event kökündeki diplomacy_disabled=false değeri korunmadı")
+	}
+
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"others": {ID: "others", DiplomacyDisabled: true},
+		},
+	}
+	Apply(gs, &enableDiplomacy)
+	if gs.Factions["others"].DiplomacyDisabled {
+		t.Fatal("event diplomacy_disabled=false değerini uygulamadı")
+	}
+
+	var disableDiplomacy Event
+	if err := json.Unmarshal([]byte(`{
+		"target":"specific_faction",
+		"affected_faction":"others",
+		"choices":[{"label_tr":"Kilitle","desc_tr":"","effect":{"diplomacy_disabled":true}}]
+	}`), &disableDiplomacy); err != nil {
+		t.Fatalf("choice event JSON'u çözülemedi: %v", err)
+	}
+	if _, ok := ApplyChoice(gs, &disableDiplomacy, 0); !ok {
+		t.Fatal("diplomasi kilidi choice etkisi uygulanmadı")
+	}
+	if !gs.Factions["others"].DiplomacyDisabled {
+		t.Fatal("choice etkisindeki diplomacy_disabled=true uygulanmadı")
+	}
+}
+
 func TestEventCanStartWarWithDiplomacyDisabledFaction(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

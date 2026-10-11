@@ -163,6 +163,7 @@ type Effect struct {
 	BuildingEfficiencyPercent int                          `json:"building_efficiency_percent,omitempty"`
 	CombatAttackPercent       int                          `json:"combat_attack_percent,omitempty"`
 	CombatDefensePercent      int                          `json:"combat_defense_percent,omitempty"`
+	DiplomacyDisabled         *bool                        `json:"diplomacy_disabled,omitempty"`
 	TradeDisabled             *bool                        `json:"trade_disabled,omitempty"`
 	AffectedFaction           string                       `json:"affected_faction,omitempty"`   // specific_faction için
 	RelationDeltaAll          int                          `json:"relation_delta_all,omitempty"` // etkilenen fraksiyonun tüm ilişkilerine uygulanır
@@ -223,6 +224,7 @@ type Event struct {
 	BuildingEfficiencyPercent int                          `json:"building_efficiency_percent,omitempty"`
 	CombatAttackPercent       int                          `json:"combat_attack_percent,omitempty"`
 	CombatDefensePercent      int                          `json:"combat_defense_percent,omitempty"`
+	DiplomacyDisabled         *bool                        `json:"diplomacy_disabled,omitempty"`
 	TradeDisabled             *bool                        `json:"trade_disabled,omitempty"`
 	RelationDeltaAll          int                          `json:"relation_delta_all,omitempty"`
 	CompleteTechs             []string                     `json:"complete_techs,omitempty"`
@@ -553,6 +555,7 @@ func (e *Event) BaseEffect() Effect {
 		BuildingEfficiencyPercent: e.BuildingEfficiencyPercent,
 		CombatAttackPercent:       e.CombatAttackPercent,
 		CombatDefensePercent:      e.CombatDefensePercent,
+		DiplomacyDisabled:         e.DiplomacyDisabled,
 		TradeDisabled:             e.TradeDisabled,
 		AffectedFaction:           e.AffectedFaction,
 		RelationDeltaAll:          e.RelationDeltaAll,
@@ -1644,6 +1647,9 @@ func applyToFaction(gs *state.GameState, fid string, eff Effect) {
 		f.Gold = max0(f.Gold + eff.GoldDelta)
 		f.OtherIncomeDelta += eff.OtherIncomeDelta
 		f.Grain = max0(f.Grain + eff.GrainDelta)
+		if eff.DiplomacyDisabled != nil {
+			f.DiplomacyDisabled = *eff.DiplomacyDisabled
+		}
 		if eff.TradeDisabled != nil {
 			f.TradeDisabled = *eff.TradeDisabled
 		}

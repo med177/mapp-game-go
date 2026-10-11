@@ -613,6 +613,10 @@ okunur; yeni kayıtlar `random_probability` yazar.
 boolean alanı hedef fraksiyonun ticaret kilidini değiştirir. `false`, ticareti
 açar; alanın bulunmaması mevcut durumu değiştirmez. Değişiklik kompakt ve debug
 kayıtlarında saklanır; eski kayıtlarda alan yoksa senaryo varsayılanı korunur.
+`diplomacy_disabled` da event veya choice etkisinde opsiyonel boolean olarak
+kullanılabilir. `true` normal diplomasi aksiyonlarını kapatır, `false` yeniden
+açar; bu değişiklik kompakt ve debug kaydında saklanır. Alan verilmezse mevcut
+değer korunur ve eski save'lerde senaryo varsayılanı geçerlidir.
 
 Yaklaşan olay HUD'unda `player_faction` ve oyuncunun `affected_faction` değeriyle
 eşleşen `specific_faction` event'leri `Özel` listesine alınır. `all_factions` ve
