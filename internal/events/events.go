@@ -744,10 +744,10 @@ func applyOneSuccessorRevival(gs *state.GameState, eff Effect, revival Successor
 		successor.TributeRate = 20
 		successor.TributeRateConfigured = true
 		if !revival.SuppressRelation {
-			diplomacy.ForceRelation(gs, overlordID, successorID, faction.StanceAllied, 50)
+			diplomacy.ForceEventRelation(gs, overlordID, successorID, faction.StanceAllied, 50)
 		}
 	} else if eff.AffectedFaction != "" && !revival.SuppressRelation {
-		diplomacy.ForceRelation(gs, faction.FactionID(eff.AffectedFaction), successorID, faction.StanceAllied, 50)
+		diplomacy.ForceEventRelation(gs, faction.FactionID(eff.AffectedFaction), successorID, faction.StanceAllied, 50)
 	}
 }
 
@@ -1495,7 +1495,7 @@ func applyVassalRevolts(gs *state.GameState, factionIDs []string) {
 		vassal.TributeRate = 0
 		vassal.TributeRateConfigured = false
 		if gs.Factions[overlordID] != nil {
-			diplomacy.ForceRelation(gs, vassalID, overlordID, faction.StanceWar, -100)
+			diplomacy.ForceEventRelation(gs, vassalID, overlordID, faction.StanceWar, -100)
 		}
 	}
 }
@@ -1546,7 +1546,7 @@ func applyDynasticSettlement(gs *state.GameState, settlement *DynasticSettlement
 	}
 
 	if stance := dynasticSettlementStance(settlement.RelationStance); stance != "" {
-		diplomacy.ForceRelation(gs, sourceID, recipientID, stance, settlement.RelationScoreDelta)
+		diplomacy.ForceEventRelation(gs, sourceID, recipientID, stance, settlement.RelationScoreDelta)
 	}
 
 	if !settlement.AutoUnionWhenSourceEmpty || len(gs.LandRegionsOwnedBy(sourceID)) != 0 {
@@ -1854,7 +1854,7 @@ func applyRelationEffects(gs *state.GameState, fid faction.FactionID, rels []Rel
 		case string(faction.StanceTrade):
 			stance = faction.StanceTrade
 		}
-		diplomacy.ForceRelation(gs, fid, faction.FactionID(rel.FactionID), stance, rel.ScoreDelta)
+		diplomacy.ForceEventRelation(gs, fid, faction.FactionID(rel.FactionID), stance, rel.ScoreDelta)
 	}
 }
 
@@ -1874,14 +1874,14 @@ func applyCoalition(gs *state.GameState, coalition *CoalitionEffect) {
 			if gs.Factions[right] == nil {
 				continue
 			}
-			diplomacy.ForceRelation(gs, left, right, memberStance, coalition.MemberScoreDelta)
+			diplomacy.ForceEventRelation(gs, left, right, memberStance, coalition.MemberScoreDelta)
 		}
 		for _, opponentID := range coalition.Opponents {
 			opponent := faction.FactionID(opponentID)
 			if gs.Factions[opponent] == nil {
 				continue
 			}
-			diplomacy.ForceRelation(gs, left, opponent, opponentStance, coalition.OpponentScoreDelta)
+			diplomacy.ForceEventRelation(gs, left, opponent, opponentStance, coalition.OpponentScoreDelta)
 		}
 	}
 }

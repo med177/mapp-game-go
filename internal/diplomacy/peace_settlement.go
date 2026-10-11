@@ -86,6 +86,9 @@ func ExecuteAIPeace(gs *state.GameState, proposer, responder faction.FactionID) 
 	if gs == nil || proposer == "" || responder == "" || proposer == responder {
 		return Result{Message: "Geçersiz barış hedefi."}
 	}
+	if hasDiplomacyDisabledFaction(gs, proposer, responder) {
+		return Result{Message: "Taraflardan biri diplomasiye kapalı."}
+	}
 	rel := Relation(gs, proposer, responder)
 	if rel == nil || rel.Stance != faction.StanceWar {
 		return Result{Message: "Barış teklifi sadece aktif savaşta uygulanır."}

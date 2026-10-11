@@ -313,6 +313,18 @@ func ActionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	return actionBlockReason(gs, actor, target, action, true)
 }
 
+func hasDiplomacyDisabledFaction(gs *state.GameState, factionIDs ...faction.FactionID) bool {
+	if gs == nil {
+		return false
+	}
+	for _, factionID := range factionIDs {
+		if f := gs.Factions[factionID]; f != nil && f.DiplomacyDisabled {
+			return true
+		}
+	}
+	return false
+}
+
 func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, action Action, checkQuota bool) string {
 	if gs == nil {
 		return "Diplomasi durumu yok."
@@ -327,6 +339,9 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 	}
 	if actorFaction.IsEliminated || targetFaction.IsEliminated {
 		return "Elenmiş fraksiyonlarla diplomasi kurulamaz."
+	}
+	if actorFaction.DiplomacyDisabled || targetFaction.DiplomacyDisabled {
+		return "Taraflardan biri diplomasiye kapalı."
 	}
 	if action == ActionDeclareWar && warDeclarationBlockedByScenario(gs, actor, target) {
 		return "Bu senaryoda büyük savaş dönemi henüz başlamadı."

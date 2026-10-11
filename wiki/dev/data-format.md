@@ -341,7 +341,11 @@ yerde taşır; bölgenin güncel sahibi dinamik hedef devlettir. Bu üretim yeni
 ve save/load base state'inde aynıdır;
 fetih sonrası mevcut sahiplik değişikliği core listesini geriye dönük değiştirmez.
 
-`trade_disabled` ve `war_fatigue_exempt` opsiyonel boolean alanlardır.
+`diplomacy_disabled`, `trade_disabled` ve `war_fatigue_exempt` opsiyonel boolean alanlardır.
+`diplomacy_disabled`, faction'ın taraf olduğu tüm normal diplomasi aksiyonlarını
+ve ticareti, ayrıca doğrudan savaş ilanını kapatır; bu faction'la savaş
+ilişkisi senaryo event etkileriyle kurulabilir. Bu faction barış öneremez veya
+AI barış teklifini kabul edemez; diğer ilişki türleri de açılamaz.
 `trade_disabled`, fraksiyonun ticaret işlemlerini kapatır. `war_fatigue_exempt`
 ise bu fraksiyonun taraf olduğu savaşları her iki tarafın memnuniyet savaş
 yorgunluğu cezası hesabından çıkarır; diğer savaşlar normal hesaplanır.

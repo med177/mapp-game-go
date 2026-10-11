@@ -40,6 +40,9 @@ func MinorPrivilegeOfferBlockReason(gs *state.GameState, actor, target faction.F
 	if from == nil || to == nil || from.IsEliminated || to.IsEliminated {
 		return "Elenmiş devletlere imtiyaz teklif edilemez."
 	}
+	if from.DiplomacyDisabled || to.DiplomacyDisabled {
+		return "Taraflardan biri diplomasiye kapalı."
+	}
 	if from.IsVirtual || to.IsVirtual {
 		return "Sanal devletlere imtiyaz teklif edilemez."
 	}
@@ -117,6 +120,9 @@ func RevokeMinorPrivilege(gs *state.GameState, actor faction.FactionID, rid worl
 	if operator == "" || operator == actor {
 		return Result{Message: "Bu bölgenin ayrı bir imtiyaz sahibi yok."}
 	}
+	if hasDiplomacyDisabledFaction(gs, actor, operator) {
+		return Result{Message: "Taraflardan biri diplomasiye kapalı."}
+	}
 
 	region.IsPrivileged = false
 	EnsurePrivilegedMinorTradeRoutes(gs)
@@ -155,6 +161,9 @@ func MinorPrivilegeOfferBlockReasonWithoutQueueChecks(gs *state.GameState, actor
 	to := gs.Factions[target]
 	if from == nil || to == nil || from.IsEliminated || to.IsEliminated || from.IsVirtual || to.IsVirtual {
 		return "İmtiyaz teklifi taraflarından biri artık geçerli değil."
+	}
+	if from.DiplomacyDisabled || to.DiplomacyDisabled {
+		return "Taraflardan biri diplomasiye kapalı."
 	}
 	region := gs.Regions[rid]
 	if region == nil || region.IsSea || !region.IsMinorRegion || region.IsPrivileged {

@@ -42,6 +42,9 @@ func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action 
 	if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
 		return false
 	}
+	if hasDiplomacyDisabledFaction(gs, from, to) {
+		return false
+	}
 	if to == gs.PlayerFactionID && IsRelationshipNotification(action) {
 		pending := 0
 		for _, offer := range gs.DiplomaticOffers {
@@ -103,6 +106,9 @@ func QueueWarJoinOffer(gs *state.GameState, caller, player, declarer, enemy fact
 	if callerFaction == nil || playerFaction == nil || callerFaction.IsEliminated || playerFaction.IsEliminated {
 		return false
 	}
+	if hasDiplomacyDisabledFaction(gs, caller, player) {
+		return false
+	}
 	if alreadyAtWar(gs, player, enemy) {
 		return false
 	}
@@ -154,6 +160,9 @@ func queueSiegeSettlementOffer(gs *state.GameState, from, to faction.FactionID, 
 	fromFaction := gs.Factions[from]
 	toFaction := gs.Factions[to]
 	if fromFaction == nil || toFaction == nil || fromFaction.IsEliminated || toFaction.IsEliminated {
+		return false
+	}
+	if hasDiplomacyDisabledFaction(gs, from, to) {
 		return false
 	}
 	target := gs.Regions[regionID]
@@ -259,6 +268,9 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 	}
 	offer := gs.DiplomaticOffers[index]
 	gs.DiplomaticOffers = append(gs.DiplomaticOffers[:index], gs.DiplomaticOffers[index+1:]...)
+	if hasDiplomacyDisabledFaction(gs, offer.FromFactionID, offer.ToFactionID) {
+		return Result{Message: "Taraflardan biri diplomasiye kapalı."}
+	}
 
 	action := Action(offer.Action)
 	if action == ActionJoinWarCall {
@@ -332,7 +344,8 @@ func offerPartiesExist(gs *state.GameState, offer state.DiplomaticOffer) bool {
 	}
 	from := gs.Factions[offer.FromFactionID]
 	to := gs.Factions[offer.ToFactionID]
-	return from != nil && to != nil && !from.IsEliminated && !to.IsEliminated
+	return from != nil && to != nil && !from.IsEliminated && !to.IsEliminated &&
+		!from.DiplomacyDisabled && !to.DiplomacyDisabled
 }
 
 // resolveAcceptedTradeOffer, AI'nin teklif kuyruğuna eklediği ve oyuncunun

@@ -428,6 +428,25 @@ func ForceRelation(gs *state.GameState, a, b faction.FactionID, stance faction.D
 	if gs == nil || a == "" || b == "" || a == b {
 		return
 	}
+	if hasDiplomacyDisabledFaction(gs, a, b) {
+		return
+	}
+	forceRelation(gs, a, b, stance, scoreDelta)
+}
+
+// ForceEventRelation, senaryo event'lerinin ilişki etkilerini uygular.
+// Diplomasiye kapalı faction'lar için yalnızca event kaynaklı savaş kurulabilir.
+func ForceEventRelation(gs *state.GameState, a, b faction.FactionID, stance faction.DiplomaticStance, scoreDelta int) {
+	if gs == nil || a == "" || b == "" || a == b {
+		return
+	}
+	if hasDiplomacyDisabledFaction(gs, a, b) && stance != faction.StanceWar {
+		return
+	}
+	forceRelation(gs, a, b, stance, scoreDelta)
+}
+
+func forceRelation(gs *state.GameState, a, b faction.FactionID, stance faction.DiplomaticStance, scoreDelta int) {
 	rel := EnsureRelation(gs, a, b)
 	prevStance := rel.Stance
 	AddRelationScoreBoth(gs, a, b, scoreDelta)

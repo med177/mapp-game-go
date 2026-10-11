@@ -560,9 +560,9 @@
     "other_income_periods": [
       {
         "start_year": 295,
-        "end_year": 310,
+        "end_year": 320,
         "end_month": 12,
-        "amount": 100,
+        "amount": 300,
         "description": "Duvarı Koruma Geliri"
       }
     ],
@@ -806,6 +806,7 @@
     ],
     "is_playable": false,
     "is_eliminated": false,
+    "diplomacy_disabled": true,
     "trade_disabled": true,
     "war_fatigue_exempt": true,
     "capital_settlement_id": "always_winter_main",

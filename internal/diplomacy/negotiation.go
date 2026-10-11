@@ -28,6 +28,9 @@ func QueueTransferOffer(gs *state.GameState, from, to faction.FactionID, request
 	if gs.Factions[from] == nil || gs.Factions[to] == nil || gs.Factions[from].IsEliminated || gs.Factions[to].IsEliminated {
 		return false
 	}
+	if hasDiplomacyDisabledFaction(gs, from, to) {
+		return false
+	}
 	if rel := Relation(gs, from, to); rel != nil && rel.Stance == faction.StanceWar {
 		return false
 	}

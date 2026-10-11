@@ -132,6 +132,59 @@ func TestDeclareWarOnVassalDoesNotRequireOverlordDiplomacy(t *testing.T) {
 	}
 }
 
+func TestDiplomacyDisabledFactionCannotUseNormalDiplomacyActions(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ordinary": {ID: "ordinary", NameTR: "Normal Devlet"},
+			"locked":   {ID: "locked", NameTR: "Diplomasiye Kapalı", DiplomacyDisabled: true},
+		},
+	}
+	actions := []Action{
+		ActionDeclareWar, ActionJoinWarCall, ActionProposePeace, ActionProposeAlliance,
+		ActionProposeTrade, ActionProposeSurrender, ActionProposeSiegeVassalization,
+		ActionCancelAlliance, ActionCancelTrade, ActionImproveRelations, ActionSendGift,
+		ActionInciteRevolt, ActionOfferMinorPrivilege, ActionOfferVassalization,
+		ActionProposeTransfer, ActionReleaseVassal, ActionAnnexVassal,
+	}
+	for _, action := range actions {
+		for _, pair := range [][2]faction.FactionID{{"ordinary", "locked"}, {"locked", "ordinary"}} {
+			reason := ActionBlockReason(gs, pair[0], pair[1], action)
+			if !strings.Contains(reason, "diplomasiye kapalı") {
+				t.Errorf("%s action %v yönünde engellenmedi: %q", action, pair, reason)
+			}
+		}
+	}
+
+	result := Execute(gs, "ordinary", "locked", ActionDeclareWar)
+	if result.Applied || Relation(gs, "ordinary", "locked") != nil {
+		t.Fatalf("normal savaş ilanı diplomasi kilidini aştı: result=%+v relation=%+v", result, Relation(gs, "ordinary", "locked"))
+	}
+	ForceRelation(gs, "ordinary", "locked", faction.StanceAllied, 50)
+	ForceRelation(gs, "ordinary", "locked", faction.StanceWar, -100)
+	if Relation(gs, "ordinary", "locked") != nil {
+		t.Fatal("diplomasiye kapalı faction için doğrudan ilişki kuruldu")
+	}
+}
+
+func TestDiplomacyDisabledFactionCannotQueueNormalOffers(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"caller": {ID: "caller"},
+			"locked": {ID: "locked", DiplomacyDisabled: true},
+			"enemy":  {ID: "enemy"},
+		},
+	}
+	if QueueOffer(gs, "caller", "locked", ActionProposePeace) {
+		t.Fatal("diplomasiye kapalı faction için normal teklif kuyruğa alındı")
+	}
+	if QueueTransferOffer(gs, "caller", "locked", nil, nil, 1, "test") {
+		t.Fatal("diplomasiye kapalı faction için pazarlık kuyruğa alındı")
+	}
+	if QueueWarJoinOffer(gs, "caller", "locked", "caller", "enemy", "test") {
+		t.Fatal("diplomasiye kapalı faction için savaşa katılım teklifi kuyruğa alındı")
+	}
+}
+
 func TestDeclareWarRequiresScenarioEventFlag(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

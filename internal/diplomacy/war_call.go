@@ -277,7 +277,7 @@ func directExternalAlliesOf(gs *state.GameState, fid faction.FactionID) []factio
 	}
 	allies := make([]faction.FactionID, 0, 6)
 	for otherID, other := range gs.Factions {
-		if other == nil || other.IsEliminated || otherID == fid || sameRealm(gs, fid, otherID) {
+		if other == nil || other.IsEliminated || other.DiplomacyDisabled || otherID == fid || sameRealm(gs, fid, otherID) {
 			continue
 		}
 		if rel := Relation(gs, fid, otherID); rel != nil && rel.Stance == faction.StanceAllied {

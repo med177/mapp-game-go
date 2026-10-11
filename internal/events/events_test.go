@@ -124,6 +124,41 @@ func TestChoiceCanEnableFactionTrade(t *testing.T) {
 	}
 }
 
+func TestEventCanStartWarWithDiplomacyDisabledFaction(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"others":       {ID: "others", DiplomacyDisabled: true},
+			"nights_watch": {ID: "nights_watch"},
+		},
+	}
+	e := &Event{Choices: []Choice{
+		{Effect: Effect{
+			Target:          "specific_faction",
+			AffectedFaction: "others",
+			Relations:       []RelationEffect{{FactionID: "nights_watch", Stance: string(faction.StanceWar)}},
+		}},
+		{Effect: Effect{
+			Target:          "specific_faction",
+			AffectedFaction: "others",
+			Relations:       []RelationEffect{{FactionID: "stark", Stance: string(faction.StanceAllied)}},
+		}},
+	}}
+
+	if _, ok := ApplyChoice(gs, e, 0); !ok {
+		t.Fatal("event seçimi uygulanmadı")
+	}
+	relation := gs.Relations[faction.RelationKey("others", "nights_watch")]
+	if relation == nil || relation.Stance != faction.StanceWar {
+		t.Fatalf("event üzerinden savaş ilişkisi kurulmadı: %+v", relation)
+	}
+	if _, ok := ApplyChoice(gs, e, 1); !ok {
+		t.Fatal("ikinci event seçimi uygulanmadı")
+	}
+	if relation := gs.Relations[faction.RelationKey("others", "stark")]; relation != nil {
+		t.Fatalf("event üzerinden diplomasiye kapalı faction için ittifak ilişkisi kuruldu: %+v", relation)
+	}
+}
+
 func TestVictoryConditionsRequireKeyRegionsAndMinimumOwnership(t *testing.T) {
 	gs := &state.GameState{
 		FiredEventIDs: map[string]bool{

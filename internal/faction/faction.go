@@ -67,6 +67,9 @@ type Faction struct {
 	// IsVirtual, isyan sırasında otomatik oluşturulan; diplomasi ve ticarete
 	// kapalı, yalnız askeri hedef olarak var olan sanal isyancı devleti işaretler.
 	IsVirtual bool `json:"is_virtual,omitempty"`
+	// DiplomacyDisabled, bu fraksiyonla normal diplomasi aksiyonlarını kapatır.
+	// Savaşlar da dahil olmak üzere ilişki değişiklikleri yalnız senaryo event'leriyle yapılabilir.
+	DiplomacyDisabled bool `json:"diplomacy_disabled,omitempty"`
 	// TradeDisabled, fraksiyonun diğer fraksiyonlarla mal ve ticaret rotası
 	// işlemlerine kapalı olduğunu belirtir.
 	TradeDisabled bool `json:"trade_disabled,omitempty"`
@@ -115,7 +118,7 @@ type Faction struct {
 
 // CanTrade, fraksiyonun ticaret işlemlerine açık olup olmadığını döner.
 func (f *Faction) CanTrade() bool {
-	return f != nil && !f.IsEliminated && !f.IsVirtual && !f.TradeDisabled
+	return f != nil && !f.IsEliminated && !f.IsVirtual && !f.DiplomacyDisabled && !f.TradeDisabled
 }
 
 // OtherIncomePeriodAt, verilen tarihte geçerli olan gelir aralığını döner.

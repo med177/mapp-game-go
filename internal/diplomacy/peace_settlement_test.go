@@ -62,3 +62,20 @@ func TestCanImposeVassalageRejectsLoserWithMoreThanThreeRegions(t *testing.T) {
 		t.Fatal("dört bölgeli devlet AI-AI barışında vassal olmayı kabul etti")
 	}
 }
+
+func TestDiplomacyDisabledFactionCannotProposeOrAcceptAIPeace(t *testing.T) {
+	gs := newPeaceSettlementTestState()
+	gs.Factions["others"] = &faction.Faction{ID: "others", DiplomacyDisabled: true}
+	gs.Relations = map[string]*faction.Relation{
+		faction.RelationKey("others", "naples"): {
+			FactionA: "others", FactionB: "naples", Stance: faction.StanceWar,
+		},
+	}
+
+	for _, pair := range [][2]faction.FactionID{{"others", "naples"}, {"naples", "others"}} {
+		result := ExecuteAIPeace(gs, pair[0], pair[1])
+		if result.Applied || Relation(gs, pair[0], pair[1]).Stance != faction.StanceWar {
+			t.Errorf("diplomasi kilitli faction için AI barışı uygulandı (%s -> %s): %+v", pair[0], pair[1], result)
+		}
+	}
+}
