@@ -6063,8 +6063,42 @@ func (g *Game) showPendingCaptiveReleaseNotification() {
 }
 
 const (
-	liberatedMilitiaCount = 5
+	liberatedArmyUnitCount = 5
 )
+
+// successorStartingUnitType, ardıl devletin kuruluş bölgesinde üretebildiği
+// ilk kara muharebe birimini senaryo tanım sırasına göre seçer. Milis, deniz
+// birlikleri ve henüz teknoloji/bina şartları karşılanmayan birimler atlanır.
+func successorStartingUnitType(gs *state.GameState, region *world.Region, successor *faction.Faction) string {
+	if gs == nil || region == nil || successor == nil {
+		return "militia"
+	}
+	order := gs.UnitTypeOrder
+	if len(order) == 0 {
+		order = make([]string, 0, len(gs.UnitTypes))
+		for unitTypeID := range gs.UnitTypes {
+			order = append(order, unitTypeID)
+		}
+		sort.Strings(order)
+	}
+	buildingLevels := region.BuildingLevels()
+	for _, unitTypeID := range order {
+		if unitTypeID == "militia" {
+			continue
+		}
+		unitType := gs.UnitTypes[unitTypeID]
+		if unitType == nil || !unitType.IsAvailableToFaction(string(successor.ID)) ||
+			!unitType.HasAllRequiredTechs(successor.Research.Completed) ||
+			!unitType.HasBuildingRequirements(buildingLevels) {
+			continue
+		}
+		switch unitType.Category {
+		case army.CategoryInfantry, army.CategoryCavalry, army.CategorySiege, army.CategoryDragon, army.CategoryAirborne:
+			return unitTypeID
+		}
+	}
+	return "militia"
+}
 
 // reviveSuccessorAtRegion, savaş sonrası ardıl devlet kararında elenmiş bir
 // fraksiyonu yeniden oyuna sokar. Aktif veya mevcut toprağı olan ardıllar
@@ -6098,7 +6132,7 @@ func (g *Game) reviveSuccessorAtRegion(regionID world.RegionID, successorID fact
 		ID:            armyID,
 		OwnerID:       string(successorID),
 		RegionID:      regionID,
-		Units:         army.MakeUnits("militia", liberatedMilitiaCount),
+		Units:         army.MakeUnits(successorStartingUnitType(g.gs, g.gs.Regions[regionID], successor), liberatedArmyUnitCount),
 		MaxMovePoints: army.DefaultArmyMovePoints,
 		MovePoints:    army.DefaultArmyMovePoints,
 	}
@@ -6153,7 +6187,7 @@ func (g *Game) liberateSuccessor(regionID world.RegionID) {
 		ID:            armyID,
 		OwnerID:       string(successorID),
 		RegionID:      regionID,
-		Units:         army.MakeUnits("militia", liberatedMilitiaCount),
+		Units:         army.MakeUnits(successorStartingUnitType(g.gs, region, successor), liberatedArmyUnitCount),
 		IsNaval:       false,
 		IsGarrison:    false,
 		MaxMovePoints: army.DefaultArmyMovePoints,
@@ -6177,7 +6211,16 @@ func (g *Game) liberateSuccessor(regionID world.RegionID) {
 		if name == "" {
 			name = string(successorID)
 		}
-		message := fmt.Sprintf("%s yeniden kuruldu: %s bölgesi özgürleştirildi, 5 milis göreve başladı.", name, region.NameTR)
+		unitTypeID := successorStartingUnitType(g.gs, region, successor)
+		unitName := unitTypeID
+		if unitType := g.gs.UnitTypes[unitTypeID]; unitType != nil {
+			if unitType.NameTR != "" {
+				unitName = unitType.NameTR
+			} else if unitType.Name != "" {
+				unitName = unitType.Name
+			}
+		}
+		message := fmt.Sprintf("%s yeniden kuruldu: %s bölgesi özgürleştirildi, %d adet %s göreve başladı.", name, region.NameTR, liberatedArmyUnitCount, unitName)
 		g.renderer.ShowCombatResult(message)
 		g.renderer.AddEventDetail("[ÖZGÜRLÜK] "+message, fmt.Sprintf("%s devleti yeniden oyuna döndü ve özgürleştiren devletle müttefik oldu.", name))
 		g.renderer.MarkMapDirty()

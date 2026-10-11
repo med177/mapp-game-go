@@ -7,10 +7,7 @@
 *.dylib
 *.zip
 *.tar.gz
-game
-!internal/game/
-internal/game/*
-!internal/game/headless_report.go
+/game
 
 # Test binary, built with `go test -c`
 *.test
