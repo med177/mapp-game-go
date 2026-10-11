@@ -5,6 +5,11 @@ last_updated: 2026-10-10
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-11: 298 senaryosunda Akgezenlerin başlangıç savaşları barışa alındı;
+  diğer faction'larla savaş ilanları 60 tur ve `others_awaken_300` event'ine
+  kadar engellendi. Uyanış event'i ana hedefleri yeniden savaşa sokuyor.
+  `assets/scenarios/298_war_of_five_kings/data/{relations,scenario}.json`.
+
 - 2026-10-10: 298 senaryosunda Robert'ın ölüm event'inin her claimant seçeneğinde
   `robert_dead` ve `war_of_five_kings_active` flag'lerini set etmesi sağlandı.
   Renly'nin 299/05 ölümü artık Robb'un bağımsızlık seçimine veya Stormsend'in

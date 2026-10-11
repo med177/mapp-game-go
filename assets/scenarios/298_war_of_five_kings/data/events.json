@@ -4004,7 +4004,19 @@
         "faction_id": "stark",
         "stance": "war",
         "score_delta": -70
-      }
+      },
+      { "faction_id": "lannister", "stance": "war", "score_delta": -100 },
+      { "faction_id": "baratheon_king", "stance": "war", "score_delta": -100 },
+      { "faction_id": "baratheon_dragonstone", "stance": "war", "score_delta": -100 },
+      { "faction_id": "baratheon_stormsend", "stance": "war", "score_delta": -100 },
+      { "faction_id": "tyrell", "stance": "war", "score_delta": -100 },
+      { "faction_id": "arryn", "stance": "war", "score_delta": -100 },
+      { "faction_id": "bolton", "stance": "war", "score_delta": -100 },
+      { "faction_id": "tully", "stance": "war", "score_delta": -100 },
+      { "faction_id": "greyjoy", "stance": "war", "score_delta": -100 },
+      { "faction_id": "martell", "stance": "war", "score_delta": -100 },
+      { "faction_id": "targaryen", "stance": "war", "score_delta": -100 },
+      { "faction_id": "brotherhood_without_banners", "stance": "war", "score_delta": -100 }
     ],
     "set_flags": [
       "others_awakened"

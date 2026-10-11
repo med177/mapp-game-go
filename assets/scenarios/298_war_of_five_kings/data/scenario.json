@@ -44,6 +44,91 @@
           "tully",
           "bolton"
         ]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "nights_watch"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "free_folk"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "stark"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "lannister"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "baratheon_king"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "baratheon_dragonstone"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "baratheon_stormsend"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "tyrell"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "arryn"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "bolton"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "tully"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "greyjoy"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "braavos"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "targaryen"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "free_cities"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "brotherhood_without_banners"]
+      },
+      {
+        "min_turns": 60,
+        "war_declaration_requires_event": "others_awaken_300",
+        "blocked_factions": ["others", "martell"]
       }
     ],
     "relation_improvement_gold_cost": 250,
