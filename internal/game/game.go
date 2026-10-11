@@ -2292,7 +2292,7 @@ func (g *Game) eventRelevantToPlayer(evt *events.Event) bool {
 	if g == nil || g.gs == nil || evt == nil {
 		return false
 	}
-	return events.IsPlayerRelevant(g.gs, evt)
+	return events.IsPlayerEventCodexRelevant(g.gs, evt)
 }
 
 func (g *Game) codexReasonLabel(reason string, _ *events.Event) string {

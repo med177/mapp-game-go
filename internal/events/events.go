@@ -641,6 +641,23 @@ func IsPlayerRelevant(gs *state.GameState, e *Event) bool {
 	}
 }
 
+// IsPlayerEventCodexRelevant, yalnızca doğrudan oyuncu faction'ına atanmış
+// event'leri oyuncuya özel Kodex/HUD listesine alır. Diğer hedefler genel
+// listede kalır; normal olay bildirim uygunluğu bundan etkilenmez.
+func IsPlayerEventCodexRelevant(gs *state.GameState, e *Event) bool {
+	if gs == nil || e == nil {
+		return false
+	}
+	switch e.Target {
+	case "player_faction":
+		return true
+	case "specific_faction":
+		return e.AffectedFaction == string(gs.PlayerFactionID)
+	default:
+		return false
+	}
+}
+
 func Apply(gs *state.GameState, e *Event) {
 	if gs == nil || e == nil {
 		return

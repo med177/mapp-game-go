@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-10-09
+last_updated: 2026-10-11
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -308,6 +308,10 @@ Olay tetiklendiğinde:
   `Genel:` etiketiyle yan yana gösterilir. İki olay alanına tıklanınca Kodex
   aynı event kimliğinin seçili olduğu `Tümü` sayfasıyla açılır. Hover popup'ı
   event tarihi, kalan tur, koşul durumu ve getirileri kısa biçimde gösterir.
+- `player_faction` ve oyuncunun `affected_faction` değerine eşleşen
+  `specific_faction` event'leri `Özel` yaklaşan olay alanında görünür;
+  `all_factions` ve diğer hedefler yalnız `Genel` alanda listelenir. Bu HUD
+  sınıflandırması normal event bildirimlerini veya etkilerini değiştirmez.
 
 ---
 

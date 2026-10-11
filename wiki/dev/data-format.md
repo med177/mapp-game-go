@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-10-09
+last_updated: 2026-10-11
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -607,6 +607,11 @@ okunur; yeni kayıtlar `random_probability` yazar.
 boolean alanı hedef fraksiyonun ticaret kilidini değiştirir. `false`, ticareti
 açar; alanın bulunmaması mevcut durumu değiştirmez. Değişiklik kompakt ve debug
 kayıtlarında saklanır; eski kayıtlarda alan yoksa senaryo varsayılanı korunur.
+
+Yaklaşan olay HUD'unda `player_faction` ve oyuncunun `affected_faction` değeriyle
+eşleşen `specific_faction` event'leri `Özel` listesine alınır. `all_factions` ve
+diğer hedefler yalnızca `Genel` listede gösterilir. Bu sınıflandırma event'in
+tetiklenmesini, etkilerini veya normal olay bildirimlerini değiştirmez.
 
 ```json
 {

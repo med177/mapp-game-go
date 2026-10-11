@@ -281,3 +281,30 @@ func TestRequiresInactiveFaction(t *testing.T) {
 		t.Fatal("Özgür Halk elendiğinde eliminasyon koşulu sağlanmadı")
 	}
 }
+
+func TestPlayerEventCodexShowsOnlyDirectPlayerTargets(t *testing.T) {
+	gs := &state.GameState{PlayerFactionID: "free_folk"}
+	var globalEvent Event
+	if err := json.Unmarshal([]byte(`{"target":"all_factions"}`), &globalEvent); err != nil {
+		t.Fatalf("global event JSON'dan okunamadı: %v", err)
+	}
+	if !IsPlayerRelevant(gs, &globalEvent) {
+		t.Fatal("global event normal oyuncu bildirim uygunluğunu kaybetti")
+	}
+	if IsPlayerEventCodexRelevant(gs, &globalEvent) {
+		t.Fatal("all_factions event'i özel Kodex/HUD listesine girdi")
+	}
+	if !IsPlayerEventCodexRelevant(gs, &Event{Target: "specific_faction", AffectedFaction: "free_folk"}) {
+		t.Fatal("doğrudan oyuncu faction'ına atanmış event özel listede görünmedi")
+	}
+	if !IsPlayerEventCodexRelevant(gs, &Event{Target: "player_faction"}) {
+		t.Fatal("player_faction event'i özel listede görünmedi")
+	}
+	if IsPlayerEventCodexRelevant(gs, &Event{
+		Target:               "specific_faction",
+		AffectedFaction:      "baratheon_king",
+		PlayerChoiceFactions: []string{"free_folk"},
+	}) {
+		t.Fatal("başka faction'a atanmış, oyuncuya seçim veren event özel listeye girdi")
+	}
+}

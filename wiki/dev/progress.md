@@ -1,9 +1,15 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-10
+last_updated: 2026-10-11
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-11: Yaklaşan olay HUD'unda `Özel` listeyi yalnızca doğrudan oyuncuya
+  atanmış `player_faction` ve `specific_faction` event'leri gösterecek şekilde
+  sınırlandırdım. `all_factions` ve diğer hedefler `Genel` listede yer alıyor;
+  normal event bildirimleri ve etkileri aynı kaldı. `internal/events/events.go`
+  ve `internal/game/game.go`.
 
 - 2026-10-11: 298 senaryosunda Akgezenlerin başlangıç savaşları barışa alındı;
   diğer faction'larla savaş ilanları 60 tur ve `others_awaken_300` event'ine
