@@ -4204,17 +4204,13 @@
     "religion": "old_gods",
     "active_event_id": "",
     "buildings": [
-      "walls",
-      "barracks",
       "granary",
       "granary",
       "granary",
       "temple",
-      "market",
       "farm",
       "farm",
-      "farm",
-      "port"
+      "farm"
     ]
   },
   {
@@ -4251,17 +4247,13 @@
     "religion": "old_gods",
     "active_event_id": "",
     "buildings": [
-      "walls",
-      "barracks",
       "granary",
       "granary",
       "granary",
       "temple",
-      "market",
       "farm",
       "farm",
-      "farm",
-      "port"
+      "farm"
     ]
   },
   {
