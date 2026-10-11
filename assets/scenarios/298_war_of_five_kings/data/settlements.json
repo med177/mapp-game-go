@@ -5,8 +5,73 @@
       {
         "id": "always_winter_main",
         "name_tr": "Always Winter",
-        "x": 975,
-        "y": 56,
+        "x": 431,
+        "y": 46,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "whiteglass_heights",
+    "settlements": [
+      {
+        "id": "whiteglass_heights_settlement_1",
+        "name_tr": "Solgun Ocak",
+        "x": 999,
+        "y": 73,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "stillfrost_basin",
+    "settlements": [
+      {
+        "id": "stillfrost_basin_settlement_1",
+        "name_tr": "Gri Yarık Hisarı",
+        "x": 999,
+        "y": 238,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "winterwake_coast",
+    "settlements": [
+      {
+        "id": "winterwake_coast_settlement_1",
+        "name_tr": "Ayazgöl Limanı",
+        "x": 1268,
+        "y": 42,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "shiverpeak_range",
+    "settlements": [
+      {
+        "id": "shiverpeak_range_settlement_1",
+        "name_tr": "Dolu Taşı Gözetleme Yeri",
+        "x": 700,
+        "y": 277,
+        "type": "city",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "pale_wind_march",
+    "settlements": [
+      {
+        "id": "pale_wind_march_settlement_1",
+        "name_tr": "Buz Şelalesi Geçidi",
+        "x": 1100,
+        "y": 620,
         "type": "city",
         "is_center": true
       }
@@ -398,9 +463,9 @@
       {
         "id": "hardhome_main",
         "name_tr": "Hardhome",
-        "x": 1530,
-        "y": 434,
-        "type": "port",
+        "x": 1531,
+        "y": 505,
+        "type": "town",
         "is_center": true
       },
       {
@@ -409,6 +474,52 @@
         "x": 1254,
         "y": 537,
         "type": "town"
+      },
+      {
+        "id": "beyond_the_wall_settlement_3",
+        "name_tr": "Liman",
+        "x": 1522,
+        "y": 430,
+        "type": "port"
+      }
+    ]
+  },
+  {
+    "region_id": "frostpine_uplands",
+    "settlements": [
+      {
+        "id": "frostpine_uplands_settlement_1",
+        "name_tr": "Kargagölge Kampı",
+        "x": 1270,
+        "y": 337,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "rimewood_ridge",
+    "settlements": [
+      {
+        "id": "rimewood_ridge_settlement_1",
+        "name_tr": "Taşkovuk",
+        "x": 1132,
+        "y": 202,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "coldwater_shore",
+    "settlements": [
+      {
+        "id": "coldwater_shore_settlement_1",
+        "name_tr": "Dalga Kıran",
+        "x": 1340,
+        "y": 155,
+        "type": "town",
+        "is_center": true
       }
     ]
   },

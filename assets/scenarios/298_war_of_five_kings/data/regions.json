@@ -38,16 +38,14 @@
     "name_tr": "Always Winter",
     "terrain": "mountain",
     "owner_id": "others",
+    "successor_faction_id": "others",
     "neighbors": [
-      "bay_of_ice",
-      "beyond_the_wall",
-      "eastwatch_sea",
       "far_north_sea",
-      "frozen_coast_sea",
-      "the_wall_west"
+      "shiverpeak_range",
+      "whiteglass_heights"
     ],
-    "world_x": 978,
-    "world_y": 65,
+    "world_x": 562,
+    "world_y": 74,
     "shape_id": "always_winter",
     "is_sea": false,
     "is_locked": false,
@@ -62,8 +60,195 @@
     "trade_capacity": 0,
     "satisfaction": 100,
     "tax_rate": 0,
-    "population": 300,
-    "rural_population": 100,
+    "population": 75,
+    "rural_population": 25,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "whiteglass_heights",
+    "name": "Whiteglass Heights",
+    "name_tr": "Akçam Sırtları",
+    "terrain": "mountain",
+    "owner_id": "",
+    "neighbors": [
+      "always_winter",
+      "rimewood_ridge",
+      "shiverpeak_range",
+      "winterwake_coast",
+      "stillfrost_basin"
+    ],
+    "world_x": 945,
+    "world_y": 98,
+    "shape_id": "always_winter",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 30,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 18,
+    "rural_population": 6,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "stillfrost_basin",
+    "name": "Stillfrost Basin",
+    "name_tr": "Donuk Ayaz Çanağı",
+    "terrain": "mountain",
+    "owner_id": "",
+    "neighbors": [
+      "frostpine_uplands",
+      "rimewood_ridge",
+      "shiverpeak_range",
+      "pale_wind_march",
+      "whiteglass_heights"
+    ],
+    "world_x": 1038,
+    "world_y": 270,
+    "shape_id": "always_winter",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 30,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 19,
+    "rural_population": 6,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "winterwake_coast",
+    "name": "Winterwake Coast",
+    "name_tr": "Kışiz Kıyısı",
+    "terrain": "mountain",
+    "owner_id": "",
+    "neighbors": [
+      "eastwatch_sea",
+      "rimewood_ridge",
+      "coldwater_shore",
+      "whiteglass_heights"
+    ],
+    "world_x": 1231,
+    "world_y": 109,
+    "shape_id": "always_winter",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 30,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 38,
+    "rural_population": 13,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "shiverpeak_range",
+    "name": "Shiverpeak Range",
+    "name_tr": "Ürperen Zirveler",
+    "terrain": "mountain",
+    "owner_id": "",
+    "neighbors": [
+      "always_winter",
+      "bay_of_ice",
+      "far_north_sea",
+      "frozen_coast_sea",
+      "pale_wind_march",
+      "whiteglass_heights",
+      "stillfrost_basin"
+    ],
+    "world_x": 634,
+    "world_y": 405,
+    "shape_id": "always_winter",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 30,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 75,
+    "rural_population": 25,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": [
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "pale_wind_march",
+    "name": "Pale Wind March",
+    "name_tr": "Soluk Yel Sınırı",
+    "terrain": "mountain",
+    "owner_id": "",
+    "neighbors": [
+      "bay_of_ice",
+      "beyond_the_wall",
+      "frostpine_uplands",
+      "shiverpeak_range",
+      "stillfrost_basin",
+      "the_wall_west"
+    ],
+    "world_x": 1100,
+    "world_y": 620,
+    "shape_id": "always_winter",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 30,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 75,
+    "rural_population": 25,
     "religion": "",
     "active_event_id": "",
     "buildings": null
@@ -338,10 +523,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "always_winter",
       "bay_of_seals",
       "beyond_the_wall",
       "brandon_gift",
+      "frostpine_uplands",
+      "coldwater_shore",
+      "winterwake_coast",
       "shivering_sea",
       "skagos",
       "the_gift",
@@ -511,9 +698,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "always_winter",
       "bay_of_ice",
       "far_north_sea",
+      "shiverpeak_range",
       "sunset_sea"
     ],
     "world_x": 345,
@@ -545,7 +732,8 @@
     "owner_id": "",
     "neighbors": [
       "always_winter",
-      "frozen_coast_sea"
+      "frozen_coast_sea",
+      "shiverpeak_range"
     ],
     "world_x": 331,
     "world_y": 350,
@@ -575,13 +763,14 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "always_winter",
       "bear_island",
       "brandon_gift",
       "dragon_point",
       "frozen_coast_sea",
       "ironman_bay",
       "long_lake",
+      "shiverpeak_range",
+      "pale_wind_march",
       "stony_shore",
       "sunset_sea",
       "the_wall_west",
@@ -1881,10 +2070,10 @@
     "owner_id": "nights_watch",
     "successor_faction_id": "nights_watch",
     "neighbors": [
-      "always_winter",
       "bay_of_ice",
       "beyond_the_wall",
       "brandon_gift",
+      "pale_wind_march",
       "the_wall_east"
     ],
     "world_x": 1213,
@@ -2249,29 +2438,156 @@
     "owner_id": "free_folk",
     "successor_faction_id": "free_folk",
     "neighbors": [
-      "always_winter",
       "eastwatch_sea",
+      "frostpine_uplands",
+      "pale_wind_march",
       "the_wall_east",
       "the_wall_west"
     ],
-    "world_x": 1259,
-    "world_y": 302,
+    "world_x": 1311,
+    "world_y": 525,
     "shape_id": "freefolk",
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 30,
-    "base_grain_output": 100,
-    "base_iron_output": 6,
-    "base_timber_output": 26,
-    "base_stone_output": 16,
-    "base_spice_output": 1,
-    "base_cloth_output": 2,
-    "trade_capacity": 2,
+    "base_gold_income": 15,
+    "base_grain_output": 50,
+    "base_iron_output": 3,
+    "base_timber_output": 13,
+    "base_stone_output": 8,
+    "base_spice_output": 0,
+    "base_cloth_output": 1,
+    "trade_capacity": 1,
     "satisfaction": 95,
     "tax_rate": 25,
-    "population": 100,
-    "rural_population": 50,
+    "population": 50,
+    "rural_population": 25,
+    "religion": "old_gods",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "frostpine_uplands",
+    "name": "Frostpine Uplands",
+    "name_tr": "Ayazçam Yaylası",
+    "terrain": "mountain",
+    "owner_id": "free_folk",
+    "successor_faction_id": "free_folk",
+    "neighbors": [
+      "beyond_the_wall",
+      "eastwatch_sea",
+      "rimewood_ridge",
+      "coldwater_shore",
+      "pale_wind_march",
+      "stillfrost_basin"
+    ],
+    "world_x": 1231,
+    "world_y": 269,
+    "shape_id": "freefolk",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 7,
+    "base_grain_output": 25,
+    "base_iron_output": 1,
+    "base_timber_output": 6,
+    "base_stone_output": 4,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 95,
+    "tax_rate": 25,
+    "population": 25,
+    "rural_population": 12,
+    "religion": "old_gods",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "rimewood_ridge",
+    "name": "Rimewood Ridge",
+    "name_tr": "Kırağıkoru Sırtı",
+    "terrain": "mountain",
+    "owner_id": "free_folk",
+    "successor_faction_id": "free_folk",
+    "neighbors": [
+      "frostpine_uplands",
+      "coldwater_shore",
+      "whiteglass_heights",
+      "winterwake_coast",
+      "stillfrost_basin"
+    ],
+    "world_x": 1168,
+    "world_y": 241,
+    "shape_id": "freefolk",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 4,
+    "base_grain_output": 12,
+    "base_iron_output": 1,
+    "base_timber_output": 3,
+    "base_stone_output": 2,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 95,
+    "tax_rate": 25,
+    "population": 12,
+    "rural_population": 6,
+    "religion": "old_gods",
+    "active_event_id": "",
+    "buildings": [
+      "port",
+      "barracks",
+      "granary",
+      "temple",
+      "market"
+    ]
+  },
+  {
+    "id": "coldwater_shore",
+    "name": "Coldwater Shore",
+    "name_tr": "Soğuksu Kıyısı",
+    "terrain": "mountain",
+    "owner_id": "free_folk",
+    "successor_faction_id": "free_folk",
+    "neighbors": [
+      "eastwatch_sea",
+      "frostpine_uplands",
+      "rimewood_ridge",
+      "winterwake_coast"
+    ],
+    "world_x": 1240,
+    "world_y": 191,
+    "shape_id": "freefolk",
+    "is_sea": false,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 4,
+    "base_grain_output": 13,
+    "base_iron_output": 1,
+    "base_timber_output": 4,
+    "base_stone_output": 2,
+    "base_spice_output": 1,
+    "base_cloth_output": 1,
+    "trade_capacity": 1,
+    "satisfaction": 95,
+    "tax_rate": 25,
+    "population": 13,
+    "rural_population": 7,
     "religion": "old_gods",
     "active_event_id": "",
     "buildings": [
@@ -2450,7 +2766,9 @@
     "rural_population": 50,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "riverlands",
@@ -2611,7 +2929,9 @@
     "rural_population": 60,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "lannisport",
@@ -2803,7 +3123,9 @@
     "rural_population": 60,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "skagos",
@@ -3066,7 +3388,9 @@
     "rural_population": 50,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "the_neck",
@@ -3101,7 +3425,9 @@
     "rural_population": 50,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "the_fingers",
@@ -3432,7 +3758,9 @@
     "rural_population": 70,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["port"]
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "blackmont",
@@ -3544,7 +3872,9 @@
     "rural_population": 60,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "sandstone",
@@ -3580,7 +3910,9 @@
     "rural_population": 40,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "godsgrace",
@@ -3692,7 +4024,9 @@
     "rural_population": 60,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "stormlands",
@@ -3730,7 +4064,9 @@
     "rural_population": 25,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "tumbleton",
@@ -3977,7 +4313,9 @@
     "rural_population": 20,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["port"]
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "torrhens_square",
@@ -4014,7 +4352,9 @@
     "rural_population": 40,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "lonely_hills",
@@ -4051,7 +4391,9 @@
     "rural_population": 20,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "hornwood",
@@ -4086,7 +4428,9 @@
     "rural_population": 15,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "widows_watch",
@@ -4230,7 +4574,9 @@
     "rural_population": 20,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["port"]
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "the_grey_cliffs",
@@ -4263,7 +4609,9 @@
     "rural_population": 20,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "great_wyk",
@@ -4366,7 +4714,10 @@
     "rural_population": 30,
     "religion": "drowned_god",
     "active_event_id": "",
-    "buildings": ["walls", "port"]
+    "buildings": [
+      "walls",
+      "port"
+    ]
   },
   {
     "id": "west_vale",
@@ -4403,7 +4754,9 @@
     "rural_population": 40,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "gulltown",
@@ -4812,7 +5165,9 @@
     "rural_population": 50,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "brightwater_reach",
@@ -4890,7 +5245,9 @@
     "rural_population": 50,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "summerhall",
@@ -4929,7 +5286,9 @@
     "rural_population": 20,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "hapstackhall",
@@ -5037,7 +5396,9 @@
     "rural_population": 30,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["port"]
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "mistwood",
@@ -5109,7 +5470,9 @@
     "rural_population": 40,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "stonehelm",
@@ -5146,7 +5509,9 @@
     "rural_population": 40,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "tarth",
@@ -5178,7 +5543,9 @@
     "rural_population": 30,
     "religion": "faith_of_the_seven",
     "active_event_id": "",
-    "buildings": ["port"]
+    "buildings": [
+      "port"
+    ]
   },
   {
     "id": "uplands",
@@ -5253,7 +5620,9 @@
     "rural_population": 40,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "wyl",
@@ -5288,7 +5657,9 @@
     "rural_population": 30,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "the_tor",
@@ -5323,7 +5694,9 @@
     "rural_population": 30,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "vaith",
@@ -5431,7 +5804,9 @@
     "rural_population": 30,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "sun_house",
@@ -5465,7 +5840,9 @@
     "rural_population": 30,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "hellholt",
@@ -5503,7 +5880,9 @@
     "rural_population": 30,
     "religion": "old_gods",
     "active_event_id": "",
-    "buildings": ["walls"]
+    "buildings": [
+      "walls"
+    ]
   },
   {
     "id": "the_boneway",
