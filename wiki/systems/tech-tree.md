@@ -54,7 +54,7 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
   - Denizcilik: Sarı (200,200,100)
 - **Tamamlanmış Teknolojiler:** Kategori rengine sahip tick badge ile işaretlenir
 - **Aktif Araştırma:** HUD'da gösterilir (isim + kalan tur)
-- **Seçim Esnekliği:** Aktif araştırma kartından başka teknoloji seçmek mevcut araştırmayı bekletir; tur ilerlemesi ve ödenen ücret saklanır, daha sonra ücret tekrar düşmeden devam eder. `İptal Et • İade` eylemi ise ilerlemeyi siler ve ödenen altını tamamen iade eder; sonrasında başka bir teknoloji seçilebilir. Bu iki işlem birbirinden ayrıdır.
+- **Seçim Esnekliği:** Aktif araştırma kartından başka teknoloji seçmek mevcut araştırmayı bekletir; tur ilerlemesi ve ödenen ücret saklanır, daha sonra ücret tekrar düşmeden devam eder. `İptal Et • İade` eylemi ise ilerlemeyi siler ve ödenen altını tamamen iade eder. İptal, oyuncu yeni bir araştırmayı elle seçene kadar tur sonu otomatik teknoloji seçimini ve araştırma seçimi uyarısını kapatır; bu, kaynak biriktirmek için bilinçli olarak boşta kalmayı sağlar.
 - **Tur Bitir Davranışı:** Aktif araştırma yoksa ve uygun bir teknoloji varsa turn resolution sırasında ağaç sırasına göre sonraki bağlı teknoloji otomatik başlatılır; böylece her tur panel açıp kart seçme zorunluluğu kalkar. Tüm teknolojiler tamamlandıysa veya yalnız kilitli düğümler kaldıysa otomatik başlangıç olmaz
   - Din: Magenta (200,100,200)
 - **Durum Göstergeleri:**

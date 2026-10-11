@@ -8,7 +8,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-10-11: Teknoloji panelindeki `İptal Et • İade` eylemi aktif araştırmayı
   bekletmeden tamamen siliyor ve ödenen altını iade ediyor. Araştırma kartı
   değiştirildiğinde ise önceki araştırmanın turu ve ödenmiş tutarı korunarak
-  bekletme/devam davranışı sürüyor. `internal/{tech/tech.go,
+  bekletme/devam davranışı sürüyor. İptal sonrası oyuncu yeni araştırmayı elle
+  seçene kadar otomatik teknoloji başlangıcı da kapalı kalıyor. `internal/{tech/tech.go,
   faction/faction.go,game/game.go,render/tech_panel.go}`.
 
 - 2026-10-11: Yaklaşan olay HUD'unda `Özel` listeyi yalnızca doğrudan oyuncuya

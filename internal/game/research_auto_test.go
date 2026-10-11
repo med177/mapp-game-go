@@ -134,8 +134,20 @@ func TestCancelResearchRefundsPaidGoldAndAllowsDifferentResearch(t *testing.T) {
 	if len(player.Research.PausedTurns) != 0 {
 		t.Fatalf("iptal edilen araştırma bekletilmiş olarak saklanmamalı: %+v", player.Research.PausedTurns)
 	}
+	if !player.Research.AutoStartDisabled {
+		t.Fatal("iptal, oyuncu yeni araştırmayı seçene kadar otomatik başlangıcı kapatmalı")
+	}
+	if g.autoStartResearchIfIdle() {
+		t.Fatal("iptal sonrasında tur başında otomatik araştırma seçilmemeli")
+	}
+	if g.endTurnResearchNeedsConfirmation() {
+		t.Fatal("bilinçli araştırma atlama tercihi tur sonu araştırma onayı istememeli")
+	}
 
 	g.startResearch("second")
+	if player.Research.AutoStartDisabled {
+		t.Fatal("oyuncu yeni araştırmayı elle seçince otomatik başlangıç tercihi sıfırlanmalı")
+	}
 	if player.Research.ActiveID != "second" || player.Gold != 70 {
 		t.Fatalf("iptalden sonra farklı araştırma seçilemedi: gold=%d active=%q", player.Gold, player.Research.ActiveID)
 	}

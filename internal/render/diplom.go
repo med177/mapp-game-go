@@ -2485,10 +2485,10 @@ func stanceDisplayText(s faction.DiplomaticStance) string {
 func diplomacyStatusDisplay(gs *state.GameState, actor, target faction.FactionID, rel *faction.Relation) (color.Color, string) {
 	if gs != nil {
 		if diplomacy.DirectOverlord(gs, actor) == target {
-			return color.RGBA{210, 188, 92, 255}, "LORD Bağlı Olduğun Devlet"
+			return color.RGBA{210, 188, 92, 255}, "Sahibin"
 		}
 		if diplomacy.DirectOverlord(gs, target) == actor {
-			return color.RGBA{86, 188, 94, 255}, "VASSAL Bağlı Devlet"
+			return color.RGBA{86, 188, 94, 255}, "Vassalın"
 		}
 		if overlord := diplomacy.DirectOverlord(gs, target); overlord != "" {
 			return color.RGBA{168, 154, 104, 255}, "VASSAL"

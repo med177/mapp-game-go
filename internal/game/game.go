@@ -1523,7 +1523,7 @@ func (g *Game) autoStartResearchIfIdle() bool {
 		return false
 	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
-	if f == nil || f.Research.ActiveID != "" {
+	if f == nil || f.Research.ActiveID != "" || f.Research.AutoStartDisabled {
 		return false
 	}
 	selectionState := f.Research
@@ -1564,6 +1564,9 @@ func (g *Game) endTurnResearchNeedsConfirmation() bool {
 		return false
 	}
 	if g.autoStartResearchIfIdle() {
+		return false
+	}
+	if f.Research.AutoStartDisabled {
 		return false
 	}
 	return g.playerHasResearchableTechs()
@@ -7710,6 +7713,7 @@ func (g *Game) startResearch(techID string) {
 		tech.PauseResearch(&f.Research)
 	}
 	if tech.StartResearchWithModifiers(&f.Research, t, &f.Gold, researchEffects.ResearchSpeedMod, researchEffects.ResearchCostMod) {
+		f.Research.AutoStartDisabled = false
 		if canResume {
 			g.renderer.ShowCombatResult(t.NameTR + " araştırması kaldığı yerden devam ediyor! (" + fmt.Sprintf("%d tur kaldı", f.Research.TurnsLeft) + ")")
 		} else {
@@ -7749,6 +7753,7 @@ func (g *Game) cancelResearch() {
 	if !ok {
 		return
 	}
+	f.Research.AutoStartDisabled = true
 	name := activeID
 	if t != nil && t.NameTR != "" {
 		name = t.NameTR
