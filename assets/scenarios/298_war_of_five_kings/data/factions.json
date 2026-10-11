@@ -857,8 +857,42 @@
         "value": 90
       },
       {
-        "region_id": "the_gift_west",
+        "region_id": "the_gift_east",
         "value": 100
+      },
+      {
+        "region_id": "the_gift_center",
+        "value": 100
+      },
+      {
+        "region_id": "kings_landing",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "casterly_rock",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "sunspear",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "highgarden",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "oldtown",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "dragonstone",
+        "value": 100,
+        "core": true
       }
     ]
   },

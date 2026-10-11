@@ -4264,7 +4264,7 @@
           "unit_reinforcements": [
             {
               "unit_type": "nights_watch_rangers",
-              "unit_count": 2
+              "unit_count": 6
             }
           ],
           "set_flags": [

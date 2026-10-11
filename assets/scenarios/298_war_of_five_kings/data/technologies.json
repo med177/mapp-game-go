@@ -22,7 +22,7 @@
   {
     "category": "military",
     "description_tr": "Süvari hücumları, mızrak duvarları ve meydan savaşı talimleri standartlaştırılır. Süvari saldırısı +%8.",
-    "effects": { "cavalry_attack_mod": 0.08 },
+    "effects": { "cavalry_attack_mod": 0.08, "land_attack_mod": 0.09 },
     "gold_cost": 260,
     "id": "battlefield_drills",
     "name_tr": "Meydan Muharebesi Talimleri",
