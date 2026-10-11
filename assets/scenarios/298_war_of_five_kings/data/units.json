@@ -211,6 +211,99 @@
     "movement_points": 5
   },
   {
+    "id": "wildling_spearmen",
+    "allowed_factions": [ "free_folk" ],
+    "image": "army/wildling_spearmen.png",
+    "name": "Foragers",
+    "name_tr": "Toplayıcılar",
+    "attack": 8,
+    "category": "infantry",
+    "defense": 12,
+    "embarkable": true,
+    "gold_cost": 25,
+    "grain_upkeep": 3,
+    "gold_upkeep": 0,
+    "hp": 90,
+    "morale": 65,
+    "required_buildings": [
+      { "id": "barracks", "level": 1 }
+    ],
+    "required_tech": [
+      "feudal_levies"
+    ],
+    "tier": 1,
+    "turns_required": 2,
+    "grain_cost": 8,
+    "iron_cost": 1,
+    "timber_cost": 1,
+    "stone_cost": 0,
+    "cloth_cost": 1,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
+    "id": "wildling_bowmen",
+    "allowed_factions": [ "free_folk" ],
+    "image": "army/wildling_bowmen.png",
+    "name": "Hunters",
+    "name_tr": "Avcılar",
+    "attack": 12,
+    "category": "infantry",
+    "defense": 5,
+    "embarkable": true,
+    "gold_cost": 18,
+    "grain_upkeep": 4,
+    "gold_upkeep": 0,
+    "hp": 100,
+    "morale": 65,
+    "required_buildings": [
+      { "id": "barracks", "level": 1 }
+    ],
+    "required_tech": [
+      "feudal_levies"
+    ],
+    "tier": 1,
+    "turns_required": 2,
+    "grain_cost": 5,
+    "iron_cost": 1,
+    "timber_cost": 1,
+    "stone_cost": 0,
+    "cloth_cost": 1,
+    "spice_cost": 0,
+    "movement_points": 2
+  },
+  {
+    "id": "wildling_raiders",
+    "allowed_factions": [ "free_folk" ],
+    "image": "army/wildling_raider.png",
+    "name": "Wildling Raiders",
+    "name_tr": "Akıncılar",
+    "attack": 18,
+    "category": "infantry",
+    "defense": 10,
+    "embarkable": true,
+    "gold_cost": 50,
+    "grain_upkeep": 6,
+    "gold_upkeep": 1,
+    "hp": 115,
+    "morale": 65,
+    "required_buildings": [
+      { "id": "barracks", "level": 1 }
+    ],
+    "required_tech": [
+      "feudal_levies"
+    ],
+    "tier": 2,
+    "turns_required": 3,
+    "grain_cost": 16,
+    "iron_cost": 2,
+    "timber_cost": 2,
+    "stone_cost": 0,
+    "cloth_cost": 1,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+  {
     "id": "giant",
     "allowed_factions": [ "free_folk" ],
     "max_per_faction": 5,
@@ -245,41 +338,10 @@
     "movement_points": 2
   },
   {
-    "id": "wildling_raiders",
-    "allowed_factions": [ "free_folk" ],
-    "image": "army/wildling_raider.png",
-    "name": "Wildling Raiders",
-    "name_tr": "Vahşi Akıncılar",
-    "attack": 18,
-    "category": "infantry",
-    "defense": 10,
-    "embarkable": true,
-    "gold_cost": 50,
-    "grain_upkeep": 6,
-    "gold_upkeep": 1,
-    "hp": 115,
-    "morale": 65,
-    "required_buildings": [
-      { "id": "barracks", "level": 1 }
-    ],
-    "required_tech": [
-      "feudal_levies"
-    ],
-    "tier": 2,
-    "turns_required": 2,
-    "grain_cost": 16,
-    "iron_cost": 2,
-    "timber_cost": 2,
-    "stone_cost": 0,
-    "cloth_cost": 1,
-    "spice_cost": 0,
-    "movement_points": 3
-  },
-  {
     "id": "nights_watch_rangers",
     "allowed_factions": [ "nights_watch", "stark" ],
     "image": "army/nightwatch_ranger.png",
-    "name": "Night's Watch Rangers",
+    "name": "Rangers",
     "name_tr": "Nöbetçiler",
     "attack": 15,
     "category": "infantry",
@@ -288,7 +350,7 @@
     "gold_cost": 180,
     "grain_upkeep": 7,
     "gold_upkeep": 5,
-    "hp": 120,
+    "hp": 110,
     "morale": 75,
     "required_buildings": [
       { "id": "barracks", "level": 1 }
@@ -297,9 +359,40 @@
       "ranger_scouting"
     ],
     "tier": 2,
-    "turns_required": 3,
+    "turns_required": 2,
     "grain_cost": 18,
-    "iron_cost": 4,
+    "iron_cost": 3,
+    "timber_cost": 3,
+    "stone_cost": 0,
+    "cloth_cost": 2,
+    "spice_cost": 0,
+    "movement_points": 3
+  },
+    {
+    "id": "nights_watch_swordsmen",
+    "allowed_factions": [ "nights_watch"],
+    "image": "army/nightwatch_swordsmen.png",
+    "name": "Swordsmen",
+    "name_tr": "Kılıçlılar",
+    "attack": 12,
+    "category": "infantry",
+    "defense": 20,
+    "embarkable": true,
+    "gold_cost": 200,
+    "grain_upkeep": 10,
+    "gold_upkeep": 7,
+    "hp": 130,
+    "morale": 85,
+    "required_buildings": [
+      { "id": "barracks", "level": 2 }
+    ],
+    "required_tech": [
+      "ranger_scouting"
+    ],
+    "tier": 2,
+    "turns_required": 4,
+    "grain_cost": 20,
+    "iron_cost": 5,
     "timber_cost": 2,
     "stone_cost": 0,
     "cloth_cost": 3,
