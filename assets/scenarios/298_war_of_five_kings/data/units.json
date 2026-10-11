@@ -392,7 +392,7 @@
       "ranger_scouting"
     ],
     "tier": 2,
-    "turns_required": 4,
+    "turns_required": 3,
     "grain_cost": 20,
     "iron_cost": 5,
     "timber_cost": 2,
