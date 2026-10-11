@@ -64,7 +64,8 @@ func TestTechCancelResearchButtonDispatchesCancelAction(t *testing.T) {
 		},
 	}
 	r := &Renderer{gs: gs}
-	button := buildTechCancelResearchButton(techPanelLayoutForScreen())
+	statusText := techResearchStatusText(f, gs.TechTypes)
+	_, button := buildTechResearchStatus(techPanelLayoutForScreen(), statusText)
 
 	action := r.handleTechInput(f, gameui.InputState{
 		MouseX:          button.X + button.W/2,
@@ -76,5 +77,39 @@ func TestTechCancelResearchButtonDispatchesCancelAction(t *testing.T) {
 	}
 	if !r.techPanelPointerHit(button.X+button.W/2, button.Y+button.H/2) {
 		t.Fatal("iptal düğmesi cursor hit-test tarafından etkileşimli tanınmalı")
+	}
+}
+
+func TestTechResearchStatusGroupIsCentered(t *testing.T) {
+	layout := techPanelLayoutForScreen()
+	statusText := "> Araştırılıyor: Uzun Bir Teknoloji Adı  (12 tur kaldı)"
+	textRect, button := buildTechResearchStatus(layout, statusText)
+	groupCenter := (textRect.X + button.X + button.W) / 2
+	statusCenter := layout.statusRect.X + layout.statusRect.W/2
+	if delta := groupCenter - statusCenter; delta < -0.5 || delta > 0.5 {
+		t.Fatalf("aktif araştırma ve iptal grubu merkezlenmedi: group=%v status=%v", groupCenter, statusCenter)
+	}
+	if button.X <= textRect.X+textRect.W {
+		t.Fatalf("iptal düğmesi durum metninden sonra gelmeli: text=%+v button=%+v", textRect, button)
+	}
+}
+
+func TestTechFilterTabsAreNarrowAndCentered(t *testing.T) {
+	rect := techPanelLayoutForScreen().filterRect
+	categories := tech.AllCategories()
+	tabW, startX := techFilterTabDimensions(rect)
+	totalW := tabW*float64(len(categories)) + techFilterTabGap*float64(len(categories)-1)
+	if tabW >= rect.W/float64(len(categories)) {
+		t.Fatalf("filtre sekmeleri alanı dolduracak kadar geniş: tabW=%v rowW=%v", tabW, rect.W)
+	}
+	if delta := startX + totalW/2 - (rect.X + rect.W/2); delta < -0.5 || delta > 0.5 {
+		t.Fatalf("filtre grubu ekran ortasında değil: start=%v width=%v rect=%+v", startX, totalW, rect)
+	}
+	for idx, category := range categories {
+		x := startX + float64(idx)*(tabW+techFilterTabGap) + tabW/2
+		got, ok := techFilterTabHit(x, rect.Y+rect.H/2, rect)
+		if !ok || got != category {
+			t.Fatalf("sekme merkezi yanlış kategoriye gidiyor: idx=%d got=%q ok=%t want=%q", idx, got, ok, category)
+		}
 	}
 }

@@ -59,14 +59,23 @@ type Technology struct {
 	Requires        []string `json:"requires"`
 	RequiredRegions []string `json:"required_regions,omitempty"`
 	AllowedFactions []string `json:"allowed_factions,omitempty"`
+	BlockedFactions []string `json:"blocked_factions,omitempty"`
 	MinYear         int      `json:"min_year,omitempty"`
 	Effects         Effects  `json:"effects"`
 }
 
 // IsAvailableToFaction teknolojiye hangi fraksiyonların erişebileceğini kontrol eder.
-// allowed_factions boşsa teknoloji tüm fraksiyonlar için kullanılabilir.
+// Engellenen fraksiyonlar, allowed_factions listesinde bulunsalar bile erişemez.
 func (t *Technology) IsAvailableToFaction(factionID string) bool {
-	if t == nil || len(t.AllowedFactions) == 0 || factionID == "" {
+	if t == nil {
+		return true
+	}
+	for _, blockedFactionID := range t.BlockedFactions {
+		if blockedFactionID == factionID {
+			return false
+		}
+	}
+	if len(t.AllowedFactions) == 0 || factionID == "" {
 		return true
 	}
 	for _, allowedFactionID := range t.AllowedFactions {

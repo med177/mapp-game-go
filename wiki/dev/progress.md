@@ -5,6 +5,11 @@ last_updated: 2026-10-11
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-11: Teknoloji panelinde aktif araştırma metni ile iptal/iade düğmesi
+  aynı merkezli gruba alındı; kategori filtreleri daraltılıp ekran ortasına
+  hizalandı. Sekme çizimi ve hit-test ortak geometri kullanıyor.
+  `internal/render/tech_panel.go`.
+
 - 2026-10-11: Teknoloji panelindeki `İptal Et • İade` eylemi aktif araştırmayı
   bekletmeden tamamen siliyor ve ödenen altını iade ediyor. Araştırma kartı
   değiştirildiğinde ise önceki araştırmanın turu ve ödenmiş tutarı korunarak

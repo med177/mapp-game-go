@@ -145,6 +145,7 @@
     "effects": { "naval_defense_mod": 0.08 },
     "gold_cost": 220,
     "id": "shipwrights",
+    "blocked_factions": ["free_folk", "nights_watch"],
     "name_tr": "Gemi Ustaları",
     "requires": [],
     "turns_required": 3
@@ -155,6 +156,7 @@
     "effects": { "naval_move_bonus": 1, "naval_defense_mod": 0.05 },
     "gold_cost": 300,
     "id": "coastal_navigation",
+    "blocked_factions": ["free_folk", "nights_watch"],
     "name_tr": "Kıyı Seyrüseferi",
     "requires": ["shipwrights"],
     "turns_required": 4
@@ -165,6 +167,7 @@
     "effects": { "naval_attack_mod": 0.12, "naval_move_bonus": 1 },
     "gold_cost": 420,
     "id": "longship_raiding",
+    "blocked_factions": ["free_folk", "nights_watch"],
     "name_tr": "Uzun Gemi Akıncılığı",
     "requires": ["coastal_navigation"],
     "turns_required": 6
@@ -175,6 +178,7 @@
     "effects": { "naval_attack_mod": 0.1, "naval_defense_mod": 0.1 },
     "gold_cost": 520,
     "id": "fleet_battle_tactics",
+    "blocked_factions": ["free_folk", "nights_watch"],
     "name_tr": "Filo Muharebe Taktikleri",
     "requires": ["longship_raiding"],
     "turns_required": 7

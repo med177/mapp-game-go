@@ -113,10 +113,10 @@ const (
 	techConnMidMargin   = 16.0
 
 	// Filter sekme sabitleri
-	techFilterTabH    = 36.0
-	techFilterTabGap  = 8.0
-	techFilterTabPad  = 14.0
-	techFilterTabMinW = 88.0
+	techFilterTabH     = 36.0
+	techFilterTabGap   = 8.0
+	techFilterTabPad   = 14.0
+	techFilterTabWidth = 160.0
 
 	// Teknoloji panelindeki kategori ikonları küçük çözünürlükte de net kalmalı.
 	techFilterTabIconSize = 28.0
@@ -171,15 +171,47 @@ func buildTechCloseButton() gameui.Button {
 	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h))
 }
 
-func buildTechCancelResearchButton(layout techPanelLayout) gameui.Button {
+func techResearchStatusText(f *faction.Faction, allTechs map[string]*tech.Technology) string {
+	if f == nil {
+		return ""
+	}
+	name := f.Research.ActiveID
+	if t := allTechs[f.Research.ActiveID]; t != nil && t.NameTR != "" {
+		name = t.NameTR
+	}
+	return fmt.Sprintf("> Araştırılıyor: %s  (%d tur kaldı)", name, f.Research.TurnsLeft)
+}
+
+func buildTechResearchStatus(layout techPanelLayout, statusText string) (gameui.Rect, gameui.Button) {
 	const buttonWidth = 142.0
-	return gameui.NewButton(
-		layout.statusRect.X+layout.statusRect.W-buttonWidth,
+	const gap = 12.0
+	textWidth := MeasureText(statusText, FaceMed)
+	groupWidth := textWidth + gap + buttonWidth
+	startX := layout.statusRect.X + (layout.statusRect.W-groupWidth)/2
+	textRect := gameui.Rect{X: startX, Y: layout.statusRect.Y + 2, W: textWidth, H: layout.statusRect.H - 2}
+	button := gameui.NewButton(
+		startX+textWidth+gap,
 		layout.statusRect.Y+1,
 		buttonWidth,
 		24,
 		"İptal Et • İade",
 	).WithIcon(gameui.IconClose)
+	return textRect, button
+}
+
+func techFilterTabDimensions(rect gameui.Rect) (tabW, startX float64) {
+	categories := tech.AllCategories()
+	if len(categories) == 0 {
+		return 0, rect.X
+	}
+	availableW := rect.W - techFilterTabGap*float64(len(categories)-1)
+	tabW = techFilterTabWidth
+	if maxTabW := availableW / float64(len(categories)); tabW > maxTabW {
+		tabW = maxTabW
+	}
+	totalW := tabW*float64(len(categories)) + techFilterTabGap*float64(len(categories)-1)
+	startX = rect.X + (rect.W-totalW)/2
+	return tabW, startX
 }
 
 func techNodeRect(node techNode) gameui.Rect {
@@ -454,15 +486,7 @@ func techNodeDependencyOrder(node techNode, prevIndex map[string]int) float64 {
 func drawTechFilterTabs(screen *ebiten.Image, rect gameui.Rect, activeFilter tech.Category, f *faction.Faction, allTechs map[string]*tech.Technology) {
 	categories := tech.AllCategories()
 	// Her sekmenin genişliğini hesapla
-	tabCount := len(categories)
-	availableW := rect.W - techFilterTabGap*float64(tabCount-1)
-	tabW := availableW / float64(tabCount)
-	if tabW < techFilterTabMinW {
-		tabW = techFilterTabMinW
-	}
-
-	totalW := tabW*float64(tabCount) + techFilterTabGap*float64(tabCount-1)
-	startX := rect.X + (rect.W-totalW)/2
+	tabW, startX := techFilterTabDimensions(rect)
 
 	for idx, cat := range categories {
 		tabX := startX + float64(idx)*(tabW+techFilterTabGap)
@@ -537,14 +561,7 @@ func techFilterTabHit(mx, my float64, rect gameui.Rect) (tech.Category, bool) {
 		return "", false
 	}
 	categories := tech.AllCategories()
-	tabCount := len(categories)
-	availableW := rect.W - techFilterTabGap*float64(tabCount-1)
-	tabW := availableW / float64(tabCount)
-	if tabW < techFilterTabMinW {
-		tabW = techFilterTabMinW
-	}
-	totalW := tabW*float64(tabCount) + techFilterTabGap*float64(tabCount-1)
-	startX := rect.X + (rect.W-totalW)/2
+	tabW, startX := techFilterTabDimensions(rect)
 
 	relX := mx - startX
 	if relX < 0 {
@@ -767,11 +784,9 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 	// Aktif araştırma durumu
 	activeY := layout.statusRect.Y
 	if f.Research.ActiveID != "" {
-		if t, ok := r.gs.TechTypes[f.Research.ActiveID]; ok {
-			msg := fmt.Sprintf("> Araştırılıyor: %s  (%d tur kaldı)", t.NameTR, f.Research.TurnsLeft)
-			DrawText(screen, msg, layout.statusRect.X, activeY+2, FaceMed, color.RGBA{110, 230, 110, 255})
-		}
-		cancelButton := buildTechCancelResearchButton(layout)
+		msg := techResearchStatusText(f, r.gs.TechTypes)
+		statusTextRect, cancelButton := buildTechResearchStatus(layout, msg)
+		DrawText(screen, msg, statusTextRect.X, activeY+2, FaceMed, color.RGBA{110, 230, 110, 255})
 		drawTechButton(screen, cancelButton, color.RGBA{92, 35, 31, 245}, color.RGBA{255, 225, 215, 255}, 0)
 	} else {
 		drawUIMutedText(screen, layout.statusRect.X, activeY+2, "Aktif araştırma yok — araştırmak için bir teknolojiye tıkla")
@@ -905,8 +920,11 @@ func (r *Renderer) handleTechInput(f *faction.Faction, input gameui.InputState) 
 		r.techFilterCategory = ""
 		return InputAction{}
 	}
-	if f.Research.ActiveID != "" && buildTechCancelResearchButton(layout).HandleInput(input) {
-		return InputAction{Kind: ActionCancelResearch}
+	if f.Research.ActiveID != "" {
+		_, cancelButton := buildTechResearchStatus(layout, techResearchStatusText(f, r.gs.TechTypes))
+		if cancelButton.HandleInput(input) {
+			return InputAction{Kind: ActionCancelResearch}
+		}
 	}
 	if input.LeftJustPressed && techTreeSideBlankHit(layout, treeData.contentW, r.techPanX, r.techPanY, input.MouseX, input.MouseY) {
 		r.showTech = false
@@ -971,8 +989,11 @@ func (r *Renderer) techPanelPointerHit(fx, fy float64) bool {
 		return true
 	}
 	layout := techPanelLayoutForScreen()
-	if f.Research.ActiveID != "" && buildTechCancelResearchButton(layout).HitTest(fx, fy) {
-		return true
+	if f.Research.ActiveID != "" {
+		_, cancelButton := buildTechResearchStatus(layout, techResearchStatusText(f, r.gs.TechTypes))
+		if cancelButton.HitTest(fx, fy) {
+			return true
+		}
 	}
 	if layout.treeRect.Hit(fx, fy) {
 		return true

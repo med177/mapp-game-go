@@ -582,10 +582,12 @@ Kuşatma birimleri için opsiyonel `siege_breach_multiplier`, `siege_breach_max_
 }
 ```
 
-`allowed_factions` opsiyoneldir. Doluysa teknoloji yalnızca listedeki faction
-ID'leri tarafından araştırılabilir; boş veya eksikse tüm faction'lara açıktır.
-`min_year` opsiyonel tarih kilididir. Faction, belirtilen yıldan önce teknolojiye
-başlayamaz. Bu iki alan oyuncu, AI ve event kaynaklı araştırma başlatma
+`allowed_factions` ve `blocked_factions` opsiyoneldir. `allowed_factions` doluysa
+teknoloji yalnızca listedeki faction ID'leri tarafından araştırılabilir; boş
+veya eksikse tüm faction'lara açıktır. `blocked_factions` listesinde bulunan
+fraksiyonlar, izin listesinde olsalar bile araştırmayı yapamaz. `min_year`
+opsiyonel tarih kilididir. Faction, belirtilen yıldan önce teknolojiye
+başlayamaz. Bu alanlar oyuncu, AI ve event kaynaklı araştırma başlatma
 akışlarında uygulanır.
 
 Teknoloji `effects` alanında `gold_upkeep_mod` ve `grain_upkeep_mod` pozitif
