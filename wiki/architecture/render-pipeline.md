@@ -1,3 +1,4 @@
+Not: Teknoloji panelinde aktif araştırma için `İptal Et • İade` düğmesi ücreti tamamen geri verip araştırmayı siler; başka kart seçmek ise ödenen tutar ve ilerlemeyi koruyarak araştırmayı bekletir (`internal/render/tech_panel.go`, `internal/game/game.go`).
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]

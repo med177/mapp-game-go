@@ -171,6 +171,17 @@ func buildTechCloseButton() gameui.Button {
 	return gameui.NewCloseButton(float64(x), float64(y), float64(w), float64(h))
 }
 
+func buildTechCancelResearchButton(layout techPanelLayout) gameui.Button {
+	const buttonWidth = 142.0
+	return gameui.NewButton(
+		layout.statusRect.X+layout.statusRect.W-buttonWidth,
+		layout.statusRect.Y+1,
+		buttonWidth,
+		24,
+		"İptal Et • İade",
+	).WithIcon(gameui.IconClose)
+}
+
 func techNodeRect(node techNode) gameui.Rect {
 	return gameui.Rect{
 		X: node.x - techNodeWidth/2,
@@ -760,6 +771,8 @@ func (r *Renderer) DrawTechPanel(screen *ebiten.Image) {
 			msg := fmt.Sprintf("> Araştırılıyor: %s  (%d tur kaldı)", t.NameTR, f.Research.TurnsLeft)
 			DrawText(screen, msg, layout.statusRect.X, activeY+2, FaceMed, color.RGBA{110, 230, 110, 255})
 		}
+		cancelButton := buildTechCancelResearchButton(layout)
+		drawTechButton(screen, cancelButton, color.RGBA{92, 35, 31, 245}, color.RGBA{255, 225, 215, 255}, 0)
 	} else {
 		drawUIMutedText(screen, layout.statusRect.X, activeY+2, "Aktif araştırma yok — araştırmak için bir teknolojiye tıkla")
 	}
@@ -892,6 +905,9 @@ func (r *Renderer) handleTechInput(f *faction.Faction, input gameui.InputState) 
 		r.techFilterCategory = ""
 		return InputAction{}
 	}
+	if f.Research.ActiveID != "" && buildTechCancelResearchButton(layout).HandleInput(input) {
+		return InputAction{Kind: ActionCancelResearch}
+	}
 	if input.LeftJustPressed && techTreeSideBlankHit(layout, treeData.contentW, r.techPanX, r.techPanY, input.MouseX, input.MouseY) {
 		r.showTech = false
 		r.techDragging = false
@@ -955,6 +971,9 @@ func (r *Renderer) techPanelPointerHit(fx, fy float64) bool {
 		return true
 	}
 	layout := techPanelLayoutForScreen()
+	if f.Research.ActiveID != "" && buildTechCancelResearchButton(layout).HitTest(fx, fy) {
+		return true
+	}
 	if layout.treeRect.Hit(fx, fy) {
 		return true
 	}

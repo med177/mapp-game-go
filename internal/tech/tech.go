@@ -140,12 +140,41 @@ func PauseResearch(rs *faction.ResearchState) {
 	if rs == nil || rs.ActiveID == "" || rs.TurnsLeft <= 0 {
 		return
 	}
+	if rs.PaidGoldRecorded {
+		if rs.PausedGold == nil {
+			rs.PausedGold = make(map[string]int)
+		}
+		rs.PausedGold[rs.ActiveID] = rs.PaidGold
+	}
 	if rs.PausedTurns == nil {
 		rs.PausedTurns = make(map[string]int)
 	}
 	rs.PausedTurns[rs.ActiveID] = rs.TurnsLeft
 	rs.ActiveID = ""
 	rs.TurnsLeft = 0
+	rs.PaidGold = 0
+	rs.PaidGoldRecorded = false
+}
+
+// CancelResearch araştırmayı tamamen iptal eder ve başlangıçta ödenen altını iade eder.
+// Eski kayıtlarda ödeme tutarı tutulmadığı için, bu kayıtlarda güncel efektif maliyet kullanılır.
+func CancelResearch(rs *faction.ResearchState, t *Technology, gold *int, researchCostMod float64) (int, bool) {
+	if rs == nil || rs.ActiveID == "" || gold == nil {
+		return 0, false
+	}
+	activeID := rs.ActiveID
+	refund := rs.PaidGold
+	if !rs.PaidGoldRecorded {
+		refund = EffectiveResearchGoldCost(t, researchCostMod)
+	}
+	*gold += refund
+	rs.ActiveID = ""
+	rs.TurnsLeft = 0
+	rs.PaidGold = 0
+	rs.PaidGoldRecorded = false
+	delete(rs.PausedTurns, activeID)
+	delete(rs.PausedGold, activeID)
+	return refund, true
 }
 
 // StartResearch araştırmayı başlatır; başarısızsa false döner.
@@ -174,6 +203,14 @@ func StartResearchWithModifiers(rs *faction.ResearchState, t *Technology, gold *
 			rs.ActiveID = t.ID
 			rs.TurnsLeft = pausedTurns
 			delete(rs.PausedTurns, t.ID)
+			if paidGold, ok := rs.PausedGold[t.ID]; ok {
+				rs.PaidGold = paidGold
+				rs.PaidGoldRecorded = true
+				delete(rs.PausedGold, t.ID)
+			} else {
+				rs.PaidGold = 0
+				rs.PaidGoldRecorded = false
+			}
 			return true
 		}
 	}
@@ -184,6 +221,8 @@ func StartResearchWithModifiers(rs *faction.ResearchState, t *Technology, gold *
 	*gold -= cost
 	rs.ActiveID = t.ID
 	rs.TurnsLeft = EffectiveTurnsRequired(t, researchSpeedMod)
+	rs.PaidGold = cost
+	rs.PaidGoldRecorded = true
 	return true
 }
 
@@ -230,6 +269,8 @@ func Tick(rs *faction.ResearchState) string {
 		rs.Completed[id] = true
 		rs.ActiveID = ""
 		rs.TurnsLeft = 0
+		rs.PaidGold = 0
+		rs.PaidGoldRecorded = false
 		return id
 	}
 	return ""

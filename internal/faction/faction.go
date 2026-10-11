@@ -8,10 +8,13 @@ type FactionID string
 // ResearchState bir fraksiyonun teknoloji araştırma durumu.
 // tech paketi bu struct üzerinde çalışan yardımcı fonksiyonlar sağlar.
 type ResearchState struct {
-	Completed   map[string]bool `json:"completed"`
-	PausedTurns map[string]int  `json:"paused_turns,omitempty"`
-	ActiveID    string          `json:"active_id"`
-	TurnsLeft   int             `json:"turns_left"`
+	Completed        map[string]bool `json:"completed"`
+	PausedTurns      map[string]int  `json:"paused_turns,omitempty"`
+	PausedGold       map[string]int  `json:"paused_gold,omitempty"`
+	ActiveID         string          `json:"active_id"`
+	TurnsLeft        int             `json:"turns_left"`
+	PaidGold         int             `json:"paid_gold,omitempty"`
+	PaidGoldRecorded bool            `json:"paid_gold_recorded,omitempty"`
 }
 
 // TerritorialClaim bir fraksiyonun belirli bir bölge üzerindeki tarihsel veya

@@ -7732,18 +7732,28 @@ func ownerReligion(gs *state.GameState, ownerID string) string {
 
 // cancelResearch aktif teknoloji araştırmasını iptal eder.
 func (g *Game) cancelResearch() {
+	if g == nil || g.gs == nil {
+		return
+	}
 	f := g.gs.Factions[g.gs.PlayerFactionID]
-	if f.Research.ActiveID == "" {
-		g.renderer.ShowCombatResult("Aktif araştırma yok!")
+	if f == nil || f.Research.ActiveID == "" {
+		if g.renderer != nil {
+			g.renderer.ShowCombatResult("Aktif araştırma yok!")
+		}
 		return
 	}
 	activeID := f.Research.ActiveID
-	tech.PauseResearch(&f.Research)
-	if t, ok := g.gs.TechTypes[activeID]; ok {
-		g.renderer.ShowCombatResult(fmt.Sprintf("%s araştırması duraklatıldı. Kaldığı yerden devam edebilirsin.", t.NameTR))
+	t := g.gs.TechTypes[activeID]
+	researchEffects := tech.ComputeEffects(f.Research.Completed, g.gs.TechTypes)
+	refund, ok := tech.CancelResearch(&f.Research, t, &f.Gold, researchEffects.ResearchCostMod)
+	if !ok {
 		return
 	}
-	f.Research.ActiveID = ""
-	f.Research.TurnsLeft = 0
-	g.renderer.ShowCombatResult("Araştırma duraklatıldı.")
+	name := activeID
+	if t != nil && t.NameTR != "" {
+		name = t.NameTR
+	}
+	if g.renderer != nil {
+		g.renderer.ShowCombatResult(fmt.Sprintf("%s araştırması iptal edildi. %d altın iade edildi.", name, refund))
+	}
 }

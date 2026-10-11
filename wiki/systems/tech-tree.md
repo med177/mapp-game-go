@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-09-08
+last_updated: 2026-10-11
 related: [systems/combat, systems/economy, architecture/state-management, dev/data-format]
 ---
 
@@ -31,10 +31,12 @@ type Technology struct {
 
 ```go
 type ResearchState struct {
-    Completed   map[string]bool  // tamamlanan teknoloji ID'leri
-    PausedTurns map[string]int   // yarım bırakılan araştırmaların kalan turu
-    ActiveID    string           // şu an araştırılan teknoloji
-    TurnsLeft   int              // aktif araştırmada kalan tur
+  Completed   map[string]bool  // tamamlanan teknoloji ID'leri
+  PausedTurns map[string]int   // yarım bırakılan araştırmaların kalan turu
+  PausedGold  map[string]int   // bekletilmiş araştırmaların ödenmiş altını
+  ActiveID    string           // şu an araştırılan teknoloji
+  TurnsLeft   int              // aktif araştırmada kalan tur
+  PaidGold    int              // aktif araştırma için ödenen altın
 }
 ```
 
@@ -52,7 +54,7 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
   - Denizcilik: Sarı (200,200,100)
 - **Tamamlanmış Teknolojiler:** Kategori rengine sahip tick badge ile işaretlenir
 - **Aktif Araştırma:** HUD'da gösterilir (isim + kalan tur)
-- **Seçim Esnekliği:** İlk seçim sonrası vazgeçme/değiştirme mümkün; yarım kalan araştırma pause olur ve sonra altın tekrar düşmeden kaldığı yerden devam eder
+- **Seçim Esnekliği:** Aktif araştırma kartından başka teknoloji seçmek mevcut araştırmayı bekletir; tur ilerlemesi ve ödenen ücret saklanır, daha sonra ücret tekrar düşmeden devam eder. `İptal Et • İade` eylemi ise ilerlemeyi siler ve ödenen altını tamamen iade eder; sonrasında başka bir teknoloji seçilebilir. Bu iki işlem birbirinden ayrıdır.
 - **Tur Bitir Davranışı:** Aktif araştırma yoksa ve uygun bir teknoloji varsa turn resolution sırasında ağaç sırasına göre sonraki bağlı teknoloji otomatik başlatılır; böylece her tur panel açıp kart seçme zorunluluğu kalkar. Tüm teknolojiler tamamlandıysa veya yalnız kilitli düğümler kaldıysa otomatik başlangıç olmaz
   - Din: Magenta (200,100,200)
 - **Durum Göstergeleri:**

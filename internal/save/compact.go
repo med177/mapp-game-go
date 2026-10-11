@@ -1787,10 +1787,13 @@ func cloneResearchStatePtr(v faction.ResearchState) *faction.ResearchState {
 
 func cloneResearchStateValue(v faction.ResearchState) faction.ResearchState {
 	return faction.ResearchState{
-		Completed:   cloneStringBoolMap(v.Completed),
-		PausedTurns: cloneStringIntMap(v.PausedTurns),
-		ActiveID:    v.ActiveID,
-		TurnsLeft:   v.TurnsLeft,
+		Completed:        cloneStringBoolMap(v.Completed),
+		PausedTurns:      cloneStringIntMap(v.PausedTurns),
+		PausedGold:       cloneStringIntMap(v.PausedGold),
+		ActiveID:         v.ActiveID,
+		TurnsLeft:        v.TurnsLeft,
+		PaidGold:         v.PaidGold,
+		PaidGoldRecorded: v.PaidGoldRecorded,
 	}
 }
 

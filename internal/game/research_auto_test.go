@@ -105,6 +105,80 @@ func TestPlayerHasResearchableTechsRequiresAvailableMeans(t *testing.T) {
 	}
 }
 
+func TestCancelResearchRefundsPaidGoldAndAllowsDifferentResearch(t *testing.T) {
+	player := &faction.Faction{
+		ID:   "player",
+		Gold: 100,
+		Research: faction.ResearchState{
+			Completed: map[string]bool{"root": true},
+		},
+	}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions:        map[faction.FactionID]*faction.Faction{"player": player},
+		TechTypes: map[string]*tech.Technology{
+			"first":  {ID: "first", NameTR: "İlk Araştırma", Requires: []string{"root"}, GoldCost: 60, TurnsRequired: 4},
+			"second": {ID: "second", NameTR: "İkinci Araştırma", Requires: []string{"root"}, GoldCost: 30, TurnsRequired: 2},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.startResearch("first")
+	if player.Gold != 40 || player.Research.ActiveID != "first" {
+		t.Fatalf("ilk araştırma başlamadı veya maliyeti düşmedi: gold=%d active=%q", player.Gold, player.Research.ActiveID)
+	}
+	g.cancelResearch()
+	if player.Gold != 100 || player.Research.ActiveID != "" || player.Research.TurnsLeft != 0 {
+		t.Fatalf("iptalde tam iade ve temiz state bekleniyordu: gold=%d research=%+v", player.Gold, player.Research)
+	}
+	if len(player.Research.PausedTurns) != 0 {
+		t.Fatalf("iptal edilen araştırma bekletilmiş olarak saklanmamalı: %+v", player.Research.PausedTurns)
+	}
+
+	g.startResearch("second")
+	if player.Research.ActiveID != "second" || player.Gold != 70 {
+		t.Fatalf("iptalden sonra farklı araştırma seçilemedi: gold=%d active=%q", player.Gold, player.Research.ActiveID)
+	}
+}
+
+func TestSwitchingResearchKeepsPaidCostForResumeAndCancel(t *testing.T) {
+	player := &faction.Faction{
+		ID:   "player",
+		Gold: 100,
+		Research: faction.ResearchState{
+			Completed: map[string]bool{"root": true},
+		},
+	}
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions:        map[faction.FactionID]*faction.Faction{"player": player},
+		TechTypes: map[string]*tech.Technology{
+			"first":  {ID: "first", NameTR: "İlk", Requires: []string{"root"}, GoldCost: 60, TurnsRequired: 4},
+			"second": {ID: "second", NameTR: "İkinci", Requires: []string{"root"}, GoldCost: 30, TurnsRequired: 2},
+		},
+	}
+	g := &Game{gs: gs, renderer: &render.Renderer{}}
+
+	g.startResearch("first")
+	player.Research.TurnsLeft = 3
+	g.startResearch("second")
+	if player.Research.ActiveID != "second" || player.Research.PausedTurns["first"] != 3 || player.Research.PausedGold["first"] != 60 {
+		t.Fatalf("araştırma değiştirirken ilk çalışma ücret/tur bilgisi korunmalı: %+v", player.Research)
+	}
+	g.cancelResearch()
+	if player.Gold != 40 || player.Research.ActiveID != "" {
+		t.Fatalf("ikinci araştırma iptalinde yalnızca onun ücreti iade edilmeli: gold=%d research=%+v", player.Gold, player.Research)
+	}
+	g.startResearch("first")
+	if player.Research.ActiveID != "first" || player.Research.TurnsLeft != 3 || player.Research.PaidGold != 60 {
+		t.Fatalf("bekletilen araştırma ücret ödemeden kaldığı yerden devam etmeli: %+v", player.Research)
+	}
+	g.cancelResearch()
+	if player.Gold != 100 {
+		t.Fatalf("devam ettirilen araştırma iptalinde ilk ücret iade edilmeli: gold=%d want=100", player.Gold)
+	}
+}
+
 func TestMoveDockedFleetToSamePortDoesNotConsumeMovement(t *testing.T) {
 	const (
 		sea  = world.RegionID("sea")

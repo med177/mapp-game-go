@@ -1794,6 +1794,8 @@ func applyCompletedTechs(gs *state.GameState, fid faction.FactionID, techIDs []s
 		if f.Research.ActiveID == techID {
 			f.Research.ActiveID = ""
 			f.Research.TurnsLeft = 0
+			f.Research.PaidGold = 0
+			f.Research.PaidGoldRecorded = false
 		}
 	}
 }
@@ -1829,6 +1831,8 @@ func applyStartedResearch(gs *state.GameState, fid faction.FactionID, techID str
 	f.Research.ActiveID = techID
 	researchEffects := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
 	f.Research.TurnsLeft = tech.EffectiveTurnsRequired(t, researchEffects.ResearchSpeedMod)
+	f.Research.PaidGold = 0
+	f.Research.PaidGoldRecorded = true
 }
 
 func applyRelationEffects(gs *state.GameState, fid faction.FactionID, rels []RelationEffect) {
