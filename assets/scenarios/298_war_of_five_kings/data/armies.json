@@ -212,25 +212,6 @@
     ]
   },
   {
-    "id": "army_nights_watch_1",
-    "owner_id": "nights_watch",
-    "region_id": "the_wall_west",
-    "units": [
-      {
-        "type_id": "nights_watch_rangers",
-        "count": 4
-      },
-      {
-        "type_id": "infantry",
-        "count": 4
-      },
-      {
-        "type_id": "militia",
-        "count": 2
-      }
-    ]
-  },
-  {
     "id": "army_free_folk_1",
     "owner_id": "free_folk",
     "region_id": "beyond_the_wall",
@@ -500,21 +481,32 @@
     ]
   },
   {
+    "id": "army_nights_watch_1",
+    "owner_id": "nights_watch",
+    "region_id": "the_wall_west",
+    "units": [
+      {
+        "type_id": "nights_watch_rangers",
+        "count": 6
+      },
+      {
+        "type_id": "nights_watch_swordsmen",
+        "count": 4
+      }
+    ]
+  },
+  {
     "id": "army_nights_watch_2",
     "owner_id": "nights_watch",
     "region_id": "the_wall_east",
     "units": [
       {
         "type_id": "nights_watch_rangers",
-        "count": 3
+        "count": 5
       },
       {
-        "type_id": "infantry",
+        "type_id": "nights_watch_swordsmen",
         "count": 3
-      },
-      {
-        "type_id": "militia",
-        "count": 2
       }
     ]
   },
