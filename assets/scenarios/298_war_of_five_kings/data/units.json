@@ -1,7 +1,7 @@
 [
   {
     "id": "militia",
-    "blocked_factions": [ "free_folk", "others" ],
+    "blocked_factions": [ "free_folk", "others", "nights_watch" ],
     "image": "army/peasant.png",
     "name": "Peasant Levy",
     "name_tr": "Köylü Milisler",
@@ -33,7 +33,7 @@
   },
   {
     "id": "infantry",
-    "blocked_factions": [ "free_folk", "others" ],
+    "blocked_factions": [ "free_folk", "others", "nights_watch" ],
     "image": "army/spearmen.png",
     "name": "Spearmen",
     "name_tr": "Mızraklılar",
@@ -103,7 +103,7 @@
   },
   {
     "id": "heavy_cavalry",
-    "blocked_factions": [ "free_folk", "others" ],
+    "blocked_factions": [ "free_folk", "others", "nights_watch" ],
     "image": "army/knight_westeros.png",
     "name": "Knights of Westeros",
     "name_tr": "Şövalyeler",
@@ -175,7 +175,7 @@
     "spice_cost": 0,
     "movement_points": 2
   },
-    {
+  {
     "id": "dragon",
     "allowed_factions": [ "targaryen" ],
     "max_per_faction": 3,
@@ -323,12 +323,14 @@
     "siege_breach_multiplier": 1.3,
     "siege_breach_max_fort_level": 7,
     "siege_defense_pressure": 2,
-    "required_buildings": [],
+    "required_buildings": [ 
+      { "id": "barracks", "level": 2 }
+    ],
     "required_tech": [
       "feudal_levies"
     ],
     "tier": 3,
-    "turns_required": 8,
+    "turns_required": 7,
     "grain_cost": 26,
     "iron_cost": 2,
     "timber_cost": 0,
@@ -368,9 +370,9 @@
     "spice_cost": 0,
     "movement_points": 3
   },
-    {
+  {
     "id": "nights_watch_swordsmen",
-    "allowed_factions": [ "nights_watch"],
+    "allowed_factions": [ "nights_watch" ],
     "image": "army/nightwatch_swordsmen.png",
     "name": "Swordsmen",
     "name_tr": "Kılıçlılar",
@@ -647,7 +649,7 @@
   },
   {
     "id": "trebuchet",
-    "blocked_factions": [ "free_folk", "targaryen", "others" ],
+    "blocked_factions": [ "free_folk", "targaryen", "others", "nights_watch" ],
     "image": "army/trebuchet.png",
     "name": "Trebuchet",
     "name_tr": "Mancınık",
@@ -680,7 +682,7 @@
   },
   {
     "id": "transport",
-    "blocked_factions": [ "free_folk", "others" ],
+    "blocked_factions": [ "free_folk", "others", "nights_watch" ],
     "image": "army/ship_transport.png",
     "name": "Transport Ship",
     "name_tr": "Nakliye Gemisi",
@@ -712,6 +714,7 @@
   },
   {
     "id": "merchant_ship",
+    "blocked_factions": [ "free_folk", "others" ],
     "image": "army/ship_merchant.png",
     "name": "Merchant Ship",
     "name_tr": "Ticaret Gemisi",
@@ -741,9 +744,10 @@
     "spice_cost": 2,
     "cloth_cost": 6,
     "movement_points": 4
-  }, {
+  },
+  {
     "id": "warship",
-    "blocked_factions": [ "targaryen", "free_folk", "nights_watch" ],
+    "blocked_factions": [ "free_folk", "others", "nights_watch", "targaryen" ],
     "image": "army/ship_war_galley.png",
     "name": "Warship",
     "name_tr": "Savaş Gemisi",
