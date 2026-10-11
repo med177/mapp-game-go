@@ -81,7 +81,7 @@
     "region_id": "isle_faces",
     "settlements": [
       {
-        "id": "new_region_63_settlement_1",
+        "id": "faces_tower",
         "name_tr": "Yüzler Kulesi",
         "x": 1277,
         "y": 2170,
@@ -1129,22 +1129,48 @@
     ]
   },
   {
-    "region_id": "the_gift",
+    "region_id": "the_gift_west",
     "settlements": [
       {
         "id": "the_gift_main",
         "name_tr": "Hediye",
-        "x": 1358,
-        "y": 740,
+        "x": 1214,
+        "y": 711,
         "type": "town",
         "is_center": true
       },
       {
         "id": "the_gift_port",
         "name_tr": "Liman",
-        "x": 1522,
-        "y": 707,
+        "x": 1097,
+        "y": 674,
         "type": "port"
+      }
+    ]
+  },
+  {
+    "region_id": "the_gift_east",
+    "settlements": [
+      {
+        "id": "the_gift_east_settlement_1",
+        "name_tr": "Kraliçe Tacı",
+        "x": 1458,
+        "y": 763,
+        "type": "town",
+        "is_center": true
+      }
+    ]
+  },
+  {
+    "region_id": "the_gift_center",
+    "settlements": [
+      {
+        "id": "king_remember_forest",
+        "name_tr": "Köstebek Kasabası",
+        "x": 1375,
+        "y": 765,
+        "type": "town",
+        "is_center": true
       }
     ]
   },
@@ -1154,8 +1180,8 @@
       {
         "id": "castle_black_main",
         "name_tr": "Kara Kale",
-        "x": 1368,
-        "y": 640,
+        "x": 1372,
+        "y": 635,
         "type": "fortress",
         "is_center": true
       }

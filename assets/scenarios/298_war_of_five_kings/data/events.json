@@ -3910,8 +3910,8 @@
             "source_faction_id": "nights_watch",
             "recipient_faction_id": "free_folk",
             "region_ids": [
-              "brandon_gift",
-              "the_gift"
+              "the_gift_center",
+              "the_gift_east"
             ],
             "relation_stance": "allied",
             "relation_score_delta": 35
@@ -3939,8 +3939,8 @@
             "source_faction_id": "nights_watch",
             "recipient_faction_id": "free_folk",
             "region_ids": [
-              "brandon_gift",
-              "the_gift"
+              "the_gift_center",
+              "the_gift_east"
             ],
             "relation_stance": "allied",
             "relation_score_delta": 35
@@ -4069,8 +4069,8 @@
       "free_folk_south_settlement"
     ],
     "requires_owned_regions": [
-      "brandon_gift",
-      "the_gift"
+      "the_gift_center",
+      "the_gift_east"
     ],
     "requires_active_factions": [
       "free_folk"

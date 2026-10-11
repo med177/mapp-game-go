@@ -729,8 +729,12 @@
               "value": 100
             },
             {
-              "region_id": "the_gift",
-              "value": 90
+              "region_id": "the_gift_west",
+              "value": 80
+            },
+            {
+              "region_id": "brandon_gift",
+              "value": 100
             }
           ],
           "priority": 100,
@@ -913,23 +917,19 @@
         },
         {
           "region_id": "the_wall_west",
-          "value": 90
+          "value": 80
         },
         {
           "region_id": "the_wall_east",
-          "value": 90
+          "value": 80
         },
         {
-          "region_id": "brandon_gift",
+          "region_id": "the_gift_center",
           "value": 100
         },
         {
-          "region_id": "the_gift",
+          "region_id": "the_gift_east",
           "value": 100
-        },
-        {
-          "region_id": "winterfell_region",
-          "value": 75
         }
       ],
       "objectives": [
@@ -965,11 +965,11 @@
               "value": 100
             },
             {
-              "region_id": "the_gift",
+              "region_id": "the_gift_center",
               "value": 100
             },
             {
-              "region_id": "winterfell_region",
+              "region_id": "the_gift_east",
               "value": 78
             }
           ],

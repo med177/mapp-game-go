@@ -606,7 +606,7 @@
         "core": true
       },
       {
-        "region_id": "the_gift",
+        "region_id": "the_gift_west",
         "value": 80,
         "core": true
       }
@@ -857,7 +857,7 @@
         "value": 90
       },
       {
-        "region_id": "the_gift",
+        "region_id": "the_gift_west",
         "value": 100
       }
     ]
