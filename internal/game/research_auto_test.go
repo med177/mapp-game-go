@@ -60,6 +60,51 @@ func TestAutoStartResearchIfIdleStartsNextResearchableTech(t *testing.T) {
 	}
 }
 
+func TestPlayerHasResearchableTechsRequiresAvailableMeans(t *testing.T) {
+	tests := []struct {
+		name        string
+		gold        int
+		pausedTurns int
+		want        bool
+	}{
+		{name: "insufficient gold", gold: 0, want: false},
+		{name: "enough gold", gold: 50, want: true},
+		{name: "paused research can resume without gold", gold: 0, pausedTurns: 3, want: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			player := &faction.Faction{
+				ID:   "player",
+				Gold: tt.gold,
+				Research: faction.ResearchState{
+					Completed: map[string]bool{"root": true},
+				},
+			}
+			if tt.pausedTurns > 0 {
+				player.Research.PausedTurns = map[string]int{"next": tt.pausedTurns}
+			}
+			gs := &state.GameState{
+				PlayerFactionID: "player",
+				Factions:        map[faction.FactionID]*faction.Faction{"player": player},
+				TechTypes: map[string]*tech.Technology{
+					"next": {
+						ID:            "next",
+						Requires:      []string{"root"},
+						GoldCost:      50,
+						TurnsRequired: 3,
+					},
+				},
+			}
+			g := &Game{gs: gs}
+
+			if got := g.playerHasResearchableTechs(); got != tt.want {
+				t.Fatalf("playerHasResearchableTechs() = %t, want %t", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestMoveDockedFleetToSamePortDoesNotConsumeMovement(t *testing.T) {
 	const (
 		sea  = world.RegionID("sea")

@@ -2878,6 +2878,7 @@ func (g *Game) playerHasResearchableTechs() bool {
 		return false
 	}
 	completed := f.Research.Completed
+	researchEffects := tech.ComputeEffects(completed, g.gs.TechTypes)
 	ownedRegions := make(map[string]bool)
 	for _, region := range g.gs.LandRegionsOwnedBy(f.ID) {
 		ownedRegions[string(region.ID)] = true
@@ -2890,7 +2891,9 @@ func (g *Game) playerHasResearchableTechs() bool {
 			continue
 		}
 		if tech.IsUnlockedForFactionContext(&f.Research, t, string(f.ID), g.gs.Year, ownedRegions) {
-			return true
+			if f.Research.PausedTurns[techID] > 0 || f.Gold >= tech.EffectiveResearchGoldCost(t, researchEffects.ResearchCostMod) {
+				return true
+			}
 		}
 	}
 	return false
