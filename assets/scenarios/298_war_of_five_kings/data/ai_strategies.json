@@ -1257,6 +1257,30 @@
         {
           "region_id": "beyond_the_wall",
           "value": 90
+        },
+        {
+          "region_id": "kings_landing",
+          "value": 100
+        },
+        {
+          "region_id": "casterly_rock",
+          "value": 100
+        },
+        {
+          "region_id": "sunspear",
+          "value": 100
+        },
+        {
+          "region_id": "highgarden",
+          "value": 100
+        },
+        {
+          "region_id": "oldtown",
+          "value": 100
+        },
+        {
+          "region_id": "dragonstone",
+          "value": 100
         }
       ],
       "objectives": [
