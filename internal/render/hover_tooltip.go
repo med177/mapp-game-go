@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"image/color"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/city"
@@ -261,7 +262,9 @@ func (r *Renderer) drawArmyTransportInfoHoverTooltip(screen *ebiten.Image) {
 	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
 	drawTooltipBox(screen, x, y, w, h)
 	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
-	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 40}, detail, ColorWhite, gameui.TextSmall, 17, 2)
+	for lineIndex, line := range strings.Split(detail, "\n") {
+		drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 34 + float64(lineIndex)*17, W: w - 24, H: 17}, line, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	}
 }
 
 func armyPanelCombatView(gs *state.GameState, a *army.Army, embarked bool) (army.Army, combat.BattleContext, bool, bool) {

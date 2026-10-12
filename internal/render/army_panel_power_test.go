@@ -115,4 +115,8 @@ func TestArmyTransportFooterShowsPointerAndTotalSupplyCapacity(t *testing.T) {
 	if want := "Toplam ikmal malı kapasitesi (5 tur): 2500 mal"; !strings.Contains(detail, want) {
 		t.Fatalf("tooltip detayı %q, %q içermiyor", detail, want)
 	}
+	lines := strings.Split(detail, "\n")
+	if len(lines) != 2 || !strings.HasPrefix(lines[1], "Mevcut yük:") {
+		t.Fatalf("mevcut yük ikinci satırda değil: %q", detail)
+	}
 }
