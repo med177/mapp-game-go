@@ -263,7 +263,6 @@
       "gulltown_bay",
       "hapstackhall",
       "pentos_bay",
-      "sharp_point",
       "shipbreaker_bay",
       "the_gullet"
     ],
@@ -298,6 +297,7 @@
       "braavos_channel",
       "gulltown_bay",
       "myr_bay",
+      "myr_region",
       "narrow_sea",
       "pentos_region",
       "shipbreaker_bay"
@@ -486,7 +486,6 @@
       "bay_of_seals",
       "eastwatch_sea",
       "karhold",
-      "lonely_hills",
       "sea",
       "skagos",
       "the_bite",
@@ -1944,7 +1943,6 @@
     "neighbors": [
       "hapstackhall",
       "kingswood",
-      "narrow_sea",
       "the_gullet"
     ],
     "world_x": 1616,
@@ -2178,8 +2176,8 @@
       "norvos",
       "pentos_bay"
     ],
-    "world_x": 2136,
-    "world_y": 2362,
+    "world_x": 2229,
+    "world_y": 2263,
     "shape_id": "ESS_PN",
     "is_sea": false,
     "is_locked": false,
@@ -2221,10 +2219,11 @@
       "disputed_lands",
       "essos_free_cities",
       "myr_bay",
+      "pentos_bay",
       "pentos_region"
     ],
-    "world_x": 2295,
-    "world_y": 2797,
+    "world_x": 2311,
+    "world_y": 2785,
     "shape_id": "ESS_PN",
     "is_sea": false,
     "is_locked": false,
@@ -4464,7 +4463,6 @@
     "neighbors": [
       "karhold",
       "long_lake",
-      "shivering_sea",
       "the_dreadfort",
       "the_gift_center",
       "the_gift_east",

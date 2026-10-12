@@ -404,6 +404,11 @@ func (r *Renderer) drawArmyMarkerHoverTooltip(screen *ebiten.Image) {
 	if _, ok := r.uiLayers.TopAt(fx, fy); ok {
 		return
 	}
+	// Bonus rozeti marker dairesinin hover alanıyla örtüşür. Rozet kendi
+	// tooltip'ini göstereceği için bu noktada filo birim özeti çizilmemeli.
+	if _, ok := r.merchantTradeBonusHitAt(fx, fy); ok {
+		return
+	}
 	aid, ok := r.armyHitAt(fx, fy)
 	if !ok {
 		return
