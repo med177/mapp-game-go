@@ -296,6 +296,15 @@ func (s *GameState) movementRegionCanTransit(a *army.Army, region *world.Region)
 		if candidate == nil || candidate.ID == a.ID || candidate.RegionID != region.ID || candidate.OwnerID == a.OwnerID {
 			continue
 		}
+		if airborne && candidate.IsNaval {
+			// Barıştaki veya müttefik filolar hava rotasında temas oluşturmaz;
+			// deniz üzerindeki ara durakları kapatmamaları gerekir. Savaş halindeki
+			// filo ise hedef deniz olarak kalır ve üzerinden geçilmez.
+			relation := s.Relations[faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(candidate.OwnerID))]
+			if relation == nil || relation.Stance != faction.StanceWar {
+				continue
+			}
+		}
 		return false
 	}
 	return true

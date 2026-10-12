@@ -941,6 +941,14 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 	} else {
 		DrawText(screen, "Can: ~", textX, statY, FaceSmall, ColorGray)
 	}
+	statY += 16
+	if capacity := a.TransportCapacity(gs.UnitTypes); capacity > 0 {
+		DrawText(screen, fmt.Sprintf("Ordu taşıma: %d birlik", capacity), textX, statY, FaceSmall, ColorGray)
+		statY += 16
+	}
+	if capacity := gs.SupplyCargoCapacityForTurns(a.ID, 5); capacity > 0 {
+		DrawText(screen, fmt.Sprintf("Mal taşıma (5 tur): %d", capacity), textX, statY, FaceSmall, ColorGray)
+	}
 
 	if sprite != nil {
 		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})

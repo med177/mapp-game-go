@@ -160,6 +160,72 @@ func TestAirMovementRouteCrossesSeaAndBlockedTerrain(t *testing.T) {
 	}
 }
 
+func TestAirMovementCanFlyOverPeacetimeFleetToReachHostileFleet(t *testing.T) {
+	const (
+		start   = world.RegionID("braavos")
+		channel = world.RegionID("braavos_channel")
+		target  = world.RegionID("bay_of_crabs")
+		beyond  = world.RegionID("beyond")
+	)
+	attacker := &army.Army{
+		ID:         "dragon_army",
+		OwnerID:    "player",
+		RegionID:   start,
+		MovePoints: 6,
+		Units:      []army.Unit{{TypeID: "dragon"}},
+	}
+	transitFleet := &army.Army{
+		ID:       "peaceful_fleet",
+		OwnerID:  "neutral",
+		RegionID: channel,
+		IsNaval:  true,
+		Units:    []army.Unit{{TypeID: "transport"}},
+	}
+	targetFleet := &army.Army{
+		ID:       "enemy_merchant_fleet",
+		OwnerID:  "enemy",
+		RegionID: target,
+		IsNaval:  true,
+		Units:    []army.Unit{{TypeID: "merchant_ship"}},
+	}
+	gs := &GameState{
+		Regions: map[world.RegionID]*world.Region{
+			start:   {ID: start, Neighbors: []world.RegionID{channel}},
+			channel: {ID: channel, IsSea: true, Neighbors: []world.RegionID{start, target}},
+			target:  {ID: target, IsSea: true, Neighbors: []world.RegionID{channel, beyond}},
+			beyond:  {ID: beyond, IsSea: true, Neighbors: []world.RegionID{target}},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			attacker.ID:     attacker,
+			transitFleet.ID: transitFleet,
+			targetFleet.ID:  targetFleet,
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"dragon":        {ID: "dragon", Category: army.CategoryDragon},
+			"transport":     {ID: "transport", Category: army.CategoryNavalTrans},
+			"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("player", "neutral"): {FactionA: "player", FactionB: "neutral", Stance: faction.StancePeace},
+			faction.RelationKey("player", "enemy"):   {FactionA: "player", FactionB: "enemy", Stance: faction.StanceWar},
+		},
+	}
+
+	reachability := gs.MovementReachableForArmy(attacker)
+	if !gs.AirSortieAllowed(attacker, target, reachability) {
+		t.Fatalf("hostile fleet at %q should be sortie-reachable through a peacetime fleet; nodes=%v", target, reachability.Nodes)
+	}
+	if route := reachability.PathTo(target); len(route) != 3 || route[1] != channel {
+		t.Fatalf("sortie route = %v, want %q -> %q -> %q", route, start, channel, target)
+	}
+	if defender := gs.SelectBattleDefender(attacker, target, false); defender == nil || defender.ID != targetFleet.ID {
+		t.Fatalf("hostile merchant fleet defender = %v, want %q", defender, targetFleet.ID)
+	}
+	if _, ok := reachability.Nodes[beyond]; ok {
+		t.Fatalf("air route continued through the hostile fleet's target region: %v", reachability.Nodes)
+	}
+}
+
 func TestAirMovementRouteUsesScenarioAirspaceDiplomacyRule(t *testing.T) {
 	regions := map[world.RegionID]*world.Region{
 		"start":   {ID: "start", OwnerID: "player", Neighbors: []world.RegionID{"foreign"}},
