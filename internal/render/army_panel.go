@@ -761,15 +761,19 @@ func transportInfoButtonStyleFor(a *army.Army) gameui.ButtonStyle {
 	return transportInfoButtonStyle
 }
 
+const (
+	armyTransportInfoButtonHorizontalPadding float32 = 10
+	armyTransportPowerTextGap                float32 = 8
+)
+
 func armyTransportInfoButtonFromFooter(footer armyPanelFooterLayout) (gameui.Button, bool) {
 	if footer.transportText == "" {
 		return gameui.Button{}, false
 	}
 	textW := float32(MeasureText(footer.transportText, FaceSmall))
-	const horizontalPadding = float32(10)
-	buttonW := textW + horizontalPadding*2
+	buttonW := textW + armyTransportInfoButtonHorizontalPadding*2
 	return gameui.NewButton(
-		float64(footer.transportX-horizontalPadding),
+		float64(footer.transportX-armyTransportInfoButtonHorizontalPadding),
 		float64(footer.footerY+merchantRouteFooterButtonGap),
 		float64(buttonW),
 		float64(merchantRouteFooterButtonH),
@@ -881,7 +885,7 @@ func (footer *armyPanelFooterLayout) recalculateRightAnchoredText() {
 	x := footer.footerRight - float32(MeasureText(footer.powerText, FaceSmall))
 	footer.powerX = x
 	if footer.transportText != "" {
-		x -= 12 + float32(MeasureText(footer.transportText, FaceSmall))
+		x -= armyTransportPowerTextGap + armyTransportInfoButtonHorizontalPadding + float32(MeasureText(footer.transportText, FaceSmall))
 		footer.transportX = x
 	}
 	if footer.bonusText != "" {

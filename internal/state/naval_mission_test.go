@@ -83,6 +83,29 @@ func TestSupplyCargoLoadsAssignsAndUnloadsAtCapital(t *testing.T) {
 	}
 }
 
+func TestSupplyCargoCapacityForUnitTypeIsPerUnit(t *testing.T) {
+	units := make([]army.Unit, 16)
+	for i := range units {
+		units[i] = army.Unit{TypeID: "transport"}
+	}
+	gs := &GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"transport": {ID: "transport", Category: army.CategoryNavalTrans, CarryCapacity: 4},
+			"dragon":    {ID: "dragon", Category: army.CategoryDragon, GrainUpkeep: 25},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {ID: "fleet", IsNaval: true, Units: units},
+		},
+	}
+
+	if got := gs.SupplyCargoCapacityForUnitType("transport", 5); got != 500 {
+		t.Fatalf("tek nakliye gemisinin 5 turluk ikmal kapasitesi = %d, want 500", got)
+	}
+	if got := gs.SupplyCargoCapacityForTurns("fleet", 5); got != 2500 {
+		t.Fatalf("filonun 5 turluk ikmal kapasitesi = %d, want 2500", got)
+	}
+}
+
 func TestLoadSupplyCargoForTurnsAddsToExistingCargoAndLeavesOverflowInStock(t *testing.T) {
 	gs := &GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

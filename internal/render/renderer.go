@@ -2535,6 +2535,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawNavalEmbarkedArmyHoverTooltip(screen)
 		r.drawNavalLandingTargetHoverTooltip(screen)
 		r.drawNavalSupplyCargoHoverTooltip(screen)
+		r.drawArmyTransportInfoHoverTooltip(screen)
 	} else {
 		r.drawEditModeHud(screen)
 		// Shape yardım paneli harita işaretlerinden sonra çizilir; böylece ordu

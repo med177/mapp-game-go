@@ -226,6 +226,44 @@ func (r *Renderer) drawArmyPowerHoverTooltip(screen *ebiten.Image) {
 	drawArmyPowerTooltip(screen, r.gs, r.SelectedArmy, embarked, float64(mx), float64(my))
 }
 
+func armyTransportInfoTooltipText(gs *state.GameState, fleet *army.Army) (string, string, bool) {
+	if gs == nil || fleet == nil || !fleet.IsTransportCarrier(gs.UnitTypes) {
+		return "", "", false
+	}
+	if !fleet.IsNaval {
+		return "Taşıma Kapasitesi", fmt.Sprintf("Ordu taşıma kapasitesi: %d birlik\nİkmal malı taşıma kapasitesi yok.", fleet.TransportCapacity(gs.UnitTypes)), true
+	}
+
+	capacity := gs.SupplyCargoCapacityForTurns(fleet.ID, 5)
+	if capacity <= 0 {
+		return "Taşıma Kapasitesi", "Bu filonun ikmal malı kapasitesi yok.", true
+	}
+	loaded := gs.SupplyCargoLoadedAmount(fleet.ID)
+	detail := fmt.Sprintf("Toplam ikmal malı kapasitesi (5 tur): %d mal\nMevcut yük: %d / %d mal", capacity, loaded, capacity)
+	return "Filo Taşıma Kapasitesi", detail, true
+}
+
+func (r *Renderer) drawArmyTransportInfoHoverTooltip(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || !r.armyPanelTooltipActive() || r.SelectedArmy == "" {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	if !armyTransportInfoButtonHit(float64(mx), float64(my), r.gs, r.SelectedArmy) {
+		return
+	}
+	fleet := r.gs.Armies[r.SelectedArmy]
+	title, detail, ok := armyTransportInfoTooltipText(r.gs, fleet)
+	if !ok {
+		return
+	}
+	const tooltipW = 350.0
+	const tooltipH = 84.0
+	x, y, w, h := tooltipRect(float64(mx), float64(my), tooltipW, tooltipH)
+	drawTooltipBox(screen, x, y, w, h)
+	drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 9, W: w - 24, H: 20}, title, ColorGold, gameui.TextMedium, gameui.TextAlignStart)
+	drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 34, W: w - 24, H: h - 40}, detail, ColorWhite, gameui.TextSmall, 17, 2)
+}
+
 func armyPanelCombatView(gs *state.GameState, a *army.Army, embarked bool) (army.Army, combat.BattleContext, bool, bool) {
 	if gs == nil || a == nil {
 		return army.Army{}, combat.BattleContextLand, false, false
@@ -942,11 +980,11 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 		DrawText(screen, "Can: ~", textX, statY, FaceSmall, ColorGray)
 	}
 	statY += 16
-	if capacity := a.TransportCapacity(gs.UnitTypes); capacity > 0 {
-		DrawText(screen, fmt.Sprintf("Ordu taşıma: %d birlik", capacity), textX, statY, FaceSmall, ColorGray)
+	if capacity := utype.CarryCapacity; capacity > 0 {
+		DrawText(screen, fmt.Sprintf("Bu birimin taşıması: %d birlik", capacity), textX, statY, FaceSmall, ColorGray)
 		statY += 16
 	}
-	if capacity := gs.SupplyCargoCapacityForTurns(a.ID, 5); capacity > 0 {
+	if capacity := gs.SupplyCargoCapacityForUnitType(utype.ID, 5); capacity > 0 {
 		DrawText(screen, fmt.Sprintf("Mal taşıma (5 tur): %d", capacity), textX, statY, FaceSmall, ColorGray)
 	}
 

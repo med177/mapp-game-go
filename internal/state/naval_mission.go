@@ -208,6 +208,24 @@ func (s *GameState) SupplyCargoCapacityForTurns(fleetID army.ArmyID, turns int) 
 	if fleet == nil || !fleet.IsNaval {
 		return 0
 	}
+	return fleet.TransportCapacity(s.UnitTypes) * s.maxSupplyCargoGrainUpkeep() * turns
+}
+
+// SupplyCargoCapacityForUnitType, tek bir birim örneğinin seçilen süre boyunca
+// taşıyabileceği toplam ikmal malı miktarını döner. Birim hover tooltip'inde
+// filo toplamı yerine bu değer gösterilmelidir.
+func (s *GameState) SupplyCargoCapacityForUnitType(unitTypeID string, turns int) int {
+	if s == nil || turns <= 0 {
+		return 0
+	}
+	unitType := s.UnitTypes[unitTypeID]
+	if unitType == nil || unitType.CarryCapacity <= 0 {
+		return 0
+	}
+	return unitType.CarryCapacity * s.maxSupplyCargoGrainUpkeep() * turns
+}
+
+func (s *GameState) maxSupplyCargoGrainUpkeep() int {
 	maxUpkeep := 0
 	for _, unitType := range s.UnitTypes {
 		if unitType == nil || unitType.Category == army.CategoryNavalWar || unitType.Category == army.CategoryNavalTrans || unitType.Category == army.CategoryNavalTrade {
@@ -217,7 +235,7 @@ func (s *GameState) SupplyCargoCapacityForTurns(fleetID army.ArmyID, turns int) 
 			maxUpkeep = unitType.GrainUpkeep
 		}
 	}
-	return fleet.TransportCapacity(s.UnitTypes) * maxUpkeep * turns
+	return maxUpkeep
 }
 
 // SupplyCargoLoadedAmount, filodaki tüm ikmal mallarının toplam miktarını
