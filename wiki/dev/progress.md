@@ -11,6 +11,17 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   izinleri birlikte uygulanıyor. `internal/tech`, `internal/render`,
   `internal/game`, `internal/ai`, `internal/events` ve ilgili senaryo JSON'u.
 
+- 2026-10-12: 298 senaryosunun Targaryen dönüşü event'i, mevcut savaş sonrası
+  bayrak ve tarih koşullarını koruyarak üç rotaya genişletildi: Baratheonlarla
+  birleşme, bağımsız taht iddiası için savaş veya Westeros seferini erteleyip
+  doğuda güçlenme. `assets/scenarios/298_war_of_five_kings/data/events.json`.
+
+- 2026-10-12: 298 senaryosunda 306–330 arasına 18 tarihli event eklendi. Savaş
+  sonrası ekonomi ve yönetim kararlarının yanı sıra Martell, Stark, Tyrell,
+  Greyjoy, Targaryen ve Gece Nöbeti'ne özgü dallar; Duvar yarılmışsa ortak
+  savunma, Akgezenlerin önderi yenilmişse ayrı toparlanma yolu içeriyor.
+  `assets/scenarios/298_war_of_five_kings/data/events.json`.
+
 - 2026-10-11: Teknoloji panelinde aktif araştırma metni ile iptal/iade düğmesi
   aynı merkezli gruba alındı; kategori filtreleri daraltılıp ekran ortasına
   hizalandı. Sekme çizimi ve hit-test ortak geometri kullanıyor.

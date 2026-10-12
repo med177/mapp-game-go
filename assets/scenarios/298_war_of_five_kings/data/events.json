@@ -5043,7 +5043,7 @@
   {
     "id": "targaryen_return_302",
     "name_tr": "Targaryenlerin Westeros'a Dönüşü",
-    "desc_tr": "Daenerys Targaryen ejderhalarıyla birlikte Westeros'a döner. Eski hanedan Demir Taht üzerindeki hakkını yeniden ileri sürer.",
+    "desc_tr": "Beş Kralın Savaşı'nın ardından Daenerys Targaryen ejderhaları ve doğuda topladığı güçle Westeros'a dönmeye hazırlanıyor. Hanedan, Demir Taht'ı Baratheonlarla birleşerek mi geri alacağına, kendi sancağı altında mı savaşacağına, yoksa seferi erteleyip doğudaki gücünü mü pekiştireceğine karar vermeli.",
     "random_probability": 0,
     "min_turn": 0,
     "target": "specific_faction",
@@ -5055,12 +5055,12 @@
     "historical_month": 9,
     "one_shot": true,
     "affected_faction": "targaryen",
-    "choice_prompt_tr": "Targaryen hanedanı Demir Taht'ı geri almak için harekete geçsin mi?",
+    "choice_prompt_tr": "Targaryen hanedanı Westeros'a dönüşünde hangi yolu izlemeli?",
     "choices": [
       {
         "id": "targaryen_restoration_of_the_iron_throne",
-        "label_tr": "Targaryen restorasyonunu ilan et",
-        "desc_tr": "Targaryen ve Baratheon kuvvetleri tek bir siyasi yapı altında birleşir; Demir Taht Targaryen hanedanına döner.",
+        "label_tr": "Baratheonlarla birleş, Demir Taht'ı geri al",
+        "desc_tr": "Targaryen ve Kral'ın Şehri'ndeki Baratheon kuvvetleri tek bir siyasi yapı altında birleşir; Demir Taht Targaryen hanedanına döner.",
         "ai_weight": 10,
         "effect": {
           "target": "specific_faction",
@@ -5070,6 +5070,63 @@
           "player_faction_id": "targaryen",
           "set_flags": [
             "targaryen_restoration_started"
+          ]
+        }
+      },
+      {
+        "id": "targaryen_independent_claim",
+        "label_tr": "Kendi sancağın altında taht iddiasında bulun",
+        "desc_tr": "Baratheonlarla birleşmeyi reddet. Targaryen ordusu Demir Taht üzerindeki hakkını kendi gücüyle ararken Kral'ın Şehri ve Lannisterlarla savaşa girer.",
+        "ai_weight": 7,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "targaryen",
+          "combat_attack_percent": 10,
+          "relations": [
+            {
+              "faction_id": "baratheon_king",
+              "stance": "war",
+              "score_delta": -70
+            },
+            {
+              "faction_id": "lannister",
+              "stance": "war",
+              "score_delta": -55
+            }
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "unsullied",
+              "unit_count": 2
+            },
+            {
+              "unit_type": "dothraki_horse_lords",
+              "unit_count": 2
+            }
+          ],
+          "set_flags": [
+            "targaryen_independent_claim_declared"
+          ]
+        }
+      },
+      {
+        "id": "targaryen_delay_westeros_campaign",
+        "label_tr": "Seferi ertele, doğudaki gücünü pekiştir",
+        "desc_tr": "Westeros'taki yeni düzene şimdilik meydan okuma. Doğu şehirleriyle bağlarını güçlendirerek Targaryen hanedanının hazinesini ve halk desteğini artır.",
+        "ai_weight": 3,
+        "effect": {
+          "target": "specific_faction",
+          "affected_faction": "targaryen",
+          "sat_delta": 8,
+          "gold_delta": 500,
+          "relations": [
+            {
+              "faction_id": "free_cities",
+              "score_delta": 20
+            }
+          ],
+          "set_flags": [
+            "targaryen_westeros_campaign_delayed"
           ]
         }
       }
@@ -5084,6 +5141,1131 @@
     ],
     "requires_active_factions": [
       "targaryen"
+    ]
+  },
+  {
+    "id": "postwar_reconstruction_306",
+    "name_tr": "Savaş Sonrası Yeniden İnşa",
+    "desc_tr": "Beş Kralın Savaşı'nın bıraktığı yıkım, yeni düzenin ilk yıllarında bütün krallıkları zorluyor. Yönetim, sınırlı kaynakları üretimi canlandırmaya mı yoksa sınırları güvenceye almaya mı ayırmalı?",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 306,
+    "historical_month": 3,
+    "one_shot": true,
+    "choice_prompt_tr": "Savaş sonrası ilk öncelik ne olmalı?",
+    "choices": [
+      {
+        "id": "rebuild_roads_and_markets_306",
+        "label_tr": "Yolları ve pazarları onar",
+        "desc_tr": "Ticaret yollarını açıp yerleşimlerin toparlanmasına yatırım yaparsın.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": -220,
+          "sat_delta": 5,
+          "trade_income_percent": 8,
+          "effect_duration_turns": 24,
+          "set_flags": [
+            "postwar_roads_rebuilt"
+          ]
+        }
+      },
+      {
+        "id": "fortify_postwar_frontier_306",
+        "label_tr": "Sınır garnizonlarını güçlendir",
+        "desc_tr": "Yeni savaşların önüne geçmek için tahkimata ve askerî hazırlığa kaynak ayırırsın.",
+        "ai_weight": 6,
+        "effect": {
+          "gold_delta": -160,
+          "grain_delta": -120,
+          "combat_defense_percent": 8,
+          "army_upkeep_percent": 8,
+          "effect_duration_turns": 18,
+          "set_flags": [
+            "postwar_frontier_fortified"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_settlement_complete"
+    ]
+  },
+  {
+    "id": "martell_sands_council_307",
+    "name_tr": "Dorne'nin Geciken Hesabı",
+    "desc_tr": "Dorne'de eski hanedanların kayıpları unutulmuş değil. Saray, intikam çağrılarını desteklemek ile güneyin gücünü yeni bir savaşa sürüklememek arasında bölünüyor.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 307,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "martell",
+    "choice_prompt_tr": "Dorne'nin gücü hangi amaçla kullanılmalı?",
+    "choices": [
+      {
+        "id": "martell_back_targaryen_claim_307",
+        "label_tr": "Targaryen iddiasına destek ver",
+        "desc_tr": "Eski hesapları ortak bir siyasi davaya bağlar, Daenerys ile yakınlaşırken batıdaki rakiplerine karşı hazırlık yaparsın.",
+        "ai_weight": 6,
+        "effect": {
+          "sat_delta": -3,
+          "combat_attack_percent": 6,
+          "relations": [
+            {
+              "faction_id": "targaryen",
+              "stance": "allied",
+              "score_delta": 28
+            },
+            {
+              "faction_id": "lannister",
+              "score_delta": -18
+            }
+          ],
+          "set_flags": [
+            "martell_supports_targaryen_return"
+          ]
+        }
+      },
+      {
+        "id": "martell_secure_dorne_307",
+        "label_tr": "Dorne'yi savaştan uzak tut",
+        "desc_tr": "Sunspear çevresindeki savunmayı ve yerel desteği güçlendirerek Dorne'nin kararını kendi zamanına bırakırsın.",
+        "ai_weight": 8,
+        "effect": {
+          "sat_delta": 7,
+          "gold_delta": 120,
+          "combat_defense_percent": 7,
+          "set_flags": [
+            "martell_secures_dorne"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "martell"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete"
+    ],
+    "requires_active_factions": [
+      "martell"
+    ]
+  },
+  {
+    "id": "targaryen_court_308",
+    "name_tr": "Ejderha Hanedanının Divanı",
+    "desc_tr": "Daenerys'in 305'te verdiği karar Targaryen çevresini bir araya getirdi; Westeros'a dönmeyi isteyenler ile doğudaki dayanaklarını korumak isteyenler aynı yönetim biçimini istemiyor.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 308,
+    "historical_month": 2,
+    "one_shot": true,
+    "affected_faction": "targaryen",
+    "choice_prompt_tr": "Yeni hanedanın yönetimi nasıl kurulmalı?",
+    "choices": [
+      {
+        "id": "targaryen_court_compromise_308",
+        "label_tr": "Müttefik hanelerle uzlaş",
+        "desc_tr": "Westeros'taki ve doğudaki yeni bağlılıkları ödüllendirip hanedanın çevresinde daha geniş bir siyasi destek kurarsın.",
+        "ai_weight": 7,
+        "effect": {
+          "sat_delta": 8,
+          "gold_delta": -100,
+          "combat_defense_percent": 5,
+          "set_flags": [
+            "targaryen_court_compromise"
+          ]
+        }
+      },
+      {
+        "id": "targaryen_court_centralize_308",
+        "label_tr": "Yönetimi hanedanda merkezileştir",
+        "desc_tr": "Hanedan otoritesini tartışmasız kılmak için kararları sarayda toplar, askerî gücü öne çıkarırsın.",
+        "ai_weight": 6,
+        "effect": {
+          "sat_delta": -4,
+          "combat_attack_percent": 8,
+          "gold_delta": 100,
+          "set_flags": [
+            "targaryen_court_centralized"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "targaryen"
+    ],
+    "requires_flags": [
+      "targaryen_return_ready"
+    ],
+    "requires_active_factions": [
+      "targaryen"
+    ]
+  },
+  {
+    "id": "northern_compact_309",
+    "name_tr": "Kuzey ve Nehir Toprakları'nın Paktı",
+    "desc_tr": "Savaşın sona ermesi eski ittifakları kendiliğinden onarmadı. Kuzey, Nehir Toprakları ve Vadi ile ortak savunma kurabilir ya da kendi sınırlarına çekilebilir.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 309,
+    "historical_month": 5,
+    "one_shot": true,
+    "affected_faction": "stark",
+    "choice_prompt_tr": "Kuzey'in güvenliği hangi yolla sağlansın?",
+    "choices": [
+      {
+        "id": "stark_riverlands_compact_309",
+        "label_tr": "Eski müttefiklerle savunma paktı kur",
+        "desc_tr": "Tullylerle bağları yeniler, Vadi lordlarına ortak güvenlik için çağrı gönderirsin.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": -100,
+          "relations": [
+            {
+              "faction_id": "tully",
+              "stance": "allied",
+              "score_delta": 24
+            },
+            {
+              "faction_id": "arryn",
+              "score_delta": 12
+            }
+          ],
+          "set_flags": [
+            "northern_defense_compact"
+          ]
+        }
+      },
+      {
+        "id": "stark_northern_recovery_309",
+        "label_tr": "Kuzey'i önce kendi gücünle toparla",
+        "desc_tr": "Dış ittifaklara kaynak ayırmak yerine kış depolarını ve kuzey kalelerini güçlendirirsin.",
+        "ai_weight": 8,
+        "effect": {
+          "sat_delta": 6,
+          "grain_delta": 250,
+          "combat_defense_percent": 8,
+          "set_flags": [
+            "northern_recovery_prioritized"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "stark"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete"
+    ],
+    "requires_active_factions": [
+      "stark"
+    ]
+  },
+  {
+    "id": "tyrell_granaries_310",
+    "name_tr": "Reach'in Ambarları",
+    "desc_tr": "Uzayan savaşlardan sonra Reach'in hasadı yeniden zengin, fakat çevredeki toprakların ihtiyacı da büyüyor. Tyrell hanesi bolluğu kendi ordusuna mı ayırmalı, komşularıyla paylaşarak nüfuz mu kazanmalı?",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 310,
+    "historical_month": 10,
+    "one_shot": true,
+    "affected_faction": "tyrell",
+    "choice_prompt_tr": "Reach'in bolluğu hangi amaçla kullanılsın?",
+    "choices": [
+      {
+        "id": "tyrell_stockpile_grain_310",
+        "label_tr": "Hasadı depolara ayır",
+        "desc_tr": "Bir sonraki kıtlık veya sefer için tahıl biriktirip halkın güvenini sağlamlaştırırsın.",
+        "ai_weight": 8,
+        "effect": {
+          "grain_delta": 500,
+          "sat_delta": 5,
+          "grain_production_percent": 8,
+          "effect_duration_turns": 18,
+          "set_flags": [
+            "tyrell_grain_reserves"
+          ]
+        }
+      },
+      {
+        "id": "tyrell_feed_the_realm_310",
+        "label_tr": "Tahılı krallıklara gönder",
+        "desc_tr": "Tahıl sevkiyatıyla güneydeki müttefiklerin desteğini artırır, Reach'in hazinesinden fedakârlık edersin.",
+        "ai_weight": 6,
+        "effect": {
+          "grain_delta": -180,
+          "gold_delta": 180,
+          "relations": [
+            {
+              "faction_id": "baratheon_king",
+              "score_delta": 12
+            },
+            {
+              "faction_id": "martell",
+              "score_delta": 10
+            }
+          ],
+          "set_flags": [
+            "tyrell_grain_aid_sent"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "tyrell"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete"
+    ],
+    "requires_active_factions": [
+      "tyrell"
+    ]
+  },
+  {
+    "id": "realm_trade_recovery_311",
+    "name_tr": "Krallıklar Arasında Ticaret",
+    "desc_tr": "Sınırlar sakinleşirken tüccarlar yeniden güvenli güzergâhlar arıyor. Yönetim, yabancı pazarlarla alışverişi büyütmek ya da yerel üreticileri korumak arasında seçim yapmalı.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 311,
+    "historical_month": 8,
+    "one_shot": true,
+    "choice_prompt_tr": "Barış döneminde ekonomi nasıl yönlendirilsin?",
+    "choices": [
+      {
+        "id": "open_postwar_markets_311",
+        "label_tr": "Pazarları yeniden aç",
+        "desc_tr": "Özgür Şehirlerle ticareti canlandırıp gelirleri artırırsın; yerli tüccarlar daha sert rekabete girer.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": 220,
+          "trade_income_percent": 10,
+          "effect_duration_turns": 18,
+          "relations": [
+            {
+              "faction_id": "free_cities",
+              "score_delta": 15
+            }
+          ],
+          "set_flags": [
+            "postwar_markets_reopened"
+          ]
+        }
+      },
+      {
+        "id": "protect_local_producers_311",
+        "label_tr": "Yerel üreticileri koru",
+        "desc_tr": "Dış ticareti sınırlayıp tahıl ve temel malların ülke içinde kalmasını sağlarsın.",
+        "ai_weight": 6,
+        "effect": {
+          "sat_delta": 5,
+          "grain_delta": 180,
+          "grain_production_percent": 6,
+          "effect_duration_turns": 18,
+          "set_flags": [
+            "postwar_local_producers_protected"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete"
+    ]
+  },
+  {
+    "id": "ironborn_moot_312",
+    "name_tr": "Demir Adalar'ın Yeni Meclisi",
+    "desc_tr": "Balon Greyjoy'un seferlerinden sonra ada lordları ganimetin ve kayıpların hesabını soruyor. Demir Adalar eski yağma düzenine mi dönecek, yoksa deniz ticaretinden güç mü devşirecek?",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 312,
+    "historical_month": 4,
+    "one_shot": true,
+    "affected_faction": "greyjoy",
+    "choice_prompt_tr": "Demir Adalar'ın geleceği hangi yola bağlansın?",
+    "choices": [
+      {
+        "id": "greyjoy_resume_raiding_312",
+        "label_tr": "Baskın seferlerini yeniden başlat",
+        "desc_tr": "Donanmayı ve yağmacı birlikleri hazırlar, komşuların güvenini pahasına askerî baskıyı artırırsın.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": 180,
+          "combat_attack_percent": 8,
+          "army_upkeep_percent": 8,
+          "effect_duration_turns": 18,
+          "relations": [
+            {
+              "faction_id": "stark",
+              "score_delta": -15
+            },
+            {
+              "faction_id": "lannister",
+              "score_delta": -12
+            }
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "ironborn_reavers",
+              "unit_count": 2
+            }
+          ],
+          "set_flags": [
+            "greyjoy_raiding_policy_restored"
+          ]
+        }
+      },
+      {
+        "id": "greyjoy_turn_to_sea_trade_312",
+        "label_tr": "Deniz ticaretine yönel",
+        "desc_tr": "Gemileri yağma yerine ticarete ayırıp adaların kaynaklarını uzun vadeli gelirle güvenceye alırsın.",
+        "ai_weight": 6,
+        "effect": {
+          "gold_delta": 250,
+          "sat_delta": 6,
+          "trade_income_percent": 8,
+          "effect_duration_turns": 18,
+          "relations": [
+            {
+              "faction_id": "free_cities",
+              "score_delta": 12
+            }
+          ],
+          "set_flags": [
+            "greyjoy_sea_trade_policy"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "greyjoy"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete"
+    ],
+    "requires_active_factions": [
+      "greyjoy"
+    ]
+  },
+  {
+    "id": "realm_winter_council_314",
+    "name_tr": "Kış Divanı",
+    "desc_tr": "Kuzeyden gelen sert kış haberleri, savaşın bitmesinin halkı hemen doyurmadığını gösteriyor. Yönetim, ordunun erzağını güvenceye almak ya da halkın yükünü hafifletmek zorunda.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 314,
+    "historical_month": 2,
+    "one_shot": true,
+    "choice_prompt_tr": "Kışın yükü nasıl paylaşılmalı?",
+    "choices": [
+      {
+        "id": "winter_ration_for_armies_314",
+        "label_tr": "Tahılı ordulara ayır",
+        "desc_tr": "Sınır birliklerinin ikmalini güvenceye alırsın; halkın memnuniyeti ve ambarlar üzerindeki baskı artar.",
+        "ai_weight": 5,
+        "effect": {
+          "grain_delta": -280,
+          "sat_delta": -5,
+          "combat_defense_percent": 7,
+          "effect_duration_turns": 12,
+          "set_flags": [
+            "winter_rations_for_armies"
+          ]
+        }
+      },
+      {
+        "id": "winter_relief_for_people_314",
+        "label_tr": "Halka kış yardımı dağıt",
+        "desc_tr": "Depoları açıp halkın desteğini korursun; ordu ikmali için daha az kaynak kalır.",
+        "ai_weight": 8,
+        "effect": {
+          "grain_delta": -180,
+          "gold_delta": -100,
+          "sat_delta": 9,
+          "set_flags": [
+            "winter_relief_distributed"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete"
+    ]
+  },
+  {
+    "id": "night_watch_ravens_315",
+    "name_tr": "Duvar'dan Gelen Kuzgunlar",
+    "desc_tr": "Duvar'ın ötesinden gelen haberler, Akgezenlerin geçitleri zorladığını bildiriyor. Gece Nöbeti, Kuzey'i yardıma çağırabilir ya da kalan kuvvetlerini tek bir savunma hattında toplayabilir.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 315,
+    "historical_month": 7,
+    "one_shot": true,
+    "affected_faction": "nights_watch",
+    "choice_prompt_tr": "Duvar'ın savunması nasıl sürdürülsün?",
+    "choices": [
+      {
+        "id": "night_watch_call_north_315",
+        "label_tr": "Kuzey'i yardıma çağır",
+        "desc_tr": "Starklara ve eski müttefiklere kuzey geçitlerinin düşmesi hâlinde bütün krallıkların tehlikeye gireceğini bildirirsin.",
+        "ai_weight": 8,
+        "effect": {
+          "grain_delta": -100,
+          "relations": [
+            {
+              "faction_id": "stark",
+              "score_delta": 22
+            }
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "nights_watch_rangers",
+              "unit_count": 3
+            }
+          ],
+          "set_flags": [
+            "northern_watch_aid_requested"
+          ]
+        }
+      },
+      {
+        "id": "night_watch_hold_the_gates_315",
+        "label_tr": "Geçitleri kendi gücünle tut",
+        "desc_tr": "Yardım gelmesini beklemeden gözcüleri ve savunma birliklerini Duvar'ın en kırılgan noktalarında toplarsın.",
+        "ai_weight": 6,
+        "effect": {
+          "combat_defense_percent": 12,
+          "unit_reinforcements": [
+            {
+              "unit_type": "nights_watch_rangers",
+              "unit_count": 2
+            }
+          ],
+          "set_flags": [
+            "night_watch_gates_manned"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "nights_watch"
+    ],
+    "requires_flags": [
+      "others_awakened",
+      "wall_breached"
+    ],
+    "requires_active_factions": [
+      "nights_watch"
+    ]
+  },
+  {
+    "id": "realm_aid_for_the_wall_316",
+    "name_tr": "Duvar İçin Krallıkların Yardımı",
+    "desc_tr": "Akgezenlerin güneye ilerleyişi artık yalnız Gece Nöbeti'nin sorunu değil. Her yönetim, ortak savunmaya kaynak göndermek ya da kendi topraklarını korumak arasında karar vermeli.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 316,
+    "historical_month": 11,
+    "one_shot": true,
+    "choice_prompt_tr": "Akgezen tehdidine karşı hangi bedel göze alınsın?",
+    "choices": [
+      {
+        "id": "send_aid_to_the_wall_316",
+        "label_tr": "Duvar'a asker ve erzak gönder",
+        "desc_tr": "Kendi hazinenden ve ordudan fedakârlık ederek Gece Nöbeti'nin savunmasına katkı sağlarsın.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": -120,
+          "grain_delta": -180,
+          "relations": [
+            {
+              "faction_id": "nights_watch",
+              "stance": "allied",
+              "score_delta": 20
+            }
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "infantry",
+              "unit_count": 2
+            }
+          ],
+          "set_flags": [
+            "realm_aid_sent_to_wall"
+          ]
+        }
+      },
+      {
+        "id": "secure_home_frontier_316",
+        "label_tr": "Önce kendi sınırlarını güvenceye al",
+        "desc_tr": "Uzak kuzeye birlik göndermek yerine yerel savunmayı ve erzak depolarını güçlendirirsin.",
+        "ai_weight": 6,
+        "effect": {
+          "grain_delta": 120,
+          "combat_defense_percent": 6,
+          "effect_duration_turns": 12,
+          "set_flags": [
+            "realm_home_frontier_secured"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "others_awakened",
+      "wall_breached"
+    ]
+  },
+  {
+    "id": "targaryen_eastern_strategy_318",
+    "name_tr": "Targaryenlerin Doğu Stratejisi",
+    "desc_tr": "Targaryen gücü batı seferi ile doğudaki müttefikler arasında paylaştırılırken şehirlerin de korunması gerekiyor. Hanedan, askerî ağırlığını Westeros'a mı yöneltmeli, doğudaki dayanaklarını mı sağlamlaştırmalı?",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 318,
+    "historical_month": 6,
+    "one_shot": true,
+    "affected_faction": "targaryen",
+    "choice_prompt_tr": "Hanedanın askerî ağırlığı nereye verilsin?",
+    "choices": [
+      {
+        "id": "targaryen_focus_westeros_318",
+        "label_tr": "Westeros seferini hızlandır",
+        "desc_tr": "Gücünü Demir Taht üzerindeki iddiaya aktarır, ordunun saldırı kabiliyetini artırırsın.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": -180,
+          "grain_delta": -120,
+          "combat_attack_percent": 9,
+          "army_upkeep_percent": 8,
+          "effect_duration_turns": 18,
+          "set_flags": [
+            "targaryen_focuses_westeros_campaign"
+          ]
+        }
+      },
+      {
+        "id": "targaryen_secure_eastern_allies_318",
+        "label_tr": "Doğudaki ittifakları güvenceye al",
+        "desc_tr": "Seferi yavaşlatıp doğu şehirleriyle bağları ve Targaryen hazinesini güçlendirirsin.",
+        "ai_weight": 6,
+        "effect": {
+          "gold_delta": 280,
+          "sat_delta": 5,
+          "relations": [
+            {
+              "faction_id": "free_cities",
+              "score_delta": 18
+            }
+          ],
+          "set_flags": [
+            "targaryen_eastern_allies_secured"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "targaryen"
+    ],
+    "requires_flags": [
+      "targaryen_return_ready"
+    ],
+    "requires_active_factions": [
+      "targaryen"
+    ]
+  },
+  {
+    "id": "realm_law_and_lords_320",
+    "name_tr": "Taç ile Lordlar Arasında",
+    "desc_tr": "Savaşın kazananı belli olsa da krallıklardaki her lord yeni merkezin emirlerine aynı ölçüde boyun eğmiyor. Yönetim, gücü sarayda toplamak ya da yerel sadakati korumak arasında seçim yapmalı.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 320,
+    "historical_month": 4,
+    "one_shot": true,
+    "choice_prompt_tr": "Yeni düzenin temeli ne olsun?",
+    "choices": [
+      {
+        "id": "centralize_realm_authority_320",
+        "label_tr": "Merkezî otoriteyi güçlendir",
+        "desc_tr": "Krallık genelinde ortak kurallar ve daha güçlü bir ordu kurarsın; yerel özerklik daralır.",
+        "ai_weight": 6,
+        "effect": {
+          "sat_delta": -4,
+          "gold_delta": 150,
+          "combat_attack_percent": 6,
+          "effect_duration_turns": 18,
+          "set_flags": [
+            "realm_authority_centralized"
+          ]
+        }
+      },
+      {
+        "id": "grant_local_lord_privileges_320",
+        "label_tr": "Yerel lordların ayrıcalıklarını tanı",
+        "desc_tr": "Bölgesel yöneticileri düzene ortak ederek halk desteğini artırır, merkezî gücü daha sınırlı tutarsın.",
+        "ai_weight": 7,
+        "effect": {
+          "sat_delta": 8,
+          "gold_delta": -100,
+          "combat_defense_percent": 4,
+          "set_flags": [
+            "realm_local_privileges_recognized"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete"
+    ]
+  },
+  {
+    "id": "night_watch_long_night_322",
+    "name_tr": "Uzun Gece'nin Son Cephesi",
+    "desc_tr": "Duvar'ın ardındaki ordu geri çekilmiyor. Gece Nöbeti, hayatta kalan güçlerini son bir savunmada toplamak ya da güney krallıklarının desteğini beklemek zorunda.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 322,
+    "historical_month": 9,
+    "one_shot": true,
+    "affected_faction": "nights_watch",
+    "choice_prompt_tr": "Son savunma nasıl yürütülsün?",
+    "choices": [
+      {
+        "id": "night_watch_final_stand_322",
+        "label_tr": "Duvar'da son direnişi kur",
+        "desc_tr": "Kuvvetlerini geçitlerde toplar; kayıplar pahasına ölüler ordusunun güneye ilerleyişini yavaşlatırsın.",
+        "ai_weight": 7,
+        "effect": {
+          "grain_delta": -120,
+          "combat_defense_percent": 15,
+          "unit_reinforcements": [
+            {
+              "unit_type": "nights_watch_rangers",
+              "unit_count": 3
+            }
+          ],
+          "set_flags": [
+            "night_watch_final_stand"
+          ]
+        }
+      },
+      {
+        "id": "night_watch_reinforcements_322",
+        "label_tr": "Güneyden takviye bekle",
+        "desc_tr": "Kuzgunlarla yardım çağrısı gönderir, savunmayı müttefiklerin ulaşabileceği kadar sürdürürsün.",
+        "ai_weight": 8,
+        "effect": {
+          "sat_delta": 3,
+          "relations": [
+            {
+              "faction_id": "stark",
+              "score_delta": 15
+            }
+          ],
+          "unit_reinforcements": [
+            {
+              "unit_type": "nights_watch_rangers",
+              "unit_count": 2
+            }
+          ],
+          "set_flags": [
+            "night_watch_southern_reinforcements_requested"
+          ]
+        }
+      }
+    ],
+    "player_choice_factions": [
+      "nights_watch"
+    ],
+    "requires_flags": [
+      "others_awakened",
+      "wall_breached"
+    ],
+    "blocks_flags": [
+      "boss_defeated:cmd_night_king"
+    ],
+    "requires_active_factions": [
+      "nights_watch",
+      "others"
+    ]
+  },
+  {
+    "id": "realm_supplies_for_the_north_324",
+    "name_tr": "Kuzeye Giden Son Erzak",
+    "desc_tr": "Kuzeyden gelen talepler, kışın ve Duvar'daki mücadelenin güneydeki ambarları da tükettiğini gösteriyor. Her hükümdar yardımın miktarına kendisi karar vermeli.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 324,
+    "historical_month": 3,
+    "one_shot": true,
+    "choice_prompt_tr": "Kuzey'e ne ölçüde destek verilsin?",
+    "choices": [
+      {
+        "id": "send_full_northern_relief_324",
+        "label_tr": "Büyük bir yardım konvoyu gönder",
+        "desc_tr": "Kayda değer tahıl ve altını kuzeye yollarsın; Gece Nöbeti ve Starklarla ilişkiler güçlenir.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": -180,
+          "grain_delta": -300,
+          "sat_delta": 4,
+          "relations": [
+            {
+              "faction_id": "nights_watch",
+              "score_delta": 18
+            },
+            {
+              "faction_id": "stark",
+              "score_delta": 12
+            }
+          ],
+          "set_flags": [
+            "large_northern_relief_sent"
+          ]
+        }
+      },
+      {
+        "id": "send_limited_northern_relief_324",
+        "label_tr": "Sınırlı erzak ve danışman gönder",
+        "desc_tr": "Kendi kaynaklarını korurken kuzeydeki müttefiklere küçük ama düzenli bir destek sözü verirsin.",
+        "ai_weight": 6,
+        "effect": {
+          "gold_delta": -60,
+          "grain_delta": -100,
+          "relations": [
+            {
+              "faction_id": "nights_watch",
+              "score_delta": 8
+            }
+          ],
+          "set_flags": [
+            "limited_northern_relief_sent"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "others_awakened",
+      "wall_breached"
+    ]
+  },
+  {
+    "id": "long_night_continues_326",
+    "name_tr": "Akgezenler Güneye İniyor",
+    "desc_tr": "Duvar'ın yarılması krallıkların kuzey sınırını savunmasız bıraktı. Akgezen ordusu hâlâ ayaktayken her yönetim, kendi topraklarını korumak ile ortak cepheye katılmak arasında seçim yapmalı.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 326,
+    "historical_month": 8,
+    "one_shot": true,
+    "choice_prompt_tr": "Akgezen ordusuna karşı nasıl karşılık verilsin?",
+    "choices": [
+      {
+        "id": "join_long_night_front_326",
+        "label_tr": "Kuzey cephesine katıl",
+        "desc_tr": "Birliklerini ortak savaşa gönderir, Gece Nöbeti ve Starklarla aynı cephede yer alırsın.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": -100,
+          "grain_delta": -140,
+          "combat_attack_percent": 7,
+          "relations": [
+            {
+              "faction_id": "nights_watch",
+              "stance": "allied",
+              "score_delta": 20
+            },
+            {
+              "faction_id": "stark",
+              "score_delta": 12
+            }
+          ],
+          "set_flags": [
+            "realm_joined_long_night_front"
+          ]
+        }
+      },
+      {
+        "id": "defend_own_lands_long_night_326",
+        "label_tr": "Kendi topraklarını savunmaya hazırlan",
+        "desc_tr": "Uzak cepheye ordu göndermeden geçitleri, ambarları ve yerel savunmayı güçlendirirsin.",
+        "ai_weight": 6,
+        "effect": {
+          "grain_delta": 100,
+          "combat_defense_percent": 8,
+          "effect_duration_turns": 18,
+          "set_flags": [
+            "realm_prepared_for_long_night"
+          ]
+        }
+      }
+    ],
+    "blocks_flags": [
+      "boss_defeated:cmd_night_king"
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete",
+      "others_awakened",
+      "wall_breached"
+    ],
+    "requires_active_factions": [
+      "others"
+    ]
+  },
+  {
+    "id": "long_night_aftermath_326",
+    "name_tr": "Uzun Gece'den Sonra",
+    "desc_tr": "Akgezenlerin önderinin düşmesiyle ölüler ordusu dağılıyor. Sağ kalan krallıklar, kuzeydeki kayıpları onarmak ve bu tehdidin yeniden doğmasını önlemek için yeni bir düzen kurmalı.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 326,
+    "historical_month": 8,
+    "one_shot": true,
+    "choice_prompt_tr": "Kuzey'in geleceği nasıl güvenceye alınsın?",
+    "choices": [
+      {
+        "id": "rebuild_the_wall_after_victory_326",
+        "label_tr": "Duvar'ı ve nöbet kalelerini onar",
+        "desc_tr": "Kuzey geçitlerini tahkim eder, hayatta kalan savunmacılarla kalıcı bir gözetleme hattı kurarsın.",
+        "ai_weight": 8,
+        "effect": {
+          "gold_delta": -180,
+          "grain_delta": -120,
+          "combat_defense_percent": 8,
+          "relations": [
+            {
+              "faction_id": "nights_watch",
+              "score_delta": 18
+            }
+          ],
+          "set_flags": [
+            "wall_reconstruction_started"
+          ]
+        }
+      },
+      {
+        "id": "resettle_northern_frontier_326",
+        "label_tr": "Kuzey sınırındaki yerleşimleri canlandır",
+        "desc_tr": "Kaynakları surlar yerine boşalan yerleşimlere aktarır, kuzeydeki halkın geri dönmesini teşvik edersin.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": -100,
+          "grain_delta": 180,
+          "sat_delta": 8,
+          "set_flags": [
+            "northern_frontier_resettled"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete",
+      "others_awakened",
+      "boss_defeated:cmd_night_king"
+    ]
+  },
+  {
+    "id": "realm_council_328",
+    "name_tr": "Büyük Hanelerin Son Divanı",
+    "desc_tr": "Taht savaşları ve kuzeydeki felaket, eski bağlılıkları tüketti. Büyük haneler yeni sınırları, ortak savunmayı ve hükümdarın yetkisini yeniden tartışıyor.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 328,
+    "historical_month": 5,
+    "one_shot": true,
+    "choice_prompt_tr": "Yeni düzen hangi ilkeye dayanmalı?",
+    "choices": [
+      {
+        "id": "realm_council_shared_defense_328",
+        "label_tr": "Haneler arasında ortak savunma kur",
+        "desc_tr": "Eski rakiplerle anlaşarak krallıkları yeni bir dış tehdide karşı birlikte hareket etmeye hazırlarsın.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": -120,
+          "relations": [
+            {
+              "faction_id": "stark",
+              "score_delta": 10
+            },
+            {
+              "faction_id": "martell",
+              "score_delta": 10
+            },
+            {
+              "faction_id": "tyrell",
+              "score_delta": 10
+            }
+          ],
+          "combat_defense_percent": 5,
+          "set_flags": [
+            "great_houses_shared_defense"
+          ]
+        }
+      },
+      {
+        "id": "realm_council_strengthen_crown_328",
+        "label_tr": "Tahtın otoritesini tartışmasız kıl",
+        "desc_tr": "Dağınık vaatler yerine merkezî bir ordu ve güçlü bir hazineyle barışı korumaya çalışırsın.",
+        "ai_weight": 6,
+        "effect": {
+          "gold_delta": 220,
+          "sat_delta": -3,
+          "combat_attack_percent": 5,
+          "set_flags": [
+            "great_houses_crown_strengthened"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "war_of_five_kings_settlement_complete"
+    ]
+  },
+  {
+    "id": "new_age_330",
+    "name_tr": "Yeni Çağın Eşiğinde",
+    "desc_tr": "330 yılına gelindiğinde Westeros, savaşların ve uzun gecenin ardından bambaşka bir güç dengesine kavuştu. Hükümdar, sonraki kuşaklara bırakacağı düzenin yönünü belirlemeli.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "historical_year": 330,
+    "historical_month": 12,
+    "one_shot": true,
+    "choice_prompt_tr": "Krallığının geleceğine hangi mirası bırakacaksın?",
+    "choices": [
+      {
+        "id": "new_age_open_realms_330",
+        "label_tr": "Açık ticaret ve kalıcı barış",
+        "desc_tr": "Tüccarları ve komşu haneleri yeni düzene bağlayarak refahı ve diplomatik desteği öncele.",
+        "ai_weight": 7,
+        "effect": {
+          "gold_delta": 300,
+          "sat_delta": 8,
+          "trade_income_percent": 8,
+          "effect_duration_turns": 24,
+          "relations": [
+            {
+              "faction_id": "free_cities",
+              "score_delta": 12
+            }
+          ],
+          "set_flags": [
+            "new_age_open_realms"
+          ]
+        }
+      },
+      {
+        "id": "new_age_strong_frontier_330",
+        "label_tr": "Güçlü sınırlar ve caydırıcı ordu",
+        "desc_tr": "Yeni bir savaşın krallıkları hazırlıksız yakalamaması için savunma ve askerî kapasiteyi büyüt.",
+        "ai_weight": 6,
+        "effect": {
+          "gold_delta": -150,
+          "grain_delta": -120,
+          "combat_defense_percent": 8,
+          "combat_attack_percent": 4,
+          "effect_duration_turns": 24,
+          "set_flags": [
+            "new_age_strong_frontier"
+          ]
+        }
+      }
+    ],
+    "requires_flags": [
+      "war_of_five_kings_resolved",
+      "war_of_five_kings_settlement_complete"
     ]
   }
 ]

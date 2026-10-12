@@ -166,6 +166,19 @@ seçer; seçtiği hanedan rakibini yenerse 1485'i beklemeden İngiltere'ye dönm
 teklifi alır. Teklif reddedilirse hanedanla devam edilir. 1485 tarihsel event'i
 ise savaş sonuçsuz kalırsa aynı birleşme teklifini yedek yol olarak sunar.
 
+298 senaryosundaki `targaryen_return_302`, Beş Kralın Savaşı'nın çözülmesini,
+barış düzeninin tamamlanmasını ve `targaryen_return_ready` flag'ini bekler.
+305/09 tarihinde Daenerys; Baratheonlarla siyasi birleşme, ayrı bir taht iddiası
+için savaş veya Westeros seferini erteleyip doğuda güçlenme yollarından birini
+seçebilir (`assets/scenarios/298_war_of_five_kings/data/events.json`).
+
+Aynı senaryoda 306–330 dönemi, savaş sonrası yeniden inşa ve ticaret kararlarıyla
+başlar; Martell, Stark, Tyrell, Greyjoy ve Targaryen'e özgü siyasi tercihlerle
+devam eder. `others_awakened` ve `wall_breached` bayrakları Duvar savunması ve
+krallıkların yardım event'lerini açar; `boss_defeated:cmd_night_king` ise
+Akgezenler yenilirse ayrı bir savaş sonrası toparlanma dalına geçer. Böylece
+farklı sefer sonuçları aynı tarihli event'leri yanlışlıkla birlikte tetiklemez.
+
 Event'ler ayrıca `requires_active_factions` ile bir veya daha fazla faction'ın
 oyunda kalmasını şart koşabilir. 1300 senaryosundaki Reconquista zinciri,
 Aragon-Kastilya birliğinden sonra Granada aktifse 1482'de Granada'ya savaş

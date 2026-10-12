@@ -71,6 +71,14 @@ Teknoloji paneli (`internal/render/tech_panel.go`) ağaç yapısında gösterili
 
 1300 senaryosunda teknoloji ağacı başlangıç, orta ve ileri dönem dallarıyla 85 düğüme genişletilmiştir. Yeni askerî, ekonomik, diplomatik, dinî ve denizcilik düğümleri 1310–1550 arasındaki ilerlemeyi katmanlandırır. Özellikle `market_gold_mod`, `peace_relation_bonus`, `naval_move_bonus`, `reveal_enemy_strength`, `conversion_speed_mod`, `spice_mod` ve `cloth_mod` efekt alanları runtime'da karşılık bulur.
 
+298 senaryosunda teknoloji ağacı 295–330 AC ilerleyişine göre genişletilmiştir:
+ortak askerî, ekonomik ve diplomatik dallar ile erişimi uygun fraksiyonlarla
+sınırlı denizcilik ve dinî dallar kademeli olarak açılır. Her fraksiyonun ayrıca
+mevcut uzmanlık teknolojisine bağlanan, 310 ve 322 AC'de açılan iki aşamalı bir
+uzmanlık zinciri vardır; ortak son dönem araştırmaları 328 ve 330 AC'de açılır.
+Bu tarih kilitleri oyuncu ve AI araştırmalarında ortak uygunluk kontrolüyle
+uygulanır.
+
 AI zaten aynı `ResearchState` ve `tech.StartResearch / tech.Tick / tech.PauseResearch` akışını kullanır; oyuncu ve AI için teknoloji ilerleme mantığı ayrışmaz.
 
 Birim üretim kapıları `assets/scenarios/<id>/data/units.json` içindeki `required_tech` dizisini AND olarak değerlendirir. Birim, listelenen zincirin tüm halkaları tamamlanmadan oyuncu veya AI tarafından üretilemez.
