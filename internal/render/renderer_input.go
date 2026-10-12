@@ -1735,6 +1735,12 @@ func (r *Renderer) handleRightClick() InputAction {
 					return InputAction{}
 				}
 				relation := diplomacy.Relation(r.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetArmy.OwnerID))
+				reachability := r.movementReachabilityForArmy(a)
+				if _, reachable := reachability.Nodes[targetArmy.RegionID]; reachable &&
+					r.gs.AirSortieAllowed(a, targetArmy.RegionID, reachability) &&
+					r.openAirTargetIntentDialog(a, r.gs.Regions[targetArmy.RegionID], targetArmy) {
+					return InputAction{}
+				}
 				if relation == nil || relation.Stance != faction.StanceWar {
 					name := targetArmy.OwnerID
 					if targetFaction := r.gs.Factions[faction.FactionID(targetArmy.OwnerID)]; targetFaction != nil && targetFaction.NameTR != "" {
@@ -1743,7 +1749,6 @@ func (r *Renderer) handleRightClick() InputAction {
 					r.openWarConfirm(faction.FactionID(targetArmy.OwnerID), name, a.ID, targetArmy.RegionID, targetArmy.ID, false, ActionMoveArmy, combat.BattleContextLand)
 					return InputAction{}
 				}
-				reachability := r.movementReachabilityForArmy(a)
 				if _, reachable := reachability.Nodes[targetArmy.RegionID]; reachable &&
 					r.gs.AirSortieAllowed(a, targetArmy.RegionID, reachability) {
 					return r.prepareArmyMovementAction(InputAction{
@@ -1854,6 +1859,17 @@ func (r *Renderer) handleRightClick() InputAction {
 	}
 	if a.IsNaval && r.openNavalCoastalTargetDialog(a, r.gs.Regions[rid], rid, navalTargetSettlementID) {
 		return InputAction{}
+	}
+	if a.UsesAirMovement(r.gs.UnitTypes) && rid != a.RegionID {
+		if target := r.gs.Regions[rid]; target != nil && target.CanLandEnter() {
+			reachability := r.movementReachabilityForArmy(a)
+			if _, reachable := reachability.Nodes[rid]; reachable && r.gs.AirSortieAllowed(a, rid, reachability) {
+				defender := r.gs.SelectBattleDefender(a, rid, false)
+				if airTargetIntentRequired(r.gs, a, target, defender) && r.openAirTargetIntentDialog(a, target, defender) {
+					return InputAction{}
+				}
+			}
+		}
 	}
 	if a.UsesAirMovement(r.gs.UnitTypes) && r.openAirForeignRegionWarConfirm(a, rid) {
 		return InputAction{}
@@ -1977,6 +1993,57 @@ func airAttackMarkerIsFriendly(gs *state.GameState, attacker, target *army.Army)
 	}
 	relation := diplomacy.Relation(gs, faction.FactionID(attacker.OwnerID), faction.FactionID(target.OwnerID))
 	return relation != nil && relation.Stance == faction.StanceAllied
+}
+
+func airTargetIntentRequired(gs *state.GameState, attacker *army.Army, target *world.Region, defender *army.Army) bool {
+	if gs == nil || attacker == nil || target == nil || !attacker.UsesAirMovement(gs.UnitTypes) || !target.CanLandEnter() {
+		return false
+	}
+	targetOwnerID := gs.SovereignOwnerID(target)
+	foreignRegion := targetOwnerID != "" && targetOwnerID != attacker.OwnerID && !armyRegionIsFriendly(gs, attacker, target)
+	enemyArmy := defender != nil && defender.ID != attacker.ID && !airAttackMarkerIsFriendly(gs, attacker, defender)
+	return foreignRegion || enemyArmy
+}
+
+// openAirTargetIntentDialog, uçan ordu bir düşman ordusunun bulunduğu kara
+// hedefine yöneltilirken doğrudan saldırı ile bölgeye inme tercihini sorar.
+// Taşıdığı birlikleri indirme seçeneği, yalnızca kalıcı iniş yapılabilen kara
+// hedeflerinde mevcut ActionDisembarkArmy akışını kullanır.
+func (r *Renderer) openAirTargetIntentDialog(attacker *army.Army, target *world.Region, defender *army.Army) bool {
+	if r == nil || r.gs == nil || attacker == nil || target == nil ||
+		attacker.IsNaval || !attacker.UsesAirMovement(r.gs.UnitTypes) || !target.CanLandEnter() {
+		return false
+	}
+	if defender != nil && (defender.ID == attacker.ID || defender.RegionID != target.ID || airAttackMarkerIsFriendly(r.gs, attacker, defender)) {
+		return false
+	}
+
+	landingAction := InputAction{Kind: ActionMoveArmy, ArmyID: attacker.ID, TargetRegion: target.ID, AirLanding: true}
+	message := "Bu düşman bölgesine saldırı sortisi mi yapmak, yoksa oraya inip kalmak mı istiyorsun?"
+	if defender != nil {
+		message = "Hedefte düşman ordusu var. Doğrudan saldırmak mı, yoksa bölgeye inip kalmak mı istiyorsun?"
+	}
+	targetOwnerID := r.gs.SovereignOwnerID(target)
+	canLandEmbarkedUnits := targetOwnerID == attacker.OwnerID || armyRegionIsFriendly(r.gs, attacker, target)
+	if len(attacker.EmbarkedUnits) > 0 && canLandEmbarkedUnits && defender == nil && !r.gs.AirSortieRequired(attacker, target.ID) {
+		landingAction.Kind = ActionDisembarkArmy
+		landingAction.AirLanding = false
+		message = "Hedefte düşman ordusu var. Doğrudan saldırabilir veya taşıyıcıyla bölgeye inip birlikleri indirebilirsin."
+	}
+	r.ShowThreeChoiceDialog(
+		"Hava hedefi",
+		message,
+		"Saldır",
+		"Buraya İn",
+		"İptal",
+		InputAction{Kind: ActionMoveArmy, ArmyID: attacker.ID, TargetRegion: target.ID},
+		landingAction,
+		InputAction{},
+	)
+	if defender != nil {
+		r.confirmDialog.pendingAction.TargetArmyID = defender.ID
+	}
+	return true
 }
 
 func (r *Renderer) openAirForeignRegionWarConfirm(attacker *army.Army, regionID world.RegionID) bool {

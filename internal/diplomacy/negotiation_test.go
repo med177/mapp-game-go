@@ -123,3 +123,63 @@ func TestExecutePlayerTransferOfferReturnsAIResourceCounterOffer(t *testing.T) {
 		t.Fatal("karşı teklif gönderilirken kaynak aktarımı erken uygulandı")
 	}
 }
+
+func TestTransferOfferReturnsHeldCaptivesToTheirOwners(t *testing.T) {
+	playerCommander := &army.Commander{
+		ID: "player_commander", OwnerID: "player", Name: "Oyuncu Komutan", Level: 3,
+		CaptiveAtSettlementID: "target_hold",
+	}
+	targetCommander := &army.Commander{
+		ID: "target_commander", OwnerID: "target", Name: "Hedef Komutan", Level: 2,
+		CaptiveAtSettlementID: "player_hold",
+	}
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"target": {ID: "target"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"player_region": {ID: "player_region", OwnerID: "player", Settlements: []world.Settlement{{ID: "player_hold"}}},
+			"target_region": {ID: "target_region", OwnerID: "target", Settlements: []world.Settlement{{ID: "target_hold"}}},
+		},
+		Commanders: map[string]*army.Commander{
+			playerCommander.ID: playerCommander,
+			targetCommander.ID: targetCommander,
+		},
+	}
+	EnsureRelation(gs, "player", "target")
+
+	requested := []state.DiplomaticTransfer{{Kind: transferKindCaptive, ID: playerCommander.ID, Amount: 1}}
+	offered := []state.DiplomaticTransfer{{Kind: transferKindCaptive, ID: targetCommander.ID, Amount: 1}}
+	if !QueueTransferOffer(gs, "player", "target", requested, offered, 50, "tutsak takası") {
+		t.Fatal("iki tarafın tutsak komutanlarıyla teklif kuyruğa alınamadı")
+	}
+	if got := TransferListValue(gs, "player", offered); got <= 0 {
+		t.Fatalf("tutsak komutanın pazarlık değeri = %d, pozitif olmalı", got)
+	}
+	result := ResolveOffer(gs, 0, true)
+	if !result.Applied {
+		t.Fatalf("tutsak takası uygulanmadı: %s", result.Message)
+	}
+	if playerCommander.CaptiveAtSettlementID != "" || targetCommander.CaptiveAtSettlementID != "" {
+		t.Fatalf("tutsaklıklar kaldırılmadı: oyuncu=%q hedef=%q", playerCommander.CaptiveAtSettlementID, targetCommander.CaptiveAtSettlementID)
+	}
+}
+
+func TestQueueTransferOfferRejectsCaptiveHeldByWrongFaction(t *testing.T) {
+	commander := &army.Commander{ID: "third_commander", OwnerID: "third", CaptiveAtSettlementID: "player_hold"}
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			"target": {ID: "target"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"player_region": {ID: "player_region", OwnerID: "player", Settlements: []world.Settlement{{ID: "player_hold"}}},
+		},
+		Commanders: map[string]*army.Commander{commander.ID: commander},
+	}
+	EnsureRelation(gs, "player", "target")
+	if QueueTransferOffer(gs, "player", "target", nil, []state.DiplomaticTransfer{{Kind: transferKindCaptive, ID: commander.ID, Amount: 1}}, 50, "test") {
+		t.Fatal("üçüncü taraf komutanı yanlış devlete iade edilmek üzere kabul edildi")
+	}
+}

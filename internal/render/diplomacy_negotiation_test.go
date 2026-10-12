@@ -198,3 +198,43 @@ func TestNegotiationArmyDropdownRemainsOpenableWhenOnlyCommanderBoundTypesExist(
 		t.Fatal("yalnız komutanlı birlikler için açıklama dropdown'da gösterilmedi")
 	}
 }
+
+func TestNegotiationCaptivePickerSeparatesRequestedAndOfferedCommanders(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"player_hold": {ID: "player_hold", OwnerID: "player", Settlements: []world.Settlement{{ID: "player_hold_settlement"}}},
+			"target_hold": {ID: "target_hold", OwnerID: "target", Settlements: []world.Settlement{{ID: "target_hold_settlement"}}},
+		},
+		Commanders: map[string]*army.Commander{
+			"target_commander": {ID: "target_commander", OwnerID: "target", Name: "Hedef Komutan", CaptiveAtSettlementID: "player_hold_settlement"},
+			"player_commander": {ID: "player_commander", OwnerID: "player", Name: "Oyuncu Komutan", CaptiveAtSettlementID: "target_hold_settlement"},
+			"other_commander":  {ID: "other_commander", OwnerID: "other", Name: "Üçüncü Taraf", CaptiveAtSettlementID: "player_hold_settlement"},
+		},
+	}
+
+	offered := &negotiationSideState{kind: negotiationKindCaptive, counterparty: "target", amount: 1}
+	options := negotiationOptionsForSide(gs, "player", offered, negotiationKindCaptive)
+	if len(options) != 1 || options[0].id != "target_commander" || options[0].label != "Hedef Komutan" {
+		t.Fatalf("verilecek tutsak seçenekleri = %+v, yalnız hedef komutanı bekleniyordu", options)
+	}
+	addNegotiationItem(gs, "player", offered)
+	if len(offered.items) != 1 || offered.items[0].Kind != "captive" || offered.items[0].ID != "target_commander" || offered.items[0].Amount != 1 {
+		t.Fatalf("verilen tutsak kalemi yanlış eklendi: %+v", offered.items)
+	}
+	if options = negotiationOptionsForSide(gs, "player", offered, negotiationKindCaptive); len(options) != 0 {
+		t.Fatalf("eklenmiş tutsak tekrar seçilebilir: %+v", options)
+	}
+
+	requested := &negotiationSideState{kind: negotiationKindCaptive, counterparty: "player", amount: 1}
+	options = negotiationOptionsForSide(gs, "target", requested, negotiationKindCaptive)
+	if len(options) != 1 || options[0].id != "player_commander" {
+		t.Fatalf("talep edilebilir tutsak seçenekleri = %+v, oyuncu komutanı bekleniyordu", options)
+	}
+
+	layout := negotiationSideLayout{minus: gameui.Button{Enabled: true}, plus: gameui.Button{Enabled: true}, add: gameui.Button{Enabled: true}}
+	configureNegotiationSideControls(gs, "target", requested, &layout)
+	if !layout.add.Enabled || layout.minus.Enabled || layout.plus.Enabled {
+		t.Fatalf("tutsak tekil kalem kontrolleri yanlış: add=%t minus=%t plus=%t", layout.add.Enabled, layout.minus.Enabled, layout.plus.Enabled)
+	}
+}

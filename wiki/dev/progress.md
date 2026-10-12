@@ -5,6 +5,20 @@ last_updated: 2026-10-12
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-12: İki taraflı diplomatik pazarlıkta `Tutsak` kalemi eklendi. Oyuncu
+  kendi elindeki karşı taraf komutanını iade için verebiliyor veya karşı tarafın
+  tuttuğu kendi komutanını talep edebiliyor; kabulde komutan serbest bırakılıyor.
+  Üçüncü taraf tutsakları seçeneklerde gösterilmiyor. Regresyonlar:
+  `internal/diplomacy/negotiation_test.go`,
+  `internal/render/diplomacy_negotiation_test.go`.
+
+- 2026-10-12: Uçan orduyla düşman bölgesine sağ tıklandığında, bölgede ordu
+  bulunmasa da `Saldır / Buraya İn / İptal` niyet modalı açılıyor. Saldırı
+  mevcut sortie/savaş akışını koruyor; iniş seçimi otomatik dönüşü kapatıp orduyu
+  hedefte bırakıyor ve varsa savaş ilanı onayından sonra da korunuyor.
+  `internal/render/renderer_input.go`, `internal/render/renderer.go`,
+  `internal/game/game.go`.
+
 - 2026-10-12: 298 senaryosunda Akgezenlerin `awaken_the_dead` ve
   `break_the_wall` planları `wall_breached` bayrağıyla sona eriyor; güneye iniş
   objective'i devralıyor. AI, mevcut/kuyruktaki nakliye kapasitesi veya üretilebilir

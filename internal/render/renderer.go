@@ -761,6 +761,7 @@ type warConfirmState struct {
 	pendingArmy        army.ArmyID
 	pendingDest        world.RegionID
 	pendingEnemy       army.ArmyID
+	airLanding         bool
 	opensBattlePlan    bool
 	battleAction       ActionKind
 	battleContext      combat.BattleContext
@@ -848,7 +849,7 @@ type battlePlanState struct {
 	contactDefenderHolding  bool
 }
 
-func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string, pendingArmy army.ArmyID, pendingDest world.RegionID, pendingEnemy army.ArmyID, opensBattlePlan bool, battleAction ActionKind, battleContext combat.BattleContext) {
+func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string, pendingArmy army.ArmyID, pendingDest world.RegionID, pendingEnemy army.ArmyID, opensBattlePlan bool, battleAction ActionKind, battleContext combat.BattleContext, airLanding ...bool) {
 	if r == nil || r.gs == nil || targetID == "" {
 		return
 	}
@@ -859,6 +860,7 @@ func (r *Renderer) openWarConfirm(targetID faction.FactionID, targetName string,
 		pendingArmy:     pendingArmy,
 		pendingDest:     pendingDest,
 		pendingEnemy:    pendingEnemy,
+		airLanding:      len(airLanding) > 0 && airLanding[0],
 		opensBattlePlan: opensBattlePlan,
 		battleAction:    battleAction,
 		battleContext:   battleContext,
@@ -2772,27 +2774,54 @@ func (r *Renderer) PlayerMovementBlocked() bool {
 // OpenQueuedWarConfirm, rota kuyruğu bir sonraki adımda diplomatik savaş
 // ilanı gerektiren yabancı bölgeye geldiğinde, normal sağ tık akışındaki aynı
 // savaş onayını açar. Kuyruk bu modalı doğrudan aşmaz.
-func (r *Renderer) OpenQueuedWarConfirm(attacker *army.Army, target *world.Region) bool {
+func (r *Renderer) OpenQueuedWarConfirm(attacker *army.Army, target *world.Region, targetArmyID army.ArmyID, airLanding bool) bool {
 	targetOwnerID := ""
 	if r != nil && r.gs != nil {
 		targetOwnerID = r.gs.SovereignOwnerID(target)
 	}
-	if r == nil || r.gs == nil || attacker == nil || target == nil || targetOwnerID == "" ||
-		targetOwnerID == attacker.OwnerID || target.IsSea || !shouldPromptWarConfirmForMove(r.gs, attacker, target) {
+	if r == nil || r.gs == nil || attacker == nil || target == nil || target.IsSea {
+		return false
+	}
+	var enemyArmy *army.Army
+	if targetArmyID != "" {
+		candidate := r.gs.Armies[targetArmyID]
+		if candidate != nil && candidate.ID != attacker.ID && candidate.RegionID == target.ID &&
+			!airAttackMarkerIsFriendly(r.gs, attacker, candidate) {
+			enemyArmy = candidate
+		}
+	}
+	if enemyArmy == nil {
+		enemyArmy = r.gs.SelectBattleDefender(attacker, target.ID, attacker.IsNaval && target.CanNavalEnter())
+	}
+	needsWarConfirm := targetOwnerID != "" && targetOwnerID != attacker.OwnerID &&
+		shouldPromptWarConfirmForMove(r.gs, attacker, target)
+	if enemyArmy != nil && enemyArmy.OwnerID != "" && enemyArmy.OwnerID != attacker.OwnerID &&
+		!airAttackMarkerIsFriendly(r.gs, attacker, enemyArmy) {
+		relation := diplomacy.Relation(r.gs, faction.FactionID(attacker.OwnerID), faction.FactionID(enemyArmy.OwnerID))
+		if relation == nil || relation.Stance != faction.StanceWar {
+			targetOwnerID = enemyArmy.OwnerID
+			needsWarConfirm = true
+		}
+	}
+	if !needsWarConfirm || targetOwnerID == "" {
 		return false
 	}
 	name := targetOwnerID
 	if owner := r.gs.Factions[faction.FactionID(targetOwnerID)]; owner != nil && owner.NameTR != "" {
 		name = owner.NameTR
 	}
-	enemyArmy := r.gs.SelectBattleDefender(attacker, target.ID, attacker.IsNaval && target.CanNavalEnter())
 	battleAction, battleContext, opensBattlePlan := r.battlePlanIntent(attacker, target, enemyArmy)
+	if airLanding {
+		// İniş tercihi düşman ordusuyla temas ederse temas/savaş akışı oyun
+		// katmanında çözülür; savaş planı sonrası emrin sortie'ye dönmemesi gerekir.
+		opensBattlePlan = false
+	}
 	r.openWarConfirm(faction.FactionID(targetOwnerID), name, attacker.ID, target.ID, func() army.ArmyID {
 		if enemyArmy == nil {
 			return ""
 		}
 		return enemyArmy.ID
-	}(), opensBattlePlan, battleAction, battleContext)
+	}(), opensBattlePlan, battleAction, battleContext, airLanding)
 	return true
 }
 
@@ -3455,6 +3484,7 @@ func (r *Renderer) drawMoveTargets(screen *ebiten.Image) {
 			targetColor := color.RGBA{255, 90, 70, 230}
 			if dx*dx+dy*dy <= 28*28 {
 				targetColor = movementTargetHoverColor
+				DrawTextCentered(screen, "SALDIRI", float64(position.X), float64(position.Y)-34, FaceSmall, color.RGBA{255, 115, 90, 245})
 			}
 			vector.StrokeCircle(screen, position.X, position.Y, 28, 3, targetColor, true)
 		}

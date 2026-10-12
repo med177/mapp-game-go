@@ -192,8 +192,8 @@
       {
         "id": "kings_landing_main",
         "name_tr": "Kralın Şehri",
-        "x": 1447,
-        "y": 2352,
+        "x": 1460,
+        "y": 2340,
         "type": "fortress",
         "is_center": true
       },
@@ -206,9 +206,16 @@
       },
       {
         "id": "kings_landing_port",
-        "name_tr": "Liman",
-        "x": 1435,
-        "y": 2367,
+        "name_tr": "Merkez Liman",
+        "x": 1409,
+        "y": 2365,
+        "type": "port"
+      },
+      {
+        "id": "kings_landing_port_north",
+        "name_tr": "Kuzey Limanı",
+        "x": 1495,
+        "y": 2286,
         "type": "port"
       }
     ]

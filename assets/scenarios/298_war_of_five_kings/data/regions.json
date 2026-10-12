@@ -8,11 +8,11 @@
     "neighbors": [
       "bay_of_crabs",
       "bay_of_seals",
-      "braavos_channel",
+      "new_region_159",
       "shivering_sea"
     ],
-    "world_x": 2166,
-    "world_y": 1316,
+    "world_x": 2177,
+    "world_y": 1253,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -260,9 +260,11 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "gulltown_bay",
       "hapstackhall",
+      "new_region_158",
+      "new_region_160",
       "pentos_bay",
+      "sharp_point",
       "shipbreaker_bay",
       "the_gullet"
     ],
@@ -294,11 +296,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "braavos_channel",
-      "gulltown_bay",
       "myr_bay",
       "myr_region",
       "narrow_sea",
+      "new_region_160",
       "pentos_region",
       "shipbreaker_bay"
     ],
@@ -330,19 +331,52 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "blackwater_bay",
       "crackclaw_point",
       "dragonstone",
       "duskendale",
-      "gulltown_bay",
-      "hapstackhall",
+      "kings_landing",
+      "narrow_sea",
+      "new_region_158",
+      "new_region_160"
+    ],
+    "world_x": 1618,
+    "world_y": 2221,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_158",
+    "name": "New Region 158",
+    "name_tr": "Yeni Bolge 158",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "blackwater_bay",
+      "crownlands",
       "kings_landing",
       "kingswood",
       "narrow_sea",
-      "sharp_point"
+      "sharp_point",
+      "the_gullet"
     ],
-    "world_x": 1655,
-    "world_y": 2300,
+    "world_x": 1636,
+    "world_y": 2369,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -371,19 +405,50 @@
     "neighbors": [
       "bay_of_crabs",
       "braavos_channel",
-      "crackclaw_point",
-      "duskendale",
+      "new_region_160",
+      "the_bite",
+      "the_eyrie",
+      "the_fingers"
+    ],
+    "world_x": 1851,
+    "world_y": 1782,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
+    "id": "new_region_160",
+    "name": "New Region 160",
+    "name_tr": "Yeni Bolge 160",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "braavos_channel",
       "gulltown",
+      "gulltown_bay",
       "narrow_sea",
       "pentos_bay",
-      "saltpans",
+      "pentos_region",
       "the_eyrie",
-      "the_fingers",
-      "the_gullet",
-      "wickenden"
+      "the_gullet"
     ],
-    "world_x": 1881,
-    "world_y": 1866,
+    "world_x": 1929,
+    "world_y": 1897,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -411,6 +476,7 @@
     "owner_id": "",
     "neighbors": [
       "bay_of_crabs",
+      "gulltown_bay",
       "moat_cailin",
       "shivering_sea",
       "the_fingers",
@@ -483,9 +549,8 @@
     "owner_id": "",
     "neighbors": [
       "bay_of_crabs",
-      "bay_of_seals",
-      "eastwatch_sea",
       "karhold",
+      "new_region_159",
       "sea",
       "skagos",
       "the_bite",
@@ -516,6 +581,45 @@
     "buildings": null
   },
   {
+    "id": "new_region_159",
+    "name": "New Region 159",
+    "name_tr": "Yeni Bolge 159",
+    "terrain": "sea",
+    "owner_id": "",
+    "neighbors": [
+      "bay_of_seals",
+      "beyond_the_wall",
+      "eastwatch_sea",
+      "karhold",
+      "sea",
+      "shivering_sea",
+      "skagos",
+      "the_gift_east",
+      "the_grey_cliffs",
+      "the_wall_east"
+    ],
+    "world_x": 1592,
+    "world_y": 682,
+    "is_sea": true,
+    "is_locked": false,
+    "unlock_turn": 0,
+    "base_gold_income": 0,
+    "base_grain_output": 0,
+    "base_iron_output": 0,
+    "base_timber_output": 0,
+    "base_stone_output": 0,
+    "base_spice_output": 0,
+    "base_cloth_output": 0,
+    "trade_capacity": 0,
+    "satisfaction": 100,
+    "tax_rate": 45,
+    "population": 0,
+    "rural_population": 0,
+    "religion": "",
+    "active_event_id": "",
+    "buildings": null
+  },
+  {
     "id": "eastwatch_sea",
     "name": "Eastwatch Sea",
     "name_tr": "Doğu Gözcüsü Denizi",
@@ -526,14 +630,11 @@
       "beyond_the_wall",
       "coldwater_shore",
       "frostpine_uplands",
-      "shivering_sea",
-      "skagos",
-      "the_gift_east",
-      "the_wall_east",
+      "new_region_159",
       "winterwake_coast"
     ],
-    "world_x": 1807,
-    "world_y": 295,
+    "world_x": 1526,
+    "world_y": 279,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -561,11 +662,13 @@
     "owner_id": "",
     "neighbors": [
       "eastwatch_sea",
+      "new_region_159",
       "sea",
-      "shivering_sea"
+      "skagos",
+      "the_gift_east"
     ],
-    "world_x": 1966,
-    "world_y": 296,
+    "world_x": 1768,
+    "world_y": 299,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -595,13 +698,12 @@
       "bay_of_crabs",
       "braavos",
       "gulltown_bay",
+      "new_region_160",
       "norvos",
-      "pentos_bay",
-      "pentos_region",
-      "sea"
+      "pentos_region"
     ],
-    "world_x": 2010,
-    "world_y": 1846,
+    "world_x": 2028,
+    "world_y": 1853,
     "is_sea": true,
     "is_locked": false,
     "unlock_turn": 0,
@@ -633,7 +735,7 @@
       "isle_faces",
       "kings_landing",
       "kingswood",
-      "the_gullet"
+      "new_region_158"
     ],
     "world_x": 1274,
     "world_y": 2192,
@@ -1770,6 +1872,7 @@
       "crownlands",
       "duskendale",
       "kingswood",
+      "new_region_158",
       "the_gullet"
     ],
     "world_x": 1443,
@@ -1942,7 +2045,8 @@
     "neighbors": [
       "hapstackhall",
       "kingswood",
-      "the_gullet"
+      "narrow_sea",
+      "new_region_158"
     ],
     "world_x": 1616,
     "world_y": 2415,
@@ -2121,7 +2225,7 @@
     "neighbors": [
       "beyond_the_wall",
       "brandon_gift",
-      "eastwatch_sea",
+      "new_region_159",
       "the_gift_east",
       "the_wall_west"
     ],
@@ -2171,6 +2275,7 @@
       "braavos_channel",
       "essos_free_cities",
       "myr_region",
+      "new_region_160",
       "norvos",
       "pentos_bay"
     ],
@@ -2449,6 +2554,7 @@
     "neighbors": [
       "eastwatch_sea",
       "frostpine_uplands",
+      "new_region_159",
       "pale_wind_march",
       "the_wall_east",
       "the_wall_west"
@@ -2703,6 +2809,7 @@
     "neighbors": [
       "gulltown",
       "gulltown_bay",
+      "new_region_160",
       "saltpans",
       "the_fingers",
       "the_mountains_of_the_moon",
@@ -3106,6 +3213,7 @@
     "owner_id": "stark",
     "neighbors": [
       "lonely_hills",
+      "new_region_159",
       "shivering_sea",
       "the_dreadfort",
       "the_gift_east",
@@ -3144,7 +3252,8 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
-      "eastwatch_sea",
+      "bay_of_seals",
+      "new_region_159",
       "shivering_sea"
     ],
     "world_x": 1696,
@@ -3487,6 +3596,7 @@
       "harrenhal",
       "kings_landing",
       "kingswood",
+      "new_region_158",
       "reach",
       "stone_sept",
       "the_hollow_hill"
@@ -3522,7 +3632,6 @@
     "successor_faction_id": "baratheon_dragonstone",
     "neighbors": [
       "duskendale",
-      "gulltown_bay",
       "the_gullet"
     ],
     "world_x": 1647,
@@ -3557,7 +3666,6 @@
     "neighbors": [
       "crackclaw_point",
       "crownlands",
-      "gulltown_bay",
       "harrenhal",
       "kings_landing",
       "saltpans",
@@ -3599,10 +3707,10 @@
       "crownlands",
       "hapstackhall",
       "kings_landing",
+      "new_region_158",
       "reach",
       "sharp_point",
       "stormlands",
-      "the_gullet",
       "tumbleton"
     ],
     "world_x": 1416,
@@ -4172,10 +4280,11 @@
     "owner_id": "nights_watch",
     "successor_faction_id": "nights_watch",
     "neighbors": [
+      "bay_of_seals",
       "brandon_gift",
-      "eastwatch_sea",
       "karhold",
       "lonely_hills",
+      "new_region_159",
       "shivering_sea",
       "the_gift_center",
       "the_wall_east"
@@ -4683,6 +4792,7 @@
     "successor_faction_id": "stark",
     "neighbors": [
       "karhold",
+      "new_region_159",
       "shivering_sea"
     ],
     "world_x": 1744,
@@ -4862,7 +4972,7 @@
     "owner_id": "arryn",
     "successor_faction_id": "arryn",
     "neighbors": [
-      "gulltown_bay",
+      "new_region_160",
       "the_eyrie",
       "wickenden"
     ],
@@ -4899,7 +5009,6 @@
     "successor_faction_id": "arryn",
     "neighbors": [
       "duskendale",
-      "gulltown_bay",
       "harrenhal",
       "the_eyrie",
       "the_mountains_of_the_moon",
@@ -4938,7 +5047,6 @@
     "successor_faction_id": "arryn",
     "neighbors": [
       "gulltown",
-      "gulltown_bay",
       "saltpans",
       "the_eyrie"
     ],
@@ -5399,8 +5507,7 @@
       "sharp_point",
       "shipbreaker_bay",
       "storm_end",
-      "stormlands",
-      "the_gullet"
+      "stormlands"
     ],
     "world_x": 1564,
     "world_y": 2547,

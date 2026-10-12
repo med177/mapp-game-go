@@ -1,13 +1,13 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-10-09
+last_updated: 2026-10-12
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
 # Diplomasi Sistemi
 
-**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`, `internal/diplomacy/vassalage.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/diplomacy/imperial.go`, `internal/diplomacy/imperial_politics.go`, `internal/faction/faction.go`, `internal/game/game.go`
+**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`, `internal/diplomacy/negotiation.go`, `internal/diplomacy/vassalage.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/diplomacy/imperial.go`, `internal/diplomacy/imperial_politics.go`, `internal/faction/faction.go`, `internal/game/game.go`, `internal/render/diplomacy_negotiation.go`
 
 `MilitaryPowerBreakdown()` kara ve donanma ordularının etkin güçlerini ayrı
 hesaplar; `MilitaryPower()` bu iki değerin toplamıdır. Etkin güç, birimin saldırı
@@ -228,11 +228,16 @@ ile regression testleri `TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice` v
 
 ### Karşılıklı Transfer Pazarlığı
 
-`state.DiplomaticTransfer`, `region`, `resource` ve `army` kalemlerini taşır.
+`state.DiplomaticTransfer`, `region`, `resource`, `army` ve `captive` kalemlerini taşır.
 `internal/render/diplomacy_negotiation.go` ve `internal/ui.ListView` iki taraflı panelde sol kolonda
 `Talep Edilen`, sağ kolonda `Verilen` kalemlerini gösterir. Oyuncu kendi
-topraklarını doğrudan kaydırılabilir bölge listesinden, mevcut kaynaklarını veya
-komutan taşımayan kara ordusu birimlerini seçip miktar belirleyebilir. Bölge
+topraklarını doğrudan kaydırılabilir bölge listesinden, mevcut kaynaklarını,
+komutan taşımayan kara ordusu birimlerini veya karşı tarafın elinde tutulan
+kendi komutanını seçip miktar belirleyebilir. Oyuncu ayrıca kendi elindeki,
+karşı tarafa ait bir komutanı teklif ederek sahibine iade edebilir. Tutsak
+kalemleri tekil ve miktarsızdır; üçüncü bir devlete ait komutanlar pazarlıkta
+gösterilmez. Kabul edilen tutsak aktarımı komutanın tutsaklığını kaldırıp onu
+sahibine geri verir. Bölge
 transferinde üretim emirleri temizlenir, başkentler yeniden normalize edilir ve
 devredilen bölgedeki eski sahip orduları geçerli kara toprağına tahliye edilir;
 ordu transferi hedef devletin kara bölgesine yeni bir ordu olarak eklenir.

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-10-01
+last_updated: 2026-10-12
 related: [state-management, render-pipeline]
 ---
 
@@ -231,7 +231,7 @@ bölünür; böylece `ActionEndTurn` aynı çağrıda tüm market hesabını ça
 | Aksiyon | Tetikleyici | Açıklama |
 |---|---|---|
 | `ActionEndTurn` | Enter/Space | Önce `autosave` slotuna kaydeder, sonra AI turuna geç; senaryo tabanı ilk oyuncu turu hazırlanırken önbelleğe alınır |
-| `ActionMoveArmy` | Sağ tık | Orduyu komşu bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Aynı modal düşman donanma varsa deniz savaşı için de açılır. Ordu o anda başka bir bölgeyi kuşatıyorsa ve farklı bir komşuya yürüyorsa eski kuşatma otomatik kaldırılır; aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için girebilir, ilgisiz üçüncü devletler yeni kuşatma hamlesi üretemez. Tahkimli ve zaten kuşatılmış bölgedeki besieger düşman orduya savaş açılabiliyorsa bu hareket kuşatmayı kaldırır ama yeni kuşatma açmaz |
+| `ActionMoveArmy` | Sağ tık | Orduyu hedef bölgeye taşı; düşman kara ordusu varsa önce savaş planı modalında `Agresif / Dengeli / Savunmacı` seçimi alınır, sonra seçilen duruşla resolve edilir. Uçan ordu, düşman toprağına veya düşman kara ordusu bulunan erişilebilir hedefe sağ tıklandığında `Saldır / Buraya İn / İptal` niyet modalı gösterir; saldırı seçimi mevcut sortie/savaş akışını ve varsa seçili hedef ordu ID'sini korur, iniş seçimi sortie dönüşünü iptal ederek orduyu hedef bölgede bırakır. Savaş ilanı gerekiyorsa seçilen niyet onaydan sonra da korunur. Aynı modal düşman donanma varsa deniz savaşı için de açılır. Ordu o anda başka bir bölgeyi kuşatıyorsa ve farklı bir komşuya yürüyorsa eski kuşatma otomatik kaldırılır; aktif kuşatmaya aynı fraksiyon ya da müttefik fraksiyon destek için girebilir, ilgisiz üçüncü devletler yeni kuşatma hamlesi üretemez. Tahkimli ve zaten kuşatılmış bölgedeki besieger düşman orduya savaş açılabiliyorsa bu hareket kuşatmayı kaldırır ama yeni kuşatma açmaz |
 | `ActionDisembarkArmy` | Sağ tık | Nakliye filosu düşman kıyıya savaş halinde çıkarma yapabilir; savunan ordu varsa önce `Çıkarma Muharebesi` modalı açılır ve seçilen duruş `ActionDisembarkArmy.BattleStance` alanıyla oyun katmanına taşınır. Kendi kıyısında limana dock olduktan sonra aynı kara bölgesine tekrar sağ tıklanınca gemideki birlikler doğrudan karaya indirilir |
 | `ActionStartSiege` | Kuşatma modalı | Tahkimli düşman kara bölgesinde aktif kuşatma başlatır; kuşatma birimi olsun veya olmasın bu orduyla daha sonra genel hücum seçilebilir. Gedik yoksa tahkimat doğrudan düşmez. Ordu hedefe girmez, hareketi biter. Başka bir devletin devam eden kuşatmasına destek ayrı `ActionMoveArmy` akışıyla gelir; burada yeni bir kuşatma kaydı açılmaz |
 | `ActionAssaultSiege` | Kuşatma modalı / seçili kuşatma paneli | Aktif kuşatma üstünden tahkimata genel hücum yapar; gedik ve sur bonusu combat çözümüne katılır |

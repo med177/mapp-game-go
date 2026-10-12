@@ -156,6 +156,7 @@ type InputAction struct {
 	// TargetSettlementID, denizden kara hedefinde liman ile merkez yerleşimi
 	// ayırır. Boş bırakıldığında bölge tabanlı eski hareket semantiği korunur.
 	TargetSettlementID   string
+	AirLanding           bool // Uçan ordu hedefe inip kalır; sortie dönüşü yapmaz.
 	BuildingID           string
 	Quantity             int
 	TargetFaction        faction.FactionID

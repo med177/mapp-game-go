@@ -456,6 +456,8 @@ type GameState struct {
 
 	// Tetiklenmiş tek seferlik olay ID'leri
 	FiredEventIDs map[string]bool `json:"fired_event_ids"`
+	// EventChoiceHistory, gerçekleşen event'lerde seçilen seçenek indeksini tutar.
+	EventChoiceHistory map[string]int `json:"event_choice_history,omitempty"`
 
 	// Son savaş/kuşatma/diplomasi çözümünde gerçekleşen faction
 	// üstünlüğünü aynı turdaki veri odaklı event'lere aktarır. Kalıcı campaign

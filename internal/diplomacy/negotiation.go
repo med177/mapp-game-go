@@ -15,11 +15,12 @@ const (
 	transferKindRegion   = "region"
 	transferKindResource = "resource"
 	transferKindArmy     = "army"
+	transferKindCaptive  = "captive"
 	transferRelationGain = 10
 	maxTransferItems     = 6
 )
 
-// QueueTransferOffer, iki taraflı kaynak/bölge/asker pazarlığını teklif
+// QueueTransferOffer, iki taraflı kaynak/bölge/asker/tutsak pazarlığını teklif
 // kuyruğuna ekler. Kalemler çözümleme anına kadar state'te korunur.
 func QueueTransferOffer(gs *state.GameState, from, to faction.FactionID, requested, offered []state.DiplomaticTransfer, priority int, reason string) bool {
 	if gs == nil || from == "" || to == "" || from == to || len(requested) == 0 && len(offered) == 0 {
@@ -34,7 +35,7 @@ func QueueTransferOffer(gs *state.GameState, from, to faction.FactionID, request
 	if rel := Relation(gs, from, to); rel != nil && rel.Stance == faction.StanceWar {
 		return false
 	}
-	if !validTransferList(gs, to, requested) || !validTransferList(gs, from, offered) {
+	if !validTransferList(gs, to, from, requested) || !validTransferList(gs, from, to, offered) {
 		return false
 	}
 	if len(requested) > maxTransferItems || len(offered) > maxTransferItems || !gs.SpendDiplomacyOfferQuota(from) {
@@ -95,7 +96,7 @@ func acceptedTransferCounterOffer(gs *state.GameState, ai, player faction.Factio
 	for i := 0; i < len(counterOffered); i++ {
 		transfer := counterOffered[i]
 		switch transfer.Kind {
-		case transferKindRegion:
+		case transferKindRegion, transferKindCaptive:
 			if len(counterOffered) == 1 {
 				continue
 			}
@@ -192,7 +193,7 @@ func AssessTransferOffer(gs *state.GameState, from, to faction.FactionID, reques
 }
 
 func resolveAcceptedTransferOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {
-	if !offerPartiesExist(gs, offer) || !validTransferList(gs, offer.ToFactionID, offer.RequestedTransfers) || !validTransferList(gs, offer.FromFactionID, offer.OfferedTransfers) {
+	if !offerPartiesExist(gs, offer) || !validTransferList(gs, offer.ToFactionID, offer.FromFactionID, offer.RequestedTransfers) || !validTransferList(gs, offer.FromFactionID, offer.ToFactionID, offer.OfferedTransfers) {
 		return Result{Message: "Pazarlık artık geçerli değil."}
 	}
 	if !applyTransferList(gs, offer.ToFactionID, offer.FromFactionID, offer.RequestedTransfers) || !applyTransferList(gs, offer.FromFactionID, offer.ToFactionID, offer.OfferedTransfers) {
@@ -211,7 +212,7 @@ func resolveAcceptedTransferOffer(gs *state.GameState, offer state.DiplomaticOff
 	}
 }
 
-func validTransferList(gs *state.GameState, owner faction.FactionID, transfers []state.DiplomaticTransfer) bool {
+func validTransferList(gs *state.GameState, owner, beneficiary faction.FactionID, transfers []state.DiplomaticTransfer) bool {
 	if gs == nil || owner == "" || len(transfers) > maxTransferItems {
 		return false
 	}
@@ -239,6 +240,11 @@ func validTransferList(gs *state.GameState, owner faction.FactionID, transfers [
 			if unitCountForFaction(gs, owner, transfer.ID) < transfer.Amount {
 				return false
 			}
+		case transferKindCaptive:
+			commander := gs.Commanders[transfer.ID]
+			if transfer.Amount != 1 || commander == nil || commander.OwnerID != string(beneficiary) || !commanderHeldByFaction(gs, commander, owner) {
+				return false
+			}
 		default:
 			return false
 		}
@@ -247,7 +253,7 @@ func validTransferList(gs *state.GameState, owner faction.FactionID, transfers [
 }
 
 func applyTransferList(gs *state.GameState, from, to faction.FactionID, transfers []state.DiplomaticTransfer) bool {
-	if !validTransferList(gs, from, transfers) {
+	if !validTransferList(gs, from, to, transfers) {
 		return false
 	}
 	regionTransferred := false
@@ -264,6 +270,10 @@ func applyTransferList(gs *state.GameState, from, to faction.FactionID, transfer
 			economy.AddFactionResource(gs.Factions[to], kind, transfer.Amount)
 		case transferKindArmy:
 			if !transferArmyUnits(gs, from, to, transfer.ID, transfer.Amount) {
+				return false
+			}
+		case transferKindCaptive:
+			if !gs.ReleaseCommanderCaptivity(transfer.ID) {
 				return false
 			}
 		}
@@ -346,7 +356,7 @@ func unitCountForFaction(gs *state.GameState, owner faction.FactionID, unitTypeI
 }
 
 // TransferListValue returns the shared diplomatic value estimate for a list
-// of resources, regions, or army units owned by the specified faction.
+// of resources, regions, army units, or captive commanders owned by the specified faction.
 func TransferListValue(gs *state.GameState, owner faction.FactionID, transfers []state.DiplomaticTransfer) int {
 	value := 0
 	for _, transfer := range transfers {
@@ -372,9 +382,32 @@ func TransferListValue(gs *state.GameState, owner faction.FactionID, transfers [
 				unitValue += unitType.Attack + unitType.Defense + unitType.Morale + int(unitType.Tier)*10
 			}
 			value += transfer.Amount * unitValue
+		case transferKindCaptive:
+			if gs != nil {
+				if commander := gs.Commanders[transfer.ID]; commander != nil {
+					value += 50 + commander.Level*10
+				}
+			}
 		}
 	}
 	return value
+}
+
+func commanderHeldByFaction(gs *state.GameState, commander *army.Commander, owner faction.FactionID) bool {
+	if gs == nil || commander == nil || commander.CaptiveAtSettlementID == "" || owner == "" {
+		return false
+	}
+	for _, region := range gs.Regions {
+		if region == nil {
+			continue
+		}
+		for _, settlement := range region.Settlements {
+			if settlement.ID == commander.CaptiveAtSettlementID {
+				return region.OwnerID == string(owner)
+			}
+		}
+	}
+	return false
 }
 
 // RegionTenTurnEconomicValue bir bölgenin mevcut efektif altın ve kaynak

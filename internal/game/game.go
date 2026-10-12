@@ -85,6 +85,7 @@ type pendingPlayerMovement struct {
 	steps                  []world.RegionID
 	targetSettlementID     string
 	targetArmyID           army.ArmyID
+	airLanding             bool
 	airSortieReturn        bool
 	returnAnimationStarted bool
 	forceDisembark         bool
@@ -1938,6 +1939,10 @@ func (g *Game) applyHistoricalChoiceWithNotification(evt *events.Event, idx int,
 	if !ok {
 		return
 	}
+	if g.gs.EventChoiceHistory == nil {
+		g.gs.EventChoiceHistory = make(map[string]int)
+	}
+	g.gs.EventChoiceHistory[evt.ID] = idx
 	playerWasEventFaction := evt != nil && evt.Target == "specific_faction" &&
 		g.gs.PlayerFactionID == faction.FactionID(evt.AffectedFaction)
 	g.resolvePoliticalTransformation(choice.Effect)
@@ -2125,6 +2130,12 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 			detail = append(detail, evt.DescTR)
 		}
 		detail = append(detail, g.eventCodexContextLines(evt)...)
+		if choice, ok := g.eventCodexSelectedChoice(evt); ok {
+			detail = append(detail, "Seçilen seçenek: "+choice.LabelTR)
+			if choice.DescTR != "" {
+				detail = append(detail, choice.DescTR)
+			}
+		}
 		detail = append(detail, g.eventCodexEffectLines(evt)...)
 		if entry.monthsUntil > 0 {
 			detail = append(detail, fmt.Sprintf("Kalan süre: %d ay (%d tur)", entry.monthsUntil, turnsUntilHistoricalEvent(g.gs, evt)))
@@ -2226,6 +2237,15 @@ func (g *Game) collectEventCodexEntries(filter string) []eventCodexEntry {
 	}
 	sort.Slice(entries, func(i, j int) bool {
 		a, b := entries[i], entries[j]
+		if filter == "past" {
+			if a.evt.HistoricalYear != b.evt.HistoricalYear {
+				return a.evt.HistoricalYear > b.evt.HistoricalYear
+			}
+			if a.evt.HistoricalMonth != b.evt.HistoricalMonth {
+				return a.evt.HistoricalMonth > b.evt.HistoricalMonth
+			}
+			return a.evt.NameTR < b.evt.NameTR
+		}
 		if ar, br := eventCodexStatusRank(a.status), eventCodexStatusRank(b.status); ar != br {
 			return ar < br
 		}
@@ -2468,12 +2488,29 @@ func (g *Game) eventCodexEffectLines(evt *events.Event) []string {
 	if effect := historicalChoiceEffectSummary(g.gs, evt.BaseEffect()); effect != "" {
 		lines = append(lines, "Etki: "+effect)
 	}
+	if choice, ok := g.eventCodexSelectedChoice(evt); ok {
+		if effect := historicalChoiceEffectSummary(g.gs, choice.Effect); effect != "" {
+			lines = append(lines, "Seçim etkisi — "+choice.LabelTR+": "+effect)
+		}
+		return lines
+	}
 	for _, choice := range evt.Choices {
 		if effect := historicalChoiceEffectSummary(g.gs, choice.Effect); effect != "" {
 			lines = append(lines, "Seçim etkisi — "+choice.LabelTR+": "+effect)
 		}
 	}
 	return lines
+}
+
+func (g *Game) eventCodexSelectedChoice(evt *events.Event) (events.Choice, bool) {
+	if g == nil || g.gs == nil || evt == nil || g.gs.EventChoiceHistory == nil {
+		return events.Choice{}, false
+	}
+	idx, ok := g.gs.EventChoiceHistory[evt.ID]
+	if !ok || idx < 0 || idx >= len(evt.Choices) {
+		return events.Choice{}, false
+	}
+	return evt.Choices[idx], true
 }
 
 func (g *Game) historicalEventDetail(evt *events.Event) string {
@@ -6462,7 +6499,7 @@ func (g *Game) startPlayerMovement(action render.InputAction) {
 	}
 	g.pendingAirAttackArmyID = action.TargetArmyID
 	route := g.gs.MovementRouteForArmy(a, action.TargetRegion)
-	if len(route) >= 2 {
+	if len(route) >= 2 && !action.AirLanding {
 		g.gs.BeginAirSortie(a, action.TargetRegion)
 	}
 	if len(route) < 2 {
@@ -6475,6 +6512,7 @@ func (g *Game) startPlayerMovement(action render.InputAction) {
 		steps:              append([]world.RegionID(nil), route[1:]...),
 		targetSettlementID: action.TargetSettlementID,
 		targetArmyID:       action.TargetArmyID,
+		airLanding:         action.AirLanding,
 	}
 	g.advancePendingPlayerMovement()
 }
@@ -6526,7 +6564,7 @@ func (g *Game) advancePendingPlayerMovement() {
 	if finalStep {
 		settlementID = pending.targetSettlementID
 	}
-	if target := g.gs.Regions[next]; target != nil && g.renderer.OpenQueuedWarConfirm(a, target) {
+	if target := g.gs.Regions[next]; target != nil && g.renderer.OpenQueuedWarConfirm(a, target, pending.targetArmyID, pending.airLanding) {
 		g.pendingPlayerMovement = nil
 		g.renderer.CancelArmyMovementAnimation()
 		return

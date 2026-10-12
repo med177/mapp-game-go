@@ -161,6 +161,7 @@ type campaignSaveState struct {
 	VictoryAchieved          bool                                               `json:"va,omitempty"`
 	VictoryAchievedTurn      int                                                `json:"vat,omitempty"`
 	FiredEventIDs            []string                                           `json:"fe,omitempty"`
+	EventChoiceHistory       map[string]int                                     `json:"ech,omitempty"`
 	TradeNetworkModifiers    []state.TradeNetworkModifier                       `json:"tnm,omitempty"`
 	LastSubjugationActorID   faction.FactionID                                  `json:"lsa,omitempty"`
 	LastSubjugatedFactionID  faction.FactionID                                  `json:"lst,omitempty"`
@@ -260,6 +261,7 @@ type legacyCampaignSaveState struct {
 	VictoryAchieved          bool                                               `json:"victory_achieved"`
 	VictoryAchievedTurn      int                                                `json:"victory_achieved_turn"`
 	FiredEventIDs            map[string]bool                                    `json:"fired_event_ids"`
+	EventChoiceHistory       map[string]int                                     `json:"event_choice_history,omitempty"`
 	Relations                map[string]*faction.Relation                       `json:"relations"`
 	DiplomaticOffers         []state.DiplomaticOffer                            `json:"diplomatic_offers,omitempty"`
 	PendingConquestDecisions []state.PendingConquestDecision                    `json:"pending_conquest_decisions,omitempty"`
@@ -435,6 +437,7 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		VictoryAchieved:          legacy.VictoryAchieved,
 		VictoryAchievedTurn:      legacy.VictoryAchievedTurn,
 		FiredEventIDs:            firedEventIDsToSlice(legacy.FiredEventIDs),
+		EventChoiceHistory:       cloneStringIntMap(legacy.EventChoiceHistory),
 		Relations:                makeLegacyRelationState(legacy.Relations),
 		DiplomaticOffers:         append([]state.DiplomaticOffer(nil), legacy.DiplomaticOffers...),
 		PendingConquestDecisions: append([]state.PendingConquestDecision(nil), legacy.PendingConquestDecisions...),
@@ -576,6 +579,7 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		VictoryAchieved:          gs.VictoryAchieved,
 		VictoryAchievedTurn:      gs.VictoryAchievedTurn,
 		FiredEventIDs:            firedEventIDsToSlice(gs.FiredEventIDs),
+		EventChoiceHistory:       cloneStringIntMap(gs.EventChoiceHistory),
 		TradeNetworkModifiers:    append([]state.TradeNetworkModifier(nil), gs.TradeNetworkModifiers...),
 		LastSubjugationActorID:   gs.LastSubjugationActorID,
 		LastSubjugatedFactionID:  gs.LastSubjugatedFactionID,
@@ -690,6 +694,7 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		VictoryAchieved:          gs.VictoryAchieved,
 		VictoryAchievedTurn:      gs.VictoryAchievedTurn,
 		FiredEventIDs:            firedEventIDsFromSlice(firedEventIDsToSlice(gs.FiredEventIDs)),
+		EventChoiceHistory:       cloneStringIntMap(gs.EventChoiceHistory),
 		Relations:                cloneRelations(gs.Relations),
 		DiplomaticOffers:         append([]state.DiplomaticOffer(nil), gs.DiplomaticOffers...),
 		PendingConquestDecisions: append([]state.PendingConquestDecision(nil), gs.PendingConquestDecisions...),
@@ -783,6 +788,7 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.VictoryAchieved = saved.VictoryAchieved
 	gs.VictoryAchievedTurn = saved.VictoryAchievedTurn
 	gs.FiredEventIDs = firedEventIDsFromSlice(saved.FiredEventIDs)
+	gs.EventChoiceHistory = cloneStringIntMap(saved.EventChoiceHistory)
 	gs.TradeNetworkModifiers = append([]state.TradeNetworkModifier(nil), saved.TradeNetworkModifiers...)
 	gs.LastSubjugationActorID = saved.LastSubjugationActorID
 	gs.LastSubjugatedFactionID = saved.LastSubjugatedFactionID

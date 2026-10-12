@@ -923,6 +923,7 @@ func (r *Renderer) finalizeWarConfirm(wc warConfirmState) InputAction {
 		TargetFaction: faction.FactionID(wc.factionID),
 		WarAllies:     selectedWarAlliesFromState(wc),
 		TargetArmyID:  wc.pendingEnemy,
+		AirLanding:    wc.airLanding,
 	}
 	if wc.pendingArmy == "" || wc.pendingDest == "" {
 		return action
@@ -1331,7 +1332,7 @@ func diplomacyTransferSummaryTR(gs *state.GameState, items []state.DiplomaticTra
 	parts := make([]string, 0, len(items))
 	for _, item := range items {
 		label := negotiationItemLabel(gs, item)
-		if item.Kind != "region" {
+		if item.Kind != "region" && item.Kind != "captive" {
 			label += " x" + strconv.Itoa(item.Amount)
 		}
 		parts = append(parts, label)
@@ -2398,6 +2399,8 @@ func (r *Renderer) drawConfirmDialogButtons(screen *ebiten.Image) {
 
 func confirmDialogActionButtonStyle(label string) gameui.ButtonStyle {
 	switch label {
+	case "Saldır":
+		return solidButtonStyle(color.RGBA{145, 38, 32, 240}, color.RGBA{235, 105, 92, 255}, ColorWhite, 10)
 	case "Kuşatma Başlat":
 		return solidButtonStyle(color.RGBA{190, 100, 28, 240}, color.RGBA{240, 155, 70, 255}, ColorWhite, 10)
 	case "Genel Hücum":
@@ -2418,6 +2421,9 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 			return btn.WithIcon(gameui.IconSiege)
 		}
 		if label == "Genel Hücum" {
+			return btn.WithIcon(gameui.IconSword)
+		}
+		if label == "Saldır" {
 			return btn.WithIcon(gameui.IconSword)
 		}
 		if strings.Contains(label, "İlhak") {
@@ -2448,6 +2454,9 @@ func decorateConfirmDialogButton(btn gameui.Button, label string, role string) g
 		}
 		if label == "Limana Gir" {
 			return btn.WithIcon(gameui.IconDock)
+		}
+		if label == "Buraya İn" {
+			return btn.WithIcon(gameui.IconExit)
 		}
 		return btn.WithIcon(gameui.IconSave)
 	default:

@@ -19,6 +19,8 @@ const (
 	negotiationKindRegion = iota
 	negotiationKindResource
 	negotiationKindArmy
+	negotiationKindCaptive
+	negotiationKindCount
 
 	negotiationSelectedItemsHeight = 220.0
 )
@@ -27,6 +29,7 @@ type negotiationSideState struct {
 	kind           int
 	option         int
 	amount         int
+	counterparty   faction.FactionID
 	optionDropdown *gameui.Dropdown
 	selectedList   gameui.ListView
 	items          []state.DiplomaticTransfer
@@ -159,16 +162,20 @@ func configureNegotiationSideControls(gs *state.GameState, owner faction.Faction
 	}
 	hasOptions := negotiationHasOptions(gs, owner, side.kind)
 	canAdd := hasOptions
-	if side.kind == negotiationKindRegion {
+	switch side.kind {
+	case negotiationKindRegion:
 		hasOptions = len(negotiationOptionsForSide(gs, owner, side, side.kind)) > 0
 		canAdd = hasOptions
-	} else if side.kind == negotiationKindArmy {
+	case negotiationKindArmy:
+		hasOptions = len(negotiationOptionsForSide(gs, owner, side, side.kind)) > 0
+		_, canAdd = negotiationCurrentOption(gs, owner, side)
+	case negotiationKindCaptive:
 		hasOptions = len(negotiationOptionsForSide(gs, owner, side, side.kind)) > 0
 		_, canAdd = negotiationCurrentOption(gs, owner, side)
 	}
 	layout.option.Enabled = hasOptions
-	layout.minus.Enabled = canAdd && side.kind != negotiationKindRegion
-	layout.plus.Enabled = canAdd && side.kind != negotiationKindRegion
+	layout.minus.Enabled = canAdd && side.kind != negotiationKindRegion && side.kind != negotiationKindCaptive
+	layout.plus.Enabled = canAdd && side.kind != negotiationKindRegion && side.kind != negotiationKindCaptive
 	layout.add.Enabled = canAdd && len(side.items) < 6
 }
 
@@ -230,8 +237,8 @@ func (r *Renderer) openDiplomacyNegotiation(target faction.FactionID) {
 		show:         true,
 		target:       target,
 		counterIndex: -1,
-		requested:    negotiationSideState{kind: negotiationKindRegion, amount: 1},
-		offered:      negotiationSideState{kind: negotiationKindRegion, amount: 1},
+		requested:    negotiationSideState{kind: negotiationKindRegion, amount: 1, counterparty: r.gs.PlayerFactionID},
+		offered:      negotiationSideState{kind: negotiationKindRegion, amount: 1, counterparty: target},
 	}
 }
 
@@ -250,8 +257,8 @@ func (r *Renderer) OpenDiplomacyCounterOffer(index int) {
 		show:         true,
 		target:       offer.FromFactionID,
 		counterIndex: index,
-		requested:    negotiationSideState{kind: negotiationKindRegion, amount: 1, items: cloneNegotiationTransfers(offer.OfferedTransfers)},
-		offered:      negotiationSideState{kind: negotiationKindRegion, amount: 1, items: cloneNegotiationTransfers(offer.RequestedTransfers)},
+		requested:    negotiationSideState{kind: negotiationKindRegion, amount: 1, counterparty: r.gs.PlayerFactionID, items: cloneNegotiationTransfers(offer.OfferedTransfers)},
+		offered:      negotiationSideState{kind: negotiationKindRegion, amount: 1, counterparty: offer.FromFactionID, items: cloneNegotiationTransfers(offer.RequestedTransfers)},
 	}
 }
 
@@ -282,12 +289,14 @@ func negotiationKindLabel(kind int) string {
 		return "Kaynak / Altın"
 	case negotiationKindArmy:
 		return "Asker"
+	case negotiationKindCaptive:
+		return "Tutsak"
 	default:
 		return "Bölge"
 	}
 }
 
-func negotiationOptions(gs *state.GameState, owner faction.FactionID, kind int) []negotiationOption {
+func negotiationOptions(gs *state.GameState, owner, counterparty faction.FactionID, kind int) []negotiationOption {
 	if gs == nil {
 		return nil
 	}
@@ -363,19 +372,45 @@ func negotiationOptions(gs *state.GameState, owner faction.FactionID, kind int) 
 			options = append(options, negotiationOption{id: id, label: label, max: count, disabled: disabled})
 		}
 		sort.Slice(options, func(i, j int) bool { return options[i].id < options[j].id })
+	case negotiationKindCaptive:
+		for _, commander := range gs.Commanders {
+			if commander == nil || commander.OwnerID != string(counterparty) || commander.CaptiveAtSettlementID == "" {
+				continue
+			}
+			regionID := regionForCommanderSettlement(gs, commander.CaptiveAtSettlementID)
+			region := gs.Regions[regionID]
+			if region == nil || region.OwnerID != string(owner) {
+				continue
+			}
+			label := commander.Name
+			if label == "" {
+				label = commander.ID
+			}
+			options = append(options, negotiationOption{id: commander.ID, label: label, max: 1, isRegion: true})
+		}
+		sort.Slice(options, func(i, j int) bool {
+			if options[i].label == options[j].label {
+				return options[i].id < options[j].id
+			}
+			return options[i].label < options[j].label
+		})
 	}
 	return options
 }
 
 func negotiationOptionsForSide(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, kind int) []negotiationOption {
-	options := negotiationOptions(gs, owner, kind)
-	if kind != negotiationKindRegion || side == nil || len(side.items) == 0 {
+	counterparty := faction.FactionID("")
+	if side != nil {
+		counterparty = side.counterparty
+	}
+	options := negotiationOptions(gs, owner, counterparty, kind)
+	if (kind != negotiationKindRegion && kind != negotiationKindCaptive) || side == nil || len(side.items) == 0 {
 		return options
 	}
 
 	selected := make(map[string]struct{}, len(side.items))
 	for _, item := range side.items {
-		if item.Kind == "region" {
+		if item.Kind == "region" || item.Kind == "captive" {
 			selected[item.ID] = struct{}{}
 		}
 	}
@@ -413,7 +448,7 @@ func negotiationCurrentOption(gs *state.GameState, owner faction.FactionID, side
 }
 
 func negotiationDefaultAmount(kind, max int) int {
-	if kind == negotiationKindRegion {
+	if kind == negotiationKindRegion || kind == negotiationKindCaptive {
 		return 1
 	}
 	if kind == negotiationKindArmy {
@@ -432,8 +467,8 @@ func cycleNegotiationPicker(gs *state.GameState, owner faction.FactionID, side *
 	if side == nil || kindDelta == 0 {
 		return
 	}
-	for step := 0; step < 3; step++ {
-		side.kind = (side.kind + kindDelta + 3) % 3
+	for step := 0; step < negotiationKindCount; step++ {
+		side.kind = (side.kind + kindDelta + negotiationKindCount) % negotiationKindCount
 		options := negotiationOptionsForSide(gs, owner, side, side.kind)
 		if len(options) == 0 {
 			continue
@@ -515,6 +550,8 @@ func negotiationTransferKind(kind int) string {
 		return "resource"
 	case negotiationKindArmy:
 		return "army"
+	case negotiationKindCaptive:
+		return "captive"
 	default:
 		return "region"
 	}
@@ -558,7 +595,7 @@ func negotiationSelectedItemsList(gs *state.GameState, side *negotiationSideStat
 		label := negotiationItemLabel(gs, item)
 		if item.Kind == "region" {
 			label += " (1)"
-		} else {
+		} else if item.Kind != "captive" {
 			label += " (" + strconv.Itoa(item.Amount) + ")"
 		}
 		list.Items = append(list.Items, label)
@@ -599,7 +636,7 @@ func negotiationOptionDropdownRect(panel gameui.Rect) gameui.Rect {
 }
 
 func negotiationUsesDropdown(kind int) bool {
-	return kind == negotiationKindRegion || kind == negotiationKindArmy
+	return kind == negotiationKindRegion || kind == negotiationKindArmy || kind == negotiationKindCaptive
 }
 
 func negotiationOptionDropdown(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, panel gameui.Rect) *gameui.Dropdown {
@@ -688,6 +725,11 @@ func negotiationItemLabel(gs *state.GameState, item state.DiplomaticTransfer) st
 			return unitType.NameTR
 		}
 		return item.ID
+	case "captive":
+		if commander := gs.Commanders[item.ID]; commander != nil && commander.Name != "" {
+			return "Tutsak: " + commander.Name
+		}
+		return "Tutsak: " + item.ID
 	default:
 		return item.ID
 	}
