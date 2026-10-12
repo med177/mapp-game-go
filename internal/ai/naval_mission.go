@@ -53,7 +53,7 @@ func buildAINavalMission(ctx *StrategicContext) *aiNavalMission {
 		return nil
 	}
 	targets := aiNavalMissionTargets(ctx)
-	if len(targets) == 0 {
+	if len(targets) == 0 || !aiNavalMissionTransportAvailable(ctx) {
 		return nil
 	}
 
@@ -151,6 +151,59 @@ func buildAINavalMission(ctx *StrategicContext) *aiNavalMission {
 		return nil
 	}
 	return &best.mission
+}
+
+// aiNavalMissionTransportAvailable prevents landlocked or otherwise
+// non-naval factions from acquiring an overseas mission they cannot execute.
+// Existing/queued transport capacity is sufficient; otherwise the faction
+// must be able to produce transports from a viable owned coastal port.
+func aiNavalMissionTransportAvailable(ctx *StrategicContext) bool {
+	if ctx == nil || ctx.gs == nil || ctx.FactionID == "" {
+		return false
+	}
+	gs := ctx.gs
+	fid := ctx.FactionID
+	for _, fleet := range aiSortedArmies(gs) {
+		if fleet == nil || fleet.OwnerID != string(fid) || !fleet.IsNaval {
+			continue
+		}
+		if len(fleet.EmbarkedUnits) > 0 || fleet.AvailableTransportCapacity(gs.UnitTypes) > 0 {
+			return true
+		}
+	}
+	for _, order := range gs.ProductionQueue {
+		if order.Kind != aiProductionKindUnit || order.FactionID != string(fid) {
+			continue
+		}
+		unitType := gs.UnitTypes[order.TypeID]
+		if unitType != nil && unitType.Category == army.CategoryNavalTrans && unitType.CarryCapacity > 0 {
+			return true
+		}
+	}
+
+	self := gs.Factions[fid]
+	transport := gs.UnitTypes["transport"]
+	if self == nil || transport == nil || transport.Category != army.CategoryNavalTrans || transport.CarryCapacity <= 0 ||
+		!transport.IsAvailableToFaction(string(fid)) || !transport.HasAllRequiredTechs(self.Research.Completed) ||
+		!aiCanQueueNavalUnit(gs, fid, transport.ID) {
+		return false
+	}
+
+	requiredPortLevel := maxInt(1, transport.PrimaryBuildingLevel())
+	for _, region := range aiSortedRegions(gs) {
+		if region.OwnerID != string(fid) || region.IsSea || !region.IsCoastal(gs.Regions) || !aiNavalEmbarkPortViable(gs, fid, region) {
+			continue
+		}
+		portLevel := aiBuildingLevel(region, "port") + aiQueuedBuildingCount(gs, region.ID, "port", fid)
+		if portLevel >= requiredPortLevel {
+			return true
+		}
+		portType := gs.BuildingTypes["port"]
+		if portType != nil && portLevel < gs.BuildingLevelCap(region, "port") && aiBuildingAllowed(gs, region, "port", portType.RequiredTerrain) {
+			return true
+		}
+	}
+	return false
 }
 
 func aiNavalMissionTargetFaction(ctx *StrategicContext, target aiNavalMissionTarget) faction.FactionID {

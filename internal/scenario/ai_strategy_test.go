@@ -65,3 +65,37 @@ func Test1300ScenarioAIReferencesAndUpdatedAnatolianTarget(t *testing.T) {
 		t.Fatal("eski papalık faction kimliği hâlâ stratejilerde")
 	}
 }
+
+func Test298OthersBreakTheWallObjectiveEndsAfterBreach(t *testing.T) {
+	path := filepath.Join("..", "..", "assets", "scenarios", "298_war_of_five_kings", "data", "ai_strategies.json")
+	config, err := LoadAIConfig(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	strategy, ok := config.Strategies["others"]
+	if !ok {
+		t.Fatal("Akgezenler AI stratejisi bulunamadı")
+	}
+	for _, objectiveID := range []string{"awaken_the_dead", "break_the_wall"} {
+		found := false
+		for _, objective := range strategy.Objectives {
+			if objective.ID != objectiveID {
+				continue
+			}
+			found = true
+			blockedByBreach := false
+			for _, flag := range objective.BlockedEventFlags {
+				if flag == "wall_breached" {
+					blockedByBreach = true
+					break
+				}
+			}
+			if !blockedByBreach {
+				t.Fatalf("%s objective'i wall_breached sonrasında kapanmıyor", objectiveID)
+			}
+		}
+		if !found {
+			t.Fatalf("%s objective'i bulunamadı", objectiveID)
+		}
+	}
+}

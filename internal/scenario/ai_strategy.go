@@ -77,10 +77,10 @@ type AITerritorialClaimDef struct {
 	Value    int    `json:"value"`
 }
 
-// AIObjectiveDef tarihsel yönü puanlamaya ekler. MinYear, MaxYear ve
-// RequiredEventFlags hard gate'tir; MaxYear verilen yılın sonuna kadar
-// geçerlidir. Diğer alanlar AI'yi yönlendirir ama güç, cephe ve diplomasi
-// güvenlik kontrollerini geçersiz kılmaz.
+// AIObjectiveDef tarihsel yönü puanlamaya ekler. MinYear, MaxYear,
+// RequiredEventFlags ve BlockedEventFlags hard gate'tir; MaxYear verilen yılın
+// sonuna kadar geçerlidir. Diğer alanlar AI'yi yönlendirir ama güç, cephe ve
+// diplomasi güvenlik kontrollerini geçersiz kılmaz.
 type AIObjectiveDef struct {
 	ID   string `json:"id"`
 	Kind string `json:"kind"`
@@ -97,6 +97,7 @@ type AIObjectiveDef struct {
 	MinYear            int      `json:"min_year,omitempty"`
 	MaxYear            int      `json:"max_year,omitempty"`
 	RequiredEventFlags []string `json:"required_event_flags,omitempty"`
+	BlockedEventFlags  []string `json:"blocked_event_flags,omitempty"`
 	ReadinessRegions   []string `json:"readiness_regions,omitempty"`
 	AllowVassalization bool     `json:"allow_vassalization,omitempty"`
 }

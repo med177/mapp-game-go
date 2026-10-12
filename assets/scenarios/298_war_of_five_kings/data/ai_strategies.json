@@ -1275,6 +1275,9 @@
           "required_event_flags": [
             "others_awakened"
           ],
+          "blocked_event_flags": [
+            "wall_breached"
+          ],
           "readiness_regions": [
             "always_winter"
           ]
@@ -1297,6 +1300,9 @@
           "min_year": 300,
           "required_event_flags": [
             "others_awakened"
+          ],
+          "blocked_event_flags": [
+            "wall_breached"
           ],
           "readiness_regions": [
             "always_winter",

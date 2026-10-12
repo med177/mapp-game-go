@@ -5,6 +5,14 @@ last_updated: 2026-10-12
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-12: 298 senaryosunda Akgezenlerin `awaken_the_dead` ve
+  `break_the_wall` planları `wall_breached` bayrağıyla sona eriyor; güneye iniş
+  objective'i devralıyor. AI, mevcut/kuyruktaki nakliye kapasitesi veya üretilebilir
+  nakliye gemisi ve uygun kıyı altyapısı yoksa denizaşırı görev oluşturmuyor.
+  Regresyonlar plan geçişini ve deniz görevi üretilebilirliğini kapsıyor
+  (`internal/ai`, `internal/scenario`,
+  `assets/scenarios/298_war_of_five_kings/data/ai_strategies.json`).
+
 - 2026-10-12: Teknoloji erişimine opsiyonel `allowed_religions` filtresi eklendi;
   298 senaryosunda Eski Tanrılar, Yedi İnancı, R'hllor ve Boğulmuş Tanrı
   teknolojileri faction dinine göre görünür ve araştırılabilir. Faction ve din

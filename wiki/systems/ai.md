@@ -456,7 +456,10 @@ Tarihsel hedefler genel olarak soft yönelimdir: mevcut güç, kara sınırı, f
 diplomasi güvenlik kontrollerini atlamaz. Yalnız geç veya anakronik hedefler `min_year`,
 `max_year` ve isteğe bağlı event flag hard gate'leri arkasında tutulur. `max_year`
 verilen yılın sonuna kadar kapsayıcıdır; son yıllarda objective puanına zaman baskısı
-eklenir, sonraki yılda hedef artık seçilmez.
+eklenir, sonraki yılda hedef artık seçilmez. `blocked_event_flags` ise bayrak set
+edildikten sonra objective'i anında geçersiz kılar; mevcut kalıcı plan da bir sonraki AI
+plan hazırlığında yenilenir. 298 senaryosunda `awaken_the_dead` ve `break_the_wall`,
+`wall_breached` ile kapanır ve `descend_into_the_north` hedefi devralır.
 
 İlk dikey dilimde Osmanlı; Bitinya hattı, Anadolu beylikleri, Ankara koridoru,
 Trakya/Konstantinopolis ve 1501 sonrası Safevi rekabeti yönlerini kullanır. Doğu Roma;
@@ -1422,16 +1425,18 @@ kullanır. Kıyı sahibi olmak tek başına liman veya transport yatırımı aç
 
 1. Aktif `expand` objective'inin hedef bölgesi ya da aynı hedef devletin kıyısı ve
    `defend` objective'indeki dost kıyı adayları çıkarılır.
-2. Uygun bir saha ordusunun hedefe güvenli kara rotası varsa deniz görevi kurulmaz.
-3. Kara yolu yoksa taşınabilir, kuşatma/sabit güvenlik/geri çekilme görevi olmayan bir
+2. Taşımaya elverişli mevcut/yüklenmiş filo veya üretilebilir nakliye gemisi ve uygun
+  dost kıyı/liman yoksa deniz görevi kurulmaz.
+3. Uygun bir saha ordusunun hedefe güvenli kara rotası varsa deniz görevi kurulmaz.
+4. Kara yolu yoksa taşınabilir, kuşatma/sabit güvenlik/geri çekilme görevi olmayan bir
    ordu; ulaşabildiği dost çıkış kıyısı ve deniz BFS'iyle erişilen hedef kıyı seçilir.
-4. Seçilen ordunun birim sayısından, çıkış denizine ulaşabilen mevcut filoların boş
+5. Seçilen ordunun birim sayısından, çıkış denizine ulaşabilen mevcut filoların boş
    `TransportCapacity` değeri ve aynı hatta kuyruktaki transport kapasitesi düşülür.
    Yalnız kalan açık kadar gemi siparişi verilir; yeterli boş kapasite varken yeni
    transport açılmaz.
-5. Gerekli port seviyesi yoksa liman yalnız seçilen çıkış kıyısında kurulur. Escort
+6. Gerekli port seviyesi yoksa liman yalnız seçilen çıkış kıyısında kurulur. Escort
    değerlendirmesi de ancak bu somut görev varken ve aynı çıkış hattında çalışır.
-6. Üretim tamamlandığında mevcut `completeNavalUnit()` akışı, sipariş limanının ilk
+7. Üretim tamamlandığında mevcut `completeNavalUnit()` akışı, sipariş limanının ilk
    komşu denizinde filo oluşturur veya mevcut filoya birim ekler. Görev hesabı da aynı
    çıkış denizini kullandığı için pending kapasite yanlış hatta sayılmaz.
 

@@ -361,7 +361,7 @@ olarak taşıyan bir nesnedir. Dizi biçimi desteklenmez; bu sözleşme yükleme
 Senaryoya özgü uzun vadeli AI yönlerini taşıyan opsiyonel dosyadır. Dosya yoksa
 fraksiyonlar `ai_strategies.json.expansion_targets` ve genel AI fallback'ini kullanır;
 eski `factions.json.ai_expansion_targets` alanı runtime uyumluluğu için türetilir.
-İlk kullanım yalnız `1300_ottoman_rise` senaryosundadır.
+`1300_ottoman_rise` ve `298_war_of_five_kings` senaryolarında kullanılır.
 
 ```json
 {
@@ -464,6 +464,9 @@ Alanlar:
   geçerlidir; sonraki yılda hard gate kapanır. Son yıllarda AI puanına zaman
   baskısı eklenir.
 - `required_event_flags`: event motorunun `set_flags` etkileriyle açılan hard gate listesi.
+- `blocked_event_flags`: listelenen event bayraklarından biri set edildiğinde objective'i
+  kapatan hard gate listesi. Örneğin bir istila hedefi, savunma hattı kırıldıktan sonra
+  yerini güneye ilerleme hedeflerine bırakabilir.
 - `allow_vassalization`: uygun son bölge ele geçirildiğinde vassallık zarının
   kullanılmasına izin verir. Uygunluk kontrollerini geçen durumda zar başarılıysa
   hedef vassal kalır; başarısızsa bölge doğrudan ilhak edilir.

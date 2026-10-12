@@ -506,6 +506,11 @@ func scenarioObjectiveHardGateActive(gs *state.GameState, objective scenario.AIO
 			return false
 		}
 	}
+	for _, flag := range objective.BlockedEventFlags {
+		if flag != "" && gs.FiredEventIDs["flag:"+flag] {
+			return false
+		}
+	}
 	return true
 }
 
