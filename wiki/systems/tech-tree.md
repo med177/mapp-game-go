@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [technology, research, effects, tree]
-last_updated: 2026-10-11
+last_updated: 2026-10-12
 related: [systems/combat, systems/economy, architecture/state-management, dev/data-format]
 ---
 
@@ -20,6 +20,8 @@ type Technology struct {
     Category     string        // military | economy | diplomacy | naval | culture
     Requires []string           // teknoloji ağacı bağımlılıkları
     RequiredRegions []string    // kontrol edilmesi gereken bölgeler
+    AllowedFactions []string    // isteğe bağlı faction erişim listesi
+    AllowedReligions []string   // isteğe bağlı din erişim listesi
     MinYear int                 // araştırmanın açılacağı en erken yıl
     Effects      TechEffects
 }
@@ -128,6 +130,12 @@ gereklidir. Kudüs → Haçlı/Cihad teknolojileri (planlanmış).
 
 Bu koşullar oyuncu, AI, otomatik araştırma, teknoloji paneli ve olayların
 başlattığı araştırma için ortak `tech.IsUnlockedForContext` kontrolüyle uygulanır.
+
+Teknolojiler ayrıca `allowed_factions` ve `allowed_religions` ile erişim
+kısıtlayabilir. İki alan birlikte kullanıldığında faction ve din koşullarının
+ikisi de sağlanır; alanlar yoksa eski senaryolardaki herkese açık davranış
+korunur. Teknoloji ağacı, oyuncu/AI araştırması ve event ile başlatılan
+araştırmalar aynı uygunluk kontrolünü kullanır.
 
 ---
 

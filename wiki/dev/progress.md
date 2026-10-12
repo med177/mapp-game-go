@@ -1,9 +1,15 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-11
+last_updated: 2026-10-12
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-12: Teknoloji erişimine opsiyonel `allowed_religions` filtresi eklendi;
+  298 senaryosunda Eski Tanrılar, Yedi İnancı, R'hllor ve Boğulmuş Tanrı
+  teknolojileri faction dinine göre görünür ve araştırılabilir. Faction ve din
+  izinleri birlikte uygulanıyor. `internal/tech`, `internal/render`,
+  `internal/game`, `internal/ai`, `internal/events` ve ilgili senaryo JSON'u.
 
 - 2026-10-11: Teknoloji panelinde aktif araştırma metni ile iptal/iade düğmesi
   aynı merkezli gruba alındı; kategori filtreleri daraltılıp ekran ortasına

@@ -1547,7 +1547,7 @@ func (g *Game) autoStartResearchIfIdle() bool {
 		ownedRegions[string(region.ID)] = true
 	}
 	researchEffects := tech.ComputeEffects(f.Research.Completed, g.gs.TechTypes)
-	techID, ok := tech.NextResearchableTechIDForFactionContextWithModifiers(&selectionState, g.gs.TechTypes, string(f.ID), f.Gold, g.gs.Year, ownedRegions, researchEffects.ResearchCostMod)
+	techID, ok := tech.NextResearchableTechIDForFactionReligionContextWithModifiers(&selectionState, g.gs.TechTypes, string(f.ID), string(f.Religion), f.Gold, g.gs.Year, ownedRegions, researchEffects.ResearchCostMod)
 	if !ok {
 		return false
 	}
@@ -2893,7 +2893,7 @@ func (g *Game) playerHasResearchableTechs() bool {
 		if completed != nil && completed[techID] {
 			continue
 		}
-		if tech.IsUnlockedForFactionContext(&f.Research, t, string(f.ID), g.gs.Year, ownedRegions) {
+		if tech.IsUnlockedForFactionReligionContext(&f.Research, t, string(f.ID), string(f.Religion), g.gs.Year, ownedRegions) {
 			if f.Research.PausedTurns[techID] > 0 || f.Gold >= tech.EffectiveResearchGoldCost(t, researchEffects.ResearchCostMod) {
 				return true
 			}
@@ -7742,7 +7742,7 @@ func (g *Game) startResearch(techID string) {
 	for _, region := range g.gs.LandRegionsOwnedBy(f.ID) {
 		ownedRegions[string(region.ID)] = true
 	}
-	if !tech.IsUnlockedForFactionContext(&f.Research, t, string(f.ID), g.gs.Year, ownedRegions) || (f.Research.Completed != nil && f.Research.Completed[techID]) {
+	if !tech.IsUnlockedForFactionReligionContext(&f.Research, t, string(f.ID), string(f.Religion), g.gs.Year, ownedRegions) || (f.Research.Completed != nil && f.Research.Completed[techID]) {
 		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")
 		return
 	}

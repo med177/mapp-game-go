@@ -29,9 +29,10 @@ func TestTechCategoryIconsUseCategoryAssets(t *testing.T) {
 }
 
 func TestCountTechByCategoryExcludesFactionRestrictedTechnologies(t *testing.T) {
-	f := &faction.Faction{ID: "stark", Research: faction.ResearchState{Completed: map[string]bool{
-		"available":  true,
-		"restricted": true,
+	f := &faction.Faction{ID: "stark", Religion: "old_gods", Research: faction.ResearchState{Completed: map[string]bool{
+		"available":      true,
+		"restricted":     true,
+		"wrong_religion": true,
 	}}}
 	allTechs := map[string]*tech.Technology{
 		"available": {ID: "available", Category: tech.CategoryMilitary},
@@ -40,10 +41,20 @@ func TestCountTechByCategoryExcludesFactionRestrictedTechnologies(t *testing.T) 
 			Category:        tech.CategoryMilitary,
 			AllowedFactions: []string{"lannister"},
 		},
+		"wrong_religion": {
+			ID:               "wrong_religion",
+			Category:         tech.CategoryMilitary,
+			AllowedReligions: []string{"faith_of_the_seven"},
+		},
+		"same_religion": {
+			ID:               "same_religion",
+			Category:         tech.CategoryMilitary,
+			AllowedReligions: []string{"old_gods"},
+		},
 	}
 
 	completed, total := countTechByCategory(f, tech.CategoryMilitary, allTechs)
-	if completed != 1 || total != 1 {
+	if completed != 1 || total != 2 {
 		t.Fatalf("factiona kapalı teknoloji sayılmamalı: completed=%d total=%d", completed, total)
 	}
 }

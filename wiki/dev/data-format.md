@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-10-11
+last_updated: 2026-10-12
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -593,6 +593,11 @@ fraksiyonlar, izin listesinde olsalar bile araştırmayı yapamaz. `min_year`
 opsiyonel tarih kilididir. Faction, belirtilen yıldan önce teknolojiye
 başlayamaz. Bu alanlar oyuncu, AI ve event kaynaklı araştırma başlatma
 akışlarında uygulanır.
+
+`allowed_religions` opsiyoneldir. Doluysa teknoloji yalnızca listedeki dinlerden
+birine sahip faction'lara görünür ve araştırılabilir. `allowed_factions` ile
+birlikte kullanıldığında iki koşul da sağlanmalıdır. Alan eksik veya boşsa din
+kısıtlaması uygulanmaz.
 
 Teknoloji `effects` alanında `gold_upkeep_mod` ve `grain_upkeep_mod` pozitif
 oranlar olarak ordu bakımını azaltır. `research_speed_mod` pozitif oranı

@@ -50,23 +50,29 @@ type Effects struct {
 
 // Technology bir araştırılabilir teknolojiyi tanımlar.
 type Technology struct {
-	ID              string   `json:"id"`
-	NameTR          string   `json:"name_tr"`
-	Category        Category `json:"category"`
-	DescriptionTR   string   `json:"description_tr"`
-	GoldCost        int      `json:"gold_cost"`
-	TurnsRequired   int      `json:"turns_required"`
-	Requires        []string `json:"requires"`
-	RequiredRegions []string `json:"required_regions,omitempty"`
-	AllowedFactions []string `json:"allowed_factions,omitempty"`
-	BlockedFactions []string `json:"blocked_factions,omitempty"`
-	MinYear         int      `json:"min_year,omitempty"`
-	Effects         Effects  `json:"effects"`
+	ID               string   `json:"id"`
+	NameTR           string   `json:"name_tr"`
+	Category         Category `json:"category"`
+	DescriptionTR    string   `json:"description_tr"`
+	GoldCost         int      `json:"gold_cost"`
+	TurnsRequired    int      `json:"turns_required"`
+	Requires         []string `json:"requires"`
+	RequiredRegions  []string `json:"required_regions,omitempty"`
+	AllowedFactions  []string `json:"allowed_factions,omitempty"`
+	BlockedFactions  []string `json:"blocked_factions,omitempty"`
+	AllowedReligions []string `json:"allowed_religions,omitempty"`
+	MinYear          int      `json:"min_year,omitempty"`
+	Effects          Effects  `json:"effects"`
 }
 
 // IsAvailableToFaction teknolojiye hangi fraksiyonların erişebileceğini kontrol eder.
 // Engellenen fraksiyonlar, allowed_factions listesinde bulunsalar bile erişemez.
 func (t *Technology) IsAvailableToFaction(factionID string) bool {
+	return t.IsAvailableToFactionAndReligion(factionID, "")
+}
+
+// IsAvailableToFactionAndReligion faction ve din kısıtlamalarını birlikte denetler.
+func (t *Technology) IsAvailableToFactionAndReligion(factionID, religionID string) bool {
 	if t == nil {
 		return true
 	}
@@ -75,15 +81,30 @@ func (t *Technology) IsAvailableToFaction(factionID string) bool {
 			return false
 		}
 	}
-	if len(t.AllowedFactions) == 0 || factionID == "" {
-		return true
-	}
-	for _, allowedFactionID := range t.AllowedFactions {
-		if allowedFactionID == factionID {
-			return true
+	if len(t.AllowedFactions) > 0 && factionID != "" {
+		allowed := false
+		for _, allowedFactionID := range t.AllowedFactions {
+			if allowedFactionID == factionID {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return false
 		}
 	}
-	return false
+	if len(t.AllowedReligions) > 0 {
+		if religionID == "" {
+			return false
+		}
+		for _, allowedReligionID := range t.AllowedReligions {
+			if allowedReligionID == religionID {
+				return true
+			}
+		}
+		return false
+	}
+	return true
 }
 
 // IsUnlocked tüm gereksinimlerin tamamlanıp tamamlanmadığını kontrol eder.
@@ -107,10 +128,15 @@ func IsUnlockedForContext(rs *faction.ResearchState, t *Technology, year int, ow
 
 // IsUnlockedForFactionContext checks technology, faction, date, and region requirements.
 func IsUnlockedForFactionContext(rs *faction.ResearchState, t *Technology, factionID string, year int, ownedRegions map[string]bool) bool {
+	return IsUnlockedForFactionReligionContext(rs, t, factionID, "", year, ownedRegions)
+}
+
+// IsUnlockedForFactionReligionContext checks faction, religion, date, and region requirements.
+func IsUnlockedForFactionReligionContext(rs *faction.ResearchState, t *Technology, factionID, religionID string, year int, ownedRegions map[string]bool) bool {
 	if t == nil {
 		return false
 	}
-	if !t.IsAvailableToFaction(factionID) {
+	if !t.IsAvailableToFactionAndReligion(factionID, religionID) {
 		return false
 	}
 	if !IsUnlocked(rs, t) {
@@ -305,6 +331,11 @@ func NextResearchableTechIDForFactionContext(rs *faction.ResearchState, allTechs
 
 // NextResearchableTechIDForFactionContextWithModifiers indirimli maliyeti de hesaba katar.
 func NextResearchableTechIDForFactionContextWithModifiers(rs *faction.ResearchState, allTechs map[string]*Technology, factionID string, gold, year int, ownedRegions map[string]bool, researchCostMod float64) (string, bool) {
+	return NextResearchableTechIDForFactionReligionContextWithModifiers(rs, allTechs, factionID, "", gold, year, ownedRegions, researchCostMod)
+}
+
+// NextResearchableTechIDForFactionReligionContextWithModifiers ayrıca fraksiyon dinine göre filtreler.
+func NextResearchableTechIDForFactionReligionContextWithModifiers(rs *faction.ResearchState, allTechs map[string]*Technology, factionID, religionID string, gold, year int, ownedRegions map[string]bool, researchCostMod float64) (string, bool) {
 	if rs == nil || allTechs == nil || len(rs.PausedTurns) > 0 {
 		return "", false
 	}
@@ -317,7 +348,7 @@ func NextResearchableTechIDForFactionContextWithModifiers(rs *faction.ResearchSt
 		if rs.Completed != nil && rs.Completed[id] {
 			continue
 		}
-		if !IsUnlockedForFactionContext(rs, t, factionID, year, ownedRegions) {
+		if !IsUnlockedForFactionReligionContext(rs, t, factionID, religionID, year, ownedRegions) {
 			continue
 		}
 		if gold < EffectiveResearchGoldCost(t, researchCostMod) {

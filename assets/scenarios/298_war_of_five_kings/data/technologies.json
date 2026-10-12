@@ -216,6 +216,7 @@
   {
     "category": "diplomacy",
     "description_tr": "Fısıltı ustaları limanları, sarayları ve düşman kamplarını gözetler. Düşman gücü açığa çıkar, barış ilişkileri +3.",
+    "allowed_factions": ["stark", "baratheon_dragonstone"],
     "effects": { "reveal_enemy_strength": true, "peace_relation_bonus": 3 },
     "gold_cost": 500,
     "id": "master_of_whispers",
@@ -229,6 +230,7 @@
     "effects": { "satisfaction_bonus": 2 },
     "gold_cost": 180,
     "id": "old_gods_customs",
+    "allowed_religions": ["old_gods"],
     "name_tr": "Eski Tanrılar Gelenekleri",
     "requires": [],
     "turns_required": 3
@@ -239,6 +241,7 @@
     "effects": { "conversion_speed_mod": 10, "satisfaction_bonus": 1 },
     "gold_cost": 260,
     "id": "faith_of_the_seven",
+    "allowed_religions": ["faith_of_the_seven"],
     "name_tr": "Yedi İnancı'nın Teşkilatı",
     "requires": [],
     "turns_required": 4
@@ -250,8 +253,9 @@
     "gold_cost": 420,
     "id": "red_priesthood",
     "allowed_factions": ["baratheon_dragonstone"],
+    "allowed_religions": ["lord_of_light"],
     "name_tr": "Kızıl Rahiplik",
-    "requires": ["faith_of_the_seven"],
+    "requires": [],
     "turns_required": 7
   },
   {
@@ -261,6 +265,7 @@
     "gold_cost": 360,
     "id": "drowned_god_rites",
     "allowed_factions": ["greyjoy"],
+    "allowed_religions": ["drowned_god"],
     "name_tr": "Boğulmuş Tanrı Ayinleri",
     "requires": ["shipwrights"],
     "turns_required": 6
@@ -433,8 +438,8 @@
   },
   {
     "category": "military",
-    "description_tr": "Bolton kumandanları korku ve katı disiplinle piyadeyi saldırıya zorlar. Piyade saldırısı +%10.",
-    "effects": { "infantry_attack_mod": 0.1 },
+    "description_tr": "Bolton kumandanları korku ve katı disiplinle piyadeyi saldırıya zorlar. Piyade saldırısı +%20.",
+    "effects": { "infantry_attack_mod": 0.2 },
     "gold_cost": 500,
     "id": "bolton_flaying_discipline",
     "allowed_factions": ["bolton"],
@@ -500,8 +505,8 @@
   },
   {
     "category": "diplomacy",
-    "description_tr": "Oldtown bilginleri ve Citadel üstatları araştırma yöntemlerini sistemleştirir. Araştırma hızı +%15, araştırma maliyeti -%10.",
-    "effects": { "research_speed_mod": 0.15, "research_cost_mod": 0.1 },
+    "description_tr": "Oldtown bilginleri ve Citadel üstatları araştırma yöntemlerini sistemleştirir. Araştırma hızı +%15, araştırma maliyeti -%20.",
+    "effects": { "research_speed_mod": 0.15, "research_cost_mod": 0.2 },
     "gold_cost": 560,
     "id": "oldtown_scholars",
     "allowed_factions": ["tyrell"],

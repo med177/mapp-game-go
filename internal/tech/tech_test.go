@@ -3,6 +3,8 @@ package tech
 import (
 	"encoding/json"
 	"testing"
+
+	"mapp-game-go/internal/faction"
 )
 
 func TestTechnologyFactionAvailability(t *testing.T) {
@@ -24,5 +26,56 @@ func TestTechnologyFactionAvailability(t *testing.T) {
 	}
 	if !technology.IsAvailableToFaction("stark") || technology.IsAvailableToFaction("lannister") {
 		t.Fatal("allowed_factions mevcut sınırlama davranışını korumalıydı")
+	}
+}
+
+func TestTechnologyReligionAvailability(t *testing.T) {
+	var technology Technology
+	if err := json.Unmarshal([]byte(`{"allowed_factions":["baratheon_dragonstone"],"allowed_religions":["lord_of_light"]}`), &technology); err != nil {
+		t.Fatalf("allowed_religions yüklenemedi: %v", err)
+	}
+
+	if !technology.IsAvailableToFactionAndReligion("baratheon_dragonstone", "lord_of_light") {
+		t.Fatal("uygun faction ve dine teknoloji açılmalıydı")
+	}
+	if technology.IsAvailableToFactionAndReligion("baratheon_dragonstone", "faith_of_the_seven") {
+		t.Fatal("aynı faction'ın farklı dini teknolojiye erişememeliydi")
+	}
+	if technology.IsAvailableToFactionAndReligion("stark", "lord_of_light") {
+		t.Fatal("uygun dini olsa da faction kısıtlaması korunmalıydı")
+	}
+	if technology.IsAvailableToFaction("baratheon_dragonstone") {
+		t.Fatal("din bağlamı olmayan sorgu dine özel teknolojiye erişememeliydi")
+	}
+}
+
+func TestIsUnlockedForFactionReligionContext(t *testing.T) {
+	technology := &Technology{ID: "old_gods_customs", AllowedReligions: []string{"old_gods"}}
+	research := &faction.ResearchState{Completed: map[string]bool{}}
+
+	if !IsUnlockedForFactionReligionContext(research, technology, "stark", "old_gods", 298, nil) {
+		t.Fatal("Eski Tanrılar inancındaki faction teknolojiye erişebilmeliydi")
+	}
+	if IsUnlockedForFactionReligionContext(research, technology, "lannister", "faith_of_the_seven", 298, nil) {
+		t.Fatal("Yedi İnancı'ndaki faction Eski Tanrılar teknolojisine erişememeliydi")
+	}
+}
+
+func TestNextResearchableTechIDRespectsFactionReligion(t *testing.T) {
+	research := &faction.ResearchState{Completed: map[string]bool{}}
+	allTechs := map[string]*Technology{
+		"old_gods_customs": {
+			ID: "old_gods_customs", GoldCost: 10, AllowedReligions: []string{"old_gods"},
+		},
+		"faith_of_the_seven": {
+			ID: "faith_of_the_seven", GoldCost: 10, AllowedReligions: []string{"faith_of_the_seven"},
+		},
+	}
+
+	id, ok := NextResearchableTechIDForFactionReligionContextWithModifiers(
+		research, allTechs, "stark", "old_gods", 100, 298, nil, 0,
+	)
+	if !ok || id != "old_gods_customs" {
+		t.Fatalf("Stark araştırma seçimi = %q, %t; Eski Tanrılar teknolojisi bekleniyordu", id, ok)
 	}
 }

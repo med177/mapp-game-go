@@ -254,7 +254,7 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 	researchEffects := tech.ComputeEffects(f.Research.Completed, r.gs.TechTypes)
 
 	for _, t := range r.gs.TechTypes {
-		if t == nil || !t.IsAvailableToFaction(string(f.ID)) {
+		if t == nil || !t.IsAvailableToFactionAndReligion(string(f.ID), string(f.Religion)) {
 			continue
 		}
 		level := r.getTechLevel(t, r.gs.TechTypes)
@@ -265,7 +265,7 @@ func (r *Renderer) buildTechTree(f *faction.Faction) [][]techNode {
 			t:               t,
 			effectiveCost:   tech.EffectiveResearchGoldCost(t, researchEffects.ResearchCostMod),
 			effectiveTurns:  tech.EffectiveTurnsRequired(t, researchEffects.ResearchSpeedMod),
-			unlocked:        tech.IsUnlockedForFactionContext(&f.Research, t, string(f.ID), r.gs.Year, ownedRegions),
+			unlocked:        tech.IsUnlockedForFactionReligionContext(&f.Research, t, string(f.ID), string(f.Religion), r.gs.Year, ownedRegions),
 			done:            f.Research.Completed[t.ID],
 			requirementText: techRequirementSummary(t, r.gs.Year, ownedRegions, regionNames),
 			level:           level,
@@ -544,7 +544,7 @@ func countTechByCategory(f *faction.Faction, cat tech.Category, allTechs map[str
 		return 0, 0
 	}
 	for _, t := range allTechs {
-		if t == nil || t.Category != cat || !t.IsAvailableToFaction(string(f.ID)) {
+		if t == nil || t.Category != cat || !t.IsAvailableToFactionAndReligion(string(f.ID), string(f.Religion)) {
 			continue
 		}
 		total++

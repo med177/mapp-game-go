@@ -112,7 +112,7 @@ func aiSelectLegacyResearchTechnology(gs *state.GameState, self *faction.Faction
 }
 
 func aiResearchCandidateAvailable(gs *state.GameState, self *faction.Faction, technology *tech.Technology, budget *aiBudget, ownedRegions map[string]bool) bool {
-	if gs == nil || self == nil || technology == nil || self.Research.Completed[technology.ID] || !tech.IsUnlockedForFactionContext(&self.Research, technology, string(self.ID), gs.Year, ownedRegions) {
+	if gs == nil || self == nil || technology == nil || self.Research.Completed[technology.ID] || !tech.IsUnlockedForFactionReligionContext(&self.Research, technology, string(self.ID), string(self.Religion), gs.Year, ownedRegions) {
 		return false
 	}
 	researchEffects := tech.ComputeEffects(self.Research.Completed, gs.TechTypes)
