@@ -2130,7 +2130,7 @@ func (g *Game) buildEventCodexFor(filter string) []render.EventCodexEntry {
 			detail = append(detail, fmt.Sprintf("Kalan süre: %d ay (%d tur)", entry.monthsUntil, turnsUntilHistoricalEvent(g.gs, evt)))
 		}
 		if entry.status == "Gerçekleşti" {
-			detail = append(detail, "Durum: Bu event gerçekleşti.")
+			detail = append(detail, "Durum: Bu olay gerçekleşti.")
 		}
 		conditionSummary := "Koşullar sağlanıyor."
 		if len(entry.reasons) > 0 {
