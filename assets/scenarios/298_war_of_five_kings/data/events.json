@@ -5080,8 +5080,8 @@
         "ai_weight": 7,
         "effect": {
           "target": "specific_faction",
-          "affected_faction": "targaryen",
           "combat_attack_percent": 10,
+          "affected_faction": "targaryen",
           "relations": [
             {
               "faction_id": "baratheon_king",
@@ -5116,9 +5116,9 @@
         "ai_weight": 3,
         "effect": {
           "target": "specific_faction",
-          "affected_faction": "targaryen",
           "sat_delta": 8,
           "gold_delta": 500,
+          "affected_faction": "targaryen",
           "relations": [
             {
               "faction_id": "free_cities",
@@ -5165,8 +5165,8 @@
         "desc_tr": "Ticaret yollarını açıp yerleşimlerin toparlanmasına yatırım yaparsın.",
         "ai_weight": 7,
         "effect": {
-          "gold_delta": -220,
           "sat_delta": 5,
+          "gold_delta": -220,
           "trade_income_percent": 8,
           "effect_duration_turns": 24,
           "set_flags": [
@@ -5182,9 +5182,9 @@
         "effect": {
           "gold_delta": -160,
           "grain_delta": -120,
-          "combat_defense_percent": 8,
           "army_upkeep_percent": 8,
           "effect_duration_turns": 18,
+          "combat_defense_percent": 8,
           "set_flags": [
             "postwar_frontier_fortified"
           ]
@@ -5300,8 +5300,8 @@
         "ai_weight": 6,
         "effect": {
           "sat_delta": -4,
-          "combat_attack_percent": 8,
           "gold_delta": 100,
+          "combat_attack_percent": 8,
           "set_flags": [
             "targaryen_court_centralized"
           ]
@@ -5406,8 +5406,8 @@
         "desc_tr": "Bir sonraki kıtlık veya sefer için tahıl biriktirip halkın güvenini sağlamlaştırırsın.",
         "ai_weight": 8,
         "effect": {
-          "grain_delta": 500,
           "sat_delta": 5,
+          "grain_delta": 500,
           "grain_production_percent": 8,
           "effect_duration_turns": 18,
           "set_flags": [
@@ -5421,8 +5421,8 @@
         "desc_tr": "Tahıl sevkiyatıyla güneydeki müttefiklerin desteğini artırır, Reach'in hazinesinden fedakârlık edersin.",
         "ai_weight": 6,
         "effect": {
-          "grain_delta": -180,
           "gold_delta": 180,
+          "grain_delta": -180,
           "relations": [
             {
               "faction_id": "baratheon_king",
@@ -5529,9 +5529,9 @@
         "ai_weight": 7,
         "effect": {
           "gold_delta": 180,
-          "combat_attack_percent": 8,
           "army_upkeep_percent": 8,
           "effect_duration_turns": 18,
+          "combat_attack_percent": 8,
           "relations": [
             {
               "faction_id": "stark",
@@ -5559,8 +5559,8 @@
         "desc_tr": "Gemileri yağma yerine ticarete ayırıp adaların kaynaklarını uzun vadeli gelirle güvenceye alırsın.",
         "ai_weight": 6,
         "effect": {
-          "gold_delta": 250,
           "sat_delta": 6,
+          "gold_delta": 250,
           "trade_income_percent": 8,
           "effect_duration_turns": 18,
           "relations": [
@@ -5607,10 +5607,10 @@
         "desc_tr": "Sınır birliklerinin ikmalini güvenceye alırsın; halkın memnuniyeti ve ambarlar üzerindeki baskı artar.",
         "ai_weight": 5,
         "effect": {
-          "grain_delta": -280,
           "sat_delta": -5,
-          "combat_defense_percent": 7,
+          "grain_delta": -280,
           "effect_duration_turns": 12,
+          "combat_defense_percent": 7,
           "set_flags": [
             "winter_rations_for_armies"
           ]
@@ -5622,9 +5622,9 @@
         "desc_tr": "Depoları açıp halkın desteğini korursun; ordu ikmali için daha az kaynak kalır.",
         "ai_weight": 8,
         "effect": {
-          "grain_delta": -180,
-          "gold_delta": -100,
           "sat_delta": 9,
+          "gold_delta": -100,
+          "grain_delta": -180,
           "set_flags": [
             "winter_relief_distributed"
           ]
@@ -5755,8 +5755,8 @@
         "ai_weight": 6,
         "effect": {
           "grain_delta": 120,
-          "combat_defense_percent": 6,
           "effect_duration_turns": 12,
+          "combat_defense_percent": 6,
           "set_flags": [
             "realm_home_frontier_secured"
           ]
@@ -5793,9 +5793,9 @@
         "effect": {
           "gold_delta": -180,
           "grain_delta": -120,
-          "combat_attack_percent": 9,
           "army_upkeep_percent": 8,
           "effect_duration_turns": 18,
+          "combat_attack_percent": 9,
           "set_flags": [
             "targaryen_focuses_westeros_campaign"
           ]
@@ -5807,8 +5807,8 @@
         "desc_tr": "Seferi yavaşlatıp doğu şehirleriyle bağları ve Targaryen hazinesini güçlendirirsin.",
         "ai_weight": 6,
         "effect": {
-          "gold_delta": 280,
           "sat_delta": 5,
+          "gold_delta": 280,
           "relations": [
             {
               "faction_id": "free_cities",
@@ -5855,8 +5855,8 @@
         "effect": {
           "sat_delta": -4,
           "gold_delta": 150,
-          "combat_attack_percent": 6,
           "effect_duration_turns": 18,
+          "combat_attack_percent": 6,
           "set_flags": [
             "realm_authority_centralized"
           ]
@@ -5979,9 +5979,9 @@
         "desc_tr": "Kayda değer tahıl ve altını kuzeye yollarsın; Gece Nöbeti ve Starklarla ilişkiler güçlenir.",
         "ai_weight": 7,
         "effect": {
+          "sat_delta": 4,
           "gold_delta": -180,
           "grain_delta": -300,
-          "sat_delta": 4,
           "relations": [
             {
               "faction_id": "nights_watch",
@@ -6070,21 +6070,21 @@
         "ai_weight": 6,
         "effect": {
           "grain_delta": 100,
-          "combat_defense_percent": 8,
           "effect_duration_turns": 18,
+          "combat_defense_percent": 8,
           "set_flags": [
             "realm_prepared_for_long_night"
           ]
         }
       }
     ],
-    "blocks_flags": [
-      "boss_defeated:cmd_night_king"
-    ],
     "requires_flags": [
       "war_of_five_kings_settlement_complete",
       "others_awakened",
       "wall_breached"
+    ],
+    "blocks_flags": [
+      "boss_defeated:cmd_night_king"
     ],
     "requires_active_factions": [
       "others"
@@ -6132,9 +6132,9 @@
         "desc_tr": "Kaynakları surlar yerine boşalan yerleşimlere aktarır, kuzeydeki halkın geri dönmesini teşvik edersin.",
         "ai_weight": 7,
         "effect": {
+          "sat_delta": 8,
           "gold_delta": -100,
           "grain_delta": 180,
-          "sat_delta": 8,
           "set_flags": [
             "northern_frontier_resettled"
           ]
@@ -6170,6 +6170,7 @@
         "ai_weight": 7,
         "effect": {
           "gold_delta": -120,
+          "combat_defense_percent": 5,
           "relations": [
             {
               "faction_id": "stark",
@@ -6184,7 +6185,6 @@
               "score_delta": 10
             }
           ],
-          "combat_defense_percent": 5,
           "set_flags": [
             "great_houses_shared_defense"
           ]
@@ -6196,8 +6196,8 @@
         "desc_tr": "Dağınık vaatler yerine merkezî bir ordu ve güçlü bir hazineyle barışı korumaya çalışırsın.",
         "ai_weight": 6,
         "effect": {
-          "gold_delta": 220,
           "sat_delta": -3,
+          "gold_delta": 220,
           "combat_attack_percent": 5,
           "set_flags": [
             "great_houses_crown_strengthened"
@@ -6231,8 +6231,8 @@
         "desc_tr": "Tüccarları ve komşu haneleri yeni düzene bağlayarak refahı ve diplomatik desteği öncele.",
         "ai_weight": 7,
         "effect": {
-          "gold_delta": 300,
           "sat_delta": 8,
+          "gold_delta": 300,
           "trade_income_percent": 8,
           "effect_duration_turns": 24,
           "relations": [
@@ -6254,9 +6254,9 @@
         "effect": {
           "gold_delta": -150,
           "grain_delta": -120,
-          "combat_defense_percent": 8,
-          "combat_attack_percent": 4,
           "effect_duration_turns": 24,
+          "combat_attack_percent": 4,
+          "combat_defense_percent": 8,
           "set_flags": [
             "new_age_strong_frontier"
           ]
