@@ -164,7 +164,7 @@ func (g *Game) applyProductionTicks() []productionResult {
 			}
 			if !g.gs.CanQueueUnit(faction.FactionID(order.FactionID), order.TypeID, 0) {
 				result.canceled = true
-				result.reason = "faction başına birim üretim sınırı dolu"
+				result.reason = "devlet başına birim üretim sınırı dolu"
 				results = append(results, result)
 				continue
 			}
