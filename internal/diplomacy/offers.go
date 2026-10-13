@@ -34,7 +34,7 @@ func QueueOfferWithMeta(gs *state.GameState, from, to faction.FactionID, action 
 		return false
 	}
 	if action != ActionProposePeace && action != ActionProposeAlliance && action != ActionProposeTrade &&
-		action != ActionImproveRelations && action != ActionSendGift && action != ActionInciteRevolt {
+		action != ActionProposeTransitPassage && action != ActionImproveRelations && action != ActionSendGift && action != ActionInciteRevolt {
 		return false
 	}
 	fromFaction := gs.Factions[from]
@@ -305,6 +305,8 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		return resolveAcceptedAllianceOffer(gs, offer)
 	case ActionProposeTrade:
 		return resolveAcceptedTradeOffer(gs, offer)
+	case ActionProposeTransitPassage:
+		return resolveAcceptedTransitPassageOffer(gs, offer)
 	case ActionImproveRelations:
 		return applyRelationImprovement(gs, offer.FromFactionID, offer.ToFactionID, RelationImprovementGoldCostFor(gs), RelationImprovementBonusFor(gs), 0, "diplomatik heyet")
 	case ActionSendGift:
@@ -319,6 +321,23 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 		return resolveAcceptedTransferOffer(gs, offer)
 	}
 	return Result{Message: "Teklif artık geçerli değil."}
+}
+
+func resolveAcceptedTransitPassageOffer(gs *state.GameState, offer state.DiplomaticOffer) Result {
+	if !offerPartiesExist(gs, offer) || IsWar(gs, offer.FromFactionID, offer.ToFactionID) ||
+		SameRealm(gs, offer.FromFactionID, offer.ToFactionID) ||
+		gs.HasTransitAgreement(offer.FromFactionID, offer.ToFactionID) {
+		return Result{Message: "Topraklarından geçiş teklifi artık geçerli değil."}
+	}
+	if !gs.AddTransitAgreement(offer.FromFactionID, offer.ToFactionID) {
+		return Result{Message: "Topraklarından geçiş anlaşması kurulamadı."}
+	}
+	AddRelationScoreBoth(gs, offer.FromFactionID, offer.ToFactionID, 5)
+	return Result{
+		Accepted: true,
+		Applied:  true,
+		Message:  factionLabel(gs, offer.ToFactionID) + " ile topraklarından geçiş hakkı anlaşması imzalandı.",
+	}
 }
 
 // resolveAcceptedPeaceOffer, kabul edilmiş barış teklifini yeniden kabul

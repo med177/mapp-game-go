@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-10-12
+last_updated: 2026-10-13
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -187,10 +187,12 @@ gelecek genişleme hedefi ortak tehditle aşılabilen yumuşak cezadır.
 | Hediye gönder | `sendGift()` | Savaşta değil + aktif senaryonun `diplomacy.gift_gold_cost` değeri; vassala doğrudan gönderilebilir, `gift_relation_bonus` kadar artırır ve `gift_receiver_gold` kadar altın aktarır |
 | İttifak kur | `proposeAlliance()` | Savaşta değil + tüm senaryolarda `Score >= 40`; iki tarafın doğrudan müttefikleriyle mevcut savaş çakışması varsa oyuncu ve AI için teklif engellenir. Varsayılan din skorunun ötesinde diplomatik temas ve coğrafi/stratejik bağ gerekir. Kabul şansı ilişki puanı, doğrudan din uyumu bonusu, güç/bölge farkı, mevcut trade bağı, doğrudan sınır tehdidi cezası ve `ortak düşman / ortak büyük tehdit` bonuslarıyla değerlendirilir |
 | Ticaret anlaşması | `proposeTrade()` | Savaşta değil + `Score >= 15` + iki tarafın da kara bölgesi ve yeterli ticaret kapasitesi var; ayrıca bağlanabilir kara/deniz ticaret hattı gerekir. Vassala doğrudan teklif edilebilir. Aynı helper kabul şansını ve UI'daki engel nedenini birlikte üretir |
+| Topraklardan geçiş hakkı | `proposeTransitPassage()` | Savaşta olmayan ve aynı vassal zincirinde bulunmayan devletler arasında teklif edilir. Alıcı devletin teklif sahibine ilişkisi kabul eşiğini belirler. Anlaşma sürdükçe iki tarafın kara orduları karşı tarafın bölgelerinden geçebilir; savaş başlayınca veya diplomasi panelinden hak bitirilince sona erer |
 | Minor imtiyazı teklif et | `offerMinorPrivilege()` | Oyuncunun egemen olduğu imtiyazsız minor bölge seçilir; hedef devlet seçildikten sonra teklif kuyruğa girer. Kabulde kullanım hakkı, otomatik imtiyaz rotası ve karşılıklı ilişki bonusu uygulanır |
 | Pazarlık | `proposeTransfer` | Savaşta olmayan hedef devlete iki kolonlu teklif panelinden bölge, kaynak/hammadde veya komutan taşımayan ordu birimi istenir ve karşılığında aynı türlerden verilebilir. Kabulde transfer uygulanır ve ilgili veren devletin ilişki puanı `+10` artar |
 | İttifakı bitir | `cancelAlliance()` | Dış devletle aktif ittifak varsa; mevcut ticaret rotaları korunur ve relation `trade/peace` durumuna iner |
 | Ticareti bitir | `cancelTrade()` | Aktif ticaret rotası varsa; rotalar kaldırılır, mevcut ittifak korunur |
+| Geçiş hakkını bitir | `cancelTransitPassage()` | Aktif toprak geçiş anlaşmasını iki taraf için sonlandırır |
 | Vassallık teklif et | `offerVassalization()` | Teklif eden zaten vassal değilse, hedef başka devlete bağlı değilse ve hedefin en fazla 3 kara bölgesi varsa; savaş duruşu teklifi göndermeyi engellemez, barışta mevcut `Score >= 55` ve askerî ön koşullar korunur |
 | Vasallığı bitir | `releaseVassal()` | Yalnız oyuncunun doğrudan vassalında; devlet bağımsızlaşır, overlord ile ticaret anlaşması devam eder |
 | Vassalı ilhak et | `annexVassal()` | Yalnız oyuncunun doğrudan vassalında ve onay sonrası; tüm bölgeler, kuvvetler, kaynaklar ve üretim emirleri oyuncuya devredilir, vassal fraksiyon elenir |
@@ -225,6 +227,12 @@ yanlışlıkla uygulanamamasını önler. İlgili uygulama seam'leri
 `internal/diplomacy/offers.go:ResolveOffer()` ve `internal/diplomacy/diplomacy.go:execute()`
 ile regression testleri `TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice` ve
 `TestResolveQueuedAllianceOfferKeepsTermsAfterStrategicStateChanges`'dır.
+
+Topraklardan geçiş hakkı ittifak veya ticaret duruşunu değiştirmeyen, iki yönlü ve
+save-backed ayrı bir anlaşmadır. Kara ordusu rotaları anlaşmalı sınırı transit
+olarak kullanabilir. Savaş ilişkisine geçiş anlaşmayı kaldırır; barış sonrasında
+yeniden teklif edilmesi gerekir (`internal/state/transit.go`,
+`internal/state/movement_route.go`).
 
 ### Karşılıklı Transfer Pazarlığı
 

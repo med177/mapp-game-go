@@ -159,6 +159,7 @@ func TestOpenQueuedWarConfirmKeepsSelectedAirAttackTarget(t *testing.T) {
 	if !r.OpenQueuedWarConfirm(attacker, r.gs.Regions[targetID], selectedDefender.ID, true) {
 		t.Fatal("expected a war confirmation for the foreign target")
 	}
+
 	if got := r.warConfirm.pendingEnemy; got != selectedDefender.ID {
 		t.Fatalf("queued war target = %q, want explicitly selected army %q", got, selectedDefender.ID)
 	}
@@ -167,5 +168,44 @@ func TestOpenQueuedWarConfirmKeepsSelectedAirAttackTarget(t *testing.T) {
 	}
 	if !r.warConfirm.airLanding {
 		t.Fatal("queued war confirmation lost the selected land-and-stay intent")
+	}
+}
+
+func TestTransitAgreementSuppressesWarConfirmForMovement(t *testing.T) {
+	const (
+		playerID = faction.FactionID("player")
+		otherID  = faction.FactionID("other")
+		targetID = world.RegionID("other_land")
+	)
+	attacker := &army.Army{ID: "army", OwnerID: string(playerID)}
+	gs := &state.GameState{
+		TransitAgreements: []state.DiplomaticTransitAgreement{{
+			FactionA: playerID,
+			FactionB: otherID,
+		}},
+		Regions: map[world.RegionID]*world.Region{
+			targetID: {ID: targetID, OwnerID: string(otherID)},
+		},
+	}
+
+	if !armyRegionIsFriendly(gs, attacker, gs.Regions[targetID]) {
+		t.Fatal("transit agreement should make the target friendly for movement")
+	}
+	if shouldPromptWarConfirmForMove(gs, attacker, gs.Regions[targetID]) {
+		t.Fatal("transit agreement should not open a war confirmation")
+	}
+
+	gs.Relations = map[string]*faction.Relation{
+		faction.RelationKey(playerID, otherID): {
+			FactionA: playerID,
+			FactionB: otherID,
+			Stance:   faction.StanceWar,
+		},
+	}
+	if armyRegionIsFriendly(gs, attacker, gs.Regions[targetID]) {
+		t.Fatal("an active war should override a stale transit agreement")
+	}
+	if shouldPromptWarConfirmForMove(gs, attacker, gs.Regions[targetID]) {
+		t.Fatal("an active war should proceed to combat without a war declaration confirmation")
 	}
 }

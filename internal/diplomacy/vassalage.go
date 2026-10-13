@@ -447,6 +447,20 @@ func actionBlockReason(gs *state.GameState, actor, target faction.FactionID, act
 		if assessment := AssessTradeProposal(gs, Relation(gs, actor, target), actor, target); assessment.BlockReason != "" {
 			return assessment.BlockReason
 		}
+	case ActionProposeTransitPassage:
+		if stance == faction.StanceWar {
+			return "Savaş halindeyken topraklardan geçiş anlaşması kurulamaz."
+		}
+		if sameRealm(gs, actor, target) {
+			return "Aynı vassal zincirindeki devletler arasında geçiş anlaşması gerekmez."
+		}
+		if gs.HasTransitAgreement(actor, target) {
+			return "Zaten aktif bir topraklardan geçiş anlaşması var."
+		}
+	case ActionCancelTransitPassage:
+		if !gs.HasTransitAgreement(actor, target) {
+			return "Aktif bir topraklardan geçiş anlaşması yok."
+		}
 	case ActionCancelTrade:
 		if !HasTradeRouteBetween(gs, actor, target) {
 			return "Aktif bir ticaret anlaşması yok."
@@ -604,6 +618,7 @@ func setWarBetweenCoalitions(gs *state.GameState, a, b faction.FactionID) {
 			rel.Stance = faction.StanceWar
 			rel.SetScoreBoth(-80)
 			removeTradeRoutesBetween(gs, lhs, rhs)
+			gs.RemoveTransitAgreement(lhs, rhs)
 			if !wasWar {
 				gs.BeginWarLedger(lhs, rhs)
 			}
@@ -970,6 +985,7 @@ func sanitizeVassalExternalDiplomacy(gs *state.GameState, vassal, root faction.F
 			rel.Stance = faction.StanceWar
 			rel.SetScoreBoth(-80)
 			removeTradeRoutesBetween(gs, vassal, other)
+			gs.RemoveTransitAgreement(vassal, other)
 			continue
 		}
 		// Dış devletler vassalla doğrudan ticaret yapabilir. Bu ilişki,

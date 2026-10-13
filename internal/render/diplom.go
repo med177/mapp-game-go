@@ -30,8 +30,10 @@ const (
 	diplomHistoryPanelW             = 286.0
 	diplomHistoryPanelGap           = 12.0
 	diplomOfferMainW                = 430.0
+	diplomOfferFooterGap            = 12.0
 	diplomHistoryPanelH             = 400.0
 	diplomActionButtonH             = 50.0
+	diplomActionPairButtonH         = 42.0
 	diplomActionGap                 = 8.0
 	diplomActionDetailBottomPadding = 18.0
 	diplomRelationRowH              = 17.0
@@ -102,10 +104,10 @@ type diplomAction struct {
 }
 
 var diplomActions = []diplomAction{
-	{diplomacy.ActionLabelTR(diplomacy.ActionDeclareWar), color.RGBA{180, 50, 50, 220}, ActionDeclareWar},
 	{diplomacy.ActionLabelTR(diplomacy.ActionProposePeace), color.RGBA{50, 120, 180, 220}, ActionProposePeace},
 	{diplomacy.ActionLabelTR(diplomacy.ActionProposeAlliance), color.RGBA{50, 160, 80, 220}, ActionProposeAlliance},
 	{diplomacy.ActionLabelTR(diplomacy.ActionProposeTrade), color.RGBA{160, 130, 50, 220}, ActionProposeTrade},
+	{diplomacy.ActionLabelTR(diplomacy.ActionProposeTransitPassage), color.RGBA{72, 132, 142, 220}, ActionProposeTransitPassage},
 	{diplomacy.ActionLabelTR(diplomacy.ActionImproveRelations), color.RGBA{72, 124, 174, 220}, ActionImproveRelations},
 	{diplomacy.ActionLabelTR(diplomacy.ActionSendGift), color.RGBA{182, 120, 58, 220}, ActionSendGift},
 	{diplomacy.ActionLabelTR(diplomacy.ActionInciteRevolt), color.RGBA{142, 72, 48, 220}, ActionInciteRevolt},
@@ -133,6 +135,8 @@ func actionKindForDiplomacyAction(action diplomacy.Action) ActionKind {
 		return ActionProposeAlliance
 	case diplomacy.ActionProposeTrade:
 		return ActionProposeTrade
+	case diplomacy.ActionProposeTransitPassage:
+		return ActionProposeTransitPassage
 	case diplomacy.ActionImproveRelations:
 		return ActionImproveRelations
 	case diplomacy.ActionSendGift:
@@ -174,6 +178,10 @@ func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID
 		actionValue = diplomacy.ActionProposeAlliance
 	case ActionProposeTrade:
 		actionValue = diplomacy.ActionProposeTrade
+	case ActionProposeTransitPassage:
+		actionValue = diplomacy.ActionProposeTransitPassage
+	case ActionCancelTransitPassage:
+		actionValue = diplomacy.ActionCancelTransitPassage
 	case ActionCancelAlliance:
 		actionValue = diplomacy.ActionCancelAlliance
 	case ActionCancelTrade:
@@ -588,11 +596,11 @@ func diplomacyOfferLayoutForScreen() diplomacyOfferLayout {
 	panel := gameui.Rect{X: r.x, Y: r.y, W: r.w, H: r.h}
 	contentRect := gameui.Rect{X: panel.X + 16, Y: panel.Y + 16, W: diplomOfferMainW, H: panel.H - 32}
 	box := gameui.BoxFromRect(contentRect)
-	footerRect, box := box.CutBottom(40, 0)
+	footerRect, box := box.CutBottom(40, diplomOfferFooterGap)
 	headerRect, box := box.CutTop(28, 14)
 	// İki satırlı durum metni için alt çerçeveye değmeyecek sabit iç boşluk.
 	statusRect, box := box.CutTop(86, 16)
-	actionsRect, box := box.CutTop(float64(len(diplomActions))*diplomActionButtonH+float64(len(diplomActions)-1)*diplomActionGap, 16)
+	actionsRect, box := box.CutTop(diplomActionAreaHeight(), 16)
 	selectedRect, _ := box.CutTop(28, 0)
 	footerCols := gameui.BoxFromRect(footerRect).SplitColumns(12, 1, 1)
 	return diplomacyOfferLayout{
@@ -661,6 +669,8 @@ func diplomacyHistoryActionLabelTR(action ActionKind) string {
 		return "Barış"
 	case ActionProposeTrade:
 		return "Ticaret"
+	case ActionProposeTransitPassage:
+		return diplomacy.ActionLabelTR(diplomacy.ActionProposeTransitPassage)
 	case ActionProposeAlliance:
 		return "İttifak"
 	case ActionDeclareWar:
@@ -682,6 +692,8 @@ func diplomacyHistoryActionIcon(action ActionKind) gameui.IconID {
 		return gameui.IconCheck
 	case ActionProposeTrade:
 		return gameui.IconSend
+	case ActionProposeTransitPassage:
+		return gameui.IconSend
 	case ActionProposeAlliance:
 		return gameui.IconBook
 	case ActionDeclareWar:
@@ -699,6 +711,8 @@ func diplomacyHistoryActionColor(action ActionKind) color.RGBA {
 		return color.RGBA{54, 118, 176, 220}
 	case ActionProposeTrade:
 		return color.RGBA{164, 128, 44, 220}
+	case ActionProposeTransitPassage:
+		return color.RGBA{72, 132, 142, 220}
 	case ActionProposeAlliance:
 		return color.RGBA{52, 146, 74, 220}
 	case ActionDeclareWar:
@@ -979,9 +993,8 @@ func diplomacyOfferHistorySummary(gs *state.GameState, dirFilter diplomacyHistor
 
 func offerPageRect() rectF {
 	w := minF(ScreenWidth-120, 760)
-	// Teklif satırları büyüdükçe seçili aksiyon ve footer için ayrılan alanı da
-	// koru. Küçük ekranlarda panel kenarlara kontrollü biçimde yaklaşabilir.
-	preferredH := 680.0 + float64(len(diplomActions))*(diplomActionButtonH-42.0)
+	// Aksiyon satırları, seçili aksiyon ve footer için gereken alanı koru.
+	preferredH := 260.0 + diplomActionAreaHeight() + diplomOfferFooterGap
 	h := minF(ScreenHeight-24, preferredH)
 	if h < 420 {
 		h = 420
@@ -1048,12 +1061,27 @@ func ensureDiplomFocusVisible(total, focus, scroll int) int {
 
 func diplomActionRect(i int) (x, y, w, h float32) {
 	layout := diplomacyOfferLayoutForScreen()
-	btnW := float32(layout.actionsRect.W)
-	btnH := float32(diplomActionButtonH)
 	gap := float32(diplomActionGap)
-	x = float32(layout.actionsRect.X)
-	y = float32(layout.actionsRect.Y + float64(i)*(float64(btnH)+float64(gap)))
-	return x, y, btnW, btnH
+	if i < 0 || i >= len(diplomActions) {
+		return 0, 0, 0, 0
+	}
+	if i < 2 {
+		btnW := float32((layout.actionsRect.W - float64(gap)) / 2)
+		return float32(layout.actionsRect.X) + float32(i)*(btnW+gap),
+			float32(layout.actionsRect.Y), btnW, float32(diplomActionPairButtonH)
+	}
+	return float32(layout.actionsRect.X),
+		float32(layout.actionsRect.Y + diplomActionPairButtonH + diplomActionGap + float64(i-2)*(diplomActionButtonH+diplomActionGap)),
+		float32(layout.actionsRect.W), float32(diplomActionButtonH)
+}
+
+func diplomActionAreaHeight() float64 {
+	if len(diplomActions) <= 2 {
+		return diplomActionPairButtonH
+	}
+	remaining := len(diplomActions) - 2
+	return diplomActionPairButtonH + diplomActionGap +
+		float64(remaining)*diplomActionButtonH + float64(remaining-1)*diplomActionGap
 }
 
 func diplomActionDetailY(buttonY, buttonH float32) float64 {
@@ -1307,7 +1335,7 @@ func buildDiplomacySendButton() gameui.Button {
 func buildDiplomacySendButtonForAction(action ActionKind) gameui.Button {
 	x, y, w, h := diplomSendRect()
 	label := "Teklif Gönder"
-	if action == ActionCancelAlliance || action == ActionCancelTrade {
+	if action == ActionCancelAlliance || action == ActionCancelTrade || action == ActionCancelTransitPassage {
 		label = "Anlaşmayı Bitir"
 	}
 	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), label).WithIcon(gameui.IconSend)
@@ -1332,6 +1360,10 @@ func diplomacyActionForTarget(gs *state.GameState, target faction.FactionID, ind
 		if diplomacy.HasTradeRouteBetween(gs, gs.PlayerFactionID, target) {
 			return ActionCancelTrade
 		}
+	case ActionProposeTransitPassage:
+		if gs.HasTransitAgreement(gs.PlayerFactionID, target) {
+			return ActionCancelTransitPassage
+		}
 	}
 	return base
 }
@@ -1342,6 +1374,8 @@ func diplomacyActionLabel(gs *state.GameState, target faction.FactionID, index i
 		return diplomacy.ActionLabelTR(diplomacy.ActionCancelAlliance)
 	case ActionCancelTrade:
 		return diplomacy.ActionLabelTR(diplomacy.ActionCancelTrade)
+	case ActionCancelTransitPassage:
+		return diplomacy.ActionLabelTR(diplomacy.ActionCancelTransitPassage)
 	default:
 		if index >= 0 && index < len(diplomActions) {
 			return diplomActions[index].label
@@ -1652,7 +1686,7 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		chance, status := presentation.Chance, presentation.Status
 		disabledReason := presentation.DisabledReason
 		bg := da.color
-		if action == ActionCancelAlliance || action == ActionCancelTrade {
+		if action == ActionCancelAlliance || action == ActionCancelTrade || action == ActionCancelTransitPassage {
 			bg = color.RGBA{156, 72, 48, 225}
 		}
 		textCol := ColorWhite
@@ -1673,29 +1707,30 @@ func drawDiplomacyOfferPanel(screen *ebiten.Image, gs *state.GameState, factions
 		if action == ActionProposePeace && status == "Eşik altında — reddedebilir" {
 			chanceText = "EŞİK ALTI"
 		}
-		if action == ActionCancelAlliance || action == ActionCancelTrade {
+		if action == ActionCancelAlliance || action == ActionCancelTrade || action == ActionCancelTransitPassage {
 			chanceText = "AKTİF"
 		}
 		if disabledReason != "" {
 			chanceText = "PASİF"
 		}
 		drawUILabel(screen, gameui.Rect{X: float64(bx), Y: float64(by) + 7, W: float64(bw - 14)}, chanceText, textCol, gameui.TextMedium, gameui.TextAlignEnd)
-		// Aktif tekliflerde kabul olasılığı, pasif tekliflerde engel nedeni gösterilir.
-		// Ayrıntı satırını buton yüksekliği değişse de alt kenardan aynı mesafede tut.
-		detailX := float64(bx) + 14
-		detailW := float64(bw - 28)
-		detailY := diplomActionDetailY(by, bh)
-		paymentNote := diplomacyActionPaymentNote(gs, target, action)
-		if paymentNote != "" {
-			paymentW := MeasureText(paymentNote, FaceSmall)
-			statusW := detailW - paymentW - 12
-			if statusW < 0 {
-				statusW = 0
+		if i >= 2 {
+			// Aktif tekliflerde kabul olasılığı, pasif tekliflerde engel nedeni gösterilir.
+			detailX := float64(bx) + 14
+			detailW := float64(bw - 28)
+			detailY := diplomActionDetailY(by, bh)
+			paymentNote := diplomacyActionPaymentNote(gs, target, action)
+			if paymentNote != "" {
+				paymentW := MeasureText(paymentNote, FaceSmall)
+				statusW := detailW - paymentW - 12
+				if statusW < 0 {
+					statusW = 0
+				}
+				drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: statusW}, trimTextToWidth(status, FaceSmall, statusW), color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
+				drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: detailW}, paymentNote, color.RGBA{210, 205, 190, 220}, gameui.TextSmall, gameui.TextAlignEnd)
+			} else {
+				drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: detailW}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
 			}
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: statusW}, trimTextToWidth(status, FaceSmall, statusW), color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: detailW}, paymentNote, color.RGBA{210, 205, 190, 220}, gameui.TextSmall, gameui.TextAlignEnd)
-		} else {
-			drawUILabel(screen, gameui.Rect{X: detailX, Y: detailY, W: detailW}, status, color.RGBA{235, 230, 210, 230}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	}
 
@@ -2525,10 +2560,14 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		actionValue = diplomacy.ActionProposeAlliance
 	case ActionProposeTrade:
 		actionValue = diplomacy.ActionProposeTrade
+	case ActionProposeTransitPassage:
+		actionValue = diplomacy.ActionProposeTransitPassage
 	case ActionCancelAlliance:
 		actionValue = diplomacy.ActionCancelAlliance
 	case ActionCancelTrade:
 		actionValue = diplomacy.ActionCancelTrade
+	case ActionCancelTransitPassage:
+		actionValue = diplomacy.ActionCancelTransitPassage
 	case ActionImproveRelations:
 		actionValue = diplomacy.ActionImproveRelations
 	case ActionSendGift:
@@ -2566,6 +2605,8 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 	case ActionProposeTrade:
 		assessment := diplomacy.AssessTradeProposal(gs, rel, gs.PlayerFactionID, target)
 		chance = assessment.Chance
+	case ActionProposeTransitPassage:
+		chance, _ = diplomacy.AssessTransitPassageProposal(gs, gs.PlayerFactionID, target)
 	case ActionImproveRelations:
 		return 100, "İlişki +" + strconv.Itoa(diplomacy.RelationImprovementBonusFor(gs)) + " / " + strconv.Itoa(diplomacy.RelationImprovementGoldCostFor(gs)) + " altın"
 	case ActionSendGift:
@@ -2578,6 +2619,8 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 		return 100, "İttifak sona erecek / Ticaret korunur"
 	case ActionCancelTrade:
 		return 100, "Ticaret sona erecek / İttifak korunur"
+	case ActionCancelTransitPassage:
+		return 100, "Geçiş izni sona erecek"
 	}
 	if chance < 0 {
 		chance = 0

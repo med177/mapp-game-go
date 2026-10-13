@@ -90,6 +90,68 @@ func TestResolveAcceptedAllianceOfferIgnoresAllianceLimit(t *testing.T) {
 	}
 }
 
+func TestResolveAcceptedTransitPassageOfferEnablesMovementAndWarEndsIt(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai":     {ID: "ai"},
+			"player": {ID: "player"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai", "player"): {
+				FactionA: "ai", FactionB: "player", Stance: faction.StancePeace,
+			},
+		},
+	}
+
+	if !QueueOffer(gs, "ai", "player", ActionProposeTransitPassage) {
+		t.Fatal("geçiş hakkı teklifi kuyruğa alınamadı")
+	}
+	result := ResolveOffer(gs, 0, true)
+	if !result.Applied || !gs.HasTransitAgreement("player", "ai") {
+		t.Fatalf("kabul edilen geçiş teklifi uygulanmadı: %#v", result)
+	}
+	if Relation(gs, "ai", "player").Stance != faction.StancePeace {
+		t.Fatal("geçiş hakkı diğer ilişki duruşunu değiştirdi")
+	}
+
+	ForceRelation(gs, "ai", "player", faction.StanceWar, 0)
+	if gs.HasTransitAgreement("ai", "player") {
+		t.Fatal("savaş başlayınca geçiş anlaşması sona ermedi")
+	}
+}
+
+func TestExecuteTransitPassageOfferUsesRecipientRelationAndCanBeCancelled(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai":     {ID: "ai"},
+			"player": {ID: "player"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("ai", "player"): {
+				FactionA:  "ai",
+				FactionB:  "player",
+				ScoreAToB: 10,
+				ScoreBToA: -80,
+				Stance:    faction.StancePeace,
+			},
+		},
+	}
+
+	if chance, accepted := AssessTransitPassageProposal(gs, "player", "ai"); chance != 55 || !accepted {
+		t.Fatalf("alıcı görüşüne göre kabul değerlendirmesi = %d, %v; 55, true bekleniyordu", chance, accepted)
+	}
+	result := Execute(gs, "player", "ai", ActionProposeTransitPassage)
+	if !result.Applied || !gs.HasTransitAgreement("ai", "player") {
+		t.Fatalf("doğrudan geçiş teklifi uygulanmadı: %#v", result)
+	}
+	result = Execute(gs, "player", "ai", ActionCancelTransitPassage)
+	if !result.Applied || gs.HasTransitAgreement("player", "ai") {
+		t.Fatalf("geçiş hakkı iptal edilemedi: %#v", result)
+	}
+}
+
 func TestResolveAcceptedWarJoinOfferSkipsWarCallAssessment(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",

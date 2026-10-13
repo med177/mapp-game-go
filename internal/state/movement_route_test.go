@@ -79,6 +79,18 @@ func TestMovementRouteStopsTransitAtForeignRegion(t *testing.T) {
 	if got := gs.MovementRouteForArmy(a, "beyond"); got != nil {
 		t.Fatalf("route continued through foreign terminal: %v", got)
 	}
+	if !gs.AddTransitAgreement("player", "enemy") {
+		t.Fatal("geçiş anlaşması oluşturulamadı")
+	}
+	if got := gs.MovementRouteForArmy(a, "beyond"); len(got) != 4 || got[3] != "beyond" {
+		t.Fatalf("geçiş anlaşmasıyla yabancı bölgeden transit rota = %v, beyond'a ulaşmalı", got)
+	}
+	if !gs.RemoveTransitAgreement("enemy", "player") {
+		t.Fatal("ters yönden anlaşma iptal edilemedi")
+	}
+	if got := gs.MovementRouteForArmy(a, "beyond"); got != nil {
+		t.Fatalf("geçiş anlaşması kaldırılınca yabancı bölgeden transit sürdü: %v", got)
+	}
 }
 
 func TestNavalMovementRouteReachesSeaAndPortWithinBudget(t *testing.T) {

@@ -141,8 +141,8 @@ func TestDiplomacyDisabledFactionCannotUseNormalDiplomacyActions(t *testing.T) {
 	}
 	actions := []Action{
 		ActionDeclareWar, ActionJoinWarCall, ActionProposePeace, ActionProposeAlliance,
-		ActionProposeTrade, ActionProposeSurrender, ActionProposeSiegeVassalization,
-		ActionCancelAlliance, ActionCancelTrade, ActionImproveRelations, ActionSendGift,
+		ActionProposeTrade, ActionProposeTransitPassage, ActionProposeSurrender, ActionProposeSiegeVassalization,
+		ActionCancelAlliance, ActionCancelTrade, ActionCancelTransitPassage, ActionImproveRelations, ActionSendGift,
 		ActionInciteRevolt, ActionOfferMinorPrivilege, ActionOfferVassalization,
 		ActionProposeTransfer, ActionReleaseVassal, ActionAnnexVassal,
 	}

@@ -3240,11 +3240,7 @@ func armyRegionIsFriendly(gs *state.GameState, attacker *army.Army, target *worl
 	}
 	attackerFID := faction.FactionID(attacker.OwnerID)
 	targetFID := faction.FactionID(targetOwnerID)
-	if diplomacy.SameRealm(gs, attackerFID, targetFID) {
-		return true
-	}
-	rel := diplomacy.Relation(gs, attackerFID, targetFID)
-	return rel != nil && rel.Stance == faction.StanceAllied
+	return gs.CanFactionTransit(string(attackerFID), string(targetFID))
 }
 
 func shouldPromptWarConfirmForMove(gs *state.GameState, attacker *army.Army, target *world.Region) bool {

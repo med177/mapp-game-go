@@ -19,10 +19,12 @@ const (
 	ActionProposePeace              Action = "propose_peace"
 	ActionProposeAlliance           Action = "propose_alliance"
 	ActionProposeTrade              Action = "propose_trade"
+	ActionProposeTransitPassage     Action = "propose_transit_passage"
 	ActionProposeSurrender          Action = "propose_surrender"
 	ActionProposeSiegeVassalization Action = "propose_siege_vassalization"
 	ActionCancelAlliance            Action = "cancel_alliance"
 	ActionCancelTrade               Action = "cancel_trade"
+	ActionCancelTransitPassage      Action = "cancel_transit_passage"
 	ActionImproveRelations          Action = "improve_relations"
 	ActionSendGift                  Action = "send_gift"
 	ActionInciteRevolt              Action = "incite_revolt"
@@ -38,6 +40,16 @@ type Result struct {
 	Applied    bool
 	Message    string
 	Settlement *PeaceSettlement
+}
+
+// AssessTransitPassageProposal, alıcının teklif sahibine bakışına göre kabul
+// olasılığını diğer deterministik tekliflerle aynı 55 eşiği üzerinden hesaplar.
+func AssessTransitPassageProposal(gs *state.GameState, proposer, recipient faction.FactionID) (int, bool) {
+	if gs == nil || proposer == "" || recipient == "" || proposer == recipient {
+		return 0, false
+	}
+	chance := clamp(50+RelationScore(gs, recipient, proposer)/2, 0, 100)
+	return chance, chance >= 55
 }
 
 const tradeAcceptanceThreshold = 45
@@ -273,6 +285,16 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		}
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ticaret anlaşması imzalandı."}
 
+	case ActionProposeTransitPassage:
+		_, accepted := AssessTransitPassageProposal(gs, actor, target)
+		if !accepted {
+			markRejectedDiplomaticOffer(gs, actor, target, action)
+			return Result{Message: factionLabel(gs, target) + " topraklarından geçiş teklifini reddetti."}
+		}
+		gs.AddTransitAgreement(actor, target)
+		AddRelationScoreBoth(gs, actor, target, 5)
+		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile topraklarından geçiş hakkı anlaşması imzalandı."}
+
 	case ActionProposeAlliance:
 		if !acceptAlliance(gs, rel, actor, target) {
 			markRejectedDiplomaticOffer(gs, actor, target, action)
@@ -299,6 +321,11 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		}
 		AddRelationScoreBoth(gs, actor, target, -5)
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile ticaret anlaşması sona erdirildi."}
+
+	case ActionCancelTransitPassage:
+		gs.RemoveTransitAgreement(actor, target)
+		AddRelationScoreBoth(gs, actor, target, -5)
+		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile topraklarından geçiş hakkı sona erdirildi."}
 
 	case ActionImproveRelations:
 		return applyRelationImprovement(gs, actor, target, RelationImprovementGoldCostFor(gs), RelationImprovementBonusFor(gs), 0, "diplomatik heyet")
@@ -452,6 +479,9 @@ func forceRelation(gs *state.GameState, a, b faction.FactionID, stance faction.D
 	AddRelationScoreBoth(gs, a, b, scoreDelta)
 	if stance != "" {
 		rel.Stance = stance
+	}
+	if rel.Stance == faction.StanceWar {
+		gs.RemoveTransitAgreement(a, b)
 	}
 	switch rel.Stance {
 	case faction.StanceWar, faction.StancePeace:

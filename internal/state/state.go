@@ -195,6 +195,13 @@ type DiplomaticOffer struct {
 	WarEnemyFactionID    faction.FactionID    `json:"war_enemy_faction_id,omitempty"`
 }
 
+// DiplomaticTransitAgreement kara ordularına iki devlet arasında karşılıklı
+// topraklarından geçiş hakkı verir.
+type DiplomaticTransitAgreement struct {
+	FactionA faction.FactionID `json:"faction_a"`
+	FactionB faction.FactionID `json:"faction_b"`
+}
+
 // DiplomaticTransfer, iki devlet arasındaki pazarlıkta tek bir malzeme veya
 // asker kalemini tanımlar. Requested gönderenin hedef devletten istediği,
 // Offered ise hedef devlete vermeyi taahhüt ettiği kalemlerdir.
@@ -466,7 +473,8 @@ type GameState struct {
 	LastSubjugatedFactionID faction.FactionID `json:"-"`
 
 	// Diplomatik ilişkiler (key: RelationKey)
-	Relations map[string]*faction.Relation `json:"relations"`
+	Relations         map[string]*faction.Relation `json:"relations"`
+	TransitAgreements []DiplomaticTransitAgreement `json:"transit_agreements,omitempty"`
 	// Aktif savaşların başlangıç durumu ve kalıcı kayıp/fetih sayaçları.
 	WarLedgers map[string]*WarLedger `json:"war_ledgers,omitempty"`
 	// TurnCombatLosses, tur çözümlemesinde gerçekleşen muharebe kayıplarının

@@ -519,10 +519,14 @@ func (g *Game) Update() error {
 			g.proposeAlliance(action.TargetFaction)
 		case render.ActionProposeTrade:
 			g.proposeTrade(action.TargetFaction)
+		case render.ActionProposeTransitPassage:
+			g.proposeTransitPassage(action.TargetFaction)
 		case render.ActionCancelAlliance:
 			g.cancelAlliance(action.TargetFaction)
 		case render.ActionCancelTrade:
 			g.cancelTrade(action.TargetFaction)
+		case render.ActionCancelTransitPassage:
+			g.cancelTransitPassage(action.TargetFaction)
 		case render.ActionOfferVassalization:
 			g.offerVassalization(action.TargetFaction)
 		case render.ActionNegotiateTransfer:
@@ -2017,7 +2021,8 @@ func (g *Game) resolveHistoricalDiplomaticOffers(evt *events.Event, effect event
 		targetID := faction.FactionID(proposal.FactionID)
 		action := diplomacy.Action(proposal.Action)
 		if targetID == "" || targetID == sourceID ||
-			(action != diplomacy.ActionProposePeace && action != diplomacy.ActionProposeAlliance && action != diplomacy.ActionProposeTrade) {
+			(action != diplomacy.ActionProposePeace && action != diplomacy.ActionProposeAlliance && action != diplomacy.ActionProposeTrade &&
+				action != diplomacy.ActionProposeTransitPassage) {
 			continue
 		}
 		reason := proposal.ReasonTR
@@ -2055,6 +2060,9 @@ func (g *Game) aiAcceptHistoricalDiplomaticOffer(from, to faction.FactionID, act
 		return diplomacy.AssessAllianceProposal(g.gs, rel, from, to).Accepted()
 	case diplomacy.ActionProposeTrade:
 		return diplomacy.AssessTradeProposal(g.gs, diplomacy.Relation(g.gs, from, to), from, to).Accepted()
+	case diplomacy.ActionProposeTransitPassage:
+		_, accepted := diplomacy.AssessTransitPassageProposal(g.gs, from, to)
+		return accepted
 	default:
 		return false
 	}
@@ -2068,6 +2076,8 @@ func historicalDiplomaticOfferActionLabel(action diplomacy.Action) string {
 		return "ittifak teklifi"
 	case diplomacy.ActionProposeTrade:
 		return "ticaret teklifi"
+	case diplomacy.ActionProposeTransitPassage:
+		return "topraklardan geçiş hakkı teklifi"
 	default:
 		return "diplomasi teklifi"
 	}
@@ -3226,6 +3236,11 @@ func (g *Game) proposeTrade(targetID faction.FactionID) {
 	g.renderer.ShowCombatResult(result.Message)
 }
 
+func (g *Game) proposeTransitPassage(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionProposeTransitPassage)
+	g.renderer.ShowCombatResult(result.Message)
+}
+
 func (g *Game) handleTransferNegotiationAction(action render.InputAction) {
 	counterIndex := -1
 	if action.CounterOffer {
@@ -3301,6 +3316,14 @@ func (g *Game) cancelTrade(targetID faction.FactionID) {
 	g.renderer.ShowCombatResult(result.Message)
 	if result.Applied {
 		g.renderer.AddEventDetail("[DİPLOMASİ] "+result.Message, g.factionNameTR(string(targetID))+" ile kurulu ticaret rotaları kapatıldı.")
+	}
+}
+
+func (g *Game) cancelTransitPassage(targetID faction.FactionID) {
+	result := diplomacy.Execute(g.gs, g.gs.PlayerFactionID, targetID, diplomacy.ActionCancelTransitPassage)
+	g.renderer.ShowCombatResult(result.Message)
+	if result.Applied {
+		g.renderer.AddEventDetail("[DİPLOMASİ] "+result.Message, g.factionNameTR(string(targetID))+" ile topraklarından geçiş izni sona erdirildi.")
 	}
 }
 
@@ -7142,8 +7165,8 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 			return
 		}
 	}
-	// Sahipli yabancı kara bölgesine girmek için savaş, ittifak veya aynı vassal
-	// zincirinde askeri geçiş hakkı gerekir.
+	// Sahipli yabancı kara bölgesine savaş, ittifak, geçiş anlaşması veya aynı
+	// vassal zincirinde askeri geçiş hakkı olmadan girilemez.
 	// Donanma-deniz hareketinde bu kural uygulanmaz; denizde serbest dolaşım var.
 	isAlliedRegion := neutralTerrainArea
 	if !neutralTerrainArea && !navalSeaMove && targetOwnerID != "" && targetOwnerID != a.OwnerID &&
@@ -7151,10 +7174,13 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		if diplomacy.SameRealm(g.gs, faction.FactionID(a.OwnerID), faction.FactionID(targetOwnerID)) {
 			isAlliedRegion = true
 		}
+		if g.gs.CanFactionTransit(a.OwnerID, targetOwnerID) {
+			isAlliedRegion = true
+		}
 		key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetOwnerID))
 		rel, exists := g.gs.Relations[key]
 		if !isAlliedRegion && (!exists || (rel.Stance != faction.StanceWar && rel.Stance != faction.StanceAllied)) {
-			g.renderer.ShowCombatResult("Savaş ilanı, ittifak veya bağlı devlet askeri geçişi olmadan yabancı toprağa girilemez!")
+			g.renderer.ShowCombatResult("Savaş, ittifak veya geçiş anlaşması olmadan yabancı toprağa girilemez!")
 			return
 		}
 		if exists && rel.Stance == faction.StanceAllied {

@@ -1,9 +1,16 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-12
+last_updated: 2026-10-13
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-13: Diplomasi paneline topraklardan geçiş hakkı teklifi eklendi.
+  Kabul edilen anlaşma iki tarafın kara ordularına karşılıklı transit verir,
+  ittifak/ticaret duruşunu değiştirmeden save/load boyunca sürer ve savaşta ya da
+  panelden iptal edilince sona erer. `internal/diplomacy`,
+  `internal/state/movement_route.go`, `internal/render/diplom.go`,
+  `internal/game/game.go`, `internal/save/compact.go`.
 
 - 2026-10-12: İki taraflı diplomatik pazarlıkta `Tutsak` kalemi eklendi. Oyuncu
   kendi elindeki karşı taraf komutanını iade için verebiliyor veya karşı tarafın

@@ -64,8 +64,10 @@ const (
 	ActionSelectVictory            ActionKind = "select_victory"  // BuildingID = VictoryType
 	ActionProposeAlliance          ActionKind = "propose_alliance"
 	ActionProposeTrade             ActionKind = "propose_trade"
+	ActionProposeTransitPassage    ActionKind = "propose_transit_passage"
 	ActionCancelAlliance           ActionKind = "cancel_alliance"
 	ActionCancelTrade              ActionKind = "cancel_trade"
+	ActionCancelTransitPassage     ActionKind = "cancel_transit_passage"
 	ActionRecruitNaval             ActionKind = "recruit_naval"
 	ActionRecruitSpecific          ActionKind = "recruit_specific"     // BuildingID = unit type ID
 	ActionCancelRecruitOrder       ActionKind = "cancel_recruit_order" // BuildingID = production order ID (tek emir iptal)

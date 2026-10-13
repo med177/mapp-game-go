@@ -3,8 +3,91 @@ package render
 import (
 	"testing"
 
+	"mapp-game-go/internal/diplomacy"
+	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/state"
+
 	gameui "mapp-game-go/internal/ui"
 )
+
+func TestDiplomacyPanelOffersAndCancelsTransitPassage(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"ai":     {ID: "ai"},
+			"player": {ID: "player"},
+		},
+	}
+	index := -1
+	for i, action := range diplomActions {
+		if action.action == ActionProposeTransitPassage {
+			index = i
+			break
+		}
+	}
+	if index < 0 {
+		t.Fatal("diplomasi panelinde geçiş hakkı teklifi bulunamadı")
+	}
+	if got := diplomacyActionForTarget(gs, "ai", index); got != ActionProposeTransitPassage {
+		t.Fatalf("anlaşma yokken panel aksiyonu = %q", got)
+	}
+	if reason := diplomacyActionDisabledReason(gs, "ai", ActionProposeTransitPassage); reason != "" {
+		t.Fatalf("geçerli geçiş teklifi pasif: %s", reason)
+	}
+
+	gs.AddTransitAgreement("player", "ai")
+	if got := diplomacyActionForTarget(gs, "ai", index); got != ActionCancelTransitPassage {
+		t.Fatalf("anlaşma varken panel aksiyonu = %q, iptal bekleniyordu", got)
+	}
+	if got, want := diplomacyActionLabel(gs, "ai", index), diplomacy.ActionLabelTR(diplomacy.ActionCancelTransitPassage); got != want {
+		t.Fatalf("aktif anlaşma düğmesi = %q, %q bekleniyordu", got, want)
+	}
+	if reason := diplomacyActionDisabledReason(gs, "ai", ActionCancelTransitPassage); reason != "" {
+		t.Fatalf("aktif geçiş anlaşması iptal edilemiyor: %s", reason)
+	}
+}
+
+func TestDiplomacyOfferActionsPairPeaceAndAllianceWithoutOverlap(t *testing.T) {
+	for _, action := range diplomActions {
+		if action.action == ActionDeclareWar {
+			t.Fatal("savaş aksiyonu teklif panelinde görünmeye devam ediyor")
+		}
+	}
+	if len(diplomActions) < 3 {
+		t.Fatalf("diplomasi panelinde beklenen aksiyonlar eksik: %d", len(diplomActions))
+	}
+
+	layout := diplomacyOfferLayoutForScreen()
+	buttons := buildDiplomacyActionButtons(nil, "")
+	buttonRect := func(button gameui.Button) gameui.Rect {
+		return gameui.Rect{X: button.X, Y: button.Y, W: button.W, H: button.H}
+	}
+	peace := buttonRect(buttons[0].Button)
+	alliance := buttonRect(buttons[1].Button)
+	if peace.Y != alliance.Y || peace.H != diplomActionPairButtonH || alliance.H != diplomActionPairButtonH {
+		t.Fatalf("barış ve ittifak aynı satırda/kompakt değil: barış=%+v ittifak=%+v", peace, alliance)
+	}
+	if peace.X+peace.W+diplomActionGap > alliance.X {
+		t.Fatalf("barış ve ittifak düğmeleri üst üste geliyor: barış=%+v ittifak=%+v", peace, alliance)
+	}
+	next := buttonRect(buttons[2].Button)
+	if next.Y < peace.Y+peace.H+diplomActionGap {
+		t.Fatalf("sonraki teklif satırı ikili satıra taşıyor: ikili=%+v sonraki=%+v", peace, next)
+	}
+	for i, button := range buttons {
+		rect := buttonRect(button.Button)
+		if rect.X < layout.actionsRect.X || rect.X+rect.W > layout.actionsRect.X+layout.actionsRect.W ||
+			rect.Y < layout.actionsRect.Y || rect.Y+rect.H > layout.actionsRect.Y+layout.actionsRect.H {
+			t.Errorf("aksiyon %d teklif alanı dışına taşıyor: %+v alan=%+v", i, rect, layout.actionsRect)
+		}
+	}
+	if bottom, limit := layout.actionsRect.Y+layout.actionsRect.H, layout.selectedRect.Y+layout.selectedRect.H; bottom > limit {
+		t.Errorf("teklif satırları seçili alanı örtüyor: satırlar=%.1f seçili alt=%.1f", bottom, limit)
+	}
+	if gap := layout.backRect.Y - (layout.actionsRect.Y + layout.actionsRect.H); gap < diplomOfferFooterGap {
+		t.Errorf("teklif düğmeleriyle alt çerçeve düğmeleri arasında yeterli boşluk yok: %.1f, en az %.1f olmalı", gap, diplomOfferFooterGap)
+	}
+}
 
 func TestDiplomacyHistoryActionFiltersUseSpaciousCenteredRows(t *testing.T) {
 	panel := gameui.Rect{X: 100, Y: 200, W: diplomHistoryPanelW, H: diplomHistoryPanelH}

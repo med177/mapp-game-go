@@ -58,3 +58,27 @@ func TestLegacySaveWithoutDiplomacyDisabledPreservesScenarioDefault(t *testing.T
 		t.Fatal("diplomacy_disabled alanı olmayan eski save senaryo varsayılanını değiştirdi")
 	}
 }
+
+func TestTransitAgreementsPersistAcrossCompactAndLegacySaveStates(t *testing.T) {
+	agreements := []state.DiplomaticTransitAgreement{{FactionA: "a", FactionB: "b"}}
+	gs := &state.GameState{TransitAgreements: agreements}
+
+	compact := campaignSaveState{TransitAgreements: append([]state.DiplomaticTransitAgreement(nil), gs.TransitAgreements...)}
+	encoded, err := json.Marshal(compact)
+	if err != nil {
+		t.Fatalf("compact kayıt serileştirilemedi: %v", err)
+	}
+	var decoded campaignSaveState
+	if err := json.Unmarshal(encoded, &decoded); err != nil {
+		t.Fatalf("compact kayıt çözülemedi: %v", err)
+	}
+	if len(decoded.TransitAgreements) != 1 || decoded.TransitAgreements[0] != agreements[0] {
+		t.Fatalf("compact save geçiş anlaşmasını korumadı: %#v", decoded.TransitAgreements)
+	}
+
+	debugState := makeDebugCampaignSaveState(gs)
+	legacy := convertLegacyCampaignSaveState(debugState)
+	if len(legacy.TransitAgreements) != 1 || legacy.TransitAgreements[0] != agreements[0] {
+		t.Fatalf("debug/legacy save geçiş anlaşmasını korumadı: %#v", legacy.TransitAgreements)
+	}
+}

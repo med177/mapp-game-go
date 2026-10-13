@@ -139,7 +139,7 @@ func (s *GameState) AirSortieRequired(a *army.Army, targetID world.RegionID) boo
 		return true
 	}
 	ownerID := s.SovereignOwnerID(target)
-	return ownerID == "" || (ownerID != a.OwnerID && !s.movementOwnerCanTransit(a.OwnerID, ownerID))
+	return ownerID == "" || (ownerID != a.OwnerID && !s.CanFactionTransit(a.OwnerID, ownerID))
 }
 
 // AirSortieBudget, yerleşilemeyen hava hedefleri için tek yön menzilini döner.
@@ -287,7 +287,7 @@ func (s *GameState) movementRegionCanTransit(a *army.Army, region *world.Region)
 	}
 	regionOwnerID := s.SovereignOwnerID(region)
 	if regionOwnerID != "" && regionOwnerID != a.OwnerID &&
-		(!airborne || s.AirspaceEnabled) && !s.movementOwnerCanTransit(a.OwnerID, regionOwnerID) {
+		(!airborne || s.AirspaceEnabled) && !s.CanFactionTransit(a.OwnerID, regionOwnerID) {
 		return false
 	}
 	// Başka bir ordunun bulunduğu bölge, rota için güvenli bir transit noktası
@@ -310,7 +310,13 @@ func (s *GameState) movementRegionCanTransit(a *army.Army, region *world.Region)
 	return true
 }
 
-func (s *GameState) movementOwnerCanTransit(ownerID, regionOwnerID string) bool {
+// CanFactionTransit reports whether a faction may enter another faction's land
+// without declaring war, through realm membership, alliance, or an active
+// transit agreement.
+func (s *GameState) CanFactionTransit(ownerID, regionOwnerID string) bool {
+	if s == nil {
+		return false
+	}
 	if ownerID == "" || regionOwnerID == "" || ownerID == regionOwnerID {
 		return true
 	}
@@ -318,7 +324,11 @@ func (s *GameState) movementOwnerCanTransit(ownerID, regionOwnerID string) bool 
 		return true
 	}
 	relation := s.Relations[faction.RelationKey(faction.FactionID(ownerID), faction.FactionID(regionOwnerID))]
-	return relation != nil && relation.Stance == faction.StanceAllied
+	if relation != nil && relation.Stance == faction.StanceWar {
+		return false
+	}
+	return s.HasTransitAgreement(faction.FactionID(ownerID), faction.FactionID(regionOwnerID)) ||
+		(relation != nil && relation.Stance == faction.StanceAllied)
 }
 
 func (s *GameState) navalLandMovementAllowed(fleet *army.Army, target *world.Region) bool {
@@ -330,7 +340,7 @@ func (s *GameState) navalLandMovementAllowed(fleet *army.Army, target *world.Reg
 	if targetOwnerID == "" {
 		return hasCargo
 	}
-	if targetOwnerID == fleet.OwnerID || s.movementOwnerCanTransit(fleet.OwnerID, targetOwnerID) {
+	if targetOwnerID == fleet.OwnerID || s.CanFactionTransit(fleet.OwnerID, targetOwnerID) {
 		return target.HasPort() || hasCargo
 	}
 	// Düşman kıyıya çıkarma, mevcut hareket akışında savaş ilanı/temas
