@@ -82,3 +82,39 @@ func TestTransitAgreementsPersistAcrossCompactAndLegacySaveStates(t *testing.T) 
 		t.Fatalf("debug/legacy save geçiş anlaşmasını korumadı: %#v", legacy.TransitAgreements)
 	}
 }
+
+func TestDeadCommanderIDsPersistAcrossCompactAndLegacySaves(t *testing.T) {
+	dead := map[string]bool{"cmd_ned_stark": true}
+	exiled := map[string]bool{"cmd_tyrion_lannister": true}
+	gs := &state.GameState{DeadCommanderIDs: dead, ExiledCommanderIDs: exiled}
+
+	compact := campaignSaveState{
+		DeadCommanderIDs:   cloneStringBoolMap(gs.DeadCommanderIDs),
+		ExiledCommanderIDs: cloneStringBoolMap(gs.ExiledCommanderIDs),
+	}
+	encoded, err := json.Marshal(compact)
+	if err != nil {
+		t.Fatalf("compact save serileştirilemedi: %v", err)
+	}
+	var decoded campaignSaveState
+	if err := json.Unmarshal(encoded, &decoded); err != nil {
+		t.Fatalf("compact save çözülemedi: %v", err)
+	}
+	loaded := &state.GameState{}
+	applyCampaignSaveState(loaded, decoded)
+	if !loaded.DeadCommanderIDs["cmd_ned_stark"] {
+		t.Fatal("compact save/load komutan ölüm state'ini kaybetti")
+	}
+	if !loaded.ExiledCommanderIDs["cmd_tyrion_lannister"] {
+		t.Fatal("compact save/load komutan sürgün state'ini kaybetti")
+	}
+
+	debug := makeDebugCampaignSaveState(gs)
+	legacy := convertLegacyCampaignSaveState(debug)
+	if !legacy.DeadCommanderIDs["cmd_ned_stark"] {
+		t.Fatal("debug/legacy dönüşümü komutan ölüm state'ini kaybetti")
+	}
+	if !legacy.ExiledCommanderIDs["cmd_tyrion_lannister"] {
+		t.Fatal("debug/legacy dönüşümü komutan sürgün state'ini kaybetti")
+	}
+}

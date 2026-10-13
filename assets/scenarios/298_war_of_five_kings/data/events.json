@@ -200,6 +200,9 @@
     "requires_active_factions": [
       "lannister",
       "baratheon_king"
+    ],
+    "requires_alive_commanders": [
+      "cmd_tywin_lannister"
     ]
   },
   {
@@ -493,6 +496,12 @@
     "requires_active_factions": [
       "baratheon_stormsend",
       "tyrell"
+    ],
+    "requires_alive_commanders": [
+      "cmd_renly_baratheon"
+    ],
+    "blocks_flags": [
+      "renly_dead"
     ]
   },
   {
@@ -571,6 +580,9 @@
     "requires_active_factions": [
       "baratheon_king",
       "stark"
+    ],
+    "requires_alive_commanders": [
+      "cmd_ned_stark"
     ]
   },
   {
@@ -715,6 +727,9 @@
       "stark",
       "baratheon_king",
       "lannister"
+    ],
+    "requires_alive_commanders": [
+      "cmd_ned_stark"
     ]
   },
   {
@@ -784,6 +799,9 @@
     "requires_active_factions": [
       "stark",
       "lannister"
+    ],
+    "requires_alive_commanders": [
+      "cmd_ned_stark"
     ]
   },
   {
@@ -826,6 +844,9 @@
           "set_flags": [
             "ned_executed"
           ],
+          "commander_deaths": [
+            "cmd_ned_stark"
+          ],
           "clear_flags": [
             "ned_arrested"
           ]
@@ -863,6 +884,9 @@
     "requires_active_factions": [
       "stark",
       "lannister"
+    ],
+    "requires_alive_commanders": [
+      "cmd_ned_stark"
     ]
   },
   {
@@ -879,6 +903,9 @@
     "set_flags": [
       "war_of_five_kings_active",
       "robert_dead"
+    ],
+    "commander_deaths": [
+      "cmd_robert_baratheon"
     ],
     "historical_year": 298,
     "historical_month": 3,
@@ -939,6 +966,9 @@
       "baratheon_king",
       "baratheon_dragonstone",
       "baratheon_stormsend"
+    ],
+    "requires_alive_commanders": [
+      "cmd_robert_baratheon"
     ]
   },
   {
@@ -1035,6 +1065,9 @@
       "tully",
       "arryn",
       "lannister"
+    ],
+    "requires_alive_commanders": [
+      "cmd_tyrion_lannister"
     ]
   },
   {
@@ -1135,6 +1168,10 @@
         "faction_id": "lannister",
         "stance": "war"
       }
+    ],
+    "requires_alive_commanders": [
+      "cmd_edmure_tully",
+      "cmd_brynden_tully"
     ]
   },
   {
@@ -1234,6 +1271,10 @@
     ],
     "requires_active_factions": [
       "tully"
+    ],
+    "requires_alive_commanders": [
+      "cmd_brynden_tully",
+      "cmd_edmure_tully"
     ]
   },
   {
@@ -1433,6 +1474,9 @@
     ],
     "requires_active_factions": [
       "stark"
+    ],
+    "requires_alive_commanders": [
+      "cmd_robb_stark"
     ]
   },
   {
@@ -1526,6 +1570,10 @@
     "requires_active_factions": [
       "stark",
       "lannister"
+    ],
+    "requires_alive_commanders": [
+      "cmd_robb_stark",
+      "cmd_jaime_lannister"
     ]
   },
   {
@@ -1700,6 +1748,9 @@
       "stark",
       "lannister",
       "tully"
+    ],
+    "requires_alive_commanders": [
+      "cmd_jaime_lannister"
     ]
   },
   {
@@ -1717,6 +1768,9 @@
     "historical_month": 5,
     "one_shot": true,
     "affected_faction": "baratheon_stormsend",
+    "commander_deaths": [
+      "cmd_renly_baratheon"
+    ],
     "choice_prompt_tr": "Renly'nin ölümünden sonra güney nasıl hareket etmeli?",
     "choices": [
       {
@@ -1811,6 +1865,12 @@
       "baratheon_stormsend",
       "baratheon_dragonstone",
       "tyrell"
+    ],
+    "requires_alive_commanders": [
+      "cmd_renly_baratheon"
+    ],
+    "blocks_flags": [
+      "renly_dead"
     ]
   },
   {
@@ -1906,6 +1966,9 @@
       "baratheon_king",
       "lannister",
       "baratheon_dragonstone"
+    ],
+    "requires_alive_commanders": [
+      "cmd_stannis_baratheon"
     ]
   },
   {
@@ -2465,6 +2528,9 @@
       "tully",
       "lannister",
       "stark"
+    ],
+    "requires_alive_commanders": [
+      "cmd_edmure_tully"
     ]
   },
   {
@@ -2630,6 +2696,10 @@
     "requires_active_factions": [
       "tully",
       "lannister"
+    ],
+    "requires_alive_commanders": [
+      "cmd_brynden_tully",
+      "cmd_edmure_tully"
     ]
   },
   {
@@ -2710,6 +2780,9 @@
     ],
     "requires_active_factions": [
       "tully"
+    ],
+    "requires_alive_commanders": [
+      "cmd_brynden_tully"
     ]
   },
   {
@@ -2807,6 +2880,9 @@
     ],
     "requires_active_factions": [
       "tully"
+    ],
+    "requires_alive_commanders": [
+      "cmd_brynden_tully"
     ]
   },
   {
@@ -3451,6 +3527,9 @@
     "historical_month": 8,
     "one_shot": true,
     "affected_faction": "lannister",
+    "commander_deaths": [
+      "cmd_tywin_lannister"
+    ],
     "choice_prompt_tr": "Tywin'in ölümünden sonra Lannister hanedanı nasıl yönetilmeli?",
     "choices": [
       {
@@ -3511,6 +3590,9 @@
     ],
     "requires_active_factions": [
       "lannister"
+    ],
+    "requires_alive_commanders": [
+      "cmd_tywin_lannister"
     ]
   },
   {
@@ -3558,6 +3640,9 @@
             "tyrion_on_trial"
           ],
           "commander_releases": [
+            "cmd_tyrion_lannister"
+          ],
+          "commander_exiles": [
             "cmd_tyrion_lannister"
           ]
         }
@@ -3610,6 +3695,9 @@
           "set_flags": [
             "tyrion_executed"
           ],
+          "commander_deaths": [
+            "cmd_tyrion_lannister"
+          ],
           "clear_flags": [
             "tyrion_captured",
             "tyrion_on_trial"
@@ -3631,6 +3719,9 @@
     ],
     "requires_active_factions": [
       "lannister"
+    ],
+    "requires_alive_commanders": [
+      "cmd_tyrion_lannister"
     ]
   },
   {
@@ -3851,6 +3942,9 @@
     "requires_active_factions": [
       "free_folk",
       "nights_watch"
+    ],
+    "requires_alive_commanders": [
+      "cmd_mance_rayder"
     ]
   },
   {
@@ -4476,6 +4570,9 @@
     ],
     "requires_active_factions": [
       "targaryen"
+    ],
+    "requires_alive_commanders": [
+      "cmd_daenerys_targaryen"
     ]
   },
   {

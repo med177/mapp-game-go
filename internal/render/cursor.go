@@ -17,10 +17,16 @@ func (r *Renderer) updateCursorShape() {
 // UI katmanı önce değerlendirilir; harita üzerindeki faza özel hedefler ancak
 // cursor bir UI yüzeyinin üzerinde değilse kontrol edilir.
 func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) && r.uiLayers.BlocksAt(fx, fy) {
-		return ebiten.CursorShapeDefault
-	}
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle) {
+		if r.negotiation.show {
+			if buildNegotiationLayout().modal.Panel.Rect.Hit(fx, fy) {
+				return ebiten.CursorShapeDefault
+			}
+			return ebiten.CursorShapeMove
+		}
+		if r.uiLayers.BlocksAt(fx, fy) {
+			return ebiten.CursorShapeDefault
+		}
 		return ebiten.CursorShapeMove
 	}
 	if r.navalMissionTargeting {
@@ -87,6 +93,9 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 	}
 	if r.negotiation.show {
 		if r.diplomacyNegotiationPointerHit(fx, fy) {
+			return ebiten.CursorShapePointer
+		}
+		if !buildNegotiationLayout().modal.Panel.Rect.Hit(fx, fy) && r.negotiationMapRegionAt(fx, fy) != "" {
 			return ebiten.CursorShapePointer
 		}
 		return ebiten.CursorShapeDefault

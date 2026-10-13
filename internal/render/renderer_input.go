@@ -2244,29 +2244,36 @@ func (r *Renderer) handleCamera() {
 		if mouseOverUI {
 			return
 		}
-		mouseWX, mouseWY := r.screenToWorld(float64(mx), float64(my))
-		minScale := minCameraScale()
-		maxZoom := r.maxCameraZoomScale()
-		if dy > 0 && r.camScale < maxZoom {
-			r.camScale *= cameraZoomStep
-			if r.camScale > maxZoom {
-				r.camScale = maxZoom
-			}
-		} else if dy < 0 && r.camScale > minScale {
-			r.camScale /= cameraZoomStep
-			if r.camScale < minScale {
-				r.camScale = minScale
-			}
-		}
-		if r.gs.Phase != state.PhaseEditMode && r.isZoomInLoopLevel(r.camScale) {
-			audio.StartZoomInLoop()
-		} else {
-			audio.StopZoomInLoop()
-		}
-		afterWX, afterWY := r.screenToWorld(float64(mx), float64(my))
-		r.camX += mouseWX - afterWX
-		r.camY += mouseWY - afterWY
+		r.zoomCameraAt(float64(mx), float64(my), dy)
 	}
+}
+
+func (r *Renderer) zoomCameraAt(mx, my, wheelY float64) {
+	if r == nil || wheelY == 0 {
+		return
+	}
+	mouseWX, mouseWY := r.screenToWorld(mx, my)
+	minScale := minCameraScale()
+	maxZoom := r.maxCameraZoomScale()
+	if wheelY > 0 && r.camScale < maxZoom {
+		r.camScale *= cameraZoomStep
+		if r.camScale > maxZoom {
+			r.camScale = maxZoom
+		}
+	} else if wheelY < 0 && r.camScale > minScale {
+		r.camScale /= cameraZoomStep
+		if r.camScale < minScale {
+			r.camScale = minScale
+		}
+	}
+	if r.gs != nil && r.gs.Phase != state.PhaseEditMode && r.isZoomInLoopLevel(r.camScale) {
+		audio.StartZoomInLoop()
+	} else {
+		audio.StopZoomInLoop()
+	}
+	afterWX, afterWY := r.screenToWorld(mx, my)
+	r.camX += mouseWX - afterWX
+	r.camY += mouseWY - afterWY
 }
 
 func (r *Renderer) scrollEventLog(dy float64) {

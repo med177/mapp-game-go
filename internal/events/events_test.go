@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -281,6 +282,149 @@ func TestStateTriggeredEventUsesPriorityForSameTurnCandidates(t *testing.T) {
 
 	if got := Tick(gs, []*Event{low, high}); got != high {
 		t.Fatalf("state event önceliği kullanılmadı: got %v, want %v", got.ID, high.ID)
+	}
+}
+
+func TestOneShotHistoricalEventDoesNotFireAgain(t *testing.T) {
+	gs := &state.GameState{
+		Year:          319,
+		Month:         1,
+		FiredEventIDs: map[string]bool{},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"baratheon_stormsend": {ID: "baratheon_stormsend"},
+		},
+	}
+	e := &Event{
+		ID:              "renly_southern_alliance_297",
+		Target:          "specific_faction",
+		AffectedFaction: "baratheon_stormsend",
+		HistoricalYear:  297,
+		OneShot:         true,
+	}
+
+	if got := Tick(gs, []*Event{e}); got != e {
+		t.Fatal("geçmiş tarihli event uygun olduğunda ilk kez tetiklenmedi")
+	}
+	if got := Tick(gs, []*Event{e}); got != nil {
+		t.Fatalf("tek seferlik event tekrar tetiklendi: %s", got.ID)
+	}
+}
+
+func TestRequiresAliveCommanderRejectsDeadOrExpiredCommander(t *testing.T) {
+	gs := &state.GameState{
+		Year:          299,
+		Month:         5,
+		FiredEventIDs: map[string]bool{},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"baratheon_stormsend": {ID: "baratheon_stormsend"},
+		},
+		Commanders: map[string]*army.Commander{
+			"cmd_renly_baratheon": {ID: "cmd_renly_baratheon", OwnerID: "baratheon_stormsend", StartYear: 290, EndYear: 300},
+		},
+		CommanderTemplates: map[string][]*army.Commander{
+			"baratheon_stormsend": {
+				{ID: "cmd_renly_baratheon", StartYear: 290, EndYear: 300},
+			},
+		},
+	}
+	e := &Event{
+		Target:                  "specific_faction",
+		AffectedFaction:         "baratheon_stormsend",
+		RequiresAliveCommanders: []string{"cmd_renly_baratheon"},
+	}
+
+	if !ConditionsMet(gs, e) {
+		t.Fatal("komutanın son aktif yılında yaşam koşulu sağlanmadı")
+	}
+	if !gs.MarkCommanderDead("cmd_renly_baratheon") {
+		t.Fatal("komutan ölümü state'e yazılamadı")
+	}
+	if ConditionsMet(gs, e) {
+		t.Fatal("ölüm state'i varken yaşam koşulu sağlandı")
+	}
+	if !gs.IsCommanderDead("cmd_renly_baratheon") || gs.Commanders["cmd_renly_baratheon"] != nil {
+		t.Fatal("ölüm state'i runtime commander kaydını kaldırmadı")
+	}
+
+	expiredGS := &state.GameState{
+		Year:          300,
+		Month:         5,
+		FiredEventIDs: map[string]bool{},
+		Factions:      gs.Factions,
+		Commanders: map[string]*army.Commander{
+			"cmd_renly_baratheon": {ID: "cmd_renly_baratheon", OwnerID: "baratheon_stormsend", StartYear: 290, EndYear: 300},
+		},
+		CommanderTemplates: gs.CommanderTemplates,
+	}
+	if ConditionsMet(expiredGS, e) {
+		t.Fatal("end_year sınırında doğal ölüm yaşam koşulunu kapatmadı")
+	}
+}
+
+func TestChoiceCommanderDeathsRecordAndGateCommander(t *testing.T) {
+	commander := &army.Commander{ID: "cmd_ned_stark", OwnerID: "stark", StartYear: 280, EndYear: 299}
+	gs := &state.GameState{
+		Year:          298,
+		FiredEventIDs: map[string]bool{},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"stark": {ID: "stark"},
+		},
+		Commanders:         map[string]*army.Commander{commander.ID: commander},
+		CommanderTemplates: map[string][]*army.Commander{"stark": {commander}},
+	}
+	deathEvent := &Event{
+		ID:              "ned_execution",
+		Target:          "specific_faction",
+		AffectedFaction: "stark",
+		CommanderDeaths: []string{commander.ID},
+		Choices: []Choice{{
+			LabelTR: "İnfaz et",
+		}},
+	}
+	aliveEvent := &Event{
+		Target:                  "specific_faction",
+		AffectedFaction:         "stark",
+		RequiresAliveCommanders: []string{commander.ID},
+	}
+
+	if !ConditionsMet(gs, aliveEvent) {
+		t.Fatal("ölümden önce alive commander koşulu sağlanmadı")
+	}
+	if _, ok := ApplyChoice(gs, deathEvent, 0); !ok {
+		t.Fatal("komutan ölüm event effect’i uygulanmadı")
+	}
+	if !gs.DeadCommanderIDs[commander.ID] || gs.Commanders[commander.ID] != nil {
+		t.Fatal("ölüm effect’i state’e yazılmadı veya runtime commander kaldırılmadı")
+	}
+	if ConditionsMet(gs, aliveEvent) {
+		t.Fatal("ölüm sonrası requires_alive_commanders koşulu sağlandı")
+	}
+}
+
+func TestCommanderExileEffectPreservesAliveCommanderRequirement(t *testing.T) {
+	commander := &army.Commander{ID: "cmd_tyrion_lannister", OwnerID: "lannister", StartYear: 298, EndYear: 330}
+	gs := &state.GameState{
+		Year:          300,
+		FiredEventIDs: map[string]bool{},
+		Factions: map[faction.FactionID]*faction.Faction{
+			"lannister": {ID: "lannister"},
+		},
+		Commanders:         map[string]*army.Commander{commander.ID: commander},
+		CommanderTemplates: map[string][]*army.Commander{"lannister": {commander}},
+	}
+	e := &Event{
+		Target:                  "specific_faction",
+		AffectedFaction:         "lannister",
+		CommanderExiles:         []string{commander.ID},
+		RequiresAliveCommanders: []string{commander.ID},
+	}
+
+	Apply(gs, e)
+	if !gs.ExiledCommanderIDs[commander.ID] || gs.IsCommanderDead(commander.ID) {
+		t.Fatal("event exile state'i ölümü veya sürgünü doğru ayıramadı")
+	}
+	if !ConditionsMet(gs, e) {
+		t.Fatal("hayatta olan sürgün komutan alive requirement'ı sağlayamadı")
 	}
 }
 

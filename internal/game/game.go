@@ -3286,8 +3286,8 @@ func (g *Game) submitTransferNegotiation(targetID faction.FactionID, requested, 
 		g.appendDiplomacyOfferHistory(offer, result.Accepted, result)
 	}
 	if g.renderer != nil {
-		g.renderer.CloseDiplomacyNegotiation()
 		if result.Applied {
+			g.renderer.CloseDiplomacyNegotiation()
 			g.renderer.MarkMapDirty()
 			if g.renderer.SelectedArmy != "" {
 				selected := g.gs.Armies[g.renderer.SelectedArmy]
@@ -3295,6 +3295,8 @@ func (g *Game) submitTransferNegotiation(targetID faction.FactionID, requested, 
 					g.renderer.SelectedArmy = ""
 				}
 			}
+		} else {
+			g.renderer.KeepDiplomacyNegotiationOpen(result.Message)
 		}
 		g.renderer.ShowCombatResult(result.Message)
 		if result.Applied {

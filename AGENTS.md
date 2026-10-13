@@ -18,6 +18,10 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 - Dosyaları UTF-8 olarak oku ve yaz; Türkçe karakterleri ASCII'ye dönüştürme.
 - Codex bu çalışma alanında WSL/Ubuntu içinde çalışır. Linux yollarını kullan;
   Windows'a özel kod veya yol gerekiyorsa platform ayrımı kullan.
+- Windows ortamında PowerShell komutu gerekiyorsa kurulu güncel PowerShell 7+
+  (`pwsh`) kullan; PowerShell 1.0 ile komut, test veya build çalıştırma.
+  Sürüm belirsizse önce `pwsh` sürümünü doğrula; güncel PowerShell mevcutken
+  eski bir sürüme sessizce geri dönme.
 - Görsel/UI doğrulamalarında WSL ortamında `xvfb-run`, `xdotool`, ImageMagick
   `import` ve `wmctrl` araçları kurulu kabul edilir; gerçek pencereyi
   otomatik açıp ekran görüntüsü alarak incele.

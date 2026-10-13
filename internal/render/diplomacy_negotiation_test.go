@@ -262,3 +262,153 @@ func TestNegotiationCaptivePickerSeparatesRequestedAndOfferedCommanders(t *testi
 		t.Fatalf("tutsak tekil kalem kontrolleri yanlış: add=%t minus=%t plus=%t", layout.add.Enabled, layout.minus.Enabled, layout.plus.Enabled)
 	}
 }
+
+func TestNegotiationMapNavigationUsesMiddleDragAndLeftClickDoesNotMoveCamera(t *testing.T) {
+	originalWidth, originalHeight := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = originalWidth, originalHeight
+	}()
+	ScreenWidth, ScreenHeight = 1280, 900
+
+	r := &Renderer{
+		gs:       &state.GameState{Phase: state.PhaseEditMode},
+		camX:     float64(WorldW) / 2,
+		camY:     float64(WorldH) / 2,
+		camScale: minCameraScale() * 2,
+	}
+	panel := gameui.Rect{X: 800, Y: 100, W: 400, H: 700}
+	initialX, initialY, initialScale := r.camX, r.camY, r.camScale
+
+	r.handleNegotiationMapDrag(100, 200, true, panel)
+	r.handleNegotiationMapDrag(160, 230, true, panel)
+	if r.camX == initialX && r.camY == initialY {
+		t.Fatal("orta tuşla harita sürükleme kamerayı hareket ettirmedi")
+	}
+	r.handleNegotiationMapDrag(160, 230, false, panel)
+
+	beforePanelDragX, beforePanelDragY := r.camX, r.camY
+	r.handleNegotiationMapDrag(900, 300, true, panel)
+	r.handleNegotiationMapDrag(950, 350, true, panel)
+	if r.camX != beforePanelDragX || r.camY != beforePanelDragY {
+		t.Fatal("pazarlık paneli üzerinde orta tuşla sürükleme kamerayı hareket ettirdi")
+	}
+	r.handleNegotiationMapDrag(950, 350, false, panel)
+	r.handleNegotiationMapNavigation(gameui.InputState{MouseX: 300, MouseY: 300, LeftPressed: true, LeftJustPressed: true}, panel)
+	if r.camX != beforePanelDragX || r.camY != beforePanelDragY {
+		t.Fatal("haritaya sol tıklama kamerayı hareket ettirdi")
+	}
+	r.handleNegotiationMapNavigation(gameui.InputState{MouseX: 300, MouseY: 300, WheelY: 1}, panel)
+	if r.camScale <= initialScale {
+		t.Fatalf("harita alanında zoom ölçeği artmadı: başlangıç=%f güncel=%f", initialScale, r.camScale)
+	}
+	zoomedScale := r.camScale
+	r.handleNegotiationMapNavigation(gameui.InputState{MouseX: 900, MouseY: 300, WheelY: 1}, panel)
+	if r.camScale != zoomedScale {
+		t.Fatal("pazarlık paneli üzerindeki tekerlek kamera zoom'unu değiştirdi")
+	}
+}
+
+func TestNegotiationMapHighlightFollowsRequestedOrOfferedSide(t *testing.T) {
+	gs := &state.GameState{
+		PlayerFactionID: "player",
+		Regions: map[world.RegionID]*world.Region{
+			"target_region": {ID: "target_region", OwnerID: "target", NameTR: "Hedef Bölge"},
+			"player_region": {ID: "player_region", OwnerID: "player", NameTR: "Oyuncu Bölgesi"},
+		},
+	}
+	r := &Renderer{
+		gs: gs,
+		negotiation: negotiationPanelState{
+			show:   true,
+			target: "target",
+			requested: negotiationSideState{
+				kind: negotiationKindRegion, amount: 1,
+			},
+			offered: negotiationSideState{
+				kind: negotiationKindRegion, amount: 1,
+			},
+		},
+	}
+	if got := r.negotiationMapHighlightRegion(); got != "target_region" {
+		t.Fatalf("varsayılan harita vurgusu = %q, hedef bölgesi bekleniyordu", got)
+	}
+	r.negotiation.mapFocusSide = 1
+	if got := r.negotiationMapHighlightRegion(); got != "player_region" {
+		t.Fatalf("verilenler tarafındaki harita vurgusu = %q, oyuncu bölgesi bekleniyordu", got)
+	}
+}
+
+func TestNegotiationMapRegionSelectionTogglesForCorrectOwner(t *testing.T) {
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			"target_region": {ID: "target_region", OwnerID: "target"},
+			"player_region": {ID: "player_region", OwnerID: "player"},
+			"other_region":  {ID: "other_region", OwnerID: "other"},
+			"sea_region":    {ID: "sea_region", OwnerID: "target", IsSea: true},
+		},
+	}
+	requested := &negotiationSideState{kind: negotiationKindResource}
+	offered := &negotiationSideState{kind: negotiationKindArmy}
+
+	if !toggleNegotiationRegion(gs, "target", requested, "target_region") {
+		t.Fatal("karşı tarafa ait bölge talebe eklenmedi")
+	}
+	if requested.kind != negotiationKindRegion || len(requested.items) != 1 || requested.items[0].ID != "target_region" {
+		t.Fatalf("talep edilen bölge kalemi yanlış: kind=%d items=%+v", requested.kind, requested.items)
+	}
+	if !toggleNegotiationRegion(gs, "target", requested, "target_region") || len(requested.items) != 0 {
+		t.Fatalf("bölgeye tekrar tıklayınca talepten kaldırılmadı: %+v", requested.items)
+	}
+	if !toggleNegotiationRegion(gs, "player", offered, "player_region") || len(offered.items) != 1 || offered.items[0].ID != "player_region" {
+		t.Fatalf("oyuncuya ait bölge teklife eklenmedi: %+v", offered.items)
+	}
+	if toggleNegotiationRegion(gs, "target", requested, "other_region") || toggleNegotiationRegion(gs, "target", requested, "sea_region") {
+		t.Fatal("başka devletin veya denizin bölgesi pazarlığa seçilebildi")
+	}
+}
+
+func TestKeepDiplomacyNegotiationOpenPreservesSelectedTransfers(t *testing.T) {
+	selected := []state.DiplomaticTransfer{{Kind: "region", ID: "target_region", Amount: 1}}
+	r := &Renderer{negotiation: negotiationPanelState{
+		show:         true,
+		target:       "target",
+		counterIndex: 2,
+		requested:    negotiationSideState{items: selected},
+	}}
+
+	r.KeepDiplomacyNegotiationOpen("Pazarlık reddedildi.")
+
+	if !r.negotiation.show || r.negotiation.counterIndex != -1 {
+		t.Fatalf("ret sonrasında pazarlık state'i açık değil veya eski index korunmuş: %+v", r.negotiation)
+	}
+	if len(r.negotiation.requested.items) != 1 || r.negotiation.requested.items[0].ID != "target_region" {
+		t.Fatalf("ret sonrasında seçili bölge kayboldu: %+v", r.negotiation.requested.items)
+	}
+	if r.negotiation.statusMessage != "Pazarlık reddedildi." {
+		t.Fatalf("ret mesajı panel state'ine yazılmadı: %q", r.negotiation.statusMessage)
+	}
+}
+
+func TestOpenDiplomacyNegotiationClosesDiplomacyPanel(t *testing.T) {
+	r := &Renderer{
+		gs:                     &state.GameState{PlayerFactionID: "player"},
+		showDiplomacy:          true,
+		diplomacyTargetFaction: "target",
+	}
+
+	r.openDiplomacyNegotiation("target")
+
+	if !r.negotiation.show || r.negotiation.target != "target" {
+		t.Fatalf("pazarlık hedefi açılmadı: %+v", r.negotiation)
+	}
+	if r.showDiplomacy || r.diplomacyTargetFaction != "" {
+		t.Fatalf("pazarlık açılırken Diplomasi paneli açık kaldı: show=%t target=%q", r.showDiplomacy, r.diplomacyTargetFaction)
+	}
+	r.rebuildUILayers()
+	layout := buildNegotiationLayout()
+	centerX := layout.modal.Panel.Rect.X + layout.modal.Panel.Rect.W/2
+	centerY := layout.modal.Panel.Rect.Y + layout.modal.Panel.Rect.H/2
+	if layer, ok := r.uiLayers.TopAt(centerX, centerY); !ok || layer.ID != uiLayerDiplomacyNegotiation {
+		t.Fatalf("Diplomasi kapanınca en üst katman pazarlık değil: %+v", layer)
+	}
+}

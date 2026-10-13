@@ -243,6 +243,11 @@
     "territorial_claims": [
       {
         "region_id": "dragonstone",
+        "value": 20,
+        "core": true
+      },
+      {
+        "region_id": "crackclaw_point",
         "value": 100,
         "core": true
       },
@@ -253,6 +258,10 @@
       {
         "region_id": "crownlands",
         "value": 100
+      },
+      {
+        "region_id": "stormlands",
+        "value": 80
       },
       {
         "region_id": "storm_end",

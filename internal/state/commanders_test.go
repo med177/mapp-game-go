@@ -50,6 +50,54 @@ func TestRemovingBossArmyEliminatesFactionAndAbandonsItsLand(t *testing.T) {
 	if !gs.FiredEventIDs["flag:boss_defeated:cmd_night_king"] {
 		t.Fatal("boss yenilgi event flag'i set edilmedi")
 	}
+	if !gs.IsCommanderDead("cmd_night_king") {
+		t.Fatal("yenilen boss komutan ölümü state'e yazılmadı")
+	}
+}
+
+func TestCommanderEndYearRecordsNaturalDeath(t *testing.T) {
+	commander := &army.Commander{ID: "cmd_expired", OwnerID: "player", Name: "Ömrü Dolan Komutan", StartYear: 280, EndYear: 299}
+	gs := &GameState{
+		Year:               299,
+		Commanders:         map[string]*army.Commander{commander.ID: commander},
+		CommanderTemplates: map[string][]*army.Commander{"player": {commander}},
+	}
+
+	gs.RetireExpiredCommanders()
+
+	if !gs.IsCommanderDead(commander.ID) || !gs.DeadCommanderIDs[commander.ID] {
+		t.Fatal("EndYear doğal ölüm state'ine kaydedilmedi")
+	}
+	if _, exists := gs.Commanders[commander.ID]; exists {
+		t.Fatal("doğal olarak ölen komutan runtime havuzunda kaldı")
+	}
+	if !gs.DismissedCommanderIDs[commander.ID] {
+		t.Fatal("doğal olarak ölen şablon komutanın yeniden üretilmesi engellenmedi")
+	}
+}
+
+func TestCommanderExileIsSeparateFromDeathAndCanReturn(t *testing.T) {
+	commander := &army.Commander{ID: "cmd_tyrion", OwnerID: "lannister", Name: "Tyrion Lannister"}
+	assignedArmy := &army.Army{ID: "army_tyrion", OwnerID: "lannister", Commander: commander}
+	commander.AssignedArmyID = assignedArmy.ID
+	gs := &GameState{
+		Year:       300,
+		Commanders: map[string]*army.Commander{commander.ID: commander},
+		Armies:     map[army.ArmyID]*army.Army{assignedArmy.ID: assignedArmy},
+	}
+
+	if !gs.ExileCommander(commander.ID) {
+		t.Fatal("canlı komutan sürgüne gönderilemedi")
+	}
+	if gs.IsCommanderDead(commander.ID) || gs.Commanders[commander.ID] == nil || assignedArmy.Commander != nil {
+		t.Fatal("sürgün komutanı ölüm gibi kaldırdı veya ordudan ayırmadı")
+	}
+	if got := gs.CommanderUnavailableReason(commander); got != "Sürgünde" {
+		t.Fatalf("sürgündeki komutan nedeni = %q, want %q", got, "Sürgünde")
+	}
+	if !gs.ReturnCommanderFromExile(commander.ID) || gs.CommanderUnavailableReason(commander) != "" {
+		t.Fatal("sürgündeki komutan geri döndürülemedi")
+	}
 }
 
 func TestDismissCommanderRemovesAssignedCommanderFromState(t *testing.T) {
@@ -137,7 +185,6 @@ func TestCommanderUnavailableFlagUnassignsAndBlocksAssignment(t *testing.T) {
 		Name:    "Tyrion Lannister",
 		UnavailableStatuses: []army.CommanderUnavailableStatus{
 			{Flag: "tyrion_captured", ReasonTR: "Tutsak"},
-			{Flag: "tyrion_executed", ReasonTR: "İnfaz edildi", HideFromRoster: true, Permanent: true},
 		},
 	}
 	assignedArmy := &army.Army{ID: "army_assigned", OwnerID: "lannister", Commander: commander}
@@ -177,10 +224,12 @@ func TestCommanderUnavailableFlagUnassignsAndBlocksAssignment(t *testing.T) {
 	if gs.CommanderHiddenFromRoster(commander) {
 		t.Fatal("tutsak komutan roster'dan gizlendi")
 	}
-	gs.FiredEventIDs["flag:tyrion_executed"] = true
-	gs.RemovePermanentlyUnavailableCommanders()
+	if !gs.MarkCommanderDead(commander.ID) {
+		t.Fatal("Tyrion ölümü state'e yazılamadı")
+	}
 	gs.SyncCommanderLinks()
-	if _, exists := gs.Commanders[commander.ID]; exists || !gs.DismissedCommanderIDs[commander.ID] || len(gs.CommanderRoster("lannister")) != 0 {
+	if _, exists := gs.Commanders[commander.ID]; exists || !gs.DismissedCommanderIDs[commander.ID] ||
+		!gs.DeadCommanderIDs[commander.ID] || len(gs.CommanderRoster("lannister")) != 0 {
 		t.Fatal("infaz edilen komutan roster'dan çıkarılmadı")
 	}
 }

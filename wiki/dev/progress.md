@@ -5,6 +5,20 @@ last_updated: 2026-10-13
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-13: Komutan ölümü commander şablonlarındaki event flag status'larından
+  çıkarılıp kalıcı `DeadCommanderIDs` state'ine taşındı. `end_year` doğal ölümü,
+  event effect'indeki `commander_deaths` erken ölümü kaydediyor. Tutsaklık ve
+  sürgün ölümden ayrı runtime/save state'leri; `requires_alive_commanders` gerçek
+  ölüm state'ini kontrol ediyor. `internal/state/commanders.go`,
+  `internal/events/events.go`, `internal/save/compact.go`.
+
+- 2026-10-13: Diplomatik pazarlık paneli sağa dock edilerek arka haritada
+  inceleme alanı bırakıldı. Orta tuş sürükler, sol tık bölgeyi sahibine göre
+  talep/teklif listesinde açıp kapatır; fare tekeri yakınlaştırır. Reddedilen
+  teklifte işaretli bölgeler ve panel korunur, seçili sınırlar haritada
+  turuncu/yeşil görünür. Regresyonlar
+  `internal/render/diplomacy_negotiation_test.go` içinde.
+
 - 2026-10-13: Gece Kralı'nın komuta ettiği ordu yenilince `others` eleniyor,
   toprakları sahipsiz kalıyor ve orduları anında temizleniyor. Yeni
   state-triggered `night_king_fall` olayı tüm krallıklara zaferi bildirip

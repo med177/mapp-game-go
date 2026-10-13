@@ -13,6 +13,7 @@ import (
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
@@ -36,11 +37,13 @@ type negotiationSideState struct {
 }
 
 type negotiationPanelState struct {
-	show         bool
-	target       faction.FactionID
-	requested    negotiationSideState
-	offered      negotiationSideState
-	counterIndex int
+	show          bool
+	target        faction.FactionID
+	requested     negotiationSideState
+	offered       negotiationSideState
+	counterIndex  int
+	mapFocusSide  int
+	statusMessage string
 }
 
 type negotiationOption struct {
@@ -76,9 +79,9 @@ var negotiationStepperButtonStyle = func() gameui.ButtonStyle {
 }()
 
 func buildNegotiationLayout() negotiationLayout {
-	w := minF(ScreenWidth-64, 1040)
+	w := minF(ScreenWidth-48, 820)
 	h := minF(ScreenHeight-28, 820)
-	panelRect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, w, h, gameui.AnchorCenter, gameui.AnchorMiddle, 0, 0)
+	panelRect := gameui.AnchorRect(gameui.Rect{W: ScreenWidth, H: ScreenHeight}, w, h, gameui.AnchorRight, gameui.AnchorMiddle, 24, 0)
 	panel := gameui.NewPanel(panelRect.X, panelRect.Y, panelRect.W, panelRect.H)
 	modal := gameui.NewModal(ScreenWidth, ScreenHeight, panel)
 	columnW := (w - 56) / 2
@@ -211,6 +214,175 @@ func (r *Renderer) diplomacyNegotiationPointerHit(mx, my float64) bool {
 		negotiationSidePointerHit(r.gs, r.gs.PlayerFactionID, &r.negotiation.offered, layout.right, mx, my)
 }
 
+func (r *Renderer) negotiationMapHighlightRegion() world.RegionID {
+	if r == nil || r.gs == nil || !r.negotiation.show {
+		return ""
+	}
+	layout := buildNegotiationLayout()
+	mx, my := ebiten.CursorPosition()
+	sides := []*negotiationSideState{&r.negotiation.requested, &r.negotiation.offered}
+	owners := [2]faction.FactionID{r.negotiation.target, r.gs.PlayerFactionID}
+	panels := [2]negotiationSideLayout{layout.left, layout.right}
+
+	// Dropdown/list üstündeki bölgeyi önizle; böylece seçim yapmadan önce de
+	// haritadaki karşılığını kontrol etmek mümkün olur.
+	for i, side := range sides {
+		if side.kind != negotiationKindRegion {
+			continue
+		}
+		if dropdown := side.optionDropdown; dropdown != nil && dropdown.IsOpen() {
+			if optionIndex, ok := dropdown.GetSelectedOption(float64(mx), float64(my)); ok {
+				options := negotiationOptionsForSide(r.gs, owners[i], side, negotiationKindRegion)
+				if optionIndex >= 0 && optionIndex < len(options) {
+					return world.RegionID(options[optionIndex].id)
+				}
+			}
+		}
+		list := negotiationSelectedItemsListGeometry(panels[i].panel)
+		list.Scroll = side.selectedList.Scroll
+		index := list.ItemIndexAtCount(float64(mx), float64(my), len(side.items))
+		if index >= 0 && index < len(side.items) && side.items[index].Kind == "region" {
+			return world.RegionID(side.items[index].ID)
+		}
+	}
+
+	focusSide := r.negotiation.mapFocusSide
+	if focusSide < 0 || focusSide >= len(sides) {
+		focusSide = 0
+	}
+	side := sides[focusSide]
+	if side.kind != negotiationKindRegion {
+		return ""
+	}
+	option, ok := negotiationCurrentOption(r.gs, owners[focusSide], side)
+	if !ok || option.id == "" {
+		return ""
+	}
+	return world.RegionID(option.id)
+}
+
+func toggleNegotiationRegion(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, regionID world.RegionID) bool {
+	if gs == nil || side == nil {
+		return false
+	}
+	region := gs.Regions[regionID]
+	if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID != string(owner) {
+		return false
+	}
+	for i, item := range side.items {
+		if item.Kind != "region" || item.ID != string(regionID) {
+			continue
+		}
+		side.kind = negotiationKindRegion
+		side.option = 0
+		side.amount = 1
+		if side.optionDropdown != nil {
+			side.optionDropdown.Close()
+		}
+		side.items = append(side.items[:i], side.items[i+1:]...)
+		return true
+	}
+	if len(side.items) >= 6 {
+		return false
+	}
+	side.kind = negotiationKindRegion
+	side.option = 0
+	side.amount = 1
+	if side.optionDropdown != nil {
+		side.optionDropdown.Close()
+	}
+	side.items = append(side.items, state.DiplomaticTransfer{Kind: "region", ID: string(regionID), Amount: 1})
+	return true
+}
+
+func (r *Renderer) negotiationMapRegionAt(mx, my float64) world.RegionID {
+	if r == nil || r.gs == nil || !r.negotiation.show || r.worldMap == nil {
+		return ""
+	}
+	worldX, worldY := r.screenToWorld(mx, my)
+	regionID := r.worldMap.RegionAt(int(worldX), int(worldY))
+	region := r.gs.Regions[regionID]
+	if region == nil || region.IsSea || region.IsTerrainArea {
+		return ""
+	}
+	if region.OwnerID != string(r.negotiation.target) && region.OwnerID != string(r.gs.PlayerFactionID) {
+		return ""
+	}
+	return regionID
+}
+
+func (r *Renderer) toggleNegotiationMapRegionAt(mx, my float64) bool {
+	regionID := r.negotiationMapRegionAt(mx, my)
+	if regionID == "" {
+		return false
+	}
+	region := r.gs.Regions[regionID]
+	var side *negotiationSideState
+	var owner faction.FactionID
+	switch region.OwnerID {
+	case string(r.negotiation.target):
+		side = &r.negotiation.requested
+		owner = r.negotiation.target
+		r.negotiation.mapFocusSide = 0
+	case string(r.gs.PlayerFactionID):
+		side = &r.negotiation.offered
+		owner = r.gs.PlayerFactionID
+		r.negotiation.mapFocusSide = 1
+	default:
+		return false
+	}
+	if toggleNegotiationRegion(r.gs, owner, side, regionID) {
+		r.negotiation.statusMessage = ""
+		return true
+	}
+	return false
+}
+
+func (r *Renderer) drawNegotiationRegionHighlights(screen *ebiten.Image) {
+	if r == nil || r.gs == nil || r.worldMap == nil || !r.negotiation.show {
+		return
+	}
+	type regionHighlight struct {
+		index uint16
+		color color.RGBA
+	}
+	var highlights [12]regionHighlight
+	count := 0
+	appendSide := func(side *negotiationSideState, tint color.RGBA) {
+		for _, item := range side.items {
+			if item.Kind != "region" || count == len(highlights) {
+				continue
+			}
+			index := r.worldMap.regionIdx[world.RegionID(item.ID)]
+			if index == 0 {
+				continue
+			}
+			highlights[count] = regionHighlight{index: index, color: tint}
+			count++
+		}
+	}
+	appendSide(&r.negotiation.requested, color.RGBA{255, 174, 72, 255})
+	appendSide(&r.negotiation.offered, color.RGBA{105, 232, 143, 255})
+	if count == 0 {
+		return
+	}
+	for _, segment := range r.worldMap.borderSegments {
+		var tint color.RGBA
+		for i := 0; i < count; i++ {
+			if segment.a == highlights[i].index || segment.b == highlights[i].index {
+				tint = highlights[i].color
+				break
+			}
+		}
+		if tint.A == 0 {
+			continue
+		}
+		x1, y1 := r.worldToScreen(float64(segment.x1), float64(segment.y1))
+		x2, y2 := r.worldToScreen(float64(segment.x2), float64(segment.y2))
+		vector.StrokeLine(screen, float32(x1), float32(y1), float32(x2), float32(y2), 3, tint, true)
+	}
+}
+
 func negotiationSidePointerHit(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, layout negotiationSideLayout, mx, my float64) bool {
 	configureNegotiationSideControls(gs, owner, side, &layout)
 	if layout.kind.HitTest(mx, my) ||
@@ -233,6 +405,9 @@ func (r *Renderer) openDiplomacyNegotiation(target faction.FactionID) {
 	if r == nil || r.gs == nil || target == "" || target == r.gs.PlayerFactionID {
 		return
 	}
+	r.showDiplomacy = false
+	r.diplomacyTargetFaction = ""
+	r.negotiationMapDragging = false
 	r.negotiation = negotiationPanelState{
 		show:         true,
 		target:       target,
@@ -253,6 +428,7 @@ func (r *Renderer) OpenDiplomacyCounterOffer(index int) {
 		return
 	}
 	r.showDiplomacy = false
+	r.negotiationMapDragging = false
 	r.negotiation = negotiationPanelState{
 		show:         true,
 		target:       offer.FromFactionID,
@@ -271,8 +447,20 @@ func (r *Renderer) CloseDiplomacyNegotiation() {
 		return
 	}
 	r.negotiation = negotiationPanelState{}
+	r.negotiationMapDragging = false
 	r.showDiplomacy = false
 	r.diplomacyTargetFaction = ""
+}
+
+// KeepDiplomacyNegotiationOpen, reddedilen/başarısız tekliften sonra oyuncunun
+// harita seçimlerini korur ve varsa artık geçersiz karşı teklif indeksini temizler.
+func (r *Renderer) KeepDiplomacyNegotiationOpen(message string) {
+	if r == nil || !r.negotiation.show {
+		return
+	}
+	r.negotiation.counterIndex = -1
+	r.negotiation.statusMessage = message
+	r.negotiationMapDragging = false
 }
 
 func negotiationFactionName(gs *state.GameState, id faction.FactionID) string {
@@ -786,9 +974,17 @@ func (r *Renderer) drawDiplomacyNegotiation(screen *ebiten.Image) {
 	}
 	layout := buildNegotiationLayout()
 	layout.submit.Enabled = len(r.negotiation.requested.items)+len(r.negotiation.offered.items) > 0
-	gameui.DrawModal(screen, layout.modal, standardModalStyle, nil, nil)
+	modalStyle := standardModalStyle
+	modalStyle.Overlay = color.RGBA{0, 0, 0, 72}
+	gameui.DrawModal(screen, layout.modal, modalStyle, nil, nil)
 	drawUILabel(screen, gameui.Rect{X: layout.modal.Panel.Rect.X + 20, Y: layout.modal.Panel.Rect.Y + 16, W: layout.modal.Panel.Rect.W - 40}, "Diplomatik Pazarlık", ColorGold, gameui.TextLarge, gameui.TextAlignCenter)
-	drawUIMutedText(screen, layout.modal.Panel.Rect.X+20, layout.modal.Panel.Rect.Y+46, negotiationFactionName(r.gs, r.negotiation.target)+" ile karşılıklı talep ve teklif oluştur.")
+	subtitle := negotiationFactionName(r.gs, r.negotiation.target) + " ile karşılıklı talep ve teklif oluştur. Haritadan bölgeleri tıklayarak seç."
+	subtitleColor := ColorGray
+	if r.negotiation.statusMessage != "" {
+		subtitle = r.negotiation.statusMessage
+		subtitleColor = color.RGBA{255, 176, 128, 255}
+	}
+	drawUILabel(screen, gameui.Rect{X: layout.modal.Panel.Rect.X + 20, Y: layout.modal.Panel.Rect.Y + 46, W: layout.modal.Panel.Rect.W - 40}, subtitle, subtitleColor, gameui.TextSmall, gameui.TextAlignCenter)
 	drawNegotiationSide(screen, r.gs, layout.left, &r.negotiation.requested, r.negotiation.target, "Talep Edilen", color.RGBA{210, 150, 78, 255})
 	drawNegotiationSide(screen, r.gs, layout.right, &r.negotiation.offered, r.gs.PlayerFactionID, "Verilen", color.RGBA{88, 174, 112, 255})
 	drawUIButtonWidget(screen, layout.submit, solidButtonStyle(color.RGBA{70, 126, 74, 240}, color.RGBA{125, 184, 124, 255}, ColorWhite, 9))
@@ -845,6 +1041,12 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 		LeftJustReleased: !leftPressed && leftWasPressed,
 		WheelY:           wheelY,
 	}
+	r.handleNegotiationMapNavigation(input, layout.modal.Panel.Rect)
+	if layout.left.panel.Hit(input.MouseX, input.MouseY) {
+		r.negotiation.mapFocusSide = 0
+	} else if layout.right.panel.Hit(input.MouseX, input.MouseY) {
+		r.negotiation.mapFocusSide = 1
+	}
 	shiftPressed := ebiten.IsKeyPressed(ebiten.KeyShift) ||
 		ebiten.IsKeyPressed(ebiten.KeyShiftLeft) ||
 		ebiten.IsKeyPressed(ebiten.KeyShiftRight)
@@ -858,10 +1060,12 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 			return InputAction{}
 		}
 		r.negotiation = negotiationPanelState{}
+		r.negotiationMapDragging = false
 		return InputAction{}
 	}
 	if layout.cancel.HandleInput(input) {
 		r.negotiation = negotiationPanelState{}
+		r.negotiationMapDragging = false
 		return InputAction{}
 	}
 	if layout.submit.HandleInput(input) {
@@ -965,4 +1169,36 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 		addNegotiationItem(r.gs, offerOwner, &r.negotiation.offered)
 	}
 	return InputAction{}
+}
+
+func (r *Renderer) handleNegotiationMapNavigation(input gameui.InputState, panel gameui.Rect) {
+	if r == nil {
+		return
+	}
+	if input.WheelY != 0 && !panel.Hit(input.MouseX, input.MouseY) {
+		r.zoomCameraAt(input.MouseX, input.MouseY, input.WheelY)
+	}
+	if input.LeftJustPressed && !panel.Hit(input.MouseX, input.MouseY) {
+		r.toggleNegotiationMapRegionAt(input.MouseX, input.MouseY)
+	}
+	r.handleNegotiationMapDrag(input.MouseX, input.MouseY, ebiten.IsMouseButtonPressed(ebiten.MouseButtonMiddle), panel)
+}
+
+func (r *Renderer) handleNegotiationMapDrag(mx, my float64, middlePressed bool, panel gameui.Rect) {
+	if r == nil {
+		return
+	}
+	if middlePressed && !panel.Hit(mx, my) {
+		if r.negotiationMapDragging {
+			previousX, previousY := r.screenToWorld(float64(r.negotiationDragLastMX), float64(r.negotiationDragLastMY))
+			currentX, currentY := r.screenToWorld(mx, my)
+			r.camX += previousX - currentX
+			r.camY += previousY - currentY
+		}
+		r.negotiationMapDragging = true
+		r.negotiationDragLastMX = int(mx)
+		r.negotiationDragLastMY = int(my)
+		return
+	}
+	r.negotiationMapDragging = false
 }

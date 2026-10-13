@@ -421,6 +421,8 @@ type GameState struct {
 	Commanders              map[string]*army.Commander             `json:"commanders,omitempty"`
 	CommanderArrivalNotices map[string]bool                        `json:"commander_arrival_notices,omitempty"`
 	DismissedCommanderIDs   map[string]bool                        `json:"dismissed_commander_ids,omitempty"`
+	DeadCommanderIDs        map[string]bool                        `json:"dead_commander_ids,omitempty"`
+	ExiledCommanderIDs      map[string]bool                        `json:"exiled_commander_ids,omitempty"`
 	AIPlans                 map[faction.FactionID]*AIPlanState     `json:"ai_plans,omitempty"`
 	// AICompletedObjectives objective'in en az bir kez tamamlandığını taşır.
 	// Bu geçmiş, tamamlanmış bir consolidate objective'inin sonradan kaybedilen

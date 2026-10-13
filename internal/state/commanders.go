@@ -265,6 +265,9 @@ func (s *GameState) ReleaseCaptivesInOwnedSettlements() []string {
 // CommanderHiddenFromRoster, kalıcı kayıp gibi durumlarda komutanın UI
 // roster'ından tamamen çıkarılması gerekip gerekmediğini bildirir.
 func (s *GameState) CommanderHiddenFromRoster(commander *army.Commander) bool {
+	if commander != nil && s.IsCommanderDead(commander.ID) {
+		return true
+	}
 	status, ok := s.activeCommanderUnavailableStatus(commander)
 	return ok && status.HideFromRoster
 }
@@ -303,8 +306,14 @@ func (s *GameState) RemovePermanentlyUnavailableCommanders() {
 // döner. Eski save'lerdeki runtime komutanı yeni alanı taşımıyorsa senaryo
 // şablonundaki tanım kullanılır.
 func (s *GameState) CommanderUnavailableReason(commander *army.Commander) string {
+	if commander != nil && s.IsCommanderDead(commander.ID) {
+		return "Öldü"
+	}
 	if commander != nil && commander.CaptiveAtSettlementID != "" {
 		return "Tutsak"
+	}
+	if commander != nil && s.ExiledCommanderIDs[commander.ID] {
+		return "Sürgünde"
 	}
 	status, ok := s.activeCommanderUnavailableStatus(commander)
 	if !ok {
@@ -361,16 +370,23 @@ func (s *GameState) RemoveArmy(armyID army.ArmyID) *army.Army {
 	if current == nil {
 		return nil
 	}
+	bossCommanderID := ""
+	if current.Commander != nil && current.Commander.IsBoss {
+		bossCommanderID = current.Commander.ID
+	} else if current.EmbarkedCommander != nil && current.EmbarkedCommander.IsBoss {
+		bossCommanderID = current.EmbarkedCommander.ID
+	}
+	if bossCommanderID != "" {
+		s.MarkCommanderDead(bossCommanderID)
+	}
 	for _, commander := range []*army.Commander{current.Commander, current.EmbarkedCommander} {
 		if commander != nil && commander.AssignedArmyID == armyID {
 			commander.AssignedArmyID = ""
 		}
 	}
 	delete(s.Armies, armyID)
-	if current.Commander != nil && current.Commander.IsBoss {
-		s.defeatBossFaction(current.OwnerID, current.Commander.ID)
-	} else if current.EmbarkedCommander != nil && current.EmbarkedCommander.IsBoss {
-		s.defeatBossFaction(current.OwnerID, current.EmbarkedCommander.ID)
+	if bossCommanderID != "" {
+		s.defeatBossFaction(current.OwnerID, bossCommanderID)
 	}
 	return current
 }
@@ -584,7 +600,7 @@ func (s *GameState) SyncCommanderAvailability() []*army.Commander {
 			if template == nil || !template.ActiveInYear(s.Year) {
 				continue
 			}
-			if s.DismissedCommanderIDs[template.ID] {
+			if s.DeadCommanderIDs[template.ID] || s.DismissedCommanderIDs[template.ID] {
 				continue
 			}
 			if _, exists := s.Commanders[template.ID]; exists {
@@ -608,8 +624,23 @@ func (s *GameState) RetireExpiredCommanders() {
 	if s == nil {
 		return
 	}
+	for _, templates := range s.CommanderTemplates {
+		for _, template := range templates {
+			if template != nil && template.EndYear > 0 && s.Year >= template.EndYear {
+				s.MarkCommanderDead(template.ID)
+			}
+		}
+	}
 	for id, commander := range s.Commanders {
+		if s.DeadCommanderIDs[id] {
+			s.DismissCommander(id)
+			continue
+		}
 		if commander == nil || commander.ActiveInYear(s.Year) {
+			continue
+		}
+		if commander.EndYear > 0 && s.Year >= commander.EndYear {
+			s.MarkCommanderDead(id)
 			continue
 		}
 		for _, currentArmy := range s.Armies {
@@ -625,6 +656,123 @@ func (s *GameState) RetireExpiredCommanders() {
 		}
 		delete(s.Commanders, id)
 	}
+}
+
+// IsCommanderDead, event ve oyun kurallarının ortak, kalıcı ölüm kaydını sorgular.
+// EndYear doğal ölüm sınırıdır; geçmiş save veya geçiş anlarında map henüz
+// güncellenmemiş olsa bile tarihi bitişi ölüm olarak değerlendirir.
+func (s *GameState) IsCommanderDead(commanderID string) bool {
+	if s == nil || commanderID == "" {
+		return false
+	}
+	if s.DeadCommanderIDs[commanderID] {
+		return true
+	}
+	if commander := s.Commanders[commanderID]; commander != nil && commander.EndYear > 0 && s.Year >= commander.EndYear {
+		return true
+	}
+	for _, templates := range s.CommanderTemplates {
+		for _, template := range templates {
+			if template != nil && template.ID == commanderID && template.EndYear > 0 && s.Year >= template.EndYear {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// MarkCommanderDead kalıcı ölümü state'e yazar, ordu bağlantılarını kaldırır
+// ve senaryo şablonunun ileride yeniden üretilmesini engeller. Event'ler ve
+// ölüm sonucu üreten savaş çözümlemeleri aynı API'yi kullanmalıdır.
+func (s *GameState) MarkCommanderDead(commanderID string) bool {
+	if s == nil || commanderID == "" {
+		return false
+	}
+	known := s.Commanders[commanderID] != nil
+	if !known {
+		for _, currentArmy := range s.Armies {
+			if currentArmy != nil && ((currentArmy.Commander != nil && currentArmy.Commander.ID == commanderID) ||
+				(currentArmy.EmbarkedCommander != nil && currentArmy.EmbarkedCommander.ID == commanderID)) {
+				known = true
+				break
+			}
+		}
+	}
+	if !known {
+		for _, templates := range s.CommanderTemplates {
+			for _, template := range templates {
+				if template != nil && template.ID == commanderID {
+					known = true
+					break
+				}
+			}
+			if known {
+				break
+			}
+		}
+	}
+	if !known && !s.DeadCommanderIDs[commanderID] {
+		return false
+	}
+	if s.DeadCommanderIDs == nil {
+		s.DeadCommanderIDs = make(map[string]bool)
+	}
+	if s.DismissedCommanderIDs == nil {
+		s.DismissedCommanderIDs = make(map[string]bool)
+	}
+	s.DeadCommanderIDs[commanderID] = true
+	s.DismissedCommanderIDs[commanderID] = true
+	delete(s.ExiledCommanderIDs, commanderID)
+	for _, currentArmy := range s.Armies {
+		if currentArmy == nil {
+			continue
+		}
+		if currentArmy.Commander != nil && currentArmy.Commander.ID == commanderID {
+			currentArmy.Commander.AssignedArmyID = ""
+			currentArmy.Commander = nil
+		}
+		if currentArmy.EmbarkedCommander != nil && currentArmy.EmbarkedCommander.ID == commanderID {
+			currentArmy.EmbarkedCommander.AssignedArmyID = ""
+			currentArmy.EmbarkedCommander = nil
+		}
+	}
+	delete(s.Commanders, commanderID)
+	return true
+}
+
+// ExileCommander komutanı öldürmeden saha roster'ından pasif hale getirir.
+// Komutan state'te kaldığından alive event koşulları sürgünü ölümle karıştırmaz.
+func (s *GameState) ExileCommander(commanderID string) bool {
+	if s == nil || commanderID == "" || s.IsCommanderDead(commanderID) || s.Commanders[commanderID] == nil {
+		return false
+	}
+	if s.ExiledCommanderIDs == nil {
+		s.ExiledCommanderIDs = make(map[string]bool)
+	}
+	s.ExiledCommanderIDs[commanderID] = true
+	commander := s.Commanders[commanderID]
+	for _, currentArmy := range s.Armies {
+		if currentArmy == nil {
+			continue
+		}
+		if currentArmy.Commander != nil && currentArmy.Commander.ID == commanderID {
+			currentArmy.Commander = nil
+		}
+		if currentArmy.EmbarkedCommander != nil && currentArmy.EmbarkedCommander.ID == commanderID {
+			currentArmy.EmbarkedCommander = nil
+		}
+	}
+	commander.AssignedArmyID = ""
+	return true
+}
+
+// ReturnCommanderFromExile sürgündeki, hayatta olan komutanı roster'a döndürür.
+func (s *GameState) ReturnCommanderFromExile(commanderID string) bool {
+	if s == nil || commanderID == "" || s.DeadCommanderIDs[commanderID] || !s.ExiledCommanderIDs[commanderID] {
+		return false
+	}
+	delete(s.ExiledCommanderIDs, commanderID)
+	return true
 }
 
 // CanAffordCommanderRecruitment fraksiyonun yeni bir runtime komutanı için

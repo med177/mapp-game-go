@@ -32,8 +32,9 @@ type CommanderProgress struct {
 	NewTraits     []CommanderTrait
 }
 
-// CommanderUnavailableStatus, komutanın event flag'i aktifken neden pasif
-// olduğunu ve UI'da hangi metnin gösterileceğini tanımlar.
+// CommanderUnavailableStatus, tutsaklık/sürgün gibi ölüm dışı event flag'leri
+// aktifken komutanın neden atanamadığını ve UI metnini tanımlar. Ölüm ayrı
+// GameState.DeadCommanderIDs state'inde tutulur.
 type CommanderUnavailableStatus struct {
 	Flag           string `json:"flag"`
 	ReasonTR       string `json:"reason_tr"`
@@ -75,9 +76,9 @@ type Commander struct {
 	EndYear                     int                          `json:"end_year,omitempty"`
 }
 
-// ActiveInYear, senaryo komutanının verilen yılda tarihsel olarak görevde
-// olup olmadığını döner. EndYear doğum/ölüm aralığının üst sınırıdır; komutan
-// EndYear başladığında artık atanamaz.
+// ActiveInYear, senaryo komutanının verilen yılda tarihsel olarak yaşayıp
+// görevde olup olmadığını döner. EndYear doğal ölüm yılının ilk günüdür;
+// komutan bu yıl başladığında artık aktif değildir.
 func (c *Commander) ActiveInYear(year int) bool {
 	if c == nil {
 		return false

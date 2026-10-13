@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-10-12
+last_updated: 2026-10-13
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -90,8 +90,13 @@ Her senaryo kendi bağımsız veri setini taşır — aşağıdaki şemalar her 
 ## commanders.json
 
 Komutan şablonlarında `start_year` zorunlu başlangıç yılını, `end_year` ise
-üst sınırı belirtir. Komutan `start_year` yılında aktif olur ve `end_year`
-başladığında emekli edilir; `end_year` eksikse yaşam süresi sınırsızdır.
+doğal ölüm sınırını belirtir. Komutan `start_year` yılında aktif olur; `end_year`
+başladığında ölümü `GameState.DeadCommanderIDs` içine kaydedilir ve komutan
+runtime roster'ından çıkarılır. `end_year` eksikse tarih kaynaklı doğal ölüm yoktur.
+Event veya savaş sırasında daha erken gerçekleşen ölümler de aynı ölüm state'ini
+kullanır. Yeni senaryo verilerinde `unavailable_statuses` kullanmayın: tutsaklık
+`CaptiveAtSettlementID`, sürgün ise `ExiledCommanderIDs` state'inde tutulur. Alan
+eski senaryo kayıtları için geriye dönük uyumluluk amacıyla okunmaya devam eder.
 
 ```json
 {
@@ -616,6 +621,23 @@ Olaylardaki rastgele tetiklenme oranı `random_probability` alanında tutulur.
 `0` rastgele tetiklenmeyi kapatır; tarih veya state koşullu tetiklenmeleri
 engellemez. Eski senaryo dosyalarındaki `probability` alanı geriye dönük olarak
 okunur; yeni kayıtlar `random_probability` yazar.
+
+Tarihsel event'in hedef tarihi geçmiş olsa bile henüz tetiklenmediyse diğer
+koşulları sağlandığı ilk turda çalışabilir. `one_shot: true`, event ilk kez
+çalıştıktan sonra tekrarını engeller; geç kalmış event'i kendiliğinden iptal
+etmez. Önemli karakterlerin hâlâ hayatta olmasını gerektiren event'ler
+`requires_alive_commanders` listesinde `commanders.json` içindeki komutan ID'lerini
+kullanabilir. Koşul, komutanın başlangıç yılına gelinmediyse veya ölüm state'i
+set edildiyse başarısız olur. `end_year` doğal ölümü kaydeder; event/choice
+effect'indeki `commander_deaths` listesi ise erken ölümü anında kaydeder ve
+komutanı ordularından/runtime roster'ından çıkarır. Ölüm state'i save/load
+boyunca `DeadCommanderIDs` içinde saklanır; ölümü commander şablonundaki bir
+status flag'ine bağlamak gerekmez. `commander_deaths` event kökünde verilirse
+bütün seçimlerde, choice effect'inde verilirse yalnız o seçimde uygulanır.
+`commander_exiles` / `commander_returns` event veya choice effect'leri komutanı
+ölüm state'ine dokunmadan sürgüne gönderir ya da geri döndürür; sürgündeki kişi
+alive requirement'ını karşılamaya devam eder. `blocks_flags` belirli bir event
+sonucunu ayrıca engellemek için kullanılabilir.
 
 `specific_faction` event veya choice etkisinde opsiyonel `trade_disabled`
 boolean alanı hedef fraksiyonun ticaret kilidini değiştirir. `false`, ticareti

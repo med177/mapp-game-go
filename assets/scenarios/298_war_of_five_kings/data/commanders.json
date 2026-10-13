@@ -23,7 +23,7 @@
       "defender"
     ],
     "start_year": 280,
-    "end_year": 298
+    "end_year": 299
   },
   {
     "id": "cmd_tywin_lannister",
@@ -74,7 +74,7 @@
       "veteran"
     ],
     "start_year": 290,
-    "end_year": 299
+    "end_year": 300
   },
   {
     "id": "cmd_daenerys_targaryen",
@@ -345,22 +345,6 @@
     "traits": [
       "tactician",
       "defender"
-    ],
-    "unavailable_statuses": [
-      {
-        "flag": "tyrion_captured",
-        "reason_tr": "Tutsak"
-      },
-      {
-        "flag": "tyrion_exiled_to_essos",
-        "reason_tr": "Sürgünde"
-      },
-      {
-        "flag": "tyrion_executed",
-        "reason_tr": "İnfaz edildi",
-        "hide_from_roster": true,
-        "permanent": true
-      }
     ],
     "start_year": 298,
     "end_year": 330
@@ -766,7 +750,7 @@
       "aggressor"
     ],
     "start_year": 277,
-    "end_year": 298
+    "end_year": 299
   },
   {
     "id": "cmd_night_king",

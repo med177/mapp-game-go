@@ -190,6 +190,9 @@ type Effect struct {
 	CapitalMoveTurns          int                          `json:"capital_move_turns,omitempty"`
 	CommanderCaptures         []CommanderCaptureEffect     `json:"commander_captures,omitempty"`
 	CommanderReleases         []string                     `json:"commander_releases,omitempty"`
+	CommanderDeaths           []string                     `json:"commander_deaths,omitempty"`
+	CommanderExiles           []string                     `json:"commander_exiles,omitempty"`
+	CommanderReturns          []string                     `json:"commander_returns,omitempty"`
 }
 
 type Choice struct {
@@ -240,6 +243,9 @@ type Event struct {
 	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
 	ArmyDefections            []ArmyDefectionEffect        `json:"army_defections,omitempty"`
 	DynasticSettlement        *DynasticSettlementEffect    `json:"dynastic_settlement,omitempty"`
+	CommanderDeaths           []string                     `json:"commander_deaths,omitempty"`
+	CommanderExiles           []string                     `json:"commander_exiles,omitempty"`
+	CommanderReturns          []string                     `json:"commander_returns,omitempty"`
 
 	// Tarihsel tetiklenme alanları
 	HistoricalYear       int    `json:"historical_year,omitempty"`        // 0 = tarihsel değil
@@ -264,6 +270,7 @@ type Event struct {
 	RequiresUnownedRegions    []world.RegionID           `json:"requires_unowned_regions,omitempty"`
 	RequiresActiveFactions    []string                   `json:"requires_active_factions,omitempty"`
 	RequiresInactiveFactions  []string                   `json:"requires_inactive_factions,omitempty"`
+	RequiresAliveCommanders   []string                   `json:"requires_alive_commanders,omitempty"`
 	RelationRequirements      []RelationRequirement      `json:"relation_requirements,omitempty"`
 	FactionSubjugationTrigger *FactionSubjugationTrigger `json:"faction_subjugation_trigger,omitempty"`
 	VictoryConditions         []FactionVictoryCondition  `json:"victory_conditions,omitempty"`
@@ -502,6 +509,7 @@ func historicalEventHasStateTrigger(e *Event) bool {
 	}
 	return len(e.RequiresFlags) > 0 ||
 		len(e.RequiresTechs) > 0 ||
+		len(e.RequiresAliveCommanders) > 0 ||
 		len(e.RequiresOwnedRegions) > 0 ||
 		len(e.RequiresUnownedRegions) > 0 ||
 		len(e.RelationRequirements) > 0 ||
@@ -576,6 +584,9 @@ func (e *Event) BaseEffect() Effect {
 		CapitalMoveTurns:          0,
 		CommanderCaptures:         nil,
 		CommanderReleases:         nil,
+		CommanderDeaths:           e.CommanderDeaths,
+		CommanderExiles:           e.CommanderExiles,
+		CommanderReturns:          e.CommanderReturns,
 	}
 }
 
@@ -860,7 +871,7 @@ func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 		reasons := []string{"hedef faction aktif değil"}
 		return reasons
 	}
-	reasons := make([]string, 0, 6)
+	reasons := make([]string, 0, 7)
 	for _, flag := range e.RequiresFlags {
 		if flag == "" || gs.FiredEventIDs[eventFlagKey(flag)] {
 			continue
@@ -931,6 +942,9 @@ func ConditionFailureReasons(gs *state.GameState, e *Event) []string {
 	}
 	if activeFaction := firstActiveRequiredFaction(gs, e.RequiresInactiveFactions); activeFaction != "" {
 		reasons = append(reasons, "eliminasyon gerekli: "+activeFaction)
+	}
+	if commanderID := firstUnavailableRequiredCommander(gs, e.RequiresAliveCommanders); commanderID != "" {
+		reasons = append(reasons, "hayatta olması gereken komutan: "+commanderID)
 	}
 	if blockedSettlement := blockedCapitalSettlementID(gs, e); blockedSettlement != "" {
 		reasons = append(reasons, "zaten hedef başkent: "+blockedSettlement)
@@ -1008,6 +1022,9 @@ func eventConditionsSatisfied(gs *state.GameState, e *Event) bool {
 		return false
 	}
 	if firstActiveRequiredFaction(gs, e.RequiresInactiveFactions) != "" {
+		return false
+	}
+	if firstUnavailableRequiredCommander(gs, e.RequiresAliveCommanders) != "" {
 		return false
 	}
 	if blockedCapitalSettlementID(gs, e) != "" {
@@ -1092,6 +1109,38 @@ func firstActiveRequiredFaction(gs *state.GameState, factionIDs []string) string
 		f := gs.Factions[faction.FactionID(id)]
 		if f != nil && !f.IsEliminated {
 			return id
+		}
+	}
+	return ""
+}
+
+func firstUnavailableRequiredCommander(gs *state.GameState, commanderIDs []string) string {
+	if gs == nil {
+		return ""
+	}
+	year, _ := gs.CurrentTurnEndDate()
+	if year <= 0 {
+		year = gs.Year
+	}
+	for _, commanderID := range commanderIDs {
+		if commanderID == "" {
+			continue
+		}
+		var template *army.Commander
+		for _, templates := range gs.CommanderTemplates {
+			for _, candidate := range templates {
+				if candidate != nil && candidate.ID == commanderID {
+					template = candidate
+					break
+				}
+			}
+			if template != nil {
+				break
+			}
+		}
+		if template == nil || gs.Commanders[commanderID] == nil ||
+			(template.StartYear > 0 && year < template.StartYear) || gs.IsCommanderDead(commanderID) {
+			return commanderID
 		}
 	}
 	return ""
@@ -1368,8 +1417,27 @@ func choiceEffect(e *Event, c Choice) Effect {
 	if eff.AffectedFaction == "" {
 		eff.AffectedFaction = e.AffectedFaction
 	}
+	eff.CommanderDeaths = mergeCommanderIDs(e.CommanderDeaths, eff.CommanderDeaths)
+	eff.CommanderExiles = mergeCommanderIDs(e.CommanderExiles, eff.CommanderExiles)
+	eff.CommanderReturns = mergeCommanderIDs(e.CommanderReturns, eff.CommanderReturns)
 	eff.SetFlags, eff.ClearFlags = mergeRootFlags(e.SetFlags, eff.SetFlags, eff.ClearFlags)
 	return eff
+}
+
+func mergeCommanderIDs(root, choice []string) []string {
+	if len(root) == 0 {
+		return choice
+	}
+	merged := make([]string, 0, len(root)+len(choice))
+	seen := make(map[string]bool, len(root)+len(choice))
+	for _, commanderID := range append(append([]string(nil), root...), choice...) {
+		if commanderID == "" || seen[commanderID] {
+			continue
+		}
+		seen[commanderID] = true
+		merged = append(merged, commanderID)
+	}
+	return merged
 }
 
 // mergeRootFlags, event kökündeki set_flags'i her seçimde garanti eder ve
@@ -1473,6 +1541,15 @@ func applyEffect(gs *state.GameState, eff Effect) world.RegionID {
 	}
 	for _, commanderID := range eff.CommanderReleases {
 		gs.ReleaseCommanderCaptivity(commanderID)
+	}
+	for _, commanderID := range eff.CommanderDeaths {
+		gs.MarkCommanderDead(commanderID)
+	}
+	for _, commanderID := range eff.CommanderExiles {
+		gs.ExileCommander(commanderID)
+	}
+	for _, commanderID := range eff.CommanderReturns {
+		gs.ReturnCommanderFromExile(commanderID)
 	}
 	if len(eff.CommanderReleases) > 0 {
 		gs.SyncCommanderLinks()

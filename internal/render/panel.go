@@ -4032,15 +4032,24 @@ func clampF(v float64) float64 {
 }
 
 func drawResRow(screen *ebiten.Image, x, y, w float64, label, value string, col color.RGBA) {
-	drawUIKeyValueRowWithGap(screen, x, y, w, label, value, ColorGray, col, 8)
+	const gap = 8.0
+	value = trimTextToWidth(value, FaceMed, w)
+	labelWidth := w - MeasureText(value, FaceMed) - gap
+	if labelWidth < 0 {
+		labelWidth = 0
+	}
+	label = trimTextToWidth(label, FaceSmall, labelWidth)
+	drawUIKeyValueRowWithGap(screen, x, y, w, label, value, ColorGray, col, gap)
 }
 
 func topResourceHUDColumns() (leftCol1, leftCol2, rightCol, leftColW, rightColW float64) {
-	const resStartX = 300.0
-	const colGap = 10.0
+	const resStartX = 260.0
+	const colGap = 22.0
 	rightColW = 118.0
 	resEndX := victoryProgressPanelRect().X - 12
-	// Gelir/Altın sütunu sağa yaslanır. Dar kaynak sütunlarının sonuna
+	// Gelir/Altın sütunu sağa yaslanır. Kaynak sütunları arasında belirgin
+	// boşluk bırakılır; kısa fraksiyon alanı gerektiğinde adını kırpar.
+	// Dar kaynak sütunlarının sonuna
 	// sıkıştırılmadığı için formatlı değerler Kereste/Taş değerlerine
 	// taşmaz; zafer kartından önce de sabit bir boşluk korunur.
 	leftColW = (resEndX - resStartX - rightColW - colGap*2) / 2

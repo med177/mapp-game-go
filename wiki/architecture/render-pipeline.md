@@ -3,7 +3,7 @@ Not: Teknoloji panelinde aktif araştırma için `İptal Et • İade` düğmesi
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-10-12
+last_updated: 2026-10-13
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -1077,6 +1077,7 @@ Bu hat şu ekranlarda aktif kullanımdadır:
 - confirm / war confirm / battle plan / battle report / event detail / historical event modal yüzeyleri
 - historical modal açıkken arka oyun inputu tamamen bloke edilir; choice varsa `1/2`, `Enter`, ok tuşları veya mouse ile seçim yapılır ve imleç önceliği bu modalın butonlarına verilir
 - oyuncuya gelen diplomasi teklif modal yüzeyi; son çözümlenmiş teklif geçmişiyle birlikte çizilir ve history kartları ilgili fraksiyonun teklif ekranına hızlı geçiş sağlar
+- iki taraflı diplomatik pazarlık paneli sağa dock edilir; açık kalan harita alanında orta tuşla sürükleme ve fare tekeriyle zoom yapılabilir. Sol tık bölgeyi sahibine göre `Talep Edilen` veya `Verilen` listesine ekler/çıkarır; seçili bölgeler haritada turuncu/yeşil sınırlarla birlikte vurgulanır. Teklif reddedilirse panel ve seçimler korunur, `Kapat` normal haritaya döndürür (`internal/render/diplomacy_negotiation.go`, `internal/render/renderer_input.go`, `internal/game/game.go`)
 - `HandleInput()` artık `PhaseAITurn` ve `PhaseTurnResolution` sırasında genel harita/HUD inputunu tamamen kilitler; bu fazlarda yalnız üst modal teklifler, historical event seçimleri ve tam ekran menü akışları etkileşim alır.
 - edit mode shape yardım paneli ve stroke preview overlay primitive'i
 

@@ -109,8 +109,11 @@ type Renderer struct {
 	landContactCameraSaved   bool
 
 	// Sürükleme takibi
-	lastMX, lastMY int
-	isDragging     bool
+	lastMX, lastMY         int
+	isDragging             bool
+	negotiationMapDragging bool
+	negotiationDragLastMX  int
+	negotiationDragLastMY  int
 
 	// Seçim
 	SelectedRegion            world.RegionID
@@ -2403,6 +2406,11 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 			}
 		}
 	}
+	if r.negotiation.show {
+		if negotiationRegion := r.negotiationMapHighlightRegion(); negotiationRegion != "" {
+			highlightRegion = negotiationRegion
+		}
+	}
 	r.worldMap.Refresh(r.gs, highlightRegion, r.mapMode)
 	if r.showActiveWars && (r.activeWarsDirty || r.renderFrame-r.activeWarsLastRefresh >= 30) {
 		r.activeWarsBuf = collectActiveWarSummaries(r.gs, r.activeWarsBuf)
@@ -2417,6 +2425,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	r.drawSelectedRegionOverlay(screen, highlightRegion)
 	r.drawTerrainAreas(screen)
 	r.drawVectorMapBorders(screen)
+	r.drawNegotiationRegionHighlights(screen)
 	r.drawLandPassages(screen)
 
 	// 2. Seçim vurgusu (bölge) kaldırıldı
