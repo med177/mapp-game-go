@@ -694,7 +694,7 @@ func cycleNegotiationOption(gs *state.GameState, owner faction.FactionID, side *
 	side.amount = negotiationDefaultAmount(side.kind, options[side.option].max)
 }
 
-func adjustNegotiationAmount(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, delta int, shiftPressed bool) {
+func adjustNegotiationAmount(gs *state.GameState, owner faction.FactionID, side *negotiationSideState, delta int, shiftPressed, ctrlPressed bool) {
 	option, ok := negotiationCurrentOption(gs, owner, side)
 	if !ok || option.isRegion {
 		return
@@ -705,6 +705,9 @@ func adjustNegotiationAmount(gs *state.GameState, owner faction.FactionID, side 
 	}
 	if shiftPressed {
 		step = 100
+	}
+	if ctrlPressed {
+		step = 1000
 	}
 	side.amount += delta * step
 	if side.amount < 1 {
@@ -1050,6 +1053,9 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 	shiftPressed := ebiten.IsKeyPressed(ebiten.KeyShift) ||
 		ebiten.IsKeyPressed(ebiten.KeyShiftLeft) ||
 		ebiten.IsKeyPressed(ebiten.KeyShiftRight)
+	ctrlPressed := ebiten.IsKeyPressed(ebiten.KeyControl) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlLeft) ||
+		ebiten.IsKeyPressed(ebiten.KeyControlRight)
 	if r.keyJustPressed(ebiten.KeyEscape) {
 		if r.negotiation.requested.optionDropdown != nil && r.negotiation.requested.optionDropdown.IsOpen() {
 			r.negotiation.requested.optionDropdown.Close()
@@ -1132,11 +1138,11 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 		return InputAction{}
 	}
 	if layout.left.minus.HandleInput(input) {
-		adjustNegotiationAmount(r.gs, requestOwner, &r.negotiation.requested, -1, shiftPressed)
+		adjustNegotiationAmount(r.gs, requestOwner, &r.negotiation.requested, -1, shiftPressed, ctrlPressed)
 		return InputAction{}
 	}
 	if layout.left.plus.HandleInput(input) {
-		adjustNegotiationAmount(r.gs, requestOwner, &r.negotiation.requested, 1, shiftPressed)
+		adjustNegotiationAmount(r.gs, requestOwner, &r.negotiation.requested, 1, shiftPressed, ctrlPressed)
 		return InputAction{}
 	}
 	if layout.left.add.HandleInput(input) {
@@ -1158,11 +1164,11 @@ func (r *Renderer) handleDiplomacyNegotiationInput() InputAction {
 		return InputAction{}
 	}
 	if layout.right.minus.HandleInput(input) {
-		adjustNegotiationAmount(r.gs, offerOwner, &r.negotiation.offered, -1, shiftPressed)
+		adjustNegotiationAmount(r.gs, offerOwner, &r.negotiation.offered, -1, shiftPressed, ctrlPressed)
 		return InputAction{}
 	}
 	if layout.right.plus.HandleInput(input) {
-		adjustNegotiationAmount(r.gs, offerOwner, &r.negotiation.offered, 1, shiftPressed)
+		adjustNegotiationAmount(r.gs, offerOwner, &r.negotiation.offered, 1, shiftPressed, ctrlPressed)
 		return InputAction{}
 	}
 	if layout.right.add.HandleInput(input) {

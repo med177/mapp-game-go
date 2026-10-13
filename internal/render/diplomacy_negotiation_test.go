@@ -112,27 +112,37 @@ func TestNegotiationArmyDropdownSelectsUnitTypeAndDefaultAmount(t *testing.T) {
 	}
 }
 
-func TestNegotiationAmountShiftChangesByOneHundred(t *testing.T) {
+func TestNegotiationAmountModifiersChangeStep(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{
-			"player": {ID: "player", Gold: 1000},
+			"player": {ID: "player", Gold: 5000},
 		},
 	}
 	side := &negotiationSideState{kind: negotiationKindResource, amount: 500}
 
-	adjustNegotiationAmount(gs, "player", side, 1, false)
+	adjustNegotiationAmount(gs, "player", side, 1, false, false)
 	if side.amount != 510 {
 		t.Fatalf("normal kaynak artışı = %d, want 510", side.amount)
 	}
 
-	adjustNegotiationAmount(gs, "player", side, 1, true)
+	adjustNegotiationAmount(gs, "player", side, 1, true, false)
 	if side.amount != 610 {
 		t.Fatalf("Shift ile kaynak artışı = %d, want 610", side.amount)
 	}
 
-	adjustNegotiationAmount(gs, "player", side, -1, true)
+	adjustNegotiationAmount(gs, "player", side, -1, true, false)
 	if side.amount != 510 {
 		t.Fatalf("Shift ile kaynak azaltımı = %d, want 510", side.amount)
+	}
+
+	adjustNegotiationAmount(gs, "player", side, 1, false, true)
+	if side.amount != 1510 {
+		t.Fatalf("Ctrl ile kaynak artışı = %d, want 1510", side.amount)
+	}
+
+	adjustNegotiationAmount(gs, "player", side, -1, false, true)
+	if side.amount != 510 {
+		t.Fatalf("Ctrl ile kaynak azaltımı = %d, want 510", side.amount)
 	}
 }
 
