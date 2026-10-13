@@ -306,8 +306,9 @@ func scoreMoveWithContextRaw(gs *state.GameState, a *army.Army, target *world.Re
 		return score + planBonus
 	}
 
-	if target.OwnerID != "" {
-		_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
+	targetOwnerID := gs.SovereignOwnerID(target)
+	if targetOwnerID != "" {
+		_, stance := relationScore(gs, a.OwnerID, targetOwnerID)
 		if !a.IsNaval && target.CanLandEnter() && target.IsFortified() {
 			if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
 				if gs.CanJoinActiveSiege(a, target.ID) {
@@ -346,11 +347,14 @@ func scoreMoveWithContextRaw(gs *state.GameState, a *army.Army, target *world.Re
 			}
 			return 5
 		}
+		if gs.CanFactionTransit(a.OwnerID, targetOwnerID) {
+			return 5
+		}
 		if stance != faction.StanceWar {
 			return -1
 		}
 	}
-	if !a.IsNaval && target.CanLandEnter() && target.OwnerID != "" && target.OwnerID != a.OwnerID && target.IsFortified() {
+	if !a.IsNaval && target.CanLandEnter() && targetOwnerID != "" && targetOwnerID != a.OwnerID && target.IsFortified() {
 		if siege := gs.SiegeAt(target.ID); siege != nil && siege.AttackerArmyID != a.ID {
 			return -1
 		}
@@ -366,7 +370,7 @@ func scoreMoveWithContextRaw(gs *state.GameState, a *army.Army, target *world.Re
 			continue
 		}
 		if aiArmyStrength(gs, a) > aiArmyStrength(gs, ea) {
-			_, stance := relationScore(gs, a.OwnerID, target.OwnerID)
+			_, stance := relationScore(gs, a.OwnerID, targetOwnerID)
 			if stance == faction.StanceWar {
 				return 95 + planBonus
 			}
@@ -389,6 +393,9 @@ func scoreMoveWithContextRaw(gs *state.GameState, a *army.Army, target *world.Re
 	}
 	if stance == faction.StanceAllied {
 		return 10
+	}
+	if gs.CanFactionTransit(a.OwnerID, targetOwnerID) {
+		return 5
 	}
 	return -1
 }

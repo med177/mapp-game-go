@@ -1978,7 +1978,8 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 							gs.RemoveArmy(siegeArmy.ID)
 						}
 						delete(gs.Sieges, fromRegion)
-						canExitToTarget := targetRegion.OwnerID == "" || targetRegion.OwnerID == a.OwnerID || diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
+						targetOwnerID := gs.SovereignOwnerID(targetRegion)
+						canExitToTarget := targetOwnerID == "" || targetOwnerID == a.OwnerID || gs.CanFactionTransit(a.OwnerID, targetOwnerID)
 						if !canExitToTarget && targetRegion.OwnerID != "" {
 							_, stance := relationScore(gs, a.OwnerID, targetRegion.OwnerID)
 							canExitToTarget = stance == faction.StanceAllied
@@ -2438,14 +2439,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			if !targetRegion.IsSea && !a.CanCaptureLand(gs.UnitTypes) {
 				isAlliedTarget = true
 			}
-			if targetRegion.OwnerID != "" && targetRegion.OwnerID != a.OwnerID {
-				if diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
-					isAlliedTarget = true
-				}
-				key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
-				if rel, exists := gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
-					isAlliedTarget = true
-				}
+			targetOwnerID := gs.SovereignOwnerID(targetRegion)
+			if targetOwnerID != "" && targetOwnerID != a.OwnerID && gs.CanFactionTransit(a.OwnerID, targetOwnerID) {
+				isAlliedTarget = true
 			}
 			if battleLiftsSiege {
 				aiClearSiege(gs, target)
@@ -2539,15 +2535,9 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 	if !targetRegion.IsSea && !a.CanCaptureLand(gs.UnitTypes) {
 		isAlliedTarget = true
 	}
-	if targetRegion.OwnerID != a.OwnerID {
-		if diplomacy.SameRealm(gs, faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID)) {
-			isAlliedTarget = true
-		} else {
-			key := faction.RelationKey(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
-			if rel, exists := gs.Relations[key]; exists && rel.Stance == faction.StanceAllied {
-				isAlliedTarget = true
-			}
-		}
+	targetOwnerID := gs.SovereignOwnerID(targetRegion)
+	if targetOwnerID != a.OwnerID && gs.CanFactionTransit(a.OwnerID, targetOwnerID) {
+		isAlliedTarget = true
 	}
 	if targetRegion.OwnerID != a.OwnerID && !isAlliedTarget && !activeSiegeSupport {
 		vassalized := TryResolvePostWarVassalization(gs, faction.FactionID(a.OwnerID), targetRegion).Applied

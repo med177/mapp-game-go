@@ -12,6 +12,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   `internal/state/movement_route.go`, `internal/render/diplom.go`,
   `internal/game/game.go`, `internal/save/compact.go`.
 
+- 2026-10-13: AI kara rotaları aktif topraklardan geçiş hakkını transit ara durak
+  olarak kullanıyor; transit edilen bölgeyi fethetmiyor. Savaş varsa geçiş izni
+  geçersiz kalıyor. Regresyonlar `internal/ai/pathfinding_test.go` içinde.
+
 - 2026-10-12: İki taraflı diplomatik pazarlıkta `Tutsak` kalemi eklendi. Oyuncu
   kendi elindeki karşı taraf komutanını iade için verebiliyor veya karşı tarafın
   tuttuğu kendi komutanını talep edebiliyor; kabulde komutan serbest bırakılıyor.

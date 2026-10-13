@@ -97,6 +97,93 @@ func TestAIRouteRejectsBlockedTerrainArea(t *testing.T) {
 	}
 }
 
+func TestAITransitAgreementEnablesRouteThroughForeignLand(t *testing.T) {
+	const (
+		actor  = faction.FactionID("actor")
+		bridge = faction.FactionID("bridge")
+		enemy  = faction.FactionID("enemy")
+	)
+	start := &world.Region{ID: "start", OwnerID: string(actor), Neighbors: []world.RegionID{"bridge_land"}}
+	bridgeLand := &world.Region{ID: "bridge_land", OwnerID: string(bridge), Neighbors: []world.RegionID{"start", "enemy_land"}}
+	enemyLand := &world.Region{ID: "enemy_land", OwnerID: string(enemy), Neighbors: []world.RegionID{"bridge_land"}}
+	armyRef := &army.Army{ID: "army", OwnerID: string(actor), RegionID: start.ID, MovePoints: 2}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			start.ID:      start,
+			bridgeLand.ID: bridgeLand,
+			enemyLand.ID:  enemyLand,
+		},
+		Armies: map[army.ArmyID]*army.Army{armyRef.ID: armyRef},
+		Factions: map[faction.FactionID]*faction.Faction{
+			actor:  {ID: actor},
+			bridge: {ID: bridge},
+			enemy:  {ID: enemy},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey(actor, enemy): {
+				FactionA: actor,
+				FactionB: enemy,
+				Stance:   faction.StanceWar,
+			},
+		},
+	}
+
+	if routes := aiWeightedLandRoutes(gs, armyRef, start.ID, aiRouteGeneral, 0, nil); routes.nextStep(enemyLand.ID) != "" {
+		t.Fatal("AI route unexpectedly crossed foreign land without a transit agreement")
+	}
+
+	gs.AddTransitAgreement(actor, bridge)
+	routes := aiWeightedLandRoutes(gs, armyRef, start.ID, aiRouteGeneral, 0, nil)
+	if got := routes.nextStep(enemyLand.ID); got != bridgeLand.ID {
+		t.Fatalf("AI route next step = %q, want transit territory %q", got, bridgeLand.ID)
+	}
+	if score := scoreMove(gs, armyRef, bridgeLand); score <= 0 {
+		t.Fatalf("AI movement scorer rejected transit territory: %d", score)
+	}
+
+	gs.Relations[faction.RelationKey(actor, bridge)] = &faction.Relation{
+		FactionA: actor,
+		FactionB: bridge,
+		Stance:   faction.StanceWar,
+	}
+	if routes = aiWeightedLandRoutes(gs, armyRef, start.ID, aiRouteGeneral, 0, nil); routes.nextStep(enemyLand.ID) != "" {
+		t.Fatal("AI route continued through transit land after war began")
+	}
+}
+
+func TestAIMovementThroughTransitAgreementDoesNotConquerRegion(t *testing.T) {
+	const (
+		actor  = faction.FactionID("actor")
+		bridge = faction.FactionID("bridge")
+	)
+	start := &world.Region{ID: "start", OwnerID: string(actor), Neighbors: []world.RegionID{"bridge_land"}}
+	bridgeLand := &world.Region{ID: "bridge_land", OwnerID: string(bridge), Neighbors: []world.RegionID{"start"}}
+	armyRef := &army.Army{
+		ID: "army", OwnerID: string(actor), RegionID: start.ID, MovePoints: 2,
+		Units: []army.Unit{{TypeID: "infantry", CurrentHP: army.MaxUnitHP}},
+	}
+	gs := &state.GameState{
+		Regions: map[world.RegionID]*world.Region{
+			start.ID:      start,
+			bridgeLand.ID: bridgeLand,
+		},
+		Armies: map[army.ArmyID]*army.Army{armyRef.ID: armyRef},
+		Factions: map[faction.FactionID]*faction.Faction{
+			actor:  {ID: actor},
+			bridge: {ID: bridge},
+		},
+	}
+	gs.AddTransitAgreement(actor, bridge)
+
+	outcome := executeMove(gs, armyRef, bridgeLand.ID, actor)
+	if !outcome.survived || armyRef.RegionID != bridgeLand.ID {
+		t.Fatalf("AI ordusu transit bölgesine giremedi: outcome=%+v region=%q", outcome, armyRef.RegionID)
+	}
+	if bridgeLand.OwnerID != string(bridge) {
+		t.Fatalf("AI transit geçişini fethe çevirdi: bölge sahibi=%q, beklenen=%q", bridgeLand.OwnerID, bridge)
+	}
+}
+
 func TestAIMovementRejectsLockedBlockedTerrainArea(t *testing.T) {
 	from := &world.Region{ID: "from", Neighbors: []world.RegionID{"blocked"}}
 	target := &world.Region{ID: "blocked", IsTerrainArea: true, TerrainAreaID: "area", IsLocked: true}

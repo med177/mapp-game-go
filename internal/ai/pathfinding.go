@@ -151,15 +151,22 @@ func (snapshot *aiRouteSnapshot) regionAccess(region *world.Region) (allowed, tr
 		return true, true, penalty
 	case region.OwnerID == "":
 		return true, false, penalty + aiRouteTerminalAccessCost
-	case diplomacy.SameRealm(snapshot.gs, snapshot.ownerID, faction.FactionID(region.OwnerID)):
+	case diplomacy.SameRealm(snapshot.gs, snapshot.ownerID, faction.FactionID(snapshot.gs.SovereignOwnerID(region))):
 		if terminal {
 			return true, false, penalty + aiRouteAlliedAccessCost
 		}
 		return true, true, penalty + aiRouteAlliedAccessCost
 	}
 
-	relation := diplomacy.Relation(snapshot.gs, snapshot.ownerID, faction.FactionID(region.OwnerID))
+	sovereignOwnerID := snapshot.gs.SovereignOwnerID(region)
+	relation := diplomacy.Relation(snapshot.gs, snapshot.ownerID, faction.FactionID(sovereignOwnerID))
 	if relation == nil {
+		if snapshot.gs.CanFactionTransit(string(snapshot.ownerID), sovereignOwnerID) {
+			if terminal {
+				return true, false, penalty + aiRouteAlliedAccessCost
+			}
+			return true, true, penalty + aiRouteAlliedAccessCost
+		}
 		return false, false, 0
 	}
 	switch relation.Stance {
@@ -171,6 +178,12 @@ func (snapshot *aiRouteSnapshot) regionAccess(region *world.Region) (allowed, tr
 	case faction.StanceWar:
 		return true, false, penalty + aiRouteTerminalAccessCost
 	default:
+		if snapshot.gs.CanFactionTransit(string(snapshot.ownerID), sovereignOwnerID) {
+			if terminal {
+				return true, false, penalty + aiRouteAlliedAccessCost
+			}
+			return true, true, penalty + aiRouteAlliedAccessCost
+		}
 		return false, false, 0
 	}
 }

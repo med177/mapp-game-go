@@ -229,10 +229,12 @@ ile regression testleri `TestResolveQueuedAllianceOfferDoesNotSpendQuotaTwice` v
 `TestResolveQueuedAllianceOfferKeepsTermsAfterStrategicStateChanges`'dır.
 
 Topraklardan geçiş hakkı ittifak veya ticaret duruşunu değiştirmeyen, iki yönlü ve
-save-backed ayrı bir anlaşmadır. Kara ordusu rotaları anlaşmalı sınırı transit
-olarak kullanabilir. Savaş ilişkisine geçiş anlaşmayı kaldırır; barış sonrasında
-yeniden teklif edilmesi gerekir (`internal/state/transit.go`,
-`internal/state/movement_route.go`).
+save-backed ayrı bir anlaşmadır. Oyuncu ve AI kara orduları anlaşmalı sınırı
+transit olarak kullanabilir; AI stratejik rota araması da bu bölgeyi ara durak
+olarak değerlendirir ve geçiş sırasında toprağı fethetmez. Savaş ilişkisine geçiş
+anlaşmayı kaldırır; barış sonrasında yeniden teklif edilmesi gerekir
+(`internal/state/transit.go`, `internal/state/movement_route.go`,
+`internal/ai/pathfinding.go`, `internal/ai/movement_strategy.go`).
 
 ### Karşılıklı Transfer Pazarlığı
 
