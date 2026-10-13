@@ -506,6 +506,9 @@ type GameState struct {
 	AIDiagnosticCaptureTurnsRemain int                        `json:"-"`
 	// Bekleyen diplomatik teklifler (ör. AI barış teklifi)
 	DiplomaticOffers []DiplomaticOffer `json:"diplomatic_offers,omitempty"`
+	// RegionTransferLockUntil, diplomatik yolla edinilen bölgelerin
+	// yeniden diplomatik olarak devredilebileceği ilk turu tutar.
+	RegionTransferLockUntil map[world.RegionID]int `json:"diplomatic_region_transfer_lock_until,omitempty"`
 	// PendingConquestDecisions, teslimiyet sonrası ardıl devlet kararlarını
 	// oyun nesnesi yeniden oluşturulsa da korur.
 	PendingConquestDecisions []PendingConquestDecision `json:"pending_conquest_decisions,omitempty"`

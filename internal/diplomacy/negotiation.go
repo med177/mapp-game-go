@@ -12,12 +12,13 @@ import (
 )
 
 const (
-	transferKindRegion   = "region"
-	transferKindResource = "resource"
-	transferKindArmy     = "army"
-	transferKindCaptive  = "captive"
-	transferRelationGain = 10
-	maxTransferItems     = 6
+	transferKindRegion            = "region"
+	transferKindResource          = "resource"
+	transferKindArmy              = "army"
+	transferKindCaptive           = "captive"
+	transferRelationGain          = 10
+	maxTransferItems              = 6
+	regionTransferProtectionTurns = 3
 )
 
 // QueueTransferOffer, iki taraflı kaynak/bölge/asker/tutsak pazarlığını teklif
@@ -228,8 +229,10 @@ func validTransferList(gs *state.GameState, owner, beneficiary faction.FactionID
 		seen[key] = struct{}{}
 		switch transfer.Kind {
 		case transferKindRegion:
-			region := gs.Regions[world.RegionID(transfer.ID)]
-			if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID != string(owner) || transfer.Amount != 1 {
+			regionID := world.RegionID(transfer.ID)
+			region := gs.Regions[regionID]
+			if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID != string(owner) || transfer.Amount != 1 ||
+				gs.RegionTransferLockUntil[regionID] > gs.Turn {
 				return false
 			}
 		case transferKindResource:
@@ -262,6 +265,10 @@ func applyTransferList(gs *state.GameState, from, to faction.FactionID, transfer
 		case transferKindRegion:
 			region := gs.Regions[world.RegionID(transfer.ID)]
 			region.OwnerID = string(to)
+			if gs.RegionTransferLockUntil == nil {
+				gs.RegionTransferLockUntil = make(map[world.RegionID]int)
+			}
+			gs.RegionTransferLockUntil[region.ID] = gs.Turn + regionTransferProtectionTurns + 1
 			gs.ClearProductionOrdersForRegion(region.ID)
 			regionTransferred = true
 		case transferKindResource:

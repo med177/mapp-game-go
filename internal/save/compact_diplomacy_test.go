@@ -6,6 +6,7 @@ import (
 
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
 )
 
 func TestDiplomacyDisabledChangePersistsAcrossSaveFormats(t *testing.T) {
@@ -80,6 +81,35 @@ func TestTransitAgreementsPersistAcrossCompactAndLegacySaveStates(t *testing.T) 
 	legacy := convertLegacyCampaignSaveState(debugState)
 	if len(legacy.TransitAgreements) != 1 || legacy.TransitAgreements[0] != agreements[0] {
 		t.Fatalf("debug/legacy save geçiş anlaşmasını korumadı: %#v", legacy.TransitAgreements)
+	}
+}
+
+func TestDiplomaticRegionTransferLocksPersistAcrossSaveFormats(t *testing.T) {
+	locks := map[world.RegionID]int{"moat_cailin": 303}
+	gs := &state.GameState{RegionTransferLockUntil: locks}
+
+	compact := campaignSaveState{RegionTransferLockUntil: cloneRegionIntMap(locks)}
+	encoded, err := json.Marshal(compact)
+	if err != nil {
+		t.Fatalf("compact kayıt serileştirilemedi: %v", err)
+	}
+	var decoded campaignSaveState
+	if err := json.Unmarshal(encoded, &decoded); err != nil {
+		t.Fatalf("compact kayıt çözülemedi: %v", err)
+	}
+	loaded := &state.GameState{}
+	applyCampaignSaveState(loaded, decoded)
+	if got := loaded.RegionTransferLockUntil["moat_cailin"]; got != 303 {
+		t.Fatalf("compact save/load bölge kilidini korumadı: %d", got)
+	}
+
+	debug := makeDebugCampaignSaveState(gs)
+	if got := debug.RegionTransferLockUntil["moat_cailin"]; got != 303 {
+		t.Fatalf("debug save bölge kilidini korumadı: %d", got)
+	}
+	legacy := convertLegacyCampaignSaveState(debug)
+	if got := legacy.RegionTransferLockUntil["moat_cailin"]; got != 303 {
+		t.Fatalf("debug/legacy dönüşümü bölge kilidini korumadı: %d", got)
 	}
 }
 

@@ -70,6 +70,42 @@ func TestTransferOfferAppliesRegionResourceArmyAndDirectionalRelation(t *testing
 	}
 }
 
+func TestDiplomaticRegionTransferIsLockedForThreeTurns(t *testing.T) {
+	gs := &state.GameState{
+		Turn: 10,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"a": {ID: "a"},
+			"b": {ID: "b"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"a_land": {ID: "a_land", OwnerID: "a"},
+			"b_land": {ID: "b_land", OwnerID: "b"},
+		},
+	}
+	EnsureRelation(gs, "a", "b")
+	region := []state.DiplomaticTransfer{{Kind: transferKindRegion, ID: "b_land", Amount: 1}}
+	if !QueueTransferOffer(gs, "a", "b", region, nil, 50, "test") {
+		t.Fatal("ilk bölge aktarımı kuyruğa eklenemedi")
+	}
+	if result := ResolveOffer(gs, 0, true); !result.Applied {
+		t.Fatalf("ilk bölge aktarımı uygulanmadı: %s", result.Message)
+	}
+	if got, want := gs.RegionTransferLockUntil["b_land"], 14; got != want {
+		t.Fatalf("kilit bitiş turu = %d, %d bekleniyordu", got, want)
+	}
+
+	for _, turn := range []int{10, 11, 12, 13} {
+		gs.Turn = turn
+		if QueueTransferOffer(gs, "b", "a", region, nil, 50, "test") {
+			t.Fatalf("%d. turda korumalı bölge yeniden devredilebildi", turn)
+		}
+	}
+	gs.Turn = 14
+	if !QueueTransferOffer(gs, "b", "a", region, nil, 50, "test") {
+		t.Fatal("üç tur tamamlandıktan sonra bölgenin devredilmesi engellendi")
+	}
+}
+
 func TestQueueTransferOfferRejectsUnavailableRequestedResource(t *testing.T) {
 	gs := &state.GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

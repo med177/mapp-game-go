@@ -253,6 +253,11 @@ devredilen bölgedeki eski sahip orduları geçerli kara toprağına tahliye edi
 ordu transferi hedef devletin kara bölgesine yeni bir ordu olarak eklenir.
 Kabul sonrası renderer sahiplik rasterını ve ordu/etiket cache'lerini kirli
 işaretleyerek haritayı aynı dönüşte yeniler.
+Diplomatik yolla edinilen bölgeler, edinim turu ve onu izleyen üç tur boyunca
+yeni bir bölge pazarlığında devredilemez; sonraki turda yeniden teklif edilebilir.
+Kayıt bu kilidin bitiş turunu korur.
+Savaşla ele geçirme ve diğer bölge sahipliği akışları bu diplomatik kilitten
+etkilenmez (`internal/state/state.go`, `internal/diplomacy/negotiation.go`).
 
 Oyuncuya gelen `propose_transfer` teklifleri mevcut teklif modalında `Kabul Et`,
 `Reddet` ve `Karşı Teklif` seçeneklerini kullanır. Karşı teklif aynı iki kolonlu

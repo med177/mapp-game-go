@@ -5,6 +5,12 @@ last_updated: 2026-10-13
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-13: Diplomatik pazarlıkla alınan bölgeler edinim turu ve onu izleyen
+  üç tur boyunca başka bir pazarlıkla devredilemiyor; bu bitiş turu kompakt ve
+  debug save/load'da korunuyor. Savaşla ele geçirme etkilenmiyor. Regresyonlar
+  `internal/diplomacy/negotiation_test.go` ve
+  `internal/save/compact_diplomacy_test.go` içinde.
+
 - 2026-10-13: Komutan ölümü commander şablonlarındaki event flag status'larından
   çıkarılıp kalıcı `DeadCommanderIDs` state'ine taşındı. `end_year` doğal ölümü,
   event effect'indeki `commander_deaths` erken ölümü kaydediyor. Tutsaklık ve
