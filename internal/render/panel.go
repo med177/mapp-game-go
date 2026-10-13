@@ -2755,12 +2755,12 @@ func DrawRegionPanelExpandedScrolledWithTab(screen *ebiten.Image, gs *state.Game
 	}
 	ly += float64(regionOwnerNameH)
 	if region.IsMinorRegion && region.IsPrivileged && region.OwnerID != "" && region.OwnerID != sovereignOwnerID {
-		operatorName, operatorCol := ownerDisplay(gs, region.OwnerID)
-		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "İmtiyaz / Kullanım: "+operatorName, operatorCol, gameui.TextSmall, gameui.TextAlignStart)
+		operatorName, _ := ownerDisplay(gs, region.OwnerID)
+		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "İmtiyaz / Kullanım: "+operatorName, color.White, gameui.TextSmall, gameui.TextAlignStart)
 		ly += regionVassalInfoH
 	}
-	if overlordLabel, overlordCol, ok := vassalOverlordDisplay(gs, sovereignOwnerID); ok {
-		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "Bağlı: "+overlordLabel, overlordCol, gameui.TextSmall, gameui.TextAlignStart)
+	if overlordLabel, _, ok := vassalOverlordDisplay(gs, sovereignOwnerID); ok {
+		drawUILabel(screen, gameui.Rect{X: lx, Y: ly, W: float64(sepW)}, "Sahip: "+overlordLabel, color.White, gameui.TextSmall, gameui.TextAlignStart)
 		ly += regionVassalInfoH
 	}
 	if tributeLabel, tributeCol, ok := vassalTributeDisplay(gs, sovereignOwnerID); ok {
