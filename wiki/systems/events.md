@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-10-11
+last_updated: 2026-10-13
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -176,8 +176,13 @@ Aynı senaryoda 306–330 dönemi, savaş sonrası yeniden inşa ve ticaret kara
 başlar; Martell, Stark, Tyrell, Greyjoy ve Targaryen'e özgü siyasi tercihlerle
 devam eder. `others_awakened` ve `wall_breached` bayrakları Duvar savunması ve
 krallıkların yardım event'lerini açar; `boss_defeated:cmd_night_king` ise
-Akgezenler yenilirse ayrı bir savaş sonrası toparlanma dalına geçer. Böylece
-farklı sefer sonuçları aynı tarihli event'leri yanlışlıkla birlikte tetiklemez.
+Gece Kralı'nın komuta ettiği ordu kaldırıldığı anda `others` fraksiyonunu eler,
+topraklarını sahipsiz bırakır ve kalan ordularını temizler; ardından
+state-triggered `night_king_fall` event'ini açar. Akgezenler ile ölüler ordusu
+anında dağılır; bu event tüm krallıklara zaferi bildirip toparlanma
+bayraklarını set eder. Tarihli `long_night_aftermath_326` kararı ayrı kalır.
+Böylece farklı sefer sonuçları aynı tarihli event'leri yanlışlıkla birlikte
+tetiklemez.
 
 Event'ler ayrıca `requires_active_factions` ile bir veya daha fazla faction'ın
 oyunda kalmasını şart koşabilir. 1300 senaryosundaki Reconquista zinciri,

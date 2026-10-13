@@ -5,6 +5,13 @@ last_updated: 2026-10-13
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-13: Gece Kralı'nın komuta ettiği ordu yenilince `others` eleniyor,
+  toprakları sahipsiz kalıyor ve orduları anında temizleniyor. Yeni
+  state-triggered `night_king_fall` olayı tüm krallıklara zaferi bildirip
+  toparlanma bayraklarını set ediyor. `internal/state/commanders.go`,
+  `internal/state/commanders_test.go` ve
+  `assets/scenarios/298_war_of_five_kings/data/events.json`.
+
 - 2026-10-13: Diplomasi paneline topraklardan geçiş hakkı teklifi eklendi.
   Kabul edilen anlaşma iki tarafın kara ordularına karşılıklı transit verir,
   ittifak/ticaret duruşunu değiştirmeden save/load boyunca sürer ve savaşta ya da

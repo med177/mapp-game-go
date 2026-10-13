@@ -6148,6 +6148,27 @@
     ]
   },
   {
+    "id": "night_king_fall",
+    "name_tr": "Gece Kralı'nın Düşüşü",
+    "desc_tr": "Gece Kralı savaşta düştü. Onun iradesiyle ayakta duran Akgezenler ve ölüler ordusu aynı anda dağıldı; Westeros üzerindeki Uzun Gece tehdidi sona erdi.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "all_factions",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "state_triggered": true,
+    "one_shot": true,
+    "set_flags": [
+      "night_king_defeated",
+      "white_walkers_destroyed"
+    ],
+    "requires_flags": [
+      "boss_defeated:cmd_night_king"
+    ]
+  },
+  {
     "id": "realm_council_328",
     "name_tr": "Büyük Hanelerin Son Divanı",
     "desc_tr": "Taht savaşları ve kuzeydeki felaket, eski bağlılıkları tüketti. Büyük haneler yeni sınırları, ortak savunmayı ve hükümdarın yetkisini yeniden tartışıyor.",

@@ -8,6 +8,50 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestRemovingBossArmyEliminatesFactionAndAbandonsItsLand(t *testing.T) {
+	boss := &army.Commander{ID: "cmd_night_king", OwnerID: "others", IsBoss: true}
+	bossArmy := &army.Army{ID: "army_boss", OwnerID: "others", Commander: boss}
+	otherArmy := &army.Army{ID: "army_others_reinforcement", OwnerID: "others"}
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"others": {ID: "others", CapitalSettlementID: "always_winter_main"},
+			"stark":  {ID: "stark"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"always_winter": {ID: "always_winter", OwnerID: "others"},
+			"winterfell":    {ID: "winterfell", OwnerID: "stark"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			bossArmy.ID:  bossArmy,
+			otherArmy.ID: otherArmy,
+		},
+	}
+
+	gs.RemoveArmy(bossArmy.ID)
+
+	if !gs.Factions["others"].IsEliminated {
+		t.Fatal("boss ordusu yenilince faction elenmiş olarak işaretlenmedi")
+	}
+	if !gs.IsEliminated("others") {
+		t.Fatal("sahipsiz bırakılan boss toprağına rağmen faction hâlâ aktif sayıldı")
+	}
+	if got := gs.Regions["always_winter"].OwnerID; got != "" {
+		t.Fatalf("boss toprağı sahipsiz bırakılmadı: owner = %q", got)
+	}
+	if got := gs.Regions["winterfell"].OwnerID; got != "stark" {
+		t.Fatalf("başka faction'ın toprağı değişti: owner = %q", got)
+	}
+	if got := gs.Factions["others"].CapitalSettlementID; got != "" {
+		t.Fatalf("elenen faction başkentini korudu: %q", got)
+	}
+	if _, exists := gs.Armies[otherArmy.ID]; exists {
+		t.Fatal("boss yenilgisinden sonra faction'ın diğer ordusu kaldı")
+	}
+	if !gs.FiredEventIDs["flag:boss_defeated:cmd_night_king"] {
+		t.Fatal("boss yenilgi event flag'i set edilmedi")
+	}
+}
+
 func TestDismissCommanderRemovesAssignedCommanderFromState(t *testing.T) {
 	commander := &army.Commander{ID: "commander_vassal_1", OwnerID: "player", Name: "Commander"}
 	currentArmy := &army.Army{ID: "army_1", OwnerID: "player", Commander: commander}

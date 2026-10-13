@@ -375,23 +375,39 @@ func (s *GameState) RemoveArmy(armyID army.ArmyID) *army.Army {
 	return current
 }
 
-// defeatBossFaction, boss komutanın ordusu yok edildiğinde aynı fraksiyonun
-// kalan ordularını temizler ve fraksiyonu yeniden ordu üretemeyecek duruma alır.
+// defeatBossFaction, boss komutanın ordusu yok edildiğinde fraksiyonu eler,
+// topraklarını sahipsiz bırakır ve kalan ordularını temizler.
 func (s *GameState) defeatBossFaction(ownerID, commanderID string) {
 	if s == nil || ownerID == "" {
 		return
 	}
-	if f := s.Factions[faction.FactionID(ownerID)]; f != nil {
-		// Bölge sahibi olan fraksiyon, boss ordusu yenilse de elenmiş
-		// sayılamaz; aksi halde bölge haritada bu devlete ait kalırken
-		// diplomasi hedefi elenmiş kabul edilir.
-		f.IsEliminated = len(s.LandRegionsOwnedBy(faction.FactionID(ownerID))) == 0
+	fid := faction.FactionID(ownerID)
+	if f := s.Factions[fid]; f != nil {
+		f.IsEliminated = true
+		f.OverlordID = ""
+		f.CapitalSettlementID = ""
+		f.PendingCapitalSettlementID = ""
+		f.PendingCapitalTurns = 0
+	}
+	for _, other := range s.Factions {
+		if other != nil && other.OverlordID == fid {
+			other.OverlordID = ""
+		}
+	}
+	for _, region := range s.Regions {
+		if region != nil && region.OwnerID == ownerID {
+			region.OwnerID = ""
+		}
+	}
+	if s.AIPlans != nil {
+		delete(s.AIPlans, fid)
 	}
 	for id, current := range s.Armies {
 		if current != nil && current.OwnerID == ownerID {
 			s.RemoveArmy(id)
 		}
 	}
+	s.NormalizeEliminatedFactionRelations()
 	if s.FiredEventIDs == nil {
 		s.FiredEventIDs = make(map[string]bool)
 	}
