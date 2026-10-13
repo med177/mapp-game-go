@@ -664,7 +664,7 @@
     "hp": 500,
     "morale": 100,
     "siege_breach_multiplier": 1.5,
-    "siege_breach_max_fort_level": 7,
+    "siege_breach_max_fort_level": 8,
     "siege_defense_pressure": 3,
     "required_buildings": [ 
       { "id": "barracks", "level": 3 }

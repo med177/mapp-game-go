@@ -2665,11 +2665,12 @@
     "religion": "old_gods",
     "active_event_id": "",
     "buildings": [
-      "port",
       "barracks",
       "granary",
       "temple",
-      "market"
+      "market",
+      "farm",
+      "farm"
     ]
   },
   {
