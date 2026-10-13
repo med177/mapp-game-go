@@ -156,6 +156,14 @@ func diplomacyActionDisabledReason(gs *state.GameState, target faction.FactionID
 	if gs == nil || target == "" {
 		return ""
 	}
+	if action == ActionProposeTransitPassage {
+		if diplomacy.SameRealm(gs, gs.PlayerFactionID, target) {
+			return "Aynı vassal zincirinde karşılıklı geçiş hakkı zaten var."
+		}
+		if relation := diplomacy.Relation(gs, gs.PlayerFactionID, target); relation != nil && relation.Stance == faction.StanceAllied {
+			return "Müttefik devletlerin karşılıklı geçiş hakkı zaten var."
+		}
+	}
 	if action == ActionNegotiateTransfer {
 		if target == gs.PlayerFactionID {
 			return "Kendi devletinizle pazarlık yapılamaz."

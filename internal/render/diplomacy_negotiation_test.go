@@ -112,6 +112,30 @@ func TestNegotiationArmyDropdownSelectsUnitTypeAndDefaultAmount(t *testing.T) {
 	}
 }
 
+func TestNegotiationAmountShiftChangesByOneHundred(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player", Gold: 1000},
+		},
+	}
+	side := &negotiationSideState{kind: negotiationKindResource, amount: 500}
+
+	adjustNegotiationAmount(gs, "player", side, 1, false)
+	if side.amount != 510 {
+		t.Fatalf("normal kaynak artışı = %d, want 510", side.amount)
+	}
+
+	adjustNegotiationAmount(gs, "player", side, 1, true)
+	if side.amount != 610 {
+		t.Fatalf("Shift ile kaynak artışı = %d, want 610", side.amount)
+	}
+
+	adjustNegotiationAmount(gs, "player", side, -1, true)
+	if side.amount != 510 {
+		t.Fatalf("Shift ile kaynak azaltımı = %d, want 510", side.amount)
+	}
+}
+
 func TestNegotiationArmyDropdownShowsCommanderBoundTypesAsDisabled(t *testing.T) {
 	gs := &state.GameState{
 		Armies: map[army.ArmyID]*army.Army{

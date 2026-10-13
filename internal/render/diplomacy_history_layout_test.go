@@ -47,6 +47,52 @@ func TestDiplomacyPanelOffersAndCancelsTransitPassage(t *testing.T) {
 	}
 }
 
+func TestDiplomacyPanelDisablesTransitOfferForAlliesAndVassals(t *testing.T) {
+	const (
+		player = faction.FactionID("player")
+		ally   = faction.FactionID("ally")
+		vassal = faction.FactionID("vassal")
+	)
+	gs := &state.GameState{
+		PlayerFactionID: player,
+		Factions: map[faction.FactionID]*faction.Faction{
+			player:    {ID: player},
+			ally:      {ID: ally},
+			vassal:    {ID: vassal, OverlordID: player},
+			"neutral": {ID: "neutral"},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey(player, ally): {
+				FactionA: player,
+				FactionB: ally,
+				Stance:   faction.StanceAllied,
+			},
+		},
+	}
+	transitIndex := -1
+	for i, action := range diplomActions {
+		if action.action == ActionProposeTransitPassage {
+			transitIndex = i
+			break
+		}
+	}
+	if transitIndex < 0 {
+		t.Fatal("diplomasi panelinde geçiş hakkı teklifi bulunamadı")
+	}
+
+	for _, target := range []faction.FactionID{ally, vassal} {
+		if diplomacyActionEnabled(gs, target, transitIndex) {
+			t.Errorf("%s için gereksiz geçiş hakkı teklifi etkin", target)
+		}
+		if reason := diplomacyActionDisabledReason(gs, target, ActionProposeTransitPassage); reason == "" {
+			t.Errorf("%s için geçiş teklifi devre dışı bırakma nedeni gösterilmedi", target)
+		}
+	}
+	if !diplomacyActionEnabled(gs, "neutral", transitIndex) {
+		t.Fatal("ittifak/vassallık bağı olmayan devlete geçiş teklifi engellendi")
+	}
+}
+
 func TestDiplomacyOfferActionsPairPeaceAndAllianceWithoutOverlap(t *testing.T) {
 	for _, action := range diplomActions {
 		if action.action == ActionDeclareWar {
