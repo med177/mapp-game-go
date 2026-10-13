@@ -6328,6 +6328,68 @@
     ]
   },
   {
+    "id": "tarth_independence_after_stormsend_298",
+    "name_tr": "Safir Ada'nın Özgürlük Yemini",
+    "desc_tr": "Fırtına Burnu'nun hâkimiyeti sarsılınca Tarth lordları, adanın eski ayrıcalıklarını ve kendi sancakları altında yaşama hakkını yeniden gündeme getirir.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "player_faction",
+    "one_shot": true,
+    "choice_prompt_tr": "Stormsend'in yenilgisinden sonra Tarth'ın geleceği nasıl şekillenmeli?",
+    "choices": [
+      {
+        "id": "restore_tarth_independence",
+        "label_tr": "Tarth'ı bağımsız bir devlet olarak yeniden kur",
+        "desc_tr": "Tarth, kendi ordusu ve toprağıyla yeniden doğar; adanın lordları kendi sancağı altında yaşamaya devam eder.",
+        "ai_weight": 6,
+        "effect": {
+          "successor_revival": {
+            "faction_id": "tarth",
+            "regions": [
+              "tarth"
+            ],
+            "mode": "independent",
+            "units": [
+              {
+                "unit_type": "infantry",
+                "unit_count": 2
+              },
+              {
+                "unit_type": "militia",
+                "unit_count": 3
+              }
+            ]
+          },
+          "set_flags": [
+            "tarth_independence_restored"
+          ]
+        }
+      },
+      {
+        "id": "keep_tarth_under_stormsend",
+        "label_tr": "Tarth'ı mevcut siyasi düzende tut",
+        "desc_tr": "Ada lordlarının talebi reddedilir; Tarth, onu elinde tutan gücün stratejik ileri karakolu olarak kalır.",
+        "ai_weight": 4,
+        "effect": {
+          "gold_delta": 120,
+          "combat_defense_percent": 4,
+          "set_flags": [
+            "tarth_independence_rejected"
+          ]
+        }
+      }
+    ],
+    "faction_subjugation_trigger": {
+      "faction_ids": [
+        "baratheon_stormsend"
+      ],
+      "require_player_actor": true
+    },
+    "requires_inactive_factions": [
+      "tarth"
+    ]
+  },
+  {
     "id": "new_age_330",
     "name_tr": "Yeni Çağın Eşiğinde",
     "desc_tr": "330 yılına gelindiğinde Westeros, savaşların ve uzun gecenin ardından bambaşka bir güç dengesine kavuştu. Hükümdar, sonraki kuşaklara bırakacağı düzenin yönünü belirlemeli.",

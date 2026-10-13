@@ -208,9 +208,9 @@
     "marine_image": "army/marine.png",
     "religion": "lord_of_light",
     "color": [
-      180,
-      40,
-      20
+      199,
+      89,
+      77
     ],
     "is_playable": true,
     "is_eliminated": false,
@@ -277,9 +277,9 @@
     "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
-      80,
-      160,
-      60
+      186,
+      196,
+      161
     ],
     "is_playable": true,
     "is_eliminated": false,
@@ -505,9 +505,9 @@
     "marine_image": "army/marine.png",
     "religion": "valyrian",
     "color": [
-      180,
-      0,
-      40
+      89,
+      24,
+      29
     ],
     "is_playable": true,
     "recommended_playable": true,
@@ -686,9 +686,9 @@
     "marine_image": "army/marine.png",
     "religion": "faith_of_the_seven",
     "color": [
-      100,
-      150,
-      190
+      59,
+      91,
+      140
     ],
     "is_playable": true,
     "is_eliminated": false,
@@ -1111,5 +1111,52 @@
       "turns_left": 0
     },
     "ai_aggressiveness": 10
+  },
+  {
+    "id": "tarth",
+    "name": "Tarth",
+    "name_tr": "Tarth",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
+    "flag": "tarth.png",
+    "religion": "faith_of_the_seven",
+    "color": [
+      200,
+      100,
+      50
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "capital_settlement_id": "tarth_main",
+    "gold": 1000,
+    "grain": 800,
+    "iron": 100,
+    "timber": 200,
+    "stone": 150,
+    "spice": 20,
+    "cloth": 50,
+    "research": {
+      "completed": {
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "ranger_scouting": true,
+        "coastal_navigation": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 60,
+    "ai_expansion_targets": [
+      "baratheon_stormsend",
+      "baratheon_king",
+      "free_cities"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "tarth",
+        "value": 100,
+        "core": true
+      }
+    ]
   }
 ]

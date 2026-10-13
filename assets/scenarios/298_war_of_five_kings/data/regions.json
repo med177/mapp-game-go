@@ -4393,8 +4393,8 @@
     "trade_capacity": 2,
     "satisfaction": 100,
     "tax_rate": 20,
-    "population": 50,
-    "rural_population": 15,
+    "population": 80,
+    "rural_population": 40,
     "religion": "old_gods",
     "active_event_id": "",
     "buildings": [
@@ -5723,7 +5723,7 @@
     "name_tr": "Tarth",
     "terrain": "coast",
     "owner_id": "baratheon_stormsend",
-    "successor_faction_id": "baratheon_stormsend",
+    "successor_faction_id": "tarth",
     "neighbors": [
       "shipbreaker_bay"
     ],

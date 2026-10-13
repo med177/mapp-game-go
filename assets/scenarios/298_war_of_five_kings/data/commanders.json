@@ -765,5 +765,32 @@
     ],
     "start_year": 300,
     "end_year": 330
+  },
+  {
+    "id": "cmd_brienne_tarth",
+    "owner_id": "tarth",
+    "name": "Brienne of Tarth",
+    "portrait_asset": "brienne_tarth.png",
+    "level": 4,
+    "traits": [
+      "veteran",
+      "aggressor"
+    ],
+    "start_year": 298,
+    "end_year": 330
+  },
+  {
+    "id": "cmd_selwyn_tarth",
+    "owner_id": "tarth",
+    "name": "Selwyn Tarth",
+    "portrait_asset": "selwyn_tarth.png",
+    "level": 3,
+    "traits": [
+      "defender",
+      "tactician",
+      "veteran"
+    ],
+    "start_year": 298,
+    "end_year": 310
   }
 ]

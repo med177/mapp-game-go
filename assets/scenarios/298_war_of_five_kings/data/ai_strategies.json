@@ -1358,6 +1358,58 @@
           ]
         }
       ]
+    },
+    {
+      "faction_id": "tarth",
+      "profile": "sapphire_island_independence",
+      "expansion_targets": [
+        "baratheon_stormsend",
+        "baratheon_king",
+        "free_cities"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "tarth",
+          "value": 100
+        }
+      ],
+      "objectives": [
+        {
+          "id": "secure_the_sapphire_island",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "tarth",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 100,
+          "readiness_regions": [
+            "tarth"
+          ]
+        },
+        {
+          "id": "restore_stormlands_influence",
+          "kind": "expand",
+          "territorial_claims": [
+            {
+              "region_id": "storm_end",
+              "value": 65
+            },
+            {
+              "region_id": "shipbreaker_bay",
+              "value": 55
+            }
+          ],
+          "priority": 55,
+          "commitment": 70,
+          "min_year": 299,
+          "readiness_regions": [
+            "tarth"
+          ]
+        }
+      ]
     }
   ]
 }
