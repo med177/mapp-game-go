@@ -1121,9 +1121,9 @@
     "flag": "tarth.png",
     "religion": "faith_of_the_seven",
     "color": [
-      200,
-      100,
-      50
+      224, 
+      98, 
+      126
     ],
     "is_playable": false,
     "is_eliminated": true,
