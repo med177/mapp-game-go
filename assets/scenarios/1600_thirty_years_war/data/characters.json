@@ -1,6 +1,7 @@
 [
   {
     "id": "commander_ottoman_kuyucu_murad_pasha",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Kuyucu Murad Paşa",
     "portrait_asset": "ottoman_kuyucu_murad_pasha.png",
@@ -14,6 +15,7 @@
   },
   {
     "id": "commander_ottoman_halil_pasha",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Damat Halil Paşa",
     "portrait_asset": "ottoman_halil_pasha.png",
@@ -27,6 +29,7 @@
   },
   {
     "id": "commander_ottoman_kose_mihal",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Köprülüzade Mehmed Paşa",
     "portrait_asset": "ottoman_kose_mihal.png",
@@ -40,6 +43,7 @@
   },
   {
     "id": "commander_ottoman_fazil_ahmed_pasha",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Köprülüzade Fazıl Ahmed Paşa",
     "portrait_asset": "ottoman_fazil_ahmed_pasha.png",
@@ -53,6 +57,7 @@
   },
   {
     "id": "commander_ottoman_kara_mustafa_pasha",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Merzifonlu Kara Mustafa Paşa",
     "portrait_asset": "ottoman_kara_mustafa_pasha.png",
@@ -66,6 +71,7 @@
   },
   {
     "id": "commander_ottoman_fazil_mustafa_pasha",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Köprülüzade Fazıl Mustafa Paşa",
     "portrait_asset": "ottoman_fazil_mustafa_pasha.png",
@@ -79,6 +85,7 @@
   },
   {
     "id": "commander_ottoman_amcazade_huseyin",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Amcazade Hüseyin Paşa",
     "portrait_asset": "ottoman_amcazade_huseyin.png",
@@ -92,6 +99,7 @@
   },
   {
     "id": "commander_ottoman_baltaci_mehmed",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Baltacı Mehmed Paşa",
     "portrait_asset": "ottoman_baltaci_mehmed.png",
@@ -105,6 +113,7 @@
   },
   {
     "id": "commander_ottoman_deli_huseyin",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Deli Hüseyin Paşa",
     "portrait_asset": "ottoman_deli_huseyin.png",
@@ -118,6 +127,7 @@
   },
   {
     "id": "commander_ottoman_murtaza_pasha",
+    "type": "commander",
     "owner_id": "ottoman",
     "name": "Murtaza Paşa",
     "portrait_asset": "ottoman_murtaza_pasha.png",
@@ -131,6 +141,7 @@
   },
   {
     "id": "commander_castile_kingdom_ambrosio_spinola",
+    "type": "commander",
     "owner_id": "castile_kingdom",
     "name": "Ambrosio Spinola",
     "portrait_asset": "castile_kingdom_ambrosio_spinola.png",
@@ -144,6 +155,7 @@
   },
   {
     "id": "commander_castile_kingdom_juan_jose_austria",
+    "type": "commander",
     "owner_id": "castile_kingdom",
     "name": "Don Juan José de Austria",
     "portrait_asset": "castile_kingdom_juan_jose_austria.png",
@@ -157,6 +169,7 @@
   },
   {
     "id": "commander_castile_kingdom_eugenio_savoia",
+    "type": "commander",
     "owner_id": "castile_kingdom",
     "name": "Eugenio de Baviera",
     "portrait_asset": "castile_kingdom_eugenio_savoia.png",
@@ -170,6 +183,7 @@
   },
   {
     "id": "commander_castile_kingdom_villadarias",
+    "type": "commander",
     "owner_id": "castile_kingdom",
     "name": "Marki de Villadarias",
     "portrait_asset": "castile_kingdom_villadarias.png",
@@ -183,6 +197,7 @@
   },
   {
     "id": "commander_castile_kingdom_pavia_commander",
+    "type": "commander",
     "owner_id": "castile_kingdom",
     "name": "Duc de Berwick",
     "portrait_asset": "castile_kingdom_pavia_commander.png",
@@ -196,6 +211,7 @@
   },
   {
     "id": "commander_france_turenne",
+    "type": "commander",
     "owner_id": "france",
     "name": "Henri de Turenne",
     "portrait_asset": "france_turenne.png",
@@ -209,6 +225,7 @@
   },
   {
     "id": "commander_france_conde",
+    "type": "commander",
     "owner_id": "france",
     "name": "Louis II de Condé",
     "portrait_asset": "france_conde.png",
@@ -222,6 +239,7 @@
   },
   {
     "id": "commander_france_luxembourg",
+    "type": "commander",
     "owner_id": "france",
     "name": "François-Henri de Montmorency",
     "portrait_asset": "france_luxembourg.png",
@@ -235,6 +253,7 @@
   },
   {
     "id": "commander_france_vendome",
+    "type": "commander",
     "owner_id": "france",
     "name": "Louis Joseph de Vendôme",
     "portrait_asset": "france_vendome.png",
@@ -248,6 +267,7 @@
   },
   {
     "id": "commander_france_villar",
+    "type": "commander",
     "owner_id": "france",
     "name": "Claude Louis Hector de Villars",
     "portrait_asset": "france_villar.png",
@@ -261,6 +281,7 @@
   },
   {
     "id": "commander_france_saxe",
+    "type": "commander",
     "owner_id": "france",
     "name": "Maurice de Saxe",
     "portrait_asset": "france_saxe.png",
@@ -274,6 +295,7 @@
   },
   {
     "id": "commander_france_broglie",
+    "type": "commander",
     "owner_id": "france",
     "name": "Victor François de Broglie",
     "portrait_asset": "france_broglie.png",
@@ -287,6 +309,7 @@
   },
   {
     "id": "commander_england_charles_montagu",
+    "type": "commander",
     "owner_id": "england",
     "name": "Charles Wriothesley",
     "portrait_asset": "england_charles_montagu.png",
@@ -300,6 +323,7 @@
   },
   {
     "id": "commander_england_cromwell",
+    "type": "commander",
     "owner_id": "england",
     "name": "Oliver Cromwell",
     "portrait_asset": "england_cromwell.png",
@@ -313,6 +337,7 @@
   },
   {
     "id": "commander_england_marlborough",
+    "type": "commander",
     "owner_id": "england",
     "name": "John Churchill, Duke of Marlborough",
     "portrait_asset": "england_marlborough.png",
@@ -326,6 +351,7 @@
   },
   {
     "id": "commander_england_eugene_dutch",
+    "type": "commander",
     "owner_id": "england",
     "name": "George Hamilton",
     "portrait_asset": "england_eugene_dutch.png",
@@ -339,6 +365,7 @@
   },
   {
     "id": "commander_england_cumberland",
+    "type": "commander",
     "owner_id": "england",
     "name": "Duke of Cumberland",
     "portrait_asset": "england_cumberland.png",
@@ -352,6 +379,7 @@
   },
   {
     "id": "commander_england_amherst",
+    "type": "commander",
     "owner_id": "england",
     "name": "Jeffery Amherst",
     "portrait_asset": "england_amherst.png",
@@ -365,6 +393,7 @@
   },
   {
     "id": "commander_dutch_republic_maurice_nassau",
+    "type": "commander",
     "owner_id": "dutch_republic",
     "name": "Maurits van Nassau",
     "portrait_asset": "dutch_republic_maurice_nassau.png",
@@ -378,6 +407,7 @@
   },
   {
     "id": "commander_dutch_republic_frederick_henry",
+    "type": "commander",
     "owner_id": "dutch_republic",
     "name": "Frederik Hendrik",
     "portrait_asset": "dutch_republic_frederick_henry.png",
@@ -391,6 +421,7 @@
   },
   {
     "id": "commander_dutch_republic_william_iii",
+    "type": "commander",
     "owner_id": "dutch_republic",
     "name": "William III of Orange",
     "portrait_asset": "dutch_republic_william_iii.png",
@@ -404,6 +435,7 @@
   },
   {
     "id": "commander_dutch_republic_heinsius",
+    "type": "commander",
     "owner_id": "dutch_republic",
     "name": "Hans Willem Bentinck",
     "portrait_asset": "dutch_republic_heinsius.png",
@@ -417,6 +449,7 @@
   },
   {
     "id": "commander_russia_sheremetev",
+    "type": "commander",
     "owner_id": "russia",
     "name": "Boris Sheremetev",
     "portrait_asset": "russia_sheremetev.png",
@@ -430,6 +463,7 @@
   },
   {
     "id": "commander_russia_menshikov",
+    "type": "commander",
     "owner_id": "russia",
     "name": "Alexander Menshikov",
     "portrait_asset": "russia_menshikov.png",
@@ -443,6 +477,7 @@
   },
   {
     "id": "commander_russia_dolgorukov",
+    "type": "commander",
     "owner_id": "russia",
     "name": "Vasily Dolgorukov",
     "portrait_asset": "russia_dolgorukov.png",
@@ -456,6 +491,7 @@
   },
   {
     "id": "commander_russia_rumyantsev",
+    "type": "commander",
     "owner_id": "russia",
     "name": "Pyotr Rumyantsev",
     "portrait_asset": "russia_rumyantsev.png",
@@ -469,6 +505,7 @@
   },
   {
     "id": "commander_russia_suvorov",
+    "type": "commander",
     "owner_id": "russia",
     "name": "Alexander Suvorov",
     "portrait_asset": "russia_suvorov.png",
@@ -482,6 +519,7 @@
   },
   {
     "id": "commander_russia_repnin",
+    "type": "commander",
     "owner_id": "russia",
     "name": "Nikolai Repnin",
     "portrait_asset": "russia_repnin.png",
@@ -495,6 +533,7 @@
   },
   {
     "id": "commander_polish_lithuania_chodkiewicz",
+    "type": "commander",
     "owner_id": "polish_lithuania",
     "name": "Jan Karol Chodkiewicz",
     "portrait_asset": "polish_lithuania_chodkiewicz.png",
@@ -508,6 +547,7 @@
   },
   {
     "id": "commander_polish_lithuania_zolkiewski",
+    "type": "commander",
     "owner_id": "polish_lithuania",
     "name": "Stanisław Żółkiewski",
     "portrait_asset": "polish_lithuania_zolkiewski.png",
@@ -521,6 +561,7 @@
   },
   {
     "id": "commander_polish_lithuania_koniecpolski",
+    "type": "commander",
     "owner_id": "polish_lithuania",
     "name": "Stanisław Koniecpolski",
     "portrait_asset": "polish_lithuania_koniecpolski.png",
@@ -534,6 +575,7 @@
   },
   {
     "id": "commander_polish_lithuania_sobieski",
+    "type": "commander",
     "owner_id": "polish_lithuania",
     "name": "Jan III Sobieski",
     "portrait_asset": "polish_lithuania_sobieski.png",
@@ -547,6 +589,7 @@
   },
   {
     "id": "commander_polish_lithuania_poniatowski",
+    "type": "commander",
     "owner_id": "polish_lithuania",
     "name": "Józef Poniatowski",
     "portrait_asset": "polish_lithuania_poniatowski.png",
@@ -560,6 +603,7 @@
   },
   {
     "id": "commander_austria_duchy_buquoy",
+    "type": "commander",
     "owner_id": "austria_duchy",
     "name": "Charles Bonaventure de Bucquoy",
     "portrait_asset": "austria_duchy_buquoy.png",
@@ -573,6 +617,7 @@
   },
   {
     "id": "commander_austria_duchy_tilly",
+    "type": "commander",
     "owner_id": "austria_duchy",
     "name": "Johann Tserclaes, Count of Tilly",
     "portrait_asset": "austria_duchy_tilly.png",
@@ -586,6 +631,7 @@
   },
   {
     "id": "commander_austria_duchy_wallenstein",
+    "type": "commander",
     "owner_id": "austria_duchy",
     "name": "Albrecht von Wallenstein",
     "portrait_asset": "austria_duchy_wallenstein.png",
@@ -599,6 +645,7 @@
   },
   {
     "id": "commander_austria_duchy_montecuccoli",
+    "type": "commander",
     "owner_id": "austria_duchy",
     "name": "Raimondo Montecuccoli",
     "portrait_asset": "austria_duchy_montecuccoli.png",
@@ -612,6 +659,7 @@
   },
   {
     "id": "commander_austria_duchy_eugene_savoy",
+    "type": "commander",
     "owner_id": "austria_duchy",
     "name": "Prince Eugene of Savoy",
     "portrait_asset": "austria_duchy_eugene_savoy.png",
@@ -625,6 +673,7 @@
   },
   {
     "id": "commander_austria_duchy_dahun",
+    "type": "commander",
     "owner_id": "austria_duchy",
     "name": "Leopold Joseph von Daun",
     "portrait_asset": "austria_duchy_dahun.png",
@@ -638,6 +687,7 @@
   },
   {
     "id": "commander_austria_duchy_lorraine_charles",
+    "type": "commander",
     "owner_id": "austria_duchy",
     "name": "Charles of Lorraine",
     "portrait_asset": "austria_duchy_lorraine_charles.png",
@@ -651,6 +701,7 @@
   },
   {
     "id": "commander_bohemian_kingdom_thurn",
+    "type": "commander",
     "owner_id": "bohemian_kingdom",
     "name": "Heinrich Matthias von Thurn",
     "portrait_asset": "bohemian_kingdom_thurn.png",
@@ -664,6 +715,7 @@
   },
   {
     "id": "commander_hungarian_kingdom_batthyany",
+    "type": "commander",
     "owner_id": "hungarian_kingdom",
     "name": "Adam Batthyány",
     "portrait_asset": "hungarian_kingdom_batthyany.png",
@@ -677,6 +729,7 @@
   },
   {
     "id": "commander_transylvania_principality_bethlen",
+    "type": "commander",
     "owner_id": "transylvania_principality",
     "name": "Gabriel Bethlen",
     "portrait_asset": "transylvania_principality_bethlen.png",
@@ -690,6 +743,7 @@
   },
   {
     "id": "commander_transylvania_principality_rakoczi",
+    "type": "commander",
     "owner_id": "transylvania_principality",
     "name": "George I Rákóczi",
     "portrait_asset": "transylvania_principality_rakoczi.png",
@@ -703,6 +757,7 @@
   },
   {
     "id": "commander_hre_maximilian_i",
+    "type": "commander",
     "owner_id": "hre",
     "name": "Maximilian I, Elector of Bavaria",
     "portrait_asset": "hre_maximilian_i.png",
@@ -716,6 +771,7 @@
   },
   {
     "id": "commander_hre_tillly_hre",
+    "type": "commander",
     "owner_id": "hre",
     "name": "Johann Tilly",
     "portrait_asset": "hre_tillly_hre.png",
@@ -729,6 +785,7 @@
   },
   {
     "id": "commander_bavaria_duchy_maximilian_bavaria",
+    "type": "commander",
     "owner_id": "bavaria_duchy",
     "name": "Maximilian I of Bavaria",
     "portrait_asset": "bavaria_duchy_maximilian_bavaria.png",
@@ -742,6 +799,7 @@
   },
   {
     "id": "commander_saxony_duchy_john_george",
+    "type": "commander",
     "owner_id": "saxony_duchy",
     "name": "John George I of Saxony",
     "portrait_asset": "saxony_duchy_john_george.png",
@@ -755,6 +813,7 @@
   },
   {
     "id": "commander_saxony_duchy_john_george_ii",
+    "type": "commander",
     "owner_id": "saxony_duchy",
     "name": "John George II of Saxony",
     "portrait_asset": "saxony_duchy_john_george_ii.png",
@@ -768,6 +827,7 @@
   },
   {
     "id": "commander_brandenburg_margraviate_george_william",
+    "type": "commander",
     "owner_id": "brandenburg_margraviate",
     "name": "George William of Brandenburg",
     "portrait_asset": "brandenburg_margraviate_george_william.png",
@@ -781,6 +841,7 @@
   },
   {
     "id": "commander_brandenburg_margraviate_great_elector",
+    "type": "commander",
     "owner_id": "brandenburg_margraviate",
     "name": "Frederick William, Great Elector",
     "portrait_asset": "brandenburg_margraviate_great_elector.png",
@@ -794,6 +855,7 @@
   },
   {
     "id": "commander_sweden_kingdom_gustavus_adolphus",
+    "type": "commander",
     "owner_id": "sweden_kingdom",
     "name": "Gustav II Adolf",
     "portrait_asset": "sweden_kingdom_gustavus_adolphus.png",
@@ -807,6 +869,7 @@
   },
   {
     "id": "commander_sweden_kingdom_johan_baner",
+    "type": "commander",
     "owner_id": "sweden_kingdom",
     "name": "Johan Banér",
     "portrait_asset": "sweden_kingdom_johan_baner.png",
@@ -820,6 +883,7 @@
   },
   {
     "id": "commander_sweden_kingdom_torstensson",
+    "type": "commander",
     "owner_id": "sweden_kingdom",
     "name": "Lennart Torstensson",
     "portrait_asset": "sweden_kingdom_torstensson.png",
@@ -833,6 +897,7 @@
   },
   {
     "id": "commander_sweden_kingdom_carl_gustav_wrangeln",
+    "type": "commander",
     "owner_id": "sweden_kingdom",
     "name": "Carl Gustaf Wrangel",
     "portrait_asset": "sweden_kingdom_carl_gustav_wrangeln.png",
@@ -846,6 +911,7 @@
   },
   {
     "id": "commander_sweden_kingdom_charles_x",
+    "type": "commander",
     "owner_id": "sweden_kingdom",
     "name": "Charles X Gustav",
     "portrait_asset": "sweden_kingdom_charles_x.png",
@@ -859,6 +925,7 @@
   },
   {
     "id": "commander_sweden_kingdom_charles_xii",
+    "type": "commander",
     "owner_id": "sweden_kingdom",
     "name": "Charles XII",
     "portrait_asset": "sweden_kingdom_charles_xii.png",
@@ -872,6 +939,7 @@
   },
   {
     "id": "commander_denmark_kingdom_christian_iv",
+    "type": "commander",
     "owner_id": "denmark_kingdom",
     "name": "Christian IV",
     "portrait_asset": "denmark_kingdom_christian_iv.png",
@@ -885,6 +953,7 @@
   },
   {
     "id": "commander_denmark_kingdom_frederick_iii",
+    "type": "commander",
     "owner_id": "denmark_kingdom",
     "name": "Frederick III of Denmark",
     "portrait_asset": "denmark_kingdom_frederick_iii.png",
@@ -898,6 +967,7 @@
   },
   {
     "id": "commander_venice_morosini",
+    "type": "commander",
     "owner_id": "venice",
     "name": "Francesco Morosini",
     "portrait_asset": "venice_morosini.png",
@@ -911,6 +981,7 @@
   },
   {
     "id": "commander_venice_pesaro",
+    "type": "commander",
     "owner_id": "venice",
     "name": "Lodovico Flangini",
     "portrait_asset": "venice_pesaro.png",
@@ -924,6 +995,7 @@
   },
   {
     "id": "commander_genoa_doria_late",
+    "type": "commander",
     "owner_id": "genoa",
     "name": "Andrea Doria of Genoa",
     "portrait_asset": "genoa_doria_late.png",
@@ -937,6 +1009,7 @@
   },
   {
     "id": "commander_papal_states_barberini",
+    "type": "commander",
     "owner_id": "papal_states",
     "name": "Antonio Barberini",
     "portrait_asset": "papal_states_barberini.png",
@@ -950,6 +1023,7 @@
   },
   {
     "id": "commander_florence_rep_medici_cosimo",
+    "type": "commander",
     "owner_id": "florence_rep",
     "name": "Cosimo II de Medici",
     "portrait_asset": "florence_rep_medici_cosimo.png",
@@ -963,6 +1037,7 @@
   },
   {
     "id": "commander_savoy_county_savoy_eugene",
+    "type": "commander",
     "owner_id": "savoy_county",
     "name": "Eugene of Savoy",
     "portrait_asset": "savoy_county_savoy_eugene.png",
@@ -976,6 +1051,7 @@
   },
   {
     "id": "commander_swiss_confederacy_salomon_hirzel",
+    "type": "commander",
     "owner_id": "swiss_confederacy",
     "name": "Salomon Hirzel",
     "portrait_asset": "swiss_confederacy_salomon_hirzel.png",
@@ -989,6 +1065,7 @@
   },
   {
     "id": "commander_safavid_allahverdi_khan",
+    "type": "commander",
     "owner_id": "safavid",
     "name": "Allahverdi Khan",
     "portrait_asset": "safavid_allahverdi_khan.png",
@@ -1002,6 +1079,7 @@
   },
   {
     "id": "commander_safavid_imam_quli",
+    "type": "commander",
     "owner_id": "safavid",
     "name": "Imam-Quli Khan",
     "portrait_asset": "safavid_imam_quli.png",
@@ -1015,6 +1093,7 @@
   },
   {
     "id": "commander_safavid_shah_abbas",
+    "type": "commander",
     "owner_id": "safavid",
     "name": "Shah Abbas I",
     "portrait_asset": "safavid_shah_abbas.png",
@@ -1028,6 +1107,7 @@
   },
   {
     "id": "commander_safavid_naqdikhan",
+    "type": "commander",
     "owner_id": "safavid",
     "name": "Qarabagh Khan",
     "portrait_asset": "safavid_naqdikhan.png",
@@ -1041,6 +1121,7 @@
   },
   {
     "id": "commander_marinid_sultanate_ahmad_mansur",
+    "type": "commander",
     "owner_id": "marinid_sultanate",
     "name": "Ahmad al-Mansur",
     "portrait_asset": "marinid_sultanate_ahmad_mansur.png",
@@ -1054,6 +1135,7 @@
   },
   {
     "id": "commander_marinid_sultanate_moulay_ismaill",
+    "type": "commander",
     "owner_id": "marinid_sultanate",
     "name": "Moulay Ismail",
     "portrait_asset": "marinid_sultanate_moulay_ismaill.png",
@@ -1067,6 +1149,7 @@
   },
   {
     "id": "commander_crimean_khanate_gazi_giray",
+    "type": "commander",
     "owner_id": "crimean_khanate",
     "name": "Gazi II Giray",
     "portrait_asset": "crimean_khanate_gazi_giray.png",
@@ -1080,6 +1163,7 @@
   },
   {
     "id": "commander_crimean_khanate_mehemmed_giray",
+    "type": "commander",
     "owner_id": "crimean_khanate",
     "name": "Mehmed III Giray",
     "portrait_asset": "crimean_khanate_mehemmed_giray.png",
@@ -1093,6 +1177,7 @@
   },
   {
     "id": "commander_wallachia_prince_michael_brave",
+    "type": "commander",
     "owner_id": "wallachia_prince",
     "name": "Michael the Brave",
     "portrait_asset": "wallachia_prince_michael_brave.png",
@@ -1106,6 +1191,7 @@
   },
   {
     "id": "commander_moldavia_prince_jeremia_movilă",
+    "type": "commander",
     "owner_id": "moldavia_prince",
     "name": "Jeremias Movilă",
     "portrait_asset": "moldavia_prince_jeremia_movilă.png",
@@ -1119,6 +1205,7 @@
   },
   {
     "id": "commander_scotland_kingdom_montrose",
+    "type": "commander",
     "owner_id": "scotland_kingdom",
     "name": "James Graham, 1st Marquess of Montrose",
     "portrait_asset": "scotland_kingdom_montrose.png",
@@ -1132,6 +1219,7 @@
   },
   {
     "id": "commander_hospitaller_de_redin",
+    "type": "commander",
     "owner_id": "hospitaller",
     "name": "Alof de Wignacourt",
     "portrait_asset": "hospitaller_de_redin.png",

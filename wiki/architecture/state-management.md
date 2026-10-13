@@ -328,7 +328,7 @@ fallback'i vassal ilhakı sonrası oyuncuya geçtiğinde aynı panelden düzenle
 `DismissCommander()` komutanı ordudan ayırıp canonical havuzdan siler. Senaryo
 şablonlarının görevden alındıktan sonra yeniden eklenmemesi
 `dismissed_commander_ids` save alanıyla korunur.
-Oyuncu yeni komutan modalında aktif senaryonun `sprites/commanders/` portreleri
+Oyuncu yeni komutan modalında aktif senaryonun `sprites/characters/` portreleri
 arasından `F2` tuşu veya rastgele portre düğmesiyle seçim yapabilir; seçilen
 `portrait_asset` adla birlikte `ActionRecruitCommander` üzerinden state'e
 taşınır. Portre seçilmezse eski kayıtlar ve doğrudan domain çağrıları için
@@ -339,8 +339,11 @@ kaynak yetmiyorsa runtime aday üretilmez. Böylece adayın açtığı
 Taktisyen/Savunma uzmanlıkları rastgele görünür, fakat aynı save yeniden
 yüklendiğinde değişmez. Senaryodan gelen başlangıç şablonları başlangıç state'i
 olduğu için bu maliyeti ödemez.
-Senaryo başlangıç şablonları `data/commanders.json` dosyasından okunur. Her kayıt
-`id`, `owner_id`, `name`, başlangıç `level`/`experience`/`traits` ve ileride portre
+Senaryo başlangıç şablonları `data/characters.json` dosyasından okunur. Her kayıt
+`type` alanında `administrator`, `commander` veya `character` değerini taşır;
+yalnız ilk iki tip askeri komutan olarak atanabilir. Eski `commanders.json` dosyaları
+ve `type` alanı olmayan kayıtlar uyumluluk için okunmaya devam eder. Her kayıt
+`id`, `owner_id`, `name`, başlangıç `level`/`experience`/`traits` ve portre
 yüklemek için `portrait_asset` alanlarını taşıyabilir. Şablon runtime komutanına
 clone edilir; savaşlarda değişen XP, seviye ve atamalar save state içindeki
 `GameState.Commanders` havuzunda tutulur.

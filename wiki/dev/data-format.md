@@ -87,9 +87,16 @@ fraksiyonlara açıktır; doluysa yalnızca listelenen fraksiyonlara gösterilir
 
 Her senaryo kendi bağımsız veri setini taşır — aşağıdaki şemalar her senaryo için geçerlidir.
 
-## commanders.json
+## characters.json
 
-Komutan şablonlarında `start_year` zorunlu başlangıç yılını, `end_year` ise
+Karakter kayıtları `type` alanıyla sınıflandırılır. Desteklenen değerler
+`administrator`, `commander` ve `character`'dır. `administrator` ve `commander`
+tipleri kara ordusu veya savaş gemisi içeren filolara atanabilir; `character`
+tipi askeri komutan roster'ında gösterilmez ve atanamaz. Eski senaryolarda
+`type` eksikse kayıt geriye dönük uyumluluk için `commander` kabul edilir.
+Portre dosya adları `sprites/characters/` altından çözülür.
+
+Komutan tipindeki karakter şablonlarında `start_year` zorunlu başlangıç yılını, `end_year` ise
 doğal ölüm sınırını belirtir. Komutan `start_year` yılında aktif olur; `end_year`
 başladığında ölümü `GameState.DeadCommanderIDs` içine kaydedilir ve komutan
 runtime roster'ından çıkarılır. `end_year` eksikse tarih kaynaklı doğal ölüm yoktur.
@@ -101,6 +108,7 @@ eski senaryo kayıtları için geriye dönük uyumluluk amacıyla okunmaya devam
 ```json
 {
   "id": "commander_ottoman_bayezid_i",
+  "type": "commander",
   "owner_id": "ottoman",
   "name": "Yıldırım Bayezid",
   "portrait_asset": "ottoman_bayezid_i.png",
@@ -626,7 +634,7 @@ Tarihsel event'in hedef tarihi geçmiş olsa bile henüz tetiklenmediyse diğer
 koşulları sağlandığı ilk turda çalışabilir. `one_shot: true`, event ilk kez
 çalıştıktan sonra tekrarını engeller; geç kalmış event'i kendiliğinden iptal
 etmez. Önemli karakterlerin hâlâ hayatta olmasını gerektiren event'ler
-`requires_alive_commanders` listesinde `commanders.json` içindeki komutan ID'lerini
+`requires_alive_commanders` listesinde `characters.json` içindeki komutan ID'lerini
 kullanabilir. Koşul, komutanın başlangıç yılına gelinmediyse veya ölüm state'i
 set edildiyse başarısız olur. `end_year` doğal ölümü kaydeder; event/choice
 effect'indeki `commander_deaths` listesi ise erken ölümü anında kaydeder ve

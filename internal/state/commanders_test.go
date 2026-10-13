@@ -394,6 +394,58 @@ func TestAssignCommanderToArmyRejectsNonMilitaryFleets(t *testing.T) {
 	}
 }
 
+func TestCharacterTypeControlsArmyAndNavyAssignment(t *testing.T) {
+	types := []struct {
+		characterType army.CharacterType
+		canAssign     bool
+	}{
+		{characterType: army.CharacterTypeAdministrator, canAssign: true},
+		{characterType: army.CharacterTypeCommander, canAssign: true},
+		{characterType: army.CharacterTypeCharacter, canAssign: false},
+	}
+
+	for _, tt := range types {
+		for _, isNaval := range []bool{false, true} {
+			name := string(tt.characterType)
+			if isNaval {
+				name += " donanma"
+			} else {
+				name += " ordu"
+			}
+			t.Run(name, func(t *testing.T) {
+				const armyID army.ArmyID = "army_test"
+				commander := &army.Commander{
+					ID:      "character_test",
+					Type:    tt.characterType,
+					OwnerID: "player",
+					Name:    "Test Karakter",
+				}
+				currentArmy := &army.Army{ID: armyID, OwnerID: "player", IsNaval: isNaval}
+				gs := &GameState{
+					Armies:     map[army.ArmyID]*army.Army{armyID: currentArmy},
+					Commanders: map[string]*army.Commander{commander.ID: commander},
+				}
+				if isNaval {
+					currentArmy.Units = []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}}
+					gs.UnitTypes = map[string]*army.UnitType{
+						"warship": {ID: "warship", Category: army.CategoryNavalWar},
+					}
+				}
+
+				if got := gs.AssignCommanderToArmy(commander.ID, armyID); got != tt.canAssign {
+					t.Fatalf("AssignCommanderToArmy() = %v, want %v", got, tt.canAssign)
+				}
+				if tt.canAssign && currentArmy.Commander != commander {
+					t.Fatal("atanabilir karakter orduya bağlanmadı")
+				}
+				if !tt.canAssign && currentArmy.Commander != nil {
+					t.Fatal("character tipi orduya komutan olarak bağlandı")
+				}
+			})
+		}
+	}
+}
+
 func TestReleaseInvalidFleetCommandersRemovesOnlyCivilianFleetCommanders(t *testing.T) {
 	unitTypes := map[string]*army.UnitType{
 		"transport":     {ID: "transport", Category: army.CategoryNavalTrans},

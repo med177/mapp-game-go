@@ -50,7 +50,8 @@ var scenarioBaseCacheFiles = []string{
 	"data/ai_strategies.json",
 	"data/relations.json",
 	"data/units.json",
-	"data/commanders.json",
+	"data/characters.json",
+	"data/commanders.json", // Eski senaryo paketleri için cache fingerprint uyumluluğu.
 	"data/buildings.json",
 	"data/technologies.json",
 	"data/political_transformations.json",
@@ -599,7 +600,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 	if err != nil {
 		log.Printf("Birim tipleri yüklenemedi: %v", err)
 	}
-	commanderTemplates, err := army.LoadCommanderTemplates(dp("commanders.json"))
+	commanderTemplates, err := army.LoadCharacterTemplates(dp("characters.json"))
 	if err != nil {
 		log.Printf("Komutan şablonları yüklenemedi: %v", err)
 		commanderTemplates = map[string][]*army.Commander{}

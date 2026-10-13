@@ -4795,7 +4795,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	}
 	advance()
 	yield()
-	commanderTemplates, err := army.LoadCommanderTemplates(dp("commanders.json"))
+	commanderTemplates, err := army.LoadCharacterTemplates(dp("characters.json"))
 	if err != nil {
 		log.Printf("Komutan şablonları yüklenemedi: %v", err)
 		commanderTemplates = map[string][]*army.Commander{}

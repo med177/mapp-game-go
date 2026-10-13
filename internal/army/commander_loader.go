@@ -4,13 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
-// LoadCommanderTemplates senaryo commanders.json dosyasındaki başlangıç
-// komutanlarını fraksiyon ID'sine göre indeksler. Bu kayıtlar runtime kariyer
-// state'inden ayrıdır; oyun başında clone edilerek GameState.Commanders'a alınır.
-func LoadCommanderTemplates(path string) (map[string][]*Commander, error) {
+// LoadCharacterTemplates senaryo characters.json dosyasındaki kayıtları fraksiyon ID'sine göre indeksler.
+// Eski senaryoların commanders.json dosyası da geriye dönük olarak okunur.
+func LoadCharacterTemplates(path string) (map[string][]*Commander, error) {
 	data, err := os.ReadFile(path)
+	if os.IsNotExist(err) && filepath.Base(path) == "characters.json" {
+		data, err = os.ReadFile(filepath.Join(filepath.Dir(path), "commanders.json"))
+	}
 	if err != nil {
 		if os.IsNotExist(err) {
 			return map[string][]*Commander{}, nil
@@ -20,7 +23,7 @@ func LoadCommanderTemplates(path string) (map[string][]*Commander, error) {
 
 	var list []*Commander
 	if err := json.Unmarshal(data, &list); err != nil {
-		return nil, fmt.Errorf("commanders JSON parse edilemedi: %w", err)
+		return nil, fmt.Errorf("characters JSON parse edilemedi: %w", err)
 	}
 
 	result := make(map[string][]*Commander)
@@ -28,9 +31,17 @@ func LoadCommanderTemplates(path string) (map[string][]*Commander, error) {
 		if commander == nil || commander.ID == "" || commander.OwnerID == "" || commander.Name == "" {
 			continue
 		}
+		if commander.Type != "" && !commander.Type.IsValid() {
+			continue
+		}
 		commander.AssignedArmyID = ""
 		commander.Normalize()
 		result[commander.OwnerID] = append(result[commander.OwnerID], commander)
 	}
 	return result, nil
+}
+
+// LoadCommanderTemplates eski çağrı noktaları için uyumluluk sarmalayıcısıdır.
+func LoadCommanderTemplates(path string) (map[string][]*Commander, error) {
+	return LoadCharacterTemplates(path)
 }

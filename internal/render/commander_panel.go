@@ -95,10 +95,14 @@ func commanderPortraitPath(asset string) string {
 	if clean == "." || clean == "" || filepath.IsAbs(clean) || slash == ".." || strings.HasPrefix(slash, "../") {
 		return ""
 	}
+	if strings.HasPrefix(slash, "commanders/") {
+		clean = filepath.Join("characters", strings.TrimPrefix(slash, "commanders/"))
+		slash = filepath.ToSlash(clean)
+	}
 	if strings.ContainsRune(slash, '/') {
 		return filepath.Join(ActiveScenarioPath, "sprites", clean)
 	}
-	return filepath.Join(ActiveScenarioPath, "sprites", "commanders", clean)
+	return filepath.Join(ActiveScenarioPath, "sprites", "characters", clean)
 }
 
 func drawCommanderPortraitAsset(screen *ebiten.Image, asset string, x, y, w, h float64) {
@@ -257,7 +261,7 @@ func commanderRecruitPortraits() []string {
 	if ActiveScenarioPath == "" {
 		return nil
 	}
-	entries, err := os.ReadDir(filepath.Join(ActiveScenarioPath, "sprites", "commanders"))
+	entries, err := os.ReadDir(filepath.Join(ActiveScenarioPath, "sprites", "characters"))
 	if err != nil {
 		return nil
 	}

@@ -1,6 +1,7 @@
 [
   {
     "id": "cmd_robb_stark",
+    "type": "commander",
     "owner_id": "stark",
     "name": "Robb Stark",
     "portrait_asset": "robb_stark.png",
@@ -14,6 +15,7 @@
   },
   {
     "id": "cmd_ned_stark",
+    "type": "commander",
     "owner_id": "stark",
     "name": "Eddard Stark",
     "portrait_asset": "ned_stark.png",
@@ -27,6 +29,7 @@
   },
   {
     "id": "cmd_tywin_lannister",
+    "type": "commander",
     "owner_id": "lannister",
     "name": "Tywin Lannister",
     "portrait_asset": "tywin_lannister.png",
@@ -40,6 +43,7 @@
   },
   {
     "id": "cmd_jaime_lannister",
+    "type": "commander",
     "owner_id": "lannister",
     "name": "Jaime Lannister",
     "portrait_asset": "jaime_lannister.png",
@@ -53,6 +57,7 @@
   },
   {
     "id": "cmd_stannis_baratheon",
+    "type": "commander",
     "owner_id": "baratheon_dragonstone",
     "name": "Stannis Baratheon",
     "portrait_asset": "stannis.png",
@@ -66,6 +71,7 @@
   },
   {
     "id": "cmd_renly_baratheon",
+    "type": "commander",
     "owner_id": "baratheon_stormsend",
     "name": "Renly Baratheon",
     "portrait_asset": "renly.png",
@@ -78,6 +84,7 @@
   },
   {
     "id": "cmd_daenerys_targaryen",
+    "type": "commander",
     "owner_id": "targaryen",
     "name": "Daenerys Targaryen",
     "portrait_asset": "daenerys.png",
@@ -91,6 +98,7 @@
   },
   {
     "id": "cmd_jon_snow",
+    "type": "commander",
     "owner_id": "nights_watch",
     "name": "Jon Snow",
     "portrait_asset": "jon_snow.png",
@@ -104,6 +112,7 @@
   },
   {
     "id": "cmd_yohn_royce",
+    "type": "commander",
     "owner_id": "arryn",
     "name": "Yohn Royce",
     "portrait_asset": "yohn_royce.png",
@@ -117,6 +126,7 @@
   },
   {
     "id": "cmd_brynden_tully",
+    "type": "commander",
     "owner_id": "tully",
     "name": "Brynden Tully",
     "portrait_asset": "brynden_tully.png",
@@ -130,6 +140,7 @@
   },
   {
     "id": "cmd_edmure_tully",
+    "type": "commander",
     "owner_id": "tully",
     "name": "Edmure Tully",
     "portrait_asset": "edmure_tully.png",
@@ -143,6 +154,7 @@
   },
   {
     "id": "cmd_mance_rayder",
+    "type": "commander",
     "owner_id": "free_folk",
     "name": "Mance Rayder",
     "portrait_asset": "mance_rayder.png",
@@ -156,6 +168,7 @@
   },
   {
     "id": "cmd_tormund_giantsbane",
+    "type": "commander",
     "owner_id": "free_folk",
     "name": "Tormund Giantsbane",
     "portrait_asset": "tormund_giantsbane.png",
@@ -169,6 +182,7 @@
   },
   {
     "id": "cmd_roose_bolton",
+    "type": "commander",
     "owner_id": "bolton",
     "name": "Roose Bolton",
     "portrait_asset": "roose_bolton.png",
@@ -182,6 +196,7 @@
   },
   {
     "id": "cmd_ramsay_bolton",
+    "type": "commander",
     "owner_id": "bolton",
     "name": "Ramsay Snow",
     "portrait_asset": "ramsay_bolton.png",
@@ -195,6 +210,7 @@
   },
   {
     "id": "cmd_sealord_braavos",
+    "type": "commander",
     "owner_id": "braavos",
     "name": "Sealord of Braavos",
     "portrait_asset": "sealord_braavos.png",
@@ -208,6 +224,7 @@
   },
   {
     "id": "cmd_beric_dondarrion",
+    "type": "commander",
     "owner_id": "brotherhood_without_banners",
     "name": "Beric Dondarrion",
     "portrait_asset": "beric_dondarrion.png",
@@ -221,6 +238,7 @@
   },
   {
     "id": "cmd_thoros_of_myr",
+    "type": "commander",
     "owner_id": "brotherhood_without_banners",
     "name": "Thoros of Myr",
     "portrait_asset": "thoros_of_myr.png",
@@ -234,6 +252,7 @@
   },
   {
     "id": "cmd_greatjon_umber",
+    "type": "commander",
     "owner_id": "stark",
     "name": "Greatjon Umber",
     "portrait_asset": "greatjon_umber.png",
@@ -247,6 +266,7 @@
   },
   {
     "id": "cmd_galbart_glover",
+    "type": "commander",
     "owner_id": "stark",
     "name": "Galbart Glover",
     "portrait_asset": "galbart_glover.png",
@@ -260,6 +280,7 @@
   },
   {
     "id": "cmd_rickard_karstark",
+    "type": "commander",
     "owner_id": "stark",
     "name": "Rickard Karstark",
     "portrait_asset": "rickard_karstark.png",
@@ -273,6 +294,7 @@
   },
   {
     "id": "cmd_maege_mormont",
+    "type": "commander",
     "owner_id": "stark",
     "name": "Maege Mormont",
     "portrait_asset": "maege_mormont.png",
@@ -286,6 +308,7 @@
   },
   {
     "id": "cmd_rodrik_cassel",
+    "type": "commander",
     "owner_id": "stark",
     "name": "Rodrik Cassel",
     "portrait_asset": "rodrik_cassel.png",
@@ -299,6 +322,7 @@
   },
   {
     "id": "cmd_gregor_clegane",
+    "type": "commander",
     "owner_id": "lannister",
     "name": "Gregor Clegane",
     "portrait_asset": "gregor_clegane.png",
@@ -312,6 +336,7 @@
   },
   {
     "id": "cmd_kevan_lannister",
+    "type": "commander",
     "owner_id": "lannister",
     "name": "Kevan Lannister",
     "portrait_asset": "kevan_lannister.png",
@@ -325,6 +350,7 @@
   },
   {
     "id": "cmd_addam_marbrand",
+    "type": "commander",
     "owner_id": "lannister",
     "name": "Addam Marbrand",
     "portrait_asset": "addam_marbrand.png",
@@ -338,6 +364,7 @@
   },
   {
     "id": "cmd_tyrion_lannister",
+    "type": "commander",
     "owner_id": "lannister",
     "name": "Tyrion Lannister",
     "portrait_asset": "tyrion_lannister.png",
@@ -351,6 +378,7 @@
   },
   {
     "id": "cmd_sandor_clegane",
+    "type": "commander",
     "owner_id": "baratheon_king",
     "name": "Sandor Clegane",
     "portrait_asset": "sandor_clegane.png",
@@ -364,6 +392,7 @@
   },
   {
     "id": "cmd_barristan_selmy",
+    "type": "commander",
     "owner_id": "targaryen",
     "name": "Barristan Selmy",
     "portrait_asset": "barristan_selmy.png",
@@ -377,6 +406,7 @@
   },
   {
     "id": "cmd_davos_seaworth",
+    "type": "commander",
     "owner_id": "baratheon_dragonstone",
     "name": "Davos Seaworth",
     "portrait_asset": "davos_seaworth.png",
@@ -390,6 +420,7 @@
   },
   {
     "id": "cmd_salladhor_saan",
+    "type": "commander",
     "owner_id": "baratheon_dragonstone",
     "name": "Salladhor Saan",
     "portrait_asset": "salladhor_saan.png",
@@ -403,6 +434,7 @@
   },
   {
     "id": "cmd_axell_florent",
+    "type": "commander",
     "owner_id": "baratheon_dragonstone",
     "name": "Axell Florent",
     "portrait_asset": "axell_florent.png",
@@ -416,6 +448,7 @@
   },
   {
     "id": "cmd_rolland_storm",
+    "type": "commander",
     "owner_id": "baratheon_dragonstone",
     "name": "Rolland Storm",
     "portrait_asset": "rolland_storm.png",
@@ -429,6 +462,7 @@
   },
   {
     "id": "cmd_loras_tyrell",
+    "type": "commander",
     "owner_id": "tyrell",
     "name": "Loras Tyrell",
     "portrait_asset": "loras_tyrell.png",
@@ -442,6 +476,7 @@
   },
   {
     "id": "cmd_randyll_tarly",
+    "type": "commander",
     "owner_id": "tyrell",
     "name": "Randyll Tarly",
     "portrait_asset": "randyll_tarly.png",
@@ -455,6 +490,7 @@
   },
   {
     "id": "cmd_mace_tyrell",
+    "type": "commander",
     "owner_id": "tyrell",
     "name": "Mace Tyrell",
     "portrait_asset": "mace_tyrell.png",
@@ -468,6 +504,7 @@
   },
   {
     "id": "cmd_mathis_rowan",
+    "type": "commander",
     "owner_id": "tyrell",
     "name": "Mathis Rowan",
     "portrait_asset": "mathis_rowan.png",
@@ -481,6 +518,7 @@
   },
   {
     "id": "cmd_balon_greyjoy",
+    "type": "commander",
     "owner_id": "greyjoy",
     "name": "Balon Greyjoy",
     "portrait_asset": "balon_greyjoy.png",
@@ -494,6 +532,7 @@
   },
   {
     "id": "cmd_theon_greyjoy",
+    "type": "commander",
     "owner_id": "greyjoy",
     "name": "Theon Greyjoy",
     "portrait_asset": "theon_greyjoy.png",
@@ -507,6 +546,7 @@
   },
   {
     "id": "cmd_asha_greyjoy",
+    "type": "commander",
     "owner_id": "greyjoy",
     "name": "Asha Greyjoy",
     "portrait_asset": "asha_greyjoy.png",
@@ -520,6 +560,7 @@
   },
   {
     "id": "cmd_victarion_greyjoy",
+    "type": "commander",
     "owner_id": "greyjoy",
     "name": "Victarion Greyjoy",
     "portrait_asset": "victarion_greyjoy.png",
@@ -533,6 +574,7 @@
   },
   {
     "id": "cmd_rodrik_harlaw",
+    "type": "commander",
     "owner_id": "greyjoy",
     "name": "Rodrik Harlaw",
     "portrait_asset": "rodrik_harlaw.png",
@@ -546,6 +588,7 @@
   },
   {
     "id": "cmd_dagmer_cleftjaw",
+    "type": "commander",
     "owner_id": "greyjoy",
     "name": "Dagmer Cleftjaw",
     "portrait_asset": "dagmer_cleftjaw.png",
@@ -559,6 +602,7 @@
   },
   {
     "id": "cmd_oberyn_martell",
+    "type": "commander",
     "owner_id": "martell",
     "name": "Oberyn Martell",
     "portrait_asset": "oberyn_martell.png",
@@ -572,6 +616,7 @@
   },
   {
     "id": "cmd_areo_hotah",
+    "type": "commander",
     "owner_id": "martell",
     "name": "Areo Hotah",
     "portrait_asset": "areo_hotah.png",
@@ -585,6 +630,7 @@
   },
   {
     "id": "cmd_obara_sand",
+    "type": "commander",
     "owner_id": "martell",
     "name": "Obara Sand",
     "portrait_asset": "obara_sand.png",
@@ -598,6 +644,7 @@
   },
   {
     "id": "cmd_lynn_corbray",
+    "type": "commander",
     "owner_id": "arryn",
     "name": "Lyn Corbray",
     "portrait_asset": "lyn_corbray.png",
@@ -611,6 +658,7 @@
   },
   {
     "id": "cmd_vardis_egen",
+    "type": "commander",
     "owner_id": "arryn",
     "name": "Vardis Egen",
     "portrait_asset": "vardis_egen.png",
@@ -624,6 +672,7 @@
   },
   {
     "id": "cmd_jeor_mormont",
+    "type": "commander",
     "owner_id": "nights_watch",
     "name": "Jeor Mormont",
     "portrait_asset": "jeor_mormont.png",
@@ -637,6 +686,7 @@
   },
   {
     "id": "cmd_qhorin_halfhand",
+    "type": "commander",
     "owner_id": "nights_watch",
     "name": "Qhorin Halfhand",
     "portrait_asset": "qhorin_halfhand.png",
@@ -650,6 +700,7 @@
   },
   {
     "id": "cmd_alliser_thorne",
+    "type": "commander",
     "owner_id": "nights_watch",
     "name": "Alliser Thorne",
     "portrait_asset": "alliser_thorne.png",
@@ -663,6 +714,7 @@
   },
   {
     "id": "cmd_rattleshirt",
+    "type": "commander",
     "owner_id": "free_folk",
     "name": "Rattleshirt",
     "portrait_asset": "rattleshirt.png",
@@ -676,6 +728,7 @@
   },
   {
     "id": "cmd_varamyr_sixskins",
+    "type": "commander",
     "owner_id": "free_folk",
     "name": "Varamyr Sixskins",
     "portrait_asset": "varamyr_sixskins.png",
@@ -689,6 +742,7 @@
   },
   {
     "id": "cmd_styr",
+    "type": "commander",
     "owner_id": "free_folk",
     "name": "Styr, the Magnar of Thenn",
     "portrait_asset": "styr.png",
@@ -702,6 +756,7 @@
   },
   {
     "id": "cmd_jorah_mormont",
+    "type": "commander",
     "owner_id": "targaryen",
     "name": "Jorah Mormont",
     "portrait_asset": "jorah_mormont.png",
@@ -715,6 +770,7 @@
   },
   {
     "id": "cmd_grey_worm",
+    "type": "commander",
     "owner_id": "targaryen",
     "name": "Grey Worm",
     "portrait_asset": "grey_worm.png",
@@ -728,6 +784,7 @@
   },
   {
     "id": "cmd_daario_naharis",
+    "type": "commander",
     "owner_id": "targaryen",
     "name": "Daario Naharis",
     "portrait_asset": "daario_naharis.png",
@@ -741,6 +798,7 @@
   },
   {
     "id": "cmd_robert_baratheon",
+    "type": "commander",
     "owner_id": "baratheon_king",
     "name": "Robert Baratheon",
     "portrait_asset": "robert_baratheon.png",
@@ -754,6 +812,7 @@
   },
   {
     "id": "cmd_night_king",
+    "type": "commander",
     "owner_id": "others",
     "name": "Gece Kralı",
     "portrait_asset": "night_king.png",
@@ -768,6 +827,7 @@
   },
   {
     "id": "cmd_brienne_tarth",
+    "type": "commander",
     "owner_id": "tarth",
     "name": "Brienne of Tarth",
     "portrait_asset": "brienne_tarth.png",
@@ -781,6 +841,7 @@
   },
   {
     "id": "cmd_selwyn_tarth",
+    "type": "commander",
     "owner_id": "tarth",
     "name": "Selwyn Tarth",
     "portrait_asset": "selwyn_tarth.png",

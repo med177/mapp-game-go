@@ -3,6 +3,25 @@ package army
 // CommanderTrait ordunun komutanından gelen kalıcı uzmanlık türünü belirtir.
 type CommanderTrait string
 
+// CharacterType, senaryo karakterinin oyun içindeki rolünü belirtir.
+type CharacterType string
+
+const (
+	CharacterTypeAdministrator CharacterType = "administrator"
+	CharacterTypeCommander     CharacterType = "commander"
+	CharacterTypeCharacter     CharacterType = "character"
+)
+
+// IsValid, karakter tipinin desteklenen değerlerden biri olup olmadığını söyler.
+func (t CharacterType) IsValid() bool {
+	switch t {
+	case CharacterTypeAdministrator, CharacterTypeCommander, CharacterTypeCharacter:
+		return true
+	default:
+		return false
+	}
+}
+
 const (
 	CommanderTraitVeteran   CommanderTrait = "veteran"
 	CommanderTraitTactician CommanderTrait = "tactician"
@@ -55,6 +74,7 @@ type CommanderEffects struct {
 // Commander bir orduya atanmış komutanın kalıcı kariyer state'idir.
 type Commander struct {
 	ID                          string                       `json:"id"`
+	Type                        CharacterType                `json:"type"`
 	OwnerID                     string                       `json:"owner_id"`
 	AssignedArmyID              ArmyID                       `json:"assigned_army_id,omitempty"`
 	Name                        string                       `json:"name"`
@@ -93,15 +113,25 @@ func (c *Commander) ActiveInYear(year int) bool {
 func NewCommander(id, name string) *Commander {
 	return &Commander{
 		ID:    id,
+		Type:  CharacterTypeCommander,
 		Name:  name,
 		Level: CommanderStartingLevel,
 	}
+}
+
+// CanCommandArmy, karakterin kara ordusu veya donanma komutanlığına atanıp atanamayacağını söyler.
+// Tipi eksik eski kayıtlar komutan kabul edilir.
+func (c *Commander) CanCommandArmy() bool {
+	return c != nil && (c.Type == "" || c.Type == CharacterTypeAdministrator || c.Type == CharacterTypeCommander)
 }
 
 // Normalize eski veya eksik save verisinden gelen komutan state'ini güvenli hale getirir.
 func (c *Commander) Normalize() {
 	if c == nil {
 		return
+	}
+	if c.Type == "" {
+		c.Type = CharacterTypeCommander
 	}
 	if c.Level < CommanderStartingLevel {
 		c.Level = CommanderStartingLevel
