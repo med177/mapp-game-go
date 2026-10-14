@@ -1158,5 +1158,50 @@
         "core": true
       }
     ]
+  },
+  {
+    "id": "mormont",
+    "name": "House Mormont",
+    "name_tr": "Mormont Hanesi",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
+    "flag": "mormont.png",
+    "religion": "faith_of_the_seven",
+    "color": [
+      34,
+      139,
+      34
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "capital_settlement_id": "bear_island_main",
+    "gold": 1000,
+    "grain": 500,
+    "iron": 100,
+    "timber": 200,
+    "stone": 150,
+    "spice": 20,
+    "cloth": 50,
+    "research": {
+      "completed": {
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "ranger_scouting": true,
+        "coastal_navigation": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50,
+    "ai_expansion_targets": [
+      "stark"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "bear_island",
+        "value": 100,
+        "core": true
+      }
+    ]
   }
 ]

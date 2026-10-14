@@ -26,6 +26,7 @@ const (
 	uiLayerArmy                 = "army-panel"
 	uiLayerSiege                = "siege-panel"
 	uiLayerActiveWars           = "active-wars-panel"
+	uiLayerCharacterRoster      = "character-roster-panel"
 	uiLayerMerchantRoute        = "merchant-route-panel"
 	uiLayerNavalMission         = "naval-mission-panel"
 	uiLayerDiplomacy            = "diplomacy-panel"
@@ -116,7 +117,7 @@ func (r *Renderer) uiLayerPointerAt(mx, my float64) bool {
 	switch layer.ID {
 	case uiLayerTopStatus:
 		modeButtons := buildMapModeButtons()
-		return activeWarsHudButtonHit(mx, my) || (topStatusPanelHit(mx, my) && (r.overextensionHUDHovering(mx, my) || r.nearestEventHUDHovering(mx, my) || r.nearestGeneralEventHUDHovering(mx, my) || r.grainEconomyPopupHovering(mx, my) || r.goldIncomePopupHovering(mx, my) ||
+		return activeWarsHudButtonHit(mx, my) || characterRosterHUDButtonHit(mx, my) || (topStatusPanelHit(mx, my) && (r.overextensionHUDHovering(mx, my) || r.nearestEventHUDHovering(mx, my) || r.nearestGeneralEventHUDHovering(mx, my) || r.grainEconomyPopupHovering(mx, my) || r.goldIncomePopupHovering(mx, my) ||
 			r.armyOrganizationPopupHovering(mx, my) ||
 			victoryProgressHit(mx, my) || modeButtons[0].HitTest(mx, my) || modeButtons[1].HitTest(mx, my) ||
 			(imperialPanelAvailable(r.gs) && imperialHUDButtonHit(mx, my))))
@@ -175,6 +176,8 @@ func (r *Renderer) uiLayerPointerAt(mx, my float64) bool {
 		return false
 	case uiLayerCommander:
 		return r.commanderPanelHovering(mx, my)
+	case uiLayerCharacterRoster:
+		return r.characterRosterPanelHovering(mx, my)
 	case uiLayerEditInspector:
 		return r.editInspectorActiveButtonAt(mx, my) != editButtonNone
 	case uiLayerEditForm:
@@ -289,6 +292,13 @@ func (r *Renderer) rebuildUILayers() {
 		W: activeWarsButton.W,
 		H: activeWarsButton.H,
 	})
+	characterRosterButton := buildCharacterRosterHUDButton()
+	r.addUILayer(uiLayerTopStatus, gameui.Rect{
+		X: characterRosterButton.X,
+		Y: characterRosterButton.Y,
+		W: characterRosterButton.W,
+		H: characterRosterButton.H,
+	})
 	r.addUILayer(uiLayerEventLog, uiLayerRect(float64(evLogX()), float64(evLogY()), float64(evLogW), float64(eventLogPanelH(r.eventLogCollapsed))))
 	r.addUILayer(uiLayerMinimap, uiLayerRect(float64(minimapX()), float64(minimapY()), float64(minimapW), float64(minimapH)))
 	if r.grainEconomyPopupHoveringAtCursor() {
@@ -373,6 +383,10 @@ func (r *Renderer) rebuildUILayers() {
 		case overlayPanelActiveWars:
 			if r.showActiveWars {
 				r.addUILayer(uiLayerActiveWars, activeWarsPanelRect())
+			}
+		case overlayPanelCharacterRoster:
+			if r.showCharacterRoster {
+				r.addUILayer(uiLayerCharacterRoster, characterRosterPanelRect())
 			}
 		}
 	}

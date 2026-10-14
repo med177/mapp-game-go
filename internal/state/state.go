@@ -1653,7 +1653,7 @@ func (s *GameState) TaxIncomeForFaction(fid faction.FactionID) int {
 			total += operator
 		}
 	}
-	return total
+	return total + s.TreasurerTaxIncomeBonus(fid, total)
 }
 
 // GrainSaleGoldBudget bu turda acil/otomatik tahıl satışında kullanılabilecek

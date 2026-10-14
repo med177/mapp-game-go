@@ -3,6 +3,7 @@ package victory
 import (
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
@@ -29,6 +30,37 @@ func TestOtherIncomeIsIncludedInGoldIncomeCalculations(t *testing.T) {
 	}
 	if got := GoldIncomeForFaction(gs, fid); got != 35 {
 		t.Fatalf("gross gold income = %d, want 35", got)
+	}
+}
+
+func TestTreasurerBonusMatchesTaxPreviewAndGrossIncome(t *testing.T) {
+	const fid faction.FactionID = "player"
+	character := &army.Commander{ID: "cmd_tywin", Type: army.CharacterTypeAdministrator, OwnerID: string(fid), Name: "Tywin"}
+	region := &world.Region{ID: "capital", OwnerID: string(fid), BaseGoldIncome: 1000, TaxRate: 50, Satisfaction: 50}
+	gs := &state.GameState{
+		Year:            300,
+		Month:           6,
+		PlayerFactionID: fid,
+		Factions:        map[faction.FactionID]*faction.Faction{fid: {ID: fid}},
+		Regions:         map[world.RegionID]*world.Region{region.ID: region},
+		Commanders:      map[string]*army.Commander{character.ID: character},
+	}
+
+	basePreview := GoldEconomyPreview(gs, fid)
+	baseGross := GoldIncomeForFaction(gs, fid)
+	if !gs.AssignCharacterToCouncilRole(fid, character.ID, state.CouncilRoleTreasurer) {
+		t.Fatal("treasurer assignment failed")
+	}
+	preview := GoldEconomyPreview(gs, fid)
+	bonus := basePreview.TaxIncome * state.TreasurerTaxIncomeBonusPercent / 100
+	if got, want := preview.TaxIncome, basePreview.TaxIncome+bonus; got != want {
+		t.Fatalf("tax preview with treasurer = %d, want %d", got, want)
+	}
+	if got, want := GoldIncomeForFaction(gs, fid), baseGross+bonus; got != want {
+		t.Fatalf("gross income with treasurer = %d, want %d", got, want)
+	}
+	if preview.TradeIncome != basePreview.TradeIncome || preview.OtherIncome != basePreview.OtherIncome {
+		t.Fatalf("treasurer changed non-tax categories: trade %d->%d, other %d->%d", basePreview.TradeIncome, preview.TradeIncome, basePreview.OtherIncome, preview.OtherIncome)
 	}
 }
 

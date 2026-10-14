@@ -58,7 +58,7 @@ func (s *GameState) syncCommanderPointer(currentArmy *army.Army, aid army.ArmyID
 	if currentArmy == nil || commander == nil {
 		return
 	}
-	if !commander.CanCommandArmy() || !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
+	if !commander.CanCommandArmy() || commander.AssignedCouncilRole != "" || !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
 		if embarked {
 			currentArmy.EmbarkedCommander = nil
 		} else {
@@ -614,7 +614,7 @@ func (s *GameState) SyncCommanderAvailability() []*army.Commander {
 			}
 			commander := cloneCommanderTemplate(template, ownerID)
 			s.Commanders[commander.ID] = commander
-			if ownerID == string(s.PlayerFactionID) && !s.CommanderArrivalNotices[commander.ID] {
+			if ownerID == string(s.PlayerFactionID) && commander.CanCommandArmy() && !s.CommanderArrivalNotices[commander.ID] {
 				s.CommanderArrivalNotices[commander.ID] = true
 				arrivals = append(arrivals, commander)
 			}
@@ -851,7 +851,7 @@ func (s *GameState) ensureCommanderPool(ownerID string, desired int, chargeGener
 	s.SyncCommanderLinks()
 	owned := 0
 	for _, commander := range s.Commanders {
-		if commander != nil && commander.OwnerID == ownerID && commander.CanCommandArmy() {
+		if commander != nil && commander.OwnerID == ownerID && commander.CanCommandArmy() && commander.AssignedCouncilRole == "" {
 			s.repairGeneratedCommanderPortrait(commander)
 			owned++
 		}
@@ -993,7 +993,7 @@ func cloneCommanderTemplate(source *army.Commander, ownerID string) *army.Comman
 	clone := *source
 	clone.OwnerID = ownerID
 	clone.AssignedArmyID = ""
-	clone.Traits = append([]army.CommanderTrait(nil), source.Traits...)
+	clone.Traits = append([]army.CharacterTrait(nil), source.Traits...)
 	clone.Normalize()
 	return &clone
 }
@@ -1074,7 +1074,7 @@ func (s *GameState) CommanderRoster(ownerID string) []*army.Commander {
 	s.SyncCommanderLinks()
 	available := make([]*army.Commander, 0, len(s.Commanders))
 	for _, commander := range s.Commanders {
-		if commander == nil || !commander.CanCommandArmy() || commander.OwnerID != ownerID || commander.AssignedArmyID != "" || !commander.ActiveInYear(s.Year) || s.CommanderHiddenFromRoster(commander) {
+		if commander == nil || !commander.CanCommandArmy() || commander.OwnerID != ownerID || commander.AssignedArmyID != "" || commander.AssignedCouncilRole != "" || !commander.ActiveInYear(s.Year) || s.CommanderHiddenFromRoster(commander) {
 			continue
 		}
 		available = append(available, commander)
@@ -1103,7 +1103,7 @@ func (s *GameState) AssignStrongestCommanderToArmy(armyID army.ArmyID) bool {
 	s.SyncCommanderLinks()
 	candidates := make([]*army.Commander, 0)
 	for _, commander := range s.Commanders {
-		if commander == nil || !commander.CanCommandArmy() || commander.OwnerID != currentArmy.OwnerID || commander.AssignedArmyID != "" || !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
+		if commander == nil || !commander.CanCommandArmy() || commander.OwnerID != currentArmy.OwnerID || commander.AssignedArmyID != "" || commander.AssignedCouncilRole != "" || !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
 			continue
 		}
 		candidates = append(candidates, commander)
@@ -1135,7 +1135,7 @@ func (s *GameState) AssignCommanderToArmy(commanderID string, armyID army.ArmyID
 	s.SyncCommanderLinks()
 	currentArmy := s.Armies[armyID]
 	commander := s.Commanders[commanderID]
-	if currentArmy == nil || commander == nil || !commander.CanCommandArmy() || commander.OwnerID != currentArmy.OwnerID || !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
+	if currentArmy == nil || commander == nil || !commander.CanCommandArmy() || commander.AssignedCouncilRole != "" || commander.OwnerID != currentArmy.OwnerID || !commander.ActiveInYear(s.Year) || s.CommanderUnavailable(commander) {
 		return false
 	}
 	if !s.CanAssignCommanderToArmy(armyID) {

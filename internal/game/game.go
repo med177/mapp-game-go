@@ -435,6 +435,46 @@ func (g *Game) Update() error {
 			} else {
 				g.renderer.ShowCombatResult("Komutan bu orduya atanamadı.")
 			}
+		case render.ActionAdoptNeutralCharacter:
+			if g.gs.AdoptNeutralCharacter(action.CharacterID) {
+				g.renderer.RefreshCharacterRosterPanel()
+				g.renderer.ShowCombatResult("Karakter fraksiyonuna katıldı.")
+			} else {
+				g.renderer.ShowCombatResult("Karakter fraksiyona katılamadı.")
+			}
+		case render.ActionReleaseCharacter:
+			if g.gs.ReleaseCharacterToNeutralPool(g.gs.PlayerFactionID, action.CharacterID) {
+				g.renderer.RefreshCharacterRosterPanel()
+				g.renderer.ShowCombatResult("Karakter haneden çıkarıldı ve tarafsız adaylara bırakıldı.")
+			} else {
+				g.renderer.ShowCombatResult("Karakter haneden çıkarılamadı.")
+			}
+		case render.ActionAssignCouncilRole:
+			if g.gs.AssignCharacterToCouncilRole(g.gs.PlayerFactionID, action.CharacterID, action.CouncilRole) {
+				g.renderer.RefreshCharacterRosterPanel()
+				message := "Hazine Sorumlusu atandı. Bölgesel vergi geliri +%5."
+				switch action.CouncilRole {
+				case state.CouncilRoleHeadOfHouse:
+					message = "Hane Lideri atandı."
+				case state.CouncilRoleDiplomat:
+					message = "Diplomat atandı. Heyet hamlesi +3 ilişki puanı sağlar."
+				}
+				g.renderer.ShowCombatResult(message)
+			} else {
+				g.renderer.ShowCombatResult("Karakter konsey koltuğuna atanamadı.")
+			}
+		case render.ActionClearCouncilRole:
+			if g.gs.UnassignCharacterFromCouncilRole(g.gs.PlayerFactionID, action.CharacterID) {
+				g.renderer.RefreshCharacterRosterPanel()
+				message := "Hazine Sorumlusu koltuğu boşaltıldı."
+				switch action.CouncilRole {
+				case state.CouncilRoleHeadOfHouse:
+					message = "Hane Lideri koltuğu boşaltıldı."
+				case state.CouncilRoleDiplomat:
+					message = "Diplomat koltuğu boşaltıldı."
+				}
+				g.renderer.ShowCombatResult(message)
+			}
 		case render.ActionRecruitCommander:
 			if commander, ok := g.gs.RecruitPlayerCommanderWithPortrait(action.CommanderName, action.PortraitAsset); ok {
 				g.renderer.ShowCombatResult(fmt.Sprintf("%s komutan olarak katıldı. Seviye %d, %d XP.", commander.Name, commander.Level, commander.Experience))

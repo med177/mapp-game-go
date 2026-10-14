@@ -617,6 +617,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		grainByFaction[r.OwnerID] += grain
 
 	}
+	for fid, taxIncome := range taxIncomeByFaction {
+		bonus := gs.TreasurerTaxIncomeBonus(faction.FactionID(fid), taxIncome)
+		taxIncomeByFaction[fid] += bonus
+		incomeByFaction[fid] += bonus
+	}
 
 	// --- Ticaret rotalarını işlet (mal + altın transferi) ---
 	goldBeforeEconomy := make(map[string]int, len(gs.Factions))

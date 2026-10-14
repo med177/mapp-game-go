@@ -328,7 +328,7 @@ func execute(gs *state.GameState, actor, target faction.FactionID, action Action
 		return Result{Accepted: true, Applied: true, Message: factionLabel(gs, target) + " ile topraklarından geçiş hakkı sona erdirildi."}
 
 	case ActionImproveRelations:
-		return applyRelationImprovement(gs, actor, target, RelationImprovementGoldCostFor(gs), RelationImprovementBonusFor(gs), 0, "diplomatik heyet")
+		return applyRelationImprovement(gs, actor, target, RelationImprovementGoldCostFor(gs), RelationImprovementBonusForActor(gs, actor), 0, "diplomatik heyet")
 
 	case ActionSendGift:
 		return applyRelationImprovement(gs, actor, target, GiftGoldCostFor(gs), GiftRelationBonusFor(gs), GiftReceiverGoldFor(gs), "hediye")

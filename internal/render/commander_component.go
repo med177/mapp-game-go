@@ -12,7 +12,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-type commanderTraitBadgeStyle struct {
+type characterTraitBadgeStyle struct {
 	Label  string
 	BG     color.RGBA
 	Border color.RGBA
@@ -24,7 +24,7 @@ type commanderEffectLine struct {
 	Color color.RGBA
 }
 
-type commanderTraitBadgeOptions struct {
+type characterTraitBadgeOptions struct {
 	MaxRows int
 }
 
@@ -66,50 +66,86 @@ func commanderSummaryHeaderTexts(role string, commander *army.Commander) (topLab
 	return role, name
 }
 
-func commanderTraitsSummary(commander *army.Commander) string {
-	if commander == nil || len(commander.Traits) == 0 {
+func characterTraitsSummary(character *army.Commander) string {
+	if character == nil || len(character.Traits) == 0 {
 		return "Yok"
 	}
-	traits := make([]string, 0, len(commander.Traits))
-	for _, trait := range commander.Traits {
+	traits := make([]string, 0, len(character.Traits))
+	for _, trait := range character.Traits {
 		traits = append(traits, army.TraitLabelTR(trait))
 	}
 	return strings.Join(traits, ", ")
 }
 
-func commanderTraitBadge(trait army.CommanderTrait) commanderTraitBadgeStyle {
+func characterTraitBadge(trait army.CharacterTrait) characterTraitBadgeStyle {
+	label := army.TraitLabelTR(trait)
 	switch trait {
-	case army.CommanderTraitVeteran:
-		return commanderTraitBadgeStyle{
-			Label:  "Tecrübe",
+	case army.CharacterTraitVeteran:
+		return characterTraitBadgeStyle{
+			Label:  label,
 			BG:     color.RGBA{70, 48, 16, 230},
 			Border: color.RGBA{216, 168, 72, 255},
 			Text:   color.RGBA{255, 236, 176, 255},
 		}
-	case army.CommanderTraitTactician:
-		return commanderTraitBadgeStyle{
-			Label:  "Taktik",
+	case army.CharacterTraitTactician:
+		return characterTraitBadgeStyle{
+			Label:  label,
 			BG:     color.RGBA{32, 58, 88, 230},
 			Border: color.RGBA{104, 168, 228, 255},
 			Text:   color.RGBA{218, 236, 255, 255},
 		}
-	case army.CommanderTraitDefender:
-		return commanderTraitBadgeStyle{
-			Label:  "Savunma",
+	case army.CharacterTraitDefender:
+		return characterTraitBadgeStyle{
+			Label:  label,
 			BG:     color.RGBA{34, 74, 48, 230},
 			Border: color.RGBA{108, 196, 136, 255},
 			Text:   color.RGBA{222, 250, 226, 255},
 		}
-	case army.CommanderTraitAggressor:
-		return commanderTraitBadgeStyle{
-			Label:  "Saldırı",
+	case army.CharacterTraitAggressor:
+		return characterTraitBadgeStyle{
+			Label:  label,
 			BG:     color.RGBA{96, 42, 30, 235},
 			Border: color.RGBA{232, 126, 86, 255},
 			Text:   color.RGBA{255, 226, 206, 255},
 		}
+	case "assassin", "spy", "schemer", "manipulative", "cunning", "shadowbinder", "mysterious":
+		return characterTraitBadgeStyle{
+			Label:  label,
+			BG:     color.RGBA{62, 42, 78, 230},
+			Border: color.RGBA{164, 122, 196, 255},
+			Text:   color.RGBA{238, 220, 255, 255},
+		}
+	case "scholar", "intelligent", "advisor", "alchemist":
+		return characterTraitBadgeStyle{
+			Label:  label,
+			BG:     color.RGBA{32, 58, 88, 230},
+			Border: color.RGBA{104, 168, 228, 255},
+			Text:   color.RGBA{218, 236, 255, 255},
+		}
+	case "queen", "princess", "beautiful", "lover", "mother", "goodwill", "loyal", "innocent":
+		return characterTraitBadgeStyle{
+			Label:  label,
+			BG:     color.RGBA{34, 74, 48, 230},
+			Border: color.RGBA{108, 196, 136, 255},
+			Text:   color.RGBA{222, 250, 226, 255},
+		}
+	case "mercenary", "fighter", "vengeful", "cruel":
+		return characterTraitBadgeStyle{
+			Label:  label,
+			BG:     color.RGBA{96, 42, 30, 235},
+			Border: color.RGBA{232, 126, 86, 255},
+			Text:   color.RGBA{255, 226, 206, 255},
+		}
+	case "explorer", "resourceful", "independent", "free_spirit", "sorceress", "skilled", "spoiled":
+		return characterTraitBadgeStyle{
+			Label:  label,
+			BG:     color.RGBA{70, 48, 16, 230},
+			Border: color.RGBA{216, 168, 72, 255},
+			Text:   color.RGBA{255, 236, 176, 255},
+		}
 	default:
-		return commanderTraitBadgeStyle{
-			Label:  army.TraitLabelTR(trait),
+		return characterTraitBadgeStyle{
+			Label:  label,
 			BG:     color.RGBA{58, 58, 58, 230},
 			Border: color.RGBA{146, 146, 146, 255},
 			Text:   color.RGBA{238, 238, 238, 255},
@@ -117,8 +153,8 @@ func commanderTraitBadge(trait army.CommanderTrait) commanderTraitBadgeStyle {
 	}
 }
 
-func commanderOverflowBadge(hiddenCount int) commanderTraitBadgeStyle {
-	return commanderTraitBadgeStyle{
+func characterOverflowBadge(hiddenCount int) characterTraitBadgeStyle {
+	return characterTraitBadgeStyle{
 		Label:  fmt.Sprintf("+%d", hiddenCount),
 		BG:     color.RGBA{46, 46, 46, 220},
 		Border: color.RGBA{124, 124, 124, 240},
@@ -178,13 +214,13 @@ func commanderSummaryDividerY(portraitY float64, effectLineCount int) float64 {
 	return infoY
 }
 
-func drawCommanderTraitBadge(screen *ebiten.Image, style commanderTraitBadgeStyle, x, y, w, h float64) {
+func drawCharacterTraitBadge(screen *ebiten.Image, style characterTraitBadgeStyle, x, y, w, h float64) {
 	vector.FillRect(screen, float32(x), float32(y), float32(w), float32(h), style.BG, false)
 	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1, style.Border, false)
 	DrawTextCentered(screen, style.Label, x+w/2, y+2, FaceSmall, style.Text)
 }
 
-func drawCommanderTraitBadges(screen *ebiten.Image, commander *army.Commander, x, y, maxWidth float64, opts commanderTraitBadgeOptions) float64 {
+func drawCharacterTraitBadges(screen *ebiten.Image, character *army.Commander, x, y, maxWidth float64, opts characterTraitBadgeOptions) float64 {
 	const (
 		badgeH = 18.0
 		gapX   = 6.0
@@ -209,42 +245,42 @@ func drawCommanderTraitBadges(screen *ebiten.Image, commander *army.Commander, x
 		if hiddenCount <= 0 {
 			return cursorY + badgeH
 		}
-		style := commanderOverflowBadge(hiddenCount)
+		style := characterOverflowBadge(hiddenCount)
 		w := badgeWidth(style.Label)
 		if cursorX > x && cursorX+w > maxX {
 			cursorX = x
 			cursorY += badgeH + gapY
 		}
-		drawCommanderTraitBadge(screen, style, cursorX, cursorY, w, badgeH)
+		drawCharacterTraitBadge(screen, style, cursorX, cursorY, w, badgeH)
 		return cursorY + badgeH
 	}
 
-	if commander == nil || len(commander.Traits) == 0 {
-		style := commanderTraitBadgeStyle{
+	if character == nil || len(character.Traits) == 0 {
+		style := characterTraitBadgeStyle{
 			Label:  "Özellik yok",
 			BG:     color.RGBA{42, 42, 42, 220},
 			Border: color.RGBA{108, 108, 108, 240},
 			Text:   color.RGBA{216, 216, 216, 255},
 		}
-		drawCommanderTraitBadge(screen, style, x, y, badgeWidth(style.Label), badgeH)
+		drawCharacterTraitBadge(screen, style, x, y, badgeWidth(style.Label), badgeH)
 		return y + badgeH
 	}
 
 	cursorX := x
 	cursorY := y
 	row := 1
-	for i, trait := range commander.Traits {
-		style := commanderTraitBadge(trait)
+	for i, trait := range character.Traits {
+		style := characterTraitBadge(trait)
 		w := badgeWidth(style.Label)
 		if cursorX > x && cursorX+w > maxX {
 			if row >= maxRows {
-				return renderOverflow(cursorX, cursorY, len(commander.Traits)-i)
+				return renderOverflow(cursorX, cursorY, len(character.Traits)-i)
 			}
 			cursorX = x
 			cursorY += badgeH + gapY
 			row++
 		}
-		drawCommanderTraitBadge(screen, style, cursorX, cursorY, w, badgeH)
+		drawCharacterTraitBadge(screen, style, cursorX, cursorY, w, badgeH)
 		cursorX += w + gapX
 	}
 	return cursorY + badgeH
@@ -299,7 +335,7 @@ func drawCommanderSummaryCard(screen *ebiten.Image, commander *army.Commander, x
 		contentBottomY = y + h
 	}
 	DrawText(screen, "Uzmanlıklar", infoTextX, infoY+8, FaceSmall, ColorGold)
-	badgesBottomY := drawCommanderTraitBadges(screen, commander, infoTextX, infoY+24, infoTextW, commanderTraitBadgeOptions{MaxRows: opts.MaxTraitRows})
+	badgesBottomY := drawCharacterTraitBadges(screen, commander, infoTextX, infoY+24, infoTextW, characterTraitBadgeOptions{MaxRows: opts.MaxTraitRows})
 	nextTextY := badgesBottomY + 8
 	if opts.ShowEffectText && nextTextY+14 <= contentBottomY {
 		if commander == nil {

@@ -1410,6 +1410,36 @@
           ]
         }
       ]
+    },
+    {
+      "faction_id": "mormont",
+      "profile": "bear_island_defense",
+      "expansion_targets": [
+        "stark"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "bear_island",
+          "value": 100
+        }
+      ],
+      "objectives": [
+        {
+          "id": "secure_bear_island",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "bear_island",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 100,
+          "readiness_regions": [
+            "bear_island"
+          ]
+        }
+      ]
     }
   ]
 }

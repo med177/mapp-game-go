@@ -308,7 +308,7 @@ func ResolveOffer(gs *state.GameState, index int, accepted bool) Result {
 	case ActionProposeTransitPassage:
 		return resolveAcceptedTransitPassageOffer(gs, offer)
 	case ActionImproveRelations:
-		return applyRelationImprovement(gs, offer.FromFactionID, offer.ToFactionID, RelationImprovementGoldCostFor(gs), RelationImprovementBonusFor(gs), 0, "diplomatik heyet")
+		return applyRelationImprovement(gs, offer.FromFactionID, offer.ToFactionID, RelationImprovementGoldCostFor(gs), RelationImprovementBonusForActor(gs, offer.FromFactionID), 0, "diplomatik heyet")
 	case ActionSendGift:
 		return applyRelationImprovement(gs, offer.FromFactionID, offer.ToFactionID, GiftGoldCostFor(gs), GiftRelationBonusFor(gs), GiftReceiverGoldFor(gs), "hediye")
 	case ActionInciteRevolt:

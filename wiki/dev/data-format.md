@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-10-13
+last_updated: 2026-10-14
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -95,6 +95,9 @@ tipleri kara ordusu veya savaş gemisi içeren filolara atanabilir; `character`
 tipi askeri komutan roster'ında gösterilmez ve atanamaz. Eski senaryolarda
 `type` eksikse kayıt geriye dönük uyumluluk için `commander` kabul edilir.
 Portre dosya adları `sprites/characters/` altından çözülür.
+`assigned_army_id` ve `assigned_council_role` kampanya/runtime atamalarıdır;
+senaryo template'inde bulunsalar bile karakter yükleyicisi bu alanları temizler.
+Oyuncu atamaları yalnız save'deki runtime karakter kaydında tutulur.
 
 Komutan tipindeki karakter şablonlarında `start_year` zorunlu başlangıç yılını, `end_year` ise
 doğal ölüm sınırını belirtir. Komutan `start_year` yılında aktif olur; `end_year`

@@ -40,6 +40,16 @@ func RelationImprovementBonusFor(gs *state.GameState) int {
 	return diplomacyConfig(gs).RelationImprovementBonus
 }
 
+// RelationImprovementBonusForActor, senaryo heyet bonusuna aktörün atanmış
+// diplomat katkısını ekler. Heyet hedefi mevcut diplomasi eyleminde seçilir.
+func RelationImprovementBonusForActor(gs *state.GameState, actor faction.FactionID) int {
+	bonus := RelationImprovementBonusFor(gs)
+	if gs != nil {
+		bonus += gs.DiplomatRelationBonus(actor)
+	}
+	return bonus
+}
+
 func GiftGoldCostFor(gs *state.GameState) int {
 	return diplomacyConfig(gs).GiftGoldCost
 }

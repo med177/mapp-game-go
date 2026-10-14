@@ -269,38 +269,45 @@ type Renderer struct {
 	aiTurnDetail    string
 
 	// Tarihsel olay tam ekran bildirimi
-	historicalEventTitle     string
-	historicalEventDesc      string
-	historicalEventPrompt    string
-	historicalEventChoices   []HistoricalEventChoice
-	historicalEventFocus     int
-	showHistoricalEvent      bool
-	commanderArrivals        []*army.Commander
-	commanderArrivalScroll   int
-	battleReport             battleReportState
-	queuedBattleReport       battleReportState
-	combatSummary            combatSummaryState
-	queuedCombatSummary      combatSummaryState
-	warSummary               warSummaryState
-	showActiveWars           bool
-	activeWarsScroll         int
-	activeWarsBuf            []ActiveWarSummary
-	activeWarsDirty          bool
-	activeWarsLastRefresh    uint64
-	showCommanderPanel       bool
-	commanderPanelArmy       army.ArmyID
-	commanderPanelFocus      int
-	commanderPanelScroll     int
-	showCommanderRecruit     bool
-	commanderEditID          string
-	commanderRecruitName     gameui.TextBox
-	commanderRecruitError    string
-	commanderRecruitPortrait string
-	showAIDiagnostic         bool
-	showShortcuts            bool
-	aiDiagnosticFaction      faction.FactionID
-	aiDiagnosticScroll       int
-	aiDiagnosticSnapshot     *ai.AIDiagnosticSnapshot
+	historicalEventTitle         string
+	historicalEventDesc          string
+	historicalEventPrompt        string
+	historicalEventChoices       []HistoricalEventChoice
+	historicalEventFocus         int
+	showHistoricalEvent          bool
+	commanderArrivals            []*army.Commander
+	commanderArrivalScroll       int
+	battleReport                 battleReportState
+	queuedBattleReport           battleReportState
+	combatSummary                combatSummaryState
+	queuedCombatSummary          combatSummaryState
+	warSummary                   warSummaryState
+	showActiveWars               bool
+	activeWarsScroll             int
+	activeWarsBuf                []ActiveWarSummary
+	activeWarsDirty              bool
+	activeWarsLastRefresh        uint64
+	showCharacterRoster          bool
+	characterRosterAssignMenuID  string
+	characterRosterOwnedScroll   int
+	characterRosterNeutralScroll int
+	characterRosterOwned         []*army.Commander
+	characterRosterCandidates    []*army.Commander
+	characterRosterCacheValid    bool
+	showCommanderPanel           bool
+	commanderPanelArmy           army.ArmyID
+	commanderPanelFocus          int
+	commanderPanelScroll         int
+	showCommanderRecruit         bool
+	commanderEditID              string
+	commanderRecruitName         gameui.TextBox
+	commanderRecruitError        string
+	commanderRecruitPortrait     string
+	showAIDiagnostic             bool
+	showShortcuts                bool
+	aiDiagnosticFaction          faction.FactionID
+	aiDiagnosticScroll           int
+	aiDiagnosticSnapshot         *ai.AIDiagnosticSnapshot
 
 	// İlk frame kamera başlatma
 	firstDraw bool
@@ -1648,6 +1655,7 @@ func (r *Renderer) ReloadGameStateWithPreparedMap(gs *state.GameState, prepared 
 	r.clearArmySplitSelection()
 	r.closeFactionPanel()
 	r.CloseCommanderPanel()
+	r.CloseCharacterRosterPanel()
 	r.clearSelectedSettlement()
 	r.ClearAITurnStatus()
 	r.confirmDialog = confirmDialogState{}
@@ -1891,6 +1899,7 @@ func (r *Renderer) PrepareForTurnAdvance() {
 	r.showActiveWars = false
 	r.activeWarsScroll = 0
 	r.activeWarsDirty = true
+	r.CloseCharacterRosterPanel()
 	r.queuedBattleReport = battleReportState{}
 	r.combatLog = ""
 	r.combatLogTimer = 0
@@ -2501,6 +2510,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		nearestEvent, hasNearestEvent := r.nearestEventCodexEntry()
 		nearestGeneralEvent, hasNearestGeneralEvent := r.nearestGeneralEventCodexEntry()
 		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showImperialPanel, r.showActiveWars, r.AIControlsPlayerFaction, r.AIControlsPlayerEconomy, r.mapMode)
+		drawCharacterRosterHUDButton(screen, r.showCharacterRoster)
 		var nearestEventPtr *EventCodexEntry
 		if hasNearestEvent {
 			nearestEventPtr = &nearestEvent

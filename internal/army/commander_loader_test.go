@@ -9,7 +9,7 @@ import (
 func TestLoadCharacterTemplatesDefaultsLegacyTypeAndKeepsCharacterTypes(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "characters.json")
 	data := `[
-		{"id":"administrator","type":"administrator","owner_id":"faction","name":"Administrator"},
+		{"id":"administrator","type":"administrator","owner_id":"faction","name":"Administrator","assigned_council_role":"treasurer"},
 		{"id":"commander","type":"commander","owner_id":"faction","name":"Commander"},
 		{"id":"character","type":"character","owner_id":"faction","name":"Character"},
 		{"id":"legacy","owner_id":"faction","name":"Legacy"}
@@ -35,6 +35,9 @@ func TestLoadCharacterTemplatesDefaultsLegacyTypeAndKeepsCharacterTypes(t *testi
 	for _, character := range got {
 		if want := wantTypes[character.ID]; character.Type != want {
 			t.Errorf("character %q type = %q, want %q", character.ID, character.Type, want)
+		}
+		if character.AssignedCouncilRole != "" {
+			t.Errorf("template character %q retained runtime council role %q", character.ID, character.AssignedCouncilRole)
 		}
 	}
 }

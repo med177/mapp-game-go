@@ -1,7 +1,7 @@
 package army
 
-// CommanderTrait ordunun komutanından gelen kalıcı uzmanlık türünü belirtir.
-type CommanderTrait string
+// CharacterTrait, karakterin sahip olduğu kalıcı özellik türünü belirtir.
+type CharacterTrait string
 
 // CharacterType, senaryo karakterinin oyun içindeki rolünü belirtir.
 type CharacterType string
@@ -23,10 +23,10 @@ func (t CharacterType) IsValid() bool {
 }
 
 const (
-	CommanderTraitVeteran   CommanderTrait = "veteran"
-	CommanderTraitTactician CommanderTrait = "tactician"
-	CommanderTraitDefender  CommanderTrait = "defender"
-	CommanderTraitAggressor CommanderTrait = "aggressor"
+	CharacterTraitVeteran   CharacterTrait = "veteran"
+	CharacterTraitTactician CharacterTrait = "tactician"
+	CharacterTraitDefender  CharacterTrait = "defender"
+	CharacterTraitAggressor CharacterTrait = "aggressor"
 )
 
 const (
@@ -48,7 +48,7 @@ type CommanderProgress struct {
 	XPGained      int
 	PreviousLevel int
 	CurrentLevel  int
-	NewTraits     []CommanderTrait
+	NewTraits     []CharacterTrait
 }
 
 // CommanderUnavailableStatus, tutsaklık/sürgün gibi ölüm dışı event flag'leri
@@ -77,6 +77,7 @@ type Commander struct {
 	Type                        CharacterType                `json:"type"`
 	OwnerID                     string                       `json:"owner_id"`
 	AssignedArmyID              ArmyID                       `json:"assigned_army_id,omitempty"`
+	AssignedCouncilRole         string                       `json:"assigned_council_role,omitempty"`
 	Name                        string                       `json:"name"`
 	PortraitAsset               string                       `json:"portrait_asset,omitempty"`
 	Level                       int                          `json:"level"`
@@ -84,7 +85,7 @@ type Commander struct {
 	Experience                  int                          `json:"experience"`
 	Battles                     int                          `json:"battles"`
 	Victories                   int                          `json:"victories"`
-	Traits                      []CommanderTrait             `json:"traits,omitempty"`
+	Traits                      []CharacterTrait             `json:"traits,omitempty"`
 	UnavailableStatuses         []CommanderUnavailableStatus `json:"unavailable_statuses,omitempty"`
 	InjuryTurnsOnDefeat         int                          `json:"injury_turns_on_defeat,omitempty"`
 	UnavailableUntilTurn        int                          `json:"unavailable_until_turn,omitempty"`
@@ -178,7 +179,7 @@ func (c *Commander) RecordBattle(won bool) CommanderProgress {
 }
 
 // HasTrait komutanın belirtilen uzmanlığı kazanıp kazanmadığını söyler.
-func (c *Commander) HasTrait(trait CommanderTrait) bool {
+func (c *Commander) HasTrait(trait CharacterTrait) bool {
 	if c == nil {
 		return false
 	}
@@ -222,21 +223,21 @@ func (c *Commander) Effects() CommanderEffects {
 		return CommanderEffects{}
 	}
 	effects := CommanderEffects{}
-	if c.HasTrait(CommanderTraitVeteran) {
+	if c.HasTrait(CharacterTraitVeteran) {
 		effects.AttackMod += 0.02
 		effects.DefenseMod += 0.02
 		effects.MoraleMod += 0.08
 	}
-	if c.HasTrait(CommanderTraitTactician) {
+	if c.HasTrait(CharacterTraitTactician) {
 		effects.AttackMod += 0.04
 		effects.DefenseMod += 0.02
 		effects.MoveBonus++
 	}
-	if c.HasTrait(CommanderTraitDefender) {
+	if c.HasTrait(CharacterTraitDefender) {
 		effects.DefenseMod += 0.06
 		effects.MoraleMod += 0.05
 	}
-	if c.HasTrait(CommanderTraitAggressor) {
+	if c.HasTrait(CharacterTraitAggressor) {
 		effects.AttackMod += 0.06
 		effects.SiegeProgressBonus++
 		effects.SiegeBreachBonus++
@@ -253,22 +254,82 @@ func (c *Commander) Effects() CommanderEffects {
 }
 
 // TraitLabelTR trait'lerin oyuncuya gösterilecek adını döner.
-func TraitLabelTR(trait CommanderTrait) string {
+func TraitLabelTR(trait CharacterTrait) string {
 	switch trait {
-	case CommanderTraitVeteran:
-		return "Savaş Tecrübesi"
-	case CommanderTraitTactician:
+	case CharacterTraitVeteran:
+		return "Gazi"
+	case CharacterTraitTactician:
 		return "Taktisyen"
-	case CommanderTraitDefender:
-		return "Savunma Uzmanı"
-	case CommanderTraitAggressor:
+	case CharacterTraitDefender:
+		return "Savunmacı"
+	case CharacterTraitAggressor:
 		return "Saldırgan"
+	case "assassin":
+		return "Suikastçı"
+	case "spy":
+		return "Casus"
+	case "explorer":
+		return "Kaşif"
+	case "queen":
+		return "Kraliçe"
+	case "intelligent":
+		return "Zeki"
+	case "beautiful":
+		return "Güzel"
+	case "manipulative":
+		return "Manipülatif"
+	case "sorceress":
+		return "Büyücü"
+	case "shadowbinder":
+		return "Karanlık"
+	case "mother":
+		return "Korumacı"
+	case "resourceful":
+		return "Becerikli"
+	case "loyal":
+		return "Sadık"
+	case "lover":
+		return "Sevgili"
+	case "schemer":
+		return "Entrikacı"
+	case "vengeful":
+		return "Kindar"
+	case "fighter":
+		return "Savaşçı"
+	case "independent":
+		return "Bağımsız"
+	case "princess":
+		return "Prenses"
+	case "free_spirit":
+		return "Özgür Ruhlu"
+	case "mercenary":
+		return "Paralı Asker"
+	case "scholar":
+		return "Bilgin"
+	case "cunning":
+		return "Kurnaz"
+	case "goodwill":
+		return "Saf Kalpli"
+	case "advisor":
+		return "Danışman"
+	case "alchemist":
+		return "Simyacı"
+	case "mysterious":
+		return "Gizemli"
+	case "skilled":
+		return "Yetenekli"
+	case "cruel":
+		return "Zalim"
+	case "spoiled":
+		return "Şımarık"
+	case "innocent":
+		return "Masum"
 	default:
 		return string(trait)
 	}
 }
 
-func (c *Commander) syncProgression(existing []CommanderTrait) []CommanderTrait {
+func (c *Commander) syncProgression(existing []CharacterTrait) []CharacterTrait {
 	if c == nil {
 		return nil
 	}
@@ -286,8 +347,8 @@ func (c *Commander) syncProgression(existing []CommanderTrait) []CommanderTrait 
 		c.Level = CommanderStartingLevel
 	}
 
-	newTraits := make([]CommanderTrait, 0, 1)
-	addTrait := func(trait CommanderTrait, requiredLevel int) {
+	newTraits := make([]CharacterTrait, 0, 1)
+	addTrait := func(trait CharacterTrait, requiredLevel int) {
 		if c.Level < requiredLevel || c.HasTrait(trait) {
 			return
 		}
@@ -300,9 +361,9 @@ func (c *Commander) syncProgression(existing []CommanderTrait) []CommanderTrait 
 		newTraits = append(newTraits, trait)
 	}
 
-	addTrait(CommanderTraitVeteran, 2)
-	addTrait(CommanderTraitTactician, 3)
-	addTrait(CommanderTraitDefender, 4)
-	addTrait(CommanderTraitAggressor, 5)
+	addTrait(CharacterTraitVeteran, 2)
+	addTrait(CharacterTraitTactician, 3)
+	addTrait(CharacterTraitDefender, 4)
+	addTrait(CharacterTraitAggressor, 5)
 	return newTraits
 }

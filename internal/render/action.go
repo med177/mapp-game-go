@@ -111,6 +111,10 @@ const (
 	ActionDisbandArmy               ActionKind = "disband_army"     // seçili birimleri terhis et
 	ActionMergeArmies               ActionKind = "merge_armies"     // ArmyID'yi TargetArmyID ile birleştir
 	ActionAssignCommander           ActionKind = "assign_commander"
+	ActionAssignCouncilRole         ActionKind = "assign_council_role"
+	ActionClearCouncilRole          ActionKind = "clear_council_role"
+	ActionAdoptNeutralCharacter     ActionKind = "adopt_neutral_character"
+	ActionReleaseCharacter          ActionKind = "release_character"
 	ActionRecruitCommander          ActionKind = "recruit_commander"
 	ActionEditCommander             ActionKind = "edit_commander"
 	ActionDismissCommander          ActionKind = "dismiss_commander"
@@ -152,6 +156,8 @@ type InputAction struct {
 	UnitIndices   []int // ActionSplitArmy için seçilerek ayrılacak fiziksel birim index'leri
 	TargetArmyID  army.ArmyID
 	CommanderID   string
+	CharacterID   string
+	CouncilRole   string
 	CommanderName string
 	PortraitAsset string
 	TargetRegion  world.RegionID

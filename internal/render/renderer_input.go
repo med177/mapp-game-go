@@ -760,6 +760,14 @@ func (r *Renderer) handleLeftClick() InputAction {
 		}
 		return InputAction{}
 	}
+	if r.uiLayerAllowsAt(fx, fy, uiLayerTopStatus) && characterRosterHUDButtonHit(fx, fy) {
+		if r.showCharacterRoster {
+			r.CloseCharacterRosterPanel()
+		} else {
+			r.OpenCharacterRosterPanel()
+		}
+		return InputAction{}
+	}
 	if r.uiLayerAllowsAt(fx, fy, uiLayerTurnTech) && turnTechHudTechHit(fx, fy) {
 		r.showTech = true
 		r.showRecruitPanel = false

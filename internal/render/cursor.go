@@ -474,7 +474,7 @@ func (r *Renderer) diplomacyOfferHovering(fx, fy float64) bool {
 }
 
 func (r *Renderer) inGameHovering(fx, fy float64) bool {
-	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || (imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy)) || musicHudInteractiveHit(fx, fy) || activeWarsHudButtonHit(fx, fy) || turnTechHudTechHit(fx, fy) || turnTechHudTradeRouteHit(r.gs, fx, fy) || turnTechHudWarFatigueHit(r.gs, fx, fy) || r.armyOrganizationPopupHovering(fx, fy) {
+	if topDateHudMenuButtonHit(fx, fy) || bottomActionButtonHit(fx, fy) || (imperialPanelAvailable(r.gs) && imperialHUDButtonHit(fx, fy)) || musicHudInteractiveHit(fx, fy) || activeWarsHudButtonHit(fx, fy) || characterRosterHUDButtonHit(fx, fy) || turnTechHudTechHit(fx, fy) || turnTechHudTradeRouteHit(r.gs, fx, fy) || turnTechHudWarFatigueHit(r.gs, fx, fy) || r.armyOrganizationPopupHovering(fx, fy) {
 		return true
 	}
 	if victoryProgressHit(fx, fy) {

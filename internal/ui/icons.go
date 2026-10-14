@@ -47,6 +47,7 @@ const (
 	IconSplit     IconID = "split"
 	IconForward   IconID = "forward"
 	IconRevolt    IconID = "revolt"
+	IconPeople    IconID = "people"
 )
 
 const iconAssetDir = "assets/ui/icons"
@@ -86,6 +87,7 @@ func init() {
 		IconSplit,
 		IconForward,
 		IconRevolt,
+		IconPeople,
 	} {
 		uiIconCache[id] = loadIconAsset(id)
 	}

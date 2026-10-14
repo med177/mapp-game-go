@@ -4533,12 +4533,12 @@ func cloneArmyMap(src map[army.ArmyID]*army.Army) map[army.ArmyID]*army.Army {
 		copy(copyArmy.EmbarkedUnits, a.EmbarkedUnits)
 		if a.Commander != nil {
 			commander := *a.Commander
-			commander.Traits = append([]army.CommanderTrait(nil), a.Commander.Traits...)
+			commander.Traits = append([]army.CharacterTrait(nil), a.Commander.Traits...)
 			copyArmy.Commander = &commander
 		}
 		if a.EmbarkedCommander != nil {
 			commander := *a.EmbarkedCommander
-			commander.Traits = append([]army.CommanderTrait(nil), a.EmbarkedCommander.Traits...)
+			commander.Traits = append([]army.CharacterTrait(nil), a.EmbarkedCommander.Traits...)
 			copyArmy.EmbarkedCommander = &commander
 		}
 		dst[aid] = &copyArmy

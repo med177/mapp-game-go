@@ -1,9 +1,44 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-13
+last_updated: 2026-10-14
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-14: Karakter roster'ı göreve atanma önceliğine göre sıralanıyor;
+  Hane Lideri, Hazine Sorumlusu ve Diplomat görevleri bu sırayla gösteriliyor.
+  Görevler ayrı satırlardan kaldırılarak atanmış karakter kartında gösteriliyor;
+  boşta üyede `Ata`, atanmış üyede `Kaldır` düğmesi var. Hane Lideri görevi
+  atama state'inde saklanıyor ancak henüz oyun bonusu üretmiyor.
+
+- 2026-10-14: Karakter roster'ının ilk dilimi eklendi. Aktif `administrator` ve
+  `character` kayıtları ayrı panelde listeleniyor; `owner_id: "none"` tarafsız
+  adaylar ücretsiz olarak oyuncu fraksiyonuna alınabiliyor. Administrator'ların
+  mevcut ordu komutanlığı uygunluğu korundu ve sahiplik değişimi yeni save alanı
+  eklemeden mevcut commander map'i üzerinden kompakt/legacy kayıtlarda doğrulandı.
+  HUD düğmesi Aktif Savaşlar'ın yanına yerleştirildi; `assets/ui/icons/people.png`
+  asset'i eklendi. Testler: `go test ./internal/state
+  ./internal/render ./internal/game ./internal/ui -count=1` ve
+  `go test ./internal/save -run TestAdoptedNeutralCharacterOwnershipPersistsCompactAndLegacySaves -count=1`.
+
+- 2026-10-14: Karakter roster'ında tarafsız adayları haneye katma ve karakteri
+  haneden serbest bırakma işlemleri Evet/Hayır modalıyla onaylanıyor. Serbest
+  bırakma ordu/konsey atamalarını temizleyip karakteri tarafsız adaylara döndürüyor.
+  Kapsam: `internal/state/character_roster.go`,
+  `internal/render/character_roster_panel.go`, `internal/game/game.go`.
+
+- 2026-10-14: Konseyin ilk pilot koltuğu Hazine Sorumlusu eklendi. Aktif ve boşta
+  olan yönetici/karakter atanabiliyor; atama ordu roster'ından çıkarıyor, mevcut
+  sahibin değiştirilmesi veya koltuğun boşaltılması destekleniyor. Bonus yalnız
+  bölgesel vergiye +%5; çözümleme, gelir önizlemesi, brüt gelir ve vergi bütçesi
+  ortak state hesabını kullanıyor. Council role mevcut commander save alanında
+  saklanıyor. State, victory, game, render ve save regresyonları eklendi.
+
+- 2026-10-14: Diplomat konsey koltuğu eklendi. Oyuncu hedefi mevcut Diplomasi
+  panelinde seçiyor; Heyet eylemi senaryonun normal ilişki bonusuna ek +3 puan
+  veriyor. Doğrudan ve kuyruktan çözülen Heyet sonuçları, panel önizlemesi ve
+  bildirim metni ortak bonus hesabını kullanıyor; Hediye etkilenmiyor.
+  Atama/boşaltma ve compact/legacy save regresyonları eklendi.
 
 - 2026-10-13: Diplomatik pazarlıkla alınan bölgeler edinim turu ve onu izleyen
   üç tur boyunca başka bir pazarlıkla devredilemiyor; bu bitiş turu kompakt ve

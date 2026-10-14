@@ -1966,7 +1966,7 @@ func cloneCommander(src *army.Commander) *army.Commander {
 		return nil
 	}
 	copyCommander := *src
-	copyCommander.Traits = append([]army.CommanderTrait(nil), src.Traits...)
+	copyCommander.Traits = append([]army.CharacterTrait(nil), src.Traits...)
 	return &copyCommander
 }
 

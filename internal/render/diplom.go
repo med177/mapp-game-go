@@ -2616,7 +2616,7 @@ func estimateDiplomacyChance(gs *state.GameState, target faction.FactionID, acti
 	case ActionProposeTransitPassage:
 		chance, _ = diplomacy.AssessTransitPassageProposal(gs, gs.PlayerFactionID, target)
 	case ActionImproveRelations:
-		return 100, "İlişki +" + strconv.Itoa(diplomacy.RelationImprovementBonusFor(gs)) + " / " + strconv.Itoa(diplomacy.RelationImprovementGoldCostFor(gs)) + " altın"
+		return 100, "İlişki +" + strconv.Itoa(diplomacy.RelationImprovementBonusForActor(gs, gs.PlayerFactionID)) + " / " + strconv.Itoa(diplomacy.RelationImprovementGoldCostFor(gs)) + " altın"
 	case ActionSendGift:
 		return 100, "İlişki +" + strconv.Itoa(diplomacy.GiftRelationBonusFor(gs)) + " / " + strconv.Itoa(diplomacy.GiftGoldCostFor(gs)) + " altın"
 	case ActionInciteRevolt:

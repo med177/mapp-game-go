@@ -502,7 +502,7 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 					DrawText(body, unavailableReason+" — atanamaz", textX, row.Y+36, FaceSmall, ColorRed)
 				} else {
 					DrawText(body, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), textX, row.Y+36, FaceSmall, ColorGray)
-					drawCommanderTraitBadges(body, commander, textX, row.Y+56, row.W-(textX-row.X)-12, commanderTraitBadgeOptions{MaxRows: 1})
+					drawCharacterTraitBadges(body, commander, textX, row.Y+56, row.W-(textX-row.X)-12, characterTraitBadgeOptions{MaxRows: 1})
 				}
 			}
 		}
@@ -723,7 +723,7 @@ func drawCommanderProfile(screen *ebiten.Image, x, y float64, role string, comma
 	DrawText(screen, commanderCombatEffectSummary(commander), x, y+62, FaceSmall, color.RGBA{140, 210, 150, 255})
 	DrawText(screen, commanderOperationalEffectSummary(commander), x, y+82, FaceSmall, color.RGBA{145, 185, 220, 255})
 	DrawText(screen, "Uzmanlıklar", x, y+104, FaceSmall, ColorGold)
-	bottomY := drawCommanderTraitBadges(screen, commander, x, y+122, 280, commanderTraitBadgeOptions{})
+	bottomY := drawCharacterTraitBadges(screen, commander, x, y+122, 280, characterTraitBadgeOptions{})
 	return bottomY + 14
 }
 

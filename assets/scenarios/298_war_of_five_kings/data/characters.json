@@ -1,7 +1,7 @@
 [
   {
     "id": "cmd_robb_stark",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "stark",
     "name": "Robb Stark",
     "portrait_asset": "robb_stark.png",
@@ -15,7 +15,7 @@
   },
   {
     "id": "cmd_ned_stark",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "stark",
     "name": "Eddard Stark",
     "portrait_asset": "ned_stark.png",
@@ -29,7 +29,7 @@
   },
   {
     "id": "cmd_tywin_lannister",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "lannister",
     "name": "Tywin Lannister",
     "portrait_asset": "tywin_lannister.png",
@@ -57,7 +57,7 @@
   },
   {
     "id": "cmd_stannis_baratheon",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "baratheon_dragonstone",
     "name": "Stannis Baratheon",
     "portrait_asset": "stannis.png",
@@ -71,7 +71,7 @@
   },
   {
     "id": "cmd_renly_baratheon",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "baratheon_stormsend",
     "name": "Renly Baratheon",
     "portrait_asset": "renly.png",
@@ -84,7 +84,7 @@
   },
   {
     "id": "cmd_daenerys_targaryen",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "targaryen",
     "name": "Daenerys Targaryen",
     "portrait_asset": "daenerys.png",
@@ -154,7 +154,7 @@
   },
   {
     "id": "cmd_mance_rayder",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "free_folk",
     "name": "Mance Rayder",
     "portrait_asset": "mance_rayder.png",
@@ -182,7 +182,7 @@
   },
   {
     "id": "cmd_roose_bolton",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "bolton",
     "name": "Roose Bolton",
     "portrait_asset": "roose_bolton.png",
@@ -210,7 +210,7 @@
   },
   {
     "id": "cmd_sealord_braavos",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "braavos",
     "name": "Sealord of Braavos",
     "portrait_asset": "sealord_braavos.png",
@@ -295,7 +295,7 @@
   {
     "id": "cmd_maege_mormont",
     "type": "commander",
-    "owner_id": "stark",
+    "owner_id": "mormont",
     "name": "Maege Mormont",
     "portrait_asset": "maege_mormont.png",
     "level": 3,
@@ -518,7 +518,7 @@
   },
   {
     "id": "cmd_balon_greyjoy",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "greyjoy",
     "name": "Balon Greyjoy",
     "portrait_asset": "balon_greyjoy.png",
@@ -545,11 +545,11 @@
     "end_year": 301
   },
   {
-    "id": "cmd_asha_greyjoy",
+    "id": "cmd_yara_greyjoy",
     "type": "commander",
     "owner_id": "greyjoy",
-    "name": "Asha Greyjoy",
-    "portrait_asset": "asha_greyjoy.png",
+    "name": "Yara Greyjoy",
+    "portrait_asset": "yara_greyjoy.png",
     "level": 4,
     "traits": [
       "tactician",
@@ -602,7 +602,7 @@
   },
   {
     "id": "cmd_oberyn_martell",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "martell",
     "name": "Oberyn Martell",
     "portrait_asset": "oberyn_martell.png",
@@ -672,7 +672,7 @@
   },
   {
     "id": "cmd_jeor_mormont",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "nights_watch",
     "name": "Jeor Mormont",
     "portrait_asset": "jeor_mormont.png",
@@ -742,7 +742,7 @@
   },
   {
     "id": "cmd_styr",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "free_folk",
     "name": "Styr, the Magnar of Thenn",
     "portrait_asset": "styr.png",
@@ -798,7 +798,7 @@
   },
   {
     "id": "cmd_robert_baratheon",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "baratheon_king",
     "name": "Robert Baratheon",
     "portrait_asset": "robert_baratheon.png",
@@ -812,7 +812,7 @@
   },
   {
     "id": "cmd_night_king",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "others",
     "name": "Gece Kralı",
     "portrait_asset": "night_king.png",
@@ -841,7 +841,7 @@
   },
   {
     "id": "cmd_selwyn_tarth",
-    "type": "commander",
+    "type": "administrator",
     "owner_id": "tarth",
     "name": "Selwyn Tarth",
     "portrait_asset": "selwyn_tarth.png",
@@ -853,5 +853,332 @@
     ],
     "start_year": 298,
     "end_year": 310
+  },
+  {
+    "id": "cmd_ygritte",
+    "type": "commander",
+    "owner_id": "free_folk",
+    "name": "Ygritte",
+    "portrait_asset": "ygritte.png",
+    "level": 3,
+    "traits": [
+      "aggressor",
+      "veteran"
+    ],
+    "start_year": 298,
+    "end_year": 311
+  },
+  {
+    "id": "chr_arya_stark",
+    "type": "character",
+    "owner_id": "stark",
+    "name": "Arya Stark",
+    "portrait_asset": "arya_stark.png",
+    "level": 3,
+    "traits": [
+      "assassin",
+      "spy",
+      "explorer"
+    ],
+    "start_year": 298,
+    "end_year": 330
+  },
+  {
+    "id": "chr_sansa_stark",
+    "type": "character",
+    "owner_id": "stark",
+    "name": "Sansa Stark",
+    "portrait_asset": "sansa_stark.png",
+    "level": 2,
+    "traits": [
+      "queen",
+      "intelligent",
+      "beautiful"
+    ],
+    "start_year": 298,
+    "end_year": 330
+  },
+  {
+    "id": "chr_cersei_lannister",
+    "type": "character",
+    "owner_id": "baratheon_king",
+    "name": "Cersei Lannister",
+    "portrait_asset": "cersei_lannister.png",
+    "level": 4,
+    "traits": [
+      "queen",
+      "intelligent",
+      "manipulative"
+    ],
+    "start_year": 298,
+    "end_year": 307
+  },
+  {
+    "id": "chr_melisandre",
+    "type": "character",
+    "owner_id": "baratheon_dragonstone",
+    "name": "Melisandre",
+    "portrait_asset": "melisandre.png",
+    "level": 4,
+    "traits": [
+      "sorceress",
+      "manipulative",
+      "shadowbinder"
+    ],
+    "start_year": 298,
+    "end_year": 316
+  },
+  {
+    "id": "chr_margaery_tyrell",
+    "type": "character",
+    "owner_id": "tyrell",
+    "name": "Margaery Tyrell",
+    "portrait_asset": "margaery_tyrell.png",
+    "level": 3,
+    "traits": [
+      "queen",
+      "intelligent",
+      "beautiful"
+    ],
+    "start_year": 298,
+    "end_year": 330
+  },
+  {
+    "id": "chr_catelyn_stark",
+    "type": "character",
+    "owner_id": "stark",
+    "name": "Catelyn Stark",
+    "portrait_asset": "catelyn_stark.png",
+    "level": 3,
+    "traits": [
+      "mother",
+      "resourceful",
+      "loyal"
+    ],
+    "start_year": 298,
+    "end_year": 330
+  },
+  {
+    "id": "chr_ellaria_sand",
+    "type": "character",
+    "owner_id": "martell",
+    "name": "Ellaria Sand",
+    "portrait_asset": "ellaria_sand.png",
+    "level": 3,
+    "traits": [
+      "lover",
+      "schemer",
+      "vengeful"
+    ],
+    "start_year": 298,
+    "end_year": 308
+  },
+  {
+    "id": "chr_nymeria_sand",
+    "type": "character",
+    "owner_id": "martell",
+    "name": "Nymeria Sand",
+    "portrait_asset": "nymeria_sand.png",
+    "level": 3,
+    "traits": [
+      "fighter",
+      "independent",
+      "vengeful"
+    ],
+    "start_year": 298,
+    "end_year": 308
+  },
+  {
+    "id": "cmd_lyanna_mormont",
+    "type": "administrator",
+    "owner_id": "mormont",
+    "name": "Lyanna Mormont",
+    "portrait_asset": "lyanna_mormont.png",
+    "level": 3,
+    "traits": [
+      "aggressor"
+    ],
+    "start_year": 298,
+    "end_year": 310
+  },
+  {
+    "id": "chr_val",
+    "type": "character",
+    "owner_id": "free_folk",
+    "name": "Val",
+    "portrait_asset": "val.png",
+    "level": 2,
+    "traits": [
+      "princess",
+      "beautiful",
+      "free_spirit"
+    ],
+    "start_year": 296,
+    "end_year": 330
+  },
+  {
+    "id": "chr_bronn",
+    "type": "character",
+    "owner_id": "none",
+    "name": "Bronn",
+    "portrait_asset": "bronn.png",
+    "level": 3,
+    "traits": [
+      "mercenary",
+      "resourceful",
+      "loyal"
+    ],
+    "start_year": 295,
+    "end_year": 330
+  },
+  {
+    "id": "chr_littlefinger",
+    "type": "character",
+    "owner_id": "baratheon_king",
+    "name": "Petyr Baelish",
+    "portrait_asset": "littlefinger.png",
+    "level": 4,
+    "traits": [
+      "schemer",
+      "manipulative",
+      "resourceful"
+    ],
+    "start_year": 295,
+    "end_year": 312
+  },
+  {
+    "id": "chr_varys",
+    "type": "character",
+    "owner_id": "baratheon_king",
+    "name": "Varys",
+    "portrait_asset": "varys.png",
+    "level": 4,
+    "traits": [
+      "schemer",
+      "intelligent",
+      "loyal"
+    ],
+    "start_year": 295,
+    "end_year": 315
+  },
+  {
+    "id": "chr_pycelle",
+    "type": "character",
+    "owner_id": "baratheon_king",
+    "name": "Pycelle",
+    "portrait_asset": "pycelle.png",
+    "level": 4,
+    "traits": [
+      "schemer",
+      "scholar",
+      "alchemist"
+    ],
+    "start_year": 295,
+    "end_year": 305
+  },
+  {
+    "id": "chr_olenna_tyrell",
+    "type": "character",
+    "owner_id": "tyrell",
+    "name": "Olenna Tyrell",
+    "portrait_asset": "olenna_tyrell.png",
+    "level": 4,
+    "traits": [
+      "schemer",
+      "cunning",
+      "queen"
+    ],
+    "start_year": 295,
+    "end_year": 306
+  },
+  {
+    "id": "chr_samwell_tarly",
+    "type": "character",
+    "owner_id": "nights_watch",
+    "name": "Samwell Tarly",
+    "portrait_asset": "samwell_tarly.png",
+    "level": 3,
+    "traits": [
+      "goodwill",
+      "loyal",
+      "scholar"
+    ],
+    "start_year": 295,
+    "end_year": 330
+  },
+  {
+    "id": "chr_shae",
+    "type": "character",
+    "owner_id": "none",
+    "name": "Shae",
+    "portrait_asset": "shae.png",
+    "level": 3,
+    "traits": [
+      "cunning",
+      "beautiful",
+      "loyal"
+    ],
+    "start_year": 295,
+    "end_year": 315
+  },
+  {
+    "id": "chr_grand_maester",
+    "type": "character",
+    "owner_id": "none",
+    "name": "Büyük Üstad",
+    "portrait_asset": "grand_maester.png",
+    "level": 4,
+    "traits": [
+      "scholar",
+      "advisor",
+      "intelligent"
+    ],
+    "start_year": 295,
+    "end_year": 330
+  },
+  {
+    "id": "chr_jaqen_hghar",
+    "type": "character",
+    "owner_id": "braavos",
+    "name": "Jaqen H'ghar",
+    "portrait_asset": "jaqen_hghar.png",
+    "level": 4,
+    "traits": [
+      "assassin",
+      "mysterious",
+      "skilled"
+    ],
+    "start_year": 295,
+    "end_year": 310
+  },
+  {
+    "id": "chr_joffrey_baratheon",
+    "type": "administrator",
+    "owner_id": "baratheon_king",
+    "name": "Joffrey Baratheon",
+    "portrait_asset": "joffrey_baratheon.png",
+    "level": 4,
+    "traits": [
+      "schemer",
+      "cruel",
+      "spoiled"
+    ],
+    "start_year": 295,
+    "end_year": 301
+  },
+  {
+    "id": "chr_tommen_baratheon",
+    "type": "administrator",
+    "owner_id": "baratheon_king",
+    "name": "Tommen Baratheon",
+    "portrait_asset": "tommen_baratheon.png",
+    "level": 3,
+    "traits": [
+      "schemer",
+      "innocent",
+      "spoiled"
+    ],
+    "start_year": 295,
+    "end_year": 305
   }
 ]

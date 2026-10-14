@@ -1299,7 +1299,7 @@ func diplomacyOfferMessageTR(gs *state.GameState, offer state.DiplomaticOffer) s
 		return fromName + " devleti " + regionName + " bölgesinin kullanım hakkını size teklif ediyor. Kabul ederseniz imtiyazlı ticaret rotası kurulur; rota normal ticaret kotası ve tarifesi tüketmez."
 	}
 	if offer.Action == string(diplomacy.ActionImproveRelations) {
-		return fromName + " devleti size diplomatik heyet gönderdi. İlişkiniz +" + strconv.Itoa(diplomacy.RelationImprovementBonusFor(gs)) + " artacak."
+		return fromName + " devleti size diplomatik heyet gönderdi. İlişkiniz +" + strconv.Itoa(diplomacy.RelationImprovementBonusForActor(gs, offer.FromFactionID)) + " artacak."
 	}
 	if offer.Action == string(diplomacy.ActionSendGift) {
 		return fromName + " devleti size hediye gönderdi. İlişkiniz +" + strconv.Itoa(diplomacy.GiftRelationBonusFor(gs)) + " artacak ve hazinenize " + strconv.Itoa(diplomacy.GiftReceiverGoldFor(gs)) + " altın eklenecek."

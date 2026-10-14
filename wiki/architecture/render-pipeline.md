@@ -3,7 +3,7 @@ Not: Teknoloji panelinde aktif araştırma için `İptal Et • İade` düğmesi
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-10-13
+last_updated: 2026-10-14
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -326,11 +326,13 @@ görselini arka plan olarak kullanır. Yükleme başarısız olursa düz koyu ar
 fallback'i korunur (`internal/render/loading.go`, `renderer.go`, `game.go`,
 `internal/save/save.go`).
 
-Merchant rota, Donanma Görevi ve Aktif Savaşlar panelleri `overlayPanelOrder`
+Merchant rota, Donanma Görevi, Aktif Savaşlar ve Karakterler panelleri `overlayPanelOrder`
 stack'i üzerinden çizim, input ve cursor önceliğini paylaşır. Yeni açılan panel
 stack'in en üstüne taşınır; çizim alttan üste, input/cursor taraması üstten alta
 yapılır. Kapatılan panel görünürlükten çıkar ve alttaki açık panel yeniden öne
-gelir (`internal/render/overlay_panel_stack.go`, `internal/render/cursor.go`).
+gelir. Utility panel dışındaki harita input'u korunur; panel içindeki boş yüzey
+ise alttaki panellere tıklamanın sızmasını engeller
+(`internal/render/overlay_panel_stack.go`, `internal/render/cursor.go`).
 
 Ordu bilgi panelindeki birim popup'ı da aynı üst katman kuralını izler.
 Diplomasi, teknoloji, ticaret, kuşatma, modal veya utility overlay paneli
@@ -838,7 +840,31 @@ Bölge bilgi paneli ilk açıldığında komşu listesi varsayılan olarak `Tüm
 
 Üst-sol durum HUD'u oyuncu devletinin bayrağı ve adıyla birlikte mevcut askerî gücünü ve aktif, elenmemiş devletler arasındaki güç sırasını gösterir. Rakip devletler için değerler `state.MilitaryPowerEstimate()` ile gözlemciye özel tahmin olarak çizilir; kendi güç ve `reveal_enemy_strength` istihbaratı kesindir. `DEV_MODE=true` iken `F10` bu görünümü gerçek güçlere açıp kapatır. Aynı standing bilgisi seçilen devlet bilgi panelindeki `Durum` bölümünde de gösterilir; sıra hesabı ortak `factionMilitaryPowerStanding` helper'ından gelir. Sıralama eşit güçte faction ID'siyle deterministik olarak çözülür (`internal/render/panel.go`). Kaynak HUD'unda tahıl miktarının altında ayrıca `Ambar` satırı bulunur; kapasite ekonomi tick'i status'undan, status henüz oluşmamışsa `GameState.GrainStorageCapacityForFaction()` hesaplamasından alınır.
 
-Üst müzik HUD'unun sağındaki ayrılmış yardımcı düğme şeridinde 36×36 px yuvarlak ortak kılıç ikonu aktif savaş sayısını rozet olarak gösterir; ikon üstten 5 px boşlukla yerleşir ve üzerine gelindiğinde parmak imleci kullanır. Şerit ileride benzer durum düğmelerinin sıralanmasına açıktır. İkon açıldığında `Relations` içindeki `StanceWar` çiftleri `WarLedger` başlangıç turu/kayıpları ve güncel `diplomacy.MilitaryPower`/ordu-birim sayılarıyla `Aktif Savaşlar` paneline dönüştürülür (`internal/render/active_wars.go`). Taraf özetinde kara ordu ve donanma sayıları ile `Kayıp (Ordu/Filo): X/Y` toplamı ayrı gösterilir; eski save'lerde tür ayrımı olmayan toplam kayıplar kara ordusu hanesine alınır. Genişletilmiş savaş satırlarının iki ucunda 50×50 px kare faction bayrak alanı bulunur; mevcut savaş adı, süre, kayıp, güç ve ordu metinleri iki bayrağın arasındaki merkez kolonda hizalanır. Bayrak asset'i yoksa ortak baş harf fallback'i kullanılır. Satıra tıklamak kamerayı iki tarafın başkentleri arasındaki harita noktasına taşır; başkent bulunamazsa deterministic faction bölgesi fallback'i kullanılır. Panel kapalıyken kendi eski rect'i harita hit-test'ini engellemez. Panel, sağdaki olay logunun soluna 12 px boşlukla yerleşir; böylece olay logunu kapatmaz. Bu panel modal değildir: yalnız kendi yüzeyindeki kapatma/tekerlek/input'u tüketir; panel dışındaki harita tıklaması ve orta tuş sürüklemesi devam eder.
+Üst müzik HUD'unun sağındaki ayrılmış yardımcı düğme şeridinde 36×36 px yuvarlak ortak kılıç ikonu aktif savaş sayısını rozet olarak gösterir; hemen yanındaki aynı ölçülü people düğmesi karakter roster'ını açar. People görseli `assets/ui/icons/people.png` asset'inden yüklenir; her iki düğmenin draw, hit-test, cursor ve UI-layer rect'i aynı slot geometry'sinden türetilir. İkon açıldığında `Relations` içindeki `StanceWar` çiftleri `WarLedger` başlangıç turu/kayıpları ve güncel `diplomacy.MilitaryPower`/ordu-birim sayılarıyla `Aktif Savaşlar` paneline dönüştürülür (`internal/render/active_wars.go`). Taraf özetinde kara ordu ve donanma sayıları ile `Kayıp (Ordu/Filo): X/Y` toplamı ayrı gösterilir; eski save'lerde tür ayrımı olmayan toplam kayıplar kara ordusu hanesine alınır. Genişletilmiş savaş satırlarının iki ucunda 50×50 px kare faction bayrak alanı bulunur; mevcut savaş adı, süre, kayıp, güç ve ordu metinleri iki bayrağın arasındaki merkez kolonda hizalanır. Bayrak asset'i yoksa ortak baş harf fallback'i kullanılır. Satıra tıklamak kamerayı iki tarafın başkentleri arasındaki harita noktasına taşır; başkent bulunamazsa deterministic faction bölgesi fallback'i kullanılır. Panel kapalıyken kendi eski rect'i harita hit-test'ini engellemez. Panel, sağdaki olay logunun soluna 12 px boşlukla yerleşir; böylece olay logunu kapatmaz. Bu panel modal değildir: yalnız kendi yüzeyindeki kapatma/tekerlek/input'u tüketir; panel dışındaki harita tıklaması ve orta tuş sürüklemesi devam eder.
+
+Karakter roster paneli aynı panel alanında iki liste gösterir: oyuncu fraksiyonuna
+ait aktif `administrator`/`character` kayıtları ve `owner_id: "none"` tarafsız
+adayları. Adayı `+` ile haneye katma ve fraksiyon karakterini `X` ile tarafsız
+havuzuna bırakma işlemleri ortak Evet/Hayır onay modalı üzerinden yapılır.
+Serbest bırakma onayı ordu ve konsey atamalarının da kaldırılacağını belirtir;
+onaylanan sahiplik işlemleri `ActionAdoptNeutralCharacter` ve
+`ActionReleaseCharacter` üzerinden state katmanına gider. Karakter portreleri
+mevcut `sprites/characters/` loader'ını kullanır. Hane listesinde görevler ayrı
+koltuk satırları olarak gösterilmez; atanmış karakter kartında görev adı ve
+bonus bilgisi görünür. Boşta karakterin `Ata` düğmesi hemen altında görev
+seçenekleri listesini açar. Atanmış karakterde aynı yerdeki `Kaldır` düğmesi
+görevi kaldırır; ardından karakter yeniden atanabilir. Seçenekler aynı satır
+içinde açılır ve dışarı tıklamayla kapanır. Hane Lideri ataması mevcut
+`AssignedCouncilRole` alanında korunur, ancak henüz oyun bonusu vermez. Hazine
+bonusu bölgesel vergide +%5, Diplomat bonusu mevcut Diplomasi panelinden hedef
+seçilen Heyet hamlesinde +3 ilişki puanıdır. Hane üyeleri
+atama önceliğine göre (Hane Lideri, Hazine Sorumlusu, Diplomat, ordu görevi,
+boşta) ve eşit görevde ada göre sıralanır. Uygun karakter `ActionAssignCouncilRole`,
+mevcut koltuk sahibi
+`ActionClearCouncilRole` ile oyun/state katmanına iletilir; çizim katmanı bonus
+veya sahiplik mutasyonu yapmaz. Aktif savaş ve karakter panelleri aynı utility
+overlay stack'inde açılma sırasına göre çizilir
+(`internal/render/character_roster_panel.go`).
 
 Devlet bilgi paneli açıkken yeni bir bölge seçilirse panel açık tutulur ve `SelectedRegion` bölgesinin `OwnerID` değerindeki devlete senkronlanır. Aynı devletin bölgeleri arasında geçiş panel scroll'unu korur; farklı devlete geçiş panel içeriğini baştan başlatır (`internal/render/renderer_input.go`).
 

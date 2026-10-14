@@ -28,6 +28,7 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 	}
 	baseIncomeByFaction := make(map[faction.FactionID]int)
 	baseIncomeByFaction[fid] = 0
+	taxIncomeByFaction := make(map[faction.FactionID]int)
 
 	for _, region := range gs.Regions {
 		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID == "" || gs.SiegeAt(region.ID) != nil {
@@ -62,6 +63,9 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 			}
 		}
 		sovereign := faction.FactionID(gs.SovereignOwnerID(region))
+		sovereignTax, operatorTax := gs.RegionIncomeShares(region, tax)
+		taxIncomeByFaction[sovereign] += sovereignTax
+		taxIncomeByFaction[owner] += operatorTax
 		sovereignTotal, operatorTotal := gs.RegionIncomeShares(region, regionTotal)
 		baseIncomeByFaction[sovereign] += sovereignTotal
 		if operatorTotal != 0 {
@@ -70,7 +74,6 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 		if sovereign != fid && owner != fid {
 			continue
 		}
-		sovereignTax, operatorTax := gs.RegionIncomeShares(region, tax)
 		sovereignTrade, operatorTrade := gs.RegionIncomeShares(region, tradeBase)
 		sovereignCenter, operatorCenter := gs.RegionIncomeShares(region, center)
 		sovereignCapital, operatorCapital := gs.RegionIncomeShares(region, capital)
@@ -87,6 +90,10 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 			status.CapitalIncome += operatorCapital
 		}
 	}
+	for ownerID, taxIncome := range taxIncomeByFaction {
+		baseIncomeByFaction[ownerID] += gs.TreasurerTaxIncomeBonus(ownerID, taxIncome)
+	}
+	status.TaxIncome += gs.TreasurerTaxIncomeBonus(fid, taxIncomeByFaction[fid])
 
 	blockadeLoot := gs.BlockadeLootForFaction(fid).Gold
 	status.BlockadeIncome = blockadeLoot
@@ -455,6 +462,7 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 	}
 
 	income := gs.Factions[fid].OtherIncomeAt(gs.Year, gs.Month)
+	taxIncomeForFaction := 0
 	season := gs.CurrentSeason()
 	seasonMod := season.TradeMod()
 	harvestMod := season.HarvestMod()
@@ -463,7 +471,7 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 		fx = tech.ComputeEffects(gs.Factions[fid].Research.Completed, gs.TechTypes)
 	}
 	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID == "" {
+		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID == "" || gs.SiegeAt(region.ID) != nil {
 			continue
 		}
 		goldMod := 1.0
@@ -488,7 +496,15 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 		if region.OwnerID == string(fid) {
 			income += operatorShare
 		}
+		sovereignTaxShare, operatorTaxShare := gs.RegionIncomeShares(region, taxIncome)
+		if gs.SovereignOwnerID(region) == string(fid) {
+			taxIncomeForFaction += sovereignTaxShare
+		}
+		if region.OwnerID == string(fid) {
+			taxIncomeForFaction += operatorTaxShare
+		}
 	}
+	income += gs.TreasurerTaxIncomeBonus(fid, taxIncomeForFaction)
 	loot := gs.BlockadeLootForFaction(fid)
 	income += loot.Gold
 	income += gs.HistoricalTradeIncomeForFaction(fid)

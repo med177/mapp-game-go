@@ -8,15 +8,17 @@ const (
 	overlayPanelMerchantRoute overlayPanelID = iota
 	overlayPanelNavalMission
 	overlayPanelActiveWars
+	overlayPanelCharacterRoster
 )
 
-const overlayPanelCount = int(overlayPanelActiveWars + 1)
+const overlayPanelCount = int(overlayPanelCharacterRoster + 1)
 
 func defaultOverlayPanelOrder() [overlayPanelCount]overlayPanelID {
 	return [overlayPanelCount]overlayPanelID{
 		overlayPanelMerchantRoute,
 		overlayPanelNavalMission,
 		overlayPanelActiveWars,
+		overlayPanelCharacterRoster,
 	}
 }
 
@@ -62,6 +64,8 @@ func (r *Renderer) overlayPanelVisible(panel overlayPanelID) bool {
 		return r.showNavalMissionPanel
 	case overlayPanelActiveWars:
 		return r.showActiveWars
+	case overlayPanelCharacterRoster:
+		return r.showCharacterRoster
 	default:
 		return false
 	}
@@ -98,6 +102,8 @@ func (r *Renderer) handleOverlayPanelInput() (InputAction, bool) {
 			if hasTop && top.ID == layerID {
 				return InputAction{}, true
 			}
+		case overlayPanelCharacterRoster:
+			return r.handleCharacterRosterPanelInput()
 		}
 	}
 	return InputAction{}, false
@@ -111,6 +117,8 @@ func overlayPanelLayerID(panel overlayPanelID) string {
 		return uiLayerNavalMission
 	case overlayPanelActiveWars:
 		return uiLayerActiveWars
+	case overlayPanelCharacterRoster:
+		return uiLayerCharacterRoster
 	default:
 		return ""
 	}
@@ -134,6 +142,10 @@ func (r *Renderer) drawOverlayPanels(screen *ebiten.Image) {
 		case overlayPanelActiveWars:
 			if r.showActiveWars {
 				drawActiveWarsPanel(screen, r.gs, r.activeWarsBuf, r.activeWarsScroll)
+			}
+		case overlayPanelCharacterRoster:
+			if r.showCharacterRoster {
+				r.drawCharacterRosterPanel(screen)
 			}
 		}
 	}

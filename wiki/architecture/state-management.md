@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-10-01
+last_updated: 2026-10-14
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -350,6 +350,38 @@ clone edilir; savaşlarda değişen XP, seviye ve atamalar save state içindeki
 AI tarafında `EnsureFactionCommanders(ownerID)` aktif saha ordusu sayısına göre
 havuzu büyütür ve komutansız orduları deterministik ID sırasıyla doldurur; garnizonlar
 bu otomatik atamanın dışındadır.
+
+`CharacterRoster(ownerID)`, `administrator` ve `character` tipindeki aktif
+senaryo kayıtlarını askeri komutan listesinden ayrı ve deterministik sırada
+sunar; `commander` tipi mevcut askeri roster'da kalır. `administrator` kayıtları
+roster'da yönetim adayı olarak görünürken mevcut ordu komutanlığı uygunluğunu da
+korur. `owner_id: "none"` olan aktif yönetici/karakter kayıtları
+`NeutralCharacterCandidates()` ile tarafsız aday havuzuna çıkar; oyuncu
+`AdoptNeutralCharacter()` ile bir adayı ücretsiz olarak kendi fraksiyonuna
+alabilir. Bu işlem senaryo şablonunu değil runtime `GameState.Commanders`
+kaydındaki `OwnerID` değerini değiştirir. Bu map kompakt (`cmd`) ve legacy save
+akışlarında zaten saklandığından yeni kayıt alanı gerekmez; eski kayıtlarda alan
+bulunmadığında senaryo başlangıç şablonlarıyla mevcut varsayılan davranış korunur.
+`ReleaseCharacterToNeutralPool()` oyuncunun aktif hanesindeki karakteri tarafsız
+adaylara geri bırakır; ordu ve konsey atamalarını da kaldırır. Bu iki sahiplik
+geçişi mevcut save state'teki `OwnerID` alanını günceller.
+Karakter tipindeki kayıtlar runtime havuzuna alınır ancak “Yeni Komutanlar” askeri
+varış bildirimine girmez; bildirim yalnız `CanCommandArmy()` true olan tiplere
+verilir.
+
+`Commander.AssignedCouncilRole`, karakterin council koltuğunu mevcut canonical
+`GameState.Commanders` map'inde tutar ve compact/legacy save ile korunur.
+Hane Lideri, Hazine Sorumlusu ve Diplomat görevleri bu alanda saklanır;
+`AssignCharacterToCouncilRole()` karakteri seçilen göreve geçirir ve hedef
+koltuğun eski sahibini boşa çıkarır. `CharacterRoster()` önce bu görev
+önceliğine, sonra ada göre sıralar; ordu atama/AI commander roster'ı council
+atamalı karakterleri kullanmaz. Hane Lideri şu an bonus üretmez. Hazine
+Sorumlusu'nun `TreasurerTaxIncomeBonus()` hesabı yalnız
+bölgesel vergi matrahına +%5 uygular. `TaxIncomeForFaction()`, ekonomi tick'i,
+`GoldEconomyPreview()` ve `GoldIncomeForFaction()` aynı state bonusunu kullanır;
+ticaret ve diğer gelir kategorileri değişmez. Diplomat koltuğu, mevcut Heyet
+aksiyonuna `DiplomatRelationBonus()` üzerinden +3 ekler; hedefi oyuncu normal
+Diplomasi panelinden seçer. Hediye ve diğer aksiyonlar diplomat bonusunu almaz.
 
 Ordu yaşam döngüsü de komutan bağlantısını state katmanında korur. `RemoveArmy()`
 silinen ordunun normal veya nakliye filosunda taşınan komutanını havuza geri bırakır;
