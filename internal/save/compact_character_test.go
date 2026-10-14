@@ -13,6 +13,7 @@ func TestAdoptedNeutralCharacterOwnershipPersistsCompactAndLegacySaves(t *testin
 	character := &army.Commander{
 		ID: "chr_bronn", Type: army.CharacterTypeCharacter, OwnerID: "player",
 		Name: "Bronn", Traits: []army.CharacterTrait{"mercenary"},
+		AdoptionCostGold: 500, GoldUpkeep: 6,
 	}
 	gs := &state.GameState{
 		ScenarioID:      "test_scenario",
@@ -35,13 +36,15 @@ func TestAdoptedNeutralCharacterOwnershipPersistsCompactAndLegacySaves(t *testin
 	}
 	loaded := &state.GameState{}
 	applyCampaignSaveState(loaded, decoded)
-	if got := loaded.Commanders[character.ID]; got == nil || got.OwnerID != "player" {
+	if got := loaded.Commanders[character.ID]; got == nil || got.OwnerID != "player" ||
+		got.AdoptionCostGold != 500 || got.GoldUpkeep != 6 {
 		t.Fatalf("compact save/load character owner = %#v, want player", got)
 	}
 
 	debug := makeDebugCampaignSaveState(gs)
 	legacy := convertLegacyCampaignSaveState(debug)
-	if got := legacy.Commanders[character.ID]; got == nil || got.OwnerID != "player" {
+	if got := legacy.Commanders[character.ID]; got == nil || got.OwnerID != "player" ||
+		got.AdoptionCostGold != 500 || got.GoldUpkeep != 6 {
 		t.Fatalf("debug/legacy save conversion character owner = %#v, want player", got)
 	}
 }

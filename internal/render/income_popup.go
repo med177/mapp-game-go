@@ -36,12 +36,12 @@ type goldIncomePopupLine struct {
 	color color.RGBA
 }
 
-func goldIncomePopupLines(status state.GoldEconomyStatus) [22]goldIncomePopupLine {
+func goldIncomePopupLines(status state.GoldEconomyStatus) [23]goldIncomePopupLine {
 	otherIncomeLabel := status.OtherIncomeDescription
 	if otherIncomeLabel == "" {
 		otherIncomeLabel = "Diğer gelirler"
 	}
-	return [22]goldIncomePopupLine{
+	return [23]goldIncomePopupLine{
 		{label: "Vergi", value: status.TaxIncome, color: ColorGold},
 		{label: "Konsey geliri", value: status.CouncilIncome, color: color.RGBA{220, 190, 130, 255}},
 		{label: otherIncomeLabel, value: status.OtherIncome, color: color.RGBA{220, 190, 130, 255}},
@@ -62,6 +62,7 @@ func goldIncomePopupLines(status state.GoldEconomyStatus) [22]goldIncomePopupLin
 		{label: "Abluka ganimeti", value: status.BlockadeIncome, color: ColorGold},
 		{label: "Yağma", value: status.RaidIncome, color: ColorGold},
 		{label: "Hediyeler", value: status.GiftIncome - status.GiftExpense, color: color.RGBA{210, 170, 120, 255}},
+		{label: "Hane bakımı", value: -status.CharacterUpkeep, color: ColorRed},
 		{label: "Ordu masrafı", value: -status.Upkeep, color: ColorRed},
 		{label: "Bina bakımı", value: -status.BuildingUpkeep, color: ColorRed},
 	}
@@ -70,7 +71,7 @@ func goldIncomePopupLines(status state.GoldEconomyStatus) [22]goldIncomePopupLin
 func goldIncomePopupRect() gameui.Rect {
 	_, _, rightCol, _, rightColW := topResourceHUDColumns()
 	const popupW = 330.0
-	const popupH = 515.0
+	const popupH = 560.0
 	x := rightCol + rightColW - popupW
 	if x < 8 {
 		x = 8

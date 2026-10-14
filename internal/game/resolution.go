@@ -676,6 +676,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 
 	// Gerçek ordu bakım maliyetleri (UnitType.GrainUpkeep/GoldUpkeep)
 	upkeepByFaction := make(map[string]int)
+	characterGoldUpkeepByFaction := make(map[string]int)
 	goldUpkeepByFaction := make(map[string]int)
 	buildingGoldUpkeepByFaction := make(map[string]int)
 	for _, a := range gs.Armies {
@@ -683,6 +684,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		goldUpkeepByFaction[a.OwnerID] += gs.EffectiveArmyGoldUpkeep(a)
 	}
 	for fid := range gs.Factions {
+		characterGoldUpkeepByFaction[string(fid)] = gs.FactionCharacterGoldUpkeep(string(fid))
 		buildingGoldUpkeepByFaction[string(fid)] = gs.FactionBuildingGoldUpkeep(fid)
 	}
 
@@ -728,6 +730,12 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		if f.Gold < 0 {
 			f.Gold = 0
 		}
+		characterGoldUpkeep := characterGoldUpkeepByFaction[fidStr]
+		paidCharacterGoldUpkeep := characterGoldUpkeep
+		if paidCharacterGoldUpkeep > f.Gold {
+			paidCharacterGoldUpkeep = f.Gold
+		}
+		f.Gold -= paidCharacterGoldUpkeep
 		goldUpkeep := goldUpkeepByFaction[fidStr]
 		paidGoldUpkeep := goldUpkeep
 		if paidGoldUpkeep > f.Gold {
@@ -762,19 +770,22 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			MerchantTradeIncome:     merchantTradeIncome,
 			TradePowerIncome:        tradePowerIncome,
 			Upkeep:                  goldUpkeep,
+			CharacterUpkeep:         characterGoldUpkeep,
 			BuildingUpkeep:          buildingGoldUpkeep,
 			GoldBefore:              goldBefore,
 			GoldAfter:               f.Gold,
 			PaidUpkeep:              paidGoldUpkeep,
+			PaidCharacterUpkeep:     paidCharacterGoldUpkeep,
 			PaidBuildingUpkeep:      paidBuildingGoldUpkeep,
 			Shortage:                goldUpkeep - paidGoldUpkeep,
+			CharacterShortage:       characterGoldUpkeep - paidCharacterGoldUpkeep,
 			BuildingShortage:        buildingGoldUpkeep - paidBuildingGoldUpkeep,
 		}
 		if ledger := gs.GoldTurnLedger[fid]; ledger.Turn == gs.Turn {
 			goldStatus.GiftIncome = ledger.GiftIncome
 			goldStatus.GiftExpense = ledger.GiftExpense
 		}
-		goldStatus.NetChange = goldStatus.Income + goldStatus.CouncilIncome + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.PrivilegedTradeIncome + goldStatus.PrivilegeIncome + goldStatus.TradePowerIncome + goldStatus.MerchantTradeIncome - goldUpkeep - buildingGoldUpkeep
+		goldStatus.NetChange = goldStatus.Income + goldStatus.CouncilIncome + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.PrivilegedTradeIncome + goldStatus.PrivilegeIncome + goldStatus.TradePowerIncome + goldStatus.MerchantTradeIncome - characterGoldUpkeep - goldUpkeep - buildingGoldUpkeep
 		if goldStatus.Shortage > 0 {
 			applyGoldUpkeepShortagePenalty(gs, fidStr, goldStatus.Upkeep, goldStatus.Shortage, &goldStatus)
 		}

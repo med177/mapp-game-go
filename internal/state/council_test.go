@@ -47,6 +47,9 @@ func TestScenarioCouncilRolesTraitsAndExperienceScaleEffects(t *testing.T) {
 	if got := gs.CouncilRoleEffects(owner, "steward").IncomeMod; math.Abs(got-1.07) > 1e-9 {
 		t.Fatalf("level-one trait-adjusted effect = %.4f, want 1.07", got)
 	}
+	if got, want := gs.CouncilRoleEffectsForCharacter(character, "steward"), gs.CouncilRoleEffects(owner, "steward"); got != want {
+		t.Fatalf("candidate role effects = %+v, assigned role effects = %+v", got, want)
+	}
 	gs.RecordCouncilTurnExperience()
 	gs.RecordCouncilEffectExperience(owner, "income_mod")
 	if character.CouncilExperience != 15 || character.CouncilLevel != 1 {

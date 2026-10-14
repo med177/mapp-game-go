@@ -5,6 +5,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 )
 
 func TestCharacterRosterFiltersTypesAndSortsDeterministically(t *testing.T) {
@@ -80,6 +81,68 @@ func TestAdoptNeutralCharacterMovesOwnershipAndRemovesCandidate(t *testing.T) {
 	}
 	if gs.AdoptNeutralCharacter(character.ID) {
 		t.Fatal("AdoptNeutralCharacter() adopted the character a second time")
+	}
+}
+
+func TestAdoptNeutralCharacterChargesFeeOnlyWhenAffordable(t *testing.T) {
+	character := &army.Commander{
+		ID: "chr_bronn", Type: army.CharacterTypeCharacter, OwnerID: NeutralCharacterOwnerID,
+		AdoptionCostGold: 500, GoldUpkeep: 6,
+	}
+	owner := &faction.Faction{ID: "player", Gold: 499}
+	gs := &GameState{
+		Year: 300,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": owner,
+		},
+		Commanders: map[string]*army.Commander{character.ID: character},
+	}
+
+	if gs.AdoptNeutralCharacterForFaction("player", character.ID) {
+		t.Fatal("adoption succeeded without enough gold")
+	}
+	if owner.Gold != 499 || character.OwnerID != NeutralCharacterOwnerID {
+		t.Fatalf("failed adoption changed gold or ownership: gold=%d owner=%q", owner.Gold, character.OwnerID)
+	}
+	owner.Gold++
+	if !gs.AdoptNeutralCharacterForFaction("player", character.ID) {
+		t.Fatal("adoption failed when the faction had exactly enough gold")
+	}
+	if owner.Gold != 0 || character.OwnerID != "player" {
+		t.Fatalf("successful adoption state = gold %d, owner %q; want 0 and player", owner.Gold, character.OwnerID)
+	}
+}
+
+func TestFactionCharacterGoldUpkeepIncludesOwnedHouseholdCharacters(t *testing.T) {
+	leader := &army.Commander{
+		ID: "leader", Type: army.CharacterTypeCharacter, OwnerID: "player",
+		AssignedCouncilRole: CouncilRoleHeadOfHouse, GoldUpkeep: 50,
+	}
+	heir := &army.Commander{
+		ID: "heir", Type: army.CharacterTypeCharacter, OwnerID: "player",
+		AssignedCouncilRole: CouncilRoleHeir, GoldUpkeep: 60,
+	}
+	gs := &GameState{
+		Year: 300,
+		Commanders: map[string]*army.Commander{
+			"owned":       {ID: "owned", Type: army.CharacterTypeCharacter, OwnerID: "player", GoldUpkeep: 6},
+			leader.ID:     leader,
+			heir.ID:       heir,
+			"unavailable": {ID: "unavailable", Type: army.CharacterTypeAdministrator, OwnerID: "player", GoldUpkeep: 4, CaptiveAtSettlementID: "keep"},
+			"neutral":     {ID: "neutral", Type: army.CharacterTypeCharacter, OwnerID: NeutralCharacterOwnerID, GoldUpkeep: 20},
+			"commander":   {ID: "commander", Type: army.CharacterTypeCommander, OwnerID: "player", GoldUpkeep: 30},
+			"dead":        {ID: "dead", Type: army.CharacterTypeCharacter, OwnerID: "player", GoldUpkeep: 10},
+		},
+		CouncilConfig: scenario.CharacterCouncilConfig{
+			Roles: []scenario.CouncilRoleDefinition{
+				{ID: CouncilRoleHeadOfHouse, NameTR: "Lider", NoCost: true},
+				{ID: CouncilRoleHeir, NameTR: "Veliaht", NoCost: true},
+			},
+		},
+		DeadCommanderIDs: map[string]bool{"dead": true},
+	}
+	if got, want := gs.FactionCharacterGoldUpkeep("player"), 10; got != want {
+		t.Fatalf("character upkeep = %d, want %d", got, want)
 	}
 }
 

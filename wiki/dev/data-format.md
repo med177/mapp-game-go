@@ -107,18 +107,23 @@ Event veya savaş sırasında daha erken gerçekleşen ölümler de aynı ölüm
 kullanır. Yeni senaryo verilerinde `unavailable_statuses` kullanmayın: tutsaklık
 `CaptiveAtSettlementID`, sürgün ise `ExiledCommanderIDs` state'inde tutulur. Alan
 eski senaryo kayıtları için geriye dönük uyumluluk amacıyla okunmaya devam eder.
+`administrator` ve `character` kayıtlarında isteğe bağlı `adoption_cost_gold`,
+tarafsız havuzdan haneye alımın tek seferlik altın ücretini; `gold_upkeep` ise
+hane üyesi başına turda ödenecek altın bakımını belirtir. Eksik alanlar sıfır
+kabul edilir. Ekonomi çözümlemesinde hane bakımı önce, ordu maaşı ve bina
+bütçesi daha sonra tahsil edilir; ödenemeyen hane bakımı ordu maaşı açığı
+cezasına dahil edilmez.
 
 ```json
 {
-  "id": "commander_ottoman_bayezid_i",
-  "type": "commander",
-  "owner_id": "ottoman",
-  "name": "Yıldırım Bayezid",
-  "portrait_asset": "ottoman_bayezid_i.png",
+  "id": "neutral_character_example",
+  "type": "character",
+  "owner_id": "none",
+  "name": "Örnek Karakter",
   "level": 2,
-  "traits": ["aggressor"],
-  "start_year": 1389,
-  "end_year": 1403
+  "adoption_cost_gold": 500,
+  "gold_upkeep": 4,
+  "traits": ["aggressor"]
 }
 ```
 
@@ -128,7 +133,9 @@ Senaryoya özgü konsey görevlerini tanımlar.
 Dosya isteğe bağlıdır; bulunmadığında eski senaryolar yerleşik görev tanımlarını
 kullanır. `roles` içindeki her görev benzersiz bir `id` ve Türkçe `name_tr`
 taşımalıdır. `effects` başlangıç bonusunu, `per_level` ise 1. seviye üzerindeki
-her seviye için ek bonusu belirler.
+her seviye için ek bonusu belirler. İsteğe bağlı `no_cost: true`, bu göreve
+atanmış karakterin tur başı `gold_upkeep` bakımını kaldırır; tarafsız havuzdan
+alımın tek seferlik `adoption_cost_gold` ücretini etkilemez.
 
 Desteklenen etki anahtarları:
 

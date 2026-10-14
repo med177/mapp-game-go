@@ -1171,9 +1171,9 @@ type GrainEconomyStatus struct {
 	SupplyLevel     GrainSupplyLevel
 }
 
-// GoldEconomyStatus ekonomi tick'inin altın geliri ve sabit ordu bakım
-// sonucunu taşır. GoldAfter tur sonundaki gerçek hazineyi, Shortage ise
-// ödenemeyen bakım miktarını gösterir.
+// GoldEconomyStatus ekonomi tick'inin altın geliri ile hane, ordu ve bina bakım
+// sonuçlarını taşır. GoldAfter tur sonundaki gerçek hazineyi, shortage alanları
+// ise ilgili kategoride ödenemeyen bakım miktarını gösterir.
 type GoldEconomyStatus struct {
 	FactionID               faction.FactionID
 	Income                  int
@@ -1200,13 +1200,16 @@ type GoldEconomyStatus struct {
 	GiftIncome              int
 	GiftExpense             int
 	Upkeep                  int
+	CharacterUpkeep         int
 	BuildingUpkeep          int
 	NetChange               int
 	GoldBefore              int
 	GoldAfter               int
 	PaidUpkeep              int
+	PaidCharacterUpkeep     int
 	PaidBuildingUpkeep      int
 	Shortage                int
+	CharacterShortage       int
 	BuildingShortage        int
 	AttritionHPDamage       int
 	UnitsLost               int

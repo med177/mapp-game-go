@@ -51,7 +51,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 
 - 2026-10-14: Karakter roster'ının ilk dilimi eklendi. Aktif `administrator` ve
   `character` kayıtları ayrı panelde listeleniyor; `owner_id: "none"` tarafsız
-  adaylar ücretsiz olarak oyuncu fraksiyonuna alınabiliyor. Administrator'ların
+  adaylar tek seferlik ücreti ödenerek oyuncu fraksiyonuna alınabiliyor. Administrator'ların
   mevcut ordu komutanlığı uygunluğu korundu ve sahiplik değişimi yeni save alanı
   eklemeden mevcut commander map'i üzerinden kompakt/legacy kayıtlarda doğrulandı.
   HUD düğmesi Aktif Savaşlar'ın yanına yerleştirildi; `assets/ui/icons/people.png`
@@ -74,6 +74,23 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   ordu ve konsey atamaları temizlenerek tarafsız havuza bırakılıyor. Tutsak
   karakterler sahiplik değişiminden sonra tutsaklık bitene kadar aday listesinde
   gizli kalıyor. `internal/game/resolution.go`, `internal/ai/privilege.go`.
+
+- 2026-10-14: AI konsey atamalarını senaryo rolü, karakter seviyesi/nitelikleri
+  ve faction'ın güncel gelir, üretim, memnuniyet, ordu/savaş, diplomasi ve
+  araştırma durumuna göre tahmini getiriyi yükseltecek şekilde yeniden
+  düzenliyor. Tarafsız karakter yalnız mevcut atama toplam değerini artırıyorsa
+  alınıyor; aynı turda en fazla bir kişi alınabiliyor.
+  `internal/ai/neutral_character.go`, `internal/state/council.go`.
+
+- 2026-10-14: Tarafsız haneye alınan karakterlerden tek seferlik senaryo ücreti
+  tahsil ediliyor; aktif hane üyeleri tur başına altın bakımı ödüyor. Karakter
+  bakımı ordu ve bina masraflarından önce tahsil ediliyor. AI, katılım ücretini
+  12 tura yayarak ve tur başı bakımı düşerek rol getirisini değerlendiriyor.
+  Five Kings haneye alınabilir kayıtlarına 500 altın ücret ve seviye başına
+  2 altın/tur bakım verildi. Hane Lideri ve Veliaht rollerinde `no_cost: true`
+  ile tur başı bakım kaldırıldı. `internal/army/commander.go`,
+  `internal/state/character_roster.go`, `internal/game/resolution.go`,
+  `internal/ai/neutral_character.go`.
 
 - 2026-10-14: Konseyin ilk pilot koltuğu Hazinedar eklendi. Aktif ve boşta
   olan yönetici/karakter atanabiliyor; atama ordu roster'ından çıkarıyor, mevcut

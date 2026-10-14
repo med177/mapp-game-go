@@ -114,23 +114,31 @@ func (s *GameState) councilCharacterAvailableForEffect(ownerID, roleID string, c
 }
 
 func (s *GameState) CouncilRoleEffects(ownerID faction.FactionID, roleID string) scenario.CouncilEffects {
-	var effects scenario.CouncilEffects
 	holder := s.CouncilRoleHolder(ownerID, roleID)
 	if holder == nil {
-		return effects
+		return scenario.CouncilEffects{}
+	}
+	return s.CouncilRoleEffectsForCharacter(holder, roleID)
+}
+
+// CouncilRoleEffectsForCharacter returns the configured role, level, and trait
+// effects for a character without requiring that character to hold the role.
+func (s *GameState) CouncilRoleEffectsForCharacter(character *army.Commander, roleID string) scenario.CouncilEffects {
+	if character == nil {
+		return scenario.CouncilEffects{}
 	}
 	config := s.councilConfig()
 	role, ok := config.Role(roleID)
 	if !ok {
-		return effects
+		return scenario.CouncilEffects{}
 	}
-	level := holder.CouncilLevel
+	level := character.CouncilLevel
 	if level < army.CommanderStartingLevel {
-		level = army.CouncilLevelForExperience(holder.CouncilExperience)
+		level = army.CouncilLevelForExperience(character.CouncilExperience)
 	}
-	effects = addCouncilEffects(role.Effects, scaleCouncilEffects(role.PerLevel, level-1))
+	effects := addCouncilEffects(role.Effects, scaleCouncilEffects(role.PerLevel, level-1))
 	hasPositiveTraitEffect := false
-	for _, trait := range holder.Traits {
+	for _, trait := range character.Traits {
 		if definition, exists := config.Traits[string(trait)]; exists {
 			traitEffects := definition.CouncilEffects[roleID]
 			effects = addCouncilEffects(effects, traitEffects)

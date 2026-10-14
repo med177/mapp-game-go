@@ -90,6 +90,8 @@ type Commander struct {
 	Experience                  int                          `json:"experience"`
 	Battles                     int                          `json:"battles"`
 	Victories                   int                          `json:"victories"`
+	AdoptionCostGold            int                          `json:"adoption_cost_gold,omitempty"`
+	GoldUpkeep                  int                          `json:"gold_upkeep,omitempty"`
 	Traits                      []CharacterTrait             `json:"traits,omitempty"`
 	UnavailableStatuses         []CommanderUnavailableStatus `json:"unavailable_statuses,omitempty"`
 	InjuryTurnsOnDefeat         int                          `json:"injury_turns_on_defeat,omitempty"`

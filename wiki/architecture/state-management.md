@@ -9,8 +9,9 @@ related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-
 
 Ekonomi çözümlemesi `GameState.GoldEconomy` içinde serialize edilmeyen runtime
 snapshot tutar. Her fraksiyon için vergi/ticaret/rota/haracı ayrıştırılmış altın
-geliri, sabit ordu `GoldUpkeep`, ödenen/ödenemeyen bakım ve tur sonu hazine burada
-raporlanır; kalıcı hazine değeri yine `Faction.Gold` alanıdır. Böylece save
+geliri, hane karakteri/ordu/bina bakımı, ödenen/ödenemeyen karakter ve ordu
+bakımı ve tur sonu hazine burada raporlanır; hane bakımı önce, ordu ve bina
+bakımı sonra tahsil edilir. Kalıcı hazine değeri yine `Faction.Gold` alanıdır. Böylece save
 formatına geçmiş tur raporu eklenmeden HUD, gelir popup'ı ve oyuncu uyarıları
 aynı çözüm sonucu kullanır. Tur içi hediye transferleri `GoldTurnLedger` runtime
 alanında ayrıca tutulur.
@@ -368,12 +369,19 @@ sunar; `commander` tipi mevcut askeri roster'da kalır. `administrator` kayıtla
 roster'da yönetim adayı olarak görünürken mevcut ordu komutanlığı uygunluğunu da
 korur. `owner_id: "none"` olan aktif yönetici/karakter kayıtları tüm fraksiyonların
 erişebildiği tarafsız aday havuzunda yer alır. Oyuncu `AdoptNeutralCharacter()`
-ile, AI ise `AdoptNeutralCharacterForFaction()` ile bir adayı ücretsiz olarak
-kendi hanesine alabilir. AI, boş konsey koltuğu varsa tur başına en fazla bir
-adayı alıp ilk boş göreve atar. Bu işlem senaryo şablonunu değil runtime `GameState.Commanders`
-kaydındaki `OwnerID` değerini değiştirir. Bu map kompakt (`cmd`) ve legacy save
-akışlarında zaten saklandığından yeni kayıt alanı gerekmez; eski kayıtlarda alan
-bulunmadığında senaryo başlangıç şablonlarıyla mevcut varsayılan davranış korunur.
+ile, AI ise `AdoptNeutralCharacterForFaction()` ile bir adayı tek seferlik
+`adoption_cost_gold` ücretini ödeyerek kendi hanesine alabilir. Hane üyelerinin
+`gold_upkeep` bakımı her tur tahsil edilir; rol tanımındaki `no_cost: true`,
+atanmış karakterin bu bakımını kaldırır. AI, mevcut hane üyelerini rol etkilerinin
+beklenen faction getirisine göre yeniden eşleştirir; yeni adayda bakım ve alım
+ücretinin 12 turluk payını da hesaba katar ve yalnız getirisi maliyetinden büyükse
+tur başına en fazla birini alır. Gelir, kaynak fiyatları/üretimi, memnuniyetsiz
+bölgeler, ordu gücü ve savaş, kullanılabilir Heyet hedefleri ile araştırma
+getirisi tahminde hesaba katılır. Karakter bakım maliyeti olmayan AI üyeleri
+sırf boşta diye serbest bırakılmaz. Bu işlem senaryo şablonunu değil runtime
+`GameState.Commanders` kaydındaki `OwnerID` değerini değiştirir. Ücret verileri
+mevcut commander kaydıyla kompakt (`cmd`) ve legacy save biçimlerinde taşınır;
+ayrı bir kayıt alanı gerekmez.
 `ReleaseCharacterToNeutralPool()` oyuncunun aktif hanesindeki karakteri tarafsız
 adaylara geri bırakır; ordu ve konsey atamalarını da kaldırır. Bu iki sahiplik
 geçişi mevcut save state'teki `OwnerID` alanını günceller.

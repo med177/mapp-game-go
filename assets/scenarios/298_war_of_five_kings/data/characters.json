@@ -6,11 +6,13 @@
     "name": "Robb Stark",
     "portrait_asset": "robb_stark.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "tactician",
       "aggressor"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 300
   },
   {
@@ -20,6 +22,8 @@
     "name": "Eddard Stark",
     "portrait_asset": "ned_stark.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "defender"
@@ -34,6 +38,8 @@
     "name": "Tywin Lannister",
     "portrait_asset": "tywin_lannister.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "tactician",
       "veteran",
@@ -63,6 +69,8 @@
     "name": "Stannis Baratheon",
     "portrait_asset": "stannis.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "tactician"
@@ -77,6 +85,8 @@
     "name": "Renly Baratheon",
     "portrait_asset": "renly.png",
     "level": 2,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 4,
     "traits": [
       "veteran",
       "charismatic",
@@ -92,12 +102,14 @@
     "name": "Daenerys Targaryen",
     "portrait_asset": "daenerys.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "aggressor",
       "veteran"
     ],
-    "start_year": 297,
-    "end_year": 329
+    "start_year": 295,
+    "end_year": 325
   },
   {
     "id": "cmd_jon_snow",
@@ -111,7 +123,7 @@
       "aggressor"
     ],
     "start_year": 298,
-    "end_year": 329
+    "end_year": 330
   },
   {
     "id": "cmd_yohn_royce",
@@ -124,7 +136,7 @@
       "defender",
       "veteran"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 305
   },
   {
@@ -138,7 +150,7 @@
       "tactician",
       "defender"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 301
   },
   {
@@ -152,7 +164,7 @@
       "aggressor",
       "defender"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 303
   },
   {
@@ -162,11 +174,13 @@
     "name": "Mance Rayder",
     "portrait_asset": "mance_rayder.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "tactician"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 302
   },
   {
@@ -180,7 +194,7 @@
       "veteran",
       "aggressor"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 305
   },
   {
@@ -190,11 +204,13 @@
     "name": "Roose Bolton",
     "portrait_asset": "roose_bolton.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "tactician",
       "defender"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 303
   },
   {
@@ -208,7 +224,7 @@
       "aggressor",
       "veteran"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 305
   },
   {
@@ -218,11 +234,13 @@
     "name": "Sealord of Braavos",
     "portrait_asset": "sealord_braavos.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "tactician"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 305
   },
   {
@@ -236,7 +254,7 @@
       "veteran",
       "aggressor"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 302
   },
   {
@@ -250,7 +268,7 @@
       "veteran",
       "defender"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 305
   },
   {
@@ -376,7 +394,7 @@
       "tactician",
       "defender"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -390,7 +408,7 @@
       "veteran",
       "aggressor"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 303
   },
   {
@@ -404,7 +422,7 @@
       "veteran",
       "defender"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -418,7 +436,7 @@
       "veteran",
       "tactician"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -474,7 +492,7 @@
       "aggressor",
       "veteran"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -526,6 +544,8 @@
     "name": "Balon Greyjoy",
     "portrait_asset": "balon_greyjoy.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "tactician"
@@ -544,7 +564,7 @@
       "aggressor",
       "veteran"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 301
   },
   {
@@ -558,7 +578,7 @@
       "tactician",
       "aggressor"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -610,6 +630,8 @@
     "name": "Oberyn Martell",
     "portrait_asset": "oberyn_martell.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressor",
       "veteran"
@@ -642,7 +664,7 @@
       "aggressor",
       "veteran"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -680,6 +702,8 @@
     "name": "Jeor Mormont",
     "portrait_asset": "jeor_mormont.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "veteran",
       "defender"
@@ -750,11 +774,13 @@
     "name": "Styr, the Magnar of Thenn",
     "portrait_asset": "styr.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressor",
       "veteran"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 301
   },
   {
@@ -806,6 +832,8 @@
     "name": "Robert Baratheon",
     "portrait_asset": "robert_baratheon.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "veteran",
       "aggressor",
@@ -821,6 +849,8 @@
     "name": "Gece Kralı",
     "portrait_asset": "night_king.png",
     "level": 10,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 20,
     "is_boss": true,
     "traits": [
       "veteran",
@@ -840,7 +870,7 @@
       "veteran",
       "aggressor"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -850,12 +880,14 @@
     "name": "Selwyn Tarth",
     "portrait_asset": "selwyn_tarth.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "tactician",
       "veteran"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 310
   },
   {
@@ -869,7 +901,7 @@
       "aggressor",
       "veteran"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 311
   },
   {
@@ -879,12 +911,14 @@
     "name": "Arya Stark",
     "portrait_asset": "arya_stark.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "assassin",
       "spy",
       "explorer"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -894,12 +928,14 @@
     "name": "Sansa Stark",
     "portrait_asset": "sansa_stark.png",
     "level": 2,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 4,
     "traits": [
       "queen",
       "intelligent",
       "beautiful"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -909,12 +945,14 @@
     "name": "Cersei Lannister",
     "portrait_asset": "cersei_lannister.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "queen",
       "intelligent",
       "manipulative"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 307
   },
   {
@@ -924,12 +962,14 @@
     "name": "Melisandre",
     "portrait_asset": "melisandre.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "sorceress",
       "manipulative",
       "shadowbinder"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 316
   },
   {
@@ -939,12 +979,14 @@
     "name": "Margaery Tyrell",
     "portrait_asset": "margaery_tyrell.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "queen",
       "intelligent",
       "beautiful"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -954,12 +996,14 @@
     "name": "Catelyn Stark",
     "portrait_asset": "catelyn_stark.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "mother",
       "resourceful",
       "loyal"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -969,12 +1013,14 @@
     "name": "Ellaria Sand",
     "portrait_asset": "ellaria_sand.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "lover",
       "schemer",
       "vengeful"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 308
   },
   {
@@ -984,12 +1030,14 @@
     "name": "Nymeria Sand",
     "portrait_asset": "nymeria_sand.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "fighter",
       "independent",
       "vengeful"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 308
   },
   {
@@ -999,10 +1047,12 @@
     "name": "Lyanna Mormont",
     "portrait_asset": "lyanna_mormont.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "aggressor"
     ],
-    "start_year": 298,
+    "start_year": 295,
     "end_year": 310
   },
   {
@@ -1012,12 +1062,14 @@
     "name": "Val",
     "portrait_asset": "val.png",
     "level": 2,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 4,
     "traits": [
       "princess",
       "beautiful",
       "free_spirit"
     ],
-    "start_year": 296,
+    "start_year": 295,
     "end_year": 330
   },
   {
@@ -1027,6 +1079,8 @@
     "name": "Bronn",
     "portrait_asset": "bronn.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "mercenary",
       "resourceful",
@@ -1042,6 +1096,8 @@
     "name": "Petyr Baelish",
     "portrait_asset": "littlefinger.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "schemer",
       "manipulative",
@@ -1057,6 +1113,8 @@
     "name": "Varys",
     "portrait_asset": "varys.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "schemer",
       "intelligent",
@@ -1072,6 +1130,8 @@
     "name": "Pycelle",
     "portrait_asset": "pycelle.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "schemer",
       "scholar",
@@ -1087,6 +1147,8 @@
     "name": "Olenna Tyrell",
     "portrait_asset": "olenna_tyrell.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "schemer",
       "cunning",
@@ -1102,6 +1164,8 @@
     "name": "Samwell Tarly",
     "portrait_asset": "samwell_tarly.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "goodwill",
       "loyal",
@@ -1117,6 +1181,8 @@
     "name": "Shae",
     "portrait_asset": "shae.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "cunning",
       "beautiful",
@@ -1132,6 +1198,8 @@
     "name": "Büyük Üstad",
     "portrait_asset": "grand_maester.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "scholar",
       "advisor",
@@ -1147,6 +1215,8 @@
     "name": "Jaqen H'ghar",
     "portrait_asset": "jaqen_hghar.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "assassin",
       "mysterious",
@@ -1162,6 +1232,8 @@
     "name": "Joffrey Baratheon",
     "portrait_asset": "joffrey_baratheon.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "schemer",
       "cruel",
@@ -1177,6 +1249,8 @@
     "name": "Tommen Baratheon",
     "portrait_asset": "tommen_baratheon.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "schemer",
       "innocent",

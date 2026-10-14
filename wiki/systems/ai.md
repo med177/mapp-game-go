@@ -1118,8 +1118,16 @@ genel hücum ve kuşatma teslimi çıkışlarında aynı politika helper'ından 
 bölgede ardıl fraksiyon hâlâ aktifse `CanRestoreSuccessorAtRegion()` false olur ve
 AI vassallık kararı uygulanmadan doğrudan ilhak akışı korunur.
 
+`aiManageNeutralCharacters()` konsey üyelerini beklenen rol getirisine göre
+yeniden eşleştirir. Tarafsız aday, hazine tek seferlik alım ücretini
+karşılayabiliyorsa ve tahmini tur başı ek rol getirisi bakım ile alım ücretinin
+12 turluk payını aşıyorsa haneye katılır; `no_cost` görevine atanacak aday için
+bakım maliyeti sıfır kabul edilir. Her tur en fazla bir aday alınır. Hane
+üyelerinin devam eden bakım gideri, `no_cost` görevleri hariç, AI bütçesinin
+üç turluk acil bakım rezervine de eklenir.
+
 `TakeTurn` sırasıyla şu adımları yapar:
-1. Tarafsız aday havuzundan boş konsey koltuğu için en fazla bir karakter alma → `aiManageNeutralCharacters()`
+1. Konsey rollerini optimize etme ve maliyetleri karşılanan, getirisi pozitif adayı alma → `aiManageNeutralCharacters()`
 2. Zorluk 3 ise → `FormCoalitionAgainstRapidExpansion()`
 3. Diplomasi taraması ve fırsatçı savaş değerlendirmesi → `aiHandleDiplomacy()`
 4. Teknoloji araştırma → `aiResearch()`
@@ -1132,7 +1140,7 @@ AI vassallık kararı uygulanmadan doğrudan ilhak akışı korunur.
 
 `TurnStepper` aynı zinciri iki faza ayırır:
 
-1. `runTurnPrelude()` — tarafsız karakter alımı, diplomasi, araştırma, ekonomi, deniz, recruit/build, konsolidasyon ve komutan ataması
+1. `runTurnPrelude()` — konsey rol optimizasyonu ve gerekirse tarafsız karakter alımı, diplomasi, araştırma, ekonomi, deniz, recruit/build, konsolidasyon ve komutan ataması
 2. Hareket fazı — her `Step()` çağrısı tek bir `executeMove()` sonucu döndürür
 
 Bu step sonucu `TurnStep{Kind, FocusRegion, Message}` biçimindedir. Oyun katmanı:

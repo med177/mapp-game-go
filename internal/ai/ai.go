@@ -107,7 +107,6 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 	if fid == gs.PlayerFactionID && gs.AIControlsPlayerEconomy && !gs.AIControlsPlayerFaction {
 		return runPlayerEconomyPreludeWithPreparedContext(gs, fid, eventDefs, preparedContext, steps)
 	}
-	aiManageNeutralCharacters(gs, fid)
 	planningContext := preparedContext
 	if planningContext != nil && (planningContext.gs != gs || planningContext.FactionID != fid) {
 		planningContext = nil
@@ -120,6 +119,7 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 		// sonraki savaş/diplomasi kararları eski stratejik görüntüyü kullanmasın.
 		planningContext = prepareStrategicContextWithEvents(gs, fid, eventDefs)
 	}
+	aiManageNeutralCharactersWithContext(gs, fid, planningContext)
 	// Difficulty 3: herhangi bir fraksiyonun sabit büyüklüğünü değil, kısa
 	// süredeki hızlı genişlemesini tehdit olarak değerlendir.
 	if gs.Difficulty >= 3 {

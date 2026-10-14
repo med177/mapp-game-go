@@ -170,7 +170,7 @@ func TestCharacterReleaseButtonAndConfirmation(t *testing.T) {
 
 func TestCharacterAdoptionConfirmation(t *testing.T) {
 	r := &Renderer{}
-	character := &army.Commander{ID: "chr_bronn", Name: "Bronn"}
+	character := &army.Commander{ID: "chr_bronn", Name: "Bronn", AdoptionCostGold: 500, GoldUpkeep: 6}
 	r.confirmCharacterAdoption(character)
 	if !r.confirmDialog.show || r.confirmDialog.pendingAction.Kind != ActionAdoptNeutralCharacter ||
 		r.confirmDialog.pendingAction.CharacterID != character.ID ||
@@ -179,6 +179,25 @@ func TestCharacterAdoptionConfirmation(t *testing.T) {
 	}
 	if !strings.Contains(r.confirmDialog.message, character.Name) {
 		t.Fatalf("adoption confirmation message %q omits character name", r.confirmDialog.message)
+	}
+	if !strings.Contains(r.confirmDialog.message, "500 altın") ||
+		!strings.Contains(r.confirmDialog.message, "6 altın/tur") {
+		t.Fatalf("adoption confirmation message %q omits costs", r.confirmDialog.message)
+	}
+}
+
+func TestCharacterRosterCandidateShowsOneTimeAndPerTurnCostsSeparately(t *testing.T) {
+	character := &army.Commander{
+		AdoptionCostGold: 500,
+		GoldUpkeep:       6,
+	}
+	got := characterRosterCandidateCostLines(character)
+	want := [2]string{
+		"Alım: 500 altın (tek seferlik)",
+		"Bakım: 6 altın/tur",
+	}
+	if got != want {
+		t.Fatalf("candidate cost lines = %q, want %q", got, want)
 	}
 }
 

@@ -72,6 +72,24 @@ func TestTreasurerBonusMatchesFactionIncomePreviewAndGrossIncome(t *testing.T) {
 	}
 }
 
+func TestGoldEconomyPreviewIncludesHouseholdUpkeep(t *testing.T) {
+	const fid faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_member", Type: army.CharacterTypeCharacter, OwnerID: string(fid), GoldUpkeep: 6,
+	}
+	gs := &state.GameState{
+		PlayerFactionID: fid,
+		Factions:        map[faction.FactionID]*faction.Faction{fid: {ID: fid}},
+		Commanders:      map[string]*army.Commander{character.ID: character},
+	}
+
+	status := GoldEconomyPreview(gs, fid)
+
+	if status.CharacterUpkeep != 6 || status.NetChange != -6 {
+		t.Fatalf("character upkeep preview = %d, net change = %d; want 6 and -6", status.CharacterUpkeep, status.NetChange)
+	}
+}
+
 func TestEventOtherIncomeDeltaIsIncludedWithHistoricalPeriod(t *testing.T) {
 	const fid = faction.FactionID("papal_states")
 	gs := &state.GameState{

@@ -445,6 +445,7 @@ func aiBuildEconomySnapshot(gs *state.GameState, fid faction.FactionID) aiEconom
 			snapshot.GrainDemand += upkeep
 		}
 	}
+	snapshot.GoldUpkeep += gs.FactionCharacterGoldUpkeep(string(fid))
 	return snapshot
 }
 

@@ -97,9 +97,9 @@ func prepareAIBudget(gs *state.GameState, fid faction.FactionID, ctx *StrategicC
 	if criticalThreat {
 		emergency += aiBudgetCriticalReserve
 	}
-	// Mevcut ordunun ve binaların üç aylık bakımını acil rezervde tut. Böylece
-	// AI yeni üretim yaparken mevcut düzenli giderlerini finansmansız bırakmaz.
-	maintenance := gs.FactionGoldUpkeep(fid) + gs.FactionBuildingGoldUpkeep(fid)
+	// Mevcut hane, ordu ve binaların üç aylık bakımını acil rezervde tut.
+	maintenance := gs.FactionCharacterGoldUpkeep(string(fid)) +
+		gs.FactionGoldUpkeep(fid) + gs.FactionBuildingGoldUpkeep(fid)
 	emergency += maintenance * aiGoldUpkeepReserveTurns
 	emergency = minInt(aiBudgetEmergencyGoldCap, maxInt(aiMinGoldReserve, emergency))
 	spendable := maxInt(0, self.Gold-emergency)

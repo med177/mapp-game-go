@@ -94,9 +94,8 @@ func (s *GameState) AdoptNeutralCharacter(characterID string) bool {
 	return s.AdoptNeutralCharacterForFaction(s.PlayerFactionID, characterID)
 }
 
-// AdoptNeutralCharacterForFaction tarafsız bir karakteri belirtilen fraksiyona
-// ücretsiz bağlar. Şablon değiştirilmez; sahiplik runtime karakter state'inde
-// tutulur ve mevcut commanders save alanı üzerinden korunur.
+// AdoptNeutralCharacterForFaction, yeterli altın varsa tarafsız karakteri
+// belirtilen fraksiyona bağlar ve tek seferlik katılım ücretini tahsil eder.
 func (s *GameState) AdoptNeutralCharacterForFaction(ownerID faction.FactionID, characterID string) bool {
 	if s == nil || characterID == "" || ownerID == "" || ownerID == faction.FactionID(NeutralCharacterOwnerID) {
 		return false
@@ -109,11 +108,35 @@ func (s *GameState) AdoptNeutralCharacterForFaction(ownerID faction.FactionID, c
 	if !isRosterCharacter(character) || character.OwnerID != NeutralCharacterOwnerID ||
 		!character.ActiveInYear(s.Year) || character.AssignedArmyID != "" || character.AssignedCouncilRole != "" ||
 		s.DeadCommanderIDs[characterID] || s.DismissedCommanderIDs[characterID] ||
-		s.ExiledCommanderIDs[characterID] || character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) {
+		s.ExiledCommanderIDs[characterID] || character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) ||
+		character.AdoptionCostGold < 0 || character.GoldUpkeep < 0 || owner.Gold < character.AdoptionCostGold {
 		return false
 	}
+	owner.Gold -= character.AdoptionCostGold
 	character.OwnerID = string(ownerID)
 	return true
+}
+
+// FactionCharacterGoldUpkeep returns the per-turn gold upkeep of a faction's
+// active household characters, including members temporarily unavailable for duties.
+func (s *GameState) FactionCharacterGoldUpkeep(ownerID string) int {
+	if s == nil || ownerID == "" {
+		return 0
+	}
+	councilConfig := s.councilConfig()
+	total := 0
+	for _, character := range s.Commanders {
+		if !isRosterCharacter(character) || character.OwnerID != ownerID ||
+			!character.ActiveInYear(s.Year) || s.DeadCommanderIDs[character.ID] ||
+			s.DismissedCommanderIDs[character.ID] || character.GoldUpkeep <= 0 {
+			continue
+		}
+		if role, ok := councilConfig.Role(character.AssignedCouncilRole); ok && role.NoCost {
+			continue
+		}
+		total += character.GoldUpkeep
+	}
+	return total
 }
 
 // ReleaseCharacterToNeutralPool aktif karakterin atamalarını kaldırıp tarafsız

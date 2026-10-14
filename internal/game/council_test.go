@@ -78,6 +78,42 @@ func TestTreasurerBonusAppliedToFactionIncomeByEconomyTick(t *testing.T) {
 	}
 }
 
+func TestCharacterUpkeepIsPaidBeforeArmyUpkeepWithoutChangingArmyShortage(t *testing.T) {
+	const fid faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_member", Type: army.CharacterTypeCharacter, OwnerID: string(fid), GoldUpkeep: 10,
+	}
+	gs := &state.GameState{
+		Turn:            1,
+		Year:            300,
+		Month:           1,
+		PlayerFactionID: fid,
+		Factions: map[faction.FactionID]*faction.Faction{
+			fid: {ID: fid, Gold: 12, Grain: 100},
+		},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		Armies: map[army.ArmyID]*army.Army{
+			"army": {ID: "army", OwnerID: string(fid), Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", GoldUpkeep: 5},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	status := gs.GoldEconomy[fid]
+	if status.CharacterUpkeep != 10 || status.PaidCharacterUpkeep != 10 || status.CharacterShortage != 0 {
+		t.Fatalf("character upkeep status = %+v; want 10 paid in full", status)
+	}
+	if status.Upkeep != 5 || status.PaidUpkeep != 2 || status.Shortage != 3 {
+		t.Fatalf("army upkeep status = %+v; want 2 paid and 3 shortage after character cost", status)
+	}
+	if gs.Factions[fid].Gold != 0 {
+		t.Fatalf("remaining gold = %d, want 0", gs.Factions[fid].Gold)
+	}
+}
+
 func TestMilitaryResponsibleGainsExperienceWhenMilitaryBonusApplies(t *testing.T) {
 	const fid faction.FactionID = "player"
 	character := &army.Commander{

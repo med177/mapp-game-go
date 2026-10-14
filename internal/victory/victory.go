@@ -205,8 +205,9 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 		status.PrivilegeIncome + status.TributeIncome
 	status.CouncilIncome = gs.CouncilIncomeBonus(fid, councilIncomeBase)
 	status.Upkeep = gs.FactionGoldUpkeep(fid)
+	status.CharacterUpkeep = gs.FactionCharacterGoldUpkeep(string(fid))
 	status.BuildingUpkeep = gs.FactionBuildingGoldUpkeep(fid)
-	status.NetChange = status.Income + status.CouncilIncome + status.TradePowerIncome + status.MerchantTradeIncome + status.TradeRouteIncome - status.TradeRouteExpense + status.TradeRouteCustomsIncome + status.PrivilegedTradeIncome + status.PrivilegeIncome + status.TributeIncome - status.TributePaid - status.Upkeep - status.BuildingUpkeep
+	status.NetChange = status.Income + status.CouncilIncome + status.TradePowerIncome + status.MerchantTradeIncome + status.TradeRouteIncome - status.TradeRouteExpense + status.TradeRouteCustomsIncome + status.PrivilegedTradeIncome + status.PrivilegeIncome + status.TributeIncome - status.TributePaid - status.Upkeep - status.CharacterUpkeep - status.BuildingUpkeep
 	return status
 }
 

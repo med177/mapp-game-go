@@ -249,6 +249,16 @@ func characterRosterDetailRect(row gameui.Rect, textX float64) gameui.Rect {
 	return gameui.Rect{X: textX, Y: row.Y + 34, W: row.X + row.W - textX - characterRosterCardPadding, H: 17}
 }
 
+func characterRosterCandidateCostLines(character *army.Commander) [2]string {
+	if character == nil {
+		return [2]string{}
+	}
+	return [2]string{
+		"Alım: " + itoa(character.AdoptionCostGold) + " altın (tek seferlik)",
+		"Bakım: " + itoa(character.GoldUpkeep) + " altın/tur",
+	}
+}
+
 func characterRosterRowBorderRect(row gameui.Rect) gameui.Rect {
 	const borderInset = 1.0
 	return gameui.Rect{
@@ -329,7 +339,8 @@ func (r *Renderer) confirmCharacterAdoption(character *army.Commander) {
 	}
 	r.ShowConfirmDialog(
 		"Karakteri Haneye Kat",
-		character.Name+" hanenize katılsın mı?",
+		character.Name+" hanenize katılsın mı? Tek seferlik ücret: "+itoa(character.AdoptionCostGold)+
+			" altın; bakım: "+itoa(character.GoldUpkeep)+" altın/tur.",
 		"Evet",
 		"Hayır",
 		InputAction{Kind: ActionAdoptNeutralCharacter, CharacterID: character.ID},
@@ -708,18 +719,32 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 		}
 		detail := kind
 		var bonus []string
+		upkeepLabel := "Bakım: " + itoa(character.GoldUpkeep) + " altın/tur"
 		if candidate {
 			detail = "Tarafsız aday"
 		} else if character.AssignedCouncilRole != "" {
 			if role, ok := gs.CouncilConfig.WithDefaults().Role(character.AssignedCouncilRole); ok {
-				detail = role.NameTR + " · Seviye " + itoa(character.CouncilLevel)
+				if role.NoCost {
+					upkeepLabel = "Tur başı bakım yok"
+				}
+				detail = role.NameTR + " · " + upkeepLabel
 				bonus = characterCouncilEffectsLinesTR(gs.CouncilRoleEffects(gs.PlayerFactionID, character.AssignedCouncilRole))
 			} else {
-				detail = character.AssignedCouncilRole
+				detail = character.AssignedCouncilRole + " · " + upkeepLabel
 			}
+		} else {
+			detail = kind + " · " + upkeepLabel
 		}
 		detailRect := characterRosterDetailRect(row, textX)
-		drawUILabel(body, detailRect, trimTextToWidth(detail, FaceSmall, detailRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		if candidate {
+			costLines := characterRosterCandidateCostLines(character)
+			drawUILabel(body, detailRect, trimTextToWidth(costLines[0], FaceSmall, detailRect.W), ColorGold, gameui.TextSmall, gameui.TextAlignStart)
+			upkeepRect := detailRect
+			upkeepRect.Y += 18
+			drawUILabel(body, upkeepRect, trimTextToWidth(costLines[1], FaceSmall, upkeepRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		} else {
+			drawUILabel(body, detailRect, trimTextToWidth(detail, FaceSmall, detailRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		}
 		for bonusIndex, bonusLine := range bonus {
 			bonusRect := gameui.Rect{
 				X: textX,
@@ -792,7 +817,7 @@ func (r *Renderer) drawCharacterRosterPanel(screen *ebiten.Image) {
 	drawUICardRect(screen, candidateColumn, color.RGBA{20, 16, 11, 220}, color.RGBA{92, 72, 40, 190}, 1)
 	drawUILabel(screen, gameui.Rect{X: ownedColumn.X + 8, Y: ownedColumn.Y + 7, W: ownedColumn.W - 16}, "Hane Üyeleri ("+itoa(len(ownedRoster))+")", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: candidateColumn.X + 8, Y: candidateColumn.Y + 7, W: candidateColumn.W - 16}, "Adaylar ("+itoa(len(candidates))+")", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
-	drawUILabel(screen, gameui.Rect{X: candidateColumn.X + 8, Y: candidateColumn.Y + 34, W: candidateColumn.W - 16, H: 32}, "Ücretsiz katılabilirler", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, gameui.Rect{X: candidateColumn.X + 8, Y: candidateColumn.Y + 34, W: candidateColumn.W - 16, H: 32}, "Alım ve tur başı bakım ücreti kartta", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 	drawCharacterRosterRows(screen, r.gs, ownedColumn, ownedViewport, ownedRoster, r.characterRosterOwnedScroll, false, r.characterRosterAssignMenuID)
 	drawCharacterRosterRows(screen, r.gs, candidateColumn, candidateViewport, candidates, r.characterRosterNeutralScroll, true, "")
 	menuIndex := characterRosterIndexByID(ownedRoster, r.characterRosterAssignMenuID)

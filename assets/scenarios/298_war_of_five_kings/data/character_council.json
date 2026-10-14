@@ -5,6 +5,7 @@
     {
       "id": "head_of_house",
       "name_tr": "Lider",
+      "no_cost": true,
       "effects": {
         "satisfaction_points": 1,
         "military_power_mod": 1.01,
@@ -19,6 +20,7 @@
     {
       "id": "heir",
       "name_tr": "Veliaht",
+      "no_cost": true,
       "effects": {
         "satisfaction_points": 1,
         "relation_bonus_points": 1

@@ -26,6 +26,7 @@ type CouncilEffects struct {
 type CouncilRoleDefinition struct {
 	ID                   string         `json:"id"`
 	NameTR               string         `json:"name_tr"`
+	NoCost               bool           `json:"no_cost,omitempty"`
 	Effects              CouncilEffects `json:"effects,omitempty"`
 	PerLevel             CouncilEffects `json:"per_level,omitempty"`
 	TraitFallbackEffects CouncilEffects `json:"trait_fallback_effects,omitempty"`
