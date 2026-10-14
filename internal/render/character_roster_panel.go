@@ -727,9 +727,10 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 		}
 		drawUILabel(body, gameui.Rect{X: textX, Y: row.Y + 8, W: nameW, H: 18}, trimTextToWidth(character.Name, FaceSmall, nameW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 		kind := "Karakter"
-		if character.Type == army.CharacterTypeAdministrator {
+		switch character.Type {
+		case army.CharacterTypeAdministrator:
 			kind = "Yönetici"
-		} else if character.Type == army.CharacterTypeCommander {
+		case army.CharacterTypeCommander:
 			kind = "Komutan"
 		}
 		if !candidate && character.AssignedArmyID != "" {
