@@ -780,16 +780,7 @@ func resolveScenarioPath(scenarioID, savedScenarioPath string) string {
 }
 
 func loadScenarioDefinition(scenarioPath string) (*scenario.Scenario, error) {
-	data, err := os.ReadFile(filepath.Join(scenarioPath, "data", "scenario.json"))
-	if err != nil {
-		return nil, err
-	}
-	var sc scenario.Scenario
-	if err := json.Unmarshal(data, &sc); err != nil {
-		return nil, err
-	}
-	sc.Path = scenarioPath
-	return &sc, nil
+	return scenario.Load(scenarioPath)
 }
 
 func scenarioIDFromPath(scenarioPath string) string {

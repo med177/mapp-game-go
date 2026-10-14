@@ -2,12 +2,58 @@ package save
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 )
+
+func TestLoadScenarioDefinitionIncludesCouncilRolesAndTraits(t *testing.T) {
+	scenarioPath := t.TempDir()
+	dataDir := filepath.Join(scenarioPath, "data")
+	if err := os.Mkdir(dataDir, 0o700); err != nil {
+		t.Fatalf("scenario data dizini oluşturulamadı: %v", err)
+	}
+	files := map[string]string{
+		"scenario.json": `{"id":"test","name":"Test","period":"medieval"}`,
+		"character_council.json": `{
+			"roles": [
+				{"id":"military_responsible","name_tr":"Serasker"},
+				{"id":"treasurer","name_tr":"Hazinedar"}
+			]
+		}`,
+		"character_traits.json": `{
+			"traits": {
+				"administrator": {"name_tr":"İdareci"}
+			}
+		}`,
+	}
+	for filename, contents := range files {
+		if err := os.WriteFile(filepath.Join(dataDir, filename), []byte(contents), 0o600); err != nil {
+			t.Fatalf("%s yazılamadı: %v", filename, err)
+		}
+	}
+
+	loaded, err := loadScenarioDefinition(scenarioPath)
+	if err != nil {
+		t.Fatalf("senaryo tanımı yüklenemedi: %v", err)
+	}
+	for roleID, want := range map[string]string{
+		"military_responsible": "Serasker",
+		"treasurer":            "Hazinedar",
+	} {
+		role, ok := loaded.CharacterCouncil.Role(roleID)
+		if !ok || role.NameTR != want {
+			t.Errorf("rol %q = %+v, found=%t; want name_tr %q", roleID, role, ok, want)
+		}
+	}
+	if got := loaded.CharacterCouncil.Traits["administrator"].NameTR; got != "İdareci" {
+		t.Errorf("administrator trait name = %q, want %q", got, "İdareci")
+	}
+}
 
 func TestAdoptedNeutralCharacterOwnershipPersistsCompactAndLegacySaves(t *testing.T) {
 	character := &army.Commander{
