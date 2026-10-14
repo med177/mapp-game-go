@@ -76,11 +76,44 @@ func TestCharacterRosterAssignedAndUnassignedRowsHaveDividerGap(t *testing.T) {
 	if current.Y-previous.Y != characterRosterRowH+characterRosterDutyGroupGap {
 		t.Fatalf("row pitch across groups = %.0f, want base pitch %.0f plus group gap %.0f", current.Y-previous.Y, characterRosterRowH, characterRosterDutyGroupGap)
 	}
+	if gap := characterRosterRowH - previous.H; gap != 8 {
+		t.Fatalf("regular card gap = %.0f, want 8px", gap)
+	}
+	if above, below := dividerY-(previous.Y+previous.H), current.Y-dividerY; above != 10 || below != 10 {
+		t.Fatalf("divider spacing = %.0f above / %.0f below, want 10px each", above, below)
+	}
 	if _, showDivider := characterRosterDutyGroupDividerY(viewport, []*army.Commander{unassigned, unassigned}, 1, 0); showDivider {
 		t.Fatal("unassigned-to-unassigned rows should not show a divider")
 	}
 	if assigned.AssignedCouncilRole == "" || unassigned.AssignedCouncilRole != "" {
 		t.Fatal("test rows do not represent assigned and unassigned council duties")
+	}
+}
+
+func TestCharacterRosterListsShowPartialNextCardAtViewportBottom(t *testing.T) {
+	viewport := gameui.Rect{X: 20, Y: 40, W: 200, H: 5*characterRosterRowH + 64}
+	if got, want := characterRosterVisibleRows(viewport), 6; got != want {
+		t.Fatalf("candidate visible rows = %d, want %d to render the partial bottom card", got, want)
+	}
+	partial := characterRosterRowRect(viewport, 5)
+	if partial.Y >= viewport.Y+viewport.H || partial.Y+partial.H <= viewport.Y+viewport.H {
+		t.Fatalf("last visible candidate row %v should be clipped at viewport bottom %.0f", partial, viewport.Y+viewport.H)
+	}
+	characters := make([]*army.Commander, 6)
+	for index := range characters {
+		characters[index] = &army.Commander{ID: itoa(index)}
+	}
+	if got := characterRosterOwnedVisibleRows(viewport, characters, 0); got != 6 {
+		t.Fatalf("owned visible rows = %d, want 6 including partial bottom card", got)
+	}
+	candidates := make([]*army.Commander, 12)
+	for index := range candidates {
+		candidates[index] = &army.Commander{ID: itoa(index)}
+	}
+	scroll := characterRosterMaxScroll(len(candidates), viewport)
+	lastCandidate := characterRosterRowRect(viewport, len(candidates)-1-scroll)
+	if lastCandidate.Y >= viewport.Y+viewport.H || lastCandidate.Y+lastCandidate.H <= viewport.Y+viewport.H {
+		t.Fatalf("last candidate row %v should remain partially visible at max scroll in viewport %v", lastCandidate, viewport)
 	}
 }
 
@@ -279,7 +312,7 @@ func TestCharacterRosterColumnsGiveCandidatesMoreCardWidth(t *testing.T) {
 	}
 }
 
-func TestCharacterRosterPanelWidensOwnedCardsAndReducesHeight(t *testing.T) {
+func TestCharacterRosterPanelFitsSixFullOwnedRows(t *testing.T) {
 	originalWidth, originalHeight := ScreenWidth, ScreenHeight
 	defer func() {
 		ScreenWidth, ScreenHeight = originalWidth, originalHeight
@@ -293,8 +326,12 @@ func TestCharacterRosterPanelWidensOwnedCardsAndReducesHeight(t *testing.T) {
 	if panel.W-base.W != 40 || baseOwnedWidth+40 != owned.W {
 		t.Fatalf("panel/card width increase = %.0f/%.0f, want 40/40", panel.W-base.W, owned.W-baseOwnedWidth)
 	}
-	if panel.H != 880 {
-		t.Fatalf("character roster panel height = %.0f, want 880 (60px below the prior 940px)", panel.H)
+	if panel.H != characterRosterPanelMaxH {
+		t.Fatalf("character roster panel height = %.0f, want max height %.0f", panel.H, characterRosterPanelMaxH)
+	}
+	viewport := characterRosterOwnedListViewport(owned)
+	if viewport.H != 6*characterRosterRowH {
+		t.Fatalf("owned roster viewport height = %.0f, want exactly six row pitches (%.0f)", viewport.H, 6*characterRosterRowH)
 	}
 }
 

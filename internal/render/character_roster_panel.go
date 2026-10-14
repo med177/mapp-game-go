@@ -15,21 +15,24 @@ import (
 )
 
 const (
-	characterRosterRowH             = 129.0
+	characterRosterRowH             = 136.0
+	characterRosterCardH            = 128.0
 	characterRosterColumnGap        = 10.0
 	characterRosterCandidateListTop = 74.0
-	characterRosterPanelMaxH        = 880.0
 	characterRosterPanelPad         = 10.0
-	characterRosterAssignMenuWidth  = 156.0
-	characterRosterAssignMenuPad    = 6.0
-	characterRosterAssignOptionH    = 30.0
-	characterRosterDutyButtonW      = 48.0
-	characterRosterCardPadding      = 6.0
-	characterRosterScrollbarGap     = 4.0
-	characterRosterScrollbarW       = 3.0
-	characterRosterScrollbarRight   = 5.0
-	characterRosterDutyGroupPad     = 8.0
-	characterRosterDutyGroupGap     = characterRosterDutyGroupPad * 2
+	characterRosterOwnedListTop     = 34.0
+	characterRosterPanelMaxH        = 6*characterRosterRowH + activeWarsPanelHeaderH +
+		characterRosterPanelPad + characterRosterOwnedListTop + 5
+	characterRosterAssignMenuWidth = 156.0
+	characterRosterAssignMenuPad   = 6.0
+	characterRosterAssignOptionH   = 30.0
+	characterRosterDutyButtonW     = 48.0
+	characterRosterCardPadding     = 6.0
+	characterRosterScrollbarGap    = 4.0
+	characterRosterScrollbarW      = 3.0
+	characterRosterScrollbarRight  = 5.0
+	characterRosterDutyGroupPad    = 10.0
+	characterRosterDutyGroupGap    = characterRosterDutyGroupPad*2 - (characterRosterRowH - characterRosterCardH)
 )
 
 func characterRosterHUDButtonRect() [4]float32 {
@@ -117,17 +120,16 @@ func characterRosterListViewport(column gameui.Rect) gameui.Rect {
 }
 
 func characterRosterOwnedListViewport(column gameui.Rect) gameui.Rect {
-	const listTop = 34.0
 	return gameui.Rect{
 		X: column.X + 5,
-		Y: column.Y + listTop,
+		Y: column.Y + characterRosterOwnedListTop,
 		W: column.W - 5 - characterRosterScrollbarGap - characterRosterScrollbarW - characterRosterScrollbarRight,
-		H: column.H - listTop - 5,
+		H: column.H - characterRosterOwnedListTop - 5,
 	}
 }
 
 func characterRosterVisibleRows(viewport gameui.Rect) int {
-	rows := int(viewport.H / characterRosterRowH)
+	rows := int(math.Ceil(viewport.H / characterRosterRowH))
 	if rows < 1 {
 		return 1
 	}
@@ -157,7 +159,7 @@ func characterRosterRowRect(viewport gameui.Rect, visibleIndex int) gameui.Rect 
 		X: viewport.X,
 		Y: viewport.Y + float64(visibleIndex)*characterRosterRowH,
 		W: viewport.W,
-		H: characterRosterRowH - 1,
+		H: characterRosterCardH,
 	}
 }
 
@@ -194,7 +196,7 @@ func characterRosterOwnedVisibleRows(viewport gameui.Rect, characters []*army.Co
 	visibleRows := 0
 	for index := scroll; index < len(characters); index++ {
 		row := characterRosterOwnedRowRect(viewport, index, scroll, characters)
-		if visibleRows > 0 && row.Y+row.H > viewport.Y+viewport.H {
+		if visibleRows > 0 && row.Y >= viewport.Y+viewport.H {
 			break
 		}
 		visibleRows++
