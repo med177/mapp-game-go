@@ -123,7 +123,8 @@ func (s *GameState) AdoptNeutralCharacterForFaction(ownerID faction.FactionID, c
 }
 
 // FactionCharacterGoldUpkeep returns the per-turn gold upkeep of a faction's
-// active household characters, including members temporarily unavailable for duties.
+// active household characters and commanders assigned to council duties,
+// including members temporarily unavailable for duties.
 func (s *GameState) FactionCharacterGoldUpkeep(ownerID string) int {
 	if s == nil || ownerID == "" {
 		return 0
@@ -131,7 +132,9 @@ func (s *GameState) FactionCharacterGoldUpkeep(ownerID string) int {
 	councilConfig := s.councilConfig()
 	total := 0
 	for _, character := range s.Commanders {
-		if !isHouseholdDutyCharacter(character) || character.OwnerID != ownerID ||
+		hasHouseholdUpkeep := isHouseholdDutyCharacter(character) ||
+			(character != nil && character.Type == army.CharacterTypeCommander && character.AssignedCouncilRole != "")
+		if !hasHouseholdUpkeep || character.OwnerID != ownerID ||
 			!character.ActiveInYear(s.Year) || s.DeadCommanderIDs[character.ID] ||
 			s.DismissedCommanderIDs[character.ID] || character.GoldUpkeep <= 0 {
 			continue

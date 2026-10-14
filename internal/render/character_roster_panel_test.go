@@ -461,6 +461,20 @@ func TestCharacterTraitBadgesUseLocalizedLabelsAndTraitColors(t *testing.T) {
 	}
 }
 
+func TestCharacterRosterUpkeepLabelForCouncilCommander(t *testing.T) {
+	commander := &army.Commander{
+		ID: "cmd_tyrion", Type: army.CharacterTypeCommander, GoldUpkeep: 7,
+	}
+	paidRole := scenario.CouncilRoleDefinition{ID: state.CouncilRoleTreasurer, NameTR: "Hazinedar"}
+	if got, want := characterRosterUpkeepLabel(commander, paidRole), "Bakım: 7 altın/tur"; got != want {
+		t.Fatalf("assigned commander's upkeep label = %q, want %q", got, want)
+	}
+	freeRole := scenario.CouncilRoleDefinition{ID: state.CouncilRoleHeadOfHouse, NameTR: "Lider", NoCost: true}
+	if got, want := characterRosterUpkeepLabel(commander, freeRole), "Tur başı bakım yok"; got != want {
+		t.Fatalf("no-cost commander's upkeep label = %q, want %q", got, want)
+	}
+}
+
 func TestCharacterRosterHUDButtonSitsBesideActiveWarsButton(t *testing.T) {
 	active := buildActiveWarsHUDButton()
 	characters := buildCharacterRosterHUDButton()

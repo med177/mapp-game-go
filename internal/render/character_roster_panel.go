@@ -261,6 +261,16 @@ func characterRosterCandidateCostLines(character *army.Commander) [2]string {
 	}
 }
 
+func characterRosterUpkeepLabel(character *army.Commander, role scenario.CouncilRoleDefinition) string {
+	if role.NoCost {
+		return "Tur başı bakım yok"
+	}
+	if character == nil {
+		return "Bakım: 0 altın/tur"
+	}
+	return "Bakım: " + itoa(character.GoldUpkeep) + " altın/tur"
+}
+
 func characterRosterCouncilManageable(character *army.Commander) bool {
 	return character != nil &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
@@ -738,21 +748,20 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 		}
 		detail := kind
 		var bonus []string
-		upkeepLabel := "Bakım: " + itoa(character.GoldUpkeep) + " altın/tur"
+		upkeepLabel := characterRosterUpkeepLabel(character, scenario.CouncilRoleDefinition{})
 		if candidate {
 			detail = "Tarafsız aday"
 		} else if character.Type == army.CharacterTypeCommander {
 			if role, ok := gs.CouncilConfig.WithDefaults().Role(character.AssignedCouncilRole); ok {
-				detail = kind + " · " + role.NameTR
+				upkeepLabel = characterRosterUpkeepLabel(character, role)
+				detail = role.NameTR + " · " + upkeepLabel
 				bonus = characterCouncilEffectsLinesTR(gs.CouncilRoleEffects(gs.PlayerFactionID, character.AssignedCouncilRole))
 			} else {
 				detail = kind
 			}
 		} else if character.AssignedCouncilRole != "" {
 			if role, ok := gs.CouncilConfig.WithDefaults().Role(character.AssignedCouncilRole); ok {
-				if role.NoCost {
-					upkeepLabel = "Tur başı bakım yok"
-				}
+				upkeepLabel = characterRosterUpkeepLabel(character, role)
 				detail = role.NameTR + " · " + upkeepLabel
 				bonus = characterCouncilEffectsLinesTR(gs.CouncilRoleEffects(gs.PlayerFactionID, character.AssignedCouncilRole))
 			} else {

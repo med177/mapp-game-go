@@ -146,6 +146,35 @@ func TestFactionCharacterGoldUpkeepIncludesOwnedHouseholdCharacters(t *testing.T
 	}
 }
 
+func TestFactionCharacterGoldUpkeepIncludesCouncilAssignedCommanders(t *testing.T) {
+	assigned := &army.Commander{
+		ID: "assigned", Type: army.CharacterTypeCommander, OwnerID: "player",
+		AssignedCouncilRole: CouncilRoleTreasurer, GoldUpkeep: 8,
+	}
+	unassigned := &army.Commander{
+		ID: "unassigned", Type: army.CharacterTypeCommander, OwnerID: "player", GoldUpkeep: 12,
+	}
+	freeRoleCommander := &army.Commander{
+		ID: "free_role", Type: army.CharacterTypeCommander, OwnerID: "player",
+		AssignedCouncilRole: CouncilRoleHeadOfHouse, GoldUpkeep: 15,
+	}
+	gs := &GameState{
+		Year: 300,
+		Commanders: map[string]*army.Commander{
+			assigned.ID: assigned, unassigned.ID: unassigned, freeRoleCommander.ID: freeRoleCommander,
+		},
+		CouncilConfig: scenario.CharacterCouncilConfig{
+			Roles: []scenario.CouncilRoleDefinition{
+				{ID: CouncilRoleTreasurer, NameTR: "Hazinedar"},
+				{ID: CouncilRoleHeadOfHouse, NameTR: "Lider", NoCost: true},
+			},
+		},
+	}
+	if got, want := gs.FactionCharacterGoldUpkeep("player"), 8; got != want {
+		t.Fatalf("commander household upkeep = %d, want %d", got, want)
+	}
+}
+
 func TestReleaseCharacterReturnsToNeutralAndClearsAssignments(t *testing.T) {
 	character := &army.Commander{
 		ID: "chr_bronn", Type: army.CharacterTypeCharacter, OwnerID: "player", Name: "Bronn",

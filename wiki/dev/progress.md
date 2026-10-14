@@ -1,9 +1,16 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-14
+last_updated: 2026-10-15
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
+
+- 2026-10-15: Konsey görevine atanan askerî komutanlar da karakter bakımına
+  dahil edildi. Komutan şablonlarına `gold_upkeep` (seviye başına 2 altın) ve
+  `adoption_cost_gold` (500 altın) eklendi. `no_cost: true` rolleri komutanlara
+  da bakım muafiyeti verir.
+  `internal/state/character_roster.go`, `internal/game/resolution.go`,
+  `internal/render/character_roster_panel.go`.
 
 - 2026-10-14: Hane panelinin üyeler listesine aktif askerî komutanlar da eklendi.
   Komutanların ordu yönetimi mevcut komutan panelinde kalır; hane panelinden

@@ -109,10 +109,15 @@ kullanır. Yeni senaryo verilerinde `unavailable_statuses` kullanmayın: tutsakl
 eski senaryo kayıtları için geriye dönük uyumluluk amacıyla okunmaya devam eder.
 `administrator` ve `character` kayıtlarında isteğe bağlı `adoption_cost_gold`,
 tarafsız havuzdan haneye alımın tek seferlik altın ücretini; `gold_upkeep` ise
-hane üyesi başına turda ödenecek altın bakımını belirtir. Eksik alanlar sıfır
-kabul edilir. Ekonomi çözümlemesinde hane bakımı önce, ordu maaşı ve bina
-bütçesi daha sonra tahsil edilir; ödenemeyen hane bakımı ordu maaşı açığı
-cezasına dahil edilmez.
+hane üyesi başına turda ödenecek altın bakımını belirtir. `commander` kayıtlarında
+`adoption_cost_gold` şablonun haneye alım ücretini, `gold_upkeep` ise karakter
+konsey görevine atandığında tur başına ödenecek bakımı belirtir; görevsiz askerî
+komutan için bu karakter bakımı alınmaz. Senaryo karakter verilerinde bakım
+tutarları seviye başına 2 altın kuralını izler. Eksik alanlar sıfır kabul edilir.
+`character_council.json` içindeki `no_cost: true` bu bakımı görev atanmış
+karakterler için kaldırır.
+Ekonomi çözümlemesinde hane bakımı önce, ordu maaşı ve bina bütçesi daha sonra
+tahsil edilir; ödenemeyen hane bakımı ordu maaşı açığı cezasına dahil edilmez.
 
 ```json
 {

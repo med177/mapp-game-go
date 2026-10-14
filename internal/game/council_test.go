@@ -114,6 +114,39 @@ func TestCharacterUpkeepIsPaidBeforeArmyUpkeepWithoutChangingArmyShortage(t *tes
 	}
 }
 
+func TestCouncilAssignedCommanderUpkeepIsChargedEachTurn(t *testing.T) {
+	const fid faction.FactionID = "player"
+	commander := &army.Commander{
+		ID: "cmd_tyrion", Type: army.CharacterTypeCommander, OwnerID: string(fid),
+		AssignedCouncilRole: state.CouncilRoleTreasurer, GoldUpkeep: 7,
+	}
+	gs := &state.GameState{
+		Turn:            1,
+		Year:            300,
+		Month:           1,
+		PlayerFactionID: fid,
+		Factions: map[faction.FactionID]*faction.Faction{
+			fid: {ID: fid, Gold: 100, Grain: 100},
+		},
+		Commanders: map[string]*army.Commander{commander.ID: commander},
+		CouncilConfig: scenario.CharacterCouncilConfig{
+			Roles: []scenario.CouncilRoleDefinition{{
+				ID: state.CouncilRoleTreasurer, NameTR: "Hazinedar",
+			}},
+		},
+	}
+
+	applyEconomyTick(gs)
+
+	status := gs.GoldEconomy[fid]
+	if status.CharacterUpkeep != 7 || status.PaidCharacterUpkeep != 7 || status.CharacterShortage != 0 {
+		t.Fatalf("commander character upkeep status = %+v; want 7 paid in full", status)
+	}
+	if got, want := gs.Factions[fid].Gold, 93; got != want {
+		t.Fatalf("remaining gold = %d, want %d after commander upkeep", got, want)
+	}
+}
+
 func TestMilitaryResponsibleGainsExperienceWhenMilitaryBonusApplies(t *testing.T) {
 	const fid faction.FactionID = "player"
 	character := &army.Commander{

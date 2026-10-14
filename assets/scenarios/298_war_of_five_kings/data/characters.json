@@ -55,6 +55,8 @@
     "name": "Jaime Lannister",
     "portrait_asset": "jaime_lannister.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressor",
       "veteran"
@@ -118,6 +120,8 @@
     "name": "Jon Snow",
     "portrait_asset": "jon_snow.png",
     "level": 2,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 4,
     "traits": [
       "veteran",
       "aggressor"
@@ -132,6 +136,8 @@
     "name": "Yohn Royce",
     "portrait_asset": "yohn_royce.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "veteran"
@@ -146,6 +152,8 @@
     "name": "Brynden Tully",
     "portrait_asset": "brynden_tully.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "tactician",
       "defender"
@@ -160,6 +168,8 @@
     "name": "Edmure Tully",
     "portrait_asset": "edmure_tully.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "aggressor",
       "defender"
@@ -190,6 +200,8 @@
     "name": "Tormund Giantsbane",
     "portrait_asset": "tormund_giantsbane.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "veteran",
       "aggressor"
@@ -220,6 +232,8 @@
     "name": "Ramsay Snow",
     "portrait_asset": "ramsay_bolton.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "aggressor",
       "veteran"
@@ -250,6 +264,8 @@
     "name": "Beric Dondarrion",
     "portrait_asset": "beric_dondarrion.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "aggressor"
@@ -264,6 +280,8 @@
     "name": "Thoros of Myr",
     "portrait_asset": "thoros_of_myr.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "veteran",
       "defender"
@@ -278,6 +296,8 @@
     "name": "Greatjon Umber",
     "portrait_asset": "greatjon_umber.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "aggressor"
@@ -292,6 +312,8 @@
     "name": "Galbart Glover",
     "portrait_asset": "galbart_glover.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "tactician",
       "defender"
@@ -306,6 +328,8 @@
     "name": "Rickard Karstark",
     "portrait_asset": "rickard_karstark.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "aggressor"
@@ -320,6 +344,8 @@
     "name": "Maege Mormont",
     "portrait_asset": "maege_mormont.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "veteran",
       "defender"
@@ -334,6 +360,8 @@
     "name": "Rodrik Cassel",
     "portrait_asset": "rodrik_cassel.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "veteran",
       "defender"
@@ -348,6 +376,8 @@
     "name": "Gregor Clegane",
     "portrait_asset": "gregor_clegane.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressor",
       "veteran"
@@ -362,6 +392,8 @@
     "name": "Kevan Lannister",
     "portrait_asset": "kevan_lannister.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "tactician"
@@ -376,6 +408,8 @@
     "name": "Addam Marbrand",
     "portrait_asset": "addam_marbrand.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "tactician",
       "aggressor"
@@ -390,6 +424,8 @@
     "name": "Tyrion Lannister",
     "portrait_asset": "tyrion_lannister.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "tactician",
       "defender"
@@ -404,6 +440,8 @@
     "name": "Sandor Clegane",
     "portrait_asset": "sandor_clegane.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "aggressor"
@@ -418,6 +456,8 @@
     "name": "Barristan Selmy",
     "portrait_asset": "barristan_selmy.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "veteran",
       "defender"
@@ -432,6 +472,8 @@
     "name": "Davos Seaworth",
     "portrait_asset": "davos_seaworth.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "tactician"
@@ -446,6 +488,8 @@
     "name": "Salladhor Saan",
     "portrait_asset": "salladhor_saan.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "aggressor"
@@ -460,6 +504,8 @@
     "name": "Axell Florent",
     "portrait_asset": "axell_florent.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "aggressor",
       "veteran"
@@ -474,6 +520,8 @@
     "name": "Rolland Storm",
     "portrait_asset": "rolland_storm.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "veteran"
@@ -488,6 +536,8 @@
     "name": "Loras Tyrell",
     "portrait_asset": "loras_tyrell.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressor",
       "veteran"
@@ -502,6 +552,8 @@
     "name": "Randyll Tarly",
     "portrait_asset": "randyll_tarly.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "veteran",
       "tactician"
@@ -516,6 +568,8 @@
     "name": "Mace Tyrell",
     "portrait_asset": "mace_tyrell.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "veteran",
       "defender"
@@ -530,6 +584,8 @@
     "name": "Mathis Rowan",
     "portrait_asset": "mathis_rowan.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "tactician",
       "defender"
@@ -560,6 +616,8 @@
     "name": "Theon Greyjoy",
     "portrait_asset": "theon_greyjoy.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "aggressor",
       "veteran"
@@ -574,6 +632,8 @@
     "name": "Yara Greyjoy",
     "portrait_asset": "yara_greyjoy.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "tactician",
       "aggressor"
@@ -588,6 +648,8 @@
     "name": "Victarion Greyjoy",
     "portrait_asset": "victarion_greyjoy.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "veteran",
       "aggressor"
@@ -602,6 +664,8 @@
     "name": "Rodrik Harlaw",
     "portrait_asset": "rodrik_harlaw.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "tactician"
@@ -616,6 +680,8 @@
     "name": "Dagmer Cleftjaw",
     "portrait_asset": "dagmer_cleftjaw.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "aggressor"
@@ -646,6 +712,8 @@
     "name": "Areo Hotah",
     "portrait_asset": "areo_hotah.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "defender"
@@ -660,6 +728,8 @@
     "name": "Obara Sand",
     "portrait_asset": "obara_sand.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressor",
       "veteran"
@@ -674,6 +744,8 @@
     "name": "Lyn Corbray",
     "portrait_asset": "lyn_corbray.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressor",
       "veteran"
@@ -688,6 +760,8 @@
     "name": "Vardis Egen",
     "portrait_asset": "vardis_egen.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "defender"
@@ -718,6 +792,8 @@
     "name": "Qhorin Halfhand",
     "portrait_asset": "qhorin_halfhand.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "tactician"
@@ -732,6 +808,8 @@
     "name": "Alliser Thorne",
     "portrait_asset": "alliser_thorne.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "veteran",
       "aggressor"
@@ -746,6 +824,8 @@
     "name": "Rattleshirt",
     "portrait_asset": "rattleshirt.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "aggressor"
@@ -760,6 +840,8 @@
     "name": "Varamyr Sixskins",
     "portrait_asset": "varamyr_sixskins.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "tactician",
       "veteran"
@@ -790,6 +872,8 @@
     "name": "Jorah Mormont",
     "portrait_asset": "jorah_mormont.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "defender"
@@ -804,6 +888,8 @@
     "name": "Grey Worm",
     "portrait_asset": "grey_worm.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "tactician",
       "aggressor"
@@ -818,6 +904,8 @@
     "name": "Daario Naharis",
     "portrait_asset": "daario_naharis.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressor",
       "veteran"
@@ -866,6 +954,8 @@
     "name": "Brienne of Tarth",
     "portrait_asset": "brienne_tarth.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "veteran",
       "aggressor"
@@ -897,6 +987,8 @@
     "name": "Ygritte",
     "portrait_asset": "ygritte.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "aggressor",
       "veteran"

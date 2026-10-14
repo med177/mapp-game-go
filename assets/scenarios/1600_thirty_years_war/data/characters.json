@@ -6,6 +6,8 @@
     "name": "Kuyucu Murad Paşa",
     "portrait_asset": "ottoman_kuyucu_murad_pasha.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "aggressive"
@@ -20,6 +22,8 @@
     "name": "Damat Halil Paşa",
     "portrait_asset": "ottoman_halil_pasha.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "administrator",
       "defender"
@@ -34,6 +38,8 @@
     "name": "Köprülüzade Mehmed Paşa",
     "portrait_asset": "ottoman_kose_mihal.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "organizer",
       "aggressive"
@@ -48,6 +54,8 @@
     "name": "Köprülüzade Fazıl Ahmed Paşa",
     "portrait_asset": "ottoman_fazil_ahmed_pasha.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "siege_master",
       "aggressive"
@@ -62,6 +70,8 @@
     "name": "Merzifonlu Kara Mustafa Paşa",
     "portrait_asset": "ottoman_kara_mustafa_pasha.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "siege_master"
@@ -76,6 +86,8 @@
     "name": "Köprülüzade Fazıl Mustafa Paşa",
     "portrait_asset": "ottoman_fazil_mustafa_pasha.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "organizer"
@@ -90,6 +102,8 @@
     "name": "Amcazade Hüseyin Paşa",
     "portrait_asset": "ottoman_amcazade_huseyin.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "administrator",
       "defender"
@@ -104,6 +118,8 @@
     "name": "Baltacı Mehmed Paşa",
     "portrait_asset": "ottoman_baltaci_mehmed.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "defender"
@@ -118,6 +134,8 @@
     "name": "Deli Hüseyin Paşa",
     "portrait_asset": "ottoman_deli_huseyin.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "aggressive",
       "cavalry"
@@ -132,6 +150,8 @@
     "name": "Murtaza Paşa",
     "portrait_asset": "ottoman_murtaza_pasha.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "organizer"
@@ -146,6 +166,8 @@
     "name": "Ambrosio Spinola",
     "portrait_asset": "castile_kingdom_ambrosio_spinola.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "siege_master",
       "organizer"
@@ -160,6 +182,8 @@
     "name": "Don Juan José de Austria",
     "portrait_asset": "castile_kingdom_juan_jose_austria.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "cavalry"
@@ -174,6 +198,8 @@
     "name": "Eugenio de Baviera",
     "portrait_asset": "castile_kingdom_eugenio_savoia.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "defender"
@@ -188,6 +214,8 @@
     "name": "Marki de Villadarias",
     "portrait_asset": "castile_kingdom_villadarias.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "siege_master"
@@ -202,6 +230,8 @@
     "name": "Duc de Berwick",
     "portrait_asset": "castile_kingdom_pavia_commander.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "aggressive"
@@ -216,6 +246,8 @@
     "name": "Henri de Turenne",
     "portrait_asset": "france_turenne.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -230,6 +262,8 @@
     "name": "Louis II de Condé",
     "portrait_asset": "france_conde.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "cavalry"
@@ -244,6 +278,8 @@
     "name": "François-Henri de Montmorency",
     "portrait_asset": "france_luxembourg.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "defender"
@@ -258,6 +294,8 @@
     "name": "Louis Joseph de Vendôme",
     "portrait_asset": "france_vendome.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "cavalry"
@@ -272,6 +310,8 @@
     "name": "Claude Louis Hector de Villars",
     "portrait_asset": "france_villar.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -286,6 +326,8 @@
     "name": "Maurice de Saxe",
     "portrait_asset": "france_saxe.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "cavalry"
@@ -300,6 +342,8 @@
     "name": "Victor François de Broglie",
     "portrait_asset": "france_broglie.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "organizer"
@@ -314,6 +358,8 @@
     "name": "Charles Wriothesley",
     "portrait_asset": "england_charles_montagu.png",
     "level": 2,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 4,
     "traits": [
       "organizer",
       "defender"
@@ -328,6 +374,8 @@
     "name": "Oliver Cromwell",
     "portrait_asset": "england_cromwell.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -342,6 +390,8 @@
     "name": "John Churchill, Duke of Marlborough",
     "portrait_asset": "england_marlborough.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -356,6 +406,8 @@
     "name": "George Hamilton",
     "portrait_asset": "england_eugene_dutch.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "cavalry",
       "defender"
@@ -370,6 +422,8 @@
     "name": "Duke of Cumberland",
     "portrait_asset": "england_cumberland.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "defender"
@@ -384,6 +438,8 @@
     "name": "Jeffery Amherst",
     "portrait_asset": "england_amherst.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "defender"
@@ -398,6 +454,8 @@
     "name": "Maurits van Nassau",
     "portrait_asset": "dutch_republic_maurice_nassau.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "organizer",
       "siege_master"
@@ -412,6 +470,8 @@
     "name": "Frederik Hendrik",
     "portrait_asset": "dutch_republic_frederick_henry.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "siege_master"
@@ -426,6 +486,8 @@
     "name": "William III of Orange",
     "portrait_asset": "dutch_republic_william_iii.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -440,6 +502,8 @@
     "name": "Hans Willem Bentinck",
     "portrait_asset": "dutch_republic_heinsius.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "organizer",
       "diplomat"
@@ -454,6 +518,8 @@
     "name": "Boris Sheremetev",
     "portrait_asset": "russia_sheremetev.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "defender"
@@ -468,6 +534,8 @@
     "name": "Alexander Menshikov",
     "portrait_asset": "russia_menshikov.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -482,6 +550,8 @@
     "name": "Vasily Dolgorukov",
     "portrait_asset": "russia_dolgorukov.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "cavalry"
@@ -496,6 +566,8 @@
     "name": "Pyotr Rumyantsev",
     "portrait_asset": "russia_rumyantsev.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -510,6 +582,8 @@
     "name": "Alexander Suvorov",
     "portrait_asset": "russia_suvorov.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "cavalry"
@@ -524,6 +598,8 @@
     "name": "Nikolai Repnin",
     "portrait_asset": "russia_repnin.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "organizer"
@@ -538,6 +614,8 @@
     "name": "Jan Karol Chodkiewicz",
     "portrait_asset": "polish_lithuania_chodkiewicz.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "cavalry",
       "aggressive"
@@ -552,6 +630,8 @@
     "name": "Stanisław Żółkiewski",
     "portrait_asset": "polish_lithuania_zolkiewski.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "organizer",
       "defender"
@@ -566,6 +646,8 @@
     "name": "Stanisław Koniecpolski",
     "portrait_asset": "polish_lithuania_koniecpolski.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "cavalry",
       "defender"
@@ -580,6 +662,8 @@
     "name": "Jan III Sobieski",
     "portrait_asset": "polish_lithuania_sobieski.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "cavalry"
@@ -594,6 +678,8 @@
     "name": "Józef Poniatowski",
     "portrait_asset": "polish_lithuania_poniatowski.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "organizer"
@@ -608,6 +694,8 @@
     "name": "Charles Bonaventure de Bucquoy",
     "portrait_asset": "austria_duchy_buquoy.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "organizer"
@@ -622,6 +710,8 @@
     "name": "Johann Tserclaes, Count of Tilly",
     "portrait_asset": "austria_duchy_tilly.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "defender"
@@ -636,6 +726,8 @@
     "name": "Albrecht von Wallenstein",
     "portrait_asset": "austria_duchy_wallenstein.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -650,6 +742,8 @@
     "name": "Raimondo Montecuccoli",
     "portrait_asset": "austria_duchy_montecuccoli.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "organizer",
       "defender"
@@ -664,6 +758,8 @@
     "name": "Prince Eugene of Savoy",
     "portrait_asset": "austria_duchy_eugene_savoy.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -678,6 +774,8 @@
     "name": "Leopold Joseph von Daun",
     "portrait_asset": "austria_duchy_dahun.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "organizer"
@@ -692,6 +790,8 @@
     "name": "Charles of Lorraine",
     "portrait_asset": "austria_duchy_lorraine_charles.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "defender"
@@ -706,6 +806,8 @@
     "name": "Heinrich Matthias von Thurn",
     "portrait_asset": "bohemian_kingdom_thurn.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "organizer"
@@ -720,6 +822,8 @@
     "name": "Adam Batthyány",
     "portrait_asset": "hungarian_kingdom_batthyany.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "cavalry"
@@ -734,6 +838,8 @@
     "name": "Gabriel Bethlen",
     "portrait_asset": "transylvania_principality_bethlen.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "organizer",
       "diplomat"
@@ -748,6 +854,8 @@
     "name": "George I Rákóczi",
     "portrait_asset": "transylvania_principality_rakoczi.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "organizer"
@@ -762,6 +870,8 @@
     "name": "Maximilian I, Elector of Bavaria",
     "portrait_asset": "hre_maximilian_i.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "defender",
       "organizer"
@@ -776,6 +886,8 @@
     "name": "Johann Tilly",
     "portrait_asset": "hre_tillly_hre.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "defender"
@@ -790,6 +902,8 @@
     "name": "Maximilian I of Bavaria",
     "portrait_asset": "bavaria_duchy_maximilian_bavaria.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "organizer",
       "defender"
@@ -804,6 +918,8 @@
     "name": "John George I of Saxony",
     "portrait_asset": "saxony_duchy_john_george.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "organizer"
@@ -818,6 +934,8 @@
     "name": "John George II of Saxony",
     "portrait_asset": "saxony_duchy_john_george_ii.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "organizer",
       "defender"
@@ -832,6 +950,8 @@
     "name": "George William of Brandenburg",
     "portrait_asset": "brandenburg_margraviate_george_william.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "organizer"
@@ -846,6 +966,8 @@
     "name": "Frederick William, Great Elector",
     "portrait_asset": "brandenburg_margraviate_great_elector.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "organizer",
       "aggressive"
@@ -860,6 +982,8 @@
     "name": "Gustav II Adolf",
     "portrait_asset": "sweden_kingdom_gustavus_adolphus.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -874,6 +998,8 @@
     "name": "Johan Banér",
     "portrait_asset": "sweden_kingdom_johan_baner.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "cavalry"
@@ -888,6 +1014,8 @@
     "name": "Lennart Torstensson",
     "portrait_asset": "sweden_kingdom_torstensson.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "siege_master"
@@ -902,6 +1030,8 @@
     "name": "Carl Gustaf Wrangel",
     "portrait_asset": "sweden_kingdom_carl_gustav_wrangeln.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "defender"
@@ -916,6 +1046,8 @@
     "name": "Charles X Gustav",
     "portrait_asset": "sweden_kingdom_charles_x.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "cavalry"
@@ -930,6 +1062,8 @@
     "name": "Charles XII",
     "portrait_asset": "sweden_kingdom_charles_xii.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "cavalry"
@@ -944,6 +1078,8 @@
     "name": "Christian IV",
     "portrait_asset": "denmark_kingdom_christian_iv.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "organizer"
@@ -958,6 +1094,8 @@
     "name": "Frederick III of Denmark",
     "portrait_asset": "denmark_kingdom_frederick_iii.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "organizer"
@@ -972,6 +1110,8 @@
     "name": "Francesco Morosini",
     "portrait_asset": "venice_morosini.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "naval",
       "siege_master"
@@ -986,6 +1126,8 @@
     "name": "Lodovico Flangini",
     "portrait_asset": "venice_pesaro.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "naval",
       "defender"
@@ -1000,6 +1142,8 @@
     "name": "Andrea Doria of Genoa",
     "portrait_asset": "genoa_doria_late.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "naval",
       "diplomat"
@@ -1014,6 +1158,8 @@
     "name": "Antonio Barberini",
     "portrait_asset": "papal_states_barberini.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "diplomat",
       "organizer"
@@ -1028,6 +1174,8 @@
     "name": "Cosimo II de Medici",
     "portrait_asset": "florence_rep_medici_cosimo.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "administrator",
       "diplomat"
@@ -1042,6 +1190,8 @@
     "name": "Eugene of Savoy",
     "portrait_asset": "savoy_county_savoy_eugene.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -1056,6 +1206,8 @@
     "name": "Salomon Hirzel",
     "portrait_asset": "swiss_confederacy_salomon_hirzel.png",
     "level": 2,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 4,
     "traits": [
       "defender",
       "organizer"
@@ -1070,6 +1222,8 @@
     "name": "Allahverdi Khan",
     "portrait_asset": "safavid_allahverdi_khan.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "aggressive"
@@ -1084,6 +1238,8 @@
     "name": "Imam-Quli Khan",
     "portrait_asset": "safavid_imam_quli.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "naval"
@@ -1098,6 +1254,8 @@
     "name": "Shah Abbas I",
     "portrait_asset": "safavid_shah_abbas.png",
     "level": 5,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 10,
     "traits": [
       "aggressive",
       "organizer"
@@ -1112,6 +1270,8 @@
     "name": "Qarabagh Khan",
     "portrait_asset": "safavid_naqdikhan.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "cavalry"
@@ -1126,6 +1286,8 @@
     "name": "Ahmad al-Mansur",
     "portrait_asset": "marinid_sultanate_ahmad_mansur.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "organizer",
       "aggressive"
@@ -1140,6 +1302,8 @@
     "name": "Moulay Ismail",
     "portrait_asset": "marinid_sultanate_moulay_ismaill.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "organizer"
@@ -1154,6 +1318,8 @@
     "name": "Gazi II Giray",
     "portrait_asset": "crimean_khanate_gazi_giray.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "cavalry",
       "aggressive"
@@ -1168,6 +1334,8 @@
     "name": "Mehmed III Giray",
     "portrait_asset": "crimean_khanate_mehemmed_giray.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "cavalry",
       "organizer"
@@ -1182,6 +1350,8 @@
     "name": "Michael the Brave",
     "portrait_asset": "wallachia_prince_michael_brave.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "cavalry"
@@ -1196,6 +1366,8 @@
     "name": "Jeremias Movilă",
     "portrait_asset": "moldavia_prince_jeremia_movilă.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "organizer"
@@ -1210,6 +1382,8 @@
     "name": "James Graham, 1st Marquess of Montrose",
     "portrait_asset": "scotland_kingdom_montrose.png",
     "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
     "traits": [
       "aggressive",
       "cavalry"
@@ -1224,6 +1398,8 @@
     "name": "Alof de Wignacourt",
     "portrait_asset": "hospitaller_de_redin.png",
     "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
     "traits": [
       "defender",
       "naval"
