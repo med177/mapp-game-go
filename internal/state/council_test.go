@@ -109,6 +109,38 @@ func TestCharacterCanBeReassignedBetweenCouncilDuties(t *testing.T) {
 	}
 }
 
+func TestNewCouncilRolesCanBeAssignedAndReplaceTheirIncumbents(t *testing.T) {
+	const owner faction.FactionID = "player"
+	roles := []string{CouncilRoleHeir, CouncilRoleMilitaryResponsible}
+	for _, role := range roles {
+		t.Run(role, func(t *testing.T) {
+			first := &army.Commander{ID: "first", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "First"}
+			second := &army.Commander{ID: "second", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Second"}
+			gs := &GameState{
+				Year:       300,
+				Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+				Commanders: map[string]*army.Commander{first.ID: first, second.ID: second},
+			}
+			if !gs.CanAssignCharacterToCouncilRole(owner, first.ID, role) ||
+				!gs.AssignCharacterToCouncilRole(owner, first.ID, role) {
+				t.Fatalf("could not assign first character to %q", role)
+			}
+			if gs.CouncilRoleHolder(owner, role) != first {
+				t.Fatalf("role holder for %q = %v, want first character", role, gs.CouncilRoleHolder(owner, role))
+			}
+			if !gs.AssignCharacterToCouncilRole(owner, second.ID, role) {
+				t.Fatalf("could not replace incumbent for %q", role)
+			}
+			if first.AssignedCouncilRole != "" || gs.CouncilRoleHolder(owner, role) != second {
+				t.Fatalf("replacement for %q left incorrect incumbents: first=%q holder=%v", role, first.AssignedCouncilRole, gs.CouncilRoleHolder(owner, role))
+			}
+			if !gs.UnassignCharacterFromCouncilRole(owner, second.ID) || second.AssignedCouncilRole != "" {
+				t.Fatalf("could not unassign %q", role)
+			}
+		})
+	}
+}
+
 func TestTaxIncomeForFactionIncludesTreasurerBonus(t *testing.T) {
 	const owner faction.FactionID = "player"
 	character := &army.Commander{ID: "chr_sansa", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Sansa"}

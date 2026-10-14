@@ -9,12 +9,15 @@ const (
 	CouncilRoleHeadOfHouse         = "head_of_house"
 	CouncilRoleTreasurer           = "treasurer"
 	CouncilRoleDiplomat            = "diplomat"
+	CouncilRoleHeir                = "heir"
+	CouncilRoleMilitaryResponsible = "military_responsible"
 	TreasurerTaxIncomeBonusPercent = 5
 	DiplomatRelationBonusPoints    = 3
 )
 
 func validCouncilRole(role string) bool {
-	return role == CouncilRoleHeadOfHouse || role == CouncilRoleTreasurer || role == CouncilRoleDiplomat
+	return role == CouncilRoleHeadOfHouse || role == CouncilRoleTreasurer || role == CouncilRoleDiplomat ||
+		role == CouncilRoleHeir || role == CouncilRoleMilitaryResponsible
 }
 
 func (s *GameState) councilCharacterAvailable(ownerID string, character *army.Commander) bool {

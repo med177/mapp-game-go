@@ -13,13 +13,27 @@ import (
 )
 
 const (
-	characterRosterRowH       = 132.0
-	characterRosterColumnGap  = 10.0
-	characterRosterColumnHead = 122.0
-	characterRosterPanelPad   = 10.0
+	characterRosterRowH            = 132.0
+	characterRosterColumnGap       = 10.0
+	characterRosterColumnHead      = 122.0
+	characterRosterPanelPad        = 10.0
+	characterRosterAssignMenuWidth = 156.0
+	characterRosterAssignMenuPad   = 6.0
+	characterRosterAssignOptionH   = 30.0
+	characterRosterDutyButtonW     = 48.0
+	characterRosterCardPadding     = 6.0
+	characterRosterScrollbarGap    = 4.0
+	characterRosterScrollbarW      = 3.0
+	characterRosterScrollbarRight  = 5.0
 )
 
-var characterCouncilRoleIDs = [3]string{state.CouncilRoleHeadOfHouse, state.CouncilRoleTreasurer, state.CouncilRoleDiplomat}
+var characterCouncilRoleIDs = [5]string{
+	state.CouncilRoleHeadOfHouse,
+	state.CouncilRoleTreasurer,
+	state.CouncilRoleDiplomat,
+	state.CouncilRoleHeir,
+	state.CouncilRoleMilitaryResponsible,
+}
 
 func characterRosterHUDButtonRect() [4]float32 {
 	return topHudUtilityButtonRect(1)
@@ -86,7 +100,7 @@ func characterRosterListViewport(column gameui.Rect) gameui.Rect {
 	return gameui.Rect{
 		X: column.X + 5,
 		Y: column.Y + characterRosterColumnHead,
-		W: column.W - 10,
+		W: column.W - 5 - characterRosterScrollbarGap - characterRosterScrollbarW - characterRosterScrollbarRight,
 		H: column.H - characterRosterColumnHead - 5,
 	}
 }
@@ -96,7 +110,7 @@ func characterRosterOwnedListViewport(column gameui.Rect) gameui.Rect {
 	return gameui.Rect{
 		X: column.X + 5,
 		Y: column.Y + listTop,
-		W: column.W - 10,
+		W: column.W - 5 - characterRosterScrollbarGap - characterRosterScrollbarW - characterRosterScrollbarRight,
 		H: column.H - listTop - 5,
 	}
 }
@@ -136,6 +150,18 @@ func characterRosterRowRect(viewport gameui.Rect, visibleIndex int) gameui.Rect 
 	}
 }
 
+func characterRosterDutyGroupDividerY(characters []*army.Commander, index int, row gameui.Rect) (float64, bool) {
+	if index <= 0 || index >= len(characters) || characters[index-1] == nil || characters[index] == nil ||
+		characters[index-1].AssignedCouncilRole == "" || characters[index].AssignedCouncilRole != "" {
+		return 0, false
+	}
+	return row.Y - (characterRosterRowH-row.H)/2, true
+}
+
+func characterRosterDetailRect(row gameui.Rect, textX float64) gameui.Rect {
+	return gameui.Rect{X: textX, Y: row.Y + 34, W: row.X + row.W - textX - characterRosterCardPadding, H: 17}
+}
+
 func characterRosterRowBorderRect(row gameui.Rect) gameui.Rect {
 	const borderInset = 1.0
 	return gameui.Rect{
@@ -148,11 +174,25 @@ func characterRosterRowBorderRect(row gameui.Rect) gameui.Rect {
 
 func characterRosterPortraitRect(row gameui.Rect) gameui.Rect {
 	size := float64(armyPanelCommanderPortrait)
-	return gameui.Rect{X: row.X + 6, Y: row.Y + 4, W: size, H: size}
+	return gameui.Rect{X: row.X + characterRosterCardPadding, Y: row.Y + characterRosterCardPadding, W: size, H: size}
 }
 
 func characterRosterTraitRowRect(row gameui.Rect) gameui.Rect {
-	return gameui.Rect{X: row.X + 8, Y: row.Y + row.H - 24, W: row.W - 16, H: 18}
+	return gameui.Rect{
+		X: row.X + characterRosterCardPadding,
+		Y: row.Y + row.H - 24,
+		W: row.W - characterRosterCardPadding*2,
+		H: 18,
+	}
+}
+
+func characterRosterScrollbarTrack(viewport gameui.Rect) gameui.Rect {
+	return gameui.Rect{
+		X: viewport.X + viewport.W + characterRosterScrollbarGap,
+		Y: viewport.Y + 2,
+		W: characterRosterScrollbarW,
+		H: viewport.H - 4,
+	}
 }
 
 func characterRosterRowAt(x, y float64, count, scroll int, viewport gameui.Rect) int {
@@ -221,13 +261,13 @@ func (r *Renderer) confirmCharacterRelease(character *army.Commander) {
 func characterCouncilAssignButton(column gameui.Rect, rowIndex, scroll int) gameui.Button {
 	viewport := characterRosterOwnedListViewport(column)
 	row := characterRosterRowRect(viewport, rowIndex-scroll)
-	return gameui.NewButton(row.X+row.W-78, row.Y+5, 74, 22, "Ata")
+	return gameui.NewButton(row.X+row.W-characterRosterCardPadding-characterRosterDutyButtonW, row.Y+5, characterRosterDutyButtonW, 22, "Ata")
 }
 
 func characterCouncilRemoveDutyButton(column gameui.Rect, rowIndex, scroll int) gameui.Button {
 	viewport := characterRosterOwnedListViewport(column)
 	row := characterRosterRowRect(viewport, rowIndex-scroll)
-	return gameui.NewButton(row.X+row.W-78, row.Y+5, 74, 22, "Kaldır")
+	return gameui.NewButton(row.X+row.W-characterRosterCardPadding-characterRosterDutyButtonW, row.Y+5, characterRosterDutyButtonW, 22, "Kaldır")
 }
 
 func characterRosterDutyActionButton(column gameui.Rect, rowIndex, scroll int, character *army.Commander) gameui.Button {
@@ -240,8 +280,12 @@ func characterRosterDutyActionButton(column gameui.Rect, rowIndex, scroll int, c
 func characterRosterAssignmentMenuRect(column gameui.Rect, rowIndex, scroll int) gameui.Rect {
 	viewport := characterRosterOwnedListViewport(column)
 	row := characterRosterRowRect(viewport, rowIndex-scroll)
-	const menuWidth = 116.0
-	return gameui.Rect{X: row.X + row.W - menuWidth - 4, Y: row.Y + 31, W: menuWidth, H: 3 * 22}
+	return gameui.Rect{
+		X: row.X + row.W - characterRosterAssignMenuWidth - 4,
+		Y: row.Y + 31,
+		W: characterRosterAssignMenuWidth,
+		H: characterRosterAssignMenuPad*2 + float64(len(characterCouncilRoleIDs))*characterRosterAssignOptionH,
+	}
 }
 
 func characterRosterAssignmentOptionButton(column gameui.Rect, rowIndex, scroll, optionIndex int) gameui.Button {
@@ -249,8 +293,13 @@ func characterRosterAssignmentOptionButton(column gameui.Rect, rowIndex, scroll,
 	if optionIndex < 0 || optionIndex >= len(characterCouncilRoleIDs) {
 		return gameui.Button{}
 	}
-	role := characterCouncilRoleIDs[optionIndex]
-	return gameui.NewButton(menu.X+3, menu.Y+float64(optionIndex)*22+1, menu.W-6, 20, characterCouncilRoleNameTR(role))
+	return gameui.NewButton(
+		menu.X+characterRosterAssignMenuPad,
+		menu.Y+characterRosterAssignMenuPad+float64(optionIndex)*characterRosterAssignOptionH,
+		menu.W-characterRosterAssignMenuPad*2,
+		characterRosterAssignOptionH,
+		characterCouncilRoleNameTR(characterCouncilRoleIDs[optionIndex]),
+	)
 }
 
 func characterCouncilRoleNameTR(role string) string {
@@ -261,6 +310,10 @@ func characterCouncilRoleNameTR(role string) string {
 		return "Hazine Sorumlusu"
 	case state.CouncilRoleDiplomat:
 		return "Diplomat"
+	case state.CouncilRoleHeir:
+		return "Veliaht"
+	case state.CouncilRoleMilitaryResponsible:
+		return "Askeri Sorumlu"
 	default:
 		return "Görev"
 	}
@@ -313,10 +366,11 @@ func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 		}
 	}
 	if index := characterRosterRowAt(x, y, len(ownedRoster), r.characterRosterOwnedScroll, ownedViewport); index >= 0 {
-		if characterReleaseButton(ownedColumn, index, r.characterRosterOwnedScroll).HitTest(x, y) {
-			return r.characterRosterAssignMenuID != ownedRoster[index].ID
-		}
 		character := ownedRoster[index]
+		if character.AssignedCouncilRole == "" &&
+			characterReleaseButton(ownedColumn, index, r.characterRosterOwnedScroll).HitTest(x, y) {
+			return r.characterRosterAssignMenuID != character.ID
+		}
 		dutyButton := characterRosterDutyActionButton(ownedColumn, index, r.characterRosterOwnedScroll, character)
 		if dutyButton.HitTest(x, y) &&
 			(character.AssignedCouncilRole != "" ||
@@ -375,7 +429,8 @@ func handleCharacterRosterPanelClick(r *Renderer, x, y float64) (InputAction, bo
 
 	if index := characterRosterRowAt(x, y, len(ownedRoster), r.characterRosterOwnedScroll, ownedViewport); index >= 0 {
 		character := ownedRoster[index]
-		if characterReleaseButton(ownedColumn, index, r.characterRosterOwnedScroll).HitTest(x, y) {
+		if character.AssignedCouncilRole == "" &&
+			characterReleaseButton(ownedColumn, index, r.characterRosterOwnedScroll).HitTest(x, y) {
 			r.confirmCharacterRelease(character)
 			return InputAction{}, true
 		}
@@ -403,7 +458,7 @@ func drawCharacterRosterScrollbar(screen *ebiten.Image, viewport gameui.Rect, co
 	if maxScroll <= 0 || viewport.H <= 0 {
 		return
 	}
-	track := gameui.Rect{X: viewport.X + viewport.W - 4, Y: viewport.Y + 2, W: 3, H: viewport.H - 4}
+	track := characterRosterScrollbarTrack(viewport)
 	thumbH := track.H * float64(characterRosterVisibleRows(viewport)) / float64(count)
 	if thumbH < 18 {
 		thumbH = 18
@@ -444,7 +499,15 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 	body := screen.SubImage(image.Rect(left, top, right, bottom)).(*ebiten.Image)
 	for index := scroll; index < end; index++ {
 		character := characters[index]
-		row := characterRosterRowRect(viewport, index-scroll)
+		visibleIndex := index - scroll
+		row := characterRosterRowRect(viewport, visibleIndex)
+		if !candidate {
+			if dividerY, showDivider := characterRosterDutyGroupDividerY(characters, index, row); showDivider {
+				dividerX := row.X + characterRosterCardPadding
+				dividerEndX := row.X + row.W - characterRosterCardPadding
+				vector.StrokeLine(body, float32(dividerX), float32(dividerY), float32(dividerEndX), float32(dividerY), 1, color.RGBA{174, 132, 58, 190}, false)
+			}
+		}
 		rowBG := color.RGBA{35, 26, 14, 210}
 		rowBorder := color.RGBA{100, 75, 30, 180}
 		vector.FillRect(body, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), rowBG, false)
@@ -454,19 +517,18 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 		drawCommanderPortrait(body, character, portrait.X, portrait.Y, portrait.W, portrait.H)
 
 		textX := portrait.X + portrait.W + 10
-		textW := row.X + row.W - textX - 8
+		textW := row.X + row.W - textX - characterRosterCardPadding
+		nameW := textW
 		var adopt gameui.Button
 		if candidate {
 			adopt = characterAdoptButton(column, index, scroll)
-			textW = adopt.X - textX - 5
+			nameW = adopt.X - textX - 5
 		} else if character.AssignedCouncilRole != "" ||
 			gs.CanAssignCharacterToCouncilRole(gs.PlayerFactionID, character.ID, state.CouncilRoleHeadOfHouse) {
 			button := characterRosterDutyActionButton(column, index, scroll, character)
-			if available := button.X - textX - 5; available < textW {
-				textW = available
-			}
+			nameW = button.X - textX - 5
 		}
-		drawUILabel(body, gameui.Rect{X: textX, Y: row.Y + 8, W: textW, H: 18}, trimTextToWidth(character.Name, FaceSmall, textW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+		drawUILabel(body, gameui.Rect{X: textX, Y: row.Y + 8, W: nameW, H: 18}, trimTextToWidth(character.Name, FaceSmall, nameW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 		kind := "Karakter"
 		if character.Type == army.CharacterTypeAdministrator {
 			kind = "Yönetici"
@@ -482,33 +544,53 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 			detail = characterCouncilRoleNameTR(character.AssignedCouncilRole)
 			bonus = characterCouncilRoleBenefitTR(character.AssignedCouncilRole)
 		}
-		drawUILabel(body, gameui.Rect{X: textX, Y: row.Y + 29, W: textW, H: 17}, trimTextToWidth(detail, FaceSmall, textW), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+		detailRect := characterRosterDetailRect(row, textX)
+		drawUILabel(body, detailRect, trimTextToWidth(detail, FaceSmall, detailRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		if bonus != "" {
-			drawUILabel(body, gameui.Rect{X: textX, Y: row.Y + 49, W: textW, H: 17}, trimTextToWidth(bonus, FaceSmall, textW), color.RGBA{165, 205, 145, 255}, gameui.TextSmall, gameui.TextAlignStart)
+			bonusRect := detailRect
+			bonusRect.Y += 20
+			drawUILabel(body, bonusRect, trimTextToWidth(bonus, FaceSmall, bonusRect.W), color.RGBA{165, 205, 145, 255}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 		traitRow := characterRosterTraitRowRect(row)
 		drawCharacterTraitBadges(body, character, traitRow.X, traitRow.Y, traitRow.W, characterTraitBadgeOptions{MaxRows: 1})
 		if candidate {
 			drawUIButtonWidget(body, adopt, applyTinyButtonStyle)
 		} else {
-			if character.ID != assignmentMenuCharacterID {
+			if character.AssignedCouncilRole == "" && character.ID != assignmentMenuCharacterID {
 				drawUIButtonWidget(body, characterReleaseButton(column, index, scroll), dangerTinyButtonStyle)
 			}
 			if character.AssignedCouncilRole != "" {
-				drawUIButtonWidget(body, characterRosterDutyActionButton(column, index, scroll, character), dangerTinyButtonStyle)
+				drawUIButtonWidget(body, characterRosterDutyActionButton(column, index, scroll, character), tinyButtonStyle)
 			} else if gs.CanAssignCharacterToCouncilRole(gs.PlayerFactionID, character.ID, state.CouncilRoleHeadOfHouse) {
 				drawUIButtonWidget(body, characterRosterDutyActionButton(column, index, scroll, character), tinyButtonStyle)
 			}
-			if character.ID == assignmentMenuCharacterID {
-				menu := characterRosterAssignmentMenuRect(column, index, scroll)
-				drawUICardRect(body, menu, color.RGBA{24, 20, 14, 250}, color.RGBA{174, 132, 58, 255}, 1)
-				for optionIndex := range characterCouncilRoleIDs {
-					drawUIButtonWidget(body, characterRosterAssignmentOptionButton(column, index, scroll, optionIndex), tinyButtonStyle)
-				}
-			}
+		}
+	}
+	if !candidate {
+		menuIndex := characterRosterIndexByID(characters, assignmentMenuCharacterID)
+		if menuIndex >= scroll && menuIndex < end {
+			drawCharacterRosterAssignmentMenu(body, column, menuIndex, scroll)
 		}
 	}
 	drawCharacterRosterScrollbar(screen, viewport, len(characters), scroll)
+}
+
+func drawCharacterRosterAssignmentMenu(screen *ebiten.Image, column gameui.Rect, rowIndex, scroll int) {
+	menu := characterRosterAssignmentMenuRect(column, rowIndex, scroll)
+	drawUICardRect(screen, menu, color.RGBA{24, 20, 14, 250}, color.RGBA{174, 132, 58, 255}, 1)
+	cursorX, cursorY := ebiten.CursorPosition()
+	for optionIndex := range characterCouncilRoleIDs {
+		option := characterRosterAssignmentOptionButton(column, rowIndex, scroll, optionIndex)
+		if option.HitTest(float64(cursorX), float64(cursorY)) {
+			vector.FillRect(screen, float32(option.X), float32(option.Y), float32(option.W), float32(option.H), color.RGBA{86, 63, 30, 150}, false)
+		}
+		if optionIndex > 0 {
+			separatorY := float32(option.Y)
+			vector.StrokeLine(screen, float32(menu.X+8), separatorY, float32(menu.X+menu.W-8), separatorY, 1, color.RGBA{92, 72, 43, 170}, false)
+		}
+		labelRect := gameui.Rect{X: option.X + 8, Y: option.Y + 4, W: option.W - 16, H: option.H - 8}
+		drawUILabel(screen, labelRect, option.Label, color.RGBA{235, 220, 185, 255}, gameui.TextSmall, gameui.TextAlignStart)
+	}
 }
 
 func (r *Renderer) drawCharacterRosterPanel(screen *ebiten.Image) {

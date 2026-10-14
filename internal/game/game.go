@@ -458,6 +458,10 @@ func (g *Game) Update() error {
 					message = "Hane Lideri atandı."
 				case state.CouncilRoleDiplomat:
 					message = "Diplomat atandı. Heyet hamlesi +3 ilişki puanı sağlar."
+				case state.CouncilRoleHeir:
+					message = "Veliaht atandı."
+				case state.CouncilRoleMilitaryResponsible:
+					message = "Askeri Sorumlu atandı."
 				}
 				g.renderer.ShowCombatResult(message)
 			} else {
@@ -472,6 +476,10 @@ func (g *Game) Update() error {
 					message = "Hane Lideri koltuğu boşaltıldı."
 				case state.CouncilRoleDiplomat:
 					message = "Diplomat koltuğu boşaltıldı."
+				case state.CouncilRoleHeir:
+					message = "Veliaht görevi kaldırıldı."
+				case state.CouncilRoleMilitaryResponsible:
+					message = "Askeri Sorumlu görevi kaldırıldı."
 				}
 				g.renderer.ShowCombatResult(message)
 			}

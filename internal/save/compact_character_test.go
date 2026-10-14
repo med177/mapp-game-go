@@ -59,10 +59,21 @@ func TestCouncilRoleAssignmentPersistsCompactAndLegacySaves(t *testing.T) {
 		ID: "chr_joffrey", Type: army.CharacterTypeCharacter, OwnerID: "player",
 		Name: "Joffrey Baratheon", AssignedCouncilRole: state.CouncilRoleHeadOfHouse,
 	}
+	heir := &army.Commander{
+		ID: "chr_tommen", Type: army.CharacterTypeCharacter, OwnerID: "player",
+		Name: "Tommen Baratheon", AssignedCouncilRole: state.CouncilRoleHeir,
+	}
+	militaryResponsible := &army.Commander{
+		ID: "chr_stannis", Type: army.CharacterTypeCharacter, OwnerID: "player",
+		Name: "Stannis Baratheon", AssignedCouncilRole: state.CouncilRoleMilitaryResponsible,
+	}
 	gs := &state.GameState{
 		ScenarioID:      "test_scenario",
 		PlayerFactionID: faction.FactionID("player"),
-		Commanders:      map[string]*army.Commander{treasurer.ID: treasurer, diplomat.ID: diplomat, headOfHouse.ID: headOfHouse},
+		Commanders: map[string]*army.Commander{
+			treasurer.ID: treasurer, diplomat.ID: diplomat, headOfHouse.ID: headOfHouse,
+			heir.ID: heir, militaryResponsible.ID: militaryResponsible,
+		},
 	}
 
 	compact := campaignSaveState{
@@ -89,6 +100,12 @@ func TestCouncilRoleAssignmentPersistsCompactAndLegacySaves(t *testing.T) {
 	if got := loaded.Commanders[headOfHouse.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleHeadOfHouse {
 		t.Fatalf("compact save/load council role = %#v, want head of house", got)
 	}
+	if got := loaded.Commanders[heir.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleHeir {
+		t.Fatalf("compact save/load council role = %#v, want heir", got)
+	}
+	if got := loaded.Commanders[militaryResponsible.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleMilitaryResponsible {
+		t.Fatalf("compact save/load council role = %#v, want military responsible", got)
+	}
 
 	debug := makeDebugCampaignSaveState(gs)
 	legacy := convertLegacyCampaignSaveState(debug)
@@ -100,5 +117,11 @@ func TestCouncilRoleAssignmentPersistsCompactAndLegacySaves(t *testing.T) {
 	}
 	if got := legacy.Commanders[headOfHouse.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleHeadOfHouse {
 		t.Fatalf("debug/legacy save conversion council role = %#v, want head of house", got)
+	}
+	if got := legacy.Commanders[heir.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleHeir {
+		t.Fatalf("debug/legacy save conversion council role = %#v, want heir", got)
+	}
+	if got := legacy.Commanders[militaryResponsible.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleMilitaryResponsible {
+		t.Fatalf("debug/legacy save conversion council role = %#v, want military responsible", got)
 	}
 }

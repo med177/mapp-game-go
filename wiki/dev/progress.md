@@ -5,8 +5,14 @@ last_updated: 2026-10-14
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-14: Konsey görevlerine Veliaht ve Askeri Sorumlu eklendi. Görevler
+  karakter kartından atanıp kaldırılabiliyor ve kompakt/legacy kayıtlarda
+  korunuyor; roster sıralaması ile görev bildirimleri bu rolleri içeriyor.
+  Henüz özel oyun bonusu üretmiyorlar.
+
 - 2026-10-14: Karakter roster'ı göreve atanma önceliğine göre sıralanıyor;
-  Hane Lideri, Hazine Sorumlusu ve Diplomat görevleri bu sırayla gösteriliyor.
+  Hane Lideri, Hazine Sorumlusu, Diplomat, Veliaht ve Askeri Sorumlu görevleri
+  bu sırayla gösteriliyor.
   Görevler ayrı satırlardan kaldırılarak atanmış karakter kartında gösteriliyor;
   boşta üyede `Ata`, atanmış üyede `Kaldır` düğmesi var. Hane Lideri görevi
   atama state'inde saklanıyor ancak henüz oyun bonusu üretmiyor.

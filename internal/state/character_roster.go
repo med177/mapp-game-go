@@ -23,11 +23,15 @@ func characterDutySortPriority(character *army.Commander) int {
 		return 1
 	case CouncilRoleDiplomat:
 		return 2
+	case CouncilRoleHeir:
+		return 3
+	case CouncilRoleMilitaryResponsible:
+		return 4
 	case "":
 		if character.AssignedArmyID != "" {
-			return 3
+			return 5
 		}
-		return 5
+		return 6
 	default:
 		return 4
 	}

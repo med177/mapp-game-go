@@ -35,12 +35,14 @@ func TestCharacterRosterSortsByAssignedDutyBeforeName(t *testing.T) {
 			"diplomat":   {ID: "diplomat", Type: army.CharacterTypeCharacter, OwnerID: "player", Name: "B", AssignedCouncilRole: CouncilRoleDiplomat},
 			"treasurer":  {ID: "treasurer", Type: army.CharacterTypeCharacter, OwnerID: "player", Name: "C", AssignedCouncilRole: CouncilRoleTreasurer},
 			"head":       {ID: "head", Type: army.CharacterTypeCharacter, OwnerID: "player", Name: "D", AssignedCouncilRole: CouncilRoleHeadOfHouse},
+			"heir":       {ID: "heir", Type: army.CharacterTypeCharacter, OwnerID: "player", Name: "E", AssignedCouncilRole: CouncilRoleHeir},
+			"military":   {ID: "military", Type: army.CharacterTypeCharacter, OwnerID: "player", Name: "F", AssignedCouncilRole: CouncilRoleMilitaryResponsible},
 			"army":       {ID: "army", Type: army.CharacterTypeAdministrator, OwnerID: "player", Name: "E", AssignedArmyID: "army_1"},
 		},
 	}
 
 	roster := gs.CharacterRoster("player")
-	want := []string{"head", "treasurer", "diplomat", "army", "unassigned"}
+	want := []string{"head", "treasurer", "diplomat", "heir", "military", "army", "unassigned"}
 	if len(roster) != len(want) {
 		t.Fatalf("roster length = %d, want %d", len(roster), len(want))
 	}
