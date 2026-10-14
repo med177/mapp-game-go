@@ -281,6 +281,66 @@ func TestNewCouncilRolesCanBeAssignedAndReplaceTheirIncumbents(t *testing.T) {
 	}
 }
 
+func TestMilitaryCommanderCanHoldArmyAndCouncilRolesWithArmyRestrictions(t *testing.T) {
+	const owner faction.FactionID = "player"
+	commander := &army.Commander{
+		ID: "cmd_jaime", Type: army.CharacterTypeCommander, OwnerID: string(owner),
+		AssignedArmyID: "army_1",
+	}
+	gs := &GameState{
+		Year:       300,
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders: map[string]*army.Commander{commander.ID: commander},
+	}
+
+	if gs.CanAssignCharacterToCouncilRole(owner, commander.ID, CouncilRoleTreasurer) {
+		t.Fatal("army-assigned commander should not be eligible for a non-military council role")
+	}
+	if !gs.AssignCharacterToCouncilRole(owner, commander.ID, CouncilRoleMilitaryResponsible) {
+		t.Fatal("army-assigned commander could not hold military responsible role")
+	}
+	if gs.CouncilRoleHolder(owner, CouncilRoleMilitaryResponsible) != commander {
+		t.Fatal("military commander assigned to military responsible role was not returned as role holder")
+	}
+	if !gs.commanderCouncilRoleAllowsArmyCommand(commander) {
+		t.Fatal("commander assigned military responsible role should remain eligible to command its army")
+	}
+}
+
+func TestCouncilRoleSetCommanderArmyControlsDualAssignment(t *testing.T) {
+	const owner faction.FactionID = "player"
+	commander := &army.Commander{
+		ID: "cmd_jaime", Type: army.CharacterTypeCommander, OwnerID: string(owner),
+		AssignedArmyID: "army_1",
+	}
+	config := scenario.CharacterCouncilConfig{
+		Roles: []scenario.CouncilRoleDefinition{
+			{ID: CouncilRoleTreasurer, NameTR: "Hazinedar", SetCommanderArmy: true},
+			{ID: CouncilRoleDiplomat, NameTR: "Diplomat"},
+		},
+	}
+	gs := &GameState{
+		Year:          300,
+		Factions:      map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders:    map[string]*army.Commander{commander.ID: commander},
+		CouncilConfig: config,
+	}
+
+	if !gs.CanAssignCharacterToCouncilRole(owner, commander.ID, CouncilRoleTreasurer) {
+		t.Fatal("set_commander_army role rejected an army-assigned commander")
+	}
+	if gs.CanAssignCharacterToCouncilRole(owner, commander.ID, CouncilRoleDiplomat) {
+		t.Fatal("role without set_commander_army accepted an army-assigned commander")
+	}
+	if !gs.AssignCharacterToCouncilRole(owner, commander.ID, CouncilRoleTreasurer) {
+		t.Fatal("could not assign army commander to dual-assignment role")
+	}
+	if !gs.commanderCouncilRoleAllowsArmyCommand(commander) ||
+		gs.CouncilRoleHolder(owner, CouncilRoleTreasurer) != commander {
+		t.Fatal("commander lost army or council assignment despite set_commander_army")
+	}
+}
+
 func TestTaxIncomeForFactionRemainsSeparateFromCouncilIncomeBonus(t *testing.T) {
 	const owner faction.FactionID = "player"
 	character := &army.Commander{ID: "chr_sansa", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Sansa"}

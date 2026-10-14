@@ -201,6 +201,37 @@ func TestCharacterRosterCandidateShowsOneTimeAndPerTurnCostsSeparately(t *testin
 	}
 }
 
+func TestMilitaryCommanderIsListedWithoutHouseholdControls(t *testing.T) {
+	const owner faction.FactionID = "player"
+	commander := &army.Commander{
+		ID: "cmd_jaime", Type: army.CharacterTypeCommander, OwnerID: string(owner), Name: "Jaime",
+		AssignedArmyID: "army_1",
+	}
+	if characterRosterMemberManageable(commander) {
+		t.Fatal("military commander should not receive council or release controls")
+	}
+	if !characterRosterMemberManageable(&army.Commander{Type: army.CharacterTypeCharacter}) {
+		t.Fatal("household character should retain council and release controls")
+	}
+	r := &Renderer{
+		gs: &state.GameState{
+			Year:            300,
+			PlayerFactionID: owner,
+			Factions:        map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+			Commanders:      map[string]*army.Commander{commander.ID: commander},
+		},
+	}
+	r.OpenCharacterRosterPanel()
+	if len(r.characterRosterOwned) != 1 || r.characterRosterOwned[0] != commander {
+		t.Fatalf("owned household panel members = %#v, want Jaime", r.characterRosterOwned)
+	}
+	ownedColumn, _ := characterRosterColumns()
+	release := characterReleaseButton(ownedColumn, 0, r.characterRosterOwnedScroll, r.characterRosterOwned)
+	if r.characterRosterPanelHovering(release.X+release.W/2, release.Y+release.H/2) {
+		t.Fatal("military commander exposed the household release control")
+	}
+}
+
 func TestOwnedCharacterReleaseButtonIsInteractive(t *testing.T) {
 	const owner faction.FactionID = "player"
 	character := &army.Commander{

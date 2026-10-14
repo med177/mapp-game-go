@@ -233,7 +233,7 @@ func aiBestCouncilAssignment(
 				continue
 			}
 			effects := gs.CouncilRoleEffectsForCharacter(character, role.ID)
-			scores[roleIndex][characterIndex] = aiCouncilRoleValue(gs, fid, role.ID, character, effects, context)
+			scores[roleIndex][characterIndex] = aiCouncilRoleValue(gs, role.ID, character, effects, context)
 		}
 	}
 	if len(roles) > aiCouncilExactMatchingMaxRoles {
@@ -327,9 +327,14 @@ func aiGreedyCouncilAssignment(
 }
 
 func aiCouncilCharacterEligible(gs *state.GameState, fid faction.FactionID, roleID string, character *army.Commander) bool {
-	if gs == nil || character == nil ||
-		(character.Type != army.CharacterTypeAdministrator && character.Type != army.CharacterTypeCharacter) ||
-		!character.ActiveInYear(gs.Year) || (character.AssignedArmyID != "" && roleID != state.CouncilRoleMilitaryResponsible) ||
+	if gs == nil || character == nil {
+		return false
+	}
+	role, roleExists := gs.CouncilConfig.WithDefaults().Role(roleID)
+	if (character.Type != army.CharacterTypeAdministrator && character.Type != army.CharacterTypeCharacter &&
+		character.Type != army.CharacterTypeCommander) ||
+		!roleExists || !character.ActiveInYear(gs.Year) ||
+		(character.AssignedArmyID != "" && !role.SetCommanderArmy) ||
 		gs.DeadCommanderIDs[character.ID] || gs.DismissedCommanderIDs[character.ID] ||
 		gs.ExiledCommanderIDs[character.ID] || character.CaptiveAtSettlementID != "" ||
 		gs.CommanderUnavailable(character) {
@@ -338,14 +343,7 @@ func aiCouncilCharacterEligible(gs *state.GameState, fid faction.FactionID, role
 	return character.OwnerID == string(fid) || character.OwnerID == state.NeutralCharacterOwnerID
 }
 
-func aiCouncilRoleValue(
-	gs *state.GameState,
-	fid faction.FactionID,
-	roleID string,
-	character *army.Commander,
-	effects scenario.CouncilEffects,
-	context aiCouncilValueContext,
-) int {
+func aiCouncilRoleValue(gs *state.GameState, roleID string, character *army.Commander, effects scenario.CouncilEffects, context aiCouncilValueContext) int {
 	value := (normalizedCouncilMod(effects.IncomeMod) - 1) * context.taxIncome
 	resourceDelta := normalizedCouncilMod(effects.ResourceProductionMod) - 1
 	if resourceDelta != 0 {

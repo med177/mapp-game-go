@@ -13,7 +13,13 @@ import (
 const NeutralCharacterOwnerID = "none"
 
 func isRosterCharacter(character *army.Commander) bool {
-	return character != nil && (character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter)
+	return character != nil && (character.Type == army.CharacterTypeAdministrator ||
+		character.Type == army.CharacterTypeCharacter || character.Type == army.CharacterTypeCommander)
+}
+
+func isHouseholdDutyCharacter(character *army.Commander) bool {
+	return character != nil &&
+		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter)
 }
 
 func characterDutySortPriority(character *army.Commander, roles []scenario.CouncilRoleDefinition) int {
@@ -31,9 +37,8 @@ func characterDutySortPriority(character *army.Commander, roles []scenario.Counc
 	return len(roles)
 }
 
-// CharacterRoster bir fraksiyona ait aktif yönetici ve karakter kayıtlarını
-// görev önceliği, ardından ada göre deterministik sırada döner. Askerî
-// komutanlar kendi roster'larında kalır.
+// CharacterRoster bir fraksiyona ait aktif hane karakterleri ve askerî
+// komutanları görev önceliği, ardından ada göre deterministik sırada döner.
 func (s *GameState) CharacterRoster(ownerID string) []*army.Commander {
 	if s == nil || ownerID == "" {
 		return nil
@@ -68,7 +73,7 @@ func (s *GameState) NeutralCharacterCandidates() []*army.Commander {
 	}
 	candidates := make([]*army.Commander, 0)
 	for _, character := range s.Commanders {
-		if !isRosterCharacter(character) || character.OwnerID != NeutralCharacterOwnerID ||
+		if !isHouseholdDutyCharacter(character) || character.OwnerID != NeutralCharacterOwnerID ||
 			!character.ActiveInYear(s.Year) || character.AssignedArmyID != "" || character.AssignedCouncilRole != "" ||
 			s.DeadCommanderIDs[character.ID] || s.DismissedCommanderIDs[character.ID] ||
 			s.ExiledCommanderIDs[character.ID] || character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) {
@@ -105,7 +110,7 @@ func (s *GameState) AdoptNeutralCharacterForFaction(ownerID faction.FactionID, c
 		return false
 	}
 	character := s.Commanders[characterID]
-	if !isRosterCharacter(character) || character.OwnerID != NeutralCharacterOwnerID ||
+	if !isHouseholdDutyCharacter(character) || character.OwnerID != NeutralCharacterOwnerID ||
 		!character.ActiveInYear(s.Year) || character.AssignedArmyID != "" || character.AssignedCouncilRole != "" ||
 		s.DeadCommanderIDs[characterID] || s.DismissedCommanderIDs[characterID] ||
 		s.ExiledCommanderIDs[characterID] || character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) ||
@@ -126,7 +131,7 @@ func (s *GameState) FactionCharacterGoldUpkeep(ownerID string) int {
 	councilConfig := s.councilConfig()
 	total := 0
 	for _, character := range s.Commanders {
-		if !isRosterCharacter(character) || character.OwnerID != ownerID ||
+		if !isHouseholdDutyCharacter(character) || character.OwnerID != ownerID ||
 			!character.ActiveInYear(s.Year) || s.DeadCommanderIDs[character.ID] ||
 			s.DismissedCommanderIDs[character.ID] || character.GoldUpkeep <= 0 {
 			continue
@@ -147,7 +152,7 @@ func (s *GameState) ReleaseCharacterToNeutralPool(ownerID faction.FactionID, cha
 		return false
 	}
 	character := s.Commanders[characterID]
-	if !isRosterCharacter(character) || character.OwnerID != string(ownerID) ||
+	if !isHouseholdDutyCharacter(character) || character.OwnerID != string(ownerID) ||
 		!character.ActiveInYear(s.Year) || s.DeadCommanderIDs[characterID] ||
 		s.DismissedCommanderIDs[characterID] || s.ExiledCommanderIDs[characterID] ||
 		character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) {
@@ -166,7 +171,7 @@ func (s *GameState) ReleaseFactionCharactersToNeutralPool(ownerID faction.Factio
 	}
 	released := 0
 	for _, character := range s.Commanders {
-		if !isRosterCharacter(character) || character.OwnerID != string(ownerID) ||
+		if !isHouseholdDutyCharacter(character) || character.OwnerID != string(ownerID) ||
 			!character.ActiveInYear(s.Year) || s.DeadCommanderIDs[character.ID] ||
 			s.DismissedCommanderIDs[character.ID] {
 			continue

@@ -15,9 +15,12 @@ const (
 	CouncilRoleResearchResponsible = "research_responsible"
 )
 
-func commanderCouncilRoleAllowsArmyCommand(character *army.Commander) bool {
-	return character == nil || character.AssignedCouncilRole == "" ||
-		character.AssignedCouncilRole == CouncilRoleMilitaryResponsible
+func (s *GameState) commanderCouncilRoleAllowsArmyCommand(character *army.Commander) bool {
+	if character == nil || character.AssignedCouncilRole == "" {
+		return true
+	}
+	role, ok := s.councilConfig().Role(character.AssignedCouncilRole)
+	return ok && role.SetCommanderArmy
 }
 
 func (s *GameState) councilConfig() scenario.CharacterCouncilConfig {
@@ -33,10 +36,14 @@ func (s *GameState) validCouncilRole(role string) bool {
 }
 
 func (s *GameState) councilCharacterAvailable(ownerID, roleID string, character *army.Commander) bool {
-	return s != nil && ownerID != "" && character != nil &&
-		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter) &&
-		character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
-		(character.AssignedArmyID == "" || roleID == CouncilRoleMilitaryResponsible) &&
+	if s == nil || ownerID == "" || character == nil {
+		return false
+	}
+	role, ok := s.councilConfig().Role(roleID)
+	return ok && character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
+		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
+			character.Type == army.CharacterTypeCommander) &&
+		(character.AssignedArmyID == "" || role.SetCommanderArmy) &&
 		(character.AssignedCouncilRole == "" || s.validCouncilRole(character.AssignedCouncilRole)) &&
 		!s.DeadCommanderIDs[character.ID] && !s.DismissedCommanderIDs[character.ID] &&
 		!s.ExiledCommanderIDs[character.ID] && character.CaptiveAtSettlementID == "" &&
@@ -105,9 +112,11 @@ func (s *GameState) CouncilRoleHolder(ownerID faction.FactionID, role string) *a
 }
 
 func (s *GameState) councilCharacterAvailableForEffect(ownerID, roleID string, character *army.Commander) bool {
-	return character != nil && character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
-		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter) &&
-		(character.AssignedArmyID == "" || roleID == CouncilRoleMilitaryResponsible) &&
+	role, ok := s.councilConfig().Role(roleID)
+	return ok && character != nil && character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
+		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
+			character.Type == army.CharacterTypeCommander) &&
+		(character.AssignedArmyID == "" || role.SetCommanderArmy) &&
 		!s.DeadCommanderIDs[character.ID] &&
 		!s.DismissedCommanderIDs[character.ID] && !s.ExiledCommanderIDs[character.ID] &&
 		character.CaptiveAtSettlementID == "" && !s.CommanderUnavailable(character)

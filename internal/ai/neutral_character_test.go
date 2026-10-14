@@ -18,6 +18,10 @@ func TestAIAdoptsOneNeutralCharacterToFillCouncilVacancy(t *testing.T) {
 	second := &army.Commander{
 		ID: "chr_b", Type: army.CharacterTypeAdministrator, OwnerID: state.NeutralCharacterOwnerID, Name: "B",
 	}
+	militaryCommander := &army.Commander{
+		ID: "cmd_c", Type: army.CharacterTypeCommander, OwnerID: string(aiFaction),
+		Name: "C", AssignedArmyID: "army_1",
+	}
 	gs := &state.GameState{
 		Year:            300,
 		PlayerFactionID: "player",
@@ -29,8 +33,9 @@ func TestAIAdoptsOneNeutralCharacterToFillCouncilVacancy(t *testing.T) {
 			"capital": {ID: "capital", OwnerID: string(aiFaction), BaseGoldIncome: 1000, TaxRate: 100, Satisfaction: 100},
 		},
 		Commanders: map[string]*army.Commander{
-			first.ID:  first,
-			second.ID: second,
+			first.ID:             first,
+			second.ID:            second,
+			militaryCommander.ID: militaryCommander,
 		},
 		CouncilConfig: scenario.DefaultCharacterCouncilConfig(),
 	}
@@ -43,8 +48,13 @@ func TestAIAdoptsOneNeutralCharacterToFillCouncilVacancy(t *testing.T) {
 	if second.OwnerID != state.NeutralCharacterOwnerID || second.AssignedCouncilRole != "" {
 		t.Fatalf("second candidate was also adopted: owner %q, role %q", second.OwnerID, second.AssignedCouncilRole)
 	}
-	if roster := gs.CharacterRoster(string(aiFaction)); len(roster) != 1 || roster[0] != first {
-		t.Fatalf("AI character roster = %#v, want only adopted character", roster)
+	if militaryCommander.OwnerID != string(aiFaction) || militaryCommander.AssignedArmyID != "army_1" ||
+		militaryCommander.AssignedCouncilRole != "" {
+		t.Fatalf("AI changed military commander assignments: owner %q, army %q, role %q",
+			militaryCommander.OwnerID, militaryCommander.AssignedArmyID, militaryCommander.AssignedCouncilRole)
+	}
+	if roster := gs.CharacterRoster(string(aiFaction)); len(roster) != 2 || roster[0] != first || roster[1] != militaryCommander {
+		t.Fatalf("AI household roster = %#v, want adopted character and military commander", roster)
 	}
 }
 
@@ -90,6 +100,48 @@ func TestAIReassignsCouncilRoleToCharacterWithBestExpectedReturn(t *testing.T) {
 
 	if ordinary.AssignedCouncilRole != "" || steward.AssignedCouncilRole != state.CouncilRoleTreasurer {
 		t.Fatalf("council assignments = ordinary:%q skilled:%q; want skilled steward in treasurer role", ordinary.AssignedCouncilRole, steward.AssignedCouncilRole)
+	}
+}
+
+func TestAIConsidersMilitaryCommandersForCouncilRoles(t *testing.T) {
+	const owner faction.FactionID = "ai"
+	commander := &army.Commander{
+		ID: "cmd_jaime", Type: army.CharacterTypeCommander, OwnerID: string(owner),
+		Traits: []army.CharacterTrait{"exceptional_steward"}, AssignedArmyID: "army_1",
+	}
+	config := scenario.CharacterCouncilConfig{
+		Roles: []scenario.CouncilRoleDefinition{{
+			ID: state.CouncilRoleTreasurer, NameTR: "Hazinedar",
+			SetCommanderArmy: true,
+			Effects:          scenario.CouncilEffects{IncomeMod: 1.01},
+		}},
+		Traits: map[string]scenario.CharacterTraitDefinition{
+			"exceptional_steward": {
+				NameTR: "Usta Hazinedar",
+				CouncilEffects: map[string]scenario.CouncilEffects{
+					state.CouncilRoleTreasurer: {IncomeMod: 1.20},
+				},
+			},
+		},
+	}
+	gs := &state.GameState{
+		Year: 300,
+		Factions: map[faction.FactionID]*faction.Faction{
+			owner: {ID: owner},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"capital": {ID: "capital", OwnerID: string(owner), BaseGoldIncome: 1000, TaxRate: 100, Satisfaction: 100},
+		},
+		Commanders:    map[string]*army.Commander{commander.ID: commander},
+		CouncilConfig: config,
+	}
+
+	aiManageNeutralCharacters(gs, owner)
+
+	if commander.AssignedCouncilRole != state.CouncilRoleTreasurer ||
+		gs.CouncilRoleHolder(owner, state.CouncilRoleTreasurer) != commander {
+		t.Fatalf("AI commander council role = %q, holder %v; want commander as treasurer",
+			commander.AssignedCouncilRole, gs.CouncilRoleHolder(owner, state.CouncilRoleTreasurer))
 	}
 }
 

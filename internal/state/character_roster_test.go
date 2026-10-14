@@ -8,7 +8,7 @@ import (
 	"mapp-game-go/internal/scenario"
 )
 
-func TestCharacterRosterFiltersTypesAndSortsDeterministically(t *testing.T) {
+func TestCharacterRosterIncludesHouseholdAndMilitaryCharactersSortedDeterministically(t *testing.T) {
 	gs := &GameState{
 		Year: 300,
 		Commanders: map[string]*army.Commander{
@@ -20,8 +20,8 @@ func TestCharacterRosterFiltersTypesAndSortsDeterministically(t *testing.T) {
 	}
 
 	roster := gs.CharacterRoster("player")
-	if len(roster) != 2 || roster[0].ID != "character" || roster[1].ID != "administrator" {
-		t.Fatalf("roster = %#v, want Arya then Tywin", roster)
+	if len(roster) != 3 || roster[0].ID != "character" || roster[1].ID != "commander" || roster[2].ID != "administrator" {
+		t.Fatalf("roster = %#v, want Arya, Jaime, then Tywin", roster)
 	}
 	if got := gs.CharacterRoster("missing"); len(got) != 0 {
 		t.Fatalf("missing faction roster = %#v, want empty", got)
@@ -207,13 +207,42 @@ func TestReleaseCharacterRejectsNonOwner(t *testing.T) {
 	}
 }
 
+func TestMilitaryCommanderAppearsInHouseholdButCannotBeReleased(t *testing.T) {
+	commander := &army.Commander{
+		ID: "cmd_jaime", Type: army.CharacterTypeCommander, OwnerID: "player",
+		Name: "Jaime", AssignedArmyID: "army_1",
+	}
+	gs := &GameState{
+		Year: 300,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Commanders: map[string]*army.Commander{commander.ID: commander},
+	}
+
+	roster := gs.CharacterRoster("player")
+	if len(roster) != 1 || roster[0] != commander {
+		t.Fatalf("household roster = %#v, want Jaime", roster)
+	}
+	if gs.ReleaseCharacterToNeutralPool("player", commander.ID) {
+		t.Fatal("military commander was released through household character action")
+	}
+	if commander.OwnerID != "player" || commander.AssignedArmyID != "army_1" {
+		t.Fatalf("rejected release changed commander state: owner=%q army=%q", commander.OwnerID, commander.AssignedArmyID)
+	}
+}
+
 func TestNeutralCharacterCandidatesExcludeUnavailableAndArmyAssigned(t *testing.T) {
 	gs := &GameState{
 		Year: 300,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
 		Commanders: map[string]*army.Commander{
-			"ready":    {ID: "ready", Type: army.CharacterTypeCharacter, OwnerID: NeutralCharacterOwnerID, Name: "Ready"},
-			"assigned": {ID: "assigned", Type: army.CharacterTypeAdministrator, OwnerID: NeutralCharacterOwnerID, Name: "Assigned", AssignedArmyID: "army_1"},
-			"exiled":   {ID: "exiled", Type: army.CharacterTypeCharacter, OwnerID: NeutralCharacterOwnerID, Name: "Exiled"},
+			"ready":     {ID: "ready", Type: army.CharacterTypeCharacter, OwnerID: NeutralCharacterOwnerID, Name: "Ready"},
+			"assigned":  {ID: "assigned", Type: army.CharacterTypeAdministrator, OwnerID: NeutralCharacterOwnerID, Name: "Assigned", AssignedArmyID: "army_1"},
+			"exiled":    {ID: "exiled", Type: army.CharacterTypeCharacter, OwnerID: NeutralCharacterOwnerID, Name: "Exiled"},
+			"commander": {ID: "commander", Type: army.CharacterTypeCommander, OwnerID: NeutralCharacterOwnerID, Name: "Commander"},
 		},
 		ExiledCommanderIDs: map[string]bool{"exiled": true},
 	}
@@ -221,6 +250,9 @@ func TestNeutralCharacterCandidatesExcludeUnavailableAndArmyAssigned(t *testing.
 	candidates := gs.NeutralCharacterCandidates()
 	if len(candidates) != 1 || candidates[0].ID != "ready" {
 		t.Fatalf("neutral candidates = %#v, want only Ready", candidates)
+	}
+	if gs.AdoptNeutralCharacterForFaction("player", "commander") {
+		t.Fatal("military commander was adopted through household candidate flow")
 	}
 }
 

@@ -363,19 +363,23 @@ AI tarafında `EnsureFactionCommanders(ownerID)` aktif saha ordusu sayısına g�
 havuzu büyütür ve komutansız orduları deterministik ID sırasıyla doldurur; garnizonlar
 bu otomatik atamanın dışındadır.
 
-`CharacterRoster(ownerID)`, `administrator` ve `character` tipindeki aktif
-senaryo kayıtlarını askeri komutan listesinden ayrı ve deterministik sırada
-sunar; `commander` tipi mevcut askeri roster'da kalır. `administrator` kayıtları
-roster'da yönetim adayı olarak görünürken mevcut ordu komutanlığı uygunluğunu da
-korur. `owner_id: "none"` olan aktif yönetici/karakter kayıtları tüm fraksiyonların
-erişebildiği tarafsız aday havuzunda yer alır. Oyuncu `AdoptNeutralCharacter()`
-ile, AI ise `AdoptNeutralCharacterForFaction()` ile bir adayı tek seferlik
+`CharacterRoster(ownerID)`, aktif hane karakterleriyle askerî komutanları
+deterministik sırada sunar; komutanlar hane panelinde görünür, ancak askerî
+komutan listesi ve ordu atama akışı kendi yönetim yüzeyinde kalır. Hane paneli
+komutanlara konsey atama veya tarafsız havuza bırakma işlemi sunmaz. Tarafsız
+aday havuzu, `owner_id: "none"` olan aktif `administrator` ve `character`
+kayıtlarıyla sınırlıdır. Oyuncu `AdoptNeutralCharacter()` ile, AI ise
+`AdoptNeutralCharacterForFaction()` ile bir adayı tek seferlik
 `adoption_cost_gold` ücretini ödeyerek kendi hanesine alabilir. Hane üyelerinin
 `gold_upkeep` bakımı her tur tahsil edilir; rol tanımındaki `no_cost: true`,
 atanmış karakterin bu bakımını kaldırır. AI, mevcut hane üyelerini rol etkilerinin
 beklenen faction getirisine göre yeniden eşleştirir; yeni adayda bakım ve alım
 ücretinin 12 turluk payını da hesaba katar ve yalnız getirisi maliyetinden büyükse
-tur başına en fazla birini alır. Gelir, kaynak fiyatları/üretimi, memnuniyetsiz
+tur başına en fazla birini alır. AI, askerî komutanları da konsey ataması için
+değerlendirir. Rol tanımındaki `set_commander_army: true`, o rolü taşıyan
+komutanın ordu komutanlığını eşzamanlı sürdürmesine izin verir; aynı alan orduya
+atanmış komutanın bu göreve atanabilmesini de belirler. Gelir,
+kaynak fiyatları/üretimi, memnuniyetsiz
 bölgeler, ordu gücü ve savaş, kullanılabilir Heyet hedefleri ile araştırma
 getirisi tahminde hesaba katılır. Karakter bakım maliyeti olmayan AI üyeleri
 sırf boşta diye serbest bırakılmaz. Bu işlem senaryo şablonunu değil runtime

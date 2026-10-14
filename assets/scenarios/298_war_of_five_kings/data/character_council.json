@@ -6,6 +6,7 @@
       "id": "head_of_house",
       "name_tr": "Lider",
       "no_cost": true,
+      "set_commander_army": true,
       "effects": {
         "satisfaction_points": 1,
         "military_power_mod": 1.01,
@@ -21,6 +22,7 @@
       "id": "heir",
       "name_tr": "Veliaht",
       "no_cost": true,
+      "set_commander_army": true,
       "effects": {
         "satisfaction_points": 1,
         "relation_bonus_points": 1
@@ -33,6 +35,7 @@
     {
       "id": "military_responsible",
       "name_tr": "Serasker",
+      "set_commander_army": true,
       "effects": {
         "military_power_mod": 1.03,
         "commander_power_mod": 1.03

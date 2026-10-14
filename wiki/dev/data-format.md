@@ -136,6 +136,11 @@ taşımalıdır. `effects` başlangıç bonusunu, `per_level` ise 1. seviye üze
 her seviye için ek bonusu belirler. İsteğe bağlı `no_cost: true`, bu göreve
 atanmış karakterin tur başı `gold_upkeep` bakımını kaldırır; tarafsız havuzdan
 alımın tek seferlik `adoption_cost_gold` ücretini etkilemez.
+İsteğe bağlı `set_commander_army: true`, bu görevi yürütürken karakterin aynı
+zamanda bir orduya komuta etmesine izin verir. Alan yoksa varsayılan `false` olur;
+alana izin veren bir göreve atanmış ordu komutanı için de görev ve ordu komutanlığı
+birlikte sürer. Bu alan, atanmış komutanın ordu uygunluğunu ve göreve atanabilirken
+mevcut ordu atamasını koruyabilmesini aynı anda belirler.
 
 Desteklenen etki anahtarları:
 

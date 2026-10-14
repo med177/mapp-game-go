@@ -5,6 +5,14 @@ last_updated: 2026-10-14
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-14: Hane panelinin üyeler listesine aktif askerî komutanlar da eklendi.
+  Komutanların ordu yönetimi mevcut komutan panelinde kalır; hane panelinden
+  konsey görevi veya tarafsız havuz işlemleri sunulmaz. AI askerî komutanları da
+  rol getirisine göre atar; `set_commander_army` rolü hem görev hem ordu
+  komutanlığını birlikte sürdürmeye izin verir.
+  `internal/state/character_roster.go`, `internal/render/character_roster_panel.go`,
+  `internal/ai/neutral_character.go`, `internal/state/council.go`.
+
 - 2026-10-14: Konsey görevleri `data/character_council.json`, karakter nitelikleri
   ise ayrı `data/character_traits.json` üzerinden tanımlanıyor. Gelir, memnuniyet,
   kara/deniz muharebe gücü, komuta edilen birliğin gücü, Heyet ilişkisi, kaynak
