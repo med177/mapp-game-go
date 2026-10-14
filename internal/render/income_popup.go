@@ -36,13 +36,14 @@ type goldIncomePopupLine struct {
 	color color.RGBA
 }
 
-func goldIncomePopupLines(status state.GoldEconomyStatus) [21]goldIncomePopupLine {
+func goldIncomePopupLines(status state.GoldEconomyStatus) [22]goldIncomePopupLine {
 	otherIncomeLabel := status.OtherIncomeDescription
 	if otherIncomeLabel == "" {
 		otherIncomeLabel = "Diğer gelirler"
 	}
-	return [21]goldIncomePopupLine{
+	return [22]goldIncomePopupLine{
 		{label: "Vergi", value: status.TaxIncome, color: ColorGold},
+		{label: "Konsey geliri", value: status.CouncilIncome, color: color.RGBA{220, 190, 130, 255}},
 		{label: otherIncomeLabel, value: status.OtherIncome, color: color.RGBA{220, 190, 130, 255}},
 		{label: "Pasif ticaret", value: status.TradeIncome, color: color.RGBA{145, 220, 155, 255}},
 		{label: "Ticaret merkezi geliri", value: status.TradeCenterIncome, color: color.RGBA{205, 180, 110, 255}},
@@ -213,7 +214,7 @@ func (r *Renderer) drawGrainEconomyPopup(screen *ebiten.Image) {
 			value = formatSignedAmount(line.value)
 		}
 		drawUIKeyValueRowWithGap(screen, popup.X+12, y, popup.W-24, line.label, value, ColorGray, line.color, 8)
-		y += 21
+		y += 20
 	}
 	drawUISeparator(screen, float32(popup.X+10), float32(popup.Y+popup.H-30), float32(popup.X+popup.W-20), 1, panelBorder)
 	drawUILabel(screen, gameui.Rect{X: popup.X + 12, Y: popup.Y + popup.H - 22}, "Net değişim", ColorGray, gameui.TextSmall, gameui.TextAlignStart)

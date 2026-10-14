@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/scenario"
 	gameui "mapp-game-go/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -77,8 +78,11 @@ func characterTraitsSummary(character *army.Commander) string {
 	return strings.Join(traits, ", ")
 }
 
-func characterTraitBadge(trait army.CharacterTrait) characterTraitBadgeStyle {
+func characterTraitBadge(trait army.CharacterTrait, labelOverride ...string) characterTraitBadgeStyle {
 	label := army.TraitLabelTR(trait)
+	if len(labelOverride) > 0 && labelOverride[0] != "" {
+		label = labelOverride[0]
+	}
 	switch trait {
 	case army.CharacterTraitVeteran:
 		return characterTraitBadgeStyle{
@@ -220,7 +224,7 @@ func drawCharacterTraitBadge(screen *ebiten.Image, style characterTraitBadgeStyl
 	DrawTextCentered(screen, style.Label, x+w/2, y+2, FaceSmall, style.Text)
 }
 
-func drawCharacterTraitBadges(screen *ebiten.Image, character *army.Commander, x, y, maxWidth float64, opts characterTraitBadgeOptions) float64 {
+func drawCharacterTraitBadges(screen *ebiten.Image, character *army.Commander, x, y, maxWidth float64, opts characterTraitBadgeOptions, configs ...scenario.CharacterCouncilConfig) float64 {
 	const (
 		badgeH = 18.0
 		gapX   = 6.0
@@ -270,7 +274,11 @@ func drawCharacterTraitBadges(screen *ebiten.Image, character *army.Commander, x
 	cursorY := y
 	row := 1
 	for i, trait := range character.Traits {
-		style := characterTraitBadge(trait)
+		label := ""
+		if len(configs) > 0 {
+			label = configs[0].Traits[string(trait)].NameTR
+		}
+		style := characterTraitBadge(trait, label)
 		w := badgeWidth(style.Label)
 		if cursorX > x && cursorX+w > maxX {
 			if row >= maxRows {

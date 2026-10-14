@@ -671,6 +671,7 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	}
 	defMods.DefenseMod += state.SiegeDefenseBonus(fortLevel, breachLevel, force.DefensePressure)
 	result := combat.ResolveBattleWithContextPlan(attacker, defender, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
+	g.gs.RecordCouncilBattleExperience(faction.FactionID(attacker.OwnerID), faction.FactionID(defenderOwnerID))
 	g.recordCommanderBattle(attacker, defender, nil, result.AttackerWins)
 	var collapse eliminationResult
 	extraDamage := siegeAssaultAttackerDamage(fortLevel, breachLevel)

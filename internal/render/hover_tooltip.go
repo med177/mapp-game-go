@@ -355,20 +355,21 @@ func drawArmyPowerTooltip(screen *ebiten.Image, gs *state.GameState, aid army.Ar
 	drawUILabel(screen, gameui.Rect{X: x + pad, Y: y + 8, W: w - pad*2, H: 20}, "Muharebe gücü hesabı", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: x + pad, Y: y + 31, W: w - pad*2, H: 18},
 		fmt.Sprintf("Birim tabanı (HP, deneyim ve ordu morali): %d", attack.BaseStrength), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
-	commanderText := fmt.Sprintf("Komutan: saldırı %s  •  savunma %s  •  moral %s",
-		combatPercent(attack.CommanderAttackModifier), combatPercent(defense.CommanderDefenseModifier), combatPercent(attack.CommanderMoraleModifier))
+	commanderText := fmt.Sprintf("Komutan: saldırı %s  •  savunma %s  •  moral %s  •  konsey komutası %s",
+		combatPercent(attack.CommanderAttackModifier), combatPercent(defense.CommanderDefenseModifier),
+		combatPercent(attack.CommanderMoraleModifier), combatPercent(attack.CommanderCouncilModifier))
 	drawUIWrappedLabel(screen, gameui.Rect{X: x + pad, Y: y + 50, W: w - pad*2, H: 30}, commanderText, color.RGBA{155, 215, 165, 255}, gameui.TextSmall, 15, 2)
 
-	attackFormula := fmt.Sprintf("Saldırı: taban × (1 + teknoloji %s + organizasyon %s + komutan %s + moral %s + duruş %s + core %s)",
-		combatPercent(attack.TechnologyModifier), combatPercent(attack.OrganizationModifier), combatPercent(attack.CommanderAttackModifier),
+	attackFormula := fmt.Sprintf("Saldırı: taban × (1 + teknoloji %s + konsey %s + organizasyon %s + komutan %s + moral %s + duruş %s + core %s)",
+		combatPercent(attack.TechnologyModifier), combatPercent(attack.CouncilPowerModifier), combatPercent(attack.OrganizationModifier), combatPercent(attack.CommanderAttackModifier+attack.CommanderCouncilModifier),
 		combatPercent(attack.CommanderMoraleModifier), combatPercent(attack.StanceModifier), combatPercent(attack.CoreModifier))
 	drawUIWrappedLabel(screen, gameui.Rect{X: x + pad, Y: y + 82, W: w - pad*2, H: 34}, attackFormula, ColorGray, gameui.TextSmall, 15, 2)
 	drawUILabel(screen, gameui.Rect{X: x + pad, Y: y + 116, W: w - pad*2, H: 18},
 		fmt.Sprintf("Muharebede saldırı gücü: %.1f", attack.FinalStrength), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 
-	defenseFormula := fmt.Sprintf("Savunma: taban × arazi %.2f × (1 + teknoloji %s + organizasyon %s + komutan %s + moral %s + core %s)",
-		defense.TerrainMultiplier, combatPercent(defense.TechnologyModifier), combatPercent(defense.OrganizationModifier),
-		combatPercent(defense.CommanderDefenseModifier), combatPercent(defense.CommanderMoraleModifier), combatPercent(defense.CoreModifier))
+	defenseFormula := fmt.Sprintf("Savunma: taban × arazi %.2f × (1 + teknoloji %s + konsey %s + organizasyon %s + komutan %s + moral %s + core %s)",
+		defense.TerrainMultiplier, combatPercent(defense.TechnologyModifier), combatPercent(defense.CouncilPowerModifier), combatPercent(defense.OrganizationModifier),
+		combatPercent(defense.CommanderDefenseModifier+defense.CommanderCouncilModifier), combatPercent(defense.CommanderMoraleModifier), combatPercent(defense.CoreModifier))
 	drawUIWrappedLabel(screen, gameui.Rect{X: x + pad, Y: y + 136, W: w - pad*2, H: 34}, defenseFormula, ColorGray, gameui.TextSmall, 15, 2)
 	drawUILabel(screen, gameui.Rect{X: x + pad, Y: y + 170, W: w - pad*2, H: 18},
 		fmt.Sprintf("Muharebede savunma gücü: %.1f", defense.FinalStrength), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)

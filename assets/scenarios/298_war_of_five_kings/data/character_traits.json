@@ -1,0 +1,386 @@
+{
+  "traits": {
+    "advisor": {
+      "name_tr": "Danışman",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        },
+        "head_of_house": {
+          "satisfaction_points": 1
+        }
+      }
+    },
+    "aggressor": {
+      "name_tr": "Saldırgan",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        },
+        "diplomat": {
+          "relation_bonus_points": -1
+        }
+      }
+    },
+    "alchemist": {
+      "name_tr": "Simyacı",
+      "council_effects": {
+        "treasurer": {
+          "income_mod": 1.01,
+          "resource_production_mod": 1.01
+        },
+        "research_responsible": {
+          "research_speed_mod": 1.01
+        }
+      }
+    },
+    "assassin": {
+      "name_tr": "Suikastçı",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        },
+        "diplomat": {
+          "relation_bonus_points": -1
+        }
+      }
+    },
+    "beautiful": {
+      "name_tr": "Güzel",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "charismatic": {
+      "name_tr": "Karizmatik",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 2
+        },
+        "heir": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "cruel": {
+      "name_tr": "Zalim",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        },
+        "diplomat": {
+          "relation_bonus_points": -2
+        },
+        "head_of_house": {
+          "satisfaction_points": -1
+        }
+      }
+    },
+    "cunning": {
+      "name_tr": "Kurnaz",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "defender": {
+      "name_tr": "Savunmacı",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "administrator": {
+      "name_tr": "İdareci",
+      "council_effects": {
+        "treasurer": {
+          "income_mod": 1.02,
+          "resource_production_mod": 1.02
+        },
+        "head_of_house": {
+          "satisfaction_points": 1
+        }
+      }
+    },
+    "explorer": {
+      "name_tr": "Kaşif",
+      "council_effects": {
+        "research_responsible": {
+          "research_speed_mod": 1.01
+        }
+      }
+    },
+    "fighter": {
+      "name_tr": "Savaşçı",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "free_spirit": {
+      "name_tr": "Özgür Ruhlu",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        },
+        "head_of_house": {
+          "satisfaction_points": -1
+        }
+      }
+    },
+    "goodwill": {
+      "name_tr": "Saf Kalpli",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "independent": {
+      "name_tr": "Bağımsız",
+      "council_effects": {
+        "head_of_house": {
+          "satisfaction_points": -1
+        }
+      }
+    },
+    "impatient": {
+      "name_tr": "Sabırsız",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": -1
+        },
+        "head_of_house": {
+          "satisfaction_points": -1
+        }
+      }
+    },
+    "innocent": {
+      "name_tr": "Masum",
+      "council_effects": {
+        "heir": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "intelligent": {
+      "name_tr": "Zeki",
+      "council_effects": {
+        "treasurer": {
+          "income_mod": 1.02,
+          "resource_production_mod": 1.02
+        },
+        "head_of_house": {
+          "satisfaction_points": 1
+        },
+        "research_responsible": {
+          "research_speed_mod": 1.01
+        }
+      }
+    },
+    "lover": {
+      "name_tr": "Sevgili",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "loyal": {
+      "name_tr": "Sadık",
+      "council_effects": {
+        "heir": {
+          "relation_bonus_points": 1
+        },
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "manipulative": {
+      "name_tr": "Manipülatif",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "mercenary": {
+      "name_tr": "Paralı Asker",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        },
+        "diplomat": {
+          "relation_bonus_points": -1
+        }
+      }
+    },
+    "mother": {
+      "name_tr": "Korumacı",
+      "council_effects": {
+        "head_of_house": {
+          "satisfaction_points": 1
+        }
+      }
+    },
+    "mysterious": {
+      "name_tr": "Gizemli",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": -1
+        }
+      }
+    },
+    "princess": {
+      "name_tr": "Prenses",
+      "council_effects": {
+        "heir": {
+          "relation_bonus_points": 1
+        },
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "queen": {
+      "name_tr": "Kraliçe",
+      "council_effects": {
+        "head_of_house": {
+          "satisfaction_points": 1
+        },
+        "heir": {
+          "relation_bonus_points": 2
+        },
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "resourceful": {
+      "name_tr": "Becerikli",
+      "council_effects": {
+        "treasurer": {
+          "income_mod": 1.02,
+          "resource_production_mod": 1.02
+        },
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "reckless": {
+      "name_tr": "Pervasız",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        },
+        "diplomat": {
+          "relation_bonus_points": -1
+        }
+      }
+    },
+    "schemer": {
+      "name_tr": "Entrikacı",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "scholar": {
+      "name_tr": "Bilgin",
+      "council_effects": {
+        "treasurer": {
+          "income_mod": 1.01,
+          "resource_production_mod": 1.01
+        },
+        "head_of_house": {
+          "satisfaction_points": 1
+        },
+        "research_responsible": {
+          "research_speed_mod": 1.01
+        }
+      }
+    },
+    "shadowbinder": {
+      "name_tr": "Karanlık",
+      "council_effects": {
+        "research_responsible": {
+          "research_speed_mod": 1.01
+        },
+        "diplomat": {
+          "relation_bonus_points": -1
+        }
+      }
+    },
+    "skilled": {
+      "name_tr": "Yetenekli",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "sorceress": {
+      "name_tr": "Büyücü",
+      "council_effects": {
+        "research_responsible": {
+          "research_speed_mod": 1.02
+        }
+      }
+    },
+    "spoiled": {
+      "name_tr": "Şımarık",
+      "council_effects": {
+        "treasurer": {
+          "income_mod": 0.99,
+          "resource_production_mod": 0.99
+        },
+        "head_of_house": {
+          "satisfaction_points": -1
+        }
+      }
+    },
+    "spy": {
+      "name_tr": "Casus",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 1
+        }
+      }
+    },
+    "tactician": {
+      "name_tr": "Taktisyen",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.02
+        }
+      }
+    },
+    "veteran": {
+      "name_tr": "Gazi",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "vengeful": {
+      "name_tr": "Kindar",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        },
+        "diplomat": {
+          "relation_bonus_points": -1
+        }
+      }
+    }
+  }
+}

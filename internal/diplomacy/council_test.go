@@ -36,8 +36,8 @@ func diplomatHeyetTestState() (*state.GameState, *army.Commander) {
 	return gs, diplomat
 }
 
-func TestExecuteImproveRelationsAddsAssignedDiplomatBonus(t *testing.T) {
-	gs, _ := diplomatHeyetTestState()
+func TestExecuteImproveRelationsAddsAssignedDiplomatBonusAndDutyExperience(t *testing.T) {
+	gs, diplomat := diplomatHeyetTestState()
 	result := Execute(gs, gs.PlayerFactionID, "target", ActionImproveRelations)
 	if !result.Applied {
 		t.Fatalf("heyet was not applied: %s", result.Message)
@@ -48,10 +48,13 @@ func TestExecuteImproveRelationsAddsAssignedDiplomatBonus(t *testing.T) {
 	if got := gs.Factions[gs.PlayerFactionID].Gold; got != 400 {
 		t.Fatalf("heyet gold after cost = %d, want 400", got)
 	}
+	if diplomat.CouncilExperience != 10 {
+		t.Fatalf("diplomat experience after applied heyet = %d, want 10", diplomat.CouncilExperience)
+	}
 }
 
 func TestResolveImproveRelationsNotificationAddsOriginDiplomatBonus(t *testing.T) {
-	gs, _ := diplomatHeyetTestState()
+	gs, diplomat := diplomatHeyetTestState()
 	gs.DiplomaticOffers = []state.DiplomaticOffer{{
 		FromFactionID: gs.PlayerFactionID,
 		ToFactionID:   "target",
@@ -64,5 +67,8 @@ func TestResolveImproveRelationsNotificationAddsOriginDiplomatBonus(t *testing.T
 	}
 	if got := RelationScore(gs, gs.PlayerFactionID, "target"); got != 8 {
 		t.Fatalf("queued heyet relation score = %d, want base 5 + diplomat 3 = 8", got)
+	}
+	if diplomat.CouncilExperience != 10 {
+		t.Fatalf("diplomat experience after resolved heyet = %d, want 10", diplomat.CouncilExperience)
 	}
 }

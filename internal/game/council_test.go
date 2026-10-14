@@ -1,15 +1,19 @@
 package game
 
 import (
+	"math"
 	"testing"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/render"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/tech"
 	"mapp-game-go/internal/world"
 )
 
-func TestTreasurerBonusAppliedByEconomyTickOnlyToTaxIncome(t *testing.T) {
+func TestTreasurerBonusAppliedToFactionIncomeByEconomyTick(t *testing.T) {
 	const fid faction.FactionID = "player"
 
 	buildState := func(withTreasurer bool) *state.GameState {
@@ -17,12 +21,18 @@ func TestTreasurerBonusAppliedByEconomyTickOnlyToTaxIncome(t *testing.T) {
 			ID: "cmd_tywin", Type: army.CharacterTypeAdministrator,
 			OwnerID: string(fid), Name: "Tywin",
 		}
+
 		gs := &state.GameState{
 			Turn:            1,
 			Year:            300,
 			Month:           6,
 			PlayerFactionID: fid,
-			Factions:        map[faction.FactionID]*faction.Faction{fid: {ID: fid, Gold: 0, Grain: 100}},
+			Factions: map[faction.FactionID]*faction.Faction{
+				fid: {
+					ID: fid, Gold: 0, Grain: 100,
+					OtherIncomePeriods: []faction.OtherIncomePeriod{{StartYear: 300, Amount: 100}},
+				},
+			},
 			Regions: map[world.RegionID]*world.Region{
 				"capital": {ID: "capital", OwnerID: string(fid), BaseGoldIncome: 1000, TaxRate: 50, Satisfaction: 50},
 			},
@@ -36,6 +46,7 @@ func TestTreasurerBonusAppliedByEconomyTickOnlyToTaxIncome(t *testing.T) {
 
 	base := buildState(false)
 	withTreasurer := buildState(true)
+	treasurer := withTreasurer.Commanders["cmd_tywin"]
 	baseReport := applyEconomyTick(base)
 	treasurerReport := applyEconomyTick(withTreasurer)
 	_ = baseReport
@@ -43,17 +54,87 @@ func TestTreasurerBonusAppliedByEconomyTickOnlyToTaxIncome(t *testing.T) {
 
 	baseStatus := base.GoldEconomy[fid]
 	treasurerStatus := withTreasurer.GoldEconomy[fid]
-	wantBonus := baseStatus.TaxIncome * state.TreasurerTaxIncomeBonusPercent / 100
+	wantBonus := baseStatus.Income * 5 / 100
 	if wantBonus <= 0 {
-		t.Fatalf("fixture produced no tax bonus: base tax income = %d", baseStatus.TaxIncome)
+		t.Fatalf("fixture produced no income bonus: base income = %d", baseStatus.Income)
 	}
-	if got, want := treasurerStatus.TaxIncome, baseStatus.TaxIncome+wantBonus; got != want {
-		t.Fatalf("economy tick tax income with treasurer = %d, want %d", got, want)
+	if got, want := treasurerStatus.CouncilIncome, wantBonus; got != want {
+		t.Fatalf("economy tick council income bonus with treasurer = %d, want %d", got, want)
 	}
-	if got, want := treasurerStatus.Income, baseStatus.Income+wantBonus; got != want {
+	if got, want := treasurerStatus.TaxIncome, baseStatus.TaxIncome; got != want {
+		t.Fatalf("treasurer changed tax income category: got %d want %d", got, want)
+	}
+	if got, want := treasurerStatus.Income, baseStatus.Income; got != want {
 		t.Fatalf("economy tick income with treasurer = %d, want %d", got, want)
 	}
 	if got, want := treasurerStatus.TradeIncome, baseStatus.TradeIncome; got != want {
 		t.Fatalf("treasurer changed trade income: got %d want %d", got, want)
+	}
+	if got, want := treasurerStatus.OtherIncome, baseStatus.OtherIncome; got != want {
+		t.Fatalf("treasurer changed other income category: got %d want %d", got, want)
+	}
+	if treasurer.CouncilExperience != 10 {
+		t.Fatalf("treasurer experience after income bonus = %d, want 10", treasurer.CouncilExperience)
+	}
+}
+
+func TestMilitaryResponsibleGainsExperienceWhenMilitaryBonusApplies(t *testing.T) {
+	const fid faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_military", Type: army.CharacterTypeCharacter, OwnerID: string(fid), Name: "Marshal",
+	}
+	gs := &state.GameState{
+		Turn:            1,
+		Year:            300,
+		Month:           1,
+		PlayerFactionID: fid,
+		Factions:        map[faction.FactionID]*faction.Faction{fid: {ID: fid, Gold: 1000, Grain: 100}},
+		Commanders:      map[string]*army.Commander{character.ID: character},
+		CouncilConfig:   scenario.DefaultCharacterCouncilConfig(),
+	}
+	if !gs.AssignCharacterToCouncilRole(fid, character.ID, state.CouncilRoleMilitaryResponsible) {
+		t.Fatal("military responsible assignment failed")
+	}
+
+	gs.RecordCouncilBattleExperience(fid)
+	if got := gs.CouncilMilitaryPowerMod(fid); math.Abs(got-1.02) > 1e-9 {
+		t.Fatalf("military power mod without military trait = %.2f, want 1.02", got)
+	}
+	if character.CouncilExperience != scenario.DefaultCouncilXPPerEffect {
+		t.Fatalf("military responsible experience = %d, want effect XP %d", character.CouncilExperience, scenario.DefaultCouncilXPPerEffect)
+	}
+}
+
+func TestPlayerResearchUsesCouncilResearchSpeed(t *testing.T) {
+	const fid faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_scientist", Type: army.CharacterTypeCharacter, OwnerID: string(fid), Name: "Scientist",
+	}
+	gs := &state.GameState{
+		Year:            1,
+		PlayerFactionID: fid,
+		Factions:        map[faction.FactionID]*faction.Faction{fid: {ID: fid, Gold: 100}},
+		Commanders:      map[string]*army.Commander{character.ID: character},
+		TechTypes: map[string]*tech.Technology{
+			"writing": {ID: "writing", NameTR: "Yazı", TurnsRequired: 10},
+		},
+		CouncilConfig: scenario.CharacterCouncilConfig{
+			Roles: []scenario.CouncilRoleDefinition{{
+				ID: state.CouncilRoleResearchResponsible, NameTR: "Bilim Sorumlusu",
+				Effects: scenario.CouncilEffects{ResearchSpeedMod: 2},
+			}},
+		},
+	}
+	if !gs.AssignCharacterToCouncilRole(fid, character.ID, state.CouncilRoleResearchResponsible) {
+		t.Fatal("could not assign research responsible")
+	}
+
+	game := &Game{gs: gs, renderer: &render.Renderer{}}
+	game.startResearch("writing")
+	if got := gs.Factions[fid].Research.TurnsLeft; got != 5 {
+		t.Fatalf("research turns left with council speed = %d, want 5", got)
+	}
+	if character.CouncilExperience != scenario.DefaultCouncilXPPerEffect {
+		t.Fatalf("research responsible XP = %d, want %d", character.CouncilExperience, scenario.DefaultCouncilXPPerEffect)
 	}
 }

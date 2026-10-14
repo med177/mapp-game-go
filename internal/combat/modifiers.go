@@ -14,6 +14,8 @@ func TechModsFor(gs *state.GameState, ownerID string) TechMods {
 	mods := TechMods{
 		LandOrganizationMod: -float64(gs.ArmyOrganizationPenaltyPercent(faction.FactionID(ownerID))) / 100.0,
 	}
+	mods.CouncilPowerMod = gs.CouncilMilitaryPowerMod(faction.FactionID(ownerID)) - 1
+	mods.CommanderPowerMod = gs.CouncilCommanderPowerMod(faction.FactionID(ownerID)) - 1
 	f, ok := gs.Factions[faction.FactionID(ownerID)]
 	if !ok || f == nil || gs.TechTypes == nil {
 		return mods

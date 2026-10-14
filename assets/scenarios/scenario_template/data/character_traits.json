@@ -1,0 +1,36 @@
+{
+  "traits": {
+    "veteran": {
+      "name_tr": "Gazi",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "tactician": {
+      "name_tr": "Taktisyen",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.02
+        }
+      }
+    },
+    "defender": {
+      "name_tr": "Savunmacı",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "aggressor": {
+      "name_tr": "Saldırgan",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    }
+  }
+}

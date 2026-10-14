@@ -32,8 +32,10 @@ func aiResearchWithStrategicContextAndSteps(gs *state.GameState, fid faction.Fac
 		return
 	}
 	researchEffects := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
+	researchEffects.ResearchSpeedMod += gs.CouncilResearchSpeedMod(fid)
 	researchCost := tech.EffectiveResearchGoldCost(best, researchEffects.ResearchCostMod)
 	if tech.StartResearchWithModifiers(&f.Research, best, &f.Gold, researchEffects.ResearchSpeedMod, researchEffects.ResearchCostMod) {
+		gs.RecordCouncilEffectExperience(fid, "research_speed_mod")
 		if budget != nil {
 			budget.consume(aiBudgetResearch, researchCost)
 		}

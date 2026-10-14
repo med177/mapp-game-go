@@ -90,11 +90,6 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 			status.CapitalIncome += operatorCapital
 		}
 	}
-	for ownerID, taxIncome := range taxIncomeByFaction {
-		baseIncomeByFaction[ownerID] += gs.TreasurerTaxIncomeBonus(ownerID, taxIncome)
-	}
-	status.TaxIncome += gs.TreasurerTaxIncomeBonus(fid, taxIncomeByFaction[fid])
-
 	blockadeLoot := gs.BlockadeLootForFaction(fid).Gold
 	status.BlockadeIncome = blockadeLoot
 	if period, ok := gs.Factions[fid].OtherIncomePeriodAt(gs.Year, gs.Month); ok {
@@ -205,9 +200,13 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 			status.TributeIncome += tributePreview(gs, childID, tributeBaseIncome(gs, childID, baseIncomeByFaction[childID]))
 		}
 	}
+	councilIncomeBase := status.Income + status.TradePowerIncome + status.MerchantTradeIncome +
+		status.TradeRouteIncome + status.TradeRouteCustomsIncome + status.PrivilegedTradeIncome +
+		status.PrivilegeIncome + status.TributeIncome
+	status.CouncilIncome = gs.CouncilIncomeBonus(fid, councilIncomeBase)
 	status.Upkeep = gs.FactionGoldUpkeep(fid)
 	status.BuildingUpkeep = gs.FactionBuildingGoldUpkeep(fid)
-	status.NetChange = status.Income + status.TradePowerIncome + status.MerchantTradeIncome + status.TradeRouteIncome - status.TradeRouteExpense + status.TradeRouteCustomsIncome + status.PrivilegedTradeIncome + status.PrivilegeIncome + status.TributeIncome - status.TributePaid - status.Upkeep - status.BuildingUpkeep
+	status.NetChange = status.Income + status.CouncilIncome + status.TradePowerIncome + status.MerchantTradeIncome + status.TradeRouteIncome - status.TradeRouteExpense + status.TradeRouteCustomsIncome + status.PrivilegedTradeIncome + status.PrivilegeIncome + status.TributeIncome - status.TributePaid - status.Upkeep - status.BuildingUpkeep
 	return status
 }
 
@@ -231,7 +230,8 @@ func tributeBaseIncome(gs *state.GameState, fid faction.FactionID, base int) int
 	if owner := gs.Factions[fid]; owner != nil && gs.TechTypes != nil {
 		base += tech.ComputeEffects(owner.Research.Completed, gs.TechTypes).GoldPerRegion * len(gs.RegionsOwnedBy(fid))
 	}
-	return base + gs.BlockadeLootForFaction(fid).Gold
+	base += gs.BlockadeLootForFaction(fid).Gold
+	return base + gs.CouncilIncomeBonus(fid, base)
 }
 
 func tributePreview(gs *state.GameState, fid faction.FactionID, income int) int {
@@ -460,83 +460,10 @@ func GoldIncomeForFaction(gs *state.GameState, fid faction.FactionID) int {
 	if gs == nil || fid == "" || gs.Factions[fid] == nil {
 		return 0
 	}
-
-	income := gs.Factions[fid].OtherIncomeAt(gs.Year, gs.Month)
-	taxIncomeForFaction := 0
-	season := gs.CurrentSeason()
-	seasonMod := season.TradeMod()
-	harvestMod := season.HarvestMod()
-	var fx tech.Effects
-	if gs.TechTypes != nil {
-		fx = tech.ComputeEffects(gs.Factions[fid].Research.Completed, gs.TechTypes)
-	}
-	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.IsTerrainArea || region.OwnerID == "" || gs.SiegeAt(region.ID) != nil {
-			continue
-		}
-		goldMod := 1.0
-		for _, bid := range region.Buildings {
-			if building, ok := gs.BuildingTypes[bid]; ok {
-				goldMod *= building.GoldMod
-			}
-		}
-		retention := gs.RegionBlockadeOutputRetentionPercent(region)
-		taxIncome := state.ScaleBlockadeOutputForEconomy(int(float64(region.GoldIncome())*goldMod*float64(harvestMod)/100), retention)
-		tradeIncome := gs.BaseRegionTradeIncome(region)
-		tradeIncome = tradeIncome * seasonMod / 100
-		tradeIncome = state.ScaleBlockadeOutputForEconomy(tradeIncome, retention)
-		if fx.MarketGoldMod != 0 {
-			tradeIncome = int(float64(tradeIncome) * (1.0 + fx.MarketGoldMod))
-		}
-		regionIncome := taxIncome + tradeIncome
-		sovereignShare, operatorShare := gs.RegionIncomeShares(region, regionIncome)
-		if gs.SovereignOwnerID(region) == string(fid) {
-			income += sovereignShare
-		}
-		if region.OwnerID == string(fid) {
-			income += operatorShare
-		}
-		sovereignTaxShare, operatorTaxShare := gs.RegionIncomeShares(region, taxIncome)
-		if gs.SovereignOwnerID(region) == string(fid) {
-			taxIncomeForFaction += sovereignTaxShare
-		}
-		if region.OwnerID == string(fid) {
-			taxIncomeForFaction += operatorTaxShare
-		}
-	}
-	income += gs.TreasurerTaxIncomeBonus(fid, taxIncomeForFaction)
-	loot := gs.BlockadeLootForFaction(fid)
-	income += loot.Gold
-	income += gs.HistoricalTradeIncomeForFaction(fid)
-
-	for _, route := range gs.TradeRoutes {
-		if route == nil {
-			continue
-		}
-		if route.IsPrivilegedMinor {
-			sovereignID, operatorID, ok := gs.PrivilegedTradeParticipants(route.FromFactionID, route.ToFactionID)
-			if !ok {
-				continue
-			}
-			value := gs.PrivilegedTradeRouteValue(route, gs.MerchantTradeRouteEffectiveAmount(route))
-			if operatorID == string(fid) {
-				income += value
-			}
-			if sovereignID == string(fid) {
-				income += state.PrivilegedTradeRoyalty(value)
-			}
-			continue
-		}
-		if route.FromFactionID == string(fid) {
-			income += route.GoldEarned()
-		}
-	}
-
-	if gs.TechTypes != nil {
-		income += fx.GoldPerRegion * len(gs.RegionsOwnedBy(fid))
-	}
-
-	return max(income, 0)
+	status := GoldEconomyPreview(gs, fid)
+	return max(status.Income+status.CouncilIncome+status.TradePowerIncome+status.MerchantTradeIncome+
+		status.TradeRouteIncome+status.TradeRouteCustomsIncome+status.PrivilegedTradeIncome+
+		status.PrivilegeIncome+status.TributeIncome, 0)
 }
 
 func max(a, b int) int {

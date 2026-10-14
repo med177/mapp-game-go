@@ -1119,19 +1119,20 @@ bölgede ardıl fraksiyon hâlâ aktifse `CanRestoreSuccessorAtRegion()` false o
 AI vassallık kararı uygulanmadan doğrudan ilhak akışı korunur.
 
 `TakeTurn` sırasıyla şu adımları yapar:
-1. Zorluk 3 ise → `FormCoalitionAgainstRapidExpansion()`
-2. Diplomasi taraması ve fırsatçı savaş değerlendirmesi → `aiHandleDiplomacy()`
-3. Teknoloji araştırma → `aiResearch()`
-4. Ekonomik bina inşası → `aiEconomyBuild()`
-5. Deniz stratejisi → `aiNavalStrategy()`
-6. Birim alımı + kışla inşası → `aiRecruitAndBuild()`
-7. Ordu konsolidasyonu → `aiConsolidateArmies()`
-8. Komutan havuzu üretimi ve boşta kalan saha ordularına atama → `EnsureFactionCommanders()`
-9. Ordu hareketi → `moveArmy()` (her ordu için)
+1. Tarafsız aday havuzundan boş konsey koltuğu için en fazla bir karakter alma → `aiManageNeutralCharacters()`
+2. Zorluk 3 ise → `FormCoalitionAgainstRapidExpansion()`
+3. Diplomasi taraması ve fırsatçı savaş değerlendirmesi → `aiHandleDiplomacy()`
+4. Teknoloji araştırma → `aiResearch()`
+5. Ekonomik bina inşası → `aiEconomyBuild()`
+6. Deniz stratejisi → `aiNavalStrategy()`
+7. Birim alımı + kışla inşası → `aiRecruitAndBuild()`
+8. Ordu konsolidasyonu → `aiConsolidateArmies()`
+9. Komutan havuzu üretimi ve boşta kalan saha ordularına atama → `EnsureFactionCommanders()`
+10. Ordu hareketi → `moveArmy()` (her ordu için)
 
 `TurnStepper` aynı zinciri iki faza ayırır:
 
-1. `runTurnPrelude()` — diplomasi, araştırma, ekonomi, deniz, recruit/build, konsolidasyon ve komutan ataması
+1. `runTurnPrelude()` — tarafsız karakter alımı, diplomasi, araştırma, ekonomi, deniz, recruit/build, konsolidasyon ve komutan ataması
 2. Hareket fazı — her `Step()` çağrısı tek bir `executeMove()` sonucu döndürür
 
 Bu step sonucu `TurnStep{Kind, FocusRegion, Message}` biçimindedir. Oyun katmanı:

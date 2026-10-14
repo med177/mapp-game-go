@@ -764,6 +764,9 @@ func applyRelationImprovement(gs *state.GameState, actor, target faction.Faction
 	}
 	EnsureRelation(gs, actor, target)
 	AddRelationScoreBoth(gs, actor, target, delta)
+	if sourceLabel == "diplomatik heyet" {
+		gs.RecordCouncilEffectExperience(actor, "relation_bonus_points")
+	}
 	return Result{
 		Accepted: true,
 		Applied:  true,

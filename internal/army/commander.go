@@ -12,6 +12,9 @@ const (
 	CharacterTypeCharacter     CharacterType = "character"
 )
 
+// CouncilRoleMilitaryResponsible allows its holder to command an army while serving.
+const CouncilRoleMilitaryResponsible = "military_responsible"
+
 // IsValid, karakter tipinin desteklenen değerlerden biri olup olmadığını söyler.
 func (t CharacterType) IsValid() bool {
 	switch t {
@@ -78,6 +81,8 @@ type Commander struct {
 	OwnerID                     string                       `json:"owner_id"`
 	AssignedArmyID              ArmyID                       `json:"assigned_army_id,omitempty"`
 	AssignedCouncilRole         string                       `json:"assigned_council_role,omitempty"`
+	CouncilLevel                int                          `json:"council_level,omitempty"`
+	CouncilExperience           int                          `json:"council_experience,omitempty"`
 	Name                        string                       `json:"name"`
 	PortraitAsset               string                       `json:"portrait_asset,omitempty"`
 	Level                       int                          `json:"level"`
@@ -149,7 +154,49 @@ func (c *Commander) Normalize() {
 	if c.Victories > c.Battles {
 		c.Victories = c.Battles
 	}
+	c.NormalizeCouncilProgress()
 	c.syncProgression(nil)
+}
+
+func (c *Commander) NormalizeCouncilProgress() {
+	if c == nil {
+		return
+	}
+	if c.CouncilExperience < 0 {
+		c.CouncilExperience = 0
+	}
+	if c.CouncilLevel > 0 || c.CouncilExperience > 0 {
+		c.CouncilLevel = CouncilLevelForExperience(c.CouncilExperience)
+	}
+}
+
+func CouncilLevelForExperience(experience int) int {
+	switch {
+	case experience >= CommanderLevel5XP:
+		return 5
+	case experience >= CommanderLevel4XP:
+		return 4
+	case experience >= CommanderLevel3XP:
+		return 3
+	case experience >= CommanderLevel2XP:
+		return 2
+	default:
+		return CommanderStartingLevel
+	}
+}
+
+func (c *Commander) RecordCouncilExperience(amount int) (previousLevel, currentLevel int) {
+	if c == nil || amount <= 0 {
+		return 0, 0
+	}
+	c.NormalizeCouncilProgress()
+	previousLevel = c.CouncilLevel
+	if previousLevel == 0 {
+		previousLevel = CommanderStartingLevel
+	}
+	c.CouncilExperience += amount
+	c.CouncilLevel = CouncilLevelForExperience(c.CouncilExperience)
+	return previousLevel, c.CouncilLevel
 }
 
 // RecordBattle komutanın katıldığı bir savaşı kariyerine işler.

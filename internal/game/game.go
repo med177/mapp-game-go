@@ -1428,6 +1428,7 @@ func (g *Game) resolveTurn() {
 	// otomatik imtiyaz rotalarını ekonomi çalışmadan önce güncelle.
 	diplomacy.EnsurePrivilegedMinorTradeRoutes(g.gs)
 	economyReport := applyEconomyTick(g.gs)
+	g.gs.RecordCouncilTurnExperience()
 	navalVoyageAlerts := applyEmbarkedVoyageAttrition(g.gs)
 	completedTechs := applyTechTicks(g.gs)
 	productionResults := g.applyProductionTicks()
@@ -4915,6 +4916,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 	commanderCaptureChanceOnDefeat := state.DefaultCommanderCaptureChanceOnDefeat
 	commanderRansomGold := state.DefaultCommanderRansomGold
 	var victoryOpts []scenario.VictoryOptionDef
+	characterCouncilConfig := scenario.DefaultCharacterCouncilConfig()
 	if sc != nil {
 		year = sc.Year
 		month = sc.Month
@@ -4934,6 +4936,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		}
 		diplomacyConfig = sc.Diplomacy.WithDefaults()
 		victoryOpts = sc.VictoryConditions
+		characterCouncilConfig = sc.CharacterCouncil
 	}
 
 	gs := &state.GameState{
@@ -4957,6 +4960,7 @@ func loadScenarioDataForMode(scenarioPath string, difficulty int, editMode bool,
 		CommanderCaptureChanceOnDefeat: commanderCaptureChanceOnDefeat,
 		CommanderRansomGold:            commanderRansomGold,
 		DiplomacyConfig:                diplomacyConfig,
+		CouncilConfig:                  characterCouncilConfig,
 		AirspaceEnabled:                sc.Airspace.Enabled,
 		UndeadMechanics:                sc.UndeadMechanics.WithDefaults(),
 		FactionLore:                    factionLore,
@@ -5873,6 +5877,7 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 			g.gs.IsCoreRegion(faction.FactionID(fleet.OwnerID), targetRegion.ID),
 			g.gs.IsCoreRegion(faction.FactionID(enemyArmy.OwnerID), targetRegion.ID))
 		result := combat.ResolveBattleWithContextPlan(landing, enemyArmy, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextAmphibious, battleStance)
+		g.gs.RecordCouncilBattleExperience(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID))
 		g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost, landing.IsNaval, enemyArmy.IsNaval, len(landing.Units) == 0, len(enemyArmy.Units) == 0)
 		g.recordCommanderBattle(landing, enemyArmy, nil, result.AttackerWins)
 		fleet.EmbarkedUnits = fleet.EmbarkedUnits[:0]
@@ -6752,6 +6757,7 @@ func (g *Game) resolveSortieMovement(a *army.Army, target *world.Region, stance 
 	// nedeniyle huruç savaşında küçük bir savunma bonusu korur.
 	defMods.DefenseMod += 0.10
 	result := combat.ResolveBattleWithContextPlan(a, siegeArmy, sourceRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, stance)
+	g.gs.RecordCouncilBattleExperience(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID))
 	g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, siegeArmy.IsNaval, len(a.Units) == 0, len(siegeArmy.Units) == 0)
 	g.recordCommanderBattle(a, siegeArmy, nil, result.AttackerWins)
 
@@ -7339,6 +7345,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 			defMods.NavalDefenseMod += g.gs.NavalEscortDefenseBonus(defSourceIDs, target)
 		}
 		result := combat.ResolveBattleWithContactDefense(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance, contactAttackerHolding, contactDefenderHolding)
+		g.gs.RecordCouncilBattleExperience(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID))
 		defenderDestroyed := len(combinedDef.Units) == 0
 		g.gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(defOwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, combinedDef.IsNaval, len(a.Units) == 0, defenderDestroyed)
 		g.recordCommanderBattle(a, combinedDef, defSourceIDs, result.AttackerWins)
@@ -7861,6 +7868,7 @@ func (g *Game) startResearch(techID string) {
 		return
 	}
 	researchEffects := tech.ComputeEffects(f.Research.Completed, g.gs.TechTypes)
+	researchEffects.ResearchSpeedMod += g.gs.CouncilResearchSpeedMod(f.ID)
 	researchCost := tech.EffectiveResearchGoldCost(t, researchEffects.ResearchCostMod)
 	if !canResume && f.Gold < researchCost {
 		g.renderer.ShowCombatResult("Araştırma başlatılamadı. Altın veya gereksinim eksik.")
@@ -7871,6 +7879,9 @@ func (g *Game) startResearch(techID string) {
 	}
 	if tech.StartResearchWithModifiers(&f.Research, t, &f.Gold, researchEffects.ResearchSpeedMod, researchEffects.ResearchCostMod) {
 		f.Research.AutoStartDisabled = false
+		if !canResume {
+			g.gs.RecordCouncilEffectExperience(f.ID, "research_speed_mod")
+		}
 		if canResume {
 			g.renderer.ShowCombatResult(t.NameTR + " araştırması kaldığı yerden devam ediyor! (" + fmt.Sprintf("%d tur kaldı", f.Research.TurnsLeft) + ")")
 		} else {

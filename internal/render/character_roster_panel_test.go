@@ -1,11 +1,13 @@
 package render
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 )
@@ -38,9 +40,13 @@ func TestCharacterRosterPortraitMatchesCommanderPortraitSize(t *testing.T) {
 
 func TestCharacterRosterViewportsReserveScrollbarGutter(t *testing.T) {
 	column := gameui.Rect{X: 20, Y: 30, W: 240, H: 400}
+	candidateViewport := characterRosterListViewport(column)
+	if candidateViewport.Y != column.Y+34+32+8 {
+		t.Fatalf("candidate list starts at y=%.0f, want 8px below the description at y=%.0f", candidateViewport.Y, column.Y+34+32+8)
+	}
 	for name, viewport := range map[string]gameui.Rect{
 		"owned":      characterRosterOwnedListViewport(column),
-		"candidates": characterRosterListViewport(column),
+		"candidates": candidateViewport,
 	} {
 		track := characterRosterScrollbarTrack(viewport)
 		row := characterRosterRowRect(viewport, 0)
@@ -58,20 +64,50 @@ func TestCharacterRosterAssignedAndUnassignedRowsHaveDividerGap(t *testing.T) {
 	assigned := &army.Commander{AssignedCouncilRole: state.CouncilRoleTreasurer}
 	unassigned := &army.Commander{}
 	rows := []*army.Commander{assigned, unassigned}
-	current := characterRosterRowRect(viewport, 1)
-	dividerY, showDivider := characterRosterDutyGroupDividerY(rows, 1, current)
+	previous := characterRosterOwnedRowRect(viewport, 0, 0, rows)
+	current := characterRosterOwnedRowRect(viewport, 1, 0, rows)
+	dividerY, showDivider := characterRosterDutyGroupDividerY(viewport, rows, 1, 0)
 	if !showDivider {
 		t.Fatal("assigned-to-unassigned transition should show a divider")
 	}
-	previous := characterRosterRowRect(viewport, 0)
-	if dividerY <= previous.Y+previous.H || dividerY >= current.Y {
-		t.Fatalf("group divider y=%.0f should fit in the gap between assigned row %v and unassigned row %v", dividerY, previous, current)
+	if above, below := dividerY-(previous.Y+previous.H), current.Y-dividerY; above < characterRosterDutyGroupPad || below < characterRosterDutyGroupPad {
+		t.Fatalf("group divider spacing = %.0f above / %.0f below, want at least %.0f on both sides", above, below, characterRosterDutyGroupPad)
 	}
-	if _, showDivider := characterRosterDutyGroupDividerY([]*army.Commander{unassigned, unassigned}, 1, current); showDivider {
+	if current.Y-previous.Y != characterRosterRowH+characterRosterDutyGroupGap {
+		t.Fatalf("row pitch across groups = %.0f, want base pitch %.0f plus group gap %.0f", current.Y-previous.Y, characterRosterRowH, characterRosterDutyGroupGap)
+	}
+	if _, showDivider := characterRosterDutyGroupDividerY(viewport, []*army.Commander{unassigned, unassigned}, 1, 0); showDivider {
 		t.Fatal("unassigned-to-unassigned rows should not show a divider")
 	}
 	if assigned.AssignedCouncilRole == "" || unassigned.AssignedCouncilRole != "" {
 		t.Fatal("test rows do not represent assigned and unassigned council duties")
+	}
+}
+
+func TestCharacterRosterOwnedRowsKeepSpacingAndScrollGeometryAligned(t *testing.T) {
+	viewport := gameui.Rect{X: 20, Y: 40, W: 200, H: 450}
+	characters := []*army.Commander{
+		{ID: "assigned", AssignedCouncilRole: state.CouncilRoleTreasurer},
+		{ID: "free1"},
+		{ID: "free2"},
+		{ID: "free3"},
+	}
+	firstFree := characterRosterOwnedRowRect(viewport, 1, 0, characters)
+	secondFree := characterRosterOwnedRowRect(viewport, 2, 0, characters)
+	if secondFree.Y-firstFree.Y != characterRosterRowH {
+		t.Fatalf("rows in same group have pitch %.0f, want %.0f", secondFree.Y-firstFree.Y, characterRosterRowH)
+	}
+	scrolledFirst := characterRosterOwnedRowRect(viewport, 1, 1, characters)
+	if scrolledFirst.Y != viewport.Y {
+		t.Fatalf("first scrolled row y=%.0f, want viewport top %.0f", scrolledFirst.Y, viewport.Y)
+	}
+	if got := characterRosterOwnedRowAt(firstFree.X+1, firstFree.Y+1, characters, 0, viewport); got != 1 {
+		t.Fatalf("hit on first unassigned row = %d, want 1", got)
+	}
+	maxScroll := characterRosterMaxOwnedScroll(viewport, characters)
+	lastRow := characterRosterOwnedRowRect(viewport, len(characters)-1, maxScroll, characters)
+	if lastRow.Y+lastRow.H > viewport.Y+viewport.H {
+		t.Fatalf("last row %v is clipped at max owned scroll %d in viewport %v", lastRow, maxScroll, viewport)
 	}
 }
 
@@ -175,9 +211,96 @@ func TestCharacterRosterColumnsGiveCandidatesMoreCardWidth(t *testing.T) {
 	}
 }
 
+func TestCharacterRosterPanelWidensOwnedCardsAndReducesHeight(t *testing.T) {
+	originalWidth, originalHeight := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = originalWidth, originalHeight
+	}()
+	ScreenWidth, ScreenHeight = 1680, 1200
+
+	base := activeWarsPanelRect()
+	panel := characterRosterPanelRect()
+	owned, _ := characterRosterColumns()
+	baseOwnedWidth := (base.W - 2*characterRosterPanelPad - characterRosterColumnGap) * 0.5
+	if panel.W-base.W != 40 || baseOwnedWidth+40 != owned.W {
+		t.Fatalf("panel/card width increase = %.0f/%.0f, want 40/40", panel.W-base.W, owned.W-baseOwnedWidth)
+	}
+	if panel.H != 880 {
+		t.Fatalf("character roster panel height = %.0f, want 880 (60px below the prior 940px)", panel.H)
+	}
+}
+
+func TestCharacterCouncilEffectLabelsUseOneLinePerBonus(t *testing.T) {
+	effects := scenario.CouncilEffects{
+		SatisfactionPoints: 1,
+		MilitaryPowerMod:   1.03,
+		CommanderPowerMod:  1.02,
+	}
+	got := characterCouncilEffectsLinesTR(effects)
+	want := []string{"Memnuniyet +1", "Askerî güç +%3", "Komuta gücü +%2"}
+	if len(got) != len(want) {
+		t.Fatalf("council bonus lines = %v, want %v", got, want)
+	}
+	for index := range want {
+		if got[index] != want[index] {
+			t.Fatalf("council bonus line %d = %q, want %q", index, got[index], want[index])
+		}
+	}
+}
+
+func TestCharacterCouncilEffectLabelsFormatPenaltiesAsNegative(t *testing.T) {
+	effects := scenario.CouncilEffects{
+		SatisfactionPoints:  -1,
+		MilitaryPowerMod:    0.98,
+		RelationBonusPoints: -2,
+	}
+	got := characterCouncilEffectsLinesTR(effects)
+	want := []string{"Memnuniyet -1", "Askerî güç -%2", "Heyet -2"}
+	if len(got) != len(want) {
+		t.Fatalf("council penalty lines = %v, want %v", got, want)
+	}
+	for index := range want {
+		if got[index] != want[index] {
+			t.Fatalf("council penalty line %d = %q, want %q", index, got[index], want[index])
+		}
+	}
+}
+
+func TestCharacterRosterPanelFitsThreeUnassignedRowsBelowAssignedGroup(t *testing.T) {
+	originalHeight := ScreenHeight
+	defer func() { ScreenHeight = originalHeight }()
+	ScreenHeight = 1200
+
+	panel := characterRosterPanelRect()
+	if panel.H <= activeWarsPanelRect().H {
+		t.Fatalf("character roster panel height %.0f should exceed active wars panel height %.0f", panel.H, activeWarsPanelRect().H)
+	}
+	ownedColumn, _ := characterRosterColumns()
+	viewport := characterRosterOwnedListViewport(ownedColumn)
+	characters := []*army.Commander{
+		{AssignedCouncilRole: state.CouncilRoleHeadOfHouse},
+		{AssignedCouncilRole: state.CouncilRoleTreasurer},
+		{AssignedCouncilRole: state.CouncilRoleDiplomat},
+		{},
+		{},
+		{},
+	}
+	visibleRows := characterRosterOwnedVisibleRows(viewport, characters, 0)
+	unassignedVisible := 0
+	for index := 0; index < visibleRows; index++ {
+		if characters[index].AssignedCouncilRole == "" {
+			unassignedVisible++
+		}
+	}
+	if unassignedVisible < 3 {
+		t.Fatalf("visible unassigned rows = %d, want at least 3 (panel=%v viewport=%v)", unassignedVisible, panel, viewport)
+	}
+}
+
 func TestCharacterDutyActionsAndAssignmentMenuStayInRosterCard(t *testing.T) {
 	ownedColumn, _ := characterRosterColumns()
 	ownedViewport := characterRosterOwnedListViewport(ownedColumn)
+	roles := scenario.DefaultCharacterCouncilConfig().Roles
 	if ownedViewport.Y != ownedColumn.Y+34 {
 		t.Fatalf("owned roster starts at y=%.0f, want directly below header at %.0f", ownedViewport.Y, ownedColumn.Y+34)
 	}
@@ -190,12 +313,12 @@ func TestCharacterDutyActionsAndAssignmentMenuStayInRosterCard(t *testing.T) {
 		assignedButton.W != unassignedButton.W || assignedButton.H != unassignedButton.H {
 		t.Fatalf("remove-duty button = %+v, want Ata-sized text-only Kaldır button", assignedButton)
 	}
-	menu := characterRosterAssignmentMenuRect(ownedColumn, 0, 0)
+	menu := characterRosterAssignmentMenuRectWithCount(ownedColumn, 0, 0, len(roles))
 	if menu.Y != unassignedButton.Y+unassignedButton.H+4 {
 		t.Fatalf("assignment menu y=%.0f, want immediately below Ata button at %.0f", menu.Y, unassignedButton.Y+unassignedButton.H+4)
 	}
-	for optionIndex := range characterCouncilRoleIDs {
-		option := characterRosterAssignmentOptionButton(ownedColumn, 0, 0, optionIndex)
+	for optionIndex, role := range roles {
+		option := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, 0, optionIndex, len(roles), role.NameTR)
 		if option.X < menu.X || option.X+option.W > menu.X+menu.W ||
 			option.Y < menu.Y || option.Y+option.H > menu.Y+menu.H {
 			t.Fatalf("assignment option %d = %+v, outside menu %v", optionIndex, option, menu)
@@ -211,17 +334,8 @@ func TestCharacterDutyActionsAndAssignmentMenuStayInRosterCard(t *testing.T) {
 		t.Fatalf("duty detail rect %v should use the full card width below the remove button %v", detail, assignedButton)
 	}
 
-	wantRoleLabels := []string{"Lider", "Hazinedar", "Diplomat", "Veliaht", "Serasker"}
-	if len(characterCouncilRoleIDs) != len(wantRoleLabels) {
-		t.Fatalf("council role count = %d, want %d", len(characterCouncilRoleIDs), len(wantRoleLabels))
-	}
-	for index, wantLabel := range wantRoleLabels {
-		if got := characterCouncilRoleNameTR(characterCouncilRoleIDs[index]); got != wantLabel {
-			t.Errorf("council role %q label = %q, want %q", characterCouncilRoleIDs[index], got, wantLabel)
-		}
-	}
-	lastOption := characterRosterAssignmentOptionButton(ownedColumn, 0, 0, len(characterCouncilRoleIDs)-1)
-	if lastOption.Label != "Serasker" || lastOption.Y+lastOption.H > menu.Y+menu.H {
+	lastOption := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, 0, len(roles)-1, len(roles), roles[len(roles)-1].NameTR)
+	if lastOption.Label != roles[len(roles)-1].NameTR || lastOption.Y+lastOption.H > menu.Y+menu.H {
 		t.Fatalf("last council role option = %+v, outside expanded menu %v", lastOption, menu)
 	}
 }
@@ -313,6 +427,7 @@ func TestCharacterRosterTreasurerSeatAndAssignmentButtonAreInteractive(t *testin
 	r.OpenCharacterRosterPanel()
 	ownedColumn, _ := characterRosterColumns()
 	viewport := characterRosterOwnedListViewport(ownedColumn)
+	roles := characterCouncilRoles(r.gs)
 	assign := characterCouncilAssignButton(ownedColumn, 0, 0)
 	if assign.Label != "Ata" {
 		t.Fatalf("assignment button label = %q, want Ata", assign.Label)
@@ -321,15 +436,15 @@ func TestCharacterRosterTreasurerSeatAndAssignmentButtonAreInteractive(t *testin
 		t.Fatal("eligible administrator's council assignment button is not interactive")
 	}
 	r.characterRosterAssignMenuID = character.ID
-	for optionIndex, role := range characterCouncilRoleIDs {
-		option := characterRosterAssignmentOptionButton(ownedColumn, 0, 0, optionIndex)
-		menu := characterRosterAssignmentMenuRect(ownedColumn, 0, 0)
-		if option.Label != characterCouncilRoleNameTR(role) ||
+	for optionIndex, role := range roles {
+		option := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, 0, optionIndex, len(roles), role.NameTR)
+		menu := characterRosterAssignmentMenuRectWithCount(ownedColumn, 0, 0, len(roles))
+		if option.Label != role.NameTR ||
 			option.X < menu.X || option.X+option.W > menu.X+menu.W ||
 			option.Y < menu.Y || option.Y+option.H > menu.Y+menu.H {
 			t.Fatalf("assignment option %d = %+v, outside menu %v", optionIndex, option, menu)
 		}
-		if got := characterRosterAssignmentOptionAt(option.X+option.W/2, option.Y+option.H/2, ownedColumn, 0, 0); got != optionIndex {
+		if got := characterRosterAssignmentOptionAtForRoles(option.X+option.W/2, option.Y+option.H/2, ownedColumn, 0, 0, roles); got != optionIndex {
 			t.Fatalf("assignment option hit = %d, want %d", got, optionIndex)
 		}
 		if !r.characterRosterPanelHovering(option.X+option.W/2, option.Y+option.H/2) {
@@ -350,9 +465,8 @@ func TestCharacterRosterTreasurerSeatAndAssignmentButtonAreInteractive(t *testin
 	if r.characterRosterPanelHovering(release.X+release.W/2, release.Y+release.H/2) {
 		t.Fatal("assigned treasurer's haneden çıkarma button should be hidden and non-interactive")
 	}
-	if got := characterCouncilRoleNameTR(character.AssignedCouncilRole); got != "Hazinedar" ||
-		characterCouncilRoleBenefitTR(character.AssignedCouncilRole) != "Vergi geliri +%5" {
-		t.Fatalf("assigned character card role/benefit = %q / %q", got, characterCouncilRoleBenefitTR(character.AssignedCouncilRole))
+	if role, ok := r.gs.CouncilConfig.WithDefaults().Role(character.AssignedCouncilRole); !ok || role.NameTR != "Hazine Sorumlusu" {
+		t.Fatalf("assigned character card role = %+v, found=%t", role, ok)
 	}
 	if got := characterRosterRowAt(removeDuty.X+removeDuty.W/2, removeDuty.Y+removeDuty.H/2, 1, 0, viewport); got != 0 {
 		t.Fatalf("treasurer assignment row index = %d, want 0", got)
@@ -376,6 +490,41 @@ func TestCharacterRosterTreasurerSeatAndAssignmentButtonAreInteractive(t *testin
 	if removeDuty.Label != "Kaldır" || removeDuty.Icon != "" ||
 		!r.characterRosterPanelHovering(removeDuty.X+removeDuty.W/2, removeDuty.Y+removeDuty.H/2) {
 		t.Fatal("assigned head of house's text-only Kaldır button is not interactive")
+	}
+}
+
+func TestCharacterRosterAssignmentMenuUsesScenarioRoles(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_courtier", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Courtier",
+	}
+	roles := []scenario.CouncilRoleDefinition{
+		{ID: "steward", NameTR: "Kâhya"},
+		{ID: "envoy", NameTR: "Elçi"},
+	}
+	r := &Renderer{
+		gs: &state.GameState{
+			Year:            300,
+			PlayerFactionID: owner,
+			Factions:        map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+			Commanders:      map[string]*army.Commander{character.ID: character},
+			CouncilConfig:   scenario.CharacterCouncilConfig{Roles: roles},
+		},
+	}
+	r.OpenCharacterRosterPanel()
+	ownedColumn, _ := characterRosterColumns()
+	assign := characterCouncilAssignButton(ownedColumn, 0, 0, r.characterRosterOwned)
+	if _, handled := handleCharacterRosterPanelClick(r, assign.X+assign.W/2, assign.Y+assign.H/2); !handled ||
+		r.characterRosterAssignMenuID != character.ID {
+		t.Fatal("scenario-configured character assignment menu did not open")
+	}
+	option := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, 0, 1, len(roles), roles[1].NameTR, r.characterRosterOwned)
+	if option.Label != "Elçi" {
+		t.Fatalf("dynamic role option label = %q, want Elçi", option.Label)
+	}
+	action, handled := handleCharacterRosterPanelClick(r, option.X+option.W/2, option.Y+option.H/2)
+	if !handled || action.Kind != ActionAssignCouncilRole || action.CouncilRole != "envoy" {
+		t.Fatalf("scenario role selection = %+v, handled=%t", action, handled)
 	}
 }
 
@@ -419,7 +568,8 @@ func TestCharacterRosterClicksUseRenderedButtonGeometry(t *testing.T) {
 		t.Fatal("Ata click did not reopen assignment menu")
 	}
 
-	option := characterRosterAssignmentOptionButton(ownedColumn, 0, 0, 1)
+	roles := characterCouncilRoles(r.gs)
+	option := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, 0, 1, len(roles), roles[1].NameTR)
 	action, handled := handleCharacterRosterPanelClick(r, option.X+option.W/2, option.Y+option.H/2)
 	if !handled || action.Kind != ActionAssignCouncilRole || action.CharacterID != owned.ID || action.CouncilRole != state.CouncilRoleTreasurer {
 		t.Fatalf("assignment option click = %+v, handled=%t", action, handled)
@@ -441,6 +591,62 @@ func TestCharacterRosterClicksUseRenderedButtonGeometry(t *testing.T) {
 	_, handled = handleCharacterRosterPanelClick(r, adopt.X+adopt.W/2, adopt.Y+adopt.H/2)
 	if !handled || !r.confirmDialog.show {
 		t.Fatalf("candidate join click handled=%t, confirmation visible=%t", handled, r.confirmDialog.show)
+	}
+}
+
+func TestCharacterRosterAssignmentMenuCanExtendOutsidePanel(t *testing.T) {
+	const owner faction.FactionID = "player"
+	r := &Renderer{
+		gs: &state.GameState{
+			Year:            300,
+			PlayerFactionID: owner,
+			Factions:        map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+			Commanders:      make(map[string]*army.Commander),
+		},
+	}
+	ownedColumn, _ := characterRosterColumns()
+	viewport := characterRosterOwnedListViewport(ownedColumn)
+	visibleRows := characterRosterVisibleRows(viewport)
+	for index := 0; index < visibleRows; index++ {
+		id := fmt.Sprintf("chr_%d", index)
+		r.gs.Commanders[id] = &army.Commander{
+			ID: id, Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: id,
+		}
+	}
+	r.OpenCharacterRosterPanel()
+	if len(r.characterRosterOwned) != visibleRows {
+		t.Fatalf("owned roster has %d rows, want %d", len(r.characterRosterOwned), visibleRows)
+	}
+	lastIndex := len(r.characterRosterOwned) - 1
+	character := r.characterRosterOwned[lastIndex]
+	r.characterRosterAssignMenuID = character.ID
+
+	roles := characterCouncilRoles(r.gs)
+	menu := characterRosterAssignmentMenuRectWithCount(ownedColumn, lastIndex, r.characterRosterOwnedScroll, len(roles))
+	if menu.Y+menu.H <= ownedColumn.Y+ownedColumn.H {
+		t.Fatalf("menu %v should extend beyond the owned-character panel ending at y=%.0f", menu, ownedColumn.Y+ownedColumn.H)
+	}
+	option := characterRosterAssignmentOptionButtonForRole(ownedColumn, lastIndex, r.characterRosterOwnedScroll, len(roles)-1, len(roles), roles[len(roles)-1].NameTR)
+	action, handled := handleCharacterRosterOutsideClick(r, option.X+option.W/2, option.Y+option.H/2, true, false)
+	if !handled || action.Kind != ActionAssignCouncilRole ||
+		action.CharacterID != character.ID || action.CouncilRole != roles[len(roles)-1].ID {
+		t.Fatalf("outside-panel menu click = %+v, handled=%t", action, handled)
+	}
+	if len(r.prevMouse) == 0 {
+		t.Fatal("handled menu click was not marked as consumed")
+	}
+}
+
+func TestCharacterRosterOutsideMapClickPassesThrough(t *testing.T) {
+	r := &Renderer{showCharacterRoster: true}
+	panel := characterRosterPanelRect()
+	x, y := panel.X-20, panel.Y+panel.H/2
+
+	if _, handled := handleCharacterRosterOutsideClick(r, x, y, true, false); handled {
+		t.Fatal("map click outside the character roster panel was handled by the panel")
+	}
+	if len(r.prevMouse) != 0 {
+		t.Fatal("unhandled map click was consumed before map selection")
 	}
 }
 

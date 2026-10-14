@@ -247,6 +247,7 @@ func eliminateFaction(gs *state.GameState, fid, successor faction.FactionID) eli
 		delete(gs.Factions, fid)
 		return eliminationResult{}
 	}
+	gs.ReleaseFactionCharactersToNeutralPool(fid)
 	f.IsEliminated = true
 	if successor != "" && successor != fid {
 		gs.MarkFactionSubjugation(successor, fid)
@@ -617,12 +618,6 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		grainByFaction[r.OwnerID] += grain
 
 	}
-	for fid, taxIncome := range taxIncomeByFaction {
-		bonus := gs.TreasurerTaxIncomeBonus(faction.FactionID(fid), taxIncome)
-		taxIncomeByFaction[fid] += bonus
-		incomeByFaction[fid] += bonus
-	}
-
 	// --- Ticaret rotalarını işlet (mal + altın transferi) ---
 	goldBeforeEconomy := make(map[string]int, len(gs.Factions))
 	for fid, f := range gs.Factions {
@@ -723,7 +718,13 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		privilegeIncome := privilegeIncomeByFaction[fidStr]
 		tradePowerIncome := tradePowerIncomeByFaction[fidStr]
 		merchantTradeIncome := merchantTradeIncomeByFaction[fidStr]
-		f.Gold += goldIncome + privilegedTradeIncome + privilegeIncome + tradePowerIncome + merchantTradeIncome
+		councilIncomeBase := goldIncome + privilegedTradeIncome + privilegeIncome + tradePowerIncome + merchantTradeIncome +
+			max(tradeRouteIncomeByFaction[fidStr], 0) + max(tradeRouteCustomsByFaction[fidStr], 0)
+		councilIncome := gs.CouncilIncomeBonus(fid, councilIncomeBase)
+		if councilIncome != 0 {
+			gs.RecordCouncilEffectExperience(fid, "income_mod")
+		}
+		f.Gold += goldIncome + councilIncome + privilegedTradeIncome + privilegeIncome + tradePowerIncome + merchantTradeIncome
 		if f.Gold < 0 {
 			f.Gold = 0
 		}
@@ -742,6 +743,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		goldStatus := state.GoldEconomyStatus{
 			FactionID:               fid,
 			Income:                  goldIncome,
+			CouncilIncome:           councilIncome,
 			TaxIncome:               taxIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
 			OtherIncome:             otherIncome,
 			OtherIncomeDescription:  otherIncomePeriod.Description,
@@ -772,17 +774,24 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			goldStatus.GiftIncome = ledger.GiftIncome
 			goldStatus.GiftExpense = ledger.GiftExpense
 		}
-		goldStatus.NetChange = goldStatus.Income + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.PrivilegedTradeIncome + goldStatus.PrivilegeIncome + goldStatus.TradePowerIncome + goldStatus.MerchantTradeIncome - goldUpkeep - buildingGoldUpkeep
+		goldStatus.NetChange = goldStatus.Income + goldStatus.CouncilIncome + goldStatus.TradeRouteIncome - goldStatus.TradeRouteExpense + goldStatus.TradeRouteCustomsIncome + goldStatus.PrivilegedTradeIncome + goldStatus.PrivilegeIncome + goldStatus.TradePowerIncome + goldStatus.MerchantTradeIncome - goldUpkeep - buildingGoldUpkeep
 		if goldStatus.Shortage > 0 {
 			applyGoldUpkeepShortagePenalty(gs, fidStr, goldStatus.Upkeep, goldStatus.Shortage, &goldStatus)
 		}
 		gs.GoldEconomy[fid] = goldStatus
 		f.Grain = status.Stockpile
+		resourceCouncilMod := gs.CouncilResourceProductionMod(fid)
+		resourceCouncilEffectApplied := resourceCouncilMod != 1 &&
+			(grainByFaction[fidStr] > 0 || ironByFaction[fidStr] > 0 || timberByFaction[fidStr] > 0 ||
+				stoneByFaction[fidStr] > 0 || spiceByFaction[fidStr] > 0 || clothByFaction[fidStr] > 0)
 		f.Iron += int(float64(ironByFaction[fidStr])*(1.0+fx.IronMod)) + loot.Iron + raidLoot.Iron
 		f.Timber += int(float64(timberByFaction[fidStr])*(1.0+fx.TimberMod)) + loot.Timber + raidLoot.Timber
 		f.Stone += int(float64(stoneByFaction[fidStr])*(1.0+fx.StoneMod)) + loot.Stone + raidLoot.Stone
 		f.Spice += spiceByFaction[fidStr] + loot.Spice + raidLoot.Spice
 		f.Cloth += clothByFaction[fidStr] + loot.Cloth + raidLoot.Cloth
+		if resourceCouncilEffectApplied {
+			gs.RecordCouncilEffectExperience(fid, "resource_production_mod")
+		}
 
 		if status.Shortage > 0 {
 			applyGrainShortagePenalty(gs, fidStr, status.Shortage)
@@ -808,12 +817,19 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 	// Vergi, bina, tahıl, teknoloji, savaş, genişleme ve ordu etkilerini tek
 	// delta içinde birleştir. Nihai değer yalnızca burada 0-100 aralığına çekilir.
 	satisfactionCalculator := satisfaction.NewCalculator(gs)
+	satisfactionExperienceRecorded := make(map[faction.FactionID]bool)
 	for _, r := range gs.Regions {
 		if r == nil || r.IsSea || r.OwnerID == "" {
 			continue
 		}
 		breakdown := satisfactionCalculator.ForRegion(r)
-		r.Satisfaction = clamp(r.Satisfaction+breakdown.Total, 0, 100)
+		nextSatisfaction := clamp(r.Satisfaction+breakdown.Total, 0, 100)
+		withoutCouncil := clamp(r.Satisfaction+breakdown.Total-breakdown.Council, 0, 100)
+		if breakdown.Council != 0 && nextSatisfaction != withoutCouncil && !satisfactionExperienceRecorded[faction.FactionID(r.OwnerID)] {
+			gs.RecordCouncilEffectExperience(faction.FactionID(r.OwnerID), "satisfaction_points")
+			satisfactionExperienceRecorded[faction.FactionID(r.OwnerID)] = true
+		}
+		r.Satisfaction = nextSatisfaction
 	}
 	report.PlayerLogisticsAlerts = applyRegionalLogisticsPressure(gs)
 	applyGrainFundedArmyReplenishment(gs)
@@ -844,6 +860,11 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			continue
 		}
 		income := incomeByFaction[string(fid)] + effectsByFaction[string(fid)].GoldPerRegion*len(gs.RegionsOwnedBy(fid)) + gs.BlockadeLootForFaction(fid).Gold
+		incomeCouncilBonus := gs.CouncilIncomeBonus(fid, income)
+		if incomeCouncilBonus != 0 {
+			gs.RecordCouncilEffectExperience(fid, "income_mod")
+		}
+		income += incomeCouncilBonus
 		if income <= 0 {
 			continue
 		}
@@ -859,14 +880,19 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			tribute = f.Gold
 		}
 		f.Gold -= tribute
-		overlord.Gold += tribute
+		overlordCouncilBonus := gs.CouncilIncomeBonus(f.OverlordID, tribute)
+		overlord.Gold += tribute + overlordCouncilBonus
+		if overlordCouncilBonus != 0 {
+			gs.RecordCouncilEffectExperience(f.OverlordID, "income_mod")
+		}
 		vassalStatus := gs.GoldEconomy[fid]
 		vassalStatus.TributePaid += tribute
 		vassalStatus.NetChange -= tribute
 		gs.GoldEconomy[fid] = vassalStatus
 		overlordStatus := gs.GoldEconomy[f.OverlordID]
 		overlordStatus.TributeIncome += tribute
-		overlordStatus.NetChange += tribute
+		overlordStatus.CouncilIncome += overlordCouncilBonus
+		overlordStatus.NetChange += tribute + overlordCouncilBonus
 		gs.GoldEconomy[f.OverlordID] = overlordStatus
 	}
 	for fid, status := range gs.GoldEconomy {

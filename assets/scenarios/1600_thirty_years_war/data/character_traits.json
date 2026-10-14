@@ -1,0 +1,79 @@
+{
+  "traits": {
+    "administrator": {
+      "name_tr": "Yönetici",
+      "council_effects": {
+        "head_of_house": {
+          "satisfaction_points": 1
+        },
+        "treasurer": {
+          "income_mod": 1.01,
+          "resource_production_mod": 1.01
+        }
+      }
+    },
+    "aggressive": {
+      "name_tr": "Saldırgan",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "cavalry": {
+      "name_tr": "Süvari Uzmanı",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "defender": {
+      "name_tr": "Savunmacı",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "diplomat": {
+      "name_tr": "Diplomat",
+      "council_effects": {
+        "diplomat": {
+          "relation_bonus_points": 2
+        }
+      }
+    },
+    "naval": {
+      "name_tr": "Deniz Uzmanı",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "organizer": {
+      "name_tr": "Teşkilatçı",
+      "council_effects": {
+        "head_of_house": {
+          "satisfaction_points": 1
+        },
+        "treasurer": {
+          "income_mod": 1.01,
+          "resource_production_mod": 1.01
+        },
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    },
+    "siege_master": {
+      "name_tr": "Kuşatma Uzmanı",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.01
+        }
+      }
+    }
+  }
+}

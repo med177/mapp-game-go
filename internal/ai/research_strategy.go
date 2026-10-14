@@ -116,6 +116,7 @@ func aiResearchCandidateAvailable(gs *state.GameState, self *faction.Faction, te
 		return false
 	}
 	researchEffects := tech.ComputeEffects(self.Research.Completed, gs.TechTypes)
+	researchEffects.ResearchSpeedMod += gs.CouncilResearchSpeedMod(self.ID)
 	researchCost := tech.EffectiveResearchGoldCost(technology, researchEffects.ResearchCostMod)
 	return aiCanAffordForBudget(self, economy.ResourceCost{Gold: researchCost}, budget, aiBudgetResearch)
 }

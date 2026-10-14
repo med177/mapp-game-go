@@ -231,9 +231,10 @@ type Scenario struct {
 
 	CommanderRansomGold int `json:"commander_ransom_gold,omitempty"`
 
-	Diplomacy       DiplomacyConfig `json:"diplomacy,omitempty"`
-	Airspace        AirspaceConfig  `json:"airspace,omitempty"`
-	UndeadMechanics UndeadMechanics `json:"undead_mechanics,omitempty"`
+	Diplomacy        DiplomacyConfig        `json:"diplomacy,omitempty"`
+	Airspace         AirspaceConfig         `json:"airspace,omitempty"`
+	UndeadMechanics  UndeadMechanics        `json:"undead_mechanics,omitempty"`
+	CharacterCouncil CharacterCouncilConfig `json:"-"`
 
 	MapConfig         MapConfig          `json:"map"`
 	Music             MusicConfig        `json:"music"`
@@ -370,6 +371,24 @@ func Load(path string) (*Scenario, error) {
 	}
 	definition.Path = path
 	definition.Diplomacy = definition.Diplomacy.WithDefaults()
+	definition.CharacterCouncil, err = LoadCharacterCouncilConfig(definition.DataPath("character_council.json"))
+	if err != nil {
+		return nil, err
+	}
+	characterTraits, err := LoadCharacterTraitsConfig(definition.DataPath("character_traits.json"))
+	if err != nil {
+		return nil, err
+	}
+	if definition.CharacterCouncil.Traits == nil {
+		definition.CharacterCouncil.Traits = characterTraits.Traits
+	} else {
+		for traitID, trait := range characterTraits.Traits {
+			definition.CharacterCouncil.Traits[traitID] = trait
+		}
+	}
+	if err := definition.CharacterCouncil.Validate(); err != nil {
+		return nil, err
+	}
 	return &definition, nil
 }
 

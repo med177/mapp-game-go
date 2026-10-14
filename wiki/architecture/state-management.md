@@ -46,6 +46,17 @@ güncellemesi gerekmez: yardımcı yalnız güncel `Region.OwnerID` üzerinden t
 root bonus alanlarını loader aşamasında tamamlar; campaign save bu senaryo bazlı
 konfigürasyonu ayrıca serialize etmez.
 
+Konsey görevleri ve deneyim ayarları senaryonun isteğe bağlı
+`data/character_council.json`, karakter nitelikleri ve bonusları ise ayrı
+`data/character_traits.json` dosyasından yüklenir. Görev etkileri state
+katmanında hesaplanır; gelir, memnuniyet, kara/deniz muharebe gücü, komuta
+edilen birliğin gücü, Heyet ilişkisi, kaynak üretimi ve araştırma hızı aynı
+senaryo konfigürasyonunu kullanır. Atanmış karakterler tur başına ve görev
+etkisi fiilen uygulandığında konsey deneyimi kazanır. Konsey XP/seviyesi
+karakter kaydında kalıcıdır; senaryo şablonundaki başlangıç karakterlere kampanya
+ilerlemesi taşınmaz. Eski senaryolarda dosya yoksa varsayılan görev tanımları
+kullanılır. Veri biçimi için [[dev/data-format#character_council.json]].
+
 Aktif dış `TradeRoute` anlaşmalarının bu kapasiteyi nasıl paylaştığı
 `diplomacy.RebalanceTradeRouteCapacities()` ile türetilir; rota miktarları ayrı
 bir kalıcı kapasite snapshot'ı değildir. Rota kurulumu, sanitize/load ve her
@@ -355,35 +366,37 @@ bu otomatik atamanın dışındadır.
 senaryo kayıtlarını askeri komutan listesinden ayrı ve deterministik sırada
 sunar; `commander` tipi mevcut askeri roster'da kalır. `administrator` kayıtları
 roster'da yönetim adayı olarak görünürken mevcut ordu komutanlığı uygunluğunu da
-korur. `owner_id: "none"` olan aktif yönetici/karakter kayıtları
-`NeutralCharacterCandidates()` ile tarafsız aday havuzuna çıkar; oyuncu
-`AdoptNeutralCharacter()` ile bir adayı ücretsiz olarak kendi fraksiyonuna
-alabilir. Bu işlem senaryo şablonunu değil runtime `GameState.Commanders`
+korur. `owner_id: "none"` olan aktif yönetici/karakter kayıtları tüm fraksiyonların
+erişebildiği tarafsız aday havuzunda yer alır. Oyuncu `AdoptNeutralCharacter()`
+ile, AI ise `AdoptNeutralCharacterForFaction()` ile bir adayı ücretsiz olarak
+kendi hanesine alabilir. AI, boş konsey koltuğu varsa tur başına en fazla bir
+adayı alıp ilk boş göreve atar. Bu işlem senaryo şablonunu değil runtime `GameState.Commanders`
 kaydındaki `OwnerID` değerini değiştirir. Bu map kompakt (`cmd`) ve legacy save
 akışlarında zaten saklandığından yeni kayıt alanı gerekmez; eski kayıtlarda alan
 bulunmadığında senaryo başlangıç şablonlarıyla mevcut varsayılan davranış korunur.
 `ReleaseCharacterToNeutralPool()` oyuncunun aktif hanesindeki karakteri tarafsız
 adaylara geri bırakır; ordu ve konsey atamalarını da kaldırır. Bu iki sahiplik
 geçişi mevcut save state'teki `OwnerID` alanını günceller.
+Bir fraksiyon elendiğinde `ReleaseFactionCharactersToNeutralPool()` o anda
+hayatta olan yönetici/karakterlerini aynı havuza taşır; tutsak veya geçici olarak
+kullanılamayan karakterler durumları sona erene kadar aday listesinde görünmez.
 Karakter tipindeki kayıtlar runtime havuzuna alınır ancak “Yeni Komutanlar” askeri
 varış bildirimine girmez; bildirim yalnız `CanCommandArmy()` true olan tiplere
 verilir.
 
 `Commander.AssignedCouncilRole`, karakterin council koltuğunu mevcut canonical
 `GameState.Commanders` map'inde tutar ve compact/legacy save ile korunur.
-Lider, Hazinedar, Diplomat, Veliaht ve Serasker görevleri bu
-alanda saklanır; `AssignCharacterToCouncilRole()` karakteri seçilen göreve
+Senaryoda tanımlı görevler bu alanda saklanır; `AssignCharacterToCouncilRole()` karakteri seçilen göreve
 geçirir ve hedef koltuğun eski sahibini boşa çıkarır. `CharacterRoster()`
 önce bu görev önceliğine, sonra ada göre sıralar. Veliaht ve Serasker
-atamaları roster ve kayıtta saklanır ancak henüz oyun bonusu üretmez. Ordu
-atama/AI commander roster'ı council atamalı karakterleri kullanmaz. Lider
-şu an bonus üretmez. Hazine
-Sorumlusu'nun `TreasurerTaxIncomeBonus()` hesabı yalnız
-bölgesel vergi matrahına +%5 uygular. `TaxIncomeForFaction()`, ekonomi tick'i,
-`GoldEconomyPreview()` ve `GoldIncomeForFaction()` aynı state bonusunu kullanır;
-ticaret ve diğer gelir kategorileri değişmez. Diplomat koltuğu, mevcut Heyet
-aksiyonuna `DiplomatRelationBonus()` üzerinden +3 ekler; hedefi oyuncu normal
-Diplomasi panelinden seçer. Hediye ve diğer aksiyonlar diplomat bonusunu almaz.
+atamaları da görev yapılandırmasıyla gelir/üretim/araştırma ve diğer konsey
+etkilerini alır. Askeri Sorumlu hem konsey koltuğunda kalabilir hem ordu veya
+donanmaya komuta edebilir; diğer konsey görevleri ordu komutanlığıyla
+çakışmaz. `TaxIncomeForFaction()` yalnız vergi matrahını döndürür; fraksiyon
+geneli gelir bonusu ekonomi tick'i, `GoldEconomyPreview()` ve
+`GoldIncomeForFaction()` hesaplarında ayrı uygulanır. Diplomat, Hane Lideri ve
+Veliaht ilişki katkıları Heyet aksiyonunda birleşir; hediye ve diğer aksiyonlar
+bu bonusu almaz.
 
 Ordu yaşam döngüsü de komutan bağlantısını state katmanında korur. `RemoveArmy()`
 silinen ordunun normal veya nakliye filosunda taşınan komutanını havuza geri bırakır;

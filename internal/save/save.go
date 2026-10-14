@@ -672,6 +672,7 @@ func loadScenarioBaseState(scenarioID, savedScenarioPath string) (*state.GameSta
 		CommanderCaptureChanceOnDefeat: commanderCaptureChance,
 		CommanderRansomGold:            commanderRansomGold,
 		DiplomacyConfig:                sc.Diplomacy.WithDefaults(),
+		CouncilConfig:                  sc.CharacterCouncil,
 		AirspaceEnabled:                sc.Airspace.Enabled,
 		UndeadMechanics:                sc.UndeadMechanics.WithDefaults(),
 		FactionLore:                    factionLore,

@@ -1,14 +1,151 @@
 package state
 
 import (
+	"math"
 	"testing"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/world"
 )
 
-func TestTreasurerCouncilSeatAddsFactionTaxBonusAndBlocksArmyAssignment(t *testing.T) {
+func TestScenarioCouncilRolesTraitsAndExperienceScaleEffects(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_scholar", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		Name: "Scholar", Traits: []army.CharacterTrait{"scholar"},
+	}
+	gs := &GameState{
+		Year:       300,
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		CouncilConfig: scenario.CharacterCouncilConfig{
+			XPPerTurn:   5,
+			XPPerEffect: 10,
+			Roles: []scenario.CouncilRoleDefinition{{
+				ID: "steward", NameTR: "Kâhya",
+				Effects:  scenario.CouncilEffects{IncomeMod: 1.03},
+				PerLevel: scenario.CouncilEffects{IncomeMod: 1.02},
+			}},
+			Traits: map[string]scenario.CharacterTraitDefinition{
+				"scholar": {
+					NameTR: "Bilgin",
+					CouncilEffects: map[string]scenario.CouncilEffects{
+						"steward": {IncomeMod: 1.04},
+					},
+				},
+			},
+		},
+	}
+	if !gs.AssignCharacterToCouncilRole(owner, character.ID, "steward") {
+		t.Fatal("scenario-defined council role could not be assigned")
+	}
+	if got := gs.CouncilIncomeBonus(owner, 1000); got != 70 {
+		t.Fatalf("scenario-defined steward income effect = %d, want 70", got)
+	}
+	if got := gs.CouncilRoleEffects(owner, "steward").IncomeMod; math.Abs(got-1.07) > 1e-9 {
+		t.Fatalf("level-one trait-adjusted effect = %.4f, want 1.07", got)
+	}
+	gs.RecordCouncilTurnExperience()
+	gs.RecordCouncilEffectExperience(owner, "income_mod")
+	if character.CouncilExperience != 15 || character.CouncilLevel != 1 {
+		t.Fatalf("council progress after turn and effect = %d XP, level %d", character.CouncilExperience, character.CouncilLevel)
+	}
+	character.RecordCouncilExperience(85)
+	if character.CouncilLevel != 2 {
+		t.Fatalf("council level after reaching commander level-two threshold = %d, want 2", character.CouncilLevel)
+	}
+	if got := gs.CouncilRoleEffects(owner, "steward").IncomeMod; math.Abs(got-1.09) > 1e-9 {
+		t.Fatalf("level-two trait-adjusted effect = %.4f, want 1.09", got)
+	}
+}
+
+func TestNegativeTraitCouncilModReducesRoleBonus(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_inexperienced", Type: army.CharacterTypeCharacter,
+		OwnerID: string(owner), Name: "Inexperienced", Traits: []army.CharacterTrait{"inexperienced"},
+	}
+	gs := &GameState{
+		Year:       300,
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		CouncilConfig: scenario.CharacterCouncilConfig{
+			Roles: []scenario.CouncilRoleDefinition{{
+				ID: CouncilRoleMilitaryResponsible, NameTR: "Askeri Sorumlu",
+				Effects: scenario.CouncilEffects{MilitaryPowerMod: 1.03},
+			}},
+			Traits: map[string]scenario.CharacterTraitDefinition{
+				"inexperienced": {
+					NameTR: "Tecrübesiz",
+					CouncilEffects: map[string]scenario.CouncilEffects{
+						CouncilRoleMilitaryResponsible: {MilitaryPowerMod: 0.98},
+					},
+				},
+			},
+		},
+	}
+	if !gs.AssignCharacterToCouncilRole(owner, character.ID, CouncilRoleMilitaryResponsible) {
+		t.Fatal("military responsible assignment failed")
+	}
+	if got := gs.CouncilMilitaryPowerMod(owner); math.Abs(got-1.01) > 1e-9 {
+		t.Fatalf("military power mod after negative trait effect = %.4f, want 1.01", got)
+	}
+}
+
+func TestMilitaryRoleFallbackPenaltyAppliesOnlyWithoutPositiveMilitaryTrait(t *testing.T) {
+	const owner faction.FactionID = "player"
+	buildState := func(character *army.Commander) *GameState {
+		config := scenario.DefaultCharacterCouncilConfig()
+		config.Traits = map[string]scenario.CharacterTraitDefinition{
+			"fighter": {
+				NameTR: "Savaşçı",
+				CouncilEffects: map[string]scenario.CouncilEffects{
+					CouncilRoleMilitaryResponsible: {MilitaryPowerMod: 1.01},
+				},
+			},
+			"scholar": {
+				NameTR: "Bilgin",
+				CouncilEffects: map[string]scenario.CouncilEffects{
+					"treasurer": {IncomeMod: 1.01},
+				},
+			},
+		}
+		return &GameState{
+			Year:          300,
+			Factions:      map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+			Commanders:    map[string]*army.Commander{character.ID: character},
+			CouncilConfig: config,
+		}
+	}
+
+	unfit := &army.Commander{
+		ID: "chr_unfit", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		Traits: []army.CharacterTrait{"scholar", "scholar"},
+	}
+	unfitState := buildState(unfit)
+	if !unfitState.AssignCharacterToCouncilRole(owner, unfit.ID, CouncilRoleMilitaryResponsible) {
+		t.Fatal("could not assign character without military traits")
+	}
+	if got := unfitState.CouncilMilitaryPowerMod(owner); math.Abs(got-1.02) > 1e-9 {
+		t.Fatalf("unmatched-trait military mod = %.4f, want 1.02 (single fallback penalty)", got)
+	}
+
+	fit := &army.Commander{
+		ID: "chr_fit", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		Traits: []army.CharacterTrait{"fighter", "scholar"},
+	}
+	fitState := buildState(fit)
+	if !fitState.AssignCharacterToCouncilRole(owner, fit.ID, CouncilRoleMilitaryResponsible) {
+		t.Fatal("could not assign character with military trait")
+	}
+	if got := fitState.CouncilMilitaryPowerMod(owner); math.Abs(got-1.04) > 1e-9 {
+		t.Fatalf("matched-trait military mod = %.4f, want 1.04 without fallback penalty", got)
+	}
+}
+
+func TestTreasurerCouncilSeatAddsFactionIncomeBonusAndBlocksArmyAssignment(t *testing.T) {
 	const owner faction.FactionID = "player"
 	character := &army.Commander{
 		ID: "cmd_tywin", Type: army.CharacterTypeAdministrator,
@@ -23,14 +160,14 @@ func TestTreasurerCouncilSeatAddsFactionTaxBonusAndBlocksArmyAssignment(t *testi
 		Armies:          map[army.ArmyID]*army.Army{currentArmy.ID: currentArmy},
 	}
 
-	if got := gs.TreasurerTaxIncomeBonus(owner, 1000); got != 0 {
-		t.Fatalf("unassigned treasurer bonus = %d, want 0", got)
+	if got := gs.CouncilIncomeBonus(owner, 1000); got != 0 {
+		t.Fatalf("unassigned council income bonus = %d, want 0", got)
 	}
 	if !gs.AssignCharacterToCouncilRole(owner, character.ID, CouncilRoleTreasurer) {
 		t.Fatal("eligible character could not be assigned as treasurer")
 	}
-	if got := gs.TreasurerTaxIncomeBonus(owner, 1000); got != 50 {
-		t.Fatalf("treasurer tax bonus = %d, want 50", got)
+	if got := gs.CouncilIncomeBonus(owner, 1000); got != 50 {
+		t.Fatalf("treasurer income bonus = %d, want 50", got)
 	}
 	if gs.AssignCommanderToArmy(character.ID, currentArmy.ID) {
 		t.Fatal("council character was also assigned to an army")
@@ -69,8 +206,8 @@ func TestAssigningTreasurerReplacesIncumbentAndRejectsDoubleRole(t *testing.T) {
 	if gs.AssignCharacterToCouncilRole("missing", first.ID, CouncilRoleTreasurer) {
 		t.Fatal("character was assigned to a nonexistent faction")
 	}
-	if gs.TreasurerTaxIncomeBonus(owner, 1000) != 50 {
-		t.Fatal("replacing treasurer stacked the tax bonus")
+	if gs.CouncilIncomeBonus(owner, 1000) != 50 {
+		t.Fatal("replacing treasurer stacked the income bonus")
 	}
 }
 
@@ -141,7 +278,7 @@ func TestNewCouncilRolesCanBeAssignedAndReplaceTheirIncumbents(t *testing.T) {
 	}
 }
 
-func TestTaxIncomeForFactionIncludesTreasurerBonus(t *testing.T) {
+func TestTaxIncomeForFactionRemainsSeparateFromCouncilIncomeBonus(t *testing.T) {
 	const owner faction.FactionID = "player"
 	character := &army.Commander{ID: "chr_sansa", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Sansa"}
 	region := &world.Region{ID: "capital", OwnerID: string(owner), BaseGoldIncome: 1000, TaxRate: 50, Satisfaction: 50}
@@ -160,8 +297,8 @@ func TestTaxIncomeForFactionIncludesTreasurerBonus(t *testing.T) {
 	if !gs.AssignCharacterToCouncilRole(owner, character.ID, CouncilRoleTreasurer) {
 		t.Fatal("treasurer assignment failed")
 	}
-	if got := gs.TaxIncomeForFaction(owner); got != 525 {
-		t.Fatalf("tax income with treasurer = %d, want 525", got)
+	if got := gs.TaxIncomeForFaction(owner); got != 500 {
+		t.Fatalf("council income bonus changed tax-only budget = %d, want 500", got)
 	}
 }
 

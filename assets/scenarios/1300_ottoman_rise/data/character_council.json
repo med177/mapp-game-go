@@ -1,0 +1,79 @@
+{
+  "xp_per_turn": 5,
+  "xp_per_effect": 10,
+  "roles": [
+    {
+      "id": "head_of_house",
+      "name_tr": "Hane Lideri",
+      "effects": {
+        "satisfaction_points": 1,
+        "military_power_mod": 1.01,
+        "relation_bonus_points": 1
+      },
+      "per_level": {
+        "satisfaction_points": 1,
+        "military_power_mod": 1.01,
+        "relation_bonus_points": 1
+      }
+    },
+    {
+      "id": "treasurer",
+      "name_tr": "Hazine Sorumlusu",
+      "effects": {
+        "income_mod": 1.05,
+        "resource_production_mod": 1.05
+      },
+      "per_level": {
+        "income_mod": 1.01,
+        "resource_production_mod": 1.01
+      }
+    },
+    {
+      "id": "diplomat",
+      "name_tr": "Diplomat",
+      "effects": {
+        "relation_bonus_points": 3
+      },
+      "per_level": {
+        "relation_bonus_points": 1
+      }
+    },
+    {
+      "id": "heir",
+      "name_tr": "Veliaht",
+      "effects": {
+        "satisfaction_points": 1,
+        "relation_bonus_points": 1
+      },
+      "per_level": {
+        "satisfaction_points": 1,
+        "relation_bonus_points": 1
+      }
+    },
+    {
+      "id": "military_responsible",
+      "name_tr": "Askeri Sorumlu",
+      "effects": {
+        "military_power_mod": 1.03,
+        "commander_power_mod": 1.03
+      },
+      "per_level": {
+        "military_power_mod": 1.01,
+        "commander_power_mod": 1.01
+      },
+      "trait_fallback_effects": {
+        "military_power_mod": 0.99
+      }
+    },
+    {
+      "id": "research_responsible",
+      "name_tr": "Bilim Sorumlusu",
+      "effects": {
+        "research_speed_mod": 1.05
+      },
+      "per_level": {
+        "research_speed_mod": 1.01
+      }
+    }
+  ]
+}

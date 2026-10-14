@@ -50,6 +50,7 @@ func TestCouncilRoleAssignmentPersistsCompactAndLegacySaves(t *testing.T) {
 	treasurer := &army.Commander{
 		ID: "cmd_tywin", Type: army.CharacterTypeAdministrator, OwnerID: "player",
 		Name: "Tywin Lannister", AssignedCouncilRole: state.CouncilRoleTreasurer,
+		CouncilLevel: 3, CouncilExperience: 300,
 	}
 	diplomat := &army.Commander{
 		ID: "chr_varys", Type: army.CharacterTypeCharacter, OwnerID: "player",
@@ -93,6 +94,8 @@ func TestCouncilRoleAssignmentPersistsCompactAndLegacySaves(t *testing.T) {
 	applyCampaignSaveState(loaded, decoded)
 	if got := loaded.Commanders[treasurer.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleTreasurer {
 		t.Fatalf("compact save/load council role = %#v, want treasurer", got)
+	} else if got.CouncilLevel != 3 || got.CouncilExperience != 300 {
+		t.Fatalf("compact save/load council progression = level %d, xp %d; want level 3, xp 300", got.CouncilLevel, got.CouncilExperience)
 	}
 	if got := loaded.Commanders[diplomat.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleDiplomat {
 		t.Fatalf("compact save/load council role = %#v, want diplomat", got)
@@ -111,6 +114,8 @@ func TestCouncilRoleAssignmentPersistsCompactAndLegacySaves(t *testing.T) {
 	legacy := convertLegacyCampaignSaveState(debug)
 	if got := legacy.Commanders[treasurer.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleTreasurer {
 		t.Fatalf("debug/legacy save conversion council role = %#v, want treasurer", got)
+	} else if got.CouncilLevel != 3 || got.CouncilExperience != 300 {
+		t.Fatalf("debug/legacy council progression = level %d, xp %d; want level 3, xp 300", got.CouncilLevel, got.CouncilExperience)
 	}
 	if got := legacy.Commanders[diplomat.ID]; got == nil || got.AssignedCouncilRole != state.CouncilRoleDiplomat {
 		t.Fatalf("debug/legacy save conversion council role = %#v, want diplomat", got)

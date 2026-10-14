@@ -122,6 +122,91 @@ eski senaryo kayıtları için geriye dönük uyumluluk amacıyla okunmaya devam
 }
 ```
 
+## character_council.json
+
+Senaryoya özgü konsey görevlerini tanımlar.
+Dosya isteğe bağlıdır; bulunmadığında eski senaryolar yerleşik görev tanımlarını
+kullanır. `roles` içindeki her görev benzersiz bir `id` ve Türkçe `name_tr`
+taşımalıdır. `effects` başlangıç bonusunu, `per_level` ise 1. seviye üzerindeki
+her seviye için ek bonusu belirler.
+
+Desteklenen etki anahtarları:
+
+- `income_mod`: fraksiyonun gelir kaynaklarına çarpan bonusu (`1.05` = +%5).
+- `satisfaction_points`: fraksiyona ait bölgelerin memnuniyet tur değişimine puan bonusu.
+- `military_power_mod`: kara ve deniz ordularının saldırı/savunma gücüne çarpan bonusu (`1.03` = +%3).
+- `commander_power_mod`: Askeri Sorumlu'nun komuta ettiği ordu/donanmanın gücüne ek çarpan bonusu.
+- `relation_bonus_points`: Heyet diplomasi eylemine ek ilişki puanı.
+- `resource_production_mod`: fraksiyonun tahıl, demir, kereste, taş, baharat ve kumaş üretimine çarpan bonusu.
+- `research_speed_mod`: yeni başlatılan araştırmanın hızına çarpan bonusu.
+
+`*_mod` alanları `1.0` tabanlıdır: `1.0` etkisiz, `1.05` +%5 ve `0.95` -%5
+anlamına gelir. Bonuslar birleştirilirken çarpanların `1.0` üzerindeki farkları
+toplanır; böylece birden fazla görev/nitelik etkisi eskisi gibi yüzde puanı
+olarak eklenir. `per_level` içindeki mod değeri, 1. seviyenin üzerindeki her
+seviye başına eklenecek farkı belirtir (`1.01` seviye başına +%1).
+Negatif değerli nitelik etkileri de desteklenir: örneğin Askeri Sorumlu rolünde
+`military_power_mod: 0.98`, o karakterin görev bonusundan 2 yüzde puanı düşürür.
+Puan alanlarında negatif tamsayılar aynı şekilde ilgili puan bonusunu azaltır.
+Bir rol, isteğe bağlı `trait_fallback_effects` ile eşleşen olumlu niteliği
+olmayan karaktere tek seferlik varsayılan nitelik cezası tanımlayabilir. Örneğin
+Askeri Sorumlu rolündeki `{"military_power_mod": 0.99}`, hiçbir niteliği askerî
+güç bonusu sağlamayan karakterin toplam bonusundan 1 yüzde puanı düşürür; bu
+ceza karakterin kaç tane uyumsuz niteliği olduğuna göre katlanmaz.
+
+`xp_per_turn`, göreve atanmış karakterin her tur kazandığı deneyimi;
+`xp_per_effect`, görev bonusu fiilen uygulandığında (gelir, memnuniyet,
+üretim, diplomasi, araştırma başlangıcı veya muharebe) kazandığı deneyimi
+belirler. Konsey seviyesi komutan deneyim eşiklerini kullanır
+(100/300/550/850 XP ile 2–5. seviyeler); XP ve seviye karakterin kampanya
+kaydında saklanır.
+Örnek:
+
+```json
+{
+  "xp_per_turn": 5,
+  "xp_per_effect": 10,
+  "roles": [
+    {
+      "id": "treasurer",
+      "name_tr": "Hazine Sorumlusu",
+      "effects": {
+        "income_mod": 1.05,
+        "resource_production_mod": 1.05
+      },
+      "per_level": {
+        "income_mod": 1.01,
+        "resource_production_mod": 1.01
+      }
+    }
+  ]
+}
+```
+
+## character_traits.json
+
+Senaryoya özgü karakter niteliklerinin Türkçe adlarını ve konsey bonuslarını
+tanımlar. Dosya isteğe bağlıdır. `traits` anahtarının altında kayıtlar karakter
+şablonlarındaki `traits` ID'leriyle eşleşir; `council_effects` altındaki rol
+ID'leri aynı senaryonun `character_council.json` dosyasında tanımlı olmalıdır.
+Bonuslar görev etkilerine eklenir.
+
+```json
+{
+  "traits": {
+    "scholar": {
+      "name_tr": "Bilgin",
+      "council_effects": {
+        "treasurer": {
+          "income_mod": 1.02,
+          "resource_production_mod": 1.02
+        }
+      }
+    }
+  }
+}
+```
+
 ### regions.json ardıl devlet alanı
 
 Kara bölgesinde isteğe bağlı `successor_faction_id` alanı, fetih sonrası yeniden

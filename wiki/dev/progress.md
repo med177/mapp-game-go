@@ -5,6 +5,38 @@ last_updated: 2026-10-14
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-14: Konsey görevleri `data/character_council.json`, karakter nitelikleri
+  ise ayrı `data/character_traits.json` üzerinden tanımlanıyor. Gelir, memnuniyet,
+  kara/deniz muharebe gücü, komuta edilen birliğin gücü, Heyet ilişkisi, kaynak
+  üretimi ve araştırma hızı bonusları görev seviyesi ile nitelik katkılarını
+  birleştiriyor. Çarpan bonusları JSON'da `*_mod` alanlarıyla (`1.05` = +%5)
+  tanımlanıyor; `0.98` ve negatif puan değerleri rol bonusunu azaltabiliyor.
+  Birden çok bonusun birleştirilmesi yüzde puanı toplama davranışını koruyor.
+  Atanmış karakterler tur başına ve bonus oyun akışında uygulandığında
+  konsey XP'si kazanıyor. XP/seviye karakter kampanya kaydında korunuyor; eski
+  senaryolar varsayılan görev tanımlarını kullanıyor.
+  `internal/scenario/character_council.go`, `internal/state/council.go`,
+  `internal/game/resolution.go`, `internal/combat/modifiers.go`.
+
+- 2026-10-14: Rol ile uyumlu olumlu niteliği olmayan karakter Askeri Sorumlu
+  olduğunda tek seferlik -%1 askerî güç etkisi alıyor; uyumlu niteliği olanlar
+  bu ceza yerine nitelik bonuslarını alıyor. Five Kings senaryosunda Saldırgan,
+  Suikastçı, Zalim, Paralı Asker ve Kindar diplomat ilişkisini; Zalim, Özgür
+  Ruhlu, Bağımsız ve Şımarık hane memnuniyetini; Şımarık ise hazinedar gelir ve
+  kaynak üretimini düşürüyor. `trait_fallback_effects` ve negatif nitelik
+  etkileri `character_council.json` / `character_traits.json` ile tanımlanıyor.
+
+- 2026-10-14: Five Kings senaryosuna Karizmatik, İdareci, Sabırsız ve Pervasız
+  nitelikleri eklendi; Renly, Tywin ve Robert gibi uygun karakterlerin mevcut
+  nitelik listeleriyle ilişkilendirildi. Diplomat, Hane Lideri ve Hazinedar
+  etkileri olumlu/olumsuz rol uyumunu yansıtıyor.
+
+- 2026-10-14: Five Kings senaryosundaki daha önce konsey etkisi olmayan Kaşif,
+  Gizemli, Karanlık ve Büyücü nitelikleri de bağlandı. Kaşif ve büyülü nitelikler
+  Bilim Sorumlusu araştırma hızını artırıyor; Gizemli ve Karanlık Diplomat
+  ilişki bonusunu düşürüyor. Karakter bağlantıları mevcut Arya Stark, Jaqen
+  H'ghar ve Melisandre kayıtları üzerinden çalışıyor.
+
 - 2026-10-14: Konsey görevlerine Veliaht ve Serasker eklendi. Görevler
   karakter kartından atanıp kaldırılabiliyor ve kompakt/legacy kayıtlarda
   korunuyor; roster sıralaması ile görev bildirimleri bu rolleri içeriyor.
@@ -32,6 +64,16 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   bırakma ordu/konsey atamalarını temizleyip karakteri tarafsız adaylara döndürüyor.
   Kapsam: `internal/state/character_roster.go`,
   `internal/render/character_roster_panel.go`, `internal/game/game.go`.
+
+- 2026-10-14: Tarafsız karakter havuzu tüm fraksiyonlarca paylaşılır hale geldi.
+  Oyuncu adayı kendi hanesine alabilir; AI da boş konsey koltuğu bulunduğunda
+  tur başına en fazla bir adayı alıp ilk boş göreve atar.
+  `internal/state/character_roster.go`, `internal/ai/neutral_character.go`.
+
+- 2026-10-14: Fraksiyon elendiğinde hayatta kalan yönetici/karakter kayıtları
+  ordu ve konsey atamaları temizlenerek tarafsız havuza bırakılıyor. Tutsak
+  karakterler sahiplik değişiminden sonra tutsaklık bitene kadar aday listesinde
+  gizli kalıyor. `internal/game/resolution.go`, `internal/ai/privilege.go`.
 
 - 2026-10-14: Konseyin ilk pilot koltuğu Hazinedar eklendi. Aktif ve boşta
   olan yönetici/karakter atanabiliyor; atama ordu roster'ından çıkarıyor, mevcut

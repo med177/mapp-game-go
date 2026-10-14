@@ -39,17 +39,21 @@ const (
 
 // TakeTurn belirtilen fraksiyon için tüm AI kararlarını verir ve uygular.
 func aiTechMods(gs *state.GameState, ownerID string) combat.TechMods {
-	f, ok := gs.Factions[faction.FactionID(ownerID)]
-	if !ok || gs.TechTypes == nil {
+	if gs == nil {
 		return combat.TechMods{}
 	}
-	fx := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
-	return combat.TechMods{
-		AttackMod:       fx.InfantryAttackMod + fx.CavalryAttackMod + fx.SiegeAttackMod,
-		DefenseMod:      fx.LandDefenseMod,
-		NavalAttackMod:  fx.NavalAttackMod,
-		NavalDefenseMod: fx.NavalDefenseMod,
+	mods := combat.TechMods{
+		CouncilPowerMod:   gs.CouncilMilitaryPowerMod(faction.FactionID(ownerID)) - 1,
+		CommanderPowerMod: gs.CouncilCommanderPowerMod(faction.FactionID(ownerID)) - 1,
 	}
+	if f, ok := gs.Factions[faction.FactionID(ownerID)]; ok && f != nil && gs.TechTypes != nil {
+		fx := tech.ComputeEffects(f.Research.Completed, gs.TechTypes)
+		mods.AttackMod = fx.InfantryAttackMod + fx.CavalryAttackMod + fx.SiegeAttackMod
+		mods.DefenseMod = fx.LandDefenseMod
+		mods.NavalAttackMod = fx.NavalAttackMod
+		mods.NavalDefenseMod = fx.NavalDefenseMod
+	}
+	return mods
 }
 
 // relationScore iki fraksiyon arasındaki ilişki puanını döner; yoksa 0.
@@ -103,6 +107,7 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 	if fid == gs.PlayerFactionID && gs.AIControlsPlayerEconomy && !gs.AIControlsPlayerFaction {
 		return runPlayerEconomyPreludeWithPreparedContext(gs, fid, eventDefs, preparedContext, steps)
 	}
+	aiManageNeutralCharacters(gs, fid)
 	planningContext := preparedContext
 	if planningContext != nil && (planningContext.gs != gs || planningContext.FactionID != fid) {
 		planningContext = nil
@@ -1562,6 +1567,7 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 			defMods := aiTechMods(gs, enemyInTarget.OwnerID)
 			seaTerrain := string(world.TerrainSea)
 			result := combat.ResolveBattleWithContextPlan(escort, enemyInTarget, world.TerrainType(seaTerrain), gs.UnitTypes, atkMods, defMods, combat.BattleContextNaval, combat.BattleStanceAggressive)
+			gs.RecordCouncilBattleExperience(faction.FactionID(escort.OwnerID), faction.FactionID(enemyInTarget.OwnerID))
 			gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(escort.OwnerID), faction.FactionID(enemyInTarget.OwnerID), result.AttackerLost, result.DefenderLost, escort.IsNaval, enemyInTarget.IsNaval, len(escort.Units) == 0, len(enemyInTarget.Units) == 0)
 			recordCommanderBattle(gs, escort, enemyInTarget, nil, result.AttackerWins)
 
@@ -1971,6 +1977,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 						gs.IsCoreRegion(faction.FactionID(siegeArmy.OwnerID), sourceRegion.ID))
 					defMods.DefenseMod += 0.10
 					result := combat.ResolveBattleWithMods(a, siegeArmy, sourceRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+					gs.RecordCouncilBattleExperience(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID))
 					gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(siegeArmy.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, siegeArmy.IsNaval, len(a.Units) == 0, len(siegeArmy.Units) == 0)
 					recordCommanderBattle(gs, a, siegeArmy, nil, result.AttackerWins)
 					if result.AttackerWins {
@@ -2086,6 +2093,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 				gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
 				gs.IsCoreRegion(faction.FactionID(enemyArmy.OwnerID), targetRegion.ID))
 			result := combat.ResolveBattleWithMods(landing, enemyArmy, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods)
+			gs.RecordCouncilBattleExperience(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID))
 			gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(landing.OwnerID), faction.FactionID(enemyArmy.OwnerID), result.AttackerLost, result.DefenderLost, landing.IsNaval, enemyArmy.IsNaval, len(landing.Units) == 0, len(enemyArmy.Units) == 0)
 			recordCommanderBattle(gs, landing, enemyArmy, nil, result.AttackerWins)
 			a.EmbarkedUnits = a.EmbarkedUnits[:0]
@@ -2236,6 +2244,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			defensePressure := state.SiegeDefensePressureForArmy(gs.UnitTypes, a, activeSiege.FortLevel)
 			defMods.DefenseMod += state.SiegeDefenseBonus(activeSiege.FortLevel, activeSiege.BreachLevel, defensePressure)
 			result := combat.ResolveBattleWithContextPlan(a, defender, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, combat.BattleContextLand, combat.BattleStanceBalanced)
+			gs.RecordCouncilBattleExperience(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID))
 			gs.RecordWarCasualtiesByTypeAndOutcome(faction.FactionID(a.OwnerID), faction.FactionID(targetRegion.OwnerID), result.AttackerLost, result.DefenderLost, a.IsNaval, defender.IsNaval, len(a.Units) == 0, !virtualDefense && len(defender.Units) == 0)
 			recordCommanderBattle(gs, a, defender, nil, result.AttackerWins)
 			if result.AttackerWins {
@@ -2406,6 +2415,7 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			contactContext = combat.BattleContextNaval
 		}
 		result := combat.ResolveBattleWithContactDefense(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, contactContext, combat.BattleStanceBalanced, contactAttackerHolding, contactDefenderHolding)
+		gs.RecordCouncilBattleExperience(faction.FactionID(a.OwnerID), faction.FactionID(defForBattle.OwnerID))
 		if result.AttackerWins {
 			raiseWightsAfterVictory(gs, a.OwnerID, target, result.DefenderLost)
 		} else {

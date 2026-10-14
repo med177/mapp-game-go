@@ -5,9 +5,34 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
+
+func TestCouncilSatisfactionBonusAppliesToEveryOwnedRegion(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_head", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+	}
+	region := &world.Region{ID: "region", OwnerID: string(owner)}
+	gs := &state.GameState{
+		Year:          1,
+		Factions:      map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders:    map[string]*army.Commander{character.ID: character},
+		Regions:       map[world.RegionID]*world.Region{region.ID: region},
+		CouncilConfig: scenario.DefaultCharacterCouncilConfig(),
+	}
+	baseBreakdown := Calculate(gs, region)
+	if !gs.AssignCharacterToCouncilRole(owner, character.ID, state.CouncilRoleHeadOfHouse) {
+		t.Fatal("could not assign head of house")
+	}
+
+	breakdown := Calculate(gs, region)
+	if breakdown.Council != 1 || breakdown.Total != baseBreakdown.Total+1 {
+		t.Fatalf("satisfaction breakdown = %+v, base total %d, want council bonus 1", breakdown, baseBreakdown.Total)
+	}
+}
 
 func TestArmyStabilityBonusUsesVassalAndAllyArmies(t *testing.T) {
 	const regionID = world.RegionID("region")

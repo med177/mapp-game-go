@@ -36,7 +36,8 @@
     "level": 5,
     "traits": [
       "tactician",
-      "veteran"
+      "veteran",
+      "administrator"
     ],
     "start_year": 260,
     "end_year": 301
@@ -77,7 +78,9 @@
     "portrait_asset": "renly.png",
     "level": 2,
     "traits": [
-      "veteran"
+      "veteran",
+      "charismatic",
+      "impatient"
     ],
     "start_year": 290,
     "end_year": 300
@@ -805,7 +808,8 @@
     "level": 5,
     "traits": [
       "veteran",
-      "aggressor"
+      "aggressor",
+      "reckless"
     ],
     "start_year": 277,
     "end_year": 299

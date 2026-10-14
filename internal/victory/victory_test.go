@@ -33,7 +33,7 @@ func TestOtherIncomeIsIncludedInGoldIncomeCalculations(t *testing.T) {
 	}
 }
 
-func TestTreasurerBonusMatchesTaxPreviewAndGrossIncome(t *testing.T) {
+func TestTreasurerBonusMatchesFactionIncomePreviewAndGrossIncome(t *testing.T) {
 	const fid faction.FactionID = "player"
 	character := &army.Commander{ID: "cmd_tywin", Type: army.CharacterTypeAdministrator, OwnerID: string(fid), Name: "Tywin"}
 	region := &world.Region{ID: "capital", OwnerID: string(fid), BaseGoldIncome: 1000, TaxRate: 50, Satisfaction: 50}
@@ -41,9 +41,14 @@ func TestTreasurerBonusMatchesTaxPreviewAndGrossIncome(t *testing.T) {
 		Year:            300,
 		Month:           6,
 		PlayerFactionID: fid,
-		Factions:        map[faction.FactionID]*faction.Faction{fid: {ID: fid}},
-		Regions:         map[world.RegionID]*world.Region{region.ID: region},
-		Commanders:      map[string]*army.Commander{character.ID: character},
+		Factions: map[faction.FactionID]*faction.Faction{
+			fid: {
+				ID:                 fid,
+				OtherIncomePeriods: []faction.OtherIncomePeriod{{StartYear: 300, Amount: 100}},
+			},
+		},
+		Regions:    map[world.RegionID]*world.Region{region.ID: region},
+		Commanders: map[string]*army.Commander{character.ID: character},
 	}
 
 	basePreview := GoldEconomyPreview(gs, fid)
@@ -52,9 +57,12 @@ func TestTreasurerBonusMatchesTaxPreviewAndGrossIncome(t *testing.T) {
 		t.Fatal("treasurer assignment failed")
 	}
 	preview := GoldEconomyPreview(gs, fid)
-	bonus := basePreview.TaxIncome * state.TreasurerTaxIncomeBonusPercent / 100
-	if got, want := preview.TaxIncome, basePreview.TaxIncome+bonus; got != want {
-		t.Fatalf("tax preview with treasurer = %d, want %d", got, want)
+	bonus := basePreview.Income * 5 / 100
+	if got, want := preview.CouncilIncome, bonus; got != want {
+		t.Fatalf("council income preview with treasurer = %d, want %d", got, want)
+	}
+	if got, want := preview.TaxIncome, basePreview.TaxIncome; got != want {
+		t.Fatalf("tax category with treasurer = %d, want %d", got, want)
 	}
 	if got, want := GoldIncomeForFaction(gs, fid), baseGross+bonus; got != want {
 		t.Fatalf("gross income with treasurer = %d, want %d", got, want)

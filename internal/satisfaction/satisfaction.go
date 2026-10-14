@@ -21,6 +21,7 @@ type Breakdown struct {
 	Buildings     int
 	Grain         int
 	Technology    int
+	Council       int
 	WarFatigue    int
 	Overextension int
 	Army          int
@@ -98,6 +99,7 @@ func (calculator *Calculator) ForRegion(region *world.Region) Breakdown {
 			breakdown.Technology = effects.SatisfactionBonus
 		}
 	}
+	breakdown.Council = gs.CouncilSatisfactionBonus(factionID(region.OwnerID))
 	warFatigue := calculator.warFatigueByID[factionID(region.OwnerID)]
 	if _, known := calculator.warFatigueByID[factionID(region.OwnerID)]; !known {
 		warFatigue = diplomacy.IndependentWarSatisfactionPenalty(gs, factionID(region.OwnerID))
@@ -111,7 +113,7 @@ func (calculator *Calculator) ForRegion(region *world.Region) Breakdown {
 	}
 	breakdown.Army = ArmyStabilityBonus(gs, region)
 	breakdown.Historical = HistoricalTransitionDelta(gs, region)
-	breakdown.Total = breakdown.Annual + breakdown.Siege + breakdown.Tax + breakdown.Tribute + breakdown.Buildings + breakdown.Grain + breakdown.Technology + breakdown.WarFatigue + breakdown.Overextension + breakdown.Army + breakdown.Historical
+	breakdown.Total = breakdown.Annual + breakdown.Siege + breakdown.Tax + breakdown.Tribute + breakdown.Buildings + breakdown.Grain + breakdown.Technology + breakdown.Council + breakdown.WarFatigue + breakdown.Overextension + breakdown.Army + breakdown.Historical
 	return breakdown
 }
 

@@ -374,16 +374,17 @@ type GameState struct {
 	DecisionSeed uint64 `json:"decision_seed,omitempty"`
 
 	// Senaryo
-	ScenarioID                     string                   `json:"scenario_id"`   // aktif senaryo ID'si
-	ScenarioPath                   string                   `json:"scenario_path"` // aktif senaryo klasörü
-	MapConfig                      scenario.MapConfig       `json:"map"`           // aktif senaryonun harita hizalama ayarları
-	PrivilegedBuildingMaxLevel     int                      `json:"-"`             // aktif senaryonun imtiyazlı minor bina tavanı
-	MinorPrivilegeProtectionTurns  int                      `json:"-"`             // aktif senaryonun yeni imtiyaz koruma süresi
-	AggressiveExpansionLastTurns   int                      `json:"-"`             // aktif senaryonun aşırı genişleme baskı süresi
-	CommanderInjuryTurnsOnDefeat   int                      `json:"-"`             // yenilen komutanın iyileşme süresi
-	CommanderCaptureChanceOnDefeat int                      `json:"-"`             // yenilen komutanın tutsak edilme olasılığı
-	DiplomacyConfig                scenario.DiplomacyConfig `json:"-"`             // aktif senaryonun diplomasi ayarları
-	BaseGoldValues                 map[economy.GoodType]int `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
+	ScenarioID                     string                          `json:"scenario_id"`   // aktif senaryo ID'si
+	ScenarioPath                   string                          `json:"scenario_path"` // aktif senaryo klasörü
+	MapConfig                      scenario.MapConfig              `json:"map"`           // aktif senaryonun harita hizalama ayarları
+	PrivilegedBuildingMaxLevel     int                             `json:"-"`             // aktif senaryonun imtiyazlı minor bina tavanı
+	MinorPrivilegeProtectionTurns  int                             `json:"-"`             // aktif senaryonun yeni imtiyaz koruma süresi
+	AggressiveExpansionLastTurns   int                             `json:"-"`             // aktif senaryonun aşırı genişleme baskı süresi
+	CommanderInjuryTurnsOnDefeat   int                             `json:"-"`             // yenilen komutanın iyileşme süresi
+	CommanderCaptureChanceOnDefeat int                             `json:"-"`             // yenilen komutanın tutsak edilme olasılığı
+	DiplomacyConfig                scenario.DiplomacyConfig        `json:"-"`             // aktif senaryonun diplomasi ayarları
+	CouncilConfig                  scenario.CharacterCouncilConfig `json:"-"`             // aktif senaryonun görev ve nitelik bonusları
+	BaseGoldValues                 map[economy.GoodType]int        `json:"-"`             // senaryonun cache'lenmiş temel mal fiyatları
 
 	CommanderRansomGold int                                `json:"-"`
 	UndeadMechanics     scenario.UndeadMechanics           `json:"-"`
@@ -1176,6 +1177,7 @@ type GrainEconomyStatus struct {
 type GoldEconomyStatus struct {
 	FactionID               faction.FactionID
 	Income                  int
+	CouncilIncome           int
 	TaxIncome               int
 	OtherIncome             int
 	OtherIncomeDescription  string
@@ -1653,7 +1655,7 @@ func (s *GameState) TaxIncomeForFaction(fid faction.FactionID) int {
 			total += operator
 		}
 	}
-	return total + s.TreasurerTaxIncomeBonus(fid, total)
+	return total
 }
 
 // GrainSaleGoldBudget bu turda acil/otomatik tahıl satışında kullanılabilecek
@@ -3469,6 +3471,17 @@ func (s *GameState) regionProductionSummary(region *world.Region, applyBlockade 
 		out.Cloth += bonus.Cloth
 	}
 
+	councilProductionMod := s.CouncilResourceProductionMod(faction.FactionID(region.OwnerID))
+	if councilProductionMod < 0 {
+		councilProductionMod = 0
+	}
+	out.Grain = int(float64(out.Grain)*councilProductionMod + 1e-9)
+	out.Iron = int(float64(out.Iron)*councilProductionMod + 1e-9)
+	out.Timber = int(float64(out.Timber)*councilProductionMod + 1e-9)
+	out.Stone = int(float64(out.Stone)*councilProductionMod + 1e-9)
+	out.Spice = int(float64(out.Spice)*councilProductionMod + 1e-9)
+	out.Cloth = int(float64(out.Cloth)*councilProductionMod + 1e-9)
+
 	productionPercent := 100 + s.RegionGrainProductionModifier(region.ID)
 	if productionPercent < 0 {
 		productionPercent = 0
@@ -3932,8 +3945,7 @@ func (s *GameState) ArmyOrganizationMultiplier(fid faction.FactionID) float64 {
 }
 
 // EffectiveArmyStrength, AI ve stratejik değerlendirmeler için bir ordunun
-// mevcut organizasyon cezası uygulanmış savaş gücünü döner. Donanmalar bu
-// kara ordusu organizasyon cezasından etkilenmez.
+// konsey ve organizasyon etkileri uygulanmış savaş gücünü döner.
 func (s *GameState) EffectiveArmyStrength(a *army.Army) int {
 	if s == nil || a == nil {
 		return 0
@@ -3944,11 +3956,17 @@ func (s *GameState) EffectiveArmyStrength(a *army.Army) int {
 	} else {
 		power = len(a.Units) * 10
 	}
-	if power <= 0 || a.IsNaval {
+	if power <= 0 {
 		return power
 	}
-	penalty := s.ArmyOrganizationPenaltyPercent(faction.FactionID(a.OwnerID))
-	power = power * (100 - penalty) / 100
+	modifier := s.CouncilMilitaryPowerMod(faction.FactionID(a.OwnerID)) - 1
+	if a.Commander != nil && a.Commander.AssignedCouncilRole == army.CouncilRoleMilitaryResponsible {
+		modifier += s.CouncilCommanderPowerMod(faction.FactionID(a.OwnerID)) - 1
+	}
+	if !a.IsNaval {
+		modifier -= float64(s.ArmyOrganizationPenaltyPercent(faction.FactionID(a.OwnerID))) / 100
+	}
+	power = int(float64(power)*(1+modifier) + 1e-9)
 	if power < 1 {
 		return 1
 	}

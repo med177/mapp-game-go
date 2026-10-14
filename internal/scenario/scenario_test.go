@@ -1,6 +1,7 @@
 package scenario
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -81,6 +82,119 @@ func TestLoadReadsPeacePeriodRequiredEvent(t *testing.T) {
 	if len(definition.Diplomacy.PeacePeriods) != 1 ||
 		definition.Diplomacy.PeacePeriods[0].WarDeclarationRequiresEvent != "death_of_robert_298" {
 		t.Fatalf("barış dönemi kalıcı event ID'sini yüklemedi: %+v", definition.Diplomacy.PeacePeriods)
+	}
+}
+
+func TestLoadCharacterCouncilConfigSupportsOptionalAndScenarioSpecificData(t *testing.T) {
+	dir := t.TempDir()
+	dataDir := filepath.Join(dir, "data")
+	if err := os.Mkdir(dataDir, 0o700); err != nil {
+		t.Fatalf("data klasörü oluşturulamadı: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dataDir, "scenario.json"), []byte(`{"period":"medieval"}`), 0o600); err != nil {
+		t.Fatalf("scenario.json yazılamadı: %v", err)
+	}
+	legacy, err := Load(dir)
+	if err != nil {
+		t.Fatalf("eski senaryo varsayılan görevlerle yüklenemedi: %v", err)
+	}
+	if len(legacy.CharacterCouncil.Roles) == 0 {
+		t.Fatal("görev dosyası olmayan senaryo varsayılan görev listesini almadı")
+	}
+
+	config := []byte(`{
+		"xp_per_turn": 7,
+		"xp_per_effect": 13,
+		"roles": [{"id":"steward","name_tr":"Kâhya","effects":{"income_mod":1.04}}]
+	}`)
+	if err := os.WriteFile(filepath.Join(dataDir, "character_council.json"), config, 0o600); err != nil {
+		t.Fatalf("character_council.json yazılamadı: %v", err)
+	}
+	traits := []byte(`{
+		"traits": {"scholar":{"name_tr":"Bilgin","council_effects":{"steward":{"income_mod":1.02}}}}
+	}`)
+	if err := os.WriteFile(filepath.Join(dataDir, "character_traits.json"), traits, 0o600); err != nil {
+		t.Fatalf("character_traits.json yazılamadı: %v", err)
+	}
+	loaded, err := Load(dir)
+	if err != nil {
+		t.Fatalf("senaryo görev tanımı yüklenemedi: %v", err)
+	}
+	if loaded.CharacterCouncil.XPPerTurn != 7 || loaded.CharacterCouncil.XPPerEffect != 13 ||
+		len(loaded.CharacterCouncil.Roles) != 1 || loaded.CharacterCouncil.Roles[0].ID != "steward" ||
+		loaded.CharacterCouncil.Traits["scholar"].CouncilEffects["steward"].IncomeMod != 1.02 {
+		t.Fatalf("senaryo görev/nitelik tanımı beklenmedik: %+v", loaded.CharacterCouncil)
+	}
+
+	legacyCombined := []byte(`{
+		"xp_per_turn": 7,
+		"xp_per_effect": 13,
+		"roles": [{"id":"steward","name_tr":"Kâhya","effects":{"income_mod":1.04}}],
+		"traits": {"scholar":{"name_tr":"Bilgin","council_effects":{"steward":{"income_mod":1.02}}}}
+	}`)
+	if err := os.WriteFile(filepath.Join(dataDir, "character_council.json"), legacyCombined, 0o600); err != nil {
+		t.Fatalf("eski birleşik görev tanımı yazılamadı: %v", err)
+	}
+	if err := os.Remove(filepath.Join(dataDir, "character_traits.json")); err != nil {
+		t.Fatalf("ayrı nitelik tanımı kaldırılamadı: %v", err)
+	}
+	legacyCombinedConfig, err := Load(dir)
+	if err != nil {
+		t.Fatalf("eski birleşik görev/nitelik tanımı yüklenemedi: %v", err)
+	}
+	if got := legacyCombinedConfig.CharacterCouncil.Traits["scholar"].CouncilEffects["steward"].IncomeMod; got != 1.02 {
+		t.Fatalf("eski birleşik nitelik bonusu = %.2f, want 1.02", got)
+	}
+}
+
+func TestAllScenarioCouncilConfigurationsLoad(t *testing.T) {
+	root := filepath.Join("..", "..", "assets", "scenarios")
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		t.Fatalf("senaryo dizini okunamadı: %v", err)
+	}
+	loadedCount := 0
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		scenarioPath := filepath.Join(root, entry.Name())
+		if _, err := os.Stat(filepath.Join(scenarioPath, "data", "scenario.json")); err != nil {
+			continue
+		}
+		definition, err := Load(scenarioPath)
+		if err != nil {
+			t.Errorf("%s yüklenemedi: %v", entry.Name(), err)
+			continue
+		}
+		councilPath := filepath.Join(scenarioPath, "data", "character_council.json")
+		if _, err := os.Stat(councilPath); err == nil {
+			charactersPath := filepath.Join(scenarioPath, "data", "characters.json")
+			if data, err := os.ReadFile(charactersPath); err == nil {
+				var characters []struct {
+					Traits []string `json:"traits"`
+				}
+				if err := json.Unmarshal(data, &characters); err != nil {
+					t.Errorf("%s karakter dosyası parse edilemedi: %v", entry.Name(), err)
+				} else {
+					for _, character := range characters {
+						for _, traitID := range character.Traits {
+							if _, ok := definition.CharacterCouncil.Traits[traitID]; !ok {
+								t.Errorf("%s konsey tanımında karakter niteliği %q eksik", entry.Name(), traitID)
+							}
+						}
+					}
+				}
+			} else if !os.IsNotExist(err) {
+				t.Errorf("%s karakter dosyası okunamadı: %v", entry.Name(), err)
+			}
+		} else if !os.IsNotExist(err) {
+			t.Errorf("%s konsey tanımı incelenemedi: %v", entry.Name(), err)
+		}
+		loadedCount++
+	}
+	if loadedCount == 0 {
+		t.Fatal("doğrulanacak senaryo bulunamadı")
 	}
 }
 

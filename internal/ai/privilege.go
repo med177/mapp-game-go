@@ -161,6 +161,7 @@ func aiEliminateFactionAfterPrivilegeRevoke(gs *state.GameState, fid faction.Fac
 	if f == nil || f.IsEliminated {
 		return
 	}
+	gs.ReleaseFactionCharactersToNeutralPool(fid)
 	f.IsEliminated = true
 	f.OverlordID = ""
 	f.CapitalSettlementID = ""
