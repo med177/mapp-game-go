@@ -2067,7 +2067,7 @@ func (r *Renderer) infoPopupRect() gameui.Rect {
 	popupH := float64(infoPopupHeight(r.combatLog))
 	activeWarsButton := buildActiveWarsHUDButton()
 	return gameui.Rect{
-		X: activeWarsButton.X + activeWarsButton.W + float64(infoPopupActiveWarsGap),
+		X: activeWarsButton.X + activeWarsButton.W + float64(infoPopupActiveWarsGap+infoPopupRightShift),
 		Y: float64(infoPopupTop),
 		W: float64(infoPopupW),
 		H: popupH,

@@ -18,6 +18,22 @@ func TestActiveWarsHudButtonHitUsesRenderedRoundButton(t *testing.T) {
 	}
 }
 
+func TestInfoPopupIsShiftedRightOfCharacterRosterButton(t *testing.T) {
+	r := &Renderer{}
+	popup := r.infoPopupRect()
+	activeWarsButton := buildActiveWarsHUDButton()
+	wantX := activeWarsButton.X + activeWarsButton.W + float64(infoPopupActiveWarsGap+infoPopupRightShift)
+	if popup.X != wantX {
+		t.Fatalf("bilgi balonu X = %v, want %v", popup.X, wantX)
+	}
+
+	characterButton := characterRosterHUDButtonRect()
+	characterButtonRight := float64(characterButton[0] + characterButton[2])
+	if popup.X < characterButtonRight {
+		t.Fatalf("bilgi balonu karakter paneli düğmesiyle örtüşüyor: popup X=%v, düğme sağ kenarı=%v", popup.X, characterButtonRight)
+	}
+}
+
 func TestActiveWarsHudButtonRemainsTopPointerLayerWhenDateHudOverlaps(t *testing.T) {
 	originalWidth := ScreenWidth
 	defer func() { ScreenWidth = originalWidth }()

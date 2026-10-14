@@ -67,6 +67,7 @@ const (
 	infoPanelH                  = float32(780)
 	infoPopupW                  = float32(430)
 	infoPopupActiveWarsGap      = float32(20)
+	infoPopupRightShift         = float32(40)
 	infoPopupTop                = float32(8)
 	factionPanelHeaderH         = 70.0
 	factionPanelBodyPadBottom   = 12.0
