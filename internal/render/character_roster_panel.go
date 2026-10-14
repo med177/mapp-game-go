@@ -510,6 +510,11 @@ func characterRosterAssignmentOptionAtForRoles(x, y float64, column gameui.Rect,
 	return -1
 }
 
+func characterRosterCanAssignRole(gs *state.GameState, character *army.Commander, role scenario.CouncilRoleDefinition) bool {
+	return gs != nil && character != nil &&
+		gs.CanAssignCharacterToCouncilRole(gs.PlayerFactionID, character.ID, role.ID)
+}
+
 func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 	if r == nil || r.gs == nil || !r.showCharacterRoster {
 		return false
@@ -533,7 +538,7 @@ func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 		menuIndex < r.characterRosterOwnedScroll+characterRosterOwnedVisibleRows(ownedViewport, ownedRoster, r.characterRosterOwnedScroll) {
 		if characterRosterCouncilManageable(ownedRoster[menuIndex]) {
 			if option := characterRosterAssignmentOptionAtForRoles(x, y, ownedColumn, menuIndex, r.characterRosterOwnedScroll, roles, ownedRoster); option >= 0 {
-				return true
+				return characterRosterCanAssignRole(r.gs, ownedRoster[menuIndex], roles[option])
 			}
 		}
 	}
@@ -588,8 +593,8 @@ func handleCharacterRosterPanelClick(r *Renderer, x, y float64) (InputAction, bo
 		characterRosterCouncilManageable(ownedRoster[menuIndex]) {
 		if option := characterRosterAssignmentOptionAtForRoles(x, y, ownedColumn, menuIndex, r.characterRosterOwnedScroll, roles, ownedRoster); option >= 0 {
 			character := ownedRoster[menuIndex]
-			r.characterRosterAssignMenuID = ""
-			if r.gs.CanAssignCharacterToCouncilRole(r.gs.PlayerFactionID, character.ID, roles[option].ID) {
+			if characterRosterCanAssignRole(r.gs, character, roles[option]) {
+				r.characterRosterAssignMenuID = ""
 				return InputAction{Kind: ActionAssignCouncilRole, CharacterID: character.ID, CouncilRole: roles[option].ID}, true
 			}
 			return InputAction{}, true
@@ -811,13 +816,18 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 	drawCharacterRosterScrollbar(screen, viewport, len(characters), scroll, ownedCharacters)
 }
 
-func drawCharacterRosterAssignmentMenu(screen *ebiten.Image, column gameui.Rect, rowIndex, scroll int, characters []*army.Commander, roles []scenario.CouncilRoleDefinition) {
+func drawCharacterRosterAssignmentMenu(screen *ebiten.Image, gs *state.GameState, column gameui.Rect, rowIndex, scroll int, characters []*army.Commander, roles []scenario.CouncilRoleDefinition) {
 	menu := characterRosterAssignmentMenuRectWithCount(column, rowIndex, scroll, len(roles), characters)
 	drawUICardRect(screen, menu, color.RGBA{24, 20, 14, 250}, color.RGBA{174, 132, 58, 255}, 1)
 	cursorX, cursorY := ebiten.CursorPosition()
+	var character *army.Commander
+	if rowIndex >= 0 && rowIndex < len(characters) {
+		character = characters[rowIndex]
+	}
 	for optionIndex, role := range roles {
 		option := characterRosterAssignmentOptionButtonForRole(column, rowIndex, scroll, optionIndex, len(roles), role.NameTR, characters)
-		if option.HitTest(float64(cursorX), float64(cursorY)) {
+		enabled := characterRosterCanAssignRole(gs, character, role)
+		if enabled && option.HitTest(float64(cursorX), float64(cursorY)) {
 			vector.FillRect(screen, float32(option.X), float32(option.Y), float32(option.W), float32(option.H), color.RGBA{86, 63, 30, 150}, false)
 		}
 		if optionIndex > 0 {
@@ -825,7 +835,11 @@ func drawCharacterRosterAssignmentMenu(screen *ebiten.Image, column gameui.Rect,
 			vector.StrokeLine(screen, float32(menu.X+8), separatorY, float32(menu.X+menu.W-8), separatorY, 1, color.RGBA{92, 72, 43, 170}, false)
 		}
 		labelRect := gameui.Rect{X: option.X + 8, Y: option.Y + 4, W: option.W - 16, H: option.H - 8}
-		drawUILabel(screen, labelRect, option.Label, color.RGBA{235, 220, 185, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		labelColor := color.RGBA{235, 220, 185, 255}
+		if !enabled {
+			labelColor = color.RGBA{128, 118, 101, 210}
+		}
+		drawUILabel(screen, labelRect, option.Label, labelColor, gameui.TextSmall, gameui.TextAlignStart)
 	}
 }
 
@@ -859,7 +873,7 @@ func (r *Renderer) drawCharacterRosterPanel(screen *ebiten.Image) {
 	if menuIndex >= r.characterRosterOwnedScroll &&
 		menuIndex < r.characterRosterOwnedScroll+characterRosterOwnedVisibleRows(ownedViewport, ownedRoster, r.characterRosterOwnedScroll) &&
 		characterRosterCouncilManageable(ownedRoster[menuIndex]) {
-		drawCharacterRosterAssignmentMenu(screen, ownedColumn, menuIndex, r.characterRosterOwnedScroll, ownedRoster, roles)
+		drawCharacterRosterAssignmentMenu(screen, r.gs, ownedColumn, menuIndex, r.characterRosterOwnedScroll, ownedRoster, roles)
 	}
 }
 

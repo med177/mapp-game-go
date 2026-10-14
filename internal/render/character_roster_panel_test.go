@@ -256,9 +256,10 @@ func TestMilitaryCommanderShowsCouncilAssignmentButNoReleaseControl(t *testing.T
 			Factions:        map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
 			Commanders:      map[string]*army.Commander{commander.ID: commander},
 			CouncilConfig: scenario.CharacterCouncilConfig{
-				Roles: []scenario.CouncilRoleDefinition{{
-					ID: state.CouncilRoleMilitaryResponsible, NameTR: "Serasker", SetCommanderArmy: true,
-				}},
+				Roles: []scenario.CouncilRoleDefinition{
+					{ID: state.CouncilRoleTreasurer, NameTR: "Hazinedar"},
+					{ID: state.CouncilRoleMilitaryResponsible, NameTR: "Serasker", SetCommanderArmy: true},
+				},
 			},
 		},
 	}
@@ -276,8 +277,17 @@ func TestMilitaryCommanderShowsCouncilAssignmentButNoReleaseControl(t *testing.T
 		t.Fatal("eligible army commander does not show an interactive Ata button")
 	}
 	r.characterRosterAssignMenuID = commander.ID
-	role := r.gs.CouncilConfig.Roles[0]
-	option := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, r.characterRosterOwnedScroll, 0, 1, role.NameTR, r.characterRosterOwned)
+	roles := r.gs.CouncilConfig.Roles
+	disabledOption := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, r.characterRosterOwnedScroll, 0, len(roles), roles[0].NameTR, r.characterRosterOwned)
+	if r.characterRosterPanelHovering(disabledOption.X+disabledOption.W/2, disabledOption.Y+disabledOption.H/2) {
+		t.Fatal("army commander showed an unavailable council role as interactive")
+	}
+	if action, handled := handleCharacterRosterPanelClick(r, disabledOption.X+disabledOption.W/2, disabledOption.Y+disabledOption.H/2); !handled ||
+		action.Kind != ActionNone || r.characterRosterAssignMenuID != commander.ID {
+		t.Fatalf("disabled council role click = %+v, handled=%t, menu=%q; want inert option with menu open",
+			action, handled, r.characterRosterAssignMenuID)
+	}
+	option := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, r.characterRosterOwnedScroll, 1, len(roles), roles[1].NameTR, r.characterRosterOwned)
 	if !r.characterRosterPanelHovering(option.X+option.W/2, option.Y+option.H/2) {
 		t.Fatal("military commander council role option is not interactive")
 	}
