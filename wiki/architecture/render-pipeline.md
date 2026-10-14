@@ -854,11 +854,11 @@ koltuk satırları olarak gösterilmez; atanmış karakter kartında görev adı
 bonus bilgisi görünür. Boşta karakterin `Ata` düğmesi hemen altında görev
 seçenekleri listesini açar. Atanmış karakterde aynı yerdeki `Kaldır` düğmesi
 görevi kaldırır; ardından karakter yeniden atanabilir. Seçenekler aynı satır
-içinde açılır ve dışarı tıklamayla kapanır. Hane Lideri ataması mevcut
+içinde açılır ve dışarı tıklamayla kapanır. Lider ataması mevcut
 `AssignedCouncilRole` alanında korunur, ancak henüz oyun bonusu vermez. Hazine
 bonusu bölgesel vergide +%5, Diplomat bonusu mevcut Diplomasi panelinden hedef
 seçilen Heyet hamlesinde +3 ilişki puanıdır. Hane üyeleri
-atama önceliğine göre (Hane Lideri, Hazine Sorumlusu, Diplomat, ordu görevi,
+atama önceliğine göre (Lider, Hazinedar, Diplomat, ordu görevi,
 boşta) ve eşit görevde ada göre sıralanır. Uygun karakter `ActionAssignCouncilRole`,
 mevcut koltuk sahibi
 `ActionClearCouncilRole` ile oyun/state katmanına iletilir; çizim katmanı bonus

@@ -305,15 +305,15 @@ func characterRosterAssignmentOptionButton(column gameui.Rect, rowIndex, scroll,
 func characterCouncilRoleNameTR(role string) string {
 	switch role {
 	case state.CouncilRoleHeadOfHouse:
-		return "Hane Lideri"
+		return "Lider"
 	case state.CouncilRoleTreasurer:
-		return "Hazine Sorumlusu"
+		return "Hazinedar"
 	case state.CouncilRoleDiplomat:
 		return "Diplomat"
 	case state.CouncilRoleHeir:
 		return "Veliaht"
 	case state.CouncilRoleMilitaryResponsible:
-		return "Askeri Sorumlu"
+		return "Serasker"
 	default:
 		return "Görev"
 	}

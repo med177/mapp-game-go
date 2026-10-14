@@ -452,16 +452,16 @@ func (g *Game) Update() error {
 		case render.ActionAssignCouncilRole:
 			if g.gs.AssignCharacterToCouncilRole(g.gs.PlayerFactionID, action.CharacterID, action.CouncilRole) {
 				g.renderer.RefreshCharacterRosterPanel()
-				message := "Hazine Sorumlusu atandı. Bölgesel vergi geliri +%5."
+				message := "Hazinedar atandı. Bölgesel vergi geliri +%5."
 				switch action.CouncilRole {
 				case state.CouncilRoleHeadOfHouse:
-					message = "Hane Lideri atandı."
+					message = "Lider atandı."
 				case state.CouncilRoleDiplomat:
 					message = "Diplomat atandı. Heyet hamlesi +3 ilişki puanı sağlar."
 				case state.CouncilRoleHeir:
 					message = "Veliaht atandı."
 				case state.CouncilRoleMilitaryResponsible:
-					message = "Askeri Sorumlu atandı."
+					message = "Serasker atandı."
 				}
 				g.renderer.ShowCombatResult(message)
 			} else {
@@ -470,16 +470,16 @@ func (g *Game) Update() error {
 		case render.ActionClearCouncilRole:
 			if g.gs.UnassignCharacterFromCouncilRole(g.gs.PlayerFactionID, action.CharacterID) {
 				g.renderer.RefreshCharacterRosterPanel()
-				message := "Hazine Sorumlusu koltuğu boşaltıldı."
+				message := "Hazinedar koltuğu boşaltıldı."
 				switch action.CouncilRole {
 				case state.CouncilRoleHeadOfHouse:
-					message = "Hane Lideri koltuğu boşaltıldı."
+					message = "Lider koltuğu boşaltıldı."
 				case state.CouncilRoleDiplomat:
 					message = "Diplomat koltuğu boşaltıldı."
 				case state.CouncilRoleHeir:
 					message = "Veliaht görevi kaldırıldı."
 				case state.CouncilRoleMilitaryResponsible:
-					message = "Askeri Sorumlu görevi kaldırıldı."
+					message = "Serasker görevi kaldırıldı."
 				}
 				g.renderer.ShowCombatResult(message)
 			}

@@ -211,7 +211,7 @@ func TestCharacterDutyActionsAndAssignmentMenuStayInRosterCard(t *testing.T) {
 		t.Fatalf("duty detail rect %v should use the full card width below the remove button %v", detail, assignedButton)
 	}
 
-	wantRoleLabels := []string{"Hane Lideri", "Hazine Sorumlusu", "Diplomat", "Veliaht", "Askeri Sorumlu"}
+	wantRoleLabels := []string{"Lider", "Hazinedar", "Diplomat", "Veliaht", "Serasker"}
 	if len(characterCouncilRoleIDs) != len(wantRoleLabels) {
 		t.Fatalf("council role count = %d, want %d", len(characterCouncilRoleIDs), len(wantRoleLabels))
 	}
@@ -221,7 +221,7 @@ func TestCharacterDutyActionsAndAssignmentMenuStayInRosterCard(t *testing.T) {
 		}
 	}
 	lastOption := characterRosterAssignmentOptionButton(ownedColumn, 0, 0, len(characterCouncilRoleIDs)-1)
-	if lastOption.Label != "Askeri Sorumlu" || lastOption.Y+lastOption.H > menu.Y+menu.H {
+	if lastOption.Label != "Serasker" || lastOption.Y+lastOption.H > menu.Y+menu.H {
 		t.Fatalf("last council role option = %+v, outside expanded menu %v", lastOption, menu)
 	}
 }
@@ -350,7 +350,7 @@ func TestCharacterRosterTreasurerSeatAndAssignmentButtonAreInteractive(t *testin
 	if r.characterRosterPanelHovering(release.X+release.W/2, release.Y+release.H/2) {
 		t.Fatal("assigned treasurer's haneden çıkarma button should be hidden and non-interactive")
 	}
-	if got := characterCouncilRoleNameTR(character.AssignedCouncilRole); got != "Hazine Sorumlusu" ||
+	if got := characterCouncilRoleNameTR(character.AssignedCouncilRole); got != "Hazinedar" ||
 		characterCouncilRoleBenefitTR(character.AssignedCouncilRole) != "Vergi geliri +%5" {
 		t.Fatalf("assigned character card role/benefit = %q / %q", got, characterCouncilRoleBenefitTR(character.AssignedCouncilRole))
 	}

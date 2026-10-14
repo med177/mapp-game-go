@@ -5,16 +5,16 @@ last_updated: 2026-10-14
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
-- 2026-10-14: Konsey görevlerine Veliaht ve Askeri Sorumlu eklendi. Görevler
+- 2026-10-14: Konsey görevlerine Veliaht ve Serasker eklendi. Görevler
   karakter kartından atanıp kaldırılabiliyor ve kompakt/legacy kayıtlarda
   korunuyor; roster sıralaması ile görev bildirimleri bu rolleri içeriyor.
   Henüz özel oyun bonusu üretmiyorlar.
 
 - 2026-10-14: Karakter roster'ı göreve atanma önceliğine göre sıralanıyor;
-  Hane Lideri, Hazine Sorumlusu, Diplomat, Veliaht ve Askeri Sorumlu görevleri
+  Lider, Hazinedar, Diplomat, Veliaht ve Serasker görevleri
   bu sırayla gösteriliyor.
   Görevler ayrı satırlardan kaldırılarak atanmış karakter kartında gösteriliyor;
-  boşta üyede `Ata`, atanmış üyede `Kaldır` düğmesi var. Hane Lideri görevi
+  boşta üyede `Ata`, atanmış üyede `Kaldır` düğmesi var. Lider görevi
   atama state'inde saklanıyor ancak henüz oyun bonusu üretmiyor.
 
 - 2026-10-14: Karakter roster'ının ilk dilimi eklendi. Aktif `administrator` ve
@@ -33,7 +33,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   Kapsam: `internal/state/character_roster.go`,
   `internal/render/character_roster_panel.go`, `internal/game/game.go`.
 
-- 2026-10-14: Konseyin ilk pilot koltuğu Hazine Sorumlusu eklendi. Aktif ve boşta
+- 2026-10-14: Konseyin ilk pilot koltuğu Hazinedar eklendi. Aktif ve boşta
   olan yönetici/karakter atanabiliyor; atama ordu roster'ından çıkarıyor, mevcut
   sahibin değiştirilmesi veya koltuğun boşaltılması destekleniyor. Bonus yalnız
   bölgesel vergiye +%5; çözümleme, gelir önizlemesi, brüt gelir ve vergi bütçesi

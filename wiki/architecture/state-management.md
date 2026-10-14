@@ -371,12 +371,12 @@ verilir.
 
 `Commander.AssignedCouncilRole`, karakterin council koltuğunu mevcut canonical
 `GameState.Commanders` map'inde tutar ve compact/legacy save ile korunur.
-Hane Lideri, Hazine Sorumlusu, Diplomat, Veliaht ve Askeri Sorumlu görevleri bu
+Lider, Hazinedar, Diplomat, Veliaht ve Serasker görevleri bu
 alanda saklanır; `AssignCharacterToCouncilRole()` karakteri seçilen göreve
 geçirir ve hedef koltuğun eski sahibini boşa çıkarır. `CharacterRoster()`
-önce bu görev önceliğine, sonra ada göre sıralar. Veliaht ve Askeri Sorumlu
+önce bu görev önceliğine, sonra ada göre sıralar. Veliaht ve Serasker
 atamaları roster ve kayıtta saklanır ancak henüz oyun bonusu üretmez. Ordu
-atama/AI commander roster'ı council atamalı karakterleri kullanmaz. Hane Lideri
+atama/AI commander roster'ı council atamalı karakterleri kullanmaz. Lider
 şu an bonus üretmez. Hazine
 Sorumlusu'nun `TreasurerTaxIncomeBonus()` hesabı yalnız
 bölgesel vergi matrahına +%5 uygular. `TaxIncomeForFaction()`, ekonomi tick'i,
