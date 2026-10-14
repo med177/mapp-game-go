@@ -201,16 +201,19 @@ func TestCharacterRosterCandidateShowsOneTimeAndPerTurnCostsSeparately(t *testin
 	}
 }
 
-func TestMilitaryCommanderIsListedWithoutHouseholdControls(t *testing.T) {
+func TestMilitaryCommanderShowsCouncilAssignmentButNoReleaseControl(t *testing.T) {
 	const owner faction.FactionID = "player"
 	commander := &army.Commander{
 		ID: "cmd_jaime", Type: army.CharacterTypeCommander, OwnerID: string(owner), Name: "Jaime",
 		AssignedArmyID: "army_1",
 	}
-	if characterRosterMemberManageable(commander) {
-		t.Fatal("military commander should not receive council or release controls")
+	if !characterRosterCouncilManageable(commander) {
+		t.Fatal("military commander should be eligible for council controls")
 	}
-	if !characterRosterMemberManageable(&army.Commander{Type: army.CharacterTypeCharacter}) {
+	if characterRosterReleaseable(commander) {
+		t.Fatal("military commander should not receive household release control")
+	}
+	if !characterRosterReleaseable(&army.Commander{Type: army.CharacterTypeCharacter}) {
 		t.Fatal("household character should retain council and release controls")
 	}
 	r := &Renderer{
@@ -219,6 +222,11 @@ func TestMilitaryCommanderIsListedWithoutHouseholdControls(t *testing.T) {
 			PlayerFactionID: owner,
 			Factions:        map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
 			Commanders:      map[string]*army.Commander{commander.ID: commander},
+			CouncilConfig: scenario.CharacterCouncilConfig{
+				Roles: []scenario.CouncilRoleDefinition{{
+					ID: state.CouncilRoleMilitaryResponsible, NameTR: "Serasker", SetCommanderArmy: true,
+				}},
+			},
 		},
 	}
 	r.OpenCharacterRosterPanel()
@@ -229,6 +237,16 @@ func TestMilitaryCommanderIsListedWithoutHouseholdControls(t *testing.T) {
 	release := characterReleaseButton(ownedColumn, 0, r.characterRosterOwnedScroll, r.characterRosterOwned)
 	if r.characterRosterPanelHovering(release.X+release.W/2, release.Y+release.H/2) {
 		t.Fatal("military commander exposed the household release control")
+	}
+	assign := characterRosterDutyActionButton(ownedColumn, 0, r.characterRosterOwnedScroll, commander, r.characterRosterOwned)
+	if assign.Label != "Ata" || !r.characterRosterPanelHovering(assign.X+assign.W/2, assign.Y+assign.H/2) {
+		t.Fatal("eligible army commander does not show an interactive Ata button")
+	}
+	r.characterRosterAssignMenuID = commander.ID
+	role := r.gs.CouncilConfig.Roles[0]
+	option := characterRosterAssignmentOptionButtonForRole(ownedColumn, 0, r.characterRosterOwnedScroll, 0, 1, role.NameTR, r.characterRosterOwned)
+	if !r.characterRosterPanelHovering(option.X+option.W/2, option.Y+option.H/2) {
+		t.Fatal("military commander council role option is not interactive")
 	}
 }
 

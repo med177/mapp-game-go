@@ -8,6 +8,7 @@ import (
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
 	gameui "mapp-game-go/internal/ui"
@@ -235,7 +236,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
 	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
 
-	drawArmyCommanderCard(screen, a, layout)
+	drawArmyCommanderCard(screen, a, layout, gs.CouncilConfig)
 	if btn, ok := buildArmyPanelCommanderUnassignButton(gs, aid); ok {
 		gameui.DrawButton(screen, btn, commanderUnassignButtonStyle(), sharedTextRenderer{})
 	}
@@ -475,7 +476,7 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 	sepY := layout.headerY
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
 	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
-	drawArmyCommanderCard(screen, &displayArmy, layout)
+	drawArmyCommanderCard(screen, &displayArmy, layout, gs.CouncilConfig)
 
 	const totalSlots = army.MaxArmySize
 	for i := 0; i < totalSlots; i++ {
@@ -529,7 +530,7 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 	drawArmyPowerFooter(screen, nil, nil, layout, displayArmy.TotalStrength(gs.UnitTypes), displayArmy.TotalDefense(gs.UnitTypes), "Güç", "")
 }
 
-func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout) {
+func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout, config scenario.CharacterCouncilConfig) {
 	commander, role := armyPanelDisplayedCommander(a)
 	drawCommanderSummaryCard(screen, commander, float64(layout.commanderX), float64(layout.commanderY), float64(layout.commanderW), float64(layout.commanderH), commanderCardOptions{
 		Role:            role,
@@ -537,6 +538,7 @@ func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyP
 		EmptyEffectText: "-",
 		ShowEffectText:  false,
 		MaxTraitRows:    1,
+		CouncilConfig:   config,
 	})
 }
 
@@ -593,7 +595,7 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
 	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
 
-	drawEnemyArmyCommanderCard(screen, a, layout)
+	drawEnemyArmyCommanderCard(screen, a, layout, gs.CouncilConfig)
 
 	const totalSlots = army.MaxArmySize
 	for i := 0; i < totalSlots; i++ {
@@ -1042,7 +1044,7 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
 	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
 
-	drawEnemyArmyCommanderCard(screen, a, layout)
+	drawEnemyArmyCommanderCard(screen, a, layout, gs.CouncilConfig)
 
 	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 	for i := 0; i < totalSlots; i++ {
@@ -1453,7 +1455,7 @@ func armyPanelDisplayedCommander(a *army.Army) (*army.Commander, string) {
 	return nil, "Komutan"
 }
 
-func drawArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout) {
+func drawArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout, config scenario.CharacterCouncilConfig) {
 	commander, role := armyPanelDisplayedCommander(a)
 	extra := ""
 	if a != nil && a.Commander != nil && a.EmbarkedCommander != nil && a.Commander != a.EmbarkedCommander {
@@ -1467,6 +1469,7 @@ func drawArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelL
 		ShowEffectText:  false,
 		MaxTraitRows:    1,
 		BottomInset:     8,
+		CouncilConfig:   config,
 	})
 }
 

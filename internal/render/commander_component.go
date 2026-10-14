@@ -37,6 +37,7 @@ type commanderCardOptions struct {
 	ShowEffectText  bool
 	MaxTraitRows    int
 	BottomInset     float64
+	CouncilConfig   scenario.CharacterCouncilConfig
 }
 
 type commanderCompactStripOptions struct {
@@ -76,6 +77,13 @@ func characterTraitsSummary(character *army.Commander) string {
 		traits = append(traits, army.TraitLabelTR(trait))
 	}
 	return strings.Join(traits, ", ")
+}
+
+func characterTraitDisplayName(trait army.CharacterTrait, config scenario.CharacterCouncilConfig) string {
+	if definition, ok := config.Traits[string(trait)]; ok && definition.NameTR != "" {
+		return definition.NameTR
+	}
+	return army.TraitLabelTR(trait)
 }
 
 func characterTraitBadge(trait army.CharacterTrait, labelOverride ...string) characterTraitBadgeStyle {
@@ -224,7 +232,7 @@ func drawCharacterTraitBadge(screen *ebiten.Image, style characterTraitBadgeStyl
 	DrawTextCentered(screen, style.Label, x+w/2, y+2, FaceSmall, style.Text)
 }
 
-func drawCharacterTraitBadges(screen *ebiten.Image, character *army.Commander, x, y, maxWidth float64, opts characterTraitBadgeOptions, configs ...scenario.CharacterCouncilConfig) float64 {
+func drawCharacterTraitBadges(screen *ebiten.Image, character *army.Commander, x, y, maxWidth float64, opts characterTraitBadgeOptions, config scenario.CharacterCouncilConfig) float64 {
 	const (
 		badgeH = 18.0
 		gapX   = 6.0
@@ -274,10 +282,7 @@ func drawCharacterTraitBadges(screen *ebiten.Image, character *army.Commander, x
 	cursorY := y
 	row := 1
 	for i, trait := range character.Traits {
-		label := ""
-		if len(configs) > 0 {
-			label = configs[0].Traits[string(trait)].NameTR
-		}
+		label := characterTraitDisplayName(trait, config)
 		style := characterTraitBadge(trait, label)
 		w := badgeWidth(style.Label)
 		if cursorX > x && cursorX+w > maxX {
@@ -343,7 +348,7 @@ func drawCommanderSummaryCard(screen *ebiten.Image, commander *army.Commander, x
 		contentBottomY = y + h
 	}
 	DrawText(screen, "Uzmanlıklar", infoTextX, infoY+8, FaceSmall, ColorGold)
-	badgesBottomY := drawCharacterTraitBadges(screen, commander, infoTextX, infoY+24, infoTextW, characterTraitBadgeOptions{MaxRows: opts.MaxTraitRows})
+	badgesBottomY := drawCharacterTraitBadges(screen, commander, infoTextX, infoY+24, infoTextW, characterTraitBadgeOptions{MaxRows: opts.MaxTraitRows}, opts.CouncilConfig)
 	nextTextY := badgesBottomY + 8
 	if opts.ShowEffectText && nextTextY+14 <= contentBottomY {
 		if commander == nil {

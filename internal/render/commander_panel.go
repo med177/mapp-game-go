@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
 
@@ -502,7 +503,7 @@ func (r *Renderer) DrawCommanderPanel(screen *ebiten.Image) {
 					DrawText(body, unavailableReason+" — atanamaz", textX, row.Y+36, FaceSmall, ColorRed)
 				} else {
 					DrawText(body, fmt.Sprintf("Seviye %d  |  %d XP", commander.Level, commander.Experience), textX, row.Y+36, FaceSmall, ColorGray)
-					drawCharacterTraitBadges(body, commander, textX, row.Y+56, row.W-(textX-row.X)-12, characterTraitBadgeOptions{MaxRows: 1})
+					drawCharacterTraitBadges(body, commander, textX, row.Y+56, row.W-(textX-row.X)-12, characterTraitBadgeOptions{MaxRows: 1}, r.gs.CouncilConfig)
 				}
 			}
 		}
@@ -598,10 +599,10 @@ func (r *Renderer) drawCommanderDetail(screen *ebiten.Image, current *army.Army)
 	} else {
 		y := panel.Y + 150
 		if current.Commander != nil {
-			y = drawCommanderProfile(screen, x, y, "Filo Komutanı", current.Commander)
+			y = drawCommanderProfile(screen, x, y, "Filo Komutanı", current.Commander, r.gs.CouncilConfig)
 		}
 		if current.EmbarkedCommander != nil {
-			drawCommanderProfile(screen, x, y, "Taşınan Kara Komutanı", current.EmbarkedCommander)
+			drawCommanderProfile(screen, x, y, "Taşınan Kara Komutanı", current.EmbarkedCommander, r.gs.CouncilConfig)
 		}
 	}
 
@@ -716,14 +717,14 @@ func commanderSiegeSummary(commander *army.Commander) string {
 	return "Komutan: " + commander.Name + "  |  " + commanderOperationalEffectSummary(commander)
 }
 
-func drawCommanderProfile(screen *ebiten.Image, x, y float64, role string, commander *army.Commander) float64 {
+func drawCommanderProfile(screen *ebiten.Image, x, y float64, role string, commander *army.Commander, config scenario.CharacterCouncilConfig) float64 {
 	DrawText(screen, role, x, y, FaceSmall, ColorGold)
 	DrawText(screen, commander.Name, x, y+20, FaceMed, ColorWhite)
 	DrawText(screen, fmt.Sprintf("Seviye %d  |  %d XP  |  Savaş %d  |  Zafer %d", commander.Level, commander.Experience, commander.Battles, commander.Victories), x, y+42, FaceSmall, ColorGray)
 	DrawText(screen, commanderCombatEffectSummary(commander), x, y+62, FaceSmall, color.RGBA{140, 210, 150, 255})
 	DrawText(screen, commanderOperationalEffectSummary(commander), x, y+82, FaceSmall, color.RGBA{145, 185, 220, 255})
 	DrawText(screen, "Uzmanlıklar", x, y+104, FaceSmall, ColorGold)
-	bottomY := drawCharacterTraitBadges(screen, commander, x, y+122, 280, characterTraitBadgeOptions{})
+	bottomY := drawCharacterTraitBadges(screen, commander, x, y+122, 280, characterTraitBadgeOptions{}, config)
 	return bottomY + 14
 }
 

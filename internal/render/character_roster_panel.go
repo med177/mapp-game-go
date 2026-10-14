@@ -259,7 +259,13 @@ func characterRosterCandidateCostLines(character *army.Commander) [2]string {
 	}
 }
 
-func characterRosterMemberManageable(character *army.Commander) bool {
+func characterRosterCouncilManageable(character *army.Commander) bool {
+	return character != nil &&
+		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
+			character.Type == army.CharacterTypeCommander)
+}
+
+func characterRosterReleaseable(character *army.Commander) bool {
 	return character != nil &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter)
 }
@@ -513,7 +519,7 @@ func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 	r.characterRosterOwnedScroll = clampCharacterRosterOwnedScroll(r.characterRosterOwnedScroll, ownedViewport, ownedRoster)
 	if menuIndex := characterRosterIndexByID(ownedRoster, r.characterRosterAssignMenuID); menuIndex >= r.characterRosterOwnedScroll &&
 		menuIndex < r.characterRosterOwnedScroll+characterRosterOwnedVisibleRows(ownedViewport, ownedRoster, r.characterRosterOwnedScroll) {
-		if characterRosterMemberManageable(ownedRoster[menuIndex]) {
+		if characterRosterCouncilManageable(ownedRoster[menuIndex]) {
 			if option := characterRosterAssignmentOptionAtForRoles(x, y, ownedColumn, menuIndex, r.characterRosterOwnedScroll, roles, ownedRoster); option >= 0 {
 				return true
 			}
@@ -521,12 +527,12 @@ func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 	}
 	if index := characterRosterOwnedRowAt(x, y, ownedRoster, r.characterRosterOwnedScroll, ownedViewport); index >= 0 {
 		character := ownedRoster[index]
-		if characterRosterMemberManageable(character) && character.AssignedCouncilRole == "" &&
+		if characterRosterReleaseable(character) && character.AssignedCouncilRole == "" &&
 			characterReleaseButton(ownedColumn, index, r.characterRosterOwnedScroll, ownedRoster).HitTest(x, y) {
 			return r.characterRosterAssignMenuID != character.ID
 		}
 		dutyButton := characterRosterDutyActionButton(ownedColumn, index, r.characterRosterOwnedScroll, character, ownedRoster)
-		if characterRosterMemberManageable(character) && dutyButton.HitTest(x, y) &&
+		if characterRosterCouncilManageable(character) && dutyButton.HitTest(x, y) &&
 			(character.AssignedCouncilRole != "" ||
 				characterCanBeAssignedToAnyCouncilRole(r.gs, character.ID)) {
 			return true
@@ -567,7 +573,7 @@ func handleCharacterRosterPanelClick(r *Renderer, x, y float64) (InputAction, bo
 	menuIndex := characterRosterIndexByID(ownedRoster, r.characterRosterAssignMenuID)
 	if menuIndex >= r.characterRosterOwnedScroll &&
 		menuIndex < r.characterRosterOwnedScroll+characterRosterOwnedVisibleRows(ownedViewport, ownedRoster, r.characterRosterOwnedScroll) &&
-		characterRosterMemberManageable(ownedRoster[menuIndex]) {
+		characterRosterCouncilManageable(ownedRoster[menuIndex]) {
 		if option := characterRosterAssignmentOptionAtForRoles(x, y, ownedColumn, menuIndex, r.characterRosterOwnedScroll, roles, ownedRoster); option >= 0 {
 			character := ownedRoster[menuIndex]
 			r.characterRosterAssignMenuID = ""
@@ -585,16 +591,16 @@ func handleCharacterRosterPanelClick(r *Renderer, x, y float64) (InputAction, bo
 
 	if index := characterRosterOwnedRowAt(x, y, ownedRoster, r.characterRosterOwnedScroll, ownedViewport); index >= 0 {
 		character := ownedRoster[index]
-		if characterRosterMemberManageable(character) && character.AssignedCouncilRole == "" &&
+		if characterRosterReleaseable(character) && character.AssignedCouncilRole == "" &&
 			characterReleaseButton(ownedColumn, index, r.characterRosterOwnedScroll, ownedRoster).HitTest(x, y) {
 			r.confirmCharacterRelease(character)
 			return InputAction{}, true
 		}
-		if characterRosterMemberManageable(character) && character.AssignedCouncilRole != "" &&
+		if characterRosterCouncilManageable(character) && character.AssignedCouncilRole != "" &&
 			characterRosterDutyActionButton(ownedColumn, index, r.characterRosterOwnedScroll, character, ownedRoster).HitTest(x, y) {
 			return InputAction{Kind: ActionClearCouncilRole, CharacterID: character.ID, CouncilRole: character.AssignedCouncilRole}, true
 		}
-		if characterRosterMemberManageable(character) && character.AssignedCouncilRole == "" &&
+		if characterRosterCouncilManageable(character) && character.AssignedCouncilRole == "" &&
 			characterCanBeAssignedToAnyCouncilRole(r.gs, character.ID) &&
 			characterCouncilAssignButton(ownedColumn, index, r.characterRosterOwnedScroll, ownedRoster).HitTest(x, y) {
 			r.characterRosterAssignMenuID = character.ID
@@ -712,7 +718,7 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 		if candidate {
 			adopt = characterAdoptButton(column, index, scroll)
 			nameW = adopt.X - textX - 5
-		} else if characterRosterMemberManageable(character) && (character.AssignedCouncilRole != "" ||
+		} else if characterRosterCouncilManageable(character) && (character.AssignedCouncilRole != "" ||
 			characterCanBeAssignedToAnyCouncilRole(gs, character.ID)) {
 			button := characterRosterDutyActionButton(column, index, scroll, character, characters)
 			nameW = button.X - textX - 5
@@ -776,12 +782,12 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 		if candidate {
 			drawUIButtonWidget(body, adopt, applyTinyButtonStyle)
 		} else {
-			if characterRosterMemberManageable(character) && character.AssignedCouncilRole == "" && character.ID != assignmentMenuCharacterID {
+			if characterRosterReleaseable(character) && character.AssignedCouncilRole == "" && character.ID != assignmentMenuCharacterID {
 				drawUIButtonWidget(body, characterReleaseButton(column, index, scroll, characters), dangerTinyButtonStyle)
 			}
-			if characterRosterMemberManageable(character) && character.AssignedCouncilRole != "" {
+			if characterRosterCouncilManageable(character) && character.AssignedCouncilRole != "" {
 				drawUIButtonWidget(body, characterRosterDutyActionButton(column, index, scroll, character, characters), tinyButtonStyle)
-			} else if characterRosterMemberManageable(character) && characterCanBeAssignedToAnyCouncilRole(gs, character.ID) {
+			} else if characterRosterCouncilManageable(character) && characterCanBeAssignedToAnyCouncilRole(gs, character.ID) {
 				drawUIButtonWidget(body, characterRosterDutyActionButton(column, index, scroll, character, characters), tinyButtonStyle)
 			}
 		}
@@ -840,7 +846,7 @@ func (r *Renderer) drawCharacterRosterPanel(screen *ebiten.Image) {
 	menuIndex := characterRosterIndexByID(ownedRoster, r.characterRosterAssignMenuID)
 	if menuIndex >= r.characterRosterOwnedScroll &&
 		menuIndex < r.characterRosterOwnedScroll+characterRosterOwnedVisibleRows(ownedViewport, ownedRoster, r.characterRosterOwnedScroll) &&
-		characterRosterMemberManageable(ownedRoster[menuIndex]) {
+		characterRosterCouncilManageable(ownedRoster[menuIndex]) {
 		drawCharacterRosterAssignmentMenu(screen, ownedColumn, menuIndex, r.characterRosterOwnedScroll, ownedRoster, roles)
 	}
 }
