@@ -342,7 +342,7 @@
     "region_id": "sharp_point",
     "units": [
       {
-        "type_id": "elite_cavalry",
+        "type_id": "heavy_cavalry",
         "count": 2
       },
       {
