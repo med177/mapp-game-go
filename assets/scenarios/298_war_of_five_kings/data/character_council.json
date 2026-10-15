@@ -36,6 +36,7 @@
       "id": "military_responsible",
       "name_tr": "Serasker",
       "set_commander_army": true,
+      "allowed_character_types": ["administrator", "commander"],
       "effects": {
         "military_power_mod": 1.03,
         "commander_power_mod": 1.03

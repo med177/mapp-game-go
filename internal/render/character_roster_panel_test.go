@@ -243,6 +243,82 @@ func TestCharacterRosterMissionDetailsUseSeparateLines(t *testing.T) {
 	}
 }
 
+func TestCharacterAdventureAbilityLinesShowNameAndEffect(t *testing.T) {
+	abilities := []army.CharacterAbility{
+		{ID: "duel_veteran", NameTR: "Düello Ustalığı", Scope: "army", Effect: "army_power", Modifier: 0.03},
+		{ID: "fieldcraft", NameTR: "Saha Keşfi", Scope: "faction", Effect: "military_power", Modifier: 0.02},
+	}
+	got := characterAdventureAbilityLinesTR(abilities)
+	want := []string{"Düello Ustalığı (+%3 ordu gücü)", "Saha Keşfi (+%2 askerî güç)"}
+	if len(got) != len(want) {
+		t.Fatalf("adventure ability lines = %q, want %q", got, want)
+	}
+	for index := range want {
+		if got[index] != want[index] {
+			t.Fatalf("adventure ability line %d = %q, want %q", index, got[index], want[index])
+		}
+	}
+	if got := characterAdventureAbilityLinesTR([]army.CharacterAbility{{ID: "unnamed"}}); len(got) != 0 {
+		t.Fatalf("unnamed adventure ability lines = %q, want empty", got)
+	}
+}
+
+func TestCharacterAdventureAbilityEffectsSummaryOmitsAbilityNames(t *testing.T) {
+	abilities := []army.CharacterAbility{
+		{ID: "duel_veteran", NameTR: "Düello Ustalığı", Scope: "army", Effect: "army_power", Modifier: 0.03},
+		{ID: "fieldcraft", NameTR: "Saha Keşfi", Scope: "faction", Effect: "military_power", Modifier: 0.02},
+	}
+	if got, want := characterAdventureAbilityEffectsSummaryTR(abilities), "+%3 ordu gücü · +%2 askerî güç"; got != want {
+		t.Fatalf("adventure ability effect summary = %q, want %q", got, want)
+	}
+}
+
+func TestCharacterAbilityPopupExpandsForEveryAbility(t *testing.T) {
+	popup := characterAbilityPopupRect(100, 100, 10)
+	wantHeight := characterAbilityPopupPad*2 + characterAbilityPopupTitleH + 10*characterAbilityPopupLineH
+	if popup.H != wantHeight {
+		t.Fatalf("10-ability popup height = %.0f, want %.0f", popup.H, wantHeight)
+	}
+	if popup.W != characterAbilityPopupWidth {
+		t.Fatalf("ability popup width = %.0f, want %.0f", popup.W, characterAbilityPopupWidth)
+	}
+}
+
+func TestCharacterRosterAbilityPortraitHoverShowsPointer(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_bronn", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Bronn",
+	}
+	for index := 0; index < 10; index++ {
+		character.AdventureAbilities = append(character.AdventureAbilities, army.CharacterAbility{
+			ID: "ability_" + itoa(index), NameTR: "Yetenek " + itoa(index),
+			Scope: "army", Effect: "army_power", Modifier: 0.01,
+		})
+	}
+	r := &Renderer{
+		gs: &state.GameState{
+			Year: 300, PlayerFactionID: owner,
+			Factions: map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		},
+		showCharacterRoster:       true,
+		characterRosterOwned:      []*army.Commander{character},
+		characterRosterCacheValid: true,
+	}
+	ownedColumn, _ := characterRosterColumns()
+	viewport := characterRosterOwnedListViewport(ownedColumn)
+	row := characterRosterOwnedRowRect(viewport, 0, 0, r.characterRosterOwned)
+	portrait := characterRosterPortraitRect(row)
+	x, y := portrait.X+portrait.W/2, portrait.Y+portrait.H/2
+
+	gotCharacter, lines := characterRosterAbilityPortraitAt(r, x, y)
+	if gotCharacter != character || len(lines) != 10 {
+		t.Fatalf("hovered ability portrait = %v with %d lines, want character and 10 lines", gotCharacter, len(lines))
+	}
+	if !r.characterRosterPanelHovering(x, y) {
+		t.Fatal("character portrait with abilities should use the pointer cursor")
+	}
+}
+
 func TestCharacterRosterMissionButtonMatchesDutyButtonAtBottomRight(t *testing.T) {
 	ownedColumn, _ := characterRosterColumns()
 	character := &army.Commander{}
@@ -666,7 +742,14 @@ func TestCharacterRosterTreasurerSeatAndAssignmentButtonAreInteractive(t *testin
 		if got := characterRosterAssignmentOptionAtForRoles(option.X+option.W/2, option.Y+option.H/2, ownedColumn, 0, 0, roles); got != optionIndex {
 			t.Fatalf("assignment option hit = %d, want %d", got, optionIndex)
 		}
-		if !r.characterRosterPanelHovering(option.X+option.W/2, option.Y+option.H/2) {
+		hovering := r.characterRosterPanelHovering(option.X+option.W/2, option.Y+option.H/2)
+		if enabled := r.gs.CanAssignCharacterToCouncilRole(owner, character.ID, role.ID); hovering != enabled {
+			t.Fatalf("assignment option %q hover = %t, want enabled state %t", option.Label, hovering, enabled)
+		}
+		if !r.gs.CanAssignCharacterToCouncilRole(owner, character.ID, role.ID) {
+			continue
+		}
+		if !hovering {
 			t.Fatalf("assignment option %q is not interactive", option.Label)
 		}
 	}

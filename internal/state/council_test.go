@@ -124,7 +124,7 @@ func TestMilitaryRoleFallbackPenaltyAppliesOnlyWithoutPositiveMilitaryTrait(t *t
 	}
 
 	unfit := &army.Commander{
-		ID: "chr_unfit", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		ID: "chr_unfit", Type: army.CharacterTypeCommander, OwnerID: string(owner),
 		Traits: []army.CharacterTrait{"scholar", "scholar"},
 	}
 	unfitState := buildState(unfit)
@@ -136,7 +136,7 @@ func TestMilitaryRoleFallbackPenaltyAppliesOnlyWithoutPositiveMilitaryTrait(t *t
 	}
 
 	fit := &army.Commander{
-		ID: "chr_fit", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		ID: "chr_fit", Type: army.CharacterTypeCommander, OwnerID: string(owner),
 		Traits: []army.CharacterTrait{"fighter", "scholar"},
 	}
 	fitState := buildState(fit)
@@ -265,8 +265,12 @@ func TestNewCouncilRolesCanBeAssignedAndReplaceTheirIncumbents(t *testing.T) {
 	roles := []string{CouncilRoleHeir, CouncilRoleMilitaryResponsible}
 	for _, role := range roles {
 		t.Run(role, func(t *testing.T) {
-			first := &army.Commander{ID: "first", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "First"}
-			second := &army.Commander{ID: "second", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Second"}
+			characterType := army.CharacterTypeCharacter
+			if role == CouncilRoleMilitaryResponsible {
+				characterType = army.CharacterTypeCommander
+			}
+			first := &army.Commander{ID: "first", Type: characterType, OwnerID: string(owner), Name: "First"}
+			second := &army.Commander{ID: "second", Type: characterType, OwnerID: string(owner), Name: "Second"}
 			gs := &GameState{
 				Year:       300,
 				Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
@@ -315,6 +319,43 @@ func TestMilitaryCommanderCanHoldArmyAndCouncilRolesWithArmyRestrictions(t *test
 	}
 	if !gs.commanderCouncilRoleAllowsArmyCommand(commander) {
 		t.Fatal("commander assigned military responsible role should remain eligible to command its army")
+	}
+}
+
+func TestMilitaryResponsibleRoleOnlyAllowsCommanders(t *testing.T) {
+	const owner faction.FactionID = "player"
+	commander := &army.Commander{
+		ID: "cmd_commander", Type: army.CharacterTypeCommander, OwnerID: string(owner),
+	}
+	character := &army.Commander{
+		ID: "chr_character", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		AssignedCouncilRole: CouncilRoleMilitaryResponsible,
+	}
+	gs := &GameState{
+		Year: 300,
+		Factions: map[faction.FactionID]*faction.Faction{
+			owner: {ID: owner},
+		},
+		Commanders: map[string]*army.Commander{
+			commander.ID: commander,
+			character.ID: character,
+		},
+	}
+
+	if !gs.CanAssignCharacterToCouncilRole(owner, commander.ID, CouncilRoleMilitaryResponsible) {
+		t.Fatal("commander should be eligible for the military responsible role")
+	}
+	if gs.CanAssignCharacterToCouncilRole(owner, character.ID, CouncilRoleMilitaryResponsible) {
+		t.Fatal("character type should not be eligible for the military responsible role")
+	}
+	if !gs.AssignCharacterToCouncilRole(owner, commander.ID, CouncilRoleMilitaryResponsible) {
+		t.Fatal("commander could not be assigned as military responsible")
+	}
+	if gs.CouncilRoleHolder(owner, CouncilRoleMilitaryResponsible) != commander {
+		t.Fatal("commander was not selected as the military responsible role holder")
+	}
+	if gs.CouncilRoleEffectsForCharacter(character, CouncilRoleMilitaryResponsible) != (scenario.CouncilEffects{}) {
+		t.Fatal("legacy assignment of an ineligible character still receives role effects")
 	}
 }
 

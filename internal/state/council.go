@@ -23,7 +23,7 @@ func (s *GameState) commanderCouncilRoleAllowsArmyCommand(character *army.Comman
 		return true
 	}
 	role, ok := s.councilConfig().Role(character.AssignedCouncilRole)
-	return ok && role.SetCommanderArmy
+	return ok && role.AllowsCharacterType(string(character.Type)) && role.SetCommanderArmy
 }
 
 func (s *GameState) councilConfig() scenario.CharacterCouncilConfig {
@@ -43,7 +43,8 @@ func (s *GameState) councilCharacterAvailable(ownerID, roleID string, character 
 		return false
 	}
 	role, ok := s.councilConfig().Role(roleID)
-	return ok && character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
+	return ok && role.AllowsCharacterType(string(character.Type)) &&
+		character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
 		character.ActiveMissionID == "" &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
 			character.Type == army.CharacterTypeCommander) &&
@@ -120,7 +121,8 @@ func (s *GameState) CouncilRoleHolder(ownerID faction.FactionID, role string) *a
 
 func (s *GameState) councilCharacterAvailableForEffect(ownerID, roleID string, character *army.Commander) bool {
 	role, ok := s.councilConfig().Role(roleID)
-	return ok && character != nil && character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
+	return ok && character != nil && role.AllowsCharacterType(string(character.Type)) &&
+		character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
 		character.ActiveMissionID == "" &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
 			character.Type == army.CharacterTypeCommander) &&
@@ -146,7 +148,7 @@ func (s *GameState) CouncilRoleEffectsForCharacter(character *army.Commander, ro
 	}
 	config := s.councilConfig()
 	role, ok := config.Role(roleID)
-	if !ok {
+	if !ok || !role.AllowsCharacterType(string(character.Type)) {
 		return scenario.CouncilEffects{}
 	}
 	level := character.CouncilLevel

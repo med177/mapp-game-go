@@ -34,6 +34,10 @@ const (
 	characterRosterScrollbarRight  = 5.0
 	characterRosterDutyGroupPad    = 8.0
 	characterRosterDutyGroupGap    = characterRosterDutyGroupPad*2 - (characterRosterRowH - characterRosterCardH)
+	characterAbilityPopupWidth     = 320.0
+	characterAbilityPopupPad       = 10.0
+	characterAbilityPopupTitleH    = 22.0
+	characterAbilityPopupLineH     = 18.0
 )
 
 func characterRosterHUDButtonRect() [4]float32 {
@@ -386,6 +390,13 @@ func characterRosterTraitRowRect(row gameui.Rect) gameui.Rect {
 	}
 }
 
+func characterAbilityPopupRect(mx, my float64, abilityCount int) gameui.Rect {
+	height := characterAbilityPopupPad*2 + characterAbilityPopupTitleH +
+		float64(abilityCount)*characterAbilityPopupLineH
+	x, y, width, height := tooltipRect(mx, my, characterAbilityPopupWidth, height)
+	return gameui.Rect{X: x, Y: y, W: width, H: height}
+}
+
 func characterRosterScrollbarTrack(viewport gameui.Rect) gameui.Rect {
 	return gameui.Rect{
 		X: viewport.X + viewport.W + characterRosterScrollbarGap,
@@ -577,6 +588,135 @@ func characterCouncilEffectsLinesTR(effects scenario.CouncilEffects) []string {
 	return parts
 }
 
+func characterAdventureAbilityLinesTR(abilities []army.CharacterAbility) []string {
+	var parts []string
+	for _, ability := range abilities {
+		if ability.NameTR == "" {
+			continue
+		}
+		label := ability.NameTR
+		effectName := ""
+		switch {
+		case ability.Scope == "faction" && ability.Effect == "military_power":
+			effectName = "askerî güç"
+		case ability.Scope == "army" && ability.Effect == "army_power":
+			effectName = "ordu gücü"
+		case ability.Scope == "navy" && ability.Effect == "navy_power":
+			effectName = "donanma gücü"
+		}
+		if effectName != "" && ability.Modifier != 0 {
+			percent := int(math.Round(ability.Modifier * 100))
+			label += " (" + formatSignedCouncilPercent(percent) + " " + effectName + ")"
+		}
+		parts = append(parts, label)
+	}
+	return parts
+}
+
+func characterAdventureAbilityEffectsSummaryTR(abilities []army.CharacterAbility) string {
+	var effects []string
+	for _, ability := range abilities {
+		effectName := ""
+		switch {
+		case ability.Scope == "faction" && ability.Effect == "military_power":
+			effectName = "askerî güç"
+		case ability.Scope == "army" && ability.Effect == "army_power":
+			effectName = "ordu gücü"
+		case ability.Scope == "navy" && ability.Effect == "navy_power":
+			effectName = "donanma gücü"
+		}
+		if effectName == "" || ability.Modifier == 0 {
+			continue
+		}
+		percent := int(math.Round(ability.Modifier * 100))
+		effects = append(effects, formatSignedCouncilPercent(percent)+" "+effectName)
+	}
+	return strings.Join(effects, " · ")
+}
+
+func characterRosterAbilityPortraitAt(r *Renderer, x, y float64) (*army.Commander, []string) {
+	if r == nil || r.gs == nil || !r.showCharacterRoster {
+		return nil, nil
+	}
+	r.ensureCharacterRosterPanelCache()
+	ownedColumn, candidateColumn := characterRosterColumns()
+	ownedViewport := characterRosterOwnedListViewport(ownedColumn)
+	r.characterRosterOwnedScroll = clampCharacterRosterOwnedScroll(
+		r.characterRosterOwnedScroll, ownedViewport, r.characterRosterOwned,
+	)
+	ownedVisible := characterRosterOwnedVisibleRows(
+		ownedViewport, r.characterRosterOwned, r.characterRosterOwnedScroll,
+	)
+	for index := r.characterRosterOwnedScroll; index < len(r.characterRosterOwned) &&
+		index < r.characterRosterOwnedScroll+ownedVisible; index++ {
+		character := r.characterRosterOwned[index]
+		if character == nil {
+			continue
+		}
+		portrait := characterRosterPortraitRect(characterRosterOwnedRowRect(
+			ownedViewport, index, r.characterRosterOwnedScroll, r.characterRosterOwned,
+		))
+		if ownedViewport.Hit(x, y) && portrait.Hit(x, y) {
+			if lines := characterAdventureAbilityLinesTR(character.AdventureAbilities); len(lines) > 0 {
+				return character, lines
+			}
+		}
+	}
+
+	candidateViewport := characterRosterListViewport(candidateColumn)
+	r.characterRosterNeutralScroll = clampCharacterRosterScroll(
+		r.characterRosterNeutralScroll, len(r.characterRosterCandidates), candidateViewport,
+	)
+	candidateVisible := characterRosterVisibleRows(candidateViewport)
+	for visibleIndex := 0; visibleIndex < candidateVisible; visibleIndex++ {
+		index := r.characterRosterNeutralScroll + visibleIndex
+		if index >= len(r.characterRosterCandidates) {
+			break
+		}
+		character := r.characterRosterCandidates[index]
+		if character == nil {
+			continue
+		}
+		portrait := characterRosterPortraitRect(characterRosterRowRect(candidateViewport, visibleIndex))
+		if candidateViewport.Hit(x, y) && portrait.Hit(x, y) {
+			if lines := characterAdventureAbilityLinesTR(character.AdventureAbilities); len(lines) > 0 {
+				return character, lines
+			}
+		}
+	}
+	return nil, nil
+}
+
+func drawCharacterRosterAbilityPopup(screen *ebiten.Image, r *Renderer) {
+	if screen == nil || r == nil {
+		return
+	}
+	mx, my := ebiten.CursorPosition()
+	character, lines := characterRosterAbilityPortraitAt(r, float64(mx), float64(my))
+	if character == nil || len(lines) == 0 {
+		return
+	}
+	popup := characterAbilityPopupRect(float64(mx), float64(my), len(lines))
+	drawTooltipBox(screen, popup.X, popup.Y, popup.W, popup.H)
+	drawUILabel(screen, gameui.Rect{
+		X: popup.X + characterAbilityPopupPad,
+		Y: popup.Y + characterAbilityPopupPad,
+		W: popup.W - characterAbilityPopupPad*2,
+		H: characterAbilityPopupTitleH,
+	}, "Yetenekleri", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
+	for index, line := range lines {
+		lineRect := gameui.Rect{
+			X: popup.X + characterAbilityPopupPad,
+			Y: popup.Y + characterAbilityPopupPad + characterAbilityPopupTitleH +
+				float64(index)*characterAbilityPopupLineH,
+			W: popup.W - characterAbilityPopupPad*2,
+			H: characterAbilityPopupLineH,
+		}
+		drawUILabel(screen, lineRect, trimTextToWidth(line, FaceSmall, lineRect.W),
+			ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	}
+}
+
 func formatSignedCouncilPercent(value int) string {
 	sign := "+"
 	if value < 0 {
@@ -623,6 +763,9 @@ func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 	}
 	r.ensureCharacterRosterPanelCache()
 	if characterRosterCloseButton().HitTest(x, y) {
+		return true
+	}
+	if character, _ := characterRosterAbilityPortraitAt(r, x, y); character != nil {
 		return true
 	}
 	if r.characterMissionMenuInteractiveHit(x, y) {
@@ -920,16 +1063,6 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 			bonus = nil
 		} else if len(character.PendingAdventureAbilities) > 0 {
 			detail = "Yetenek seçimi bekliyor"
-		} else if len(character.AdventureAbilities) > 0 {
-			abilityNames := make([]string, 0, len(character.AdventureAbilities))
-			for _, ability := range character.AdventureAbilities {
-				if ability.NameTR != "" {
-					abilityNames = append(abilityNames, ability.NameTR)
-				}
-			}
-			if len(abilityNames) > 0 {
-				detail += " · " + strings.Join(abilityNames, ", ")
-			}
 		}
 		detailRect := characterRosterDetailRect(row, textX)
 		if hasMissionButton {
@@ -959,6 +1092,21 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 				H: 16,
 			}
 			drawUILabel(body, bonusRect, trimTextToWidth(bonusLine, FaceSmall, bonusRect.W), color.RGBA{165, 205, 145, 255}, gameui.TextSmall, gameui.TextAlignStart)
+		}
+		abilityEffects := characterAdventureAbilityEffectsSummaryTR(character.AdventureAbilities)
+		if abilityEffects != "" {
+			abilityLineY := detailRect.Y + 20 + float64(len(bonus))*16
+			if missionDetails[0] != "" && abilityLineY < detailRect.Y+36 {
+				abilityLineY = detailRect.Y + 36
+			}
+			abilityRect := gameui.Rect{
+				X: textX,
+				Y: abilityLineY,
+				W: row.X + row.W - textX - characterRosterCardPadding,
+				H: 16,
+			}
+			drawUILabel(body, abilityRect, trimTextToWidth(abilityEffects, FaceSmall, abilityRect.W),
+				color.RGBA{190, 220, 155, 255}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 		traitRow := characterRosterTraitRowRect(row)
 		if hasMissionButton {
@@ -1048,6 +1196,7 @@ func (r *Renderer) drawCharacterRosterPanel(screen *ebiten.Image) {
 		drawCharacterRosterAssignmentMenu(screen, r.gs, ownedColumn, menuIndex, r.characterRosterOwnedScroll, ownedRoster, roles)
 	}
 	r.drawCharacterMissionMenu(screen)
+	drawCharacterRosterAbilityPopup(screen, r)
 }
 
 func (r *Renderer) handleCharacterRosterPanelInput() (InputAction, bool) {

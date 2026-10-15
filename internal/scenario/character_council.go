@@ -24,13 +24,26 @@ type CouncilEffects struct {
 
 // CouncilRoleDefinition is a scenario-defined council duty and its level-scaled effect.
 type CouncilRoleDefinition struct {
-	ID                   string         `json:"id"`
-	NameTR               string         `json:"name_tr"`
-	NoCost               bool           `json:"no_cost,omitempty"`
-	SetCommanderArmy     bool           `json:"set_commander_army,omitempty"`
-	Effects              CouncilEffects `json:"effects,omitempty"`
-	PerLevel             CouncilEffects `json:"per_level,omitempty"`
-	TraitFallbackEffects CouncilEffects `json:"trait_fallback_effects,omitempty"`
+	ID                    string         `json:"id"`
+	NameTR                string         `json:"name_tr"`
+	NoCost                bool           `json:"no_cost,omitempty"`
+	SetCommanderArmy      bool           `json:"set_commander_army,omitempty"`
+	AllowedCharacterTypes []string       `json:"allowed_character_types,omitempty"`
+	Effects               CouncilEffects `json:"effects,omitempty"`
+	PerLevel              CouncilEffects `json:"per_level,omitempty"`
+	TraitFallbackEffects  CouncilEffects `json:"trait_fallback_effects,omitempty"`
+}
+
+func (r CouncilRoleDefinition) AllowsCharacterType(characterType string) bool {
+	if len(r.AllowedCharacterTypes) == 0 {
+		return true
+	}
+	for _, allowedType := range r.AllowedCharacterTypes {
+		if allowedType == characterType {
+			return true
+		}
+	}
+	return false
 }
 
 // CharacterTraitDefinition names a trait and describes its additional council effects.
@@ -63,7 +76,7 @@ func DefaultCharacterCouncilConfig() CharacterCouncilConfig {
 			{ID: "treasurer", NameTR: "Hazine Sorumlusu", Effects: CouncilEffects{IncomeMod: 1.05}, PerLevel: CouncilEffects{IncomeMod: 1.01}},
 			{ID: "diplomat", NameTR: "Diplomat", Effects: CouncilEffects{RelationBonusPoints: 3}, PerLevel: CouncilEffects{RelationBonusPoints: 1}},
 			{ID: "heir", NameTR: "Veliaht", Effects: CouncilEffects{SatisfactionPoints: 1, RelationBonusPoints: 1}, PerLevel: CouncilEffects{SatisfactionPoints: 1, RelationBonusPoints: 1}},
-			{ID: "military_responsible", NameTR: "Askeri Sorumlu", SetCommanderArmy: true, Effects: CouncilEffects{MilitaryPowerMod: 1.03, CommanderPowerMod: 1.03}, PerLevel: CouncilEffects{MilitaryPowerMod: 1.01, CommanderPowerMod: 1.01}, TraitFallbackEffects: CouncilEffects{MilitaryPowerMod: 0.99}},
+			{ID: "military_responsible", NameTR: "Askeri Sorumlu", SetCommanderArmy: true, AllowedCharacterTypes: []string{"commander"}, Effects: CouncilEffects{MilitaryPowerMod: 1.03, CommanderPowerMod: 1.03}, PerLevel: CouncilEffects{MilitaryPowerMod: 1.01, CommanderPowerMod: 1.01}, TraitFallbackEffects: CouncilEffects{MilitaryPowerMod: 0.99}},
 			{ID: "research_responsible", NameTR: "Bilim Sorumlusu", Effects: CouncilEffects{ResearchSpeedMod: 1.05}, PerLevel: CouncilEffects{ResearchSpeedMod: 1.01}},
 		},
 		Traits: map[string]CharacterTraitDefinition{},
@@ -134,6 +147,18 @@ func (c CharacterCouncilConfig) Validate() error {
 			return fmt.Errorf("yinelenen karakter görevi %q", role.ID)
 		}
 		roleIDs[role.ID] = struct{}{}
+		allowedCharacterTypes := make(map[string]struct{}, len(role.AllowedCharacterTypes))
+		for _, characterType := range role.AllowedCharacterTypes {
+			switch characterType {
+			case "administrator", "commander", "character":
+			default:
+				return fmt.Errorf("karakter görevi %q geçersiz allowed_character_types girdisi içeriyor: %q", role.ID, characterType)
+			}
+			if _, exists := allowedCharacterTypes[characterType]; exists {
+				return fmt.Errorf("karakter görevi %q yinelenen allowed_character_types girdisi içeriyor: %q", role.ID, characterType)
+			}
+			allowedCharacterTypes[characterType] = struct{}{}
+		}
 	}
 	missionIDs := make(map[string]struct{}, len(c.Missions))
 	for _, mission := range c.Missions {

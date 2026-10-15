@@ -105,7 +105,7 @@ func TestLoadCharacterCouncilConfigSupportsOptionalAndScenarioSpecificData(t *te
 	config := []byte(`{
 		"xp_per_turn": 7,
 		"xp_per_effect": 13,
-		"roles": [{"id":"steward","name_tr":"Kâhya","set_commander_army":true,"effects":{"income_mod":1.04}}]
+		"roles": [{"id":"steward","name_tr":"Kâhya","set_commander_army":true,"allowed_character_types":["commander"],"effects":{"income_mod":1.04}}]
 	}`)
 	if err := os.WriteFile(filepath.Join(dataDir, "character_council.json"), config, 0o600); err != nil {
 		t.Fatalf("character_council.json yazılamadı: %v", err)
@@ -123,6 +123,8 @@ func TestLoadCharacterCouncilConfigSupportsOptionalAndScenarioSpecificData(t *te
 	if loaded.CharacterCouncil.XPPerTurn != 7 || loaded.CharacterCouncil.XPPerEffect != 13 ||
 		len(loaded.CharacterCouncil.Roles) != 1 || loaded.CharacterCouncil.Roles[0].ID != "steward" ||
 		!loaded.CharacterCouncil.Roles[0].SetCommanderArmy ||
+		len(loaded.CharacterCouncil.Roles[0].AllowedCharacterTypes) != 1 ||
+		loaded.CharacterCouncil.Roles[0].AllowedCharacterTypes[0] != "commander" ||
 		loaded.CharacterCouncil.Traits["scholar"].CouncilEffects["steward"].IncomeMod != 1.02 {
 		t.Fatalf("senaryo görev/nitelik tanımı beklenmedik: %+v", loaded.CharacterCouncil)
 	}
