@@ -428,7 +428,9 @@ func (r *Renderer) drawArmyMarkerHoverTooltip(screen *ebiten.Image) {
 		drawHiddenArmyMarkerTooltip(screen, a, fx, fy)
 		return
 	}
-	drawArmyMarkerUnitSummaryTooltip(screen, r.gs, a, fx, fy)
+	casualtyHP := armyMarkerCasualtyHP(r.gs, a)
+	hasCasualtyWarning := r.armyLogisticsDamageVisible(aid)
+	drawArmyMarkerUnitSummaryTooltip(screen, r.gs, a, fx, fy, casualtyHP, hasCasualtyWarning)
 }
 
 func drawHiddenArmyMarkerTooltip(screen *ebiten.Image, a *army.Army, mx, my float64) {
@@ -486,7 +488,17 @@ func armyMarkerSummaryRows(gs *state.GameState, a *army.Army) []armyMergePreview
 	return rows
 }
 
-func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army, mx, my float64) {
+func armyMarkerCasualtyHP(gs *state.GameState, a *army.Army) int {
+	if gs == nil || a == nil {
+		return 0
+	}
+	if a.IsNaval {
+		return gs.ArmyLogistics[a.ID].TotalHPDamage
+	}
+	return gs.RegionLogistics[a.RegionID].TotalHPDamage
+}
+
+func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army, mx, my float64, casualtyHP int, hasCasualtyWarning bool) {
 	if gs == nil || a == nil {
 		return
 	}
@@ -518,6 +530,10 @@ func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState,
 		header = label + ": kısmi istihbarat"
 	}
 	DrawText(screen, header, contentX, y+10, FaceSmall, ColorGold)
+	if hasCasualtyWarning {
+		casualtyLabel := "Zayiat " + itoa(casualtyHP) + " HP"
+		DrawText(screen, casualtyLabel, x+w-10-MeasureText(casualtyLabel, FaceSmall), y+10, FaceSmall, ColorRed)
+	}
 
 	drawArmyUnitSummaryTiles(screen, gs, a.OwnerID, rows, contentX, y+32)
 }

@@ -4,6 +4,10 @@ import (
 	"math"
 	"testing"
 
+	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/state"
+	"mapp-game-go/internal/world"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -65,6 +69,29 @@ func TestArmyMarkerSummaryTooltipReservesCommanderEffectLines(t *testing.T) {
 	}
 	if effectHeight <= portraitOnlyHeight {
 		t.Fatalf("bonuslu popup yüksekliği %.0f, portreli popup'tan uzun olmalı (%.0f)", effectHeight, portraitOnlyHeight)
+	}
+}
+
+func TestArmyMarkerCasualtyHPUsesArmyOrRegionLogistics(t *testing.T) {
+	const (
+		landArmy army.ArmyID    = "land-army"
+		fleet    army.ArmyID    = "fleet"
+		region   world.RegionID = "front"
+	)
+	gs := &state.GameState{
+		RegionLogistics: map[world.RegionID]state.RegionLogisticsStatus{
+			region: {TotalHPDamage: 275},
+		},
+		ArmyLogistics: map[army.ArmyID]state.ArmyLogisticsStatus{
+			fleet: {TotalHPDamage: 120},
+		},
+	}
+
+	if got := armyMarkerCasualtyHP(gs, &army.Army{ID: landArmy, RegionID: region}); got != 275 {
+		t.Fatalf("kara ordusu zayiatı = %d HP, want 275 HP", got)
+	}
+	if got := armyMarkerCasualtyHP(gs, &army.Army{ID: fleet, IsNaval: true, RegionID: region}); got != 120 {
+		t.Fatalf("filo zayiatı = %d HP, want 120 HP", got)
 	}
 }
 
