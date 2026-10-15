@@ -2766,7 +2766,7 @@
     "name_tr": "İkizler",
     "terrain": "plain",
     "owner_id": "tully",
-    "successor_faction_id": "tully",
+    "successor_faction_id": "frey",
     "neighbors": [
       "deepwood_motte",
       "ironmans_bay",
