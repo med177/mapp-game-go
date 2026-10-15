@@ -38,6 +38,8 @@ const (
 	characterAbilityPopupPad       = 10.0
 	characterAbilityPopupTitleH    = 22.0
 	characterAbilityPopupLineH     = 18.0
+	characterAbilityBadgeSize      = 24.0
+	characterAbilityBadgeInset     = 2.0
 )
 
 func characterRosterHUDButtonRect() [4]float32 {
@@ -381,6 +383,27 @@ func characterRosterPortraitRect(row gameui.Rect) gameui.Rect {
 	return gameui.Rect{X: row.X + characterRosterCardPadding, Y: row.Y + characterRosterCardPadding, W: size, H: size}
 }
 
+func characterRosterAbilityBadgeRect(portrait gameui.Rect) gameui.Rect {
+	size := characterAbilityBadgeSize
+	return gameui.Rect{
+		X: portrait.X + portrait.W - size + characterAbilityBadgeInset,
+		Y: portrait.Y + portrait.H - size + characterAbilityBadgeInset,
+		W: size,
+		H: size,
+	}
+}
+
+func drawCharacterRosterAbilityBadge(screen *ebiten.Image, portrait gameui.Rect) {
+	badge := characterRosterAbilityBadgeRect(portrait)
+	vector.FillRect(screen, float32(badge.X), float32(badge.Y), float32(badge.W), float32(badge.H), color.RGBA{23, 31, 39, 245}, false)
+	vector.StrokeRect(screen, float32(badge.X), float32(badge.Y), float32(badge.W), float32(badge.H), 1, color.RGBA{180, 205, 220, 255}, false)
+	gameui.DrawIcon(
+		screen, gameui.IconAbility,
+		badge.X+characterAbilityBadgeInset, badge.Y+characterAbilityBadgeInset,
+		badge.W-characterAbilityBadgeInset*2, color.White,
+	)
+}
+
 func characterRosterTraitRowRect(row gameui.Rect) gameui.Rect {
 	return gameui.Rect{
 		X: row.X + characterRosterCardPadding,
@@ -388,6 +411,17 @@ func characterRosterTraitRowRect(row gameui.Rect) gameui.Rect {
 		W: row.W - characterRosterCardPadding*2,
 		H: 18,
 	}
+}
+
+func characterRosterLineRectBeforeButton(row gameui.Rect, textX, y, height float64, button gameui.Button) gameui.Rect {
+	line := gameui.Rect{
+		X: textX, Y: y, W: row.X + row.W - textX - characterRosterCardPadding, H: height,
+	}
+	if line.Y < button.Y+button.H && line.Y+line.H > button.Y &&
+		button.X > line.X && button.X < line.X+line.W {
+		line.W = button.X - line.X - 4
+	}
+	return line
 }
 
 func characterAbilityPopupRect(mx, my float64, abilityCount int) gameui.Rect {
@@ -993,6 +1027,9 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 		}
 		portrait := characterRosterPortraitRect(row)
 		drawCommanderPortrait(body, character, portrait.X, portrait.Y, portrait.W, portrait.H)
+		if character != nil && len(character.AdventureAbilities) > 0 {
+			drawCharacterRosterAbilityBadge(body, portrait)
+		}
 
 		textX := portrait.X + portrait.W + 10
 		textW := row.X + row.W - textX - characterRosterCardPadding
@@ -1104,6 +1141,13 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 				Y: abilityLineY,
 				W: row.X + row.W - textX - characterRosterCardPadding,
 				H: 16,
+			}
+			if !candidate && characterRosterReleaseable(character) &&
+				character.AssignedCouncilRole == "" && character.ID != assignmentMenuCharacterID {
+				abilityRect = characterRosterLineRectBeforeButton(
+					row, textX, abilityLineY, 16,
+					characterReleaseButton(column, index, scroll, characters),
+				)
 			}
 			drawUILabel(body, abilityRect, trimTextToWidth(abilityEffects, FaceSmall, abilityRect.W),
 				color.RGBA{190, 220, 155, 255}, gameui.TextSmall, gameui.TextAlignStart)

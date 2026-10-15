@@ -12,6 +12,7 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-10-16: Karakter roster'ında macera yeteneklerinin kısa etkileri kartın
   orta bölümünde gösteriliyor; portre üzerine gelindiğinde tüm yetenek adları
   ve etkileri dinamik yükseklikteki `Yetenekleri` popup'ında listeleniyor.
+  Yetenek sahibi karakter portrelerinin sağ altına `ability.png` rozeti eklendi.
 
 - 2026-10-16: Konsey rollerine isteğe bağlı `allowed_character_types` kısıtı
   eklendi. Serasker rolü yalnızca `commander` tipi karakterlere atanabiliyor;

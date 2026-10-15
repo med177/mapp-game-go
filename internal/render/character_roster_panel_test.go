@@ -39,6 +39,21 @@ func TestCharacterRosterPortraitMatchesCommanderPortraitSize(t *testing.T) {
 	}
 }
 
+func TestCharacterRosterAbilityBadgeOverlaysPortraitBottomRight(t *testing.T) {
+	row := characterRosterRowRect(gameui.Rect{X: 20, Y: 30, W: 300, H: 500}, 0)
+	portrait := characterRosterPortraitRect(row)
+	badge := characterRosterAbilityBadgeRect(portrait)
+	if badge.X+badge.W != portrait.X+portrait.W+characterAbilityBadgeInset ||
+		badge.Y+badge.H != portrait.Y+portrait.H+characterAbilityBadgeInset {
+		t.Fatalf("ability badge %v is not aligned to portrait bottom-right %v", badge, portrait)
+	}
+	if badge.X < portrait.X || badge.Y < portrait.Y ||
+		badge.X+badge.W > portrait.X+portrait.W+characterAbilityBadgeInset ||
+		badge.Y+badge.H > portrait.Y+portrait.H+characterAbilityBadgeInset {
+		t.Fatalf("ability badge %v falls outside portrait bottom-right corner %v", badge, portrait)
+	}
+}
+
 func TestCharacterRosterViewportsReserveScrollbarGutter(t *testing.T) {
 	column := gameui.Rect{X: 20, Y: 30, W: 240, H: 400}
 	candidateViewport := characterRosterListViewport(column)
@@ -270,6 +285,18 @@ func TestCharacterAdventureAbilityEffectsSummaryOmitsAbilityNames(t *testing.T) 
 	}
 	if got, want := characterAdventureAbilityEffectsSummaryTR(abilities), "+%3 ordu gücü · +%2 askerî güç"; got != want {
 		t.Fatalf("adventure ability effect summary = %q, want %q", got, want)
+	}
+}
+
+func TestCharacterRosterAbilityEffectLineAvoidsReleaseButton(t *testing.T) {
+	row := gameui.Rect{X: 100, Y: 200, W: 400, H: characterRosterCardH}
+	button := gameui.NewButton(row.X+row.W-34, row.Y+59, 28, 28, "")
+	line := characterRosterLineRectBeforeButton(row, row.X+150, row.Y+54, 16, button)
+	if line.X+line.W+4 != button.X {
+		t.Fatalf("ability line ends at %.0f; want 4px gap before release button at %.0f", line.X+line.W, button.X)
+	}
+	if line.Y >= button.Y+button.H || line.Y+line.H <= button.Y {
+		t.Fatal("test ability line should vertically overlap release button")
 	}
 }
 
