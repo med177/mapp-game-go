@@ -7,8 +7,7 @@
           "satisfaction_points": 1
         },
         "treasurer": {
-          "income_mod": 1.01,
-          "resource_production_mod": 1.01
+          "income_mod": 1.01
         }
       }
     },
@@ -59,8 +58,7 @@
           "satisfaction_points": 1
         },
         "treasurer": {
-          "income_mod": 1.01,
-          "resource_production_mod": 1.01
+          "income_mod": 1.01
         },
         "military_responsible": {
           "military_power_mod": 1.01

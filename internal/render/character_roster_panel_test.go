@@ -393,12 +393,13 @@ func TestCharacterRosterPanelFitsSixFullOwnedRows(t *testing.T) {
 
 func TestCharacterCouncilEffectLabelsUseOneLinePerBonus(t *testing.T) {
 	effects := scenario.CouncilEffects{
+		IncomeMod:          1.05,
 		SatisfactionPoints: 1,
 		MilitaryPowerMod:   1.03,
 		CommanderPowerMod:  1.02,
 	}
 	got := characterCouncilEffectsLinesTR(effects)
-	want := []string{"Memnuniyet +1", "Askerî güç +%3", "Komuta gücü +%2"}
+	want := []string{"Bölgesel vergi +%5", "Memnuniyet +1", "Askerî güç +%3", "Komuta gücü +%2"}
 	if len(got) != len(want) {
 		t.Fatalf("council bonus lines = %v, want %v", got, want)
 	}

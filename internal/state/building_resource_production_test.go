@@ -51,26 +51,33 @@ func TestRegionProductionSummaryAppliesBuildingResourceModsAndBonuses(t *testing
 	}
 }
 
-func TestRegionProductionSummaryAppliesFactionCouncilResourceBonus(t *testing.T) {
+func TestRegionProductionSummaryAppliesFactionCouncilResourceRoleBonus(t *testing.T) {
 	const owner faction.FactionID = "player"
 	region := &world.Region{
 		ID: "capital", OwnerID: string(owner), Terrain: world.TerrainPlain,
 		BaseGrainOutput: 100, BaseIronOutput: 100, BaseTimberOutput: 100,
 		BaseStoneOutput: 100, BaseSpiceOutput: 100, BaseClothOutput: 100,
 	}
-	buildState := func(withTreasurer bool) *GameState {
+	buildState := func(withResourceRole bool) *GameState {
 		character := &army.Commander{
 			ID: "chr_treasurer", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
 		}
 		gs := &GameState{
-			Year:          1,
-			Factions:      map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
-			Commanders:    map[string]*army.Commander{character.ID: character},
-			Regions:       map[world.RegionID]*world.Region{region.ID: region},
-			CouncilConfig: scenario.DefaultCharacterCouncilConfig(),
+			Year:       1,
+			Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+			Commanders: map[string]*army.Commander{character.ID: character},
+			Regions:    map[world.RegionID]*world.Region{region.ID: region},
+			CouncilConfig: scenario.CharacterCouncilConfig{
+				Roles: []scenario.CouncilRoleDefinition{{
+					ID: "resource_steward",
+					Effects: scenario.CouncilEffects{
+						ResourceProductionMod: 1.05,
+					},
+				}},
+			},
 		}
-		if withTreasurer && !gs.AssignCharacterToCouncilRole(owner, character.ID, CouncilRoleTreasurer) {
-			t.Fatal("could not assign treasurer")
+		if withResourceRole && !gs.AssignCharacterToCouncilRole(owner, character.ID, "resource_steward") {
+			t.Fatal("could not assign resource steward")
 		}
 		return gs
 	}

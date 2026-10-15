@@ -70,8 +70,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   olduğunda tek seferlik -%1 askerî güç etkisi alıyor; uyumlu niteliği olanlar
   bu ceza yerine nitelik bonuslarını alıyor. Five Kings senaryosunda Saldırgan,
   Suikastçı, Zalim, Paralı Asker ve Kindar diplomat ilişkisini; Zalim, Özgür
-  Ruhlu, Bağımsız ve Şımarık hane memnuniyetini; Şımarık ise hazinedar gelir ve
-  kaynak üretimini düşürüyor. `trait_fallback_effects` ve negatif nitelik
+  Ruhlu, Bağımsız ve Şımarık hane memnuniyetini; Şımarık ise hazinedar vergi
+  bonusunu düşürüyor. `trait_fallback_effects` ve negatif nitelik
   etkileri `character_council.json` / `character_traits.json` ile tanımlanıyor.
 
 - 2026-10-14: Five Kings senaryosuna Karizmatik, İdareci, Sabırsız ve Pervasız
@@ -146,6 +146,11 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   bölgesel vergiye +%5; çözümleme, gelir önizlemesi, brüt gelir ve vergi bütçesi
   ortak state hesabını kullanıyor. Council role mevcut commander save alanında
   saklanıyor. State, victory, game, render ve save regresyonları eklendi.
+
+- 2026-10-15: Hazinedar bonusu yalnız kuşatma dışı bölgelerin vergi gelirine
+  uygulanacak şekilde daraltıldı. Ticaret, haraç, teknoloji, diğer gelirler ve
+  kaynak üretimi bonus kapsamı dışında; gerçek ekonomi tick'i, haraç ve gelir
+  önizlemesi aynı kuralı izliyor.
 
 - 2026-10-14: Diplomat konsey koltuğu eklendi. Oyuncu hedefi mevcut Diplomasi
   panelinde seçiyor; Heyet eylemi senaryonun normal ilişki bonusuna ek +3 puan

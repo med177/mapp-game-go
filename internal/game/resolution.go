@@ -720,9 +720,8 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 		privilegeIncome := privilegeIncomeByFaction[fidStr]
 		tradePowerIncome := tradePowerIncomeByFaction[fidStr]
 		merchantTradeIncome := merchantTradeIncomeByFaction[fidStr]
-		councilIncomeBase := goldIncome + privilegedTradeIncome + privilegeIncome + tradePowerIncome + merchantTradeIncome +
-			max(tradeRouteIncomeByFaction[fidStr], 0) + max(tradeRouteCustomsByFaction[fidStr], 0)
-		councilIncome := gs.CouncilIncomeBonus(fid, councilIncomeBase)
+		taxIncome := taxIncomeByFaction[fidStr] * supplyGoldPercent / 100
+		councilIncome := gs.CouncilTaxIncomeBonus(fid, taxIncome)
 		if councilIncome != 0 {
 			gs.RecordCouncilEffectExperience(fid, "income_mod")
 		}
@@ -752,7 +751,7 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			FactionID:               fid,
 			Income:                  goldIncome,
 			CouncilIncome:           councilIncome,
-			TaxIncome:               taxIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
+			TaxIncome:               taxIncome,
 			OtherIncome:             otherIncome,
 			OtherIncomeDescription:  otherIncomePeriod.Description,
 			TradeIncome:             tradeIncomeByFaction[fidStr] * grainGoldIncomePercent(status.SupplyLevel) / 100,
@@ -871,11 +870,6 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			continue
 		}
 		income := incomeByFaction[string(fid)] + effectsByFaction[string(fid)].GoldPerRegion*len(gs.RegionsOwnedBy(fid)) + gs.BlockadeLootForFaction(fid).Gold
-		incomeCouncilBonus := gs.CouncilIncomeBonus(fid, income)
-		if incomeCouncilBonus != 0 {
-			gs.RecordCouncilEffectExperience(fid, "income_mod")
-		}
-		income += incomeCouncilBonus
 		if income <= 0 {
 			continue
 		}
@@ -891,19 +885,14 @@ func applyEconomyTick(gs *state.GameState) economyTickReport {
 			tribute = f.Gold
 		}
 		f.Gold -= tribute
-		overlordCouncilBonus := gs.CouncilIncomeBonus(f.OverlordID, tribute)
-		overlord.Gold += tribute + overlordCouncilBonus
-		if overlordCouncilBonus != 0 {
-			gs.RecordCouncilEffectExperience(f.OverlordID, "income_mod")
-		}
+		overlord.Gold += tribute
 		vassalStatus := gs.GoldEconomy[fid]
 		vassalStatus.TributePaid += tribute
 		vassalStatus.NetChange -= tribute
 		gs.GoldEconomy[fid] = vassalStatus
 		overlordStatus := gs.GoldEconomy[f.OverlordID]
 		overlordStatus.TributeIncome += tribute
-		overlordStatus.CouncilIncome += overlordCouncilBonus
-		overlordStatus.NetChange += tribute + overlordCouncilBonus
+		overlordStatus.NetChange += tribute
 		gs.GoldEconomy[f.OverlordID] = overlordStatus
 	}
 	for fid, status := range gs.GoldEconomy {

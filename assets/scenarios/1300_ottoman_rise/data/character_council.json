@@ -20,12 +20,10 @@
       "id": "treasurer",
       "name_tr": "Hazine Sorumlusu",
       "effects": {
-        "income_mod": 1.05,
-        "resource_production_mod": 1.05
+        "income_mod": 1.05
       },
       "per_level": {
-        "income_mod": 1.01,
-        "resource_production_mod": 1.01
+        "income_mod": 1.01
       }
     },
     {

@@ -233,11 +233,12 @@ func normalizeCouncilMod(mod float64) float64 {
 	return mod
 }
 
-func (s *GameState) CouncilIncomeBonus(ownerID faction.FactionID, income int) int {
-	if income <= 0 {
+func (s *GameState) CouncilTaxIncomeBonus(ownerID faction.FactionID, taxIncome int) int {
+	if taxIncome <= 0 {
 		return 0
 	}
-	return int(float64(income)*(s.CouncilEffectsForFaction(ownerID).IncomeMod-1) + 1e-9)
+	incomeMod := s.CouncilEffectsForFaction(ownerID).IncomeMod
+	return int(float64(taxIncome)*(normalizeCouncilMod(incomeMod)-1) + 1e-9)
 }
 
 func (s *GameState) CouncilSatisfactionBonus(ownerID faction.FactionID) int {

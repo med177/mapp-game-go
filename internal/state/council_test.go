@@ -41,7 +41,7 @@ func TestScenarioCouncilRolesTraitsAndExperienceScaleEffects(t *testing.T) {
 	if !gs.AssignCharacterToCouncilRole(owner, character.ID, "steward") {
 		t.Fatal("scenario-defined council role could not be assigned")
 	}
-	if got := gs.CouncilIncomeBonus(owner, 1000); got != 70 {
+	if got := gs.CouncilTaxIncomeBonus(owner, 1000); got != 70 {
 		t.Fatalf("scenario-defined steward income effect = %d, want 70", got)
 	}
 	if got := gs.CouncilRoleEffects(owner, "steward").IncomeMod; math.Abs(got-1.07) > 1e-9 {
@@ -148,7 +148,7 @@ func TestMilitaryRoleFallbackPenaltyAppliesOnlyWithoutPositiveMilitaryTrait(t *t
 	}
 }
 
-func TestTreasurerCouncilSeatAddsFactionIncomeBonusAndBlocksArmyAssignment(t *testing.T) {
+func TestTreasurerCouncilSeatAddsTaxIncomeBonusAndBlocksArmyAssignment(t *testing.T) {
 	const owner faction.FactionID = "player"
 	character := &army.Commander{
 		ID: "cmd_tywin", Type: army.CharacterTypeAdministrator,
@@ -163,14 +163,17 @@ func TestTreasurerCouncilSeatAddsFactionIncomeBonusAndBlocksArmyAssignment(t *te
 		Armies:          map[army.ArmyID]*army.Army{currentArmy.ID: currentArmy},
 	}
 
-	if got := gs.CouncilIncomeBonus(owner, 1000); got != 0 {
+	if got := gs.CouncilTaxIncomeBonus(owner, 1000); got != 0 {
 		t.Fatalf("unassigned council income bonus = %d, want 0", got)
 	}
 	if !gs.AssignCharacterToCouncilRole(owner, character.ID, CouncilRoleTreasurer) {
 		t.Fatal("eligible character could not be assigned as treasurer")
 	}
-	if got := gs.CouncilIncomeBonus(owner, 1000); got != 50 {
+	if got := gs.CouncilTaxIncomeBonus(owner, 1000); got != 50 {
 		t.Fatalf("treasurer income bonus = %d, want 50", got)
+	}
+	if got := gs.CouncilResourceProductionMod(owner); got != 1 {
+		t.Fatalf("treasurer resource production mod = %.2f, want no bonus (1.00)", got)
 	}
 	if gs.AssignCommanderToArmy(character.ID, currentArmy.ID) {
 		t.Fatal("council character was also assigned to an army")
@@ -217,7 +220,7 @@ func TestAssigningTreasurerReplacesIncumbentAndRejectsDoubleRole(t *testing.T) {
 	if gs.AssignCharacterToCouncilRole("missing", first.ID, CouncilRoleTreasurer) {
 		t.Fatal("character was assigned to a nonexistent faction")
 	}
-	if gs.CouncilIncomeBonus(owner, 1000) != 50 {
+	if gs.CouncilTaxIncomeBonus(owner, 1000) != 50 {
 		t.Fatal("replacing treasurer stacked the income bonus")
 	}
 }

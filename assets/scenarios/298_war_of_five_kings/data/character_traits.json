@@ -26,8 +26,7 @@
       "name_tr": "Simyacı",
       "council_effects": {
         "treasurer": {
-          "income_mod": 1.01,
-          "resource_production_mod": 1.01
+          "income_mod": 1.01
         },
         "research_responsible": {
           "research_speed_mod": 1.01
@@ -98,8 +97,7 @@
       "name_tr": "İdareci",
       "council_effects": {
         "treasurer": {
-          "income_mod": 1.02,
-          "resource_production_mod": 1.02
+          "income_mod": 1.02
         },
         "head_of_house": {
           "satisfaction_points": 1
@@ -172,8 +170,7 @@
       "name_tr": "Zeki",
       "council_effects": {
         "treasurer": {
-          "income_mod": 1.02,
-          "resource_production_mod": 1.02
+          "income_mod": 1.02
         },
         "head_of_house": {
           "satisfaction_points": 1
@@ -266,8 +263,7 @@
       "name_tr": "Becerikli",
       "council_effects": {
         "treasurer": {
-          "income_mod": 1.02,
-          "resource_production_mod": 1.02
+          "income_mod": 1.02
         },
         "military_responsible": {
           "military_power_mod": 1.01
@@ -297,8 +293,7 @@
       "name_tr": "Bilgin",
       "council_effects": {
         "treasurer": {
-          "income_mod": 1.01,
-          "resource_production_mod": 1.01
+          "income_mod": 1.01
         },
         "head_of_house": {
           "satisfaction_points": 1
@@ -339,8 +334,7 @@
       "name_tr": "Şımarık",
       "council_effects": {
         "treasurer": {
-          "income_mod": 0.99,
-          "resource_production_mod": 0.99
+          "income_mod": 0.99
         },
         "head_of_house": {
           "satisfaction_points": -1

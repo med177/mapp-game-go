@@ -149,7 +149,8 @@ mevcut ordu atamasını koruyabilmesini aynı anda belirler.
 
 Desteklenen etki anahtarları:
 
-- `income_mod`: fraksiyonun gelir kaynaklarına çarpan bonusu (`1.05` = +%5).
+- `income_mod`: yalnızca kuşatma dışındaki bölgesel vergi gelirine çarpan bonusu
+  (`1.05` = +%5); ticaret, haraç, kaynak ve diğer gelirler etkilenmez.
 - `satisfaction_points`: fraksiyona ait bölgelerin memnuniyet tur değişimine puan bonusu.
 - `military_power_mod`: kara ve deniz ordularının saldırı/savunma gücüne çarpan bonusu (`1.03` = +%3).
 - `commander_power_mod`: Askeri Sorumlu'nun komuta ettiği ordu/donanmanın gücüne ek çarpan bonusu.
@@ -188,12 +189,10 @@ kaydında saklanır.
       "id": "treasurer",
       "name_tr": "Hazine Sorumlusu",
       "effects": {
-        "income_mod": 1.05,
-        "resource_production_mod": 1.05
+        "income_mod": 1.05
       },
       "per_level": {
-        "income_mod": 1.01,
-        "resource_production_mod": 1.01
+        "income_mod": 1.01
       }
     }
   ]
@@ -350,8 +349,7 @@ Bonuslar görev etkilerine eklenir.
       "name_tr": "Bilgin",
       "council_effects": {
         "treasurer": {
-          "income_mod": 1.02,
-          "resource_production_mod": 1.02
+          "income_mod": 1.02
         }
       }
     }

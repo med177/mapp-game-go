@@ -60,7 +60,7 @@ func DefaultCharacterCouncilConfig() CharacterCouncilConfig {
 		XPPerEffect: DefaultCouncilXPPerEffect,
 		Roles: []CouncilRoleDefinition{
 			{ID: "head_of_house", NameTR: "Hane Lideri", Effects: CouncilEffects{SatisfactionPoints: 1, MilitaryPowerMod: 1.01, RelationBonusPoints: 1}, PerLevel: CouncilEffects{SatisfactionPoints: 1, MilitaryPowerMod: 1.01, RelationBonusPoints: 1}},
-			{ID: "treasurer", NameTR: "Hazine Sorumlusu", Effects: CouncilEffects{IncomeMod: 1.05, ResourceProductionMod: 1.05}, PerLevel: CouncilEffects{IncomeMod: 1.01, ResourceProductionMod: 1.01}},
+			{ID: "treasurer", NameTR: "Hazine Sorumlusu", Effects: CouncilEffects{IncomeMod: 1.05}, PerLevel: CouncilEffects{IncomeMod: 1.01}},
 			{ID: "diplomat", NameTR: "Diplomat", Effects: CouncilEffects{RelationBonusPoints: 3}, PerLevel: CouncilEffects{RelationBonusPoints: 1}},
 			{ID: "heir", NameTR: "Veliaht", Effects: CouncilEffects{SatisfactionPoints: 1, RelationBonusPoints: 1}, PerLevel: CouncilEffects{SatisfactionPoints: 1, RelationBonusPoints: 1}},
 			{ID: "military_responsible", NameTR: "Askeri Sorumlu", SetCommanderArmy: true, Effects: CouncilEffects{MilitaryPowerMod: 1.03, CommanderPowerMod: 1.03}, PerLevel: CouncilEffects{MilitaryPowerMod: 1.01, CommanderPowerMod: 1.01}, TraitFallbackEffects: CouncilEffects{MilitaryPowerMod: 0.99}},

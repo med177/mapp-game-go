@@ -13,7 +13,7 @@ import (
 	"mapp-game-go/internal/world"
 )
 
-func TestTreasurerBonusAppliedToFactionIncomeByEconomyTick(t *testing.T) {
+func TestTreasurerBonusAppliesOnlyToNonSiegeRegionalTax(t *testing.T) {
 	const fid faction.FactionID = "player"
 
 	buildState := func(withTreasurer bool) *state.GameState {
@@ -34,9 +34,11 @@ func TestTreasurerBonusAppliedToFactionIncomeByEconomyTick(t *testing.T) {
 				},
 			},
 			Regions: map[world.RegionID]*world.Region{
-				"capital": {ID: "capital", OwnerID: string(fid), BaseGoldIncome: 1000, TaxRate: 50, Satisfaction: 50},
+				"capital":  {ID: "capital", OwnerID: string(fid), BaseGoldIncome: 1000, TaxRate: 50, TradeCapacity: 100, Satisfaction: 50},
+				"besieged": {ID: "besieged", OwnerID: string(fid), BaseGoldIncome: 2000, TaxRate: 100, Satisfaction: 50},
 			},
 			Commanders: map[string]*army.Commander{character.ID: character},
+			Sieges:     map[world.RegionID]*state.SiegeState{"besieged": {RegionID: "besieged"}},
 		}
 		if withTreasurer && !gs.AssignCharacterToCouncilRole(fid, character.ID, state.CouncilRoleTreasurer) {
 			t.Fatal("treasurer assignment failed")
@@ -54,9 +56,9 @@ func TestTreasurerBonusAppliedToFactionIncomeByEconomyTick(t *testing.T) {
 
 	baseStatus := base.GoldEconomy[fid]
 	treasurerStatus := withTreasurer.GoldEconomy[fid]
-	wantBonus := baseStatus.Income * 5 / 100
+	wantBonus := baseStatus.TaxIncome * 5 / 100
 	if wantBonus <= 0 {
-		t.Fatalf("fixture produced no income bonus: base income = %d", baseStatus.Income)
+		t.Fatalf("fixture produced no tax income bonus: tax income = %d", baseStatus.TaxIncome)
 	}
 	if got, want := treasurerStatus.CouncilIncome, wantBonus; got != want {
 		t.Fatalf("economy tick council income bonus with treasurer = %d, want %d", got, want)
@@ -72,6 +74,10 @@ func TestTreasurerBonusAppliedToFactionIncomeByEconomyTick(t *testing.T) {
 	}
 	if got, want := treasurerStatus.OtherIncome, baseStatus.OtherIncome; got != want {
 		t.Fatalf("treasurer changed other income category: got %d want %d", got, want)
+	}
+	if treasurerStatus.TradeIncome == 0 || treasurerStatus.OtherIncome == 0 {
+		t.Fatalf("fixture must include trade and other income, got trade=%d other=%d",
+			treasurerStatus.TradeIncome, treasurerStatus.OtherIncome)
 	}
 	if treasurer.CouncilExperience != 10 {
 		t.Fatalf("treasurer experience after income bonus = %d, want 10", treasurer.CouncilExperience)

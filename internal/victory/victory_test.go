@@ -33,10 +33,10 @@ func TestOtherIncomeIsIncludedInGoldIncomeCalculations(t *testing.T) {
 	}
 }
 
-func TestTreasurerBonusMatchesFactionIncomePreviewAndGrossIncome(t *testing.T) {
+func TestTreasurerBonusMatchesFactionTaxPreviewAndGrossIncome(t *testing.T) {
 	const fid faction.FactionID = "player"
 	character := &army.Commander{ID: "cmd_tywin", Type: army.CharacterTypeAdministrator, OwnerID: string(fid), Name: "Tywin"}
-	region := &world.Region{ID: "capital", OwnerID: string(fid), BaseGoldIncome: 1000, TaxRate: 50, Satisfaction: 50}
+	region := &world.Region{ID: "capital", OwnerID: string(fid), BaseGoldIncome: 1000, TaxRate: 50, TradeCapacity: 100, Satisfaction: 50}
 	gs := &state.GameState{
 		Year:            300,
 		Month:           6,
@@ -57,7 +57,7 @@ func TestTreasurerBonusMatchesFactionIncomePreviewAndGrossIncome(t *testing.T) {
 		t.Fatal("treasurer assignment failed")
 	}
 	preview := GoldEconomyPreview(gs, fid)
-	bonus := basePreview.Income * 5 / 100
+	bonus := basePreview.TaxIncome * 5 / 100
 	if got, want := preview.CouncilIncome, bonus; got != want {
 		t.Fatalf("council income preview with treasurer = %d, want %d", got, want)
 	}
@@ -69,6 +69,34 @@ func TestTreasurerBonusMatchesFactionIncomePreviewAndGrossIncome(t *testing.T) {
 	}
 	if preview.TradeIncome != basePreview.TradeIncome || preview.OtherIncome != basePreview.OtherIncome {
 		t.Fatalf("treasurer changed non-tax categories: trade %d->%d, other %d->%d", basePreview.TradeIncome, preview.TradeIncome, basePreview.OtherIncome, preview.OtherIncome)
+	}
+}
+
+func TestTreasurerBonusDoesNotApplyToTribute(t *testing.T) {
+	const overlord faction.FactionID = "overlord"
+	const vassal faction.FactionID = "vassal"
+	treasurer := &army.Commander{ID: "treasurer", Type: army.CharacterTypeCharacter, OwnerID: string(vassal)}
+	region := &world.Region{ID: "region", OwnerID: string(vassal), BaseGoldIncome: 1000, TaxRate: 50, Satisfaction: 50}
+	gs := &state.GameState{
+		Year: 300,
+		Factions: map[faction.FactionID]*faction.Faction{
+			overlord: {ID: overlord},
+			vassal:   {ID: vassal, OverlordID: overlord, TributeRate: 50, TributeRateConfigured: true, Gold: 1000},
+		},
+		Regions:    map[world.RegionID]*world.Region{region.ID: region},
+		Commanders: map[string]*army.Commander{treasurer.ID: treasurer},
+	}
+	if !gs.AssignCharacterToCouncilRole(vassal, treasurer.ID, state.CouncilRoleTreasurer) {
+		t.Fatal("treasurer assignment failed")
+	}
+
+	preview := GoldEconomyPreview(gs, vassal)
+	wantTaxBonus := preview.TaxIncome * 5 / 100
+	if preview.CouncilIncome != wantTaxBonus {
+		t.Fatalf("council tax bonus = %d, want %d", preview.CouncilIncome, wantTaxBonus)
+	}
+	if preview.TributePaid != preview.TaxIncome/2 {
+		t.Fatalf("treasurer changed tribute calculation: tribute=%d tax=%d", preview.TributePaid, preview.TaxIncome)
 	}
 }
 

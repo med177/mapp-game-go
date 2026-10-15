@@ -200,10 +200,7 @@ func GoldEconomyPreview(gs *state.GameState, fid faction.FactionID) state.GoldEc
 			status.TributeIncome += tributePreview(gs, childID, tributeBaseIncome(gs, childID, baseIncomeByFaction[childID]))
 		}
 	}
-	councilIncomeBase := status.Income + status.TradePowerIncome + status.MerchantTradeIncome +
-		status.TradeRouteIncome + status.TradeRouteCustomsIncome + status.PrivilegedTradeIncome +
-		status.PrivilegeIncome + status.TributeIncome
-	status.CouncilIncome = gs.CouncilIncomeBonus(fid, councilIncomeBase)
+	status.CouncilIncome = gs.CouncilTaxIncomeBonus(fid, status.TaxIncome)
 	status.Upkeep = gs.FactionGoldUpkeep(fid)
 	status.CharacterUpkeep = gs.FactionCharacterGoldUpkeep(string(fid))
 	status.BuildingUpkeep = gs.FactionBuildingGoldUpkeep(fid)
@@ -232,7 +229,7 @@ func tributeBaseIncome(gs *state.GameState, fid faction.FactionID, base int) int
 		base += tech.ComputeEffects(owner.Research.Completed, gs.TechTypes).GoldPerRegion * len(gs.RegionsOwnedBy(fid))
 	}
 	base += gs.BlockadeLootForFaction(fid).Gold
-	return base + gs.CouncilIncomeBonus(fid, base)
+	return base
 }
 
 func tributePreview(gs *state.GameState, fid faction.FactionID, income int) int {

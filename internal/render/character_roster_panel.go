@@ -482,7 +482,7 @@ func characterCanBeAssignedToAnyCouncilRole(gs *state.GameState, characterID str
 func characterCouncilEffectsLinesTR(effects scenario.CouncilEffects) []string {
 	var parts []string
 	if percent := councilEffectPercent(effects.IncomeMod); percent != 0 {
-		parts = append(parts, "Gelir "+formatSignedCouncilPercent(percent))
+		parts = append(parts, "Bölgesel vergi "+formatSignedCouncilPercent(percent))
 	}
 	if effects.SatisfactionPoints != 0 {
 		parts = append(parts, "Memnuniyet "+formatSignedCouncilPoints(effects.SatisfactionPoints))
