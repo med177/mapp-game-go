@@ -61,6 +61,7 @@ func TestRoleLinkedMissionPausesCouncilEffectAndCompletesAfterConfiguredTurns(t 
 		ID: "chr_varys", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
 		Name: "Varys", AssignedCouncilRole: CouncilRoleDiplomat,
 	}
+	armyID := army.ArmyID("army_available")
 	gs := &GameState{
 		Year: 300,
 		Factions: map[faction.FactionID]*faction.Faction{
@@ -68,6 +69,7 @@ func TestRoleLinkedMissionPausesCouncilEffectAndCompletesAfterConfiguredTurns(t 
 			target: {ID: target},
 		},
 		Commanders: map[string]*army.Commander{diplomat.ID: diplomat},
+		Armies:     map[army.ArmyID]*army.Army{armyID: {ID: armyID, OwnerID: string(owner)}},
 		CouncilConfig: scenario.CharacterCouncilConfig{
 			Roles: []scenario.CouncilRoleDefinition{{
 				ID: CouncilRoleDiplomat, NameTR: "Diplomat",
@@ -96,12 +98,16 @@ func TestRoleLinkedMissionPausesCouncilEffectAndCompletesAfterConfiguredTurns(t 
 	if got := gs.CouncilRoleEffects(owner, CouncilRoleDiplomat).RelationBonusPoints; got != 0 {
 		t.Fatalf("diplomat council effect while away = %d, want 0", got)
 	}
-	if gs.AssignCommanderToArmy(diplomat.ID, "army_missing") || gs.AssignCharacterToCouncilRole(owner, diplomat.ID, CouncilRoleDiplomat) {
+	if gs.AssignCommanderToArmy(diplomat.ID, armyID) || gs.AssignCharacterToCouncilRole(owner, diplomat.ID, CouncilRoleDiplomat) {
 		t.Fatal("active mission character was reassigned to another duty")
+	}
+	if gs.Armies[armyID].Commander != nil || diplomat.AssignedArmyID != "" {
+		t.Fatal("active mission character was assigned to an army")
 	}
 	if completed := gs.TickCharacterMissions(); len(completed) != 0 || diplomat.ActiveMissionTurnsRemaining != 1 {
 		t.Fatalf("first mission tick = %+v, remaining turns %d", completed, diplomat.ActiveMissionTurnsRemaining)
 	}
+
 	completed := gs.TickCharacterMissions()
 	if len(completed) != 1 || completed[0].Mission.ID != "envoy" || completed[0].TargetFaction != target ||
 		completed[0].Mission.CompletionEffects.RelationBonusPoints != 15 {
@@ -113,6 +119,35 @@ func TestRoleLinkedMissionPausesCouncilEffectAndCompletesAfterConfiguredTurns(t 
 	if gs.CouncilRoleHolder(owner, CouncilRoleDiplomat) != diplomat ||
 		gs.CouncilRoleEffects(owner, CouncilRoleDiplomat).RelationBonusPoints != 3 {
 		t.Fatal("diplomat role did not resume after mission completion")
+	}
+}
+
+func TestArmyAssignedCharacterCannotStartMission(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "cmd_assigned", Type: army.CharacterTypeCommander, OwnerID: string(owner), AssignedArmyID: "army_1",
+	}
+	currentArmy := &army.Army{ID: "army_1", OwnerID: string(owner), Commander: character}
+	gs := &GameState{
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner, Gold: 100}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		Armies:     map[army.ArmyID]*army.Army{currentArmy.ID: currentArmy},
+		CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{{
+			ID: "archive", TargetKind: scenario.CharacterMissionTargetNone, DurationTurns: 1, GoldCost: 25,
+		}}},
+	}
+
+	if options := gs.CharacterMissionOptions(owner, character.ID); len(options) != 0 {
+		t.Fatalf("army-assigned character mission options = %+v, want none", options)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, character.ID, "archive", ""); canStart || reason == "" {
+		t.Fatalf("army-assigned character mission validation = (%v, %q), want rejection with reason", canStart, reason)
+	}
+	if started, reason := gs.StartCharacterMissionTarget(owner, character.ID, "archive", ""); started || reason == "" {
+		t.Fatalf("army-assigned character mission start = (%v, %q), want rejection with reason", started, reason)
+	}
+	if gs.Factions[owner].Gold != 100 || character.ActiveMissionID != "" || currentArmy.Commander != character {
+		t.Fatal("rejected mission changed the army assignment, character, or faction gold")
 	}
 }
 

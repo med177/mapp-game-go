@@ -1,10 +1,9 @@
 ---
-name: Mapp UI Değişikliği
-description: Mapp arayüzünde görünüm, yerleşim, hover veya tıklama davranışı değiştirirken kullan.
+name: mapp-ui-de-i-ikli-i
+description: "Mapp arayüzünde görünüm, yerleşim, hover veya tıklama davranışı değiştirirken kullan."
+disable-model-invocation: true
 argument-hint: İstenen arayüz değişikliğini ve varsa görsel referansı belirt.
-agent: agent
 ---
-
 Bu Mapp UI isteğini uygula:
 
 **İstek:** ${input:request:Değişecek ekran/öğe ve beklenen davranışı yaz}

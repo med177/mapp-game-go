@@ -14,6 +14,7 @@ import (
 )
 
 const characterMissionMapMarkerSize = 28.0
+const characterMissionMapMarkerLabelGap = 6.0
 
 type characterMissionMapMarker struct {
 	regionID       world.RegionID
@@ -131,8 +132,22 @@ func (r *Renderer) characterMissionMapMarkerCenter(regionID world.RegionID) (flo
 	if region == nil {
 		return 0, 0, false
 	}
+	primaryIndex := region.PrimarySettlementIndex()
+	for _, label := range r.regionLabelStatic() {
+		if label.Region == nil || label.Region.ID != regionID || label.Index != primaryIndex {
+			continue
+		}
+		sx, sy := r.worldToScreen(label.WX, label.WY)
+		cx, cy := characterMissionMapMarkerCenterAfterLabel(sx-label.W/2, sy+16, label.W, label.H)
+		return cx, cy, true
+	}
 	x, y := r.regionScreenPos(region)
 	return x + 22, y - 20, true
+}
+
+func characterMissionMapMarkerCenterAfterLabel(labelX, labelY, labelW, labelH float64) (float64, float64) {
+	return labelX + labelW + characterMissionMapMarkerLabelGap + characterMissionMapMarkerSize/2,
+		labelY + labelH/2
 }
 
 func (r *Renderer) drawCharacterMissionMapMarkers(screen *ebiten.Image) {

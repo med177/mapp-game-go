@@ -5,6 +5,11 @@ last_updated: 2026-10-15
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-15: Ordu komutanlığı ve karakter görevleri karşılıklı olarak
+  dışlandı. Orduya atanmış karakter görev başlatamaz; aktif görevdeki karakter
+  doğrudan veya otomatik olarak ordu komutanı yapılamaz. Aynı state kuralları
+  oyuncu UI'sı ve AI akışları için geçerlidir.
+
 - 2026-10-15: Karakter görevleri isteğe bağlı `data/character_missions.json`
   kataloğundan yükleniyor; rol bağlı ve bağımsız görevler süre/maliyet/hedef
   tanımlarıyla hane panelinden başlatılabiliyor. Aktif görev karakterin save

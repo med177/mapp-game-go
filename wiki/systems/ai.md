@@ -19,7 +19,9 @@ değerlendirilir. Hedef olarak ilişki ödüllü görevlerde ilişkisi düşük 
 fraksiyonlar, istihbarat görevlerinde askerî gücü yüksek hedefler seçilir.
 AI, görev maliyetinden sonra asgari altın rezervini korur ve macera sonunda
 bekleyen yetenekler arasından tahmini ordu, donanma veya fraksiyon gücü katkısı
-en yüksek olanı seçer. Oyuncunun tam AI kontrolü etkin değilse karakterleri
+en yüksek olanı seçer. Orduya atanmış karakterler göreve çıkarılmaz; aktif
+görevdeki karakterler de AI'nin otomatik ordu komutanı atama adaylarından
+çıkarılır. Oyuncunun tam AI kontrolü etkin değilse karakterleri
 oyuncu adına görevlendirmez.
 
 İmtiyazlı ticaret rotaları AI ekonomisinde de hesaba katılır.

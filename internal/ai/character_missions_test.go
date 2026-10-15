@@ -72,6 +72,54 @@ func TestAIReservesGoldBeforeStartingCharacterMission(t *testing.T) {
 	}
 }
 
+func TestAILeavesArmyAssignedCharacterOutOfMissions(t *testing.T) {
+	const owner faction.FactionID = "ai"
+	character := &army.Commander{
+		ID: "commander", Type: army.CharacterTypeCommander, OwnerID: string(owner), AssignedArmyID: "army_1",
+	}
+	currentArmy := &army.Army{ID: "army_1", OwnerID: string(owner), Commander: character}
+	gs := &state.GameState{
+		Year:            300,
+		PlayerFactionID: "player",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+			owner:    {ID: owner, Gold: 200},
+		},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		Armies:     map[army.ArmyID]*army.Army{currentArmy.ID: currentArmy},
+		CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{{
+			ID: "recon", TargetKind: scenario.CharacterMissionTargetNone, DurationTurns: 1, GoldCost: 40,
+			CompletionEffects: scenario.CharacterMissionEffects{GoldReward: 100},
+		}}},
+	}
+
+	aiManageCharacterMissions(gs, owner, nil)
+
+	if character.ActiveMissionID != "" || gs.Factions[owner].Gold != 200 || currentArmy.Commander != character {
+		t.Fatal("AI mission logic assigned an army commander to a mission")
+	}
+}
+
+func TestAICommanderManagementLeavesMissionCharacterUnassigned(t *testing.T) {
+	const owner faction.FactionID = "ai"
+	character := &army.Commander{
+		ID: "commander", Type: army.CharacterTypeCommander, OwnerID: string(owner), ActiveMissionID: "recon",
+	}
+	currentArmy := &army.Army{ID: "army_1", OwnerID: string(owner)}
+	gs := &state.GameState{
+		Year:       300,
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		Armies:     map[army.ArmyID]*army.Army{currentArmy.ID: currentArmy},
+	}
+
+	gs.EnsureFactionCommanders(string(owner))
+
+	if currentArmy.Commander == character || character.AssignedArmyID != "" {
+		t.Fatal("AI commander management assigned a character that is on a mission")
+	}
+}
+
 func TestAIKeepsValuableAdvisorOutOfLowValueMission(t *testing.T) {
 	const owner faction.FactionID = "ai"
 	character := &army.Commander{

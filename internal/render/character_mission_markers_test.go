@@ -78,3 +78,16 @@ func TestCharacterMissionMapMarkerRectContainsItsCenter(t *testing.T) {
 		t.Fatalf("mission marker geometry = %+v, expected centered hit rectangle", rect)
 	}
 }
+
+func TestCharacterMissionMapMarkerCentersAfterSettlementLabel(t *testing.T) {
+	labelX, labelY, labelW, labelH := 100.0, 150.0, 92.0, 16.0
+	markerX, markerY := characterMissionMapMarkerCenterAfterLabel(labelX, labelY, labelW, labelH)
+	labelRight := labelX + labelW
+	markerLeft := markerX - characterMissionMapMarkerSize/2
+
+	if markerLeft-labelRight != characterMissionMapMarkerLabelGap ||
+		markerY != labelY+labelH/2 {
+		t.Fatalf("mission marker center = (%.0f, %.0f), label right=%.0f; want %gpx gap and vertically centered",
+			markerX, markerY, labelRight, characterMissionMapMarkerLabelGap)
+	}
+}

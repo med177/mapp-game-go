@@ -452,6 +452,7 @@ func TestReleaseInvalidFleetCommandersRemovesOnlyCivilianFleetCommanders(t *test
 		"merchant_ship": {ID: "merchant_ship", Category: army.CategoryNavalTrade},
 		"warship":       {ID: "warship", Category: army.CategoryNavalWar},
 	}
+
 	newCommander := func(id string) *army.Commander {
 		return &army.Commander{ID: id, OwnerID: "player", Name: id}
 	}
@@ -510,5 +511,30 @@ func TestReleaseInvalidFleetCommandersRemovesOnlyCivilianFleetCommanders(t *test
 	}
 	if warshipFleet.Commander != warshipCommander || warshipCommander.AssignedArmyID != warshipFleet.ID {
 		t.Fatal("savaş gemisi içeren filonun komutanı yanlışlıkla kaldırıldı")
+	}
+}
+
+func TestActiveMissionCharacterCannotBeAssignedAsArmyCommander(t *testing.T) {
+	const armyID army.ArmyID = "army_active_mission"
+	character := &army.Commander{
+		ID: "cmd_on_mission", Type: army.CharacterTypeCommander, OwnerID: "player", ActiveMissionID: "recon",
+	}
+	currentArmy := &army.Army{ID: armyID, OwnerID: "player"}
+	gs := &GameState{
+		Armies:     map[army.ArmyID]*army.Army{armyID: currentArmy},
+		Commanders: map[string]*army.Commander{character.ID: character},
+	}
+
+	if roster := gs.CommanderRoster("player"); len(roster) != 0 {
+		t.Fatalf("active mission commander roster = %+v, want none", roster)
+	}
+	if gs.AssignCommanderToArmy(character.ID, armyID) {
+		t.Fatal("active mission character was assigned to an army")
+	}
+	if gs.AssignStrongestCommanderToArmy(armyID) {
+		t.Fatal("active mission character was auto-assigned to an army")
+	}
+	if currentArmy.Commander != nil || character.AssignedArmyID != "" {
+		t.Fatal("rejected assignment changed the army or character")
 	}
 }

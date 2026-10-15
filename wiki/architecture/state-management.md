@@ -404,7 +404,10 @@ geçirir ve hedef koltuğun eski sahibini boşa çıkarır. `CharacterRoster()`
 atamaları da görev yapılandırmasıyla gelir/üretim/araştırma ve diğer konsey
 etkilerini alır. Askeri Sorumlu hem konsey koltuğunda kalabilir hem ordu veya
 donanmaya komuta edebilir; diğer konsey görevleri ordu komutanlığıyla
-çakışmaz. `TaxIncomeForFaction()` yalnız vergi matrahını döndürür; fraksiyon
+çakışmaz. Karakter aktif bir göreve gönderildiğinde ordu komutanlığına
+atanamaz; orduya atanmış karakter de yeni göreve başlayamaz. Bu karşılıklı
+uygunluk state atama API'lerinde doğrulanır, komutan roster'ından ve otomatik
+atama adaylarından da çıkarılır. `TaxIncomeForFaction()` yalnız vergi matrahını döndürür; fraksiyon
 geneli gelir bonusu ekonomi tick'i, `GoldEconomyPreview()` ve
 `GoldIncomeForFaction()` hesaplarında ayrı uygulanır. Diplomat, Hane Lideri ve
 Veliaht ilişki katkıları Heyet aksiyonunda birleşir; hediye ve diğer aksiyonlar
