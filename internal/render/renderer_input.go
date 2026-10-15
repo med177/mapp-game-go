@@ -1068,20 +1068,11 @@ func (r *Renderer) handleLeftClick() InputAction {
 
 	var mapRID world.RegionID
 	var mapDoubleClick bool
-	// Ordu ve yerleşim ikonları harita bölgesi tıklamasını normalde erken yakalar.
-	// Bölge çift tıklaması ikon seçiminden önce değerlendirilerek mevcut diplomasi
-	// kısayolu korunur; seçili marker üzerinde detay açma sağ tık akışındadır.
+	// Ordu ve görev marker'ları bölge seçiminden önce değerlendirilir. Bu
+	// yüzden çift tıklama kısayolu da iki marker'ın hit alanında çalıştırılmaz.
 	mapWX, mapWY := r.screenToWorld(fx, fy)
 	mapRID = r.worldMap.RegionAt(int(mapWX), int(mapWY))
 	mapDoubleClick = r.mapRegionDoubleClicked(mapRID)
-	if mapDoubleClick {
-		ownerID := diplomacyOwnerForMapRegion(r.gs, mapRID)
-		if ownerID != "" && ownerID != string(r.gs.PlayerFactionID) {
-			r.openDiplomacyTarget(faction.FactionID(ownerID), 0)
-			r.resetMapRegionDoubleClick()
-			return InputAction{}
-		}
-	}
 	if aid, ok := r.navalMissionPendingHitAt(fx, fy); ok {
 		if r.SelectedArmy == aid {
 			return InputAction{}
@@ -1133,6 +1124,17 @@ func (r *Renderer) handleLeftClick() InputAction {
 		r.resetRecruitSelection()
 		r.playArmySelectionSound(aid)
 		return InputAction{Kind: ActionSelectArmy, ArmyID: aid}
+	}
+	if r.openCharacterRosterForMissionMarkerAt(fx, fy) {
+		return InputAction{}
+	}
+	if mapDoubleClick {
+		ownerID := diplomacyOwnerForMapRegion(r.gs, mapRID)
+		if ownerID != "" && ownerID != string(r.gs.PlayerFactionID) {
+			r.openDiplomacyTarget(faction.FactionID(ownerID), 0)
+			r.resetMapRegionDoubleClick()
+			return InputAction{}
+		}
 	}
 	if rid, idx, ok := r.settlementHitAt(fx, fy); ok {
 		if r.selectMapRegionFromMapClickResult(rid, mapDoubleClick) {
@@ -1577,6 +1579,17 @@ func (r *Renderer) armyHitAt(mx, my float64) (army.ArmyID, bool) {
 		}
 	}
 	return "", false
+}
+
+func (r *Renderer) armyMarkerAt(mx, my float64) bool {
+	if _, ok := r.navalMissionPendingHitAt(mx, my); ok {
+		return true
+	}
+	if _, ok := r.embarkedArmyHitAt(mx, my); ok {
+		return true
+	}
+	_, ok := r.armyHitAt(mx, my)
+	return ok
 }
 
 // embarkedArmyHitAt, filonun sağ üstündeki taşınan ordu karesini filo

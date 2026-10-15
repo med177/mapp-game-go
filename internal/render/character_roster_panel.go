@@ -727,7 +727,7 @@ func drawCharacterRosterScrollbar(screen *ebiten.Image, viewport gameui.Rect, co
 	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{210, 175, 85, 230})
 }
 
-func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionOptions map[string][]scenario.CharacterMissionDefinition, column, viewport gameui.Rect, characters []*army.Commander, scroll int, candidate bool, assignmentMenuCharacterID string) {
+func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionOptions map[string][]scenario.CharacterMissionDefinition, column, viewport gameui.Rect, characters []*army.Commander, scroll int, candidate bool, assignmentMenuCharacterID, selectedCharacterID string) {
 	if len(characters) == 0 {
 		message := "Karakter bulunmuyor."
 		if candidate {
@@ -773,6 +773,9 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 		vector.FillRect(body, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), rowBG, false)
 		border := characterRosterRowBorderRect(row)
 		vector.StrokeRect(body, float32(border.X), float32(border.Y), float32(border.W), float32(border.H), 1, rowBorder, false)
+		if !candidate && character.ID == selectedCharacterID {
+			vector.StrokeRect(body, float32(border.X), float32(border.Y), float32(border.W), float32(border.H), 2.5, ColorGold, false)
+		}
 		portrait := characterRosterPortraitRect(row)
 		drawCommanderPortrait(body, character, portrait.X, portrait.Y, portrait.W, portrait.H)
 
@@ -964,8 +967,8 @@ func (r *Renderer) drawCharacterRosterPanel(screen *ebiten.Image) {
 	drawUILabel(screen, gameui.Rect{X: ownedColumn.X + 8, Y: ownedColumn.Y + 7, W: ownedColumn.W - 16}, "Hane Üyeleri ("+itoa(len(ownedRoster))+")", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: candidateColumn.X + 8, Y: candidateColumn.Y + 7, W: candidateColumn.W - 16}, "Adaylar ("+itoa(len(candidates))+")", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: candidateColumn.X + 8, Y: candidateColumn.Y + 34, W: candidateColumn.W - 16, H: 32}, "Alım ve tur başı bakım ücreti kartta", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawCharacterRosterRows(screen, r.gs, r.characterMissionsByCharacter, ownedColumn, ownedViewport, ownedRoster, r.characterRosterOwnedScroll, false, r.characterRosterAssignMenuID)
-	drawCharacterRosterRows(screen, r.gs, r.characterMissionsByCharacter, candidateColumn, candidateViewport, candidates, r.characterRosterNeutralScroll, true, "")
+	drawCharacterRosterRows(screen, r.gs, r.characterMissionsByCharacter, ownedColumn, ownedViewport, ownedRoster, r.characterRosterOwnedScroll, false, r.characterRosterAssignMenuID, r.characterRosterSelectedCharacterID)
+	drawCharacterRosterRows(screen, r.gs, r.characterMissionsByCharacter, candidateColumn, candidateViewport, candidates, r.characterRosterNeutralScroll, true, "", "")
 	menuIndex := characterRosterIndexByID(ownedRoster, r.characterRosterAssignMenuID)
 	if menuIndex >= r.characterRosterOwnedScroll &&
 		menuIndex < r.characterRosterOwnedScroll+characterRosterOwnedVisibleRows(ownedViewport, ownedRoster, r.characterRosterOwnedScroll) &&
@@ -1044,15 +1047,29 @@ func (r *Renderer) handleCharacterRosterPanelInput() (InputAction, bool) {
 }
 
 func (r *Renderer) OpenCharacterRosterPanel() {
+	r.openCharacterRosterPanel("")
+}
+
+func (r *Renderer) OpenCharacterRosterPanelForCharacter(characterID string) {
+	r.openCharacterRosterPanel(characterID)
+}
+
+func (r *Renderer) openCharacterRosterPanel(characterID string) {
 	if r == nil || r.gs == nil || r.gs.PlayerFactionID == "" {
 		return
 	}
 	r.showCharacterRoster = true
+	r.characterRosterSelectedCharacterID = characterID
 	r.characterRosterAssignMenuID = ""
 	r.CloseCharacterMissionMenu()
 	r.characterRosterOwnedScroll = 0
 	r.characterRosterNeutralScroll = 0
 	r.RefreshCharacterRosterPanel()
+	if index := characterRosterIndexByID(r.characterRosterOwned, characterID); index >= 0 {
+		ownedColumn, _ := characterRosterColumns()
+		viewport := characterRosterOwnedListViewport(ownedColumn)
+		r.characterRosterOwnedScroll = clampCharacterRosterOwnedScroll(index, viewport, r.characterRosterOwned)
+	}
 	r.bringOverlayPanelToFront(overlayPanelCharacterRoster)
 }
 
@@ -1083,6 +1100,7 @@ func (r *Renderer) CloseCharacterRosterPanel() {
 		return
 	}
 	r.showCharacterRoster = false
+	r.characterRosterSelectedCharacterID = ""
 	r.characterRosterAssignMenuID = ""
 	r.characterRosterOwnedScroll = 0
 	r.characterRosterNeutralScroll = 0

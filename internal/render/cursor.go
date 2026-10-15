@@ -229,7 +229,7 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 			}
 			return ebiten.CursorShapeDefault
 		}
-		if r.landPassageHoverAt(fx, fy) >= 0 {
+		if r.gs.Phase == state.PhaseEditMode && r.landPassageHoverAt(fx, fy) >= 0 {
 			return ebiten.CursorShapePointer
 		}
 		if r.uiLayers.BlocksAt(fx, fy) {
@@ -239,6 +239,15 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 			return ebiten.CursorShapeDefault
 		}
 		if r.gs.Phase == state.PhasePlayerTurn {
+			if r.armyMarkerAt(fx, fy) {
+				return ebiten.CursorShapePointer
+			}
+			if _, ok := r.characterMissionMapMarkerAt(fx, fy); ok {
+				return ebiten.CursorShapePointer
+			}
+			if r.landPassageHoverAt(fx, fy) >= 0 {
+				return ebiten.CursorShapePointer
+			}
 			if _, ok := r.navalSupplyCargoHitAt(fx, fy); ok ||
 				r.navalMovementTargetHovering(fx, fy) ||
 				r.embarkFleetTargetHovering(fx, fy) ||

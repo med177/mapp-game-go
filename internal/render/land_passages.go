@@ -152,6 +152,14 @@ func (r *Renderer) drawLandPassageHoverTooltip(screen *ebiten.Image) {
 		return
 	}
 	mx, my := ebiten.CursorPosition()
+	if r.mapMode != MapModeTrade {
+		if r.armyMarkerAt(float64(mx), float64(my)) {
+			return
+		}
+		if _, hit := r.characterMissionMapMarkerAt(float64(mx), float64(my)); hit {
+			return
+		}
+	}
 	index := r.landPassageHoverAt(float64(mx), float64(my))
 	if index < 0 || index >= len(r.gs.LandPassages) {
 		return

@@ -24,9 +24,60 @@ type characterMissionMapMarker struct {
 	turnsRemaining int
 }
 
+type characterMissionMarkerTooltipLayout struct {
+	panel     gameui.Rect
+	portrait  gameui.Rect
+	name      gameui.Rect
+	mission   gameui.Rect
+	remaining gameui.Rect
+}
+
+const characterMissionMarkerTooltipWidth = 340.0
+
 func characterMissionMapMarkerRect(cx, cy float64) gameui.Rect {
 	size := characterMissionMapMarkerSize
 	return gameui.Rect{X: cx - size/2, Y: cy - size/2, W: size, H: size}
+}
+
+func characterMissionMarkerTooltipGeometry(mx, my float64) characterMissionMarkerTooltipLayout {
+	const (
+		height          = 120.0
+		padding         = 12.0
+		portraitTextGap = 12.0
+		portraitSize    = float64(armyPanelCommanderPortrait)
+	)
+	x, y, w, h := tooltipRect(mx, my, characterMissionMarkerTooltipWidth, height)
+	textX := x + padding + portraitSize + portraitTextGap
+	textW := w - 2*padding - portraitSize - portraitTextGap
+	return characterMissionMarkerTooltipLayout{
+		panel:     gameui.Rect{X: x, Y: y, W: w, H: h},
+		portrait:  gameui.Rect{X: x + padding, Y: y + padding, W: portraitSize, H: portraitSize},
+		name:      gameui.Rect{X: textX, Y: y + 12, W: textW, H: 18},
+		mission:   gameui.Rect{X: textX, Y: y + 42, W: textW, H: 18},
+		remaining: gameui.Rect{X: textX, Y: y + 72, W: textW, H: 18},
+	}
+}
+
+func (r *Renderer) characterMissionMapMarkerAt(x, y float64) (characterMissionMapMarker, bool) {
+	if r == nil || r.gs == nil || r.mapMode == MapModeTrade || r.gs.Phase == state.PhaseEditMode {
+		return characterMissionMapMarker{}, false
+	}
+	for _, marker := range r.characterMissionMapMarkers() {
+		cx, cy, ok := r.characterMissionMapMarkerCenter(marker.regionID)
+		if ok && characterMissionMapMarkerRect(cx, cy).Hit(x, y) {
+			return marker, true
+		}
+	}
+	return characterMissionMapMarker{}, false
+}
+
+func (r *Renderer) openCharacterRosterForMissionMarkerAt(x, y float64) bool {
+	marker, ok := r.characterMissionMapMarkerAt(x, y)
+	if !ok {
+		return false
+	}
+	r.OpenCharacterRosterPanelForCharacter(marker.characterID)
+	return true
 }
 
 func characterMissionMapTargetRegion(gs *state.GameState, mission scenario.CharacterMissionDefinition, targetID string) *world.Region {
@@ -182,26 +233,28 @@ func (r *Renderer) drawCharacterMissionMarkerHoverTooltip(screen *ebiten.Image) 
 	if _, ok := r.uiLayers.TopAt(float64(mx), float64(my)); ok {
 		return
 	}
-	for _, marker := range r.characterMissionMapMarkers() {
-		cx, cy, ok := r.characterMissionMapMarkerCenter(marker.regionID)
-		if !ok || !characterMissionMapMarkerRect(cx, cy).Hit(float64(mx), float64(my)) {
-			continue
-		}
-		character := r.gs.Commanders[marker.characterID]
-		mission, missionOK := characterMissionDefinition(r.gs, marker.missionID)
-		if character == nil || !missionOK {
-			return
-		}
-		detail := character.Name + ": " + mission.NameTR + " · " + itoa(marker.turnsRemaining) + " tur kaldı"
-		if marker.count > 1 {
-			detail += " · +" + itoa(marker.count-1) + " başka görev"
-		}
-		x, y, w, h := tooltipRect(float64(mx), float64(my), 330, 76)
-		drawTooltipBox(screen, x, y, w, h)
-		drawUILabel(screen, gameui.Rect{X: x + 12, Y: y + 8, W: w - 24, H: 20},
-			"Karakter görevi", ColorGold, gameui.TextMedium, gameui.TextAlignStart)
-		drawUIWrappedLabel(screen, gameui.Rect{X: x + 12, Y: y + 32, W: w - 24, H: h - 38},
-			detail, ColorWhite, gameui.TextSmall, 16, 2)
+	if r.armyMarkerAt(float64(mx), float64(my)) {
 		return
 	}
+	marker, ok := r.characterMissionMapMarkerAt(float64(mx), float64(my))
+	if !ok {
+		return
+	}
+	character := r.gs.Commanders[marker.characterID]
+	mission, missionOK := characterMissionDefinition(r.gs, marker.missionID)
+	if character == nil || !missionOK {
+		return
+	}
+	remaining := itoa(marker.turnsRemaining) + " tur kaldı"
+	if marker.count > 1 {
+		remaining += " · +" + itoa(marker.count-1) + " başka görev"
+	}
+	layout := characterMissionMarkerTooltipGeometry(float64(mx), float64(my))
+	drawTooltipBox(screen, layout.panel.X, layout.panel.Y, layout.panel.W, layout.panel.H)
+	drawCommanderPortrait(screen, character, layout.portrait.X, layout.portrait.Y, layout.portrait.W, layout.portrait.H)
+	drawUILabel(screen, layout.name, trimTextToWidth(character.Name, FaceSmall, layout.name.W),
+		ColorGold, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, layout.mission, trimTextToWidth(mission.NameTR, FaceSmall, layout.mission.W),
+		ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+	drawUILabel(screen, layout.remaining, remaining, ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 }

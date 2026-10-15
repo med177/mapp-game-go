@@ -33,7 +33,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   uygulanıyor; savaş, AI, güç tahmini ve önizleme aynı bonus kurallarını kullanıyor.
   Hedefli aktif karakter görevleri haritada kitap rozetiyle gösteriliyor:
   bölge hedefleri doğrudan, fraksiyon hedefleri başkentinde işaretleniyor;
-  aynı yerdeki görevler tek rozet altında gruplanıp hover ile ayrıntı veriyor.
+  aynı yerdeki görevler tek rozet altında gruplanıyor. Hover imleci pointer'a
+  dönüşür ve karakter portresini içeren popup ayrıntı verir; tıklama hane
+  panelini açıp ilgili karakteri görünür ve sarı çerçeveli seçili gösterir.
   Hedefsiz macera ve bağımsız görevler konumları olmadığı için marker üretmiyor.
   AI de uygun danışman, ajan ve macera görevlerini net tahmini faydaya göre
   başlatıyor; konsey bonusu kaybını ve altın maliyetini hesaba katıp asgari

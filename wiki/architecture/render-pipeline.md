@@ -775,7 +775,12 @@ sürükletir, `Geçiş Sil`/`Delete` seçili geçişi kaldırır. Bu işlemler d
 runtime state'e uygulanır. Aynı sekmedeki `Komşu Ekle`, seçili kara bölgeyi
 kaynak alıp haritadan seçilen ikinci kara bölgeye karşılıklı `neighbors` kaydı
 ekler; böylece arada deniz olsa bile kara hareket grafiğinde doğrudan bağlantı
-oluşur.
+oluşur. Uzaklaştırılmış haritada ordu, karakter görevi ve geçiş işaretlerinin
+çizim ve etkileşim önceliği ordu → görev → geçiştir: ordu ikonları görev
+işaretlerinin önünde, ikisi de geçiş çizgilerinin önünde görünür. Çakışan hit
+alanlarında cursor ve hover içeriği de aynı sırayı izler; ordu tıklaması görev
+işaretinden önce değerlendirilir (`internal/render/renderer.go`,
+`internal/render/renderer_input.go`, `internal/render/cursor.go`).
 
 Shape sekmesindeki `Sınır Boya`, `Sınır Sil`, `Bölge Boya` ve `Bölge Sil`
 butonları toggle çalışır; aktif araca tekrar tıklamak aracı kapatır, `>` işareti

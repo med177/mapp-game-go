@@ -288,6 +288,7 @@ type Renderer struct {
 	activeWarsDirty                       bool
 	activeWarsLastRefresh                 uint64
 	showCharacterRoster                   bool
+	characterRosterSelectedCharacterID    string
 	characterRosterAssignMenuID           string
 	characterRosterOwnedScroll            int
 	characterRosterNeutralScroll          int
@@ -2482,6 +2483,9 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 
 	// 6. Ordu ikonları (ticaret modunda gizlenir)
 	if r.mapMode != MapModeTrade {
+		// Ordu işaretleri görev rozetlerinin, görev rozetleri de alttaki
+		// geçiş çizgilerinin önünde görünür.
+		r.drawCharacterMissionMapMarkers(screen)
 		r.drawArmies(screen, armyPositions)
 		r.drawPendingNavalContactHighlight(screen, armyPositions)
 		r.drawPendingLandContactHighlight(screen, armyPositions)
@@ -2490,7 +2494,6 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		// Seçim çerçevesi en üstte kalır; görev ve deniz rozetleri seçili
 		// ordunun/filonun okunabilir işaretini kapatmamalı.
 		r.drawSelectedArmyIndicator(screen, armyPositions)
-		r.drawCharacterMissionMapMarkers(screen)
 	}
 	if r.gs.Phase == state.PhaseEditMode {
 		// Seçili bölgenin sınırı ordu ikonlarının altında kaybolmamalı.
