@@ -307,6 +307,26 @@ func TestCharacterRosterAbilityEffectLineAvoidsReleaseButton(t *testing.T) {
 	}
 }
 
+func TestCharacterRosterAbilityEffectLineDoesNotOverlapTraits(t *testing.T) {
+	row := gameui.Rect{X: 100, Y: 200, W: 400, H: characterRosterCardH}
+	detail := characterRosterDetailRect(row, row.X+150)
+
+	line, fits := characterRosterAbilityEffectLineRect(row, detail.X, detail, 2, false, false)
+	if !fits || line.Y+line.H > characterRosterTraitRowRect(row).Y {
+		t.Fatalf("ability line %v should fit above trait row %v", line, characterRosterTraitRowRect(row))
+	}
+
+	line, fits = characterRosterAbilityEffectLineRect(row, detail.X, detail, 3, false, false)
+	if fits || line.Y+line.H <= characterRosterTraitRowRect(row).Y {
+		t.Fatalf("ability line %v should be omitted rather than overlap trait row %v", line, characterRosterTraitRowRect(row))
+	}
+
+	line, fits = characterRosterAbilityEffectLineRect(row, detail.X, detail, 0, false, true)
+	if !fits || line.Y != detail.Y+36 || line.Y+line.H > characterRosterTraitRowRect(row).Y {
+		t.Fatalf("candidate ability line %v should appear after both cost lines and before traits %v", line, characterRosterTraitRowRect(row))
+	}
+}
+
 func TestCharacterAbilityPopupExpandsForEveryAbility(t *testing.T) {
 	popup := characterAbilityPopupRect(100, 100, 10)
 	wantHeight := characterAbilityPopupPad*2 + characterAbilityPopupTitleH + 10*characterAbilityPopupLineH

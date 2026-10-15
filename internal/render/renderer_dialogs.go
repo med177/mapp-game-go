@@ -2042,7 +2042,7 @@ func (r *Renderer) ShowFourChoiceDialog(title, message, firstLabel, secondLabel,
 		return
 	}
 	r.confirmDialog = confirmDialogState{show: true, title: title, message: message,
-		messageLines: wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
+		messageLines: wrapTextLines(message, FaceSmall, float64(confirmDialogFourChoiceW)-40),
 		acceptLabel:  firstLabel, secondLabel: secondLabel, thirdLabel: thirdLabel, fourthLabel: fourthLabel,
 		pendingAction: firstAction, secondAction: secondAction, thirdAction: thirdAction, fourthAction: fourthAction,
 		declineActs: true}
@@ -2184,7 +2184,7 @@ func (r *Renderer) QueueFourChoiceDialogAfterBattleReport(title, message, firstL
 		return
 	}
 	r.queuedConfirmDialog = confirmDialogState{show: true, title: title, message: message,
-		messageLines: wrapTextLines(message, FaceSmall, float64(confirmDialogW)-40),
+		messageLines: wrapTextLines(message, FaceSmall, float64(confirmDialogFourChoiceW)-40),
 		acceptLabel:  firstLabel, secondLabel: secondLabel, thirdLabel: thirdLabel, fourthLabel: fourthLabel,
 		pendingAction: firstAction, secondAction: secondAction, thirdAction: thirdAction, fourthAction: fourthAction,
 		declineActs: true}
@@ -2226,7 +2226,15 @@ func (r *Renderer) drawConfirmDialog(screen *ebiten.Image) {
 			drawUILabel(screen, gameui.Rect{X: content.X, Y: content.Y + float64(i)*28, W: content.W}, line, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 	} else {
-		drawUIWrappedLabel(screen, gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + 58, W: modal.Panel.Rect.W - 40}, r.confirmDialog.message, color.RGBA{220, 220, 220, 255}, gameui.TextSmall, 17, 3)
+		drawUIWrappedLabel(
+			screen,
+			gameui.Rect{X: modal.Panel.Rect.X + 20, Y: modal.Panel.Rect.Y + confirmDialogMessageY, W: modal.Panel.Rect.W - 40},
+			r.confirmDialog.message,
+			color.RGBA{220, 220, 220, 255},
+			gameui.TextSmall,
+			confirmDialogMessageLineStep,
+			len(r.confirmDialog.messageLines),
+		)
 	}
 	r.drawConfirmDialogButtons(screen)
 }

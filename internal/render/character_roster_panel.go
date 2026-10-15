@@ -411,6 +411,17 @@ func characterRosterTraitRowRect(row gameui.Rect) gameui.Rect {
 	}
 }
 
+func characterRosterAbilityEffectLineRect(row gameui.Rect, textX float64, detailRect gameui.Rect, bonusCount int, hasMissionDetails, hasCandidateCostLines bool) (gameui.Rect, bool) {
+	y := detailRect.Y + 20 + float64(bonusCount)*16
+	if (hasMissionDetails || hasCandidateCostLines) && y < detailRect.Y+36 {
+		y = detailRect.Y + 36
+	}
+	line := gameui.Rect{
+		X: textX, Y: y, W: row.X + row.W - textX - characterRosterCardPadding, H: 16,
+	}
+	return line, line.Y+line.H <= characterRosterTraitRowRect(row).Y
+}
+
 func characterRosterLineRectBeforeButton(row gameui.Rect, textX, y, height float64, button gameui.Button) gameui.Rect {
 	line := gameui.Rect{
 		X: textX, Y: y, W: row.X + row.W - textX - characterRosterCardPadding, H: height,
@@ -1130,25 +1141,20 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 		}
 		abilityEffects := characterAdventureAbilityEffectsSummaryTR(character.AdventureAbilities)
 		if abilityEffects != "" {
-			abilityLineY := detailRect.Y + 20 + float64(len(bonus))*16
-			if missionDetails[0] != "" && abilityLineY < detailRect.Y+36 {
-				abilityLineY = detailRect.Y + 36
+			abilityRect, fitsBeforeTraits := characterRosterAbilityEffectLineRect(
+				row, textX, detailRect, len(bonus), missionDetails[0] != "", candidate,
+			)
+			if fitsBeforeTraits {
+				if !candidate && characterRosterReleaseable(character) &&
+					character.AssignedCouncilRole == "" && character.ID != assignmentMenuCharacterID {
+					abilityRect = characterRosterLineRectBeforeButton(
+						row, textX, abilityRect.Y, abilityRect.H,
+						characterReleaseButton(column, index, scroll, characters),
+					)
+				}
+				drawUILabel(body, abilityRect, trimTextToWidth(abilityEffects, FaceSmall, abilityRect.W),
+					color.RGBA{190, 220, 155, 255}, gameui.TextSmall, gameui.TextAlignStart)
 			}
-			abilityRect := gameui.Rect{
-				X: textX,
-				Y: abilityLineY,
-				W: row.X + row.W - textX - characterRosterCardPadding,
-				H: 16,
-			}
-			if !candidate && characterRosterReleaseable(character) &&
-				character.AssignedCouncilRole == "" && character.ID != assignmentMenuCharacterID {
-				abilityRect = characterRosterLineRectBeforeButton(
-					row, textX, abilityLineY, 16,
-					characterReleaseButton(column, index, scroll, characters),
-				)
-			}
-			drawUILabel(body, abilityRect, trimTextToWidth(abilityEffects, FaceSmall, abilityRect.W),
-				color.RGBA{190, 220, 155, 255}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 		traitRow := characterRosterTraitRowRect(row)
 		if hasMissionButton {

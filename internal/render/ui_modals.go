@@ -2,6 +2,13 @@ package render
 
 import gameui "mapp-game-go/internal/ui"
 
+const (
+	confirmDialogMessageY            = 58.0
+	confirmDialogMessageLineStep     = 17.0
+	confirmDialogMessageButtonGap    = 17.0
+	confirmDialogButtonBottomPadding = 18.0
+)
+
 type eventDetailLayout struct {
 	panelRect   gameui.Rect
 	headerRect  gameui.Rect
@@ -55,6 +62,23 @@ func buildConfirmDialogModalFor(state confirmDialogState) gameui.Modal {
 	if state.spacious {
 		modalW = float64(confirmDialogSpaciousW)
 		modalH = float64(confirmDialogSpaciousH)
+	} else if state.navalContact == nil && state.landContact == nil {
+		lineCount := len(state.messageLines)
+		if lineCount == 0 && state.message != "" {
+			messageWidth := modalW - 40
+			if state.secondLabel != "" && state.fourthLabel != "" {
+				messageWidth = float64(confirmDialogFourChoiceW) - 40
+			}
+			lineCount = len(wrapTextLines(state.message, FaceSmall, messageWidth))
+		}
+		requiredHeight := confirmDialogMessageY +
+			float64(lineCount)*confirmDialogMessageLineStep +
+			confirmDialogMessageButtonGap +
+			float64(confirmDialogBtnH) +
+			confirmDialogButtonBottomPadding
+		if requiredHeight > modalH {
+			modalH = requiredHeight
+		}
 	}
 	anchor := gameui.AnchorMiddle
 	if state.navalContact != nil {
@@ -84,7 +108,7 @@ func buildConfirmDialogButtons(state confirmDialogState) (gameui.Button, gameui.
 	if state.declineAction.Kind == ActionLiftSiege {
 		btnW = 160
 	}
-	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - 18
+	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - confirmDialogButtonBottomPadding
 	if state.thirdLabel != "" {
 		saveX, discardX, cancelX := confirmDialogThreeButtonXs(float32(modal.Panel.Rect.X), btnW, modal.Panel.Rect.W)
 		third := gameui.NewButton(float64(discardX), btnY, btnW, float64(confirmDialogBtnH), state.thirdLabel)
@@ -113,7 +137,7 @@ func buildConfirmDialogFourButtons(state confirmDialogState) [4]gameui.Button {
 	modal := buildConfirmDialogModalFor(state)
 	btnW := (modal.Panel.Rect.W - 48) / 4
 	gap := 8.0
-	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - 18
+	btnY := modal.Panel.Rect.Y + modal.Panel.Rect.H - float64(confirmDialogBtnH) - confirmDialogButtonBottomPadding
 	startX := modal.Panel.Rect.X + (modal.Panel.Rect.W-(btnW*4+gap*3))/2
 	labels := [4]string{state.acceptLabel, state.secondLabel, state.thirdLabel, state.fourthLabel}
 	buttons := [4]gameui.Button{}
