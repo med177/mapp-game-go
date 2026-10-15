@@ -43,14 +43,21 @@ func TestCharacterRosterAbilityBadgeOverlaysPortraitBottomRight(t *testing.T) {
 	row := characterRosterRowRect(gameui.Rect{X: 20, Y: 30, W: 300, H: 500}, 0)
 	portrait := characterRosterPortraitRect(row)
 	badge := characterRosterAbilityBadgeRect(portrait)
-	if badge.X+badge.W != portrait.X+portrait.W+characterAbilityBadgeInset ||
-		badge.Y+badge.H != portrait.Y+portrait.H+characterAbilityBadgeInset {
-		t.Fatalf("ability badge %v is not aligned to portrait bottom-right %v", badge, portrait)
+	if badge.X+badge.W != portrait.X+portrait.W-characterAbilityBadgePadding ||
+		badge.Y+badge.H != portrait.Y+portrait.H-characterAbilityBadgePadding {
+		t.Fatalf("ability badge %v does not keep %vpx inset from portrait bottom-right %v",
+			badge, characterAbilityBadgePadding, portrait)
 	}
 	if badge.X < portrait.X || badge.Y < portrait.Y ||
-		badge.X+badge.W > portrait.X+portrait.W+characterAbilityBadgeInset ||
-		badge.Y+badge.H > portrait.Y+portrait.H+characterAbilityBadgeInset {
-		t.Fatalf("ability badge %v falls outside portrait bottom-right corner %v", badge, portrait)
+		badge.X+badge.W > portrait.X+portrait.W ||
+		badge.Y+badge.H > portrait.Y+portrait.H {
+		t.Fatalf("ability badge %v falls outside portrait %v", badge, portrait)
+	}
+	if badge.H != characterAbilityBadgeHeight {
+		t.Fatalf("ability badge height = %.2f, want %.2f", badge.H, characterAbilityBadgeHeight)
+	}
+	if badge.W != characterAbilityIconWidth {
+		t.Fatalf("ability badge width = %.2f, want %.2f", badge.W, characterAbilityIconWidth)
 	}
 }
 

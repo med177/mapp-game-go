@@ -38,8 +38,9 @@ const (
 	characterAbilityPopupPad       = 10.0
 	characterAbilityPopupTitleH    = 22.0
 	characterAbilityPopupLineH     = 18.0
-	characterAbilityBadgeSize      = 24.0
-	characterAbilityBadgeInset     = 2.0
+	characterAbilityBadgeHeight    = 20.0
+	characterAbilityIconWidth      = 10.0
+	characterAbilityBadgePadding   = 3.0
 )
 
 func characterRosterHUDButtonRect() [4]float32 {
@@ -384,23 +385,20 @@ func characterRosterPortraitRect(row gameui.Rect) gameui.Rect {
 }
 
 func characterRosterAbilityBadgeRect(portrait gameui.Rect) gameui.Rect {
-	size := characterAbilityBadgeSize
 	return gameui.Rect{
-		X: portrait.X + portrait.W - size + characterAbilityBadgeInset,
-		Y: portrait.Y + portrait.H - size + characterAbilityBadgeInset,
-		W: size,
-		H: size,
+		X: portrait.X + portrait.W - characterAbilityIconWidth - characterAbilityBadgePadding,
+		Y: portrait.Y + portrait.H - characterAbilityBadgeHeight - characterAbilityBadgePadding,
+		W: characterAbilityIconWidth,
+		H: characterAbilityBadgeHeight,
 	}
 }
 
 func drawCharacterRosterAbilityBadge(screen *ebiten.Image, portrait gameui.Rect) {
 	badge := characterRosterAbilityBadgeRect(portrait)
-	vector.FillRect(screen, float32(badge.X), float32(badge.Y), float32(badge.W), float32(badge.H), color.RGBA{23, 31, 39, 245}, false)
-	vector.StrokeRect(screen, float32(badge.X), float32(badge.Y), float32(badge.W), float32(badge.H), 1, color.RGBA{180, 205, 220, 255}, false)
 	gameui.DrawIcon(
 		screen, gameui.IconAbility,
-		badge.X+characterAbilityBadgeInset, badge.Y+characterAbilityBadgeInset,
-		badge.W-characterAbilityBadgeInset*2, color.White,
+		badge.X-(badge.H-badge.W)/2, badge.Y,
+		badge.H, color.White,
 	)
 }
 
