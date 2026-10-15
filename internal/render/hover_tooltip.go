@@ -309,7 +309,7 @@ func armyPanelCombatView(gs *state.GameState, a *army.Army, embarked bool) (army
 	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 	view.Units = make([]army.Unit, 0, revealed)
 	for displayIndex := 0; displayIndex < revealed; displayIndex++ {
-		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypeOrder, displayIndex)
 		if unitIndex < 0 {
 			break
 		}
@@ -460,7 +460,7 @@ func armyMarkerSummaryRows(gs *state.GameState, a *army.Army) []armyMergePreview
 		revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 		units = make([]army.Unit, 0, revealed)
 		for displayIndex := 0; displayIndex < revealed; displayIndex++ {
-			unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+			unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypeOrder, displayIndex)
 			if unitIndex < 0 {
 				break
 			}

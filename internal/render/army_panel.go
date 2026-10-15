@@ -246,7 +246,7 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	for i := 0; i < totalSlots; i++ {
 		cx, cy := armyPanelUnitPosition(layout, i)
 
-		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, i)
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypeOrder, i)
 		if unitIndex < 0 {
 			// Boş slot — silik çerçeve
 			vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{14, 12, 8, 120}, false)
@@ -481,7 +481,7 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 	const totalSlots = army.MaxArmySize
 	for i := 0; i < totalSlots; i++ {
 		cx, cy := armyPanelUnitPosition(layout, i)
-		unitIndex := armyPanelUnitIndex(displayArmy.Units, gs.UnitTypes, i)
+		unitIndex := armyPanelUnitIndex(displayArmy.Units, gs.UnitTypeOrder, i)
 		if unitIndex < 0 {
 			vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{14, 12, 8, 120}, false)
 			vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{45, 38, 24, 130}, false)
@@ -686,7 +686,7 @@ func scoutedEnemyArmyStrength(gs *state.GameState, a *army.Army, fullIntel bool,
 	}
 	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 	for displayIndex := 0; displayIndex < revealed; displayIndex++ {
-		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypeOrder, displayIndex)
 		if unitIndex < 0 {
 			break
 		}
@@ -1050,7 +1050,7 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	for i := 0; i < totalSlots; i++ {
 		cx, cy := armyPanelUnitPosition(layout, i)
 
-		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, i)
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypeOrder, i)
 		if unitIndex < 0 {
 			vector.FillRect(screen, cx, cy, cardW, cardH, color.RGBA{14, 12, 8, 90}, false)
 			vector.StrokeRect(screen, cx, cy, cardW, cardH, 1, color.RGBA{45, 38, 24, 95}, false)
@@ -1075,19 +1075,20 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	drawEnemyArmyFooterText(screen, layout, footer, "Görünen güç: "+itoa(attack)+" / "+itoa(defense))
 }
 
-// armyPanelUnitIndex, oyun state'indeki birim sırasını değiştirmeden paneldeki
-// gösterim sırasındaki birimin gerçek index'ini döndürür. Aynı kategori içindeki
-// sıra korunur; kartlar piyade, süvari, kuşatma ve ardından diğer kategoriler
-// şeklinde gruplanır.
-func armyPanelUnitIndex(units []army.Unit, unitTypes map[string]*army.UnitType, displayIndex int) int {
+// armyPanelUnitIndex, birimleri birim tanım dosyasındaki türe göre gruplayıp
+// paneldeki gösterim sırasındaki birimin gerçek index'ini döndürür.
+func armyPanelUnitIndex(units []army.Unit, unitTypeOrder []string, displayIndex int) int {
 	if displayIndex < 0 || displayIndex >= len(units) {
 		return -1
 	}
 
 	seen := 0
-	for categoryRank := 0; categoryRank <= 3; categoryRank++ {
+	for orderIndex, typeID := range unitTypeOrder {
+		if containsUnitTypeID(unitTypeOrder[:orderIndex], typeID) {
+			continue
+		}
 		for index := range units {
-			if armyPanelUnitCategoryRank(unitTypes, units[index].TypeID) != categoryRank {
+			if units[index].TypeID != typeID {
 				continue
 			}
 			if seen == displayIndex {
@@ -1096,24 +1097,41 @@ func armyPanelUnitIndex(units []army.Unit, unitTypes map[string]*army.UnitType, 
 			seen++
 		}
 	}
+
+	for index, unit := range units {
+		if containsUnitTypeID(unitTypeOrder, unit.TypeID) ||
+			containsArmyUnitType(units[:index], unit.TypeID) {
+			continue
+		}
+		for unitIndex := range units {
+			if units[unitIndex].TypeID != unit.TypeID {
+				continue
+			}
+			if seen == displayIndex {
+				return unitIndex
+			}
+			seen++
+		}
+	}
 	return -1
 }
 
-func armyPanelUnitCategoryRank(unitTypes map[string]*army.UnitType, typeID string) int {
-	unitType := unitTypes[typeID]
-	if unitType == nil {
-		return 3
+func containsUnitTypeID(unitTypeIDs []string, typeID string) bool {
+	for _, id := range unitTypeIDs {
+		if id == typeID {
+			return true
+		}
 	}
-	switch unitType.Category {
-	case army.CategoryInfantry:
-		return 0
-	case army.CategoryCavalry:
-		return 1
-	case army.CategorySiege, army.CategoryDragon:
-		return 2
-	default:
-		return 3
+	return false
+}
+
+func containsArmyUnitType(units []army.Unit, typeID string) bool {
+	for _, unit := range units {
+		if unit.TypeID == typeID {
+			return true
+		}
 	}
+	return false
 }
 
 func drawUnknownEnemyUnitCard(screen *ebiten.Image, cx, cy float32) {
@@ -1589,7 +1607,7 @@ func armyPanelUnitHover(mx, my float64, gs *state.GameState, aid army.ArmyID) (a
 
 	layout := armyPanelGeometry()
 	for displayIndex := 0; displayIndex < army.MaxArmySize; displayIndex++ {
-		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypeOrder, displayIndex)
 		if unitIndex < 0 || !armyPanelUnitVisible(gs, a, displayIndex) {
 			continue
 		}
@@ -1657,7 +1675,7 @@ func armyPanelUnitIndexAt(mx, my float64, gs *state.GameState, aid army.ArmyID) 
 	}
 	layout := armyPanelGeometry()
 	for displayIndex := 0; displayIndex < army.MaxArmySize; displayIndex++ {
-		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypes, displayIndex)
+		unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypeOrder, displayIndex)
 		if unitIndex < 0 || !armyPanelUnitVisible(gs, a, displayIndex) {
 			continue
 		}
