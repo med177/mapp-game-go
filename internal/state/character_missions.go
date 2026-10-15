@@ -212,7 +212,8 @@ func (s *GameState) missionCharacterAvailable(ownerID string, character *army.Co
 }
 
 // CharacterMissionOptions returns JSON-configured tasks that fit the
-// character's current role/assignment. Config order is preserved for UI.
+// character's current role/assignment, with restricted tasks before general
+// tasks. Config order is preserved within each group.
 func (s *GameState) CharacterMissionOptions(ownerID faction.FactionID, characterID string) []scenario.CharacterMissionDefinition {
 	if s == nil || ownerID == "" {
 		return nil
@@ -232,7 +233,14 @@ func (s *GameState) CharacterMissionOptions(ownerID faction.FactionID, character
 			options = append(options, mission)
 		}
 	}
+	sort.SliceStable(options, func(i, j int) bool {
+		return characterMissionIsRestricted(options[i]) && !characterMissionIsRestricted(options[j])
+	})
 	return options
+}
+
+func characterMissionIsRestricted(mission scenario.CharacterMissionDefinition) bool {
+	return mission.RoleID != "" || len(mission.AllowedCharacters) > 0 || len(mission.AllowedFactions) > 0
 }
 
 // CharacterMissionTargetIDs returns eligible targets in deterministic display

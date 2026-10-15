@@ -199,6 +199,35 @@ func TestStandaloneMissionRequiresCharacterWithoutCouncilRole(t *testing.T) {
 	}
 }
 
+func TestCharacterMissionOptionsPrioritizeRestrictedMissions(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_diplomat", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		AssignedCouncilRole: CouncilRoleDiplomat,
+	}
+	gs := &GameState{
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{
+			{ID: "general", AllowCouncilRoles: true},
+			{ID: "faction_specific", AllowCouncilRoles: true, AllowedFactions: []string{string(owner)}},
+			{ID: "character_specific", AllowCouncilRoles: true, AllowedCharacters: []string{character.ID}},
+			{ID: "role_specific", RoleID: CouncilRoleDiplomat},
+		}},
+	}
+
+	options := gs.CharacterMissionOptions(owner, character.ID)
+	want := []string{"faction_specific", "character_specific", "role_specific", "general"}
+	if len(options) != len(want) {
+		t.Fatalf("mission options count = %d, want %d", len(options), len(want))
+	}
+	for i, missionID := range want {
+		if options[i].ID != missionID {
+			t.Fatalf("mission options[%d] = %q, want %q", i, options[i].ID, missionID)
+		}
+	}
+}
+
 func TestAllowedCharactersRestrictsMissionOptionsAndStart(t *testing.T) {
 	const owner faction.FactionID = "player"
 	const otherOwner faction.FactionID = "other"

@@ -228,6 +228,9 @@ listelenen karakter sahibi fraksiyonların görevi başlatmasını engeller ve
 `allowed_factions` ile çakıştığında engel önceliklidir. İzin listeleri birlikte
 tanımlanmışsa karakterin hem `allowed_characters` hem `allowed_factions` listesiyle
 eşleşmesi gerekir.
+Görev menüsünde `role_id`, `allowed_characters` veya `allowed_factions` ile
+sınırlandırılmış görevler genel görevlerden önce gösterilir; her grubun kendi
+içindeki sıra JSON tanımındaki sırayı korur.
 
 İsteğe bağlı `requires_flags` içindeki tüm senaryo event flag'leri etkin olmalı;
 `blocks_flags` içindeki herhangi bir flag etkinse görev sunulmaz ve başlatılamaz.
