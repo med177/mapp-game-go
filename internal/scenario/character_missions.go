@@ -51,14 +51,21 @@ type CharacterMissionEffects struct {
 }
 
 // CharacterMissionDefinition is a scenario-defined, timed character task.
-// RoleID is optional: linked tasks require that council role; role-free tasks
-// require an unassigned character.
+// RoleID links a task to one council role; AllowCouncilRoles lets a role-free
+// task also be used by characters assigned to any council role.
 type CharacterMissionDefinition struct {
 	ID                string                        `json:"id"`
 	NameTR            string                        `json:"name_tr"`
 	Type              string                        `json:"type,omitempty"`
 	RoleID            string                        `json:"role_id,omitempty"`
+	AllowCouncilRoles bool                          `json:"allow_council_roles,omitempty"`
+	AllowedCharacters []string                      `json:"allowed_characters,omitempty"`
+	AllowedFactions   []string                      `json:"allowed_factions,omitempty"`
+	BlockedFactions   []string                      `json:"blocked_factions,omitempty"`
+	RequiresFlags     []string                      `json:"requires_flags,omitempty"`
+	BlocksFlags       []string                      `json:"blocks_flags,omitempty"`
 	TargetKind        string                        `json:"target_kind,omitempty"`
+	MinYear           int                           `json:"min_year,omitempty"`
 	DurationTurns     int                           `json:"duration_turns"`
 	GoldCost          int                           `json:"gold_cost,omitempty"`
 	CompletionEffects CharacterMissionEffects       `json:"completion_effects,omitempty"`

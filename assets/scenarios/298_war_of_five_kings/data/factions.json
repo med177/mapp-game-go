@@ -1203,5 +1203,50 @@
         "core": true
       }
     ]
+  },
+  {
+    "id": "frey",
+    "name": "House Frey",
+    "name_tr": "Frey Hanesi",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
+    "flag": "frey.png",
+    "religion": "faith_of_the_seven",
+    "color": [
+      139,
+      69,
+      19
+    ],
+    "is_playable": false,
+    "is_eliminated": true,
+    "capital_settlement_id": "the_twins_main",
+    "gold": 1000,
+    "grain": 500,
+    "iron": 100,
+    "timber": 200,
+    "stone": 150,
+    "spice": 20,
+    "cloth": 50,
+    "research": {
+      "completed": {
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "ranger_scouting": true,
+        "coastal_navigation": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 50,
+    "ai_expansion_targets": [
+      "stark"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "the_twins",
+        "value": 100,
+        "core": true
+      }
+    ]
   }
 ]

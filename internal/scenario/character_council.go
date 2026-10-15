@@ -145,12 +145,60 @@ func (c CharacterCouncilConfig) Validate() error {
 		}
 		missionIDs[mission.ID] = struct{}{}
 		if mission.RoleID != "" {
+			if mission.AllowCouncilRoles {
+				return fmt.Errorf("role_id ile allow_council_roles birlikte kullanılamaz: %q", mission.ID)
+			}
 			if _, exists := roleIDs[mission.RoleID]; !exists {
 				return fmt.Errorf("misyon %q bilinmeyen karakter rolüne başvuruyor: %q", mission.ID, mission.RoleID)
 			}
 		}
-		if mission.DurationTurns <= 0 || mission.GoldCost < 0 {
-			return fmt.Errorf("misyon %q pozitif duration_turns ve negatif olmayan gold_cost gerektirir", mission.ID)
+		allowedCharacters := make(map[string]struct{}, len(mission.AllowedCharacters))
+		for _, characterID := range mission.AllowedCharacters {
+			if characterID == "" {
+				return fmt.Errorf("misyon %q boş allowed_characters girdisi içeriyor", mission.ID)
+			}
+			if _, exists := allowedCharacters[characterID]; exists {
+				return fmt.Errorf("misyon %q yinelenen allowed_characters girdisi içeriyor: %q", mission.ID, characterID)
+			}
+			allowedCharacters[characterID] = struct{}{}
+		}
+		allowedFactions := make(map[string]struct{}, len(mission.AllowedFactions))
+		for _, factionID := range mission.AllowedFactions {
+			if factionID == "" {
+				return fmt.Errorf("misyon %q boş allowed_factions girdisi içeriyor", mission.ID)
+			}
+			if _, exists := allowedFactions[factionID]; exists {
+				return fmt.Errorf("misyon %q yinelenen allowed_factions girdisi içeriyor: %q", mission.ID, factionID)
+			}
+			allowedFactions[factionID] = struct{}{}
+		}
+		blockedFactions := make(map[string]struct{}, len(mission.BlockedFactions))
+		for _, factionID := range mission.BlockedFactions {
+			if factionID == "" {
+				return fmt.Errorf("misyon %q boş blocked_factions girdisi içeriyor", mission.ID)
+			}
+			if _, exists := blockedFactions[factionID]; exists {
+				return fmt.Errorf("misyon %q yinelenen blocked_factions girdisi içeriyor: %q", mission.ID, factionID)
+			}
+			blockedFactions[factionID] = struct{}{}
+		}
+		for field, flags := range map[string][]string{
+			"requires_flags": mission.RequiresFlags,
+			"blocks_flags":   mission.BlocksFlags,
+		} {
+			seenFlags := make(map[string]struct{}, len(flags))
+			for _, flag := range flags {
+				if flag == "" {
+					return fmt.Errorf("misyon %q boş %s girdisi içeriyor", mission.ID, field)
+				}
+				if _, exists := seenFlags[flag]; exists {
+					return fmt.Errorf("misyon %q yinelenen %s girdisi içeriyor: %q", mission.ID, field, flag)
+				}
+				seenFlags[flag] = struct{}{}
+			}
+		}
+		if mission.DurationTurns <= 0 || mission.GoldCost < 0 || mission.MinYear < 0 {
+			return fmt.Errorf("misyon %q pozitif duration_turns, negatif olmayan gold_cost ve min_year gerektirir", mission.ID)
 		}
 		switch mission.Type {
 		case "":

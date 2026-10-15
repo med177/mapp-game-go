@@ -20,7 +20,8 @@ func TestLoadScenarioCharacterMissionsSupportsRoleLinkedAndStandaloneTasks(t *te
 	}
 	missions := `{"missions":[
 		{"id":"envoy","name_tr":"Elçilik","role_id":"diplomat","target_kind":"faction","duration_turns":2,"gold_cost":100,"completion_effects":{"relation_bonus_points":5}},
-		{"id":"archive","name_tr":"Arşiv Seferi","duration_turns":2,"gold_cost":25,"completion_effects":{"council_experience":10}},
+		{"id":"archive","name_tr":"Arşiv Seferi","allowed_characters":["chr_arya_stark"],"allowed_factions":["stark"],"blocked_factions":["braavos"],"requires_flags":["journey_unlocked"],"blocks_flags":["journey_closed"],"min_year":300,"duration_turns":2,"gold_cost":25,"completion_effects":{"council_experience":10}},
+		{"id":"shared","name_tr":"Ortak Görev","allow_council_roles":true,"blocked_factions":["others"],"duration_turns":2},
 		{"id":"spy","name_tr":"İstihbarat","target_kind":"faction","duration_turns":2,"gold_cost":50,"completion_effects":{"military_intel_turns":3}},
 		{"id":"recon","name_tr":"Bölgesel Keşif","target_kind":"region","duration_turns":2,"gold_cost":75,"completion_effects":{"region_military_intel_turns":2}}
 	]}`
@@ -32,21 +33,96 @@ func TestLoadScenarioCharacterMissionsSupportsRoleLinkedAndStandaloneTasks(t *te
 	if err != nil {
 		t.Fatalf("görevleri olan senaryo yüklenemedi: %v", err)
 	}
-	if len(loaded.CharacterCouncil.Missions) != 4 {
-		t.Fatalf("yüklü misyon sayısı = %d, want 4", len(loaded.CharacterCouncil.Missions))
+	if len(loaded.CharacterCouncil.Missions) != 5 {
+		t.Fatalf("yüklü misyon sayısı = %d, want 5", len(loaded.CharacterCouncil.Missions))
 	}
-	envoy, archive, spy, recon := loaded.CharacterCouncil.Missions[0], loaded.CharacterCouncil.Missions[1], loaded.CharacterCouncil.Missions[2], loaded.CharacterCouncil.Missions[3]
+	envoy, archive, shared, spy, recon := loaded.CharacterCouncil.Missions[0], loaded.CharacterCouncil.Missions[1], loaded.CharacterCouncil.Missions[2], loaded.CharacterCouncil.Missions[3], loaded.CharacterCouncil.Missions[4]
 	if envoy.RoleID != "diplomat" || envoy.TargetKind != CharacterMissionTargetFaction || envoy.DurationTurns != 2 || envoy.GoldCost != 100 || envoy.CompletionEffects.RelationBonusPoints != 5 {
 		t.Fatalf("role-linked mission = %+v", envoy)
 	}
-	if archive.RoleID != "" || archive.TargetKind != CharacterMissionTargetNone || archive.CompletionEffects.CouncilExperience != 10 {
+	if archive.RoleID != "" || archive.TargetKind != CharacterMissionTargetNone || archive.CompletionEffects.CouncilExperience != 10 ||
+		len(archive.AllowedCharacters) != 1 || archive.AllowedCharacters[0] != "chr_arya_stark" ||
+		len(archive.AllowedFactions) != 1 || archive.AllowedFactions[0] != "stark" ||
+		len(archive.BlockedFactions) != 1 || archive.BlockedFactions[0] != "braavos" ||
+		len(archive.RequiresFlags) != 1 || archive.RequiresFlags[0] != "journey_unlocked" ||
+		len(archive.BlocksFlags) != 1 || archive.BlocksFlags[0] != "journey_closed" || archive.MinYear != 300 {
 		t.Fatalf("standalone mission = %+v", archive)
+	}
+	if !shared.AllowCouncilRoles || len(shared.BlockedFactions) != 1 || shared.BlockedFactions[0] != "others" {
+		t.Fatalf("shared mission = %+v", shared)
 	}
 	if spy.TargetKind != CharacterMissionTargetFaction || spy.CompletionEffects.MilitaryIntelTurns != 3 {
 		t.Fatalf("spy mission = %+v", spy)
 	}
 	if recon.TargetKind != CharacterMissionTargetRegion || recon.CompletionEffects.RegionIntelTurns != 2 {
 		t.Fatalf("region reconnaissance mission = %+v", recon)
+	}
+}
+
+func TestCharacterMissionValidationRejectsRoleLinkedAllowCouncilRoles(t *testing.T) {
+	config := CharacterCouncilConfig{
+		Roles: []CouncilRoleDefinition{{ID: "diplomat", NameTR: "Diplomat"}},
+		Missions: []CharacterMissionDefinition{{
+			ID: "envoy", NameTR: "Elçilik", RoleID: "diplomat", AllowCouncilRoles: true, DurationTurns: 1,
+		}},
+	}
+	if err := config.Validate(); err == nil {
+		t.Fatal("role-linked mission with allow_council_roles was accepted")
+	}
+}
+
+func TestCharacterMissionValidationRejectsInvalidAllowedCharacters(t *testing.T) {
+	config := CharacterCouncilConfig{Missions: []CharacterMissionDefinition{{
+		ID: "archive", NameTR: "Arşiv Seferi", DurationTurns: 1,
+		AllowedCharacters: []string{"chr_arya_stark", "chr_arya_stark"},
+	}}}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with duplicate allowed character IDs was accepted")
+	}
+	config.Missions[0].AllowedCharacters = []string{""}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with an empty allowed character ID was accepted")
+	}
+	config.Missions[0].AllowedCharacters = nil
+	config.Missions[0].AllowedFactions = []string{"stark", "stark"}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with duplicate allowed faction IDs was accepted")
+	}
+	config.Missions[0].AllowedFactions = []string{""}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with an empty allowed faction ID was accepted")
+	}
+	config.Missions[0].AllowedFactions = nil
+	config.Missions[0].BlockedFactions = []string{"stark", "stark"}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with duplicate blocked faction IDs was accepted")
+	}
+	config.Missions[0].BlockedFactions = []string{""}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with an empty blocked faction ID was accepted")
+	}
+	config.Missions[0].BlockedFactions = nil
+	config.Missions[0].RequiresFlags = []string{"ready", "ready"}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with duplicate required flags was accepted")
+	}
+	config.Missions[0].RequiresFlags = []string{""}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with an empty required flag was accepted")
+	}
+	config.Missions[0].RequiresFlags = nil
+	config.Missions[0].BlocksFlags = []string{"closed", "closed"}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with duplicate blocked flags was accepted")
+	}
+	config.Missions[0].BlocksFlags = []string{""}
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with an empty blocked flag was accepted")
+	}
+	config.Missions[0].BlocksFlags = nil
+	config.Missions[0].MinYear = -1
+	if err := config.Validate(); err == nil {
+		t.Fatal("mission with a negative min_year was accepted")
 	}
 }
 

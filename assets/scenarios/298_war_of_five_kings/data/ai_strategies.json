@@ -1440,6 +1440,36 @@
           ]
         }
       ]
+    },
+    {
+      "faction_id": "frey",
+      "profile": "the_twins_defense",
+      "expansion_targets": [
+        "stark"
+      ],
+      "territorial_claims": [
+        {
+          "region_id": "the_twins",
+          "value": 100
+        }
+      ],
+      "objectives": [
+        {
+          "id": "secure_the_twins",
+          "kind": "defend",
+          "territorial_claims": [
+            {
+              "region_id": "the_twins",
+              "value": 100
+            }
+          ],
+          "priority": 100,
+          "commitment": 100,
+          "readiness_regions": [
+            "the_twins"
+          ]
+        }
+      ]
     }
   ]
 }

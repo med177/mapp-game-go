@@ -83,9 +83,258 @@
       }
     },
     {
+      "id": "military_intelligence",
+      "name_tr": "Askerî İstihbarat Keşfi",
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 250,
+      "completion_effects": {
+        "military_intel_turns": 2
+      }
+    },
+    {
+      "id": "region_reconnaissance",
+      "name_tr": "Bölgesel Askerî Keşif",
+      "target_kind": "region",
+      "duration_turns": 2,
+      "gold_cost": 200,
+      "completion_effects": {
+        "region_military_intel_turns": 2
+      }
+    },
+     {
+      "id": "common_vassal_loyalty",
+      "name_tr": "Lortların Desteğini Sağlama",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 120,
+      "completion_effects": {
+        "relation_bonus_points": 10,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "common_prisoner_exchange",
+      "name_tr": "Rehin Alma ve Esir Takası",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 60,
+      "completion_effects": {
+        "relation_bonus_points": 15,
+        "gold_reward": 100,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "common_dynastic_marriage",
+      "name_tr": "Saray Evliliği Düzenleme",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "target_kind": "faction",
+      "duration_turns": 3,
+      "gold_cost": 180,
+      "completion_effects": {
+        "relation_bonus_points": 20,
+        "military_intel_turns": 3,
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "common_supply_convoy",
+      "name_tr": "Erzak Konvoyu ve İkmal Güvenliği",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "target_kind": "region",
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": {
+        "region_military_intel_turns": 3,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "common_war_financing",
+      "name_tr": "Savaş Finansmanı ve Banka Kredisi",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "duration_turns": 2,
+      "gold_cost": 0,
+      "completion_effects": {
+        "gold_reward": 350,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "common_smithing_mobilization",
+      "name_tr": "Demirci ve Zırh Üretim Seferberliği",
+      "type": "adventure",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "duration_turns": 3,
+      "gold_cost": 220,
+      "adventure": {
+        "success_chance_percent": 45,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["administrator", "resourceful", "veteran"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_council_experience": 15,
+        "partial_council_experience": 6,
+        "success_ability_choices": [
+          {"id": "field_armory", "name_tr": "Seferber Edilmiş Cephanelik", "scope": "faction", "effect": "military_power", "modifier": 0.02}
+        ],
+        "partial_ability_choices": [
+          {"id": "field_armory", "name_tr": "Seferber Edilmiş Cephanelik", "scope": "faction", "effect": "military_power", "modifier": 0.01}
+        ]
+      }
+    },
+    {
+      "id": "common_supply_line_sabotage",
+      "name_tr": "İkmal Hattı Baskını Hazırlığı",
+      "type": "adventure",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "duration_turns": 3,
+      "gold_cost": 120,
+      "adventure": {
+        "success_chance_percent": 45,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["aggressor", "tactician", "veteran"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_council_experience": 15,
+        "partial_council_experience": 6,
+        "success_ability_choices": [
+          {"id": "supply_raid_drills", "name_tr": "İkmal Baskını Talimleri", "scope": "army", "effect": "army_power", "modifier": 0.03}
+        ],
+        "partial_ability_choices": [
+          {"id": "supply_raid_drills", "name_tr": "İkmal Baskını Talimleri", "scope": "army", "effect": "army_power", "modifier": 0.01}
+        ]
+      }
+    },
+    {
+      "id": "common_scout_network",
+      "name_tr": "Gözcü ve Casus Ağı Kurma",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "target_kind": "region",
+      "duration_turns": 2,
+      "gold_cost": 120,
+      "completion_effects": {
+        "region_military_intel_turns": 4,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "common_mercenary_contract",
+      "name_tr": "Paralı Askerlerle Sözleşme",
+      "type": "adventure",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "duration_turns": 3,
+      "gold_cost": 250,
+      "adventure": {
+        "success_chance_percent": 45,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["mercenary", "resourceful", "charismatic"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_council_experience": 15,
+        "partial_council_experience": 6,
+        "success_ability_choices": [
+          {"id": "mercenary_contracts", "name_tr": "Paralı Asker Sözleşmeleri", "scope": "faction", "effect": "military_power", "modifier": 0.02}
+        ],
+        "partial_ability_choices": [
+          {"id": "mercenary_contracts", "name_tr": "Paralı Asker Sözleşmeleri", "scope": "faction", "effect": "military_power", "modifier": 0.01}
+        ]
+      }
+    },
+    {
+      "id": "common_bandit_clearing",
+      "name_tr": "Haydut ve Yağmacı Temizliği",
+      "type": "adventure",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "adventure": {
+        "success_chance_percent": 50,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["aggressor", "defender", "veteran"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 1,
+        "success_gold_reward": 120,
+        "partial_gold_reward": 40,
+        "success_council_experience": 15,
+        "partial_council_experience": 6,
+        "success_ability_choices": [
+          {"id": "road_patrols", "name_tr": "Ticaret Yolu Devriyeleri", "scope": "army", "effect": "army_power", "modifier": 0.02}
+        ]
+      }
+    },
+    {
+      "id": "common_sacred_rites",
+      "name_tr": "Dini Ayin ve Kehanet",
+      "type": "adventure",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "adventure": {
+        "success_chance_percent": 45,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["goodwill", "loyal", "scholar"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 1,
+        "success_council_experience": 15,
+        "partial_council_experience": 6,
+        "success_ability_choices": [
+          {"id": "sacred_resolve", "name_tr": "Kutsal Seferberlik", "scope": "faction", "effect": "military_power", "modifier": 0.02}
+        ],
+        "partial_ability_choices": [
+          {"id": "sacred_resolve", "name_tr": "Kutsal Seferberlik", "scope": "faction", "effect": "military_power", "modifier": 0.01}
+        ]
+      }
+    },
+    {
+      "id": "common_duel_of_honor",
+      "name_tr": "Kişisel Onur ve Dövüş Meydan Okuması",
+      "type": "adventure",
+      "allow_council_roles": true,
+      "blocked_factions": ["others"],
+      "duration_turns": 2,
+      "gold_cost": 80,
+      "adventure": {
+        "success_chance_percent": 40,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["aggressor", "fighter", "veteran"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_council_experience": 15,
+        "partial_council_experience": 6,
+        "success_ability_choices": [
+          {"id": "duel_veteran", "name_tr": "Düello Ustalığı", "scope": "army", "effect": "army_power", "modifier": 0.03}
+        ],
+        "partial_ability_choices": [
+          {"id": "duel_veteran", "name_tr": "Düello Ustalığı", "scope": "army", "effect": "army_power", "modifier": 0.01}
+        ]
+      }
+    },
+    {
       "id": "faceless_journey",
       "name_tr": "Yüzsüzlerin Yolculuğu",
       "type": "adventure",
+      "allowed_characters": ["chr_arya_stark"],
       "duration_turns": 3,
       "gold_cost": 100,
       "adventure": {
@@ -110,23 +359,492 @@
       }
     },
     {
-      "id": "military_intelligence",
-      "name_tr": "Askerî İstihbarat Keşfi",
-      "target_kind": "faction",
-      "duration_turns": 2,
-      "gold_cost": 250,
+      "id": "robb_whispering_wood_ambush",
+      "name_tr": "Fısıldayan Orman Pusu Harekâtı",
+      "allowed_characters": ["cmd_robb_stark"],
+      "allowed_factions": ["stark"],
+      "requires_flags": ["war_of_five_kings_active", "northern_independence_declared"],
+      "blocks_flags": ["jaime_captured"],
+      "min_year": 299,
+      "duration_turns": 3,
+      "gold_cost": 180,
       "completion_effects": {
-        "military_intel_turns": 2
+        "council_experience": 20
       }
     },
     {
-      "id": "region_reconnaissance",
-      "name_tr": "Bölgesel Askerî Keşif",
-      "target_kind": "region",
+      "id": "stannis_shadow_assassination",
+      "name_tr": "Melisandre ile Gölge Suikastı",
+      "allowed_characters": ["cmd_stannis_baratheon"],
+      "allowed_factions": ["baratheon_dragonstone"],
+      "requires_flags": ["stannis_claim_supported"],
+      "blocks_flags": ["renly_dead"],
+      "min_year": 299,
+      "duration_turns": 3,
+      "gold_cost": 250,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "tyrion_blackwater_wildfire_defense",
+      "name_tr": "Çılgın Ateş ve Karasu Savunması",
+      "allowed_characters": ["cmd_tyrion_lannister"],
+      "allowed_factions": ["lannister"],
+      "requires_flags": ["war_of_five_kings_active"],
+      "blocks_flags": ["blackwater_lannister_victory", "blackwater_stannis_assault"],
+      "min_year": 299,
+      "duration_turns": 2,
+      "gold_cost": 300,
+      "completion_effects": {
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "renly_feasts_and_alliance_wedding",
+      "name_tr": "Ziyafetler ve İttifak Düğünü",
+      "allowed_characters": ["cmd_renly_baratheon"],
+      "allowed_factions": ["baratheon_stormsend"],
+      "blocks_flags": ["renly_dead"],
+      "min_year": 297,
+      "duration_turns": 2,
+      "gold_cost": 300,
+      "completion_effects": {
+        "gold_reward": 100,
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "balon_old_way_northern_raid",
+      "name_tr": "Eski Yasa ve Kuzey Yağması",
+      "allowed_characters": ["cmd_balon_greyjoy"],
+      "allowed_factions": ["greyjoy"],
+      "requires_flags": ["war_of_five_kings_active"],
+      "blocks_flags": ["greyjoy_northern_raid_success", "greyjoy_northern_raid_concluded"],
+      "min_year": 299,
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": {
+        "gold_reward": 400,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "daenerys_eastern_expedition",
+      "name_tr": "Qarth ve Ölümsüzler Tapınağı",
+      "allowed_characters": ["cmd_daenerys_targaryen"],
+      "allowed_factions": ["targaryen"],
+      "requires_flags": ["targaryen_return_ready"],
+      "blocks_flags": [
+        "targaryen_restoration_started",
+        "targaryen_independent_claim_declared",
+        "targaryen_westeros_campaign_delayed"
+      ],
+      "min_year": 304,
+      "duration_turns": 3,
+      "gold_cost": 250,
+      "completion_effects": {
+        "gold_reward": 150,
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "catelyn_riverlords_diplomacy",
+      "name_tr": "Nehir Lordlarını İkna ve Fırtına Diplomasisi",
+      "allowed_characters": ["chr_catelyn_stark"],
+      "allowed_factions": ["stark"],
+      "requires_flags": ["war_of_five_kings_active", "northern_independence_declared"],
+      "blocks_flags": ["stark_betrayed", "war_of_five_kings_resolved"],
+      "min_year": 299,
+      "duration_turns": 3,
+      "gold_cost": 220,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "melisandre_prophecies_of_flame",
+      "name_tr": "Gece Karanlık ve Dehşet Dolu",
+      "allowed_characters": ["chr_melisandre"],
+      "allowed_factions": ["baratheon_dragonstone"],
+      "requires_flags": ["stannis_claim_supported"],
+      "blocks_flags": ["renly_dead", "war_of_five_kings_resolved"],
+      "min_year": 298,
+      "duration_turns": 3,
+      "gold_cost": 180,
+      "completion_effects": {
+        "council_experience": 25
+      }
+    },
+    {
+      "id": "cersei_city_watch_and_treasury",
+      "name_tr": "Şehir Muhafızları ve Taht Altınları",
+      "allowed_characters": ["chr_cersei_lannister"],
+      "allowed_factions": ["baratheon_king"],
+      "requires_flags": ["war_of_five_kings_active", "joffrey_claim_supported"],
+      "blocks_flags": ["blackwater_lannister_victory", "blackwater_stannis_assault"],
+      "min_year": 298,
       "duration_turns": 2,
       "gold_cost": 200,
       "completion_effects": {
-        "region_military_intel_turns": 2
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "brienne_oath_and_escort",
+      "name_tr": "Yemin ve Muhafızın Sadakati",
+      "allowed_characters": ["cmd_brienne_tarth"],
+      "allowed_factions": ["tarth"],
+      "requires_flags": ["renly_dead", "jaime_captured"],
+      "blocks_flags": ["jaime_exchanged", "jaime_exchanged_by_tully", "jaime_held_through_war"],
+      "min_year": 299,
+      "duration_turns": 3,
+      "gold_cost": 100,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "arya_harrenhal_infiltration",
+      "name_tr": "Kurt Kızı ve Harrenhal Ajanı",
+      "allowed_characters": ["chr_arya_stark"],
+      "allowed_factions": ["stark"],
+      "requires_flags": ["war_of_five_kings_active"],
+      "blocks_flags": ["stark_betrayed", "war_of_five_kings_resolved"],
+      "min_year": 299,
+      "duration_turns": 3,
+      "gold_cost": 80,
+      "completion_effects": {
+        "gold_reward": 100,
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "yara_deepwood_motte_raid",
+      "name_tr": "Derinorman Kayalığı Yıldırım Baskını",
+      "allowed_characters": ["cmd_yara_greyjoy"],
+      "allowed_factions": ["greyjoy"],
+      "requires_flags": ["war_of_five_kings_active", "greyjoy_raids_north"],
+      "blocks_flags": ["greyjoy_northern_raid_success", "greyjoy_northern_raid_concluded"],
+      "min_year": 299,
+      "duration_turns": 2,
+      "gold_cost": 120,
+      "completion_effects": {
+        "gold_reward": 300,
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "sansa_court_and_siege_morale",
+      "name_tr": "Saray Oyunları ve Kuşatma Morali",
+      "allowed_characters": ["chr_sansa_stark"],
+      "allowed_factions": ["stark"],
+      "requires_flags": ["war_of_five_kings_active", "sansa_joffrey_betrothal"],
+      "blocks_flags": ["blackwater_lannister_victory", "blackwater_stannis_assault"],
+      "min_year": 299,
+      "duration_turns": 2,
+      "gold_cost": 75,
+      "completion_effects": {
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "olenna_rose_poison_and_alliance",
+      "name_tr": "Gülün Zehri ve İttifak Pazarlığı",
+      "allowed_characters": ["chr_olenna_tyrell"],
+      "allowed_factions": ["tyrell"],
+      "requires_flags": ["margaery_joffrey_married"],
+      "blocks_flags": ["purple_wedding_completed", "tyrell_alliance_broken"],
+      "min_year": 299,
+      "duration_turns": 3,
+      "gold_cost": 250,
+      "target_kind": "faction",
+      "completion_effects": {
+        "relation_bonus_points": 15,
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "margaery_win_the_peoples_hearts",
+      "name_tr": "Halkın Kalbini Kazanmak",
+      "allowed_characters": ["chr_margaery_tyrell"],
+      "allowed_factions": ["tyrell"],
+      "requires_flags": ["margaery_joffrey_married"],
+      "blocks_flags": ["purple_wedding_completed", "tyrell_alliance_broken"],
+      "min_year": 299,
+      "duration_turns": 2,
+      "gold_cost": 200,
+      "completion_effects": {
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "lysa_arryn_neutrality_and_bloody_gate",
+      "name_tr": "Kartal Yuvası'nın Tarafsızlığı ve Kanlı Kapı",
+      "allowed_characters": ["chr_lysa_arryn"],
+      "allowed_factions": ["arryn"],
+      "requires_flags": ["war_of_five_kings_active", "arryn_neutrality_declared"],
+      "blocks_flags": ["vale_aid_sent_to_stark", "vale_aligned_with_crown", "war_of_five_kings_resolved"],
+      "min_year": 298,
+      "duration_turns": 3,
+      "gold_cost": 180,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "ygritte_beyond_the_wall_raid",
+      "name_tr": "Surların Ötesinden Baskın ve Yıkım",
+      "allowed_characters": ["cmd_ygritte"],
+      "allowed_factions": ["free_folk"],
+      "requires_flags": ["others_awakened"],
+      "blocks_flags": ["wall_breached"],
+      "min_year": 300,
+      "duration_turns": 3,
+      "gold_cost": 100,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "meera_neck_survival_and_guidance",
+      "name_tr": "Boyun Bataklıklarında Hayatta Kalma ve Rehberlik",
+      "allowed_characters": ["chr_meera_reed"],
+      "allowed_factions": ["free_folk"],
+      "requires_flags": ["others_awakened", "wall_breached"],
+      "min_year": 301,
+      "duration_turns": 3,
+      "gold_cost": 100,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "shae_red_keep_informant_network",
+      "name_tr": "Kızıl Kale'de Gizli Ağ ve Hizmetkâr Sızması",
+      "allowed_characters": ["chr_shae"],
+      "allowed_factions": ["lannister"],
+      "requires_flags": ["war_of_five_kings_active", "joffrey_claim_supported"],
+      "blocks_flags": ["tyrion_on_trial"],
+      "min_year": 298,
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": {
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "jaime_riverrun_siege_and_submission",
+      "name_tr": "Nehir Koşusu Kuşatması ve Nehir Lordlarının İtaati",
+      "allowed_characters": ["cmd_jaime_lannister"],
+      "duration_turns": 3,
+      "gold_cost": 180,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "tywin_gold_mines_and_blackwater_alliance",
+      "name_tr": "Altın Madenleri ve Karasu İttifakı",
+      "allowed_characters": ["cmd_tywin_lannister"],
+      "duration_turns": 2,
+      "gold_cost": 300,
+      "completion_effects": {
+        "council_experience": 20,
+        "gold_reward": 150
+      }
+    },
+    {
+      "id": "oberyn_dornish_revenge_trial_by_combat",
+      "name_tr": "Dorne İntikamı ve Dövüşle Yargılanma",
+      "type": "adventure",
+      "allowed_characters": ["cmd_oberyn_martell"],
+      "duration_turns": 3,
+      "gold_cost": 150,
+      "adventure": {
+        "success_chance_percent": 45,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["aggressor", "veteran"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_gold_reward": 150,
+        "partial_gold_reward": 50,
+        "success_council_experience": 20,
+        "partial_council_experience": 8,
+        "success_ability_choices": [
+          {"id": "viper_spearcraft", "name_tr": "Engerek Mızrak Ustalığı", "scope": "army", "effect": "army_power", "modifier": 0.03},
+          {"id": "dornish_battlecraft", "name_tr": "Dorne Muharebe Ustalığı", "scope": "faction", "effect": "military_power", "modifier": 0.02}
+        ],
+        "partial_ability_choices": [
+          {"id": "dornish_battlecraft", "name_tr": "Dorne Muharebe Ustalığı", "scope": "faction", "effect": "military_power", "modifier": 0.02}
+        ]
+      }
+    },
+    {
+      "id": "roose_seeds_of_northern_betrayal",
+      "name_tr": "Kuzeyde İhanetin Tohumları",
+      "allowed_characters": ["cmd_roose_bolton"],
+      "duration_turns": 3,
+      "gold_cost": 220,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "ramsay_winterfell_hunt",
+      "name_tr": "Kışyarı'nın Yakılması ve Av Partisi",
+      "type": "adventure",
+      "allowed_characters": ["cmd_ramsay_bolton"],
+      "duration_turns": 3,
+      "gold_cost": 140,
+      "adventure": {
+        "success_chance_percent": 40,
+        "partial_success_chance_percent": 30,
+        "relevant_traits": ["aggressor", "veteran"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_gold_reward": 200,
+        "partial_gold_reward": 75,
+        "success_council_experience": 20,
+        "partial_council_experience": 8,
+        "success_ability_choices": [
+          {"id": "dreadfort_hunt", "name_tr": "Dehşet Kalesi Avcılığı", "scope": "army", "effect": "army_power", "modifier": 0.03}
+        ]
+      }
+    },
+    {
+      "id": "jon_wildling_infiltration_and_wall_defense",
+      "name_tr": "Yabanıl Sızması ve Sur Savunması",
+      "allowed_characters": ["cmd_jon_snow"],
+      "duration_turns": 3,
+      "gold_cost": 120,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "theon_fall_of_winterfell",
+      "name_tr": "Winterfell'in Düşüşü ve Sahte Zafer",
+      "allowed_characters": ["cmd_theon_greyjoy"],
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": {
+        "gold_reward": 150,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "littlefinger_purchase_of_the_vale",
+      "name_tr": "Vadi'nin Satın Alınması ve Müttefik Pazarlığı",
+      "allowed_characters": ["chr_littlefinger"],
+      "target_kind": "faction",
+      "duration_turns": 3,
+      "gold_cost": 220,
+      "completion_effects": {
+        "relation_bonus_points": 15,
+        "military_intel_turns": 3,
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "varys_whisper_network",
+      "name_tr": "Fısıltı Ağları ve Kargaşa İklimi",
+      "allowed_characters": ["chr_varys"],
+      "target_kind": "faction",
+      "duration_turns": 3,
+      "gold_cost": 180,
+      "completion_effects": {
+        "military_intel_turns": 4,
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "blackfish_riverlands_guerrilla_defense",
+      "name_tr": "Nehir Toprakları Gerilla Savunması",
+      "allowed_characters": ["cmd_brynden_tully"],
+      "target_kind": "region",
+      "duration_turns": 3,
+      "gold_cost": 120,
+      "completion_effects": {
+        "region_military_intel_turns": 3,
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "davos_smuggling_and_supply_line",
+      "name_tr": "Gece Kaçakçılığı ve İkmal Hattı",
+      "allowed_characters": ["cmd_davos_seaworth"],
+      "duration_turns": 3,
+      "gold_cost": 120,
+      "completion_effects": {
+        "gold_reward": 300,
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "frey_twin_towers_bridge_bargain",
+      "name_tr": "İkiz Kuleler Köprü Pazarlığı",
+      "allowed_characters": ["chr_walder_frey", "chr_catelyn_stark"],
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": {
+        "gold_reward": 200,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "mance_unite_the_wildling_clans",
+      "name_tr": "Yabanıl Kabilelerini Birleştirme",
+      "type": "adventure",
+      "allowed_characters": ["cmd_mance_rayder"],
+      "duration_turns": 3,
+      "gold_cost": 180,
+      "adventure": {
+        "success_chance_percent": 45,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["veteran", "tactician"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_gold_reward": 150,
+        "partial_gold_reward": 50,
+        "success_council_experience": 20,
+        "partial_council_experience": 8,
+        "success_ability_choices": [
+          {"id": "wildling_host", "name_tr": "Yabanıl Ordusunun Seferberliği", "scope": "faction", "effect": "military_power", "modifier": 0.03}
+        ],
+        "partial_ability_choices": [
+          {"id": "wildling_host", "name_tr": "Yabanıl Ordusunun Seferberliği", "scope": "faction", "effect": "military_power", "modifier": 0.02}
+        ]
+      }
+    },
+    {
+      "id": "brotherhood_peoples_revenge",
+      "name_tr": "Halkın İntikamı ve Haydut Avı",
+      "type": "adventure",
+      "allowed_characters": ["cmd_beric_dondarrion", "cmd_thoros_of_myr"],
+      "duration_turns": 3,
+      "gold_cost": 100,
+      "adventure": {
+        "success_chance_percent": 45,
+        "partial_success_chance_percent": 25,
+        "relevant_traits": ["veteran", "aggressor", "defender"],
+        "trait_bonus_percent": 15,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_gold_reward": 100,
+        "partial_gold_reward": 40,
+        "success_council_experience": 20,
+        "partial_council_experience": 8,
+        "success_ability_choices": [
+          {"id": "brotherhood_ambush", "name_tr": "Sancaksız Kardeşlik Pususu", "scope": "army", "effect": "army_power", "modifier": 0.03},
+          {"id": "brotherhood_support", "name_tr": "Halkın Kardeşliğe Desteği", "scope": "faction", "effect": "military_power", "modifier": 0.02}
+        ],
+        "partial_ability_choices": [
+          {"id": "brotherhood_support", "name_tr": "Halkın Kardeşliğe Desteği", "scope": "faction", "effect": "military_power", "modifier": 0.01}
+        ]
       }
     }
   ]

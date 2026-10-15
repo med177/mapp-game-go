@@ -210,9 +210,28 @@ kabul edilir.
 `role_id` verilirse görev yalnız o konsey rolüne atanmış karaktere açılır;
 görev devam ederken karakterin konsey bonusu askıya alınır ve görev bitince rol
 etkisi yeniden devreye girer. `role_id` yoksa görev yalnızca konsey görevi
-bulunmayan karaktere açılır. `target_kind` `none`, `faction` veya `region`
-olabilir; alan verilmezse `none` kabul edilir. `faction` hedefi oyuncu dışındaki,
-elenmemiş, sanal olmayan ve o anda savaşta olunmayan bir fraksiyondan seçilir.
+bulunmayan karaktere açılır; isteğe bağlı `allow_council_roles: true`, bu kuralı
+gevşeterek görevi herhangi bir konsey rolündeki karaktere de açar. Bu alan
+`role_id` ile birlikte kullanılamaz. Ortak görev sırasında karakterin mevcut
+konsey etkisi, diğer aktif görevlerde olduğu gibi, askıya alınır. İsteğe bağlı
+`allowed_characters`, karakter ID'lerini
+listeleyerek görevi yalnızca bu karakterlerle sınırlar; alan yoksa veya boşsa
+mevcut tüm uygun karakterler kullanılabilir. İsteğe bağlı `allowed_factions`,
+görevi başlatan karakterin sahibi olan fraksiyonun ID'sini sınırlar; alan yoksa
+veya boşsa tüm fraksiyonlarda kullanılabilir. İsteğe bağlı `blocked_factions`,
+listelenen karakter sahibi fraksiyonların görevi başlatmasını engeller ve
+`allowed_factions` ile çakıştığında engel önceliklidir. İzin listeleri birlikte
+tanımlanmışsa karakterin hem `allowed_characters` hem `allowed_factions` listesiyle
+eşleşmesi gerekir.
+
+İsteğe bağlı `requires_flags` içindeki tüm senaryo event flag'leri etkin olmalı;
+`blocks_flags` içindeki herhangi bir flag etkinse görev sunulmaz ve başlatılamaz.
+Flag durumu event'lerin `set_flags` / `clear_flags` etkileriyle yönetilir.
+İsteğe bağlı `min_year` verilirse görev yalnızca bu oyun yılı ve sonrasında
+kullanılabilir; alan verilmezse veya `0` ise yıl kısıtlaması uygulanmaz.
+`target_kind` `none`, `faction` veya `region` olabilir; alan verilmezse `none`
+kabul edilir. `faction` hedefi oyuncu dışındaki, elenmemiş, sanal olmayan ve o
+anda savaşta olunmayan bir fraksiyondan seçilir.
 
 `completion_effects` görev tamamlandığında uygulanacak isteğe bağlı ödülleri
 taşır:

@@ -163,10 +163,16 @@ func TestStandaloneMissionRequiresCharacterWithoutCouncilRole(t *testing.T) {
 		},
 		CouncilConfig: scenario.CharacterCouncilConfig{
 			Roles: []scenario.CouncilRoleDefinition{{ID: CouncilRoleHeir, NameTR: "Veliaht"}},
-			Missions: []scenario.CharacterMissionDefinition{{
-				ID: "archive", NameTR: "Arşiv Seferi", TargetKind: scenario.CharacterMissionTargetNone, DurationTurns: 1,
-				CompletionEffects: scenario.CharacterMissionEffects{CouncilExperience: 10},
-			}},
+			Missions: []scenario.CharacterMissionDefinition{
+				{
+					ID: "archive", NameTR: "Arşiv Seferi", TargetKind: scenario.CharacterMissionTargetNone, DurationTurns: 1,
+					CompletionEffects: scenario.CharacterMissionEffects{CouncilExperience: 10},
+				},
+				{
+					ID: "common", NameTR: "Ortak Görev", AllowCouncilRoles: true,
+					BlockedFactions: []string{"others"}, TargetKind: scenario.CharacterMissionTargetNone, DurationTurns: 1,
+				},
+			},
 		},
 	}
 
@@ -175,6 +181,153 @@ func TestStandaloneMissionRequiresCharacterWithoutCouncilRole(t *testing.T) {
 	}
 	if canStart, _ := gs.CanStartCharacterMission(owner, busy.ID, "archive", ""); canStart {
 		t.Fatal("character assigned to a council role started a standalone mission")
+	}
+	if options := gs.CharacterMissionOptions(owner, busy.ID); len(options) != 1 || options[0].ID != "common" {
+		t.Fatalf("council character mission options = %+v, want common mission only", options)
+	}
+	if canStart, reason := gs.CanStartCharacterMission(owner, busy.ID, "common", ""); !canStart {
+		t.Fatalf("character assigned to a council role could not start common mission: %s", reason)
+	}
+	if busy.AssignedCouncilRole != CouncilRoleHeir {
+		t.Fatalf("common mission changed council assignment to %q", busy.AssignedCouncilRole)
+	}
+	if started, reason := gs.StartCharacterMissionTarget(owner, busy.ID, "common", ""); !started {
+		t.Fatalf("common mission start failed: %s", reason)
+	}
+	if gs.CouncilRoleHolder(owner, CouncilRoleHeir) != nil {
+		t.Fatal("council role effect remained active while its holder was on a common mission")
+	}
+}
+
+func TestAllowedCharactersRestrictsMissionOptionsAndStart(t *testing.T) {
+	const owner faction.FactionID = "player"
+	const otherOwner faction.FactionID = "other"
+	allowed := &army.Commander{ID: "chr_arya_stark", Type: army.CharacterTypeCharacter, OwnerID: string(owner)}
+	blocked := &army.Commander{ID: "chr_sansa_stark", Type: army.CharacterTypeCharacter, OwnerID: string(otherOwner)}
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			owner:      {ID: owner, Gold: 100},
+			otherOwner: {ID: otherOwner, Gold: 100},
+		},
+		Commanders: map[string]*army.Commander{
+			allowed.ID: allowed,
+			blocked.ID: blocked,
+		},
+		CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{
+			{
+				ID: "faceless_journey", NameTR: "Yüzsüzlerin Yolculuğu", TargetKind: scenario.CharacterMissionTargetNone,
+				DurationTurns: 1, AllowedCharacters: []string{allowed.ID},
+			},
+			{
+				ID: "faction_archive", NameTR: "Fraksiyona Özel Arşiv", TargetKind: scenario.CharacterMissionTargetNone,
+				DurationTurns: 1, AllowedFactions: []string{string(owner)},
+			},
+			{
+				ID: "blocked_faction_archive", NameTR: "Fraksiyona Kapalı Arşiv", TargetKind: scenario.CharacterMissionTargetNone,
+				DurationTurns: 1, BlockedFactions: []string{string(owner)},
+			},
+			{
+				ID: "deny_overrides_allow", NameTR: "Engel Öncelikli Arşiv", TargetKind: scenario.CharacterMissionTargetNone,
+				DurationTurns: 1, AllowedFactions: []string{string(owner)}, BlockedFactions: []string{string(owner)},
+			},
+			{
+				ID: "flag_gated_mission", NameTR: "Bayrak Koşullu Görev", TargetKind: scenario.CharacterMissionTargetNone,
+				DurationTurns: 1, RequiresFlags: []string{"journey_unlocked", "second_prerequisite"},
+				BlocksFlags: []string{"journey_closed"},
+			},
+		}},
+	}
+
+	if options := gs.CharacterMissionOptions(owner, allowed.ID); len(options) != 2 ||
+		options[0].ID != "faceless_journey" || options[1].ID != "faction_archive" {
+		t.Fatalf("allowed faction mission options = %+v, want only allowed missions", options)
+	}
+	if options := gs.CharacterMissionOptions(otherOwner, blocked.ID); len(options) != 1 ||
+		options[0].ID != "blocked_faction_archive" {
+		t.Fatalf("other faction mission options = %+v, want blocked_faction_archive only", options)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, allowed.ID, "faceless_journey", ""); !canStart {
+		t.Fatalf("allowed character could not start mission: %s", reason)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, blocked.ID, "faceless_journey", ""); canStart || reason == "" {
+		t.Fatalf("blocked character mission validation = (%v, %q), want rejection with reason", canStart, reason)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, allowed.ID, "faction_archive", ""); !canStart {
+		t.Fatalf("allowed faction could not start mission: %s", reason)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(otherOwner, blocked.ID, "faction_archive", ""); canStart || reason == "" {
+		t.Fatalf("blocked faction mission validation = (%v, %q), want rejection with reason", canStart, reason)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, allowed.ID, "blocked_faction_archive", ""); canStart || reason == "" {
+		t.Fatalf("blocked faction mission validation = (%v, %q), want rejection with reason", canStart, reason)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(otherOwner, blocked.ID, "blocked_faction_archive", ""); !canStart {
+		t.Fatalf("non-blocked faction could not start mission: %s", reason)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, allowed.ID, "deny_overrides_allow", ""); canStart || reason == "" {
+		t.Fatalf("blocked allowed faction validation = (%v, %q), want blocked_factions to override allowed_factions", canStart, reason)
+	}
+	if options := gs.CharacterMissionOptions(owner, allowed.ID); containsCharacterMission(options, "flag_gated_mission") {
+		t.Fatal("mission with an unmet required event flag was offered")
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, allowed.ID, "flag_gated_mission", ""); canStart || reason == "" {
+		t.Fatalf("mission without required event flag validation = (%v, %q), want rejection", canStart, reason)
+	}
+	gs.FiredEventIDs = map[string]bool{"flag:journey_unlocked": true}
+	if options := gs.CharacterMissionOptions(owner, allowed.ID); containsCharacterMission(options, "flag_gated_mission") {
+		t.Fatal("mission was offered before all required event flags were set")
+	}
+	gs.FiredEventIDs["flag:second_prerequisite"] = true
+	if options := gs.CharacterMissionOptions(owner, allowed.ID); !containsCharacterMission(options, "flag_gated_mission") {
+		t.Fatal("mission was not offered after all required event flags were set")
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, allowed.ID, "flag_gated_mission", ""); !canStart {
+		t.Fatalf("mission with required event flag could not start: %s", reason)
+	}
+	gs.FiredEventIDs["flag:journey_closed"] = true
+	if options := gs.CharacterMissionOptions(owner, allowed.ID); containsCharacterMission(options, "flag_gated_mission") {
+		t.Fatal("mission with a blocking event flag was offered")
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, allowed.ID, "flag_gated_mission", ""); canStart || reason == "" {
+		t.Fatalf("mission with blocking event flag validation = (%v, %q), want rejection", canStart, reason)
+	}
+}
+
+func containsCharacterMission(missions []scenario.CharacterMissionDefinition, missionID string) bool {
+	for _, mission := range missions {
+		if mission.ID == missionID {
+			return true
+		}
+	}
+	return false
+}
+
+func TestCharacterMissionMinYearRestrictsOptionsAndStart(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{ID: "chr_arya", Type: army.CharacterTypeCharacter, OwnerID: string(owner)}
+	gs := &GameState{
+		Year:       299,
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner, Gold: 100}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{{
+			ID: "historical_mission", NameTR: "Tarihli Görev", TargetKind: scenario.CharacterMissionTargetNone,
+			MinYear: 300, DurationTurns: 1,
+		}}},
+	}
+
+	if options := gs.CharacterMissionOptions(owner, character.ID); len(options) != 0 {
+		t.Fatalf("mission offered before min_year: %+v", options)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, character.ID, "historical_mission", ""); canStart || reason == "" {
+		t.Fatalf("mission start before min_year = (%v, %q), want rejection", canStart, reason)
+	}
+
+	gs.Year = 300
+	if options := gs.CharacterMissionOptions(owner, character.ID); len(options) != 1 || options[0].ID != "historical_mission" {
+		t.Fatalf("mission options at min_year = %+v, want historical_mission", options)
+	}
+	if canStart, reason := gs.CanStartCharacterMissionTarget(owner, character.ID, "historical_mission", ""); !canStart {
+		t.Fatalf("mission could not start at min_year: %s", reason)
 	}
 }
 

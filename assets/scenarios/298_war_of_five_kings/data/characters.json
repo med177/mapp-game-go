@@ -1350,5 +1350,56 @@
     ],
     "start_year": 295,
     "end_year": 305
+  },
+  {
+    "id": "chr_lysa_arryn",
+    "type": "character",
+    "owner_id": "arryn",
+    "name": "Lysa Arryn",
+    "portrait_asset": "lysa_arryn.png",
+    "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
+    "traits": [
+      "loyal",
+      "mother",
+      "reckless"
+    ],
+    "start_year": 295,
+    "end_year": 301
+  },
+  {
+    "id": "chr_meera_reed",
+    "type": "character",
+    "owner_id": "free_folk",
+    "name": "Meera Reed",
+    "portrait_asset": "meera_reed.png",
+    "level": 3,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 6,
+    "traits": [
+      "loyal",
+      "brave",
+      "skilled"
+    ],
+    "start_year": 295,
+    "end_year": 310
+  },
+  {
+    "id": "chr_walder_frey",
+    "type": "character",
+    "owner_id": "frey",
+    "name": "Walder Frey",
+    "portrait_asset": "walder_frey.png",
+    "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
+    "traits": [
+      "schemer",
+      "cruel",
+      "manipulative"
+    ],
+    "start_year": 295,
+    "end_year": 315
   }
 ]

@@ -36,14 +36,63 @@ func (s *GameState) characterMissionDefinition(missionID string) (scenario.Chara
 	return scenario.CharacterMissionDefinition{}, false
 }
 
-func characterMissionRoleMatches(character *army.Commander, mission scenario.CharacterMissionDefinition) bool {
-	if character == nil {
+func characterMissionMatches(
+	ownerID string,
+	firedEventIDs map[string]bool,
+	year int,
+	character *army.Commander,
+	mission scenario.CharacterMissionDefinition,
+) bool {
+	if character == nil || (mission.MinYear > 0 && year < mission.MinYear) {
 		return false
 	}
 	if mission.RoleID == "" {
-		return character.AssignedCouncilRole == ""
+		if character.AssignedCouncilRole != "" && !mission.AllowCouncilRoles {
+			return false
+		}
+	} else if character.AssignedCouncilRole != mission.RoleID {
+		return false
 	}
-	return character.AssignedCouncilRole == mission.RoleID
+	if len(mission.AllowedCharacters) > 0 {
+		allowed := false
+		for _, allowedCharacterID := range mission.AllowedCharacters {
+			if character.ID == allowedCharacterID {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return false
+		}
+	}
+	if len(mission.AllowedFactions) > 0 {
+		allowed := false
+		for _, allowedFactionID := range mission.AllowedFactions {
+			if ownerID == allowedFactionID {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return false
+		}
+	}
+	for _, blockedFactionID := range mission.BlockedFactions {
+		if ownerID == blockedFactionID {
+			return false
+		}
+	}
+	for _, flag := range mission.RequiresFlags {
+		if !firedEventIDs["flag:"+flag] {
+			return false
+		}
+	}
+	for _, flag := range mission.BlocksFlags {
+		if firedEventIDs["flag:"+flag] {
+			return false
+		}
+	}
+	return true
 }
 
 func (s *GameState) CharacterAdventureChances(character *army.Commander, adventure *scenario.CharacterAdventureDefinition) (success, partial, failure int) {
@@ -156,7 +205,7 @@ func (s *GameState) missionCharacterAvailable(ownerID string, character *army.Co
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter || character.Type == army.CharacterTypeCommander) &&
 		character.OwnerID == ownerID && character.ActiveInYear(s.Year) && character.AssignedArmyID == "" &&
 		character.ActiveMissionID == "" && len(character.PendingAdventureAbilities) == 0 &&
-		characterMissionRoleMatches(character, mission) &&
+		characterMissionMatches(ownerID, s.FiredEventIDs, s.Year, character, mission) &&
 		!s.DeadCommanderIDs[character.ID] && !s.DismissedCommanderIDs[character.ID] &&
 		!s.ExiledCommanderIDs[character.ID] && character.CaptiveAtSettlementID == "" &&
 		!s.CommanderUnavailable(character)
@@ -179,7 +228,7 @@ func (s *GameState) CharacterMissionOptions(ownerID faction.FactionID, character
 	}
 	options := make([]scenario.CharacterMissionDefinition, 0, len(s.CouncilConfig.Missions))
 	for _, mission := range s.CouncilConfig.Missions {
-		if characterMissionRoleMatches(character, mission) {
+		if characterMissionMatches(string(ownerID), s.FiredEventIDs, s.Year, character, mission) {
 			options = append(options, mission)
 		}
 	}

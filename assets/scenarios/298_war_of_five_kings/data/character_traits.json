@@ -375,6 +375,14 @@
           "relation_bonus_points": -1
         }
       }
+    },
+    "brave":{
+      "name_tr": "Cesur",
+      "council_effects": {
+        "military_responsible": {
+          "military_power_mod": 1.02
+        }
+      }
     }
   }
 }

@@ -1,13 +1,39 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-15
+last_updated: 2026-10-16
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
 - 2026-10-15: Hane HUD düğmesi, atanmayı bekleyen konsey rolü sayısını kırmızı
   rozetle (tüm roller doluysa yeşil `0`) ve aktif görevdeki oyuncu
   karakterlerini sağ alt turuncu rozetle gösterir.
+
+- 2026-10-16: Beş Kralın Savaşı senaryosuna diğerleri fraksiyonu hariç tüm
+  fraksiyonlara açık 12 ortak karakter görevi eklendi. `allow_council_roles`
+  alanı konsey rolündeki karakterlere de görev sunuyor; görev sürerken konsey
+  bonusu askıya alınıyor. Orduya atanmış karakterler mevcut görev uygunluk
+  kuralına göre görev başlatamıyor.
+
+- 2026-10-15: Karakter görevleri isteğe bağlı `allowed_characters`,
+  `allowed_factions` ve `blocked_factions` ID listeleriyle belirli karakterlere
+  ve görev sahibi fraksiyonlara sınırlandırılabiliyor. `requires_flags` /
+  `blocks_flags` event flag koşulları ve `min_year` tarih eşiği görev
+  görünürlüğünü ve başlatmayı denetliyor. Engelli fraksiyon/flag kuralı
+  izin/önkoşul listesinden öncelikli.
+  Five Kings senaryosunda “Yüzsüzlerin Yolculuğu” Arya Stark'a özel; Robb,
+  Stannis, Tyrion, Renly, Balon ve Daenerys için senaryonun yıl ve event
+  bayraklarıyla açılan özel görevler bulunuyor. Catelyn, Melisandre, Cersei,
+  Brienne, Arya, Yara Greyjoy ve Sansa için de karaktere özel, tarih/event
+  koşullu görevler kataloğa eklendi. Olenna ve Margaery'nin saray görevleri,
+  Lysa'nın tarafsızlık, Ygritte ve Meera'nın Duvar/Özgür Halk, Shae'nin ise
+  Kızıl Kale casusluk görevi tarihsel flag koşullarıyla eklendi. Jaime, Tywin,
+  Oberyn, Roose, Ramsay, Jon ve Theon için yeni karakter görevleri de eklendi;
+  Oberyn ve Ramsay görevleri macera başarı/yaralanma akışını kullanıyor.
+  Petyr, Varys, Brynden, Davos, Mance, Beric ve Thoros için görevler eklendi;
+  Walder Frey kataloğunda bulunmadığından İkiz Kuleler köprü pazarlığı Catelyn
+  Stark'a vekil görev olarak tanımlandı. Macera görevleri mevcut yetenek ve
+  başarısızlıkta yaralanma mekaniklerini kullanıyor.
 
 - 2026-10-15: Ordu komutanlığı ve karakter görevleri karşılıklı olarak
   dışlandı. Orduya atanmış karakter görev başlatamaz; aktif görevdeki karakter
