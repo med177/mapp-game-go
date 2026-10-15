@@ -467,6 +467,16 @@ func (g *Game) Update() error {
 				}
 			}
 			g.renderer.ShowCombatResult(fmt.Sprintf("%s göreve çıktı: %s.", characterName, missionName))
+		case render.ActionChooseAdventureAbility:
+			chosen, reason := g.gs.ChooseCharacterAdventureAbility(
+				g.gs.PlayerFactionID, action.CharacterID, action.AdventureAbilityID,
+			)
+			g.renderer.RefreshCharacterRosterPanel()
+			if chosen {
+				g.renderer.ShowCombatResult("Karakter yeni macera yeteneğini öğrendi.")
+			} else {
+				g.renderer.ShowCombatResult(reason)
+			}
 		case render.ActionReleaseCharacter:
 			if g.gs.ReleaseCharacterToNeutralPool(g.gs.PlayerFactionID, action.CharacterID) {
 				g.renderer.RefreshCharacterRosterPanel()
@@ -5899,6 +5909,8 @@ func (g *Game) resolveFleetDisembarkWithStance(fleet *army.Army, target world.Re
 		defenderBefore := snapshotBattleArmy(enemyArmy, g.gs.UnitTypes)
 		atkMods := techModsFor(g.gs, fleet.OwnerID)
 		defMods := techModsFor(g.gs, enemyArmy.OwnerID)
+		combat.ApplyAdventureAbilityMods(g.gs, landing, combat.BattleContextAmphibious, &atkMods)
+		combat.ApplyAdventureAbilityMods(g.gs, enemyArmy, combat.BattleContextAmphibious, &defMods)
 		combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 			g.gs.IsCoreRegion(faction.FactionID(fleet.OwnerID), targetRegion.ID),
 			g.gs.IsCoreRegion(faction.FactionID(enemyArmy.OwnerID), targetRegion.ID))
@@ -6776,6 +6788,8 @@ func (g *Game) resolveSortieMovement(a *army.Army, target *world.Region, stance 
 	defenderBefore := snapshotBattleArmy(siegeArmy, g.gs.UnitTypes)
 	atkMods := techModsFor(g.gs, a.OwnerID)
 	defMods := techModsFor(g.gs, siegeArmy.OwnerID)
+	combat.ApplyAdventureAbilityMods(g.gs, a, combat.BattleContextLand, &atkMods)
+	combat.ApplyAdventureAbilityMods(g.gs, siegeArmy, combat.BattleContextLand, &defMods)
 	combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 		g.gs.IsCoreRegion(faction.FactionID(a.OwnerID), sourceRegion.ID),
 		g.gs.IsCoreRegion(faction.FactionID(siegeArmy.OwnerID), sourceRegion.ID))
@@ -7354,10 +7368,16 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 		if liftedSiegeRegion != "" {
 			g.releaseSiegeForArmyMovement(liftedSiegeRegion, aid)
 		}
+		battleContext := combat.BattleContextLand
+		if navalSeaMove {
+			battleContext = combat.BattleContextNaval
+		}
 		atkMods := techModsFor(g.gs, a.OwnerID)
+		combat.ApplyAdventureAbilityMods(g.gs, a, battleContext, &atkMods)
 		// Savunma modlarını bölge sahibinden al (birleşik orduda ilk ordu sahibi referans)
 		defOwnerID := enemyArmy.OwnerID
 		defMods := techModsFor(g.gs, defOwnerID)
+		combat.ApplyAdventureAbilityMods(g.gs, combinedDef, battleContext, &defMods)
 		combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 			g.gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
 			g.gs.IsCoreRegion(faction.FactionID(defOwnerID), targetRegion.ID))
@@ -7365,9 +7385,7 @@ func (g *Game) moveArmyToSettlementWithStanceAndContactResolved(aid army.ArmyID,
 			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
 			enemyArmy.InAmbush = false
 		}
-		battleContext := combat.BattleContextLand
 		if navalSeaMove {
-			battleContext = combat.BattleContextNaval
 			defMods.NavalDefenseMod += g.gs.NavalEscortDefenseBonus(defSourceIDs, target)
 		}
 		result := combat.ResolveBattleWithContactDefense(a, combinedDef, targetRegion.Terrain, g.gs.UnitTypes, atkMods, defMods, battleContext, battleStance, contactAttackerHolding, contactDefenderHolding)

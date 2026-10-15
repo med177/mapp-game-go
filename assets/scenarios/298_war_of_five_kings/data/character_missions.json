@@ -83,6 +83,33 @@
       }
     },
     {
+      "id": "faceless_journey",
+      "name_tr": "Yüzsüzlerin Yolculuğu",
+      "type": "adventure",
+      "duration_turns": 3,
+      "gold_cost": 100,
+      "adventure": {
+        "success_chance_percent": 45,
+        "partial_success_chance_percent": 30,
+        "relevant_traits": ["assassin", "spy", "explorer"],
+        "trait_bonus_percent": 20,
+        "level_bonus_percent": 3,
+        "failure_unavailable_turns": 2,
+        "success_gold_reward": 125,
+        "partial_gold_reward": 50,
+        "success_council_experience": 20,
+        "partial_council_experience": 8,
+        "success_ability_choices": [
+          {"id": "shadowcraft", "name_tr": "Gölgede Ustalık", "scope": "army", "effect": "army_power", "modifier": 0.03},
+          {"id": "fieldcraft", "name_tr": "Saha Keşfi", "scope": "faction", "effect": "military_power", "modifier": 0.02},
+          {"id": "naval_strategy", "name_tr": "Denizcilik", "scope": "navy", "effect": "navy_power", "modifier": 0.03}
+        ],
+        "partial_ability_choices": [
+          {"id": "fieldcraft", "name_tr": "Saha Keşfi", "scope": "faction", "effect": "military_power", "modifier": 0.02}
+        ]
+      }
+    },
+    {
       "id": "military_intelligence",
       "name_tr": "Askerî İstihbarat Keşfi",
       "target_kind": "faction",

@@ -296,6 +296,7 @@ type Renderer struct {
 	characterRosterCacheValid             bool
 	characterRosterMissionMenuCharacterID string
 	characterRosterSelectedMissionID      string
+	characterRosterAbilityChoice          bool
 	characterRosterMissionOptions         []scenario.CharacterMissionDefinition
 	characterRosterMissionTargets         []string
 	characterRosterMissionScroll          int
@@ -334,30 +335,33 @@ type Renderer struct {
 	queuedConfirmDialog confirmDialogState
 	offerCursor         int
 
-	armyIconBuf                 []armyIconPos
-	armyIconWorldBuf            []armyIconPos
-	armyIconLayoutKey           uint64
-	armyIconLayoutValid         bool
-	armySiegeDisplayCache       map[army.ArmyID]armySiegeDisplayCacheEntry
-	armySiegeDisplayCacheValid  bool
-	armyLogisticsBadgeVisible   map[army.ArmyID]bool
-	armyMovementAnimation       armyMovementAnimation
-	movementReachability        state.MovementReachability
-	movementReachabilityArmy    army.ArmyID
-	movementReachabilityRegion  world.RegionID
-	movementReachabilityPoints  int
-	movementReachabilityValid   bool
-	movementRegionBuf           []world.RegionID
-	movementPreviewFrozen       bool
-	movementPreviewFrozenX      float64
-	movementPreviewFrozenY      float64
-	merchantTradeStatusCache    map[army.ArmyID]state.MerchantFleetTradeStatus
-	merchantTradeStatusCacheSet bool
-	terrainAreaImage            *ebiten.Image
-	terrainAreaImageDirty       bool
-	selectedRegionOverlay       *ebiten.Image
-	selectedRegionOverlayBounds image.Rectangle
-	selectedRegionOverlayKey    selectedRegionOverlayKey
+	armyIconBuf                      []armyIconPos
+	armyIconWorldBuf                 []armyIconPos
+	characterMissionMarkerBuf        []characterMissionMapMarker
+	characterMissionMarkerFrame      uint64
+	characterMissionMarkerCacheValid bool
+	armyIconLayoutKey                uint64
+	armyIconLayoutValid              bool
+	armySiegeDisplayCache            map[army.ArmyID]armySiegeDisplayCacheEntry
+	armySiegeDisplayCacheValid       bool
+	armyLogisticsBadgeVisible        map[army.ArmyID]bool
+	armyMovementAnimation            armyMovementAnimation
+	movementReachability             state.MovementReachability
+	movementReachabilityArmy         army.ArmyID
+	movementReachabilityRegion       world.RegionID
+	movementReachabilityPoints       int
+	movementReachabilityValid        bool
+	movementRegionBuf                []world.RegionID
+	movementPreviewFrozen            bool
+	movementPreviewFrozenX           float64
+	movementPreviewFrozenY           float64
+	merchantTradeStatusCache         map[army.ArmyID]state.MerchantFleetTradeStatus
+	merchantTradeStatusCacheSet      bool
+	terrainAreaImage                 *ebiten.Image
+	terrainAreaImageDirty            bool
+	selectedRegionOverlay            *ebiten.Image
+	selectedRegionOverlayBounds      image.Rectangle
+	selectedRegionOverlayKey         selectedRegionOverlayKey
 	// armyGroupDisplayOrder, aynı anchor'a sonradan giren ordunun mevcut
 	// orduların soluna yerleşebilmesi için grup bazlı ilk görülme sırasını tutar.
 	armyGroupDisplayOrder    map[armyDisplayGroupKey]map[army.ArmyID]uint64
@@ -2486,6 +2490,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		// Seçim çerçevesi en üstte kalır; görev ve deniz rozetleri seçili
 		// ordunun/filonun okunabilir işaretini kapatmamalı.
 		r.drawSelectedArmyIndicator(screen, armyPositions)
+		r.drawCharacterMissionMapMarkers(screen)
 	}
 	if r.gs.Phase == state.PhaseEditMode {
 		// Seçili bölgenin sınırı ordu ikonlarının altında kaybolmamalı.
@@ -2557,6 +2562,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		r.drawArmyPowerHoverTooltip(screen)
 		r.drawLandPassageHoverTooltip(screen)
 		r.drawArmyTaskStatusHoverTooltip(screen)
+		r.drawCharacterMissionMarkerHoverTooltip(screen)
 		r.drawNavalMissionBonusHoverTooltip(screen)
 		r.drawMerchantTradeBonusHoverTooltip(screen)
 		r.drawNavalEmbarkedArmyHoverTooltip(screen)

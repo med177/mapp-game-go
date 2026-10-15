@@ -43,6 +43,7 @@ func TestResolveCharacterMissionCompletionsAppliesConfiguredRewards(t *testing.T
 		ActiveMissionID: "envoy", ActiveMissionTargetID: string(target), ActiveMissionTurnsRemaining: 1,
 		CouncilExperience: 90, CouncilLevel: 1,
 	}
+
 	gs := &state.GameState{
 		PlayerFactionID: owner,
 		Factions: map[faction.FactionID]*faction.Faction{
@@ -79,5 +80,73 @@ func TestResolveCharacterMissionCompletionsAppliesConfiguredRewards(t *testing.T
 	}
 	if character.ActiveMissionID != "" || character.ActiveMissionTargetID != "" || character.ActiveMissionTurnsRemaining != 0 {
 		t.Fatalf("completed mission state was not cleared: %+v", character)
+	}
+}
+
+func TestResolveAdventureMissionSuccessPartialAndFailure(t *testing.T) {
+	tests := []struct {
+		name        string
+		adventure   scenario.CharacterAdventureDefinition
+		wantOutcome string
+		wantGold    int
+		wantXP      int
+		wantInjury  bool
+	}{
+		{
+			name: "success",
+			adventure: scenario.CharacterAdventureDefinition{
+				SuccessChancePercent: 100, SuccessGoldReward: 100,
+				SuccessCouncilExperience: 15,
+				SuccessAbilityChoices:    []scenario.AdventureAbilityChoice{{ID: "fieldcraft", NameTR: "Saha Keşfi"}},
+			},
+			wantOutcome: scenario.CharacterAdventureSuccess, wantGold: 100, wantXP: 15,
+		},
+		{
+			name: "partial",
+			adventure: scenario.CharacterAdventureDefinition{
+				PartialSuccessChancePercent: 100, PartialGoldReward: 40, PartialCouncilExperience: 5,
+			},
+			wantOutcome: scenario.CharacterAdventurePartial, wantGold: 40, wantXP: 5,
+		},
+		{
+			name: "failure",
+			adventure: scenario.CharacterAdventureDefinition{
+				FailureUnavailableTurns: 2,
+			},
+			wantOutcome: scenario.CharacterAdventureFailure, wantInjury: true,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			const owner faction.FactionID = "player"
+			character := &army.Commander{
+				ID: "chr_arya", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+				ActiveMissionID: "journey", ActiveMissionTurnsRemaining: 1,
+			}
+			gs := &state.GameState{
+				Turn: 10, PlayerFactionID: owner,
+				Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+				Commanders: map[string]*army.Commander{character.ID: character},
+				CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{{
+					ID: "journey", NameTR: "Macera", Type: scenario.CharacterMissionTypeAdventure, DurationTurns: 1,
+					Adventure: &test.adventure,
+				}}},
+			}
+			(&Game{gs: gs}).resolveCharacterMissionCompletions()
+			if got := gs.Factions[owner].Gold; got != test.wantGold {
+				t.Errorf("adventure gold = %d, want %d", got, test.wantGold)
+			}
+			if character.CouncilExperience != test.wantXP {
+				t.Errorf("adventure XP = %d, want %d", character.CouncilExperience, test.wantXP)
+			}
+			if test.wantInjury {
+				if !gs.CommanderUnavailable(character) || character.UnavailableUntilTurn != gs.Turn+2 ||
+					character.UnavailableReasonTR != "Macera sırasında yaralandı" {
+					t.Errorf("failure injury state = %+v, want two-turn temporary injury", character)
+				}
+			} else if test.name == "success" && len(character.PendingAdventureAbilities) != 1 {
+				t.Errorf("success pending abilities = %+v, want one selection", character.PendingAdventureAbilities)
+			}
+		})
 	}
 }

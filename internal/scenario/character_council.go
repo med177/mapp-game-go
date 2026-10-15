@@ -152,11 +152,47 @@ func (c CharacterCouncilConfig) Validate() error {
 		if mission.DurationTurns <= 0 || mission.GoldCost < 0 {
 			return fmt.Errorf("misyon %q pozitif duration_turns ve negatif olmayan gold_cost gerektirir", mission.ID)
 		}
+		switch mission.Type {
+		case "":
+			if mission.Adventure != nil {
+				return fmt.Errorf("misyon %q adventure tanımı içeremez", mission.ID)
+			}
+		case CharacterMissionTypeStandard:
+			if mission.Adventure != nil {
+				return fmt.Errorf("standart misyon %q adventure tanımı içeremez", mission.ID)
+			}
+		case CharacterMissionTypeAdventure:
+			if mission.Adventure == nil || mission.TargetKind != CharacterMissionTargetNone {
+				return fmt.Errorf("macera misyonu %q hedef almamalı ve adventure tanımı içermelidir", mission.ID)
+			}
+			if mission.CompletionEffects != (CharacterMissionEffects{}) {
+				return fmt.Errorf("macera misyonu %q ödülleri adventure sonuçlarında tanımlanmalıdır", mission.ID)
+			}
+			adventure := mission.Adventure
+			if adventure.SuccessChancePercent < 0 || adventure.SuccessChancePercent > 100 ||
+				adventure.PartialSuccessChancePercent < 0 || adventure.PartialSuccessChancePercent > 100 ||
+				adventure.SuccessChancePercent+adventure.PartialSuccessChancePercent > 100 ||
+				adventure.TraitBonusPercent < 0 || adventure.LevelBonusPercent < 0 ||
+				adventure.FailureUnavailableTurns < 0 || adventure.SuccessGoldReward < 0 ||
+				adventure.PartialGoldReward < 0 || adventure.SuccessCouncilExperience < 0 ||
+				adventure.PartialCouncilExperience < 0 {
+				return fmt.Errorf("macera misyonu %q olasılık, ceza ve ödülleri geçersiz", mission.ID)
+			}
+			if err := validateAdventureAbilityChoices(mission.ID, adventure.SuccessAbilityChoices); err != nil {
+				return err
+			}
+			if err := validateAdventureAbilityChoices(mission.ID, adventure.PartialAbilityChoices); err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("misyon %q geçersiz type: %q", mission.ID, mission.Type)
+		}
 		switch mission.TargetKind {
 		case CharacterMissionTargetNone, CharacterMissionTargetFaction, CharacterMissionTargetRegion:
 		default:
 			return fmt.Errorf("misyon %q geçersiz target_kind: %q", mission.ID, mission.TargetKind)
 		}
+
 		if mission.CompletionEffects.GoldReward < 0 || mission.CompletionEffects.CouncilExperience < 0 ||
 			mission.CompletionEffects.MilitaryIntelTurns < 0 || mission.CompletionEffects.RegionIntelTurns < 0 {
 			return fmt.Errorf("misyon %q completion_effect ödülleri negatif olamaz", mission.ID)
@@ -177,6 +213,35 @@ func (c CharacterCouncilConfig) Validate() error {
 			if _, exists := roleIDs[roleID]; !exists {
 				return fmt.Errorf("nitelik %q bilinmeyen karakter görevine başvuruyor: %q", traitID, roleID)
 			}
+		}
+	}
+	return nil
+}
+
+func validateAdventureAbilityChoices(missionID string, choices []AdventureAbilityChoice) error {
+	ids := make(map[string]struct{}, len(choices))
+	for _, ability := range choices {
+		if ability.ID == "" || ability.NameTR == "" {
+			return fmt.Errorf("macera misyonu %q yetenek seçeneklerinde id ve name_tr zorunludur", missionID)
+		}
+		if _, exists := ids[ability.ID]; exists {
+			return fmt.Errorf("macera misyonu %q yinelenen yetenek seçeneği %q içeriyor", missionID, ability.ID)
+		}
+		ids[ability.ID] = struct{}{}
+		if ability.Scope == "" && ability.Effect == "" && ability.Modifier == 0 {
+			continue
+		}
+		validEffect := false
+		switch ability.Scope {
+		case "faction":
+			validEffect = ability.Effect == "military_power"
+		case "army":
+			validEffect = ability.Effect == "army_power"
+		case "navy":
+			validEffect = ability.Effect == "navy_power"
+		}
+		if !validEffect || ability.Modifier <= 0 {
+			return fmt.Errorf("macera misyonu %q yeteneği %q için scope, effect ve pozitif modifier uyumsuz", missionID, ability.ID)
 		}
 	}
 	return nil

@@ -593,6 +593,8 @@ func (r *Renderer) openBattlePlanWithDestination(attacker *army.Army, target *wo
 	}
 	atkMods := combat.TechModsFor(r.gs, attacker.OwnerID)
 	defMods := combat.TechModsFor(r.gs, defender.OwnerID)
+	combat.ApplyAdventureAbilityMods(r.gs, previewAttacker, battleContext, &atkMods)
+	combat.ApplyAdventureAbilityMods(r.gs, defender, battleContext, &defMods)
 	combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 		r.gs.IsCoreRegion(faction.FactionID(attacker.OwnerID), target.ID),
 		r.gs.IsCoreRegion(faction.FactionID(defender.OwnerID), target.ID))

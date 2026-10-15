@@ -16,8 +16,27 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   Bölge hedefli keşif de eklendi: seçilen kilitsiz kara bölgesindeki yabancı
   orduların güç tahminleri iki tur kesinleşiyor; hedef seçimi bölge roster
   listesinden yapılıyor ve bölgesel istihbarat save/load ile korunuyor.
-  Doğrulama: `go test ./internal/scenario ./internal/state ./internal/render
-  ./internal/game ./internal/save -count=1`.
+  Macera görevleri de eklendi: başarı ihtimali trait ve konsey seviyesiyle
+  belirleniyor, görev başında saklanan zar ve sonuç başarı/kısmi
+  başarı/başarısızlığı save/load boyunca sabit tutuyor. Başarı ve kısmi başarı ödülleri
+  ayrı tanımlanabiliyor; oyuncu kalıcı karakter yeteneklerinden birini seçiyor.
+  Başarısızlık yalnızca tanımlı sayıda tur için yaralanma yaratıyor. 298
+  senaryosunda Arya'nın trait'lerine uygun “Yüzsüzlerin Yolculuğu” örneği var;
+  seçilen yetenekler artık fraksiyon geneli, atanmış kara ordusu veya atanmış
+  filonun deniz muharebesi bonuslarına bağlanıyor. Etkiler aktif macera
+  görevinde askıya alınıyor ve her yetenek kimliği karakter başına bir kez
+  uygulanıyor; savaş, AI, güç tahmini ve önizleme aynı bonus kurallarını kullanıyor.
+  Hedefli aktif karakter görevleri haritada kitap rozetiyle gösteriliyor:
+  bölge hedefleri doğrudan, fraksiyon hedefleri başkentinde işaretleniyor;
+  aynı yerdeki görevler tek rozet altında gruplanıp hover ile ayrıntı veriyor.
+  Hedefsiz macera ve bağımsız görevler konumları olmadığı için marker üretmiyor.
+  AI de uygun danışman, ajan ve macera görevlerini net tahmini faydaya göre
+  başlatıyor; konsey bonusu kaybını ve altın maliyetini hesaba katıp asgari
+  hazine rezervini koruyor. Macera yeteneği seçeneklerinden fraksiyon/ordu/
+  donanma gücüne en yüksek tahmini katkıyı sağlayanı otomatik seçiyor.
+  Doğrulama: `go test ./internal/scenario ./internal/state ./internal/combat
+  ./internal/game ./internal/ai ./internal/render ./internal/save -count=1`;
+  iki senaryo görev kataloğunda JSON sözdizimi doğrulandı.
 
 - 2026-10-15: Konsey görevine atanan askerî komutanlar da karakter bakımına
   dahil edildi. Komutan şablonlarına `gold_upkeep` (seviye başına 2 altın) ve

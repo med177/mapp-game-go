@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"math"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/scenario"
@@ -418,13 +419,19 @@ func characterRosterDutyRemovable(character *army.Commander) bool {
 
 func characterRosterMissionButton(column gameui.Rect, rowIndex, scroll int, rosters ...[]*army.Commander) gameui.Button {
 	viewport := characterRosterOwnedListViewport(column)
-	row := characterRosterOwnedRowRect(viewport, rowIndex, scroll, characterRosterOptionalCharacters(rosters))
+	characters := characterRosterOptionalCharacters(rosters)
+	row := characterRosterOwnedRowRect(viewport, rowIndex, scroll, characters)
+	label := "Görev"
+	if rowIndex >= 0 && rowIndex < len(characters) && characters[rowIndex] != nil &&
+		len(characters[rowIndex].PendingAdventureAbilities) > 0 {
+		label = "Yetenek"
+	}
 	return gameui.NewButton(
 		row.X+row.W-characterRosterCardPadding-characterRosterDutyButtonW,
 		row.Y+row.H-characterRosterCardPadding-18,
 		characterRosterDutyButtonW,
 		18,
-		"Görev",
+		label,
 	)
 }
 
@@ -580,7 +587,7 @@ func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 				characterCanBeAssignedToAnyCouncilRole(r.gs, character.ID)) {
 			return true
 		}
-		if character.ActiveMissionID == "" && len(r.characterMissionOptionsFor(character.ID)) > 0 &&
+		if character.ActiveMissionID == "" && (len(character.PendingAdventureAbilities) > 0 || len(r.characterMissionOptionsFor(character.ID)) > 0) &&
 			characterRosterMissionButton(ownedColumn, index, r.characterRosterOwnedScroll, ownedRoster).HitTest(x, y) {
 			return true
 		}
@@ -644,7 +651,7 @@ func handleCharacterRosterPanelClick(r *Renderer, x, y float64) (InputAction, bo
 
 	if index := characterRosterOwnedRowAt(x, y, ownedRoster, r.characterRosterOwnedScroll, ownedViewport); index >= 0 {
 		character := ownedRoster[index]
-		if character.ActiveMissionID == "" && len(r.characterMissionOptionsFor(character.ID)) > 0 &&
+		if character.ActiveMissionID == "" && (len(character.PendingAdventureAbilities) > 0 || len(r.characterMissionOptionsFor(character.ID)) > 0) &&
 			characterRosterMissionButton(ownedColumn, index, r.characterRosterOwnedScroll, ownedRoster).HitTest(x, y) {
 			r.OpenCharacterMissionMenu(character.ID)
 			return InputAction{}, true
@@ -774,7 +781,8 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 		nameW := textW
 		var adopt gameui.Button
 		var missionButton gameui.Button
-		hasMissionButton := !candidate && character.ActiveMissionID == "" && len(missionOptions[character.ID]) > 0
+		hasMissionButton := !candidate && character.ActiveMissionID == "" &&
+			(len(character.PendingAdventureAbilities) > 0 || len(missionOptions[character.ID]) > 0)
 		if candidate {
 			adopt = characterAdoptButton(column, index, scroll)
 			nameW = adopt.X - textX - 5
@@ -835,6 +843,18 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 			}
 			missionDetails = characterRosterMissionDetailLines(missionName, character.ActiveMissionTurnsRemaining)
 			bonus = nil
+		} else if len(character.PendingAdventureAbilities) > 0 {
+			detail = "Yetenek seçimi bekliyor"
+		} else if len(character.AdventureAbilities) > 0 {
+			abilityNames := make([]string, 0, len(character.AdventureAbilities))
+			for _, ability := range character.AdventureAbilities {
+				if ability.NameTR != "" {
+					abilityNames = append(abilityNames, ability.NameTR)
+				}
+			}
+			if len(abilityNames) > 0 {
+				detail += " · " + strings.Join(abilityNames, ", ")
+			}
 		}
 		detailRect := characterRosterDetailRect(row, textX)
 		if hasMissionButton {

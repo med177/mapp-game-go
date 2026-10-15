@@ -142,3 +142,75 @@ func TestStandaloneMissionRequiresCharacterWithoutCouncilRole(t *testing.T) {
 		t.Fatal("character assigned to a council role started a standalone mission")
 	}
 }
+
+func TestCharacterAdventureChancesOutcomeAndAbilitySelection(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_arya", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		Traits: []army.CharacterTrait{"assassin"}, CouncilLevel: 3,
+	}
+	adventure := &scenario.CharacterAdventureDefinition{
+		SuccessChancePercent: 40, PartialSuccessChancePercent: 30,
+		RelevantTraits: []string{"assassin"}, TraitBonusPercent: 20, LevelBonusPercent: 5,
+	}
+	success, partial, failure := (&GameState{}).CharacterAdventureChances(character, adventure)
+	if success != 75 || partial != 25 || failure != 0 {
+		t.Fatalf("trait/level adventure chances = %d/%d/%d, want 75/25/0", success, partial, failure)
+	}
+	unrelated := &army.Commander{CouncilLevel: 3, Traits: []army.CharacterTrait{"scholar"}}
+	success, partial, failure = (&GameState{}).CharacterAdventureChances(unrelated, adventure)
+	if success != 55 || partial != 30 || failure != 15 {
+		t.Fatalf("unrelated-trait adventure chances = %d/%d/%d, want 55/30/15", success, partial, failure)
+	}
+
+	gs := &GameState{
+		Turn: 10, Year: 300, PlayerFactionID: owner,
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner, Gold: 500}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{{
+			ID: "journey", NameTR: "Macera", Type: scenario.CharacterMissionTypeAdventure,
+			TargetKind: scenario.CharacterMissionTargetNone, DurationTurns: 1, GoldCost: 50,
+			Adventure: &scenario.CharacterAdventureDefinition{
+				SuccessChancePercent: 100,
+				SuccessAbilityChoices: []scenario.AdventureAbilityChoice{
+					{ID: "shadowcraft", NameTR: "Gölgede Ustalık", Scope: "army", Effect: "army_power", Modifier: 0.03},
+					{ID: "fieldcraft", NameTR: "Saha Keşfi", Scope: "faction", Effect: "military_power", Modifier: 0.02},
+				},
+			},
+		}}},
+	}
+	if started, reason := gs.StartCharacterMissionTarget(owner, character.ID, "journey", ""); !started {
+		t.Fatalf("adventure mission start failed: %s", reason)
+	}
+	roll := character.ActiveMissionOutcomeRoll
+	if roll < 0 || roll > 99 {
+		t.Fatalf("stored adventure roll = %d, want [0,99]", roll)
+	}
+	if character.ActiveMissionOutcome != scenario.CharacterAdventureSuccess {
+		t.Fatalf("stored outcome = %q, want success", character.ActiveMissionOutcome)
+	}
+	character.Traits = nil
+	character.CouncilLevel = 0
+	gs.CouncilConfig.Missions[0].Adventure.SuccessChancePercent = 0
+	completed := gs.TickCharacterMissions()
+	if len(completed) != 1 || completed[0].AdventureOutcome != scenario.CharacterAdventureSuccess ||
+		character.ActiveMissionOutcomeRoll != 0 || len(character.PendingAdventureAbilities) != 2 {
+		t.Fatalf("adventure completion/result = %+v, character=%+v", completed, character)
+	}
+	if options := gs.CharacterMissionOptions(owner, character.ID); len(options) != 0 {
+		t.Fatalf("missions were offered before choosing the pending ability: %+v", options)
+	}
+	if chosen, reason := gs.ChooseCharacterAdventureAbility(owner, character.ID, "fieldcraft"); !chosen {
+		t.Fatalf("earned ability could not be chosen: %s", reason)
+	}
+	if len(character.AdventureAbilities) != 1 || character.AdventureAbilities[0].ID != "fieldcraft" ||
+		character.AdventureAbilities[0].Scope != "faction" ||
+		character.AdventureAbilities[0].Effect != "military_power" ||
+		character.AdventureAbilities[0].Modifier != 0.02 ||
+		len(character.PendingAdventureAbilities) != 0 {
+		t.Fatalf("learned/pending adventure abilities = %+v / %+v", character.AdventureAbilities, character.PendingAdventureAbilities)
+	}
+	if chosen, _ := gs.ChooseCharacterAdventureAbility(owner, character.ID, "fieldcraft"); chosen {
+		t.Fatal("same adventure ability was granted more than once")
+	}
+}

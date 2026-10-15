@@ -3,6 +3,14 @@ package army
 // CharacterTrait, karakterin sahip olduğu kalıcı özellik türünü belirtir.
 type CharacterTrait string
 
+type CharacterAbility struct {
+	ID       string  `json:"id"`
+	NameTR   string  `json:"name_tr"`
+	Scope    string  `json:"scope,omitempty"`
+	Effect   string  `json:"effect,omitempty"`
+	Modifier float64 `json:"modifier,omitempty"`
+}
+
 // CharacterType, senaryo karakterinin oyun içindeki rolünü belirtir.
 type CharacterType string
 
@@ -86,6 +94,10 @@ type Commander struct {
 	ActiveMissionID             string                       `json:"active_mission_id,omitempty"`
 	ActiveMissionTargetID       string                       `json:"active_mission_target_id,omitempty"`
 	ActiveMissionTurnsRemaining int                          `json:"active_mission_turns_remaining,omitempty"`
+	ActiveMissionOutcomeRoll    int                          `json:"active_mission_outcome_roll,omitempty"`
+	ActiveMissionOutcome        string                       `json:"active_mission_outcome,omitempty"`
+	AdventureAbilities          []CharacterAbility           `json:"adventure_abilities,omitempty"`
+	PendingAdventureAbilities   []CharacterAbility           `json:"pending_adventure_abilities,omitempty"`
 	Name                        string                       `json:"name"`
 	PortraitAsset               string                       `json:"portrait_asset,omitempty"`
 	Level                       int                          `json:"level"`
@@ -186,6 +198,17 @@ func (c *Commander) NormalizeMissionState() {
 	if c.ActiveMissionID == "" {
 		c.ActiveMissionTargetID = ""
 		c.ActiveMissionTurnsRemaining = 0
+		c.ActiveMissionOutcomeRoll = 0
+		c.ActiveMissionOutcome = ""
+	}
+	if c.ActiveMissionOutcomeRoll < 0 || c.ActiveMissionOutcomeRoll > 99 {
+		c.ActiveMissionOutcomeRoll = 0
+		c.ActiveMissionOutcome = ""
+	}
+	switch c.ActiveMissionOutcome {
+	case "", "success", "partial", "failure":
+	default:
+		c.ActiveMissionOutcome = ""
 	}
 }
 

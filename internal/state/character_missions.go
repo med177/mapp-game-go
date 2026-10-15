@@ -1,7 +1,10 @@
 package state
 
 import (
+	"hash/fnv"
 	"sort"
+	"strconv"
+	"strings"
 
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
@@ -12,12 +15,13 @@ import (
 // CompletedCharacterMission is a resolved save-backed task result for the game
 // layer to apply through canonical diplomacy/economy APIs.
 type CompletedCharacterMission struct {
-	OwnerID       faction.FactionID
-	CharacterID   string
-	CharacterName string
-	Mission       scenario.CharacterMissionDefinition
-	TargetFaction faction.FactionID
-	TargetRegion  world.RegionID
+	OwnerID          faction.FactionID
+	CharacterID      string
+	CharacterName    string
+	Mission          scenario.CharacterMissionDefinition
+	TargetFaction    faction.FactionID
+	TargetRegion     world.RegionID
+	AdventureOutcome string
 }
 
 func (s *GameState) characterMissionDefinition(missionID string) (scenario.CharacterMissionDefinition, bool) {
@@ -42,11 +46,117 @@ func characterMissionRoleMatches(character *army.Commander, mission scenario.Cha
 	return character.AssignedCouncilRole == mission.RoleID
 }
 
+func (s *GameState) CharacterAdventureChances(character *army.Commander, adventure *scenario.CharacterAdventureDefinition) (success, partial, failure int) {
+	if adventure == nil {
+		return 0, 0, 100
+	}
+	success = adventure.SuccessChancePercent
+	if character != nil {
+		level := character.CouncilLevel
+		if level <= 0 {
+			level = army.CommanderStartingLevel
+		}
+		hasRelevantTrait := false
+		for _, trait := range character.Traits {
+			for _, relevant := range adventure.RelevantTraits {
+				if strings.EqualFold(strings.TrimSpace(string(trait)), strings.TrimSpace(relevant)) {
+					hasRelevantTrait = true
+					break
+				}
+			}
+			if hasRelevantTrait {
+				break
+			}
+		}
+		if hasRelevantTrait {
+			success = addAdventureChance(success, adventure.TraitBonusPercent)
+		}
+		if adventure.LevelBonusPercent > 0 && success < 100 {
+			remaining := 100 - success
+			levelsNeeded := remaining / adventure.LevelBonusPercent
+			if remaining%adventure.LevelBonusPercent != 0 {
+				levelsNeeded++
+			}
+			if level >= levelsNeeded {
+				success = 100
+			} else {
+				success += level * adventure.LevelBonusPercent
+			}
+		}
+	}
+	if success > 100 {
+		success = 100
+	}
+	if success < 0 {
+		success = 0
+	}
+	partial = adventure.PartialSuccessChancePercent
+	if partial > 100-success {
+		partial = 100 - success
+	}
+	failure = 100 - success - partial
+	return success, partial, failure
+}
+
+func addAdventureChance(chance, bonus int) int {
+	if bonus >= 100-chance {
+		return 100
+	}
+	return chance + bonus
+}
+
+func characterAdventureRoll(s *GameState, character *army.Commander, missionID string) int {
+	hash := fnv.New32a()
+	_, _ = hash.Write([]byte(s.ScenarioID))
+	_, _ = hash.Write([]byte{0})
+	_, _ = hash.Write([]byte(character.OwnerID))
+	_, _ = hash.Write([]byte{0})
+	_, _ = hash.Write([]byte(character.ID))
+	_, _ = hash.Write([]byte{0})
+	_, _ = hash.Write([]byte(missionID))
+	_, _ = hash.Write([]byte{0})
+	_, _ = hash.Write([]byte(strconv.Itoa(s.Turn)))
+	_, _ = hash.Write([]byte{0})
+	_, _ = hash.Write([]byte(strconv.Itoa(character.CouncilExperience)))
+	return int(hash.Sum32() % 100)
+}
+
+func adventureOutcome(roll, success, partial int) string {
+	if roll < success {
+		return scenario.CharacterAdventureSuccess
+	}
+	if roll < success+partial {
+		return scenario.CharacterAdventurePartial
+	}
+	return scenario.CharacterAdventureFailure
+}
+
+func availableAdventureAbilityChoices(character *army.Commander, choices []scenario.AdventureAbilityChoice) []army.CharacterAbility {
+	if character == nil || len(choices) == 0 {
+		return nil
+	}
+	learned := make(map[string]struct{}, len(character.AdventureAbilities))
+	for _, ability := range character.AdventureAbilities {
+		learned[ability.ID] = struct{}{}
+	}
+	available := make([]army.CharacterAbility, 0, len(choices))
+	for _, choice := range choices {
+		if _, exists := learned[choice.ID]; exists {
+			continue
+		}
+		available = append(available, army.CharacterAbility{
+			ID: choice.ID, NameTR: choice.NameTR, Scope: choice.Scope, Effect: choice.Effect, Modifier: choice.Modifier,
+		})
+	}
+	return available
+}
+
 func (s *GameState) missionCharacterAvailable(ownerID string, character *army.Commander, mission scenario.CharacterMissionDefinition) bool {
 	return s != nil && ownerID != "" && character != nil &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter || character.Type == army.CharacterTypeCommander) &&
 		character.OwnerID == ownerID && character.ActiveInYear(s.Year) && character.AssignedArmyID == "" &&
-		character.ActiveMissionID == "" && characterMissionRoleMatches(character, mission) &&
+		character.ActiveMissionID == "" && len(character.PendingAdventureAbilities) == 0 &&
+		characterMissionRoleMatches(character, mission) &&
 		!s.DeadCommanderIDs[character.ID] && !s.DismissedCommanderIDs[character.ID] &&
 		!s.ExiledCommanderIDs[character.ID] && character.CaptiveAtSettlementID == "" &&
 		!s.CommanderUnavailable(character)
@@ -62,6 +172,7 @@ func (s *GameState) CharacterMissionOptions(ownerID faction.FactionID, character
 	character := s.Commanders[characterID]
 	if owner == nil || owner.IsEliminated || character == nil || !character.ActiveInYear(s.Year) ||
 		character.AssignedArmyID != "" || character.ActiveMissionID != "" ||
+		len(character.PendingAdventureAbilities) > 0 ||
 		s.DeadCommanderIDs[characterID] || s.DismissedCommanderIDs[characterID] ||
 		s.ExiledCommanderIDs[characterID] || character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) {
 		return nil
@@ -243,7 +354,53 @@ func (s *GameState) StartCharacterMissionTarget(ownerID faction.FactionID, chara
 	character.ActiveMissionID = mission.ID
 	character.ActiveMissionTargetID = string(targetID)
 	character.ActiveMissionTurnsRemaining = mission.DurationTurns
+	character.ActiveMissionOutcomeRoll = 0
+	character.ActiveMissionOutcome = ""
+	if mission.Type == scenario.CharacterMissionTypeAdventure {
+		character.ActiveMissionOutcomeRoll = characterAdventureRoll(s, character, mission.ID)
+		success, partial, _ := s.CharacterAdventureChances(character, mission.Adventure)
+		character.ActiveMissionOutcome = adventureOutcome(character.ActiveMissionOutcomeRoll, success, partial)
+	}
 	return true, ""
+}
+
+// ChooseCharacterAdventureAbility stores one earned ability and clears the
+// pending choice so it cannot be applied twice.
+func (s *GameState) ChooseCharacterAdventureAbility(ownerID faction.FactionID, characterID, abilityID string) (bool, string) {
+	if s == nil || ownerID != s.PlayerFactionID {
+		return false, "Geçersiz yetenek seçimi."
+	}
+	return s.ChooseCharacterAdventureAbilityForFaction(ownerID, characterID, abilityID)
+}
+
+// ChooseCharacterAdventureAbilityForFaction stores an earned ability for any
+// faction controlled by the game, including factions managed by the AI.
+func (s *GameState) ChooseCharacterAdventureAbilityForFaction(ownerID faction.FactionID, characterID, abilityID string) (bool, string) {
+	if s == nil || ownerID == "" || characterID == "" || abilityID == "" {
+		return false, "Geçersiz yetenek seçimi."
+	}
+	owner := s.Factions[ownerID]
+	if owner == nil || owner.IsEliminated {
+		return false, "Karakterin fraksiyonu bulunamadı."
+	}
+	character := s.Commanders[characterID]
+	if character == nil || character.OwnerID != string(ownerID) {
+		return false, "Karakter bu yeteneği seçemez."
+	}
+	for _, choice := range character.PendingAdventureAbilities {
+		if choice.ID != abilityID {
+			continue
+		}
+		for _, learned := range character.AdventureAbilities {
+			if learned.ID == abilityID {
+				return false, "Karakter bu yeteneğe zaten sahip."
+			}
+		}
+		character.AdventureAbilities = append(character.AdventureAbilities, choice)
+		character.PendingAdventureAbilities = nil
+		return true, ""
+	}
+	return false, "Bu yetenek seçeneği artık kullanılamıyor."
 }
 
 // TickCharacterMissions advances each active mission once per resolved turn.
@@ -267,23 +424,43 @@ func (s *GameState) TickCharacterMissions() []CompletedCharacterMission {
 			character.ActiveMissionID = ""
 			character.ActiveMissionTargetID = ""
 			character.ActiveMissionTurnsRemaining = 0
+			character.ActiveMissionOutcomeRoll = 0
+			character.ActiveMissionOutcome = ""
 			continue
 		}
 		if character.ActiveMissionTurnsRemaining > 1 {
 			character.ActiveMissionTurnsRemaining--
 			continue
 		}
-		completed = append(completed, CompletedCharacterMission{
+		result := CompletedCharacterMission{
 			OwnerID:       faction.FactionID(character.OwnerID),
 			CharacterID:   character.ID,
 			CharacterName: character.Name,
 			Mission:       mission,
 			TargetFaction: missionTargetFaction(mission, character.ActiveMissionTargetID),
 			TargetRegion:  missionTargetRegion(mission, character.ActiveMissionTargetID),
-		})
+		}
+		if mission.Type == scenario.CharacterMissionTypeAdventure && mission.Adventure != nil {
+			result.AdventureOutcome = character.ActiveMissionOutcome
+			if result.AdventureOutcome == "" {
+				success, partial, _ := s.CharacterAdventureChances(character, mission.Adventure)
+				result.AdventureOutcome = adventureOutcome(character.ActiveMissionOutcomeRoll, success, partial)
+			}
+			var choices []scenario.AdventureAbilityChoice
+			switch result.AdventureOutcome {
+			case scenario.CharacterAdventureSuccess:
+				choices = mission.Adventure.SuccessAbilityChoices
+			case scenario.CharacterAdventurePartial:
+				choices = mission.Adventure.PartialAbilityChoices
+			}
+			character.PendingAdventureAbilities = availableAdventureAbilityChoices(character, choices)
+		}
+		completed = append(completed, result)
 		character.ActiveMissionID = ""
 		character.ActiveMissionTargetID = ""
 		character.ActiveMissionTurnsRemaining = 0
+		character.ActiveMissionOutcomeRoll = 0
+		character.ActiveMissionOutcome = ""
 	}
 	return completed
 }

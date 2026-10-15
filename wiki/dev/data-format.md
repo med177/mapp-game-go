@@ -230,9 +230,80 @@ taşır:
   savunma gücü tahminlerini bu sayıda oyuncu turu boyunca kesin gösterir;
   yalnız `target_kind: "region"` ile kullanılabilir.
 
+`type` verilmezse görev `standard` kabul edilir. `type: "adventure"` görevleri
+hedef almaz (`target_kind` verilmezse `none`) ve normal `completion_effects`
+yerine sonuçlara göre ödül verir. `adventure` nesnesi şu alanları destekler:
+
+- `success_chance_percent` ve `partial_success_chance_percent`: başlangıç başarı
+  ihtimali ile kısmi başarı ihtimali; toplamları en fazla 100 olabilir.
+- `relevant_traits`, `trait_bonus_percent` ve `level_bonus_percent`: listeden
+  herhangi bir trait karakterde varsa başarı ihtimaline trait bonusu bir kez
+  eklenir; karakterin her konsey seviyesi `level_bonus_percent` ekler. Başarı
+  ihtimali %100'de sınırlandırılır, kısmi başarı kalan olasılığa göre daraltılır.
+- `success_gold_reward`, `partial_gold_reward`, `success_council_experience` ve
+  `partial_council_experience`: yalnız ilgili sonuçta verilen ödüller.
+- `failure_unavailable_turns`: başarısızlıkta karakterin yaralı kalacağı tur
+  sayısı; ölüm veya kalıcı kayıp oluşturmaz.
+- `success_ability_choices` ve `partial_ability_choices`: ilgili sonuçta
+  oyuncuya sunulan `{ "id", "name_tr" }` yetenek seçenekleri. Oyuncu birini
+  seçer; öğrenilen ve bekleyen seçimler karakterin save kaydında tutulur.
+  İsteğe bağlı `scope`, `effect` ve pozitif `modifier` alanları yeteneği
+  mekanik etkiye bağlar. Desteklenen eşleşmeler `faction` + `military_power`
+  (fraksiyonun tüm ordularına), `army` + `army_power` (atanmış kara ordusuna)
+  ve `navy` + `navy_power` (atanmış filonun deniz muharebelerine) şeklindedir.
+  `modifier` ondalık çarpandır (`0.03` = +%3); aynı karakterde yinelenen
+  yetenek kimliği yalnızca bir kez sayılır. Etki alanları verilmeyen eski
+  yetenek kayıtları yüklenmeye devam eder ancak bonus uygulamaz. Aktif macera
+  görevindeki, etkisiz veya başka fraksiyona ait karakterin yetenekleri
+  uygulanmaz. Yetenek verisi seçildiği anda karakter save state'ine kopyalanır.
+
+Macera zar değeri ve zar atılırken hesaplanan sonuç görev başlatılırken
+karakterin save state'inde saklanır. Böylece daha sonra trait/seviye değişmesi,
+kayıt yükleme veya tur çözümleme sırası sonucu değiştirmez. Örnek:
+
+```json
+{
+  "id": "faceless_journey",
+  "name_tr": "Yüzsüzlerin Yolculuğu",
+  "type": "adventure",
+  "duration_turns": 3,
+  "gold_cost": 100,
+  "adventure": {
+    "success_chance_percent": 45,
+    "partial_success_chance_percent": 30,
+    "relevant_traits": ["assassin", "spy", "explorer"],
+    "trait_bonus_percent": 20,
+    "level_bonus_percent": 3,
+    "failure_unavailable_turns": 2,
+    "success_ability_choices": [
+      {
+        "id": "shadowcraft", "name_tr": "Gölgede Ustalık",
+        "scope": "army", "effect": "army_power", "modifier": 0.03
+      },
+      {
+        "id": "fieldcraft", "name_tr": "Saha Keşfi",
+        "scope": "faction", "effect": "military_power", "modifier": 0.02
+      },
+      {
+        "id": "naval_strategy", "name_tr": "Denizcilik",
+        "scope": "navy", "effect": "navy_power", "modifier": 0.03
+      }
+    ],
+    "partial_ability_choices": [
+      {
+        "id": "fieldcraft", "name_tr": "Saha Keşfi",
+        "scope": "faction", "effect": "military_power", "modifier": 0.02
+      }
+    ]
+  }
+}
+```
+
 Maliyet ve ödüller negatif olamaz. Devam eden görev kimliği, hedefi ve kalan
-tur sayısı karakterin runtime/save kaydında tutulur; senaryo karakter şablonuna
-yazılmaz. Örnek:
+tur sayısı, macera zar sonucu, öğrenilen yetenekler ve bekleyen seçim karakterin
+runtime/save kaydında tutulur; senaryo karakter şablonuna yazılmaz. Macerada
+`completion_effects` kullanılamaz; ödüller yalnız sonuç alanlarında tanımlanır.
+Örnek:
 
 ```json
 {

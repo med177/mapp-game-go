@@ -120,6 +120,7 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 		planningContext = prepareStrategicContextWithEvents(gs, fid, eventDefs)
 	}
 	aiManageNeutralCharactersWithContext(gs, fid, planningContext)
+	aiManageCharacterMissions(gs, fid, steps)
 	// Difficulty 3: herhangi bir fraksiyonun sabit büyüklüğünü değil, kısa
 	// süredeki hızlı genişlemesini tehdit olarak değerlendir.
 	if gs.Difficulty >= 3 {
@@ -1565,6 +1566,8 @@ func aiEscortMoveFirst(gs *state.GameState, transport *army.Army, target world.R
 		if stance == faction.StanceWar {
 			atkMods := aiTechMods(gs, escort.OwnerID)
 			defMods := aiTechMods(gs, enemyInTarget.OwnerID)
+			combat.ApplyAdventureAbilityMods(gs, escort, combat.BattleContextNaval, &atkMods)
+			combat.ApplyAdventureAbilityMods(gs, enemyInTarget, combat.BattleContextNaval, &defMods)
 			seaTerrain := string(world.TerrainSea)
 			result := combat.ResolveBattleWithContextPlan(escort, enemyInTarget, world.TerrainType(seaTerrain), gs.UnitTypes, atkMods, defMods, combat.BattleContextNaval, combat.BattleStanceAggressive)
 			gs.RecordCouncilBattleExperience(faction.FactionID(escort.OwnerID), faction.FactionID(enemyInTarget.OwnerID))
@@ -1972,6 +1975,8 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 					// AI vs AI huruç: hemen çöz.
 					atkMods := aiTechMods(gs, a.OwnerID)
 					defMods := aiTechMods(gs, siegeArmy.OwnerID)
+					combat.ApplyAdventureAbilityMods(gs, a, combat.BattleContextLand, &atkMods)
+					combat.ApplyAdventureAbilityMods(gs, siegeArmy, combat.BattleContextLand, &defMods)
 					combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 						gs.IsCoreRegion(faction.FactionID(a.OwnerID), sourceRegion.ID),
 						gs.IsCoreRegion(faction.FactionID(siegeArmy.OwnerID), sourceRegion.ID))
@@ -2089,6 +2094,8 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			}
 			atkMods := aiTechMods(gs, a.OwnerID)
 			defMods := aiTechMods(gs, enemyArmy.OwnerID)
+			combat.ApplyAdventureAbilityMods(gs, landing, combat.BattleContextLand, &atkMods)
+			combat.ApplyAdventureAbilityMods(gs, enemyArmy, combat.BattleContextLand, &defMods)
 			combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 				gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
 				gs.IsCoreRegion(faction.FactionID(enemyArmy.OwnerID), targetRegion.ID))
@@ -2238,6 +2245,8 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 			}
 			atkMods := aiTechMods(gs, a.OwnerID)
 			defMods := aiTechMods(gs, targetRegion.OwnerID)
+			combat.ApplyAdventureAbilityMods(gs, a, combat.BattleContextLand, &atkMods)
+			combat.ApplyAdventureAbilityMods(gs, defender, combat.BattleContextLand, &defMods)
 			combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 				gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
 				gs.IsCoreRegion(faction.FactionID(targetRegion.OwnerID), targetRegion.ID))
@@ -2396,12 +2405,18 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		} else {
 			defForBattle = enemyArmy
 		}
+		contactContext := combat.BattleContextLand
+		if a.IsNaval && targetRegion.IsSea {
+			contactContext = combat.BattleContextNaval
+		}
 		atkMods := aiTechMods(gs, a.OwnerID)
+		combat.ApplyAdventureAbilityMods(gs, a, contactContext, &atkMods)
 		defOwnerID := a.OwnerID
 		if enemyArmy != nil {
 			defOwnerID = enemyArmy.OwnerID
 		}
 		defMods := aiTechMods(gs, defOwnerID)
+		combat.ApplyAdventureAbilityMods(gs, defForBattle, contactContext, &defMods)
 		combat.ApplyCoreCombatBonuses(&atkMods, &defMods,
 			gs.IsCoreRegion(faction.FactionID(a.OwnerID), targetRegion.ID),
 			gs.IsCoreRegion(faction.FactionID(defOwnerID), targetRegion.ID))
@@ -2409,10 +2424,6 @@ func executeMoveWithNavalPatrolAndContact(gs *state.GameState, a *army.Army, tar
 		if ambushDefender != nil {
 			defMods.DefenseMod += float64(world.TerrainData[targetRegion.Terrain].AmbushBonus) / 100.0
 			ambushDefender.InAmbush = false
-		}
-		contactContext := combat.BattleContextLand
-		if a.IsNaval && targetRegion.IsSea {
-			contactContext = combat.BattleContextNaval
 		}
 		result := combat.ResolveBattleWithContactDefense(a, defForBattle, targetRegion.Terrain, gs.UnitTypes, atkMods, defMods, contactContext, combat.BattleStanceBalanced, contactAttackerHolding, contactDefenderHolding)
 		gs.RecordCouncilBattleExperience(faction.FactionID(a.OwnerID), faction.FactionID(defForBattle.OwnerID))

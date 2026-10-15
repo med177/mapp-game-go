@@ -62,6 +62,7 @@ type TechMods struct {
 	LandOrganizationMod float64 // kara ordusu slot aşımı çarpanı (ör. -0.10 = -10%)
 	CouncilPowerMod     float64 // fraksiyon geneli konsey muharebe çarpanı
 	CommanderPowerMod   float64 // askeri sorumlunun komuta ettiği birliğe özel çarpan
+	AssignedAbilityMod  float64 // ordu/filo komutanının bağlama uygun yetenek bonusu
 	CoreAttackMod       float64 // saldıranın kendi core bölgesindeki muharebe bonusu
 	CoreDefenseMod      float64 // savunucunun kendi core bölgesindeki muharebe bonusu
 }
@@ -77,6 +78,7 @@ type StrengthBreakdown struct {
 	CommanderMoraleModifier  float64
 	CouncilPowerModifier     float64
 	CommanderCouncilModifier float64
+	AssignedAbilityModifier  float64
 	StanceModifier           float64
 	CoreModifier             float64
 	TerrainMultiplier        float64
@@ -435,6 +437,7 @@ func ArmyStrengthBreakdown(a *army.Army, terrain world.TerrainType, types map[st
 		CommanderDefenseModifier: defenseCommander,
 		CommanderMoraleModifier:  a.CommanderMoraleModifier(),
 		CouncilPowerModifier:     mods.CouncilPowerMod,
+		AssignedAbilityModifier:  mods.AssignedAbilityMod,
 		TerrainMultiplier:        1,
 		ContactMultiplier:        1,
 	}
@@ -452,6 +455,7 @@ func ArmyStrengthBreakdown(a *army.Army, terrain world.TerrainType, types map[st
 		breakdown.CoreModifier = mods.CoreAttackMod
 		modifier := breakdown.TechnologyModifier + breakdown.CouncilPowerModifier + breakdown.OrganizationModifier +
 			breakdown.CommanderAttackModifier + breakdown.CommanderMoraleModifier + breakdown.CommanderCouncilModifier +
+			breakdown.AssignedAbilityModifier +
 			breakdown.StanceModifier + breakdown.CoreModifier
 		breakdown.FinalStrength = float64(breakdown.BaseStrength) * (1 + modifier)
 	} else {
@@ -464,7 +468,8 @@ func ArmyStrengthBreakdown(a *army.Army, terrain world.TerrainType, types map[st
 		breakdown.CoreModifier = mods.CoreDefenseMod
 		breakdown.TerrainMultiplier = terrainBonus(terrain)
 		modifier := breakdown.TechnologyModifier + breakdown.CouncilPowerModifier + breakdown.OrganizationModifier +
-			breakdown.CommanderDefenseModifier + breakdown.CommanderMoraleModifier + breakdown.CommanderCouncilModifier + breakdown.CoreModifier
+			breakdown.CommanderDefenseModifier + breakdown.CommanderMoraleModifier + breakdown.CommanderCouncilModifier +
+			breakdown.AssignedAbilityModifier + breakdown.CoreModifier
 		breakdown.FinalStrength = float64(breakdown.BaseStrength) * breakdown.TerrainMultiplier * (1 + modifier)
 	}
 	if holding {

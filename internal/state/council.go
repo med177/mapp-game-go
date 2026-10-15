@@ -185,7 +185,7 @@ func (s *GameState) CouncilEffectsForFaction(ownerID faction.FactionID) scenario
 	for _, role := range s.councilConfig().Roles {
 		effects = addCouncilEffects(effects, s.CouncilRoleEffects(ownerID, role.ID))
 	}
-	return effects
+	return addCouncilEffects(effects, s.adventureAbilityCouncilEffects(ownerID))
 }
 
 func addCouncilEffects(a, b scenario.CouncilEffects) scenario.CouncilEffects {

@@ -185,7 +185,13 @@ func TestActiveCharacterMissionPersistsCompactAndLegacySaves(t *testing.T) {
 		ID: "chr_varys", Type: army.CharacterTypeCharacter, OwnerID: "player",
 		Name: "Varys", AssignedCouncilRole: state.CouncilRoleDiplomat,
 		ActiveMissionID: "diplomatic_envoy", ActiveMissionTargetID: "target_house",
-		ActiveMissionTurnsRemaining: 1,
+		ActiveMissionTurnsRemaining: 1, ActiveMissionOutcomeRoll: 37, ActiveMissionOutcome: "partial",
+		AdventureAbilities: []army.CharacterAbility{{
+			ID: "fieldcraft", NameTR: "Saha Keşfi", Scope: "faction", Effect: "military_power", Modifier: 0.02,
+		}},
+		PendingAdventureAbilities: []army.CharacterAbility{{
+			ID: "shadowcraft", NameTR: "Gölgede Ustalık", Scope: "army", Effect: "army_power", Modifier: 0.03,
+		}},
 	}
 	gs := &state.GameState{
 		ScenarioID:      "test_scenario",
@@ -219,7 +225,16 @@ func assertActiveMissionSaveState(t *testing.T, character *army.Commander) {
 	t.Helper()
 	if character == nil || character.AssignedCouncilRole != state.CouncilRoleDiplomat ||
 		character.ActiveMissionID != "diplomatic_envoy" || character.ActiveMissionTargetID != "target_house" ||
-		character.ActiveMissionTurnsRemaining != 1 {
-		t.Fatalf("active mission save state = %+v, want mission/target/turn and retained council role", character)
+		character.ActiveMissionTurnsRemaining != 1 || character.ActiveMissionOutcomeRoll != 37 ||
+		character.ActiveMissionOutcome != "partial" ||
+		len(character.AdventureAbilities) != 1 || character.AdventureAbilities[0].ID != "fieldcraft" ||
+		character.AdventureAbilities[0].Scope != "faction" ||
+		character.AdventureAbilities[0].Effect != "military_power" ||
+		character.AdventureAbilities[0].Modifier != 0.02 ||
+		len(character.PendingAdventureAbilities) != 1 || character.PendingAdventureAbilities[0].ID != "shadowcraft" ||
+		character.PendingAdventureAbilities[0].Scope != "army" ||
+		character.PendingAdventureAbilities[0].Effect != "army_power" ||
+		character.PendingAdventureAbilities[0].Modifier != 0.03 {
+		t.Fatalf("active mission/ability save state = %+v, want mission result roll and retained abilities", character)
 	}
 }

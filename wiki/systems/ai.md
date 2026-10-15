@@ -1,11 +1,26 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-10-09
+last_updated: 2026-10-15
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
 # Yapay Zeka Sistemi
+
+## Karakter görevleri
+
+AI, her fraksiyon turunun ön hazırlığında önce konsey atamalarını günceller,
+sonra uygun karakter görevlerini değerlendirir
+(`internal/ai/neutral_character.go`, `internal/ai/character_missions.go`).
+Rol bağlantılı danışman görevlerinde görev süresince kaybolacak konsey bonusu,
+görev ödülü ve altın maliyetiyle karşılaştırılır; yalnız tahmini net faydası
+pozitif görevler başlatılır. Boşta karakterler ajanlık ve macera görevleri için
+değerlendirilir. Hedef olarak ilişki ödüllü görevlerde ilişkisi düşük uygun
+fraksiyonlar, istihbarat görevlerinde askerî gücü yüksek hedefler seçilir.
+AI, görev maliyetinden sonra asgari altın rezervini korur ve macera sonunda
+bekleyen yetenekler arasından tahmini ordu, donanma veya fraksiyon gücü katkısı
+en yüksek olanı seçer. Oyuncunun tam AI kontrolü etkin değilse karakterleri
+oyuncu adına görevlendirmez.
 
 İmtiyazlı ticaret rotaları AI ekonomisinde de hesaba katılır.
 `aiFactionGoldProduction()` aktif rotaların beklenen ticari değerini kullanım

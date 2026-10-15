@@ -648,12 +648,14 @@ func (g *Game) assaultSiegeWithStance(aid army.ArmyID, target world.RegionID, st
 	attackerBefore := snapshotBattleArmy(attacker, g.gs.UnitTypes)
 	defenderBefore := snapshotBattleArmy(defender, g.gs.UnitTypes)
 	atkMods := techModsFor(g.gs, attacker.OwnerID)
+	combat.ApplyAdventureAbilityMods(g.gs, attacker, combat.BattleContextLand, &atkMods)
 	defMods := combat.TechMods{}
 	if virtualDefense {
 		defMods = techModsFor(g.gs, targetOwnerID)
 	} else {
 		defMods = techModsFor(g.gs, defender.OwnerID)
 	}
+	combat.ApplyAdventureAbilityMods(g.gs, defender, combat.BattleContextLand, &defMods)
 	defenderOwnerID := targetOwnerID
 	if !virtualDefense && defender != nil {
 		defenderOwnerID = defender.OwnerID

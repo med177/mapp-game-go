@@ -33,7 +33,13 @@ func characterMissionMenuRect(r *Renderer) (gameui.Rect, bool) {
 	viewport := characterRosterOwnedListViewport(column)
 	row := characterRosterOwnedRowRect(viewport, index, r.characterRosterOwnedScroll, owned)
 	itemCount := len(r.characterRosterMissionOptions)
-	if r.characterRosterSelectedMissionID != "" {
+	if r.characterRosterAbilityChoice {
+		if character := r.gs.Commanders[r.characterRosterMissionMenuCharacterID]; character != nil {
+			itemCount = len(character.PendingAdventureAbilities)
+		} else {
+			itemCount = 0
+		}
+	} else if r.characterRosterSelectedMissionID != "" {
 		itemCount = len(r.characterRosterMissionTargets)
 	}
 	visibleRows := itemCount
@@ -87,13 +93,18 @@ func (r *Renderer) OpenCharacterMissionMenu(characterID string) bool {
 		return false
 	}
 	r.ensureCharacterRosterPanelCache()
-	options := r.characterMissionsByCharacter[characterID]
-	if len(options) == 0 {
+	character := r.gs.Commanders[characterID]
+	if character == nil {
 		return false
 	}
 	r.characterRosterMissionMenuCharacterID = characterID
 	r.characterRosterSelectedMissionID = ""
-	r.characterRosterMissionOptions = append(r.characterRosterMissionOptions[:0], options...)
+	r.characterRosterAbilityChoice = len(character.PendingAdventureAbilities) > 0
+	r.characterRosterMissionOptions = append(r.characterRosterMissionOptions[:0], r.characterMissionsByCharacter[characterID]...)
+	if !r.characterRosterAbilityChoice && len(r.characterRosterMissionOptions) == 0 {
+		r.characterRosterMissionMenuCharacterID = ""
+		return false
+	}
 	r.characterRosterMissionTargets = nil
 	r.characterRosterMissionScroll = 0
 	r.characterRosterAssignMenuID = ""
@@ -106,6 +117,7 @@ func (r *Renderer) CloseCharacterMissionMenu() {
 	}
 	r.characterRosterMissionMenuCharacterID = ""
 	r.characterRosterSelectedMissionID = ""
+	r.characterRosterAbilityChoice = false
 	r.characterRosterMissionOptions = nil
 	r.characterRosterMissionTargets = nil
 	r.characterRosterMissionScroll = 0
@@ -151,6 +163,14 @@ func (r *Renderer) confirmCharacterMissionStart(action InputAction, mission scen
 		message += " (hedef: " + targetLabel + ")"
 	}
 	message += ". Süre: " + itoa(mission.DurationTurns) + " tur. Maliyet: " + itoa(mission.GoldCost) + " altın. Görev başlatılsın mı?"
+	if mission.Type == scenario.CharacterMissionTypeAdventure && mission.Adventure != nil {
+		character := r.gs.Commanders[action.CharacterID]
+		success, partial, failure := r.gs.CharacterAdventureChances(character, mission.Adventure)
+		message += " Başarı: %" + itoa(success) + ", kısmi başarı: %" + itoa(partial) + ", başarısızlık: %" + itoa(failure) + "."
+		if mission.Adventure.FailureUnavailableTurns > 0 {
+			message += " Başarısızlıkta " + itoa(mission.Adventure.FailureUnavailableTurns) + " tur yaralanma riski var."
+		}
+	}
 	r.ShowConfirmDialog("Görevi Başlat", message, "Evet", "Hayır", action, nil)
 }
 
@@ -164,6 +184,21 @@ func (r *Renderer) characterMissionMenuInteractiveHit(x, y float64) bool {
 	}
 	if r.characterRosterSelectedMissionID != "" && characterMissionMenuBackButton(menu).HitTest(x, y) {
 		return true
+	}
+	if r.characterRosterAbilityChoice {
+		character := r.gs.Commanders[r.characterRosterMissionMenuCharacterID]
+		if character == nil {
+			return false
+		}
+		for index, ability := range character.PendingAdventureAbilities {
+			if index < r.characterRosterMissionScroll || index >= r.characterRosterMissionScroll+characterMissionMenuMaxRows {
+				continue
+			}
+			if characterMissionMenuOptionButton(menu, index-r.characterRosterMissionScroll, ability.NameTR).HitTest(x, y) {
+				return true
+			}
+		}
+		return false
 	}
 	if r.characterRosterSelectedMissionID == "" {
 		owner := r.gs.Factions[r.gs.PlayerFactionID]
@@ -196,7 +231,12 @@ func (r *Renderer) drawCharacterMissionMenu(screen *ebiten.Image) {
 		return
 	}
 	drawUIPanelFrame(screen, menu, color.RGBA{18, 14, 10, 250}, color.RGBA{180, 140, 62, 255}, 1.2, 3)
-	if r.characterRosterSelectedMissionID == "" {
+	if r.characterRosterAbilityChoice {
+		titleRect := characterMissionMenuTitleRect(menu)
+		titleRect.X = menu.X + characterMissionMenuPad
+		titleRect.W = menu.W - characterMissionMenuPad*2 - 30
+		drawUILabel(screen, titleRect, "Yetenek seç", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
+	} else if r.characterRosterSelectedMissionID == "" {
 		titleRect := characterMissionMenuTitleRect(menu)
 		titleRect.X = menu.X + characterMissionMenuPad
 		titleRect.W = menu.W - characterMissionMenuPad*2 - 30
@@ -211,7 +251,11 @@ func (r *Renderer) drawCharacterMissionMenu(screen *ebiten.Image) {
 
 	start := r.characterRosterMissionScroll
 	var count int
-	if r.characterRosterSelectedMissionID == "" {
+	if r.characterRosterAbilityChoice {
+		if character := r.gs.Commanders[r.characterRosterMissionMenuCharacterID]; character != nil {
+			count = len(character.PendingAdventureAbilities)
+		}
+	} else if r.characterRosterSelectedMissionID == "" {
 		count = len(r.characterRosterMissionOptions)
 	} else {
 		count = len(r.characterRosterMissionTargets)
@@ -233,9 +277,19 @@ func (r *Renderer) drawCharacterMissionMenu(screen *ebiten.Image) {
 		label := ""
 		button := characterMissionMenuOptionButton(menu, index-start, label)
 		button.Enabled = true
-		if r.characterRosterSelectedMissionID == "" {
+		if r.characterRosterAbilityChoice {
+			character := r.gs.Commanders[r.characterRosterMissionMenuCharacterID]
+			if character != nil && index < len(character.PendingAdventureAbilities) {
+				label = character.PendingAdventureAbilities[index].NameTR
+			}
+		} else if r.characterRosterSelectedMissionID == "" {
 			mission := r.characterRosterMissionOptions[index]
 			label = mission.NameTR + " · " + itoa(mission.DurationTurns) + " tur · " + itoa(mission.GoldCost) + " altın"
+			if mission.Type == scenario.CharacterMissionTypeAdventure && mission.Adventure != nil {
+				character := r.gs.Commanders[r.characterRosterMissionMenuCharacterID]
+				success, partial, _ := r.gs.CharacterAdventureChances(character, mission.Adventure)
+				label += " · B" + itoa(success) + " K" + itoa(partial) + "%"
+			}
 			owner := r.gs.Factions[r.gs.PlayerFactionID]
 			button.Enabled = owner != nil && owner.Gold >= mission.GoldCost
 		} else {
@@ -246,6 +300,9 @@ func (r *Renderer) drawCharacterMissionMenu(screen *ebiten.Image) {
 	}
 	if count == 0 {
 		message := "Uygun görev yok."
+		if r.characterRosterAbilityChoice {
+			message = "Öğrenilecek yetenek kalmadı."
+		}
 		if r.characterRosterSelectedMissionID != "" {
 			message = "Uygun hedef yok."
 		}
@@ -266,6 +323,28 @@ func (r *Renderer) handleCharacterMissionMenuClick(x, y float64) (InputAction, b
 		r.characterRosterSelectedMissionID = ""
 		r.characterRosterMissionTargets = nil
 		r.characterRosterMissionScroll = 0
+		return InputAction{}, true
+	}
+	if r.characterRosterAbilityChoice {
+		character := r.gs.Commanders[r.characterRosterMissionMenuCharacterID]
+		if character == nil {
+			r.CloseCharacterMissionMenu()
+			return InputAction{}, true
+		}
+		for index, ability := range character.PendingAdventureAbilities {
+			visibleIndex := index - r.characterRosterMissionScroll
+			if visibleIndex < 0 || visibleIndex >= characterMissionMenuMaxRows {
+				continue
+			}
+			if characterMissionMenuOptionButton(menu, visibleIndex, ability.NameTR).HitTest(x, y) {
+				action := InputAction{
+					Kind: ActionChooseAdventureAbility, CharacterID: character.ID,
+					AdventureAbilityID: ability.ID,
+				}
+				r.CloseCharacterMissionMenu()
+				return action, true
+			}
+		}
 		return InputAction{}, true
 	}
 	if r.characterRosterSelectedMissionID == "" {
@@ -325,6 +404,13 @@ func (r *Renderer) scrollCharacterMissionMenu(x, y, wheelY float64) bool {
 	count := len(r.characterRosterMissionOptions)
 	if r.characterRosterSelectedMissionID != "" {
 		count = len(r.characterRosterMissionTargets)
+	}
+	if r.characterRosterAbilityChoice {
+		if character := r.gs.Commanders[r.characterRosterMissionMenuCharacterID]; character != nil {
+			count = len(character.PendingAdventureAbilities)
+		} else {
+			count = 0
+		}
 	}
 	maxScroll := count - characterMissionMenuMaxRows
 	if maxScroll < 0 {

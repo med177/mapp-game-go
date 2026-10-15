@@ -3969,7 +3969,11 @@ func (s *GameState) EffectiveArmyStrength(a *army.Army) int {
 	if a.Commander != nil && a.Commander.AssignedCouncilRole == army.CouncilRoleMilitaryResponsible {
 		modifier += s.CouncilCommanderPowerMod(faction.FactionID(a.OwnerID)) - 1
 	}
-	if !a.IsNaval {
+	abilityEffects := s.AdventureAbilityEffectsForArmy(a)
+	if a.IsNaval {
+		modifier += abilityEffects.NavalPowerMod
+	} else {
+		modifier += abilityEffects.ArmyPowerMod
 		modifier -= float64(s.ArmyOrganizationPenaltyPercent(faction.FactionID(a.OwnerID))) / 100
 	}
 	power = int(float64(power)*(1+modifier) + 1e-9)

@@ -1,6 +1,7 @@
 package combat
 
 import (
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/tech"
@@ -27,4 +28,23 @@ func TechModsFor(gs *state.GameState, ownerID string) TechMods {
 	mods.NavalAttackMod = fx.NavalAttackMod
 	mods.NavalDefenseMod = fx.NavalDefenseMod
 	return mods
+}
+
+// ApplyAdventureAbilityMods adds the assigned character's context-specific
+// ability. Faction-wide abilities already flow through the council modifier.
+func ApplyAdventureAbilityMods(gs *state.GameState, a *army.Army, context BattleContext, mods *TechMods) {
+	if gs == nil || a == nil || mods == nil {
+		return
+	}
+	effects := gs.AdventureAbilityEffectsForArmy(a)
+	switch NormalizeBattleContext(context) {
+	case BattleContextNaval:
+		if a.IsNaval {
+			mods.AssignedAbilityMod += effects.NavalPowerMod
+		}
+	default:
+		if !a.IsNaval {
+			mods.AssignedAbilityMod += effects.ArmyPowerMod
+		}
+	}
 }

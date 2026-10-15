@@ -862,6 +862,7 @@ func TestCharacterMissionMenuHeaderUsesIconBackButtonAndBalancedPadding(t *testi
 	if back.Label != "" || back.Icon != gameui.IconBack {
 		t.Fatalf("mission menu back button = %+v, want icon-only back button", back)
 	}
+
 	if back.Y-menu.Y != characterMissionMenuPad ||
 		characterMissionMenuHeaderH-(back.Y-menu.Y)-back.H != characterMissionMenuPad ||
 		closeButton.Y-menu.Y != characterMissionMenuPad ||
@@ -876,6 +877,84 @@ func TestCharacterMissionMenuHeaderUsesIconBackButtonAndBalancedPadding(t *testi
 	lastOption := characterMissionMenuOptionButton(menu, 1, "Hedef")
 	if menu.Y+menu.H-(lastOption.Y+lastOption.H) < characterMissionMenuPad {
 		t.Fatalf("mission menu bottom padding is less than %v px", characterMissionMenuPad)
+	}
+}
+
+func TestCharacterRosterDispatchesAdventureAbilityChoice(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_arya", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Arya",
+		PendingAdventureAbilities: []army.CharacterAbility{
+			{ID: "shadowcraft", NameTR: "Gölgede Ustalık"},
+			{ID: "fieldcraft", NameTR: "Saha Keşfi"},
+		},
+	}
+	r := &Renderer{gs: &state.GameState{
+		Year: 300, PlayerFactionID: owner,
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+	}}
+	r.OpenCharacterRosterPanel()
+	column, _ := characterRosterColumns()
+	index := characterRosterIndexByID(r.characterRosterOwned, character.ID)
+	button := characterRosterMissionButton(column, index, r.characterRosterOwnedScroll, r.characterRosterOwned)
+	if button.Label != "Yetenek" {
+		t.Fatalf("pending ability action label = %q, want Yetenek", button.Label)
+	}
+	if _, handled := handleCharacterRosterPanelClick(r, button.X+button.W/2, button.Y+button.H/2); !handled ||
+		!r.characterRosterAbilityChoice {
+		t.Fatal("clicking Yetenek did not open the ability selection menu")
+	}
+	menu, ok := characterMissionMenuRect(r)
+	if !ok {
+		t.Fatal("ability choice menu has no geometry")
+	}
+	option := characterMissionMenuOptionButton(menu, 1, "Saha Keşfi")
+	action, handled := handleCharacterRosterPanelClick(r, option.X+option.W/2, option.Y+option.H/2)
+	if !handled || action.Kind != ActionChooseAdventureAbility || action.CharacterID != character.ID ||
+		action.AdventureAbilityID != "fieldcraft" || r.characterRosterMissionMenuCharacterID != "" {
+		t.Fatalf("ability selection action = %+v handled=%t; menu character=%q", action, handled, r.characterRosterMissionMenuCharacterID)
+	}
+}
+
+func TestAdventureMissionConfirmationShowsTraitAdjustedChancesAndRisk(t *testing.T) {
+	const owner faction.FactionID = "player"
+	character := &army.Commander{
+		ID: "chr_arya", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Arya",
+		Traits: []army.CharacterTrait{"assassin"}, CouncilLevel: 2,
+	}
+	r := &Renderer{gs: &state.GameState{
+		Year: 300, PlayerFactionID: owner,
+		Factions:   map[faction.FactionID]*faction.Faction{owner: {ID: owner, Gold: 500}},
+		Commanders: map[string]*army.Commander{character.ID: character},
+		CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{{
+			ID: "journey", NameTR: "Macera", Type: scenario.CharacterMissionTypeAdventure,
+			TargetKind: scenario.CharacterMissionTargetNone, DurationTurns: 3, GoldCost: 100,
+			Adventure: &scenario.CharacterAdventureDefinition{
+				SuccessChancePercent: 30, PartialSuccessChancePercent: 20,
+				RelevantTraits: []string{"assassin"}, TraitBonusPercent: 10,
+				LevelBonusPercent: 5, FailureUnavailableTurns: 2,
+			},
+		}}},
+	}}
+	r.OpenCharacterRosterPanel()
+	column, _ := characterRosterColumns()
+	index := characterRosterIndexByID(r.characterRosterOwned, character.ID)
+	button := characterRosterMissionButton(column, index, r.characterRosterOwnedScroll, r.characterRosterOwned)
+	if _, handled := handleCharacterRosterPanelClick(r, button.X+button.W/2, button.Y+button.H/2); !handled {
+		t.Fatal("adventure mission menu did not open")
+	}
+	menu, _ := characterMissionMenuRect(r)
+	option := characterMissionMenuOptionButton(menu, 0, "Macera")
+	if _, handled := handleCharacterRosterPanelClick(r, option.X+option.W/2, option.Y+option.H/2); !handled ||
+		!r.confirmDialog.show {
+		t.Fatal("adventure mission did not open its confirmation")
+	}
+	if !strings.Contains(r.confirmDialog.message, "Başarı: %50") ||
+		!strings.Contains(r.confirmDialog.message, "kısmi başarı: %20") ||
+		!strings.Contains(r.confirmDialog.message, "başarısızlık: %30") ||
+		!strings.Contains(r.confirmDialog.message, "2 tur yaralanma riski") {
+		t.Fatalf("adventure confirmation omits adjusted chances/risk: %q", r.confirmDialog.message)
 	}
 }
 

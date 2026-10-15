@@ -115,6 +115,7 @@ const (
 	ActionClearCouncilRole          ActionKind = "clear_council_role"
 	ActionAdoptNeutralCharacter     ActionKind = "adopt_neutral_character"
 	ActionStartCharacterMission     ActionKind = "start_character_mission"
+	ActionChooseAdventureAbility    ActionKind = "choose_adventure_ability"
 	ActionReleaseCharacter          ActionKind = "release_character"
 	ActionRecruitCommander          ActionKind = "recruit_commander"
 	ActionEditCommander             ActionKind = "edit_commander"
@@ -152,17 +153,18 @@ const (
 
 // InputAction renderer'ın bir çerçevede ürettiği tek oyun eylemi.
 type InputAction struct {
-	Kind          ActionKind
-	ArmyID        army.ArmyID
-	UnitIndices   []int // ActionSplitArmy için seçilerek ayrılacak fiziksel birim index'leri
-	TargetArmyID  army.ArmyID
-	CommanderID   string
-	CharacterID   string
-	CouncilRole   string
-	MissionID     string
-	CommanderName string
-	PortraitAsset string
-	TargetRegion  world.RegionID
+	Kind               ActionKind
+	ArmyID             army.ArmyID
+	UnitIndices        []int // ActionSplitArmy için seçilerek ayrılacak fiziksel birim index'leri
+	TargetArmyID       army.ArmyID
+	CommanderID        string
+	CharacterID        string
+	CouncilRole        string
+	MissionID          string
+	AdventureAbilityID string
+	CommanderName      string
+	PortraitAsset      string
+	TargetRegion       world.RegionID
 	// TargetSettlementID, denizden kara hedefinde liman ile merkez yerleşimi
 	// ayırır. Boş bırakıldığında bölge tabanlı eski hareket semantiği korunur.
 	TargetSettlementID   string
