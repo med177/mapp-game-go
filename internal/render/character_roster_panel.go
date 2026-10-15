@@ -133,7 +133,9 @@ func drawCharacterRosterHUDButton(screen *ebiten.Image, gs *state.GameState, ope
 	if openRoles > 0 {
 		drawCharacterRosterHUDCountBadge(screen, centerX+11, centerY-15, openRoles, color.RGBA{170, 42, 32, 255})
 	}
-	drawCharacterRosterHUDCountBadge(screen, centerX+11, centerY+15, activeMissions, color.RGBA{218, 126, 35, 255})
+	if activeMissions > 0 {
+		drawCharacterRosterHUDCountBadge(screen, centerX+11, centerY+15, activeMissions, color.RGBA{218, 126, 35, 255})
+	}
 }
 
 func characterRosterPanelRect() gameui.Rect {
