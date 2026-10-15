@@ -1,5 +1,6 @@
 {
     "editor.mouseWheelZoom": true,
     "terminal.integrated.mouseWheelZoom": true,
-    "window.zoomLevel": 1
+    "window.zoomLevel": 1,
+    "chat.promptFilesRecommendations": true
 }

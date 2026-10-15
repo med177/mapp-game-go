@@ -31,7 +31,7 @@ const (
 	characterRosterScrollbarGap    = 4.0
 	characterRosterScrollbarW      = 3.0
 	characterRosterScrollbarRight  = 5.0
-	characterRosterDutyGroupPad    = 10.0
+	characterRosterDutyGroupPad    = 8.0
 	characterRosterDutyGroupGap    = characterRosterDutyGroupPad*2 - (characterRosterRowH - characterRosterCardH)
 )
 
@@ -261,6 +261,13 @@ func characterRosterCandidateCostLines(character *army.Commander) [2]string {
 	}
 }
 
+func characterRosterMissionDetailLines(missionName string, turnsRemaining int) [2]string {
+	return [2]string{
+		"Görevde: " + missionName,
+		"Kalan süre: " + itoa(turnsRemaining) + " tur",
+	}
+}
+
 func characterRosterUpkeepLabel(character *army.Commander, role scenario.CouncilRoleDefinition) string {
 	if role.NoCost {
 		return "Tur başı bakım yok"
@@ -278,7 +285,7 @@ func characterRosterCouncilManageable(character *army.Commander) bool {
 }
 
 func characterRosterReleaseable(character *army.Commander) bool {
-	return character != nil &&
+	return character != nil && character.ActiveMissionID == "" &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter)
 }
 
@@ -405,6 +412,22 @@ func characterRosterDutyActionButton(column gameui.Rect, rowIndex, scroll int, c
 	return characterCouncilAssignButton(column, rowIndex, scroll, rosters...)
 }
 
+func characterRosterDutyRemovable(character *army.Commander) bool {
+	return character != nil && character.AssignedCouncilRole != "" && character.ActiveMissionID == ""
+}
+
+func characterRosterMissionButton(column gameui.Rect, rowIndex, scroll int, rosters ...[]*army.Commander) gameui.Button {
+	viewport := characterRosterOwnedListViewport(column)
+	row := characterRosterOwnedRowRect(viewport, rowIndex, scroll, characterRosterOptionalCharacters(rosters))
+	return gameui.NewButton(
+		row.X+row.W-characterRosterCardPadding-characterRosterDutyButtonW,
+		row.Y+row.H-characterRosterCardPadding-18,
+		characterRosterDutyButtonW,
+		18,
+		"Görev",
+	)
+}
+
 func characterRosterAssignmentMenuRectWithCount(column gameui.Rect, rowIndex, scroll, roleCount int, rosters ...[]*army.Commander) gameui.Rect {
 	viewport := characterRosterOwnedListViewport(column)
 	row := characterRosterOwnedRowRect(viewport, rowIndex, scroll, characterRosterOptionalCharacters(rosters))
@@ -523,6 +546,9 @@ func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 	if characterRosterCloseButton().HitTest(x, y) {
 		return true
 	}
+	if r.characterMissionMenuInteractiveHit(x, y) {
+		return true
+	}
 	ownedColumn, candidateColumn := characterRosterColumns()
 	candidates := r.characterRosterCandidates
 	roles := characterCouncilRoles(r.gs)
@@ -550,8 +576,12 @@ func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 		}
 		dutyButton := characterRosterDutyActionButton(ownedColumn, index, r.characterRosterOwnedScroll, character, ownedRoster)
 		if characterRosterCouncilManageable(character) && dutyButton.HitTest(x, y) &&
-			(character.AssignedCouncilRole != "" ||
+			(characterRosterDutyRemovable(character) ||
 				characterCanBeAssignedToAnyCouncilRole(r.gs, character.ID)) {
+			return true
+		}
+		if character.ActiveMissionID == "" && len(r.characterMissionOptionsFor(character.ID)) > 0 &&
+			characterRosterMissionButton(ownedColumn, index, r.characterRosterOwnedScroll, ownedRoster).HitTest(x, y) {
 			return true
 		}
 	}
@@ -577,6 +607,12 @@ func handleCharacterRosterPanelClick(r *Renderer, x, y float64) (InputAction, bo
 	if characterRosterCloseButton().HitTest(x, y) {
 		r.CloseCharacterRosterPanel()
 		return InputAction{}, true
+	}
+	if r.characterRosterMissionMenuCharacterID != "" {
+		if action, handled := r.handleCharacterMissionMenuClick(x, y); handled {
+			return action, true
+		}
+		r.CloseCharacterMissionMenu()
 	}
 	ownedColumn, candidateColumn := characterRosterColumns()
 	ownedRoster := r.characterRosterOwned
@@ -608,12 +644,17 @@ func handleCharacterRosterPanelClick(r *Renderer, x, y float64) (InputAction, bo
 
 	if index := characterRosterOwnedRowAt(x, y, ownedRoster, r.characterRosterOwnedScroll, ownedViewport); index >= 0 {
 		character := ownedRoster[index]
+		if character.ActiveMissionID == "" && len(r.characterMissionOptionsFor(character.ID)) > 0 &&
+			characterRosterMissionButton(ownedColumn, index, r.characterRosterOwnedScroll, ownedRoster).HitTest(x, y) {
+			r.OpenCharacterMissionMenu(character.ID)
+			return InputAction{}, true
+		}
 		if characterRosterReleaseable(character) && character.AssignedCouncilRole == "" &&
 			characterReleaseButton(ownedColumn, index, r.characterRosterOwnedScroll, ownedRoster).HitTest(x, y) {
 			r.confirmCharacterRelease(character)
 			return InputAction{}, true
 		}
-		if characterRosterCouncilManageable(character) && character.AssignedCouncilRole != "" &&
+		if characterRosterCouncilManageable(character) && characterRosterDutyRemovable(character) &&
 			characterRosterDutyActionButton(ownedColumn, index, r.characterRosterOwnedScroll, character, ownedRoster).HitTest(x, y) {
 			return InputAction{Kind: ActionClearCouncilRole, CharacterID: character.ID, CouncilRole: character.AssignedCouncilRole}, true
 		}
@@ -679,7 +720,7 @@ func drawCharacterRosterScrollbar(screen *ebiten.Image, viewport gameui.Rect, co
 	drawRoundedRect(screen, float32(track.X), float32(thumbY), float32(track.W), float32(thumbH), 2, color.RGBA{210, 175, 85, 230})
 }
 
-func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, viewport gameui.Rect, characters []*army.Commander, scroll int, candidate bool, assignmentMenuCharacterID string) {
+func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionOptions map[string][]scenario.CharacterMissionDefinition, column, viewport gameui.Rect, characters []*army.Commander, scroll int, candidate bool, assignmentMenuCharacterID string) {
 	if len(characters) == 0 {
 		message := "Karakter bulunmuyor."
 		if candidate {
@@ -732,6 +773,8 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 		textW := row.X + row.W - textX - characterRosterCardPadding
 		nameW := textW
 		var adopt gameui.Button
+		var missionButton gameui.Button
+		hasMissionButton := !candidate && character.ActiveMissionID == "" && len(missionOptions[character.ID]) > 0
 		if candidate {
 			adopt = characterAdoptButton(column, index, scroll)
 			nameW = adopt.X - textX - 5
@@ -739,6 +782,12 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 			characterCanBeAssignedToAnyCouncilRole(gs, character.ID)) {
 			button := characterRosterDutyActionButton(column, index, scroll, character, characters)
 			nameW = button.X - textX - 5
+		}
+		if hasMissionButton {
+			missionButton = characterRosterMissionButton(column, index, scroll, characters)
+			if availableWidth := missionButton.X - textX - 5; availableWidth < nameW {
+				nameW = availableWidth
+			}
 		}
 		drawUILabel(body, gameui.Rect{X: textX, Y: row.Y + 8, W: nameW, H: 18}, trimTextToWidth(character.Name, FaceSmall, nameW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 		kind := "Karakter"
@@ -752,6 +801,7 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 			kind += " · Orduya atanmış"
 		}
 		detail := kind
+		var missionDetails [2]string
 		var bonus []string
 		upkeepLabel := characterRosterUpkeepLabel(character, scenario.CouncilRoleDefinition{})
 		if candidate {
@@ -775,7 +825,21 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 		} else {
 			detail = kind + " · " + upkeepLabel
 		}
+		if character.ActiveMissionID != "" {
+			missionName := character.ActiveMissionID
+			for _, mission := range gs.CouncilConfig.Missions {
+				if mission.ID == character.ActiveMissionID {
+					missionName = mission.NameTR
+					break
+				}
+			}
+			missionDetails = characterRosterMissionDetailLines(missionName, character.ActiveMissionTurnsRemaining)
+			bonus = nil
+		}
 		detailRect := characterRosterDetailRect(row, textX)
+		if hasMissionButton {
+			detailRect.W = missionButton.X - detailRect.X - 5
+		}
 		if candidate {
 			costLines := characterRosterCandidateCostLines(character)
 			drawUILabel(body, detailRect, trimTextToWidth(costLines[0], FaceSmall, detailRect.W), ColorGold, gameui.TextSmall, gameui.TextAlignStart)
@@ -783,7 +847,14 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 			upkeepRect.Y += 18
 			drawUILabel(body, upkeepRect, trimTextToWidth(costLines[1], FaceSmall, upkeepRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 		} else {
-			drawUILabel(body, detailRect, trimTextToWidth(detail, FaceSmall, detailRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			if missionDetails[0] != "" {
+				drawUILabel(body, detailRect, trimTextToWidth(missionDetails[0], FaceSmall, detailRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+				missionTurnsRect := detailRect
+				missionTurnsRect.Y += 18
+				drawUILabel(body, missionTurnsRect, trimTextToWidth(missionDetails[1], FaceSmall, missionTurnsRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			} else {
+				drawUILabel(body, detailRect, trimTextToWidth(detail, FaceSmall, detailRect.W), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
+			}
 		}
 		for bonusIndex, bonusLine := range bonus {
 			bonusRect := gameui.Rect{
@@ -795,6 +866,9 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 			drawUILabel(body, bonusRect, trimTextToWidth(bonusLine, FaceSmall, bonusRect.W), color.RGBA{165, 205, 145, 255}, gameui.TextSmall, gameui.TextAlignStart)
 		}
 		traitRow := characterRosterTraitRowRect(row)
+		if hasMissionButton {
+			traitRow.W = missionButton.X - traitRow.X - characterRosterCardPadding
+		}
 		drawCharacterTraitBadges(body, character, traitRow.X, traitRow.Y, traitRow.W, characterTraitBadgeOptions{MaxRows: 1}, gs.CouncilConfig)
 		if candidate {
 			drawUIButtonWidget(body, adopt, applyTinyButtonStyle)
@@ -802,10 +876,13 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, column, 
 			if characterRosterReleaseable(character) && character.AssignedCouncilRole == "" && character.ID != assignmentMenuCharacterID {
 				drawUIButtonWidget(body, characterReleaseButton(column, index, scroll, characters), dangerTinyButtonStyle)
 			}
-			if characterRosterCouncilManageable(character) && character.AssignedCouncilRole != "" {
+			if characterRosterCouncilManageable(character) && characterRosterDutyRemovable(character) {
 				drawUIButtonWidget(body, characterRosterDutyActionButton(column, index, scroll, character, characters), tinyButtonStyle)
 			} else if characterRosterCouncilManageable(character) && characterCanBeAssignedToAnyCouncilRole(gs, character.ID) {
 				drawUIButtonWidget(body, characterRosterDutyActionButton(column, index, scroll, character, characters), tinyButtonStyle)
+			}
+			if hasMissionButton {
+				drawUIButtonWidget(body, missionButton, tinyButtonStyle)
 			}
 		}
 	}
@@ -867,14 +944,15 @@ func (r *Renderer) drawCharacterRosterPanel(screen *ebiten.Image) {
 	drawUILabel(screen, gameui.Rect{X: ownedColumn.X + 8, Y: ownedColumn.Y + 7, W: ownedColumn.W - 16}, "Hane Üyeleri ("+itoa(len(ownedRoster))+")", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: candidateColumn.X + 8, Y: candidateColumn.Y + 7, W: candidateColumn.W - 16}, "Adaylar ("+itoa(len(candidates))+")", ColorGold, gameui.TextSmall, gameui.TextAlignStart)
 	drawUILabel(screen, gameui.Rect{X: candidateColumn.X + 8, Y: candidateColumn.Y + 34, W: candidateColumn.W - 16, H: 32}, "Alım ve tur başı bakım ücreti kartta", ColorGray, gameui.TextSmall, gameui.TextAlignStart)
-	drawCharacterRosterRows(screen, r.gs, ownedColumn, ownedViewport, ownedRoster, r.characterRosterOwnedScroll, false, r.characterRosterAssignMenuID)
-	drawCharacterRosterRows(screen, r.gs, candidateColumn, candidateViewport, candidates, r.characterRosterNeutralScroll, true, "")
+	drawCharacterRosterRows(screen, r.gs, r.characterMissionsByCharacter, ownedColumn, ownedViewport, ownedRoster, r.characterRosterOwnedScroll, false, r.characterRosterAssignMenuID)
+	drawCharacterRosterRows(screen, r.gs, r.characterMissionsByCharacter, candidateColumn, candidateViewport, candidates, r.characterRosterNeutralScroll, true, "")
 	menuIndex := characterRosterIndexByID(ownedRoster, r.characterRosterAssignMenuID)
 	if menuIndex >= r.characterRosterOwnedScroll &&
 		menuIndex < r.characterRosterOwnedScroll+characterRosterOwnedVisibleRows(ownedViewport, ownedRoster, r.characterRosterOwnedScroll) &&
 		characterRosterCouncilManageable(ownedRoster[menuIndex]) {
 		drawCharacterRosterAssignmentMenu(screen, r.gs, ownedColumn, menuIndex, r.characterRosterOwnedScroll, ownedRoster, roles)
 	}
+	r.drawCharacterMissionMenu(screen)
 }
 
 func (r *Renderer) handleCharacterRosterPanelInput() (InputAction, bool) {
@@ -883,6 +961,16 @@ func (r *Renderer) handleCharacterRosterPanelInput() (InputAction, bool) {
 	}
 	r.ensureCharacterRosterPanelCache()
 	if r.keyJustPressed(ebiten.KeyEscape) {
+		if r.characterRosterMissionMenuCharacterID != "" {
+			if r.characterRosterSelectedMissionID != "" {
+				r.characterRosterSelectedMissionID = ""
+				r.characterRosterMissionTargets = nil
+				r.characterRosterMissionScroll = 0
+			} else {
+				r.CloseCharacterMissionMenu()
+			}
+			return InputAction{}, true
+		}
 		if r.characterRosterAssignMenuID != "" {
 			r.characterRosterAssignMenuID = ""
 			return InputAction{}, true
@@ -909,6 +997,9 @@ func (r *Renderer) handleCharacterRosterPanelInput() (InputAction, bool) {
 	ownedViewport := characterRosterOwnedListViewport(ownedColumn)
 	candidateViewport := characterRosterListViewport(candidateColumn)
 	if _, wheelY := ebiten.Wheel(); wheelY != 0 {
+		if r.scrollCharacterMissionMenu(x, y, wheelY) {
+			return InputAction{}, true
+		}
 		r.characterRosterAssignMenuID = ""
 		switch {
 		case ownedViewport.Hit(x, y):
@@ -938,6 +1029,7 @@ func (r *Renderer) OpenCharacterRosterPanel() {
 	}
 	r.showCharacterRoster = true
 	r.characterRosterAssignMenuID = ""
+	r.CloseCharacterMissionMenu()
 	r.characterRosterOwnedScroll = 0
 	r.characterRosterNeutralScroll = 0
 	r.RefreshCharacterRosterPanel()
@@ -957,6 +1049,12 @@ func (r *Renderer) RefreshCharacterRosterPanel() {
 	}
 	r.characterRosterOwned = r.gs.CharacterRoster(string(r.gs.PlayerFactionID))
 	r.characterRosterCandidates = r.gs.NeutralCharacterCandidates()
+	r.characterMissionsByCharacter = make(map[string][]scenario.CharacterMissionDefinition, len(r.characterRosterOwned))
+	for _, character := range r.characterRosterOwned {
+		if missions := r.gs.CharacterMissionOptions(r.gs.PlayerFactionID, character.ID); len(missions) > 0 {
+			r.characterMissionsByCharacter[character.ID] = missions
+		}
+	}
 	r.characterRosterCacheValid = true
 }
 
@@ -971,6 +1069,8 @@ func (r *Renderer) CloseCharacterRosterPanel() {
 	r.characterRosterOwned = nil
 	r.characterRosterCandidates = nil
 	r.characterRosterCacheValid = false
+	r.characterMissionsByCharacter = nil
+	r.CloseCharacterMissionMenu()
 }
 
 func (r *Renderer) characterRosterPanelHovering(x, y float64) bool {

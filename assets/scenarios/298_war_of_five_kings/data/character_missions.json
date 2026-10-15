@@ -1,0 +1,106 @@
+{
+  "missions": [
+    {
+      "id": "diplomatic_envoy",
+      "name_tr": "Diplomatik Elçilik",
+      "role_id": "diplomat",
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 250,
+      "completion_effects": {
+        "relation_bonus_points": 15
+      }
+    },
+    {
+      "id": "household_visit",
+      "name_tr": "Haneler Arası Ziyaret",
+      "role_id": "head_of_house",
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 180,
+      "completion_effects": {
+        "relation_bonus_points": 8
+      }
+    },
+    {
+      "id": "heir_education",
+      "name_tr": "Veliahtlık Eğitimi",
+      "role_id": "heir",
+      "duration_turns": 3,
+      "gold_cost": 120,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "border_exercises",
+      "name_tr": "Sınır Tatbikatı",
+      "role_id": "military_responsible",
+      "duration_turns": 2,
+      "gold_cost": 160,
+      "completion_effects": {
+        "council_experience": 15
+      }
+    },
+    {
+      "id": "treasury_audit",
+      "name_tr": "Vergi Defterlerini Denetle",
+      "role_id": "treasurer",
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": {
+        "gold_reward": 175,
+        "council_experience": 5
+      }
+    },
+    {
+      "id": "maester_conclave",
+      "name_tr": "Üstatlar Divanı",
+      "role_id": "research_responsible",
+      "duration_turns": 3,
+      "gold_cost": 180,
+      "completion_effects": {
+        "council_experience": 20
+      }
+    },
+    {
+      "id": "archive_research",
+      "name_tr": "Kadim Kayıtları Araştır",
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": {
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "independent_expedition",
+      "name_tr": "Bağımsız Keşif Seferi",
+      "duration_turns": 3,
+      "gold_cost": 150,
+      "completion_effects": {
+        "gold_reward": 100,
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "military_intelligence",
+      "name_tr": "Askerî İstihbarat Keşfi",
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 250,
+      "completion_effects": {
+        "military_intel_turns": 2
+      }
+    },
+    {
+      "id": "region_reconnaissance",
+      "name_tr": "Bölgesel Askerî Keşif",
+      "target_kind": "region",
+      "duration_turns": 2,
+      "gold_cost": 200,
+      "completion_effects": {
+        "region_military_intel_turns": 2
+      }
+    }
+  ]
+}

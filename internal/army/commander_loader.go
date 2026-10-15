@@ -38,6 +38,9 @@ func LoadCharacterTemplates(path string) (map[string][]*Commander, error) {
 		commander.AssignedCouncilRole = ""
 		commander.CouncilLevel = 0
 		commander.CouncilExperience = 0
+		commander.ActiveMissionID = ""
+		commander.ActiveMissionTargetID = ""
+		commander.ActiveMissionTurnsRemaining = 0
 		commander.Normalize()
 		result[commander.OwnerID] = append(result[commander.OwnerID], commander)
 	}

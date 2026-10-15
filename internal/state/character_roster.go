@@ -74,7 +74,7 @@ func (s *GameState) NeutralCharacterCandidates() []*army.Commander {
 	candidates := make([]*army.Commander, 0)
 	for _, character := range s.Commanders {
 		if !isHouseholdDutyCharacter(character) || character.OwnerID != NeutralCharacterOwnerID ||
-			!character.ActiveInYear(s.Year) || character.AssignedArmyID != "" || character.AssignedCouncilRole != "" ||
+			!character.ActiveInYear(s.Year) || character.AssignedArmyID != "" || character.AssignedCouncilRole != "" || character.ActiveMissionID != "" ||
 			s.DeadCommanderIDs[character.ID] || s.DismissedCommanderIDs[character.ID] ||
 			s.ExiledCommanderIDs[character.ID] || character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) {
 			continue
@@ -111,7 +111,7 @@ func (s *GameState) AdoptNeutralCharacterForFaction(ownerID faction.FactionID, c
 	}
 	character := s.Commanders[characterID]
 	if !isHouseholdDutyCharacter(character) || character.OwnerID != NeutralCharacterOwnerID ||
-		!character.ActiveInYear(s.Year) || character.AssignedArmyID != "" || character.AssignedCouncilRole != "" ||
+		!character.ActiveInYear(s.Year) || character.AssignedArmyID != "" || character.AssignedCouncilRole != "" || character.ActiveMissionID != "" ||
 		s.DeadCommanderIDs[characterID] || s.DismissedCommanderIDs[characterID] ||
 		s.ExiledCommanderIDs[characterID] || character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) ||
 		character.AdoptionCostGold < 0 || character.GoldUpkeep < 0 || owner.Gold < character.AdoptionCostGold {
@@ -135,7 +135,7 @@ func (s *GameState) FactionCharacterGoldUpkeep(ownerID string) int {
 		hasHouseholdUpkeep := isHouseholdDutyCharacter(character) ||
 			(character != nil && character.Type == army.CharacterTypeCommander && character.AssignedCouncilRole != "")
 		if !hasHouseholdUpkeep || character.OwnerID != ownerID ||
-			!character.ActiveInYear(s.Year) || s.DeadCommanderIDs[character.ID] ||
+			!character.ActiveInYear(s.Year) || character.ActiveMissionID != "" || s.DeadCommanderIDs[character.ID] ||
 			s.DismissedCommanderIDs[character.ID] || character.GoldUpkeep <= 0 {
 			continue
 		}
@@ -156,6 +156,7 @@ func (s *GameState) ReleaseCharacterToNeutralPool(ownerID faction.FactionID, cha
 	}
 	character := s.Commanders[characterID]
 	if !isHouseholdDutyCharacter(character) || character.OwnerID != string(ownerID) ||
+		character.ActiveMissionID != "" ||
 		!character.ActiveInYear(s.Year) || s.DeadCommanderIDs[characterID] ||
 		s.DismissedCommanderIDs[characterID] || s.ExiledCommanderIDs[characterID] ||
 		character.CaptiveAtSettlementID != "" || s.CommanderUnavailable(character) {
@@ -202,5 +203,8 @@ func (s *GameState) moveCharacterToNeutralPool(character *army.Commander) {
 	}
 	character.AssignedArmyID = ""
 	character.AssignedCouncilRole = ""
+	character.ActiveMissionID = ""
+	character.ActiveMissionTargetID = ""
+	character.ActiveMissionTurnsRemaining = 0
 	character.OwnerID = NeutralCharacterOwnerID
 }

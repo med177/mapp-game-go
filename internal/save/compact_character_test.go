@@ -179,3 +179,47 @@ func TestCouncilRoleAssignmentPersistsCompactAndLegacySaves(t *testing.T) {
 		t.Fatalf("debug/legacy save conversion council role = %#v, want military responsible", got)
 	}
 }
+
+func TestActiveCharacterMissionPersistsCompactAndLegacySaves(t *testing.T) {
+	character := &army.Commander{
+		ID: "chr_varys", Type: army.CharacterTypeCharacter, OwnerID: "player",
+		Name: "Varys", AssignedCouncilRole: state.CouncilRoleDiplomat,
+		ActiveMissionID: "diplomatic_envoy", ActiveMissionTargetID: "target_house",
+		ActiveMissionTurnsRemaining: 1,
+	}
+	gs := &state.GameState{
+		ScenarioID:      "test_scenario",
+		PlayerFactionID: faction.FactionID("player"),
+		Commanders:      map[string]*army.Commander{character.ID: character},
+	}
+
+	compact := campaignSaveState{
+		ScenarioID:      gs.ScenarioID,
+		PlayerFactionID: gs.PlayerFactionID,
+		Commanders:      cloneCommanders(gs.Commanders),
+	}
+	encoded, err := json.Marshal(compact)
+	if err != nil {
+		t.Fatalf("compact save serialize edilemedi: %v", err)
+	}
+	var decoded campaignSaveState
+	if err := json.Unmarshal(encoded, &decoded); err != nil {
+		t.Fatalf("compact save deserialize edilemedi: %v", err)
+	}
+	loaded := &state.GameState{}
+	applyCampaignSaveState(loaded, decoded)
+	assertActiveMissionSaveState(t, loaded.Commanders[character.ID])
+
+	debug := makeDebugCampaignSaveState(gs)
+	legacy := convertLegacyCampaignSaveState(debug)
+	assertActiveMissionSaveState(t, legacy.Commanders[character.ID])
+}
+
+func assertActiveMissionSaveState(t *testing.T, character *army.Commander) {
+	t.Helper()
+	if character == nil || character.AssignedCouncilRole != state.CouncilRoleDiplomat ||
+		character.ActiveMissionID != "diplomatic_envoy" || character.ActiveMissionTargetID != "target_house" ||
+		character.ActiveMissionTurnsRemaining != 1 {
+		t.Fatalf("active mission save state = %+v, want mission/target/turn and retained council role", character)
+	}
+}

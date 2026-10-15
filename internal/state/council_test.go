@@ -178,6 +178,14 @@ func TestTreasurerCouncilSeatAddsFactionIncomeBonusAndBlocksArmyAssignment(t *te
 	if len(gs.CommanderRoster(string(owner))) != 0 {
 		t.Fatal("council character remained in the available commander roster")
 	}
+	character.ActiveMissionID = "envoy"
+	character.ActiveMissionTurnsRemaining = 2
+	if gs.UnassignCharacterFromCouncilRole(owner, character.ID) ||
+		character.AssignedCouncilRole != CouncilRoleTreasurer {
+		t.Fatal("active mission allowed council role removal")
+	}
+	character.ActiveMissionID = ""
+	character.ActiveMissionTurnsRemaining = 0
 	if !gs.UnassignCharacterFromCouncilRole(owner, character.ID) || character.AssignedCouncilRole != "" {
 		t.Fatal("treasurer could not be returned to the character pool")
 	}

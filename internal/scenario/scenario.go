@@ -386,6 +386,11 @@ func Load(path string) (*Scenario, error) {
 			definition.CharacterCouncil.Traits[traitID] = trait
 		}
 	}
+	characterMissions, err := LoadCharacterMissionsConfig(definition.DataPath("character_missions.json"))
+	if err != nil {
+		return nil, err
+	}
+	definition.CharacterCouncil.Missions = characterMissions.Missions
 	if err := definition.CharacterCouncil.Validate(); err != nil {
 		return nil, err
 	}

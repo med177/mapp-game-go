@@ -442,6 +442,31 @@ func (g *Game) Update() error {
 			} else {
 				g.renderer.ShowCombatResult("Karakter fraksiyona katılamadı.")
 			}
+		case render.ActionStartCharacterMission:
+			targetID := string(action.TargetFaction)
+			if action.TargetRegion != "" {
+				targetID = string(action.TargetRegion)
+			}
+			started, reason := g.gs.StartCharacterMissionTarget(g.gs.PlayerFactionID, action.CharacterID, action.MissionID, targetID)
+			g.renderer.CloseCharacterMissionMenu()
+			if !started {
+				g.renderer.RefreshCharacterRosterPanel()
+				g.renderer.ShowCombatResult(reason)
+				break
+			}
+			g.renderer.RefreshCharacterRosterPanel()
+			characterName := action.CharacterID
+			if character := g.gs.Commanders[action.CharacterID]; character != nil && character.Name != "" {
+				characterName = character.Name
+			}
+			missionName := action.MissionID
+			for _, mission := range g.gs.CouncilConfig.Missions {
+				if mission.ID == action.MissionID {
+					missionName = mission.NameTR
+					break
+				}
+			}
+			g.renderer.ShowCombatResult(fmt.Sprintf("%s göreve çıktı: %s.", characterName, missionName))
 		case render.ActionReleaseCharacter:
 			if g.gs.ReleaseCharacterToNeutralPool(g.gs.PlayerFactionID, action.CharacterID) {
 				g.renderer.RefreshCharacterRosterPanel()
@@ -1525,6 +1550,7 @@ func (g *Game) resolveTurn() {
 	events.TickActiveRegionEvents(g.gs)
 
 	historicalChanges := g.gs.AdvanceTurn()
+	g.resolveCharacterMissionCompletions()
 	render.RefreshFactionHistoricalVisuals(g.gs)
 	if arrivals := g.gs.SyncCommanderAvailability(); len(arrivals) > 0 {
 		g.showCommanderArrivals(arrivals)

@@ -216,6 +216,28 @@ func TestReleaseCharacterReturnsToNeutralAndClearsAssignments(t *testing.T) {
 	}
 }
 
+func TestReleaseCharacterRejectsActiveMission(t *testing.T) {
+	character := &army.Commander{
+		ID: "chr_arya", Type: army.CharacterTypeCharacter, OwnerID: "player", Name: "Arya",
+		ActiveMissionID: "recon", ActiveMissionTurnsRemaining: 2,
+	}
+	gs := &GameState{
+		Year: 300,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"player": {ID: "player"},
+		},
+		Commanders: map[string]*army.Commander{character.ID: character},
+	}
+
+	if gs.ReleaseCharacterToNeutralPool("player", character.ID) {
+		t.Fatal("ReleaseCharacterToNeutralPool() accepted a character with an active mission")
+	}
+	if character.OwnerID != "player" || character.ActiveMissionID != "recon" {
+		t.Fatalf("rejected release changed active character state: owner=%q mission=%q",
+			character.OwnerID, character.ActiveMissionID)
+	}
+}
+
 func TestReleaseCharacterRejectsNonOwner(t *testing.T) {
 	character := &army.Commander{
 		ID: "chr_bronn", Type: army.CharacterTypeCharacter, OwnerID: "other", Name: "Bronn",

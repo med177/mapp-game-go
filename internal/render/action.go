@@ -114,6 +114,7 @@ const (
 	ActionAssignCouncilRole         ActionKind = "assign_council_role"
 	ActionClearCouncilRole          ActionKind = "clear_council_role"
 	ActionAdoptNeutralCharacter     ActionKind = "adopt_neutral_character"
+	ActionStartCharacterMission     ActionKind = "start_character_mission"
 	ActionReleaseCharacter          ActionKind = "release_character"
 	ActionRecruitCommander          ActionKind = "recruit_commander"
 	ActionEditCommander             ActionKind = "edit_commander"
@@ -158,6 +159,7 @@ type InputAction struct {
 	CommanderID   string
 	CharacterID   string
 	CouncilRole   string
+	MissionID     string
 	CommanderName string
 	PortraitAsset string
 	TargetRegion  world.RegionID

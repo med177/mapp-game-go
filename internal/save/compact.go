@@ -156,6 +156,8 @@ type campaignSaveState struct {
 	RecentFactionExpansion   map[faction.FactionID]state.FactionExpansionRecord `json:"rx,omitempty"`
 	FactionAttackTurns       map[faction.FactionID]int                          `json:"fat,omitempty"`
 	FactionAttackTargetTurns map[faction.FactionID]map[faction.FactionID]int    `json:"fatt,omitempty"`
+	TemporaryMilitaryIntel   map[faction.FactionID]map[faction.FactionID]int    `json:"tmi,omitempty"`
+	RegionIntel              map[faction.FactionID]map[world.RegionID]int       `json:"trmi,omitempty"`
 	RelationTrendAppliedTurn int                                                `json:"rtt,omitempty"`
 	EconomicVictoryTurns     int                                                `json:"evt,omitempty"`
 	FactionsEliminated       int                                                `json:"fel,omitempty"`
@@ -260,6 +262,8 @@ type legacyCampaignSaveState struct {
 	RecentFactionExpansion   map[faction.FactionID]state.FactionExpansionRecord `json:"recent_faction_expansion,omitempty"`
 	FactionAttackTurns       map[faction.FactionID]int                          `json:"faction_attack_turns,omitempty"`
 	FactionAttackTargetTurns map[faction.FactionID]map[faction.FactionID]int    `json:"faction_attack_target_turns,omitempty"`
+	TemporaryMilitaryIntel   map[faction.FactionID]map[faction.FactionID]int    `json:"temporary_military_intel,omitempty"`
+	RegionIntel              map[faction.FactionID]map[world.RegionID]int       `json:"temporary_region_military_intel,omitempty"`
 	RelationTrendAppliedTurn int                                                `json:"relation_trend_applied_turn,omitempty"`
 	EconomicVictoryTurns     int                                                `json:"economic_victory_turns"`
 	FactionsEliminated       int                                                `json:"factions_eliminated"`
@@ -440,6 +444,8 @@ func convertLegacyCampaignSaveState(legacy legacyCampaignSaveState) campaignSave
 		RecentFactionExpansion:   cloneFactionExpansion(legacy.RecentFactionExpansion),
 		FactionAttackTurns:       cloneFactionIntMap(legacy.FactionAttackTurns),
 		FactionAttackTargetTurns: cloneFactionAttackTargets(legacy.FactionAttackTargetTurns),
+		TemporaryMilitaryIntel:   cloneFactionAttackTargets(legacy.TemporaryMilitaryIntel),
+		RegionIntel:              cloneFactionRegionTurns(legacy.RegionIntel),
 		RelationTrendAppliedTurn: legacy.RelationTrendAppliedTurn,
 		EconomicVictoryTurns:     legacy.EconomicVictoryTurns,
 		FactionsEliminated:       legacy.FactionsEliminated,
@@ -586,6 +592,8 @@ func makeCampaignSaveState(gs *state.GameState) (campaignSaveState, error) {
 		RecentFactionExpansion:   cloneFactionExpansion(gs.RecentFactionExpansion),
 		FactionAttackTurns:       cloneFactionIntMap(gs.FactionAttackTurns),
 		FactionAttackTargetTurns: cloneFactionAttackTargets(gs.FactionAttackTargetTurns),
+		TemporaryMilitaryIntel:   cloneFactionAttackTargets(gs.TemporaryMilitaryIntel),
+		RegionIntel:              cloneFactionRegionTurns(gs.TemporaryRegionMilitaryIntel),
 		RelationTrendAppliedTurn: gs.RelationTrendAppliedTurn,
 		EconomicVictoryTurns:     gs.EconomicVictoryTurns,
 		FactionsEliminated:       gs.FactionsEliminated,
@@ -705,6 +713,8 @@ func makeDebugCampaignSaveState(gs *state.GameState) legacyCampaignSaveState {
 		RecentFactionExpansion:   cloneFactionExpansion(gs.RecentFactionExpansion),
 		FactionAttackTurns:       cloneFactionIntMap(gs.FactionAttackTurns),
 		FactionAttackTargetTurns: cloneFactionAttackTargets(gs.FactionAttackTargetTurns),
+		TemporaryMilitaryIntel:   cloneFactionAttackTargets(gs.TemporaryMilitaryIntel),
+		RegionIntel:              cloneFactionRegionTurns(gs.TemporaryRegionMilitaryIntel),
 		RelationTrendAppliedTurn: gs.RelationTrendAppliedTurn,
 		EconomicVictoryTurns:     gs.EconomicVictoryTurns,
 		FactionsEliminated:       gs.FactionsEliminated,
@@ -877,6 +887,8 @@ func applyCampaignSaveState(gs *state.GameState, saved campaignSaveState) {
 	gs.RecentFactionExpansion = cloneFactionExpansion(saved.RecentFactionExpansion)
 	gs.FactionAttackTurns = cloneFactionIntMap(saved.FactionAttackTurns)
 	gs.FactionAttackTargetTurns = cloneFactionAttackTargets(saved.FactionAttackTargetTurns)
+	gs.TemporaryMilitaryIntel = cloneFactionAttackTargets(saved.TemporaryMilitaryIntel)
+	gs.TemporaryRegionMilitaryIntel = cloneFactionRegionTurns(saved.RegionIntel)
 	gs.RelationTrendAppliedTurn = saved.RelationTrendAppliedTurn
 	gs.NextCommanderSeq = saved.NextCommanderSeq
 	gs.SyncCommanderLinks()
@@ -1906,6 +1918,24 @@ func cloneFactionAttackTargets(src map[faction.FactionID]map[faction.FactionID]i
 			continue
 		}
 		out[attacker] = cloneFactionIntMap(targets)
+	}
+	return out
+}
+
+func cloneFactionRegionTurns(src map[faction.FactionID]map[world.RegionID]int) map[faction.FactionID]map[world.RegionID]int {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make(map[faction.FactionID]map[world.RegionID]int, len(src))
+	for observer, targets := range src {
+		if len(targets) == 0 {
+			continue
+		}
+		clonedTargets := make(map[world.RegionID]int, len(targets))
+		for regionID, turns := range targets {
+			clonedTargets[regionID] = turns
+		}
+		out[observer] = clonedTargets
 	}
 	return out
 }

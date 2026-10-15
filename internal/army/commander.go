@@ -83,6 +83,9 @@ type Commander struct {
 	AssignedCouncilRole         string                       `json:"assigned_council_role,omitempty"`
 	CouncilLevel                int                          `json:"council_level,omitempty"`
 	CouncilExperience           int                          `json:"council_experience,omitempty"`
+	ActiveMissionID             string                       `json:"active_mission_id,omitempty"`
+	ActiveMissionTargetID       string                       `json:"active_mission_target_id,omitempty"`
+	ActiveMissionTurnsRemaining int                          `json:"active_mission_turns_remaining,omitempty"`
 	Name                        string                       `json:"name"`
 	PortraitAsset               string                       `json:"portrait_asset,omitempty"`
 	Level                       int                          `json:"level"`
@@ -157,6 +160,7 @@ func (c *Commander) Normalize() {
 		c.Victories = c.Battles
 	}
 	c.NormalizeCouncilProgress()
+	c.NormalizeMissionState()
 	c.syncProgression(nil)
 }
 
@@ -169,6 +173,19 @@ func (c *Commander) NormalizeCouncilProgress() {
 	}
 	if c.CouncilLevel > 0 || c.CouncilExperience > 0 {
 		c.CouncilLevel = CouncilLevelForExperience(c.CouncilExperience)
+	}
+}
+
+func (c *Commander) NormalizeMissionState() {
+	if c == nil {
+		return
+	}
+	if c.ActiveMissionTurnsRemaining < 0 {
+		c.ActiveMissionTurnsRemaining = 0
+	}
+	if c.ActiveMissionID == "" {
+		c.ActiveMissionTargetID = ""
+		c.ActiveMissionTurnsRemaining = 0
 	}
 }
 

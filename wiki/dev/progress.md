@@ -5,6 +5,20 @@ last_updated: 2026-10-15
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-15: Karakter görevleri isteğe bağlı `data/character_missions.json`
+  kataloğundan yükleniyor; rol bağlı ve bağımsız görevler süre/maliyet/hedef
+  tanımlarıyla hane panelinden başlatılabiliyor. Aktif görev karakterin save
+  state'inde saklanıyor, görev süresince konsey bonusu duruyor; tamamlanınca
+  JSON ödülleri ilişki, altın ve konsey XP'sine uygulanıyor. 298 senaryosunda
+  altı konsey rolü, iki bağımsız görev ve hedefli geçici askerî istihbarat görevi
+  tanımlandı. İstihbarat süresi kompakt/legacy kayıtlarda korunur ve askerî güç
+  tahminlerinde yalnız seçilen hedefe uygulanır.
+  Bölge hedefli keşif de eklendi: seçilen kilitsiz kara bölgesindeki yabancı
+  orduların güç tahminleri iki tur kesinleşiyor; hedef seçimi bölge roster
+  listesinden yapılıyor ve bölgesel istihbarat save/load ile korunuyor.
+  Doğrulama: `go test ./internal/scenario ./internal/state ./internal/render
+  ./internal/game ./internal/save -count=1`.
+
 - 2026-10-15: Konsey görevine atanan askerî komutanlar da karakter bakımına
   dahil edildi. Komutan şablonlarına `gold_upkeep` (seviye başına 2 altın) ve
   `adoption_cost_gold` (500 altın) eklendi. `no_cost: true` rolleri komutanlara

@@ -41,9 +41,10 @@ type CharacterTraitDefinition struct {
 
 // CharacterCouncilConfig is the scenario-specific character duty configuration.
 type CharacterCouncilConfig struct {
-	XPPerTurn   int                     `json:"xp_per_turn,omitempty"`
-	XPPerEffect int                     `json:"xp_per_effect,omitempty"`
-	Roles       []CouncilRoleDefinition `json:"roles"`
+	XPPerTurn   int                          `json:"xp_per_turn,omitempty"`
+	XPPerEffect int                          `json:"xp_per_effect,omitempty"`
+	Roles       []CouncilRoleDefinition      `json:"roles"`
+	Missions    []CharacterMissionDefinition `json:"-"`
 	// Traits supports older combined council files. New scenario data belongs
 	// in character_traits.json and is merged at load time.
 	Traits map[string]CharacterTraitDefinition `json:"traits,omitempty"`
@@ -133,6 +134,40 @@ func (c CharacterCouncilConfig) Validate() error {
 			return fmt.Errorf("yinelenen karakter görevi %q", role.ID)
 		}
 		roleIDs[role.ID] = struct{}{}
+	}
+	missionIDs := make(map[string]struct{}, len(c.Missions))
+	for _, mission := range c.Missions {
+		if mission.ID == "" || mission.NameTR == "" {
+			return fmt.Errorf("karakter görevlerinde id ve name_tr zorunludur")
+		}
+		if _, exists := missionIDs[mission.ID]; exists {
+			return fmt.Errorf("yinelenen karakter misyonu %q", mission.ID)
+		}
+		missionIDs[mission.ID] = struct{}{}
+		if mission.RoleID != "" {
+			if _, exists := roleIDs[mission.RoleID]; !exists {
+				return fmt.Errorf("misyon %q bilinmeyen karakter rolüne başvuruyor: %q", mission.ID, mission.RoleID)
+			}
+		}
+		if mission.DurationTurns <= 0 || mission.GoldCost < 0 {
+			return fmt.Errorf("misyon %q pozitif duration_turns ve negatif olmayan gold_cost gerektirir", mission.ID)
+		}
+		switch mission.TargetKind {
+		case CharacterMissionTargetNone, CharacterMissionTargetFaction, CharacterMissionTargetRegion:
+		default:
+			return fmt.Errorf("misyon %q geçersiz target_kind: %q", mission.ID, mission.TargetKind)
+		}
+		if mission.CompletionEffects.GoldReward < 0 || mission.CompletionEffects.CouncilExperience < 0 ||
+			mission.CompletionEffects.MilitaryIntelTurns < 0 || mission.CompletionEffects.RegionIntelTurns < 0 {
+			return fmt.Errorf("misyon %q completion_effect ödülleri negatif olamaz", mission.ID)
+		}
+		if mission.TargetKind != CharacterMissionTargetFaction &&
+			(mission.CompletionEffects.RelationBonusPoints != 0 || mission.CompletionEffects.MilitaryIntelTurns != 0) {
+			return fmt.Errorf("misyon %q relation_bonus_points ve military_intel_turns için faction hedefi gerektirir", mission.ID)
+		}
+		if mission.TargetKind != CharacterMissionTargetRegion && mission.CompletionEffects.RegionIntelTurns != 0 {
+			return fmt.Errorf("misyon %q region_military_intel_turns için region hedefi gerektirir", mission.ID)
+		}
 	}
 	for traitID, trait := range c.Traits {
 		if traitID == "" || trait.NameTR == "" {

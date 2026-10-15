@@ -16,7 +16,10 @@ const (
 )
 
 func (s *GameState) commanderCouncilRoleAllowsArmyCommand(character *army.Commander) bool {
-	if character == nil || character.AssignedCouncilRole == "" {
+	if character == nil || character.ActiveMissionID != "" {
+		return false
+	}
+	if character.AssignedCouncilRole == "" {
 		return true
 	}
 	role, ok := s.councilConfig().Role(character.AssignedCouncilRole)
@@ -41,6 +44,7 @@ func (s *GameState) councilCharacterAvailable(ownerID, roleID string, character 
 	}
 	role, ok := s.councilConfig().Role(roleID)
 	return ok && character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
+		character.ActiveMissionID == "" &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
 			character.Type == army.CharacterTypeCommander) &&
 		(character.AssignedArmyID == "" || role.SetCommanderArmy) &&
@@ -69,6 +73,9 @@ func (s *GameState) AssignCharacterToCouncilRole(ownerID faction.FactionID, char
 	character := s.Commanders[characterID]
 	for _, incumbent := range s.Commanders {
 		if incumbent != nil && incumbent.OwnerID == string(ownerID) && incumbent.AssignedCouncilRole == role && incumbent.ID != characterID {
+			if incumbent.ActiveMissionID != "" {
+				return false
+			}
 			incumbent.AssignedCouncilRole = ""
 		}
 	}
@@ -82,7 +89,7 @@ func (s *GameState) UnassignCharacterFromCouncilRole(ownerID faction.FactionID, 
 		return false
 	}
 	character := s.Commanders[characterID]
-	if character == nil || character.OwnerID != string(ownerID) || character.AssignedCouncilRole == "" {
+	if character == nil || character.OwnerID != string(ownerID) || character.AssignedCouncilRole == "" || character.ActiveMissionID != "" {
 		return false
 	}
 	character.AssignedCouncilRole = ""
@@ -114,6 +121,7 @@ func (s *GameState) CouncilRoleHolder(ownerID faction.FactionID, role string) *a
 func (s *GameState) councilCharacterAvailableForEffect(ownerID, roleID string, character *army.Commander) bool {
 	role, ok := s.councilConfig().Role(roleID)
 	return ok && character != nil && character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
+		character.ActiveMissionID == "" &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
 			character.Type == army.CharacterTypeCommander) &&
 		(character.AssignedArmyID == "" || role.SetCommanderArmy) &&

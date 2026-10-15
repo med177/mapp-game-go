@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-10-14
+last_updated: 2026-10-15
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -199,6 +199,70 @@ kaydında saklanır.
   ]
 }
 ```
+
+## character_missions.json
+
+Senaryo karakter görevlerini tanımlar; dosya isteğe bağlıdır. Dosya yoksa
+senaryo görev menüsü gösterilmez ve eski senaryolar normal yüklenmeye devam
+eder. `missions` içindeki her kayıt benzersiz `id`, `name_tr` ve pozitif
+`duration_turns` taşır. `gold_cost` başlangıçta tahsil edilir ve verilmezse `0`
+kabul edilir.
+
+`role_id` verilirse görev yalnız o konsey rolüne atanmış karaktere açılır;
+görev devam ederken karakterin konsey bonusu askıya alınır ve görev bitince rol
+etkisi yeniden devreye girer. `role_id` yoksa görev yalnızca konsey görevi
+bulunmayan karaktere açılır. `target_kind` `none`, `faction` veya `region`
+olabilir; alan verilmezse `none` kabul edilir. `faction` hedefi oyuncu dışındaki,
+elenmemiş, sanal olmayan ve o anda savaşta olunmayan bir fraksiyondan seçilir.
+
+`completion_effects` görev tamamlandığında uygulanacak isteğe bağlı ödülleri
+taşır:
+
+- `relation_bonus_points`: seçilen hedef fraksiyonla iki yönlü ilişki puanı artışı;
+  yalnız `target_kind: "faction"` ile kullanılabilir.
+- `gold_reward`: karakterin sahibi olan fraksiyona verilecek altın.
+- `council_experience`: karaktere verilecek konsey deneyimi.
+- `military_intel_turns`: seçilen hedef fraksiyonun askerî gücünü bu sayıda
+  oyuncu turu boyunca kesin gösterir; yalnız `target_kind: "faction"` ile
+  kullanılabilir. Aynı hedefe yeni bir görev mevcut süreden kısa istihbarat
+  verirse süreyi azaltmaz.
+- `region_military_intel_turns`: seçilen bölgedeki yabancı orduların saldırı ve
+  savunma gücü tahminlerini bu sayıda oyuncu turu boyunca kesin gösterir;
+  yalnız `target_kind: "region"` ile kullanılabilir.
+
+Maliyet ve ödüller negatif olamaz. Devam eden görev kimliği, hedefi ve kalan
+tur sayısı karakterin runtime/save kaydında tutulur; senaryo karakter şablonuna
+yazılmaz. Örnek:
+
+```json
+{
+  "missions": [
+    {
+      "id": "diplomatic_envoy",
+      "name_tr": "Diplomatik Elçilik",
+      "role_id": "diplomat",
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 250,
+      "completion_effects": { "relation_bonus_points": 15 }
+    },
+    {
+      "id": "archive_research",
+      "name_tr": "Kadim Kayıtları Araştır",
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": { "council_experience": 10 }
+    }
+  ]
+}
+```
+
+`target_kind: "region"` kullanıldığında oyuncu, sahibi oynanabilir ve elenmemiş
+olan, kendi fraksiyonuna ait olmayan, kilitsiz kara bölgelerinden hedef seçer.
+Görev bitince `region_military_intel_turns`, yalnız hedef bölgedeki yabancı
+orduların saldırı ve savunma gücü tahminlerini belirtilen tur sayısı boyunca
+kesinleştirir. Farklı bölgedeki ordular etkilenmez. Süre save/load ile korunur
+ve her oyuncu turunda bir azaltılır.
 
 ## character_traits.json
 

@@ -10,6 +10,7 @@ import (
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	gameui "mapp-game-go/internal/ui"
+	"mapp-game-go/internal/world"
 )
 
 func TestCharacterRosterPortraitMatchesCommanderPortraitSize(t *testing.T) {
@@ -79,8 +80,8 @@ func TestCharacterRosterAssignedAndUnassignedRowsHaveDividerGap(t *testing.T) {
 	if gap := characterRosterRowH - previous.H; gap != 8 {
 		t.Fatalf("regular card gap = %.0f, want 8px", gap)
 	}
-	if above, below := dividerY-(previous.Y+previous.H), current.Y-dividerY; above != 10 || below != 10 {
-		t.Fatalf("divider spacing = %.0f above / %.0f below, want 10px each", above, below)
+	if above, below := dividerY-(previous.Y+previous.H), current.Y-dividerY; above != 8 || below != 8 {
+		t.Fatalf("divider spacing = %.0f above / %.0f below, want 8px each", above, below)
 	}
 	if _, showDivider := characterRosterDutyGroupDividerY(viewport, []*army.Commander{unassigned, unassigned}, 1, 0); showDivider {
 		t.Fatal("unassigned-to-unassigned rows should not show a divider")
@@ -234,6 +235,32 @@ func TestCharacterRosterCandidateShowsOneTimeAndPerTurnCostsSeparately(t *testin
 	}
 }
 
+func TestCharacterRosterMissionDetailsUseSeparateLines(t *testing.T) {
+	got := characterRosterMissionDetailLines("Diplomatik Elçilik", 2)
+	want := [2]string{"Görevde: Diplomatik Elçilik", "Kalan süre: 2 tur"}
+	if got != want {
+		t.Fatalf("mission detail lines = %q, want %q", got, want)
+	}
+}
+
+func TestCharacterRosterMissionButtonMatchesDutyButtonAtBottomRight(t *testing.T) {
+	ownedColumn, _ := characterRosterColumns()
+	character := &army.Commander{}
+	dutyButton := characterRosterDutyActionButton(ownedColumn, 0, 0, character)
+	missionButton := characterRosterMissionButton(ownedColumn, 0, 0, []*army.Commander{character})
+	row := characterRosterOwnedRowRect(characterRosterOwnedListViewport(ownedColumn), 0, 0, []*army.Commander{character})
+	traits := characterRosterTraitRowRect(row)
+
+	if missionButton.Label != "Görev" || missionButton.W != dutyButton.W {
+		t.Fatalf("mission button = %+v, want Ata/Kaldır-sized button %+v", missionButton, dutyButton)
+	}
+	if missionButton.X+missionButton.W != row.X+row.W-characterRosterCardPadding ||
+		missionButton.Y != traits.Y || missionButton.H != traits.H ||
+		missionButton.Y+missionButton.H != row.Y+row.H-characterRosterCardPadding {
+		t.Fatalf("mission button %v is not inset at the card's bottom-right corner: %v", missionButton, row)
+	}
+}
+
 func TestMilitaryCommanderShowsCouncilAssignmentButNoReleaseControl(t *testing.T) {
 	const owner faction.FactionID = "player"
 	commander := &army.Commander{
@@ -311,6 +338,25 @@ func TestOwnedCharacterReleaseButtonIsInteractive(t *testing.T) {
 	release := characterReleaseButton(ownedColumn, 0, r.characterRosterOwnedScroll)
 	if !r.characterRosterPanelHovering(release.X+release.W/2, release.Y+release.H/2) {
 		t.Fatal("owned character release button is not interactive")
+	}
+
+	character.ActiveMissionID = "recon"
+	character.ActiveMissionTurnsRemaining = 2
+	r.RefreshCharacterRosterPanel()
+	release = characterReleaseButton(ownedColumn, 0, r.characterRosterOwnedScroll, r.characterRosterOwned)
+	if characterRosterReleaseable(character) || r.characterRosterPanelHovering(release.X+release.W/2, release.Y+release.H/2) {
+		t.Fatal("character with an active mission exposed the household release control")
+	}
+	if _, handled := handleCharacterRosterPanelClick(r, release.X+release.W/2, release.Y+release.H/2); handled ||
+		r.confirmDialog.show {
+		t.Fatal("character with an active mission could be released")
+	}
+
+	character.ActiveMissionID = ""
+	character.ActiveMissionTurnsRemaining = 0
+	r.RefreshCharacterRosterPanel()
+	if !characterRosterReleaseable(character) || !r.characterRosterPanelHovering(release.X+release.W/2, release.Y+release.H/2) {
+		t.Fatal("character release control did not return after the mission ended")
 	}
 }
 
@@ -590,6 +636,30 @@ func TestCharacterRosterTreasurerSeatAndAssignmentButtonAreInteractive(t *testin
 		!r.characterRosterPanelHovering(removeDuty.X+removeDuty.W/2, removeDuty.Y+removeDuty.H/2) {
 		t.Fatal("assigned treasurer's text-only Kaldır button is not interactive")
 	}
+	character.ActiveMissionID = "envoy"
+	character.ActiveMissionTurnsRemaining = 2
+	r.RefreshCharacterRosterPanel()
+	removeDuty = characterRosterDutyActionButton(ownedColumn, 0, 0, character, r.characterRosterOwned)
+	if characterRosterDutyRemovable(character) || r.characterRosterPanelHovering(removeDuty.X+removeDuty.W/2, removeDuty.Y+removeDuty.H/2) {
+		t.Fatal("character on a mission exposed the council Kaldır button")
+	}
+	if action, handled := handleCharacterRosterPanelClick(r, removeDuty.X+removeDuty.W/2, removeDuty.Y+removeDuty.H/2); handled ||
+		action.Kind != ActionNone || character.AssignedCouncilRole != state.CouncilRoleTreasurer {
+		t.Fatalf("active mission allowed council role removal: action=%+v handled=%t role=%q",
+			action, handled, character.AssignedCouncilRole)
+	}
+	if r.gs.UnassignCharacterFromCouncilRole(owner, character.ID) ||
+		character.AssignedCouncilRole != state.CouncilRoleTreasurer {
+		t.Fatal("active mission allowed council role removal through state API")
+	}
+	character.ActiveMissionID = ""
+	character.ActiveMissionTurnsRemaining = 0
+	r.RefreshCharacterRosterPanel()
+	removeDuty = characterRosterDutyActionButton(ownedColumn, 0, 0, character, r.characterRosterOwned)
+	if !characterRosterDutyRemovable(character) ||
+		!r.characterRosterPanelHovering(removeDuty.X+removeDuty.W/2, removeDuty.Y+removeDuty.H/2) {
+		t.Fatal("council Kaldır button did not return after mission ended")
+	}
 	release := characterReleaseButton(ownedColumn, 0, 0)
 	if r.characterRosterPanelHovering(release.X+release.W/2, release.Y+release.H/2) {
 		t.Fatal("assigned treasurer's haneden çıkarma button should be hidden and non-interactive")
@@ -654,6 +724,158 @@ func TestCharacterRosterAssignmentMenuUsesScenarioRoles(t *testing.T) {
 	action, handled := handleCharacterRosterPanelClick(r, option.X+option.W/2, option.Y+option.H/2)
 	if !handled || action.Kind != ActionAssignCouncilRole || action.CouncilRole != "envoy" {
 		t.Fatalf("scenario role selection = %+v, handled=%t", action, handled)
+	}
+}
+
+func TestCharacterMissionMenuDispatchesRoleLinkedAndIndependentMissions(t *testing.T) {
+	const owner faction.FactionID = "player"
+	const target faction.FactionID = "target"
+	diplomat := &army.Commander{
+		ID: "chr_diplomat", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Diplomat",
+		AssignedCouncilRole: state.CouncilRoleDiplomat,
+	}
+	independent := &army.Commander{
+		ID: "chr_independent", Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: "Independent",
+	}
+	r := &Renderer{
+		gs: &state.GameState{
+			Year:            300,
+			PlayerFactionID: owner,
+			Factions: map[faction.FactionID]*faction.Faction{
+				owner:  {ID: owner, Gold: 1000},
+				target: {ID: target, NameTR: "Hedef Hanesi"},
+			},
+			Commanders: map[string]*army.Commander{
+				diplomat.ID:    diplomat,
+				independent.ID: independent,
+			},
+			Regions: map[world.RegionID]*world.Region{
+				"target_region": {ID: "target_region", OwnerID: string(target), NameTR: "Sınır Bölgesi"},
+			},
+			CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{
+				{ID: "envoy", NameTR: "Diplomatik Elçilik", RoleID: state.CouncilRoleDiplomat, TargetKind: scenario.CharacterMissionTargetFaction, DurationTurns: 2, GoldCost: 100},
+				{ID: "archive", NameTR: "Arşiv Araştırması", DurationTurns: 2, GoldCost: 50},
+				{ID: "recon", NameTR: "Bölgesel Keşif", TargetKind: scenario.CharacterMissionTargetRegion, DurationTurns: 2, GoldCost: 75},
+			}},
+		},
+	}
+	r.OpenCharacterRosterPanel()
+	ownedColumn, _ := characterRosterColumns()
+
+	diplomatIndex := characterRosterIndexByID(r.characterRosterOwned, diplomat.ID)
+	missionButton := characterRosterMissionButton(ownedColumn, diplomatIndex, r.characterRosterOwnedScroll, r.characterRosterOwned)
+	if _, handled := handleCharacterRosterPanelClick(r, missionButton.X+missionButton.W/2, missionButton.Y+missionButton.H/2); !handled ||
+		r.characterRosterMissionMenuCharacterID != diplomat.ID {
+		t.Fatal("clicking the diplomat's Görev button did not open its mission menu")
+	}
+	menu, ok := characterMissionMenuRect(r)
+	if !ok {
+		t.Fatal("role-linked mission menu has no geometry")
+	}
+	missionButton = characterMissionMenuOptionButton(menu, 0, "Diplomatik Elçilik")
+	action, handled := handleCharacterRosterPanelClick(r, missionButton.X+missionButton.W/2, missionButton.Y+missionButton.H/2)
+	if !handled || action.Kind != ActionNone || r.characterRosterSelectedMissionID != "envoy" ||
+		len(r.characterRosterMissionTargets) != 1 || r.characterRosterMissionTargets[0] != string(target) {
+		t.Fatalf("role-linked task selection = %+v, handled=%t, selected=%q, targets=%v", action, handled,
+			r.characterRosterSelectedMissionID, r.characterRosterMissionTargets)
+	}
+	menu, _ = characterMissionMenuRect(r)
+	targetButton := characterMissionMenuOptionButton(menu, 0, "Hedef Hanesi")
+	action, handled = handleCharacterRosterPanelClick(r, targetButton.X+targetButton.W/2, targetButton.Y+targetButton.H/2)
+	if !handled || action.Kind != ActionNone || !r.confirmDialog.show ||
+		r.confirmDialog.pendingAction.Kind != ActionStartCharacterMission ||
+		r.confirmDialog.pendingAction.CharacterID != diplomat.ID ||
+		r.confirmDialog.pendingAction.MissionID != "envoy" ||
+		r.confirmDialog.pendingAction.TargetFaction != target ||
+		r.confirmDialog.acceptLabel != "Evet" || r.confirmDialog.declineLabel != "Hayır" {
+		t.Fatalf("role-linked task confirmation = %+v, handled=%t, dialog=%+v", action, handled, r.confirmDialog)
+	}
+	if !strings.Contains(r.confirmDialog.message, diplomat.Name) ||
+		!strings.Contains(r.confirmDialog.message, "Diplomatik Elçilik") ||
+		!strings.Contains(r.confirmDialog.message, "Hedef Hanesi") ||
+		!strings.Contains(r.confirmDialog.message, "100 altın") {
+		t.Fatalf("role-linked task confirmation message omits mission details: %q", r.confirmDialog.message)
+	}
+	if r.characterRosterMissionMenuCharacterID != "" {
+		t.Fatal("mission menu remained open after selecting a target")
+	}
+	r.confirmDialog = confirmDialogState{}
+
+	independentIndex := characterRosterIndexByID(r.characterRosterOwned, independent.ID)
+	missionButton = characterRosterMissionButton(ownedColumn, independentIndex, r.characterRosterOwnedScroll, r.characterRosterOwned)
+	if _, handled := handleCharacterRosterPanelClick(r, missionButton.X+missionButton.W/2, missionButton.Y+missionButton.H/2); !handled ||
+		r.characterRosterMissionMenuCharacterID != independent.ID {
+		t.Fatal("clicking the unassigned character's Görev button did not open its mission menu")
+	}
+	menu, _ = characterMissionMenuRect(r)
+	missionButton = characterMissionMenuOptionButton(menu, 0, "Arşiv Araştırması")
+	action, handled = handleCharacterRosterPanelClick(r, missionButton.X+missionButton.W/2, missionButton.Y+missionButton.H/2)
+	if !handled || action.Kind != ActionNone || !r.confirmDialog.show ||
+		r.confirmDialog.pendingAction.Kind != ActionStartCharacterMission ||
+		r.confirmDialog.pendingAction.CharacterID != independent.ID ||
+		r.confirmDialog.pendingAction.MissionID != "archive" ||
+		r.confirmDialog.pendingAction.TargetFaction != "" || r.confirmDialog.pendingAction.TargetRegion != "" ||
+		r.confirmDialog.acceptLabel != "Evet" || r.confirmDialog.declineLabel != "Hayır" {
+		t.Fatalf("independent task confirmation = %+v, handled=%t, dialog=%+v", action, handled, r.confirmDialog)
+	}
+	if !strings.Contains(r.confirmDialog.message, independent.Name) ||
+		!strings.Contains(r.confirmDialog.message, "Arşiv Araştırması") ||
+		!strings.Contains(r.confirmDialog.message, "2 tur") ||
+		!strings.Contains(r.confirmDialog.message, "50 altın") {
+		t.Fatalf("independent task confirmation message omits mission details: %q", r.confirmDialog.message)
+	}
+	if r.characterRosterMissionMenuCharacterID != "" {
+		t.Fatal("mission menu remained open after selecting an independent task")
+	}
+	r.confirmDialog = confirmDialogState{}
+
+	missionButton = characterRosterMissionButton(ownedColumn, independentIndex, r.characterRosterOwnedScroll, r.characterRosterOwned)
+	if _, handled := handleCharacterRosterPanelClick(r, missionButton.X+missionButton.W/2, missionButton.Y+missionButton.H/2); !handled {
+		t.Fatal("clicking the scout's Görev button did not open its mission menu")
+	}
+	menu, _ = characterMissionMenuRect(r)
+	missionButton = characterMissionMenuOptionButton(menu, 1, "Bölgesel Keşif")
+	action, handled = handleCharacterRosterPanelClick(r, missionButton.X+missionButton.W/2, missionButton.Y+missionButton.H/2)
+	if !handled || r.characterRosterSelectedMissionID != "recon" {
+		t.Fatalf("region-targeted mission selection = %+v, handled=%t", action, handled)
+	}
+	menu, _ = characterMissionMenuRect(r)
+	targetButton = characterMissionMenuOptionButton(menu, 0, "Sınır Bölgesi")
+	action, handled = handleCharacterRosterPanelClick(r, targetButton.X+targetButton.W/2, targetButton.Y+targetButton.H/2)
+	if !handled || action.Kind != ActionNone || !r.confirmDialog.show ||
+		r.confirmDialog.pendingAction.Kind != ActionStartCharacterMission ||
+		r.confirmDialog.pendingAction.CharacterID != independent.ID ||
+		r.confirmDialog.pendingAction.MissionID != "recon" ||
+		r.confirmDialog.pendingAction.TargetRegion != "target_region" ||
+		r.confirmDialog.pendingAction.TargetFaction != "" ||
+		!strings.Contains(r.confirmDialog.message, "Sınır Bölgesi") {
+		t.Fatalf("region-targeted task confirmation = %+v, handled=%t, dialog=%+v", action, handled, r.confirmDialog)
+	}
+}
+
+func TestCharacterMissionMenuHeaderUsesIconBackButtonAndBalancedPadding(t *testing.T) {
+	menu := gameui.Rect{X: 10, Y: 20, W: characterMissionMenuW, H: characterMissionMenuHeaderH + 2*characterMissionMenuRowH + characterMissionMenuPad}
+	back := characterMissionMenuBackButton(menu)
+	closeButton := characterMissionMenuCloseButton(menu)
+	title := characterMissionMenuTitleRect(menu)
+
+	if back.Label != "" || back.Icon != gameui.IconBack {
+		t.Fatalf("mission menu back button = %+v, want icon-only back button", back)
+	}
+	if back.Y-menu.Y != characterMissionMenuPad ||
+		characterMissionMenuHeaderH-(back.Y-menu.Y)-back.H != characterMissionMenuPad ||
+		closeButton.Y-menu.Y != characterMissionMenuPad ||
+		characterMissionMenuHeaderH-(closeButton.Y-menu.Y)-closeButton.H != characterMissionMenuPad {
+		t.Fatalf("mission menu header controls lack balanced vertical padding: back=%+v close=%+v header=%.0f pad=%.0f",
+			back, closeButton, characterMissionMenuHeaderH, characterMissionMenuPad)
+	}
+	if title.X < back.X+back.W || title.X+title.W > closeButton.X ||
+		title.Y < menu.Y+characterMissionMenuPad || title.Y+title.H > menu.Y+characterMissionMenuHeaderH-characterMissionMenuPad {
+		t.Fatalf("mission menu title %v overlaps header controls or padding: back=%+v close=%+v", title, back, closeButton)
+	}
+	lastOption := characterMissionMenuOptionButton(menu, 1, "Hedef")
+	if menu.Y+menu.H-(lastOption.Y+lastOption.H) < characterMissionMenuPad {
+		t.Fatalf("mission menu bottom padding is less than %v px", characterMissionMenuPad)
 	}
 }
 

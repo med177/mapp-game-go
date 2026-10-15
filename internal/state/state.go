@@ -496,7 +496,9 @@ type GameState struct {
 	// FactionAttackTargetTurns, saldıranın bu tur hangi devletlere saldırdığını
 	// taşır. Din temelli bölgesel ilişki tepkisi bu hedeflerin dinlerinden
 	// türetilir; aynı din grubuna birden fazla saldırı tek tepki sayılır.
-	FactionAttackTargetTurns map[faction.FactionID]map[faction.FactionID]int `json:"faction_attack_target_turns,omitempty"`
+	FactionAttackTargetTurns     map[faction.FactionID]map[faction.FactionID]int `json:"faction_attack_target_turns,omitempty"`
+	TemporaryMilitaryIntel       map[faction.FactionID]map[faction.FactionID]int `json:"temporary_military_intel,omitempty"`
+	TemporaryRegionMilitaryIntel map[faction.FactionID]map[world.RegionID]int    `json:"temporary_region_military_intel,omitempty"`
 	// RelationTrendAppliedTurn, aynı turda ilişki trendinin iki kez uygulanmasını
 	// ve save/load sonrasında yinelenmesini önler.
 	RelationTrendAppliedTurn int `json:"relation_trend_applied_turn,omitempty"`
@@ -1465,6 +1467,7 @@ func (s *GameState) CurrentTurnIncludesMonth(month int) bool {
 // AdvanceTurn turu bir ileri alır, senaryonun takvim ayı hızına göre ay/yıl günceller.
 func (s *GameState) AdvanceTurn() []HistoricalFactionChangeReport {
 	s.Turn++
+	s.tickTemporaryMilitaryIntel()
 	for remaining := s.CalendarMonthsPerTurn(); remaining > 0; remaining-- {
 		s.Month++
 		if s.Month > 12 {

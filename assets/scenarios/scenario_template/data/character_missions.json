@@ -1,0 +1,44 @@
+{
+  "missions": [
+    {
+      "id": "diplomatic_envoy",
+      "name_tr": "Diplomatik Elçilik",
+      "role_id": "diplomat",
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 300,
+      "completion_effects": {
+        "relation_bonus_points": 5
+      }
+    },
+    {
+      "id": "independent_expedition",
+      "name_tr": "Bağımsız Sefer",
+      "duration_turns": 2,
+      "gold_cost": 100,
+      "completion_effects": {
+        "council_experience": 10
+      }
+    },
+    {
+      "id": "military_intelligence",
+      "name_tr": "Askerî İstihbarat Keşfi",
+      "target_kind": "faction",
+      "duration_turns": 2,
+      "gold_cost": 150,
+      "completion_effects": {
+        "military_intel_turns": 2
+      }
+    },
+    {
+      "id": "region_reconnaissance",
+      "name_tr": "Bölgesel Askerî Keşif",
+      "target_kind": "region",
+      "duration_turns": 2,
+      "gold_cost": 125,
+      "completion_effects": {
+        "region_military_intel_turns": 2
+      }
+    }
+  ]
+}

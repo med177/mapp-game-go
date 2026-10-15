@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/tech"
+	"mapp-game-go/internal/world"
 )
 
 const (
@@ -22,7 +23,8 @@ const (
 // teknolojisine sahip olduğu hedefin gücünü tam bilir.
 func MilitaryPowerEstimate(gs *GameState, observer, target faction.FactionID) int {
 	land, naval, exact := militaryPowerBreakdownExact(gs, target)
-	if exact || observer == target || HasMilitaryIntel(gs, observer) || debugRevealMilitaryPower(gs) {
+	if exact || observer == target || HasMilitaryIntel(gs, observer) ||
+		HasTemporaryMilitaryIntel(gs, observer, target) || debugRevealMilitaryPower(gs) {
 		return land + naval
 	}
 	land, naval = applyMilitaryIntelError(gs, observer, target, "faction", land, naval)
@@ -33,7 +35,8 @@ func MilitaryPowerEstimate(gs *GameState, observer, target faction.FactionID) in
 // aynı gözlem hatasıyla döndürür. Böylece toplam ve alt kalemler çelişmez.
 func MilitaryPowerEstimateBreakdown(gs *GameState, observer, target faction.FactionID) (land, naval int, exact bool) {
 	land, naval, exact = militaryPowerBreakdownExact(gs, target)
-	if exact || observer == target || HasMilitaryIntel(gs, observer) || debugRevealMilitaryPower(gs) {
+	if exact || observer == target || HasMilitaryIntel(gs, observer) ||
+		HasTemporaryMilitaryIntel(gs, observer, target) || debugRevealMilitaryPower(gs) {
 		return land, naval, true
 	}
 	land, naval = applyMilitaryIntelError(gs, observer, target, "faction", land, naval)
@@ -51,7 +54,10 @@ func ArmyPowerEstimate(gs *GameState, observer faction.FactionID, armyRef *army.
 		unitTypes = gs.UnitTypes
 	}
 	power = armyRef.TotalStrength(unitTypes)
-	if gs == nil || observer == faction.FactionID(armyRef.OwnerID) || HasMilitaryIntel(gs, observer) || debugRevealMilitaryPower(gs) {
+	target := faction.FactionID(armyRef.OwnerID)
+	if gs == nil || observer == target || HasMilitaryIntel(gs, observer) ||
+		HasTemporaryMilitaryIntel(gs, observer, target) ||
+		HasTemporaryRegionMilitaryIntel(gs, observer, armyRef.RegionID) || debugRevealMilitaryPower(gs) {
 		return power, true
 	}
 	land, _ := applyMilitaryIntelError(gs, observer, faction.FactionID(armyRef.OwnerID), "army:"+string(armyRef.ID), power, 0)
@@ -69,7 +75,10 @@ func ArmyDefenseEstimate(gs *GameState, observer faction.FactionID, armyRef *arm
 		unitTypes = gs.UnitTypes
 	}
 	power = armyRef.TotalDefense(unitTypes)
-	if gs == nil || observer == faction.FactionID(armyRef.OwnerID) || HasMilitaryIntel(gs, observer) || debugRevealMilitaryPower(gs) {
+	target := faction.FactionID(armyRef.OwnerID)
+	if gs == nil || observer == target || HasMilitaryIntel(gs, observer) ||
+		HasTemporaryMilitaryIntel(gs, observer, target) ||
+		HasTemporaryRegionMilitaryIntel(gs, observer, armyRef.RegionID) || debugRevealMilitaryPower(gs) {
 		return power, true
 	}
 	land, _ := applyMilitaryIntelError(gs, observer, faction.FactionID(armyRef.OwnerID), "army-defense:"+string(armyRef.ID), power, 0)
@@ -106,6 +115,87 @@ func HasMilitaryIntel(gs *GameState, observer faction.FactionID) bool {
 		return false
 	}
 	return tech.ComputeEffects(fx.Research.Completed, gs.TechTypes).RevealEnemyStrength
+}
+
+// HasTemporaryMilitaryIntel reports whether an observer has current, targeted
+// intelligence about a faction's exact military strength.
+func HasTemporaryMilitaryIntel(gs *GameState, observer, target faction.FactionID) bool {
+	return gs != nil && observer != "" && target != "" &&
+		gs.TemporaryMilitaryIntel[observer][target] > 0
+}
+
+// GrantTemporaryMilitaryIntel grants or refreshes targeted military intelligence.
+func (s *GameState) GrantTemporaryMilitaryIntel(observer, target faction.FactionID, turns int) {
+	if s == nil || observer == "" || target == "" || observer == target || turns <= 0 {
+		return
+	}
+	if s.TemporaryMilitaryIntel == nil {
+		s.TemporaryMilitaryIntel = make(map[faction.FactionID]map[faction.FactionID]int)
+	}
+	targets := s.TemporaryMilitaryIntel[observer]
+	if targets == nil {
+		targets = make(map[faction.FactionID]int)
+		s.TemporaryMilitaryIntel[observer] = targets
+	}
+	if targets[target] < turns {
+		targets[target] = turns
+	}
+}
+
+// HasTemporaryRegionMilitaryIntel reports whether an observer has current
+// exact military intelligence for a specific region.
+func HasTemporaryRegionMilitaryIntel(gs *GameState, observer faction.FactionID, target world.RegionID) bool {
+	return gs != nil && observer != "" && target != "" &&
+		gs.TemporaryRegionMilitaryIntel[observer][target] > 0
+}
+
+// GrantTemporaryRegionMilitaryIntel grants or refreshes region-targeted
+// military intelligence.
+func (s *GameState) GrantTemporaryRegionMilitaryIntel(observer faction.FactionID, target world.RegionID, turns int) {
+	if s == nil || observer == "" || target == "" || turns <= 0 || s.Regions[target] == nil {
+		return
+	}
+	if s.TemporaryRegionMilitaryIntel == nil {
+		s.TemporaryRegionMilitaryIntel = make(map[faction.FactionID]map[world.RegionID]int)
+	}
+	targets := s.TemporaryRegionMilitaryIntel[observer]
+	if targets == nil {
+		targets = make(map[world.RegionID]int)
+		s.TemporaryRegionMilitaryIntel[observer] = targets
+	}
+	if targets[target] < turns {
+		targets[target] = turns
+	}
+}
+
+func (s *GameState) tickTemporaryMilitaryIntel() {
+	if s == nil {
+		return
+	}
+	for observer, targets := range s.TemporaryMilitaryIntel {
+		for target, turns := range targets {
+			if turns <= 1 {
+				delete(targets, target)
+				continue
+			}
+			targets[target] = turns - 1
+		}
+		if len(targets) == 0 {
+			delete(s.TemporaryMilitaryIntel, observer)
+		}
+	}
+	for observer, targets := range s.TemporaryRegionMilitaryIntel {
+		for target, turns := range targets {
+			if turns <= 1 {
+				delete(targets, target)
+				continue
+			}
+			targets[target] = turns - 1
+		}
+		if len(targets) == 0 {
+			delete(s.TemporaryRegionMilitaryIntel, observer)
+		}
+	}
 }
 
 func militaryPowerBreakdownExact(gs *GameState, target faction.FactionID) (land, naval int, exact bool) {
