@@ -33,6 +33,10 @@ const (
 	armySummaryTileHeight    = 120.0
 	armySummaryTileGap       = 6.0
 	armySummaryTooltipPad    = 10.0
+	armySummaryCommanderGap  = 10.0
+	armySummaryEffectsGap    = 6.0
+	armySummaryEffectLineH   = 12.0
+	armySummaryCommanderSize = float64(armyPanelCommanderPortrait)
 	armySummaryColumns       = 4
 )
 
@@ -487,12 +491,23 @@ func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState,
 	}
 	rows := armyMarkerSummaryRows(gs, a)
 	rowLines := armySummaryRowCount(len(rows))
-	tooltipHeight := 40.0 + armySummaryGridHeight(rowLines) + armySummaryTooltipPad
-	if len(rows) == 0 {
-		tooltipHeight = 54
+	commander, _ := armyPanelDisplayedCommander(a)
+	var effectLines []commanderEffectLine
+	if commander != nil {
+		effectLines = commanderCardEffectLines(commander)
 	}
-	x, y, w, h := tooltipRect(mx, my, armySummaryTooltipWidth(), tooltipHeight)
+	tooltipWidth, tooltipHeight := armyMarkerSummaryTooltipSize(rowLines, commander != nil, len(effectLines))
+	x, y, w, h := tooltipRect(mx, my, tooltipWidth, tooltipHeight)
 	drawTooltipBox(screen, x, y, w, h)
+	contentX := x + armySummaryTooltipPad
+	if commander != nil {
+		drawCommanderPortrait(screen, commander, contentX, y+armySummaryTooltipPad, armySummaryCommanderSize, armySummaryCommanderSize)
+		effectsY := y + armySummaryTooltipPad + armySummaryCommanderSize + armySummaryEffectsGap
+		for index, line := range effectLines {
+			DrawText(screen, line.Text, contentX, effectsY+float64(index)*armySummaryEffectLineH, FaceTiny, line.Color)
+		}
+		contentX += armySummaryCommanderSize + armySummaryCommanderGap
+	}
 	label := "Ordu"
 	if a.IsNaval {
 		label = "Filo"
@@ -501,13 +516,29 @@ func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState,
 	if !playerCanSeeArmyDetails(gs, a) && !playerHasRevealEnemyStrength(gs) {
 		header = label + ": kısmi istihbarat"
 	}
-	DrawText(screen, header, x+10, y+10, FaceSmall, ColorGold)
+	DrawText(screen, header, contentX, y+10, FaceSmall, ColorGold)
 
-	drawArmyUnitSummaryTiles(screen, gs, a.OwnerID, rows, x+armySummaryTooltipPad, y+32)
+	drawArmyUnitSummaryTiles(screen, gs, a.OwnerID, rows, contentX, y+32)
 }
 
 func armySummaryTooltipWidth() float64 {
 	return armySummaryTooltipPad*2 + armySummaryColumns*armySummaryTileWidth + (armySummaryColumns-1)*armySummaryTileGap
+}
+
+func armyMarkerSummaryTooltipSize(rowCount int, hasCommander bool, effectLineCount int) (float64, float64) {
+	width := armySummaryTooltipWidth()
+	height := 40.0 + armySummaryGridHeight(rowCount) + armySummaryTooltipPad
+	if rowCount == 0 {
+		height = 54
+	}
+	if hasCommander {
+		width += armySummaryCommanderSize + armySummaryCommanderGap
+		commanderColumnHeight := armySummaryTooltipPad*2 + armySummaryCommanderSize + armySummaryEffectsGap + float64(effectLineCount)*armySummaryEffectLineH
+		if height < commanderColumnHeight {
+			height = commanderColumnHeight
+		}
+	}
+	return width, height
 }
 
 func armySummaryRowCount(itemCount int) int {
@@ -534,7 +565,7 @@ func drawArmyUnitSummaryTiles(screen *ebiten.Image, gs *state.GameState, ownerID
 		tileY := startY + float64(line)*(armySummaryTileHeight+armySummaryTileGap)
 		vector.FillRect(screen, float32(tileX), float32(tileY), float32(armySummaryTileWidth), float32(armySummaryTileHeight), color.RGBA{248, 246, 238, 235}, false)
 		if sprite := unitSpriteForFaction(gs, ownerID, row.typeID); sprite != nil {
-			drawArmyMarkerUnitImage(screen, sprite, float32(tileX), float32(tileY), float32(armySummaryTileWidth), float32(armySummaryTileHeight))
+			drawArmyMarkerUnitImage(screen, sprite, float32(tileX), float32(tileY), float32(armySummaryTileWidth))
 		}
 		countY := tileY + armySummaryTileHeight - 26
 		vector.FillRect(screen, float32(tileX), float32(countY), float32(armySummaryTileWidth), 26, color.RGBA{25, 20, 15, 175}, false)
@@ -546,18 +577,25 @@ func drawArmyUnitSummaryTiles(screen *ebiten.Image, gs *state.GameState, ownerID
 	}
 }
 
-// drawArmyMarkerUnitImage görseli kartın tamamına yayar; marker popup'ındaki
-// kartlar kaynak görselin dikey oranına göre boşluk bırakmaz.
-func drawArmyMarkerUnitImage(screen *ebiten.Image, sprite *ebiten.Image, x, y, width, height float32) bool {
-	if screen == nil || sprite == nil || width <= 0 || height <= 0 {
+// armyMarkerUnitImageScale kart genişliğini doldururken kaynak görsel oranını korur.
+func armyMarkerUnitImageScale(sourceWidth, sourceHeight int, width float32) (float64, bool) {
+	if sourceWidth <= 0 || sourceHeight <= 0 || width <= 0 {
+		return 0, false
+	}
+	return float64(width) / float64(sourceWidth), true
+}
+
+func drawArmyMarkerUnitImage(screen *ebiten.Image, sprite *ebiten.Image, x, y, width float32) bool {
+	if screen == nil || sprite == nil {
 		return false
 	}
 	bounds := sprite.Bounds()
-	if bounds.Dx() <= 0 || bounds.Dy() <= 0 {
+	scale, ok := armyMarkerUnitImageScale(bounds.Dx(), bounds.Dy(), width)
+	if !ok {
 		return false
 	}
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(float64(width)/float64(bounds.Dx()), float64(height)/float64(bounds.Dy()))
+	op.GeoM.Scale(scale, scale)
 	op.GeoM.Translate(float64(x), float64(y))
 	screen.DrawImage(sprite, op)
 	return true
