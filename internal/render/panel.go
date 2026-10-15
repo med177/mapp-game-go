@@ -864,7 +864,7 @@ func topDateHudMenuButtonHit(fx, fy float64) bool {
 
 func buildTopDateHudMenuButton() gameui.Button {
 	x, y, w, h := topDateHudMenuButtonRect()
-	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Menü").WithIcon(gameui.IconMenu)
+	return gameui.NewButton(float64(x), float64(y), float64(w), float64(h), "Menü").WithIcon(gameui.IconBook)
 }
 
 func musicHudRect() (x, y, w, h float32) {

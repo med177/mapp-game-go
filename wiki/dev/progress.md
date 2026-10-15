@@ -5,6 +5,10 @@ last_updated: 2026-10-15
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-15: Hane HUD düğmesi, atanmayı bekleyen konsey rolü sayısını kırmızı
+  rozetle (tüm roller doluysa yeşil `0`) ve aktif görevdeki oyuncu
+  karakterlerini sağ alt turuncu rozetle gösterir.
+
 - 2026-10-15: Ordu komutanlığı ve karakter görevleri karşılıklı olarak
   dışlandı. Orduya atanmış karakter görev başlatamaz; aktif görevdeki karakter
   doğrudan veya otomatik olarak ordu komutanı yapılamaz. Aynı state kuralları

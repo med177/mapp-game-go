@@ -547,6 +547,49 @@ func TestCharacterRosterHUDButtonSitsBesideActiveWarsButton(t *testing.T) {
 	}
 }
 
+func TestCharacterRosterHUDBadgesCountOpenRolesAndActiveMissions(t *testing.T) {
+	const player = faction.FactionID("player")
+	roles := []scenario.CouncilRoleDefinition{
+		{ID: "role_1"}, {ID: "role_2"}, {ID: "role_3"},
+		{ID: "role_4"}, {ID: "role_5"}, {ID: "role_6"},
+	}
+	gs := &state.GameState{
+		Year:            300,
+		PlayerFactionID: player,
+		CouncilConfig:   scenario.CharacterCouncilConfig{Roles: roles},
+		Commanders: map[string]*army.Commander{
+			"one":   {ID: "one", OwnerID: string(player), Type: army.CharacterTypeCharacter, AssignedCouncilRole: "role_1"},
+			"two":   {ID: "two", OwnerID: string(player), Type: army.CharacterTypeCharacter, AssignedCouncilRole: "role_2", ActiveMissionID: "mission_a"},
+			"three": {ID: "three", OwnerID: string(player), Type: army.CharacterTypeCommander, AssignedCouncilRole: "role_3"},
+			"four":  {ID: "four", OwnerID: string(player), Type: army.CharacterTypeAdministrator, AssignedCouncilRole: "role_4", ActiveMissionID: "mission_b"},
+			"five":  {ID: "five", OwnerID: string(player), Type: army.CharacterTypeCharacter},
+			"six":   {ID: "six", OwnerID: string(player), Type: army.CharacterTypeCharacter},
+			"enemy": {ID: "enemy", OwnerID: "enemy", Type: army.CharacterTypeCharacter, ActiveMissionID: "mission_enemy"},
+			"dead":  {ID: "dead", OwnerID: string(player), Type: army.CharacterTypeCharacter, AssignedCouncilRole: "role_5", ActiveMissionID: "mission_dead"},
+			"future": {
+				ID: "future", OwnerID: string(player), Type: army.CharacterTypeCharacter,
+				StartYear: 301, AssignedCouncilRole: "role_6", ActiveMissionID: "mission_future",
+			},
+		},
+		DeadCommanderIDs: map[string]bool{"dead": true},
+	}
+
+	openRoles, activeMissions := characterRosterHUDCounts(gs)
+	if openRoles != 2 {
+		t.Fatalf("open council roles = %d, want 2", openRoles)
+	}
+	if activeMissions != 2 {
+		t.Fatalf("active mission characters = %d, want 2", activeMissions)
+	}
+
+	gs.Commanders["five"].AssignedCouncilRole = "role_5"
+	gs.Commanders["six"].AssignedCouncilRole = "role_6"
+	openRoles, activeMissions = characterRosterHUDCounts(gs)
+	if openRoles != 0 {
+		t.Fatalf("open council roles after filling every role = %d, want 0", openRoles)
+	}
+}
+
 func TestCharacterRosterButtonAndPanelUseTopInputLayers(t *testing.T) {
 	originalWidth := ScreenWidth
 	defer func() { ScreenWidth = originalWidth }()

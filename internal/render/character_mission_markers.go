@@ -214,7 +214,7 @@ func (r *Renderer) drawCharacterMissionMapMarkers(screen *ebiten.Image) {
 		rect := characterMissionMapMarkerRect(cx, cy)
 		vector.FillCircle(screen, float32(cx), float32(cy), float32(characterMissionMapMarkerSize/2), color.RGBA{38, 28, 12, 248}, true)
 		vector.StrokeCircle(screen, float32(cx), float32(cy), float32(characterMissionMapMarkerSize/2-1), 2, color.RGBA{255, 214, 82, 255}, true)
-		if !gameui.DrawIcon(screen, gameui.IconBook, rect.X+6, rect.Y+6, 16, color.RGBA{255, 238, 174, 255}) {
+		if !gameui.DrawIcon(screen, gameui.IconPerson, rect.X+6, rect.Y+6, 16, color.RGBA{255, 238, 174, 255}) {
 			DrawTextCentered(screen, "G", cx, cy-5, FaceSmall, color.RGBA{255, 238, 174, 255})
 		}
 		if marker.count > 1 {

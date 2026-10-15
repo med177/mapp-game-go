@@ -51,7 +51,71 @@ func characterRosterHUDButtonHit(mx, my float64) bool {
 	return buildCharacterRosterHUDButton().HitTest(mx, my)
 }
 
-func drawCharacterRosterHUDButton(screen *ebiten.Image, open bool) {
+func characterRosterHUDCounts(gs *state.GameState) (openRoles, activeMissions int) {
+	if gs == nil || gs.PlayerFactionID == "" {
+		return 0, 0
+	}
+
+	isRosterCharacter := func(character *army.Commander) bool {
+		if character == nil || character.OwnerID != string(gs.PlayerFactionID) ||
+			!character.ActiveInYear(gs.Year) || gs.DeadCommanderIDs[character.ID] ||
+			gs.DismissedCommanderIDs[character.ID] {
+			return false
+		}
+		switch character.Type {
+		case army.CharacterTypeAdministrator, army.CharacterTypeCharacter, army.CharacterTypeCommander:
+			return true
+		default:
+			return false
+		}
+	}
+
+	roles := characterCouncilRoles(gs)
+	for index, role := range roles {
+		if role.ID == "" {
+			continue
+		}
+		duplicate := false
+		for _, previous := range roles[:index] {
+			if previous.ID == role.ID {
+				duplicate = true
+				break
+			}
+		}
+		if duplicate {
+			continue
+		}
+
+		assigned := false
+		for _, character := range gs.Commanders {
+			if isRosterCharacter(character) && character.AssignedCouncilRole == role.ID {
+				assigned = true
+				break
+			}
+		}
+		if !assigned {
+			openRoles++
+		}
+	}
+
+	for _, character := range gs.Commanders {
+		if isRosterCharacter(character) && character.ActiveMissionID != "" {
+			activeMissions++
+		}
+	}
+	return openRoles, activeMissions
+}
+
+func drawCharacterRosterHUDCountBadge(screen *ebiten.Image, centerX, centerY float32, count int, fill color.RGBA) {
+	const radius = 8.0
+	vector.FillCircle(screen, centerX, centerY, radius, fill, true)
+	drawUILabel(screen, gameui.Rect{
+		X: float64(centerX - radius), Y: float64(centerY - 7),
+		W: radius * 2, H: 14,
+	}, itoa(count), ColorWhite, gameui.TextSmall, gameui.TextAlignCenter)
+}
+
+func drawCharacterRosterHUDButton(screen *ebiten.Image, gs *state.GameState, open bool) {
 	button := buildCharacterRosterHUDButton()
 	centerX := float32(button.X + button.W/2)
 	centerY := float32(button.Y + button.H/2)
@@ -64,6 +128,12 @@ func drawCharacterRosterHUDButton(screen *ebiten.Image, open bool) {
 	vector.FillCircle(screen, centerX, centerY, float32(button.W/2), fill, true)
 	vector.StrokeCircle(screen, centerX, centerY, float32(button.W/2-1), 1.5, border, true)
 	gameui.DrawIcon(screen, button.Icon, button.X+(button.W-button.IconSize)/2, button.Y+(button.H-button.IconSize)/2, button.IconSize, ColorWhite)
+
+	openRoles, activeMissions := characterRosterHUDCounts(gs)
+	if openRoles > 0 {
+		drawCharacterRosterHUDCountBadge(screen, centerX+11, centerY-15, openRoles, color.RGBA{170, 42, 32, 255})
+	}
+	drawCharacterRosterHUDCountBadge(screen, centerX+11, centerY+15, activeMissions, color.RGBA{218, 126, 35, 255})
 }
 
 func characterRosterPanelRect() gameui.Rect {
@@ -461,10 +531,10 @@ func characterRosterAssignmentOptionButtonForRole(column gameui.Rect, rowIndex, 
 }
 
 func characterCouncilRoles(gs *state.GameState) []scenario.CouncilRoleDefinition {
-	if gs == nil {
+	if gs == nil || gs.CouncilConfig.Roles == nil {
 		return scenario.DefaultCharacterCouncilConfig().Roles
 	}
-	return gs.CouncilConfig.WithDefaults().Roles
+	return gs.CouncilConfig.Roles
 }
 
 func characterCanBeAssignedToAnyCouncilRole(gs *state.GameState, characterID string) bool {

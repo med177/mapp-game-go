@@ -732,7 +732,7 @@ func drawActiveWarsHUDButton(screen *ebiten.Image, gs *state.GameState, open boo
 
 	count := countActiveWars(gs)
 	if count > 0 {
-		badgeX, badgeY := centerX+8, centerY-12
+		badgeX, badgeY := centerX+11, centerY-15
 		vector.FillCircle(screen, badgeX, badgeY, 8, color.RGBA{170, 42, 32, 255}, true)
 		drawUILabel(screen, gameui.Rect{X: float64(badgeX - 8), Y: float64(badgeY - 7), W: 16, H: 14}, itoa(count), ColorWhite, gameui.TextSmall, gameui.TextAlignCenter)
 	}

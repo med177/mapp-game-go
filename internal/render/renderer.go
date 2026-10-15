@@ -2524,7 +2524,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 		nearestEvent, hasNearestEvent := r.nearestEventCodexEntry()
 		nearestGeneralEvent, hasNearestGeneralEvent := r.nearestGeneralEventCodexEntry()
 		DrawBottomPanel(screen, r.gs, r.SelectedArmy, r.showArmyDetailPanel, r.showRecruitPanel, recruitEnabled, recruitReason, r.showTrade, r.showDiplomacy, r.showTech, r.showImperialPanel, r.showActiveWars, r.AIControlsPlayerFaction, r.AIControlsPlayerEconomy, r.mapMode)
-		drawCharacterRosterHUDButton(screen, r.showCharacterRoster)
+		drawCharacterRosterHUDButton(screen, r.gs, r.showCharacterRoster)
 		var nearestEventPtr *EventCodexEntry
 		if hasNearestEvent {
 			nearestEventPtr = &nearestEvent
