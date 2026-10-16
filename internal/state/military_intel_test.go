@@ -66,6 +66,45 @@ func TestMilitaryPowerEstimateTechnologyRevealsExactValue(t *testing.T) {
 	}
 }
 
+func TestNearbyArmyIntelTechnologyIsRegionScoped(t *testing.T) {
+	gs := &GameState{
+		DecisionSeed: 19,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"observer": {ID: "observer", Research: faction.ResearchState{Completed: map[string]bool{"nearby": true}}},
+			"enemy":    {ID: "enemy"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"home": {ID: "home", Neighbors: []world.RegionID{"near"}},
+			"near": {ID: "near", Neighbors: []world.RegionID{"home"}},
+			"far":  {ID: "far"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"observer_army": {ID: "observer_army", OwnerID: "observer", RegionID: "home"},
+			"near_army":     {ID: "near_army", OwnerID: "enemy", RegionID: "near", Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}}},
+			"far_army":      {ID: "far_army", OwnerID: "enemy", RegionID: "far", Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}}},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", Attack: 50, Defense: 30, HP: 100},
+		},
+		TechTypes: map[string]*tech.Technology{
+			"nearby": {ID: "nearby", Effects: tech.Effects{RevealNearbyArmyIntel: true}},
+		},
+	}
+
+	if !HasNearbyArmyIntel(gs, "observer", "near") || !HasNearbyArmyIntel(gs, "observer", "home") {
+		t.Fatal("yakın ordu istihbaratı aynı/komşu bölgede sağlanmadı")
+	}
+	if HasNearbyArmyIntel(gs, "observer", "far") {
+		t.Fatal("yakın ordu istihbaratı uzak bölgeye yayıldı")
+	}
+	if _, exact := ArmyPowerEstimate(gs, "observer", gs.Armies["near_army"]); !exact {
+		t.Fatal("komşu bölgedeki ordunun gücü kesin görünmedi")
+	}
+	if _, exact := ArmyPowerEstimate(gs, "observer", gs.Armies["far_army"]); exact {
+		t.Fatal("uzak bölgedeki ordunun gücü kesin göründü")
+	}
+}
+
 func TestTemporaryMilitaryIntelIsTargetedAndExpires(t *testing.T) {
 	gs := &GameState{
 		Factions: map[faction.FactionID]*faction.Faction{

@@ -568,7 +568,7 @@ func aiNavalMissionMove(gs *state.GameState, fleet *army.Army, ctx *StrategicCon
 			if !aiCanDisembarkToLand(gs, fleet, target) {
 				return "", true
 			}
-			if defender := aiEnemyArmyInRegion(gs, fleet.OwnerID, target.ID); defender != nil && aiLandingStrength(gs, fleet) <= aiArmyStrength(gs, defender) {
+			if defender := aiEnemyArmyInRegion(gs, fleet.OwnerID, target.ID); defender != nil && aiLandingStrength(gs, fleet) <= aiArmyStrengthAsSeenBy(gs, faction.FactionID(fleet.OwnerID), defender) {
 				return "", true
 			}
 			return target.ID, true
@@ -636,7 +636,7 @@ func aiRetargetLoadedNavalMissionToWarCoast(gs *state.GameState, fleet *army.Arm
 			continue
 		}
 		defender := aiEnemyArmyInRegion(gs, fleet.OwnerID, region.ID)
-		if defender != nil && landingStrength <= aiArmyStrength(gs, defender) {
+		if defender != nil && landingStrength <= aiArmyStrengthAsSeenBy(gs, faction.FactionID(fleet.OwnerID), defender) {
 			continue
 		}
 		landingSea, seaDistance := aiBestLandingSeaForContext(ctx, fleet.RegionID, region)

@@ -1243,9 +1243,9 @@ func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.Fact
 			defender := gs.SelectBattleDefender(attacker, target.ID, false)
 			defenderPower := 0
 			if defender != nil {
-				defenderPower = aiArmyStrength(gs, defender)
+				defenderPower = aiArmyStrengthAsSeenBy(gs, fid, defender)
 			}
-			shouldOffer = siege.TurnsElapsed >= 2 && (siege.BreachLevel >= 1 || defenderPower == 0 || aiArmyStrength(gs, attacker) >= defenderPower*125/100)
+			shouldOffer = siege.TurnsElapsed >= 2 && (siege.BreachLevel >= 1 || defenderPower == 0 || aiArmyStrengthAsSeenBy(gs, fid, attacker) >= defenderPower*125/100)
 			if shouldOffer && aiDiplomacyOfferRoll(gs, fid, gs.PlayerFactionID, diplomacy.ActionProposeSurrender) >= 70 {
 				shouldOffer = false
 			}
@@ -1257,9 +1257,9 @@ func aiHandleSiegeSurrenderOffersWithSteps(gs *state.GameState, fid faction.Fact
 			defender := gs.SelectBattleDefender(attacker, target.ID, false)
 			defenderPower := 0
 			if defender != nil {
-				defenderPower = aiArmyStrength(gs, defender)
+				defenderPower = aiArmyStrengthAsSeenBy(gs, fid, defender)
 			}
-			attackerPower := aiArmyStrength(gs, attacker)
+			attackerPower := aiArmyStrengthAsSeenBy(gs, fid, attacker)
 			shouldOffer = defender != nil && !gs.HasCapableSiegeReliefArmy(attacker, target) && siege.TurnsElapsed >= 3 && (siege.BreachLevel >= 1 || defenderPower*100 < attackerPower*80)
 			if shouldOffer && aiDiplomacyOfferRoll(gs, fid, gs.PlayerFactionID, diplomacy.ActionProposeSurrender) >= 60 {
 				shouldOffer = false

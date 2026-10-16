@@ -60,6 +60,9 @@ func ArmyPowerEstimate(gs *GameState, observer faction.FactionID, armyRef *army.
 		HasTemporaryRegionMilitaryIntel(gs, observer, armyRef.RegionID) || debugRevealMilitaryPower(gs) {
 		return power, true
 	}
+	if HasNearbyArmyIntel(gs, observer, armyRef.RegionID) {
+		return power, true
+	}
 	land, _ := applyMilitaryIntelError(gs, observer, faction.FactionID(armyRef.OwnerID), "army:"+string(armyRef.ID), power, 0)
 	return land, false
 }
@@ -79,6 +82,9 @@ func ArmyDefenseEstimate(gs *GameState, observer faction.FactionID, armyRef *arm
 	if gs == nil || observer == target || HasMilitaryIntel(gs, observer) ||
 		HasTemporaryMilitaryIntel(gs, observer, target) ||
 		HasTemporaryRegionMilitaryIntel(gs, observer, armyRef.RegionID) || debugRevealMilitaryPower(gs) {
+		return power, true
+	}
+	if HasNearbyArmyIntel(gs, observer, armyRef.RegionID) {
 		return power, true
 	}
 	land, _ := applyMilitaryIntelError(gs, observer, faction.FactionID(armyRef.OwnerID), "army-defense:"+string(armyRef.ID), power, 0)
@@ -115,6 +121,36 @@ func HasMilitaryIntel(gs *GameState, observer faction.FactionID) bool {
 		return false
 	}
 	return tech.ComputeEffects(fx.Research.Completed, gs.TechTypes).RevealEnemyStrength
+}
+
+// HasNearbyArmyIntel returns true when an observer with the nearby-intel
+// technology has an army in the target region or an adjacent region.
+func HasNearbyArmyIntel(gs *GameState, observer faction.FactionID, target world.RegionID) bool {
+	if gs == nil || observer == "" || target == "" || gs.TechTypes == nil {
+		return false
+	}
+	fx := gs.Factions[observer]
+	if fx == nil || !tech.ComputeEffects(fx.Research.Completed, gs.TechTypes).RevealNearbyArmyIntel {
+		return false
+	}
+	for _, observerArmy := range gs.Armies {
+		if observerArmy == nil || observerArmy.OwnerID != string(observer) {
+			continue
+		}
+		if observerArmy.RegionID == target {
+			return true
+		}
+		region := gs.Regions[observerArmy.RegionID]
+		if region == nil {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			if neighborID == target {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // HasTemporaryMilitaryIntel reports whether an observer has current, targeted

@@ -201,7 +201,7 @@ func chooseBestMoveWithStrategicContext(gs *state.GameState, a *army.Army, strat
 			enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, n.ID)
 			if enemyArmy != nil {
 				landingStr := aiLandingStrength(gs, a)
-				defStr := aiArmyStrength(gs, enemyArmy)
+				defStr := aiArmyStrengthAsSeenBy(gs, faction.FactionID(a.OwnerID), enemyArmy)
 				if landingStr <= defStr {
 					continue
 				}
@@ -327,7 +327,7 @@ func scoreMoveWithContextRaw(gs *state.GameState, a *army.Army, target *world.Re
 				enemyArmy := aiEnemyArmyInRegion(gs, a.OwnerID, target.ID)
 				if enemyArmy != nil {
 					_, enemyStance := relationScore(gs, a.OwnerID, enemyArmy.OwnerID)
-					if enemyStance == faction.StanceWar && aiArmyStrength(gs, a) > aiArmyStrength(gs, enemyArmy) {
+					if enemyStance == faction.StanceWar && aiArmyStrength(gs, a) > aiArmyStrengthAsSeenBy(gs, faction.FactionID(a.OwnerID), enemyArmy) {
 						if stance == faction.StanceAllied {
 							return 65
 						}
@@ -369,7 +369,7 @@ func scoreMoveWithContextRaw(gs *state.GameState, a *army.Army, target *world.Re
 		if ea.RegionID != target.ID || ea.OwnerID == a.OwnerID {
 			continue
 		}
-		if aiArmyStrength(gs, a) > aiArmyStrength(gs, ea) {
+		if aiArmyStrength(gs, a) > aiArmyStrengthAsSeenBy(gs, faction.FactionID(a.OwnerID), ea) {
 			_, stance := relationScore(gs, a.OwnerID, targetOwnerID)
 			if stance == faction.StanceWar {
 				return 95 + planBonus

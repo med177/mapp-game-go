@@ -134,6 +134,9 @@ func techEffectsSummary(e tech.Effects, fallback string) string {
 	if e.RevealEnemyStrength {
 		parts = append(parts, "Tam istihbarat")
 	}
+	if e.RevealNearbyArmyIntel {
+		parts = append(parts, "Yakın ordularda tam istihbarat")
+	}
 	if len(parts) == 0 {
 		return strings.TrimSpace(fallback)
 	}

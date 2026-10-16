@@ -4,7 +4,9 @@
   "roles": [
     {
       "id": "head_of_house",
-      "name_tr": "Hane Lideri",
+      "name_tr": "Lider",
+      "no_cost": true,
+      "set_commander_army": true,
       "effects": {
         "satisfaction_points": 1,
         "military_power_mod": 1.01,
@@ -17,8 +19,39 @@
       }
     },
     {
+      "id": "heir",
+      "name_tr": "Veliaht",
+      "no_cost": true,
+      "set_commander_army": true,
+      "effects": {
+        "satisfaction_points": 1,
+        "relation_bonus_points": 1
+      },
+      "per_level": {
+        "satisfaction_points": 1,
+        "relation_bonus_points": 1
+      }
+    },
+    {
+      "id": "military_responsible",
+      "name_tr": "Serasker",
+      "set_commander_army": true,
+      "allowed_character_types": ["administrator", "commander"],
+      "effects": {
+        "military_power_mod": 1.03,
+        "commander_power_mod": 1.03
+      },
+      "per_level": {
+        "military_power_mod": 1.01,
+        "commander_power_mod": 1.01
+      },
+      "trait_fallback_effects": {
+        "military_power_mod": 0.99
+      }
+    },
+    {
       "id": "treasurer",
-      "name_tr": "Hazine Sorumlusu",
+      "name_tr": "Hazinedar",
       "effects": {
         "income_mod": 1.05
       },
@@ -37,36 +70,8 @@
       }
     },
     {
-      "id": "heir",
-      "name_tr": "Veliaht",
-      "effects": {
-        "satisfaction_points": 1,
-        "relation_bonus_points": 1
-      },
-      "per_level": {
-        "satisfaction_points": 1,
-        "relation_bonus_points": 1
-      }
-    },
-    {
-      "id": "military_responsible",
-      "name_tr": "Askeri Sorumlu",
-      "allowed_character_types": ["commander"],
-      "effects": {
-        "military_power_mod": 1.03,
-        "commander_power_mod": 1.03
-      },
-      "per_level": {
-        "military_power_mod": 1.01,
-        "commander_power_mod": 1.01
-      },
-      "trait_fallback_effects": {
-        "military_power_mod": 0.99
-      }
-    },
-    {
       "id": "research_responsible",
-      "name_tr": "Bilim Sorumlusu",
+      "name_tr": "Din İşleri",
       "effects": {
         "research_speed_mod": 1.05
       },

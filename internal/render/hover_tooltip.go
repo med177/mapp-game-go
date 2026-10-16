@@ -275,6 +275,10 @@ func armyPanelCombatView(gs *state.GameState, a *army.Army, embarked bool) (army
 	if gs == nil || a == nil {
 		return army.Army{}, combat.BattleContextLand, false, false
 	}
+	intel := playerArmyIntelLevel(gs, a)
+	if intel == armyIntelNone {
+		return army.Army{}, combat.BattleContextLand, false, false
+	}
 	view := *a
 	intelLimited := false
 	context := combat.BattleContextLand
@@ -288,20 +292,24 @@ func armyPanelCombatView(gs *state.GameState, a *army.Army, embarked bool) (army
 		view.Commander = a.EmbarkedCommander
 		view.EmbarkedCommander = nil
 		context = combat.BattleContextAmphibious
-		return view, context, false, true
+		if intel != armyIntelFull {
+			revealed := scoutedEnemyRevealCount(len(view.Units), false, 0.50)
+			view.Units = view.Units[:revealed]
+			view.Commander = nil
+			view.Morale = army.DefaultArmyMorale
+			intelLimited = true
+		}
+		return view, context, intelLimited, true
 	}
 	if a.IsNaval {
 		context = combat.BattleContextNaval
 	}
-	if playerCanSeeArmyDetails(gs, a) {
+	if intel == armyIntelFull {
 		return view, context, false, true
 	}
 
-	fullIntel := playerHasRevealEnemyStrength(gs)
+	fullIntel := false
 	siegeIntel := enemyUnderPlayerSiege(gs, a)
-	if !fullIntel && !enemyArmyInPlayerMoveRange(gs, a) && !siegeIntel {
-		return army.Army{}, context, false, false
-	}
 	revealRatio := 0.50
 	if siegeIntel {
 		revealRatio = 0.75
@@ -315,6 +323,8 @@ func armyPanelCombatView(gs *state.GameState, a *army.Army, embarked bool) (army
 		}
 		view.Units = append(view.Units, a.Units[unitIndex])
 	}
+	view.Commander = nil
+	view.EmbarkedCommander = nil
 	// Düşman ordusunun toplam morali ve teknoloji bilgisi istihbaratla açılmıyorsa
 	// gizli state'i kullanma; görünür birlikleri nötr moral ile sınırla.
 	view.Morale = army.DefaultArmyMorale
@@ -423,13 +433,17 @@ func (r *Renderer) drawArmyMarkerHoverTooltip(screen *ebiten.Image) {
 	if a == nil {
 		return
 	}
-	if !playerCanSeeArmyDetails(r.gs, a) && !enemyArmyInPlayerMoveRange(r.gs, a) &&
-		!enemyUnderPlayerSiege(r.gs, a) && !playerHasRevealEnemyStrength(r.gs) {
+	if playerArmyIntelLevel(r.gs, a) == armyIntelNone {
 		drawHiddenArmyMarkerTooltip(screen, a, fx, fy)
 		return
 	}
-	casualtyHP := armyMarkerCasualtyHP(r.gs, a)
-	hasCasualtyWarning := r.armyLogisticsDamageVisible(aid)
+	fullIntel := playerArmyIntelLevel(r.gs, a) == armyIntelFull
+	casualtyHP := 0
+	hasCasualtyWarning := false
+	if fullIntel {
+		casualtyHP = armyMarkerCasualtyHP(r.gs, a)
+		hasCasualtyWarning = r.armyLogisticsDamageVisible(aid)
+	}
 	drawArmyMarkerUnitSummaryTooltip(screen, r.gs, a, fx, fy, casualtyHP, hasCasualtyWarning)
 }
 
@@ -454,13 +468,16 @@ func armyMarkerSummaryRows(gs *state.GameState, a *army.Army) []armyMergePreview
 		return nil
 	}
 	units := a.Units
-	if !playerCanSeeArmyDetails(gs, a) {
-		fullIntel := playerHasRevealEnemyStrength(gs)
+	intel := playerArmyIntelLevel(gs, a)
+	if intel == armyIntelNone {
+		return nil
+	}
+	if intel != armyIntelFull {
 		revealRatio := 0.50
 		if enemyUnderPlayerSiege(gs, a) {
 			revealRatio = 0.75
 		}
-		revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
+		revealed := scoutedEnemyRevealCount(len(a.Units), false, revealRatio)
 		units = make([]army.Unit, 0, revealed)
 		for displayIndex := 0; displayIndex < revealed; displayIndex++ {
 			unitIndex := armyPanelUnitIndex(a.Units, gs.UnitTypeOrder, displayIndex)
@@ -505,6 +522,9 @@ func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState,
 	rows := armyMarkerSummaryRows(gs, a)
 	rowLines := armySummaryRowCount(len(rows))
 	commander, _ := armyPanelDisplayedCommander(a)
+	if playerArmyIntelLevel(gs, a) != armyIntelFull {
+		commander = nil
+	}
 	var effectLines []commanderEffectLine
 	if commander != nil {
 		effectLines = commanderCardEffectLines(commander)
@@ -526,7 +546,7 @@ func drawArmyMarkerUnitSummaryTooltip(screen *ebiten.Image, gs *state.GameState,
 		label = "Filo"
 	}
 	header := label + ": " + itoa(len(a.Units)) + " birim"
-	if !playerCanSeeArmyDetails(gs, a) && !playerHasRevealEnemyStrength(gs) {
+	if playerArmyIntelLevel(gs, a) == armyIntelScouted {
 		header = label + ": kısmi istihbarat"
 	}
 	DrawText(screen, header, contentX, y+10, FaceSmall, ColorGold)

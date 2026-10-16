@@ -5,6 +5,10 @@ last_updated: 2026-10-16
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-16: Beş Kralın Savaşı'nda Korucu Keşifçiliği artık yalnızca aynı veya
+  komşu bölgelerdeki düşman orduları için tam istihbarat sağlar; uzak orduların
+  ayrıntıları gizli kalır. Global `reveal_enemy_strength` etkisi ayrı tutuldu.
+
 - 2026-10-15: Hane HUD düğmesi, atanmayı bekleyen konsey rolü sayısını kırmızı
   rozetle (tüm roller doluysa yeşil `0`) ve aktif görevdeki oyuncu
   karakterlerini sağ alt turuncu rozetle gösterir.

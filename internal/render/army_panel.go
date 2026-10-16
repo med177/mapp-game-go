@@ -59,6 +59,14 @@ type armyPanelLayout struct {
 	commanderW, commanderH         float32
 }
 
+type armyIntelLevel uint8
+
+const (
+	armyIntelNone armyIntelLevel = iota
+	armyIntelScouted
+	armyIntelFull
+)
+
 const armyPanelHeaderCloseGap = float64(8)
 
 // armyPanelHeaderRight, başlık satırındaki metinlerin kullanılabilir sağ
@@ -89,18 +97,17 @@ func DrawArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, aid army.Arm
 	if !ok {
 		return
 	}
-	if !playerCanSeeArmyDetails(gs, a) {
-		fullIntel := playerHasRevealEnemyStrength(gs)
-		siegeIntel := enemyUnderPlayerSiege(gs, a)
-		if fullIntel || enemyArmyInPlayerMoveRange(gs, a) || siegeIntel {
-			revealRatio := 0.50
-			if siegeIntel {
-				revealRatio = 0.75
-			}
-			drawScoutedEnemyArmyDetailPanel(screen, gs, a, fullIntel, revealRatio)
-		} else {
+	if intel := playerArmyIntelLevel(gs, a); intel != armyIntelFull {
+		if intel == armyIntelNone {
 			drawEnemyArmyDetailPanel(screen, gs, a)
+			return
 		}
+		siegeIntel := enemyUnderPlayerSiege(gs, a)
+		revealRatio := 0.50
+		if siegeIntel {
+			revealRatio = 0.75
+		}
+		drawScoutedEnemyArmyDetailPanel(screen, gs, a, false, revealRatio)
 		return
 	}
 
@@ -530,12 +537,15 @@ func DrawEmbarkedArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, flee
 	drawArmyPowerFooter(screen, nil, nil, layout, displayArmy.TotalStrength(gs.UnitTypes), displayArmy.TotalDefense(gs.UnitTypes), "Güç", "")
 }
 
-func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout, config scenario.CharacterCouncilConfig) {
+func drawEnemyArmyCommanderCard(screen *ebiten.Image, a *army.Army, layout armyPanelLayout, config scenario.CharacterCouncilConfig, visible bool) {
 	commander, role := armyPanelDisplayedCommander(a)
+	if !visible {
+		commander = nil
+	}
 	drawCommanderSummaryCard(screen, commander, float64(layout.commanderX), float64(layout.commanderY), float64(layout.commanderW), float64(layout.commanderH), commanderCardOptions{
 		Role:            role,
-		EmptySummary:    "-",
-		EmptyEffectText: "-",
+		EmptySummary:    "Komutan bilgisi gizli",
+		EmptyEffectText: "",
 		ShowEffectText:  false,
 		MaxTraitRows:    1,
 		CouncilConfig:   config,
@@ -595,7 +605,7 @@ func drawEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, a *army
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
 	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
 
-	drawEnemyArmyCommanderCard(screen, a, layout, gs.CouncilConfig)
+	drawEnemyArmyCommanderCard(screen, a, layout, gs.CouncilConfig, false)
 
 	const totalSlots = army.MaxArmySize
 	for i := 0; i < totalSlots; i++ {
@@ -617,6 +627,22 @@ func playerHasRevealEnemyStrength(gs *state.GameState) bool {
 		return false
 	}
 	return tech.ComputeEffects(f.Research.Completed, gs.TechTypes).RevealEnemyStrength
+}
+
+func playerArmyIntelLevel(gs *state.GameState, a *army.Army) armyIntelLevel {
+	if gs == nil || a == nil {
+		return armyIntelNone
+	}
+	if playerCanSeeArmyDetails(gs, a) || playerHasRevealEnemyStrength(gs) ||
+		state.HasTemporaryMilitaryIntel(gs, gs.PlayerFactionID, faction.FactionID(a.OwnerID)) ||
+		state.HasTemporaryRegionMilitaryIntel(gs, gs.PlayerFactionID, a.RegionID) ||
+		state.HasNearbyArmyIntel(gs, gs.PlayerFactionID, a.RegionID) {
+		return armyIntelFull
+	}
+	if enemyArmyInPlayerMoveRange(gs, a) || enemyUnderPlayerSiege(gs, a) {
+		return armyIntelScouted
+	}
+	return armyIntelNone
 }
 
 func enemyUnderPlayerSiege(gs *state.GameState, a *army.Army) bool {
@@ -980,11 +1006,12 @@ func armyPanelPowerFooterRect(gs *state.GameState, aid army.ArmyID, embarked boo
 		return gameui.Rect{X: float64(footer.powerX), Y: float64(footerY), W: MeasureText(text, FaceSmall), H: float64(siegeFooterH)}, true
 	}
 
-	fullIntel := playerHasRevealEnemyStrength(gs)
-	siegeIntel := enemyUnderPlayerSiege(gs, a)
-	if !fullIntel && !enemyArmyInPlayerMoveRange(gs, a) && !siegeIntel {
+	intel := playerArmyIntelLevel(gs, a)
+	if intel == armyIntelNone {
 		return gameui.Rect{}, false
 	}
+	fullIntel := intel == armyIntelFull
+	siegeIntel := enemyUnderPlayerSiege(gs, a)
 	revealRatio := 0.50
 	if siegeIntel {
 		revealRatio = 0.75
@@ -1028,7 +1055,8 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	if location != "" {
 		headerLeft += "  |  " + location
 	}
-	countStr := "Birim: " + itoa(len(a.Units)) + "  |  Kısmi istihbarat (%" + itoa(int(revealRatio*100+0.5)) + ")"
+	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
+	countStr := "Görünen: " + itoa(revealed) + "  |  Kısmi istihbarat (%" + itoa(int(revealRatio*100+0.5)) + ")"
 	if fullIntel {
 		countStr = "Birim: " + itoa(len(a.Units)) + "  |  Tam istihbarat"
 	}
@@ -1044,9 +1072,8 @@ func drawScoutedEnemyArmyDetailPanel(screen *ebiten.Image, gs *state.GameState, 
 	vector.StrokeLine(screen, px+armyPanelPadX, sepY, px+panelW-armyPanelPadX, sepY, 1, panelBorder, false)
 	vector.StrokeLine(screen, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, sepY+armyPanelPadY/2, layout.commanderX+layout.commanderW+armyPanelColumnGap/2, py+panelH-siegeFooterH-armyPanelPadY/2, 1, color.RGBA{70, 56, 32, 180}, false)
 
-	drawEnemyArmyCommanderCard(screen, a, layout, gs.CouncilConfig)
+	drawEnemyArmyCommanderCard(screen, a, layout, gs.CouncilConfig, false)
 
-	revealed := scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
 	for i := 0; i < totalSlots; i++ {
 		cx, cy := armyPanelUnitPosition(layout, i)
 
@@ -1698,14 +1725,17 @@ func armyPanelUnitVisible(gs *state.GameState, a *army.Army, displayIndex int) b
 	if playerCanSeeArmyDetails(gs, a) {
 		return true
 	}
-	fullIntel := playerHasRevealEnemyStrength(gs)
-	siegeIntel := enemyUnderPlayerSiege(gs, a)
-	if !fullIntel && !enemyArmyInPlayerMoveRange(gs, a) && !siegeIntel {
+	intel := playerArmyIntelLevel(gs, a)
+	if intel == armyIntelFull {
+		return true
+	}
+	if intel == armyIntelNone {
 		return false
 	}
+	siegeIntel := enemyUnderPlayerSiege(gs, a)
 	revealRatio := 0.50
 	if siegeIntel {
 		revealRatio = 0.75
 	}
-	return displayIndex < scoutedEnemyRevealCount(len(a.Units), fullIntel, revealRatio)
+	return displayIndex < scoutedEnemyRevealCount(len(a.Units), false, revealRatio)
 }

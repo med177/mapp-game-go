@@ -114,6 +114,16 @@ func aiEffectiveNavalPower(gs *state.GameState, fleet *army.Army, attacking bool
 	return maxInt(1, int(math.Round(float64(aiArmyStrength(gs, fleet))*multiplier)))
 }
 
+func aiEffectiveNavalPowerAsSeenBy(gs *state.GameState, observer faction.FactionID, fleet *army.Army, attacking bool) int {
+	actual := aiEffectiveNavalPower(gs, fleet, attacking)
+	base := aiArmyStrength(gs, fleet)
+	if base <= 0 {
+		return actual
+	}
+	estimated := aiArmyStrengthAsSeenBy(gs, observer, fleet)
+	return maxInt(1, actual*estimated/base)
+}
+
 func aiHostileNavalPowerAtSea(gs *state.GameState, owner faction.FactionID, seaRegionID world.RegionID) int {
 	if gs == nil || owner == "" || seaRegionID == "" {
 		return 0
@@ -127,7 +137,7 @@ func aiHostileNavalPowerAtSea(gs *state.GameState, owner faction.FactionID, seaR
 		if relation == nil || relation.Stance != faction.StanceWar {
 			continue
 		}
-		power += aiEffectiveNavalPower(gs, fleet, false)
+		power += aiEffectiveNavalPowerAsSeenBy(gs, owner, fleet, false)
 	}
 	return power
 }
@@ -148,7 +158,7 @@ func aiNavalPowerMaps(gs *state.GameState, owner faction.FactionID) (map[world.R
 		}
 		relation := diplomacy.Relation(gs, owner, faction.FactionID(fleet.OwnerID))
 		if relation != nil && relation.Stance == faction.StanceWar {
-			hostile[fleet.RegionID] += aiEffectiveNavalPower(gs, fleet, false)
+			hostile[fleet.RegionID] += aiEffectiveNavalPowerAsSeenBy(gs, owner, fleet, false)
 		}
 	}
 	return hostile, friendly

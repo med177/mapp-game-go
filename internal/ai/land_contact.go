@@ -45,7 +45,7 @@ func aiLandContactShouldRetreat(gs *state.GameState, current, opponent *army.Arm
 		return false
 	}
 	currentPower := aiArmyStrength(gs, current)
-	opponentPower := aiArmyStrength(gs, opponent)
+	opponentPower := aiArmyStrengthAsSeenBy(gs, faction.FactionID(current.OwnerID), opponent)
 	if currentPower <= 0 || opponentPower <= 0 {
 		return false
 	}

@@ -886,6 +886,12 @@ araştırma başlatılırken gereken tur sayısını, `research_cost_mod` poziti
 ise altın maliyetini azaltır; devam eden araştırmanın kayıtlı `turns_left` değeri
 değiştirilmez.
 
+`effects.reveal_enemy_strength: true` gözlemcinin düşman devletlerin toplam
+askerî gücünü global olarak kesin görmesini sağlar.
+`effects.reveal_nearby_army_intel: true` ise yalnızca gözlemci ordusunun
+bulunduğu veya komşu bölgelerdeki düşman orduları için tam istihbarat verir;
+uzak bölgeleri açığa çıkarmaz. Etki alanları opsiyoneldir ve ayrı ayrı uygulanır.
+
 ---
 
 ## events.json

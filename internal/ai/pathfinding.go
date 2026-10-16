@@ -107,7 +107,7 @@ func newAIRouteSnapshot(gs *state.GameState, armyRef *army.Army, mode aiRouteMod
 			continue
 		}
 		snapshot.hostileArmyPresent[candidate.RegionID] = true
-		power := aiArmyStrength(gs, candidate)
+		power := aiArmyStrengthAsSeenBy(gs, snapshot.ownerID, candidate)
 		snapshot.hostilePower[candidate.RegionID] += power
 		region := gs.Regions[candidate.RegionID]
 		if region == nil {

@@ -81,8 +81,8 @@
   },
   {
     "category": "military",
-    "description_tr": "Sınır gözcüleri, iz sürücüler ve kuzey keşifçileri düşman hareketlerini önceden haber verir. Düşman gücü açığa çıkar, hareket +1.",
-    "effects": { "reveal_enemy_strength": true, "move_bonus": 1 },
+    "description_tr": "Sınır gözcüleri, iz sürücüler ve kuzey keşifçileri düşman hareketlerini önceden haber verir. Aynı veya komşu bölgedeki düşman orduları hakkında tam istihbarat sağlar, hareket +1.",
+    "effects": { "reveal_nearby_army_intel": true, "move_bonus": 1 },
     "gold_cost": 300,
     "id": "ranger_scouting",
     "name_tr": "Korucu Keşifçiliği",

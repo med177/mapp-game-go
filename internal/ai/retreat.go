@@ -86,7 +86,7 @@ func aiSiegeDefenderShouldRetreat(gs *state.GameState, defender *army.Army, sieg
 		return false
 	}
 	defenderPower := aiArmyStrength(gs, defender)
-	attackerPower := aiArmyStrength(gs, attacker)
+	attackerPower := aiArmyStrengthAsSeenBy(gs, faction.FactionID(defender.OwnerID), attacker)
 	if attackerPower <= 0 {
 		return false
 	}
@@ -227,7 +227,7 @@ func aiHostilePowerInRegions(gs *state.GameState, owner faction.FactionID, regio
 		if relation == nil || relation.Stance != faction.StanceWar {
 			continue
 		}
-		total += aiArmyStrength(gs, candidate)
+		total += aiArmyStrengthAsSeenBy(gs, owner, candidate)
 	}
 	return total
 }

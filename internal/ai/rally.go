@@ -129,7 +129,7 @@ func aiRallyRegionSafetyScore(ctx *StrategicContext, regionID world.RegionID, ta
 		}
 		for _, neighborID := range region.Neighbors {
 			if armyRef.RegionID == neighborID {
-				enemyPower += aiArmyStrength(ctx.gs, armyRef)
+				enemyPower += aiArmyStrengthAsSeenBy(ctx.gs, ctx.FactionID, armyRef)
 				break
 			}
 		}

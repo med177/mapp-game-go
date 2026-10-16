@@ -1,13 +1,13 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-10-13
+last_updated: 2026-10-16
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
 # Diplomasi Sistemi
 
-**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`, `internal/diplomacy/negotiation.go`, `internal/diplomacy/vassalage.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/diplomacy/imperial.go`, `internal/diplomacy/imperial_politics.go`, `internal/faction/faction.go`, `internal/game/game.go`, `internal/render/diplomacy_negotiation.go`
+**Kaynak:** `internal/diplomacy/diplomacy.go`, `internal/diplomacy/offers.go`, `internal/diplomacy/negotiation.go`, `internal/diplomacy/vassalage.go`, `internal/diplomacy/peace_assessment.go`, `internal/diplomacy/alliance_strategy.go`, `internal/diplomacy/imperial.go`, `internal/diplomacy/imperial_politics.go`, `internal/faction/faction.go`, `internal/game/game.go`, `internal/render/diplomacy_negotiation.go`, `internal/render/army_panel.go`, `internal/render/hover_tooltip.go`, `internal/ai/ai.go`
 
 `MilitaryPowerBreakdown()` kara ve donanma ordularının etkin güçlerini ayrı
 hesaplar; `MilitaryPower()` bu iki değerin toplamıdır. Etkin güç, birimin saldırı
@@ -22,6 +22,20 @@ kendi gücü ve `reveal_enemy_strength` etkisine sahip gözlemci için değer ke
 Gerçek savaş çözümlemesi bu sis perdesinden etkilenmez. AI'nin nadir riskli savaş
 ilanları `WarLedger.RecklessDeclaration` ile işaretlenir ve barış değerlendirmesine
 ek baskı verir.
+
+AI'nin tek düşman ordusu hakkındaki stratejik ve taktik güç değerlendirmeleri de
+gözlemciye göre yapılır: kendi orduları, aynı/komşu bölgede görülen ordular ve
+geçerli istihbarat raporu bulunan hedefler kesin etkin gücü kullanır; uzaktaki
+ordular `state.ArmyPowerEstimate()` tahminiyle ölçeklenir. Bu sis perdesi AI'nin
+hareket, cephe, kuşatma, geri çekilme ve deniz tehdidi değerlendirmelerinde
+geçerlidir; muharebe çözümlemesinin gerçek gücünü değiştirmez.
+
+Teknoloji etkileri kapsam bakımından ayrıdır: `reveal_enemy_strength` düşman
+devletlerin toplam gücünü global olarak kesinleştirirken,
+`reveal_nearby_army_intel` yalnızca gözlemci ordusunun bulunduğu veya komşu
+bölgelerdeki düşman ordularına tam istihbarat sağlar. Harita marker'ında
+istihbarat yoksa birim/komutan/zayiat ayrıntıları gizlenir; aynı/komşu bölge
+normalde kısmi istihbarat sağlar.
 
 ## İmparatorluk Sistemi
 

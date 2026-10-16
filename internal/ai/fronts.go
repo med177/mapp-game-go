@@ -270,7 +270,7 @@ func buildAIFronts(ctx *StrategicContext) {
 			}
 			if armyRef.OwnerID == string(enemyID) {
 				if _, ok := builder.enemyRegion[armyRef.RegionID]; ok {
-					builder.front.EnemyPower += aiArmyStrength(gs, armyRef)
+					builder.front.EnemyPower += aiArmyStrengthAsSeenBy(gs, ctx.FactionID, armyRef)
 				}
 				continue
 			}
@@ -407,7 +407,7 @@ func selectAIFrontTarget(ctx *StrategicContext, front AIFront) world.RegionID {
 		}
 		for _, armyRef := range aiSortedArmies(ctx.gs) {
 			if armyRef != nil && !armyRef.IsNaval && armyRef.OwnerID == string(front.EnemyFactionID) && armyRef.RegionID == region.ID {
-				defenderPower += aiArmyStrength(ctx.gs, armyRef)
+				defenderPower += aiArmyStrengthAsSeenBy(ctx.gs, ctx.FactionID, armyRef)
 			}
 		}
 		score += friendlyAccess * 15
@@ -844,7 +844,7 @@ func aiCanDefeatSiege(ctx *StrategicContext, candidate *army.Army, target world.
 	if siegeArmy == nil || len(candidate.Units) == 0 || len(siegeArmy.Units) == 0 {
 		return false
 	}
-	return aiArmyStrength(ctx.gs, candidate)*100 >= aiArmyStrength(ctx.gs, siegeArmy)*aiReliefPowerMarginPercent
+	return aiArmyStrength(ctx.gs, candidate)*100 >= aiArmyStrengthAsSeenBy(ctx.gs, ctx.FactionID, siegeArmy)*aiReliefPowerMarginPercent
 }
 
 // selectReliefRallyGroup, tek ordunun yetmediği durumda kuşatıcıyı yenebilecek
@@ -891,7 +891,7 @@ func selectReliefRallyGroup(ctx *StrategicContext, armies []*army.Army, target w
 	for _, candidate := range candidates {
 		group = append(group, candidate)
 		groupPower += aiArmyStrength(ctx.gs, candidate)
-		if groupPower*100 >= aiArmyStrength(ctx.gs, siegeArmy)*aiReliefPowerMarginPercent {
+		if groupPower*100 >= aiArmyStrengthAsSeenBy(ctx.gs, ctx.FactionID, siegeArmy)*aiReliefPowerMarginPercent {
 			return group
 		}
 	}

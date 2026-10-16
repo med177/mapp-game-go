@@ -254,6 +254,51 @@ func aiArmyStrength(gs *state.GameState, a *army.Army) int {
 	return gs.EffectiveArmyStrength(a)
 }
 
+func aiArmyStrengthAsSeenBy(gs *state.GameState, observer faction.FactionID, target *army.Army) int {
+	if gs == nil || target == nil || observer == "" {
+		return aiArmyStrength(gs, target)
+	}
+	targetOwner := faction.FactionID(target.OwnerID)
+	actual := aiArmyStrength(gs, target)
+	if targetOwner == observer || diplomacy.SameRealm(gs, observer, targetOwner) || aiHasLocalArmyIntel(gs, observer, target.RegionID) {
+		return actual
+	}
+
+	estimate, exact := state.ArmyPowerEstimate(gs, observer, target)
+	if exact {
+		return actual
+	}
+	baseStrength := target.TotalStrength(gs.UnitTypes)
+	if baseStrength <= 0 {
+		return actual
+	}
+	return maxInt(1, actual*estimate/baseStrength)
+}
+
+func aiHasLocalArmyIntel(gs *state.GameState, observer faction.FactionID, targetRegionID world.RegionID) bool {
+	if gs == nil || observer == "" || targetRegionID == "" {
+		return false
+	}
+	for _, observerArmy := range gs.Armies {
+		if observerArmy == nil || observerArmy.OwnerID != string(observer) {
+			continue
+		}
+		if observerArmy.RegionID == targetRegionID {
+			return true
+		}
+		region := gs.Regions[observerArmy.RegionID]
+		if region == nil {
+			continue
+		}
+		for _, neighborID := range region.Neighbors {
+			if neighborID == targetRegionID {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func aiFactionMilitaryPower(gs *state.GameState, fid faction.FactionID) int {
 	if gs == nil || fid == "" {
 		return 0

@@ -49,6 +49,19 @@ func TestTechnologyReligionAvailability(t *testing.T) {
 	}
 }
 
+func TestComputeEffectsIncludesNearbyArmyIntel(t *testing.T) {
+	techs := map[string]*Technology{
+		"nearby": {ID: "nearby", Effects: Effects{RevealNearbyArmyIntel: true}},
+	}
+	effects := ComputeEffects(map[string]bool{"nearby": true}, techs)
+	if !effects.RevealNearbyArmyIntel {
+		t.Fatal("yakın ordu istihbaratı etkisi tamamlanmış teknolojiden birleştirilmedi")
+	}
+	if effects.RevealEnemyStrength {
+		t.Fatal("yakın ordu istihbaratı global düşman gücü açığına dönüşmemeliydi")
+	}
+}
+
 func TestIsUnlockedForFactionReligionContext(t *testing.T) {
 	technology := &Technology{ID: "old_gods_customs", AllowedReligions: []string{"old_gods"}}
 	research := &faction.ResearchState{Completed: map[string]bool{}}

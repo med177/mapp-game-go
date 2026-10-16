@@ -22,30 +22,31 @@ const (
 
 // Effects bir teknolojinin oyun mekanikleri üzerindeki etkilerini tanımlar.
 type Effects struct {
-	InfantryAttackMod   float64 `json:"infantry_attack_mod"`
-	CavalryAttackMod    float64 `json:"cavalry_attack_mod"`
-	SiegeAttackMod      float64 `json:"siege_attack_mod"`
-	NavalAttackMod      float64 `json:"naval_attack_mod"`
-	NavalDefenseMod     float64 `json:"naval_defense_mod"`
-	LandDefenseMod      float64 `json:"land_defense_mod"`
-	GoldPerRegion       int     `json:"gold_per_region"`
-	GrainMod            float64 `json:"grain_mod"`
-	IronMod             float64 `json:"iron_mod"`
-	TimberMod           float64 `json:"timber_mod"`
-	StoneMod            float64 `json:"stone_mod"`
-	SpiceMod            float64 `json:"spice_mod"`
-	ClothMod            float64 `json:"cloth_mod"`
-	MarketGoldMod       float64 `json:"market_gold_mod"`
-	PeaceRelationBonus  int     `json:"peace_relation_bonus"`
-	RevealEnemyStrength bool    `json:"reveal_enemy_strength"`
-	NavalMoveBonus      int     `json:"naval_move_bonus"`
-	MoveBonus           int     `json:"move_bonus"`
-	SatisfactionBonus   int     `json:"satisfaction_bonus"`
-	ConversionSpeedMod  float64 `json:"conversion_speed_mod"`
-	GoldUpkeepMod       float64 `json:"gold_upkeep_mod"`
-	GrainUpkeepMod      float64 `json:"grain_upkeep_mod"`
-	ResearchSpeedMod    float64 `json:"research_speed_mod"`
-	ResearchCostMod     float64 `json:"research_cost_mod"`
+	InfantryAttackMod     float64 `json:"infantry_attack_mod"`
+	CavalryAttackMod      float64 `json:"cavalry_attack_mod"`
+	SiegeAttackMod        float64 `json:"siege_attack_mod"`
+	NavalAttackMod        float64 `json:"naval_attack_mod"`
+	NavalDefenseMod       float64 `json:"naval_defense_mod"`
+	LandDefenseMod        float64 `json:"land_defense_mod"`
+	GoldPerRegion         int     `json:"gold_per_region"`
+	GrainMod              float64 `json:"grain_mod"`
+	IronMod               float64 `json:"iron_mod"`
+	TimberMod             float64 `json:"timber_mod"`
+	StoneMod              float64 `json:"stone_mod"`
+	SpiceMod              float64 `json:"spice_mod"`
+	ClothMod              float64 `json:"cloth_mod"`
+	MarketGoldMod         float64 `json:"market_gold_mod"`
+	PeaceRelationBonus    int     `json:"peace_relation_bonus"`
+	RevealEnemyStrength   bool    `json:"reveal_enemy_strength"`
+	RevealNearbyArmyIntel bool    `json:"reveal_nearby_army_intel"`
+	NavalMoveBonus        int     `json:"naval_move_bonus"`
+	MoveBonus             int     `json:"move_bonus"`
+	SatisfactionBonus     int     `json:"satisfaction_bonus"`
+	ConversionSpeedMod    float64 `json:"conversion_speed_mod"`
+	GoldUpkeepMod         float64 `json:"gold_upkeep_mod"`
+	GrainUpkeepMod        float64 `json:"grain_upkeep_mod"`
+	ResearchSpeedMod      float64 `json:"research_speed_mod"`
+	ResearchCostMod       float64 `json:"research_cost_mod"`
 }
 
 // Technology bir araştırılabilir teknolojiyi tanımlar.
@@ -438,6 +439,9 @@ func ComputeEffects(completed map[string]bool, allTechs map[string]*Technology) 
 		total.PeaceRelationBonus += e.PeaceRelationBonus
 		if e.RevealEnemyStrength {
 			total.RevealEnemyStrength = true
+		}
+		if e.RevealNearbyArmyIntel {
+			total.RevealNearbyArmyIntel = true
 		}
 		total.NavalMoveBonus += e.NavalMoveBonus
 		total.MoveBonus += e.MoveBonus

@@ -3323,12 +3323,15 @@ func navalCanDockAtRegion(gs *state.GameState, fleet *army.Army, target *world.R
 }
 
 func enemyArmyInPlayerMoveRange(gs *state.GameState, targetArmy *army.Army) bool {
-	if targetArmy == nil || targetArmy.OwnerID == string(gs.PlayerFactionID) {
+	if gs == nil || targetArmy == nil || targetArmy.OwnerID == string(gs.PlayerFactionID) {
 		return false
 	}
 	for _, playerArmy := range gs.Armies {
-		if playerArmy.OwnerID != string(gs.PlayerFactionID) || playerArmy.MovePoints <= 0 {
+		if playerArmy == nil || playerArmy.OwnerID != string(gs.PlayerFactionID) {
 			continue
+		}
+		if playerArmy.RegionID == targetArmy.RegionID {
+			return true
 		}
 		src, ok := gs.Regions[playerArmy.RegionID]
 		if !ok {
@@ -4714,6 +4717,9 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			if armyMarkerIsPlayerOwned(r.gs, a) != playerOwnedLayer {
 				continue
 			}
+			if r.gs.Phase != state.PhaseEditMode && playerArmyIntelLevel(r.gs, a) != armyIntelFull {
+				continue
+			}
 			r.drawArmyCommanderPortrait(screen, a, pos.X, pos.Y, a.IsNaval)
 		}
 	}
@@ -4728,7 +4734,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 			fc := factionColor(r.gs, a.OwnerID)
 			isSelected := pos.ArmyID == r.SelectedArmy
 			unitCount := len(a.Units)
-			if r.gs.Phase != state.PhaseEditMode && !playerCanSeeArmyDetails(r.gs, a) && !enemyArmyInPlayerMoveRange(r.gs, a) {
+			if r.gs.Phase != state.PhaseEditMode && playerArmyIntelLevel(r.gs, a) != armyIntelFull {
 				unitCount = -1
 			}
 			siegeBadgeX := pos.X + armyIconInnerHalf + 8
@@ -4788,7 +4794,7 @@ func (r *Renderer) drawArmies(screen *ebiten.Image, positions []armyIconPos) {
 		if (pos.ArmyID == r.SelectedArmy && a.MovePoints > 0) || r.armyMovementVisualActiveFor(a.ID) {
 			continue
 		}
-		detailsVisible := playerCanSeeArmyDetails(r.gs, a) || enemyArmyInPlayerMoveRange(r.gs, a)
+		detailsVisible := playerArmyIntelLevel(r.gs, a) == armyIntelFull
 		r.drawEmbarkedArmyBadge(screen, a, pos.X, pos.Y, detailsVisible)
 	}
 	// Normal oyuncu markerında gövdeyle birlikte çizilmeyen kuşatma/hasar

@@ -383,6 +383,19 @@
           "military_power_mod": 1.02
         }
       }
+    },
+    "greedy": {
+      "name_tr": "Açgözlü",
+      "council_effects": {
+        "treasurer": {
+          "income_mod": 1.01,
+          "satisfaction_points": -1
+        },
+        "military_responsible": {
+          "military_power_mod": 0.99,
+          "relation_bonus_points": -1
+        }
+      }
     }
   }
 }
