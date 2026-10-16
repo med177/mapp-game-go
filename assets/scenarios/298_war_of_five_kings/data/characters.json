@@ -1412,9 +1412,9 @@
     "adoption_cost_gold": 500,
     "gold_upkeep": 8,
     "traits": [
-      "loyal",
-      "wise",
-      "just"
+      "cruel",
+      "cunning",
+      "schemer"
     ],
     "start_year": 295,
     "end_year": 300
