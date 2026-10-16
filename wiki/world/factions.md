@@ -1,7 +1,7 @@
 ---
 type: world
 tags: [factions, religion, diplomacy, starting-positions]
-last_updated: 2026-09-28
+last_updated: 2026-10-17
 related: [systems/diplomacy, world/regions, architecture/state-management]
 ---
 
@@ -19,6 +19,11 @@ savaş-nakliye filoları; Portekiz nakliye/ticaret filoları; Memlük nakliye fi
 başlangıçta tarihsel ana limanlarına bağlıdır. Osmanlı, Safevî ve Rusya 1300 açılışında
 donanmasız bırakılmıştır; bu devletlerde deniz gücü kıyı ve liman altyapısı geliştikçe
 oyun içinde kurulacaktır.
+
+`298_war_of_five_kings` açılışında Greyjoy, Özgür Şehirler, Braavos, Lannister ve
+Kral'ın Şehri başlangıç donanmalarına sahiptir. Filo konumları `armies.json` içinde
+deniz rotası ve dock edilmiş liman yerleşimiyle tanımlanır; Özgür Şehirler'in
+kuvvetleri Myr ve Meereen limanlarına dağılmıştır.
 
 1300 açılışında daha önce sahipsiz kalan Kuzey Afrika ve Körfez bölgeleri için
 `marinid_sultanate`, `zayyanid_tlemcen`, `hafsid_sultanate`, `barqa_emirate`,

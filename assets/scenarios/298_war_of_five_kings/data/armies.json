@@ -63,7 +63,11 @@
       },
       {
         "type_id": "militia",
-        "count": 10
+        "count": 8
+      },
+      {
+        "type_id": "kingsguard",
+        "count": 2
       }
     ]
   },
@@ -632,6 +636,179 @@
       {
         "type_id": "militia",
         "count": 4
+      }
+    ]
+  },
+  {
+    "id": "army_tarth_1",
+    "owner_id": "tarth",
+    "region_id": "tarth",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 1
+      },
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_mormont_1",
+    "owner_id": "mormont",
+    "region_id": "bear_island",
+    "units": [
+      {
+        "type_id": "infantry",
+        "count": 3
+      },
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_frey_1",
+    "owner_id": "frey",
+    "region_id": "the_twins",
+    "units": [
+      {
+        "type_id": "elite_infantry",
+        "count": 2
+      },
+      {
+        "type_id": "infantry",
+        "count": 5
+      },
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
+    "id": "army_greyjoy_navy_1",
+    "owner_id": "greyjoy",
+    "region_id": "ironmans_bay",
+    "docked_region_id": "pyke",
+    "docked_settlement_id": "pyke_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 6
+      },
+      {
+        "type_id": "transport",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_free_cities_myr_navy",
+    "owner_id": "free_cities",
+    "region_id": "myr_bay",
+    "docked_region_id": "myr_region",
+    "docked_settlement_id": "myr_region_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 1
+      },
+      {
+        "type_id": "transport",
+        "count": 2
+      },
+      {
+        "type_id": "merchant_ship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_free_cities_meereen_navy",
+    "owner_id": "free_cities",
+    "region_id": "meereen_gulf",
+    "docked_region_id": "meereen",
+    "docked_settlement_id": "meereen_settlement_2",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 1
+      },
+      {
+        "type_id": "transport",
+        "count": 2
+      },
+      {
+        "type_id": "merchant_ship",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "army_braavos_navy_1",
+    "owner_id": "braavos",
+    "region_id": "braavos_channel",
+    "docked_region_id": "braavos",
+    "docked_settlement_id": "braavos_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 4
+      },
+      {
+        "type_id": "transport",
+        "count": 2
+      },
+      {
+        "type_id": "merchant_ship",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_lannister_navy_1",
+    "owner_id": "lannister",
+    "region_id": "golden_sound",
+    "docked_region_id": "lannisport",
+    "docked_settlement_id": "lannisport_main",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 3
+      },
+      {
+        "type_id": "transport",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_baratheon_king_navy_1",
+    "owner_id": "baratheon_king",
+    "region_id": "blackwater_bay",
+    "docked_region_id": "kings_landing",
+    "docked_settlement_id": "kings_landing_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "warship",
+        "count": 3
+      },
+      {
+        "type_id": "transport",
+        "count": 3
       }
     ]
   }

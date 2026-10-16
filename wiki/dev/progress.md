@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [progress, status, todo, known-issues, next-steps]
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
@@ -12,6 +12,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-10-16: Beş Kralın Savaşı açılışında Tarth, Mormont ve Frey kendi
   bölgelerine sahip etkin vassallar olarak başlıyor. Kızıl Düğün event'i Frey'i
   Tully'den, Bolton'u Stark'tan koparıp eski overlord'larıyla savaşa sokuyor.
+
+- 2026-10-17: Beş Kralın Savaşı başlangıç donanmaları eklendi. Greyjoy, Özgür
+  Şehirler, Braavos, Lannister ve Kral'ın Şehri filoları kendi limanlarına
+  dock edilmiş; Özgür Şehirler'in iki filosu Myr ve Meereen'e ayrılmıştır.
 
 - 2026-10-16: Event ile tutsak edilen karakterlerin konsey rolü ve devam eden
   görevleri kaldırılıyor. Karakter hane panelinde `Tutsak` etiketiyle pasif
