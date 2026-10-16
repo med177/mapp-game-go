@@ -7721,7 +7721,6 @@ func (g *Game) createSplitArmy(a *army.Army, newUnits []army.Unit) {
 	if g.renderer != nil {
 		g.renderer.SelectedArmy = newID
 	}
-	g.renderer.AddEvent(fmt.Sprintf("Ordu bölündü: %d + %d birim", len(a.Units), len(newUnits)))
 }
 
 // mergeArmiesManual seçili orduyu aynı bölgedeki seçilen dost orduya elle
@@ -7793,7 +7792,6 @@ func (g *Game) mergeArmiesManual(aid army.ArmyID, requestedTargets ...army.ArmyI
 	} else {
 		g.gs.RefreshArmyMovePointsAfterCompositionChange(a, selectedMovementUsed)
 	}
-	g.renderer.AddEvent(fmt.Sprintf("Ordular birleşti: %d birim", len(target.Units)))
 }
 
 func (g *Game) deployGarrisonArmy(aid army.ArmyID) army.ArmyID {
