@@ -539,17 +539,7 @@ func warDeclarationBlockedByScenario(gs *state.GameState, actor, target faction.
 		return false
 	}
 	for _, period := range gs.DiplomacyConfig.PeacePeriods {
-		actorBlocked := false
-		targetBlocked := false
-		for _, factionID := range period.BlockedFactions {
-			switch factionID {
-			case string(actor):
-				actorBlocked = true
-			case string(target):
-				targetBlocked = true
-			}
-		}
-		if !actorBlocked || !targetBlocked {
+		if !peacePeriodBlocksPair(period, actor, target) {
 			continue
 		}
 		if period.MinTurns > 0 && gs.Turn <= period.MinTurns {
@@ -565,6 +555,23 @@ func warDeclarationBlockedByScenario(gs *state.GameState, actor, target faction.
 				!gs.FiredEventIDs["flag:"+period.WarDeclarationUnblockedByEventFlag] {
 				return true
 			}
+		}
+	}
+	return false
+}
+
+func peacePeriodBlocksPair(period scenario.PeacePeriod, actor, target faction.FactionID) bool {
+	if len(period.OpposingFactions) > 0 {
+		return containsFactionID(period.BlockedFactions, actor) && containsFactionID(period.OpposingFactions, target) ||
+			containsFactionID(period.BlockedFactions, target) && containsFactionID(period.OpposingFactions, actor)
+	}
+	return containsFactionID(period.BlockedFactions, actor) && containsFactionID(period.BlockedFactions, target)
+}
+
+func containsFactionID(factions []string, id faction.FactionID) bool {
+	for _, factionID := range factions {
+		if factionID == string(id) {
+			return true
 		}
 	}
 	return false

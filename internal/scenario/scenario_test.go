@@ -70,7 +70,7 @@ func TestLoadReadsPeacePeriodRequiredEvent(t *testing.T) {
 	if err := os.Mkdir(dataDir, 0o700); err != nil {
 		t.Fatalf("data klasörü oluşturulamadı: %v", err)
 	}
-	content := []byte(`{"id":"test","name":"Test","period":"medieval","diplomacy":{"peace_periods":[{"war_declaration_requires_event":"death_of_robert_298"}]}}`)
+	content := []byte(`{"id":"test","name":"Test","period":"medieval","diplomacy":{"peace_periods":[{"war_declaration_requires_event":"death_of_robert_298","blocked_factions":["others"],"opposing_factions":["stark","lannister"]}]}}`)
 	if err := os.WriteFile(filepath.Join(dataDir, "scenario.json"), content, 0o600); err != nil {
 		t.Fatalf("scenario.json yazılamadı: %v", err)
 	}
@@ -80,7 +80,12 @@ func TestLoadReadsPeacePeriodRequiredEvent(t *testing.T) {
 		t.Fatalf("Load() hatası: %v", err)
 	}
 	if len(definition.Diplomacy.PeacePeriods) != 1 ||
-		definition.Diplomacy.PeacePeriods[0].WarDeclarationRequiresEvent != "death_of_robert_298" {
+		definition.Diplomacy.PeacePeriods[0].WarDeclarationRequiresEvent != "death_of_robert_298" ||
+		len(definition.Diplomacy.PeacePeriods[0].BlockedFactions) != 1 ||
+		definition.Diplomacy.PeacePeriods[0].BlockedFactions[0] != "others" ||
+		len(definition.Diplomacy.PeacePeriods[0].OpposingFactions) != 2 ||
+		definition.Diplomacy.PeacePeriods[0].OpposingFactions[0] != "stark" ||
+		definition.Diplomacy.PeacePeriods[0].OpposingFactions[1] != "lannister" {
 		t.Fatalf("barış dönemi kalıcı event ID'sini yüklemedi: %+v", definition.Diplomacy.PeacePeriods)
 	}
 }

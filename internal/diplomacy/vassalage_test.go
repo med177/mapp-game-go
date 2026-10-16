@@ -252,6 +252,46 @@ func TestDeclareWarRequiresOccurredScenarioEvent(t *testing.T) {
 	}
 }
 
+func TestDeclareWarSupportsOpposingFactionGroups(t *testing.T) {
+	gs := &state.GameState{
+		Turn: 61,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"others":       {ID: "others", NameTR: "Ak Gezenler"},
+			"stark":        {ID: "stark", NameTR: "Stark"},
+			"lannister":    {ID: "lannister", NameTR: "Lannister"},
+			"nights_watch": {ID: "nights_watch", NameTR: "Gece Nöbetçileri"},
+			"outsider":     {ID: "outsider", NameTR: "Dış Devlet"},
+		},
+		DiplomacyConfig: scenario.DiplomacyConfig{
+			PeacePeriods: []scenario.PeacePeriod{{
+				MinTurns:                    60,
+				WarDeclarationRequiresEvent: "others_awaken_300",
+				BlockedFactions:             []string{"others"},
+				OpposingFactions:            []string{"stark", "lannister", "nights_watch"},
+			}},
+		},
+		FiredEventIDs: map[string]bool{},
+	}
+
+	if reason := ActionBlockReason(gs, "others", "stark", ActionDeclareWar); reason == "" {
+		t.Fatal("karşıt gruplar arasındaki savaş event gerçekleşmeden engellenmedi")
+	}
+	gs.FiredEventIDs["others_awaken_300"] = true
+	if reason := ActionBlockReason(gs, "others", "stark", ActionDeclareWar); reason != "" {
+		t.Fatalf("event gerçekleştiğinde gruplar arası savaş engellendi: %s", reason)
+	}
+	delete(gs.FiredEventIDs, "others_awaken_300")
+	if reason := ActionBlockReason(gs, "stark", "others", ActionDeclareWar); reason == "" {
+		t.Fatal("gruplar arası savaş ters yönde engellenmedi")
+	}
+	if reason := ActionBlockReason(gs, "stark", "lannister", ActionDeclareWar); reason != "" {
+		t.Fatalf("aynı karşıt gruptaki fraksiyonların savaşı engellendi: %s", reason)
+	}
+	if reason := ActionBlockReason(gs, "others", "outsider", ActionDeclareWar); reason != "" {
+		t.Fatalf("grup dışındaki fraksiyona savaş ilanı engellendi: %s", reason)
+	}
+}
+
 func TestNormalizeVassalagePreservesExternalVassalTrade(t *testing.T) {
 	gs := &state.GameState{
 		Turn:            6,

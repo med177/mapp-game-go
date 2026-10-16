@@ -56,16 +56,37 @@ Tüm oyun tanım verisi her senaryo için `assets/scenarios/<senaryo_id>/data/` 
 }
 ```
 
-`type` değerleri: `domination`, `economic`, `military`, `religious`, `conquer_city`
+`type` değerleri: `domination`, `economic`, `military`, `religious`,
+`conquer_city`, `survive_turns`.
 
 `victory_conditions` içindeki `allowed_factions` eksik veya boşsa hedef tüm
 fraksiyonlara açıktır; doluysa yalnızca listelenen fraksiyonlara gösterilir.
+
+Zafer hedefleri oyun motorunun desteklediği alanlarla tanımlanmalıdır:
+
+- `domination`: `target_region_count` kara bölgesi eşiği, `required_regions`
+  ise ayrıca elde tutulması gereken bölgeleri belirtir.
+- `conquer_city`: `required_regions` listesindeki bütün bölgeler kontrol
+  edilmelidir.
+- Bölgesel hedeflerde `allow_vassal_control: true`, oyuncunun doğrudan
+  vassallarının bölgelerini hem zorunlu bölgelerde hem de bölge sayısında
+  oyuncunun kontrolünde sayar.
+- `required_event_flags`, `events.json` içinde `set_flags` ile oluşturulan
+  bayrakları şart koşar; event'lerdeki `clear_flags` bu bayrakları temizleyebilir.
+- `economic`: `target_gold_income` brüt tur gelirini, `gold_hold_turns` bu
+  gelirin kaç tur korunacağını belirler. Hesaplama ticaret ve diğer etkin gelir
+  kaynaklarını da içerir.
+- `military`: `target_army_strength` ve `target_defeated` eşiklerinin ikisi de
+  sağlanmalıdır. `survive_turns` için `turns`, oyunun toplam tur eşiğidir.
+- `required_trade_centers`, listedeki ticaret merkezlerinin senaryoda mevcut
+  ve o yıl etkin olmasını şart koşar; merkezin kontrolünü şart koşmaz.
+- `deadline_year` ve `deadline_month` hedefin son tarihini belirler.
 
 `map` alanı opsiyoneldir. Verilmeyen alanlar renderer'ın geriye dönük uyumlu varsayılanlarıyla tamamlanır. `background_image`, senaryonun `maps/` klasöründeki arka plan dosyasının yalnızca dosya adını belirtir; `.png`, `.jpg` ve `.jpeg` desteklenir. Alan verilmezse `world_map_background.png` kullanılır. `world_width` / `world_height` arka plan resminin dünya boyutunu, `shape_offset_*` ve `shape_scale_*` ise `country_shapes.json` koordinatlarının world pikseline dönüşümünü belirler.
 
 `music` alanı opsiyoneldir. `default_playlist` senaryo yüklendikten sonra başlatılacak listeyi belirtir; `playlists` içindeki dosya adları senaryonun `musics/` klasörüne göre çözülür. Desteklenen formatlar: `.ogg`, `.mp3`, `.wav`. `weight` eksik veya `0` ise `1` kabul edilir. Paylaşılan tıklama/uyarı efektleri bu alanın parçası değildir; `assets/sounds/` altından yüklenir.
 
-`diplomacy.peace_periods` belirli fraksiyon çiftleri arasında savaş ilanını kısıtlar. `blocked_factions` içindeki iki fraksiyon arasındaki savaşlar etkilenir; daha fazla fraksiyon eklemek listedeki tüm çiftleri kapsar. Yalnızca tek bir çifti sınırlamak için iki kimlikli ayrı bir kayıt kullanın. `min_turns` varsa bu asgari tur eşiği geçilmelidir. `war_declaration_requires_event`, gerçekleşmesi beklenen event'in **ID** değeridir; `FiredEventIDs[event_id]` kaydı kalıcıdır ve event'in `clear_flags` etkilerinden etkilenmez. `war_declaration_requires_event_flag` ve `war_declaration_unblocked_by_event_flag` ise değişebilir `flag:<id>` durumlarını kontrol eder; flag'ler sonradan temizlenebilir. Bu nedenle tek seferlik tarihsel açılışlar için event ID alanı tercih edilmelidir. Tüm alanlar opsiyoneldir. Bu kurallar mevcut savaşları bitirmez; başlangıçta savaşta olan çiftler için ilişkiler dosyasındaki `stance` değeri de `peace` olmalıdır.
+`diplomacy.peace_periods` belirli fraksiyon çiftleri arasında savaş ilanını kısıtlar. `blocked_factions` tek başına kullanıldığında listedeki fraksiyonların kendi aralarındaki tüm çiftler etkilenir. İki fraksiyon grubunun yalnızca birbirine karşı savaşmasını kısıtlamak için `blocked_factions` ve `opposing_factions` alanlarını birlikte kullanın; iki grup içindeki fraksiyonların kendi aralarındaki savaşlar etkilenmez. Yalnızca tek bir çifti sınırlamak için iki kimlikli `blocked_factions` kaydı kullanın. `min_turns` varsa bu asgari tur eşiği geçilmelidir. `war_declaration_requires_event`, gerçekleşmesi beklenen event'in **ID** değeridir; `FiredEventIDs[event_id]` kaydı kalıcıdır ve event'in `clear_flags` etkilerinden etkilenmez. `war_declaration_requires_event_flag` ve `war_declaration_unblocked_by_event_flag` ise değişebilir `flag:<id>` durumlarını kontrol eder; flag'ler sonradan temizlenebilir. Bu nedenle tek seferlik tarihsel açılışlar için event ID alanı tercih edilmelidir. Tüm alanlar opsiyoneldir. Bu kurallar mevcut savaşları bitirmez; başlangıçta savaşta olan çiftler için ilişkiler dosyasındaki `stance` değeri de `peace` olmalıdır.
 
 ```json
 {
@@ -74,7 +95,8 @@ fraksiyonlara açıktır; doluysa yalnızca listelenen fraksiyonlara gösterilir
       {
         "min_turns": 10,
         "war_declaration_requires_event": "major_war_started_event",
-        "blocked_factions": ["faction_a", "faction_b"]
+        "blocked_factions": ["faction_a"],
+        "opposing_factions": ["faction_b", "faction_c"]
       }
     ]
   }

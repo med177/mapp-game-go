@@ -48,87 +48,26 @@
       {
         "min_turns": 60,
         "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "nights_watch"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "free_folk"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "stark"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "lannister"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "baratheon_king"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "baratheon_dragonstone"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "baratheon_stormsend"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "tyrell"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "arryn"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "bolton"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "tully"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "greyjoy"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "braavos"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "targaryen"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "free_cities"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "brotherhood_without_banners"]
-      },
-      {
-        "min_turns": 60,
-        "war_declaration_requires_event": "others_awaken_300",
-        "blocked_factions": ["others", "martell"]
+        "blocked_factions": ["others"],
+        "opposing_factions": [
+          "nights_watch",
+          "free_folk",
+          "stark",
+          "lannister",
+          "baratheon_king",
+          "baratheon_dragonstone",
+          "baratheon_stormsend",
+          "tyrell",
+          "arryn",
+          "bolton",
+          "tully",
+          "greyjoy",
+          "braavos",
+          "targaryen",
+          "free_cities",
+          "brotherhood_without_banners",
+          "martell"
+        ]
       }
     ],
     "relation_improvement_gold_cost": 250,
@@ -319,9 +258,9 @@
   "victory_conditions": [
     {
       "id": "iron_throne_conquest",
-      "title": "Demir Taht'ı Ele Geçir",
-      "description": "Kralın Şehri'ni (King's Landing) ele geçirerek Yedi Krallık üzerindeki hakimiyetini ilan et.",
-      "detail": "Hedef: King's Landing, Casterly Rock, Highgarden ve Winterfell",
+      "title": "Demir Taht Üzerinde Hâkimiyet",
+      "description": "Büyük hanedan merkezlerini denetim altına alarak Demir Taht üzerindeki iddianı ve Yedi Krallık'taki üstünlüğünü kabul ettir.",
+      "detail": "King's Landing, Casterly Rock, Highgarden ve Winterfell'i senin ya da doğrudan vassallarının kontrolünde tut.",
       "type": "conquer_city",
       "required_regions": [
         "kings_landing",
@@ -329,12 +268,12 @@
         "highgarden",
         "winterfell_region"
       ],
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12,
       "allowed_factions": [
         "stark",
         "lannister",
-        "baratheon_king",
         "baratheon_dragonstone",
         "baratheon_stormsend",
         "targaryen"
@@ -342,19 +281,21 @@
     },
     {
       "id": "king_in_the_north",
-      "title": "Kuzey Kralı'nın Tahtı",
-      "description": "Kuzey'in bağımsızlığını ilan et ve Demir Taht üzerinde söz sahibi ol.",
-      "detail": "Hedef: Winterfell, The Neck, King's Landing ve en az 22 kara bölgesi",
+      "title": "Kuzey ve Nehir Toprakları Krallığı",
+      "description": "Kuzey'in bağımsızlığını ilan et, Nehir Toprakları'yla ittifakını koru ve Güney'in boyunduruğundan uzak dur.",
+      "detail": "Kuzey Kralı ilanını yap; Winterfell, The Neck, Riverrun ve The Twins'i, doğrudan vassallarınla birlikte en az 22 kara bölgesini kontrol et.",
       "type": "domination",
       "target_region_count": 22,
       "required_regions": [
         "winterfell_region",
         "the_neck",
-        "kings_landing"
+        "riverrun",
+        "the_twins"
       ],
       "required_event_flags": [
         "king_in_the_north"
       ],
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12,
       "allowed_factions": [
@@ -365,13 +306,14 @@
       "id": "lannister_rule_of_the_realm",
       "title": "Altın ve Taç",
       "description": "Batı'nın zenginliğini kullanarak Demir Taht'ı ve büyük hanedan merkezlerini kontrol et.",
-      "detail": "Hedef: King's Landing, Casterly Rock ve Highgarden",
+      "detail": "King's Landing, Casterly Rock ve Highgarden'ı senin ya da doğrudan vassallarının kontrolünde tut.",
       "type": "conquer_city",
       "required_regions": [
         "kings_landing",
         "casterly_rock",
         "highgarden"
       ],
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12,
       "allowed_factions": [
@@ -380,14 +322,34 @@
     },
     {
       "id": "baratheon_king_restoration",
-      "title": "Baratheon Tacını Birleştir",
-      "description": "Kralın Şehri'ni ve rakip Baratheon merkezlerini tek bir taç altında topla.",
-      "detail": "Hedef: King's Landing, Dragonstone ve Storm's End",
+      "title": "Baratheon Hak İddialarını Bitir",
+      "description": "Demir Taht'taki krallığını sağlamlaştır ve Dragonstone ile Storm's End'deki rakip Baratheon kollarını tek bir taç altında birleştir.",
+      "detail": "Kral'ın Şehri'ni koru; Dragonstone ve Storm's End'i senin ya da doğrudan vassallarının kontrolüne al.",
       "type": "conquer_city",
       "required_regions": [
         "kings_landing",
         "dragonstone",
         "storm_end"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "baratheon_king",
+        "baratheon_dragonstone",
+        "baratheon_stormsend"
+      ]
+    },
+    {
+      "id": "baratheon_claimants_war",
+      "title": "Rakip Taç İddialarını Ez",
+      "description": "Baratheon iç savaşında ordunu güçlendir ve taht için mücadele eden hanedanları savaş alanında saf dışı bırak.",
+      "detail": "Taht iddialarına ilişkin iç savaş başladıktan sonra en az 320 ordu gücüne ulaş ve en az 2 düşman fraksiyonu ele.",
+      "type": "military",
+      "target_army_strength": 320,
+      "target_defeated": 2,
+      "required_event_flags": [
+        "baratheon_claimants_war_started"
       ],
       "deadline_year": 330,
       "deadline_month": 12,
@@ -400,13 +362,32 @@
     {
       "id": "greyjoy_rule_of_the_seas",
       "title": "Denizden Gelen Taç",
-      "description": "Demir Adalar'dan yükselerek Westeros'un önemli kıyı ve kraliyet merkezlerini ele geçir.",
-      "detail": "Hedef: Pyke, King's Landing ve en az 18 kara bölgesi",
+      "description": "Demir Adalar'ın deniz gücünü kullan; batı kıyısındaki limanları ve deniz yollarını kendi hâkimiyetin altında birleştir.",
+      "detail": "Pyke, Lannisport ve White Harbor'ı senin ya da doğrudan vassallarının kontrolünde tut ve en az 18 kara bölgesine hükmet.",
       "type": "domination",
       "target_region_count": 18,
       "required_regions": [
         "pyke",
-        "kings_landing"
+        "lannisport",
+        "white_harbor"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "greyjoy"
+      ]
+    },
+    {
+      "id": "greyjoy_old_way",
+      "title": "Eski Yol'un Zaferi",
+      "description": "İsyan sancağını kaldır, Demirdoğumluların savaş gücünü topla ve kıyı krallıklarını boyun eğdir.",
+      "detail": "Greyjoy isyanı başladıktan sonra en az 300 ordu gücüne ulaş ve en az 2 düşman fraksiyonu ele.",
+      "type": "military",
+      "target_army_strength": 300,
+      "target_defeated": 2,
+      "required_event_flags": [
+        "greyjoy_rebellion_started"
       ],
       "deadline_year": 330,
       "deadline_month": 12,
@@ -417,8 +398,8 @@
     {
       "id": "tyrell_grain_and_alliance",
       "title": "Güneyin Hâkimiyeti",
-      "description": "Highgarden'ın tahıl ve nüfus gücüyle krallıkların kaderini belirle.",
-      "detail": "Hedef: Tur başına en az 900 altın gelirini 8 tur boyunca koru",
+      "description": "Reach'in tahıl üretimini, ticaretini ve hanedan kaynaklarını kalıcı bir ekonomik üstünlüğe dönüştür.",
+      "detail": "Ticaret, üretim ve diğer gelirler dâhil tur başına en az 900 brüt altın gelirini 8 tur boyunca koru.",
       "type": "economic",
       "target_gold_income": 900,
       "gold_hold_turns": 8,
@@ -429,15 +410,61 @@
       ]
     },
     {
+      "id": "tyrell_queen_of_the_realm",
+      "title": "Kraliçe ve Reach",
+      "description": "Margaery'nin kraliyet evliliğini hanedanın gücüne dönüştür ve saray ile Highgarden arasındaki bağı koru.",
+      "detail": "Margaery ile Joffrey'nin evliliği gerçekleşmiş olmalı; Highgarden ve King's Landing'i senin ya da doğrudan vassallarının kontrolünde tut.",
+      "type": "conquer_city",
+      "required_regions": [
+        "highgarden",
+        "kings_landing"
+      ],
+      "required_event_flags": [
+        "margaery_joffrey_married"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "tyrell"
+      ]
+    },
+    {
       "id": "martell_dornish_independence",
-      "title": "Dorne'un Bağımsızlığı",
-      "description": "Dorne'u koru ve Güneş Mızrağı'nın iradesini Westeros'a kabul ettir.",
-      "detail": "Hedef: Sunspear, King's Landing ve Dorne çevresindeki bölgeler",
+      "title": "Dorne'un Özerk Gücü",
+      "description": "Dorne'yi savaştan uzak tutma kararının ardından Güneş Mızrağı'nın gücünü yarımadanın ötesine taşı.",
+      "detail": "Dorne'yi güvenceye alma kararını ver; Sunspear, Yronwood ve Starfall'ı, doğrudan vassallarınla birlikte en az 24 kara bölgesini kontrol et.",
+      "type": "domination",
+      "target_region_count": 24,
+      "required_regions": [
+        "sunspear",
+        "yronwood",
+        "starfall"
+      ],
+      "required_event_flags": [
+        "martell_secures_dorne"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "martell"
+      ]
+    },
+    {
+      "id": "martell_dornish_vengeance",
+      "title": "Elia'nın İntikamı",
+      "description": "Targaryenlerin dönüşünü destekle ve Lannister-Baratheon yönetimini Kral'ın Şehri'nden söküp at.",
+      "detail": "Sunspear ve King's Landing'i kontrol et; Martell hanesinin Targaryenlerin dönüşünü destekleme kararını vermiş ol.",
       "type": "conquer_city",
       "required_regions": [
         "sunspear",
         "kings_landing"
       ],
+      "required_event_flags": [
+        "martell_supports_targaryen_return"
+      ],
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12,
       "allowed_factions": [
@@ -448,7 +475,7 @@
       "id": "targaryen_return_to_the_throne",
       "title": "Ejderhaların Dönüşü",
       "description": "Doğudaki gücünü Westeros'a taşı ve Targaryen hanedanını Demir Taht'a döndür.",
-      "detail": "Hedef: Targaryen restorasyonunu ilan et; King's Landing, Dragonstone ve Meereen'i kontrol et",
+      "detail": "Baratheonlarla siyasi birleşme yolunu seç; King's Landing, Dragonstone ve Meereen'i senin ya da doğrudan vassallarının kontrolünde tut.",
       "type": "conquer_city",
       "required_regions": [
         "kings_landing",
@@ -457,6 +484,45 @@
       ],
       "required_event_flags": [
         "targaryen_restoration_started"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "targaryen"
+      ]
+    },
+    {
+      "id": "targaryen_independent_claim",
+      "title": "Ejderhaların Kendi Sancağı",
+      "description": "Baratheonlarla birleşmeden, Targaryen hanedanının Demir Taht üzerindeki hakkını kendi gücünle kabul ettir.",
+      "detail": "Bağımsız taht iddianı ilan et; King's Landing, Dragonstone ve Meereen'i senin ya da doğrudan vassallarının kontrolünde tut.",
+      "type": "conquer_city",
+      "required_regions": [
+        "kings_landing",
+        "dragonstone",
+        "meereen"
+      ],
+      "required_event_flags": [
+        "targaryen_independent_claim_declared"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "targaryen"
+      ]
+    },
+    {
+      "id": "targaryen_eastern_power",
+      "title": "Doğudaki Ejderha Hazinesi",
+      "description": "Westeros seferini erteleyip Özgür Şehirlerle bağlarını güçlendir; Targaryenlerin doğudaki dayanağını kalıcı bir servete dönüştür.",
+      "detail": "Doğudaki ittifakları güvenceye al ve ticaret dâhil tur başına en az 750 brüt altın gelirini 10 tur boyunca koru.",
+      "type": "economic",
+      "target_gold_income": 750,
+      "gold_hold_turns": 10,
+      "required_event_flags": [
+        "targaryen_eastern_allies_secured"
       ],
       "deadline_year": 330,
       "deadline_month": 12,
@@ -467,10 +533,10 @@
     {
       "id": "night_watch_hold_the_wall",
       "title": "Duvar'ı Koru",
-      "description": "Gece Nöbeti olarak Duvar'ı savun; Özgür Halktan, Kuzeyden veya Akgezenlerden gelen tehdide karşı sınırı ayakta tut.",
-      "detail": "Duvar savunmasını hazırlayan bir karar al ve 168 tur boyunca hayatta kal",
+      "description": "Duvar savunmasını hazırla ve Akgezenlerin uyanışından sonraki tehdide rağmen Gece Nöbeti'ni ayakta tut.",
+      "detail": "Duvar savunmasını hazırla ve oyunun başlangıcından itibaren 360 tur boyunca hayatta kal.",
       "type": "survive_turns",
-      "turns": 168,
+      "turns": 360,
       "required_event_flags": [
         "wall_defense_prepared"
       ],
@@ -484,11 +550,11 @@
       "id": "free_folk_new_home",
       "title": "Özgür Halk'a Yeni Bir Yurt",
       "description": "Akgezenlerin Duvar'ı aşmasının ardından Özgür Halk olarak Gift ve Brandon's Gift'te kalıcı bir yurt kur ve topraklarını koru.",
-      "detail": "Hedef: Özgür Halkın güneyde yerleşim kurduğunu ilan et; The Gift ve Brandon's Gift'i, Duvar yarıldıktan sonra elinde tut ve en az 3 kara bölgesini kontrol et.",
+      "detail": "Güneyde yerleşim kararını ver; The Gift'in batısını ve Brandon Hediyesi'ni, Duvar yarıldıktan sonra senin ya da doğrudan vassallarının kontrolünde tut ve en az 3 kara bölgesine sahip ol.",
       "type": "domination",
       "target_region_count": 3,
       "required_regions": [
-        "the_gift",
+        "the_gift_west",
         "brandon_gift"
       ],
       "required_event_flags": [
@@ -496,6 +562,7 @@
         "others_awakened",
         "wall_breached"
       ],
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12,
       "allowed_factions": [
@@ -505,15 +572,17 @@
     {
       "id": "last_watch_against_the_dead",
       "title": "Ölüler Ordusunu Durdur",
-      "description": "Akgezenlerin uyanışından sonra Duvar'ı geri al ve kuzey sınırını yeniden güvenceye al.",
-      "detail": "Hedef: Always Winter bölgesini ele geçir ve Akgezen tehdidini sona erdir",
+      "description": "Duvar yarıldıktan sonra Akgezenleri kuzeydeki kaynaklarına kadar takip et ve yaşayanların diyarını savun.",
+      "detail": "Always Winter bölgesini senin ya da doğrudan vassallarının kontrolüne geçir.",
       "type": "conquer_city",
       "required_regions": [
         "always_winter"
       ],
       "required_event_flags": [
-        "others_awakened"
+        "others_awakened",
+        "wall_breached"
       ],
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12,
       "allowed_factions": [
@@ -525,13 +594,14 @@
       "id": "brotherhood_liberation",
       "title": "Halkın Adaleti",
       "description": "Soyluların savaşından sağ çık ve Nehir Toprakları'nda halkın gücünü kur.",
-      "detail": "En az 16 kara bölgesini kontrol et",
+      "detail": "Harrenhal ve Riverrun'ı senin ya da doğrudan vassallarının kontrolünde tut; en az 12 kara bölgesini denetle.",
       "type": "domination",
-      "target_region_count": 16,
+      "target_region_count": 12,
       "required_regions": [
         "harrenhal",
         "riverrun"
       ],
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12,
       "allowed_factions": [
@@ -539,12 +609,90 @@
       ]
     },
     {
+      "id": "arryn_guardians_of_the_vale",
+      "title": "Vadi'nin Muhafızları",
+      "description": "Kartal Yuvası'nı ve Martı Kasabası'nı koruyarak Vadi'nin bağımsızlığını ve geçitler üzerindeki hâkimiyetini güvenceye al.",
+      "detail": "The Eyrie ve Gulltown'ı senin ya da doğrudan vassallarının kontrolünde tut ve en az 12 kara bölgesini denetle.",
+      "type": "domination",
+      "target_region_count": 12,
+      "required_regions": [
+        "the_eyrie",
+        "gulltown"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "arryn"
+      ]
+    },
+    {
+      "id": "tully_riverlands_restored",
+      "title": "Nehir Toprakları'nı Birleştir",
+      "description": "Riverrun ve Harrenhal çevresindeki hanedanları uzlaştır veya boyun eğdirerek Nehir Toprakları'nda düzeni yeniden kur.",
+      "detail": "Riverrun, Harrenhal ve The Twins'i senin ya da doğrudan vassallarının kontrolünde tut ve en az 12 kara bölgesini denetle.",
+      "type": "domination",
+      "target_region_count": 12,
+      "required_regions": [
+        "riverrun",
+        "harrenhal",
+        "the_twins"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "tully"
+      ]
+    },
+    {
+      "id": "bolton_claim_the_north",
+      "title": "Kuzey'in Yeni Muhafızları",
+      "description": "Boltonların Kuzey üzerindeki hâkimiyet iddiasını ilan et ve Stark merkezini ele geçir.",
+      "detail": "Boltonların iktidarı ele geçirme kararını ver; Dehşet Kalesi ve Winterfell'i, doğrudan vassallarınla birlikte en az 14 kara bölgesini kontrol et.",
+      "type": "domination",
+      "target_region_count": 14,
+      "required_regions": [
+        "the_dreadfort",
+        "winterfell_region"
+      ],
+      "required_event_flags": [
+        "bolton_usurpation_started"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "bolton"
+      ]
+    },
+    {
+      "id": "braavosi_trade_hegemony",
+      "title": "Dar Deniz'in Ticaret Hâkimi",
+      "description": "Braavos'un liman ve ticaret ağını büyüterek Pentos'tan Westeros'un doğu kıyısına uzanan bir deniz üstünlüğü kur.",
+      "detail": "Braavos, Pentos ve White Harbor'ı senin ya da doğrudan vassallarının kontrolünde tut ve en az 12 kara bölgesini denetle.",
+      "type": "domination",
+      "target_region_count": 12,
+      "required_regions": [
+        "braavos",
+        "pentos_region",
+        "white_harbor"
+      ],
+      "allow_vassal_control": true,
+      "deadline_year": 330,
+      "deadline_month": 12,
+      "allowed_factions": [
+        "braavos"
+      ]
+    },
+    {
       "id": "universal_territorial_dominion",
       "title": "Kıtaların Hâkimi",
-      "description": "Kökenin ne olursa olsun, geniş toprakları tek bir yönetim altında birleştir.",
-      "detail": "En az 55 kara bölgesini kontrol et",
+      "description": "Kökenin ne olursa olsun, geniş toprakları kendi yönetimin veya doğrudan vassallarının yönetimi altında birleştir.",
+      "detail": "Senin ya da doğrudan vassallarının kontrolünde en az 55 kara bölgesi tut.",
       "type": "domination",
       "target_region_count": 55,
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12
     },
@@ -567,6 +715,25 @@
       "type": "military",
       "target_army_strength": 600,
       "target_defeated": 4,
+      "deadline_year": 330,
+      "deadline_month": 12
+    },
+    {
+      "id": "universal_last_winter",
+      "title": "Uzun Gece'den Sonra",
+      "description": "Duvar yarıldıktan sonra yaşayanları Akgezenlere karşı birleştir ve kuzeydeki tehdidin kaynağını ortadan kaldır.",
+      "detail": "Akgezenler uyanmış ve Duvar yarılmış olmalı; Winterfell'i ve Always Winter'ı kontrol et, en az 35 kara bölgesine hükmet.",
+      "type": "domination",
+      "target_region_count": 35,
+      "required_regions": [
+        "winterfell_region",
+        "always_winter"
+      ],
+      "required_event_flags": [
+        "others_awakened",
+        "wall_breached"
+      ],
+      "allow_vassal_control": true,
       "deadline_year": 330,
       "deadline_month": 12
     }
