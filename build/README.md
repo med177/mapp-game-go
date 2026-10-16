@@ -6,7 +6,7 @@ Mac için derler. Script, proje kökünden çalıştırılmayı gerektirmez ve P
 
 ## Gereksinimler
 
-- Go 1.25 veya üzeri
+- Go 1.27.2 veya üzeri
 - PowerShell 7 veya üzeri (`pwsh`)
 - İlk derlemede Go modüllerini indirmek için internet erişimi
 

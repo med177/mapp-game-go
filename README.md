@@ -26,7 +26,7 @@ Mapp Game, sıra tabanlı bir harita strateji oyunudur. Total War serisinin sefe
 
 ## Gereksinimler
 
-- **Go 1.25.3+**
+- **Go 1.27.2+**
 - **Windows 10/11** (öncelikli platform; Linux ve macOS derleme yönergeleri için [`build/README.md`](build/README.md))
 - Bağımlılıklar `go.sum` üzerinden otomatik indirilir
 
