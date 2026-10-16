@@ -10,7 +10,6 @@
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "output": "${workspaceFolder}/bin/debug/mapp-game",
-      "preLaunchTask": "Build Game (All 4 Targets)"
     },
     {
       "name": "Run Game",
@@ -21,10 +20,9 @@
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "output": "${workspaceFolder}/bin/release/mapp-game",
-      "preLaunchTask": "Build Game (All 4 Targets)"
     },
     {
-      "name": "Run Built Game (Windows)",
+      "name": "Built for All Platforms (Run->Windows)",
       "type": "go",
       "request": "launch",
       "mode": "exec",
