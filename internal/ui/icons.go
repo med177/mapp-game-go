@@ -111,7 +111,7 @@ func DrawIcon(screen *ebiten.Image, id IconID, x, y, size float64, tint color.Co
 		return false
 	}
 	drawW, drawH := iconFitDimensions(sw, sh, size)
-	op := &ebiten.DrawImageOptions{}
+	op := NewLinearImageDrawOptions()
 	op.GeoM.Scale(drawW/float64(sw), drawH/float64(sh))
 	op.GeoM.Translate(x+(size-drawW)/2, y+(size-drawH)/2)
 	op.ColorScale.ScaleWithColor(tint)

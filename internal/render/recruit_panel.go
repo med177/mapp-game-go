@@ -175,7 +175,7 @@ func drawUnitSpriteCard(screen *ebiten.Image, sprite *ebiten.Image, x, y, width 
 	}
 
 	scale := float64(width) / float64(source.Dx())
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	op.GeoM.Scale(scale, scale)
 	op.GeoM.Translate(float64(x), float64(y))
 	op.ColorScale.Scale(tint[0], tint[1], tint[2], 1.0)

@@ -87,7 +87,7 @@ func (r *Renderer) drawTerrainAreas(screen *ebiten.Image) {
 			}
 		}
 	}
-	mapOp := &ebiten.DrawImageOptions{}
+	mapOp := newLinearImageDrawOptions()
 	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 	screen.DrawImage(r.terrainAreaImage, mapOp)
 

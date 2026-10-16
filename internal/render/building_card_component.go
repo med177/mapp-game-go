@@ -233,7 +233,7 @@ func (c buildingCardComponent) Draw(screen *ebiten.Image) {
 }
 
 func (c buildingCardComponent) drawSprite(screen, sprite *ebiten.Image, isBuilt bool) {
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	bounds := sprite.Bounds()
 	scale := c.SpriteRect.W / float64(bounds.Dx())
 	op.GeoM.Scale(scale, scale)

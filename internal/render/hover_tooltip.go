@@ -631,7 +631,7 @@ func drawArmyMarkerUnitImage(screen *ebiten.Image, sprite *ebiten.Image, x, y, w
 	if !ok {
 		return false
 	}
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	op.GeoM.Scale(scale, scale)
 	op.GeoM.Translate(float64(x), float64(y))
 	screen.DrawImage(sprite, op)
@@ -746,7 +746,7 @@ func drawBuildingTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Re
 		vector.FillRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), color.RGBA{252, 252, 252, 242}, false)
 		vector.StrokeRect(screen, float32(iconX), float32(iconY), float32(iconW), float32(iconH), 1, color.RGBA{160, 160, 160, 225}, false)
 		spriteRect := buildingSpriteDrawRect(sprite, gameui.Rect{X: iconX, Y: iconY, W: iconW, H: iconH})
-		op := &ebiten.DrawImageOptions{}
+		op := newLinearImageDrawOptions()
 		bounds := sprite.Bounds()
 		op.GeoM.Scale(spriteRect.W/float64(bounds.Dx()), spriteRect.H/float64(bounds.Dy()))
 		op.GeoM.Translate(spriteRect.X, spriteRect.Y)

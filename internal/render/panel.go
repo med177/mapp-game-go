@@ -395,7 +395,7 @@ func drawFactionFlagBadgeImage(screen *ebiten.Image, flag *ebiten.Image, initial
 		}
 		drawW := flagW * scale
 		drawH := flagH * scale
-		op := &ebiten.DrawImageOptions{}
+		op := newLinearImageDrawOptions()
 		op.GeoM.Scale(scale, scale)
 		op.GeoM.Translate(x+(size-drawW)/2, y+(size-drawH)/2)
 		screen.DrawImage(flag, op)
@@ -419,7 +419,7 @@ func drawTradeOrdersBadge(screen *ebiten.Image, x, y, size float64, bg, border c
 		}
 		drawW := imageW * scale
 		drawH := imageH * scale
-		op := &ebiten.DrawImageOptions{}
+		op := newLinearImageDrawOptions()
 		op.GeoM.Scale(scale, scale)
 		op.GeoM.Translate(x+(size-drawW)/2, y+(size-drawH)/2)
 		screen.DrawImage(image, op)
@@ -441,7 +441,7 @@ func drawAIMoveBadge(screen *ebiten.Image, x, y, size float64, bg, border color.
 		}
 		drawW := imageW * scale
 		drawH := imageH * scale
-		op := &ebiten.DrawImageOptions{}
+		op := newLinearImageDrawOptions()
 		op.GeoM.Scale(scale, scale)
 		op.GeoM.Translate(x+(size-drawW)/2, y+(size-drawH)/2)
 		screen.DrawImage(image, op)
@@ -2448,7 +2448,7 @@ func DrawMinimap(screen *ebiten.Image, gs *state.GameState, camX, camY, camScale
 	// Minimap içi — görsel varsa onu kullan, yoksa koyu arka plan
 	if miniMapBg != nil {
 		bw, bh := miniMapBg.Bounds().Dx(), miniMapBg.Bounds().Dy()
-		op := &ebiten.DrawImageOptions{}
+		op := newLinearImageDrawOptions()
 		op.GeoM.Scale(float64(minimapW)/float64(bw), float64(minimapH)/float64(bh))
 		op.GeoM.Translate(float64(mx), float64(my))
 		// Hafif karartma — sahiplik renkleri daha net görünsün
@@ -3333,7 +3333,7 @@ func DrawArmyPanel(screen *ebiten.Image, gs *state.GameState, aid army.ArmyID) {
 func drawGameOver(screen *ebiten.Image, gs *state.GameState) {
 	overlay := ebiten.NewImage(int(ScreenWidth), int(ScreenHeight))
 	overlay.Fill(color.RGBA{5, 3, 2, 230})
-	screen.DrawImage(overlay, nil)
+	screen.DrawImage(overlay, newLinearImageDrawOptions())
 
 	cy := ScreenHeight/2 - 80
 
@@ -4376,7 +4376,7 @@ func DrawSettlementPanel(screen *ebiten.Image, gs *state.GameState, region *worl
 			scale := minFloat64(float64(imgW)/sw, float64(imgH)/sh)
 			dw := sw * scale
 			dh := sh * scale
-			op := &ebiten.DrawImageOptions{}
+			op := newLinearImageDrawOptions()
 			op.GeoM.Scale(scale, scale)
 			op.GeoM.Translate(float64(imgX)+(float64(imgW)-dw)/2, float64(imgY)+(float64(imgH)-dh)/2)
 			screen.DrawImage(sImg, op)
@@ -4545,7 +4545,7 @@ func DrawFactionDetailPanel(screen *ebiten.Image, gs *state.GameState, fid facti
 
 	bodyCanvas.Fill(color.RGBA{0, 0, 0, 0})
 	drawFactionDetailBody(bodyCanvas, gs, fid, f, summary, bodyW, scroll)
-	bodyOpts := &ebiten.DrawImageOptions{}
+	bodyOpts := newLinearImageDrawOptions()
 	bodyOpts.GeoM.Translate(lx, bodyY)
 	screen.DrawImage(bodyCanvas, bodyOpts)
 	drawFactionPanelScrollbar(screen, float64(px)+float64(pw)-8, bodyY, bodyH, contentHeight, scroll)
@@ -5384,7 +5384,7 @@ func drawLoreImage(screen *ebiten.Image, img *ebiten.Image, x, y, w, h float64) 
 	scale := minFloat64(w/float64(img.Bounds().Dx()), h/float64(img.Bounds().Dy()))
 	dw := float64(img.Bounds().Dx()) * scale
 	dh := float64(img.Bounds().Dy()) * scale
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	op.GeoM.Scale(scale, scale)
 	op.GeoM.Translate(x+(w-dw)/2, y+(h-dh)/2)
 	screen.DrawImage(img, op)

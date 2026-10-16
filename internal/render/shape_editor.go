@@ -1748,9 +1748,9 @@ func (r *Renderer) drawEditPaintPreview(screen *ebiten.Image) {
 	if r == nil || (!r.editShapePainting && !r.editShapePaintPending) || r.editPaintPreviewImage == nil {
 		return
 	}
-	var op ebiten.DrawImageOptions
-	r.applyMapGeoM(&op, float64(WorldW), float64(WorldH))
-	screen.DrawImage(r.editPaintPreviewImage, &op)
+	op := newLinearImageDrawOptions()
+	r.applyMapGeoM(op, float64(WorldW), float64(WorldH))
+	screen.DrawImage(r.editPaintPreviewImage, op)
 }
 
 func (r *Renderer) drawShapePaintPreviewPixel(x, y int, fill bool) {

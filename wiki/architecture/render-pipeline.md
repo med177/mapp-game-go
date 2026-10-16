@@ -3,11 +3,17 @@ Not: Teknoloji panelinde aktif araştırma için `İptal Et • İade` düğmesi
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-10-14
+last_updated: 2026-10-16
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
 # Render Pipeline
+
+Oyun içindeki tüm `DrawImage` çağrıları `gameui.NewLinearImageDrawOptions()`
+üzerinden `FilterLinear` kullanır. Böylece ölçeklenen bayrak, portre, ikon,
+panel görseli ve harita/cache katmanları Ebitengine'in `FilterNearest`
+varsayılanına düşmeden yumuşak örneklenir. Yeni görsel çizimleri de bu ortak
+options oluşturucusunu kullanmalıdır.
 
 Üst oyuncu durum kartının altında, 4 px boşluk bırakan, aynı genişlikte ve 30 px
 yüksekliğinde yuvarlatılmış ince bir uyarı şeridi bulunur. `topAlertHudRect()`

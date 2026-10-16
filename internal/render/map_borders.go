@@ -571,7 +571,7 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 		deltaX := (r.mapBorderCache.anchorCamX - r.camX) * r.camScale
 		deltaY := (r.mapBorderCache.anchorCamY - r.camY) * r.camScale
 		if math.Abs(deltaX) <= marginX/2 && math.Abs(deltaY) <= marginY/2 {
-			op := &ebiten.DrawImageOptions{}
+			op := newLinearImageDrawOptions()
 			op.GeoM.Translate(-marginX+deltaX, -marginY+deltaY)
 			screen.DrawImage(r.mapBorderCache.image, op)
 			return
@@ -639,7 +639,7 @@ func (r *Renderer) drawVectorMapBorders(screen *ebiten.Image) {
 	r.mapBorderCache.anchorCamX = r.camX
 	r.mapBorderCache.anchorCamY = r.camY
 	r.mapBorderCache.valid = true
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	op.GeoM.Translate(-marginX, -marginY)
 	screen.DrawImage(r.mapBorderCache.image, op)
 }

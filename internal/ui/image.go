@@ -2,6 +2,11 @@ package ui
 
 import "github.com/hajimehoshi/ebiten/v2"
 
+// NewLinearImageDrawOptions returns draw options with smooth texture filtering.
+func NewLinearImageDrawOptions() *ebiten.DrawImageOptions {
+	return &ebiten.DrawImageOptions{Filter: ebiten.FilterLinear}
+}
+
 type Image struct {
 	Rect    Rect
 	Src     *ebiten.Image
@@ -28,7 +33,7 @@ func (i Image) Draw(screen *ebiten.Image, _ TextRenderer) {
 	if sw == 0 || sh == 0 {
 		return
 	}
-	op := &ebiten.DrawImageOptions{}
+	op := NewLinearImageDrawOptions()
 	op.GeoM.Scale(i.Rect.W/float64(sw), i.Rect.H/float64(sh))
 	op.GeoM.Translate(i.Rect.X, i.Rect.Y)
 	screen.DrawImage(i.Src, op)

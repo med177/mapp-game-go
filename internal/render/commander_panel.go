@@ -115,7 +115,7 @@ func drawCommanderPortraitAsset(screen *ebiten.Image, asset string, x, y, w, h f
 			if heightScale := h / float64(bounds.Dy()); heightScale < scale {
 				scale = heightScale
 			}
-			op := &ebiten.DrawImageOptions{}
+			op := newLinearImageDrawOptions()
 			op.GeoM.Scale(scale, scale)
 			op.GeoM.Translate(x+(w-float64(bounds.Dx())*scale)/2, y+(h-float64(bounds.Dy())*scale)/2)
 			screen.DrawImage(img, op)

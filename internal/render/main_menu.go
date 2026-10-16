@@ -142,9 +142,8 @@ func drawMainMenuFocusGradient(screen *ebiten.Image) {
 		mainMenuGradientWidth = gradientWidth
 	}
 
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	op.GeoM.Scale(ScreenWidth/float64(gradientWidth), ScreenHeight)
-	op.Filter = ebiten.FilterLinear
 	screen.DrawImage(mainMenuGradientImage, op)
 }
 

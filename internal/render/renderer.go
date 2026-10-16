@@ -2297,7 +2297,7 @@ func (r *Renderer) drawSelectedRegionOverlay(screen *ebiten.Image, regionID worl
 	if r.selectedRegionOverlay == nil {
 		return
 	}
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	r.applyWorldSubImageGeoM(op, r.selectedRegionOverlayBounds)
 	screen.DrawImage(r.selectedRegionOverlay, op)
 }
@@ -2395,7 +2395,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	if r.gs.Phase == state.PhasePauseMenu {
 		r.ensureWorldMap()
 		r.worldMap.Refresh(r.gs, r.SelectedRegion, r.mapMode)
-		mapOp := &ebiten.DrawImageOptions{}
+		mapOp := newLinearImageDrawOptions()
 		r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 		screen.DrawImage(r.worldMap.Image(), mapOp)
 		r.drawVectorMapBorders(screen)
@@ -2439,7 +2439,7 @@ func (r *Renderer) Draw(screen *ebiten.Image) {
 	}
 
 	// 1. Üretilen dünya haritası
-	mapOp := &ebiten.DrawImageOptions{}
+	mapOp := newLinearImageDrawOptions()
 	r.applyMapGeoM(mapOp, float64(WorldW), float64(WorldH))
 	screen.DrawImage(r.worldMap.Image(), mapOp)
 	r.drawSelectedRegionOverlay(screen, highlightRegion)
@@ -5050,7 +5050,7 @@ func (r *Renderer) drawArmyMarkerSprite(screen, sprite *ebiten.Image, cx, cy flo
 	if bounds.Dx() <= 0 || bounds.Dy() <= 0 {
 		return
 	}
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	op.GeoM.Translate(float64(cx)-float64(bounds.Dx())/2, float64(cy)-float64(bounds.Dy()))
 	screen.DrawImage(sprite, op)
 }
@@ -6166,7 +6166,7 @@ func (r *Renderer) drawSettlementMarkerSprite(screen *ebiten.Image, img *ebiten.
 	circleRadius := float32(size/2) + 1
 	vector.DrawFilledCircle(screen, sx, sy, circleRadius, color.RGBA{255, 255, 255, 255}, true)
 
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	scaleX := float64(size) / float64(bounds.Dx())
 	scaleY := float64(size) / float64(bounds.Dy())
 	op.GeoM.Scale(scaleX, scaleY)
@@ -6183,7 +6183,7 @@ func (r *Renderer) drawSettlementLabelSprite(screen *ebiten.Image, img *ebiten.I
 	if bounds.Dx() == 0 || bounds.Dy() == 0 {
 		return false
 	}
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	op.GeoM.Scale(float64(size)/float64(bounds.Dx()), float64(size)/float64(bounds.Dy()))
 	op.GeoM.Translate(float64(x), float64(y))
 	screen.DrawImage(img, op)
@@ -6399,7 +6399,7 @@ func (r *Renderer) drawActiveEventIcons(screen *ebiten.Image) {
 				continue
 			}
 
-			op := &ebiten.DrawImageOptions{}
+			op := newLinearImageDrawOptions()
 			op.GeoM.Scale(float64(activeEventIconSize)/float64(img.Bounds().Dx()), float64(activeEventIconSize)/float64(img.Bounds().Dy()))
 			op.GeoM.Translate(sx-float64(activeEventIconSize)/2, sy-float64(activeEventIconSize)/2)
 

@@ -10,6 +10,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
+func newLinearImageDrawOptions() *ebiten.DrawImageOptions {
+	return gameui.NewLinearImageDrawOptions()
+}
+
 func drawUILabel(screen *ebiten.Image, rect gameui.Rect, text string, col color.Color, variant gameui.TextVariant, align gameui.TextAlign) {
 	gameui.NewTextLabel(rect, text, col, variant, align).Draw(screen, renderText)
 }
@@ -151,7 +155,7 @@ func drawUIImageCover(screen, image *ebiten.Image) {
 	}
 
 	scale := math.Max(ScreenWidth/sourceW, ScreenHeight/sourceH)
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	op.GeoM.Scale(scale, scale)
 	op.GeoM.Translate((ScreenWidth-sourceW*scale)/2, (ScreenHeight-sourceH*scale)/2)
 	screen.DrawImage(image, op)

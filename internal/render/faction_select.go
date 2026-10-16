@@ -369,7 +369,7 @@ func drawFactionRecommendationStar(screen *ebiten.Image, x, y float64) {
 		return
 	}
 	const size = 22.0
-	op := &ebiten.DrawImageOptions{}
+	op := newLinearImageDrawOptions()
 	scale := size / float64(maxDim)
 	op.GeoM.Scale(scale, scale)
 	op.GeoM.Translate(x, y)

@@ -338,7 +338,7 @@ func drawBattleReportArt(screen *ebiten.Image, rect gameui.Rect, report BattleRe
 			drawH := float64(bounds.Dy()) * scale
 			x := rect.X + (rect.W-drawW)/2
 			y := rect.Y + (rect.H-drawH)/2
-			op := &ebiten.DrawImageOptions{}
+			op := newLinearImageDrawOptions()
 			op.GeoM.Scale(scale, scale)
 			op.GeoM.Translate(x, y)
 			screen.DrawImage(img, op)
