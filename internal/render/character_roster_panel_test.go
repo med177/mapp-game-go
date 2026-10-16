@@ -908,6 +908,80 @@ func TestCharacterRosterAssignmentMenuUsesScenarioRoles(t *testing.T) {
 	}
 }
 
+func TestCharacterRosterAssignmentMenuCapturesOverflowAboveArmyPanel(t *testing.T) {
+	const owner faction.FactionID = "player"
+	gs := &state.GameState{
+		Year:            300,
+		PlayerFactionID: owner,
+		Factions:        map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders:      make(map[string]*army.Commander),
+		Armies:          map[army.ArmyID]*army.Army{"army_player": {ID: "army_player", OwnerID: string(owner)}},
+	}
+	ownedColumn, _ := characterRosterColumns()
+	visibleRows := characterRosterVisibleRows(characterRosterOwnedListViewport(ownedColumn))
+	for index := 0; index < visibleRows; index++ {
+		id := fmt.Sprintf("chr_overflow_%d", index)
+		gs.Commanders[id] = &army.Commander{
+			ID: id, Type: army.CharacterTypeCharacter, OwnerID: string(owner), Name: id,
+		}
+	}
+	r := &Renderer{
+		gs:                          gs,
+		showArmyDetailPanel:         true,
+		SelectedArmy:                "army_player",
+		showCharacterRoster:         true,
+		characterRosterAssignMenuID: fmt.Sprintf("chr_overflow_%d", visibleRows-1),
+	}
+	r.OpenCharacterRosterPanelForCharacter(r.characterRosterAssignMenuID)
+	r.characterRosterAssignMenuID = fmt.Sprintf("chr_overflow_%d", visibleRows-1)
+	r.rebuildUILayers()
+
+	ownedColumn, _ = characterRosterColumns()
+	roles := characterCouncilRoles(gs)
+	characterIndex := characterRosterIndexByID(r.characterRosterOwned, r.characterRosterAssignMenuID)
+	menu := characterRosterAssignmentMenuRectWithCount(ownedColumn, characterIndex, r.characterRosterOwnedScroll, len(roles), r.characterRosterOwned)
+	panel := characterRosterPanelRect()
+	armyPanel, ok := armyDetailPanelRect(gs, "army_player")
+	if !ok {
+		t.Fatal("army detail panel has no geometry")
+	}
+	if menu.Y+menu.H <= panel.Y+panel.H {
+		t.Fatalf("assignment menu %v does not overflow the roster panel %v", menu, panel)
+	}
+	characterID := r.characterRosterAssignMenuID
+	var selectedRole scenario.CouncilRoleDefinition
+	var x, y float64
+	for optionIndex, role := range roles {
+		option := characterRosterAssignmentOptionButtonForRole(ownedColumn, characterIndex, r.characterRosterOwnedScroll, optionIndex, len(roles), role.NameTR, r.characterRosterOwned)
+		optionX, optionY := option.X+option.W/2, option.Y+option.H/2
+		if panel.Hit(optionX, optionY) && armyPanel.Hit(optionX, optionY) &&
+			gs.CanAssignCharacterToCouncilRole(owner, characterID, role.ID) {
+			selectedRole, x, y = role, optionX, optionY
+			break
+		}
+	}
+	if selectedRole.ID == "" {
+		t.Fatalf("no enabled assignment option overlaps both panels; roster=%v army=%v menu=%v", panel, armyPanel, menu)
+	}
+	if layer, ok := r.uiLayers.TopAt(x, y); !ok || layer.ID != uiLayerCharacterRoster {
+		t.Fatalf("overflowing role option top layer = %+v, %v; want character roster", layer, ok)
+	}
+	if !characterRosterPanelInteractiveHit(r, x, y) {
+		t.Fatal("overlapping assignment option did not receive the pointer hit-test")
+	}
+	action, handled := handleCharacterRosterPanelClick(r, x, y)
+	if !handled || action.Kind != ActionAssignCouncilRole || action.CharacterID != characterID || action.CouncilRole != selectedRole.ID {
+		t.Fatalf("overflow role selection = %+v, handled=%t", action, handled)
+	}
+	overflowX, overflowY := menu.X+menu.W/2, panel.Y+panel.H+1
+	if !menu.Hit(overflowX, overflowY) {
+		t.Fatalf("menu %v does not cover the expected overflow point (%v, %v)", menu, overflowX, overflowY)
+	}
+	if layer, ok := r.uiLayers.TopAt(overflowX, overflowY); !ok || layer.ID != uiLayerCharacterRoster {
+		t.Fatalf("menu overflow top layer = %+v, %v; want character roster", layer, ok)
+	}
+}
+
 func TestCharacterMissionMenuDispatchesRoleLinkedAndIndependentMissions(t *testing.T) {
 	const owner faction.FactionID = "player"
 	const target faction.FactionID = "target"
@@ -933,12 +1007,17 @@ func TestCharacterMissionMenuDispatchesRoleLinkedAndIndependentMissions(t *testi
 			Regions: map[world.RegionID]*world.Region{
 				"target_region": {ID: "target_region", OwnerID: string(target), NameTR: "Sınır Bölgesi"},
 			},
+			Armies: map[army.ArmyID]*army.Army{
+				"army_player": {ID: "army_player", OwnerID: string(owner)},
+			},
 			CouncilConfig: scenario.CharacterCouncilConfig{Missions: []scenario.CharacterMissionDefinition{
 				{ID: "envoy", NameTR: "Diplomatik Elçilik", RoleID: state.CouncilRoleDiplomat, TargetKind: scenario.CharacterMissionTargetFaction, DurationTurns: 2, GoldCost: 100},
 				{ID: "archive", NameTR: "Arşiv Araştırması", DurationTurns: 2, GoldCost: 50},
 				{ID: "recon", NameTR: "Bölgesel Keşif", TargetKind: scenario.CharacterMissionTargetRegion, DurationTurns: 2, GoldCost: 75},
 			}},
 		},
+		showArmyDetailPanel: true,
+		SelectedArmy:        "army_player",
 	}
 	r.OpenCharacterRosterPanel()
 	ownedColumn, _ := characterRosterColumns()
@@ -954,6 +1033,15 @@ func TestCharacterMissionMenuDispatchesRoleLinkedAndIndependentMissions(t *testi
 		t.Fatal("role-linked mission menu has no geometry")
 	}
 	missionButton = characterMissionMenuOptionButton(menu, 0, "Diplomatik Elçilik")
+	r.rebuildUILayers()
+	missionX, missionY := missionButton.X+missionButton.W/2, missionButton.Y+missionButton.H/2
+	armyPanel, ok := armyDetailPanelRect(r.gs, r.SelectedArmy)
+	if !ok || !armyPanel.Hit(missionX, missionY) {
+		t.Fatalf("mission option (%v, %v) does not overlap the open army panel %v", missionX, missionY, armyPanel)
+	}
+	if layer, ok := r.uiLayers.TopAt(missionX, missionY); !ok || layer.ID != uiLayerCharacterRoster {
+		t.Fatalf("overlapping mission option top layer = %+v, %v; want character roster", layer, ok)
+	}
 	action, handled := handleCharacterRosterPanelClick(r, missionButton.X+missionButton.W/2, missionButton.Y+missionButton.H/2)
 	if !handled || action.Kind != ActionNone || r.characterRosterSelectedMissionID != "envoy" ||
 		len(r.characterRosterMissionTargets) != 1 || r.characterRosterMissionTargets[0] != string(target) {

@@ -387,6 +387,12 @@ func (r *Renderer) rebuildUILayers() {
 		case overlayPanelCharacterRoster:
 			if r.showCharacterRoster {
 				r.addUILayer(uiLayerCharacterRoster, characterRosterPanelRect())
+				if menu, ok := characterRosterAssignmentMenuRect(r); ok {
+					r.addUILayer(uiLayerCharacterRoster, menu)
+				}
+				if menu, ok := characterMissionMenuRect(r); ok {
+					r.addUILayer(uiLayerCharacterRoster, menu)
+				}
 			}
 		}
 	}

@@ -800,6 +800,36 @@ func characterRosterCanAssignRole(gs *state.GameState, character *army.Commander
 		gs.CanAssignCharacterToCouncilRole(gs.PlayerFactionID, character.ID, role.ID)
 }
 
+func characterRosterAssignmentMenuRect(r *Renderer) (gameui.Rect, bool) {
+	if r == nil || r.gs == nil || r.characterRosterAssignMenuID == "" {
+		return gameui.Rect{}, false
+	}
+	r.ensureCharacterRosterPanelCache()
+	ownedColumn, _ := characterRosterColumns()
+	ownedRoster := r.characterRosterOwned
+	viewport := characterRosterOwnedListViewport(ownedColumn)
+	scroll := r.characterRosterOwnedScroll
+	index := characterRosterIndexByID(ownedRoster, r.characterRosterAssignMenuID)
+	if index < scroll || index >= scroll+characterRosterOwnedVisibleRows(viewport, ownedRoster, scroll) ||
+		index >= len(ownedRoster) || !characterRosterCouncilManageable(ownedRoster[index]) {
+		return gameui.Rect{}, false
+	}
+	return characterRosterAssignmentMenuRectWithCount(ownedColumn, index, scroll, len(characterCouncilRoles(r.gs)), ownedRoster), true
+}
+
+func characterRosterMenuOverlayHit(r *Renderer, x, y float64) bool {
+	if r == nil || !r.showCharacterRoster {
+		return false
+	}
+	if menu, ok := characterMissionMenuRect(r); ok && menu.Hit(x, y) {
+		return true
+	}
+	if menu, ok := characterRosterAssignmentMenuRect(r); ok && menu.Hit(x, y) {
+		return true
+	}
+	return false
+}
+
 func characterRosterPanelInteractiveHit(r *Renderer, x, y float64) bool {
 	if r == nil || r.gs == nil || !r.showCharacterRoster {
 		return false
@@ -1273,7 +1303,7 @@ func (r *Renderer) handleCharacterRosterPanelInput() (InputAction, bool) {
 	mx, my := ebiten.CursorPosition()
 	x, y := float64(mx), float64(my)
 	panel := characterRosterPanelRect()
-	if !panel.Hit(x, y) {
+	if !panel.Hit(x, y) && !characterRosterMenuOverlayHit(r, x, y) {
 		if action, handled := handleCharacterRosterOutsideClick(
 			r, x, y,
 			ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft),

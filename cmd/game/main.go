@@ -53,6 +53,9 @@ func main() {
 	// Pencerenin X düğmesine basıldığında uygulamanın kapanmasını oyunun
 	// onay modalına bırak. Ebitengine aksi halde pencereyi hemen kapatır.
 	ebiten.SetWindowClosingHandled(true)
+	// Odak dışındayken Update çağrılmasın; arka plandaki fare hareketleri
+	// menü hover'larını ve bunlara bağlı sesleri tetiklememeli.
+	ebiten.SetRunnableOnUnfocused(false)
 
 	g := game.New()
 	if err := ebiten.RunGame(g); err != nil {

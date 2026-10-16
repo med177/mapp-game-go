@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-10-12
+last_updated: 2026-10-16
 related: [state-management, render-pipeline]
 ---
 
@@ -18,6 +18,11 @@ Update()  → 60 TPS — oyun mantığı
 Draw()    → her frame — render
 Layout()  → pencere boyutu bildirir
 ```
+
+Uygulama `ebiten.SetRunnableOnUnfocused(false)` ayarıyla çalışır. Pencere arka
+plandayken Ebitengine oyun döngüsünü durdurur; böylece fare hover'ı menü
+seçimlerini veya bunlara bağlı sesleri tetiklemez. Pencere yeniden odaklandığında
+oyun döngüsü kaldığı yerden devam eder.
 
 `Game` içinde üç bileşen bulunur:
 - `gs *state.GameState` — tüm oyun verisi
