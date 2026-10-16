@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-10-13
+last_updated: 2026-10-16
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -14,6 +14,12 @@ related: [world/regions, systems/economy, architecture/game-loop, architecture/s
 Olaylar JSON'dan yüklenir ve `events.LoadEvents()` ile `[]*Event` listesine dönüştürülür.
 
 Her olay `events.Tick()` içinde yalnızca **tespit edilir**; uygulama sonrasında `events.Apply()` / `events.ApplyChoice()` ile yapılır. Tek seferlik event'ler `gs.FiredEventIDs` içinde takip edilir.
+
+Bir event seçeneğindeki `commander_captures`, seçim çözümlendiğinde karakteri
+seçilen yerleşimde tutsak eder. Tutsak karakter ordudan ve konsey rolünden
+ayrılır, devam eden karakter görevleri iptal edilir ve hane listesinde
+`Tutsak` olarak pasif görünür; serbest bırakılana kadar yeni rol veya görev
+alamaz.
 
 Deterministik simülasyon için `random_region` adayları ile `all_factions`, `all_armies` ve fraksiyon-sahipliği tabanlı aktif event bölge listeleri `RegionID` sırasına sokulur. Rastgele indeks ve `ActiveRegionEvents` sıra düzeni Go map iterasyonundan etkilenmez.
 

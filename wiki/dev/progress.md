@@ -9,6 +9,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   komşu bölgelerdeki düşman orduları için tam istihbarat sağlar; uzak orduların
   ayrıntıları gizli kalır. Global `reveal_enemy_strength` etkisi ayrı tutuldu.
 
+- 2026-10-16: Event ile tutsak edilen karakterlerin konsey rolü ve devam eden
+  görevleri kaldırılıyor. Karakter hane panelinde `Tutsak` etiketiyle pasif
+  kalıyor; tutsaklık boyunca rol, görev veya hane işlemi yapılamıyor.
+
 - 2026-10-15: Hane HUD düğmesi, atanmayı bekleyen konsey rolü sayısını kırmızı
   rozetle (tüm roller doluysa yeşil `0`) ve aktif görevdeki oyuncu
   karakterlerini sağ alt turuncu rozetle gösterir.

@@ -401,6 +401,45 @@ func TestChoiceCommanderDeathsRecordAndGateCommander(t *testing.T) {
 	}
 }
 
+func TestChoiceCommanderCaptureMakesCharacterPassive(t *testing.T) {
+	commander := &army.Commander{
+		ID: "cmd_tyrion_lannister", Type: army.CharacterTypeCommander, OwnerID: "lannister",
+		AssignedCouncilRole: state.CouncilRoleTreasurer, ActiveMissionID: "mission",
+		ActiveMissionTurnsRemaining: 2,
+	}
+	gs := &state.GameState{
+		Year:       298,
+		Factions:   map[faction.FactionID]*faction.Faction{"lannister": {ID: "lannister"}},
+		Commanders: map[string]*army.Commander{commander.ID: commander},
+	}
+	e := &Event{
+		ID: "capture_tyrion",
+		Choices: []Choice{{
+			LabelTR: "Tutsak et",
+			Effect: Effect{CommanderCaptures: []CommanderCaptureEffect{{
+				CommanderID: "cmd_tyrion_lannister", HoldingSettlementID: "the_eyrie_main",
+			}}},
+		}},
+	}
+
+	if _, ok := ApplyChoice(gs, e, 0); !ok {
+		t.Fatal("tutsaklık seçeneği uygulanmadı")
+	}
+	if commander.CaptiveAtSettlementID != "the_eyrie_main" {
+		t.Fatalf("tutsaklık konumu = %q, want the_eyrie_main", commander.CaptiveAtSettlementID)
+	}
+	if commander.AssignedCouncilRole != "" || commander.ActiveMissionID != "" ||
+		commander.ActiveMissionTurnsRemaining != 0 {
+		t.Fatalf("tutsak karakterin görevleri temizlenmedi: %+v", commander)
+	}
+	if got := gs.CommanderUnavailableReason(commander); got != "Tutsak" {
+		t.Fatalf("karakterin pasiflik nedeni = %q, want Tutsak", got)
+	}
+	if got := gs.CharacterRoster("lannister"); len(got) != 1 || got[0] != commander {
+		t.Fatalf("tutsak karakter hane roster'ında görünmüyor: %#v", got)
+	}
+}
+
 func TestCommanderExileEffectPreservesAliveCommanderRequirement(t *testing.T) {
 	commander := &army.Commander{ID: "cmd_tyrion_lannister", OwnerID: "lannister", StartYear: 298, EndYear: 330}
 	gs := &state.GameState{

@@ -913,6 +913,10 @@ komutanı ordularından/runtime roster'ından çıkarır. Ölüm state'i save/lo
 boyunca `DeadCommanderIDs` içinde saklanır; ölümü commander şablonundaki bir
 status flag'ine bağlamak gerekmez. `commander_deaths` event kökünde verilirse
 bütün seçimlerde, choice effect'inde verilirse yalnız o seçimde uygulanır.
+`commander_captures`, seçimin etkisi çözümlendiğinde karakteri belirtilen
+yerleşimde tutsak eder; konsey rolünü ve devam eden karakter görevini kaldırır.
+Tutsak karakter hane panelinde görünür kalır ancak pasif gösterilir ve yeni
+konsey rolü, görev veya hane işlemlerinde kullanılamaz.
 `commander_exiles` / `commander_returns` event veya choice effect'leri komutanı
 ölüm state'ine dokunmadan sürgüne gönderir ya da geri döndürür; sürgündeki kişi
 alive requirement'ını karşılamaya devam eder. `blocks_flags` belirli bir event

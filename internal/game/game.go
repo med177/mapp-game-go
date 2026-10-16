@@ -2043,6 +2043,9 @@ func (g *Game) applyHistoricalChoiceWithNotification(evt *events.Event, idx int,
 		}
 	}
 	g.resolveHistoricalDiplomaticOffers(evt, choice.Effect)
+	if g.renderer != nil {
+		g.renderer.RefreshCharacterRosterPanel()
+	}
 	msg := fmt.Sprintf("Karar: %s -> %s", evt.NameTR, choice.LabelTR)
 	if showNotification {
 		g.renderer.ShowCombatResult(msg)

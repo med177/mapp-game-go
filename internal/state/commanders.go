@@ -132,8 +132,8 @@ func (s *GameState) InjureCommander(commanderID string, duration int, reason str
 	return true
 }
 
-// CaptureCommanderAtSettlement, komutanın tutulduğu yerleşimi save state'ine
-// yazar ve komutanı bağlı olduğu ordudan ayırır.
+// CaptureCommanderAtSettlement, komutanın tutulduğu yeri kaydeder ve aktif
+// ordu, konsey ve karakter görevlerini sonlandırır.
 func (s *GameState) CaptureCommanderAtSettlement(commanderID, settlementID string, releaseFlags []string) bool {
 	if s == nil || commanderID == "" || settlementID == "" || s.Commanders == nil {
 		return false
@@ -145,6 +145,13 @@ func (s *GameState) CaptureCommanderAtSettlement(commanderID, settlementID strin
 	commander.CaptiveAtSettlementID = settlementID
 	commander.CaptivityReleaseFlags = append([]string(nil), releaseFlags...)
 	commander.CaptivityKeepPenaltyApplied = false
+	commander.AssignedCouncilRole = ""
+	commander.ActiveMissionID = ""
+	commander.ActiveMissionTargetID = ""
+	commander.ActiveMissionTurnsRemaining = 0
+	commander.ActiveMissionOutcomeRoll = 0
+	commander.ActiveMissionOutcome = ""
+	commander.PendingAdventureAbilities = nil
 	s.SyncCommanderLinks()
 	return true
 }

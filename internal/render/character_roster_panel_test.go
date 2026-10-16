@@ -295,6 +295,21 @@ func TestCharacterAdventureAbilityEffectsSummaryOmitsAbilityNames(t *testing.T) 
 	}
 }
 
+func TestCharacterRosterCaptiveCannotBeManagedOrReleased(t *testing.T) {
+	character := &army.Commander{
+		Type: army.CharacterTypeCharacter, CaptiveAtSettlementID: "holding_main",
+	}
+	if characterRosterCouncilManageable(character) {
+		t.Fatal("tutsak karakter konsey görevinde yönetilebilir")
+	}
+	if characterRosterReleaseable(character) {
+		t.Fatal("tutsak karakter hane listesinden serbest bırakılabilir")
+	}
+	if characterRosterDutyRemovable(character) {
+		t.Fatal("tutsak karakterin konsey görevi düzenlenebilir")
+	}
+}
+
 func TestCharacterRosterAbilityEffectLineAvoidsReleaseButton(t *testing.T) {
 	row := gameui.Rect{X: 100, Y: 200, W: 400, H: characterRosterCardH}
 	button := gameui.NewButton(row.X+row.W-34, row.Y+59, 28, 28, "")

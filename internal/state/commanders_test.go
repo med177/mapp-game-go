@@ -178,6 +178,34 @@ func TestCommanderCaptiveIsReleasedWhenOwnerCapturesHoldingRegion(t *testing.T) 
 	}
 }
 
+func TestCaptureCommanderClearsDutiesAndKeepsCharacterInHousehold(t *testing.T) {
+	commander := &army.Commander{
+		ID: "cmd_captive", Type: army.CharacterTypeCommander, OwnerID: "lannister", Name: "Tutsak Komutan",
+		AssignedCouncilRole: CouncilRoleTreasurer, ActiveMissionID: "mission",
+		ActiveMissionTargetID: "target", ActiveMissionTurnsRemaining: 2,
+		ActiveMissionOutcomeRoll: 17, ActiveMissionOutcome: "success",
+		PendingAdventureAbilities: []army.CharacterAbility{{ID: "pending_ability"}},
+	}
+	gs := &GameState{Year: 300, Commanders: map[string]*army.Commander{commander.ID: commander}}
+
+	if !gs.CaptureCommanderAtSettlement(commander.ID, "holding_main", nil) {
+		t.Fatal("komutan tutsak olarak kaydedilemedi")
+	}
+	if commander.AssignedCouncilRole != "" || commander.ActiveMissionID != "" ||
+		commander.ActiveMissionTargetID != "" || commander.ActiveMissionTurnsRemaining != 0 ||
+		commander.ActiveMissionOutcomeRoll != 0 || commander.ActiveMissionOutcome != "" ||
+		len(commander.PendingAdventureAbilities) != 0 {
+		t.Fatalf("tutsak komutanın görevleri temizlenmedi: %+v", commander)
+	}
+	if got := gs.CommanderUnavailableReason(commander); got != "Tutsak" {
+		t.Fatalf("tutsak komutanın pasiflik nedeni = %q, want Tutsak", got)
+	}
+	roster := gs.CharacterRoster("lannister")
+	if len(roster) != 1 || roster[0] != commander {
+		t.Fatalf("tutsak hane üyesi panel listesinden çıkarıldı: %#v", roster)
+	}
+}
+
 func TestCommanderUnavailableFlagUnassignsAndBlocksAssignment(t *testing.T) {
 	commander := &army.Commander{
 		ID:      "cmd_tyrion",

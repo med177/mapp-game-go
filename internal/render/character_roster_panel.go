@@ -360,12 +360,13 @@ func characterRosterUpkeepLabel(character *army.Commander, role scenario.Council
 
 func characterRosterCouncilManageable(character *army.Commander) bool {
 	return character != nil &&
+		character.CaptiveAtSettlementID == "" &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
 			character.Type == army.CharacterTypeCommander)
 }
 
 func characterRosterReleaseable(character *army.Commander) bool {
-	return character != nil && character.ActiveMissionID == "" &&
+	return character != nil && character.CaptiveAtSettlementID == "" && character.ActiveMissionID == "" &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter)
 }
 
@@ -540,7 +541,8 @@ func characterRosterDutyActionButton(column gameui.Rect, rowIndex, scroll int, c
 }
 
 func characterRosterDutyRemovable(character *army.Commander) bool {
-	return character != nil && character.AssignedCouncilRole != "" && character.ActiveMissionID == ""
+	return character != nil && character.CaptiveAtSettlementID == "" &&
+		character.AssignedCouncilRole != "" && character.ActiveMissionID == ""
 }
 
 func characterRosterMissionButton(column gameui.Rect, rowIndex, scroll int, rosters ...[]*army.Commander) gameui.Button {
@@ -1058,6 +1060,11 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 		}
 		rowBG := color.RGBA{35, 26, 14, 210}
 		rowBorder := color.RGBA{100, 75, 30, 180}
+		captive := !candidate && character.CaptiveAtSettlementID != ""
+		if captive {
+			rowBG = color.RGBA{30, 29, 30, 205}
+			rowBorder = color.RGBA{83, 83, 88, 160}
+		}
 		vector.FillRect(body, float32(row.X), float32(row.Y), float32(row.W), float32(row.H), rowBG, false)
 		border := characterRosterRowBorderRect(row)
 		vector.StrokeRect(body, float32(border.X), float32(border.Y), float32(border.W), float32(border.H), 1, rowBorder, false)
@@ -1075,7 +1082,7 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 		nameW := textW
 		var adopt gameui.Button
 		var missionButton gameui.Button
-		hasMissionButton := !candidate && character.ActiveMissionID == "" &&
+		hasMissionButton := !candidate && character.CaptiveAtSettlementID == "" && character.ActiveMissionID == "" &&
 			(len(character.PendingAdventureAbilities) > 0 || len(missionOptions[character.ID]) > 0)
 		if candidate {
 			adopt = characterAdoptButton(column, index, scroll)
@@ -1091,7 +1098,11 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 				nameW = availableWidth
 			}
 		}
-		drawUILabel(body, gameui.Rect{X: textX, Y: row.Y + 8, W: nameW, H: 18}, trimTextToWidth(character.Name, FaceSmall, nameW), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
+		nameColor := ColorWhite
+		if captive {
+			nameColor = ColorGray
+		}
+		drawUILabel(body, gameui.Rect{X: textX, Y: row.Y + 8, W: nameW, H: 18}, trimTextToWidth(character.Name, FaceSmall, nameW), nameColor, gameui.TextSmall, gameui.TextAlignStart)
 		kind := "Karakter"
 		switch character.Type {
 		case army.CharacterTypeAdministrator:
@@ -1139,6 +1150,11 @@ func drawCharacterRosterRows(screen *ebiten.Image, gs *state.GameState, missionO
 			bonus = nil
 		} else if len(character.PendingAdventureAbilities) > 0 {
 			detail = "Yetenek seçimi bekliyor"
+		}
+		if captive {
+			detail = "Tutsak"
+			bonus = nil
+			missionDetails = [2]string{}
 		}
 		detailRect := characterRosterDetailRect(row, textX)
 		if hasMissionButton {
