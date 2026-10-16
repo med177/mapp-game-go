@@ -954,6 +954,10 @@ kullanılabilir. `true` normal diplomasi aksiyonlarını kapatır, `false` yenid
 açar; bu değişiklik kompakt ve debug kaydında saklanır. Alan verilmezse mevcut
 değer korunur ve eski save'lerde senaryo varsayılanı geçerlidir.
 
+`vassal_revolts`, event veya choice effect'inde overlord bağından ayrılacak
+vassal faction ID'lerini listeler. Her ayrılan vassal eski overlord'u ile savaşa
+girer; alan event kökünde verilirse bütün seçimlerden bağımsız uygulanır.
+
 Yaklaşan olay HUD'unda `player_faction` ve oyuncunun `affected_faction` değeriyle
 eşleşen `specific_faction` event'leri `Özel` listesine alınır. `all_factions` ve
 diğer hedefler yalnızca `Genel` listede gösterilir. Bu sınıflandırma event'in

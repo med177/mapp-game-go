@@ -827,7 +827,7 @@
     "spice": 0,
     "cloth": 120,
     "research": {
-      "completed": {},
+      "completed": { },
       "active_id": "",
       "turns_left": 0
     },
@@ -902,70 +902,6 @@
         "region_id": "dragonstone",
         "value": 100,
         "core": true
-      }
-    ]
-  },
-  {
-    "id": "bolton",
-    "name": "Bolton",
-    "name_tr": "Bolton",
-    "army_image": "army/army.png",
-    "marine_image": "army/marine.png",
-    "religion": "old_gods",
-    "color": [
-      120,
-      20,
-      35
-    ],
-    "is_playable": true,
-    "is_eliminated": false,
-    "overlord_id": "stark",
-    "tribute_rate": 20,
-    "tribute_rate_configured": true,
-    "vassalized_turn": 1,
-    "capital_settlement_id": "the_dreadfort_main",
-    "gold": 2800,
-    "grain": 2600,
-    "iron": 500,
-    "timber": 250,
-    "stone": 650,
-    "spice": 20,
-    "cloth": 70,
-    "research": {
-      "completed": {
-        "castle_engineering": true,
-        "castle_steel": true,
-        "feudal_levies": true,
-        "iron_weapons": true,
-        "ranger_scouting": true,
-        "siegecraft": true
-      },
-      "active_id": "",
-      "turns_left": 0
-    },
-    "ai_aggressiveness": 80,
-    "ai_expansion_targets": [
-      "stark",
-      "tully",
-      "nights_watch"
-    ],
-    "territorial_claims": [
-      {
-        "region_id": "the_dreadfort",
-        "value": 100,
-        "core": true
-      },
-      {
-        "region_id": "winterfell_region",
-        "value": 80
-      },
-      {
-        "region_id": "the_neck",
-        "value": 85
-      },
-      {
-        "region_id": "harrenhal",
-        "value": 60
       }
     ]
   },
@@ -1113,6 +1049,70 @@
     "ai_aggressiveness": 10
   },
   {
+    "id": "bolton",
+    "name": "Bolton",
+    "name_tr": "Bolton",
+    "army_image": "army/army.png",
+    "marine_image": "army/marine.png",
+    "religion": "old_gods",
+    "color": [
+      120,
+      20,
+      35
+    ],
+    "is_playable": true,
+    "is_eliminated": false,
+    "overlord_id": "stark",
+    "tribute_rate": 20,
+    "tribute_rate_configured": true,
+    "vassalized_turn": 1,
+    "capital_settlement_id": "the_dreadfort_main",
+    "gold": 2800,
+    "grain": 2600,
+    "iron": 500,
+    "timber": 250,
+    "stone": 650,
+    "spice": 20,
+    "cloth": 70,
+    "research": {
+      "completed": {
+        "castle_engineering": true,
+        "castle_steel": true,
+        "feudal_levies": true,
+        "iron_weapons": true,
+        "ranger_scouting": true,
+        "siegecraft": true
+      },
+      "active_id": "",
+      "turns_left": 0
+    },
+    "ai_aggressiveness": 80,
+    "ai_expansion_targets": [
+      "stark",
+      "tully",
+      "nights_watch"
+    ],
+    "territorial_claims": [
+      {
+        "region_id": "the_dreadfort",
+        "value": 100,
+        "core": true
+      },
+      {
+        "region_id": "winterfell_region",
+        "value": 80
+      },
+      {
+        "region_id": "the_neck",
+        "value": 85
+      },
+      {
+        "region_id": "harrenhal",
+        "value": 60
+      }
+    ]
+  },
+  {
     "id": "tarth",
     "name": "Tarth",
     "name_tr": "Tarth",
@@ -1121,12 +1121,16 @@
     "flag": "tarth.png",
     "religion": "faith_of_the_seven",
     "color": [
-      224, 
-      98, 
+      224,
+      98,
       126
     ],
     "is_playable": false,
-    "is_eliminated": true,
+    "is_eliminated": false,
+    "overlord_id": "baratheon_stormsend",
+    "tribute_rate": 20,
+    "tribute_rate_configured": true,
+    "vassalized_turn": 1,
     "capital_settlement_id": "tarth_main",
     "gold": 1000,
     "grain": 800,
@@ -1173,7 +1177,11 @@
       34
     ],
     "is_playable": false,
-    "is_eliminated": true,
+    "is_eliminated": false,
+    "overlord_id": "stark",
+    "tribute_rate": 20,
+    "tribute_rate_configured": true,
+    "vassalized_turn": 1,
     "capital_settlement_id": "bear_island_main",
     "gold": 1000,
     "grain": 500,
@@ -1218,7 +1226,11 @@
       19
     ],
     "is_playable": false,
-    "is_eliminated": true,
+    "is_eliminated": false,
+    "overlord_id": "tully",
+    "tribute_rate": 20,
+    "tribute_rate_configured": true,
+    "vassalized_turn": 1,
     "capital_settlement_id": "the_twins_main",
     "gold": 1000,
     "grain": 500,

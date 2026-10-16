@@ -178,6 +178,11 @@ barış düzeninin tamamlanmasını ve `targaryen_return_ready` flag'ini bekler.
 için savaş veya Westeros seferini erteleyip doğuda güçlenme yollarından birini
 seçebilir (`assets/scenarios/298_war_of_five_kings/data/events.json`).
 
+298 açılışında Tarth, Mormont ve Frey etkin fakat oynanamaz vassal faction'lardır;
+her biri kendi tarihsel merkez bölgesini yönetir. `red_wedding_event`, `vassal_revolts`
+ile Frey'i Tully'den ve Bolton'u Stark'tan koparıp eski overlord'larına karşı
+savaşa sokar.
+
 Aynı senaryoda 306–330 dönemi, savaş sonrası yeniden inşa ve ticaret kararlarıyla
 başlar; Martell, Stark, Tyrell, Greyjoy ve Targaryen'e özgü siyasi tercihlerle
 devam eder. `others_awakened` ve `wall_breached` bayrakları Duvar savunması ve

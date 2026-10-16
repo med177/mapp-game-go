@@ -2538,7 +2538,7 @@
   {
     "id": "red_wedding_event",
     "name_tr": "Kızıl Düğün İhaneti",
-    "desc_tr": "İkizler'de gerçekleşen kanlı ihanet Kuzey ordusunun belini büktü. Frey ve Bolton hanedanları kontrolü ele geçirmeye çalışıyor.",
+    "desc_tr": "İkizler'de gerçekleşen kanlı ihanet Kuzey ordusunun belini büktü. Freyler Tullylerden, Boltonlar Starklardan koparak eski efendilerine karşı savaşa katılıyor.",
     "random_probability": 0,
     "min_turn": 8,
     "target": "specific_faction",
@@ -2547,7 +2547,8 @@
     "grain_delta": 0,
     "army_hp_mod": -30,
     "vassal_revolts": [
-      "bolton"
+      "bolton",
+      "frey"
     ],
     "set_flags": [
       "stark_betrayed"

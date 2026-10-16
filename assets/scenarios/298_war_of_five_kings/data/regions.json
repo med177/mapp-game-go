@@ -2765,7 +2765,7 @@
     "name": "The Twins",
     "name_tr": "İkizler",
     "terrain": "plain",
-    "owner_id": "tully",
+    "owner_id": "frey",
     "successor_faction_id": "frey",
     "neighbors": [
       "deepwood_motte",
@@ -4383,7 +4383,7 @@
     "is_sea": false,
     "is_locked": false,
     "unlock_turn": 0,
-    "base_gold_income": 135,
+    "base_gold_income": 125,
     "base_grain_output": 6,
     "base_iron_output": 4,
     "base_timber_output": 18,
@@ -4392,9 +4392,9 @@
     "base_cloth_output": 4,
     "trade_capacity": 2,
     "satisfaction": 100,
-    "tax_rate": 20,
-    "population": 80,
-    "rural_population": 40,
+    "tax_rate": 30,
+    "population": 110,
+    "rural_population": 80,
     "religion": "old_gods",
     "active_event_id": "",
     "buildings": [
@@ -4755,8 +4755,8 @@
     "name": "Bear Island",
     "name_tr": "Ayı Adası",
     "terrain": "coast",
-    "owner_id": "stark",
-    "successor_faction_id": "stark",
+    "owner_id": "mormont",
+    "successor_faction_id": "mormont",
     "neighbors": [
       "bay_of_ice"
     ],
@@ -5722,7 +5722,7 @@
     "name": "Tarth",
     "name_tr": "Tarth",
     "terrain": "coast",
-    "owner_id": "baratheon_stormsend",
+    "owner_id": "tarth",
     "successor_faction_id": "tarth",
     "neighbors": [
       "shipbreaker_bay"

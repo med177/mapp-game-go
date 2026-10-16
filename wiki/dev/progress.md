@@ -9,6 +9,10 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   komşu bölgelerdeki düşman orduları için tam istihbarat sağlar; uzak orduların
   ayrıntıları gizli kalır. Global `reveal_enemy_strength` etkisi ayrı tutuldu.
 
+- 2026-10-16: Beş Kralın Savaşı açılışında Tarth, Mormont ve Frey kendi
+  bölgelerine sahip etkin vassallar olarak başlıyor. Kızıl Düğün event'i Frey'i
+  Tully'den, Bolton'u Stark'tan koparıp eski overlord'larıyla savaşa sokuyor.
+
 - 2026-10-16: Event ile tutsak edilen karakterlerin konsey rolü ve devam eden
   görevleri kaldırılıyor. Karakter hane panelinde `Tutsak` etiketiyle pasif
   kalıyor; tutsaklık boyunca rol, görev veya hane işlemi yapılamıyor.
