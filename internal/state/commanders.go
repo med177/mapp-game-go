@@ -489,10 +489,15 @@ func (s *GameState) TransferArmyOwnership(current *army.Army, ownerID string) {
 	if current == nil || ownerID == "" {
 		return
 	}
+	ownerChanged := current.OwnerID != ownerID
 	current.OwnerID = ownerID
 	for _, commander := range []*army.Commander{current.Commander, current.EmbarkedCommander} {
 		if commander != nil {
+			if ownerChanged {
+				commander.AssignedCouncilRole = ""
+			}
 			commander.OwnerID = ownerID
+			commander.AssignedArmyID = current.ID
 		}
 	}
 }

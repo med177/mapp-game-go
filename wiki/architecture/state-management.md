@@ -416,7 +416,8 @@ bu bonusu almaz.
 Ordu yaşam döngüsü de komutan bağlantısını state katmanında korur. `RemoveArmy()`
 silinen ordunun normal veya nakliye filosunda taşınan komutanını havuza geri bırakır;
 `TransferArmyOwnership()` fetih ya da fraksiyon eliminasyonu sonrası hem ordu hem de
-komutan `OwnerID` alanlarını birlikte günceller. Kara ordusu filoya bindiğinde, hem
+komutan `OwnerID` alanlarını birlikte günceller; faction değiştiren komutanların
+konsey rolleri yeni faction'a taşınmaz. Kara ordusu filoya bindiğinde, hem
 ayrı embark aksiyonunda hem de denize hareket ederek yapılan otomatik embark'ta kara
 komutanı `Army.EmbarkedCommander` alanında korunur; `AmphibiousCommander()` yalnız bu
 komutanı döndürür. Filo komutanı çıkarma savaşına katılmaz. Başarılı karaya çıkışta

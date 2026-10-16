@@ -223,8 +223,7 @@ func (s *GameState) MergeFactionForces(memberIDs []faction.FactionID, resultFact
 		if _, ok := members[current.OwnerID]; !ok {
 			continue
 		}
-		current.OwnerID = string(resultFaction)
-		normalizePoliticalCommanderOwners(current)
+		s.TransferArmyOwnership(current, string(resultFaction))
 		if current.IsNaval {
 			report.TransferredFleets++
 		} else {
@@ -469,8 +468,7 @@ func (s *GameState) SplitFactionForces(
 			target = targets[fallback%len(targets)]
 			fallback++
 		}
-		current.OwnerID = string(target)
-		normalizePoliticalCommanderOwners(current)
+		s.TransferArmyOwnership(current, string(target))
 		if current.IsNaval {
 			report.TransferredFleets++
 		} else {
@@ -612,18 +610,4 @@ func politicalForceTargetForRegion(s *GameState, current *army.Army, regionTarge
 		}
 	}
 	return "", false
-}
-
-func normalizePoliticalCommanderOwners(current *army.Army) {
-	if current == nil {
-		return
-	}
-	if current.Commander != nil {
-		current.Commander.OwnerID = current.OwnerID
-		current.Commander.AssignedArmyID = current.ID
-	}
-	if current.EmbarkedCommander != nil {
-		current.EmbarkedCommander.OwnerID = current.OwnerID
-		current.EmbarkedCommander.AssignedArmyID = current.ID
-	}
 }

@@ -325,6 +325,33 @@ func TestUpdateCommanderProfileChangesGeneratedCommanderOnlyProfile(t *testing.T
 	}
 }
 
+func TestTransferArmyOwnershipClearsCouncilRoles(t *testing.T) {
+	commander := &army.Commander{
+		ID: "commander", OwnerID: "vassal", AssignedCouncilRole: CouncilRoleTreasurer,
+	}
+	embarkedCommander := &army.Commander{
+		ID: "embarked", OwnerID: "vassal", AssignedCouncilRole: CouncilRoleMilitaryResponsible,
+	}
+	currentArmy := &army.Army{
+		ID: "army_vassal", OwnerID: "vassal", Commander: commander, EmbarkedCommander: embarkedCommander,
+	}
+	gs := &GameState{Armies: map[army.ArmyID]*army.Army{currentArmy.ID: currentArmy}}
+
+	gs.TransferArmyOwnership(currentArmy, "player")
+
+	for _, transferred := range []*army.Commander{commander, embarkedCommander} {
+		if transferred.OwnerID != "player" {
+			t.Errorf("transferred commander %q owner = %q, want player", transferred.ID, transferred.OwnerID)
+		}
+		if transferred.AssignedCouncilRole != "" {
+			t.Errorf("transferred commander %q kept council role %q", transferred.ID, transferred.AssignedCouncilRole)
+		}
+		if transferred.AssignedArmyID != currentArmy.ID {
+			t.Errorf("transferred commander %q army assignment = %q, want %q", transferred.ID, transferred.AssignedArmyID, currentArmy.ID)
+		}
+	}
+}
+
 func TestAssignCommanderToArmyRejectsNonMilitaryFleets(t *testing.T) {
 	tests := []struct {
 		name      string
