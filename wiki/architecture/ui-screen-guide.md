@@ -42,6 +42,7 @@ Yeni ekran veya panel eklerken manuel hitbox, ayrı cursor hesabı ve kopya geom
 6. Klavye focus gerekiyorsa `internal/ui.Manager` ve `Focusable` sırasını kullan.
 7. Panel, popup, HUD ve modal yüzeylerini renderer içinde ayrı `map input` bayraklarıyla değil, `gameui.LayerStack` içine çizim sırasıyla kaydet. `TopAt` sonucu en üst katmanı belirler; üst katman koordinatı tükettiğinde altındaki yüzey veya harita input alamaz.
 8. Bir panelin içinden açılan liste veya menü ana panel sınırlarının dışına taşabiliyorsa, açılır menünün kendi geometrisini de aynı panel katmanında ve çizim sırasındaki konumunda kaydet. Input handler bu taşan alanı panelin parçası olarak tüketmelidir; aksi halde alttaki panel hit-test'i tıklamayı alabilir.
+9. `Draw` sonunda ertelenerek çizilen modal veya overlay'ler için input dispatch, cursor hit-test ve `LayerStack` sırasını aynı görsel z-sırasına göre güncelle. Modalın buton hit-test'i de çizimde kullanılan ortak geometriyi kullanmalıdır.
 
 ## Örnek Desen
 ```go

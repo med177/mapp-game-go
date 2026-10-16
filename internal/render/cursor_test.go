@@ -75,6 +75,48 @@ func TestDiplomacyCounterOfferButtonIsClickableAndShowsPointer(t *testing.T) {
 	}
 }
 
+func TestCaptiveDecisionConfirmDialogTakesPriorityOverCombatSummary(t *testing.T) {
+	originalWidth, originalHeight := ScreenWidth, ScreenHeight
+	defer func() {
+		ScreenWidth, ScreenHeight = originalWidth, originalHeight
+	}()
+	ScreenWidth, ScreenHeight = 1280, 900
+
+	r := &Renderer{
+		gs: &state.GameState{
+			PlayerFactionID: "player",
+			Factions: map[faction.FactionID]*faction.Faction{
+				"player": {ID: "player"},
+				"enemy":  {ID: "enemy"},
+			},
+		},
+		combatSummary: combatSummaryState{show: true},
+	}
+	r.ShowFourChoiceDialog(
+		"Tutsak Kararı",
+		"Komutan için karar ver.",
+		"Fidye iste",
+		"Serbest bırak",
+		"Tutsak tut",
+		"İnfaz et",
+		InputAction{},
+		InputAction{},
+		InputAction{},
+		InputAction{},
+	)
+	r.rebuildUILayers()
+
+	buttons := buildConfirmDialogFourButtons(r.confirmDialog)
+	buttonX := buttons[0].X + buttons[0].W/2
+	buttonY := buttons[0].Y + buttons[0].H/2
+	if layer, ok := r.uiLayers.TopAt(buttonX, buttonY); !ok || layer.ID != uiLayerConfirm {
+		t.Fatalf("tutsak kararı düğmesinin en üst katmanı = %+v, want %q", layer, uiLayerConfirm)
+	}
+	if got := r.cursorShapeAt(buttonX, buttonY); got != ebiten.CursorShapePointer {
+		t.Fatalf("tutsak kararı düğmesindeki cursor şekli = %v, want pointer", got)
+	}
+}
+
 func TestCursorShapeAtUsesSharedEditModeUILayer(t *testing.T) {
 	originalHeight := ScreenHeight
 	defer func() { ScreenHeight = originalHeight }()

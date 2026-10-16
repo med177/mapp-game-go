@@ -29,6 +29,21 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 		}
 		return ebiten.CursorShapeMove
 	}
+	if r.negotiation.show {
+		if r.diplomacyNegotiationPointerHit(fx, fy) {
+			return ebiten.CursorShapePointer
+		}
+		if !buildNegotiationLayout().modal.Panel.Rect.Hit(fx, fy) && r.negotiationMapRegionAt(fx, fy) != "" {
+			return ebiten.CursorShapePointer
+		}
+		return ebiten.CursorShapeDefault
+	}
+	if r.confirmDialog.show {
+		if r.confirmDialogHovering(fx, fy) {
+			return ebiten.CursorShapePointer
+		}
+		return ebiten.CursorShapeDefault
+	}
 	if r.navalMissionTargeting {
 		if r.navalMissionTargetHovering(fx, fy) {
 			return ebiten.CursorShapePointer
@@ -67,12 +82,6 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 		}
 		return ebiten.CursorShapeDefault
 	}
-	if r.confirmDialog.show {
-		if r.confirmDialogHovering(fx, fy) {
-			return ebiten.CursorShapePointer
-		}
-		return ebiten.CursorShapeDefault
-	}
 	if r.warConfirm.show {
 		if r.warConfirmHovering(fx, fy) {
 			return ebiten.CursorShapePointer
@@ -87,15 +96,6 @@ func (r *Renderer) cursorShapeAt(fx, fy float64) ebiten.CursorShapeType {
 	}
 	if r.battlePlan.show {
 		if r.battlePlanHovering(fx, fy) {
-			return ebiten.CursorShapePointer
-		}
-		return ebiten.CursorShapeDefault
-	}
-	if r.negotiation.show {
-		if r.diplomacyNegotiationPointerHit(fx, fy) {
-			return ebiten.CursorShapePointer
-		}
-		if !buildNegotiationLayout().modal.Panel.Rect.Hit(fx, fy) && r.negotiationMapRegionAt(fx, fy) != "" {
 			return ebiten.CursorShapePointer
 		}
 		return ebiten.CursorShapeDefault
@@ -410,6 +410,14 @@ func (r *Renderer) victoryCardHoverIndex(fx, fy float64) int {
 }
 
 func (r *Renderer) confirmDialogHovering(fx, fy float64) bool {
+	if r.confirmDialog.secondLabel != "" && r.confirmDialog.fourthLabel != "" {
+		for _, button := range buildConfirmDialogFourButtons(r.confirmDialog) {
+			if button.Enabled && button.HitTest(fx, fy) {
+				return true
+			}
+		}
+		return false
+	}
 	acceptBtn, thirdBtn, declineBtn, hasThird := buildConfirmDialogButtons(r.confirmDialog)
 	if acceptBtn.HitTest(fx, fy) {
 		return true

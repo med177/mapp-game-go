@@ -89,6 +89,9 @@ func (r *Renderer) HandleInput() InputAction {
 	if r.negotiation.show {
 		return r.handleDiplomacyNegotiationInput()
 	}
+	if r.confirmDialog.show {
+		return r.handleConfirmDialogInput()
+	}
 	if r.showShortcuts {
 		return r.handleShortcutsInput()
 	}
@@ -111,9 +114,6 @@ func (r *Renderer) HandleInput() InputAction {
 	}
 	if r.regionTaskDialog.show {
 		return r.handleRegionTaskDialogInput()
-	}
-	if r.confirmDialog.show {
-		return r.handleConfirmDialogInput()
 	}
 	if r.warConfirm.show {
 		return r.handleWarConfirmInput()

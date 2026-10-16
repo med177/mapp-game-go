@@ -1471,6 +1471,9 @@ func (g *Game) resolveTurn() {
 	siegeUpdates := g.resolveSieges()
 	checkRebellions(g.gs)
 	checkEliminations(g.gs)
+	if g.gs.NormalizeSiegeReferences() > 0 && g.renderer != nil {
+		g.renderer.MarkMapDirty()
+	}
 	g.gs.NormalizeEmptyArmies()
 	applyRelationDecay(g.gs)
 	prevVictoryAchieved := g.gs.VictoryAchieved

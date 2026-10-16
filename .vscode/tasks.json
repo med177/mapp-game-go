@@ -2,41 +2,90 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build Game (Linux)",
+      "label": "Build Game (All 4 Targets)",
       "type": "shell",
-      "command": "go",
+      "command": "pwsh",
       "args": [
-        "build",
-        "-o",
-        "${workspaceFolder}/bin/game/mapp-linux",
-        "./cmd/game"
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/build/Build.ps1"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": ["$go"]
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$go"
     },
     {
       "label": "Build Game (Windows)",
       "type": "shell",
-      "command": "go",
+      "command": "pwsh",
       "args": [
-        "build",
-        "-o",
-        "${workspaceFolder}/bin/game/mapp.exe",
-        "./cmd/game"
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/build/Build.ps1",
+        "-Target",
+        "windows"
       ],
       "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "GOOS": "windows",
-          "GOARCH": "amd64"
-        }
+        "cwd": "${workspaceFolder}"
       },
-      "problemMatcher": [
-        "$go"
+      "group": "build",
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "Build Game (Linux)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/build/Build.ps1",
+        "-Target",
+        "linux"
       ],
-      "inAgents": true
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "Build Game (macOS Intel)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/build/Build.ps1",
+        "-Target",
+        "macos-amd64"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "Build Game (macOS Apple Silicon)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/build/Build.ps1",
+        "-Target",
+        "macos-arm64"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": "$go"
     }
   ]
 }

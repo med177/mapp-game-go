@@ -33,6 +33,10 @@ go.work
 bin/
 dist/
 build/
+!/build/
+/build/*
+!/build/Build.ps1
+!/build/README.md
 
 # Local environment
 .env

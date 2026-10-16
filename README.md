@@ -26,16 +26,16 @@ Mapp Game, sıra tabanlı bir harita strateji oyunudur. Total War serisinin sefe
 
 ## Gereksinimler
 
-- **Go 1.21+**
-- **Windows 10/11** (öncelikli platform; cross-platform mimari)
+- **Go 1.25.3+**
+- **Windows 10/11** (öncelikli platform; Linux ve macOS derleme yönergeleri için [`build/README.md`](build/README.md))
 - Bağımlılıklar `go.sum` üzerinden otomatik indirilir
 
 ### Bağımlılıklar
 
 | Paket | Sürüm | Kullanım |
 |---|---|---|
-| `github.com/hajimehoshi/ebiten/v2` | v2.9.9 | Oyun motoru (2D render, input) |
-| `golang.org/x/image` | v0.39.0 | Görüntü işleme |
+| `github.com/hajimehoshi/ebiten/v2` | v2.10.5 | Oyun motoru (2D render, input) |
+| `golang.org/x/image` | v0.45.0 | Görüntü işleme |
 | `github.com/joho/godotenv` | v1.5.1 | Ortam değişkeni yönetimi |
 
 ---

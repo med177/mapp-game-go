@@ -2745,6 +2745,59 @@ func (s *GameState) NormalizeSiegeDefenderReferences() int {
 	return cleared
 }
 
+// NormalizeSiegeReferences removes siege records whose attacker, target,
+// ownership, or war relationship no longer matches the live game state.
+func (s *GameState) NormalizeSiegeReferences() int {
+	if s == nil || len(s.Sieges) == 0 {
+		return 0
+	}
+	removed := 0
+	for regionID, siege := range s.Sieges {
+		target := s.Regions[regionID]
+		var attacker *army.Army
+		if siege != nil {
+			attacker = s.Armies[siege.AttackerArmyID]
+		}
+		targetOwnerID := s.SovereignOwnerID(target)
+		valid := siege != nil && target != nil && !target.IsSea && attacker != nil && !attacker.IsNaval &&
+			len(attacker.Units) > 0 && attacker.OwnerID != "" && targetOwnerID != "" &&
+			attacker.OwnerID != targetOwnerID && (attacker.RegionID == regionID || regionNeighbors(s, attacker.RegionID, regionID))
+		if valid {
+			attackerFactionID := faction.FactionID(attacker.OwnerID)
+			defenderFactionID := faction.FactionID(targetOwnerID)
+			rel := s.Relations[faction.RelationKey(attackerFactionID, defenderFactionID)]
+			valid = rel != nil && rel.Stance == faction.StanceWar &&
+				(siege.AttackerFactionID == "" || siege.AttackerFactionID == attacker.OwnerID)
+		}
+		if !valid {
+			delete(s.Sieges, regionID)
+			removed++
+			continue
+		}
+		siege.RegionID = regionID
+		if siege.AttackerFactionID == "" {
+			siege.AttackerFactionID = attacker.OwnerID
+		}
+	}
+	return removed
+}
+
+func regionNeighbors(s *GameState, from, to world.RegionID) bool {
+	if s == nil || from == "" || to == "" {
+		return false
+	}
+	region := s.Regions[from]
+	if region == nil {
+		return false
+	}
+	for _, neighborID := range region.Neighbors {
+		if neighborID == to {
+			return true
+		}
+	}
+	return false
+}
+
 // EffectiveArmyGrainUpkeep ordunun bu turdaki temel tahıl bakım ihtiyacını
 // hareket ve kuşatma yüküyle birlikte hesaplar. Bu değer fraksiyon ekonomisi
 // ve toplam stok güvenliği için kullanılır.

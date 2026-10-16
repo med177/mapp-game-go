@@ -5,8 +5,61 @@ import (
 	"testing"
 
 	"mapp-game-go/internal/army"
+	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/world"
 )
+
+func TestNormalizeSiegeReferencesRemovesStaleSiegesAndKeepsValidOnes(t *testing.T) {
+	gs := &GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"attacker": {ID: "attacker"},
+			"defender": {ID: "defender"},
+			"owner":    {ID: "owner"},
+			"peaceful": {ID: "peaceful"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"valid":       {ID: "valid", OwnerID: "defender", Neighbors: []world.RegionID{"home"}},
+			"home":        {ID: "home", OwnerID: "attacker", Neighbors: []world.RegionID{"valid"}},
+			"captured":    {ID: "captured", OwnerID: "attacker"},
+			"transferred": {ID: "transferred", OwnerID: "owner"},
+			"peace":       {ID: "peace", OwnerID: "peaceful"},
+			"no_army":     {ID: "no_army", OwnerID: "defender"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"active":               {ID: "active", OwnerID: "attacker", RegionID: "home", Units: []army.Unit{{TypeID: "unit"}}},
+			"captured_attacker":    {ID: "captured_attacker", OwnerID: "attacker", RegionID: "captured", Units: []army.Unit{{TypeID: "unit"}}},
+			"transferred_attacker": {ID: "transferred_attacker", OwnerID: "attacker", RegionID: "transferred", Units: []army.Unit{{TypeID: "unit"}}},
+			"peace_attacker":       {ID: "peace_attacker", OwnerID: "attacker", RegionID: "peace", Units: []army.Unit{{TypeID: "unit"}}},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("attacker", "defender"): {
+				FactionA: "attacker", FactionB: "defender", Stance: faction.StanceWar,
+			},
+			faction.RelationKey("attacker", "owner"): {
+				FactionA: "attacker", FactionB: "owner", Stance: faction.StanceWar,
+			},
+		},
+		Sieges: map[world.RegionID]*SiegeState{
+			"valid":       {RegionID: "valid", AttackerArmyID: "active", AttackerFactionID: "attacker"},
+			"captured":    {RegionID: "captured", AttackerArmyID: "captured_attacker", AttackerFactionID: "attacker"},
+			"transferred": {RegionID: "transferred", AttackerArmyID: "transferred_attacker", AttackerFactionID: "defender"},
+			"peace":       {RegionID: "peace", AttackerArmyID: "peace_attacker", AttackerFactionID: "attacker"},
+			"no_army":     {RegionID: "no_army", AttackerArmyID: "removed_army", AttackerFactionID: "attacker"},
+		},
+	}
+
+	if got := gs.NormalizeSiegeReferences(); got != 4 {
+		t.Fatalf("temizlenen geçersiz kuşatma sayısı = %d, want 4", got)
+	}
+	if gs.SiegeAt("valid") == nil {
+		t.Fatal("geçerli komşu bölge kuşatması temizlendi")
+	}
+	for _, regionID := range []world.RegionID{"captured", "transferred", "peace", "no_army"} {
+		if gs.SiegeAt(regionID) != nil {
+			t.Fatalf("%s için geçersiz kuşatma kaydı kaldı", regionID)
+		}
+	}
+}
 
 func TestNormalizeSiegeDefenderReferencesClearsOnlyStaleLinks(t *testing.T) {
 	defender := &army.Army{

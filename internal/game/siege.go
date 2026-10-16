@@ -776,7 +776,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 	updates := make([]siegeTurnUpdate, 0, len(g.gs.Sieges))
 	for regionID, siege := range g.gs.Sieges {
 		if siege == nil {
-			delete(g.gs.Sieges, regionID)
+			g.clearSiege(regionID)
 			continue
 		}
 		targetRegion := g.gs.Regions[regionID]
@@ -791,7 +791,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 			if attacker != nil && siege.AttackerHomeRegionID != "" {
 				attacker.RegionID = siege.AttackerHomeRegionID
 			}
-			delete(g.gs.Sieges, regionID)
+			g.clearSiege(regionID)
 			continue
 		}
 
@@ -888,7 +888,7 @@ func (g *Game) resolveSieges() []siegeTurnUpdate {
 					g.renderer.MarkMapDirty()
 				}
 			}
-			delete(g.gs.Sieges, regionID)
+			g.clearSiege(regionID)
 			msg := fmt.Sprintf("%s kuşatma sonrası teslim oldu.", targetRegion.NameTR)
 			if siege.BreachLevel < 2 {
 				msg = fmt.Sprintf("%s uzun kuşatma sonrası açlıkla teslim oldu.", targetRegion.NameTR)

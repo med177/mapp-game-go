@@ -401,9 +401,6 @@ func (r *Renderer) rebuildUILayers() {
 	if r.regionTaskDialog.show {
 		r.addUIScreenLayer(uiLayerRegionTask)
 	}
-	if r.confirmDialog.show {
-		r.addUIScreenLayer(uiLayerConfirm)
-	}
 	if r.warConfirm.show {
 		r.addUIScreenLayer(uiLayerConfirm)
 	}
@@ -445,6 +442,11 @@ func (r *Renderer) rebuildUILayers() {
 	}
 	if r.showShortcuts {
 		r.addUIScreenLayer(uiLayerShortcuts)
+	}
+	// Confirm dialogs are drawn in Draw's defer, above combat summaries.
+	// Keep their hit-test layer at the same z-order.
+	if r.confirmDialog.show {
+		r.addUIScreenLayer(uiLayerConfirm)
 	}
 	if r.negotiation.show {
 		r.addUIScreenLayer(uiLayerDiplomacyNegotiation)
