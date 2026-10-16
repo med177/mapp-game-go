@@ -24,6 +24,8 @@ type pauseMenuLayout struct {
 	footerRect gameui.Rect
 }
 
+const pauseMenuLabelHeight = 18.0
+
 func pauseMenuPanelRect(itemCount int) (bx, by, bw, bh float64) {
 	r := pauseMenuLayoutForScreen(itemCount).panelRect
 	return r.X, r.Y, r.W, r.H
@@ -78,6 +80,15 @@ func pauseMusicVolumeButtons(row gameui.Button, volume int) (gameui.Button, game
 	return minus, plus
 }
 
+func pauseMenuLabelRect(row gameui.Button, x, w float64) gameui.Rect {
+	return gameui.Rect{
+		X: x,
+		Y: row.Y + (row.H-pauseMenuLabelHeight)/2,
+		W: w,
+		H: pauseMenuLabelHeight,
+	}
+}
+
 func buildPauseItems(hasSave bool) []pauseMenuItem {
 	return []pauseMenuItem{
 		{"Devam Et", ActionResume, false, 0},
@@ -118,17 +129,16 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 	vector.StrokeLine(screen, fbx+20, sepY, fbx+fbw-20, sepY, 1, color.RGBA{100, 80, 35, 180}, false)
 
 	// Menü maddeleri
-	itemH := layout.itemsRect.H / float64(len(items))
 	buttons := buildPauseMenuButtons(hasSave, settings)
 
 	for i, item := range items {
-		y := layout.itemsRect.Y + float64(i)*itemH
+		row := buttons[i]
 		isSelected := i == cursor
 
 		if isSelected && !item.disabled {
-			vector.FillRect(screen, float32(layout.itemsRect.X), float32(y), float32(layout.itemsRect.W), float32(itemH)-10,
+			vector.FillRect(screen, float32(row.X), float32(row.Y), float32(row.W), float32(row.H),
 				color.RGBA{45, 35, 12, 200}, false)
-			vector.StrokeRect(screen, float32(layout.itemsRect.X), float32(y), float32(layout.itemsRect.W), float32(itemH)-10,
+			vector.StrokeRect(screen, float32(row.X), float32(row.Y), float32(row.W), float32(row.H),
 				1, color.RGBA{180, 145, 50, 200}, false)
 		}
 
@@ -138,14 +148,13 @@ func DrawPauseMenu(screen *ebiten.Image, cursor int, hasSave bool, tick int, set
 			prefix = "► "
 		}
 		if item.action == ActionAdjustMusic {
-			minus, plus := pauseMusicVolumeButtons(buttons[i], settings.MusicVolume)
-			drawUILabel(screen, gameui.Rect{X: buttons[i].X, Y: y + 8, W: 190}, prefix+"Müzik Seviyesi:", col, gameui.TextLarge, gameui.TextAlignCenter)
-			drawUILabel(screen, gameui.Rect{X: buttons[i].X + 238, Y: y + 8, W: 70}, itoa(settings.MusicVolume)+"%", ColorGold, gameui.TextLarge, gameui.TextAlignCenter)
+			minus, plus := pauseMusicVolumeButtons(row, settings.MusicVolume)
+			drawUILabel(screen, pauseMenuLabelRect(row, row.X, 190), prefix+"Müzik Seviyesi:", col, gameui.TextLarge, gameui.TextAlignCenter)
+			drawUILabel(screen, pauseMenuLabelRect(row, row.X+238, 70), itoa(settings.MusicVolume)+"%", ColorGold, gameui.TextLarge, gameui.TextAlignCenter)
 			drawUIButtonWidget(screen, minus, tinyButtonStyle)
 			drawUIButtonWidget(screen, plus, tinyButtonStyle)
 		} else {
-			label := buttons[i].Label
-			drawUILabel(screen, gameui.Rect{X: layout.itemsRect.X, Y: y + 8, W: layout.itemsRect.W}, prefix+label, col, gameui.TextLarge, gameui.TextAlignCenter)
+			drawUILabel(screen, pauseMenuLabelRect(row, row.X, row.W), prefix+row.Label, col, gameui.TextLarge, gameui.TextAlignCenter)
 		}
 	}
 
