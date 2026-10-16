@@ -97,7 +97,7 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 	}
 
 	// Alt bilgi
-	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Version 1.0.0 Alfa - Copyleft® 2026 by CORARS", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
+	drawUILabel(screen, gameui.Rect{X: 0, Y: ScreenHeight - 30, W: ScreenWidth}, "Version 0.1.0 Beta - Copyright® 2026 by CORARS", color.RGBA{80, 80, 80, 200}, gameui.TextSmall, gameui.TextAlignCenter)
 }
 
 func mainMenuBackgroundImage() *ebiten.Image {
