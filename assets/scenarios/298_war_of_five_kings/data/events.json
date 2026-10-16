@@ -519,6 +519,7 @@
     "historical_month": 1,
     "one_shot": true,
     "affected_faction": "baratheon_king",
+    "commander_deaths": [ "cmd_jon_arryn" ],
     "choice_prompt_tr": "Robert, Jon Arryn'in ölümünden sonra hangi yolu izlemeli?",
     "choices": [
       {
@@ -582,7 +583,8 @@
       "stark"
     ],
     "requires_alive_commanders": [
-      "cmd_ned_stark"
+      "cmd_ned_stark",
+      "cmd_jon_arryn"
     ]
   },
   {

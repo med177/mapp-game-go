@@ -1401,5 +1401,22 @@
     ],
     "start_year": 295,
     "end_year": 315
+  },
+  {
+    "id": "cmd_jon_arryn",
+    "type": "administrator",
+    "owner_id": "arryn",
+    "name": "Jon Arryn",
+    "portrait_asset": "jon_arryn.png",
+    "level": 4,
+    "adoption_cost_gold": 500,
+    "gold_upkeep": 8,
+    "traits": [
+      "loyal",
+      "wise",
+      "just"
+    ],
+    "start_year": 295,
+    "end_year": 300
   }
 ]
