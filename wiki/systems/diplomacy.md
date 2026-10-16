@@ -276,7 +276,7 @@ etkilenmez (`internal/state/state.go`, `internal/diplomacy/negotiation.go`).
 Oyuncuya gelen `propose_transfer` teklifleri mevcut teklif modalında `Kabul Et`,
 `Reddet` ve `Karşı Teklif` seçeneklerini kullanır. Karşı teklif aynı iki kolonlu
 editörü açar. Kabul edilen talep kalemleri için talep edilen devletin teklif
-sahibine, verilen kalemleri için diğer yönde ilişki puanı `+10` uygulanır.
+sahibine, verilen kalemleri için diğer yönde ilişki puanı `+5` uygulanır.
 `internal/diplomacy/negotiation.go` geçerlilik, atomik uygulama ve deterministik
 AI kabul değerlendirmesini merkezileştirir. Oyuncunun AI'ye gönderdiği teklif
 reddedilecekse AI, kendi kabul eşiğine ulaşan en yakın kaynak/birim miktarı

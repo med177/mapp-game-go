@@ -3287,7 +3287,7 @@
     "name": "Stony Shore",
     "name_tr": "Taşlı Kıyı",
     "terrain": "coast",
-    "owner_id": "",
+    "owner_id": "stark",
     "neighbors": [
       "bay_of_ice",
       "dragon_point",

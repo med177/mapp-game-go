@@ -62,11 +62,11 @@ func TestTransferOfferAppliesRegionResourceArmyAndDirectionalRelation(t *testing
 	if got := gs.Armies["b_army"].RegionID; got != "b_rear" {
 		t.Fatalf("bölgeyi veren ordunun konumu = %q, b_rear bekleniyordu", got)
 	}
-	if got := RelationScore(gs, "a", "b"); got != transferRelationGain {
-		t.Fatalf("a->b ilişki puanı = %d, %d bekleniyordu", got, transferRelationGain)
+	if got := RelationScore(gs, "a", "b"); got != 5 {
+		t.Fatalf("a->b ilişki puanı = %d, 5 bekleniyordu", got)
 	}
-	if got := RelationScore(gs, "b", "a"); got != transferRelationGain {
-		t.Fatalf("b->a ilişki puanı = %d, %d bekleniyordu", got, transferRelationGain)
+	if got := RelationScore(gs, "b", "a"); got != 5 {
+		t.Fatalf("b->a ilişki puanı = %d, 5 bekleniyordu", got)
 	}
 }
 

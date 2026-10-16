@@ -16,7 +16,7 @@ const (
 	transferKindResource          = "resource"
 	transferKindArmy              = "army"
 	transferKindCaptive           = "captive"
-	transferRelationGain          = 10
+	transferRelationGain          = 5
 	maxTransferItems              = 6
 	regionTransferProtectionTurns = 3
 )
