@@ -156,7 +156,7 @@ func TestCouncilAssignedCommanderUpkeepIsChargedEachTurn(t *testing.T) {
 func TestMilitaryResponsibleGainsExperienceWhenMilitaryBonusApplies(t *testing.T) {
 	const fid faction.FactionID = "player"
 	character := &army.Commander{
-		ID: "chr_military", Type: army.CharacterTypeCharacter, OwnerID: string(fid), Name: "Marshal",
+		ID: "chr_military", Type: army.CharacterTypeAdministrator, OwnerID: string(fid), Name: "Marshal",
 	}
 	gs := &state.GameState{
 		Turn:            1,

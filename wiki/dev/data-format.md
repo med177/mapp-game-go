@@ -140,7 +140,8 @@ kullanır. `roles` içindeki her görev benzersiz bir `id` ve Türkçe `name_tr`
 taşımalıdır. İsteğe bağlı `allowed_character_types`, göreve atanabilecek
 karakter tiplerini listeler (`administrator`, `commander`, `character`). Alan
 yoksa veya boşsa tüm desteklenen tipler uygundur. Örneğin Serasker rolü
-`["commander"]` ile yalnızca ordu komutanı tipindeki karakterlere atanabilir;
+`["commander", "administrator"]` ile ordu komutanı ve yönetici tipindeki
+karakterlere atanabilir;
 uyumsuz kayıtlı eski atamalar rol sahibi veya rol etkisi olarak kullanılmaz.
 `effects` başlangıç bonusunu, `per_level` ise 1. seviye üzerindeki
 her seviye için ek bonusu belirler. İsteğe bağlı `no_cost: true`, bu göreve

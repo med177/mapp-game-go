@@ -23,8 +23,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   Yetenek sahibi karakter portrelerinin sağ altına `ability.png` rozeti eklendi.
 
 - 2026-10-16: Konsey rollerine isteğe bağlı `allowed_character_types` kısıtı
-  eklendi. Serasker rolü yalnızca `commander` tipi karakterlere atanabiliyor;
-  kısıt hem atama uygunluğuna hem rol etkilerinin uygulanmasına yansıyor.
+  eklendi. Serasker rolü `commander` ve `administrator` tipi karakterlere
+  atanabiliyor; kısıt hem atama uygunluğuna hem rol etkilerinin uygulanmasına
+  yansıyor.
 
 - 2026-10-16: Beş Kralın Savaşı senaryosuna diğerleri fraksiyonu hariç tüm
   fraksiyonlara açık 12 ortak karakter görevi eklendi. `allow_council_roles`

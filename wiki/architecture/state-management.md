@@ -402,7 +402,8 @@ Senaryoda tanımlı görevler bu alanda saklanır; `AssignCharacterToCouncilRole
 geçirir ve hedef koltuğun eski sahibini boşa çıkarır. `CharacterRoster()`
 önce bu görev önceliğine, sonra ada göre sıralar. Veliaht ve Serasker
 atamaları da görev yapılandırmasıyla gelir/üretim/araştırma ve diğer konsey
-etkilerini alır. Askeri Sorumlu hem konsey koltuğunda kalabilir hem ordu veya
+etkilerini alır. Askeri Sorumlu rolü `commander` ve `administrator` tiplerine
+atanabilir; atanan karakter konsey koltuğunda kalırken ordu veya
 donanmaya komuta edebilir; diğer konsey görevleri ordu komutanlığıyla
 çakışmaz. Karakter aktif bir göreve gönderildiğinde ordu komutanlığına
 atanamaz; orduya atanmış karakter de yeni göreve başlayamaz. Bu karşılıklı

@@ -51,7 +51,7 @@
     {
       "id": "military_responsible",
       "name_tr": "Askeri Sorumlu",
-      "allowed_character_types": ["commander"],
+      "allowed_character_types": ["commander", "administrator"],
       "effects": {
         "military_power_mod": 1.03,
         "commander_power_mod": 1.03

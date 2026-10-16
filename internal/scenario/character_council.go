@@ -76,7 +76,7 @@ func DefaultCharacterCouncilConfig() CharacterCouncilConfig {
 			{ID: "treasurer", NameTR: "Hazine Sorumlusu", Effects: CouncilEffects{IncomeMod: 1.05}, PerLevel: CouncilEffects{IncomeMod: 1.01}},
 			{ID: "diplomat", NameTR: "Diplomat", Effects: CouncilEffects{RelationBonusPoints: 3}, PerLevel: CouncilEffects{RelationBonusPoints: 1}},
 			{ID: "heir", NameTR: "Veliaht", Effects: CouncilEffects{SatisfactionPoints: 1, RelationBonusPoints: 1}, PerLevel: CouncilEffects{SatisfactionPoints: 1, RelationBonusPoints: 1}},
-			{ID: "military_responsible", NameTR: "Askeri Sorumlu", SetCommanderArmy: true, AllowedCharacterTypes: []string{"commander"}, Effects: CouncilEffects{MilitaryPowerMod: 1.03, CommanderPowerMod: 1.03}, PerLevel: CouncilEffects{MilitaryPowerMod: 1.01, CommanderPowerMod: 1.01}, TraitFallbackEffects: CouncilEffects{MilitaryPowerMod: 0.99}},
+			{ID: "military_responsible", NameTR: "Askeri Sorumlu", SetCommanderArmy: true, AllowedCharacterTypes: []string{"commander", "administrator"}, Effects: CouncilEffects{MilitaryPowerMod: 1.03, CommanderPowerMod: 1.03}, PerLevel: CouncilEffects{MilitaryPowerMod: 1.01, CommanderPowerMod: 1.01}, TraitFallbackEffects: CouncilEffects{MilitaryPowerMod: 0.99}},
 			{ID: "research_responsible", NameTR: "Bilim Sorumlusu", Effects: CouncilEffects{ResearchSpeedMod: 1.05}, PerLevel: CouncilEffects{ResearchSpeedMod: 1.01}},
 		},
 		Traits: map[string]CharacterTraitDefinition{},
