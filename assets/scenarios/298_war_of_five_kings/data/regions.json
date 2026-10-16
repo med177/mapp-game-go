@@ -2,7 +2,7 @@
   {
     "id": "sea",
     "name": "Sea",
-    "name_tr": "Deniz",
+    "name_tr": "İlk Deniz",
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
@@ -35,7 +35,7 @@
   {
     "id": "always_winter",
     "name": "Always Winter",
-    "name_tr": "Always Winter",
+    "name_tr": "Daima Kış",
     "terrain": "mountain",
     "owner_id": "others",
     "successor_faction_id": "others",
