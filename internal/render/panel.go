@@ -3426,10 +3426,20 @@ func drawHistoricalEventPopup(screen *ebiten.Image, title, desc, prompt string, 
 }
 
 const (
-	commanderArrivalCardW   = 300.0
-	commanderArrivalCardH   = 110.0
-	commanderArrivalCardGap = 12.0
+	commanderArrivalCardW        = 300.0
+	commanderArrivalCardH        = 110.0
+	commanderArrivalCardGap      = 12.0
+	commanderArrivalPortraitSize = 54.0
 )
+
+func commanderArrivalPortraitRect(card gameui.Rect) gameui.Rect {
+	return gameui.Rect{
+		X: card.X + 8,
+		Y: card.Y + 8,
+		W: commanderArrivalPortraitSize,
+		H: commanderArrivalPortraitSize,
+	}
+}
 
 func commanderArrivalListViewport() gameui.Rect {
 	modal := buildCommanderArrivalModal()
@@ -3547,7 +3557,12 @@ func drawCommanderArrivalPopup(screen *ebiten.Image, title, desc string, arrival
 			x, y := row.X, row.Y
 			vector.FillRect(body, float32(x), float32(y), commanderArrivalCardW, commanderArrivalCardH, color.RGBA{35, 26, 14, 235}, false)
 			vector.StrokeRect(body, float32(x), float32(y), commanderArrivalCardW, commanderArrivalCardH, 1, color.RGBA{150, 120, 68, 255}, false)
-			drawCommanderPortrait(body, commander, x+8, y+8, 54, 62)
+			portrait := commanderArrivalPortraitRect(row)
+			drawCommanderPortraitAssetWithStyle(
+				body, commander.PortraitAsset, portrait.X, portrait.Y, portrait.W, portrait.H,
+				color.RGBA{35, 26, 14, 235},
+				color.RGBA{150, 120, 68, 255},
+			)
 			drawUILabel(body, gameui.Rect{X: x + 70, Y: y + 12, W: commanderArrivalCardW - 78}, trimTextToWidth(commander.Name, FaceSmall, commanderArrivalCardW-78), ColorWhite, gameui.TextSmall, gameui.TextAlignStart)
 			drawUILabel(body, gameui.Rect{X: x + 70, Y: y + 38, W: commanderArrivalCardW - 78}, fmt.Sprintf("Seviye %d", commander.Level), ColorGray, gameui.TextSmall, gameui.TextAlignStart)
 			drawUILabel(body, gameui.Rect{X: x + 8, Y: y + 76, W: commanderArrivalCardW - 16}, trimTextToWidth(commanderArrivalTraits(commander), FaceSmall, commanderArrivalCardW-16), ColorGold, gameui.TextSmall, gameui.TextAlignStart)

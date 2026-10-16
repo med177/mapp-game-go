@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"math"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -107,29 +108,56 @@ func commanderPortraitPath(asset string) string {
 }
 
 func drawCommanderPortraitAsset(screen *ebiten.Image, asset string, x, y, w, h float64) {
-	vector.FillRect(screen, float32(x), float32(y), float32(w), float32(h), color.RGBA{20, 16, 10, 230}, false)
+	drawCommanderPortraitAssetWithStyle(
+		screen, asset, x, y, w, h,
+		color.RGBA{20, 16, 10, 230},
+		color.RGBA{160, 120, 40, 220},
+	)
+}
+
+func drawCommanderPortraitAssetWithStyle(screen *ebiten.Image, asset string, x, y, w, h float64, background, border color.RGBA) {
+	vector.FillRect(screen, float32(x), float32(y), float32(w), float32(h), background, false)
 	if img := commanderPortraitAsset(asset); img != nil {
-		bounds := img.Bounds()
-		if bounds.Dx() > 0 && bounds.Dy() > 0 {
-			scale := w / float64(bounds.Dx())
-			if heightScale := h / float64(bounds.Dy()); heightScale < scale {
-				scale = heightScale
-			}
+		drawRect := commanderPortraitImageRect(img.Bounds(), gameui.Rect{X: x, Y: y, W: w, H: h})
+		if drawRect.W > 0 && drawRect.H > 0 {
 			op := newLinearImageDrawOptions()
-			op.GeoM.Scale(scale, scale)
-			op.GeoM.Translate(x+(w-float64(bounds.Dx())*scale)/2, y+(h-float64(bounds.Dy())*scale)/2)
+			op.GeoM.Scale(drawRect.W/float64(img.Bounds().Dx()), drawRect.H/float64(img.Bounds().Dy()))
+			op.GeoM.Translate(drawRect.X, drawRect.Y)
 			screen.DrawImage(img, op)
 		}
 	} else {
 		DrawTextCentered(screen, "Ata", x+w/2, y+h/2-8, FaceSmall, ColorGray)
 	}
-	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1, color.RGBA{160, 120, 40, 220}, false)
+	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1, border, false)
 }
 
 func drawCommanderPortraitPlaceholder(screen *ebiten.Image, x, y, w, h float64) {
-	vector.FillRect(screen, float32(x), float32(y), float32(w), float32(h), color.RGBA{20, 16, 10, 230}, false)
+	drawCommanderPortraitPlaceholderWithStyle(
+		screen, x, y, w, h,
+		color.RGBA{20, 16, 10, 230},
+		color.RGBA{160, 120, 40, 220},
+	)
+}
+
+func drawCommanderPortraitPlaceholderWithStyle(screen *ebiten.Image, x, y, w, h float64, background, border color.RGBA) {
+	vector.FillRect(screen, float32(x), float32(y), float32(w), float32(h), background, false)
 	DrawTextCentered(screen, "Ata", x+w/2, y+h/2-8, FaceSmall, ColorGray)
-	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1, color.RGBA{160, 120, 40, 220}, false)
+	vector.StrokeRect(screen, float32(x), float32(y), float32(w), float32(h), 1, border, false)
+}
+
+func commanderPortraitImageRect(bounds image.Rectangle, frame gameui.Rect) gameui.Rect {
+	sourceW, sourceH := float64(bounds.Dx()), float64(bounds.Dy())
+	if sourceW <= 0 || sourceH <= 0 || frame.W <= 0 || frame.H <= 0 {
+		return gameui.Rect{}
+	}
+	scale := math.Min(frame.W/sourceW, frame.H/sourceH)
+	drawW, drawH := sourceW*scale, sourceH*scale
+	return gameui.Rect{
+		X: frame.X + (frame.W-drawW)/2,
+		Y: frame.Y + (frame.H-drawH)/2,
+		W: drawW,
+		H: drawH,
+	}
 }
 
 func drawCommanderPortrait(screen *ebiten.Image, commander *army.Commander, x, y, w, h float64) {
