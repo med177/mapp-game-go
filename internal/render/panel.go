@@ -55,6 +55,7 @@ const (
 	evLogW               = float32(255)
 	evLogH               = float32(520)
 	evLogMinH            = float32(36)
+	eventLogCollapsedH   = float32(44)
 	eventCardH           = float32(64)
 	eventCardGap         = float32(9)
 	eventLogCardRightGap = float32(8)
@@ -1504,7 +1505,7 @@ func DrawEventLog(screen *ebiten.Image, events []string, collapsed bool, scroll 
 
 func eventLogPanelH(collapsed bool) float32 {
 	if collapsed {
-		return evLogMinH
+		return eventLogCollapsedH
 	}
 	maxH := minimapY() - evLogY() - 8
 	if maxH < evLogMinH {
