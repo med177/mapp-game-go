@@ -345,12 +345,18 @@ func drawFactionGroupLabels(screen *ebiten.Image, layout factionSelectLayout, to
 	}
 	if historicalCount > 0 && layout.historicalLabel.W > 0 {
 		drawFactionGroupLabelBackdrop(screen, layout.historicalLabel)
-		drawUIOutlinedLabel(screen, layout.historicalLabel, "Tarihsel Hedefi Olan Devletler", ColorGold, ownerLabelOutlineColor(ColorGold), gameui.TextMedium, gameui.TextAlignCenter)
+		drawFactionGroupLabel(screen, layout.historicalLabel, "Tarihsel Hedefi Olan Devletler")
 	}
 	if historicalCount < total && layout.generalLabel.W > 0 {
 		drawFactionGroupLabelBackdrop(screen, layout.generalLabel)
-		drawUIOutlinedLabel(screen, layout.generalLabel, "Genel Hedefi Olan Devletler", ColorGold, ownerLabelOutlineColor(ColorGold), gameui.TextMedium, gameui.TextAlignCenter)
+		drawFactionGroupLabel(screen, layout.generalLabel, "Genel Hedefi Olan Devletler")
 	}
+}
+
+func drawFactionGroupLabel(screen *ebiten.Image, rect gameui.Rect, text string) {
+	label := gameui.NewOutlinedLabel(rect, text, ColorGold, ownerLabelOutlineColor(ColorGold), gameui.TextMedium, gameui.TextAlignCenter)
+	label.Label.VerticalAlign = gameui.TextVerticalAlignCenter
+	label.Draw(screen, renderText)
 }
 
 func drawFactionRecommendationStar(screen *ebiten.Image, x, y float64) {
@@ -414,10 +420,15 @@ func drawFactionSelectScrollbar(screen *ebiten.Image, layout factionSelectLayout
 }
 
 func drawFactionGroupLabelBackdrop(screen *ebiten.Image, label gameui.Rect) {
-	drawUIPanelRect(screen, gameui.Rect{
+	drawUIPanelRect(screen, factionGroupLabelBackdropRect(label),
+		color.RGBA{0, 0, 0, 125}, color.RGBA{}, 0)
+}
+
+func factionGroupLabelBackdropRect(label gameui.Rect) gameui.Rect {
+	return gameui.Rect{
 		X: label.X - factionGroupLabelPad,
 		Y: label.Y - factionGroupLabelPad/2,
 		W: label.W + factionGroupLabelPad*2,
 		H: label.H + factionGroupLabelPad,
-	}, color.RGBA{0, 0, 0, 125}, color.RGBA{}, 0)
+	}
 }

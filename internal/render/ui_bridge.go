@@ -28,6 +28,11 @@ func (sharedTextRenderer) Measure(text string, variant gameui.TextVariant) float
 	return MeasureText(text, textFace(variant))
 }
 
+func (sharedTextRenderer) MeasureHeight(variant gameui.TextVariant) float64 {
+	metrics := textFace(variant).Metrics()
+	return metrics.HAscent + metrics.HDescent
+}
+
 func (sharedTextRenderer) Draw(screen *ebiten.Image, text string, x, y float64, col color.Color, variant gameui.TextVariant) {
 	DrawText(screen, text, x, y, textFace(variant), col)
 }

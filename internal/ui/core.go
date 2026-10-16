@@ -41,5 +41,6 @@ const (
 // TextRenderer UI paketinin render katmanından font bağımsız kalmasını sağlar.
 type TextRenderer interface {
 	Measure(text string, variant TextVariant) float64
+	MeasureHeight(variant TextVariant) float64
 	Draw(screen *ebiten.Image, text string, x, y float64, col color.Color, variant TextVariant)
 }

@@ -137,10 +137,11 @@ func (o OutlinedLabel) Draw(screen *ebiten.Image, text TextRenderer) {
 		return
 	}
 	baseX := alignedTextX(text, o.Label.Rect, o.Label.Text, o.Label.Variant, o.Label.Align)
+	baseY := alignedTextY(text, o.Label.Rect, o.Label.Variant, o.Label.VerticalAlign)
 	for _, off := range o.Offsets {
-		text.Draw(screen, o.Label.Text, baseX+off[0], o.Label.Rect.Y+off[1], o.OutlineColor, o.Label.Variant)
+		text.Draw(screen, o.Label.Text, baseX+off[0], baseY+off[1], o.OutlineColor, o.Label.Variant)
 	}
-	text.Draw(screen, o.Label.Text, baseX, o.Label.Rect.Y, o.Label.Color, o.Label.Variant)
+	text.Draw(screen, o.Label.Text, baseX, baseY, o.Label.Color, o.Label.Variant)
 }
 
 func alignedTextX(text TextRenderer, rect Rect, label string, variant TextVariant, align TextAlign) float64 {
