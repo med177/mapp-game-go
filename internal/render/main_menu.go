@@ -85,7 +85,6 @@ func DrawMainMenu(screen *ebiten.Image, cursor int, hasSave bool, hasAutoSave bo
 			barW := float32(280)
 			barX := float32(ScreenWidth/2) - barW/2
 			vector.FillRect(screen, barX, float32(y)-6, barW, float32(mainMenuButtonHeight-8), color.RGBA{50, 40, 15, 180}, false)
-			vector.StrokeRect(screen, barX, float32(y)-6, barW, float32(mainMenuButtonHeight-8), 1, color.RGBA{200, 160, 60, 180}, false)
 		}
 
 		col := menuItemColor(isSelected, item.disabled)
