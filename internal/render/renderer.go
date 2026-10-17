@@ -4014,6 +4014,8 @@ type settlementDraw struct {
 	StaticIndex int
 	Text        string
 	TextW       float64
+	LabelW      float64
+	LabelH      float64
 	WX, WY      float64
 	TextX       float64
 	X, Y        float64
@@ -4021,6 +4023,7 @@ type settlementDraw struct {
 	SX, SY      float64
 	DrawLabel   bool
 	CapitalIcon bool
+	Development bool
 	Priority    int
 }
 
@@ -5663,7 +5666,10 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 		item := staticItem
 		item.SX, item.SY = sx, sy
 		item.X = sx - item.W/2
-		item.TextX = item.X + (item.W - item.TextW)
+		item.TextX = sx - item.LabelW/2
+		if item.CapitalIcon {
+			item.TextX += capitalLabelIconAdvance(r.camScale >= r.zoomThreshold(1.0))
+		}
 		item.Y = sy + 16
 		r.regionLabelBuf = append(r.regionLabelBuf, item)
 	}
@@ -5696,11 +5702,15 @@ func (r *Renderer) drawRegionLabels(screen *ebiten.Image, armyPositions []armyIc
 				variant = gameui.TextMedium
 			}
 			if item.CapitalIcon {
-				r.drawCapitalLabelIcon(screen, float32(item.X), float32(item.Y), variant)
+				iconAdvance := capitalLabelIconAdvance(variant == gameui.TextMedium)
+				r.drawCapitalLabelIcon(screen, float32(item.TextX-iconAdvance), float32(item.Y), variant)
 			}
 			outlined := gameui.NewOutlinedLabel(gameui.Rect{X: item.TextX, Y: item.Y}, item.Text, labelColor, shadowColor, variant, gameui.TextAlignStart)
 			outlined.Offsets = [][2]float64{{1, 1}}
 			outlined.Draw(screen, renderText)
+			if item.Development {
+				r.drawSettlementDevelopmentBar(screen, item.Region, float32(item.SX), float32(item.Y+item.LabelH+2))
+			}
 		}
 
 		isPrimary := item.Region != nil && item.Index == item.Region.PrimarySettlementIndex()
@@ -5718,6 +5728,7 @@ func (r *Renderer) regionLabelStatic() []settlementDraw {
 	key ^= r.worldMap.settlementAnchorVersion * 0x517cc1b727220a95
 	key ^= r.regionLabelStaticVersion * 0x6eed0e9da4d94a4f
 	key ^= r.armyIconLayoutKey
+	key ^= settlementDevelopmentStateKey(r.gs) * 0x94d049bb133111eb
 	if r.regionLabelStaticValid && r.regionLabelStaticKey == key && r.regionLabelStaticGS == r.gs && r.regionLabelStaticMap == r.worldMap {
 		return r.regionLabelStaticBuf
 	}
@@ -5849,28 +5860,37 @@ func (r *Renderer) appendSettlementDraw(region *world.Region, index int, text st
 	}
 	totalW := textW + iconAdvance
 	lx := sx - totalW/2
+	development := index >= 0 && index < len(region.Settlements) &&
+		region.Settlements[index].IsCenter &&
+		r.gs.PlayerFactionID != "" &&
+		region.OwnerID == string(r.gs.PlayerFactionID) &&
+		r.camScale >= r.zoomThreshold(settlementCloseZoomScale)
 	h := float64(16)
 	if face == FaceMed {
 		h = 20
 	}
+	layoutW, layoutH := settlementLabelLayout(totalW, h, development)
 	wx, wy := r.screenToWorld(sx, sy)
 	r.regionLabelBuf = append(r.regionLabelBuf, settlementDraw{
 		Region: region,
 		Index:  index,
 		Text:   text,
 		TextW:  textW,
+		LabelW: totalW,
+		LabelH: h,
 		WX:     wx,
 		WY:     wy,
 		TextX:  lx + iconAdvance,
-		X:      lx,
+		X:      sx - layoutW/2,
 		// Etiket noktaların altına çizilir; okunabilirlik artar.
 		Y:           sy + 16,
-		W:           totalW,
-		H:           h,
+		W:           layoutW,
+		H:           layoutH,
 		SX:          sx,
 		SY:          sy,
 		DrawLabel:   drawLabel,
 		CapitalIcon: capitalIcon,
+		Development: development,
 		Priority:    priority,
 	})
 }
@@ -6199,6 +6219,7 @@ var (
 	settlementMarkerStarSprite        *ebiten.Image
 	settlementMarkerCitySprite        *ebiten.Image
 	settlementMarkerDistrictSprite    *ebiten.Image
+	settlementMarkerWorkingSprite     *ebiten.Image
 	settlementMarkerSpritesLoaded     bool
 
 	eventIconPlague   *ebiten.Image
@@ -6226,6 +6247,7 @@ func ensureSettlementMarkerSprites() {
 	settlementMarkerStarSprite = tryLoadImage(filepath.Join(base, "star.png"))
 	settlementMarkerCitySprite = tryLoadImage(filepath.Join(base, "city.png"))
 	settlementMarkerDistrictSprite = tryLoadImage(filepath.Join(base, "district.png"))
+	settlementMarkerWorkingSprite = tryLoadImage(filepath.Join(filepath.Dir(base), "icons", "working.png"))
 }
 
 func settlementMarkerCastleImage() *ebiten.Image {

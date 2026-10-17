@@ -5,6 +5,11 @@ last_updated: 2026-10-17
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-17: Harita yakın görünümünde yalnızca oyuncunun sahip olduğu
+  bölgelerin merkez yerleşim adı altında, tamamlanmış bina seviyelerinin
+  kurulabilir toplam seviyelere oranını gösteren gelişim çubuğu eklendi.
+  Bölgede bina inşaatı sürerken çubuğun sağına `working.png` ikonu eklenir.
+
 - 2026-10-17: Faction askerî güç macera yeteneği olmayan karakterler konsey
   bonusu hesabında pahalı kullanılabilirlik/ölüm kontrolünden önce eleniyor.
   Autosave'de önceki profil medyanına göre toplam tur 483 ms'den 400 ms'ye,
