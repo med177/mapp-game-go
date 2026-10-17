@@ -490,6 +490,9 @@
     "player_choice_factions": [
       "baratheon_stormsend"
     ],
+    "blocks_flags": [
+      "renly_dead"
+    ],
     "requires_owned_regions": [
       "storm_end"
     ],
@@ -499,9 +502,6 @@
     ],
     "requires_alive_commanders": [
       "cmd_renly_baratheon"
-    ],
-    "blocks_flags": [
-      "renly_dead"
     ]
   },
   {
@@ -515,11 +515,13 @@
     "gold_delta": 0,
     "grain_delta": 0,
     "army_hp_mod": 0,
+    "commander_deaths": [
+      "cmd_jon_arryn"
+    ],
     "historical_year": 298,
     "historical_month": 1,
     "one_shot": true,
     "affected_faction": "baratheon_king",
-    "commander_deaths": [ "cmd_jon_arryn" ],
     "choice_prompt_tr": "Robert, Jon Arryn'in ölümünden sonra hangi yolu izlemeli?",
     "choices": [
       {
@@ -846,11 +848,11 @@
           "set_flags": [
             "ned_executed"
           ],
-          "commander_deaths": [
-            "cmd_ned_stark"
-          ],
           "clear_flags": [
             "ned_arrested"
+          ],
+          "commander_deaths": [
+            "cmd_ned_stark"
           ]
         }
       },
@@ -1165,15 +1167,15 @@
       "tully",
       "lannister"
     ],
+    "requires_alive_commanders": [
+      "cmd_edmure_tully",
+      "cmd_brynden_tully"
+    ],
     "relation_requirements": [
       {
         "faction_id": "lannister",
         "stance": "war"
       }
-    ],
-    "requires_alive_commanders": [
-      "cmd_edmure_tully",
-      "cmd_brynden_tully"
     ]
   },
   {
@@ -1766,13 +1768,13 @@
     "gold_delta": 0,
     "grain_delta": 0,
     "army_hp_mod": 0,
+    "commander_deaths": [
+      "cmd_renly_baratheon"
+    ],
     "historical_year": 299,
     "historical_month": 5,
     "one_shot": true,
     "affected_faction": "baratheon_stormsend",
-    "commander_deaths": [
-      "cmd_renly_baratheon"
-    ],
     "choice_prompt_tr": "Renly'nin ölümünden sonra güney nasıl hareket etmeli?",
     "choices": [
       {
@@ -1863,6 +1865,9 @@
     "player_choice_factions": [
       "baratheon_stormsend"
     ],
+    "blocks_flags": [
+      "renly_dead"
+    ],
     "requires_active_factions": [
       "baratheon_stormsend",
       "baratheon_dragonstone",
@@ -1870,9 +1875,6 @@
     ],
     "requires_alive_commanders": [
       "cmd_renly_baratheon"
-    ],
-    "blocks_flags": [
-      "renly_dead"
     ]
   },
   {
@@ -1886,12 +1888,12 @@
     "gold_delta": 0,
     "grain_delta": 0,
     "army_hp_mod": 0,
-    "affected_faction": "baratheon_dragonstone",
     "army_destination_region_id": "crackclaw_point",
     "capital_settlement_id": "crackclaw_point_main",
     "capital_move_turns": 5,
     "state_triggered": true,
     "one_shot": true,
+    "affected_faction": "baratheon_dragonstone",
     "requires_flags": [
       "renly_host_joined_stannis"
     ],
@@ -3553,13 +3555,13 @@
     "gold_delta": 0,
     "grain_delta": 0,
     "army_hp_mod": 0,
+    "commander_deaths": [
+      "cmd_tywin_lannister"
+    ],
     "historical_year": 300,
     "historical_month": 8,
     "one_shot": true,
     "affected_faction": "lannister",
-    "commander_deaths": [
-      "cmd_tywin_lannister"
-    ],
     "choice_prompt_tr": "Tywin'in ölümünden sonra Lannister hanedanı nasıl yönetilmeli?",
     "choices": [
       {
@@ -3725,14 +3727,14 @@
           "set_flags": [
             "tyrion_executed"
           ],
-          "commander_deaths": [
-            "cmd_tyrion_lannister"
-          ],
           "clear_flags": [
             "tyrion_captured",
             "tyrion_on_trial"
           ],
           "commander_releases": [
+            "cmd_tyrion_lannister"
+          ],
+          "commander_deaths": [
             "cmd_tyrion_lannister"
           ]
         }
@@ -6285,12 +6287,12 @@
     "gold_delta": 0,
     "grain_delta": 0,
     "army_hp_mod": 0,
-    "state_triggered": true,
-    "one_shot": true,
     "set_flags": [
       "night_king_defeated",
       "white_walkers_destroyed"
     ],
+    "state_triggered": true,
+    "one_shot": true,
     "requires_flags": [
       "boss_defeated:cmd_night_king"
     ]
@@ -6364,6 +6366,10 @@
     "random_probability": 0,
     "min_turn": 0,
     "target": "player_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
     "one_shot": true,
     "choice_prompt_tr": "Stormsend'in yenilgisinden sonra Tarth'ın geleceği nasıl şekillenmeli?",
     "choices": [
@@ -6409,15 +6415,15 @@
         }
       }
     ],
+    "requires_inactive_factions": [
+      "tarth"
+    ],
     "faction_subjugation_trigger": {
       "faction_ids": [
         "baratheon_stormsend"
       ],
       "require_player_actor": true
-    },
-    "requires_inactive_factions": [
-      "tarth"
-    ]
+    }
   },
   {
     "id": "new_age_330",

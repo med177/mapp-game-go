@@ -827,7 +827,7 @@
     "spice": 0,
     "cloth": 120,
     "research": {
-      "completed": { },
+      "completed": {},
       "active_id": "",
       "turns_left": 0
     },
@@ -1141,10 +1141,10 @@
     "cloth": 50,
     "research": {
       "completed": {
+        "coastal_navigation": true,
         "feudal_levies": true,
         "iron_weapons": true,
-        "ranger_scouting": true,
-        "coastal_navigation": true
+        "ranger_scouting": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1192,10 +1192,10 @@
     "cloth": 50,
     "research": {
       "completed": {
+        "coastal_navigation": true,
         "feudal_levies": true,
         "iron_weapons": true,
-        "ranger_scouting": true,
-        "coastal_navigation": true
+        "ranger_scouting": true
       },
       "active_id": "",
       "turns_left": 0
@@ -1241,10 +1241,10 @@
     "cloth": 50,
     "research": {
       "completed": {
+        "coastal_navigation": true,
         "feudal_levies": true,
         "iron_weapons": true,
-        "ranger_scouting": true,
-        "coastal_navigation": true
+        "ranger_scouting": true
       },
       "active_id": "",
       "turns_left": 0

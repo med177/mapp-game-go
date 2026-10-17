@@ -260,9 +260,9 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "hapstackhall",
       "blackwater_strait",
       "gulltown_channel",
+      "hapstackhall",
       "pentos_bay",
       "sharp_point",
       "shipbreaker_bay",
@@ -296,10 +296,10 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "gulltown_channel",
       "myr_bay",
       "myr_region",
       "narrow_sea",
-      "gulltown_channel",
       "pentos_region",
       "shipbreaker_bay"
     ],
@@ -331,13 +331,13 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "blackwater_strait",
       "crackclaw_point",
       "dragonstone",
       "duskendale",
+      "gulltown_channel",
       "kings_landing",
-      "narrow_sea",
-      "blackwater_strait",
-      "gulltown_channel"
+      "narrow_sea"
     ],
     "world_x": 1618,
     "world_y": 2221,
@@ -549,8 +549,8 @@
     "owner_id": "",
     "neighbors": [
       "bay_of_crabs",
-      "karhold",
       "eastwatch_passage",
+      "karhold",
       "sea",
       "skagos",
       "the_bite",
@@ -629,8 +629,8 @@
       "bay_of_seals",
       "beyond_the_wall",
       "coldwater_shore",
-      "frostpine_uplands",
       "eastwatch_passage",
+      "frostpine_uplands",
       "winterwake_coast"
     ],
     "world_x": 1526,
@@ -661,8 +661,8 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
-      "eastwatch_sea",
       "eastwatch_passage",
+      "eastwatch_sea",
       "sea",
       "skagos",
       "the_gift_east"
@@ -730,12 +730,12 @@
     "terrain": "sea",
     "owner_id": "",
     "neighbors": [
+      "blackwater_strait",
       "crownlands",
       "harrenhal",
       "isle_faces",
       "kings_landing",
-      "kingswood",
-      "blackwater_strait"
+      "kingswood"
     ],
     "world_x": 1274,
     "world_y": 2192,
@@ -1869,10 +1869,10 @@
     "successor_faction_id": "baratheon_king",
     "neighbors": [
       "blackwater_bay",
+      "blackwater_strait",
       "crownlands",
       "duskendale",
       "kingswood",
-      "blackwater_strait",
       "the_gullet"
     ],
     "world_x": 1443,
@@ -2043,10 +2043,10 @@
     "owner_id": "baratheon_dragonstone",
     "successor_faction_id": "baratheon_dragonstone",
     "neighbors": [
+      "blackwater_strait",
       "hapstackhall",
       "kingswood",
-      "narrow_sea",
-      "blackwater_strait"
+      "narrow_sea"
     ],
     "world_x": 1616,
     "world_y": 2415,
@@ -2274,8 +2274,8 @@
       "braavos",
       "braavos_channel",
       "essos_free_cities",
-      "myr_region",
       "gulltown_channel",
+      "myr_region",
       "norvos",
       "pentos_bay"
     ],
@@ -2552,9 +2552,9 @@
     "owner_id": "free_folk",
     "successor_faction_id": "free_folk",
     "neighbors": [
+      "eastwatch_passage",
       "eastwatch_sea",
       "frostpine_uplands",
-      "eastwatch_passage",
       "pale_wind_march",
       "the_wall_east",
       "the_wall_west"
@@ -3213,8 +3213,8 @@
     "terrain": "mountain",
     "owner_id": "stark",
     "neighbors": [
-      "lonely_hills",
       "eastwatch_passage",
+      "lonely_hills",
       "shivering_sea",
       "the_dreadfort",
       "the_gift_east",
@@ -3593,11 +3593,11 @@
     "successor_faction_id": "baratheon_king",
     "neighbors": [
       "blackwater_bay",
+      "blackwater_strait",
       "duskendale",
       "harrenhal",
       "kings_landing",
       "kingswood",
-      "blackwater_strait",
       "reach",
       "stone_sept",
       "the_hollow_hill"
@@ -3705,10 +3705,10 @@
     "successor_faction_id": "baratheon_king",
     "neighbors": [
       "blackwater_bay",
+      "blackwater_strait",
       "crownlands",
       "hapstackhall",
       "kings_landing",
-      "blackwater_strait",
       "reach",
       "sharp_point",
       "stormlands",
@@ -4283,9 +4283,9 @@
     "neighbors": [
       "bay_of_seals",
       "brandon_gift",
+      "eastwatch_passage",
       "karhold",
       "lonely_hills",
-      "eastwatch_passage",
       "shivering_sea",
       "the_gift_center",
       "the_wall_east"
@@ -4792,8 +4792,8 @@
     "owner_id": "stark",
     "successor_faction_id": "stark",
     "neighbors": [
-      "karhold",
       "eastwatch_passage",
+      "karhold",
       "shivering_sea"
     ],
     "world_x": 1744,

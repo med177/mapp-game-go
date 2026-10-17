@@ -159,8 +159,8 @@
       {
         "id": "sunspear_main",
         "name_tr": "Güneş Mızrağı",
-        "x": 1691,
-        "y": 3106,
+        "x": 1688,
+        "y": 3086,
         "type": "city",
         "is_center": true
       },
@@ -239,8 +239,8 @@
       {
         "id": "crag_settlement_1",
         "name_tr": "The Crag",
-        "x": 800,
-        "y": 2074,
+        "x": 793,
+        "y": 2057,
         "type": "city",
         "is_center": true
       }
@@ -252,8 +252,8 @@
       {
         "id": "dragonstone_main",
         "name_tr": "Ejderha Kayası",
-        "x": 1618,
-        "y": 2246,
+        "x": 1609,
+        "y": 2257,
         "type": "fortress",
         "is_center": true
       },
@@ -411,8 +411,8 @@
       {
         "id": "astapor_main",
         "name_tr": "Astapor",
-        "x": 2588,
-        "y": 3036,
+        "x": 2560,
+        "y": 3033,
         "type": "city",
         "is_center": true
       }
@@ -424,8 +424,8 @@
       {
         "id": "yunkai_main",
         "name_tr": "Yunkai",
-        "x": 2586,
-        "y": 2950,
+        "x": 2555,
+        "y": 2959,
         "type": "city",
         "is_center": true
       }
@@ -437,8 +437,8 @@
       {
         "id": "meereen_main",
         "name_tr": "Meereen",
-        "x": 2595,
-        "y": 3161,
+        "x": 2586,
+        "y": 3137,
         "type": "fortress",
         "is_center": true
       },
@@ -596,8 +596,8 @@
       {
         "id": "the_mountains_of_the_moon_main",
         "name_tr": "Ay Dağları",
-        "x": 1399,
-        "y": 1939,
+        "x": 1385,
+        "y": 1899,
         "type": "fortress",
         "is_center": true
       }
@@ -609,8 +609,8 @@
       {
         "id": "riverlands_main",
         "name_tr": "Nehir Toprakları",
-        "x": 1059,
-        "y": 1986,
+        "x": 1053,
+        "y": 1967,
         "type": "city",
         "is_center": true
       }
@@ -714,8 +714,8 @@
       {
         "id": "three_towers_settlement_1",
         "name_tr": "Three Towers",
-        "x": 727,
-        "y": 3056,
+        "x": 743,
+        "y": 3040,
         "type": "city",
         "is_center": true
       }
@@ -886,8 +886,8 @@
       {
         "id": "the_fingers_main",
         "name_tr": "Parmaklar",
-        "x": 1468,
-        "y": 1688,
+        "x": 1519,
+        "y": 1663,
         "type": "town",
         "is_center": true
       }
@@ -971,8 +971,8 @@
       {
         "id": "cornfield_settlement_1",
         "name_tr": "Mısır Tarlası",
-        "x": 742,
-        "y": 2411,
+        "x": 737,
+        "y": 2421,
         "type": "city",
         "is_center": true
       },
@@ -1076,8 +1076,8 @@
       {
         "id": "godsgrace_main",
         "name_tr": "Godsgrace",
-        "x": 1497,
-        "y": 3097,
+        "x": 1500,
+        "y": 3087,
         "type": "town",
         "is_center": true
       }
@@ -1089,8 +1089,8 @@
       {
         "id": "salt_shore_main",
         "name_tr": "Tuz Kıyısı",
-        "x": 1518,
-        "y": 3165,
+        "x": 1513,
+        "y": 3146,
         "type": "fortress",
         "is_center": true
       },
@@ -1148,8 +1148,8 @@
       {
         "id": "the_gift_main",
         "name_tr": "Hediye",
-        "x": 1214,
-        "y": 711,
+        "x": 1260,
+        "y": 824,
         "type": "town",
         "is_center": true
       },
@@ -1207,8 +1207,8 @@
       {
         "id": "long_lake_main",
         "name_tr": "Uzun Göl",
-        "x": 1167,
-        "y": 883,
+        "x": 1211,
+        "y": 896,
         "type": "town",
         "is_center": true
       },
@@ -1403,8 +1403,8 @@
       {
         "id": "west_vale_main",
         "name_tr": "Batı Vadi",
-        "x": 1244,
-        "y": 1747,
+        "x": 1251,
+        "y": 1725,
         "type": "town",
         "is_center": true
       }
@@ -1475,8 +1475,8 @@
       {
         "id": "golden_tooth_main",
         "name_tr": "Altın Diş",
-        "x": 920,
-        "y": 2154,
+        "x": 919,
+        "y": 2145,
         "type": "fortress",
         "is_center": true
       },
@@ -1484,7 +1484,7 @@
         "id": "golden_tooth_hornvale",
         "name_tr": "Hornvale",
         "x": 925,
-        "y": 2187,
+        "y": 2202,
         "type": "city"
       },
       {
@@ -1633,7 +1633,7 @@
         "id": "rainwood_main",
         "name_tr": "Yağmur Ormanı",
         "x": 1621,
-        "y": 2767,
+        "y": 2756,
         "type": "town",
         "is_center": true
       }
@@ -1710,8 +1710,8 @@
       {
         "id": "uplands_main",
         "name_tr": "Yüksek Topraklar",
-        "x": 785,
-        "y": 2966,
+        "x": 788,
+        "y": 2947,
         "type": "town",
         "is_center": true
       }
@@ -1749,8 +1749,8 @@
       {
         "id": "the_tor_main",
         "name_tr": "Tor",
-        "x": 1458,
-        "y": 3016,
+        "x": 1449,
+        "y": 3018,
         "type": "fortress",
         "is_center": true
       }
@@ -1827,8 +1827,8 @@
       {
         "id": "the_boneway_main",
         "name_tr": "Kemikyolu",
-        "x": 1187,
-        "y": 2870,
+        "x": 1189,
+        "y": 2880,
         "type": "fortress",
         "is_center": true
       },
