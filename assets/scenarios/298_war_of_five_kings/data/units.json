@@ -829,7 +829,8 @@
     "embarkable": false,
     "gold_cost": 400,
     "grain_upkeep": 20,
-    "gold_upkeep": 20,
+    "gold_upkeep": 18,
+    "fishing_grain_income": 30,
     "hp": 100,
     "morale": 60,
     "required_buildings": [
@@ -841,11 +842,11 @@
     ],
     "tier": 2,
     "turns_required": 8,
-    "grain_cost": 8,
+    "grain_cost": 40,
     "iron_cost": 6,
     "timber_cost": 40,
     "stone_cost": 0,
-    "cloth_cost": 8,
+    "cloth_cost": 12,
     "spice_cost": 8,
     "movement_points": 2
   }

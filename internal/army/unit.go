@@ -88,7 +88,10 @@ type UnitType struct {
 	// CategoryNavalTrade birimleri için kullanılır; alanı olmayan eski
 	// senaryolar güvenli varsayılanla çalışır.
 	MerchantTradeIncome int `json:"merchant_trade_income,omitempty"`
-	TurnsRequired       int `json:"turns_required"`
+	// FishingGrainIncome, balıkçılık görevindeki geminin tur başına tahıl
+	// üretimidir. Alanı olmayan birimler balıkçılıktan tahıl üretmez.
+	FishingGrainIncome int `json:"fishing_grain_income,omitempty"`
+	TurnsRequired      int `json:"turns_required"`
 
 	// Gereksinimler
 	RequiredTech      []string              `json:"required_tech"` // tüm listedeki teknolojiler gerekir

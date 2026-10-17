@@ -3,7 +3,7 @@ Not: Teknoloji panelinde aktif araştırma için `İptal Et • İade` düğmesi
 ---
 type: architecture
 tags: [render, ebitengine, camera, input, ui]
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 related: [game-loop, state-management, shape-editor, systems/combat, architecture/ui-framework, dev/data-format]
 ---
 
@@ -475,10 +475,12 @@ askeri güç, stok/değişim, gelir, altın ve ambar kapasitesi aynı gösterim 
 paylaşır (`internal/render/panel.go`, `ui_compose.go`).
 
 Oyuncuya ait savaş ve nakliye filolarında ordu panelinin `GÖREV` düğmesi
-`internal/render/naval_mission_panel.go` modalını açar. Devriye/abluka/nakliye
+`internal/render/naval_mission_panel.go` modalını açar. Devriye/abluka/balıkçılık/nakliye
 görevlerinden yalnızca nakliye için modal kapanıp haritaya hedef seçme modu
 girer; geçerli kıyı bölgeleri renkli dairelerle işaretlenir. Devriye ve abluka
-filonun bulunduğu açık denizde doğrudan uygulanır; abluka seçeneği yalnız savaş
+filonun bulunduğu açık denizde doğrudan uygulanır; balıkçılık seçeneği yalnız
+kendi kıyısına komşu denizde ve pozitif `fishing_grain_income` taşıyan filo için
+gösterilir. Abluka seçeneği yalnız savaş
 halindeki düşmanın kıyısına komşu denizde gösterilir. Aynı açık denizde uygun
 nakliye filosu varsa Escort satırı gösterilir; satırda dahili filo ID'si yerine
 ortak `Escort` etiketi kullanılır. Hedef dairelerinin üzerinde OS cursor parmağa
@@ -486,7 +488,8 @@ dönüşür ve ESC seçim modunu iptal eder. Görevli filo ikonu aktif
 bonus rozetini, panel footer'ı ise görev ve hedef bölge metnini gösterir; görev
 temizleme ve yeniden atama aynı input önceliğini kullanır. Devriye veya abluka
 görevli filo farklı bir konuma taşınırsa görev state katmanında otomatik silinir;
-eski deniz için görev rozeti ve ekonomik etki kalmaz.
+eski deniz için görev rozeti ve ekonomik etki kalmaz. Balıkçılık rozeti tur
+başına üretilen tahılı gösterir.
 
 Denizden kara hareket hedefleri settlement türüne göre ayrıdır. Ordu taşıyan
 filoda merkez settlement kare border ile çıkarma hedefi, komşu limanlar ise

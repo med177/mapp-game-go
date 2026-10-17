@@ -5708,6 +5708,8 @@ func navalMissionLabelTR(kind army.NavalMissionKind) string {
 		return "devriye"
 	case army.NavalMissionBlockade:
 		return "abluka"
+	case army.NavalMissionFishing:
+		return "balıkçılık"
 	case army.NavalMissionEscort:
 		return "escort"
 	case army.NavalMissionTransport:

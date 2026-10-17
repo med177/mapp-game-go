@@ -26,12 +26,13 @@ func navalMissionReachedRegion(gs *state.GameState, fleet *army.Army) *world.Reg
 
 	mission := fleet.NavalMission
 	switch mission.Kind {
-	case army.NavalMissionPatrol, army.NavalMissionBlockade:
+	case army.NavalMissionPatrol, army.NavalMissionBlockade, army.NavalMissionFishing:
 		if !fleet.IsAtSea() || fleet.RegionID != mission.TargetRegionID {
 			return nil
 		}
 		region := gs.Regions[mission.TargetRegionID]
-		if region == nil || !region.IsSea {
+		if region == nil || !region.IsSea ||
+			mission.Kind == army.NavalMissionFishing && !gs.IsValidNavalFishingTarget(fleet.OwnerID, mission.TargetRegionID) {
 			return nil
 		}
 		return region
@@ -74,6 +75,8 @@ func navalMissionReachedLabel(kind army.NavalMissionKind) string {
 		return "HEDEFTE • DEVRİYE: 1 AB. GEMİ"
 	case army.NavalMissionBlockade:
 		return "HEDEFTE • ABLUKA: -%50/GEMİ"
+	case army.NavalMissionFishing:
+		return "HEDEFTE • BALIKÇILIK"
 	case army.NavalMissionEscort:
 		return "HEDEFTE • ESCORT: +%15 SAV."
 	case army.NavalMissionTransport:
@@ -89,6 +92,8 @@ func navalMissionReachedColor(kind army.NavalMissionKind) color.RGBA {
 		return color.RGBA{72, 185, 218, 245}
 	case army.NavalMissionBlockade:
 		return color.RGBA{232, 78, 78, 245}
+	case army.NavalMissionFishing:
+		return color.RGBA{62, 166, 190, 245}
 	case army.NavalMissionEscort:
 		return color.RGBA{128, 150, 72, 245}
 	case army.NavalMissionTransport:
@@ -209,6 +214,12 @@ func navalMissionBonusBadge(gs *state.GameState, fleet *army.Army) (string, colo
 			percent = 100
 		}
 		return itoa(percent), navalMissionReachedColor(fleet.NavalMission.Kind), true
+	case army.NavalMissionFishing:
+		income := gs.NavalFishingGrainIncomeForFleet(fleet)
+		if income <= 0 {
+			return "", color.RGBA{}, false
+		}
+		return itoa(income), navalMissionReachedColor(fleet.NavalMission.Kind), true
 	case army.NavalMissionEscort:
 		return "15", navalMissionReachedColor(fleet.NavalMission.Kind), true
 	default:
@@ -298,6 +309,8 @@ func navalMissionBonusTooltipText(gs *state.GameState, fleet *army.Army) (string
 	case army.NavalMissionBlockade:
 		lootGold := gs.BlockadeLootGoldForFleet(fleet)
 		return "Abluka bonusu", targetName + " denizinde ticarete toplam -%" + badge + " kesinti uyguluyor. Gelir katkısı (ganimet): +" + itoa(lootGold) + " altın/tur.", true
+	case army.NavalMissionFishing:
+		return "Balıkçılık geliri", targetName + " denizinde +" + badge + " tahıl/tur üretir.", true
 	case army.NavalMissionEscort:
 		return "Escort bonusu", targetName + " denizindeki nakliye filosuna +%15 deniz savunması veriyor.", true
 	default:

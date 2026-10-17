@@ -32,6 +32,66 @@ func TestConvertInvalidNavalBlockadesToPatrol(t *testing.T) {
 	}
 }
 
+func TestNavalFishingMissionRequiresOwnedCoastAndProducesPerUnitGrain(t *testing.T) {
+	gs := &GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"fishing_ship": {ID: "fishing_ship", Category: army.CategoryNavalTrade, FishingGrainIncome: 30},
+			"transport":    {ID: "transport", Category: army.CategoryNavalTrans},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"coast":     {ID: "coast", OwnerID: "player", Neighbors: []world.RegionID{"sea"}},
+			"sea":       {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"coast"}},
+			"far_coast": {ID: "far_coast", OwnerID: "player"},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"fleet": {
+				ID: "fleet", OwnerID: "player", IsNaval: true, RegionID: "sea",
+				Units: []army.Unit{
+					{TypeID: "fishing_ship", CurrentHP: 100},
+					{TypeID: "fishing_ship", CurrentHP: 100},
+					{TypeID: "fishing_ship", CurrentHP: 0},
+					{TypeID: "transport", CurrentHP: 100},
+				},
+			},
+		},
+	}
+	mission := army.NavalMission{Kind: army.NavalMissionFishing, TargetRegionID: "sea"}
+	if ok, reason := gs.CanAssignNavalMission("fleet", mission); !ok {
+		t.Fatalf("fishing mission rejected beside owned coast: %s", reason)
+	}
+	if got, want := gs.NavalFishingGrainIncomeForFleet(gs.Armies["fleet"]), 60; got != want {
+		t.Fatalf("fleet fishing income = %d, want %d", got, want)
+	}
+
+	fleet := gs.Armies["fleet"]
+	fleet.NavalMission = &mission
+	if got, want := gs.NavalFishingGrainIncomeForFaction("player"), 60; got != want {
+		t.Fatalf("faction fishing income = %d, want %d", got, want)
+	}
+
+	gs.Regions["coast"].OwnerID = "other"
+	if ok, _ := gs.CanAssignNavalMission("fleet", mission); ok {
+		t.Fatal("fishing mission should be rejected without an adjacent owned coast")
+	}
+	if got := gs.NavalFishingGrainIncomeForFaction("player"); got != 0 {
+		t.Fatalf("fishing income without owned coast = %d, want 0", got)
+	}
+}
+
+func TestFishingMissionClearsAfterRelocation(t *testing.T) {
+	fleet := &army.Army{
+		ID: "fleet", IsNaval: true, RegionID: "other_sea",
+		NavalMission: &army.NavalMission{Kind: army.NavalMissionFishing, TargetRegionID: "sea"},
+	}
+	gs := &GameState{}
+	if !gs.ClearNavalMissionAfterRelocation(fleet, "sea") {
+		t.Fatal("fishing mission should clear when fleet leaves its assigned sea")
+	}
+	if fleet.NavalMission != nil {
+		t.Fatal("fishing mission should be removed after relocation")
+	}
+}
+
 func TestSupplyCargoLoadsAssignsAndUnloadsAtCapital(t *testing.T) {
 	gs := &GameState{
 		PlayerFactionID: "player",

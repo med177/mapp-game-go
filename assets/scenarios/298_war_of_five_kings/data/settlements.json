@@ -1318,8 +1318,8 @@
       {
         "id": "cape_kraken_main",
         "name_tr": "Kraken Burnu",
-        "x": 682,
-        "y": 1585,
+        "x": 651,
+        "y": 1555,
         "type": "port",
         "is_center": true
       }

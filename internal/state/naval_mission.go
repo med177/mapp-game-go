@@ -61,6 +61,16 @@ func (s *GameState) CanAssignNavalMission(fleetID army.ArmyID, mission army.Nava
 		if !s.IsValidNavalBlockadeTarget(fleet, mission.TargetRegionID) {
 			return false, "Abluka yalnızca düşman kıyısına komşu deniz bölgesine atanabilir."
 		}
+	case army.NavalMissionFishing:
+		if s.NavalFishingGrainIncomeForFleet(fleet) <= 0 {
+			return false, "Bu görev için pozitif balıkçılık getirisi tanımlı bir gemi gerekir."
+		}
+		if !fleet.IsAtSea() || mission.TargetRegionID != fleet.RegionID {
+			return false, "Balıkçılık görevi yalnızca filonun bulunduğu açık denizde atanabilir."
+		}
+		if !s.IsValidNavalFishingTarget(fleet.OwnerID, mission.TargetRegionID) {
+			return false, "Balıkçılık yalnızca kendi kıyılarına komşu deniz bölgesinde yapılabilir."
+		}
 	case army.NavalMissionEscort:
 		if !fleetHasWarship(s, fleet) {
 			return false, "Escort görevi için savaş gemisi gerekir."
@@ -326,6 +336,54 @@ func (s *GameState) validSeaMissionTarget(regionID world.RegionID) bool {
 	return region != nil && region.IsSea && !region.IsLocked
 }
 
+// IsValidNavalFishingTarget yalnızca filonun sahibi olan devletin kara
+// bölgelerinden birine komşu açık denizlerde balıkçılığa izin verir.
+func (s *GameState) IsValidNavalFishingTarget(ownerID string, seaID world.RegionID) bool {
+	if s == nil || ownerID == "" || !s.validSeaMissionTarget(seaID) {
+		return false
+	}
+	for _, region := range s.Regions {
+		if region != nil && !region.IsSea && region.OwnerID == ownerID && regionsShareSeaNeighbor(s, region, seaID) {
+			return true
+		}
+	}
+	return false
+}
+
+// NavalFishingGrainIncomeForFleet, filodaki sağ kalan birimlerin tanımlı
+// balıkçılık tahıl verimini toplar; konum ve görev uygunluğu çağırana aittir.
+func (s *GameState) NavalFishingGrainIncomeForFleet(fleet *army.Army) int {
+	if s == nil || fleet == nil || !fleet.IsNaval {
+		return 0
+	}
+	income := 0
+	for _, unit := range fleet.Units {
+		unitType := s.UnitTypes[unit.TypeID]
+		if unit.CurrentHP > 0 && unitType != nil && unitType.FishingGrainIncome > 0 {
+			income += unitType.FishingGrainIncome
+		}
+	}
+	return income
+}
+
+// NavalFishingGrainIncomeForFaction, bu tur görev konumunda ve kendi kıyısına
+// komşu sularda balık tutan filoların tahıl üretimini döndürür.
+func (s *GameState) NavalFishingGrainIncomeForFaction(ownerID string) int {
+	if s == nil || ownerID == "" {
+		return 0
+	}
+	income := 0
+	for _, fleet := range s.Armies {
+		if fleet == nil || fleet.OwnerID != ownerID || !fleet.IsAtSea() || fleet.NavalMission == nil ||
+			fleet.NavalMission.Kind != army.NavalMissionFishing || fleet.NavalMission.TargetRegionID != fleet.RegionID ||
+			!s.IsValidNavalFishingTarget(ownerID, fleet.RegionID) {
+			continue
+		}
+		income += s.NavalFishingGrainIncomeForFleet(fleet)
+	}
+	return income
+}
+
 // IsValidNavalBlockadeTarget, ablukanın yalnızca savaş halindeki düşmanın
 // kıyı kara bölgelerine komşu denizlerde kurulabilmesini sağlar.
 func (s *GameState) IsValidNavalBlockadeTarget(fleet *army.Army, seaID world.RegionID) bool {
@@ -405,7 +463,8 @@ func (s *GameState) ClearNavalMissionAfterRelocation(fleet *army.Army, previousL
 	if fleet == nil || !fleet.IsNaval || fleet.NavalMission == nil || previousLocation == "" || fleet.LocationID() == previousLocation {
 		return false
 	}
-	if fleet.NavalMission.Kind != army.NavalMissionPatrol && fleet.NavalMission.Kind != army.NavalMissionBlockade {
+	if fleet.NavalMission.Kind != army.NavalMissionPatrol && fleet.NavalMission.Kind != army.NavalMissionBlockade &&
+		fleet.NavalMission.Kind != army.NavalMissionFishing {
 		return false
 	}
 	fleet.NavalMission = nil

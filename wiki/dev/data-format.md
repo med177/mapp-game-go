@@ -854,6 +854,11 @@ Kuşatma birimleri için opsiyonel `siege_breach_multiplier`, `siege_breach_max_
 
 `carry_capacity` sadece `category = "naval_trans"` birimlerinde kullanılır. Her nakliye gemisinin aynı anda taşıyabildiği kara birimi slot sayısını belirtir. Filo toplam kapasitesi, filodaki tüm nakliye gemilerinin `carry_capacity` toplamıdır; ancak mevcut oyun kuralı gereği toplam taşınan kara birimi sayısı yine `MaxArmySize` sınırını aşmaz.
 
+`fishing_grain_income` opsiyonel alanı, bir geminin balıkçılık görevi sırasında
+tur başına üreteceği tahılı belirtir. Alanı olmayan birimler balıkçılıktan tahıl
+üretmez. Üretim yalnızca gemi açık denizde balıkçılık görevindeyken ve kendi
+fraksiyonuna ait kara bölgesine komşu denizde bulunurken alınır.
+
 ---
 
 ## buildings.json

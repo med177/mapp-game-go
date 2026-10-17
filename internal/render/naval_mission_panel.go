@@ -85,7 +85,9 @@ func playerNavalMissionEligible(gs *state.GameState, fleet *army.Army) bool {
 	if gs == nil || fleet == nil || fleet.OwnerID != string(gs.PlayerFactionID) || !fleet.IsNaval {
 		return false
 	}
-	return fleetHasWarshipUI(gs, fleet) || fleet.TransportCapacity(gs.UnitTypes) > 0
+	return fleetHasWarshipUI(gs, fleet) ||
+		fleet.TransportCapacity(gs.UnitTypes) > 0 ||
+		gs.NavalFishingGrainIncomeForFleet(fleet) > 0
 }
 
 func fleetHasWarshipUI(gs *state.GameState, fleet *army.Army) bool {
@@ -149,7 +151,7 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 	if !playerNavalMissionEligible(gs, fleet) {
 		return nil
 	}
-	options := make([]navalMissionOption, 0, 6)
+	options := make([]navalMissionOption, 0, 7)
 	if fleet.IsDocked() {
 		centralPort := gs.SupplyCargoPortRegion(fleet.OwnerID)
 		if centralPort != nil && fleet.DockedRegionID == centralPort.ID && len(fleet.EmbarkedUnits) == 0 {
@@ -179,6 +181,17 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 			options = append(options, navalMissionOption{
 				kind: army.NavalMissionEscort, targetFleet: candidate.ID,
 				label: "Escort", description: "Aynı açık denizdeki nakliye filosunu koru.", effect: "Etki: nakliyeye +%15 deniz savunması; azami +%30.",
+			})
+		}
+	}
+	if fleet.IsAtSea() {
+		if income := gs.NavalFishingGrainIncomeForFleet(fleet); income > 0 &&
+			gs.IsValidNavalFishingTarget(fleet.OwnerID, fleet.RegionID) {
+			options = append(options, navalMissionOption{
+				kind:        army.NavalMissionFishing,
+				label:       "Balıkçılık",
+				description: "Kendi kıyılarına komşu denizde balık tut.",
+				effect:      "Etki: +" + itoa(income) + " tahıl/tur.",
 			})
 		}
 	}
@@ -585,7 +598,7 @@ func (r *Renderer) handleNavalMissionPanelInput() InputAction {
 		r.closeNavalMissionPanel()
 		return InputAction{Kind: ActionAssignNavalMission, ArmyID: aid, BuildingID: string(option.kind), TargetArmyID: option.targetFleet}
 	}
-	if option.kind == army.NavalMissionPatrol || option.kind == army.NavalMissionBlockade {
+	if option.kind == army.NavalMissionPatrol || option.kind == army.NavalMissionBlockade || option.kind == army.NavalMissionFishing {
 		aid := r.navalMissionArmy
 		fleet := r.gs.Armies[aid]
 		if fleet == nil {
@@ -658,6 +671,8 @@ func navalMissionLabelTR(kind army.NavalMissionKind) string {
 		return "Devriye"
 	case army.NavalMissionBlockade:
 		return "Abluka"
+	case army.NavalMissionFishing:
+		return "Balıkçılık"
 	case army.NavalMissionEscort:
 		return "Escort"
 	case army.NavalMissionTransport:

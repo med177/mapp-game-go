@@ -19,6 +19,7 @@ type NavalMissionKind string
 const (
 	NavalMissionPatrol     NavalMissionKind = "patrol"
 	NavalMissionBlockade   NavalMissionKind = "blockade"
+	NavalMissionFishing    NavalMissionKind = "fishing"
 	NavalMissionEscort     NavalMissionKind = "escort"
 	NavalMissionTransport  NavalMissionKind = "transport"
 	NavalMissionSupplyArmy NavalMissionKind = "supply_army"

@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [state, gamestate, serialize, save-load]
-last_updated: 2026-10-14
+last_updated: 2026-10-17
 related: [game-loop, systems/events, systems/economy, systems/diplomacy, render-pipeline, shape-editor, dev/data-format]
 ---
 
@@ -267,15 +267,16 @@ süresini gösterir.
 
 Donanma konumu iki katmanlıdır: `Army.RegionID` deniz rotası için kullanılan deniz ankrajını korur; filo limandaysa gerçek eş-konum `DockedSettlementID` (eski veride `DockedRegionID` fallback'i) olan `Army.LocationID()` ile okunur. `Army.IsAtSea()` yalnız dock bağı olmayan filoları açık deniz savaşı, abluka ve AI deniz tehdidi hesaplarına dahil eder. Deniz hareketi dock bağını temizleyerek hedef deniz bölgesini tekrar kanonik konum yapar. Save yükleme bu state'i olduğu gibi korur; eski dock migrasyonu yalnız başlangıç senaryosundaki eksik dock verisi için çalışır.
 
-Oyuncu filosunun kalıcı görevi `Army.NavalMission` içinde tutulur. `patrol` ve
-`blockade` filonun o an bulunduğu açık deniz bölgesini, `escort` aynı açık deniz bölgesindeki aynı devlete ait nakliye filosunu, `transport`
+Oyuncu filosunun kalıcı görevi `Army.NavalMission` içinde tutulur. `patrol`,
+`blockade` ve `fishing` filonun o an bulunduğu açık deniz bölgesini, `escort`
+aynı açık deniz bölgesindeki aynı devlete ait nakliye filosunu, `transport`
 ise taşınan kara ordusu ile kıyı kara bölgesini hedefler. Atama ve temizleme
 `GameState.CanAssignNavalMission()`, `AssignNavalMission()` ve
 `ClearNavalMission()` kapılarından geçer; compact save/load `nm` alanıyla bu
 görevi korur. `internal/game/player_naval_mission.go` her yeni turda hareket
 puanı yenilendikten sonra yalnız nakliye filosunu deterministik deniz BFS'iyle
 hedef kıyıya yaklaştırır; nakliye hedef kıyıya ulaştığında mevcut
-çıkarma/komşuluk çözümünü kullanır. Devriye ve abluka görevi mevcut denizde
+çıkarma/komşuluk çözümünü kullanır. Devriye, abluka ve balıkçılık görevi mevcut denizde
 kalır, görev ataması filoyu başka bir denize hareket ettirmez.
 Bu görevlerden birini taşıyan filo manuel hareket, temas geri çekilmesi veya
 liman bağlantısı nedeniyle gerçek konumunu değiştirirse
@@ -284,10 +285,14 @@ eski deniz bölgesinde ekonomik veya devriye etkisi üretmeye devam etmez.
 Yeni tur başında `ConvertInvalidNavalBlockadesToPatrol()` komşu kıyılarda savaş
 halindeki düşman bölgesi kalmayan abluka filolarını aynı denizdeki devriye
 görevine çevirir; görev hedefi de filonun mevcut denizine eşitlenir.
-Devriye, abluka ve escort yalnızca ilgili filolar aynı açık denizdeyken görev
+Devriye, abluka, balıkçılık ve escort yalnızca ilgili filolar aynı açık denizdeyken görev
 panelinden atanır; panel
 hedef haritası açmaz ve tıklanan görev doğrudan mevcut `RegionID`'yi hedefler.
-Limana bağlı filo için bu iki görev seçeneği gösterilmez. Devriye açık denizde
+Limana bağlı filo için bu görev seçenekleri gösterilmez. Balıkçılık yalnızca
+filo sahibinin kara bölgesine komşu denizde ve birim verisinde pozitif
+`fishing_grain_income` tanımlı gemilerle atanabilir; etkin filo getirisi ekonomi
+turunda tahıl üretimine eklenir. Filonun yer değiştirmesi görevi temizler.
+Devriye açık denizde
 atanabilir; `blockade` hedefi ise yalnızca savaş halindeki düşmanın kıyı kara bölgelerine
 komşu denizler arasından seçilebilir; açık deniz hedefleri state kapısından
 reddedilir.
