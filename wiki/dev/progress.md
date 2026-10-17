@@ -5,6 +5,12 @@ last_updated: 2026-10-17
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-17: Savaş sonrası vassal yapılan sanal isyancı fraksiyonlar normal,
+  oynatılamayan vassallara çevriliyor; isyancı ordu işaretleri kaldırılıp isyan
+  bölgesi normale döndürülüyor. `NormalizeVassalage()` eski kayıtlara da aynı
+  düzeltmeyi uyguladığı için isyancı vassallar serbest bırakılıp gerekirse
+  yeniden hedef alınabiliyor.
+
 - 2026-10-17: Renly'nin ordusu Stannis'e katıldıktan sonra state-triggered
   `stannis_leaves_dragonstone_299` olayı Stannis'in kara ordularını
   `crackclaw_point` bölgesinde topluyor ve başkentini buraya taşımayı başlatıyor.

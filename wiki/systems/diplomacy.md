@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [diplomacy, relations, stance, faction]
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 related: [world/factions, systems/ai, architecture/state-management, dev/data-format]
 ---
 
@@ -525,6 +525,12 @@ Bu sayede elenen devletler diğer devletlerle diplomasi verisi taşımaya devam 
 ## Vassallık Kuralları
 
 - Vassallık kabul edilince hedef fraksiyonun `OverlordID` alanı doldurulur.
+- İsyandan doğan sanal fraksiyon vassal yapılınca normal, oynatılamayan bir
+  vassala dönüşür; isyancı orduları normal vassal ordusu olur ve isyanın
+  başlangıç bölgesinin memnuniyeti `50`'ye çekilir. Bu dönüşüm kayıt yükleme
+  normalizasyonunda da uygulandığından eski kayıtlar da toparlanır. Aynı realm
+  içindeki orduya saldırılamaz; çatışmayı yeniden başlatmak için vassallık
+  bitirilip savaş ilan edilmelidir.
 - Bir overlord başka bir devletin vassalı olduğunda, onun doğrudan veya daha
   derin alt vassalları yeni en üst devletin doğrudan vassalı olur; vassallar
   başka vassallara sahip olamaz. Bu aktarımda yeni vassallık bağı için bekleme

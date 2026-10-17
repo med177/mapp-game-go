@@ -1038,6 +1038,23 @@ func sanitizeVassalExternalDiplomacy(gs *state.GameState, vassal, root faction.F
 	}
 }
 
+func settleVirtualRebelVassal(gs *state.GameState, fid faction.FactionID, f *faction.Faction) {
+	if gs == nil || f == nil || !f.IsVirtual || f.OverlordID == "" {
+		return
+	}
+	f.IsVirtual = false
+	for _, a := range gs.Armies {
+		if a == nil || a.OwnerID != string(fid) || !a.IsRebel {
+			continue
+		}
+		a.IsRebel = false
+		a.RebelAgainstID = ""
+		if region := gs.Regions[a.RegionID]; region != nil && region.OwnerID == string(fid) {
+			region.Satisfaction = 50
+		}
+	}
+}
+
 func NormalizeVassalage(gs *state.GameState) {
 	if gs == nil || len(gs.Factions) == 0 {
 		return
@@ -1061,6 +1078,7 @@ func NormalizeVassalage(gs *state.GameState) {
 			f.VassalizedTurn = 0
 			continue
 		}
+		settleVirtualRebelVassal(gs, fid, f)
 		if f.VassalizedTurn <= 0 {
 			f.VassalizedTurn = gs.Turn
 			if f.VassalizedTurn <= 0 {

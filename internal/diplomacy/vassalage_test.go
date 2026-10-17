@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/economy"
 	"mapp-game-go/internal/faction"
 	"mapp-game-go/internal/scenario"
@@ -320,6 +321,95 @@ func TestNormalizeVassalagePreservesExternalVassalTrade(t *testing.T) {
 	}
 	if !HasTradeRouteBetween(gs, "venice", "vassal") {
 		t.Fatal("vassal dış ticaret rotası normalize edilirken silindi")
+	}
+}
+
+func TestNormalizeVassalageSettlesVirtualRebelVassal(t *testing.T) {
+	gs := &state.GameState{
+		Turn:            20,
+		PlayerFactionID: "overlord",
+		Factions: map[faction.FactionID]*faction.Faction{
+			"overlord": {ID: "overlord", NameTR: "Üst Devlet"},
+			"rebel": {
+				ID: "rebel", NameTR: "İsyancılar", IsVirtual: true,
+				OverlordID: "overlord", VassalizedTurn: 5,
+			},
+			"independent_rebel": {ID: "independent_rebel", IsVirtual: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"rebel_region": {ID: "rebel_region", OwnerID: "rebel", Satisfaction: 0},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"rebel_army": {
+				ID: "rebel_army", OwnerID: "rebel", RegionID: "rebel_region",
+				IsRebel: true, RebelAgainstID: "overlord",
+			},
+		},
+		Relations: map[string]*faction.Relation{
+			faction.RelationKey("overlord", "rebel"): {
+				FactionA: "overlord", FactionB: "rebel", Stance: faction.StanceAllied,
+			},
+		},
+	}
+
+	NormalizeVassalage(gs)
+
+	if gs.Factions["rebel"].IsVirtual {
+		t.Fatal("vassal yapılan sanal isyancı fraksiyon normal vassala dönüşmedi")
+	}
+	if !gs.Factions["independent_rebel"].IsVirtual {
+		t.Fatal("bağımsız sanal isyancı fraksiyon normalleştirme sırasında değişti")
+	}
+	if rebelArmy := gs.Armies["rebel_army"]; rebelArmy.IsRebel || rebelArmy.RebelAgainstID != "" {
+		t.Fatalf("vassal ordusu isyancı olarak kaldı: is_rebel=%v rebel_against=%q", rebelArmy.IsRebel, rebelArmy.RebelAgainstID)
+	}
+	if got := gs.Regions["rebel_region"].Satisfaction; got != 50 {
+		t.Fatalf("isyan sonrası bölge memnuniyeti = %d, want 50", got)
+	}
+	if reason := ActionBlockReason(gs, "overlord", "rebel", ActionReleaseVassal); reason != "" {
+		t.Fatalf("sanal isyancı vassal serbest bırakılamıyor: %s", reason)
+	}
+
+	result := Execute(gs, "overlord", "rebel", ActionReleaseVassal)
+	if !result.Applied || gs.Factions["rebel"].OverlordID != "" {
+		t.Fatalf("vassallık sonlandırılamadı: applied=%v overlord=%q message=%q", result.Applied, gs.Factions["rebel"].OverlordID, result.Message)
+	}
+	if reason := ActionBlockReason(gs, "overlord", "rebel", ActionDeclareWar); reason != "" {
+		t.Fatalf("bağımsız eski isyancı fraksiyona savaş ilanı engellendi: %s", reason)
+	}
+	warResult := ExecuteWarDeclaration(gs, "overlord", "rebel", nil)
+	if !warResult.Applied || !IsWar(gs, "overlord", "rebel") {
+		t.Fatalf("serbest bırakılan eski isyancı fraksiyona savaş açılamadı: %s", warResult.Message)
+	}
+}
+
+func TestForceVassalizeAfterWarSettlesVirtualRebel(t *testing.T) {
+	gs := &state.GameState{
+		Turn: 8,
+		Factions: map[faction.FactionID]*faction.Faction{
+			"overlord": {ID: "overlord"},
+			"rebel":    {ID: "rebel", IsVirtual: true},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"rebel_region": {ID: "rebel_region", OwnerID: "rebel", Satisfaction: 0},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"rebel_army": {
+				ID: "rebel_army", OwnerID: "rebel", RegionID: "rebel_region",
+				IsRebel: true, RebelAgainstID: "overlord",
+			},
+		},
+	}
+
+	result := ForceVassalizeAfterWar(gs, "overlord", "rebel")
+	if !result.Applied {
+		t.Fatalf("sanal isyancı vassal yapılamadı: %s", result.Message)
+	}
+	if gs.Factions["rebel"].IsVirtual || gs.Armies["rebel_army"].IsRebel {
+		t.Fatal("savaş sonrası vassallanan isyancı devlet veya ordusu isyancı kaldı")
+	}
+	if got := gs.Regions["rebel_region"].Satisfaction; got != 50 {
+		t.Fatalf("isyan sonrası bölge memnuniyeti = %d, want 50", got)
 	}
 }
 
