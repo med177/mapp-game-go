@@ -117,7 +117,7 @@ func aiBestBuildingInvestmentWithResourceCheck(gs *state.GameState, fid faction.
 		return aiBuildingCandidate{}, false
 	}
 	self := gs.Factions[fid]
-	satisfactionCalculator := satisfaction.NewCalculator(gs)
+	satisfactionCalculator := ctx.satisfactionCalculator(gs)
 	snapshot := aiBuildEconomySnapshot(gs, fid)
 	// Tamamlanmamış çiftlikler ekonomi fotoğrafına henüz katılmaz. İki paralel
 	// yatırım kıtlığın hızla toparlanmasını sağlar; üçüncüsü ise sonucu görmeden

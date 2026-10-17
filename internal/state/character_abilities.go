@@ -22,7 +22,8 @@ func (s *GameState) adventureAbilityCouncilEffects(ownerID faction.FactionID) sc
 
 	var militaryPowerMod float64
 	for _, character := range s.Commanders {
-		if !s.characterCanProvideAdventureAbility(ownerID, character) {
+		if !hasFactionMilitaryPowerAbility(character) ||
+			!s.characterCanProvideAdventureAbility(ownerID, character) {
 			continue
 		}
 		for index, ability := range character.AdventureAbilities {
@@ -38,6 +39,19 @@ func (s *GameState) adventureAbilityCouncilEffects(ownerID faction.FactionID) sc
 		}
 	}
 	return scenario.CouncilEffects{MilitaryPowerMod: 1 + militaryPowerMod}
+}
+
+func hasFactionMilitaryPowerAbility(character *army.Commander) bool {
+	if character == nil {
+		return false
+	}
+	for _, ability := range character.AdventureAbilities {
+		if ability.ID != "" && ability.Scope == "faction" &&
+			ability.Effect == "military_power" && ability.Modifier > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *GameState) AdventureAbilityEffectsForArmy(a *army.Army) AdventureAbilityEffects {

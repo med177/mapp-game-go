@@ -131,7 +131,7 @@ func runTurnPreludeWithPreparedContext(gs *state.GameState, fid faction.FactionI
 	// hazineden çıkan heyet ve hediyeler ise tüm öncelikli harcamalardan sonra
 	// kalan bütçeyle gönderilir.
 	aiHandleDiplomacyForTurn(gs, fid, steps)
-	aiAdjustTaxesWithSteps(gs, fid, steps)
+	aiAdjustTaxesWithSteps(gs, fid, planningContext, steps)
 	if purchased := aiProcureGrain(gs, fid); purchased > 0 {
 		addTurnStep(steps, TurnStep{
 			FactionID: fid,

@@ -7,6 +7,7 @@ import (
 	"mapp-game-go/internal/army"
 	"mapp-game-go/internal/diplomacy"
 	"mapp-game-go/internal/faction"
+	"mapp-game-go/internal/satisfaction"
 	"mapp-game-go/internal/scenario"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
@@ -53,6 +54,17 @@ type StrategicContext struct {
 	routeCache       map[aiRouteCacheKey]*aiRouteMap
 	navalThreatPower map[world.RegionID]int
 	budget           *aiBudget
+	satisfaction     *satisfaction.Calculator
+}
+
+func (ctx *StrategicContext) satisfactionCalculator(gs *state.GameState) *satisfaction.Calculator {
+	if ctx == nil || ctx.gs != gs {
+		return satisfaction.NewCalculator(gs)
+	}
+	if ctx.satisfaction == nil {
+		ctx.satisfaction = satisfaction.NewCalculator(gs)
+	}
+	return ctx.satisfaction
 }
 
 // AIUpcomingEvent, oyun başında yüklenen event cache'inden bu AI turu için

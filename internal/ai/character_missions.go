@@ -30,11 +30,25 @@ func aiManageCharacterMissions(gs *state.GameState, fid faction.FactionID, steps
 
 	characters := gs.CharacterRoster(string(fid))
 	sort.Slice(characters, func(i, j int) bool { return characters[i].ID < characters[j].ID })
+	if len(characters) == 0 {
+		return
+	}
+	var armyStrengths *aiCharacterMissionArmyStrengths
+	getArmyStrengths := func() *aiCharacterMissionArmyStrengths {
+		if armyStrengths == nil {
+			armyStrengths = newAICharacterMissionArmyStrengths(gs)
+		}
+		return armyStrengths
+	}
 	for _, character := range characters {
 		if character == nil || len(character.PendingAdventureAbilities) == 0 {
 			continue
 		}
-		abilityID := aiBestAdventureAbility(gs, fid, character)
+		var abilityArmyStrengths *aiCharacterMissionArmyStrengths
+		if aiPendingAdventureAbilitiesUseArmyStrength(character.PendingAdventureAbilities) {
+			abilityArmyStrengths = getArmyStrengths()
+		}
+		abilityID := aiBestAdventureAbility(gs, fid, character, abilityArmyStrengths)
 		if abilityID == "" {
 			addTurnStep(steps, TurnStep{
 				FactionID: fid,
@@ -60,14 +74,17 @@ func aiManageCharacterMissions(gs *state.GameState, fid faction.FactionID, steps
 		var best aiCharacterMissionChoice
 		found := false
 		for _, mission := range gs.CharacterMissionOptions(fid, character.ID) {
-			target := aiCharacterMissionTarget(gs, fid, mission)
+			if aiMissionUsesArmyStrength(mission) {
+				getArmyStrengths()
+			}
+			target := aiCharacterMissionTarget(gs, fid, mission, armyStrengths)
 			if mission.TargetKind != scenario.CharacterMissionTargetNone && target == "" {
 				continue
 			}
 			if ok, _ := gs.CanStartCharacterMissionTarget(fid, character.ID, mission.ID, target); !ok {
 				continue
 			}
-			net := aiCharacterMissionNetValue(gs, fid, character, mission, target, context)
+			net := aiCharacterMissionNetValue(gs, fid, character, mission, target, context, armyStrengths)
 			if net <= 0 {
 				continue
 			}
@@ -96,14 +113,19 @@ func aiManageCharacterMissions(gs *state.GameState, fid faction.FactionID, steps
 	}
 }
 
-func aiBestAdventureAbility(gs *state.GameState, fid faction.FactionID, character *army.Commander) string {
+func aiBestAdventureAbility(
+	gs *state.GameState,
+	fid faction.FactionID,
+	character *army.Commander,
+	armyStrengths *aiCharacterMissionArmyStrengths,
+) string {
 	if gs == nil || character == nil {
 		return ""
 	}
 	bestID := ""
 	bestValue := float64(-1)
 	for _, ability := range character.PendingAdventureAbilities {
-		value := aiAdventureAbilityValue(gs, fid, ability.Scope, ability.Effect, ability.Modifier)
+		value := aiAdventureAbilityValue(gs, fid, ability.Scope, ability.Effect, ability.Modifier, armyStrengths)
 		if bestID == "" || value > bestValue {
 			bestID = ability.ID
 			bestValue = value
@@ -112,7 +134,12 @@ func aiBestAdventureAbility(gs *state.GameState, fid faction.FactionID, characte
 	return bestID
 }
 
-func aiCharacterMissionTarget(gs *state.GameState, fid faction.FactionID, mission scenario.CharacterMissionDefinition) string {
+func aiCharacterMissionTarget(
+	gs *state.GameState,
+	fid faction.FactionID,
+	mission scenario.CharacterMissionDefinition,
+	armyStrengths *aiCharacterMissionArmyStrengths,
+) string {
 	if gs == nil || mission.TargetKind == scenario.CharacterMissionTargetNone {
 		return ""
 	}
@@ -131,10 +158,10 @@ func aiCharacterMissionTarget(gs *state.GameState, fid faction.FactionID, missio
 				score, _ := relationScore(gs, string(fid), targetID)
 				value = float64(-score)
 			} else {
-				value = aiFactionArmyStrength(gs, faction.FactionID(targetID))
+				value = armyStrengths.factionStrength(faction.FactionID(targetID))
 			}
 		case scenario.CharacterMissionTargetRegion:
-			value = aiRegionArmyStrength(gs, targetID)
+			value = armyStrengths.regionStrength(targetID)
 		}
 		if value > bestValue {
 			bestTarget = targetID
@@ -144,6 +171,44 @@ func aiCharacterMissionTarget(gs *state.GameState, fid faction.FactionID, missio
 	return bestTarget
 }
 
+func aiMissionUsesArmyStrength(mission scenario.CharacterMissionDefinition) bool {
+	if mission.TargetKind == scenario.CharacterMissionTargetRegion ||
+		(mission.TargetKind == scenario.CharacterMissionTargetFaction && mission.CompletionEffects.RelationBonusPoints <= 0) ||
+		mission.CompletionEffects.MilitaryIntelTurns > 0 ||
+		mission.CompletionEffects.RegionIntelTurns > 0 {
+		return true
+	}
+	if mission.Adventure == nil {
+		return false
+	}
+	for _, choice := range mission.Adventure.SuccessAbilityChoices {
+		if aiAdventureAbilityUsesArmyStrength(choice.Scope, choice.Effect) {
+			return true
+		}
+	}
+	for _, choice := range mission.Adventure.PartialAbilityChoices {
+		if aiAdventureAbilityUsesArmyStrength(choice.Scope, choice.Effect) {
+			return true
+		}
+	}
+	return false
+}
+
+func aiAdventureAbilityUsesArmyStrength(scope, effect string) bool {
+	return (scope == "faction" && effect == "military_power") ||
+		(scope == "army" && effect == "army_power") ||
+		(scope == "navy" && effect == "navy_power")
+}
+
+func aiPendingAdventureAbilitiesUseArmyStrength(abilities []army.CharacterAbility) bool {
+	for _, ability := range abilities {
+		if aiAdventureAbilityUsesArmyStrength(ability.Scope, ability.Effect) {
+			return true
+		}
+	}
+	return false
+}
+
 func aiCharacterMissionNetValue(
 	gs *state.GameState,
 	fid faction.FactionID,
@@ -151,6 +216,7 @@ func aiCharacterMissionNetValue(
 	mission scenario.CharacterMissionDefinition,
 	targetID string,
 	context aiCouncilValueContext,
+	armyStrengths *aiCharacterMissionArmyStrengths,
 ) float64 {
 	if gs == nil || character == nil {
 		return 0
@@ -162,10 +228,10 @@ func aiCharacterMissionNetValue(
 		adventure := mission.Adventure
 		successValue := float64(adventure.SuccessGoldReward) +
 			aiMissionExperienceValue(gs, fid, character, mission.RoleID, adventure.SuccessCouncilExperience, context) +
-			aiAdventureAbilityChoicesValue(gs, fid, character, adventure.SuccessAbilityChoices)
+			aiAdventureAbilityChoicesValue(gs, fid, character, adventure.SuccessAbilityChoices, armyStrengths)
 		partialValue := float64(adventure.PartialGoldReward) +
 			aiMissionExperienceValue(gs, fid, character, mission.RoleID, adventure.PartialCouncilExperience, context) +
-			aiAdventureAbilityChoicesValue(gs, fid, character, adventure.PartialAbilityChoices)
+			aiAdventureAbilityChoicesValue(gs, fid, character, adventure.PartialAbilityChoices, armyStrengths)
 		value += float64(success)*successValue/100 + float64(partial)*partialValue/100
 		value -= float64(failure*adventure.FailureUnavailableTurns) * 5 / 100
 	} else {
@@ -175,11 +241,11 @@ func aiCharacterMissionNetValue(
 			value += float64(mission.CompletionEffects.RelationBonusPoints) * 2
 		}
 		if mission.CompletionEffects.MilitaryIntelTurns > 0 {
-			value += aiFactionArmyStrength(gs, faction.FactionID(targetID)) *
+			value += armyStrengths.factionStrength(faction.FactionID(targetID)) *
 				float64(mission.CompletionEffects.MilitaryIntelTurns) * 0.1
 		}
 		if mission.CompletionEffects.RegionIntelTurns > 0 {
-			value += aiRegionArmyStrength(gs, targetID) *
+			value += armyStrengths.regionStrength(targetID) *
 				float64(mission.CompletionEffects.RegionIntelTurns) * 0.1
 		}
 	}
@@ -221,7 +287,13 @@ func aiMissionExperienceValue(
 	return float64(bestDelta * aiMissionAbilityHorizon)
 }
 
-func aiAdventureAbilityChoicesValue(gs *state.GameState, fid faction.FactionID, character *army.Commander, choices []scenario.AdventureAbilityChoice) float64 {
+func aiAdventureAbilityChoicesValue(
+	gs *state.GameState,
+	fid faction.FactionID,
+	character *army.Commander,
+	choices []scenario.AdventureAbilityChoice,
+	armyStrengths *aiCharacterMissionArmyStrengths,
+) float64 {
 	if gs == nil || character == nil {
 		return 0
 	}
@@ -234,7 +306,7 @@ func aiAdventureAbilityChoicesValue(gs *state.GameState, fid faction.FactionID, 
 		if _, exists := learned[choice.ID]; exists {
 			continue
 		}
-		value := aiAdventureAbilityValue(gs, fid, choice.Scope, choice.Effect, choice.Modifier)
+		value := aiAdventureAbilityValue(gs, fid, choice.Scope, choice.Effect, choice.Modifier, armyStrengths)
 		if value > bestValue {
 			bestValue = value
 		}
@@ -242,17 +314,23 @@ func aiAdventureAbilityChoicesValue(gs *state.GameState, fid faction.FactionID, 
 	return bestValue
 }
 
-func aiAdventureAbilityValue(gs *state.GameState, fid faction.FactionID, scope, effect string, modifier float64) float64 {
+func aiAdventureAbilityValue(
+	gs *state.GameState,
+	fid faction.FactionID,
+	scope, effect string,
+	modifier float64,
+	armyStrengths *aiCharacterMissionArmyStrengths,
+) float64 {
 	if gs == nil || modifier <= 0 {
 		return 0
 	}
 	switch {
 	case scope == "faction" && effect == "military_power":
-		return aiFactionArmyStrength(gs, fid) * modifier * aiMissionAbilityHorizon
+		return armyStrengths.factionStrength(fid) * modifier * aiMissionAbilityHorizon
 	case scope == "army" && effect == "army_power":
-		return aiFactionArmyStrengthByType(gs, fid, false) * modifier * aiMissionAbilityHorizon
+		return armyStrengths.factionStrengthByType(fid, false) * modifier * aiMissionAbilityHorizon
 	case scope == "navy" && effect == "navy_power":
-		return aiFactionArmyStrengthByType(gs, fid, true) * modifier * aiMissionAbilityHorizon
+		return armyStrengths.factionStrengthByType(fid, true) * modifier * aiMissionAbilityHorizon
 	default:
 		return 0
 	}
@@ -272,35 +350,56 @@ func aiMissionCouncilOpportunityCost(
 	return float64(maxInt(0, aiCouncilRoleValue(gs, mission.RoleID, character, effects, context)))
 }
 
-func aiFactionArmyStrength(gs *state.GameState, fid faction.FactionID) float64 {
-	return aiFactionArmyStrengthByType(gs, fid, false) + aiFactionArmyStrengthByType(gs, fid, true)
+type aiCharacterMissionArmyStrengths struct {
+	landByFaction  map[faction.FactionID]float64
+	navalByFaction map[faction.FactionID]float64
+	byRegion       map[string]float64
 }
 
-func aiFactionArmyStrengthByType(gs *state.GameState, fid faction.FactionID, naval bool) float64 {
+func newAICharacterMissionArmyStrengths(gs *state.GameState) *aiCharacterMissionArmyStrengths {
+	strengths := &aiCharacterMissionArmyStrengths{
+		landByFaction:  make(map[faction.FactionID]float64),
+		navalByFaction: make(map[faction.FactionID]float64),
+		byRegion:       make(map[string]float64),
+	}
 	if gs == nil {
-		return 0
+		return strengths
 	}
-	var strength float64
 	for _, currentArmy := range aiSortedArmies(gs) {
-		if currentArmy.OwnerID != string(fid) || currentArmy.IsNaval != naval {
-			continue
+		fid := faction.FactionID(currentArmy.OwnerID)
+		strength := float64(currentArmy.TotalStrength(gs.UnitTypes))
+		if currentArmy.IsNaval {
+			strengths.navalByFaction[fid] += strength
+		} else {
+			strengths.landByFaction[fid] += strength
 		}
-		strength += float64(currentArmy.TotalStrength(gs.UnitTypes))
+		strengths.byRegion[string(currentArmy.RegionID)] += strength
 	}
-	return strength
+	return strengths
 }
 
-func aiRegionArmyStrength(gs *state.GameState, regionID string) float64 {
-	if gs == nil {
+func (s *aiCharacterMissionArmyStrengths) factionStrength(fid faction.FactionID) float64 {
+	if s == nil {
 		return 0
 	}
-	var strength float64
-	for _, currentArmy := range aiSortedArmies(gs) {
-		if string(currentArmy.RegionID) == regionID {
-			strength += float64(currentArmy.TotalStrength(gs.UnitTypes))
-		}
+	return s.factionStrengthByType(fid, false) + s.factionStrengthByType(fid, true)
+}
+
+func (s *aiCharacterMissionArmyStrengths) factionStrengthByType(fid faction.FactionID, naval bool) float64 {
+	if s == nil {
+		return 0
 	}
-	return strength
+	if naval {
+		return s.navalByFaction[fid]
+	}
+	return s.landByFaction[fid]
+}
+
+func (s *aiCharacterMissionArmyStrengths) regionStrength(regionID string) float64 {
+	if s == nil {
+		return 0
+	}
+	return s.byRegion[regionID]
 }
 
 func aiCharacterMissionStartMessage(gs *state.GameState, character *army.Commander, mission scenario.CharacterMissionDefinition, targetID string) string {
@@ -313,9 +412,10 @@ func aiCharacterMissionStartMessage(gs *state.GameState, character *army.Command
 		missionName = mission.ID
 	}
 	message := characterName + " " + missionName + " görevine gönderiliyor."
-	if mission.TargetKind == scenario.CharacterMissionTargetFaction {
+	switch mission.TargetKind {
+	case scenario.CharacterMissionTargetFaction:
 		message = characterName + " " + missionName + " görevine " + turnFactionName(gs, faction.FactionID(targetID)) + " hedefine gönderiliyor."
-	} else if mission.TargetKind == scenario.CharacterMissionTargetRegion {
+	case scenario.CharacterMissionTargetRegion:
 		message = characterName + " " + missionName + " görevine " + turnRegionName(gs, world.RegionID(targetID)) + " hedefine gönderiliyor."
 	}
 	return message

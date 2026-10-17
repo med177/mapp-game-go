@@ -126,6 +126,8 @@ const (
 	aiMarketPreparationFinalize
 )
 
+const quickTurnUpdateBudget = 6 * time.Millisecond
+
 const maxDiplomaticOfferHistoryEntries = 10
 
 type loadingKind int
@@ -1128,6 +1130,10 @@ func (g *Game) updateAITurnSequence() {
 		return
 	}
 
+	var updateStartedAt time.Time
+	if quickTurn {
+		updateStartedAt = time.Now()
+	}
 	for processed := 0; ; processed++ {
 		if quickTurn {
 			g.suppressQuickTurnRelationshipNotifications()
@@ -1141,7 +1147,10 @@ func (g *Game) updateAITurnSequence() {
 			if g.gs.PendingNavalContact != nil || g.gs.PendingLandContact != nil {
 				return
 			}
-			if processed >= quickTurnStepBatchLimit {
+			// AI steps are indivisible; yield between them so rendering and input
+			// remain responsive during long quick turns.
+			if processed >= quickTurnStepBatchLimit ||
+				(processed > 0 && time.Since(updateStartedAt) >= quickTurnUpdateBudget) {
 				return
 			}
 		}
@@ -1207,7 +1216,7 @@ func (g *Game) handleAITurnStep(step ai.TurnStep) {
 	if detail == "" {
 		detail = "Hamle işleniyor."
 	}
-	nearPlayer := g.aiStepVisible(step)
+	nearPlayer := !quickTurn && g.aiStepVisible(step)
 	if !quickTurn && nearPlayer && step.FocusRegion != "" {
 		g.renderer.CenterCameraOnRegion(step.FocusRegion)
 	}

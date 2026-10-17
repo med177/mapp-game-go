@@ -1,7 +1,7 @@
 ---
 type: architecture
 tags: [game-loop, phases, ebitengine, turn-system]
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 related: [state-management, render-pipeline]
 ---
 
@@ -166,7 +166,10 @@ erişim denetimi de bu izni geçerli transit sayacak şekilde genişletilmelidir
 `PhaseAITurn` normal modda adımlı görünür çözümleme kullanır. Ayarlardaki
 `Hızlı Tur` açıkken aynı scheduler bir frame içinde birden çok AI step'i işler;
 oyuncu kararı isteyen pencere (barış, ticaret, ittifak veya vassallık gibi)
-oluştuğunda durur.
+oluştuğunda durur. Uzun AI geçişlerinde tek `Update` çağrısının ana döngüyü
+uzun süre bloke etmemesi için scheduler en fazla 6 ms veya 4096 adım çalışıp
+sonraki `Update` çağrısında kaldığı yerden devam eder. Tek bir `TurnStepper.Step`
+çağrısı bölünemediğinden kendi başına bu süre sınırını aşabilir.
 
 Oyuncu turundaki alt HUD'da `Tur Bitir` düğmesinin yanında iki satırlı AI
 kontrolü bulunur. `Komple AI Yönetsin` açık kaldığı sürece oyuncu devleti de AI

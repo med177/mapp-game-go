@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [ai, strategy, coalition, difficulty]
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 related: [systems/combat, systems/diplomacy, systems/economy, systems/victory, architecture/game-loop, architecture/state-management]
 ---
 
@@ -306,6 +306,19 @@ Her `PhaseAITurn` artık iki katmandan oluşur:
 
 Oyun katmanı AI fraksiyonlarını `FactionOrder` sırasıyla dolaşır, her fraksiyon için `TurnStepper.Step()` çağırır ve normal modda her step arasında kısa bekleme ekler. Böylece harita bir anda "snap" olmaz; yakın cephedeki hareketler tek tek görünür. Ayarlardaki `Hızlı Tur` seçeneği bu beklemeleri ve AI adım başına UI güncellemesini kaldırır; adımlar toplu işlenir, kamera mevcut odağını korur ve yalnız oyuncu onayı gerektiren diplomasi tekliflerinde scheduler durur. Heyet/hediye bildirimleri hızlı turda oyuncu kuyruğunu kilitlemez.
 
+Hızlı turda toplu AI adımları tek `Update` çağrısını uzun süre bloke etmesin diye scheduler 6 ms veya 4096 adımda bir sonraki frame'e bırakır. AI adımları bölünemez; tek bir `TurnStepper.Step()` çağrısı süre sınırını aşabilir.
+
+Karakter görevleri değerlendirilirken faction ve bölge askerî güçleri, ilk ihtiyaç
+anında bir kez tüm ordulardan indekslenir; hedef ve ödül puanlaması bu indeksi
+kullanır. Karakteri veya askerî güç kullanan görev/ödülü olmayan faction'larda
+indeks oluşturulmaz.
+
+AI'nin aynı faction turundaki vergi ve bina yatırım değerlendirmeleri,
+`StrategicContext` içindeki memnuniyet hesaplayıcısını paylaşır. Vergi kararı
+bölge vergi oranını değiştirdikten sonra yatırım hesabı güncel bölge state'ini
+okur; hesaplayıcının paylaşılan önbelleği yalnız savaş yorgunluğu ve sahip
+olunan bölge sayısıdır.
+
 AI turu başında geçilmez araziye düşmüş ordular tek ortak
 `RepairArmiesInBlockedTerrain()` taramasıyla düzeltilir. Bu taramanın her
 `TurnStepper` oluşturuluşunda tekrarlanmaması ilk turdaki gereksiz beklemeyi
@@ -320,6 +333,32 @@ save şemasını değiştirmez ve memnuniyet puanını değiştirmeden AI turu m
 azaltır (`internal/diplomacy/war_fatigue.go`,
 `internal/satisfaction/satisfaction.go`,
 `internal/ai/building_investment.go`).
+
+Konsey etkileri hesaplanırken rol başına tüm karakter listesi tekrar taranmaz;
+faction'ın rol sahipleri tek geçişte seçilir ve aynı rol/config bilgisi etki
+hesabında yeniden kullanılır. `CharacterCouncilConfig.WithDefaults()` tam
+yapılandırılmış senaryolarda her çağrıda varsayılan rol/nitelik yapılarını
+kurmadan döner. Gerçek autosave profilinde (160 bölge, 21 faction, 48 ordu)
+önceki 3 koşunun medyanına kıyasla toplam tur ölçümü 1,474 sn'den 552 ms'ye
+(%63), AI aşaması 1,293 sn'den 480 ms'ye (%63) ve pazar emir hazırlığı 153
+ms'den 54 ms'ye (%65) indi. Profil headless akışta alındı; grafik çizim ve
+kullanıcıya görünen ilk-frame gecikmesini ölçmez.
+
+Pazar merkezi hacim artışı kapasite ve gelir bonusu için artık tek kez
+hesaplanıyor; `BaseRegionTradeIncome` aynı bonusları efektif kapasiteyi
+hesaplarken ikinci kez taramıyor. Aynı autosave profilinde önceki 3 koşu
+medyanına göre toplam tur 552 ms'den 500 ms'ye (%9), AI 480 ms'den 438 ms'ye
+(%9), pazar emir hazırlığı 53,6 ms'den 45,4 ms'ye (%15) indi. Bu ölçüm de
+headless olup çizim/frame gecikmesini kapsamaz.
+
+Faksiyon askerî güç macera yeteneği taşımayan karakterler, konsey bonusu
+hesabında pahalı karakter kullanılabilirliği/ölüm kontrolüne girmeden elenir.
+Son autosave profilinde (160 bölge, 21 faction, 48 ordu) önceki profil
+medyanına göre toplam tur 483 ms'den 400 ms'ye (%17), AI 425 ms'den 349 ms'ye
+(%18), pazar emir hazırlığı 46,2 ms'den 38,2 ms'ye (%17) indi. Profilde sıradaki
+incelenecek maliyet `StrategicContext.routeDistance` ve rota hazırlığıdır;
+kümülatif profil örnekleri örtüştüğü için bu bulgu tek başına bağımsız süre
+olarak yorumlanmamalıdır.
 
 İlişki onarımında uzak ve ilişkisiz devletler pahalı ittifak faydası taramasına
 girmeden elenir; ortak düşman/paylaşılan tehdit snapshot'ı aynı karar içinde

@@ -64,6 +64,54 @@ func TestScenarioCouncilRolesTraitsAndExperienceScaleEffects(t *testing.T) {
 	}
 }
 
+func TestCouncilEffectsForFactionMatchesRoleEffectsWithDuplicateAssignments(t *testing.T) {
+	const owner faction.FactionID = "player"
+	first := &army.Commander{
+		ID: "chr_a", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		AssignedCouncilRole: "steward", Traits: []army.CharacterTrait{"wise"},
+	}
+	second := &army.Commander{
+		ID: "chr_b", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		AssignedCouncilRole: "steward",
+	}
+	scholar := &army.Commander{
+		ID: "chr_c", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		AssignedCouncilRole: "scholar",
+	}
+	gs := &GameState{
+		Year:     300,
+		Factions: map[faction.FactionID]*faction.Faction{owner: {ID: owner}},
+		Commanders: map[string]*army.Commander{
+			first.ID: first, second.ID: second, scholar.ID: scholar,
+		},
+		CouncilConfig: scenario.CharacterCouncilConfig{
+			Roles: []scenario.CouncilRoleDefinition{
+				{ID: "steward", NameTR: "Kâhya", Effects: scenario.CouncilEffects{IncomeMod: 1.05}},
+				{ID: "scholar", NameTR: "Bilgin", Effects: scenario.CouncilEffects{SatisfactionPoints: 2}},
+			},
+			Traits: map[string]scenario.CharacterTraitDefinition{
+				"wise": {
+					NameTR: "Bilge",
+					CouncilEffects: map[string]scenario.CouncilEffects{
+						"steward": {IncomeMod: 1.02},
+					},
+				},
+			},
+		},
+	}
+
+	if got := gs.CouncilRoleHolder(owner, "steward"); got != first {
+		t.Fatalf("duplicate steward assignments selected %v, want lexicographically first holder", got)
+	}
+	want := addCouncilEffects(
+		gs.CouncilRoleEffects(owner, "steward"),
+		gs.CouncilRoleEffects(owner, "scholar"),
+	)
+	if got := gs.CouncilEffectsForFaction(owner); got != want {
+		t.Fatalf("faction council effects = %+v, want per-role sum %+v", got, want)
+	}
+}
+
 func TestNegativeTraitCouncilModReducesRoleBonus(t *testing.T) {
 	const owner faction.FactionID = "player"
 	character := &army.Commander{

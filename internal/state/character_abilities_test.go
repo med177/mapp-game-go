@@ -36,16 +36,24 @@ func TestAdventureAbilityEffectsRespectScopeAssignmentAndAvailability(t *testing
 			{ID: "naval_strategy", Scope: "navy", Effect: "navy_power", Modifier: 0.04},
 		},
 	}
+	deadFactionCharacter := &army.Commander{
+		ID: "dead_faction_character", Type: army.CharacterTypeCharacter, OwnerID: string(owner),
+		AdventureAbilities: []army.CharacterAbility{
+			{ID: "dead_fieldcraft", Scope: "faction", Effect: "military_power", Modifier: 0.50},
+		},
+	}
 	gs := &GameState{
 		Year: 300,
 		Factions: map[faction.FactionID]*faction.Faction{
 			owner: {ID: owner},
 		},
+		DeadCommanderIDs: map[string]bool{deadFactionCharacter.ID: true},
 		Commanders: map[string]*army.Commander{
 			factionCharacter.ID:       factionCharacter,
 			secondFactionCharacter.ID: secondFactionCharacter,
 			landCommander.ID:          landCommander,
 			navalCommander.ID:         navalCommander,
+			deadFactionCharacter.ID:   deadFactionCharacter,
 		},
 	}
 

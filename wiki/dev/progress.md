@@ -5,6 +5,41 @@ last_updated: 2026-10-17
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-17: Faction askerî güç macera yeteneği olmayan karakterler konsey
+  bonusu hesabında pahalı kullanılabilirlik/ölüm kontrolünden önce eleniyor.
+  Autosave'de önceki profil medyanına göre toplam tur 483 ms'den 400 ms'ye,
+  AI 425 ms'den 349 ms'ye, pazar hazırlığı 46,2 ms'den 38,2 ms'ye düştü.
+  Yeni profil rota mesafesi/stratejik context hazırlığını sonraki inceleme
+  adayı olarak gösteriyor.
+
+- 2026-10-17: Ticaret merkezi hacim artışı kapasite ve gelir bonusları için
+  tek kez hesaplanıyor; bölge taban gelirinde kapasite bonusu ikinci kez
+  taranmıyor. Autosave ölçümünde önceki adıma göre toplam tur 552 ms'den
+  489 ms'ye, AI 480 ms'den 430 ms'ye, pazar emir hazırlığı 53,6 ms'den
+  45,4 ms'ye düştü.
+
+- 2026-10-17: Konsey rol sahipleri faction başına tek karakter geçişinde
+  belirleniyor; aynı config/rol verisi etkiler ve deneyim kazanımı hesaplarında
+  yeniden kullanılıyor. Tam yapılandırılmış konseyler için `WithDefaults()`
+  varsayılan veri kurulumunu atlıyor. Gerçek autosave'de üç koşu medyanı toplam
+  tur süresi 1,474 sn'den 552 ms'ye, AI aşaması 1,293 sn'den 480 ms'ye düştü.
+  Headless profilin grafik kare süresini kapsamadığı not edildi.
+
+- 2026-10-17: Hızlı turda AI step batch'i tek `Update` çağrısında 6 ms veya
+  4096 adım ile sınırlandırılıyor; scheduler sonraki frame'de kaldığı yerden
+  sürdürüyor. Tek bir AI adımı bölünemediğinden bütçeyi aşabilir.
+
+- 2026-10-17: AI karakter görevleri için askerî güç hedef değerlendirmesi
+  faction turunda orduları tek geçişte indeksliyor. 30 fraksiyon, 150 bölge ve
+  400 ordulu hedefleme benchmark'ında indeksi kurma dahil süre 0,58 ms'den
+  0,053 ms'ye, tahsis 504 KB'den 23 KB'ye indi; hedef seçimi aynı kaldı.
+
+- 2026-10-17: AI faction turunda pazar kaynak talebi, vergi kararı ve bina
+  yatırım puanlaması aynı `StrategicContext` memnuniyet hesaplayıcısını
+  kullanıyor. 30 fraksiyon, 150 bölge ve 400 ordulu; beş sahip olunan bölgede
+  iki hesaplama geçişli benchmark'ta süre 110 µs'den 98 µs'ye, tahsis 151 KB'den
+  128 KB'ye indi.
+
 - 2026-10-16: Beş Kralın Savaşı'nda Korucu Keşifçiliği artık yalnızca aynı veya
   komşu bölgelerdeki düşman orduları için tam istihbarat sağlar; uzak orduların
   ayrıntıları gizli kalır. Global `reveal_enemy_strength` etkisi ayrı tutuldu.

@@ -81,12 +81,13 @@ func (s *GameState) TradeCenterBenefits(region *world.Region) (capacityBonus, in
 		if center.ID != region.ID || !center.ActiveInYear(s.Year) {
 			continue
 		}
-		return s.tradeCenterCapacityBonus(center), s.tradeCenterIncomeBonus(center)
+		volumeGrowth := s.tradeCenterVolumeGrowth(center)
+		return s.tradeCenterCapacityBonus(center, volumeGrowth), s.tradeCenterIncomeBonus(center, volumeGrowth)
 	}
 	return 0, 0
 }
 
-func (s *GameState) tradeCenterCapacityBonus(center world.TradeCenterDef) int {
+func (s *GameState) tradeCenterCapacityBonus(center world.TradeCenterDef, volumeGrowth int) int {
 	base := 0
 	if center.TradeCapacityBonus != 0 {
 		base = center.TradeCapacityBonus
@@ -98,10 +99,10 @@ func (s *GameState) tradeCenterCapacityBonus(center world.TradeCenterDef) int {
 			base = s.TradeCenters.SecondaryTradeCapacityBonus
 		}
 	}
-	return base + s.tradeCenterVolumeGrowth(center)
+	return base + volumeGrowth
 }
 
-func (s *GameState) tradeCenterIncomeBonus(center world.TradeCenterDef) int {
+func (s *GameState) tradeCenterIncomeBonus(center world.TradeCenterDef, volumeGrowth int) int {
 	base := 0
 	if center.TradeIncomeBonus != 0 {
 		base = center.TradeIncomeBonus
@@ -113,7 +114,7 @@ func (s *GameState) tradeCenterIncomeBonus(center world.TradeCenterDef) int {
 			base = s.TradeCenters.SecondaryTradeIncomeBonus
 		}
 	}
-	return base + s.tradeCenterVolumeGrowth(center)*2
+	return base + volumeGrowth*2
 }
 
 func (s *GameState) tradeCenterVolumeGrowth(center world.TradeCenterDef) int {
@@ -139,8 +140,15 @@ func (s *GameState) BaseRegionTradeIncome(region *world.Region) int {
 	if s == nil || region == nil || region.IsSea {
 		return 0
 	}
-	_, incomeBonus := s.TradeCenterBenefits(region)
-	income := economy.RegionTradeIncome(s.EffectiveRegionTradeCapacity(region)) + incomeBonus
+	capacityBonus, incomeBonus := s.TradeCenterBenefits(region)
+	capacity := 0
+	if region.TradeCapacity > 0 {
+		capacity = s.baseRegionTradeCapacity(region) + capacityBonus
+		if capacity < 0 {
+			capacity = 0
+		}
+	}
+	income := economy.RegionTradeIncome(capacity) + incomeBonus
 	modifier := s.TradeNetworkIncomeModifier(region.ID)
 	income = income * (100 + modifier) / 100
 	if income < 0 {

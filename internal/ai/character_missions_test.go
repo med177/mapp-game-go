@@ -100,6 +100,62 @@ func TestAILeavesArmyAssignedCharacterOutOfMissions(t *testing.T) {
 	}
 }
 
+func TestAICharacterMissionArmyStrengthIndexSelectsStrongestRegion(t *testing.T) {
+	const owner faction.FactionID = "owner"
+	const enemy faction.FactionID = "enemy"
+	const other faction.FactionID = "other"
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			owner: {ID: owner},
+			enemy: {ID: enemy},
+			other: {ID: other},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"weak":   {ID: "weak", OwnerID: string(enemy)},
+			"strong": {ID: "strong", OwnerID: string(other)},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"enemy_land": {
+				ID: "enemy_land", OwnerID: string(enemy), RegionID: "weak",
+				Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+			},
+			"other_land": {
+				ID: "other_land", OwnerID: string(other), RegionID: "strong",
+				Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+			},
+			"other_navy": {
+				ID: "other_navy", OwnerID: string(other), RegionID: "strong", IsNaval: true,
+				Units: []army.Unit{{TypeID: "infantry", CurrentHP: 100}},
+			},
+		},
+		UnitTypes: map[string]*army.UnitType{
+			"infantry": {ID: "infantry", Attack: 10, HP: 100},
+		},
+		CouncilConfig: scenario.CharacterCouncilConfig{
+			Missions: []scenario.CharacterMissionDefinition{{
+				ID: "region_recon", TargetKind: scenario.CharacterMissionTargetRegion,
+			}},
+		},
+	}
+	strengths := newAICharacterMissionArmyStrengths(gs)
+
+	if got, want := strengths.factionStrength(enemy), 10.0; got != want {
+		t.Fatalf("enemy army strength = %v, want %v", got, want)
+	}
+	if got, want := strengths.factionStrengthByType(other, false), 10.0; got != want {
+		t.Fatalf("other land strength = %v, want %v", got, want)
+	}
+	if got, want := strengths.factionStrengthByType(other, true), 10.0; got != want {
+		t.Fatalf("other naval strength = %v, want %v", got, want)
+	}
+	if got, want := strengths.regionStrength("strong"), 20.0; got != want {
+		t.Fatalf("strong region strength = %v, want %v", got, want)
+	}
+	if got, want := aiCharacterMissionTarget(gs, owner, gs.CouncilConfig.Missions[0], strengths), "strong"; got != want {
+		t.Fatalf("AI chose mission target %q, want strongest region %q", got, want)
+	}
+}
+
 func TestAICommanderManagementLeavesMissionCharacterUnassigned(t *testing.T) {
 	const owner faction.FactionID = "ai"
 	character := &army.Commander{

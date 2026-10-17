@@ -10,6 +10,29 @@ import (
 	"mapp-game-go/internal/world"
 )
 
+func TestStrategicContextReusesSatisfactionCalculator(t *testing.T) {
+	gs, fid := buildingInvestmentFixture()
+	context := buildStrategicContext(gs, fid)
+	region := gs.Regions["capital"]
+	region.TaxRate = 60
+
+	first := context.satisfactionCalculator(gs)
+	if second := context.satisfactionCalculator(gs); second != first {
+		t.Fatal("strategic context created a second satisfaction calculator")
+	}
+
+	before := first.ForRegion(region).Total
+	region.TaxRate = 0
+	if after := first.ForRegion(region).Total; after == before {
+		t.Fatalf("shared calculator did not observe updated region tax: before=%d after=%d", before, after)
+	}
+
+	otherState := &state.GameState{}
+	if other := context.satisfactionCalculator(otherState); other == first {
+		t.Fatal("calculator was reused for a different game state")
+	}
+}
+
 func TestAILandRecruitmentRequiresBarracksInMinorRegion(t *testing.T) {
 	minor := &world.Region{ID: "akcakoca", OwnerID: "player", IsMinorRegion: true}
 	gs := &state.GameState{

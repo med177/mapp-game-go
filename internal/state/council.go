@@ -99,7 +99,19 @@ func (s *GameState) UnassignCharacterFromCouncilRole(ownerID faction.FactionID, 
 
 // CouncilRoleHolder deterministik olarak kullanılabilir görev sahibini döner.
 func (s *GameState) CouncilRoleHolder(ownerID faction.FactionID, role string) *army.Commander {
-	if s == nil || ownerID == "" || !s.validCouncilRole(role) {
+	if s == nil || ownerID == "" {
+		return nil
+	}
+	config := s.councilConfig()
+	roleDefinition, ok := config.Role(role)
+	if !ok {
+		return nil
+	}
+	return s.councilRoleHolderForRole(ownerID, roleDefinition)
+}
+
+func (s *GameState) councilRoleHolderForRole(ownerID faction.FactionID, role scenario.CouncilRoleDefinition) *army.Commander {
+	if s == nil || ownerID == "" {
 		return nil
 	}
 	owner := s.Factions[ownerID]
@@ -108,8 +120,8 @@ func (s *GameState) CouncilRoleHolder(ownerID faction.FactionID, role string) *a
 	}
 	var holder *army.Commander
 	for _, character := range s.Commanders {
-		if character == nil || character.AssignedCouncilRole != role ||
-			!s.councilCharacterAvailableForEffect(string(ownerID), role, character) {
+		if character == nil || character.AssignedCouncilRole != role.ID ||
+			!s.councilCharacterAvailableForEffectInRole(string(ownerID), role, character) {
 			continue
 		}
 		if holder == nil || character.ID < holder.ID {
@@ -119,9 +131,8 @@ func (s *GameState) CouncilRoleHolder(ownerID faction.FactionID, role string) *a
 	return holder
 }
 
-func (s *GameState) councilCharacterAvailableForEffect(ownerID, roleID string, character *army.Commander) bool {
-	role, ok := s.councilConfig().Role(roleID)
-	return ok && character != nil && role.AllowsCharacterType(string(character.Type)) &&
+func (s *GameState) councilCharacterAvailableForEffectInRole(ownerID string, role scenario.CouncilRoleDefinition, character *army.Commander) bool {
+	return character != nil && role.AllowsCharacterType(string(character.Type)) &&
 		character.OwnerID == ownerID && character.ActiveInYear(s.Year) &&
 		character.ActiveMissionID == "" &&
 		(character.Type == army.CharacterTypeAdministrator || character.Type == army.CharacterTypeCharacter ||
@@ -133,11 +144,16 @@ func (s *GameState) councilCharacterAvailableForEffect(ownerID, roleID string, c
 }
 
 func (s *GameState) CouncilRoleEffects(ownerID faction.FactionID, roleID string) scenario.CouncilEffects {
-	holder := s.CouncilRoleHolder(ownerID, roleID)
+	config := s.councilConfig()
+	role, ok := config.Role(roleID)
+	if !ok {
+		return scenario.CouncilEffects{}
+	}
+	holder := s.councilRoleHolderForRole(ownerID, role)
 	if holder == nil {
 		return scenario.CouncilEffects{}
 	}
-	return s.CouncilRoleEffectsForCharacter(holder, roleID)
+	return councilRoleEffectsForCharacter(holder, roleID, role, config)
 }
 
 // CouncilRoleEffectsForCharacter returns the configured role, level, and trait
@@ -151,6 +167,10 @@ func (s *GameState) CouncilRoleEffectsForCharacter(character *army.Commander, ro
 	if !ok || !role.AllowsCharacterType(string(character.Type)) {
 		return scenario.CouncilEffects{}
 	}
+	return councilRoleEffectsForCharacter(character, roleID, role, config)
+}
+
+func councilRoleEffectsForCharacter(character *army.Commander, roleID string, role scenario.CouncilRoleDefinition, config scenario.CharacterCouncilConfig) scenario.CouncilEffects {
 	level := character.CouncilLevel
 	if level < army.CommanderStartingLevel {
 		level = army.CouncilLevelForExperience(character.CouncilExperience)
@@ -183,11 +203,62 @@ func councilEffectsImproveFallbackChannel(effects, fallback scenario.CouncilEffe
 }
 
 func (s *GameState) CouncilEffectsForFaction(ownerID faction.FactionID) scenario.CouncilEffects {
+	config := s.councilConfig()
+	holders := s.councilRoleHolders(ownerID, config)
 	var effects scenario.CouncilEffects
-	for _, role := range s.councilConfig().Roles {
-		effects = addCouncilEffects(effects, s.CouncilRoleEffects(ownerID, role.ID))
+	for index, holder := range holders {
+		if holder == nil {
+			continue
+		}
+		role := councilRoleDefinitionAt(config, index)
+		effects = addCouncilEffects(effects, councilRoleEffectsForCharacter(holder, role.ID, role, config))
 	}
 	return addCouncilEffects(effects, s.adventureAbilityCouncilEffects(ownerID))
+}
+
+func (s *GameState) councilRoleHolders(ownerID faction.FactionID, config scenario.CharacterCouncilConfig) []*army.Commander {
+	holders := make([]*army.Commander, len(config.Roles))
+	if s == nil || ownerID == "" {
+		return holders
+	}
+	owner := s.Factions[ownerID]
+	if owner == nil || owner.IsEliminated {
+		return holders
+	}
+
+	for _, character := range s.Commanders {
+		if character == nil || character.AssignedCouncilRole == "" {
+			continue
+		}
+		roleIndex := -1
+		for index, role := range config.Roles {
+			if role.ID != character.AssignedCouncilRole {
+				continue
+			}
+			roleIndex = index
+			break
+		}
+		if roleIndex < 0 || !s.councilCharacterAvailableForEffectInRole(string(ownerID), config.Roles[roleIndex], character) {
+			continue
+		}
+		for index, role := range config.Roles {
+			if role.ID == character.AssignedCouncilRole &&
+				(holders[index] == nil || character.ID < holders[index].ID) {
+				holders[index] = character
+			}
+		}
+	}
+	return holders
+}
+
+func councilRoleDefinitionAt(config scenario.CharacterCouncilConfig, index int) scenario.CouncilRoleDefinition {
+	role := config.Roles[index]
+	for _, earlierRole := range config.Roles[:index] {
+		if earlierRole.ID == role.ID {
+			return earlierRole
+		}
+	}
+	return role
 }
 
 func addCouncilEffects(a, b scenario.CouncilEffects) scenario.CouncilEffects {
@@ -290,12 +361,12 @@ func (s *GameState) RecordCouncilEffectExperience(ownerID faction.FactionID, eff
 		return
 	}
 	config := s.councilConfig()
-	for _, role := range config.Roles {
-		holder := s.CouncilRoleHolder(ownerID, role.ID)
+	for index, holder := range s.councilRoleHolders(ownerID, config) {
 		if holder == nil {
 			continue
 		}
-		effects := s.CouncilRoleEffects(ownerID, role.ID)
+		role := councilRoleDefinitionAt(config, index)
+		effects := councilRoleEffectsForCharacter(holder, role.ID, role, config)
 		switch effectType {
 		case "income_mod":
 			if effects.IncomeMod != 0 && effects.IncomeMod != 1 {
@@ -332,8 +403,8 @@ func (s *GameState) RecordCouncilTurnExperience() {
 	}
 	config := s.councilConfig()
 	for ownerID := range s.Factions {
-		for _, role := range config.Roles {
-			if holder := s.CouncilRoleHolder(ownerID, role.ID); holder != nil {
+		for _, holder := range s.councilRoleHolders(ownerID, config) {
+			if holder != nil {
 				holder.RecordCouncilExperience(config.XPPerTurn)
 			}
 		}

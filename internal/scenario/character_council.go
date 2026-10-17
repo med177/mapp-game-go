@@ -84,6 +84,9 @@ func DefaultCharacterCouncilConfig() CharacterCouncilConfig {
 }
 
 func (c CharacterCouncilConfig) WithDefaults() CharacterCouncilConfig {
+	if c.XPPerTurn > 0 && c.XPPerEffect > 0 && c.Roles != nil && c.Traits != nil {
+		return c
+	}
 	defaults := DefaultCharacterCouncilConfig()
 	if c.XPPerTurn <= 0 {
 		c.XPPerTurn = defaults.XPPerTurn

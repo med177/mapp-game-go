@@ -2,7 +2,6 @@ package ai
 
 import (
 	"mapp-game-go/internal/faction"
-	"mapp-game-go/internal/satisfaction"
 	"mapp-game-go/internal/state"
 	"mapp-game-go/internal/world"
 )
@@ -19,11 +18,11 @@ const (
 // aiAdjustTaxesWithSteps vergi politikasını bölge bazında uygular. Ortak
 // ekonomi-tick memnuniyet projeksiyonu kullanılır; böylece mevcut değeri
 // yüksek görünen ama bir sonraki tick'te düşecek bölgelerde vergi azaltılır.
-func aiAdjustTaxesWithSteps(gs *state.GameState, fid faction.FactionID, _ *[]TurnStep) {
+func aiAdjustTaxesWithSteps(gs *state.GameState, fid faction.FactionID, ctx *StrategicContext, _ *[]TurnStep) {
 	if gs == nil || fid == "" {
 		return
 	}
-	satisfactionCalculator := satisfaction.NewCalculator(gs)
+	satisfactionCalculator := ctx.satisfactionCalculator(gs)
 	for _, region := range aiSortedRegions(gs) {
 		if region == nil || region.IsSea || region.IsLocked || region.OwnerID != string(fid) {
 			continue
