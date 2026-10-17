@@ -11,6 +11,7 @@ dizinini kaynak kabul et; bu dosyada bunların kopyasını tutma.
 - WSL/Windows build ve doğrulama: [`wiki/dev/build-setup.md`](wiki/dev/build-setup.md)
 - Tur state machine ve çözümleme sırası: [`wiki/architecture/game-loop.md`](wiki/architecture/game-loop.md)
 - Yeni UI ekranları için ortak geometri/hit-test kuralları: [`wiki/architecture/ui-screen-guide.md`](wiki/architecture/ui-screen-guide.md)
+- Performans odaklı geliştirme, ölçüm, cache ve tur geçişi ilkeleri: [`PerformanceTips.md`](PerformanceTips.md)
 
 ## Dil ve çalışma ortamı
 
