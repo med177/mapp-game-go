@@ -366,20 +366,13 @@ func (s *GameState) NavalFishingGrainIncomeForFleet(fleet *army.Army) int {
 	return income
 }
 
-// NavalFishingNetGrainIncomeForFleet, balıkçılık verimi tanımlı ve sağ kalan
-// gemilerin tahıl üretiminden aynı gemilerin tahıl bakımını çıkarır.
+// NavalFishingNetGrainIncomeForFleet, sağ kalan balıkçı gemilerinin tahıl
+// üretiminden bu gemilerin efektif tahıl bakımını çıkarır.
 func (s *GameState) NavalFishingNetGrainIncomeForFleet(fleet *army.Army) int {
 	if s == nil || fleet == nil || !fleet.IsNaval {
 		return 0
 	}
-	netIncome := 0
-	for _, unit := range fleet.Units {
-		unitType := s.UnitTypes[unit.TypeID]
-		if unit.CurrentHP > 0 && unitType != nil && unitType.FishingGrainIncome > 0 {
-			netIncome += unitType.FishingGrainIncome - unitType.GrainUpkeep
-		}
-	}
-	return netIncome
+	return s.NavalFishingGrainIncomeForFleet(fleet) - s.EffectiveNavalFishingGrainUpkeep(fleet)
 }
 
 // NavalFishingGrainIncomeForFaction, bu tur görev konumunda ve kendi kıyısına

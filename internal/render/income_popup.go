@@ -109,36 +109,16 @@ func playerGrainEconomyStatus(gs *state.GameState) state.GrainEconomyStatus {
 	if gs == nil {
 		return state.GrainEconomyStatus{}
 	}
-	if status, ok := gs.GrainEconomy[gs.PlayerFactionID]; ok {
-		return status
-	}
-
-	// İlk ekonomi çözümlemesi gerçekleşmeden önce de popup, HUD'daki tahıl
-	// değişimini oluşturan aynı üretim/tüketim helper'larından doldurulur.
 	fid := gs.PlayerFactionID
-	production := gs.FactionProductionSummary(fid).Grain
-	civilianDemand := 0
-	for _, region := range gs.Regions {
-		if region == nil || region.IsSea || region.OwnerID != string(fid) || gs.SiegeAt(region.ID) != nil {
-			continue
-		}
-		civilianDemand += gs.CivilianGrainDemandForRegion(region)
-	}
-	armyUpkeep := 0
-	for _, currentArmy := range gs.Armies {
-		if currentArmy != nil && currentArmy.OwnerID == string(fid) {
-			armyUpkeep += gs.EffectiveArmyGrainUpkeep(currentArmy)
-		}
-	}
-	totalDemand := civilianDemand + armyUpkeep
-	return state.GrainEconomyStatus{
-		FactionID:      fid,
-		Production:     production,
-		CivilianDemand: civilianDemand,
-		ArmyUpkeep:     armyUpkeep,
-		TotalDemand:    totalDemand,
-		NetChange:      production - totalDemand,
-	}
+	status := gs.GrainEconomy[fid]
+	preview := gs.FactionGrainEconomyPreview(fid)
+	status.FactionID = preview.FactionID
+	status.Production = preview.Production
+	status.CivilianDemand = preview.CivilianDemand
+	status.ArmyUpkeep = preview.ArmyUpkeep
+	status.TotalDemand = preview.TotalDemand
+	status.NetChange = preview.NetChange
+	return status
 }
 
 type grainEconomyPopupLine struct {

@@ -2805,6 +2805,22 @@ func (s *GameState) EffectiveArmyGrainUpkeep(a *army.Army) int {
 	return s.armyGrainUpkeep(a, false, false)
 }
 
+// EffectiveNavalFishingGrainUpkeep, balıkçılık verimi olan sağ kalan gemilerin
+// bakımını filonun gerçek hareket/konum ve teknoloji katsayılarıyla hesaplar.
+func (s *GameState) EffectiveNavalFishingGrainUpkeep(fleet *army.Army) int {
+	if s == nil || fleet == nil || !fleet.IsNaval {
+		return 0
+	}
+	base := 0
+	for _, unit := range fleet.Units {
+		unitType := s.UnitTypes[unit.TypeID]
+		if unit.CurrentHP > 0 && unitType != nil && unitType.FishingGrainIncome > 0 {
+			base += unitType.GrainUpkeep
+		}
+	}
+	return s.armyGrainUpkeepForBase(fleet, base, false, false)
+}
+
 // EffectiveArmyGoldUpkeep ordunun tur başı sabit altın bakımını döner.
 // Maaş gideri konumdan, hareketten, kuşatmadan veya ikmal hattından
 // etkilenmez; tüm birim tipleri aynı kanonik yardımcı üzerinden hesaplanır.
@@ -2904,7 +2920,13 @@ func (s *GameState) armyGrainUpkeep(a *army.Army, includeRegionalSupply, externa
 	if s == nil || a == nil {
 		return 0
 	}
-	base := a.TotalGrainUpkeep(s.UnitTypes)
+	return s.armyGrainUpkeepForBase(a, a.TotalGrainUpkeep(s.UnitTypes), includeRegionalSupply, externalSupplyActive)
+}
+
+func (s *GameState) armyGrainUpkeepForBase(a *army.Army, base int, includeRegionalSupply, externalSupplyActive bool) int {
+	if s == nil || a == nil {
+		return 0
+	}
 	if base <= 0 {
 		return 0
 	}
@@ -3610,26 +3632,35 @@ func (s *GameState) FactionProductionSummary(fid faction.FactionID) RegionProduc
 	return out
 }
 
-// FactionGrainNetChange devletin bir turdaki tahıl üretimi ile sivil ve ordu
-// tüketimi arasındaki farkı döner. Negatif sonuç stokun azalacağını gösterir.
-func (s *GameState) FactionGrainNetChange(fid faction.FactionID) int {
+// FactionGrainEconomyPreview, fraksiyonun mevcut konum ve görevlerine göre
+// gelecek ekonomi turundaki tahıl üretim ve tüketimini öngörür.
+func (s *GameState) FactionGrainEconomyPreview(fid faction.FactionID) GrainEconomyStatus {
+	status := GrainEconomyStatus{FactionID: fid}
 	if s == nil || fid == "" {
-		return 0
+		return status
 	}
 
-	net := s.FactionProductionSummary(fid).Grain
+	status.Production = s.FactionProductionSummary(fid).Grain + s.NavalFishingGrainIncomeForFaction(string(fid))
 	for _, region := range s.Regions {
 		if region == nil || region.IsSea || region.OwnerID != string(fid) || s.SiegeAt(region.ID) != nil {
 			continue
 		}
-		net -= s.CivilianGrainDemandForRegion(region)
+		status.CivilianDemand += s.CivilianGrainDemandForRegion(region)
 	}
 	for _, currentArmy := range s.Armies {
 		if currentArmy != nil && currentArmy.OwnerID == string(fid) {
-			net -= s.EffectiveArmyGrainUpkeep(currentArmy)
+			status.ArmyUpkeep += s.EffectiveArmyGrainUpkeep(currentArmy)
 		}
 	}
-	return net
+	status.TotalDemand = status.CivilianDemand + status.ArmyUpkeep
+	status.NetChange = status.Production - status.TotalDemand
+	return status
+}
+
+// FactionGrainNetChange devletin bir turdaki tahıl üretimi ile sivil ve ordu
+// tüketimi arasındaki farkı döner. Negatif sonuç stokun azalacağını gösterir.
+func (s *GameState) FactionGrainNetChange(fid faction.FactionID) int {
+	return s.FactionGrainEconomyPreview(fid).NetChange
 }
 
 func applyRegionTerrainSpecialization(

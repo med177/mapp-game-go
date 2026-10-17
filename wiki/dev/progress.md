@@ -5,6 +5,11 @@ last_updated: 2026-10-17
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-17: Tahıl HUD ve popup önizlemesi etkin balıkçılık görevlerinden gelen
+  üretimi hesaba katacak ve aynı anlık tahminle hesaplanacak şekilde düzeltildi.
+  Balıkçılık rozeti artık gemilerin efektif bakımını düşerek işaretsiz net
+  katkıyı gösteriyor.
+
 - 2026-10-17: Beş Kralın Savaşı'nda balıkçılık deniz görevi eklendi. Yalnız
   kendi kıyısına komşu açık denizde çalışan filo, birim verisindeki
   `fishing_grain_income` kadar tur başına tahıl üretir; senaryo savaş gemisi

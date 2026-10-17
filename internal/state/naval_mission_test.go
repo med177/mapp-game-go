@@ -107,6 +107,46 @@ func TestNavalFishingNetIncomeSubtractsEachFishingUnitUpkeep(t *testing.T) {
 	if got, want := gs.NavalFishingNetGrainIncomeForFleet(fleet), 147; got != want {
 		t.Fatalf("fleet net fishing income = %d, want %d (six warships, merchant ship, excluding sunk ship)", got, want)
 	}
+	fleet.MaxMovePoints = 3
+	fleet.MovePoints = 2
+	if got, want := gs.NavalFishingNetGrainIncomeForFleet(fleet), 86; got != want {
+		t.Fatalf("moving fleet net fishing income = %d, want %d after 150%% upkeep", got, want)
+	}
+}
+
+func TestFactionGrainPreviewIncludesFishingAndEffectiveArmyUpkeep(t *testing.T) {
+	const fid faction.FactionID = "player"
+	fleet := &army.Army{
+		ID: "fleet", OwnerID: string(fid), IsNaval: true, RegionID: "sea",
+		MaxMovePoints: 3, MovePoints: 3,
+		NavalMission: &army.NavalMission{Kind: army.NavalMissionFishing, TargetRegionID: "sea"},
+		Units: []army.Unit{
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+		},
+	}
+	gs := &GameState{
+		PlayerFactionID: fid,
+		UnitTypes: map[string]*army.UnitType{
+			"warship": {ID: "warship", Category: army.CategoryNavalWar, FishingGrainIncome: 40, GrainUpkeep: 20},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"coast": {ID: "coast", OwnerID: string(fid), Neighbors: []world.RegionID{"sea"}},
+			"sea":   {ID: "sea", IsSea: true, Neighbors: []world.RegionID{"coast"}},
+		},
+		Armies: map[army.ArmyID]*army.Army{"fleet": fleet},
+	}
+	if got, want := gs.FactionGrainNetChange(fid), 120; got != want {
+		t.Fatalf("stationary six-ship net grain change = %d, want %d", got, want)
+	}
+	fleet.MovePoints = 2
+	if got, want := gs.FactionGrainNetChange(fid), 60; got != want {
+		t.Fatalf("moving six-ship net grain change = %d, want %d", got, want)
+	}
 }
 
 func TestFishingMissionClearsAfterRelocation(t *testing.T) {

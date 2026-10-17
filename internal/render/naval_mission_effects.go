@@ -219,7 +219,7 @@ func navalMissionBonusBadge(gs *state.GameState, fleet *army.Army) (string, colo
 			return "", color.RGBA{}, false
 		}
 		netIncome := gs.NavalFishingNetGrainIncomeForFleet(fleet)
-		return formatSignedAmount(netIncome), navalMissionReachedColor(fleet.NavalMission.Kind), true
+		return formatNumberTR(netIncome), navalMissionReachedColor(fleet.NavalMission.Kind), true
 	case army.NavalMissionEscort:
 		return "15", navalMissionReachedColor(fleet.NavalMission.Kind), true
 	default:

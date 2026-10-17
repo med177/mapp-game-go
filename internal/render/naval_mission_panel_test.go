@@ -45,8 +45,14 @@ func TestNavalMissionOptionsShowFishingOnlyBesideOwnedCoast(t *testing.T) {
 		Kind: army.NavalMissionFishing, TargetRegionID: "sea",
 	}
 	got, _, ok := navalMissionBonusBadge(gs, gs.Armies["fleet"])
-	if want := "+20"; !ok || got != want {
+	if want := "20"; !ok || got != want {
 		t.Fatalf("fishing badge = %q, want net income %q", got, want)
+	}
+	gs.Armies["fleet"].MaxMovePoints = 3
+	gs.Armies["fleet"].MovePoints = 2
+	got, _, ok = navalMissionBonusBadge(gs, gs.Armies["fleet"])
+	if want := "10"; !ok || got != want {
+		t.Fatalf("moving fishing badge = %q, want effective net income %q", got, want)
 	}
 	gs.Regions["coast"].OwnerID = "other"
 	if hasFishingOption() {
