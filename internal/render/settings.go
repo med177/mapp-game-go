@@ -90,8 +90,7 @@ func DrawSettingsScreen(screen *ebiten.Image, s Settings, cursor int) {
 		isSelected := i == cursor
 
 		if isSelected {
-			highlightRect := gameui.Rect{X: rect.X, Y: y - 8, W: rect.W, H: 56}
-			drawUICardRect(screen, highlightRect, color.RGBA{50, 40, 15, 200}, color.RGBA{200, 160, 60, 200}, 1)
+			drawUICardRect(screen, settingsRowHighlightRect(rect), color.RGBA{50, 40, 15, 200}, color.RGBA{200, 160, 60, 200}, 1)
 		}
 
 		col := ColorGray
@@ -133,13 +132,19 @@ func displayModeLabelTR(fullscreen bool) string {
 
 func settingsVolumeButtons(row, volume int) (gameui.Button, gameui.Button) {
 	rect := settingsRowRect(row)
+	highlight := settingsRowHighlightRect(rect)
 	const buttonW = 34.0
 	const buttonH = 32.0
-	minus := gameui.NewButton(rect.X+300, rect.Y+(rect.H-buttonH)/2, buttonW, buttonH, "-")
-	plus := gameui.NewButton(rect.X+rect.W-64, rect.Y+(rect.H-buttonH)/2, buttonW, buttonH, "+")
+	buttonY := highlight.Y + (highlight.H-buttonH)/2
+	minus := gameui.NewButton(rect.X+300, buttonY, buttonW, buttonH, "-")
+	plus := gameui.NewButton(rect.X+rect.W-64, buttonY, buttonW, buttonH, "+")
 	minus.Enabled = volume > 0
 	plus.Enabled = volume < 100
 	return minus, plus
+}
+
+func settingsRowHighlightRect(row gameui.Rect) gameui.Rect {
+	return gameui.Rect{X: row.X, Y: row.Y - 8, W: row.W, H: 56}
 }
 
 // ApplyDisplaySettings oyun penceresinin görünümünü ayarlara uygular.
