@@ -512,11 +512,21 @@ func aiNavalMissionMove(gs *state.GameState, fleet *army.Army, ctx *StrategicCon
 	// merchant rota kontrolü bu ankrajı "hedefe ulaştı" sanıp hiçbir hareket
 	// üretmeden önce filonun gerçek liman bağını bırakmasını sağlamalıdır.
 	if fleet.IsDocked() {
+		if ctx != nil && ctx.FactionID == faction.FactionID(fleet.OwnerID) {
+			if target, handled := aiNavalFishingMissionMove(gs, fleet, ctx); handled {
+				return target, true
+			}
+		}
 		sea := gs.Regions[fleet.RegionID]
 		if sea == nil || !sea.IsSea {
 			return "", true
 		}
 		return fleet.RegionID, true
+	}
+	if ctx != nil && ctx.FactionID == faction.FactionID(fleet.OwnerID) {
+		if target, handled := aiNavalFishingMissionMove(gs, fleet, ctx); handled {
+			return target, true
+		}
 	}
 	if target, handled := aiMerchantTradeFleetMove(gs, fleet, ctx); handled {
 		return target, true

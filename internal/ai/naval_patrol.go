@@ -17,8 +17,8 @@ const (
 	aiNavalPatrolPressureWeight = 5
 )
 
-// aiNavalPatrolMove, aktif bir çıkarma görevi bulunmayan savaş gemisini
-// ticaret hattı, tehdit altındaki liman veya düşman filosuna doğru yönlendirir.
+// aiNavalPatrolMove, aktif bir çıkarma veya balıkçılık görevi bulunmayan savaş
+// gemisini ticaret hattı, tehdit altındaki liman veya düşman filosuna yönlendirir.
 // Hedefe girişteki gerçek savaş çözümü executeMove içinde kalır; bu fonksiyon
 // yalnızca bir sonraki deniz adımını seçer.
 func aiNavalPatrolMove(gs *state.GameState, fleet *army.Army, ctx *StrategicContext) (world.RegionID, bool) {

@@ -9,6 +9,9 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
   üretimi hesaba katacak ve aynı anlık tahminle hesaplanacak şekilde düzeltildi.
   Balıkçılık rozeti artık gemilerin efektif bakımını düşerek işaretsiz net
   katkıyı gösteriyor.
+- 2026-10-17: AI, stratejik görevi olmayan ve tahıl ihtiyacı/ambar alanı bulunan
+  balıkçılık kapasiteli filoları tehdit güvenliği gözeterek kendi kıyılarına
+  yönlendiriyor; ambar dolduğunda filolar normal deniz görevlerine dönüyor.
 
 - 2026-10-17: Beş Kralın Savaşı'nda balıkçılık deniz görevi eklendi. Yalnız
   kendi kıyısına komşu açık denizde çalışan filo, birim verisindeki
