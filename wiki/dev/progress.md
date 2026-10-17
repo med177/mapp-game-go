@@ -5,6 +5,12 @@ last_updated: 2026-10-17
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-17: Dragonstone Baratheonlarının Stannis ana ordusu başlangıçta
+  `crackclaw_point` bölgesine alındı; Dragonstone limanında, `the_gullet`
+  denizine bağlı iki gemilik nakliye filosu eklendi. Faction'ın mevcut
+  `shipwrights` teknolojisi ve Dragonstone limanı nakliye gemisi üretimini
+  zaten açıyor.
+
 - 2026-10-17: Harita yakın görünümünde yalnızca oyuncunun sahip olduğu
   bölgelerin merkez yerleşim adı altında, tamamlanmış bina seviyelerinin
   kurulabilir toplam seviyelere oranını gösteren gelişim çubuğu eklendi.

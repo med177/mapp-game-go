@@ -74,7 +74,7 @@
   {
     "id": "army_stannis_1",
     "owner_id": "baratheon_dragonstone",
-    "region_id": "dragonstone",
+    "region_id": "crackclaw_point",
     "units": [
       {
         "type_id": "infantry",
@@ -90,6 +90,20 @@
       },
       {
         "type_id": "heavy_cavalry",
+        "count": 2
+      }
+    ]
+  },
+  {
+    "id": "army_stannis_navy_1",
+    "owner_id": "baratheon_dragonstone",
+    "region_id": "the_gullet",
+    "docked_region_id": "dragonstone",
+    "docked_settlement_id": "dragonstone_port",
+    "is_naval": true,
+    "units": [
+      {
+        "type_id": "transport",
         "count": 2
       }
     ]
