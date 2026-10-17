@@ -182,6 +182,7 @@ type Effect struct {
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
 	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
 	ArmyDefections            []ArmyDefectionEffect        `json:"army_defections,omitempty"`
+	ArmyDestinationRegionID   world.RegionID               `json:"army_destination_region_id,omitempty"`
 	DynasticSettlement        *DynasticSettlementEffect    `json:"dynastic_settlement,omitempty"`
 	ImperialSuccession        *ImperialSuccessionEffect    `json:"imperial_succession,omitempty"`
 	SetFlags                  []string                     `json:"set_flags,omitempty"`
@@ -242,6 +243,9 @@ type Event struct {
 	TradeNetworkModifiers     []TradeNetworkModifierEffect `json:"trade_network_modifiers,omitempty"`
 	UnitReinforcements        []UnitReinforcementEffect    `json:"unit_reinforcements,omitempty"`
 	ArmyDefections            []ArmyDefectionEffect        `json:"army_defections,omitempty"`
+	ArmyDestinationRegionID   world.RegionID               `json:"army_destination_region_id,omitempty"`
+	CapitalSettlementID       string                       `json:"capital_settlement_id,omitempty"`
+	CapitalMoveTurns          int                          `json:"capital_move_turns,omitempty"`
 	DynasticSettlement        *DynasticSettlementEffect    `json:"dynastic_settlement,omitempty"`
 	CommanderDeaths           []string                     `json:"commander_deaths,omitempty"`
 	CommanderExiles           []string                     `json:"commander_exiles,omitempty"`
@@ -579,9 +583,10 @@ func (e *Event) BaseEffect() Effect {
 		TradeNetworkModifiers:     e.TradeNetworkModifiers,
 		UnitReinforcements:        e.UnitReinforcements,
 		ArmyDefections:            e.ArmyDefections,
+		ArmyDestinationRegionID:   e.ArmyDestinationRegionID,
 		DynasticSettlement:        e.DynasticSettlement,
-		CapitalSettlementID:       "",
-		CapitalMoveTurns:          0,
+		CapitalSettlementID:       e.CapitalSettlementID,
+		CapitalMoveTurns:          e.CapitalMoveTurns,
 		CommanderCaptures:         nil,
 		CommanderReleases:         nil,
 		CommanderDeaths:           e.CommanderDeaths,
@@ -1748,7 +1753,26 @@ func applyToFaction(gs *state.GameState, fid string, eff Effect) {
 	applyStartedResearch(gs, faction.FactionID(fid), eff.StartResearchTech)
 	applyRelationEffects(gs, faction.FactionID(fid), eff.Relations)
 	applyCapitalMove(gs, faction.FactionID(fid), eff.CapitalSettlementID, eff.CapitalMoveTurns)
+	relocateFactionArmies(gs, fid, eff.ArmyDestinationRegionID)
 	applyUnitReinforcements(gs, fid, eff.UnitReinforcements)
+}
+
+func relocateFactionArmies(gs *state.GameState, factionID string, destinationRegionID world.RegionID) {
+	if gs == nil || factionID == "" || destinationRegionID == "" {
+		return
+	}
+	destination := gs.Regions[destinationRegionID]
+	if destination == nil || destination.IsSea {
+		return
+	}
+	for _, current := range gs.Armies {
+		if current == nil || current.OwnerID != factionID || current.IsNaval || current.RegionID == destinationRegionID {
+			continue
+		}
+		current.PreviousRegionID = current.RegionID
+		current.RegionID = destinationRegionID
+		current.MovePoints = 0
+	}
 }
 
 func applyUnitReinforcements(gs *state.GameState, ownerID string, reinforcements []UnitReinforcementEffect) {

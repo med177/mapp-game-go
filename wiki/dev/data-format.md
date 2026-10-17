@@ -1,7 +1,7 @@
 ---
 type: dev
 tags: [data, json, schema, assets]
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 related: [architecture/state-management, architecture/shape-editor, world/regions, world/factions, architecture/render-pipeline]
 ---
 
@@ -953,6 +953,12 @@ kayıtlarında saklanır; eski kayıtlarda alan yoksa senaryo varsayılanı koru
 kullanılabilir. `true` normal diplomasi aksiyonlarını kapatır, `false` yeniden
 açar; bu değişiklik kompakt ve debug kaydında saklanır. Alan verilmezse mevcut
 değer korunur ve eski save'lerde senaryo varsayılanı geçerlidir.
+
+Event veya choice effect'indeki `army_destination_region_id`, hedef faction'ın
+kara ordularını mevcut sahipliklerini koruyarak belirtilen kara bölgesine taşır;
+taşınan orduların o turdaki hareket puanı sıfırlanır. Donanmalar ve başka
+faction'ların orduları etkilenmez. `capital_settlement_id` ile birlikte
+kullanılabilir; başkent değişikliği normal başkent taşıma süresiyle kuyruğa alınır.
 
 `vassal_revolts`, event veya choice effect'inde overlord bağından ayrılacak
 vassal faction ID'lerini listeler. Her ayrılan vassal eski overlord'u ile savaşa

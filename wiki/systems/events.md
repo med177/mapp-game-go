@@ -1,7 +1,7 @@
 ---
 type: system
 tags: [events, historical, trigger, notification]
-last_updated: 2026-10-16
+last_updated: 2026-10-17
 related: [world/regions, systems/economy, architecture/game-loop, architecture/state-management, architecture/render-pipeline]
 ---
 
@@ -83,6 +83,12 @@ ArmyID sırasına göre seçildiği için sonuç deterministiktir. `include_nava
 açık değilse filolar kapsam dışıdır. `destination_region_id` verilirse ordu
 hedef faction'ın kuruluş merkezine event çözümlemesi sırasında intikal eder;
 komutanın sahipliği de orduyla birlikte güncellenir.
+
+Faction'ın mevcut kara ordularını başka bir bölgeye taşımak için
+`army_destination_region_id` kullanılabilir. Kara orduları hedef bölgeye
+taşınır ve kalan hareket puanları sıfırlanır; donanmalar yerinde kalır.
+`capital_settlement_id` de verilirse ilgili faction için standart başkent
+taşıma süreci başlar.
 
 1300 Osmanlı senaryosunda `ilkhanate_breakup_1335`, Musul, Sivas, Malatya ve
 Erzurum'daki İlhanlı kuvvetlerinden birer orduyu sırasıyla Celayirli, Kadı
@@ -260,7 +266,8 @@ bölgesi de devredilince normal siyasi birleşme yardımcıları kullanılır.
 - `Effect.complete_techs[]` ilgili fraksiyon için teknoloji tamamlar
 - `Effect.start_research_tech` aktif araştırma boşsa ücretsiz yönlendirilmiş araştırma başlatır
 - `Effect.relations[]` belirli fraksiyonlarla doğrudan `score_delta` ve opsiyonel `stance` uygular
-- `Effect.capital_settlement_id` + opsiyonel `capital_move_turns`, ilgili fraksiyon için doğrudan anlık taşımak yerine başkent taşıma kuyruğu başlatır
+- `Event` veya `Effect.capital_settlement_id` + opsiyonel `capital_move_turns`, ilgili fraksiyon için doğrudan anlık taşımak yerine başkent taşıma kuyruğu başlatır
+- `Event` veya `Effect.army_destination_region_id`, hedef fraksiyonun kara ordularını verilen bölgeye anında taşır; hareket puanları sıfırlanır ve donanmalar etkilenmez
 - `Event.requires_owned_regions[]` follow-up event gelmeden önce ilgili fraksiyonun belirli bölgeleri hâlâ elinde tuttuğunu doğrular
 - `Event.requires_techs[]` ilgili fraksiyonun belirli teknolojileri zaten tamamlamış olmasını ister
 - `Event.blocks_techs[]` ilgili teknoloji zaten açıksa follow-up event'i bastırır

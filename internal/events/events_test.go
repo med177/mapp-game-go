@@ -440,6 +440,58 @@ func TestChoiceCommanderCaptureMakesCharacterPassive(t *testing.T) {
 	}
 }
 
+func TestEventArmyDestinationMovesLandArmiesAndStartsCapitalMove(t *testing.T) {
+	gs := &state.GameState{
+		Factions: map[faction.FactionID]*faction.Faction{
+			"stannis": {ID: "stannis", CapitalSettlementID: "island_capital"},
+			"enemy":   {ID: "enemy"},
+		},
+		Regions: map[world.RegionID]*world.Region{
+			"island": {ID: "island", OwnerID: "stannis"},
+			"front": {
+				ID:          "front",
+				OwnerID:     "stannis",
+				Settlements: []world.Settlement{{ID: "front_capital", IsCenter: true}},
+			},
+			"sea": {ID: "sea", IsSea: true},
+		},
+		Armies: map[army.ArmyID]*army.Army{
+			"stannis_island": {ID: "stannis_island", OwnerID: "stannis", RegionID: "island", MovePoints: 3},
+			"stannis_front":  {ID: "stannis_front", OwnerID: "stannis", RegionID: "front", MovePoints: 2},
+			"enemy_army":     {ID: "enemy_army", OwnerID: "enemy", RegionID: "island", MovePoints: 4},
+			"stannis_fleet":  {ID: "stannis_fleet", OwnerID: "stannis", RegionID: "sea", IsNaval: true, MovePoints: 3},
+		},
+	}
+	e := &Event{
+		Target:                  "specific_faction",
+		AffectedFaction:         "stannis",
+		ArmyDestinationRegionID: "front",
+		CapitalSettlementID:     "front_capital",
+		CapitalMoveTurns:        5,
+	}
+
+	Apply(gs, e)
+
+	relocated := gs.Armies["stannis_island"]
+	if relocated.RegionID != "front" || relocated.PreviousRegionID != "island" || relocated.MovePoints != 0 {
+		t.Fatalf("kara ordusu event ile taşınmadı: %+v", relocated)
+	}
+	if got := gs.Armies["stannis_front"].MovePoints; got != 2 {
+		t.Fatalf("hedef bölgedeki ordunun hareket puanı %d, want 2", got)
+	}
+	if got := gs.Armies["enemy_army"].RegionID; got != "island" {
+		t.Fatalf("başka faction ordusu taşındı: %q", got)
+	}
+	if got := gs.Armies["stannis_fleet"].RegionID; got != "sea" {
+		t.Fatalf("donanma kara hedefine taşındı: %q", got)
+	}
+	if gs.Factions["stannis"].CapitalSettlementID != "island_capital" ||
+		gs.Factions["stannis"].PendingCapitalSettlementID != "front_capital" ||
+		gs.Factions["stannis"].PendingCapitalTurns != 5 {
+		t.Fatalf("başkent taşıması başlamadı: %+v", gs.Factions["stannis"])
+	}
+}
+
 func TestCommanderExileEffectPreservesAliveCommanderRequirement(t *testing.T) {
 	commander := &army.Commander{ID: "cmd_tyrion_lannister", OwnerID: "lannister", StartYear: 298, EndYear: 330}
 	gs := &state.GameState{

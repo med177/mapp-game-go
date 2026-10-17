@@ -1876,6 +1876,33 @@
     ]
   },
   {
+    "id": "stannis_leaves_dragonstone_299",
+    "name_tr": "Stannis Ejderha Kayası'ndan Ayrılıyor",
+    "desc_tr": "Renly'nin ordusunun Stannis'e katılmasıyla güçlenen donanma Dragonstone'dan Westeros anakarasına yöneliyor. Stannis kuvvetlerini Yengeç Pençesi'nde toplarken yeni karargâhını da burada kurmaya hazırlanıyor.",
+    "random_probability": 0,
+    "min_turn": 0,
+    "target": "specific_faction",
+    "sat_delta": 0,
+    "gold_delta": 0,
+    "grain_delta": 0,
+    "army_hp_mod": 0,
+    "affected_faction": "baratheon_dragonstone",
+    "army_destination_region_id": "crackclaw_point",
+    "capital_settlement_id": "crackclaw_point_main",
+    "capital_move_turns": 5,
+    "state_triggered": true,
+    "one_shot": true,
+    "requires_flags": [
+      "renly_host_joined_stannis"
+    ],
+    "requires_owned_regions": [
+      "crackclaw_point"
+    ],
+    "requires_active_factions": [
+      "baratheon_dragonstone"
+    ]
+  },
+  {
     "id": "battle_of_the_blackwater_299",
     "name_tr": "Kara Su Savaşı",
     "desc_tr": "Stannis Baratheon'un ordusu Kral'ın Şehri'ne saldırdı. Şehrin savunması, yabani ateş ve Lannister takviyeleri savaşın sonucunu belirleyecek.",

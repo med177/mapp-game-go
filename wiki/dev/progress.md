@@ -5,6 +5,12 @@ last_updated: 2026-10-17
 related: [HOME, architecture/game-loop, architecture/state-management, architecture/render-pipeline, systems/victory]
 ---
 
+- 2026-10-17: Renly'nin ordusu Stannis'e katıldıktan sonra state-triggered
+  `stannis_leaves_dragonstone_299` olayı Stannis'in kara ordularını
+  `crackclaw_point` bölgesinde topluyor ve başkentini buraya taşımayı başlatıyor.
+  Event desteği olarak `army_destination_region_id` eklendi; donanmalar
+  taşınmıyor ve kara ordularının hareket puanları sıfırlanıyor.
+
 - 2026-10-17: Dragonstone Baratheonlarının Stannis ana ordusu başlangıçta
   `crackclaw_point` bölgesine alındı; Dragonstone limanında, `the_gullet`
   denizine bağlı iki gemilik nakliye filosu eklendi. Faction'ın mevcut
