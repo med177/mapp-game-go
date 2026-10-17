@@ -305,14 +305,14 @@ func navalMissionBonusTooltipText(gs *state.GameState, fleet *army.Army) (string
 	}
 	switch fleet.NavalMission.Kind {
 	case army.NavalMissionPatrol:
-		return "Devriye bonusu", targetName + " denizinde " + badge + " görevli düşman abluka gemisini dengeliyor.", true
+		return "Devriye bonusu", targetName + "'de " + badge + " görevli düşman abluka gemisini dengeliyor.", true
 	case army.NavalMissionBlockade:
 		lootGold := gs.BlockadeLootGoldForFleet(fleet)
-		return "Abluka bonusu", targetName + " denizinde ticarete toplam -%" + badge + " kesinti uyguluyor. Gelir katkısı (ganimet): +" + itoa(lootGold) + " altın/tur.", true
+		return "Abluka bonusu", targetName + "'de ticarete toplam -%" + badge + " kesinti uyguluyor. Gelir katkısı (ganimet): +" + itoa(lootGold) + " altın/tur.", true
 	case army.NavalMissionFishing:
-		return "Balıkçılık geliri", targetName + " denizinde +" + badge + " tahıl/tur üretir.", true
+		return "Balıkçılık geliri", targetName + "'de +" + badge + " tahıl/tur üretir.", true
 	case army.NavalMissionEscort:
-		return "Escort bonusu", targetName + " denizindeki nakliye filosuna +%15 deniz savunması veriyor.", true
+		return "Escort bonusu", targetName + "'deki nakliye filosuna +%15 deniz savunması veriyor.", true
 	default:
 		return "", "", false
 	}

@@ -420,9 +420,7 @@ func (r *Renderer) drawArmyMarkerHoverTooltip(screen *ebiten.Image) {
 	if _, ok := r.uiLayers.TopAt(fx, fy); ok {
 		return
 	}
-	// Bonus rozeti marker dairesinin hover alanıyla örtüşür. Rozet kendi
-	// tooltip'ini göstereceği için bu noktada filo birim özeti çizilmemeli.
-	if _, ok := r.merchantTradeBonusHitAt(fx, fy); ok {
+	if r.armyMarkerSummarySuppressedAt(fx, fy) {
 		return
 	}
 	aid, ok := r.armyHitAt(fx, fy)
@@ -445,6 +443,14 @@ func (r *Renderer) drawArmyMarkerHoverTooltip(screen *ebiten.Image) {
 		hasCasualtyWarning = r.armyLogisticsDamageVisible(aid)
 	}
 	drawArmyMarkerUnitSummaryTooltip(screen, r.gs, a, fx, fy, casualtyHP, hasCasualtyWarning)
+}
+
+func (r *Renderer) armyMarkerSummarySuppressedAt(mx, my float64) bool {
+	if _, ok := r.navalMissionBonusHitAt(mx, my); ok {
+		return true
+	}
+	_, ok := r.merchantTradeBonusHitAt(mx, my)
+	return ok
 }
 
 func drawHiddenArmyMarkerTooltip(screen *ebiten.Image, a *army.Army, mx, my float64) {
