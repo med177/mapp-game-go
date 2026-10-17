@@ -66,7 +66,7 @@
         "count": 8
       },
       {
-        "type_id": "kingsguard",
+        "type_id": "kingsguards",
         "count": 2
       }
     ]
@@ -114,7 +114,7 @@
     "region_id": "pentos_region",
     "units": [
       {
-        "type_id": "unsullied",
+        "type_id": "unsullieds",
         "count": 6
       }
     ]
@@ -154,25 +154,6 @@
       {
         "type_id": "militia",
         "count": 4
-      }
-    ]
-  },
-  {
-    "id": "army_martell_1",
-    "owner_id": "martell",
-    "region_id": "sunspear",
-    "units": [
-      {
-        "type_id": "heavy_cavalry",
-        "count": 3
-      },
-      {
-        "type_id": "infantry",
-        "count": 4
-      },
-      {
-        "type_id": "militia",
-        "count": 5
       }
     ]
   },
@@ -375,7 +356,7 @@
     "region_id": "pentos_region",
     "units": [
       {
-        "type_id": "unsullied",
+        "type_id": "unsullieds",
         "count": 4
       },
       {
@@ -423,6 +404,25 @@
     ]
   },
   {
+    "id": "army_martell_1",
+    "owner_id": "martell",
+    "region_id": "sunspear",
+    "units": [
+      {
+        "type_id": "heavy_cavalry",
+        "count": 3
+      },
+      {
+        "type_id": "dornish_spearmen",
+        "count": 4
+      },
+      {
+        "type_id": "militia",
+        "count": 5
+      }
+    ]
+  },
+  {
     "id": "army_martell_2",
     "owner_id": "martell",
     "region_id": "yronwood",
@@ -432,7 +432,7 @@
         "count": 2
       },
       {
-        "type_id": "infantry",
+        "type_id": "dornish_guards",
         "count": 3
       },
       {

@@ -34,7 +34,7 @@
   {
     "id": "infantry",
     "blocked_factions": [ "free_folk", "others", "nights_watch", "martell" ],
-    "image": "army/spearmen.png",
+    "image": "army/spearman.png",
     "name": "Spearmen",
     "name_tr": "Mızraklılar",
     "attack": 10,
@@ -64,9 +64,9 @@
     "movement_points": 2
   },
   {
-    "id": "dorn_spearmen",
+    "id": "dornish_spearmen",
     "allowed_factions": [ "martell" ],
-    "image": "army/dorne_spearmen.png",
+    "image": "army/dornish_spearman.png",
     "name": "Spearmen",
     "name_tr": "Mızraklılar",
     "attack": 13,
@@ -98,7 +98,7 @@
   {
     "id": "wildling_spearmen",
     "allowed_factions": [ "free_folk" ],
-    "image": "army/wildling_spearmen.png",
+    "image": "army/wildling_spearman.png",
     "name": "Foragers",
     "name_tr": "Toplayıcılar",
     "attack": 8,
@@ -129,7 +129,7 @@
   {
     "id": "wildling_bowmen",
     "allowed_factions": [ "free_folk" ],
-    "image": "army/wildling_bowmen.png",
+    "image": "army/wildling_bowman.png",
     "name": "Hunters",
     "name_tr": "Avcılar",
     "attack": 12,
@@ -222,7 +222,7 @@
   {
     "id": "nights_watch_swordsmen",
     "allowed_factions": [ "nights_watch" ],
-    "image": "army/nightwatch_swordsmen.png",
+    "image": "army/nightwatch_swordsman.png",
     "name": "Swordsmen",
     "name_tr": "Kılıçlılar",
     "attack": 12,
@@ -283,9 +283,9 @@
     "movement_points": 2
   },
   {
-    "id": "dorn_guard",
+    "id": "dornish_guards",
     "allowed_factions": [ "martell" ],
-    "image": "army/dorn_guard.png",
+    "image": "army/dornish_guard.png",
     "name": "Dorn Guard",
     "name_tr": "Dorne Muhafızları",
     "attack": 16,
@@ -391,7 +391,7 @@
     "movement_points": 3
   },
   {
-    "id": "kingsguard",
+    "id": "kingsguards",
     "allowed_factions": [ "baratheon_king" ],
     "image": "army/kings_guard.png",
     "name": "Kingsguard",
@@ -424,7 +424,7 @@
     "movement_points": 2
   },
    {
-    "id": "unsullied",
+    "id": "unsullieds",
     "allowed_factions": [ "targaryen", "free_cities", "braavos" ],
     "image": "army/unsullied.png",
     "name": "Unsullied",
