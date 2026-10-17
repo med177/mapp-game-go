@@ -215,11 +215,11 @@ func navalMissionBonusBadge(gs *state.GameState, fleet *army.Army) (string, colo
 		}
 		return itoa(percent), navalMissionReachedColor(fleet.NavalMission.Kind), true
 	case army.NavalMissionFishing:
-		income := gs.NavalFishingGrainIncomeForFleet(fleet)
-		if income <= 0 {
+		if gs.NavalFishingGrainIncomeForFleet(fleet) <= 0 {
 			return "", color.RGBA{}, false
 		}
-		return itoa(income), navalMissionReachedColor(fleet.NavalMission.Kind), true
+		netIncome := gs.NavalFishingNetGrainIncomeForFleet(fleet)
+		return formatSignedAmount(netIncome), navalMissionReachedColor(fleet.NavalMission.Kind), true
 	case army.NavalMissionEscort:
 		return "15", navalMissionReachedColor(fleet.NavalMission.Kind), true
 	default:
@@ -310,7 +310,7 @@ func navalMissionBonusTooltipText(gs *state.GameState, fleet *army.Army) (string
 		lootGold := gs.BlockadeLootGoldForFleet(fleet)
 		return "Abluka bonusu", targetName + "'de ticarete toplam -%" + badge + " kesinti uyguluyor. Gelir katkısı (ganimet): +" + itoa(lootGold) + " altın/tur.", true
 	case army.NavalMissionFishing:
-		return "Balıkçılık geliri", targetName + "'de +" + badge + " tahıl/tur üretir.", true
+		return "Balıkçılık net katkısı", targetName + "'de " + badge + " tahıl/tur net katkı sağlar.", true
 	case army.NavalMissionEscort:
 		return "Escort bonusu", targetName + "'deki nakliye filosuna +%15 deniz savunması veriyor.", true
 	default:

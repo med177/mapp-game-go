@@ -12,7 +12,7 @@ func TestNavalMissionOptionsShowFishingOnlyBesideOwnedCoast(t *testing.T) {
 	gs := &state.GameState{
 		PlayerFactionID: "player",
 		UnitTypes: map[string]*army.UnitType{
-			"fishing_ship": {ID: "fishing_ship", Category: army.CategoryNavalTrade, FishingGrainIncome: 30},
+			"fishing_ship": {ID: "fishing_ship", Category: army.CategoryNavalTrade, FishingGrainIncome: 40, GrainUpkeep: 20},
 		},
 		Regions: map[world.RegionID]*world.Region{
 			"coast": {ID: "coast", OwnerID: "player", Neighbors: []world.RegionID{"sea"}},
@@ -40,6 +40,13 @@ func TestNavalMissionOptionsShowFishingOnlyBesideOwnedCoast(t *testing.T) {
 	}
 	if !playerNavalMissionEligible(gs, gs.Armies["fleet"]) {
 		t.Fatal("fishing-capable non-warship fleet should have access to the mission panel")
+	}
+	gs.Armies["fleet"].NavalMission = &army.NavalMission{
+		Kind: army.NavalMissionFishing, TargetRegionID: "sea",
+	}
+	got, _, ok := navalMissionBonusBadge(gs, gs.Armies["fleet"])
+	if want := "+20"; !ok || got != want {
+		t.Fatalf("fishing badge = %q, want net income %q", got, want)
 	}
 	gs.Regions["coast"].OwnerID = "other"
 	if hasFishingOption() {

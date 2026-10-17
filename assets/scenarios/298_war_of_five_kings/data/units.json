@@ -830,7 +830,7 @@
     "gold_cost": 400,
     "grain_upkeep": 20,
     "gold_upkeep": 18,
-    "fishing_grain_income": 30,
+    "fishing_grain_income": 40,
     "hp": 100,
     "morale": 60,
     "required_buildings": [

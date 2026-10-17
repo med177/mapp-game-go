@@ -1004,6 +1004,9 @@ func drawUnitTooltip(screen *ebiten.Image, gs *state.GameState, rid world.Region
 	DrawText(screen, fmt.Sprintf("Savunma: %d", utype.Defense), attributeX, y+layout.attributesY+30, FaceSmall, ColorGray)
 	DrawText(screen, fmt.Sprintf("Moral: %d", utype.Morale), attributeX, y+layout.attributesY+46, FaceSmall, ColorGray)
 	DrawText(screen, fmt.Sprintf("Can: %d", utype.HP), attributeX, y+layout.attributesY+62, FaceSmall, ColorGray)
+	if fishingLine := unitFishingIncomeTooltipLine(utype); fishingLine != "" {
+		DrawText(screen, fishingLine, attributeX, y+layout.attributesY+78, FaceSmall, ColorGray)
+	}
 
 	// Gereksinimler görselin sağ kolonu yerine görselin altında popup'ın
 	// tamamını kullanır; uzun teknoloji adları artık sağ kenardan taşmaz.
@@ -1076,11 +1079,22 @@ func drawArmyUnitTooltip(screen *ebiten.Image, gs *state.GameState, a *army.Army
 	}
 	if capacity := gs.SupplyCargoCapacityForUnitType(utype.ID, 5); capacity > 0 {
 		DrawText(screen, fmt.Sprintf("Mal taşıma (5 tur): %d", capacity), textX, statY, FaceSmall, ColorGray)
+		statY += 16
+	}
+	if fishingLine := unitFishingIncomeTooltipLine(utype); fishingLine != "" {
+		DrawText(screen, fishingLine, textX, statY, FaceSmall, ColorGray)
 	}
 
 	if sprite != nil {
 		drawUnitSpriteCard(screen, sprite, float32(iconX), float32(iconY), float32(iconW), [3]float32{1, 1, 1})
 	}
+}
+
+func unitFishingIncomeTooltipLine(utype *army.UnitType) string {
+	if utype == nil || utype.FishingGrainIncome <= 0 {
+		return ""
+	}
+	return fmt.Sprintf("Balıkçılık: +%d tahıl/tur", utype.FishingGrainIncome)
 }
 
 func unitAvailabilityStatus(gs *state.GameState, utype *army.UnitType, reqMissing bool) (string, color.RGBA) {

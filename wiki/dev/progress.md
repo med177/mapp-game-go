@@ -8,8 +8,8 @@ related: [HOME, architecture/game-loop, architecture/state-management, architect
 - 2026-10-17: Beş Kralın Savaşı'nda balıkçılık deniz görevi eklendi. Yalnız
   kendi kıyısına komşu açık denizde çalışan filo, birim verisindeki
   `fishing_grain_income` kadar tur başına tahıl üretir; senaryo savaş gemisi
-  getirisi 30 tahıl olarak ayarlandı; 20 tahıllık gemi bakımından sonra net
-  10 tahıl katkı sağlar.
+  getirisi 40 tahıl olarak ayarlandı; 20 tahıllık gemi bakımından sonra net
+  20 tahıl katkı sağlar.
 
 - 2026-10-17: Savaş sonrası vassal yapılan sanal isyancı fraksiyonlar normal,
   oynatılamayan vassallara çevriliyor; isyancı ordu işaretleri kaldırılıp isyan

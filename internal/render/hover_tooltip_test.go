@@ -11,6 +11,18 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+func TestUnitFishingIncomeTooltipLineShowsConfiguredYield(t *testing.T) {
+	if got, want := unitFishingIncomeTooltipLine(&army.UnitType{FishingGrainIncome: 40}), "Balıkçılık: +40 tahıl/tur"; got != want {
+		t.Fatalf("balıkçılık tooltip satırı = %q, want %q", got, want)
+	}
+	if got := unitFishingIncomeTooltipLine(&army.UnitType{}); got != "" {
+		t.Fatalf("getirisi olmayan birim için balıkçılık satırı = %q, want empty", got)
+	}
+	if got := unitFishingIncomeTooltipLine(nil); got != "" {
+		t.Fatalf("nil birim için balıkçılık satırı = %q, want empty", got)
+	}
+}
+
 func TestUnitTooltipLayoutPlacesRequirementsBelowImage(t *testing.T) {
 	const iconH = 201.0
 

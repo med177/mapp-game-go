@@ -187,11 +187,12 @@ func navalMissionOptions(gs *state.GameState, fleet *army.Army) []navalMissionOp
 	if fleet.IsAtSea() {
 		if income := gs.NavalFishingGrainIncomeForFleet(fleet); income > 0 &&
 			gs.IsValidNavalFishingTarget(fleet.OwnerID, fleet.RegionID) {
+			netIncome := gs.NavalFishingNetGrainIncomeForFleet(fleet)
 			options = append(options, navalMissionOption{
 				kind:        army.NavalMissionFishing,
 				label:       "Balıkçılık",
 				description: "Kendi kıyılarına komşu denizde balık tut.",
-				effect:      "Etki: +" + itoa(income) + " tahıl/tur.",
+				effect:      "Etki: " + formatSignedAmount(netIncome) + " net tahıl/tur.",
 			})
 		}
 	}

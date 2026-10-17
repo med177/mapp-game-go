@@ -857,7 +857,9 @@ Kuşatma birimleri için opsiyonel `siege_breach_multiplier`, `siege_breach_max_
 `fishing_grain_income` opsiyonel alanı, bir geminin balıkçılık görevi sırasında
 tur başına üreteceği tahılı belirtir. Alanı olmayan birimler balıkçılıktan tahıl
 üretmez. Üretim yalnızca gemi açık denizde balıkçılık görevindeyken ve kendi
-fraksiyonuna ait kara bölgesine komşu denizde bulunurken alınır.
+fraksiyonuna ait kara bölgesine komşu denizde bulunurken alınır. Filo görev
+paneli ve harita rozeti, brüt verimden balıkçı gemilerinin kendi
+`grain_upkeep` değerlerini çıkararak net katkıyı gösterir.
 
 ---
 

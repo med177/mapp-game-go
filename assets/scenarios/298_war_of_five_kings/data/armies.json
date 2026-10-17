@@ -126,14 +126,10 @@
     "units": [
       {
         "type_id": "ironborn_reavers",
-        "count": 4
+        "count": 6
       },
       {
         "type_id": "infantry",
-        "count": 4
-      },
-      {
-        "type_id": "militia",
         "count": 4
       }
     ]
@@ -372,14 +368,10 @@
     "units": [
       {
         "type_id": "ironborn_reavers",
-        "count": 3
+        "count": 6
       },
       {
         "type_id": "infantry",
-        "count": 3
-      },
-      {
-        "type_id": "militia",
         "count": 3
       }
     ]
@@ -717,10 +709,20 @@
       {
         "type_id": "warship",
         "count": 6
-      },
+      }
+    ]
+  },
+  {
+    "id": "army_greyjoy_navy_2",
+    "owner_id": "greyjoy",
+    "region_id": "ironmans_bay",
+    "docked_region_id": "pyke",
+    "docked_settlement_id": "pyke_port",
+    "is_naval": true,
+    "units": [
       {
         "type_id": "transport",
-        "count": 2
+        "count": 4
       }
     ]
   },

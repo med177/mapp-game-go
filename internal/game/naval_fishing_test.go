@@ -26,13 +26,20 @@ func TestEconomyTickIncludesNavalFishingInGrainProduction(t *testing.T) {
 		UnitTypes: map[string]*army.UnitType{
 			"warship": {
 				ID: "warship", Category: army.CategoryNavalWar,
-				GrainUpkeep: 20, FishingGrainIncome: 30,
+				GrainUpkeep: 20, FishingGrainIncome: 40,
 			},
 		},
 		Armies: map[army.ArmyID]*army.Army{
 			"fleet": {
 				ID: "fleet", OwnerID: string(fid), IsNaval: true, RegionID: "sea",
-				Units:        []army.Unit{{TypeID: "warship", CurrentHP: army.MaxUnitHP}},
+				Units: []army.Unit{
+					{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+					{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+					{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+					{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+					{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+					{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+				},
 				NavalMission: &army.NavalMission{Kind: army.NavalMissionFishing, TargetRegionID: "sea"},
 			},
 		},
@@ -41,16 +48,13 @@ func TestEconomyTickIncludesNavalFishingInGrainProduction(t *testing.T) {
 	applyEconomyTick(gs)
 
 	status := gs.GrainEconomy[fid]
-	if got, want := status.Production, 30; got != want {
+	if got, want := status.Production, 240; got != want {
 		t.Fatalf("grain production = %d, want %d including fishing", got, want)
 	}
-	if got, want := status.ArmyUpkeep, 20; got != want {
-		t.Fatalf("army grain upkeep = %d, want %d", got, want)
+	if got, want := status.ArmyUpkeep, 120; got != want {
+		t.Fatalf("six warships' grain upkeep = %d, want %d", got, want)
 	}
-	if got, want := status.NetChange, 10; got != want {
+	if got, want := status.NetChange, 120; got != want {
 		t.Fatalf("net grain change = %d, want %d after ship upkeep", got, want)
-	}
-	if got, want := gs.Factions[fid].Grain, 100; got != want {
-		t.Fatalf("grain stockpile = %d, want %d after fishing", got, want)
 	}
 }

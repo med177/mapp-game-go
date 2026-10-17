@@ -62,6 +62,9 @@ func TestNavalFishingMissionRequiresOwnedCoastAndProducesPerUnitGrain(t *testing
 	if got, want := gs.NavalFishingGrainIncomeForFleet(gs.Armies["fleet"]), 60; got != want {
 		t.Fatalf("fleet fishing income = %d, want %d", got, want)
 	}
+	if got, want := gs.NavalFishingNetGrainIncomeForFleet(gs.Armies["fleet"]), 60; got != want {
+		t.Fatalf("fleet net fishing income = %d, want %d", got, want)
+	}
 
 	fleet := gs.Armies["fleet"]
 	fleet.NavalMission = &mission
@@ -75,6 +78,34 @@ func TestNavalFishingMissionRequiresOwnedCoastAndProducesPerUnitGrain(t *testing
 	}
 	if got := gs.NavalFishingGrainIncomeForFaction("player"); got != 0 {
 		t.Fatalf("fishing income without owned coast = %d, want 0", got)
+	}
+}
+
+func TestNavalFishingNetIncomeSubtractsEachFishingUnitUpkeep(t *testing.T) {
+	gs := &GameState{
+		UnitTypes: map[string]*army.UnitType{
+			"warship": {ID: "warship", Category: army.CategoryNavalWar, FishingGrainIncome: 40, GrainUpkeep: 20},
+			"merchant_ship": {
+				ID: "merchant_ship", Category: army.CategoryNavalTrade,
+				FishingGrainIncome: 30, GrainUpkeep: 3,
+			},
+		},
+	}
+	fleet := &army.Army{
+		IsNaval: true,
+		Units: []army.Unit{
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "merchant_ship", CurrentHP: army.MaxUnitHP},
+			{TypeID: "warship"},
+		},
+	}
+	if got, want := gs.NavalFishingNetGrainIncomeForFleet(fleet), 147; got != want {
+		t.Fatalf("fleet net fishing income = %d, want %d (six warships, merchant ship, excluding sunk ship)", got, want)
 	}
 }
 
